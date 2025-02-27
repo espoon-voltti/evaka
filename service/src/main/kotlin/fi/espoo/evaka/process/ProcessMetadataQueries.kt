@@ -12,8 +12,8 @@ fun Database.Read.getChildDocumentMetadata(
     documentId: ChildDocumentId
 ): ProcessMetadataController.DocumentMetadata =
     createQuery {
-        sql(
-            """
+            sql(
+                """
         SELECT 
             dt.id,
             dt.name,
@@ -28,26 +28,24 @@ fun Database.Read.getChildDocumentMetadata(
         LEFT JOIN evaka_user e ON e.employee_id = cd.created_by
         WHERE cd.id = ${bind(documentId)}
     """
-        )
-    }
+            )
+        }
         .map {
             ProcessMetadataController.DocumentMetadata(
                 documentId = column("id"),
                 name = column("name"),
                 createdAt = column("created"),
                 createdBy =
-                column<EvakaUserId?>("created_by_id")?.let {
-                    EvakaUser(
-                        id = it,
-                        name = column("created_by_name"),
-                        type = column("created_by_type"),
-                    )
-                },
+                    column<EvakaUserId?>("created_by_id")?.let {
+                        EvakaUser(
+                            id = it,
+                            name = column("created_by_name"),
+                            type = column("created_by_type"),
+                        )
+                    },
                 confidential = column("confidential"),
                 downloadPath =
-                column<String?>("document_key")?.let {
-                    "/employee/child-documents/$it/pdf"
-                },
+                    column<String?>("document_key")?.let { "/employee/child-documents/$it/pdf" },
                 receivedBy = null,
             )
         }

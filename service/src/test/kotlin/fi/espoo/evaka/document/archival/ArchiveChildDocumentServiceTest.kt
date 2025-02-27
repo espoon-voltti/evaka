@@ -20,6 +20,7 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.OfficialLanguage
 import fi.espoo.evaka.user.EvakaUser
 import fi.espoo.evaka.user.EvakaUserType
+import java.io.File
 import java.io.StringWriter
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -33,7 +34,6 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.xml.sax.SAXException
 import org.xml.sax.SAXParseException
-import java.io.File
 
 fun prettyPrintXml(xml: String): String {
     val transformerFactory = TransformerFactory.newInstance()
@@ -174,7 +174,7 @@ class ArchiveChildDocumentServiceTest {
                 confidential = true,
                 downloadPath =
                     "/employee/child-documents/child-documents/child_document_c3cc95f8-f045-11ef-9114-87ea771c5c89.pdf/pdf",
-                receivedBy = ProcessMetadataController.DocumentOrigin.ELECTRONIC
+                receivedBy = ProcessMetadataController.DocumentOrigin.ELECTRONIC,
             )
 
         val archivedProcess =
@@ -221,7 +221,7 @@ class ArchiveChildDocumentServiceTest {
         val metadataXml = marshalMetadata(metadata)
 
         val prettyMetadataXml = prettyPrintXml(metadataXml)
-        //println(prettyMetadataXml)
+        // println(prettyMetadataXml)
 
         // Validate XML against schema
         val validationErrors = validateXmlAgainstSchema(prettyMetadataXml)

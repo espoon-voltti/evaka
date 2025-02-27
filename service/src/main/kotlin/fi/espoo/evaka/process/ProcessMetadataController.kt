@@ -379,7 +379,6 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
             }
     }
 
-
     private fun Database.Read.getAssistanceNeedDecisionDocumentMetadata(
         decisionId: AssistanceNeedDecisionId
     ): DocumentMetadata =
@@ -677,5 +676,3 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
             }
             .exactlyOne()
 }
-
-

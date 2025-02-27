@@ -113,7 +113,7 @@ data class DocumentContent(val answers: List<AnsweredQuestion<*>>) {
         if (answers.any { it == null }) error("Document content must not contain null answers")
     }
 
-    // override fun toString(): String = "**REDACTED**"
+    override fun toString(): String = "**REDACTED**"
 }
 
 enum class DocumentStatus(val editable: Boolean) : DatabaseEnum {

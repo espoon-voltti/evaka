@@ -245,10 +245,13 @@ class ArchiveChildDocumentService(
         // Get the document from the original location
         val originalLocation = documentClient.locate(DocumentKey.ChildDocument(documentKey))
         val documentContent = documentClient.get(originalLocation)
-
-        val masterId = "yleinen"
-        val classId = "12.01.SL1.RT34"
-        val yleinenVirtualArchiveId = "YLEINEN"
+        val masterId =
+            "yleinen" // TODO ei vielä varmuudella tiedossa. Muissa Särmä integraatioissa käytetty
+        // esim. "taloushallinto" tai "paatoksenteko"
+        val classId =
+            "12.01.SL1.RT34" // Arvo perustuu Evaka_Särmä_metatietomääritykset.xlsx -tiedostoon
+        val virtualArchiveId =
+            "YLEINEN" // Arvo perustuu Evaka_Särmä_metatietomääritykset.xlsx -tiedostoon
 
         // Create metadata object and convert to XML
         val metadata =
@@ -267,7 +270,7 @@ class ArchiveChildDocumentService(
                 metadataXml,
                 masterId,
                 classId,
-                yleinenVirtualArchiveId,
+                virtualArchiveId,
             )
         logger.info { "Response code: $responseCode" }
 
