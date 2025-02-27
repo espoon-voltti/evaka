@@ -1,0 +1,1 @@
+ALTER TABLE daycare_group ADD COLUMN nekku_customer_number text;
