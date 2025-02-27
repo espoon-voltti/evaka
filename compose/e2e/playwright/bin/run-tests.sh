@@ -13,7 +13,6 @@ fi
 export CI="${CI:-false}"
 export FORCE_COLOR=1
 export PROXY_URL=${PROXY_URL:-http://localhost:9099}
-export KEYCLOAK_URL=${KEYCLOAK_URL:-http://localhost:8080}
 export DUMMY_IDP_URL=${DUMMY_IDP_URL:-http://localhost:9090}
 
 cd /repo/frontend

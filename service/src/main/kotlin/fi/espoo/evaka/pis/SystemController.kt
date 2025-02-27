@@ -63,14 +63,9 @@ class SystemController(
                                 )
                                 ?.let { CitizenUserIdentity(it.id) }
                             ?: error("No person found with ssn")
-                    if (request.keycloakEmail == null) {
-                        tx.updateLastStrongLogin(clock, citizen.id)
-                    }
-                    tx.updateCitizenOnLogin(
-                        clock,
-                        citizen.id,
-                        keycloakEmail = request.keycloakEmail,
-                    )
+                    val now = clock.now()
+                    tx.updateLastStrongLogin(now, citizen.id)
+                    tx.updateCitizenOnLogin(now, citizen.id)
                     tx.upsertCitizenUser(citizen.id)
                     personService.getPersonWithChildren(tx, user, citizen.id)
                     citizen
@@ -113,8 +108,9 @@ class SystemController(
                         )
                     }
 
-                    tx.updateLastWeakLogin(clock, citizen.id)
-                    tx.updateCitizenOnLogin(clock, citizen.id, keycloakEmail = null)
+                    val now = clock.now()
+                    tx.updateLastWeakLogin(now, citizen.id)
+                    tx.updateCitizenOnLogin(now, citizen.id)
                     personService.getPersonWithChildren(tx, user, citizen.id)
                     CitizenUserIdentity(citizen.id)
                 }
@@ -437,8 +433,6 @@ class SystemController(
         val socialSecurityNumber: String,
         val firstName: String,
         val lastName: String,
-        // null in SFI login requests, always set (but possibly empty) in Keycloak login requests
-        val keycloakEmail: String?,
     )
 
     data class CitizenWeakLoginRequest(val username: String, val password: Sensitive<String>) {

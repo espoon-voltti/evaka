@@ -23,17 +23,12 @@ import {
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { fontWeights, H1, H2, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
-import { featureFlags } from 'lib-customizations/citizen'
 import { farMap } from 'lib-icons'
 
 import Footer from '../Footer'
 import { useUser } from '../auth/state'
 import { useTranslation } from '../localization'
-import {
-  getStrongLoginUri,
-  getWeakKeycloakLoginUri,
-  getWeakLoginUri
-} from '../navigation/const'
+import { getStrongLoginUri, getWeakLoginUri } from '../navigation/const'
 
 import { systemNotificationsQuery } from './queries'
 
@@ -101,25 +96,16 @@ export default React.memo(function LoginPage() {
               />
             )}
             <Gap size="s" />
-            {featureFlags.weakLogin ? (
-              <LinkButton
-                href={getWeakLoginUri(unvalidatedNextPath ?? '/')}
-                onClick={(e) => {
-                  e.preventDefault()
-                  void navigate(getWeakLoginUri(unvalidatedNextPath ?? '/'))
-                }}
-                data-qa="weak-login"
-              >
-                {i18n.loginPage.login.link}
-              </LinkButton>
-            ) : (
-              <LinkButton
-                href={getWeakKeycloakLoginUri(unvalidatedNextPath ?? '/')}
-                data-qa="weak-login"
-              >
-                {i18n.loginPage.login.link}
-              </LinkButton>
-            )}
+            <LinkButton
+              href={getWeakLoginUri(unvalidatedNextPath ?? '/')}
+              onClick={(e) => {
+                e.preventDefault()
+                void navigate(getWeakLoginUri(unvalidatedNextPath ?? '/'))
+              }}
+              data-qa="weak-login"
+            >
+              {i18n.loginPage.login.link}
+            </LinkButton>
           </ContentArea>
           <ContentArea opaque>
             <H2 noMargin>{i18n.loginPage.applying.title}</H2>

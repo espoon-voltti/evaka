@@ -152,7 +152,6 @@ class WeakCredentialsIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
                 socialSecurityNumber = ssn,
                 firstName = person.firstName,
                 lastName = person.lastName,
-                keycloakEmail = null,
             ),
         )
 

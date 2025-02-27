@@ -45,8 +45,6 @@ const features: Features = {
     invoiceDisplayAccountNumber: true,
     serviceApplications: true,
     multiSelectDeparture: true,
-    weakLogin: true,
-    employeeSfiLogin: true,
     archiveIntegrationEnabled: true
   },
   staging: {
@@ -83,8 +81,6 @@ const features: Features = {
     invoiceDisplayAccountNumber: true,
     serviceApplications: true,
     multiSelectDeparture: true,
-    weakLogin: true,
-    employeeSfiLogin: true,
     archiveIntegrationEnabled: true
   },
   prod: {
@@ -120,8 +116,6 @@ const features: Features = {
     invoiceDisplayAccountNumber: true,
     serviceApplications: false,
     multiSelectDeparture: false,
-    weakLogin: true,
-    employeeSfiLogin: true,
     archiveIntegrationEnabled: false
   }
 }

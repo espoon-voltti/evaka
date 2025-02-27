@@ -1680,8 +1680,8 @@ UPDATE person SET email=${bind(body.email)} WHERE id=${bind(body.personId)}
         val password = request.password?.let { passwordService.encode(it) }
         db.connect { dbc ->
             dbc.transaction { tx ->
-                tx.updateLastStrongLogin(clock, id)
-                tx.updateWeakLoginCredentials(clock, id, request.username, password)
+                tx.updateLastStrongLogin(clock.now(), id)
+                tx.updateWeakLoginCredentials(clock.now(), id, request.username, password)
             }
         }
     }
