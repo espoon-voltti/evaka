@@ -89,7 +89,6 @@ export interface CitizenLoginRequest {
   socialSecurityNumber: string
   firstName: string
   lastName: string
-  keycloakEmail?: string
 }
 
 export interface CitizenUser {

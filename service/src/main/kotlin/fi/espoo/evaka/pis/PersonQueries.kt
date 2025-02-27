@@ -69,7 +69,6 @@ data class CitizenUserDetails(
     val phone: String,
     val backupPhone: String,
     val email: String?,
-    val keycloakEmail: String?,
     val weakLoginUsername: String?,
 )
 
@@ -77,7 +76,7 @@ fun Database.Read.getCitizenUserDetails(id: PersonId): CitizenUserDetails? =
     createQuery {
             sql(
                 """
-SELECT id, first_name, last_name, preferred_name, street_address, postal_code, post_office, phone, backup_phone, email, keycloak_email, citizen_user.username AS weak_login_username
+SELECT id, first_name, last_name, preferred_name, street_address, postal_code, post_office, phone, backup_phone, email, citizen_user.username AS weak_login_username
 FROM person
 LEFT JOIN citizen_user USING (id)
 WHERE id = ${bind(id)}
@@ -511,17 +510,12 @@ private val toPersonDTO: Row.() -> PersonDTO = {
     )
 }
 
-fun Database.Transaction.updateCitizenOnLogin(
-    clock: EvakaClock,
-    id: PersonId,
-    keycloakEmail: String?,
-) =
+fun Database.Transaction.updateCitizenOnLogin(now: HelsinkiDateTime, id: PersonId) =
     createUpdate {
             sql(
                 """
 UPDATE person 
-SET last_login = ${bind(clock.now())},
-    keycloak_email = coalesce(${bind(keycloakEmail)}, keycloak_email)
+SET last_login = ${bind(now)}
 WHERE id = ${bind(id)}
 """
             )

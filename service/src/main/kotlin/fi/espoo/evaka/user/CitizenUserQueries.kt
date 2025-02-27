@@ -7,15 +7,15 @@ package fi.espoo.evaka.user
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.EncodedPassword
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.json.Json
 
-fun Database.Transaction.updateLastStrongLogin(clock: EvakaClock, id: PersonId) =
+fun Database.Transaction.updateLastStrongLogin(now: HelsinkiDateTime, id: PersonId) =
     createUpdate {
             sql(
                 """
 INSERT INTO citizen_user (id, last_strong_login)
-VALUES (${bind(id)}, ${bind(clock.now())})
+VALUES (${bind(id)}, ${bind(now)})
 ON CONFLICT (id) DO UPDATE SET last_strong_login = excluded.last_strong_login
 """
             )
@@ -40,11 +40,11 @@ WHERE username = ${bind(username)}
         }
         .exactlyOneOrNull()
 
-fun Database.Transaction.updateLastWeakLogin(clock: EvakaClock, id: PersonId) =
+fun Database.Transaction.updateLastWeakLogin(now: HelsinkiDateTime, id: PersonId) =
     createUpdate {
             sql(
                 """
-UPDATE citizen_user SET last_weak_login = ${bind(clock.now())}
+UPDATE citizen_user SET last_weak_login = ${bind(now)}
 WHERE id = ${bind(id)}
 """
             )
@@ -64,7 +64,7 @@ WHERE id = ${bind(id)}
         .updateExactlyOne()
 
 fun Database.Transaction.updateWeakLoginCredentials(
-    clock: EvakaClock,
+    now: HelsinkiDateTime,
     id: PersonId,
     username: String?, // null = don't update
     password: EncodedPassword?, // null = don't update
@@ -75,9 +75,9 @@ fun Database.Transaction.updateWeakLoginCredentials(
 UPDATE citizen_user
 SET
     username = coalesce(${bind(username)}, username),
-    username_updated_at = coalesce(${bind(clock.now().takeIf { username != null })}, username_updated_at),
+    username_updated_at = coalesce(${bind(now.takeIf { username != null })}, username_updated_at),
     password = coalesce(${bindJson(password)}, password),
-    password_updated_at = coalesce(${bind(clock.now().takeIf { password != null })}, password_updated_at)
+    password_updated_at = coalesce(${bind(now.takeIf { password != null })}, password_updated_at)
 WHERE id = ${bind(id)}
 """
             )

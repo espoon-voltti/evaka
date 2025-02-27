@@ -186,7 +186,7 @@ class PersonalDataControllerCitizen(
                 }
                 try {
                     tx.updateWeakLoginCredentials(
-                        clock,
+                        clock.now(),
                         user.id,
                         body.username?.lowercase(),
                         password,
