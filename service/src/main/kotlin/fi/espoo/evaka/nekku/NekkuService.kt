@@ -13,11 +13,11 @@ import fi.espoo.evaka.shared.async.removeUnclaimedJobs
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.io.IOException
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
 import org.springframework.stereotype.Service
-import java.io.IOException
 
 private val logger = KotlinLogging.logger {}
 
@@ -44,13 +44,6 @@ class NekkuService(
         fetchAndUpdateNekkuCustomers(client, db, loggerWarner)
     }
 
-
-
-    fun getCustomers(client: NekkuHttpClient, jsonMapper: JsonMapper) {
-        val customers = getCustomerMapping(client)
-        logger.info { customers.values.toString() }
-    }
-
     fun planNekkuCustomersSync(db: Database.Connection, clock: EvakaClock) {
         db.transaction { tx ->
             tx.removeUnclaimedJobs(setOf(AsyncJobType(AsyncJob.SyncNekkuCustomers::class)))
@@ -64,15 +57,9 @@ class NekkuService(
     }
 }
 
-private fun getCustomerMapping(client: NekkuClient): Map<String, String> {
-    logger.info { "Getting Nekku customers" }
-    val customers = client.getCustomers()
-    val customerMapping = customers.associateBy({ it.number }, { it.name })
-    return customerMapping
-}
-
 interface NekkuClient {
     data class NekkuCustomer(val number: String, val name: String)
+
     fun getCustomers(): List<NekkuCustomer>
 }
 
@@ -105,5 +92,3 @@ class NekkuHttpClient(private val env: NekkuEnv, private val jsonMapper: JsonMap
         throw IllegalStateException("Request failed")
     }
 }
-
-

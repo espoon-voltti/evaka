@@ -140,7 +140,11 @@ enum class ScheduledJob(
     SyncNekkuCustomers(
         ScheduledJobs::syncNekkuCustomers,
         // change to better schedule
-        ScheduledJobSettings(enabled = true, schedule = JobSchedule.cron("0 */5 7-17 * * *"), retryCount = 1),
+        ScheduledJobSettings(
+            enabled = false,
+            schedule = JobSchedule.cron("0 */10 7-17 * * *"),
+            retryCount = 1,
+        ),
     ),
     SendPendingDecisionReminderEmails(
         ScheduledJobs::sendPendingDecisionReminderEmails,
