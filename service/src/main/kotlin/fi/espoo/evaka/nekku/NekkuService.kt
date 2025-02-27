@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2017-2025 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
 package fi.espoo.evaka.nekku
 
 import com.fasterxml.jackson.databind.json.JsonMapper
@@ -10,13 +13,15 @@ import fi.espoo.evaka.shared.async.removeUnclaimedJobs
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import io.github.oshai.kotlinlogging.KotlinLogging
-import java.io.IOException
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
 import org.springframework.stereotype.Service
+import java.io.IOException
 
 private val logger = KotlinLogging.logger {}
+
+val loggerWarner: (String) -> Unit = { s -> logger.warn { s } }
 
 @Service
 class NekkuService(
@@ -35,10 +40,11 @@ class NekkuService(
         clock: EvakaClock,
         job: AsyncJob.SyncNekkuCustomers,
     ) {
-        if (client == null) error("Cannot sync diet list: NekkuEnv is not configured")
-        val customers = getCustomerMapping(client)
-        logger.info { customers.values.toString() }
+        if (client == null) error("Cannot sync Nekku customers: NekkuEnv is not configured")
+        fetchAndUpdateNekkuCustomers(client, db, loggerWarner)
     }
+
+
 
     fun getCustomers(client: NekkuHttpClient, jsonMapper: JsonMapper) {
         val customers = getCustomerMapping(client)
@@ -66,14 +72,14 @@ private fun getCustomerMapping(client: NekkuClient): Map<String, String> {
 }
 
 interface NekkuClient {
-
+    data class NekkuCustomer(val number: String, val name: String)
     fun getCustomers(): List<NekkuCustomer>
 }
 
 class NekkuHttpClient(private val env: NekkuEnv, private val jsonMapper: JsonMapper) : NekkuClient {
     val client = OkHttpClient()
 
-    override fun getCustomers(): List<NekkuCustomer> = request(env, "customers")
+    override fun getCustomers(): List<NekkuClient.NekkuCustomer> = request(env, "customers")
 
     private inline fun <reified R> request(env: NekkuEnv, endpoint: String): R {
         val fullUrl = env.url.resolve(endpoint).toString()
@@ -100,4 +106,4 @@ class NekkuHttpClient(private val env: NekkuEnv, private val jsonMapper: JsonMap
     }
 }
 
-data class NekkuCustomer(val number: String, val name: String)
+
