@@ -2,13 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-pluginManagement {
-    repositories {
-        gradlePluginPortal()
-        mavenCentral()
-    }
-}
-
 rootProject.name = "evaka-service"
 
 include("service-lib")
