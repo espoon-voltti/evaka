@@ -1,11 +1,6 @@
 package fi.espoo.evaka.nekku
 
 import fi.espoo.evaka.FullApplicationTest
-import fi.espoo.evaka.jamix.JamixClient
-import fi.espoo.evaka.jamix.JamixSpecialDiet
-import fi.espoo.evaka.jamix.JamixTexture
-import fi.espoo.evaka.jamix.TestJamixClient
-import fi.espoo.evaka.jamix.fetchAndUpdateJamixDiets
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
