@@ -69,6 +69,33 @@ class OperationalDaysIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     @Test
+    fun `every day with intermittent shift care is an operational day`() {
+        val daycareId =
+            db.transaction { tx ->
+                val areaId = tx.insert(DevCareArea())
+                tx.insert(
+                    DevDaycare(
+                        areaId = areaId,
+                        operationTimes =
+                            listOf(fullDay, fullDay, fullDay, fullDay, fullDay, null, null),
+                        shiftCareOperationTimes = null,
+                        shiftCareOpenOnHolidays = false,
+                    )
+                )
+            }
+        val shiftCareChild =
+            db.transaction { tx -> insertChild(tx, daycareId, ShiftCareType.INTERMITTENT) }
+
+        val result =
+            db.transaction { it.getOperationalDatesForChildren(month, setOf(shiftCareChild)) }
+
+        assertEquals(
+            month.intersection(placementRange)!!.durationInDays().toInt(),
+            result[shiftCareChild]!!.size,
+        )
+    }
+
+    @Test
     fun `daycare with shift care, not open on holidays`() {
         val daycareId =
             db.transaction { tx ->

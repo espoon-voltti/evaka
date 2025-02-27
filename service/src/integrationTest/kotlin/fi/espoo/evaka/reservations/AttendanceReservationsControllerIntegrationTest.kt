@@ -1593,7 +1593,7 @@ class AttendanceReservationsControllerIntegrationTest :
             )
             .also { res ->
                 assertEquals(
-                    emptySet(),
+                    setOf(intermittentShiftCareChild),
                     res.childReservations.filterNot { it.absent }.map { it.childId }.toSet(),
                 )
             }
