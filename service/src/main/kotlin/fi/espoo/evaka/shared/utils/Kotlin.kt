@@ -45,3 +45,18 @@ fun <T, R : Any> memoize(f: (T) -> R): (T) -> R = run {
         cache.getOrPut(input) { f(input) }
     }
 }
+
+inline fun <T> Iterable<T>.partitionIndexed(
+    predicate: (index: Int, T) -> Boolean
+): Pair<List<T>, List<T>> {
+    val first = ArrayList<T>()
+    val second = ArrayList<T>()
+    forEachIndexed { index, element ->
+        if (predicate(index, element)) {
+            first.add(element)
+        } else {
+            second.add(element)
+        }
+    }
+    return Pair(first, second)
+}
