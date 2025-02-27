@@ -22,7 +22,6 @@ import { getEmployeeUrlPrefix } from '../../constants'
 import { useTranslation } from '../../state/i18n'
 import { formatName } from '../../utils'
 import { isPartDayPlacement } from '../../utils/placements'
-import { NotificationCounter } from '../UnitPage'
 import { CircleIconSmallOrange } from '../applications/CircleIcon'
 import { CareTypeChip } from '../common/CareTypeLabel'
 import { FlexRow } from '../common/styled/containers'
@@ -77,12 +76,8 @@ export default React.memo(function TabWaitingConfirmation({
       open={open}
       title={
         <Title size={2}>
-          {i18n.unit.placementPlans.title}
-          {nonRejectedRowCount > 0 ? (
-            <NotificationCounter data-qa="notification-counter">
-              {nonRejectedRowCount}
-            </NotificationCounter>
-          ) : null}
+          {i18n.unit.placementPlans.title} (
+          <span data-qa="notification-counter">{nonRejectedRowCount}</span>)
         </Title>
       }
       toggleOpen={() => setOpen(!open)}
