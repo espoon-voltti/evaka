@@ -94,7 +94,7 @@ export default React.memo(function Decisions() {
   const sortedFinanceDecisions = useMemo(
     () =>
       financeDecisions.map((results) =>
-        orderBy(results, ['sentAt', 'validFrom'], ['desc', 'desc'])
+        orderBy(results, ['validFrom', 'sentAt'], ['desc', 'desc'])
       ),
     [financeDecisions]
   )
