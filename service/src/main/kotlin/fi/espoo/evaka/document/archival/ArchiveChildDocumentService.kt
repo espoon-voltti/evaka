@@ -265,13 +265,7 @@ class ArchiveChildDocumentService(
         logger.info { "Generated metadata XML: $metadataXml" }
 
         val (responseCode, responseBody) =
-            client.putDocument(
-                documentContent,
-                metadataXml,
-                masterId,
-                classId,
-                virtualArchiveId,
-            )
+            client.putDocument(documentContent, metadataXml, masterId, classId, virtualArchiveId)
         logger.info { "Response code: $responseCode" }
 
         if (responseCode == 200) {
