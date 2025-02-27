@@ -1,7 +1,3 @@
-<!--
-SPDX-FileCopyrightText: 2024 City of Espoo
-SPDX-License-Identifier: LGPL-2.1-or-later
--->
 <?xml version="1.0" encoding="UTF-8"?>
 <xs:schema targetNamespace="http://www.avaintec.com/2004/records-schedule-fi/1.0"
   xmlns:xs="http://www.w3.org/2001/XMLSchema"
