@@ -8,7 +8,7 @@ import fi.espoo.evaka.decision.logger
 import fi.espoo.evaka.shared.db.Database
 import org.jdbi.v3.core.mapper.PropagateNull
 
-data class CustomerNumbers(@PropagateNull val number: String, val name: String)
+data class CustomerNumbers(@PropagateNull val number: String, val name: String, val group: String)
 
 /** Throws an IllegalStateException if Nekku returns an empty texture list. */
 fun fetchAndUpdateNekkuCustomers(
@@ -16,7 +16,11 @@ fun fetchAndUpdateNekkuCustomers(
     db: Database.Connection,
     warner: (s: String) -> Unit = loggerWarner,
 ) {
-    val customersFromNekku = client.getCustomers().map { it -> CustomerNumbers(it.number, it.name) }
+    val customersFromNekku =
+        client
+            .getCustomers()
+            .filter { it.group == "Varhaiskasvatus" }
+            .map { it -> CustomerNumbers(it.number, it.name, it.group) }
 
     if (customersFromNekku.isEmpty())
         error("Refusing to sync empty Nekku customer list into database")
@@ -67,7 +71,6 @@ ON CONFLICT (number) DO UPDATE SET
     return deletedCustomerCount
 }
 
-fun Database.Transaction.getNekkuCustomers(): List<NekkuClient.NekkuCustomer> {
-    return createQuery { sql("SELECT number, name FROM nekku_customer") }
-        .toList<NekkuClient.NekkuCustomer>()
+fun Database.Transaction.getNekkuCustomers(): List<NekkuCustomer> {
+    return createQuery { sql("SELECT number, name FROM nekku_customer") }.toList<NekkuCustomer>()
 }

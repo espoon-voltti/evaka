@@ -20,7 +20,13 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `Nekku customer sync does not sync non-empty data`() {
-        val client = TestNekkuClient(customers = mapOf(Pair("2501K6089", "Ahvenojan päiväkoti")))
+        val client =
+            TestNekkuClient(
+                customers =
+                    listOf(
+                        NekkuCustomer("2501K6089", "Ahvenojan päiväkoti", group = "Varhaiskasvatus")
+                    )
+            )
         fetchAndUpdateNekkuCustomers(client, db, loggerWarner)
         db.transaction { tx ->
             val customers = tx.getNekkuCustomers().toSet()
@@ -29,9 +35,11 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     }
 }
 
-class TestNekkuClient(val customers: Map<String, String> = mapOf()) : NekkuClient {
+class TestNekkuClient(
+    val customers: List<NekkuCustomer> = emptyList()
+) : NekkuClient {
 
-    override fun getCustomers(): List<NekkuClient.NekkuCustomer> {
-        return customers.map { (number, name) -> NekkuClient.NekkuCustomer(number, name) }
+    override fun getCustomers(): List<NekkuCustomer> {
+        return customers
     }
 }

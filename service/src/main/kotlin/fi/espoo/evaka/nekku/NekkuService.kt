@@ -58,7 +58,6 @@ class NekkuService(
 }
 
 interface NekkuClient {
-    data class NekkuCustomer(val number: String, val name: String)
 
     fun getCustomers(): List<NekkuCustomer>
 }
@@ -66,7 +65,7 @@ interface NekkuClient {
 class NekkuHttpClient(private val env: NekkuEnv, private val jsonMapper: JsonMapper) : NekkuClient {
     val client = OkHttpClient()
 
-    override fun getCustomers(): List<NekkuClient.NekkuCustomer> = request(env, "customers")
+    override fun getCustomers(): List<NekkuCustomer> = request(env, "customers")
 
     private inline fun <reified R> request(env: NekkuEnv, endpoint: String): R {
         val fullUrl = env.url.resolve(endpoint).toString()
@@ -92,3 +91,5 @@ class NekkuHttpClient(private val env: NekkuEnv, private val jsonMapper: JsonMap
         throw IllegalStateException("Request failed")
     }
 }
+
+data class NekkuCustomer(val number: String, val name: String, val group: String)
