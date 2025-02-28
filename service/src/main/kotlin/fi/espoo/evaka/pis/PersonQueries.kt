@@ -394,6 +394,7 @@ RETURNING *
         .exactlyOne(toPersonDTO)
 }
 
+// email is only updated if the user has no verified email
 fun Database.Transaction.updatePersonBasicContactInfo(
     id: PersonId,
     email: String?,
@@ -403,7 +404,7 @@ fun Database.Transaction.updatePersonBasicContactInfo(
             sql(
                 """
 UPDATE person SET
-    email = ${bind(email)},
+    email = CASE WHEN verified_email IS NULL THEN ${bind(email)} ELSE email END,
     phone = ${bind(phone)}
 WHERE id = ${bind(id)}
 RETURNING id
