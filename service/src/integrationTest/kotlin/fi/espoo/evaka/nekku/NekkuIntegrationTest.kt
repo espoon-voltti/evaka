@@ -28,7 +28,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             TestNekkuClient(
                 customers =
                     listOf(
-                        NekkuCustomer("2501K6089", "Ahvenojan päiväkoti", group = "Varhaiskasvatus")
+                        NekkuCustomer("2501K6089", "Ahvenojan päiväkoti", "Varhaiskasvatus", "large")
                     )
             )
         fetchAndUpdateNekkuCustomers(client, db, loggerWarner)
@@ -37,6 +37,25 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             assertEquals(1, customers.size)
         }
     }
+
+    @Test
+    fun `Nekku customer lists only 'Varhaiskasvatus'-data`() {
+        val client =
+            TestNekkuClient(
+                customers =
+                    listOf(
+                        NekkuCustomer("2501K6089", "Ahvenojan päiväkoti", "Varhaiskasvatus", "large"),
+                        NekkuCustomer("4282K9253", "Haukiputaan lukio lipa", "Liikunta", "" )
+                    )
+            )
+        fetchAndUpdateNekkuCustomers(client, db, loggerWarner)
+        db.transaction { tx ->
+            val customers = tx.getNekkuCustomers().toSet()
+            assertEquals(1, customers.size)
+        }
+    }
+
+
 }
 
 class TestNekkuClient(

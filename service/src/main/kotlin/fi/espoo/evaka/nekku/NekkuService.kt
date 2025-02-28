@@ -92,4 +92,4 @@ class NekkuHttpClient(private val env: NekkuEnv, private val jsonMapper: JsonMap
     }
 }
 
-data class NekkuCustomer(val number: String, val name: String, val group: String)
+data class NekkuCustomer(val number: String, val name: String, val customergroup: String, val unit_size: String)
