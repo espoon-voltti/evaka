@@ -21,6 +21,7 @@ import { MessageThreadId } from 'lib-common/generated/api-types/shared'
 import { PagedMessageCopies } from 'lib-common/generated/api-types/messaging'
 import { PagedMessageThreads } from 'lib-common/generated/api-types/messaging'
 import { PagedSentMessages } from 'lib-common/generated/api-types/messaging'
+import { PersonId } from 'lib-common/generated/api-types/shared'
 import { PostMessageBody } from 'lib-common/generated/api-types/messaging'
 import { PostMessagePreflightBody } from 'lib-common/generated/api-types/messaging'
 import { PostMessagePreflightResponse } from 'lib-common/generated/api-types/messaging'
@@ -163,6 +164,22 @@ export async function getDraftMessages(
     method: 'GET'
   })
   return json.map(e => deserializeJsonDraftContent(e))
+}
+
+
+/**
+* Generated from fi.espoo.evaka.messaging.MessageController.getFinanceMessagesWithPerson
+*/
+export async function getFinanceMessagesWithPerson(
+  request: {
+    personId: PersonId
+  }
+): Promise<MessageThread[]> {
+  const { data: json } = await client.request<JsonOf<MessageThread[]>>({
+    url: uri`/employee/messages/finance/${request.personId}`.toString(),
+    method: 'GET'
+  })
+  return json.map(e => deserializeJsonMessageThread(e))
 }
 
 

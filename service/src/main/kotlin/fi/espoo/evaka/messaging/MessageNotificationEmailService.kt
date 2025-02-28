@@ -105,6 +105,7 @@ WHERE m.id = ANY(${bind(messageIds)})
                     msg.senderId,
                     municipalAccountName = featureConfig.municipalMessageAccountName,
                     serviceWorkerAccountName = featureConfig.serviceWorkerMessageAccountName,
+                    financeAccountName = featureConfig.financeMessageAccountName,
                 )
             }
         val isSenderMunicipalAccount = sender.type == AccountType.MUNICIPAL

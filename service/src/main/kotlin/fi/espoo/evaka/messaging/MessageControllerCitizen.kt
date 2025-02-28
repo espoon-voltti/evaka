@@ -144,6 +144,7 @@ class MessageControllerCitizen(
                                 page,
                                 featureConfig.municipalMessageAccountName,
                                 featureConfig.serviceWorkerMessageAccountName,
+                                featureConfig.financeMessageAccountName,
                             )
                         }
                         .mapTo(::PagedCitizenMessageThreads) {
@@ -167,11 +168,12 @@ class MessageControllerCitizen(
     data class ChildMessageAccountAccess(
         val newMessage: Set<MessageAccountId>,
         val reply: Set<MessageAccountId>,
+        val childId: ChildId?,
     )
 
     class GetReceiversResponse(
         val messageAccounts: Set<MessageAccountWithPresence>,
-        val childrenToMessageAccounts: Map<ChildId, ChildMessageAccountAccess>,
+        val childrenToMessageAccounts: List<ChildMessageAccountAccess>,
     )
 
     @GetMapping("/receivers")
@@ -184,6 +186,7 @@ class MessageControllerCitizen(
                 val accountId = dbc.read { it.getCitizenMessageAccount(user.id) }
                 val accountsPerChild =
                     (dbc.read { it.getCitizenReceivers(evakaClock.today(), accountId) })
+                val financeAccountId = dbc.read { it.getFinanceAccountId() }
                 val response =
                     GetReceiversResponse(
                         messageAccounts =
@@ -192,12 +195,20 @@ class MessageControllerCitizen(
                                 .flatten()
                                 .toSet(),
                         childrenToMessageAccounts =
-                            accountsPerChild.mapValues { entry ->
+                            accountsPerChild.map { entry ->
                                 ChildMessageAccountAccess(
                                     entry.value.newMessage.map { it.account.id }.toSet(),
                                     entry.value.reply.map { it.account.id }.toSet(),
+                                    entry.key,
                                 )
-                            },
+                            } +
+                                ChildMessageAccountAccess(
+                                    newMessage = setOf(),
+                                    reply =
+                                        if (financeAccountId != null) setOf(financeAccountId)
+                                        else setOf(),
+                                    childId = null,
+                                ),
                     )
                 accountId to response
             }
@@ -231,6 +242,7 @@ class MessageControllerCitizen(
                         user = user,
                         municipalAccountName = featureConfig.municipalMessageAccountName,
                         serviceWorkerAccountName = featureConfig.serviceWorkerMessageAccountName,
+                        financeAccountName = featureConfig.financeMessageAccountName,
                     )
                 accountId to response
             }
