@@ -442,6 +442,11 @@ class CitizenApplicationEditor {
     await popup.waitForSelector('img:not([src=""])')
   }
 
+  async assertVerifiedReadOnlyEmail(email: string) {
+    await this.page.findByDataQa('verified-email').assertTextEquals(email)
+    await this.page.findByDataQa('guardianEmail-input').waitUntilHidden()
+  }
+
   private serviceNeedOptionDataQaPrefix(placementType: PlacementType | null) {
     if (placementType === 'DAYCARE') {
       return `full-time-option-`

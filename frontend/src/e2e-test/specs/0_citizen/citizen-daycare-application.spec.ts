@@ -22,6 +22,7 @@ import {
   createDaycarePlacements,
   getApplication,
   resetServiceState,
+  runJobs,
   setPersonEmail
 } from '../../generated/api-clients'
 import CitizenApplicationsPage from '../../pages/citizen/citizen-applications'
@@ -31,6 +32,7 @@ import {
   fullDaycareForm,
   minimalDaycareForm
 } from '../../utils/application-forms'
+import { getVerificationCodeFromEmail } from '../../utils/email'
 import { Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
 
@@ -341,5 +343,57 @@ describe('Citizen daycare applications', () => {
     await applicationsPage.editApplication(applicationId)
     await editorPage.openSection('contactInfo')
     await editorPage.guardianPhoneInput.assertValueEquals('040123456789')
+  })
+
+  test('If user has a verified email, that one is used in the application and cannot be changed', async () => {
+    // given user has a draft application with an email
+    await header.selectTab('applications')
+    const editorPage = await applicationsPage.createApplication(
+      testChild.id,
+      'DAYCARE'
+    )
+    const applicationId = editorPage.getNewApplicationId()
+    await editorPage.fillData({
+      ...minimalDaycareForm().form,
+      contactInfo: {
+        guardianPhone: testAdult.phone,
+        guardianEmail: 'old-email@test.com',
+        noGuardianEmail: false,
+        otherGuardianAgreementStatus: 'AGREED'
+      }
+    })
+    await editorPage.saveAsDraftButton.click()
+    await editorPage.modalOkBtn.click()
+
+    // and given user verifies another email
+    await header.selectTab('personal-details')
+    const section = new CitizenPersonalDetailsPage(page).personalDetailsSection
+    await section.editPersonalData(
+      {
+        preferredName: testAdult.firstName.split(' ')[1],
+        email: 'new-email@example.com',
+        phone: testAdult.phone,
+        backupPhone: testAdult.backupPhone
+      },
+      true
+    )
+    await section.unverifiedEmailStatus.waitUntilVisible()
+    await section.sendVerificationCode.click()
+    await section.verificationCodeField.waitUntilVisible()
+    await runJobs({ mockedTime: mockedNow })
+    const verificationCode = await getVerificationCodeFromEmail()
+    expect(verificationCode).toBeTruthy()
+    await section.verificationCodeField.fill(verificationCode ?? '')
+    await section.verifyEmail.click()
+    await section.verifiedEmailStatus.waitUntilVisible()
+
+    // when user goes back to the application
+    await page.reload()
+    await header.selectTab('applications')
+    await applicationsPage.editApplication(applicationId)
+
+    // then the email in the application updates and cannot be edited
+    await editorPage.openSection('contactInfo')
+    await editorPage.assertVerifiedReadOnlyEmail('new-email@example.com')
   })
 })

@@ -5,11 +5,13 @@
 import React from 'react'
 import styled from 'styled-components'
 
+import { useQueryResult } from 'lib-common/query'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
 import AdaptiveFlex from 'lib-components/layout/AdaptiveFlex'
 import {
   FixedSpaceColumn,
+  FixedSpaceFlexWrap,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
@@ -18,8 +20,10 @@ import { H3, Label, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
 import { ContactInfoSectionProps } from '../../../applications/editor/contact-info/ContactInfoSection'
+import { renderResult } from '../../../async-rendering'
 import { errorToInputInfo } from '../../../input-info-helper'
 import { useLang, useTranslation } from '../../../localization'
+import { emailVerificationStatusQuery } from '../../../personal-details/queries'
 
 export default React.memo(function GuardianSubSection({
   formData,
@@ -29,6 +33,21 @@ export default React.memo(function GuardianSubSection({
 }: ContactInfoSectionProps) {
   const t = useTranslation()
   const [lang] = useLang()
+  const verifiedEmail = useQueryResult(emailVerificationStatusQuery()).map(
+    (res) => res.verifiedEmail
+  )
+
+  if (
+    verifiedEmail.isSuccess &&
+    verifiedEmail.value &&
+    formData.guardianEmail !== verifiedEmail.value
+  ) {
+    updateFormData({
+      guardianEmail: verifiedEmail.value,
+      guardianEmailVerification: verifiedEmail.value,
+      noGuardianEmail: false
+    })
+  }
 
   return (
     <>
@@ -81,62 +100,89 @@ export default React.memo(function GuardianSubSection({
       <Gap size="m" />
 
       <EmailRow breakpoint="860px" verticalSpacing="zero">
-        <FixedSpaceColumn spacing="xs">
-          <Label htmlFor="guardian-email">
-            {t.applications.editor.contactInfo.email + ' *'}
-          </Label>
-          <InputField
-            id="guardian-email"
-            value={formData.guardianEmail}
-            data-qa="guardianEmail-input"
-            onChange={(value) =>
-              updateFormData({ guardianEmail: value, noGuardianEmail: false })
-            }
-            info={errorToInputInfo(errors.guardianEmail, t.validationErrors)}
-            hideErrorsBeforeTouched={!verificationRequested}
-            placeholder={t.applications.editor.contactInfo.email}
-            width="L"
-            required={true}
-          />
-          <Gap size="xs" />
-          <Label htmlFor="verify-guardian-email">
-            {t.applications.editor.contactInfo.verifyEmail + ' *'}
-          </Label>
-          <InputField
-            id="verify-guardian-email"
-            value={formData.guardianEmailVerification}
-            data-qa="guardianEmailVerification-input"
-            onChange={(value) =>
-              updateFormData({
-                guardianEmailVerification: value,
-                noGuardianEmail: false
-              })
-            }
-            info={errorToInputInfo(
-              errors.guardianEmailVerification,
-              t.validationErrors
-            )}
-            hideErrorsBeforeTouched={!verificationRequested}
-            placeholder={t.applications.editor.contactInfo.verifyEmail}
-            width="L"
-            required={true}
-          />
-        </FixedSpaceColumn>
-        <div>
-          <Gap size="m" />
-          <Checkbox
-            label={t.applications.editor.contactInfo.noEmail}
-            checked={formData.noGuardianEmail}
-            data-qa="noGuardianEmail-input"
-            onChange={(checked) =>
-              updateFormData({
-                guardianEmail: '',
-                guardianEmailVerification: '',
-                noGuardianEmail: checked
-              })
-            }
-          />
-        </div>
+        {renderResult(verifiedEmail, (verifiedEmail) =>
+          verifiedEmail ? (
+            <FixedSpaceColumn spacing="xs">
+              <Label>{t.applications.editor.contactInfo.email + ' *'}</Label>
+              <FixedSpaceFlexWrap horizontalSpacing="X3L" verticalSpacing="L">
+                <span translate="no" data-qa="verified-email">
+                  {verifiedEmail}
+                </span>
+                <div>
+                  {t.applications.editor.contactInfo.emailChangeTip}
+                  <a href="/personal-details" target="_blank" rel="noreferrer">
+                    {t.applications.editor.contactInfo.emailChangeTipLink}
+                  </a>
+                </div>
+              </FixedSpaceFlexWrap>
+            </FixedSpaceColumn>
+          ) : (
+            <>
+              <FixedSpaceColumn spacing="xs">
+                <Label htmlFor="guardian-email">
+                  {t.applications.editor.contactInfo.email + ' *'}
+                </Label>
+                <InputField
+                  id="guardian-email"
+                  value={formData.guardianEmail}
+                  data-qa="guardianEmail-input"
+                  onChange={(value) =>
+                    updateFormData({
+                      guardianEmail: value,
+                      noGuardianEmail: false
+                    })
+                  }
+                  info={errorToInputInfo(
+                    errors.guardianEmail,
+                    t.validationErrors
+                  )}
+                  hideErrorsBeforeTouched={!verificationRequested}
+                  placeholder={t.applications.editor.contactInfo.email}
+                  width="L"
+                  required={true}
+                />
+                <Gap size="xs" />
+                <Label htmlFor="verify-guardian-email">
+                  {t.applications.editor.contactInfo.verifyEmail + ' *'}
+                </Label>
+                <InputField
+                  id="verify-guardian-email"
+                  value={formData.guardianEmailVerification}
+                  data-qa="guardianEmailVerification-input"
+                  onChange={(value) =>
+                    updateFormData({
+                      guardianEmailVerification: value,
+                      noGuardianEmail: false
+                    })
+                  }
+                  info={errorToInputInfo(
+                    errors.guardianEmailVerification,
+                    t.validationErrors
+                  )}
+                  hideErrorsBeforeTouched={!verificationRequested}
+                  placeholder={t.applications.editor.contactInfo.verifyEmail}
+                  width="L"
+                  required={true}
+                />
+              </FixedSpaceColumn>
+              <div>
+                <Gap size="m" />
+                <Checkbox
+                  label={t.applications.editor.contactInfo.noEmail}
+                  checked={formData.noGuardianEmail}
+                  data-qa="noGuardianEmail-input"
+                  onChange={(checked) =>
+                    updateFormData({
+                      guardianEmail: '',
+                      guardianEmailVerification: '',
+                      noGuardianEmail: checked
+                    })
+                  }
+                />
+              </div>
+            </>
+          )
+        )}
       </EmailRow>
       <Gap size="m" />
 
