@@ -47,7 +47,8 @@ import {
   isGroupMessageAccount,
   isMunicipalMessageAccount,
   isPersonalMessageAccount,
-  isServiceWorkerMessageAccount
+  isServiceWorkerMessageAccount,
+  isFinanceMessageAccount
 } from 'lib-components/messages/types'
 import { SelectOption } from 'lib-components/molecules/Select'
 
@@ -73,7 +74,8 @@ import {
   isStandardView,
   municipalMessageBoxes,
   personalMessageBoxes,
-  serviceWorkerMessageBoxes
+  serviceWorkerMessageBoxes,
+  financeMessageBoxes
 } from './types-view'
 
 const getMessageCopiesResult = wrapResult(getMessageCopies)
@@ -94,6 +96,7 @@ export interface MessagesState {
   accounts: Result<AuthorizedMessageAccount[]>
   municipalAccount: AuthorizedMessageAccount | undefined
   serviceWorkerAccount: AuthorizedMessageAccount | undefined
+  financeAccount: AuthorizedMessageAccount | undefined
   personalAccount: AuthorizedMessageAccount | undefined
   groupAccounts: GroupMessageAccount[]
   unitOptions: SelectOption<DaycareId>[]
@@ -134,6 +137,7 @@ const defaultState: MessagesState = {
   accounts: Loading.of(),
   municipalAccount: undefined,
   serviceWorkerAccount: undefined,
+  financeAccount: undefined,
   personalAccount: undefined,
   groupAccounts: [],
   unitOptions: [],
@@ -297,6 +301,13 @@ export const MessageContextProvider = React.memo(
           .getOrElse(undefined),
       [accounts]
     )
+    const financeAccount = useMemo(
+      () =>
+        accounts
+          .map((accounts) => accounts.find(isFinanceMessageAccount))
+          .getOrElse(undefined),
+      [accounts]
+    )
     const personalAccount = useMemo(
       () =>
         accounts
@@ -379,7 +390,9 @@ export const MessageContextProvider = React.memo(
     }, [accountId, accounts, messageBox, unitId, folders])
 
     const accountAllowsNewMessage = useCallback(
-      () => selectedAccount?.account.type !== 'SERVICE_WORKER',
+      () =>
+        selectedAccount?.account.type !== 'SERVICE_WORKER' &&
+        selectedAccount?.account.type !== 'FINANCE',
       [selectedAccount]
     )
 
@@ -731,6 +744,13 @@ export const MessageContextProvider = React.memo(
           unitId: null,
           threadId: threadId
         })
+      } else if (financeAccount) {
+        setParams({
+          messageBox: messageBox ?? financeMessageBoxes[0],
+          accountId: financeAccount.account.id,
+          unitId: null,
+          threadId: threadId
+        })
       } else if (municipalAccount) {
         setParams({
           messageBox: messageBox ?? municipalMessageBoxes[0],
@@ -758,6 +778,7 @@ export const MessageContextProvider = React.memo(
       groupAccounts,
       municipalAccount,
       serviceWorkerAccount,
+      financeAccount,
       personalAccount,
       messageBox,
       threadId
@@ -768,6 +789,7 @@ export const MessageContextProvider = React.memo(
         accounts,
         municipalAccount,
         serviceWorkerAccount,
+        financeAccount,
         personalAccount,
         groupAccounts,
         unitOptions,
@@ -807,6 +829,7 @@ export const MessageContextProvider = React.memo(
         accounts,
         municipalAccount,
         serviceWorkerAccount,
+        financeAccount,
         personalAccount,
         groupAccounts,
         unitOptions,

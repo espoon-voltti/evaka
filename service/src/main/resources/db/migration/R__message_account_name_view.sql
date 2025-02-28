@@ -23,6 +23,7 @@ CREATE VIEW message_account_view(id, type, name) AS (
             )
             WHEN 'MUNICIPAL' THEN NULL
             WHEN 'SERVICE_WORKER' THEN NULL
+            WHEN 'FINANCE' THEN NULL
         END
     FROM message_account acc
 );
