@@ -1699,7 +1699,13 @@ export const fi = {
     financeNotesAndMessages: {
       title: 'Talouden muistiinpanot ja viestit',
       addNote: 'Lisää muistiinpano',
-      confirmDelete: 'Haluatko varmasti poistaa muistiinpanon',
+      sendMessage: 'Lähetä eVaka-viesti',
+      link: 'Linkki alkuperäiseen viestiin',
+      showMessages: 'Näytä kaikki viestit',
+      hideMessages: 'Piilota kaikki viestit',
+      confirmDeleteNote: 'Haluatko varmasti poistaa muistiinpanon',
+      confirmDeleteMessage: 'Haluatko varmasti poistaa viestin',
+      confirmDeleteThread: 'Haluatko varmasti poistaa viestiketjun',
       note: 'Muistiinpano',
       created: 'Luotu',
       inEdit: 'Muokattavana'
@@ -4689,6 +4695,7 @@ export const fi = {
       municipalMessages: 'Kunnan tiedotteet',
       serviceWorkerMessages: 'Palveluohjauksen viestit',
       serviceWorkerFolders: 'Palveluohjauksen kansiot',
+      financeMessages: 'Taloushallinnon viestit',
       ownMessages: 'Omat viestit',
       groupsMessages: 'Ryhmien viestit',
       noAccountAccess:

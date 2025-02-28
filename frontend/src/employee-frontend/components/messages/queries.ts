@@ -2,11 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { PersonId } from 'lib-common/generated/api-types/shared'
 import { Queries } from 'lib-common/query'
 
 import {
+  archiveThread,
   createMessagePreflightCheck,
   deleteDraftMessage,
+  getFinanceMessagesWithPerson,
   initDraftMessage,
   replyToThread,
   updateDraftMessage
@@ -25,3 +28,9 @@ export const initDraftMutation = q.mutation(initDraftMessage, [])
 export const saveDraftMutation = q.mutation(updateDraftMessage, [])
 
 export const deleteDraftMutation = q.mutation(deleteDraftMessage, [])
+
+export const financeThreadsQuery = q.query(getFinanceMessagesWithPerson)
+
+export const deleteFinanceThreadMutation = q.parametricMutation<{
+  id: PersonId
+}>()(archiveThread, [({ id }) => financeThreadsQuery({ personId: id })])

@@ -138,6 +138,7 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     ),
                     "Espoo",
                     "Espoo palveluohjaus",
+                    "Espoo asiakasmaksut",
                 )
             }
         assertEquals(3, accounts2.size)
@@ -191,6 +192,7 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     ),
                     "Espoo",
                     "Espoo palveluohjaus",
+                    "Espoo asiakasmaksut",
                 )
             }
         assertEquals(1, accounts2.size)
@@ -230,6 +232,7 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     ),
                     "Espoo",
                     "Espoo palveluohjaus",
+                    "Espoo asiakasmaksut",
                 )
             }
         assertEquals(0, accounts2.size)
@@ -310,6 +313,7 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     recipientNames = allAccounts.map { it.name },
                     municipalAccountName = "Espoo",
                     serviceWorkerAccountName = "Espoo palveluohjaus",
+                    financeAccountName = "Espoo asiakasmaksut",
                 )
             tx.insertRecipients(listOf(messageId to allAccounts.map { it.id }.toSet()))
         }

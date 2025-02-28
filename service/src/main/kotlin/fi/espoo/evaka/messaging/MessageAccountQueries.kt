@@ -46,10 +46,12 @@ private fun messageAccountName(
     accountName: String?,
     municipalAccountName: String,
     serviceWorkerAccountName: String,
+    financeAccountName: String,
 ): String {
     return when (accountType) {
         AccountType.MUNICIPAL -> municipalAccountName
         AccountType.SERVICE_WORKER -> serviceWorkerAccountName
+        AccountType.FINANCE -> financeAccountName
         else -> accountName!!
     }
 }
@@ -58,6 +60,7 @@ fun Database.Read.getAuthorizedMessageAccountsForEmployee(
     idFilter: AccessControlFilter<MessageAccountId>,
     municipalAccountName: String,
     serviceWorkerAccountName: String,
+    financeAccountName: String,
 ): List<AuthorizedMessageAccount> {
     return createQuery {
             sql(
@@ -82,6 +85,7 @@ AND (
     OR 'MESSAGING' = ANY(supervisor_dc.enabled_pilot_features)
     OR acc.type = 'MUNICIPAL'
     OR acc.type = 'SERVICE_WORKER'
+    OR acc.type = 'FINANCE'
 )
 """
             )
@@ -98,6 +102,7 @@ AND (
                                     column("account_name"),
                                     municipalAccountName = municipalAccountName,
                                     serviceWorkerAccountName = serviceWorkerAccountName,
+                                    financeAccountName = financeAccountName,
                                 ),
                             type = accountType,
                         )
@@ -118,12 +123,17 @@ AND (
 fun Database.Read.getAccountNames(
     accountIds: Set<MessageAccountId>,
     serviceWorkerAccountName: String,
+    financeAccountName: String,
 ): List<String> {
 
     return createQuery {
             sql(
                 """
-SELECT CASE mav.type WHEN 'SERVICE_WORKER' THEN ${bind(serviceWorkerAccountName)} ELSE mav.name END as name
+SELECT CASE mav.type 
+    WHEN 'SERVICE_WORKER' THEN ${bind(serviceWorkerAccountName)} 
+    WHEN 'FINANCE' THEN ${bind(financeAccountName)} 
+    ELSE mav.name 
+END as name
 FROM message_account_view mav
 WHERE mav.id = ANY(${bind(accountIds)})
 """
@@ -136,6 +146,7 @@ fun Database.Read.getMessageAccount(
     accountId: MessageAccountId,
     municipalAccountName: String,
     serviceWorkerAccountName: String,
+    financeAccountName: String,
 ): MessageAccount {
     return createQuery {
             sql(
@@ -159,6 +170,7 @@ WHERE acc.id = ${bind(accountId)}
                             column("name"),
                             municipalAccountName = municipalAccountName,
                             serviceWorkerAccountName = serviceWorkerAccountName,
+                            financeAccountName = financeAccountName,
                         ),
                     type = accountType,
                 )
@@ -269,4 +281,8 @@ WHERE content.id = ${bind(id)}
 
 fun Database.Read.getServiceWorkerAccountId(): MessageAccountId? =
     createQuery { sql("SELECT id FROM message_account WHERE type = 'SERVICE_WORKER'") }
+        .exactlyOneOrNull<MessageAccountId>()
+
+fun Database.Read.getFinanceAccountId(): MessageAccountId? =
+    createQuery { sql("SELECT id FROM message_account WHERE type = 'FINANCE'") }
         .exactlyOneOrNull<MessageAccountId>()

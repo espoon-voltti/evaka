@@ -33,6 +33,10 @@ export const isServiceWorkerMessageAccount = (
   acc: AuthorizedMessageAccount
 ): acc is AuthorizedMessageAccount => acc.account.type === 'SERVICE_WORKER'
 
+export const isFinanceMessageAccount = (
+  acc: AuthorizedMessageAccount
+): acc is AuthorizedMessageAccount => acc.account.type === 'FINANCE'
+
 export interface SaveDraftParams {
   accountId: MessageAccountId
   draftId: MessageDraftId

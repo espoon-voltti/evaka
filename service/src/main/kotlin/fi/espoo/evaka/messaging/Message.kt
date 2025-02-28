@@ -182,7 +182,8 @@ enum class AccountType : DatabaseEnum {
     GROUP,
     CITIZEN,
     MUNICIPAL,
-    SERVICE_WORKER;
+    SERVICE_WORKER,
+    FINANCE;
 
     fun isPrimaryRecipientForCitizenMessage(): Boolean =
         when (this) {
@@ -191,6 +192,7 @@ enum class AccountType : DatabaseEnum {
             CITIZEN -> false
             MUNICIPAL -> false
             SERVICE_WORKER -> false
+            FINANCE -> false
         }
 
     override val sqlType: String = "message_account_type"
