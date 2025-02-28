@@ -21,6 +21,7 @@ class SärmäHttpClient(private val archiveEnv: ArchiveEnv?) : SärmäClientInte
 
     override fun putDocument(
         documentContent: Document,
+        metadataXml: String,
         masterId: String,
         classId: String,
         virtualArchiveId: String,
@@ -44,7 +45,11 @@ class SärmäHttpClient(private val archiveEnv: ArchiveEnv?) : SärmäClientInte
                 .addFormDataPart("instance_1_class_id", classId)
                 .addFormDataPart("instance_1_virtual_archive_id", virtualArchiveId)
                 .addFormDataPart("instance_1_record_payload_location", "SELF_CONTAINED")
-                // .addFormDataPart("instance_1_md_instance", null, xmlBody)
+                .addFormDataPart(
+                    "instance_1_md_instance",
+                    null,
+                    metadataXml.toRequestBody("application/xml".toMediaType()),
+                )
                 .addFormDataPart(
                     "instance_1_record_payload_content_size",
                     documentContent.bytes.size.toString(),
