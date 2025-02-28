@@ -19,7 +19,7 @@ private fun Database.Read.createDaycareGroupQuery(
     sql(
         """
 SELECT
-  id, daycare_id, name, start_date, end_date, jamix_customer_number,
+  id, daycare_id, name, start_date, end_date, jamix_customer_number, aromi_customer_id,
   (
     NOT exists(SELECT FROM backup_care WHERE group_id = daycare_group.id) AND
     NOT exists(SELECT FROM daycare_group_placement WHERE daycare_group_id = daycare_group.id) AND
@@ -53,13 +53,14 @@ fun Database.Transaction.createDaycareGroup(
     daycareId: DaycareId,
     name: String,
     startDate: LocalDate,
+    aromiCustomerId: String? = null,
 ): DaycareGroup =
     createUpdate {
             sql(
                 """
-INSERT INTO daycare_group (daycare_id, name, start_date, end_date)
-VALUES (${bind(daycareId)}, ${bind(name)}, ${bind(startDate)}, NULL)
-RETURNING id, daycare_id, name, start_date, end_date, true AS deletable, jamix_customer_number
+INSERT INTO daycare_group (daycare_id, name, start_date, end_date, aromi_customer_id)
+VALUES (${bind(daycareId)}, ${bind(name)}, ${bind(startDate)}, NULL, ${bind(aromiCustomerId)})
+RETURNING id, daycare_id, name, start_date, end_date, true AS deletable, jamix_customer_number, aromi_customer_id
 """
             )
         }
@@ -72,12 +73,13 @@ fun Database.Transaction.updateGroup(
     startDate: LocalDate,
     endDate: LocalDate?,
     jamixCustomerNumber: Int?,
+    aromiCustomerId: String?,
 ) {
     createUpdate {
             sql(
                 """
 UPDATE daycare_group
-SET name = ${bind(name)}, start_date = ${bind(startDate)}, end_date = ${bind(endDate)}, jamix_customer_number = ${bind(jamixCustomerNumber)}
+SET name = ${bind(name)}, start_date = ${bind(startDate)}, end_date = ${bind(endDate)}, jamix_customer_number = ${bind(jamixCustomerNumber)}, aromi_customer_id = ${bind(aromiCustomerId)}
 WHERE id = ${bind(groupId)}
         """
             )

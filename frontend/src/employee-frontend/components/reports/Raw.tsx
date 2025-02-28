@@ -12,6 +12,7 @@ import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
+import { featureFlags } from 'lib-customizations/employee'
 
 import ReportDownload from '../../components/reports/ReportDownload'
 import {
@@ -177,8 +178,17 @@ export default React.memo(function Raw() {
                 { label: 'Poissa maksullisesta', key: 'absencePaid' },
                 { label: 'Poissa maksuttomasta', key: 'absenceFree' },
                 { label: 'Henkilöstömitoitus', key: 'staffDimensioning' },
-                { label: 'Kotikunta', key: 'municipalityOfResidence' }
-              ]}
+                { label: 'Kotikunta', key: 'municipalityOfResidence' },
+                featureFlags.aromiIntegration
+                  ? {
+                      label: 'Ryhmäkohtainen Aromin asiakastunniste',
+                      key: 'aromiCustomerId'
+                    }
+                  : null
+              ].filter(
+                (h): h is { label: string; key: keyof RawReportRow } =>
+                  h !== null
+              )}
               filename={`${
                 i18n.reports.raw.title
               } ${filters.from.formatIso()}-${filters.to.formatIso()}.csv`}
