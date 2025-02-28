@@ -5,9 +5,12 @@
 package fi.espoo.evaka.titania
 
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.attendance.StaffAttendancePlan
 import fi.espoo.evaka.attendance.StaffAttendanceType
+import fi.espoo.evaka.attendance.findStaffAttendancePlansBy
 import fi.espoo.evaka.attendance.upsertStaffAttendance
 import fi.espoo.evaka.pis.createEmployee
+import fi.espoo.evaka.pis.getEmployeeIdsByNumbers
 import fi.espoo.evaka.pis.getEmployees
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.db.Database
@@ -942,7 +945,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
     }
 
     @Test
-    fun `getStampedWorkingTimeEvents`() {
+    fun getStampedWorkingTimeEvents() {
         val now = HelsinkiDateTime.of(LocalDate.of(2014, 3, 5), LocalTime.of(12, 0))
         db.transaction { tx ->
             val areaId = tx.insert(DevCareArea())
