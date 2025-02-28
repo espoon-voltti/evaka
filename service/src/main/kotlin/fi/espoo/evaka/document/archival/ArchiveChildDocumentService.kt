@@ -5,10 +5,7 @@
 package fi.espoo.evaka.document.archival
 
 import fi.espoo.evaka.document.childdocument.*
-import fi.espoo.evaka.process.ArchivedProcess
-import fi.espoo.evaka.process.ProcessMetadataController
-import fi.espoo.evaka.process.getArchiveProcessByChildDocumentId
-import fi.espoo.evaka.process.getChildDocumentMetadata
+import fi.espoo.evaka.process.*
 import fi.espoo.evaka.s3.DocumentKey
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.sarma.model.*
@@ -219,6 +216,16 @@ class ArchiveChildDocumentService(
                                     ProtectionPolicyType().apply {
                                         protectionLevel = ProtectionLevelType.HIGH
                                     }
+                            }
+                        caseFile =
+                            CaseFileType().apply {
+                                caseCreated = documentMetadata.createdAt?.asXMLGregorianCalendar()
+                                caseFinished =
+                                    archivedProcess
+                                        ?.history
+                                        ?.find { it.state == ArchivedProcessState.COMPLETED }
+                                        ?.enteredAt
+                                        ?.asXMLGregorianCalendar()
                             }
                     }
             }
