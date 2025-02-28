@@ -35,8 +35,8 @@ class LinkityHttpClient(private val env: LinkityEnv, private val jsonMapper: Jso
                 .resolve("v1/shifts")
                 .toHttpUrlOrNull()
                 ?.newBuilder()
-                ?.addQueryParameter("startDate", period.start.toString())
-                ?.addQueryParameter("endDate", period.end.toString())
+                ?.addQueryParameter("fromDate", period.start.toString())
+                ?.addQueryParameter("toDate", period.end.toString())
                 ?.build() ?: throw IllegalArgumentException("Invalid Linkity URL")
 
         val req = Request.Builder().url(url).get().build()
