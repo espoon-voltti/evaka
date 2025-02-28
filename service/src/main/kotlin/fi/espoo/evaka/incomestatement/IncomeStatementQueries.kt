@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.incomestatement
 
+import fi.espoo.evaka.application.utils.exhaust
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.invoicing.controller.SortDirection
 import fi.espoo.evaka.placement.PlacementType
@@ -68,6 +69,7 @@ SELECT
     end_date,
     type,
     gross_income_source,
+    gross_no_income_description,
     gross_estimated_monthly_income,
     gross_other_income,
     gross_other_income_info,
@@ -162,17 +164,22 @@ private fun Row.mapIncomeStatement(isCitizen: Boolean): IncomeStatement {
                 handlerNote = handlerNote,
             )
         IncomeStatementType.INCOME -> {
-            val grossIncomeSource = column<IncomeSource?>("gross_income_source")
+            val noIncomeDescription = column<String?>("gross_no_income_description")
             val gross =
-                if (grossIncomeSource != null) {
-                    Gross(
-                        incomeSource = grossIncomeSource,
-                        estimatedMonthlyIncome = column("gross_estimated_monthly_income"),
-                        otherIncome = column("gross_other_income"),
-                        otherIncomeInfo = column("gross_other_income_info"),
-                    )
+                if (noIncomeDescription != null) {
+                    Gross.NoIncome(noIncomeDescription)
                 } else {
-                    null
+                    val grossIncomeSource = column<IncomeSource?>("gross_income_source")
+                    if (grossIncomeSource != null) {
+                        Gross.Income(
+                            incomeSource = grossIncomeSource,
+                            estimatedMonthlyIncome = column("gross_estimated_monthly_income"),
+                            otherIncome = column("gross_other_income"),
+                            otherIncomeInfo = column("gross_other_income_info"),
+                        )
+                    } else {
+                        null
+                    }
                 }
 
             val selfEmployedAttachments = column<Boolean?>("self_employed_attachments")
@@ -307,6 +314,7 @@ private fun Database.SqlStatement<*>.bindIncomeStatementBody(body: IncomeStateme
     this.bind("startDate", body.startDate)
     bind("endDate", body.endDate)
     bind("grossIncomeSource", null as IncomeSource?)
+    bind("grossNoIncomeDescription", null as String?)
     bind("grossEstimatedMonthlyIncome", null as Int?)
     bind("grossOtherIncome", null as Array<OtherIncome>?)
     this.bind("grossOtherIncomeInfo", "")
@@ -349,10 +357,17 @@ private fun Database.SqlStatement<*>.bindIncomeStatementBody(body: IncomeStateme
 }
 
 private fun Database.SqlStatement<*>.bindGross(gross: Gross) {
-    this.bind("grossIncomeSource", gross.incomeSource)
-    this.bind("grossEstimatedMonthlyIncome", gross.estimatedMonthlyIncome)
-    this.bind("grossOtherIncome", gross.otherIncome)
-    this.bind("grossOtherIncomeInfo", gross.otherIncomeInfo)
+    when (gross) {
+        is Gross.Income -> {
+            this.bind("grossIncomeSource", gross.incomeSource)
+            this.bind("grossEstimatedMonthlyIncome", gross.estimatedMonthlyIncome)
+            this.bind("grossOtherIncome", gross.otherIncome)
+            this.bind("grossOtherIncomeInfo", gross.otherIncomeInfo)
+        }
+        is Gross.NoIncome -> {
+            this.bind("grossNoIncomeDescription", gross.noIncomeDescription)
+        }
+    }.exhaust()
 }
 
 private fun Database.SqlStatement<*>.bindEntrepreneur(entrepreneur: Entrepreneur) {
@@ -415,6 +430,7 @@ INSERT INTO income_statement (
     end_date,
     type, 
     gross_income_source, 
+    gross_no_income_description, 
     gross_estimated_monthly_income,
     gross_other_income, 
     gross_other_income_info,
@@ -451,6 +467,7 @@ INSERT INTO income_statement (
     :endDate,
     :type,
     :grossIncomeSource,
+    :grossNoIncomeDescription,
     :grossEstimatedMonthlyIncome,
     :grossOtherIncome :: other_income_type[],
     :grossOtherIncomeInfo,
@@ -507,6 +524,7 @@ UPDATE income_statement SET
     sent_at = coalesce(sent_at, :sentAt),
     type = :type,
     gross_income_source = :grossIncomeSource,
+    gross_no_income_description = :grossNoIncomeDescription,
     gross_estimated_monthly_income = :grossEstimatedMonthlyIncome,
     gross_other_income = :grossOtherIncome :: other_income_type[],
     gross_other_income_info = :grossOtherIncomeInfo,

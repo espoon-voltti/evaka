@@ -2291,8 +2291,6 @@ const sv: Translations = {
     childIncomeInfo: 'Giltigheten av barnets inkomstinformation',
     incomeStatementMissing:
       'Om ditt barn har inkomst, anmäl det med en inkomstredovisning.',
-    incomesRegisterConsent:
-      'Jag samtycker till att uppgifterna som rör mina inkomster kontrolleras i inkomstregistret samt hos FPA vid behov',
     incomeType: {
       description: (
         <>
@@ -2336,11 +2334,16 @@ const sv: Translations = {
         </>
       ),
       incomeSource: 'Inlämning av inkomstuppgifterna',
+      incomesRegisterConsent:
+        'Jag samtycker till att uppgifterna som rör mina inkomster kontrolleras i inkomstregistret samt hos FPA vid behov',
       provideAttachments:
         'Jag lämnar in uppgifterna som bilaga, och mina uppgifter får kontrolleras hos FPA vid behov',
       attachmentsVerificationInfo:
         'Inkomstuppgifter kontrolleras minst årligen.',
       estimate: 'Uppskattning av mina bruttoinkomster',
+      noIncome:
+        'Jag har inga inkomster eller bidrag, och mina uppgifter får kontrolleras i inkomstregistret samt hos FPA',
+      noIncomeDescription: 'Beskriv din situation',
       estimatedMonthlyIncome:
         'Genomsnittliga inkomster inklusive semesterpenning, €/månad',
       otherIncome: 'Övriga inkomster',
@@ -2615,6 +2618,9 @@ const sv: Translations = {
         'Jag samtycker till att uppgifter som rör mina inkomster kontrolleras hos FPA samt i inkomstregistret.',
       attachmentsAndKela:
         'Jag lämnar in uppgifterna som bilaga, och mina uppgifter får kontrolleras hos FPA',
+      noIncomeTitle:
+        'Jag har inga inkomster eller bidrag, och mina uppgifter får kontrolleras i inkomstregistret samt hos FPA',
+      noIncomeDescription: 'Beskriv din situation',
       grossEstimatedIncome: 'Uppskattning av bruttoinkomsterna',
       otherIncome: 'Övriga inkomster',
       otherIncomeInfo: 'Uppskattning av övriga inkomster',

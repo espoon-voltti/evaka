@@ -30,7 +30,8 @@ export interface IncomeStatementForm {
 
 export interface Gross {
   selected: boolean
-  incomeSource: IncomeSource | null
+  incomeSource: IncomeSource | 'NO_INCOME' | null
+  noIncomeDescription: string
   estimatedMonthlyIncome: string
   otherIncome: OtherIncome[]
   otherIncomeInfo: string
@@ -81,6 +82,7 @@ export const emptyIncomeStatementForm: IncomeStatementForm = {
   gross: {
     selected: false,
     incomeSource: null,
+    noIncomeDescription: '',
     estimatedMonthlyIncome: '',
     otherIncome: [],
     otherIncomeInfo: ''
@@ -153,12 +155,24 @@ export function fromIncomeStatement(
 
 function mapGross(gross: ApiTypes.Gross | null): Gross {
   if (!gross) return emptyIncomeStatementForm.gross
-  return {
-    selected: true,
-    incomeSource: gross.incomeSource,
-    estimatedMonthlyIncome: gross.estimatedMonthlyIncome?.toString() ?? '',
-    otherIncome: gross.otherIncome,
-    otherIncomeInfo: gross.otherIncomeInfo
+  if (gross.type === 'INCOME') {
+    return {
+      selected: true,
+      incomeSource: gross.incomeSource,
+      noIncomeDescription: '',
+      estimatedMonthlyIncome: gross.estimatedMonthlyIncome?.toString() ?? '',
+      otherIncome: gross.otherIncome,
+      otherIncomeInfo: gross.otherIncomeInfo
+    }
+  } else {
+    return {
+      selected: true,
+      incomeSource: 'NO_INCOME',
+      noIncomeDescription: gross.noIncomeDescription,
+      estimatedMonthlyIncome: '',
+      otherIncome: [],
+      otherIncomeInfo: ''
+    }
   }
 }
 

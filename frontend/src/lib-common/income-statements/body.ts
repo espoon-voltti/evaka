@@ -87,12 +87,21 @@ function validateGross(formData: Form.Gross) {
   if (!formData.selected) return null
   if (formData.incomeSource === null) return invalid
 
+  if (formData.incomeSource === 'NO_INCOME') {
+    if (!formData.noIncomeDescription) return invalid
+    return {
+      type: 'NO_INCOME' as const,
+      noIncomeDescription: formData.noIncomeDescription
+    }
+  }
+
   const estimatedMonthlyIncome =
     stringToInt(formData.estimatedMonthlyIncome) ?? invalid
 
   if (estimatedMonthlyIncome === invalid) return invalid
 
   return {
+    type: 'INCOME' as const,
     incomeSource: formData.incomeSource,
     estimatedMonthlyIncome,
     otherIncome: formData.otherIncome ?? [],
