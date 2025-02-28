@@ -267,8 +267,8 @@ export class Fixture {
       startDate: LocalDate.of(2020, 1, 1),
       endDate: null,
       jamixCustomerNumber: null,
-      ...initial,
-      aromiCustomerId: initial.aromiCustomerId ?? null
+      aromiCustomerId: null,
+      ...initial
     })
   }
 
