@@ -40,7 +40,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 }
 
 class TestNekkuClient(
-    val customers: List<NekkuCustomer> = emptyList()
+    private val customers: List<NekkuCustomer> = emptyList()
 ) : NekkuClient {
 
     override fun getCustomers(): List<NekkuCustomer> {
