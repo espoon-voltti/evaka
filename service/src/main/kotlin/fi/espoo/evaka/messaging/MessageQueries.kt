@@ -1215,7 +1215,15 @@ fun Database.Read.getReceiversForNewMessage(
             SELECT p.child_id, p.unit_id, dgp.daycare_group_id AS group_id, dgp.start_date
             FROM placement p
             JOIN daycare_group_placement dgp ON p.id = dgp.daycare_placement_id
-            WHERE p.start_date > ${bind(today)} OR dgp.start_date > ${bind(today)}
+            WHERE (p.start_date > ${bind(today)} OR dgp.start_date > ${bind(today)}) AND 
+                NOT EXISTS (
+                    SELECT 1 FROM daycare_group_placement earlier_dgp
+                    JOIN placement earlier_p ON earlier_dgp.daycare_placement_id = earlier_p.id
+                    WHERE earlier_dgp.end_date < dgp.start_date AND
+                        earlier_dgp.end_date >= ${bind(today)} AND
+                        earlier_dgp.daycare_group_id = dgp.daycare_group_id AND
+                        earlier_p.child_id = p.child_id
+            )
         ), children AS (
             WITH current_group_receivers AS (
                 SELECT a.id AS account_id, p.child_id, NULL::uuid AS unit_id, NULL::text AS unit_name, p.group_id, g.name AS group_name, NULL::date AS start_date
