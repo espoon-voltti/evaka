@@ -7,6 +7,7 @@ package fi.espoo.evaka.messaging
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.application.personHasSentApplicationWithId
+import fi.espoo.evaka.invoicing.controller.SortDirection
 import fi.espoo.evaka.shared.*
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -70,6 +71,7 @@ class MessageController(
                         filter,
                         featureConfig.municipalMessageAccountName,
                         featureConfig.serviceWorkerMessageAccountName,
+                        featureConfig.financeMessageAccountName,
                     )
                 }
             }
@@ -101,6 +103,7 @@ class MessageController(
                                 filter,
                                 featureConfig.municipalMessageAccountName,
                                 featureConfig.serviceWorkerMessageAccountName,
+                                featureConfig.financeMessageAccountName,
                             )
                             // Only return group accounts of the requested unit
                             .filter {
@@ -160,6 +163,7 @@ class MessageController(
                     page,
                     featureConfig.municipalMessageAccountName,
                     featureConfig.serviceWorkerMessageAccountName,
+                    featureConfig.financeMessageAccountName,
                     accountAccessLimit = accountAccessLimit,
                 )
             }
@@ -194,6 +198,7 @@ class MessageController(
                             page,
                             featureConfig.municipalMessageAccountName,
                             featureConfig.serviceWorkerMessageAccountName,
+                            featureConfig.financeMessageAccountName,
                             archiveFolderId,
                             accountAccessLimit,
                         )
@@ -253,6 +258,7 @@ class MessageController(
                         page,
                         featureConfig.municipalMessageAccountName,
                         featureConfig.serviceWorkerMessageAccountName,
+                        featureConfig.financeMessageAccountName,
                         folderId,
                     )
                 }
@@ -367,6 +373,7 @@ class MessageController(
                         threadId,
                         featureConfig.municipalMessageAccountName,
                         featureConfig.serviceWorkerMessageAccountName,
+                        featureConfig.financeMessageAccountName,
                     )
                 }
             }
@@ -398,6 +405,7 @@ class MessageController(
                             applicationId,
                             featureConfig.municipalMessageAccountName,
                             featureConfig.serviceWorkerMessageAccountName,
+                            featureConfig.financeMessageAccountName,
                         )
                     }
                 accountId to thread
@@ -409,6 +417,48 @@ class MessageController(
                 )
                 ThreadByApplicationResponse(thread = thread)
             }
+
+    @GetMapping("/employee/messages/finance/{personId}")
+    fun getFinanceMessagesWithPerson(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable personId: PersonId,
+    ): List<MessageThread> {
+        return db.connect { dbc ->
+                val accountId =
+                    dbc.read { it.getFinanceAccountId() } ?: throw NotFound("No account found")
+                requireMessageAccountAccess(dbc, user, clock, accountId)
+                var page = 1
+                val result = mutableListOf<MessageThread>()
+                do {
+                    val threads =
+                        dbc.read {
+                            val personAccountId = it.getCitizenMessageAccount(personId)
+                            it.getThreads(
+                                accountId,
+                                pageSize = 200,
+                                page,
+                                featureConfig.municipalMessageAccountName,
+                                featureConfig.serviceWorkerMessageAccountName,
+                                featureConfig.financeMessageAccountName,
+                                personAccountId = personAccountId,
+                                messagesSortDirection = SortDirection.DESC,
+                            )
+                        }
+                    result.addAll(threads.data)
+                    page++
+                } while (page <= threads.pages)
+                accountId to result
+            }
+            .let { (accountId, result) ->
+                Audit.MessagingMessagesInFolderRead.log(
+                    targetId = AuditId(accountId),
+                    meta = mapOf("total" to result.size),
+                )
+                result
+            }
+    }
 
     @GetMapping("/employee/messages/unread")
     fun getUnreadMessages(
@@ -587,12 +637,15 @@ class MessageController(
                     val senderAccountType = tx.getMessageAccountType(accountId)
                     if (
                         body.sensitive &&
-                            (senderAccountType != AccountType.PERSONAL ||
-                                body.recipients.size != 1 ||
-                                body.recipients.first().type != MessageRecipientType.CHILD)
+                            (body.recipients.size != 1 ||
+                                !((senderAccountType == AccountType.PERSONAL &&
+                                    body.recipients.first().type == MessageRecipientType.CHILD) ||
+                                    (senderAccountType == AccountType.FINANCE &&
+                                        body.recipients.first().type ==
+                                            MessageRecipientType.CITIZEN)))
                     ) {
                         throw BadRequest(
-                            "Sensitive messages are only allowed to be sent from personal accounts to a single child recipient"
+                            "Sensitive messages are only allowed to be sent from personal accounts to a single child recipient or from financial account to a single citizen"
                         )
                     }
                     if (
@@ -860,6 +913,7 @@ class MessageController(
                     user = user,
                     municipalAccountName = featureConfig.municipalMessageAccountName,
                     serviceWorkerAccountName = featureConfig.serviceWorkerMessageAccountName,
+                    financeAccountName = featureConfig.financeMessageAccountName,
                 )
             }
             .also {

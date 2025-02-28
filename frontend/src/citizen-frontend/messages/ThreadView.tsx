@@ -23,10 +23,7 @@ import {
   MessageAccount,
   MessageAccountWithPresence
 } from 'lib-common/generated/api-types/messaging'
-import {
-  ChildId,
-  MessageAccountId
-} from 'lib-common/generated/api-types/shared'
+import { MessageAccountId } from 'lib-common/generated/api-types/shared'
 import { formatFirstName } from 'lib-common/names'
 import { scrollRefIntoView } from 'lib-common/utils/scrolling'
 import { NotificationsContext } from 'lib-components/Notifications'
@@ -221,7 +218,7 @@ const SingleMessage = React.memo(
 interface Props {
   accountId: MessageAccountId
   thread: CitizenMessageThread.Regular
-  allowedAccounts: Partial<Record<ChildId, ChildMessageAccountAccess>>
+  allowedAccounts: ChildMessageAccountAccess[]
   accountDetails: MessageAccountWithPresence[]
   closeThread: () => void
   onThreadDeleted: () => void
@@ -310,8 +307,14 @@ export default React.memo(
       }
 
       const allowedReplyAccounts = new Set(
-        children.flatMap((c) => allowedAccounts[c.childId]?.reply ?? [])
+        children.flatMap(
+          (c) =>
+            allowedAccounts.find((a) => a.childId === c.childId)?.reply ?? []
+        )
       )
+      allowedAccounts
+        .filter((a) => a.childId === null)
+        .forEach((a) => a.reply.forEach((am) => allowedReplyAccounts.add(am)))
       return recipients.every((r) => allowedReplyAccounts.has(r.id))
     }, [allowedAccounts, applicationStatus, children, recipients])
 
