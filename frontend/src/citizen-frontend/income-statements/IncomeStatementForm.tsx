@@ -560,6 +560,10 @@ const GrossIncomeSelection = React.memo(function GrossIncomeSelection({
   const t = useTranslation()
 
   const onIncomeSourceChange = useFieldDispatch(onChange, 'incomeSource')
+  const onNoIncomeDescriptionChange = useFieldDispatch(
+    onChange,
+    'noIncomeDescription'
+  )
   const onEstimatedMonthlyIncomeChange = useFieldDispatch(
     onChange,
     'estimatedMonthlyIncome'
@@ -581,7 +585,7 @@ const GrossIncomeSelection = React.memo(function GrossIncomeSelection({
         />
         <Gap size="s" />
         <Radio
-          label={t.income.incomesRegisterConsent}
+          label={t.income.grossIncome.incomesRegisterConsent}
           data-qa="incomes-register-consent-checkbox"
           checked={formData.incomeSource === 'INCOMES_REGISTER'}
           onChange={() => onIncomeSourceChange('INCOMES_REGISTER')}
@@ -593,10 +597,36 @@ const GrossIncomeSelection = React.memo(function GrossIncomeSelection({
           onChange={() => onIncomeSourceChange('ATTACHMENTS')}
         />
         <Gap size="s" />
+        <Radio
+          label={t.income.grossIncome.noIncome}
+          checked={formData.incomeSource === 'NO_INCOME'}
+          onChange={() => onIncomeSourceChange('NO_INCOME')}
+        />
+        <Gap size="s" />
         <InfoBox
           message={t.income.grossIncome.attachmentsVerificationInfo}
           thin
         />
+        {formData.incomeSource === 'NO_INCOME' && (
+          <>
+            <Gap size="m" />
+            <Label htmlFor="no-income-description">
+              {t.income.grossIncome.noIncomeDescription} *
+            </Label>
+            <Gap size="s" />
+            <InputField
+              id="no-income-description"
+              data-qa="no-income-description"
+              value={formData.noIncomeDescription}
+              onChange={onNoIncomeDescriptionChange}
+              hideErrorsBeforeTouched={!showFormErrors}
+              info={errorToInputInfo(
+                validate(formData.noIncomeDescription, required),
+                t.validationErrors
+              )}
+            />
+          </>
+        )}
         {formData.incomeSource === 'ATTACHMENTS' && (
           <>
             <Gap size="s" />
@@ -607,63 +637,74 @@ const GrossIncomeSelection = React.memo(function GrossIncomeSelection({
             />
           </>
         )}
-        <Gap size="L" />
-        <Label>{t.income.grossIncome.estimate}</Label>
-        <Gap size="m" />
-        <FixedSpaceRow>
-          <FixedSpaceColumn>
-            <LightLabel htmlFor="estimated-monthly-income">
-              {t.income.grossIncome.estimatedMonthlyIncome} *
-            </LightLabel>
-            <InputField
-              id="estimated-monthly-income"
-              data-qa="gross-monthly-income-estimate"
-              value={formData.estimatedMonthlyIncome}
-              onChange={onEstimatedMonthlyIncomeChange}
-              hideErrorsBeforeTouched={!showFormErrors}
-              info={errorToInputInfo(
-                validate(formData.estimatedMonthlyIncome, required, validInt),
-                t.validationErrors
-              )}
-            />
-          </FixedSpaceColumn>
-        </FixedSpaceRow>
-        <Gap size="L" />
-        <Label>{t.income.grossIncome.otherIncome}</Label>
-        <Gap size="s" />
-        {t.income.grossIncome.otherIncomeDescription}
-        <Gap size="s" />
-        <OtherIncomeWrapper>
-          <MultiSelect
-            value={formData.otherIncome}
-            options={otherIncomes}
-            getOptionId={identity}
-            getOptionLabel={(option: OtherIncome) =>
-              t.income.grossIncome.otherIncomeTypes[option]
-            }
-            onChange={onOtherIncomeChange}
-            placeholder={t.income.grossIncome.choosePlaceholder}
-          />
-        </OtherIncomeWrapper>
-        {formData.otherIncome.map((incomeType) => (
-          <AttachmentSection
-            key={incomeType}
-            attachmentType={incomeType}
-            showFormErrors={showFormErrors}
-            attachmentHandler={attachmentHandler}
-          />
-        ))}
-        {formData.otherIncome.length > 0 && (
+        {(formData.incomeSource === 'INCOMES_REGISTER' ||
+          formData.incomeSource === 'ATTACHMENTS') && (
           <>
+            <Gap size="L" />
+            <Label>{t.income.grossIncome.estimate}</Label>
+            <Gap size="m" />
+            <FixedSpaceRow>
+              <FixedSpaceColumn>
+                <LightLabel htmlFor="estimated-monthly-income">
+                  {t.income.grossIncome.estimatedMonthlyIncome} *
+                </LightLabel>
+                <InputField
+                  id="estimated-monthly-income"
+                  data-qa="gross-monthly-income-estimate"
+                  value={formData.estimatedMonthlyIncome}
+                  onChange={onEstimatedMonthlyIncomeChange}
+                  hideErrorsBeforeTouched={!showFormErrors}
+                  info={errorToInputInfo(
+                    validate(
+                      formData.estimatedMonthlyIncome,
+                      required,
+                      validInt
+                    ),
+                    t.validationErrors
+                  )}
+                />
+              </FixedSpaceColumn>
+            </FixedSpaceRow>
+            <Gap size="L" />
+            <Label>{t.income.grossIncome.otherIncome}</Label>
             <Gap size="s" />
-            <Label>{t.income.grossIncome.otherIncomeInfoLabel}</Label>
+            {t.income.grossIncome.otherIncomeDescription}
             <Gap size="s" />
-            <P noMargin>{t.income.grossIncome.otherIncomeInfoDescription}</P>
-            <Gap size="s" />
-            <InputField
-              value={formData.otherIncomeInfo}
-              onChange={onOtherIncomeInfoChange}
-            />
+            <OtherIncomeWrapper>
+              <MultiSelect
+                value={formData.otherIncome}
+                options={otherIncomes}
+                getOptionId={identity}
+                getOptionLabel={(option: OtherIncome) =>
+                  t.income.grossIncome.otherIncomeTypes[option]
+                }
+                onChange={onOtherIncomeChange}
+                placeholder={t.income.grossIncome.choosePlaceholder}
+              />
+            </OtherIncomeWrapper>
+            {formData.otherIncome.map((incomeType) => (
+              <AttachmentSection
+                key={incomeType}
+                attachmentType={incomeType}
+                showFormErrors={showFormErrors}
+                attachmentHandler={attachmentHandler}
+              />
+            ))}
+            {formData.otherIncome.length > 0 && (
+              <>
+                <Gap size="s" />
+                <Label>{t.income.grossIncome.otherIncomeInfoLabel}</Label>
+                <Gap size="s" />
+                <P noMargin>
+                  {t.income.grossIncome.otherIncomeInfoDescription}
+                </P>
+                <Gap size="s" />
+                <InputField
+                  value={formData.otherIncomeInfo}
+                  onChange={onOtherIncomeInfoChange}
+                />
+              </>
+            )}
           </>
         )}
       </FixedSpaceColumn>

@@ -220,7 +220,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         startDate = today,
                         endDate = null,
                         gross =
-                            Gross(
+                            Gross.Income(
                                 incomeSource = IncomeSource.ATTACHMENTS,
                                 estimatedMonthlyIncome = 2000,
                                 otherIncome = setOf(),
@@ -248,7 +248,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 startDate = today,
                 endDate = null,
                 gross =
-                    Gross(
+                    Gross.Income(
                         incomeSource = IncomeSource.ATTACHMENTS,
                         estimatedMonthlyIncome = 2000,
                         otherIncome = setOf(),

@@ -204,42 +204,58 @@ function IncomeInfo({
 
 function GrossIncome({ gross }: { gross: Gross }) {
   const { i18n } = useTranslation()
-  return (
-    <>
-      <H2>{i18n.incomeStatement.grossTitle}</H2>
-      <Row
-        label={i18n.incomeStatement.incomeSource}
-        value={
-          gross.incomeSource === 'INCOMES_REGISTER'
-            ? i18n.incomeStatement.incomesRegister
-            : i18n.incomeStatement.attachmentsAndKela
-        }
-      />
-      <Row
-        label={i18n.incomeStatement.grossEstimatedIncome}
-        value={gross.estimatedMonthlyIncome}
-      />
-      <Row
-        label={i18n.incomeStatement.otherIncome}
-        value={
-          <>
-            {gross.otherIncome.map((incomeType) => (
-              <Item key={incomeType}>
-                {i18n.incomeStatement.otherIncomeTypes[incomeType]}
-              </Item>
-            ))}
-            {gross.otherIncome.length === 0 && '-'}
-          </>
-        }
-      />
-      {gross.otherIncome.length > 0 && (
+  if (gross.type === 'INCOME') {
+    return (
+      <>
+        <H2>{i18n.incomeStatement.grossTitle}</H2>
         <Row
-          label={i18n.incomeStatement.otherIncomeInfo}
-          value={gross.otherIncomeInfo}
+          label={i18n.incomeStatement.incomeSource}
+          value={
+            gross.incomeSource === 'INCOMES_REGISTER'
+              ? i18n.incomeStatement.incomesRegister
+              : i18n.incomeStatement.attachmentsAndKela
+          }
         />
-      )}
-    </>
-  )
+        <Row
+          label={i18n.incomeStatement.grossEstimatedIncome}
+          value={gross.estimatedMonthlyIncome}
+        />
+        <Row
+          label={i18n.incomeStatement.otherIncome}
+          value={
+            <>
+              {gross.otherIncome.map((incomeType) => (
+                <Item key={incomeType}>
+                  {i18n.incomeStatement.otherIncomeTypes[incomeType]}
+                </Item>
+              ))}
+              {gross.otherIncome.length === 0 && '-'}
+            </>
+          }
+        />
+        {gross.otherIncome.length > 0 && (
+          <Row
+            label={i18n.incomeStatement.otherIncomeInfo}
+            value={gross.otherIncomeInfo}
+          />
+        )}
+      </>
+    )
+  } else {
+    return (
+      <>
+        <H2>{i18n.incomeStatement.grossTitle}</H2>
+        <Row
+          label={i18n.incomeStatement.incomeSource}
+          value={i18n.incomeStatement.noIncomeTitle}
+        />
+        <Row
+          label={i18n.incomeStatement.noIncomeDescription}
+          value={gross.noIncomeDescription}
+        />
+      </>
+    )
+  }
 }
 
 function EstimatedIncome({

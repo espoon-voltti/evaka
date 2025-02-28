@@ -686,7 +686,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
             startDate = startDate,
             endDate = null,
             gross =
-                Gross(
+                Gross.Income(
                     incomeSource = IncomeSource.INCOMES_REGISTER,
                     estimatedMonthlyIncome = 42,
                     otherIncome = emptySet(),

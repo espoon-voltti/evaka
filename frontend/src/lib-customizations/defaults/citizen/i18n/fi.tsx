@@ -2292,8 +2292,6 @@ export default {
     childIncomeInfo: 'Lapsen tulotietojen voimassaoloaika',
     incomeStatementMissing:
       'Jos lapsellasi on tuloja, ilmoita se tuloselvityksellä.',
-    incomesRegisterConsent:
-      'Hyväksyn, että tuloihini liittyviä tietoja tarkastellaan tulorekisteristä, sekä Kelasta tarvittaessa',
     incomeType: {
       description: (
         <>
@@ -2333,8 +2331,13 @@ export default {
         </>
       ),
       incomeSource: 'Tulotietojen toimitus',
+      incomesRegisterConsent:
+        'Hyväksyn, että tuloihini liittyviä tietoja tarkastellaan tulorekisteristä, sekä Kelasta tarvittaessa',
       provideAttachments:
         'Toimitan tiedot liitteinä, ja tietoni saa tarkastaa Kelasta tarvittaessa',
+      noIncome:
+        'Minulla ei ole mitään tuloja tai tukia. Tietoni saa tarkastaa tulorekisterisä sekä Kelasta.',
+      noIncomeDescription: 'Kuvaile tilannettasi tarkemmin',
       attachmentsVerificationInfo:
         'Tulotiedot tarkistetaan vähintään vuoden välein.',
       estimate: 'Arvio bruttotuloistani',
@@ -2598,6 +2601,9 @@ export default {
         'Hyväksyn, että tuloihini liittyviä tietoja tarkastellaan Kelasta sekä tulorekisteristä.',
       attachmentsAndKela:
         'Toimitan tiedot liitteinä ja tietoni saa tarkastaa Kelasta',
+      noIncomeTitle:
+        'Minulla ei ole mitään tuloja tai tukia. Tietoni saa tarkastaa tulorekisterisä sekä Kelasta.',
+      noIncomeDescription: 'Kuvaile tilannettasi tarkemmin',
       grossEstimatedIncome: 'Arvio bruttotuloista',
       otherIncome: 'Muut tulot',
       otherIncomeInfo: 'Arviot muista tuloista',
