@@ -22,6 +22,7 @@ import GroupMessageAccountList from './GroupMessageAccountList'
 import MessageBox from './MessageBox'
 import { MessageContext } from './MessageContext'
 import {
+  financeMessageBoxes,
   municipalMessageBoxes,
   personalMessageBoxes,
   serviceWorkerMessageBoxes
@@ -98,6 +99,7 @@ function Accounts({ setReceivers }: AccountsProps) {
     selectedAccount,
     municipalAccount,
     serviceWorkerAccount,
+    financeAccount,
     folders,
     personalAccount,
     groupAccounts,
@@ -141,6 +143,7 @@ function Accounts({ setReceivers }: AccountsProps) {
     <>
       {!municipalAccount &&
         !serviceWorkerAccount &&
+        !financeAccount &&
         !personalAccount &&
         groupAccounts.length === 0 && (
           <NoAccounts>{i18n.messages.sidePanel.noAccountAccess}</NoAccounts>
@@ -201,6 +204,24 @@ function Accounts({ setReceivers }: AccountsProps) {
                   ))}
               </>
             )}
+        </AccountSection>
+      )}
+
+      {financeAccount && (
+        <AccountSection data-qa="finance-account">
+          <AccountHeader>
+            {i18n.messages.sidePanel.financeMessages}
+          </AccountHeader>
+          {financeMessageBoxes.map((view) => (
+            <MessageBox
+              key={view}
+              view={view}
+              account={financeAccount.account}
+              unitId={null}
+              activeView={selectedAccount}
+              selectAccount={selectAccount}
+            />
+          ))}
         </AccountSection>
       )}
 

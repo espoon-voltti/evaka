@@ -281,7 +281,8 @@ export default React.memo(function MessageEditor({
     [getSenderAccount, message]
   )
   const simpleMode = useMemo(
-    () => senderAccountType === 'SERVICE_WORKER',
+    () =>
+      senderAccountType === 'SERVICE_WORKER' || senderAccountType === 'FINANCE',
     [senderAccountType]
   )
 
