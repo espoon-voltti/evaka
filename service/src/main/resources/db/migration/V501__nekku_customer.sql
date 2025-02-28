@@ -1,7 +1,9 @@
 CREATE TABLE nekku_customer
 (
-    number  text    PRIMARY KEY NOT NULL,
-    name    text    NOT NULL
+    number          text    PRIMARY KEY NOT NULL,
+    name            text    NOT NULL,
+    customer_group  text    NOT NULL,
+    unit_size       text
 );
 
 ALTER TABLE daycare_group ADD COLUMN nekku_customer_number text;

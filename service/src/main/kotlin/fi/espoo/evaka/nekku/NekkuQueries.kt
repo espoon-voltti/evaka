@@ -8,7 +8,7 @@ import fi.espoo.evaka.decision.logger
 import fi.espoo.evaka.shared.db.Database
 import org.jdbi.v3.core.mapper.PropagateNull
 
-data class CustomerNumbers(@PropagateNull val number: String, val name: String, val group: String)
+data class CustomerNumbers(@PropagateNull val number: String, val name: String, val customergroup: String, val unit_size: String)
 
 /** Throws an IllegalStateException if Nekku returns an empty texture list. */
 fun fetchAndUpdateNekkuCustomers(
@@ -19,8 +19,7 @@ fun fetchAndUpdateNekkuCustomers(
     val customersFromNekku =
         client
             .getCustomers()
-            .filter { it.group == "Varhaiskasvatus" }
-            .map { it -> CustomerNumbers(it.number, it.name, it.group) }
+            .map { it -> CustomerNumbers(it.number, it.name, it.customergroup, it.unit_size) }
 
     if (customersFromNekku.isEmpty())
         error("Refusing to sync empty Nekku customer list into database")
@@ -58,10 +57,12 @@ fun Database.Transaction.setCustomerNumbers(customerNumbers: List<CustomerNumber
     executeBatch(customerNumbers) {
         sql(
             """
-INSERT INTO nekku_customer (number, name)
+INSERT INTO nekku_customer (number, name, customer_group, unit_size)
 VALUES (
     ${bind{it.number}},
-    ${bind{it.name}}
+    ${bind{it.name}},
+    ${bind{it.customergroup}},
+    ${bind{it.unit_size}}
 )
 ON CONFLICT (number) DO UPDATE SET
   name = excluded.name
@@ -72,5 +73,5 @@ ON CONFLICT (number) DO UPDATE SET
 }
 
 fun Database.Transaction.getNekkuCustomers(): List<NekkuCustomer> {
-    return createQuery { sql("SELECT number, name FROM nekku_customer") }.toList<NekkuCustomer>()
+    return createQuery { sql("SELECT number, name, customer_group, unit_size FROM nekku_customer WHERE customer_group = 'Varhaiskasvatus'") }.toList<NekkuCustomer>()
 }
