@@ -16,15 +16,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.dev.DevCareArea
-import fi.espoo.evaka.shared.dev.DevDaycare
-import fi.espoo.evaka.shared.dev.DevDaycareGroup
-import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
-import fi.espoo.evaka.shared.dev.DevEmployee
-import fi.espoo.evaka.shared.dev.DevPerson
-import fi.espoo.evaka.shared.dev.DevPersonType
-import fi.espoo.evaka.shared.dev.DevPlacement
-import fi.espoo.evaka.shared.dev.insert
+import fi.espoo.evaka.shared.dev.*
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.RealEvakaClock
@@ -32,6 +24,7 @@ import fi.espoo.evaka.shared.security.PilotFeature
 import java.time.LocalDate
 import java.time.LocalTime
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 
@@ -291,6 +284,81 @@ class MessageReceiversIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     .map { MessageReceiver.UnitInArea(id = it.id, name = it.name) },
                 areaReceiver.receivers.sortedBy { it.id },
             )
+        }
+    }
+
+    @Test
+    fun `child staying in the same group but with different placement does not show in starters`() {
+        val area = DevCareArea()
+        val daycare1 =
+            DevDaycare(areaId = area.id, enabledPilotFeatures = setOf(PilotFeature.MESSAGING))
+        val group = DevDaycareGroup(daycareId = daycare1.id, name = "Testaajat")
+        val supervisor = DevEmployee()
+        val adult1 = DevPerson()
+        val child1 = DevPerson()
+
+        db.transaction { tx ->
+            tx.insert(area)
+            val unitId = tx.insert(daycare1)
+            val groupId = tx.insert(group)
+            val childId = tx.insert(child1, DevPersonType.CHILD)
+            val adultId = tx.insert(adult1, DevPersonType.ADULT)
+            val daycarePlacementId1 =
+                tx.insert(
+                    DevPlacement(
+                        childId = childId,
+                        unitId = unitId,
+                        startDate = placementStart,
+                        endDate = placementEnd.minusDays(10),
+                    )
+                )
+            tx.insert(
+                DevDaycareGroupPlacement(
+                    daycarePlacementId = daycarePlacementId1,
+                    daycareGroupId = groupId,
+                    startDate = placementStart,
+                    endDate = placementEnd.minusDays(10),
+                )
+            )
+            val daycarePlacementId2 =
+                tx.insert(
+                    DevPlacement(
+                        childId = childId,
+                        unitId = unitId,
+                        startDate = placementEnd.minusDays(9),
+                        endDate = placementEnd,
+                    )
+                )
+            tx.insert(
+                DevDaycareGroupPlacement(
+                    daycarePlacementId = daycarePlacementId2,
+                    daycareGroupId = groupId,
+                    startDate = placementEnd.minusDays(9),
+                    endDate = placementEnd,
+                )
+            )
+            tx.insert(supervisor)
+            tx.upsertEmployeeMessageAccount(supervisor.id)
+            tx.insertDaycareAclRow(daycare1.id, supervisor.id, UserRole.UNIT_SUPERVISOR)
+            tx.insertEmployeeToDaycareGroupAcl(groupId, supervisor.id)
+            tx.createDaycareGroupMessageAccount(group.id)
+            tx.insertGuardian(adultId, childId)
+        }
+
+        val receivers =
+            messageController.getReceiversForNewMessage(
+                dbInstance(),
+                AuthenticatedUser.Employee(supervisor.id, setOf()),
+                RealEvakaClock(),
+            )
+        assertTrue {
+            receivers.all { a ->
+                a.receivers.none { r ->
+                    (r is MessageReceiver.Child && r.startDate != null) ||
+                        (r is MessageReceiver.Group && r.hasStarters) ||
+                        (r is MessageReceiver.Unit && r.hasStarters)
+                }
+            }
         }
     }
 
