@@ -33,6 +33,7 @@ import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
 import { formatName } from '../../../utils'
 import { isPartDayPlacement } from '../../../utils/placements'
+import { NotificationCounter } from '../../UnitPage'
 import { AgeIndicatorChip } from '../../common/AgeIndicatorChip'
 import { CareTypeChip } from '../../common/CareTypeLabel'
 
@@ -205,7 +206,12 @@ export default React.memo(function MissingGroupPlacements({
 
   return (
     <>
-      <Title size={2}>{i18n.unit.placements.title}</Title>
+      <Title size={2}>
+        {i18n.unit.placements.title}
+        {sortedRows.length > 0 && (
+          <NotificationCounter>{sortedRows.length}</NotificationCounter>
+        )}
+      </Title>
       <Table data-qa="table-of-missing-placements">
         <Thead>
           <Tr>

@@ -13,7 +13,6 @@ import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { useTranslation } from '../../state/i18n'
 import { formatName } from '../../utils'
 import { isPartDayPlacement } from '../../utils/placements'
-import { NotificationCounter } from '../UnitPage'
 import { CareTypeChip } from '../common/CareTypeLabel'
 
 interface Props {
@@ -28,10 +27,7 @@ export default React.memo(function TabApplications({ applications }: Props) {
     <CollapsibleContentArea
       title={
         <Title size={2}>
-          {i18n.unit.applications.title}
-          {applications.length > 0 ? (
-            <NotificationCounter>{applications.length}</NotificationCounter>
-          ) : null}
+          {i18n.unit.applications.title} ({applications.length})
         </Title>
       }
       opaque
