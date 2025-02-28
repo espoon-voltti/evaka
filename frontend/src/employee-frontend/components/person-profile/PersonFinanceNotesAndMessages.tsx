@@ -19,7 +19,11 @@ import {
   MessageThreadId,
   PersonId
 } from 'lib-common/generated/api-types/shared'
-import { cancelMutation, useMutationResult, useQueryResult } from 'lib-common/query'
+import {
+  cancelMutation,
+  useMutationResult,
+  useQueryResult
+} from 'lib-common/query'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
@@ -41,10 +45,8 @@ import { faChevronDown, faChevronUp } from 'lib-icons'
 
 import { getAttachmentUrl, messageAttachment } from '../../api/attachments'
 import {
-  createMessage,
   deleteDraftMessage,
   initDraftMessage,
-  replyToThread,
   updateDraftMessage
 } from '../../generated/api-clients/messaging'
 import { useTranslation } from '../../state/i18n'
@@ -56,8 +58,10 @@ import { FlexRow } from '../common/styled/containers'
 import { MessageContext } from '../messages/MessageContext'
 import MessageEditor from '../messages/MessageEditor'
 import {
+  createFinanceThreadMutation,
   deleteFinanceThreadMutation,
-  financeThreadsQuery
+  financeThreadsQuery,
+  replyToFinanceThreadMutation
 } from '../messages/queries'
 
 import {
@@ -71,8 +75,6 @@ import { PersonContext } from './state'
 const initDraftMessageResult = wrapResult(initDraftMessage)
 const updateDraftMessageResult = wrapResult(updateDraftMessage)
 const deleteDraftMessageResult = wrapResult(deleteDraftMessage)
-const createMessageResult = wrapResult(createMessage)
-const replyToFinanceThreadResult = wrapResult(replyToThread)
 
 interface Props {
   id: PersonId
@@ -111,10 +113,16 @@ export default React.memo(function PersonFinanceNotesAndMessages({
     return undefined
   }, [person, i18n])
 
-  const foo = useMutationResult()
+  const { mutateAsync: replyToThread } = useMutationResult(
+    replyToFinanceThreadMutation
+  )
+
+  const { mutateAsync: createThread } = useMutationResult(
+    createFinanceThreadMutation
+  )
 
   const onSend = useCallback(
-    (accountId: MessageAccountId, messageBody: PostMessageBody) => {
+    async (accountId: MessageAccountId, messageBody: PostMessageBody) => {
       const afterSend = (isSuccess: boolean, accountId: MessageAccountId) => {
         if (isSuccess) {
           refreshMessages(accountId)
@@ -131,7 +139,8 @@ export default React.memo(function PersonFinanceNotesAndMessages({
       setSending(true)
 
       if (thread) {
-        void replyToFinanceThreadResult({
+        await replyToThread({
+          id,
           accountId,
           messageId: thread.messages[0].id,
           body: {
@@ -140,7 +149,8 @@ export default React.memo(function PersonFinanceNotesAndMessages({
           }
         }).then((res) => afterSend(res.isSuccess, accountId))
       } else {
-        void createMessageResult({
+        await createThread({
+          id,
           accountId,
           body: {
             ...messageBody,

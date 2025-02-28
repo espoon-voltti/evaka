@@ -6,7 +6,7 @@ import { PersonId } from 'lib-common/generated/api-types/shared'
 import { Queries } from 'lib-common/query'
 
 import {
-  archiveThread,
+  archiveThread, createMessage,
   createMessagePreflightCheck,
   deleteDraftMessage,
   getFinanceMessagesWithPerson,
@@ -30,6 +30,14 @@ export const saveDraftMutation = q.mutation(updateDraftMessage, [])
 export const deleteDraftMutation = q.mutation(deleteDraftMessage, [])
 
 export const financeThreadsQuery = q.query(getFinanceMessagesWithPerson)
+
+export const createFinanceThreadMutation = q.parametricMutation<{
+  id: PersonId
+}>()(createMessage, [({ id }) => financeThreadsQuery({ personId: id })])
+
+export const replyToFinanceThreadMutation = q.parametricMutation<{
+  id: PersonId
+}>()(replyToThread, [({ id }) => financeThreadsQuery({ personId: id })])
 
 export const deleteFinanceThreadMutation = q.parametricMutation<{
   id: PersonId
