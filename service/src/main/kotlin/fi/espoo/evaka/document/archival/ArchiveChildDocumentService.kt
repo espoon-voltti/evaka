@@ -220,6 +220,11 @@ class ArchiveChildDocumentService(
                                         protectionLevel = ProtectionLevelType.HIGH
                                     }
                             }
+                        caseFile =
+                            CaseFileType().apply {
+                                caseCreated = documentMetadata.createdAt?.asXMLGregorianCalendar()
+                                caseFinished = archivedProcess?.history?.find { it.state == ArchivedProcessState.COMPLETED }?.enteredAt?.asXMLGregorianCalendar()
+                            }
                     }
             }
         }
