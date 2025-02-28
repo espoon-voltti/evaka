@@ -262,8 +262,7 @@ export default React.memo(function ThreadListContainer({
                 : undefined
             }
             onChangeFolder={
-              hasFolders &&
-              (view === 'received' || view === 'sent' || isFolderView(view))
+              hasFolders && (view === 'received' || isFolderView(view))
                 ? (id) => setFolderChangeTarget(id)
                 : undefined
             }
