@@ -28,7 +28,12 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             TestNekkuClient(
                 customers =
                     listOf(
-                        NekkuCustomer("2501K6089", "Ahvenojan päiväkoti", "Varhaiskasvatus", "large")
+                        NekkuCustomer(
+                            "2501K6089",
+                            "Ahvenojan päiväkoti",
+                            "Varhaiskasvatus",
+                            "large",
+                        )
                     )
             )
         fetchAndUpdateNekkuCustomers(client, db, loggerWarner)
@@ -44,8 +49,13 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             TestNekkuClient(
                 customers =
                     listOf(
-                        NekkuCustomer("2501K6089", "Ahvenojan päiväkoti", "Varhaiskasvatus", "large"),
-                        NekkuCustomer("4282K9253", "Haukiputaan lukio lipa", "Liikunta", "" )
+                        NekkuCustomer(
+                            "2501K6089",
+                            "Ahvenojan päiväkoti",
+                            "Varhaiskasvatus",
+                            "large",
+                        ),
+                        NekkuCustomer("4282K9253", "Haukiputaan lukio lipa", "Liikunta", ""),
                     )
             )
         fetchAndUpdateNekkuCustomers(client, db, loggerWarner)
@@ -54,13 +64,9 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             assertEquals(1, customers.size)
         }
     }
-
-
 }
 
-class TestNekkuClient(
-    private val customers: List<NekkuCustomer> = emptyList()
-) : NekkuClient {
+class TestNekkuClient(private val customers: List<NekkuCustomer> = emptyList()) : NekkuClient {
 
     override fun getCustomers(): List<NekkuCustomer> {
         return customers
