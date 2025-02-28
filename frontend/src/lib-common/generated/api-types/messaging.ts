@@ -32,6 +32,7 @@ export type AccountType =
   | 'CITIZEN'
   | 'MUNICIPAL'
   | 'SERVICE_WORKER'
+  | 'FINANCE'
 
 /**
 * Generated from fi.espoo.evaka.messaging.AuthorizedMessageAccount
@@ -45,6 +46,7 @@ export interface AuthorizedMessageAccount {
 * Generated from fi.espoo.evaka.messaging.MessageControllerCitizen.ChildMessageAccountAccess
 */
 export interface ChildMessageAccountAccess {
+  childId: PersonId | null
   newMessage: MessageAccountId[]
   reply: MessageAccountId[]
 }
@@ -124,7 +126,7 @@ export interface DraftContent {
 * Generated from fi.espoo.evaka.messaging.MessageControllerCitizen.GetReceiversResponse
 */
 export interface GetReceiversResponse {
-  childrenToMessageAccounts: Partial<Record<PersonId, ChildMessageAccountAccess>>
+  childrenToMessageAccounts: ChildMessageAccountAccess[]
   messageAccounts: MessageAccountWithPresence[]
 }
 
