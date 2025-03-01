@@ -1463,6 +1463,9 @@ export default {
         phone: 'Puhelinnumero',
         verifyEmail: 'Vahvista sähköpostiosoite',
         email: 'Sähköpostiosoite',
+        emailChangeTip:
+          'Jos haluat muuttaa sähköpostiosoitettasi, voit tehdä sen ',
+        emailChangeTipLink: 'omissa tiedoissasi.',
         noEmail: 'Minulla ei ole sähköpostiosoitetta',
         secondGuardianInfoTitle: 'Toisen huoltajan tiedot',
         secondGuardianInfo:

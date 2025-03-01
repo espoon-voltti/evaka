@@ -1519,6 +1519,9 @@ const en: Translations = {
         phone: 'Phone number',
         verifyEmail: 'Verify email',
         email: 'Email',
+        emailChangeTip:
+          'Om du vill ändra e-postadressen, gör det på sidan för ',
+        emailChangeTipLink: 'personuppgifter.',
         noEmail: "I don't have an email address",
         secondGuardianInfoTitle: 'Second guardian information',
         secondGuardianInfo:
