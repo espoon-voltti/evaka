@@ -81,7 +81,11 @@ class MessageService(
             )
         tx.upsertSenderThreadParticipants(sender, listOf(threadId), now)
         val recipientNames =
-            tx.getAccountNames(recipients, featureConfig.serviceWorkerMessageAccountName)
+            tx.getAccountNames(
+                recipients,
+                featureConfig.serviceWorkerMessageAccountName,
+                featureConfig.financeMessageAccountName,
+            )
         val messageId =
             tx.insertMessage(
                 now = now,
@@ -91,6 +95,7 @@ class MessageService(
                 recipientNames = recipientNames,
                 municipalAccountName = featureConfig.municipalMessageAccountName,
                 serviceWorkerAccountName = featureConfig.serviceWorkerMessageAccountName,
+                financeAccountName = featureConfig.financeMessageAccountName,
             )
         tx.insertMessageThreadChildren(listOf(children to threadId))
         tx.insertRecipients(listOf(messageId to recipients))
@@ -170,6 +175,7 @@ class MessageService(
                 applicationId = relatedApplication,
                 municipalAccountName = featureConfig.municipalMessageAccountName,
                 serviceWorkerAccountName = featureConfig.serviceWorkerMessageAccountName,
+                financeAccountName = featureConfig.financeMessageAccountName,
             )
         val recipientGroupsWithMessageIds = threadAndMessageIds.zip(recipientGroups)
         tx.insertMessageThreadChildren(
@@ -205,6 +211,7 @@ class MessageService(
                     applicationId = relatedApplication,
                     municipalAccountName = featureConfig.municipalMessageAccountName,
                     serviceWorkerAccountName = featureConfig.serviceWorkerMessageAccountName,
+                    financeAccountName = featureConfig.financeMessageAccountName,
                 )
             val staffRecipientsWithMessageIds =
                 staffThreadAndMessageIds.zip(other = staffCopyRecipients)
@@ -242,6 +249,7 @@ class MessageService(
         content: String,
         municipalAccountName: String,
         serviceWorkerAccountName: String,
+        financeAccountName: String,
         user: AuthenticatedUser,
     ): ThreadReply {
         val today = now.toLocalDate()
@@ -277,19 +285,22 @@ class MessageService(
                     )
             )
                 throw Forbidden("Cannot reply to application message in status $applicationStatus")
+            val financeAccountId = db.read { it.getFinanceAccountId() }
             val validRecipients =
                 db.read { it.getCitizenReceivers(today, senderAccount) }
                     .mapValues { entry -> entry.value.reply.map { it.account.id }.toSet() }
             val allRecipientsValid =
                 recipientAccountIds.all { recipient ->
-                    children.any { child -> validRecipients[child]?.contains(recipient) ?: false }
+                    children.any { child ->
+                        validRecipients[child]?.contains(recipient) ?: false
+                    } || recipient == financeAccountId
                 }
             if (!isApplication && !allRecipientsValid)
                 throw Forbidden("Not authorized to send to all recipients")
             val selectedChildren =
                 db.read { it.getChildrenByParent(user.id, today) }
                     .filter { children.contains(it.id) }
-            val selectedChildrenInSameUnit = selectedChildren.map { it.unit?.id }.toSet().size == 1
+            val selectedChildrenInSameUnit = selectedChildren.map { it.unit?.id }.toSet().size <= 1
             if (!isApplication && !selectedChildrenInSameUnit)
                 throw Forbidden("Selected children not in same unit")
         }
@@ -297,7 +308,11 @@ class MessageService(
             db.transaction { tx ->
                 tx.upsertSenderThreadParticipants(senderAccount, listOf(threadId), now)
                 val recipientNames =
-                    tx.getAccountNames(recipientAccountIds, serviceWorkerAccountName)
+                    tx.getAccountNames(
+                        recipientAccountIds,
+                        serviceWorkerAccountName,
+                        financeAccountName,
+                    )
                 val contentId = tx.insertMessageContent(content, senderAccount)
                 val messageId =
                     tx.insertMessage(
@@ -309,6 +324,7 @@ class MessageService(
                         recipientNames = recipientNames,
                         municipalAccountName = municipalAccountName,
                         serviceWorkerAccountName = serviceWorkerAccountName,
+                        financeAccountName = financeAccountName,
                     )
                 tx.insertRecipients(listOf(messageId to recipientAccountIds))
                 asyncJobRunner.scheduleMarkMessagesAsSent(tx, contentId, now)
@@ -320,7 +336,12 @@ class MessageService(
                         messageContentId = contentId,
                     )
                 }
-                tx.getSentMessage(senderAccount, messageId, serviceWorkerAccountName)
+                tx.getSentMessage(
+                    senderAccount,
+                    messageId,
+                    serviceWorkerAccountName,
+                    financeAccountName,
+                )
             }
         return ThreadReply(threadId, message)
     }
