@@ -563,6 +563,7 @@ fun generateMultipartUploadApiFunction(
             TsCode { "url: ${inline(url.value)}.toString()" },
             TsCode { "method: '${endpoint.httpMethod}'" },
             TsCode { "headers: ${join(headers, ",\n", prefix = "{\n", postfix = "\n}")}" },
+            TsCode { "onUploadProgress: options?.onUploadProgress" },
             createQueryParameters?.let { TsCode { "params" } },
             TsCode("data"),
         )

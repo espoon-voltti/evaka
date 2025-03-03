@@ -418,6 +418,7 @@ export async function createPlacementToolApplications(
     headers: {
       'Content-Type': 'multipart/form-data'
     },
+    onUploadProgress: options?.onUploadProgress,
     data
   })
   return json
@@ -456,6 +457,7 @@ export async function validatePlacementToolApplications(
     headers: {
       'Content-Type': 'multipart/form-data'
     },
+    onUploadProgress: options?.onUploadProgress,
     data
   })
   return json

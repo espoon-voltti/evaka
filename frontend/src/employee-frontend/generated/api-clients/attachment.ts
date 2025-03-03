@@ -79,6 +79,7 @@ export async function uploadApplicationAttachmentEmployee(
     headers: {
       'Content-Type': 'multipart/form-data'
     },
+    onUploadProgress: options?.onUploadProgress,
     params,
     data
   })
@@ -107,6 +108,7 @@ export async function uploadFeeAlterationAttachment(
     headers: {
       'Content-Type': 'multipart/form-data'
     },
+    onUploadProgress: options?.onUploadProgress,
     data
   })
   return json
@@ -134,6 +136,7 @@ export async function uploadIncomeAttachment(
     headers: {
       'Content-Type': 'multipart/form-data'
     },
+    onUploadProgress: options?.onUploadProgress,
     data
   })
   return json
@@ -165,6 +168,7 @@ export async function uploadIncomeStatementAttachmentEmployee(
     headers: {
       'Content-Type': 'multipart/form-data'
     },
+    onUploadProgress: options?.onUploadProgress,
     params,
     data
   })
@@ -193,6 +197,7 @@ export async function uploadInvoiceAttachmentEmployee(
     headers: {
       'Content-Type': 'multipart/form-data'
     },
+    onUploadProgress: options?.onUploadProgress,
     data
   })
   return json
@@ -220,6 +225,7 @@ export async function uploadMessageAttachment(
     headers: {
       'Content-Type': 'multipart/form-data'
     },
+    onUploadProgress: options?.onUploadProgress,
     data
   })
   return json
@@ -246,6 +252,7 @@ export async function uploadOrphanFeeAlterationAttachment(
     headers: {
       'Content-Type': 'multipart/form-data'
     },
+    onUploadProgress: options?.onUploadProgress,
     data
   })
   return json
@@ -272,6 +279,7 @@ export async function uploadOrphanIncomeAttachment(
     headers: {
       'Content-Type': 'multipart/form-data'
     },
+    onUploadProgress: options?.onUploadProgress,
     data
   })
   return json
@@ -299,6 +307,7 @@ export async function uploadPedagogicalDocumentAttachment(
     headers: {
       'Content-Type': 'multipart/form-data'
     },
+    onUploadProgress: options?.onUploadProgress,
     data
   })
   return json

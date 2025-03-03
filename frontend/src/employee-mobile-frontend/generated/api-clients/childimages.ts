@@ -65,6 +65,7 @@ export async function putImage(
     headers: {
       'Content-Type': 'multipart/form-data'
     },
+    onUploadProgress: options?.onUploadProgress,
     data
   })
   return json

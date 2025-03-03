@@ -74,6 +74,7 @@ export async function uploadApplicationAttachmentCitizen(
     headers: {
       'Content-Type': 'multipart/form-data'
     },
+    onUploadProgress: options?.onUploadProgress,
     params,
     data
   })
@@ -106,6 +107,7 @@ export async function uploadIncomeStatementAttachmentCitizen(
     headers: {
       'Content-Type': 'multipart/form-data'
     },
+    onUploadProgress: options?.onUploadProgress,
     params,
     data
   })
@@ -133,6 +135,7 @@ export async function uploadMessageAttachmentCitizen(
     headers: {
       'Content-Type': 'multipart/form-data'
     },
+    onUploadProgress: options?.onUploadProgress,
     data
   })
   return json
@@ -163,6 +166,7 @@ export async function uploadOrphanIncomeStatementAttachmentCitizen(
     headers: {
       'Content-Type': 'multipart/form-data'
     },
+    onUploadProgress: options?.onUploadProgress,
     params,
     data
   })

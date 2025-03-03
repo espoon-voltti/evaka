@@ -1324,6 +1324,7 @@ export async function createPedagogicalDocumentAttachment(
         'Content-Type': 'multipart/form-data',
         'EvakaMockedTime': options?.mockedTime?.formatIso()
       },
+      onUploadProgress: options?.onUploadProgress,
       params,
       data
     })
