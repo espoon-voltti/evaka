@@ -37,6 +37,11 @@ export class EmployeesPage {
     await this.page.findByDataQa('modal-okBtn').click()
   }
 
+  async deleteEmployee(nth: number) {
+    await this.page.findAllByDataQa('delete-button').nth(nth).click()
+    await this.page.findByDataQa('modal-okBtn').click()
+  }
+
   async clickDeactivatedEmployees() {
     await this.hideDeactivated.waitUntilVisible()
     await this.hideDeactivated.click()
