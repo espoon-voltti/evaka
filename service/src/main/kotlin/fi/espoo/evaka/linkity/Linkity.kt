@@ -11,6 +11,12 @@ enum class ShiftType {
     TRAINING,
 }
 
+enum class WorkLogType {
+    PRESENT,
+    TRAINING,
+    OTHER_WORK,
+}
+
 data class Shift(
     val sarastiaId: String,
     val workShiftId: String,
@@ -18,4 +24,11 @@ data class Shift(
     val endDateTime: HelsinkiDateTime,
     val type: ShiftType,
     val notes: String? = null,
+)
+
+data class WorkLog(
+    val sarastiaId: String,
+    val startTime: HelsinkiDateTime,
+    val endTime: HelsinkiDateTime,
+    val type: WorkLogType,
 )
