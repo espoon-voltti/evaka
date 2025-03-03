@@ -12,11 +12,12 @@ import {
   DatePickerDeprecated,
   DatePickerClearableDeprecated
 } from 'lib-components/molecules/DatePickerDeprecated'
-import { InfoBox } from 'lib-components/molecules/MessageBoxes'
+import { InfoBox, MessageBox } from 'lib-components/molecules/MessageBoxes'
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { Gap } from 'lib-components/white-space'
+import { theme } from 'lib-customizations/common'
 import { featureFlags } from 'lib-customizations/employee'
-import { faPen } from 'lib-icons'
+import { faPen, fasExclamation } from 'lib-icons'
 
 import { useTranslation } from '../../../../../state/i18n'
 import { UIContext } from '../../../../../state/ui'
@@ -35,11 +36,13 @@ export default React.memo(function GroupUpdateModal({ group }: Props) {
     startDate: LocalDate
     endDate: LocalDate | null
     jamixCustomerNumber: number | null
+    aromiCustomerId: string | null
   }>({
     name: group.name,
     startDate: group.startDate,
     endDate: group.endDate,
-    jamixCustomerNumber: group.jamixCustomerNumber
+    jamixCustomerNumber: group.jamixCustomerNumber,
+    aromiCustomerId: group.aromiCustomerId
   })
 
   return (
@@ -114,6 +117,36 @@ export default React.memo(function GroupUpdateModal({ group }: Props) {
                 data-qa="jamix-customer-id-input"
                 placeholder={i18n.unit.groups.updateModal.jamixPlaceholder}
               />
+            </>
+          )}
+          {featureFlags.aromiIntegration && (
+            <>
+              <Gap size="s" />
+              <div className="bold">
+                {i18n.unit.groups.updateModal.aromiTitle}
+              </div>
+              <InputField
+                value={data.aromiCustomerId ?? ''}
+                onChange={(value) => {
+                  const checkedValue =
+                    value !== null && value.length > 0 ? value : null
+                  setData((state) => ({
+                    ...state,
+                    aromiCustomerId: checkedValue
+                  }))
+                }}
+              />
+              {data.aromiCustomerId === null && (
+                <>
+                  <Gap size="s" />
+                  <MessageBox
+                    color={theme.colors.status.warning}
+                    icon={fasExclamation}
+                    message={i18n.unit.groups.createModal.errors.aromiWarning}
+                    thin
+                  />
+                </>
+              )}
             </>
           )}
         </section>

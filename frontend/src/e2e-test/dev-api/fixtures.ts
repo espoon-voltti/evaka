@@ -267,6 +267,7 @@ export class Fixture {
       startDate: LocalDate.of(2020, 1, 1),
       endDate: null,
       jamixCustomerNumber: null,
+      aromiCustomerId: null,
       ...initial
     })
   }
@@ -3144,7 +3145,8 @@ export const testDaycareGroup: DevDaycareGroup = {
   name: 'Kosmiset vakiot',
   startDate: LocalDate.of(2000, 1, 1),
   endDate: null,
-  jamixCustomerNumber: null
+  jamixCustomerNumber: null,
+  aromiCustomerId: null
 }
 
 /**

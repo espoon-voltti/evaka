@@ -135,7 +135,8 @@ beforeEach(async () => {
         name: 'Varayksikön ryhmä',
         startDate: LocalDate.of(2000, 1, 1),
         endDate: null,
-        jamixCustomerNumber: null
+        jamixCustomerNumber: null,
+        aromiCustomerId: null
       }
     ]
   })

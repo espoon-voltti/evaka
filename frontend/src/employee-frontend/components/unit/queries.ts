@@ -194,7 +194,9 @@ export const transferGroupMutation = q.parametricMutation<{
 ])
 
 export const createGroupMutation = q.mutation(createGroup, [
-  ({ daycareId }) => unitNotificationsQuery({ daycareId })
+  ({ daycareId }) => unitNotificationsQuery({ daycareId }),
+  unitQuery.prefix,
+  unitGroupDetailsQuery.prefix
 ])
 
 export const unitGroupsQuery = q.query(getGroups)

@@ -33,8 +33,9 @@ class DaycareService {
         name: String,
         startDate: LocalDate,
         initialCaretakers: Double,
+        aromiCustomerId: String?,
     ): DaycareGroup =
-        tx.createDaycareGroup(daycareId, name, startDate).also {
+        tx.createDaycareGroup(daycareId, name, startDate, aromiCustomerId).also {
             tx.initCaretakers(it.id, it.startDate, initialCaretakers)
             tx.createDaycareGroupMessageAccount(it.id)
         }
@@ -77,6 +78,7 @@ data class DaycareGroup(
     val endDate: LocalDate?,
     val deletable: Boolean,
     val jamixCustomerNumber: Int?,
+    val aromiCustomerId: String?,
 )
 
 data class Caretakers(val minimum: Double, val maximum: Double) {

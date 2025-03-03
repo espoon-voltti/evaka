@@ -8,6 +8,8 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
+import fi.espoo.evaka.shared.dev.DevDaycareGroup
+import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
@@ -161,6 +163,94 @@ class RawReportControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
             .containsExactlyInAnyOrder(
                 Tuple("Kotikunnallinen", "Säkkijärvi"),
                 Tuple("Kotikunnaton", ""),
+            )
+    }
+
+    @Test
+    fun `aromi customer id is shown correctly`() {
+        val clock =
+            MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2024, 10, 23), LocalTime.of(8, 47)))
+
+        val user =
+            db.transaction { tx ->
+                val admin = DevEmployee(roles = setOf(UserRole.ADMIN))
+                tx.insert(admin)
+                admin.user
+            }
+        val testArea = DevCareArea()
+        val testUnit = DevDaycare(areaId = testArea.id)
+        val aromiGroup =
+            DevDaycareGroup(
+                daycareId = testUnit.id,
+                name = "Aromi group",
+                aromiCustomerId = "DAYCARE_PK",
+            )
+        db.transaction { tx ->
+            tx.insertServiceNeedOption(snDefaultDaycare)
+            tx.insert(testArea)
+            tx.insert(testUnit)
+
+            val nonAromiGroupId =
+                tx.insert(DevDaycareGroup(daycareId = testUnit.id, name = "Non-Aromi group"))
+
+            tx.insert(aromiGroup)
+
+            tx.insert(DevPerson(firstName = "Anselmi"), DevPersonType.CHILD).also { childId ->
+                val aromiPlacementId =
+                    tx.insert(
+                        DevPlacement(
+                            childId = childId,
+                            unitId = testUnit.id,
+                            startDate = clock.today().minusYears(1),
+                            endDate = clock.today().plusYears(1),
+                        )
+                    )
+                tx.insert(
+                    DevDaycareGroupPlacement(
+                        daycarePlacementId = aromiPlacementId,
+                        daycareGroupId = aromiGroup.id,
+                        startDate = clock.today().minusYears(1),
+                        endDate = clock.today().plusYears(1),
+                    )
+                )
+            }
+
+            tx.insert(DevPerson(firstName = "Benselmi"), DevPersonType.CHILD).also { childId ->
+                val nonAromiPlacementId =
+                    tx.insert(
+                        DevPlacement(
+                            childId = childId,
+                            unitId = testUnit.id,
+                            startDate = clock.today().minusYears(1),
+                            endDate = clock.today().plusYears(1),
+                        )
+                    )
+
+                tx.insert(
+                    DevDaycareGroupPlacement(
+                        daycarePlacementId = nonAromiPlacementId,
+                        daycareGroupId = nonAromiGroupId,
+                        startDate = clock.today().minusYears(1),
+                        endDate = clock.today().plusYears(1),
+                    )
+                )
+            }
+        }
+
+        val rows =
+            rawReportController.getRawReport(
+                dbInstance(),
+                user,
+                clock,
+                clock.today(),
+                clock.today(),
+            )
+
+        assertThat(rows)
+            .extracting({ it.firstName }, { it.aromiCustomerId })
+            .containsExactlyInAnyOrder(
+                Tuple("Anselmi", aromiGroup.aromiCustomerId),
+                Tuple("Benselmi", null),
             )
     }
 }
