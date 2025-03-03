@@ -5,16 +5,15 @@
 import React, { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
 
-import { IncomeStatement } from 'lib-common/generated/api-types/incomestatement'
+import {
+  IncomeStatement,
+  IncomeStatementAttachmentType
+} from 'lib-common/generated/api-types/incomestatement'
 import { IncomeStatementId } from 'lib-common/generated/api-types/shared'
 import {
   collectAttachmentIds,
   toIncomeStatementAttachments
 } from 'lib-common/income-statements/attachments'
-import {
-  computeRequiredAttachments,
-  fromIncomeStatement
-} from 'lib-common/income-statements/form'
 import { useQueryResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
@@ -84,8 +83,8 @@ const ChildIncomeInfo = React.memo(function IncomeInfo({
   const editable = incomeStatement.status !== 'HANDLED'
 
   const requiredAttachments = useMemo(
-    () => computeRequiredAttachments(fromIncomeStatement(incomeStatement)),
-    [incomeStatement]
+    (): Set<IncomeStatementAttachmentType> => new Set(['CHILD_INCOME']),
+    []
   )
 
   const [otherInfo, setOtherInfo] = useState(() => incomeStatement.otherInfo)
@@ -115,6 +114,7 @@ const ChildIncomeInfo = React.memo(function IncomeInfo({
           incomeStatementId={incomeStatement.id}
           requiredAttachments={requiredAttachments}
           incomeStatementAttachments={incomeStatementAttachments}
+          alwaysIncludeOther={false}
           onChange={setIncomeStatementAttachments}
         />
       ) : (
