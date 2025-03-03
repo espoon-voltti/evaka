@@ -5,9 +5,9 @@
 package fi.espoo.evaka.titania
 
 import fi.espoo.evaka.PureJdbiTest
-import fi.espoo.evaka.attendance.StaffAttendanceType
-import fi.espoo.evaka.attendance.upsertStaffAttendance
+import fi.espoo.evaka.attendance.*
 import fi.espoo.evaka.pis.createEmployee
+import fi.espoo.evaka.pis.getEmployeeIdsByNumbers
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.GroupId
