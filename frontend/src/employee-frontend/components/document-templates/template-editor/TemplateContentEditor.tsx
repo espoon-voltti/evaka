@@ -270,7 +270,7 @@ const BasicsSection = React.memo(function BasicsSection({
         </GrovingDiv>
         <FixedSpaceColumn spacing="xxs">
           <span>{template.legalBasis}</span>
-          {template.confidential && (
+          {template.confidentiality && (
             <span>{i18n.documentTemplates.templateEditor.confidential}</span>
           )}
         </FixedSpaceColumn>
@@ -323,7 +323,10 @@ const BasicsEditor = React.memo(function BasicsEditor({
         domValue: template.language,
         options: languageOptions
       },
-      confidential: template.confidential,
+      confidential: template.confidentiality !== null,
+      confidentialityDurationYears:
+        template.confidentiality?.durationYears?.toString() ?? '',
+      confidentialityBasis: template.confidentiality?.basis ?? '',
       legalBasis: template.legalBasis,
       validity: openEndedLocalDateRange.fromRange(template.validity),
       processDefinitionNumber: template.processDefinitionNumber ?? '',

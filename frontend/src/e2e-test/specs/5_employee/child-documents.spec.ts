@@ -68,6 +68,8 @@ describe('Employee - Child documents', () => {
     await modal.typeSelect.selectOption('HOJKS')
     await modal.placementTypesSelect.fillAndSelectFirst('Esiopetus')
     await modal.validityStartInput.fill('01.08.2022')
+    await modal.confidentialityDurationYearsInput.fill('100')
+    await modal.confidentialityBasisInput.fill('Joku laki §300')
     await modal.confirmCreateButton.click()
     await documentTemplatesPage.openTemplate(documentName)
 
@@ -332,6 +334,8 @@ describe('Employee - Child documents', () => {
     await modal.typeSelect.selectOption('VASU')
     await modal.placementTypesSelect.fillAndSelectFirst('Esiopetus')
     await modal.validityStartInput.fill('01.08.2022')
+    await modal.confidentialityDurationYearsInput.fill('100')
+    await modal.confidentialityBasisInput.fill('Joku laki §300')
     await modal.processDefinitionNumberInput.fill('1234')
     await modal.archiveDurationMonthsInput.fill('1320')
     await modal.confirmCreateButton.click()
