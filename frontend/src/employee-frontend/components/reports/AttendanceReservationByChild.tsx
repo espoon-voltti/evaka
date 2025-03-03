@@ -257,11 +257,10 @@ export default React.memo(function AttendanceReservationByChild() {
           <BackendReportDownload
             href={getMealOrders({
               start: range.start,
-              end: range.end,
-              groupIds
+              end: range.end
             }).url.toString()}
             text="Lataa Aromi-raportti"
-            enabled={groupIds.length > 0}
+            enabled={range !== null}
           />
         )}
 

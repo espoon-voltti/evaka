@@ -4,10 +4,8 @@
 
 package fi.espoo.evaka.aromi
 
-import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.security.AccessControl
@@ -29,22 +27,12 @@ class AromiController(
         clock: EvakaClock,
         @RequestParam start: LocalDate,
         @RequestParam end: LocalDate,
-        @RequestParam groupIds: List<GroupId>?,
     ): ByteArray {
-        if (groupIds.isNullOrEmpty()) {
-            throw BadRequest("Group ids must contain at least one item")
-        }
         return db.connect { dbc ->
             dbc.read { tx ->
-                accessControl.requirePermissionFor(
-                    tx,
-                    user,
-                    clock,
-                    Action.Group.READ_AROMI_ORDERS,
-                    groupIds,
-                )
+                accessControl.requirePermissionFor(tx, user, clock, Action.Global.READ_AROMI_ORDERS)
             }
-            aromiService.getMealOrdersCsv(dbc, FiniteDateRange(start, end), groupIds)
+            aromiService.getMealOrdersCsv(dbc, FiniteDateRange(start, end))
         }
     }
 }
