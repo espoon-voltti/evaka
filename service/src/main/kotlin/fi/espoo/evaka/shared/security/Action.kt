@@ -333,7 +333,8 @@ sealed interface Action {
         OUT_OF_OFFICE_PAGE(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR).withUnitFeatures(PilotFeature.MESSAGING).inAnyUnit(),
-        );
+        ),
+        READ_AROMI_ORDERS(HasGlobalRole(ADMIN));
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
@@ -1595,7 +1596,6 @@ sealed interface Action {
         MARK_ARRIVAL(IsMobile(requirePinLogin = false).inUnitOfGroup()),
         MARK_EXTERNAL_ARRIVAL(IsMobile(requirePinLogin = false).inUnitOfGroup()),
         RECEIVE_PUSH_NOTIFICATIONS(IsMobile(requirePinLogin = false).inUnitOfGroup()),
-        READ_AROMI_ORDERS(HasGlobalRole(ADMIN)),
         CREATE_CALENDAR_EVENT(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inUnitOfGroup(),

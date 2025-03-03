@@ -256,11 +256,10 @@ export default React.memo(function AttendanceReservationByChild() {
           <BackendReportDownload
             href={`/api/employee/aromi?${new URLSearchParams({
               start: range.start.formatIso(),
-              end: range.end.formatIso(),
-              groupIds: groupIds.join(',')
+              end: range.end.formatIso()
             }).toString()}`}
             text="Lataa Aromi-raportti"
-            enabled={groupIds.length > 0}
+            enabled={range !== null}
           />
         )}
 
