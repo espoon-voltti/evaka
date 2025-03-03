@@ -602,7 +602,7 @@ private val logger = KotlinLogging.logger {}
 
 data class AuditChange(val old: Any?, val new: Any?)
 
-/** Returns */
+/** Returns changes between given objects for audit logging */
 fun <T> changes(
     old: T,
     new: T,

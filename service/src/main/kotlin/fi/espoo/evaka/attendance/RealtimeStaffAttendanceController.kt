@@ -206,7 +206,7 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
             throw BadRequest("Date cannot be in the future")
         }
 
-        val updates =
+        val (updates, changes) =
             db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -232,23 +232,26 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                         body.employeeId,
                     )
 
-                    body.entries.map { entry ->
-                        val occupancyCoefficient =
-                            if (entry.hasStaffOccupancyEffect) occupancyCoefficientSeven
-                            else occupancyCoefficientZero
-                        tx.upsertStaffAttendance(
-                            entry.id,
-                            body.employeeId,
-                            entry.groupId,
-                            entry.arrived,
-                            entry.departed,
-                            occupancyCoefficient,
-                            entry.type,
-                            false,
-                            clock.now(),
-                            user.evakaUserId,
-                        )
-                    } + deleted.map { StaffAttendanceRealtimeChange(old = it) }
+                    val updates =
+                        body.entries.map { entry ->
+                            val occupancyCoefficient =
+                                if (entry.hasStaffOccupancyEffect) occupancyCoefficientSeven
+                                else occupancyCoefficientZero
+                            tx.upsertStaffAttendance(
+                                entry.id,
+                                body.employeeId,
+                                entry.groupId,
+                                entry.arrived,
+                                entry.departed,
+                                occupancyCoefficient,
+                                entry.type,
+                                false,
+                                clock.now(),
+                                user.evakaUserId,
+                            )
+                        } + deleted.map { StaffAttendanceRealtimeChange(old = it) }
+                    updates to
+                        updates.map { changes(it.old, it.new, StaffAttendanceRealtimeAudit.fields) }
                 }
             }
         Audit.StaffAttendanceUpdate.log(
@@ -257,12 +260,7 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                 AuditId(
                     (updates.mapNotNull { it.new.id } + updates.mapNotNull { it.old.id }).distinct()
                 ),
-            meta =
-                mapOf(
-                    "date" to body.date,
-                    "changes" to
-                        updates.map { changes(it.old, it.new, StaffAttendanceRealtimeAudit.fields) },
-                ),
+            meta = mapOf("date" to body.date, "changes" to changes),
         )
     }
 
