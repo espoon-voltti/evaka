@@ -132,7 +132,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
         clock: EvakaClock,
         @RequestBody body: StaffArrivalRequest,
     ) {
-        val updates =
+        val (updates, changes) =
             try {
                 db.connect { dbc ->
                     dbc.transaction { tx ->
@@ -170,20 +170,25 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                                     body.groupId,
                                 )
                                 ?: BigDecimal.ZERO
-                        attendances.map { attendance ->
-                            tx.upsertStaffAttendance(
-                                attendance.id,
-                                attendance.employeeId,
-                                attendance.groupId,
-                                attendance.arrived,
-                                attendance.departed,
-                                occupancyCoefficient,
-                                attendance.type,
-                                false,
-                                clock.now(),
-                                user.evakaUserId,
-                            )
-                        }
+                        val updates =
+                            attendances.map { attendance ->
+                                tx.upsertStaffAttendance(
+                                    attendance.id,
+                                    attendance.employeeId,
+                                    attendance.groupId,
+                                    attendance.arrived,
+                                    attendance.departed,
+                                    occupancyCoefficient,
+                                    attendance.type,
+                                    false,
+                                    clock.now(),
+                                    user.evakaUserId,
+                                )
+                            }
+                        updates to
+                            updates.map {
+                                changes(it.old, it.new, StaffAttendanceRealtimeAudit.fields)
+                            }
                     }
                 }
             } catch (e: JdbiException) {
@@ -192,11 +197,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
         Audit.StaffAttendanceArrivalCreate.log(
             targetId = AuditId(listOf(body.groupId, body.employeeId)),
             objectId = AuditId(updates.mapNotNull { it.new.id }),
-            meta =
-                mapOf(
-                    "changes" to
-                        updates.map { changes(it.old, it.new, StaffAttendanceRealtimeAudit.fields) }
-                ),
+            meta = mapOf("changes" to changes),
         )
     }
 
@@ -215,7 +216,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
         clock: EvakaClock,
         @RequestBody body: StaffDepartureRequest,
     ) {
-        val updates =
+        val (updates, changes) =
             db.connect { dbc ->
                 dbc.transaction { tx ->
                     ac.requirePermissionFor(
@@ -242,30 +243,29 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                             body,
                         )
                     val occupancyCoefficient = ongoingAttendance.occupancyCoefficient
-                    attendances.map { attendance ->
-                        tx.upsertStaffAttendance(
-                            attendance.id,
-                            attendance.employeeId,
-                            attendance.groupId,
-                            attendance.arrived,
-                            attendance.departed,
-                            occupancyCoefficient,
-                            attendance.type,
-                            false,
-                            clock.now(),
-                            user.evakaUserId,
-                        )
-                    }
+                    val updates =
+                        attendances.map { attendance ->
+                            tx.upsertStaffAttendance(
+                                attendance.id,
+                                attendance.employeeId,
+                                attendance.groupId,
+                                attendance.arrived,
+                                attendance.departed,
+                                occupancyCoefficient,
+                                attendance.type,
+                                false,
+                                clock.now(),
+                                user.evakaUserId,
+                            )
+                        }
+                    updates to
+                        updates.map { changes(it.old, it.new, StaffAttendanceRealtimeAudit.fields) }
                 }
             }
         Audit.StaffAttendanceDepartureCreate.log(
             targetId = AuditId(listOf(body.groupId, body.employeeId)),
             objectId = AuditId(updates.mapNotNull { it.new.id }),
-            meta =
-                mapOf(
-                    "changes" to
-                        updates.map { changes(it.old, it.new, StaffAttendanceRealtimeAudit.fields) }
-                ),
+            meta = mapOf("changes" to changes),
         )
     }
 
@@ -344,10 +344,12 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                             )
                         }
 
-                    updated + deleted.map { StaffAttendanceRealtimeChange(old = it) }
+                    val updates = updated + deleted.map { StaffAttendanceRealtimeChange(old = it) }
+                    updates to
+                        updates.map { changes(it.old, it.new, StaffAttendanceRealtimeAudit.fields) }
                 }
             }
-            .also { updates ->
+            .also { (updates, changes) ->
                 Audit.StaffAttendanceUpdate.log(
                     targetId = AuditId(body.employeeId),
                     objectId =
@@ -355,17 +357,10 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                             (updates.mapNotNull { it.new.id } + updates.mapNotNull { it.old.id })
                                 .distinct()
                         ),
-                    meta =
-                        mapOf(
-                            "date" to body.date,
-                            "changes" to
-                                updates.map {
-                                    changes(it.old, it.new, StaffAttendanceRealtimeAudit.fields)
-                                },
-                        ),
+                    meta = mapOf("date" to body.date, "changes" to changes),
                 )
             }
-            .let { updates ->
+            .let { (updates) ->
                 StaffAttendanceUpdateResponse(
                     deleted =
                         updates.mapNotNull {
