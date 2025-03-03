@@ -201,44 +201,60 @@ const GrossIncome = React.memo(function GrossIncome({
   gross: Gross
 }) {
   const t = useTranslation()
-  return (
-    <>
-      <H2>{t.income.view.grossTitle}</H2>
-      <Row
-        label={t.income.view.incomeSource}
-        value={
-          gross.incomeSource === 'INCOMES_REGISTER'
-            ? t.income.view.incomesRegister
-            : t.income.view.attachmentsAndKela
-        }
-      />
-      <Row
-        label={t.income.view.grossEstimatedIncome}
-        value={gross.estimatedMonthlyIncome}
-      />
-      <Row
-        label={t.income.view.otherIncome}
-        value={
+  if (gross.type === 'INCOME') {
+    return (
+      <>
+        <H2>{t.income.view.grossTitle}</H2>
+        <Row
+          label={t.income.view.incomeSource}
+          value={
+            gross.incomeSource === 'INCOMES_REGISTER'
+              ? t.income.view.incomesRegister
+              : t.income.view.attachmentsAndKela
+          }
+        />
+        <Row
+          label={t.income.view.grossEstimatedIncome}
+          value={gross.estimatedMonthlyIncome}
+        />
+        <Row
+          label={t.income.view.otherIncome}
+          value={
+            <>
+              {gross.otherIncome.map((incomeType) => (
+                <Item key={incomeType}>
+                  {t.income.grossIncome.otherIncomeTypes[incomeType]}
+                </Item>
+              ))}
+              {gross.otherIncome.length === 0 && '-'}
+            </>
+          }
+        />
+        {gross.otherIncome.length > 0 && (
           <>
-            {gross.otherIncome.map((incomeType) => (
-              <Item key={incomeType}>
-                {t.income.grossIncome.otherIncomeTypes[incomeType]}
-              </Item>
-            ))}
-            {gross.otherIncome.length === 0 && '-'}
+            <Row
+              label={t.income.view.otherIncomeInfo}
+              value={gross.otherIncomeInfo}
+            />
           </>
-        }
-      />
-      {gross.otherIncome.length > 0 && (
-        <>
-          <Row
-            label={t.income.view.otherIncomeInfo}
-            value={gross.otherIncomeInfo}
-          />
-        </>
-      )}
-    </>
-  )
+        )}
+      </>
+    )
+  } else {
+    return (
+      <>
+        <H2>{t.income.view.grossTitle}</H2>
+        <Row
+          label={t.income.view.incomeSource}
+          value={t.income.view.noIncomeTitle}
+        />
+        <Row
+          label={t.income.view.noIncomeDescription}
+          value={gross.noIncomeDescription}
+        />
+      </>
+    )
+  }
 })
 
 const EstimatedIncome = React.memo(function EstimatedIncome({

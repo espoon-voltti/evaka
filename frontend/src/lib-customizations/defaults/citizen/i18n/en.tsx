@@ -2050,8 +2050,6 @@ const en: Translations = {
     childIncomeInfo: "Validity of the child's income information",
     incomeStatementMissing:
       'If your child has income, report it with an income statement.',
-    incomesRegisterConsent:
-      'I agree that information related to my income will be checked from the Incomes Register and Kela if necessary',
     incomeType: {
       description: (
         <>
@@ -2091,11 +2089,16 @@ const en: Translations = {
         </>
       ),
       incomeSource: 'Reporting income information',
+      incomesRegisterConsent:
+        'I agree that information related to my income will be checked from the Incomes Register and Kela if necessary',
       provideAttachments:
         'I will submit the information as attachments, and my information can be checked from Kela if necessary',
       attachmentsVerificationInfo:
         'Income information is verified at least annually.',
       estimate: 'Estimate of my gross income',
+      noIncome:
+        'I have no income or allowance, and my information can be checked from the Incomes Register and Kela',
+      noIncomeDescription: 'Describe your situation',
       estimatedMonthlyIncome:
         'Average earnings including holiday bonus, €/month',
       otherIncome: 'Other income',
@@ -2368,6 +2371,9 @@ const en: Translations = {
         'I agree that information related to my income will be checked from Kela and the Incomes Register.',
       attachmentsAndKela:
         'I will submit the information as attachments, and my information can be checked from Kela',
+      noIncomeTitle:
+        'I have no income or allowance, and my information can be checked from the Incomes Register and Kela',
+      noIncomeDescription: 'Describe your situation',
       grossEstimatedIncome: 'Estimate of gross income',
       otherIncome: 'Other income',
       otherIncomeInfo: 'Estimate of other income',
