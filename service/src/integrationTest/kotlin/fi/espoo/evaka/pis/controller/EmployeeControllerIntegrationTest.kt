@@ -25,6 +25,7 @@ import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.insert
+import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import java.time.LocalDate
@@ -33,6 +34,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 
 class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
@@ -75,8 +77,23 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
     }
 
     @Test
-    fun `admin can delete employee`() {
+    fun `admin can not delete AD-based employee`() {
         val employee = createEmployee(requestFromEmployee(employee1))
+
+        assertThrows<BadRequest> { deleteEmployee(employee.id) }
+    }
+
+    @Test
+    fun `admin can delete employee with SSN who has not yet logged in`() {
+        val employee =
+            createSsnEmployee(
+                NewSsnEmployee(
+                    ssn = Sensitive("010107A9917"),
+                    firstName = "First",
+                    lastName = "Last",
+                    email = "test@example.com",
+                )
+            )
 
         deleteEmployee(employee.id)
 
@@ -347,6 +364,7 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             temporaryInUnitId = null,
             active = true,
             hasSsn = false,
+            lastLogin = null,
         )
 
     val employee2 =
@@ -363,6 +381,7 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             temporaryInUnitId = null,
             active = true,
             hasSsn = false,
+            lastLogin = null,
         )
 
     private fun Database.Read.hasActiveMessagingAccount(employeeId: EmployeeId) =

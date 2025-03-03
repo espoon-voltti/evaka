@@ -355,9 +355,14 @@ class EmployeeController(private val accessControl: AccessControl) {
         @PathVariable id: EmployeeId,
     ) {
         db.connect { dbc ->
-            dbc.transaction {
-                accessControl.requirePermissionFor(it, user, clock, Action.Employee.DELETE, id)
-                it.deleteEmployee(id)
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(tx, user, clock, Action.Employee.DELETE, id)
+                tx.getEmployee(id)?.also {
+                    if (!it.hasSsn) throw BadRequest("Cannot delete employee without SSN")
+                    if (it.lastLogin != null)
+                        throw BadRequest("Cannot delete employee who has already logged in")
+                } ?: throw NotFound()
+                tx.deleteEmployee(id)
             }
         }
         Audit.EmployeeDelete.log(targetId = AuditId(id))
