@@ -116,9 +116,6 @@ const ChildIncome = React.memo(function ChildIncome({
 interface ChildIncomeTypeSelectionData {
   startDate: LocalDate | null
   endDate: LocalDate | null
-  highestFeeSelected: boolean
-  grossSelected: boolean
-  entrepreneurSelected: boolean
 }
 
 const ChildIncomeTimeRangeSelection = React.memo(
@@ -251,18 +248,9 @@ export default React.memo(
     const incomeTypeSelectionFormData = useMemo(
       () => ({
         startDate: formData.startDate,
-        endDate: formData.endDate,
-        highestFeeSelected: formData.highestFee,
-        grossSelected: formData.gross.selected,
-        entrepreneurSelected: formData.entrepreneur.selected
+        endDate: formData.endDate
       }),
-      [
-        formData.endDate,
-        formData.entrepreneur.selected,
-        formData.gross.selected,
-        formData.highestFee,
-        formData.startDate
-      ]
+      [formData.endDate, formData.startDate]
     )
 
     useImperativeHandle(ref, () => ({
