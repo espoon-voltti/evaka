@@ -16,7 +16,7 @@ import {
   returnToComing,
   returnToPresent
 } from '../generated/api-clients/attendance'
-import { deleteImage } from '../generated/api-clients/childimages'
+import { deleteImage, putImage } from '../generated/api-clients/childimages'
 import {
   getChildReservationsForDay,
   getConfirmedRangeData,
@@ -25,7 +25,7 @@ import {
 } from '../generated/api-clients/reservations'
 import { getBasicInfo } from '../generated/api-clients/sensitive'
 
-import { getUnitChildren, uploadChildImage } from './api'
+import { getUnitChildren } from './api'
 
 const q = new Queries()
 
@@ -89,7 +89,7 @@ export const cancelAbsenceMutation = q.mutation(cancelFullDayAbsence, [
 
 export const uploadChildImageMutation = q.parametricMutation<{
   unitId: DaycareId
-}>()(uploadChildImage, [({ unitId }) => childrenQuery(unitId)])
+}>()(putImage, [({ unitId }) => childrenQuery(unitId)])
 
 export const deleteChildImageMutation = q.parametricMutation<{
   unitId: DaycareId

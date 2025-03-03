@@ -12,6 +12,8 @@ import { ApplicationNoteId } from 'lib-common/generated/api-types/shared'
 import { ApplicationNoteResponse } from 'lib-common/generated/api-types/application'
 import { ApplicationResponse } from 'lib-common/generated/api-types/application'
 import { ApplicationUpdate } from 'lib-common/generated/api-types/application'
+import { AttachmentId } from 'lib-common/generated/api-types/shared'
+import { AxiosProgressEvent } from 'axios'
 import { DaycareId } from 'lib-common/generated/api-types/shared'
 import { DaycarePlacementPlan } from 'lib-common/generated/api-types/application'
 import { DecisionDraftGroup } from 'lib-common/generated/api-types/application'
@@ -25,6 +27,7 @@ import { PersonApplicationSummary } from 'lib-common/generated/api-types/applica
 import { PersonId } from 'lib-common/generated/api-types/shared'
 import { PlacementPlanDraft } from 'lib-common/generated/api-types/placement'
 import { PlacementProposalConfirmationUpdate } from 'lib-common/generated/api-types/application'
+import { PlacementToolValidation } from 'lib-common/generated/api-types/application'
 import { PreschoolTerm } from 'lib-common/generated/api-types/daycare'
 import { RejectDecisionRequest } from 'lib-common/generated/api-types/application'
 import { SearchApplicationRequest } from 'lib-common/generated/api-types/application'
@@ -32,6 +35,7 @@ import { SimpleApplicationAction } from 'lib-common/generated/api-types/applicat
 import { SimpleBatchRequest } from 'lib-common/generated/api-types/application'
 import { UnitApplications } from 'lib-common/generated/api-types/application'
 import { client } from '../../api/client'
+import { createFormData } from 'lib-common/api'
 import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonApplicationNote } from 'lib-common/generated/api-types/application'
 import { deserializeJsonApplicationNoteResponse } from 'lib-common/generated/api-types/application'
@@ -395,6 +399,33 @@ export async function updateDecisionDrafts(
 
 
 /**
+* Generated from fi.espoo.evaka.application.PlacementToolController.createPlacementToolApplications
+*/
+export async function createPlacementToolApplications(
+  request: {
+    file: File
+  },
+  options?: {
+    onUploadProgress?: (event: AxiosProgressEvent) => void
+  }
+): Promise<AttachmentId> {
+  const data = createFormData(
+    ['file', request.file]
+  )
+  const { data: json } = await client.request<JsonOf<AttachmentId>>({
+    url: uri`/employee/placement-tool`.toString(),
+    method: 'POST',
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    },
+    onUploadProgress: options?.onUploadProgress,
+    data
+  })
+  return json
+}
+
+
+/**
 * Generated from fi.espoo.evaka.application.PlacementToolController.getNextPreschoolTerm
 */
 export async function getNextPreschoolTerm(): Promise<PreschoolTerm[]> {
@@ -403,6 +434,33 @@ export async function getNextPreschoolTerm(): Promise<PreschoolTerm[]> {
     method: 'GET'
   })
   return json.map(e => deserializeJsonPreschoolTerm(e))
+}
+
+
+/**
+* Generated from fi.espoo.evaka.application.PlacementToolController.validatePlacementToolApplications
+*/
+export async function validatePlacementToolApplications(
+  request: {
+    file: File
+  },
+  options?: {
+    onUploadProgress?: (event: AxiosProgressEvent) => void
+  }
+): Promise<PlacementToolValidation> {
+  const data = createFormData(
+    ['file', request.file]
+  )
+  const { data: json } = await client.request<JsonOf<PlacementToolValidation>>({
+    url: uri`/employee/placement-tool/validation`.toString(),
+    method: 'POST',
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    },
+    onUploadProgress: options?.onUploadProgress,
+    data
+  })
+  return json
 }
 
 
