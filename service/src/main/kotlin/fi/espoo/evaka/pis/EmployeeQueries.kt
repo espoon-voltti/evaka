@@ -563,7 +563,7 @@ fun Database.Transaction.deactivateInactiveEmployees(now: HelsinkiDateTime): Lis
     LEFT JOIN daycare_group_acl dg ON dg.employee_id = e.id
     WHERE (
         SELECT max(ts)
-        FROM unnest(ARRAY[e.last_login, d.updated, dg.updated]) ts
+        FROM unnest(ARRAY[coalesce(e.last_login, '-infinity'), d.updated, dg.updated]) ts
     ) < ${bind(now)} - interval '56 days'
     AND e.active = true
 """

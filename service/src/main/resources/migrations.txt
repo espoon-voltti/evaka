@@ -499,3 +499,4 @@ V500__create_trigger.sql
 V501__aromi_customer_id.sql
 V502__income_statement_gross_no_income.sql
 V503__nekku_customer.sql
+V504__nullable_last_login.sql

@@ -1,0 +1,2 @@
+ALTER TABLE employee ALTER COLUMN last_login DROP NOT NULL;
+ALTER TABLE employee ALTER COLUMN last_login DROP DEFAULT ;
