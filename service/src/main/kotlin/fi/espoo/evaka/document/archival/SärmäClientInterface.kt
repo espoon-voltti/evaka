@@ -9,6 +9,7 @@ import fi.espoo.evaka.s3.Document
 interface SärmäClientInterface {
     fun putDocument(
         documentContent: Document,
+        metadataXml: String,
         masterId: String,
         classId: String,
         virtualArchiveId: String,
