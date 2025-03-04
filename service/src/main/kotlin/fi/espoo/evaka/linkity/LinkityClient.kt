@@ -12,11 +12,15 @@ import fi.espoo.evaka.varda.ensureTrailingSlash
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Duration
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
 
 interface LinkityClient {
     fun getShifts(period: FiniteDateRange): List<Shift>
+
+    fun postWorkLogs(workLogs: Collection<WorkLog>)
 }
 
 class LinkityHttpClient(private val env: LinkityEnv, private val jsonMapper: JsonMapper) :
@@ -55,6 +59,36 @@ class LinkityHttpClient(private val env: LinkityEnv, private val jsonMapper: Jso
                 ?: throw IllegalStateException(
                     "Failed to fetch shifts from Linkity: empty response"
                 )
+        }
+    }
+
+    override fun postWorkLogs(workLogs: Collection<WorkLog>) {
+        val url =
+            env.url
+                .ensureTrailingSlash()
+                .resolve("v1/worklogs")
+                .toHttpUrlOrNull()
+                ?.newBuilder()
+                ?.build() ?: throw IllegalArgumentException("Invalid Linkity URL")
+
+        logger.debug { "Posting work logs to Linkity URL: $url" }
+
+        val req =
+            Request.Builder()
+                .url(url)
+                .post(
+                    jsonMapper
+                        .writeValueAsString(workLogs)
+                        .toRequestBody("application/json".toMediaType())
+                )
+                .build()
+
+        return httpClient.newCall(req).execute().use { response ->
+            if (!response.isSuccessful) {
+                throw IllegalStateException(
+                    "Failed to send work logs to Linkity. Status: ${response.code}"
+                )
+            }
         }
     }
 }

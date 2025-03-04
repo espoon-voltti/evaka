@@ -6,11 +6,22 @@ package fi.espoo.evaka.linkity
 
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 
-class MockLinkityClient(private val shifts: List<Shift>) : LinkityClient {
+class MockLinkityClient(private val shifts: List<Shift> = emptyList()) : LinkityClient {
+    private val workLogs: MutableList<WorkLog> = mutableListOf()
+
     override fun getShifts(period: FiniteDateRange): List<Shift> {
         return shifts.filter {
-            it.startDateTime.toLocalDate() <= period.end &&
-                it.endDateTime.toLocalDate() >= period.start
+            it.startDateTime.toLocalDate() >= period.start &&
+                it.startDateTime.toLocalDate() <= period.end
         }
+    }
+
+    override fun postWorkLogs(workLogs: Collection<WorkLog>) {
+        this.workLogs.clear()
+        this.workLogs.addAll(workLogs)
+    }
+
+    fun getPreviouslyPostedWorkLogs(): List<WorkLog> {
+        return workLogs.toList()
     }
 }
