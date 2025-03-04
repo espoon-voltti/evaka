@@ -117,12 +117,10 @@ export default React.memo(
         startDate: formData.startDate,
         endDate: formData.endDate,
         highestFeeSelected: formData.highestFee,
-        grossSelected: formData.gross.selected,
-        entrepreneurSelected: formData.entrepreneur.selected
+        grossSelected: formData.gross.selected
       }),
       [
         formData.endDate,
-        formData.entrepreneur.selected,
         formData.gross.selected,
         formData.highestFee,
         formData.startDate
@@ -139,29 +137,34 @@ export default React.memo(
     )
 
     const onSelectIncomeType = useCallback(
-      (incomeType: 'highestFee' | 'gross' | 'entrepreneur', value: boolean) =>
+      (incomeType: 'highestFee' | 'gross') =>
         onChange((prev) =>
           incomeType === 'highestFee'
             ? {
                 ...prev,
-                highestFee: value,
+                highestFee: true,
                 gross: { ...prev.gross, selected: false },
                 entrepreneur: { ...prev.entrepreneur, selected: false }
               }
             : incomeType === 'gross'
               ? {
                   ...prev,
-                  gross: { ...prev.gross, selected: value }
+                  highestFee: false,
+                  gross: { ...prev.gross, selected: true }
                 }
-              : incomeType === 'entrepreneur'
-                ? {
-                    ...prev,
-                    entrepreneur: { ...prev.entrepreneur, selected: value }
-                  }
-                : (() => {
-                    throw new Error('not reached')
-                  })()
+              : (() => {
+                  throw new Error('not reached')
+                })()
         ),
+      [onChange]
+    )
+
+    const onSelectEntrepreneur = useCallback(
+      (value: boolean) =>
+        onChange((prev) => ({
+          ...prev,
+          entrepreneur: { ...prev.entrepreneur, selected: value }
+        })),
       [onChange]
     )
 
@@ -226,6 +229,8 @@ export default React.memo(
                 formData={formData.gross}
                 showFormErrors={showFormErrors}
                 onChange={onGrossChange}
+                entrepreneurSelected={formData.entrepreneur.selected}
+                onSelectEntrepreneur={onSelectEntrepreneur}
                 attachmentHandler={attachmentHandler}
               />
             </>
@@ -328,16 +333,10 @@ export default React.memo(
 )
 
 function useSelectIncomeType(
-  onSelect: (
-    incomeType: 'highestFee' | 'gross' | 'entrepreneur',
-    value: boolean
-  ) => void,
-  incomeType: 'highestFee' | 'gross' | 'entrepreneur'
+  onSelect: (incomeType: 'highestFee' | 'gross') => void,
+  incomeType: 'highestFee' | 'gross'
 ) {
-  return useCallback(
-    (value: boolean) => onSelect(incomeType, value),
-    [onSelect, incomeType]
-  )
+  return useCallback(() => onSelect(incomeType), [onSelect, incomeType])
 }
 
 interface IncomeTypeSelectionData {
@@ -345,7 +344,6 @@ interface IncomeTypeSelectionData {
   endDate: LocalDate | null
   highestFeeSelected: boolean
   grossSelected: boolean
-  entrepreneurSelected: boolean
 }
 
 const IncomeTypeSelection = React.memo(
@@ -361,10 +359,7 @@ const IncomeTypeSelection = React.memo(
       isValidStartDate: (date: LocalDate) => boolean
       showFormErrors: boolean
       onChange: SetStateCallback<Form.IncomeStatementForm>
-      onSelect: (
-        incomeType: 'highestFee' | 'gross' | 'entrepreneur',
-        value: boolean
-      ) => void
+      onSelect: (incomeType: 'highestFee' | 'gross') => void
     },
     ref: React.ForwardedRef<HTMLElement>
   ) {
@@ -375,7 +370,6 @@ const IncomeTypeSelection = React.memo(
     const onEndDateChange = useFieldDispatch(onChange, 'endDate')
     const onSelectHighestFee = useSelectIncomeType(onSelect, 'highestFee')
     const onSelectGross = useSelectIncomeType(onSelect, 'gross')
-    const onSelectEntrepreneur = useSelectIncomeType(onSelect, 'entrepreneur')
 
     const startDateInputInfo = useMemo(
       () =>
@@ -392,24 +386,13 @@ const IncomeTypeSelection = React.memo(
       [formData.startDate, t]
     )
 
-    const isEndDateRequired = useMemo(
-      () => formData.grossSelected || formData.entrepreneurSelected,
-      [formData.grossSelected, formData.entrepreneurSelected]
-    )
-
+    const isEndDateRequired = formData.grossSelected
     const invalidDateRange = useMemo(
       () =>
-        (formData.grossSelected || formData.entrepreneurSelected) &&
-        formData.endDate &&
-        formData.startDate
+        isEndDateRequired && formData.endDate && formData.startDate
           ? formData.endDate > formData.startDate.addYears(1)
           : false,
-      [
-        formData.grossSelected,
-        formData.entrepreneurSelected,
-        formData.startDate,
-        formData.endDate
-      ]
+      [isEndDateRequired, formData.startDate, formData.endDate]
     )
 
     const validateEndDate = useCallback(
@@ -510,7 +493,7 @@ const IncomeTypeSelection = React.memo(
           <Gap size="s" />
           <P noMargin>{t.income.incomeType.description}</P>
           <Gap size="s" />
-          <Checkbox
+          <Radio
             label={t.income.incomeType.agreeToHighestFee}
             data-qa="highest-fee-checkbox"
             checked={formData.highestFeeSelected}
@@ -525,20 +508,11 @@ const IncomeTypeSelection = React.memo(
             </>
           )}
           <Gap size="s" />
-          <Checkbox
+          <Radio
             label={t.income.incomeType.grossIncome}
             checked={formData.grossSelected}
             data-qa="gross-income-checkbox"
-            disabled={formData.highestFeeSelected}
             onChange={onSelectGross}
-          />
-          <Gap size="s" />
-          <Checkbox
-            label={t.income.incomeType.entrepreneurIncome}
-            checked={formData.entrepreneurSelected}
-            data-qa="entrepreneur-income-checkbox"
-            disabled={formData.highestFeeSelected}
-            onChange={onSelectEntrepreneur}
           />
         </FixedSpaceColumn>
       </ContentArea>
@@ -550,11 +524,15 @@ const GrossIncomeSelection = React.memo(function GrossIncomeSelection({
   formData,
   showFormErrors,
   onChange,
+  entrepreneurSelected,
+  onSelectEntrepreneur,
   attachmentHandler
 }: {
   formData: Form.Gross
   showFormErrors: boolean
   onChange: SetStateCallback<Form.Gross>
+  entrepreneurSelected: boolean | null
+  onSelectEntrepreneur: (value: boolean) => void
   attachmentHandler: AttachmentHandler | undefined
 }) {
   const t = useTranslation()
@@ -570,6 +548,15 @@ const GrossIncomeSelection = React.memo(function GrossIncomeSelection({
   )
   const onOtherIncomeChange = useFieldDispatch(onChange, 'otherIncome')
   const onOtherIncomeInfoChange = useFieldDispatch(onChange, 'otherIncomeInfo')
+
+  const entrepreneurYes = useCallback(
+    () => onSelectEntrepreneur(true),
+    [onSelectEntrepreneur]
+  )
+  const entrepreneurNo = useCallback(
+    () => onSelectEntrepreneur(false),
+    [onSelectEntrepreneur]
+  )
 
   return (
     <ContentArea opaque paddingVertical="L">
@@ -707,6 +694,24 @@ const GrossIncomeSelection = React.memo(function GrossIncomeSelection({
             )}
           </>
         )}
+        <Gap size="L" />
+        <LabelWithError
+          label={`${t.income.entrepreneurIncome.entrepreneurSelectTitle} *`}
+          showError={showFormErrors && entrepreneurSelected === null}
+          errorText={t.income.errors.choose}
+        />
+        <Gap size="s" />
+        <Radio
+          label={t.income.entrepreneurIncome.entrepreneurYes}
+          checked={entrepreneurSelected === true}
+          onChange={entrepreneurYes}
+        />
+        <Gap size="s" />
+        <Radio
+          label={t.income.entrepreneurIncome.entrepreneurNo}
+          checked={entrepreneurSelected === false}
+          onChange={entrepreneurNo}
+        />
       </FixedSpaceColumn>
     </ContentArea>
   )

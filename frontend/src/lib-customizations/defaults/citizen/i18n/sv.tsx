@@ -2309,8 +2309,7 @@ const sv: Translations = {
         'Jag samtycker till den högsta avgiften för småbarnspedagogik',
       highestFeeInfo:
         'Jag samtycker till att betala den högsta avgiften för småbarnspedagogik som gäller till vidare enligt vid den aktuella tidpunkten gällande lagen om klientavgifter och stadsstyrelsens beslut, tills jag meddelar något annat eller tills mitt barns småbarnspedagogik upphör. (Inkomstuppgifterna behöver inte lämnas in)',
-      grossIncome: 'Fastställande av avgiften enligt bruttoinkomster',
-      entrepreneurIncome: 'Uppgifter om företagarens inkomster'
+      grossIncome: 'Fastställande av avgiften enligt bruttoinkomster'
     },
     childIncome: {
       childAttachments: 'Information om barnets inkomster bifogas *',
@@ -2383,6 +2382,9 @@ const sv: Translations = {
         'Skriv här uppskattningar av andra inkomster per månad, t.ex. "Hyresinkomster 150, vårdpenning 300"'
     },
     entrepreneurIncome: {
+      entrepreneurSelectTitle: 'Är du företagare?',
+      entrepreneurYes: 'Ja, jag är en heltids- eller deltidsföretagare',
+      entrepreneurNo: 'Nej, jag är inte företagare',
       title: 'Att fylla i företagarens inkomstuppgifter',
       description:
         'Med denna blankett kan du vid behov fylla i uppgifterna för flera företag genom att välja de punkter som gäller alla dina företag.',
