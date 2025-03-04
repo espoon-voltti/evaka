@@ -84,43 +84,6 @@ WHERE cd.id = ${bind(id)}
         .exactlyOneOrNull<ChildDocumentDetails>()
 }
 
-fun Database.Read.getChildDocumentWithSsn(id: ChildDocumentId): ChildDocumentDetailsWithSsn? {
-    return createQuery {
-            sql(
-                """
-SELECT 
-    cd.id,
-    cd.status,
-    cd.published_at,
-    cd.archived_at,
-    cd.document_key IS NOT NULL AS pdf_available,
-    cd.content,
-    cd.published_content,
-    p.id as child_id,
-    p.first_name as child_first_name,
-    p.last_name as child_last_name,
-    p.date_of_birth as child_date_of_birth,
-    p.social_security_number as child_social_security_number,
-    dt.id as template_id,
-    dt.name as template_name,
-    dt.type as template_type,
-    dt.placement_types as template_placement_types,
-    dt.language as template_language,
-    dt.legal_basis as template_legal_basis,
-    dt.confidential as template_confidential,
-    dt.validity as template_validity,
-    dt.published as template_published,
-    dt.content as template_content
-FROM child_document cd
-JOIN document_template dt on cd.template_id = dt.id
-JOIN person p on cd.child_id = p.id
-WHERE cd.id = ${bind(id)}
-"""
-            )
-        }
-        .exactlyOneOrNull<ChildDocumentDetailsWithSsn>()
-}
-
 fun Database.Read.getChildDocumentKey(id: ChildDocumentId): String? {
     return createQuery {
             sql(

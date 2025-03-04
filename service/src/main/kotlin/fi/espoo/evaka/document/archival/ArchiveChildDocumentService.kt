@@ -4,7 +4,10 @@
 
 package fi.espoo.evaka.document.archival
 
+import fi.espoo.evaka.document.DocumentType
 import fi.espoo.evaka.document.childdocument.*
+import fi.espoo.evaka.identity.ExternalIdentifier
+import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.process.*
 import fi.espoo.evaka.s3.DocumentKey
 import fi.espoo.evaka.s3.DocumentService
@@ -69,10 +72,11 @@ class ArchiveChildDocumentService(
         }
 
         internal fun createDocumentMetadata(
-            document: ChildDocumentDetailsWithSsn,
+            document: ChildDocumentDetails,
             documentMetadata: ProcessMetadataController.DocumentMetadata,
             archivedProcess: ArchivedProcess?,
             filename: String,
+            childIdentifier: ExternalIdentifier,
         ): RecordMetadataInstance {
 
             // TODO TOS numero + vuosi koodi täytyis laittaa johonkin
@@ -112,7 +116,10 @@ class ArchiveChildDocumentService(
                                 // Child's information
                                 firstName = document.child.firstName
                                 lastName = document.child.lastName
-                                socialSecurityNumber = document.child.socialSecurityNumber
+                                socialSecurityNumber =
+                                    if (childIdentifier is ExternalIdentifier.SSN)
+                                        childIdentifier.ssn
+                                    else null
                                 // TODO add birthDate once schema field is known
                                 // birthDate?.let { birthDate = it.toString() }
                                 agents =
@@ -248,8 +255,28 @@ class ArchiveChildDocumentService(
 
         val document =
             db.read { tx ->
-                tx.getChildDocumentWithSsn(documentId)
-                    ?: throw NotFound("document $documentId not found")
+                tx.getChildDocument(documentId) ?: throw NotFound("document $documentId not found")
+            }
+        if (
+            document.template.type !in
+                setOf(
+                    DocumentType.VASU,
+                    DocumentType.LEOPS,
+                    DocumentType.HOJKS,
+                    DocumentType.MIGRATED_VASU,
+                    DocumentType.MIGRATED_LEOPS,
+                )
+        ) {
+            logger.warn {
+                "Refusing to archive non-supported document type ${document.template.type} with id $documentId"
+            }
+            return
+        }
+        val childInfo =
+            db.read { tx ->
+                val childId = document.child.id
+                tx.getPersonById(childId)
+                    ?: throw IllegalStateException("No person found with $childId")
             }
         val archivedProcess = db.read { tx -> tx.getArchiveProcessByChildDocumentId(documentId) }
         val documentMetadata = db.read { tx -> tx.getChildDocumentMetadata(documentId) }
@@ -278,6 +305,7 @@ class ArchiveChildDocumentService(
                 documentMetadata,
                 archivedProcess,
                 Paths.get(documentContent.name).fileName.toString(),
+                childInfo.identity,
             )
         val metadataXml = marshalMetadata(metadata)
         logger.info { "Generated metadata XML: $metadataXml" }
