@@ -113,6 +113,9 @@ data class FeatureConfig(
     /** Name of the message sender when sending messages on the service worker message account */
     val serviceWorkerMessageAccountName: String,
 
+    /** Name of the message sender when sending messages on the finance message account */
+    val financeMessageAccountName: String,
+
     /**
      * true = placement unit is resolved from decision when it's accepted, false = placement unit is
      * resolved from placement plan

@@ -365,6 +365,7 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
                     recipientNames = listOf("recipient name"),
                     municipalAccountName = "Espoo",
                     serviceWorkerAccountName = "Espoon palveluohjaus",
+                    financeAccountName = "Espoon asiakasmaksut",
                 )
             tx.insertRecipients(listOf(messageId to setOf(personAccount)))
         }
@@ -404,6 +405,7 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
                     recipientNames = listOf("employee name"),
                     municipalAccountName = "Espoo",
                     serviceWorkerAccountName = "Espoon palveluohjaus",
+                    financeAccountName = "Espoon asiakasmaksut",
                 )
             tx.insertRecipients(listOf(messageId to setOf(employeeAccount)))
         }
