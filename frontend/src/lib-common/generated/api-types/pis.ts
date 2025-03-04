@@ -252,7 +252,7 @@ export interface EmployeeWithDaycareRoles {
   globalRoles: UserRole[]
   hasSsn: boolean
   id: EmployeeId
-  lastLogin: HelsinkiDateTime
+  lastLogin: HelsinkiDateTime | null
   lastName: string
   personalMobileDevices: MobileDevice[]
   scheduledDaycareRoles: ScheduledDaycareRole[]
@@ -811,7 +811,7 @@ export function deserializeJsonEmployeeWithDaycareRoles(json: JsonOf<EmployeeWit
     ...json,
     created: HelsinkiDateTime.parseIso(json.created),
     daycareRoles: json.daycareRoles.map(e => deserializeJsonDaycareRole(e)),
-    lastLogin: HelsinkiDateTime.parseIso(json.lastLogin),
+    lastLogin: (json.lastLogin != null) ? HelsinkiDateTime.parseIso(json.lastLogin) : null,
     scheduledDaycareRoles: json.scheduledDaycareRoles.map(e => deserializeJsonScheduledDaycareRole(e)),
     updated: (json.updated != null) ? HelsinkiDateTime.parseIso(json.updated) : null
   }

@@ -78,7 +78,7 @@ data class EmployeeWithDaycareRoles(
     val employeeNumber: String?,
     val created: HelsinkiDateTime,
     val updated: HelsinkiDateTime?,
-    val lastLogin: HelsinkiDateTime,
+    val lastLogin: HelsinkiDateTime?,
     val firstName: String,
     val lastName: String,
     val email: String?,

@@ -125,7 +125,7 @@ export function EmployeeList({ employees }: Props) {
             ))}
           </ExpandableList>
         </Td>
-        <Td>{lastLogin.format()}</Td>
+        <Td>{lastLogin?.format() ?? '-'}</Td>
         <Td>
           {active ? (
             <ConfirmedMutation
