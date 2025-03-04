@@ -8,6 +8,7 @@ import config from '../../config'
 import { Fixture, testAdult } from '../../dev-api/fixtures'
 import {
   createFinanceNotes,
+  createMessageAccounts,
   resetServiceState
 } from '../../generated/api-clients'
 import GuardianInformationPage from '../../pages/employee/guardian-information'
@@ -21,6 +22,7 @@ beforeEach(async () => {
   await resetServiceState()
   await Fixture.person(testAdult).saveAdult()
   const financeAdmin = await Fixture.employee().financeAdmin().save()
+  await createMessageAccounts()
 
   page = await Page.open({})
   await employeeLogin(page, financeAdmin)

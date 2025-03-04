@@ -6,7 +6,8 @@ import { PersonId } from 'lib-common/generated/api-types/shared'
 import { Queries } from 'lib-common/query'
 
 import {
-  archiveThread, createMessage,
+  archiveThread,
+  createMessage,
   createMessagePreflightCheck,
   deleteDraftMessage,
   getFinanceMessagesWithPerson,
