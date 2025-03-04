@@ -8,6 +8,7 @@ import fi.espoo.evaka.document.*
 import fi.espoo.evaka.document.archival.ArchiveChildDocumentService.Companion.createDocumentMetadata
 import fi.espoo.evaka.document.archival.ArchiveChildDocumentService.Companion.marshalMetadata
 import fi.espoo.evaka.document.childdocument.*
+import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.process.ArchivedProcess
 import fi.espoo.evaka.process.ArchivedProcessHistoryRow
@@ -90,7 +91,7 @@ class ArchiveChildDocumentServiceTest {
     @Test
     fun `createDocumentMetadata creates correct metadata for document`() {
         val document =
-            ChildDocumentDetailsWithSsn(
+            ChildDocumentDetails(
                 id = documentId,
                 status = DocumentStatus.COMPLETED,
                 publishedAt = HelsinkiDateTime.of(LocalDateTime.parse("2023-02-01T12:10:00")),
@@ -117,12 +118,11 @@ class ArchiveChildDocumentServiceTest {
                             )
                     ),
                 child =
-                    ChildBasicsWithSsn(
+                    ChildBasics(
                         id = childId,
                         firstName = "Kaarina Veera Nelli",
                         lastName = "Karhula",
                         dateOfBirth = LocalDate.parse("2016-06-06"),
-                        socialSecurityNumber = "160616A978U",
                     ),
                 template =
                     DocumentTemplate(
@@ -216,7 +216,14 @@ class ArchiveChildDocumentServiceTest {
 
         val filename = "child_document_c3cc95f8-f045-11ef-9114-87ea771c5c89.pdf"
 
-        val metadata = createDocumentMetadata(document, documentMetadata, archivedProcess, filename)
+        val metadata =
+            createDocumentMetadata(
+                document,
+                documentMetadata,
+                archivedProcess,
+                filename,
+                ExternalIdentifier.SSN.getInstance("160616A978U"),
+            )
 
         val metadataXml = marshalMetadata(metadata)
 
