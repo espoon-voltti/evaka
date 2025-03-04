@@ -96,7 +96,7 @@ class IncomeStatementControllerCitizenIntegrationTest :
                 startDate = LocalDate.of(2021, 4, 3),
                 endDate = LocalDate.of(2021, 8, 9),
                 gross =
-                    Gross(
+                    Gross.Income(
                         incomeSource = IncomeSource.INCOMES_REGISTER,
                         estimatedMonthlyIncome = 500,
                         otherIncome = setOf(OtherIncome.ALIMONY, OtherIncome.RENTAL_INCOME),
@@ -150,7 +150,7 @@ class IncomeStatementControllerCitizenIntegrationTest :
                     startDate = LocalDate.of(2021, 4, 3),
                     endDate = LocalDate.of(2021, 8, 9),
                     gross =
-                        Gross(
+                        Gross.Income(
                             incomeSource = IncomeSource.INCOMES_REGISTER,
                             estimatedMonthlyIncome = 500,
                             otherIncome = setOf(OtherIncome.ALIMONY, OtherIncome.RENTAL_INCOME),
@@ -279,7 +279,7 @@ class IncomeStatementControllerCitizenIntegrationTest :
                     startDate = LocalDate.of(2021, 4, 3),
                     endDate = LocalDate.of(2021, 4, 2),
                     gross =
-                        Gross(
+                        Gross.Income(
                             incomeSource = IncomeSource.INCOMES_REGISTER,
                             estimatedMonthlyIncome = 1500,
                             otherIncome = setOf(),
@@ -399,7 +399,7 @@ class IncomeStatementControllerCitizenIntegrationTest :
                 startDate = LocalDate.of(2021, 4, 3),
                 endDate = LocalDate.of(2022, 4, 1),
                 gross =
-                    Gross(
+                    Gross.Income(
                         incomeSource = IncomeSource.ATTACHMENTS,
                         estimatedMonthlyIncome = 1500,
                         otherIncome = setOf(),
@@ -424,7 +424,7 @@ class IncomeStatementControllerCitizenIntegrationTest :
                     startDate = LocalDate.of(2021, 4, 3),
                     endDate = LocalDate.of(2022, 4, 1),
                     gross =
-                        Gross(
+                        Gross.Income(
                             incomeSource = IncomeSource.ATTACHMENTS,
                             estimatedMonthlyIncome = 1500,
                             otherIncome = setOf(),
@@ -463,7 +463,7 @@ class IncomeStatementControllerCitizenIntegrationTest :
                 startDate = LocalDate.of(2021, 4, 3),
                 endDate = LocalDate.of(2022, 4, 1),
                 gross =
-                    Gross(
+                    Gross.Income(
                         incomeSource = IncomeSource.ATTACHMENTS,
                         estimatedMonthlyIncome = 1500,
                         otherIncome = setOf(),
@@ -537,7 +537,7 @@ class IncomeStatementControllerCitizenIntegrationTest :
                     startDate = LocalDate.of(2021, 4, 3),
                     endDate = null,
                     gross =
-                        Gross(
+                        Gross.Income(
                             incomeSource = IncomeSource.ATTACHMENTS,
                             estimatedMonthlyIncome = 1500,
                             otherIncome = setOf(),
@@ -564,7 +564,7 @@ class IncomeStatementControllerCitizenIntegrationTest :
                     startDate = LocalDate.of(2021, 4, 3),
                     endDate = null,
                     gross =
-                        Gross(
+                        Gross.Income(
                             incomeSource = IncomeSource.ATTACHMENTS,
                             estimatedMonthlyIncome = 1500,
                             otherIncome = setOf(),
@@ -591,7 +591,7 @@ class IncomeStatementControllerCitizenIntegrationTest :
                 startDate = LocalDate.of(2021, 4, 3),
                 endDate = LocalDate.of(2021, 8, 9),
                 gross =
-                    Gross(
+                    Gross.Income(
                         incomeSource = IncomeSource.INCOMES_REGISTER,
                         estimatedMonthlyIncome = 500,
                         otherIncome = setOf(OtherIncome.ALIMONY, OtherIncome.RENTAL_INCOME),
@@ -643,7 +643,7 @@ class IncomeStatementControllerCitizenIntegrationTest :
             IncomeStatementBody.Income(
                 startDate = LocalDate.of(2021, 6, 11),
                 endDate = LocalDate.of(2022, 6, 1),
-                gross = null,
+                gross = Gross.NoIncome(noIncomeDescription = "this is a test"),
                 entrepreneur =
                     Entrepreneur(
                         fullTime = false,
@@ -684,7 +684,7 @@ class IncomeStatementControllerCitizenIntegrationTest :
                 lastName = testAdult_1.lastName,
                 startDate = LocalDate.of(2021, 6, 11),
                 endDate = LocalDate.of(2022, 6, 1),
-                gross = null,
+                gross = Gross.NoIncome(noIncomeDescription = "this is a test"),
                 entrepreneur =
                     Entrepreneur(
                         fullTime = false,
@@ -859,7 +859,7 @@ WHERE id = ${bind(id)}
                 startDate = LocalDate.of(2021, 4, 3),
                 endDate = LocalDate.of(2021, 8, 9),
                 gross =
-                    Gross(
+                    Gross.Income(
                         incomeSource = IncomeSource.INCOMES_REGISTER,
                         estimatedMonthlyIncome = 500,
                         otherIncome = setOf(OtherIncome.ALIMONY, OtherIncome.RENTAL_INCOME),

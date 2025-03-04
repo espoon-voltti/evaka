@@ -60,15 +60,33 @@ export interface EstimatedIncome {
   incomeStartDate: LocalDate
 }
 
+
+export namespace Gross {
+  /**
+  * Generated from fi.espoo.evaka.incomestatement.Gross.Income
+  */
+  export interface Income {
+    type: 'INCOME'
+    estimatedMonthlyIncome: number
+    incomeSource: IncomeSource
+    otherIncome: OtherIncome[]
+    otherIncomeInfo: string
+  }
+
+  /**
+  * Generated from fi.espoo.evaka.incomestatement.Gross.NoIncome
+  */
+  export interface NoIncome {
+    type: 'NO_INCOME'
+    noIncomeDescription: string
+  }
+}
+
 /**
 * Generated from fi.espoo.evaka.incomestatement.Gross
 */
-export interface Gross {
-  estimatedMonthlyIncome: number
-  incomeSource: IncomeSource
-  otherIncome: OtherIncome[]
-  otherIncomeInfo: string
-}
+export type Gross = Gross.Income | Gross.NoIncome
+
 
 /**
 * Generated from fi.espoo.evaka.incomestatement.IncomeSource

@@ -56,12 +56,18 @@ enum class IncomeSource : DatabaseEnum {
     override val sqlType: String = "income_source"
 }
 
-data class Gross(
-    val incomeSource: IncomeSource,
-    val estimatedMonthlyIncome: Int,
-    val otherIncome: Set<OtherIncome>,
-    val otherIncomeInfo: String,
-)
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
+sealed interface Gross {
+    @JsonTypeName("INCOME")
+    data class Income(
+        val incomeSource: IncomeSource,
+        val estimatedMonthlyIncome: Int,
+        val otherIncome: Set<OtherIncome>,
+        val otherIncomeInfo: String,
+    ) : Gross
+
+    @JsonTypeName("NO_INCOME") data class NoIncome(val noIncomeDescription: String) : Gross
+}
 
 data class SelfEmployed(val attachments: Boolean, val estimatedIncome: EstimatedIncome?)
 
