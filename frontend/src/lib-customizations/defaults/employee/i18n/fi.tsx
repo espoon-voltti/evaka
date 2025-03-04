@@ -2046,9 +2046,6 @@ export const fi = {
     otherIncomeInfo: 'Arviot muista tuloista',
 
     entrepreneurTitle: 'Yrittäjän tulotiedot',
-    fullTimeLabel: 'Onko yritystoiminta päätoimista vai sivutoimista',
-    fullTime: 'Päätoimista',
-    partTime: 'Sivutoimista',
     startOfEntrepreneurship: 'Yrittäjyys alkanut',
     companyName: 'Yrityksen / yritysten nimi',
     businessId: 'Y-tunnus / Y-tunnukset',
