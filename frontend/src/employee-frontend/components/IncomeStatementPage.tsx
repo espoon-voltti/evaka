@@ -289,14 +289,6 @@ function EntrepreneurIncome({ entrepreneur }: { entrepreneur: Entrepreneur }) {
     <>
       <H2>{i18n.incomeStatement.entrepreneurTitle}</H2>
       <Row
-        label={i18n.incomeStatement.fullTimeLabel}
-        value={
-          entrepreneur.fullTime
-            ? i18n.incomeStatement.fullTime
-            : i18n.incomeStatement.partTime
-        }
-      />
-      <Row
         label={i18n.incomeStatement.startOfEntrepreneurship}
         value={entrepreneur.startOfEntrepreneurship.format()}
       />

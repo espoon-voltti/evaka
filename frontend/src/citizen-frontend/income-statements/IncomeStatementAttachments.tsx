@@ -384,11 +384,13 @@ export const CitizenAttachmentsWithUpload = React.memo(
     incomeStatementId,
     requiredAttachments,
     incomeStatementAttachments,
+    alwaysIncludeOther = true,
     onChange
   }: {
     incomeStatementId: IncomeStatementId
     requiredAttachments: Set<IncomeStatementAttachmentType>
     incomeStatementAttachments: IncomeStatementAttachments
+    alwaysIncludeOther?: boolean
     onChange: SetStateCallback<IncomeStatementAttachments>
   }) {
     const t = useTranslation()
@@ -415,7 +417,7 @@ export const CitizenAttachmentsWithUpload = React.memo(
       <>
         {incomeStatementAttachmentTypes.map((attachmentType) =>
           requiredAttachments.has(attachmentType) ||
-          attachmentType === 'OTHER' ? (
+          (alwaysIncludeOther && attachmentType === 'OTHER') ? (
             <AttachmentSection
               key={attachmentType}
               attachmentType={attachmentType}
