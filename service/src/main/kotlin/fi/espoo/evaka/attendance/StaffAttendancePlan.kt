@@ -1,10 +1,9 @@
-// SPDX-FileCopyrightText: 2021-2022 City of Tampere
+// SPDX-FileCopyrightText: 2017-2025 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-package fi.espoo.evaka.titania
+package fi.espoo.evaka.attendance
 
-import fi.espoo.evaka.attendance.StaffAttendanceType
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.Duration
