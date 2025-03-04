@@ -20,6 +20,6 @@ export function getAttachment(
   }
 ): { url: Uri } {
   return {
-    url: uri`${client.defaults.baseURL ?? ''}/employee-mobile/attachments/${request.attachmentId}/download/${request.requestedFilename}`
+    url: uri`/employee-mobile/attachments/${request.attachmentId}/download/${request.requestedFilename}`.withBaseUrl(client.defaults.baseURL ?? '')
   }
 }

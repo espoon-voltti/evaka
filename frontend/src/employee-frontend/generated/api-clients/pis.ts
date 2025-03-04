@@ -813,7 +813,7 @@ export function getAddressPagePdf(
   }
 ): { url: Uri } {
   return {
-    url: uri`${client.defaults.baseURL ?? ''}/employee/person/${request.guardianId}/address-page/download`
+    url: uri`/employee/person/${request.guardianId}/address-page/download`.withBaseUrl(client.defaults.baseURL ?? '')
   }
 }
 

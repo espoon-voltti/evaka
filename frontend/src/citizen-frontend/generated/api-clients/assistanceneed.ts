@@ -46,7 +46,7 @@ export function getAssistanceNeedDecisionPdf(
   }
 ): { url: Uri } {
   return {
-    url: uri`${client.defaults.baseURL ?? ''}/citizen/children/assistance-need-decision/${request.id}/pdf`
+    url: uri`/citizen/children/assistance-need-decision/${request.id}/pdf`.withBaseUrl(client.defaults.baseURL ?? '')
   }
 }
 
@@ -116,7 +116,7 @@ export function getAssistanceNeedPreschoolDecisionPdf(
   }
 ): { url: Uri } {
   return {
-    url: uri`${client.defaults.baseURL ?? ''}/citizen/children/assistance-need-preschool-decisions/${request.id}/pdf`
+    url: uri`/citizen/children/assistance-need-preschool-decisions/${request.id}/pdf`.withBaseUrl(client.defaults.baseURL ?? '')
   }
 }
 

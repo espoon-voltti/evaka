@@ -44,7 +44,7 @@ export function getAttachment(
   }
 ): { url: Uri } {
   return {
-    url: uri`${client.defaults.baseURL ?? ''}/citizen/attachments/${request.attachmentId}/download/${request.requestedFilename}`
+    url: uri`/citizen/attachments/${request.attachmentId}/download/${request.requestedFilename}`.withBaseUrl(client.defaults.baseURL ?? '')
   }
 }
 

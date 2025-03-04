@@ -28,6 +28,6 @@ export function getMealOrders(
     ...(request.groupIds?.map((e): [string, string | null | undefined] => ['groupIds', e]) ?? [])
   )
   return {
-    url: uri`${client.defaults.baseURL ?? ''}/employee/aromi`.appendQuery(params)
+    url: uri`/employee/aromi`.withBaseUrl(client.defaults.baseURL ?? '').appendQuery(params)
   }
 }

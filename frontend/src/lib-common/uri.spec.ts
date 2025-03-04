@@ -47,4 +47,11 @@ describe('uri template', () => {
       )
     })
   })
+  describe('withBaseUrl', () => {
+    it('prepends the prefix without escapes', () => {
+      expect(uri`/foo/${'/'}/${'ö'}/${' '}`.withBaseUrl('/api').value).toBe(
+        '/api/foo/%2F/%C3%B6/%20'
+      )
+    })
+  })
 })

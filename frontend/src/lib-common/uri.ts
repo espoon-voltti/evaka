@@ -27,6 +27,10 @@ function* uriParts(
 class Uri {
   constructor(readonly value: string) {}
 
+  withBaseUrl(baseUrl: string): Uri {
+    return new Uri(`${baseUrl}${this.value}`)
+  }
+
   appendQuery(params: URLSearchParams): Uri {
     return params.size > 0 ? new Uri(`${this.value}?${params}`) : this
   }

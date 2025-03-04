@@ -293,7 +293,7 @@ export function downloadChildDocument(
   }
 ): { url: Uri } {
   return {
-    url: uri`${client.defaults.baseURL ?? ''}/employee/child-documents/${request.documentId}/pdf`
+    url: uri`/employee/child-documents/${request.documentId}/pdf`.withBaseUrl(client.defaults.baseURL ?? '')
   }
 }
 

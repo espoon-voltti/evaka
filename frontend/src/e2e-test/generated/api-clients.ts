@@ -1757,7 +1757,7 @@ export function getEmails(
     ['format', request.format?.toString()]
   )
   return {
-    url: uri`${devClient.defaults.baseURL ?? ''}/email-content`.appendQuery(params)
+    url: uri`/email-content`.withBaseUrl(devClient.defaults.baseURL ?? '').appendQuery(params)
   }
 }
 

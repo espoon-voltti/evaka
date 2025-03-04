@@ -215,7 +215,7 @@ export function getFeeDecisionPdf(
   }
 ): { url: Uri } {
   return {
-    url: uri`${client.defaults.baseURL ?? ''}/employee/fee-decisions/pdf/${request.decisionId}`
+    url: uri`/employee/fee-decisions/pdf/${request.decisionId}`.withBaseUrl(client.defaults.baseURL ?? '')
   }
 }
 
@@ -983,7 +983,7 @@ export function getVoucherValueDecisionPdf(
   }
 ): { url: Uri } {
   return {
-    url: uri`${client.defaults.baseURL ?? ''}/employee/value-decisions/pdf/${request.decisionId}`
+    url: uri`/employee/value-decisions/pdf/${request.decisionId}`.withBaseUrl(client.defaults.baseURL ?? '')
   }
 }
 

@@ -94,7 +94,7 @@ export function downloadDecisionPdf(
   }
 ): { url: Uri } {
   return {
-    url: uri`${client.defaults.baseURL ?? ''}/citizen/decisions/${request.id}/download`
+    url: uri`/citizen/decisions/${request.id}/download`.withBaseUrl(client.defaults.baseURL ?? '')
   }
 }
 
@@ -108,7 +108,7 @@ export function downloadFeeDecisionPdf(
   }
 ): { url: Uri } {
   return {
-    url: uri`${client.defaults.baseURL ?? ''}/citizen/fee-decisions/${request.id}/download`
+    url: uri`/citizen/fee-decisions/${request.id}/download`.withBaseUrl(client.defaults.baseURL ?? '')
   }
 }
 
@@ -122,7 +122,7 @@ export function downloadVoucherValueDecisionPdf(
   }
 ): { url: Uri } {
   return {
-    url: uri`${client.defaults.baseURL ?? ''}/citizen/voucher-value-decisions/${request.id}/download`
+    url: uri`/citizen/voucher-value-decisions/${request.id}/download`.withBaseUrl(client.defaults.baseURL ?? '')
   }
 }
 

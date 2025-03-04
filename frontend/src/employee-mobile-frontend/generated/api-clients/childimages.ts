@@ -39,7 +39,7 @@ export function getImage(
   }
 ): { url: Uri } {
   return {
-    url: uri`${client.defaults.baseURL ?? ''}/employee-mobile/child-images/${request.imageId}`
+    url: uri`/employee-mobile/child-images/${request.imageId}`.withBaseUrl(client.defaults.baseURL ?? '')
   }
 }
 
