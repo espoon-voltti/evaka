@@ -165,7 +165,7 @@ fun Database.Read.getHeadOfFamilyInvoices(headOfFamilyId: PersonId): List<Invoic
             sql(
                 """
 ${subquery(invoiceDetailedQuery(Predicate { where("$it.head_of_family = ${bind(headOfFamilyId)}") }))}
-ORDER BY invoice.id
+ORDER BY invoice.period_start DESC, invoice.revision_number DESC NULLS LAST
 """
             )
         }
