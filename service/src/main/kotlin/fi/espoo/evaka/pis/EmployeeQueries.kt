@@ -5,6 +5,7 @@
 package fi.espoo.evaka.pis
 
 import fi.espoo.evaka.Sensitive
+import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.identity.ExternalId
 import fi.espoo.evaka.identity.isValidSSN
 import fi.espoo.evaka.pairing.MobileDevice
@@ -20,7 +21,6 @@ import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
-import fi.espoo.evaka.shared.mapToPaged
 import java.time.LocalDate
 import org.jdbi.v3.json.Json
 
@@ -388,26 +388,35 @@ fun Database.Transaction.deleteEmployeeDaycareRoles(id: EmployeeId, daycareId: D
         .execute()
 }
 
-data class PagedEmployeesWithDaycareRoles(
-    val data: List<EmployeeWithDaycareRoles>,
-    val total: Int,
-    val pages: Int,
-)
-
-fun getEmployeesPaged(
+fun getEmployees(
     tx: Database.Read,
-    page: Int,
-    pageSize: Int,
     searchTerm: String = "",
     hideDeactivated: Boolean = false,
     globalRoles: Set<UserRole>?,
-): PagedEmployeesWithDaycareRoles {
-    val offset = (page - 1) * pageSize
+    unitRoles: Set<UserRole>?,
+    unitProviderTypes: Set<ProviderType>?,
+): List<EmployeeWithDaycareRoles> {
     val conditions =
         Predicate.allNotNull(
             if (searchTerm.isNotBlank()) employeeFreeTextSearchPredicate(searchTerm) else null,
             if (hideDeactivated) Predicate { where("$it.active = TRUE") } else null,
             if (globalRoles != null) Predicate { where("$it.roles && ${bind(globalRoles)}") }
+            else null,
+            if (unitRoles != null)
+                Predicate {
+                    where(
+                        """
+                            EXISTS (SELECT FROM daycare_acl
+                                    WHERE daycare_acl.employee_id = $it.id
+                                      AND daycare_acl.role = ANY (${bind(unitRoles)})
+                            ${if (unitProviderTypes != null) """
+                                AND EXISTS (SELECT FROM daycare
+                                            WHERE daycare.id = daycare_acl.daycare_id
+                                              AND daycare.provider_type = ANY (${bind(unitProviderTypes)}))"""
+                        else ""})"""
+                            .trimIndent()
+                    )
+                }
             else null,
         )
 
@@ -446,17 +455,15 @@ SELECT
         SELECT jsonb_agg(jsonb_build_object('id', md.id, 'name', md.name))
         FROM mobile_device md
         WHERE md.employee_id = employee.id
-    ) AS personal_mobile_devices,
-    count(*) OVER () AS count
+    ) AS personal_mobile_devices
 FROM employee
 LEFT JOIN daycare temp_unit ON temp_unit.id = employee.temporary_in_unit_id
 WHERE ${predicate(conditions.forTable("employee"))}
 ORDER BY last_name, first_name DESC
-LIMIT ${bind(pageSize)} OFFSET ${bind(offset)}
 """
             )
         }
-        .mapToPaged(::PagedEmployeesWithDaycareRoles, pageSize)
+        .toList<EmployeeWithDaycareRoles>()
 }
 
 fun Database.Transaction.deleteEmployee(employeeId: EmployeeId) =

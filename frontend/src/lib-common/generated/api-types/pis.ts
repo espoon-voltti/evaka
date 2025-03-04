@@ -28,6 +28,7 @@ import { ParentshipId } from './shared'
 import { PartnershipId } from './shared'
 import { PersonEmailVerificationId } from './shared'
 import { PersonId } from './shared'
+import { ProviderType } from './daycare'
 import { UserRole } from './shared'
 
 /**
@@ -424,15 +425,6 @@ export type Origin =
   | 'EVAKA'
 
 /**
-* Generated from fi.espoo.evaka.pis.PagedEmployeesWithDaycareRoles
-*/
-export interface PagedEmployeesWithDaycareRoles {
-  data: EmployeeWithDaycareRoles[]
-  pages: number
-  total: number
-}
-
-/**
 * Generated from fi.espoo.evaka.pis.service.Parentship
 */
 export interface Parentship {
@@ -709,8 +701,9 @@ export interface ScheduledDaycareRole {
 export interface SearchEmployeeRequest {
   globalRoles: UserRole[] | null
   hideDeactivated: boolean | null
-  page: number | null
   searchTerm: string | null
+  unitProviderTypes: ProviderType[] | null
+  unitRoles: UserRole[] | null
 }
 
 /**
@@ -858,14 +851,6 @@ export function deserializeJsonGuardiansResponse(json: JsonOf<GuardiansResponse>
     ...json,
     blockedGuardians: (json.blockedGuardians != null) ? json.blockedGuardians.map(e => deserializeJsonPersonJSON(e)) : null,
     guardians: json.guardians.map(e => deserializeJsonPersonJSON(e))
-  }
-}
-
-
-export function deserializeJsonPagedEmployeesWithDaycareRoles(json: JsonOf<PagedEmployeesWithDaycareRoles>): PagedEmployeesWithDaycareRoles {
-  return {
-    ...json,
-    data: json.data.map(e => deserializeJsonEmployeeWithDaycareRoles(e))
   }
 }
 
