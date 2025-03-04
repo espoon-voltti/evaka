@@ -340,6 +340,7 @@ enum class Audit(
     IncomeStatementUpdateHandled,
     IncomeStatementsAwaitingHandler,
     IncomeStatementsOfPerson,
+    IncomeStatementStatusOfPartner,
     IncomeStatementsOfChild,
     IncomeStatementStartDates,
     IncomeStatementStartDatesOfChild,

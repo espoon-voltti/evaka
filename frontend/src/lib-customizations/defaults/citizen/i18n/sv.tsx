@@ -2204,8 +2204,18 @@ const sv: Translations = {
             Avgifter inom småbarnspedagogik
           </a>
         </p>
+        <strong>Viktigt</strong>
+        <ul>
+          <li>
+            Avgiften baseras på inkomsten för alla vuxna som bor på samma
+            adress. Du och eventuell make/maka som bor på samma adress måste
+            anmäla era inkomster separat.
+          </li>
+        </ul>
       </>
     ),
+    partnerNoIncomeStatement: (partnerName: string) =>
+      `${partnerName} har inte återlämnat inkomstutredning. Underlåtenhet att göra det kan öka beloppet på den avgift du betalar.`,
     formTitle: 'Anmälan av inkomstuppgifter',
     formDescription: (
       <>
