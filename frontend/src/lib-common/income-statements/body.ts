@@ -110,6 +110,7 @@ function validateGross(formData: Form.Gross) {
 }
 
 function validateEntrepreneur(formData: Form.Entrepreneur, draft: boolean) {
+  if (formData.selected === null) return invalid
   if (!formData.selected) return null
 
   const {
