@@ -23,6 +23,7 @@ import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import { H3, H4 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { faCalendarAlt, faChevronLeft, faChevronRight } from 'lib-icons'
@@ -47,10 +48,6 @@ export type AttendanceGroupFilter =
 
 const GroupSelectorWrapper = styled.div`
   min-width: 320px;
-`
-
-const ColoredH3 = styled(H3)`
-  color: ${(p) => p.theme.colors.main.m1};
 `
 
 export const stickyTopBarHeight = 75
@@ -379,16 +376,23 @@ const ActiveDateRangeSelector = React.memo(function ActiveDateRangeSelector({
   return (
     <>
       <div data-qa-date-range={new FiniteDateRange(startDate, endDate)} />
-      <ColoredH3 noMargin>
-        {startDate.format('dd.MM.')}–{endDate.format('dd.MM.yyyy')}
-      </ColoredH3>
-      <FixedSpaceRow spacing="xxs">
+      <FixedSpaceRow spacing="s" alignItems="center">
         <IconOnlyButton
           icon={faChevronLeft}
           onClick={() => setSelectedDate(subUnitOfTime(selectedDate))}
           data-qa="previous-week"
           aria-label={i18n.unit.calendar.previousWeek}
         />
+        {/*Using deprecated DatePicker because it has month/year dropdowns*/}
+        <DatePickerDeprecated
+          date={startDate}
+          onChange={(date) => {
+            if (date) setSelectedDate(date)
+          }}
+          type="short"
+        />
+        <span>–</span>
+        <span>{endDate.format('dd.MM.yyyy')}</span>
         <IconOnlyButton
           icon={faChevronRight}
           onClick={() => setSelectedDate(addUnitOfTime(selectedDate))}
