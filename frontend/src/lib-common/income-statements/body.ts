@@ -114,7 +114,6 @@ function validateEntrepreneur(formData: Form.Entrepreneur, draft: boolean) {
   if (!formData.selected) return null
 
   const {
-    fullTime,
     companyName,
     businessId,
     spouseWorksInCompany,
@@ -129,7 +128,6 @@ function validateEntrepreneur(formData: Form.Entrepreneur, draft: boolean) {
   const limitedCompany = validateLimitedCompany(formData.limitedCompany)
 
   if (
-    fullTime === null ||
     startOfEntrepreneurship === invalid ||
     spouseWorksInCompany === null ||
     selfEmployed === invalid ||
@@ -148,7 +146,6 @@ function validateEntrepreneur(formData: Form.Entrepreneur, draft: boolean) {
   }
 
   return {
-    fullTime,
     startOfEntrepreneurship,
     companyName,
     businessId,

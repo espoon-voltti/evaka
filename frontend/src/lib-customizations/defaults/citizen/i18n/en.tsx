@@ -2142,9 +2142,6 @@ const en: Translations = {
       title: "Filling in the entrepreneur's income information",
       description:
         'If necessary, you can fill in the information for more than one company by ticking the boxes that apply to all of your companies.',
-      fullTimeLabel: 'Are the business activities full-time or part-time?',
-      fullTime: 'Full-time',
-      partTime: 'Part-time',
       startOfEntrepreneurship: 'Business activities started',
       companyName: 'Name(s) of company',
       businessId: 'Business ID / IDs',
@@ -2381,9 +2378,6 @@ const en: Translations = {
       otherIncomeInfo: 'Estimate of other income',
 
       entrepreneurTitle: "Entrepreneur's income information",
-      fullTimeLabel: 'Are the business activities full-time or part-time',
-      fullTime: 'Full-time',
-      partTime: 'Part-time',
       startOfEntrepreneurship: 'Business activities started',
       companyName: 'Name(s) of company',
       businessId: 'Business ID / IDs',

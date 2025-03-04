@@ -2388,9 +2388,6 @@ const sv: Translations = {
       title: 'Att fylla i företagarens inkomstuppgifter',
       description:
         'Med denna blankett kan du vid behov fylla i uppgifterna för flera företag genom att välja de punkter som gäller alla dina företag.',
-      fullTimeLabel: 'Är företagsverksamheten en huvudsyssla eller bisyssla?',
-      fullTime: 'Huvudsyssla',
-      partTime: 'Bisyssla',
       startOfEntrepreneurship: 'Entreprenörskap har börjat',
       companyName: 'Företagets / företagens namn',
       businessId: 'FO-numret / FO-numren',
@@ -2628,9 +2625,6 @@ const sv: Translations = {
       otherIncomeInfo: 'Uppskattning av övriga inkomster',
 
       entrepreneurTitle: 'Uppgifter om företagarens inkomster',
-      fullTimeLabel: 'Är företagsverksamheten en huvudsyssla eller bisyssla',
-      fullTime: 'Huvudsyssla',
-      partTime: 'Bisyssla',
       startOfEntrepreneurship: 'Entreprenörskap har börjat',
       companyName: 'Företagets / företagens namn',
       businessId: 'FO-numret / FO-numren',

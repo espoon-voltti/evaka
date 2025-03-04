@@ -224,12 +224,11 @@ private fun Row.mapIncomeStatement(isCitizen: Boolean): IncomeStatement {
 
             // If one of the entrepreneur columns is non-NULL, assume the entrepreneurship info has
             // been filled
-            val fullTime = column<Boolean?>("entrepreneur_full_time")
+            val startOfEntrepreneurship = column<LocalDate?>("start_of_entrepreneurship")
             val entrepreneur =
-                if (fullTime != null) {
+                if (startOfEntrepreneurship != null) {
                     Entrepreneur(
-                        fullTime = fullTime,
-                        startOfEntrepreneurship = column("start_of_entrepreneurship"),
+                        startOfEntrepreneurship = startOfEntrepreneurship,
                         companyName = column("company_name"),
                         businessId = column("business_id"),
                         spouseWorksInCompany = column("spouse_works_in_company"),
@@ -373,7 +372,6 @@ private fun Database.SqlStatement<*>.bindGross(gross: Gross) {
 private fun Database.SqlStatement<*>.bindEntrepreneur(entrepreneur: Entrepreneur) {
     if (entrepreneur.selfEmployed != null) bindSelfEmployed(entrepreneur.selfEmployed)
     if (entrepreneur.limitedCompany != null) bindLimitedCompany(entrepreneur.limitedCompany)
-    this.bind("fullTime", entrepreneur.fullTime)
     this.bind("startOfEntrepreneurship", entrepreneur.startOfEntrepreneurship)
     this.bind("companyName", entrepreneur.companyName)
     this.bind("businessId", entrepreneur.businessId)

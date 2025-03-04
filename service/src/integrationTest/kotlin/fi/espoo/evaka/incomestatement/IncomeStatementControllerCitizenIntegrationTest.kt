@@ -104,7 +104,6 @@ class IncomeStatementControllerCitizenIntegrationTest :
                     ),
                 entrepreneur =
                     Entrepreneur(
-                        fullTime = true,
                         startOfEntrepreneurship = LocalDate.of(1998, 1, 1),
                         companyName = "Acme Inc",
                         businessId = "1234567-8",
@@ -158,7 +157,6 @@ class IncomeStatementControllerCitizenIntegrationTest :
                         ),
                     entrepreneur =
                         Entrepreneur(
-                            fullTime = true,
                             startOfEntrepreneurship = LocalDate.of(1998, 1, 1),
                             companyName = "Acme Inc",
                             businessId = "1234567-8",
@@ -302,7 +300,6 @@ class IncomeStatementControllerCitizenIntegrationTest :
                     // At least one company type is needed
                     entrepreneur =
                         Entrepreneur(
-                            fullTime = true,
                             startOfEntrepreneurship = LocalDate.of(2000, 1, 1),
                             companyName = "Acme Inc",
                             businessId = "1234567-8",
@@ -336,7 +333,6 @@ class IncomeStatementControllerCitizenIntegrationTest :
                     gross = null,
                     entrepreneur =
                         Entrepreneur(
-                            fullTime = true,
                             startOfEntrepreneurship = LocalDate.of(2000, 1, 1),
                             companyName = "Acme Inc",
                             businessId = "1234567-8",
@@ -365,7 +361,6 @@ class IncomeStatementControllerCitizenIntegrationTest :
                     gross = null,
                     entrepreneur =
                         Entrepreneur(
-                            fullTime = true,
                             startOfEntrepreneurship = LocalDate.of(2000, 1, 1),
                             companyName = "Acme Inc",
                             businessId = "1234567-8",
@@ -599,7 +594,6 @@ class IncomeStatementControllerCitizenIntegrationTest :
                     ),
                 entrepreneur =
                     Entrepreneur(
-                        fullTime = true,
                         startOfEntrepreneurship = LocalDate.of(1998, 1, 1),
                         companyName = "Acme Inc",
                         businessId = "1234567-8",
@@ -646,7 +640,6 @@ class IncomeStatementControllerCitizenIntegrationTest :
                 gross = Gross.NoIncome(noIncomeDescription = "this is a test"),
                 entrepreneur =
                     Entrepreneur(
-                        fullTime = false,
                         startOfEntrepreneurship = LocalDate.of(2019, 1, 1),
                         companyName = "Acme Inc",
                         businessId = "1234567-8",
@@ -687,7 +680,6 @@ class IncomeStatementControllerCitizenIntegrationTest :
                 gross = Gross.NoIncome(noIncomeDescription = "this is a test"),
                 entrepreneur =
                     Entrepreneur(
-                        fullTime = false,
                         startOfEntrepreneurship = LocalDate.of(2019, 1, 1),
                         companyName = "Acme Inc",
                         businessId = "1234567-8",
@@ -867,7 +859,6 @@ WHERE id = ${bind(id)}
                     ),
                 entrepreneur =
                     Entrepreneur(
-                        fullTime = true,
                         startOfEntrepreneurship = LocalDate.of(1998, 1, 1),
                         companyName = "Acme Inc",
                         businessId = "1234567-8",

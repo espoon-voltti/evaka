@@ -2383,9 +2383,6 @@ export default {
       title: 'Yrittäjän tulotietojen täyttäminen',
       description:
         'Tällä lomakkeella voit tarvittaessa täyttää tiedot myös useammalle yritykselle valitsemalla kaikkia yrityksiäsi koskevat kohdat.',
-      fullTimeLabel: 'Onko yritystoiminta päätoimista vai sivutoimista?',
-      fullTime: 'Päätoimista',
-      partTime: 'Sivutoimista',
       startOfEntrepreneurship: 'Yrittäjyys alkanut',
       companyName: 'Yrityksen / yritysten nimi',
       businessId: 'Y-tunnus / Y-tunnukset',
@@ -2611,9 +2608,6 @@ export default {
       otherIncomeInfo: 'Arviot muista tuloista',
 
       entrepreneurTitle: 'Yrittäjän tulotiedot',
-      fullTimeLabel: 'Onko yritystoiminta päätoimista vai sivutoimista',
-      fullTime: 'Päätoimista',
-      partTime: 'Sivutoimista',
       startOfEntrepreneurship: 'Yrittäjyys alkanut',
       companyName: 'Yrityksen / yritysten nimi',
       businessId: 'Y-tunnus / Y-tunnukset',

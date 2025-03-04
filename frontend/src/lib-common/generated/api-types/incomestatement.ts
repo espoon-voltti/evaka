@@ -41,7 +41,6 @@ export interface Entrepreneur {
   businessId: string
   checkupConsent: boolean
   companyName: string
-  fullTime: boolean
   lightEntrepreneur: boolean
   limitedCompany: LimitedCompany | null
   partnership: boolean

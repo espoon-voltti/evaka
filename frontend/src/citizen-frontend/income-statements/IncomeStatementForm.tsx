@@ -732,7 +732,6 @@ const EntrepreneurIncomeSelection = React.memo(
     const t = useTranslation()
     const [lang] = useLang()
 
-    const onFullTimeChange = useFieldDispatch(onChange, 'fullTime')
     const onStartOfEntrepreneurshipChange = useFieldDispatch(
       onChange,
       'startOfEntrepreneurship'
@@ -780,26 +779,6 @@ const EntrepreneurIncomeSelection = React.memo(
           <H2 noMargin>{t.income.entrepreneurIncome.title}</H2>
           <Gap size="s" />
           <P noMargin>{t.income.entrepreneurIncome.description}</P>
-          <Gap size="L" />
-          <LabelWithError
-            label={`${t.income.entrepreneurIncome.fullTimeLabel} *`}
-            showError={showFormErrors && formData.fullTime === null}
-            errorText={t.income.errors.choose}
-          />
-          <Gap size="s" />
-          <Radio
-            label={t.income.entrepreneurIncome.fullTime}
-            data-qa="entrepreneur-full-time-option"
-            checked={formData.fullTime === true}
-            onChange={() => onFullTimeChange(true)}
-          />
-          <Gap size="s" />
-          <Radio
-            label={t.income.entrepreneurIncome.partTime}
-            data-qa="entrepreneur-part-time-option"
-            checked={formData.fullTime === false}
-            onChange={() => onFullTimeChange(false)}
-          />
           <Gap size="L" />
           <Label htmlFor="entrepreneur-start-date">
             {t.income.entrepreneurIncome.startOfEntrepreneurship} *

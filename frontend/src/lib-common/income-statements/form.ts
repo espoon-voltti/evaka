@@ -39,7 +39,6 @@ export interface Gross {
 
 export interface Entrepreneur {
   selected: boolean | null
-  fullTime: boolean | null
   startOfEntrepreneurship: LocalDate | null
   companyName: string
   businessId: string
@@ -89,7 +88,6 @@ export const emptyIncomeStatementForm: IncomeStatementForm = {
   },
   entrepreneur: {
     selected: null,
-    fullTime: null,
     startOfEntrepreneurship: null,
     companyName: '',
     businessId: '',
@@ -210,7 +208,6 @@ function mapEntrepreneur(
   if (!entrepreneur) return emptyIncomeStatementForm.entrepreneur
   return {
     selected: true,
-    fullTime: entrepreneur.fullTime,
     startOfEntrepreneurship: entrepreneur.startOfEntrepreneurship,
     companyName: entrepreneur.companyName,
     businessId: entrepreneur.businessId,

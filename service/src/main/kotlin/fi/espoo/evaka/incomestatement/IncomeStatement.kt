@@ -82,7 +82,6 @@ data class LimitedCompany(val incomeSource: IncomeSource)
 data class Accountant(val name: String, val address: String, val phone: String, val email: String)
 
 data class Entrepreneur(
-    val fullTime: Boolean,
     val startOfEntrepreneurship: LocalDate,
     val companyName: String,
     val businessId: String,
