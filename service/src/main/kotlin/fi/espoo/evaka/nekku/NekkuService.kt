@@ -16,12 +16,9 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.IOException
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import okhttp3.Response
 import org.springframework.stereotype.Service
 
 private val logger = KotlinLogging.logger {}
-
-val loggerWarner: (String) -> Unit = { s -> logger.warn { s } }
 
 @Service
 class NekkuService(
@@ -41,7 +38,7 @@ class NekkuService(
         job: AsyncJob.SyncNekkuCustomers,
     ) {
         if (client == null) error("Cannot sync Nekku customers: NekkuEnv is not configured")
-        fetchAndUpdateNekkuCustomers(client, db, loggerWarner)
+        fetchAndUpdateNekkuCustomers(client, db)
     }
 
     fun planNekkuCustomersSync(db: Database.Connection, clock: EvakaClock) {
@@ -65,30 +62,45 @@ interface NekkuClient {
 class NekkuHttpClient(private val env: NekkuEnv, private val jsonMapper: JsonMapper) : NekkuClient {
     val client = OkHttpClient()
 
-    override fun getCustomers(): List<NekkuCustomer> = request(env, "customers")
+    override fun getCustomers(): List<NekkuCustomer> {
+        val request = getBaseRequest().get().url(env.url.resolve("customers").toString()).build()
 
-    private inline fun <reified R> request(env: NekkuEnv, endpoint: String): R {
-        val fullUrl = env.url.resolve(endpoint).toString()
+        return executeRequest(request)
+    }
 
-        val request =
-            Request.Builder()
-                .url(fullUrl)
-                .addHeader("Accept", "application/json")
-                .addHeader("X-Api-Key", env.apikey.value)
-                .build()
+    private fun getBaseRequest() =
+        Request.Builder()
+            .addHeader("Accept", "application/json")
+            .addHeader("X-Api-Key", env.apikey.value)
 
-        try {
-            val response: Response = client.newCall(request).execute()
-            if (response.isSuccessful) {
-                val responseBody = response.body?.string()
-                return jsonMapper.readValue(responseBody.toString())
-            } else {
-                logger.info { "Request failed with code: ${response.code}" }
+    private inline fun <reified T> executeRequest(request: Request): T {
+        client.newCall(request).execute().use { response ->
+            if (!response.isSuccessful) {
+                val errorMessage =
+                    try {
+                        response.body?.string() ?: "No error body"
+                    } catch (e: Exception) {
+                        "Failed to read error body: ${e.message}"
+                    }
+                logger.error {
+                    "Nekku API request failed with code ${response.code}: $errorMessage"
+                }
+                throw IOException("Nekku API request failed with status ${response.code}")
             }
-        } catch (e: IOException) {
-            e.printStackTrace()
+
+            val body = response.body
+            if (body == null) {
+                logger.error { "Nekku API returned null body with status code ${response.code}" }
+                throw IOException("Response body was null with status code ${response.code}")
+            }
+
+            return try {
+                jsonMapper.readValue<T>(body.string())
+            } catch (e: Exception) {
+                logger.error(e) { "Failed to parse Nekku API response" }
+                throw IOException("Failed to parse Nekku API response", e)
+            }
         }
-        throw IllegalStateException("Request failed")
     }
 }
 
