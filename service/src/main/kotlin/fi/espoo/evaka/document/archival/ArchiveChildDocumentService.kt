@@ -193,10 +193,21 @@ class ArchiveChildDocumentService(
                                             if (documentMetadata.confidential == true)
                                                 DisclosureLevelType.CONFIDENTIAL
                                             else DisclosureLevelType.PUBLIC
+                                        // TODO lue tämä confidentiality.durationYears kentästä kun
+                                        // https://github.com/espoon-voltti/evaka/pull/6416 on
+                                        // masterissa
+                                        disclosurePeriod =
+                                            if (documentMetadata.confidential == true) "100"
+                                            else null
+                                        // TODO lue tämä confidentiality.basis kentästä kun
+                                        // https://github.com/espoon-voltti/evaka/pull/6416 on
+                                        // masterissa
+                                        // disclosureReason = "JulkL 24 § 1 mom. 32 k"
                                     }
                                 // TODO Evaka_Särmä_metatietomääritykset.xlsx sanotaan, että nämä
-                                // tulisi olla "Ei turvallisuusluokiteltu". Tarkista että
-                                // InformationSecurityLevelType.UNCLASSIFIED on OK
+                                // tulisi olla "Ei turvallisuusluokiteltu". Tarvitaan oikea versio
+                                // include-policies.xsd:stä jotta tähän saadaan asetettua oikeat
+                                // arvot
                                 informationSecurityPolicy =
                                     InformationSecurityPolicyType().apply {
                                         securityLevel = InformationSecurityLevelType.UNCLASSIFIED
@@ -210,8 +221,8 @@ class ArchiveChildDocumentService(
                                         retentionReason = "InPerpetuity"
                                     }
                                 // TODO Evaka_Särmä_metatietomääritykset.xlsx sanoo, että tämä tulee
-                                // olla "3", mutta scheman mukaan tähän voi antaa vain Basic,
-                                // Enhanced tai High
+                                // olla "3". Tarvitaan oikea versio include-policies.xsd:stä jotta
+                                // tähän saadaan asetettua oikeat arvot
                                 protectionPolicy =
                                     ProtectionPolicyType().apply {
                                         protectionLevel = ProtectionLevelType.HIGH
