@@ -2559,7 +2559,8 @@ export const fi = {
         jamixPlaceholder: 'Jamix customerNumber',
         jamixTitle: 'Ruokatilausten asiakasnumero',
         aromiPlaceholder: 'Aromin asiakastunnus',
-        aromiTitle: 'Aromi-ruokatilausten asiakastunnus'
+        aromiTitle: 'Aromi-ruokatilausten asiakastunnus',
+        nekkuPlaceholder: 'Nekku asiakasnumero'
       },
       startDate: 'Perustettu',
       endDate: 'Viimeinen toimintapäivä',
