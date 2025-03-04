@@ -16,11 +16,7 @@ data class CustomerNumbers(
 )
 
 /** Throws an IllegalStateException if Nekku returns an empty texture list. */
-fun fetchAndUpdateNekkuCustomers(
-    client: NekkuClient,
-    db: Database.Connection,
-    warner: (s: String) -> Unit = loggerWarner,
-) {
+fun fetchAndUpdateNekkuCustomers(client: NekkuClient, db: Database.Connection) {
     val customersFromNekku =
         client.getCustomers().map { it ->
             CustomerNumbers(it.number, it.name, it.customergroup, it.unit_size)
@@ -32,9 +28,9 @@ fun fetchAndUpdateNekkuCustomers(
         val nulledCustomersCount =
             tx.resetNekkuCustomerNumbersNotContainedWithin(customersFromNekku)
         if (nulledCustomersCount != 0)
-            warner(
+            logger.warn {
                 "Nekku custoner list update caused $nulledCustomersCount customer numbers to be set to null"
-            )
+            }
         val deletedCustomerCount = tx.setCustomerNumbers(customersFromNekku)
         logger.info {
             "Deleted: $deletedCustomerCount Nekku customer numbers, inserted ${customersFromNekku.size}"
@@ -69,8 +65,15 @@ VALUES (
     ${bind{it.customergroup}},
     ${bind{it.unit_size}}
 )
-ON CONFLICT (number) DO UPDATE SET
-  name = excluded.name
+ON CONFLICT (number) DO 
+UPDATE SET
+  name = excluded.name,
+  customer_group = excluded.customer_group,
+  unit_size = excluded.unit_size
+WHERE
+    nekku_customer.name <> excluded.name OR
+    nekku_customer.customer_group <> excluded.customer_group OR
+    nekku_customer.unit_size <> excluded.unit_size;
 """
         )
     }

@@ -12,18 +12,16 @@ import org.junit.jupiter.api.assertThrows
 
 private val logger = KotlinLogging.logger {}
 
-val loggerWarner: (String) -> Unit = { s -> logger.warn { s } }
-
 class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `Nekku customer sync does not sync empty data`() {
         val client = TestNekkuClient()
-        assertThrows<Exception> { fetchAndUpdateNekkuCustomers(client, db, loggerWarner) }
+        assertThrows<Exception> { fetchAndUpdateNekkuCustomers(client, db) }
     }
 
     @Test
-    fun `Nekku customer sync does not sync non-empty data`() {
+    fun `Nekku customer sync does sync non-empty data`() {
         val client =
             TestNekkuClient(
                 customers =
@@ -36,7 +34,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         )
                     )
             )
-        fetchAndUpdateNekkuCustomers(client, db, loggerWarner)
+        fetchAndUpdateNekkuCustomers(client, db)
         db.transaction { tx ->
             val customers = tx.getNekkuCustomers().toSet()
             assertEquals(1, customers.size)
@@ -58,10 +56,56 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         NekkuCustomer("4282K9253", "Haukiputaan lukio lipa", "Liikunta", ""),
                     )
             )
-        fetchAndUpdateNekkuCustomers(client, db, loggerWarner)
+        fetchAndUpdateNekkuCustomers(client, db)
         db.transaction { tx ->
             val customers = tx.getNekkuCustomers().toSet()
             assertEquals(1, customers.size)
+        }
+    }
+
+    @Test
+    fun `Nekku customer updates name and unit_size`() {
+        var client =
+            TestNekkuClient(
+                customers =
+                    listOf(
+                        NekkuCustomer(
+                            "2501K6089",
+                            "Ahvenojan päiväkoti",
+                            "Varhaiskasvatus",
+                            "large",
+                        )
+                    )
+            )
+        fetchAndUpdateNekkuCustomers(client, db)
+
+        db.transaction { tx ->
+            val customers = tx.getNekkuCustomers().toSet()
+
+            assertEquals(1, customers.size)
+            assertEquals("Ahvenojan päiväkoti", customers.first().name)
+            assertEquals("large", customers.first().unit_size)
+        }
+
+        client =
+            TestNekkuClient(
+                customers =
+                    listOf(
+                        NekkuCustomer(
+                            "2501K6089",
+                            "Ahvenojan päiväkoti MUUTETTU",
+                            "Varhaiskasvatus",
+                            "small",
+                        )
+                    )
+            )
+        fetchAndUpdateNekkuCustomers(client, db)
+        db.transaction { tx ->
+            val customers = tx.getNekkuCustomers().toSet()
+
+            assertEquals(1, customers.size)
+            assertEquals("Ahvenojan päiväkoti MUUTETTU", customers.first().name)
+            assertEquals("small", customers.first().unit_size)
         }
     }
 }
