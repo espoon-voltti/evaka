@@ -49,6 +49,7 @@ import { DecisionId } from 'lib-common/generated/api-types/shared'
 import { DecisionIncome } from 'lib-common/generated/api-types/invoicing'
 import { DecisionStatus } from 'lib-common/generated/api-types/decision'
 import { DecisionType } from 'lib-common/generated/api-types/decision'
+import { DocumentConfidentiality } from 'lib-common/generated/api-types/process'
 import { DocumentContent } from 'lib-common/generated/api-types/document'
 import { DocumentStatus } from 'lib-common/generated/api-types/document'
 import { DocumentTemplateContent } from 'lib-common/generated/api-types/document'
@@ -565,7 +566,7 @@ export interface DevDaycareGroupPlacement {
 */
 export interface DevDocumentTemplate {
   archiveDurationMonths: number | null
-  confidential: boolean
+  confidentiality: DocumentConfidentiality | null
   content: DocumentTemplateContent
   id: DocumentTemplateId
   language: OfficialLanguage

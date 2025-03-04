@@ -79,6 +79,8 @@ export class TemplateModal extends Element {
   readonly validityStartInput
   readonly processDefinitionNumberInput
   readonly archiveDurationMonthsInput
+  readonly confidentialityDurationYearsInput
+  readonly confidentialityBasisInput
   readonly confirmCreateButton
 
   constructor(locator: Locator) {
@@ -94,6 +96,12 @@ export class TemplateModal extends Element {
     )
     this.archiveDurationMonthsInput = new TextInput(
       this.findByDataQa('archive-duration-months')
+    )
+    this.confidentialityDurationYearsInput = new TextInput(
+      this.findByDataQa('confidentiality-duration-years')
+    )
+    this.confidentialityBasisInput = new TextInput(
+      this.findByDataQa('confidentiality-basis')
     )
     this.confirmCreateButton = this.findByDataQa('modal-okBtn')
   }

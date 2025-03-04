@@ -137,7 +137,7 @@ const ChildDocumentView = React.memo(function ChildDocumentView({
           </FixedSpaceColumn>
           <FixedSpaceColumn spacing="xs">
             <ChildDocumentStateChip status={document.status} />
-            {document.template.confidential && (
+            {document.template.confidentiality !== null && (
               <Label>{i18n.children.childDocuments.confidential}</Label>
             )}
             <span>{document.template.legalBasis}</span>
