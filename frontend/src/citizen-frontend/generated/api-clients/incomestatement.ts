@@ -12,6 +12,7 @@ import { IncomeStatementId } from 'lib-common/generated/api-types/shared'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
 import { PagedIncomeStatements } from 'lib-common/generated/api-types/incomestatement'
+import { PartnerIncomeStatementStatusResponse } from 'lib-common/generated/api-types/incomestatement'
 import { PersonId } from 'lib-common/generated/api-types/shared'
 import { UpdateSentIncomeStatementBody } from 'lib-common/generated/api-types/incomestatement'
 import { client } from '../../api-client'
@@ -176,6 +177,18 @@ export async function getIncomeStatements(
     params
   })
   return deserializeJsonPagedIncomeStatements(json)
+}
+
+
+/**
+* Generated from fi.espoo.evaka.incomestatement.IncomeStatementControllerCitizen.getPartnerIncomeStatementStatus
+*/
+export async function getPartnerIncomeStatementStatus(): Promise<PartnerIncomeStatementStatusResponse> {
+  const { data: json } = await client.request<JsonOf<PartnerIncomeStatementStatusResponse>>({
+    url: uri`/citizen/income-statements/partner`.toString(),
+    method: 'GET'
+  })
+  return json
 }
 
 
