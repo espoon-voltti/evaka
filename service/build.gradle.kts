@@ -96,6 +96,9 @@ dependencies {
     // OkHttp
     implementation("com.squareup.okhttp3:okhttp")
 
+    // SFTP
+    implementation("com.github.mwiede:jsch")
+
     // Jackson
     implementation("com.fasterxml.jackson.core:jackson-core")
     implementation("com.fasterxml.jackson.core:jackson-databind")

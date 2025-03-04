@@ -79,6 +79,13 @@ class EnvConfig {
         }
 
     @Bean
+    fun aromiEnv(evakaEnv: EvakaEnv, env: Environment): AromiEnv? =
+        when (evakaEnv.aromiEnabled) {
+            true -> AromiEnv.fromEnvironment(env)
+            false -> null
+        }
+
+    @Bean
     fun archiveEnv(evakaEnv: EvakaEnv, env: Environment): ArchiveEnv? =
         when (evakaEnv.särmäEnabled) {
             true -> ArchiveEnv.fromEnvironment(env)

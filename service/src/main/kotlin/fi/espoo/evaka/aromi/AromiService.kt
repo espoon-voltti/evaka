@@ -4,15 +4,20 @@
 
 package fi.espoo.evaka.aromi
 
+import fi.espoo.evaka.AromiEnv
 import fi.espoo.evaka.absence.getDaycareIdByGroup
 import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.reports.AttendanceReservationReportByChildGroup
 import fi.espoo.evaka.reports.AttendanceReservationReportByChildItem
 import fi.espoo.evaka.reports.getAttendanceReservationReportByChild
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
+import fi.espoo.evaka.shared.domain.TimeRange
+import fi.espoo.evaka.shared.sftp.SftpClient
 import java.io.ByteArrayOutputStream
 import java.io.PrintWriter
 import java.lang.Appendable
@@ -21,14 +26,67 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.Period
 import java.time.format.DateTimeFormatter
+import java.util.*
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVPrinter
 import org.springframework.stereotype.Service
 
 @Service
-class AromiService {
+class AromiService(private val aromiEnv: AromiEnv?) {
     private val startDateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmm")
     private val endTimeFormatter = DateTimeFormatter.ofPattern("HHmm")
+
+    fun sendOrders(db: Database.Connection, clock: EvakaClock) {
+        val sftpClient =
+            aromiEnv?.let { SftpClient(it.sftp) }
+                ?: error("Cannot send Aromi orders: AromiEnv is not configured")
+        val formatter = DateTimeFormatter.ofPattern(aromiEnv.filePattern)
+        val today = clock.today()
+        val range = FiniteDateRange(today.plusDays(3), today.plusDays(21))
+        val data = getAllMealOrdersCsv(range, today)
+        data.inputStream().use { sftpClient.put(it, today.format(formatter)) }
+    }
+
+    fun getAllMealOrdersCsv(range: FiniteDateRange, today: LocalDate): ByteArray =
+        ByteArrayOutputStream().use { stream ->
+            PrintWriter(stream, false, StandardCharsets.ISO_8859_1).use { writer ->
+                printCsv(
+                    writer,
+                    AromiMealOrderData(
+                        report =
+                            range
+                                .dates()
+                                .map { date ->
+                                    AttendanceReservationReportByChildGroup(
+                                        groupId = GroupId(UUID.randomUUID()),
+                                        groupName = "test group",
+                                        items =
+                                            listOf(
+                                                AttendanceReservationReportByChildItem(
+                                                    date = date,
+                                                    childId = ChildId(UUID.randomUUID()),
+                                                    childLastName = "test last",
+                                                    childFirstName = "test first",
+                                                    childDateOfBirth = today.minusWeeks(30),
+                                                    reservation =
+                                                        TimeRange(
+                                                            LocalTime.of(8, 0),
+                                                            LocalTime.of(16, 0),
+                                                        ),
+                                                    fullDayAbsence = false,
+                                                    backupCare = false,
+                                                )
+                                            ),
+                                    )
+                                }
+                                .toList(),
+                        "test unit",
+                    ),
+                )
+                writer.flush()
+            }
+            stream.toByteArray()
+        }
 
     fun getMealOrdersCsv(
         dbc: Database.Connection,

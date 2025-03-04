@@ -61,6 +61,12 @@ services:
       timeout: 5s
       retries: 5
 
+  sftp:
+    image: atmoz/sftp:alpine
+    ports:
+      - "2222:22"
+    command: foo:pass:::upload
+
   smtp:
     image: mailhog/mailhog
     ports:

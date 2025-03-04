@@ -29,6 +29,7 @@ data class EvakaEnv(
     val vtjEnabled: Boolean,
     val webPushEnabled: Boolean,
     val jamixEnabled: Boolean,
+    val aromiEnabled: Boolean,
     val särmäEnabled: Boolean,
     val linkityEnabled: Boolean,
     val forceUnpublishDocumentTemplateEnabled: Boolean,
@@ -53,6 +54,7 @@ data class EvakaEnv(
                 vtjEnabled = env.lookup("evaka.integration.vtj.enabled") ?: false,
                 webPushEnabled = env.lookup("evaka.web_push.enabled") ?: false,
                 jamixEnabled = env.lookup("evaka.integration.jamix.enabled") ?: false,
+                aromiEnabled = env.lookup("evaka.integration.aromi.enabled") ?: false,
                 särmäEnabled = env.lookup("evaka.integration.särmä.enabled") ?: false,
                 linkityEnabled = env.lookup("evaka.integration.linkity.enabled") ?: false,
                 forceUnpublishDocumentTemplateEnabled =
@@ -568,6 +570,30 @@ data class JamixEnv(val url: URI, val user: String, val password: Sensitive<Stri
         }
     }
 }
+
+data class AromiEnv(val sftp: SftpEnv, val filePattern: String) {
+    companion object {
+        fun fromEnvironment(env: Environment): AromiEnv {
+            return AromiEnv(
+                sftp =
+                    SftpEnv(
+                        host = env.lookup("evaka.integration.aromi.sftp.host"),
+                        port = env.lookup("evaka.integration.aromi.sftp.port") ?: 22,
+                        username = env.lookup("evaka.integration.aromi.sftp.username"),
+                        password = Sensitive(env.lookup("evaka.integration.aromi.sftp.password")),
+                    ),
+                filePattern = env.lookup("evaka.integration.aromi.file_pattern"),
+            )
+        }
+    }
+}
+
+data class SftpEnv(
+    val host: String,
+    val port: Int,
+    val username: String,
+    val password: Sensitive<String>,
+)
 
 data class Sensitive<T>(@JsonValue val value: T) {
     override fun toString(): String = "**REDACTED**"
