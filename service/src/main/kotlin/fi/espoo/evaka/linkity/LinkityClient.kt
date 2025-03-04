@@ -9,6 +9,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import fi.espoo.evaka.LinkityEnv
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.varda.ensureTrailingSlash
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Duration
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.OkHttpClient
@@ -20,6 +21,7 @@ interface LinkityClient {
 
 class LinkityHttpClient(private val env: LinkityEnv, private val jsonMapper: JsonMapper) :
     LinkityClient {
+    private val logger = KotlinLogging.logger {}
 
     private val httpClient =
         OkHttpClient.Builder()
@@ -38,6 +40,8 @@ class LinkityHttpClient(private val env: LinkityEnv, private val jsonMapper: Jso
                 ?.addQueryParameter("fromDate", period.start.toString())
                 ?.addQueryParameter("toDate", period.end.toString())
                 ?.build() ?: throw IllegalArgumentException("Invalid Linkity URL")
+
+        logger.debug { "Getting shifts from Linkity URL: $url" }
 
         val req = Request.Builder().url(url).get().build()
 

@@ -17,17 +17,9 @@ import fi.espoo.evaka.titania.testEmployee
 import java.time.LocalDate
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 internal class LinkityServiceTest : FullApplicationTest(resetDbBeforeEach = true) {
-    private lateinit var client: MockLinkityClient
-
-    @BeforeEach
-    fun beforeEach() {
-        client = MockLinkityClient()
-    }
-
     @Test
     fun `new plans from Linkity replace old plans`() {
         val today = LocalDate.now()
@@ -62,13 +54,10 @@ internal class LinkityServiceTest : FullApplicationTest(resetDbBeforeEach = true
                     "Uusi",
                 )
             )
-        client.setupMockShifts(shifts)
+        val client = MockLinkityClient(shifts)
+        updateStaffAttendancePlansFromLinkity(period, db, client)
 
-        val plans =
-            db.transaction { tx ->
-                updateStaffAttendancePlansFromLinkity(period, tx, client)
-                tx.findStaffAttendancePlansBy()
-            }
+        val plans = db.transaction { tx -> tx.findStaffAttendancePlansBy() }
         // There will be a new plan for today, and the old plan for tomorrow has been removed
         // Other days will have the same plans as before
         assertTrue { plans.any { it.description == "Tänään-1" && it.startTime.hour == 7 } }
@@ -98,13 +87,10 @@ internal class LinkityServiceTest : FullApplicationTest(resetDbBeforeEach = true
                     "Uusi",
                 )
             )
-        client.setupMockShifts(shifts)
+        val client = MockLinkityClient(shifts)
+        updateStaffAttendancePlansFromLinkity(period, db, client)
 
-        val plans =
-            db.transaction { tx ->
-                updateStaffAttendancePlansFromLinkity(period, tx, client)
-                tx.findStaffAttendancePlansBy()
-            }
+        val plans = db.transaction { tx -> tx.findStaffAttendancePlansBy() }
         // There will be no plans
         assertEquals(0, plans.size)
     }
@@ -128,13 +114,10 @@ internal class LinkityServiceTest : FullApplicationTest(resetDbBeforeEach = true
                     "Uusi",
                 )
             )
-        client.setupMockShifts(shifts)
+        val client = MockLinkityClient(shifts)
+        updateStaffAttendancePlansFromLinkity(period, db, client)
 
-        val plans =
-            db.transaction { tx ->
-                updateStaffAttendancePlansFromLinkity(period, tx, client)
-                tx.findStaffAttendancePlansBy()
-            }
+        val plans = db.transaction { tx -> tx.findStaffAttendancePlansBy() }
         // There will be no plans
         assertEquals(0, plans.size)
     }
@@ -166,13 +149,10 @@ internal class LinkityServiceTest : FullApplicationTest(resetDbBeforeEach = true
                     "Päällekkäin",
                 ),
             )
-        client.setupMockShifts(shifts)
+        val client = MockLinkityClient(shifts)
+        updateStaffAttendancePlansFromLinkity(period, db, client)
 
-        val plans =
-            db.transaction { tx ->
-                updateStaffAttendancePlansFromLinkity(period, tx, client)
-                tx.findStaffAttendancePlansBy()
-            }
+        val plans = db.transaction { tx -> tx.findStaffAttendancePlansBy() }
         // Only the first shift will be added
         assertEquals(1, plans.size)
         assertTrue { plans.any { it.description == "Uusi" && it.startTime.hour == 8 } }

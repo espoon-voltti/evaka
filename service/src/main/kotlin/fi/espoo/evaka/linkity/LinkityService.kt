@@ -19,36 +19,39 @@ private val logger = KotlinLogging.logger {}
 
 fun updateStaffAttendancePlansFromLinkity(
     period: FiniteDateRange,
-    tx: Database.Transaction,
+    db: Database.Connection,
     client: LinkityClient,
 ) {
     val linkityShifts = client.getShifts(period)
 
     val sarastiaIds = linkityShifts.map { it.sarastiaId }.toSet()
-    val sarastiaIdToEmployeeId = tx.getEmployeeIdsByNumbers(sarastiaIds)
 
-    val shifts = filterValidShifts(linkityShifts, sarastiaIdToEmployeeId)
+    db.transaction { tx ->
+        val sarastiaIdToEmployeeId = tx.getEmployeeIdsByNumbers(sarastiaIds)
 
-    val staffAttendancePlans =
-        shifts.mapNotNull {
-            StaffAttendancePlan(
-                employeeId = sarastiaIdToEmployeeId[it.sarastiaId] ?: return@mapNotNull null,
-                type =
-                    when (it.type) {
-                        ShiftType.PRESENT -> StaffAttendanceType.PRESENT
-                        ShiftType.TRAINING -> StaffAttendanceType.TRAINING
-                    },
-                startTime = it.startDateTime,
-                endTime = it.endDateTime,
-                description = it.notes,
-            )
-        }
+        val shifts = filterValidShifts(linkityShifts, sarastiaIdToEmployeeId)
 
-    tx.deleteStaffAttendancePlansBy(period = period)
-    logger.debug { "Deleted all staff attendance plans for period $period" }
+        val staffAttendancePlans =
+            shifts.mapNotNull {
+                StaffAttendancePlan(
+                    employeeId = sarastiaIdToEmployeeId[it.sarastiaId] ?: return@mapNotNull null,
+                    type =
+                        when (it.type) {
+                            ShiftType.PRESENT -> StaffAttendanceType.PRESENT
+                            ShiftType.TRAINING -> StaffAttendanceType.TRAINING
+                        },
+                    startTime = it.startDateTime,
+                    endTime = it.endDateTime,
+                    description = it.notes,
+                )
+            }
 
-    tx.insertStaffAttendancePlans(staffAttendancePlans)
-    logger.debug { "Inserted ${staffAttendancePlans.size} staff attendance plans" }
+        tx.deleteStaffAttendancePlansBy(period = period)
+        logger.debug { "Deleted all staff attendance plans for period $period" }
+
+        tx.insertStaffAttendancePlans(staffAttendancePlans)
+        logger.debug { "Inserted ${staffAttendancePlans.size} staff attendance plans" }
+    }
 }
 
 private fun filterValidShifts(
