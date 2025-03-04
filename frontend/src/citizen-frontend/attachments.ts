@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { AxiosProgressEvent } from 'axios'
+
 import { Failure, Success, wrapResult } from 'lib-common/api'
 import { ApplicationAttachmentType } from 'lib-common/generated/api-types/application'
 import { IncomeStatementAttachmentType } from 'lib-common/generated/api-types/incomestatement'
@@ -12,32 +14,30 @@ import {
 } from 'lib-common/generated/api-types/shared'
 import { UploadHandler } from 'lib-components/molecules/FileUpload'
 
-import { API_URL, client } from './api-client'
-import { deleteAttachment } from './generated/api-clients/attachment'
+import {
+  deleteAttachment,
+  getAttachment,
+  uploadApplicationAttachmentCitizen,
+  uploadIncomeStatementAttachmentCitizen,
+  uploadMessageAttachmentCitizen,
+  uploadOrphanIncomeStatementAttachmentCitizen
+} from './generated/api-clients/attachment'
 
-function uploadHandler(config: {
-  path: string
-  params?: unknown
-}): UploadHandler {
+function uploadHandler(
+  upload: (
+    file: File,
+    onUploadProgress: (event: AxiosProgressEvent) => void
+  ) => Promise<AttachmentId>
+): UploadHandler {
   return {
     upload: async (file, onUploadProgress) => {
-      const formData = new FormData()
-      formData.append('file', file)
-
       try {
-        const { data } = await client.post<AttachmentId>(
-          config.path,
-          formData,
-          {
-            headers: { 'Content-Type': 'multipart/form-data' },
-            params: config.params,
-            onUploadProgress: ({ loaded, total }) =>
-              onUploadProgress(
-                total !== undefined && total !== 0
-                  ? Math.round((loaded * 100) / total)
-                  : 0
-              )
-          }
+        const data = await upload(file, ({ loaded, total }) =>
+          onUploadProgress(
+            total !== undefined && total !== 0
+              ? Math.round((loaded * 100) / total)
+              : 0
+          )
         )
         return Success.of(data)
       } catch (e) {
@@ -54,31 +54,42 @@ export function incomeStatementAttachment(
   incomeStatementId: IncomeStatementId | undefined,
   attachmentType: IncomeStatementAttachmentType | null
 ): UploadHandler {
-  return uploadHandler({
-    path: incomeStatementId
-      ? `/citizen/attachments/income-statements/${incomeStatementId}`
-      : '/citizen/attachments/income-statements',
-    params: { attachmentType }
-  })
+  return uploadHandler((file, onUploadProgress) =>
+    incomeStatementId
+      ? uploadIncomeStatementAttachmentCitizen(
+          {
+            incomeStatementId,
+            attachmentType,
+            file
+          },
+          { onUploadProgress }
+        )
+      : uploadOrphanIncomeStatementAttachmentCitizen(
+          { attachmentType, file },
+          { onUploadProgress }
+        )
+  )
 }
 
-export const messageAttachment = uploadHandler({
-  path: '/citizen/attachments/messages'
-})
+export const messageAttachment = uploadHandler((file, onUploadProgress) =>
+  uploadMessageAttachmentCitizen({ file }, { onUploadProgress })
+)
 
 export function applicationAttachment(
   applicationId: ApplicationId,
   attachmentType: ApplicationAttachmentType
 ): UploadHandler {
-  return uploadHandler({
-    path: `/citizen/attachments/applications/${applicationId}?type=${attachmentType}`
-  })
+  return uploadHandler((file, onUploadProgress) =>
+    uploadApplicationAttachmentCitizen(
+      { applicationId, type: attachmentType, file },
+      { onUploadProgress }
+    )
+  )
 }
 
 export function getAttachmentUrl(
   attachmentId: AttachmentId,
   requestedFilename: string
 ): string {
-  const encodedFilename = encodeURIComponent(requestedFilename)
-  return `${API_URL}/citizen/attachments/${attachmentId}/download/${encodedFilename}`
+  return getAttachment({ attachmentId, requestedFilename }).url.toString()
 }

@@ -178,39 +178,53 @@ class AttachmentsController(
             }
     }
 
+    @PostMapping("/employee/attachments/income", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
+    fun uploadOrphanIncomeAttachment(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @RequestPart("file") file: MultipartFile,
+    ): AttachmentId {
+        return db.connect { dbc ->
+                val attachTo = AttachmentParent.None
+                handleFileUpload(dbc, user, clock, attachTo, file)
+            }
+            .also { attachmentId ->
+                Audit.AttachmentsUploadForIncome.log(
+                    targetId = null,
+                    objectId = AuditId(attachmentId),
+                    meta = mapOf("size" to file.size),
+                )
+            }
+    }
+
     @PostMapping(
         "/employee/attachments/income/{incomeId}",
-        "/employee/attachments/income",
         consumes = [MediaType.MULTIPART_FORM_DATA_VALUE],
     )
     fun uploadIncomeAttachment(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable incomeId: IncomeId?,
+        @PathVariable incomeId: IncomeId,
         @RequestPart("file") file: MultipartFile,
     ): AttachmentId {
         return db.connect { dbc ->
-                if (incomeId != null) {
-                    dbc.read {
-                        accessControl.requirePermissionFor(
-                            it,
-                            user,
-                            clock,
-                            Action.Income.UPLOAD_ATTACHMENT,
-                            incomeId,
-                        )
-                    }
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Income.UPLOAD_ATTACHMENT,
+                        incomeId,
+                    )
                 }
-                val attachTo =
-                    if (incomeId != null) AttachmentParent.Income(incomeId)
-                    else AttachmentParent.None
-
+                val attachTo = AttachmentParent.Income(incomeId)
                 handleFileUpload(dbc, user, clock, attachTo, file)
             }
             .also { attachmentId ->
                 Audit.AttachmentsUploadForIncome.log(
-                    targetId = incomeId?.let(AuditId::invoke),
+                    targetId = incomeId.let(AuditId::invoke),
                     objectId = AuditId(attachmentId),
                     meta = mapOf("size" to file.size),
                 )
@@ -331,15 +345,13 @@ class AttachmentsController(
     }
 
     @PostMapping(
-        "/citizen/attachments/income-statements/{incomeStatementId}",
         "/citizen/attachments/income-statements",
         consumes = [MediaType.MULTIPART_FORM_DATA_VALUE],
     )
-    fun uploadIncomeStatementAttachmentCitizen(
+    fun uploadOrphanIncomeStatementAttachmentCitizen(
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
-        @PathVariable incomeStatementId: IncomeStatementId?,
         @RequestParam attachmentType: IncomeStatementAttachmentType?,
         @RequestPart("file") file: MultipartFile,
     ): AttachmentId {
@@ -348,27 +360,50 @@ class AttachmentsController(
         // anymore, i.e. they have been sent and marked as handled. At some point we could
         // delete all drafts that are old enough.
         return db.connect { dbc ->
-                if (incomeStatementId != null) {
-                    dbc.read {
-                        accessControl.requirePermissionFor(
-                            it,
-                            user,
-                            clock,
-                            Action.Citizen.IncomeStatement.UPLOAD_ATTACHMENT,
-                            incomeStatementId,
-                        )
-                    }
-                }
-                val attachTo =
-                    if (incomeStatementId != null)
-                        AttachmentParent.IncomeStatement(incomeStatementId)
-                    else AttachmentParent.None
-
+                val attachTo = AttachmentParent.None
                 handleFileUpload(dbc, user, clock, attachTo, file, attachmentType)
             }
             .also { attachmentId ->
                 Audit.AttachmentsUploadForIncomeStatement.log(
-                    targetId = incomeStatementId?.let(AuditId::invoke),
+                    targetId = null,
+                    objectId = AuditId(attachmentId),
+                    meta = mapOf("size" to file.size),
+                )
+            }
+    }
+
+    @PostMapping(
+        "/citizen/attachments/income-statements/{incomeStatementId}",
+        consumes = [MediaType.MULTIPART_FORM_DATA_VALUE],
+    )
+    fun uploadIncomeStatementAttachmentCitizen(
+        db: Database,
+        user: AuthenticatedUser.Citizen,
+        clock: EvakaClock,
+        @PathVariable incomeStatementId: IncomeStatementId,
+        @RequestParam attachmentType: IncomeStatementAttachmentType?,
+        @RequestPart("file") file: MultipartFile,
+    ): AttachmentId {
+        // TODO: `attachmentType` is nullable for backwards compatibility. It can be made
+        // non-nullable when all income statements with untyped attachments cannot be edited
+        // anymore, i.e. they have been sent and marked as handled. At some point we could
+        // delete all drafts that are old enough.
+        return db.connect { dbc ->
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Citizen.IncomeStatement.UPLOAD_ATTACHMENT,
+                        incomeStatementId,
+                    )
+                }
+                val attachTo = AttachmentParent.IncomeStatement(incomeStatementId)
+                handleFileUpload(dbc, user, clock, attachTo, file, attachmentType)
+            }
+            .also { attachmentId ->
+                Audit.AttachmentsUploadForIncomeStatement.log(
+                    targetId = incomeStatementId.let(AuditId::invoke),
                     objectId = AuditId(attachmentId),
                     meta = mapOf("size" to file.size),
                 )
@@ -399,38 +434,55 @@ class AttachmentsController(
     }
 
     @PostMapping(
-        "/employee/attachments/fee-alteration/{feeAlterationId}",
         "/employee/attachments/fee-alteration",
+        consumes = [MediaType.MULTIPART_FORM_DATA_VALUE],
+    )
+    fun uploadOrphanFeeAlterationAttachment(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @RequestPart("file") file: MultipartFile,
+    ): AttachmentId {
+        return db.connect { dbc ->
+                val attachTo = AttachmentParent.None
+                handleFileUpload(dbc, user, clock, attachTo, file)
+            }
+            .also { attachmentId ->
+                Audit.AttachmentsUploadForFeeAlteration.log(
+                    targetId = null,
+                    objectId = AuditId(attachmentId),
+                    meta = mapOf("size" to file.size),
+                )
+            }
+    }
+
+    @PostMapping(
+        "/employee/attachments/fee-alteration/{feeAlterationId}",
         consumes = [MediaType.MULTIPART_FORM_DATA_VALUE],
     )
     fun uploadFeeAlterationAttachment(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable feeAlterationId: FeeAlterationId?,
+        @PathVariable feeAlterationId: FeeAlterationId,
         @RequestPart("file") file: MultipartFile,
     ): AttachmentId {
         return db.connect { dbc ->
-                if (feeAlterationId != null) {
-                    dbc.read {
-                        accessControl.requirePermissionFor(
-                            it,
-                            user,
-                            clock,
-                            Action.FeeAlteration.UPLOAD_ATTACHMENT,
-                            feeAlterationId,
-                        )
-                    }
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.FeeAlteration.UPLOAD_ATTACHMENT,
+                        feeAlterationId,
+                    )
                 }
-                val attachTo =
-                    if (feeAlterationId != null) AttachmentParent.FeeAlteration(feeAlterationId)
-                    else AttachmentParent.None
-
+                val attachTo = AttachmentParent.FeeAlteration(feeAlterationId)
                 handleFileUpload(dbc, user, clock, attachTo, file)
             }
             .also { attachmentId ->
                 Audit.AttachmentsUploadForFeeAlteration.log(
-                    targetId = feeAlterationId?.let(AuditId::invoke),
+                    targetId = feeAlterationId.let(AuditId::invoke),
                     objectId = AuditId(attachmentId),
                     meta = mapOf("size" to file.size),
                 )

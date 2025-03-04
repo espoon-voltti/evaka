@@ -45,20 +45,42 @@ data class TsFile(val project: TsProject, val path: Path) {
 
 /** Representation of a TS import. */
 sealed interface TsImport {
-    /** File that exports the name that is to be imported */
-    val file: TsFile
+    /** File or library where the thing is imported from */
+    val source: TsImportSource
     /** The local name for the imported thing */
     val name: String
 
-    data class Default(override val file: TsFile, override val name: String) : TsImport
+    data class Default(override val source: TsImportSource, override val name: String) : TsImport {
+        constructor(file: TsFile, name: String) : this(TsImportSource.File(file), name)
+    }
 
-    data class Named(override val file: TsFile, override val name: String) : TsImport
+    data class Named(override val source: TsImportSource, override val name: String) : TsImport {
+        constructor(file: TsFile, name: String) : this(TsImportSource.File(file), name)
+    }
 
     data class NamedAs(
-        override val file: TsFile,
+        override val source: TsImportSource,
         val originalName: String,
         override val name: String,
-    ) : TsImport
+    ) : TsImport {
+        constructor(
+            file: TsFile,
+            originalName: String,
+            name: String,
+        ) : this(TsImportSource.File(file), originalName, name)
+    }
+}
+
+sealed interface TsImportSource {
+    fun importFrom(file: TsFile): String
+
+    data class File(val file: TsFile) : TsImportSource {
+        override fun importFrom(file: TsFile): String = this.file.importFrom(file)
+    }
+
+    data class Library(val name: String) : TsImportSource {
+        override fun importFrom(file: TsFile): String = name
+    }
 }
 
 /**
@@ -116,3 +138,10 @@ data class TsCode(val text: String, val imports: Set<TsImport>) {
         fun toTsCode(text: String): TsCode = TsCode(text, imports.toSet())
     }
 }
+
+/**
+ * A fragment of TS code, including TS expressions for both a value and its type.
+ *
+ * Example: type = "number", value = "1 + 1"
+ */
+data class TsTypedExpression(val value: TsCode, val type: TsCode)

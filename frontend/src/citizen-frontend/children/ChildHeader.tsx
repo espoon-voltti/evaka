@@ -5,6 +5,7 @@
 import React from 'react'
 import styled from 'styled-components'
 
+import { getImageCitizen } from 'citizen-frontend/generated/api-clients/childimages'
 import { ChildAndPermittedActions } from 'lib-common/generated/api-types/children'
 import { RoundImage } from 'lib-components/atoms/RoundImage'
 import { desktopMin } from 'lib-components/breakpoints'
@@ -13,7 +14,6 @@ import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { farUser } from 'lib-icons'
 
-import { API_URL } from '../api-client'
 import { useTranslation } from '../localization'
 
 const ChildHeaderContainer = styled.div`
@@ -44,7 +44,7 @@ export default React.memo(function ChildHeader({
     <ChildHeaderContainer>
       <RoundImage
         size="XXL"
-        src={imageId ? `${API_URL}/citizen/child-images/${imageId}` : null}
+        src={imageId ? getImageCitizen({ imageId }).url.toString() : null}
         fallbackContent={farUser}
         fallbackColor={colors.grayscale.g15}
         alt={t.children.childPicture}

@@ -13,7 +13,6 @@ import React, {
 import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
-import { API_URL } from 'employee-frontend/api/client'
 import { Loading, Result, Success, wrapResult } from 'lib-common/api'
 import { UpdateStateFn } from 'lib-common/form-state'
 import { Action } from 'lib-common/generated/action'
@@ -36,14 +35,14 @@ import {
   InfoButton
 } from 'lib-components/molecules/ExpandingInfo'
 import { featureFlags } from 'lib-customizations/employee'
-import { faFileAlt } from 'lib-icons'
-import { faCalendar, faCopy, faPen, faSync } from 'lib-icons'
+import { faCalendar, faCopy, faFileAlt, faPen, faSync } from 'lib-icons'
 
 import LabelValueList from '../../components/common/LabelValueList'
 import AddSsnModal from '../../components/person-shared/person-details/AddSsnModal'
 import {
   disableSsn,
   duplicatePerson,
+  getAddressPagePdf,
   getPersonIdentity,
   updatePersonAndFamilyFromVtj,
   updatePersonDetails
@@ -317,7 +316,7 @@ export default React.memo(function PersonDetails({
         uiMode !== 'person-details-editing' ? (
           <ButtonSpacer>
             <a
-              href={`${API_URL}/employee/person/${person.id}/address-page/download`}
+              href={getAddressPagePdf({ guardianId: person.id }).url.toString()}
               target="_blank"
               rel="noreferrer"
             >

@@ -680,6 +680,14 @@ export interface PlacementProposalStatus {
 }
 
 /**
+* Generated from fi.espoo.evaka.application.PlacementToolValidation
+*/
+export interface PlacementToolValidation {
+  count: number
+  existing: number
+}
+
+/**
 * Generated from fi.espoo.evaka.application.Preferences
 */
 export interface Preferences {

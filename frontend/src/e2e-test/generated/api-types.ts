@@ -1008,6 +1008,29 @@ export interface EmailContent {
 }
 
 /**
+* Generated from fi.espoo.evaka.shared.dev.DevApi.EmailMessageFilter
+*/
+export type EmailMessageFilter =
+  | 'pendingDecisionNotification'
+  | 'clubApplicationReceived'
+  | 'daycareApplicationReceived'
+  | 'preschoolApplicationReceived'
+  | 'assistanceNeedDecisionNotification'
+  | 'assistanceNeedPreschoolDecisionNotification'
+  | 'missingReservationsNotification'
+  | 'messageNotification'
+  | 'pedagogicalDocumentNotification'
+  | 'outdatedIncomeNotification'
+  | 'calendarEventNotification'
+  | 'financeDecisionNotification'
+  | 'discussionTimeReservation'
+  | 'discussionTimeCancellation'
+  | 'discussionSurveyCreation'
+  | 'discussionTimeReservationReminder'
+  | 'serviceApplicationAcceptedNotification'
+  | 'serviceApplicationRejectedNotification'
+
+/**
 * Generated from fi.espoo.evaka.shared.dev.MockDigitransit.Feature
 */
 export interface Feature {

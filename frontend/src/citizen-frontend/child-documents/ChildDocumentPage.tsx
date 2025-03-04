@@ -37,7 +37,7 @@ import { H1, H2, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { faArrowDownToLine, faPrint } from 'lib-icons'
 
-import { API_URL } from '../api-client'
+import { downloadChildDocument } from '../generated/api-clients/document'
 
 import { childDocumentDetailsQuery, childDocumentReadMutation } from './queries'
 
@@ -79,7 +79,7 @@ export default React.memo(function ChildDocumentPage() {
                 text={i18n.common.download}
                 onClick={() => {
                   window.open(
-                    `${API_URL}/citizen/child-documents/${id}/pdf`,
+                    downloadChildDocument({ documentId: id }).url.toString(),
                     '_blank',
                     'noopener,noreferrer'
                   )

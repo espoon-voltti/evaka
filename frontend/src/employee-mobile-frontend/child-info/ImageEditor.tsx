@@ -12,9 +12,8 @@ import ReactCrop, {
 import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
-import { DaycareId } from 'lib-common/generated/api-types/shared'
+import { ChildId, DaycareId } from 'lib-common/generated/api-types/shared'
 import { useMutationResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import StickyFooter from 'lib-components/layout/StickyFooter'
@@ -29,7 +28,7 @@ import 'react-image-crop/dist/ReactCrop.css'
 
 interface Props {
   unitId: DaycareId
-  childId: UUID
+  childId: ChildId
   image: string
   onReturn: () => void
 }
