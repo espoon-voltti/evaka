@@ -1468,6 +1468,9 @@ const sv: Translations = {
         phone: 'Telefonnummer',
         verifyEmail: 'Verifiera e-postadress',
         email: 'E-postadress',
+        emailChangeTip:
+          'If you wish to change the email address, please update it in your ',
+        emailChangeTipLink: 'personal information.',
         noEmail: 'Jag har inte en e-postadress',
         secondGuardianInfoTitle: 'Uppgifter om den andra vårdnadshavaren',
         secondGuardianInfo:
