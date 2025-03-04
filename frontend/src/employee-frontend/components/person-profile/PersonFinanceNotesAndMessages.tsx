@@ -15,7 +15,6 @@ import {
 import {
   FinanceNoteId,
   MessageAccountId,
-  // MessageId,
   MessageThreadId,
   PersonId
 } from 'lib-common/generated/api-types/shared'
@@ -163,9 +162,12 @@ export default React.memo(function PersonFinanceNotesAndMessages({
     },
     [
       clearUiMode,
+      createThread,
       i18n.common.error.unknown,
       i18n.common.ok,
+      id,
       refreshMessages,
+      replyToThread,
       setErrorMessage,
       thread
     ]
@@ -235,7 +237,7 @@ export default React.memo(function PersonFinanceNotesAndMessages({
       {uiMode === 'finance-message-editor' &&
         financeAccount &&
         personName !== undefined && (
-          <StyledMessageEditor
+          <MessageEditor
             availableReceivers={[
               {
                 accountId: financeAccount.account.id,
@@ -592,8 +594,4 @@ const AccordionToggle = styled.span`
 const UnderlinedLink = styled(Link)`
   font-weight: normal;
   text-decoration: underline;
-`
-const StyledMessageEditor = styled(MessageEditor)`
-  bottom: 0;
-  right: 0;
 `
