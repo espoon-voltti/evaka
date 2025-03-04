@@ -8,6 +8,7 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.absence.getDaycareIdByGroup
 import fi.espoo.evaka.attendance.RealtimeStaffAttendanceController.OpenGroupAttendanceResponse
+import fi.espoo.evaka.changes
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
@@ -131,7 +132,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
         clock: EvakaClock,
         @RequestBody body: StaffArrivalRequest,
     ) {
-        val staffAttendanceIds =
+        val (updates, changes) =
             try {
                 db.connect { dbc ->
                     dbc.transaction { tx ->
@@ -169,20 +170,25 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                                     body.groupId,
                                 )
                                 ?: BigDecimal.ZERO
-                        attendances.map { attendance ->
-                            tx.upsertStaffAttendance(
-                                attendance.id,
-                                attendance.employeeId,
-                                attendance.groupId,
-                                attendance.arrived,
-                                attendance.departed,
-                                occupancyCoefficient,
-                                attendance.type,
-                                false,
-                                clock.now(),
-                                user.evakaUserId,
-                            )
-                        }
+                        val updates =
+                            attendances.map { attendance ->
+                                tx.upsertStaffAttendance(
+                                    attendance.id,
+                                    attendance.employeeId,
+                                    attendance.groupId,
+                                    attendance.arrived,
+                                    attendance.departed,
+                                    occupancyCoefficient,
+                                    attendance.type,
+                                    false,
+                                    clock.now(),
+                                    user.evakaUserId,
+                                )
+                            }
+                        updates to
+                            updates.map {
+                                changes(it.old, it.new, StaffAttendanceRealtimeAudit.fields)
+                            }
                     }
                 }
             } catch (e: JdbiException) {
@@ -190,7 +196,8 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
             }
         Audit.StaffAttendanceArrivalCreate.log(
             targetId = AuditId(listOf(body.groupId, body.employeeId)),
-            objectId = AuditId(staffAttendanceIds),
+            objectId = AuditId(updates.mapNotNull { it.new.id }),
+            meta = mapOf("changes" to changes),
         )
     }
 
@@ -209,7 +216,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
         clock: EvakaClock,
         @RequestBody body: StaffDepartureRequest,
     ) {
-        val staffAttendanceIds =
+        val (updates, changes) =
             db.connect { dbc ->
                 dbc.transaction { tx ->
                     ac.requirePermissionFor(
@@ -236,25 +243,29 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                             body,
                         )
                     val occupancyCoefficient = ongoingAttendance.occupancyCoefficient
-                    attendances.map { attendance ->
-                        tx.upsertStaffAttendance(
-                            attendance.id,
-                            attendance.employeeId,
-                            attendance.groupId,
-                            attendance.arrived,
-                            attendance.departed,
-                            occupancyCoefficient,
-                            attendance.type,
-                            false,
-                            clock.now(),
-                            user.evakaUserId,
-                        )
-                    }
+                    val updates =
+                        attendances.map { attendance ->
+                            tx.upsertStaffAttendance(
+                                attendance.id,
+                                attendance.employeeId,
+                                attendance.groupId,
+                                attendance.arrived,
+                                attendance.departed,
+                                occupancyCoefficient,
+                                attendance.type,
+                                false,
+                                clock.now(),
+                                user.evakaUserId,
+                            )
+                        }
+                    updates to
+                        updates.map { changes(it.old, it.new, StaffAttendanceRealtimeAudit.fields) }
                 }
             }
         Audit.StaffAttendanceDepartureCreate.log(
             targetId = AuditId(listOf(body.groupId, body.employeeId)),
-            objectId = AuditId(staffAttendanceIds),
+            objectId = AuditId(updates.mapNotNull { it.new.id }),
+            meta = mapOf("changes" to changes),
         )
     }
 
@@ -312,9 +323,9 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                     }
 
                     val deletedIds = existing.map { it.id }
-                    deletedIds.forEach { tx.deleteStaffAttendance(it) }
+                    val deleted = deletedIds.map { tx.deleteStaffAttendance(it) }
 
-                    val updatedIds =
+                    val updated =
                         body.rows.map { attendance ->
                             tx.upsertStaffAttendance(
                                 attendanceId = null,
@@ -333,19 +344,32 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                             )
                         }
 
-                    StaffAttendanceUpdateResponse(deleted = deletedIds, inserted = updatedIds)
+                    val updates = updated + deleted.map { StaffAttendanceRealtimeChange(old = it) }
+                    updates to
+                        updates.map { changes(it.old, it.new, StaffAttendanceRealtimeAudit.fields) }
                 }
             }
-            .also {
+            .also { (updates, changes) ->
                 Audit.StaffAttendanceUpdate.log(
                     targetId = AuditId(body.employeeId),
-                    objectId = AuditId(it.inserted + it.deleted),
-                    meta =
-                        mapOf(
-                            "date" to body.date,
-                            "inserted" to it.inserted,
-                            "deleted" to it.deleted,
+                    objectId =
+                        AuditId(
+                            (updates.mapNotNull { it.new.id } + updates.mapNotNull { it.old.id })
+                                .distinct()
                         ),
+                    meta = mapOf("date" to body.date, "changes" to changes),
+                )
+            }
+            .let { (updates) ->
+                StaffAttendanceUpdateResponse(
+                    deleted =
+                        updates.mapNotNull {
+                            if (it.old.id != null && it.new.id == null) it.old.id else null
+                        },
+                    inserted =
+                        updates.mapNotNull {
+                            if (it.old.id != null && it.new.id == null) null else it.new.id
+                        },
                 )
             }
     }

@@ -8,6 +8,7 @@ import fi.espoo.evaka.shared.Id
 import fi.espoo.voltti.logging.loggers.audit
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.UUID
+import kotlin.reflect.KProperty1
 
 sealed interface AuditId {
     val value: Any
@@ -598,3 +599,24 @@ enum class Audit(
 }
 
 private val logger = KotlinLogging.logger {}
+
+data class AuditChange(val old: Any?, val new: Any?)
+
+/** Returns changes between given objects for audit logging */
+fun <T> changes(
+    old: T,
+    new: T,
+    fields: Pair<KProperty1<T, Any?>, Map<String, KProperty1<T, Any?>>>,
+): Map<String, AuditChange> {
+    val changes =
+        fields.second
+            .mapNotNull { (name, property) ->
+                val oldValue = property.get(old)
+                val newValue = property.get(new)
+                if (oldValue != newValue) name to AuditChange(old = oldValue, new = newValue)
+                else null
+            }
+            .toMap()
+    return mapOf("id" to AuditChange(old = fields.first.get(old), new = fields.first.get(new))) +
+        changes
+}
