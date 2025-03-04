@@ -264,7 +264,6 @@ ${sections.filter { it.isNotBlank() }.joinToString("\n\n")}
  * inserted.
  */
 private fun TsCodeGenerator.tsBuildUri(
-    pathPrefix: TsCode?,
     endpoint: EndpointMetadata,
     // Function must return a TS expression that evaluates to the value of the given path variable
     tsPathVariableValue: (pathVariable: String) -> TsCode,
@@ -289,10 +288,7 @@ private fun TsCodeGenerator.tsBuildUri(
     // Example of returned code: uri`/employees/${request.id}/delete`
     return TsTypedExpression(
         type = TsCode { ref(Imports.uriType) },
-        value =
-            TsCode {
-                "${ref(Imports.uri)}`${if (pathPrefix != null) "\${${inline(pathPrefix)}}" else ""}${inline(uriTemplateString)}`"
-            },
+        value = TsCode { "${ref(Imports.uri)}`${inline(uriTemplateString)}`" },
     )
 }
 
@@ -375,7 +371,7 @@ fun generateJsonApiClient(
             }
 
     val getRequestProperty = { name: String -> TsCode { "request.$name" } }
-    val url = generator.tsBuildUri(pathPrefix = null, endpoint, getRequestProperty)
+    val url = generator.tsBuildUri(endpoint, getRequestProperty)
     val createQueryParameters =
         if (endpoint.requestParameters.isNotEmpty())
             TsCode {
@@ -461,7 +457,7 @@ fun generatePlainGetApiFunction(
             }
 
     val getRequestProperty = { name: String -> TsCode { "request.$name" } }
-    val url = generator.tsBuildUri(pathPrefix, endpoint, getRequestProperty)
+    val url = generator.tsBuildUri(endpoint, getRequestProperty)
     val createQueryParameters =
         if (endpoint.requestParameters.isNotEmpty())
             TsCode {
@@ -476,7 +472,7 @@ fun generatePlainGetApiFunction(
                 TsCode {
                     """
 return {
-  url: ${inline(url.value)}${if (createQueryParameters != null) ".appendQuery(params)" else ""}
+  url: ${inline(url.value)}.withBaseUrl(${inline(pathPrefix)})${if (createQueryParameters != null) ".appendQuery(params)" else ""}
 }"""
                         .removePrefix("\n")
                 },
@@ -538,7 +534,7 @@ fun generateMultipartUploadApiFunction(
             }
 
     val getRequestProperty = { name: String -> TsCode { "request.$name" } }
-    val url = generator.tsBuildUri(pathPrefix = null, endpoint, getRequestProperty)
+    val url = generator.tsBuildUri(endpoint, getRequestProperty)
     val createQueryParameters =
         if (endpoint.requestParameters.isNotEmpty())
             TsCode {
