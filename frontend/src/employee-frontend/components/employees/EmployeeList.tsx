@@ -17,7 +17,11 @@ import colors from 'lib-customizations/common'
 
 import { useTranslation } from '../../state/i18n'
 
-import { activateEmployeeMutation, deactivateEmployeeMutation } from './queries'
+import {
+  activateEmployeeMutation,
+  deactivateEmployeeMutation,
+  deleteEmployeeMutation
+} from './queries'
 
 const LinkTr = styled(Tr)`
   cursor: pointer;
@@ -127,7 +131,15 @@ export function EmployeeList({ employees }: Props) {
         </Td>
         <Td>{lastLogin?.format() ?? '-'}</Td>
         <Td>
-          {active ? (
+          {hasSsn && !lastLogin ? (
+            <ConfirmedMutation
+              buttonText={i18n.common.remove}
+              confirmationTitle={i18n.employees.deleteConfirm}
+              mutation={deleteEmployeeMutation}
+              onClick={() => ({ id })}
+              data-qa="delete-button"
+            />
+          ) : active ? (
             <ConfirmedMutation
               buttonText={i18n.employees.deactivate}
               confirmationTitle={i18n.employees.deactivateConfirm}

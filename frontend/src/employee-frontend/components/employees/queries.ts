@@ -10,6 +10,7 @@ import {
   activateEmployee,
   createSsnEmployee,
   deactivateEmployee,
+  deleteEmployee,
   deleteEmployeeDaycareRoles,
   deleteEmployeeScheduledDaycareRole,
   getEmployeeDetails,
@@ -57,6 +58,11 @@ export const activateEmployeeMutation = q.mutation(activateEmployee, [
 ])
 
 export const deactivateEmployeeMutation = q.mutation(deactivateEmployee, [
+  searchEmployeesQuery.prefix,
+  ({ id }) => employeeDetailsQuery({ id })
+])
+
+export const deleteEmployeeMutation = q.mutation(deleteEmployee, [
   searchEmployeesQuery.prefix,
   ({ id }) => employeeDetailsQuery({ id })
 ])
