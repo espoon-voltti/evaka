@@ -4,7 +4,25 @@
 
 package fi.espoo.evaka.shared.config
 
-import fi.espoo.evaka.*
+import fi.espoo.evaka.ArchiveEnv
+import fi.espoo.evaka.BucketEnv
+import fi.espoo.evaka.CitizenCalendarEnv
+import fi.espoo.evaka.DatabaseEnv
+import fi.espoo.evaka.DvvModificationsEnv
+import fi.espoo.evaka.EmailEnv
+import fi.espoo.evaka.EvakaEnv
+import fi.espoo.evaka.JamixEnv
+import fi.espoo.evaka.JwtEnv
+import fi.espoo.evaka.KoskiEnv
+import fi.espoo.evaka.LinkityEnv
+import fi.espoo.evaka.NekkuEnv
+import fi.espoo.evaka.OphEnv
+import fi.espoo.evaka.ScheduledJobsEnv
+import fi.espoo.evaka.SfiEnv
+import fi.espoo.evaka.VardaEnv
+import fi.espoo.evaka.VtjEnv
+import fi.espoo.evaka.VtjXroadEnv
+import fi.espoo.evaka.WebPushEnv
 import fi.espoo.evaka.shared.job.ScheduledJob
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -89,6 +107,13 @@ class EnvConfig {
     fun linkityEnv(evakaEnv: EvakaEnv, env: Environment): LinkityEnv? =
         when (evakaEnv.linkityEnabled) {
             true -> LinkityEnv.fromEnvironment(env)
+            false -> null
+        }
+
+    @Bean
+    fun nekkuEnv(evakaEnv: EvakaEnv, env: Environment): NekkuEnv? =
+        when (evakaEnv.nekkuEnabled) {
+            true -> NekkuEnv.fromEnvironment(env)
             false -> null
         }
 }
