@@ -2207,8 +2207,18 @@ export default {
             Maksut varhaiskasvatuksessa
           </a>
         </P>
+        <strong>Tärkeää</strong>
+        <ul>
+          <li>
+            Maksu määräytyy kaikkien samassa osoitteessa asuvien aikuisten
+            tulojen perusteella. Sinun ja mahdollisen samassa osoitteessa asuvan
+            puolisosi on ilmoitettava tulonne erikseen.
+          </li>
+        </ul>
       </>
     ),
+    partnerNoIncomeStatement: (partnerName: string) =>
+      `${partnerName} ei ole palauttanut tuloselvitystä. Palauttamatta jättäminen voi nostaa maksamaanne maksua.`,
     formTitle: 'Tulotietojen ilmoitus',
     formDescription: (
       <>

@@ -370,6 +370,21 @@ export interface PagedIncomeStatementsAwaitingHandler {
 }
 
 /**
+* Generated from fi.espoo.evaka.incomestatement.PartnerIncomeStatementStatus
+*/
+export interface PartnerIncomeStatementStatus {
+  hasIncomeStatement: boolean
+  name: string
+}
+
+/**
+* Generated from fi.espoo.evaka.incomestatement.IncomeStatementControllerCitizen.PartnerIncomeStatementStatusResponse
+*/
+export interface PartnerIncomeStatementStatusResponse {
+  partner: PartnerIncomeStatementStatus | null
+}
+
+/**
 * Generated from fi.espoo.evaka.incomestatement.SearchIncomeStatementsRequest
 */
 export interface SearchIncomeStatementsRequest {

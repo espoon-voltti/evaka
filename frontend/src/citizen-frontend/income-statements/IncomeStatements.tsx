@@ -26,6 +26,7 @@ import {
   MobileOnly,
   TabletAndDesktop
 } from 'lib-components/layout/responsive-layout'
+import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { Dimmed, H1, H2, H3 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
@@ -39,7 +40,8 @@ import ChildrenIncomeStatements from './ChildrenIncomeStatements'
 import {
   deleteIncomeStatementMutation,
   guardianIncomeStatementChildrenQuery,
-  incomeStatementsQuery
+  incomeStatementsQuery,
+  partnerIncomeStatementStatusQuery
 } from './queries'
 
 const HeadingContainer = styled.div`
@@ -218,6 +220,7 @@ export default React.memo(function IncomeStatements() {
 
   const [page, setPage] = useState(1)
   const incomeStatements = useQueryResult(incomeStatementsQuery({ page }))
+  const partnerStatus = useQueryResult(partnerIncomeStatementStatusQuery())
   const { mutateAsync: deleteIncomeStatement } = useMutation(
     deleteIncomeStatementMutation
   )
@@ -256,6 +259,14 @@ export default React.memo(function IncomeStatements() {
           <ContentArea opaque paddingVertical="L">
             <H1 noMargin>{t.income.title}</H1>
             {t.income.description}
+            {partnerStatus.isSuccess &&
+              partnerStatus.value.partner?.hasIncomeStatement === false && (
+                <AlertBox
+                  message={t.income.partnerNoIncomeStatement(
+                    partnerStatus.value.partner.name
+                  )}
+                />
+              )}
           </ContentArea>
           <Gap size="s" />
           <ContentArea opaque paddingVertical="L">

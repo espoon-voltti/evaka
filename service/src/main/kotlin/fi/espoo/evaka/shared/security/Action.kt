@@ -573,6 +573,7 @@ sealed interface Action {
             READ_EXPIRED_INCOME_DATES(IsCitizen(allowWeakLogin = true).self()),
             READ_FINANCE_DECISIONS(IsCitizen(allowWeakLogin = false).self()),
             READ_INCOME_STATEMENTS(IsCitizen(allowWeakLogin = false).self()),
+            READ_PARTNER_INCOME_STATEMENT_STATUS(IsCitizen(allowWeakLogin = false).self()),
             READ_PEDAGOGICAL_DOCUMENT_UNREAD_COUNTS(IsCitizen(allowWeakLogin = true).self()),
             READ_RESERVATIONS(IsCitizen(allowWeakLogin = true).self()),
             READ_UNREAD_ASSISTANCE_NEED_DECISION_COUNT(IsCitizen(allowWeakLogin = true).self()),

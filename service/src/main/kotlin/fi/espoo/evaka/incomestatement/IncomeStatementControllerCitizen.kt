@@ -99,6 +99,31 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
             }
     }
 
+    data class PartnerIncomeStatementStatusResponse(val partner: PartnerIncomeStatementStatus?)
+
+    @GetMapping("/partner")
+    fun getPartnerIncomeStatementStatus(
+        db: Database,
+        user: AuthenticatedUser.Citizen,
+        clock: EvakaClock,
+    ): PartnerIncomeStatementStatusResponse {
+        return db.connect { dbc ->
+                dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Citizen.Person.READ_PARTNER_INCOME_STATEMENT_STATUS,
+                        user.id,
+                    )
+                    PartnerIncomeStatementStatusResponse(
+                        tx.getPartnerIncomeStatementStatus(user.id, clock.today())
+                    )
+                }
+            }
+            .also { Audit.IncomeStatementStatusOfPartner.log() }
+    }
+
     @GetMapping("/child/start-dates/{childId}")
     fun getChildIncomeStatementStartDates(
         db: Database,
