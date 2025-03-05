@@ -77,7 +77,7 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
     }
 
     @Test
-    fun `admin can not delete AD-based employee`() {
+    fun `admin can not delete employee without SSN (AD user)`() {
         val employee = createEmployee(requestFromEmployee(employee1))
 
         assertThrows<BadRequest> { deleteEmployee(employee.id) }
