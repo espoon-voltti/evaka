@@ -4,13 +4,16 @@
 
 package fi.espoo.evaka.aromi
 
+import fi.espoo.evaka.AromiEnv
 import fi.espoo.evaka.reports.AttendanceReservationReportByChildItem
 import fi.espoo.evaka.reports.getAttendanceReservationReportByChild
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
+import fi.espoo.evaka.shared.sftp.SftpClient
 import java.io.ByteArrayOutputStream
 import java.io.PrintWriter
 import java.nio.charset.StandardCharsets
@@ -23,9 +26,20 @@ import org.apache.commons.csv.CSVPrinter
 import org.springframework.stereotype.Service
 
 @Service
-class AromiService {
+class AromiService(private val aromiEnv: AromiEnv?) {
     private val startDateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmm")
     private val endTimeFormatter = DateTimeFormatter.ofPattern("HHmm")
+
+    fun sendOrders(db: Database.Connection, clock: EvakaClock) {
+        val sftpClient =
+            aromiEnv?.let { SftpClient(it.sftp) }
+                ?: error("Cannot send Aromi orders: AromiEnv is not configured")
+        val formatter = DateTimeFormatter.ofPattern(aromiEnv.filePattern)
+        val today = clock.today()
+        val range = FiniteDateRange(today.plusDays(3), today.plusDays(21))
+        val data = getMealOrdersCsv(db, range)
+        data.inputStream().use { sftpClient.put(it, today.format(formatter)) }
+    }
 
     fun getMealOrdersCsv(dbc: Database.Connection, range: FiniteDateRange): ByteArray {
         val data = dbc.read { tx -> getData(tx, range) }
