@@ -705,12 +705,14 @@ const GrossIncomeSelection = React.memo(function GrossIncomeSelection({
           label={t.income.entrepreneurIncome.entrepreneurYes}
           checked={entrepreneurSelected === true}
           onChange={entrepreneurYes}
+          data-qa="entrepreneur-yes"
         />
         <Gap size="s" />
         <Radio
           label={t.income.entrepreneurIncome.entrepreneurNo}
           checked={entrepreneurSelected === false}
           onChange={entrepreneurNo}
+          data-qa="entrepreneur-no"
         />
       </FixedSpaceColumn>
     </ContentArea>
