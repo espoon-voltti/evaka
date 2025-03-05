@@ -96,6 +96,8 @@ describe.each(envs)('Income statements', (env) => {
       await incomeStatementsPage.checkIncomesRegisterConsent()
       await incomeStatementsPage.checkAssured()
       await incomeStatementsPage.setGrossIncomeEstimate(1500)
+      await incomeStatementsPage.setEntrepreneur(false)
+
       // End date can be max 1y from start date so a warning is shown
       await incomeStatementsPage.setValidToDate('25.12.2045')
       await incomeStatementsPage.incomeValidMaxRangeInfo.waitUntilVisible()
@@ -114,10 +116,11 @@ describe.each(envs)('Income statements', (env) => {
       await incomeStatementsPage.createNewIncomeStatement()
       await incomeStatementsPage.setValidFromDate(startDate)
       await incomeStatementsPage.setValidToDate(endDate)
-      await incomeStatementsPage.selectIncomeStatementType(
-        'entrepreneur-income'
-      )
-      await incomeStatementsPage.selectEntrepreneurType('full-time')
+      await incomeStatementsPage.selectIncomeStatementType('gross-income')
+      await incomeStatementsPage.checkIncomesRegisterConsent()
+      await incomeStatementsPage.setGrossIncomeEstimate(1500)
+      await incomeStatementsPage.setEntrepreneur(true)
+
       await incomeStatementsPage.setEntrepreneurStartDate(
         now.toLocalDate().addYears(-10).format()
       )
@@ -157,10 +160,11 @@ describe.each(envs)('Income statements', (env) => {
       await incomeStatementsPage.createNewIncomeStatement()
       await incomeStatementsPage.setValidFromDate(startDate)
       await incomeStatementsPage.setValidToDate(endDate)
-      await incomeStatementsPage.selectIncomeStatementType(
-        'entrepreneur-income'
-      )
-      await incomeStatementsPage.selectEntrepreneurType('part-time')
+      await incomeStatementsPage.selectIncomeStatementType('gross-income')
+      await incomeStatementsPage.checkIncomesRegisterConsent()
+      await incomeStatementsPage.setGrossIncomeEstimate(1500)
+      await incomeStatementsPage.setEntrepreneur(true)
+
       await incomeStatementsPage.setEntrepreneurStartDate(
         now.toLocalDate().addYears(-5).addWeeks(-7).format()
       )
@@ -197,10 +201,11 @@ describe.each(envs)('Income statements', (env) => {
       await incomeStatementsPage.createNewIncomeStatement()
       await incomeStatementsPage.setValidFromDate(startDate)
       await incomeStatementsPage.setValidToDate(endDate)
-      await incomeStatementsPage.selectIncomeStatementType(
-        'entrepreneur-income'
-      )
-      await incomeStatementsPage.selectEntrepreneurType('full-time')
+      await incomeStatementsPage.selectIncomeStatementType('gross-income')
+      await incomeStatementsPage.checkIncomesRegisterConsent()
+      await incomeStatementsPage.setGrossIncomeEstimate(1500)
+      await incomeStatementsPage.setEntrepreneur(true)
+
       await incomeStatementsPage.setEntrepreneurStartDate(
         now.toLocalDate().addMonths(-3).format()
       )
@@ -233,10 +238,11 @@ describe.each(envs)('Income statements', (env) => {
       await incomeStatementsPage.createNewIncomeStatement()
       await incomeStatementsPage.setValidFromDate(startDate)
       await incomeStatementsPage.setValidToDate(endDate)
-      await incomeStatementsPage.selectIncomeStatementType(
-        'entrepreneur-income'
-      )
-      await incomeStatementsPage.selectEntrepreneurType('full-time')
+      await incomeStatementsPage.selectIncomeStatementType('gross-income')
+      await incomeStatementsPage.checkIncomesRegisterConsent()
+      await incomeStatementsPage.setGrossIncomeEstimate(1500)
+      await incomeStatementsPage.setEntrepreneur(true)
+
       await incomeStatementsPage.setEntrepreneurStartDate(
         now.toLocalDate().addMonths(-1).addDays(3).format()
       )

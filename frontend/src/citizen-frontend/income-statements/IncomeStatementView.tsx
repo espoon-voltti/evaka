@@ -291,14 +291,6 @@ const EntrepreneurIncome = React.memo(function EntrepreneurIncome({
     <>
       <H2>{t.income.view.entrepreneurTitle}</H2>
       <Row
-        label={t.income.view.fullTimeLabel}
-        value={
-          entrepreneur.fullTime
-            ? t.income.view.fullTime
-            : t.income.view.partTime
-        }
-      />
-      <Row
         label={t.income.view.startOfEntrepreneurship}
         value={entrepreneur.startOfEntrepreneurship.format()}
       />

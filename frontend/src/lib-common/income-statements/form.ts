@@ -38,8 +38,7 @@ export interface Gross {
 }
 
 export interface Entrepreneur {
-  selected: boolean
-  fullTime: boolean | null
+  selected: boolean | null
   startOfEntrepreneurship: LocalDate | null
   companyName: string
   businessId: string
@@ -88,8 +87,7 @@ export const emptyIncomeStatementForm: IncomeStatementForm = {
     otherIncomeInfo: ''
   },
   entrepreneur: {
-    selected: false,
-    fullTime: null,
+    selected: null,
     startOfEntrepreneurship: null,
     companyName: '',
     businessId: '',
@@ -134,7 +132,10 @@ export function fromIncomeStatement(
     highestFee: incomeStatement.type === 'HIGHEST_FEE',
     ...(incomeStatement.type === 'INCOME'
       ? {
-          gross: mapGross(incomeStatement.gross),
+          gross: mapGross(
+            incomeStatement.gross,
+            incomeStatement.entrepreneur !== null
+          ),
           entrepreneur: mapEntrepreneur(incomeStatement.entrepreneur),
           student: incomeStatement.student,
           alimonyPayer: incomeStatement.alimonyPayer,
@@ -153,8 +154,20 @@ export function fromIncomeStatement(
   }
 }
 
-function mapGross(gross: ApiTypes.Gross | null): Gross {
-  if (!gross) return emptyIncomeStatementForm.gross
+function mapGross(
+  gross: ApiTypes.Gross | null,
+  entrepreneurSelected: boolean
+): Gross {
+  if (!gross) {
+    if (!entrepreneurSelected) {
+      return emptyIncomeStatementForm.gross
+    } else {
+      // The user must select gross to be able to select entrepreneur. Previously
+      // this was not the case, so for backwards compatibility we must select
+      // gross if entrepreneur is selected.
+      return { ...emptyIncomeStatementForm.gross, selected: true }
+    }
+  }
   if (gross.type === 'INCOME') {
     return {
       selected: true,
@@ -195,7 +208,6 @@ function mapEntrepreneur(
   if (!entrepreneur) return emptyIncomeStatementForm.entrepreneur
   return {
     selected: true,
-    fullTime: entrepreneur.fullTime,
     startOfEntrepreneurship: entrepreneur.startOfEntrepreneurship,
     companyName: entrepreneur.companyName,
     businessId: entrepreneur.businessId,

@@ -56,9 +56,7 @@ export default class CitizenIncomePage {
     await this.rows.nth(n).findByDataQa('edit-income-statement').click()
   }
 
-  async selectIncomeStatementType(
-    type: 'highest-fee' | 'gross-income' | 'entrepreneur-income'
-  ) {
+  async selectIncomeStatementType(type: 'highest-fee' | 'gross-income') {
     await new Checkbox(this.page.findByDataQa(`highest-fee-checkbox`)).uncheck()
     await new Checkbox(this.page.findByDataQa(`${type}-checkbox`)).check()
   }
@@ -97,10 +95,6 @@ export default class CitizenIncomePage {
     await this.page
       .find('[data-qa="incomes-register-consent-checkbox"]')
       .click()
-  }
-
-  async selectEntrepreneurType(value: 'full-time' | 'part-time') {
-    await this.page.findByDataQa(`entrepreneur-${value}-option`).click()
   }
 
   async setEntrepreneurStartDate(date: string) {
@@ -200,5 +194,10 @@ export default class CitizenIncomePage {
     await new TextInput(
       this.page.findByDataQa('gross-monthly-income-estimate')
     ).fill(String(income))
+  }
+
+  async setEntrepreneur(value: boolean) {
+    const option = value ? 'yes' : 'no'
+    await new Radio(this.page.findByDataQa(`entrepreneur-${option}`)).check()
   }
 }
