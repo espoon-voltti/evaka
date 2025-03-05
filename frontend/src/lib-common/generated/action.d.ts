@@ -166,7 +166,6 @@ export type AssistanceNeedPreschoolDecision =
   | 'ANNUL'
   | 'DECIDE'
   | 'DELETE'
-  | 'DOWNLOAD'
   | 'MARK_AS_OPENED'
   | 'READ'
   | 'READ_DECISION_MAKER_OPTIONS'
