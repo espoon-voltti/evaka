@@ -135,7 +135,7 @@ class AssistanceNeedPreschoolDecisionController(
                         it,
                         user,
                         clock,
-                        Action.AssistanceNeedPreschoolDecision.DOWNLOAD,
+                        Action.AssistanceNeedPreschoolDecision.READ,
                         id,
                     )
                 }

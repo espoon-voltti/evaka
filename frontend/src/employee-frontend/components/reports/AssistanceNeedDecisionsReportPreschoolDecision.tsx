@@ -19,8 +19,11 @@ import { AssistanceNeedPreschoolDecisionId } from 'lib-common/generated/api-type
 import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import AssistanceNeedPreschoolDecisionReadOnly from 'lib-components/assistance-need-decision/AssistanceNeedPreschoolDecisionReadOnly'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
+import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { InputFieldF } from 'lib-components/atoms/form/InputField'
+import Container from 'lib-components/layout/Container'
 import StickyFooter from 'lib-components/layout/StickyFooter'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import {
@@ -29,8 +32,12 @@ import {
 } from 'lib-components/molecules/modals/FormModal'
 import { Gap } from 'lib-components/white-space'
 import { translations } from 'lib-customizations/employee'
+import { faArrowDownToLine } from 'lib-icons'
 
-import { markAssistanceNeedPreschoolDecisionAsOpened } from '../../generated/api-clients/assistanceneed'
+import {
+  getAssistanceNeedPreschoolDecisionPdf,
+  markAssistanceNeedPreschoolDecisionAsOpened
+} from '../../generated/api-clients/assistanceneed'
 import { useTranslation } from '../../state/i18n'
 import { UserContext } from '../../state/user'
 import { renderResult } from '../async-rendering'
@@ -135,6 +142,27 @@ const DecisionView = React.memo(function DecisionView({
 
   return (
     <div>
+      <Container>
+        <FixedSpaceRow justifyContent="space-between" alignItems="center">
+          <ReturnButton label={i18n.common.goBack} />
+          {decision.hasDocument && (
+            <Button
+              appearance="inline"
+              text={i18n.common.download}
+              icon={faArrowDownToLine}
+              onClick={() => {
+                window.open(
+                  getAssistanceNeedPreschoolDecisionPdf({
+                    id: decision.id
+                  }).url.toString(),
+                  '_blank',
+                  'noopener,noreferrer'
+                )
+              }}
+            />
+          )}
+        </FixedSpaceRow>
+      </Container>
       <AssistanceNeedPreschoolDecisionReadOnly
         decision={decision}
         texts={
