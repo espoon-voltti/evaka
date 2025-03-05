@@ -498,4 +498,4 @@ V499__drop_unused_tables.sql
 V500__create_trigger.sql
 V501__aromi_customer_id.sql
 V502__income_statement_gross_no_income.sql
-V503__nekku_customer_number.sql
+V503__nekku_customer.sql
