@@ -6,6 +6,7 @@ package fi.espoo.evaka.aromi
 
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.absence.AbsenceCategory
+import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.PersonId
@@ -23,7 +24,6 @@ import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.DevReservation
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertServiceNeedOption
-import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.Forbidden
@@ -50,6 +50,7 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
     private lateinit var clock: EvakaClock
 
     private lateinit var unitId: DaycareId
+    private lateinit var unitId2: DaycareId
     private lateinit var groupId1: GroupId
     private lateinit var groupId2: GroupId
 
@@ -65,29 +66,66 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
         today = LocalDate.of(2024, 10, 24)
         clock = MockEvakaClock(HelsinkiDateTime.of(today, LocalTime.of(12, 18)))
 
+        val areaId = db.transaction { tx -> tx.insert(DevCareArea()) }
         unitId =
+            db.transaction { tx -> tx.insert(DevDaycare(areaId = areaId, name = "Päiväkoti A")) }
+        unitId2 =
             db.transaction { tx ->
-                val areaId = tx.insert(DevCareArea())
-                tx.insert(DevDaycare(areaId = areaId, name = "Päiväkoti A"))
+                tx.insert(
+                    DevDaycare(
+                        areaId = areaId,
+                        name = "EO-lafka A",
+                        type = setOf(CareType.PRESCHOOL),
+                    )
+                )
             }
         groupId1 =
             db.transaction { tx ->
-                tx.insert(DevDaycareGroup(daycareId = unitId, name = "Ryhmä 1"))
+                tx.insert(
+                    DevDaycareGroup(
+                        daycareId = unitId,
+                        name = "Ryhmä 1",
+                        aromiCustomerId = "PvkA_PK",
+                    )
+                )
             }
         groupId2 =
             db.transaction { tx ->
-                tx.insert(DevDaycareGroup(daycareId = unitId, name = "Ryhmä 2"))
+                tx.insert(
+                    DevDaycareGroup(
+                        daycareId = unitId,
+                        name = "Ryhmä 2",
+                        aromiCustomerId = "PvkA_EO",
+                    )
+                )
             }
-
         db.transaction { tx ->
-            val dateOfBirth = LocalDate.of(2021, 7, 2)
+            val eoGroupAId =
+                tx.insert(
+                    DevDaycareGroup(
+                        daycareId = unitId2,
+                        name = "Ryhmä A",
+                        aromiCustomerId = "EolA_EO",
+                    )
+                )
+            val eoGroupBId =
+                tx.insert(
+                    DevDaycareGroup(
+                        daycareId = unitId2,
+                        name = "Ryhmä B",
+                        aromiCustomerId = "EolA_EO",
+                    )
+                )
+
+            val dateOfBirthHarri = LocalDate.of(2021, 7, 2)
+            val dateOfBirthElina = LocalDate.of(2020, 3, 1)
             val placementEnd = LocalDate.of(2027, 7, 31)
             tx.insert(
                     DevPerson(
                         lastName = "Hämäläinen",
                         firstName = "Harri",
                         ssn = null,
-                        dateOfBirth = dateOfBirth,
+                        dateOfBirth = dateOfBirthHarri,
                         id = PersonId(UUID.fromString("f800197e-336c-4e98-ac2c-da305e3d605b")),
                     ),
                     DevPersonType.CHILD,
@@ -98,7 +136,7 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                             DevPlacement(
                                 childId = childId,
                                 unitId = unitId,
-                                startDate = dateOfBirth,
+                                startDate = dateOfBirthHarri,
                                 endDate = placementEnd,
                             )
                         )
@@ -106,7 +144,7 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                         DevDaycareGroupPlacement(
                             daycarePlacementId = placementId,
                             daycareGroupId = groupId1,
-                            startDate = dateOfBirth,
+                            startDate = dateOfBirthHarri,
                             endDate = LocalDate.of(2024, 10, 1),
                         )
                     )
@@ -144,6 +182,68 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                         )
                     )
                 }
+            tx.insert(
+                    DevPerson(
+                        lastName = "Eskelinen",
+                        firstName = "Elina",
+                        ssn = null,
+                        dateOfBirth = dateOfBirthElina,
+                        id = PersonId(UUID.fromString("7eb09ea9-0bb1-4f23-a7be-67f069168771")),
+                    ),
+                    DevPersonType.CHILD,
+                )
+                .also { childId ->
+                    val placementId =
+                        tx.insert(
+                            DevPlacement(
+                                childId = childId,
+                                unitId = unitId2,
+                                startDate = dateOfBirthElina,
+                                endDate = placementEnd,
+                            )
+                        )
+                    tx.insert(
+                        DevDaycareGroupPlacement(
+                            daycarePlacementId = placementId,
+                            daycareGroupId = eoGroupAId,
+                            startDate = dateOfBirthElina,
+                            endDate = LocalDate.of(2024, 10, 1),
+                        )
+                    )
+                    tx.insert(
+                        DevDaycareGroupPlacement(
+                            daycarePlacementId = placementId,
+                            daycareGroupId = eoGroupBId,
+                            startDate = LocalDate.of(2024, 10, 2),
+                            endDate = placementEnd,
+                        )
+                    )
+                    tx.insert(
+                        DevReservation(
+                            childId = childId,
+                            date = LocalDate.of(2024, 10, 1),
+                            startTime = LocalTime.of(8, 0),
+                            endTime = LocalTime.of(16, 0),
+                            createdBy = admin.evakaUserId,
+                        )
+                    )
+                    tx.insert(
+                        DevReservation(
+                            childId = childId,
+                            date = LocalDate.of(2024, 10, 2),
+                            startTime = LocalTime.of(8, 0),
+                            endTime = LocalTime.of(16, 0),
+                            createdBy = admin.evakaUserId,
+                        )
+                    )
+                    tx.insert(
+                        DevAbsence(
+                            childId = childId,
+                            date = LocalDate.of(2024, 10, 3),
+                            absenceCategory = AbsenceCategory.BILLABLE,
+                        )
+                    )
+                }
         }
     }
 
@@ -151,10 +251,7 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
     fun `ok admin`() {
         assertEquals(
             getExpectedCsv("aromi/ok-admin.csv"),
-            getMealOrders(
-                FiniteDateRange(LocalDate.of(2024, 9, 30), LocalDate.of(2024, 10, 4)),
-                listOf(groupId1, groupId2),
-            ),
+            getMealOrders(FiniteDateRange(LocalDate.of(2024, 9, 30), LocalDate.of(2024, 10, 4))),
         )
     }
 
@@ -167,9 +264,7 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                 employee.user
             }
 
-        assertThrows<Forbidden> {
-            getMealOrders(director, FiniteDateRange.ofYear(2024), listOf(groupId1, groupId2))
-        }
+        assertThrows<Forbidden> { getMealOrders(director, FiniteDateRange.ofYear(2024)) }
     }
 
     @Test
@@ -185,31 +280,14 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                 employee.user
             }
 
-        assertThrows<Forbidden> {
-            getMealOrders(staff, FiniteDateRange.ofYear(2024), listOf(groupId1, groupId2))
-        }
+        assertThrows<Forbidden> { getMealOrders(staff, FiniteDateRange.ofYear(2024)) }
     }
 
-    @Test
-    fun `bad request group ids empty`() {
-        assertThrows<BadRequest> { getMealOrders(FiniteDateRange.ofYear(2024), emptyList()) }
-    }
+    private fun getMealOrders(range: FiniteDateRange): String = getMealOrders(admin, range)
 
-    @Test
-    fun `bad request group ids null`() {
-        assertThrows<BadRequest> { getMealOrders(FiniteDateRange.ofYear(2024), null) }
-    }
-
-    private fun getMealOrders(range: FiniteDateRange, groupIds: List<GroupId>?): String =
-        getMealOrders(admin, range, groupIds)
-
-    private fun getMealOrders(
-        user: AuthenticatedUser.Employee,
-        range: FiniteDateRange,
-        groupIds: List<GroupId>?,
-    ): String =
+    private fun getMealOrders(user: AuthenticatedUser.Employee, range: FiniteDateRange): String =
         aromiController
-            .getMealOrders(dbInstance(), user, clock, range.start, range.end, groupIds)
+            .getMealOrders(dbInstance(), user, clock, range.start, range.end)
             .toString(StandardCharsets.ISO_8859_1)
 
     private fun getExpectedCsv(path: String): String =
