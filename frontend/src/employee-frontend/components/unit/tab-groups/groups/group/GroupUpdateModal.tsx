@@ -149,30 +149,6 @@ export default React.memo(function GroupUpdateModal({ group }: Props) {
               )}
             </>
           )}
-          {featureFlags.nekkuIntegration && (
-            <>
-              <Gap size="s" />
-              <div className="bold">
-                {i18n.unit.groups.updateModal.jamixTitle}
-              </div>
-              <InputField
-                value={data.jamixCustomerNumber?.toString() ?? ''}
-                onChange={(value) => {
-                  if (/^\d*$/.exec(value)) {
-                    const parsedNumber = parseInt(value)
-                    setData((state) => ({
-                      ...state,
-                      jamixCustomerNumber: isNaN(parsedNumber)
-                        ? null
-                        : parsedNumber
-                    }))
-                  }
-                }}
-                data-qa="jamix-customer-id-input"
-                placeholder={i18n.unit.groups.updateModal.nekkuPlaceholder}
-              />
-            </>
-          )}
         </section>
         <InfoBox message={i18n.unit.groups.updateModal.info} thin />
       </FixedSpaceColumn>

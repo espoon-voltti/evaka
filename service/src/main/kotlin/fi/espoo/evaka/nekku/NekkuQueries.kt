@@ -29,7 +29,7 @@ fun fetchAndUpdateNekkuCustomers(client: NekkuClient, db: Database.Connection) {
             tx.resetNekkuCustomerNumbersNotContainedWithin(customersFromNekku)
         if (nulledCustomersCount != 0)
             logger.warn {
-                "Nekku custoner list update caused $nulledCustomersCount customer numbers to be set to null"
+                "Nekku customer list update caused $nulledCustomersCount customer numbers to be set to null"
             }
         val deletedCustomerCount = tx.setCustomerNumbers(customersFromNekku)
         logger.info {
