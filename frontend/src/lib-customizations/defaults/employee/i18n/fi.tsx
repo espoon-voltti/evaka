@@ -2169,6 +2169,7 @@ export const fi = {
     name: 'Nimi',
     area: 'Alue',
     address: 'Osoite',
+    city: 'Kunta',
     type: 'Tyyppi',
     findByName: 'Etsi yksikön nimellä',
     selectProviderTypes: 'Valitse järjestämismuoto',

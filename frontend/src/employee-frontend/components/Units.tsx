@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2025 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -117,6 +117,7 @@ export default React.memo(function Units() {
                       ].join(', ')
                     : unit.visitingAddress.streetAddress}
                 </Td>
+                <Td>{unit.visitingAddress.postOffice}</Td>
                 <Td>
                   {unit.type.map((type) => i18n.common.types[type]).join(', ')}
                 </Td>
@@ -215,9 +216,15 @@ export default React.memo(function Units() {
                 </SortableTh>
                 <SortableTh
                   sorted={sortColumn === 'address' ? sortDirection : undefined}
-                  onClick={() => sortBy('address')}
+                  onClick={() => sortBy('visitingAddress.streetAddress')}
                 >
                   {i18n.units.address}
+                </SortableTh>
+                <SortableTh
+                  sorted={sortColumn === 'city' ? sortDirection : undefined}
+                  onClick={() => sortBy('visitingAddress.postOffice')}
+                >
+                  {i18n.units.city}
                 </SortableTh>
                 <SortableTh
                   sorted={sortColumn === 'type' ? sortDirection : undefined}
