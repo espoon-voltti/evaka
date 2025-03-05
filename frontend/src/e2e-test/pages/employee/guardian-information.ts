@@ -23,6 +23,7 @@ import {
 } from '../../utils/page'
 
 import { IncomeStatementPage } from './IncomeStatementPage'
+import { MessageEditor } from './messages/messages-page'
 import { TimelinePage } from './timeline/timeline-page'
 
 export default class GuardianInformationPage {
@@ -658,11 +659,35 @@ class InvoiceCorrectionNoteModal extends Modal {
 
 class FinanceNotesAndMessagesSection extends Section {
   #noteCreatedAt = this.findAll(`[data-qa="finance-note-created-at"]`)
+  #threadSentAt = this.findAll(`[data-qa="finance-thread-sent-at"]`)
+  #newMessage = this.findByDataQa('send-finance-message-button')
+  #replyThread = this.findAll(`[data-qa="reply-finance-thread"]`)
 
   async checkNoteCreatedAt(nth: number, expectedCreatedAt: HelsinkiDateTime) {
     await this.#noteCreatedAt
       .nth(nth)
       .assertTextEquals(expectedCreatedAt.format())
+  }
+
+  async checkThreadLastMessageSentAt(
+    nth: number,
+    expectedSentAt: HelsinkiDateTime
+  ) {
+    await this.#threadSentAt.nth(nth).assertTextEquals(expectedSentAt.format())
+  }
+
+  async openNewMessageEditor() {
+    await this.#newMessage.click()
+    return this.getMessageEditor()
+  }
+
+  async openReplyMessageEditor() {
+    await this.#replyThread.last().click()
+    return this.getMessageEditor()
+  }
+
+  getMessageEditor() {
+    return new MessageEditor(this.page.findByDataQa('message-editor'))
   }
 }
 

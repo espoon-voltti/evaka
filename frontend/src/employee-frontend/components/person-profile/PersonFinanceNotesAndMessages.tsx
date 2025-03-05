@@ -317,7 +317,7 @@ export default React.memo(function PersonFinanceNotesAndMessages({
                 setThread(undefined)
                 toggleUiMode('finance-message-editor')
               }}
-              data-qa="send-finance-message"
+              data-qa="send-finance-message-button"
               disabled={false}
             />
           </FlexRow>
@@ -388,8 +388,10 @@ export default React.memo(function PersonFinanceNotesAndMessages({
                             )
                           </Label>
                           <Light style={{ fontSize: '14px' }}>
-                            {thread.messages[0].sentAt.format()},{' '}
-                            {thread.messages[0].sender.name}
+                            <span data-qa="finance-thread-sent-at">
+                              {thread.messages[0].sentAt.format()}
+                            </span>
+                            , {thread.messages[0].sender.name}
                           </Light>
                         </FixedSpaceColumn>
                         <FixedSpaceRow spacing="xs">
@@ -428,7 +430,7 @@ export default React.memo(function PersonFinanceNotesAndMessages({
                                   opaque
                                   paddingHorizontal="s"
                                   paddingVertical="s"
-                                  data-qa="add-finance-note"
+                                  data-qa="finance-message"
                                 >
                                   <Light style={{ fontSize: '14px' }}>
                                     {m.sentAt.format()}, {m.sender.name}
