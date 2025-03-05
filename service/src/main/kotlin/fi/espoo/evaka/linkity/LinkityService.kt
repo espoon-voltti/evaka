@@ -4,18 +4,17 @@
 
 package fi.espoo.evaka.linkity
 
-import fi.espoo.evaka.attendance.StaffAttendancePlan
-import fi.espoo.evaka.attendance.StaffAttendanceType
-import fi.espoo.evaka.attendance.deleteStaffAttendancePlansBy
-import fi.espoo.evaka.attendance.insertStaffAttendancePlans
+import fi.espoo.evaka.attendance.*
 import fi.espoo.evaka.pis.getEmployeeIdsByNumbers
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.utils.partitionIndexed
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.time.Duration
 
 private val logger = KotlinLogging.logger {}
+private val MAX_DRIFT: Duration = Duration.ofMinutes(5)
 
 fun updateStaffAttendancePlansFromLinkity(
     period: FiniteDateRange,
@@ -82,4 +81,56 @@ private fun filterValidShifts(
         logger.info { "Overlapping shifts: ${overlappingShifts.map { it.workShiftId }}" }
     }
     return validShifts
+}
+
+fun sendWorkLogsToLinkity(period: FiniteDateRange, db: Database.Connection, client: LinkityClient) {
+    lateinit var attendances: Map<EmployeeId, List<ExportableAttendance>>
+    lateinit var plans: Map<EmployeeId, List<StaffAttendancePlan>>
+
+    db.transaction { tx ->
+        attendances = tx.getStaffAttendances(period).groupBy { it.employeeId }
+        val employeeIds = attendances.keys
+        plans =
+            tx.findStaffAttendancePlansBy(period = period, employeeIds = employeeIds).groupBy {
+                it.employeeId
+            }
+    }
+    val workLogs = roundAttendancesToPlans(attendances, plans)
+    client.postWorkLogs(workLogs)
+    logger.debug { "Posted ${workLogs.size} work logs to Linkity" }
+}
+
+private fun roundAttendancesToPlans(
+    attendances: Map<EmployeeId, List<ExportableAttendance>>,
+    plans: Map<EmployeeId, List<StaffAttendancePlan>>,
+): List<WorkLog> {
+    return attendances.flatMap { (employeeId, attendances) ->
+        val plannedTimes =
+            plans[employeeId]?.flatMap { listOf(it.startTime, it.endTime) }?.toSet() ?: emptySet()
+        attendances.mapNotNull { attendance ->
+            if (attendance.departed == null) {
+                return@mapNotNull null
+            }
+            val roundedArrivalTime =
+                plannedTimes.find { it.durationSince(attendance.arrived).abs() <= MAX_DRIFT }
+                    ?: attendance.arrived
+            val roundedDepartureTime =
+                plannedTimes.find { it.durationSince(attendance.departed).abs() <= MAX_DRIFT }
+                    ?: attendance.departed
+
+            WorkLog(
+                sarastiaId = attendance.sarastiaId,
+                startTime = roundedArrivalTime,
+                endTime = roundedDepartureTime,
+                type =
+                    when (attendance.type) {
+                        StaffAttendanceType.PRESENT,
+                        StaffAttendanceType.OVERTIME,
+                        StaffAttendanceType.JUSTIFIED_CHANGE -> WorkLogType.PRESENT
+                        StaffAttendanceType.TRAINING -> WorkLogType.TRAINING
+                        StaffAttendanceType.OTHER_WORK -> WorkLogType.OTHER_WORK
+                    },
+            )
+        }
+    }
 }
