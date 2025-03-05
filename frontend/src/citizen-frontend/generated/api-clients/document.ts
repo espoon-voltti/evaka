@@ -26,7 +26,7 @@ export function downloadChildDocument(
   }
 ): { url: Uri } {
   return {
-    url: uri`${client.defaults.baseURL ?? ''}/citizen/child-documents/${request.documentId}/pdf`
+    url: uri`/citizen/child-documents/${request.documentId}/pdf`.withBaseUrl(client.defaults.baseURL ?? '')
   }
 }
 

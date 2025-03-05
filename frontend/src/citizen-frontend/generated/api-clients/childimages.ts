@@ -19,6 +19,6 @@ export function getImageCitizen(
   }
 ): { url: Uri } {
   return {
-    url: uri`${client.defaults.baseURL ?? ''}/citizen/child-images/${request.imageId}`
+    url: uri`/citizen/child-images/${request.imageId}`.withBaseUrl(client.defaults.baseURL ?? '')
   }
 }

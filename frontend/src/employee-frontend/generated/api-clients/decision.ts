@@ -25,7 +25,7 @@ export function downloadDecisionPdf(
   }
 ): { url: Uri } {
   return {
-    url: uri`${client.defaults.baseURL ?? ''}/employee/decisions/${request.id}/download`
+    url: uri`/employee/decisions/${request.id}/download`.withBaseUrl(client.defaults.baseURL ?? '')
   }
 }
 
