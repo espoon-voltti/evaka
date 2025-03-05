@@ -804,7 +804,6 @@ sealed interface Action {
                 .inSelectedUnitOfAssistanceNeedDecision(ChildAclConfig(application = false)),
         ),
         READ_METADATA(HasGlobalRole(ADMIN)),
-        DOWNLOAD(HasGlobalRole(ADMIN)),
         DECIDE(IsEmployee.andIsDecisionMakerForAssistanceNeedDecision()),
         MARK_AS_OPENED(IsEmployee.andIsDecisionMakerForAssistanceNeedDecision()),
         UPDATE_DECISION_MAKER(HasGlobalRole(ADMIN)),

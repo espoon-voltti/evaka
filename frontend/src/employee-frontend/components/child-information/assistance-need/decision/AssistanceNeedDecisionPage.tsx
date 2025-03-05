@@ -16,6 +16,7 @@ import useRouteParams, { useIdRouteParam } from 'lib-common/useRouteParams'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import AssistanceNeedDecisionReadOnly from 'lib-components/assistance-need-decision/AssistanceNeedDecisionReadOnly'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Content, { Container } from 'lib-components/layout/Container'
@@ -26,9 +27,11 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import { InformationText } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
+import { faArrowDownToLine } from 'lib-icons'
 
 import {
   getAssistanceNeedDecision,
+  getAssistanceNeedDecisionPdf,
   revertToUnsentAssistanceNeedDecision,
   sendAssistanceNeedDecision
 } from '../../../../generated/api-clients/assistanceneed'
@@ -96,7 +99,24 @@ export default React.memo(function AssistanceNeedDecisionPage() {
   return (
     <>
       <Content>
-        <ReturnButton label={i18n.common.goBack} />
+        <FixedSpaceRow justifyContent="space-between" alignItems="center">
+          <ReturnButton label={i18n.common.goBack} />
+          {assistanceNeedDecision.isSuccess &&
+            assistanceNeedDecision.value.decision.hasDocument && (
+              <Button
+                appearance="inline"
+                text={i18n.common.download}
+                icon={faArrowDownToLine}
+                onClick={() => {
+                  window.open(
+                    getAssistanceNeedDecisionPdf({ id }).url.toString(),
+                    '_blank',
+                    'noopener,noreferrer'
+                  )
+                }}
+              />
+            )}
+        </FixedSpaceRow>
 
         {renderResult(
           assistanceNeedDecision,

@@ -164,7 +164,7 @@ class AssistanceNeedDecisionController(
                         it,
                         user,
                         clock,
-                        Action.AssistanceNeedDecision.DOWNLOAD,
+                        Action.AssistanceNeedDecision.READ,
                         id,
                     )
                 }

@@ -165,7 +165,7 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                                                 tx,
                                                 user,
                                                 clock,
-                                                Action.AssistanceNeedDecision.DOWNLOAD,
+                                                Action.AssistanceNeedDecision.READ,
                                                 decisionId,
                                             )
                                         }
