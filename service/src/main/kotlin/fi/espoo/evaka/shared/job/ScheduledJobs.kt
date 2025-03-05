@@ -9,6 +9,7 @@ import fi.espoo.evaka.ScheduledJobsEnv
 import fi.espoo.evaka.application.PendingDecisionEmailService
 import fi.espoo.evaka.application.cancelOutdatedSentTransferApplications
 import fi.espoo.evaka.application.removeOldDrafts
+import fi.espoo.evaka.aromi.AromiService
 import fi.espoo.evaka.assistance.endAssistanceFactorsWhichBelongToPastPlacements
 import fi.espoo.evaka.assistanceneed.decision.endActiveDaycareAssistanceDecisions
 import fi.espoo.evaka.assistanceneed.preschooldecision.endActivePreschoolAssistanceDecisions
@@ -146,6 +147,10 @@ enum class ScheduledJob(
             retryCount = 1,
         ),
     ),
+    SendAromiOrders(
+        ScheduledJobs::sendAromiOrders,
+        ScheduledJobSettings(enabled = false, schedule = JobSchedule.daily(LocalTime.of(0, 15))),
+    ),
     SendPendingDecisionReminderEmails(
         ScheduledJobs::sendPendingDecisionReminderEmails,
         ScheduledJobSettings(enabled = false, schedule = JobSchedule.daily(LocalTime.of(7, 0))),
@@ -271,6 +276,7 @@ class ScheduledJobs(
     private val attachmentService: AttachmentService,
     private val jamixService: JamixService,
     private val nekkuService: NekkuService,
+    private val aromiService: AromiService,
     private val sfiMessagesClient: SfiMessagesClient?,
     private val passwordBlacklist: PasswordBlacklist,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
@@ -408,6 +414,10 @@ WHERE id IN (SELECT id FROM attendances_to_end)
 
     fun syncNekkuCustomers(db: Database.Connection, clock: EvakaClock) {
         nekkuService.planNekkuCustomersSync(db, clock)
+    }
+
+    fun sendAromiOrders(db: Database.Connection, clock: EvakaClock) {
+        aromiService.sendOrders(db, clock)
     }
 
     fun sendPendingDecisionReminderEmails(db: Database.Connection, clock: EvakaClock) {

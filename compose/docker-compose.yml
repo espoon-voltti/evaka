@@ -61,6 +61,15 @@ services:
       timeout: 5s
       retries: 5
 
+  sftp:
+    image: atmoz/sftp:alpine
+    ports:
+      - "2222:22"
+    volumes:
+      - ./sftp/ssh_host_ed25519_key:/etc/ssh/ssh_host_ed25519_key
+      - ./sftp/ssh_host_rsa_key:/etc/ssh/ssh_host_rsa_key
+    command: foo:pass:::upload
+
   smtp:
     image: mailhog/mailhog
     ports:

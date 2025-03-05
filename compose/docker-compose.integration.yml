@@ -30,6 +30,7 @@ services:
       - db
       - redis
       - s3-mock
+      - sftp
     ipc: host
     network_mode: host
     entrypoint: ./gradlew integrationTest

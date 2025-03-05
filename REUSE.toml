@@ -129,6 +129,12 @@ SPDX-FileCopyrightText = "2007-2020 The original author or authors <info@gradle.
 SPDX-License-Identifier = "Apache-2.0"
 
 [[annotations]]
+path = "compose/sftp/**"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2017-2025 City of Espoo"
+SPDX-License-Identifier = "LGPL-2.1-or-later"
+
+[[annotations]]
 path = "dummy-idp/test-cert/**"
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2017-2025 City of Espoo"
