@@ -173,6 +173,29 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
     }
 
     @Test
+    fun `notification is not sent if placement unit is not invoiced by municipality`() {
+        db.transaction {
+            it.execute {
+                sql(
+                    "UPDATE daycare SET invoiced_by_municipality = false WHERE id = ${bind(daycareId)}"
+                )
+            }
+
+            it.insert(
+                DevIncome(
+                    personId = fridgeHeadOfChildId,
+                    modifiedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
+                    validFrom = clock.today().minusMonths(1),
+                    validTo = clock.today().plusWeeks(4),
+                )
+            )
+        }
+
+        assertEquals(0, getEmails().size)
+        assertEquals(0, getIncomeNotifications(fridgeHeadOfChildId).size)
+    }
+
+    @Test
     fun `fridge partner expiring income is notified 4 weeks beforehand`() {
         val fridgePartner = DevPerson(email = "partner@example.com")
 
