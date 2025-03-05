@@ -202,6 +202,7 @@ export interface Employee {
   firstName: string
   hasSsn: boolean
   id: EmployeeId
+  lastLogin: HelsinkiDateTime | null
   lastName: string
   preferredFirstName: string | null
   temporaryInUnitId: DaycareId | null
@@ -800,6 +801,7 @@ export function deserializeJsonEmployee(json: JsonOf<Employee>): Employee {
   return {
     ...json,
     created: HelsinkiDateTime.parseIso(json.created),
+    lastLogin: (json.lastLogin != null) ? HelsinkiDateTime.parseIso(json.lastLogin) : null,
     updated: (json.updated != null) ? HelsinkiDateTime.parseIso(json.updated) : null
   }
 }

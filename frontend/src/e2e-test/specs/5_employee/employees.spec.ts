@@ -80,7 +80,7 @@ describe('Employees page', () => {
     await employeePage.content.findTextExact(employee.email!).waitUntilVisible()
   })
 
-  test('a new employee can be added with SSN', async () => {
+  test('a new employee can be added with SSN and deleted', async () => {
     const person = {
       ssn: '010107A977S',
       firstName: 'Erkki',
@@ -96,5 +96,16 @@ describe('Employees page', () => {
     await wizard.email.fill(person.email)
     await wizard.ok.click()
     await wizard.waitUntilHidden()
+
+    await nav.openAndClickDropdownMenuItem('employees')
+    await waitUntilEqual(
+      () => employeesPage.visibleUsers,
+      ['Esimerkki Erkki', 'Sorsa Seppo', 'Testaaja Teppo']
+    )
+    await employeesPage.deleteEmployee(0)
+    await waitUntilEqual(
+      () => employeesPage.visibleUsers,
+      ['Sorsa Seppo', 'Testaaja Teppo']
+    )
   })
 })
