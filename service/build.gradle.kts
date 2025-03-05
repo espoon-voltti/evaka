@@ -112,6 +112,9 @@ dependencies {
     // Voltti
     implementation(project(":service-lib"))
 
+    // Särmä model
+    implementation(project(":sarmamodel"))
+
     // Flying Saucer <=>
     implementation("org.thymeleaf:thymeleaf")
     implementation("org.thymeleaf.extras:thymeleaf-extras-java8time")

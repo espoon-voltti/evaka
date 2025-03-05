@@ -27,6 +27,7 @@
 /sficlient/target/
 /vtjclient/build/
 /vtjclient/target/
+/sarmamodel/build/
 
 .idea/
 *.iws
