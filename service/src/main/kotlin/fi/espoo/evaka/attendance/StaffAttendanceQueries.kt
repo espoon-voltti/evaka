@@ -18,6 +18,7 @@ import fi.espoo.evaka.user.EvakaUser
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalTime
+import kotlin.reflect.full.memberProperties
 import org.jdbi.v3.core.mapper.Nested
 
 fun Database.Read.getStaffAttendances(
@@ -148,6 +149,41 @@ data class StaffAttendance(
     val type: StaffAttendanceType,
 )
 
+data class StaffAttendanceRealtimeAudit(
+    val id: StaffAttendanceRealtimeId?,
+    val employeeId: EmployeeId?,
+    val groupId: GroupId?,
+    val arrived: HelsinkiDateTime?,
+    val departed: HelsinkiDateTime?,
+    val occupancyCoefficient: BigDecimal?,
+    val type: StaffAttendanceType?,
+) {
+    companion object {
+        val fields =
+            StaffAttendanceRealtimeAudit::id to
+                StaffAttendanceRealtimeAudit::class
+                    .memberProperties
+                    .filter { it.name != "id" }
+                    .associateBy { it.name }
+
+        fun empty() =
+            StaffAttendanceRealtimeAudit(
+                id = null,
+                employeeId = null,
+                groupId = null,
+                arrived = null,
+                departed = null,
+                occupancyCoefficient = null,
+                type = null,
+            )
+    }
+}
+
+data class StaffAttendanceRealtimeChange(
+    @Nested("old") val old: StaffAttendanceRealtimeAudit = StaffAttendanceRealtimeAudit.empty(),
+    @Nested("new") val new: StaffAttendanceRealtimeAudit = StaffAttendanceRealtimeAudit.empty(),
+)
+
 fun Database.Transaction.upsertStaffAttendance(
     attendanceId: StaffAttendanceRealtimeId?,
     employeeId: EmployeeId?,
@@ -159,7 +195,7 @@ fun Database.Transaction.upsertStaffAttendance(
     departedAutomatically: Boolean = false,
     modifiedAt: HelsinkiDateTime,
     modifiedBy: EvakaUserId,
-): StaffAttendanceRealtimeId =
+): StaffAttendanceRealtimeChange =
     if (attendanceId == null) {
         createUpdate {
                 sql(
@@ -182,47 +218,63 @@ VALUES (
     ${bind(modifiedAt.takeIf { departureTime != null })},
     ${bind(modifiedBy.takeIf { departureTime != null })}
 )
-RETURNING id
+RETURNING id, employee_id, group_id, arrived, departed, occupancy_coefficient, type
 """
                 )
             }
             .executeAndReturnGeneratedKeys()
-            .exactlyOne<StaffAttendanceRealtimeId>()
+            .exactlyOne<StaffAttendanceRealtimeAudit>()
+            .let { StaffAttendanceRealtimeChange(new = it) }
     } else {
         createUpdate {
                 sql(
                     """
-UPDATE staff_attendance_realtime
+UPDATE staff_attendance_realtime new
 SET group_id = ${bind(groupId)},
     arrived = ${bind(arrivalTime)},
     departed = ${bind(departureTime)},
     occupancy_coefficient = ${bind(occupancyCoefficient)},
     type = ${bind(type)},
     departed_automatically = ${bind(departedAutomatically)},
-    arrived_modified_at = CASE WHEN arrived != ${bind(arrivalTime)} THEN ${bind(modifiedAt)} ELSE arrived_modified_at END,
-    arrived_modified_by = CASE WHEN arrived != ${bind(arrivalTime)} THEN ${bind(modifiedBy)} ELSE arrived_modified_by END,
-    departed_added_at = CASE WHEN arrived_added_at IS NOT NULL AND departed IS DISTINCT FROM ${bind(departureTime)} THEN coalesce(departed_added_at, ${bind(modifiedAt)}) ELSE departed_added_at END,
-    departed_added_by = CASE WHEN arrived_added_by IS NOT NULL AND departed IS DISTINCT FROM ${bind(departureTime)} THEN coalesce(departed_added_by, ${bind(modifiedBy)}) ELSE departed_added_by END,
-    departed_modified_at = CASE WHEN departed IS DISTINCT FROM ${bind(departureTime)} THEN ${bind(modifiedAt)} ELSE departed_modified_at END,
-    departed_modified_by = CASE WHEN departed IS DISTINCT FROM ${bind(departureTime)} THEN ${bind(modifiedBy)} ELSE departed_modified_by END
-WHERE id = ${bind(attendanceId)}
+    arrived_modified_at = CASE WHEN old.arrived != ${bind(arrivalTime)} THEN ${bind(modifiedAt)} ELSE old.arrived_modified_at END,
+    arrived_modified_by = CASE WHEN old.arrived != ${bind(arrivalTime)} THEN ${bind(modifiedBy)} ELSE old.arrived_modified_by END,
+    departed_added_at = CASE WHEN old.arrived_added_at IS NOT NULL AND old.departed IS DISTINCT FROM ${bind(departureTime)} THEN coalesce(old.departed_added_at, ${bind(modifiedAt)}) ELSE old.departed_added_at END,
+    departed_added_by = CASE WHEN old.arrived_added_by IS NOT NULL AND old.departed IS DISTINCT FROM ${bind(departureTime)} THEN coalesce(old.departed_added_by, ${bind(modifiedBy)}) ELSE old.departed_added_by END,
+    departed_modified_at = CASE WHEN old.departed IS DISTINCT FROM ${bind(departureTime)} THEN ${bind(modifiedAt)} ELSE old.departed_modified_at END,
+    departed_modified_by = CASE WHEN old.departed IS DISTINCT FROM ${bind(departureTime)} THEN ${bind(modifiedBy)} ELSE old.departed_modified_by END
+FROM staff_attendance_realtime old
+WHERE new.id = ${bind(attendanceId)}
+  AND new.id = old.id
+  AND (old.group_id IS DISTINCT FROM ${bind(groupId)}
+    OR old.arrived != ${bind(arrivalTime)}
+    OR old.departed IS DISTINCT FROM ${bind(departureTime)}
+    OR old.occupancy_coefficient != ${bind(occupancyCoefficient)}
+    OR old.type != ${bind(type)}
+    OR old.departed_automatically != ${bind(departedAutomatically)}
+  )
+RETURNING old.id AS old_id, old.employee_id AS old_employee_id, old.group_id AS old_group_id, old.arrived AS old_arrived, old.departed AS old_departed, old.occupancy_coefficient AS old_occupancy_coefficient, old.type AS old_type,
+          new.id AS new_id, new.employee_id AS new_employee_id, new.group_id AS new_group_id, new.arrived AS new_arrived, new.departed AS new_departed, new.occupancy_coefficient AS new_occupancy_coefficient, new.type AS new_type
 """
                 )
             }
-            .updateExactlyOne()
-            .let { attendanceId }
+            .executeAndReturnGeneratedKeys()
+            .exactlyOne<StaffAttendanceRealtimeChange>()
     }
 
-fun Database.Transaction.deleteStaffAttendance(attendanceId: StaffAttendanceRealtimeId) {
-    createUpdate {
+fun Database.Transaction.deleteStaffAttendance(
+    attendanceId: StaffAttendanceRealtimeId
+): StaffAttendanceRealtimeAudit {
+    return createUpdate {
             sql(
                 """
 DELETE FROM staff_attendance_realtime
 WHERE id = ${bind(attendanceId)}
+RETURNING id, employee_id, group_id, arrived, departed, occupancy_coefficient, type
 """
             )
         }
-        .updateExactlyOne()
+        .executeAndReturnGeneratedKeys()
+        .exactlyOne<StaffAttendanceRealtimeAudit>()
 }
 
 fun Database.Transaction.markStaffDeparture(
@@ -692,18 +744,22 @@ fun Database.Transaction.deleteStaffAttendancesOnDateExcept(
     employeeId: EmployeeId,
     arrivalDate: LocalDate,
     exceptIds: List<StaffAttendanceRealtimeId>,
-) = execute {
-    sql(
-        """
+) =
+    createUpdate {
+            sql(
+                """
 DELETE FROM staff_attendance_realtime
 WHERE
     (group_id IS NULL OR group_id = ANY (SELECT id FROM daycare_group WHERE daycare_id = ${bind(unitId)})) AND
     employee_id = ${bind(employeeId)} AND
     between_start_and_end(${bind(arrivalDate.asHelsinkiDateTimeRange())}, arrived) AND
     NOT id = ANY(${bind(exceptIds)})
+RETURNING id, employee_id, group_id, arrived, departed, occupancy_coefficient, type
 """
-    )
-}
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .toList<StaffAttendanceRealtimeAudit>()
 
 fun Database.Transaction.deleteExternalAttendancesOnDateExcept(
     name: String,
