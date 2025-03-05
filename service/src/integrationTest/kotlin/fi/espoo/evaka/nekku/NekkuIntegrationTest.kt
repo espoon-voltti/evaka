@@ -5,12 +5,9 @@
 package fi.espoo.evaka.nekku
 
 import fi.espoo.evaka.FullApplicationTest
-import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-
-private val logger = KotlinLogging.logger {}
 
 class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
