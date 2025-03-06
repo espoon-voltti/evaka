@@ -375,6 +375,10 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
+    class SyncNekkuProducts : AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
     data class SendServiceApplicationDecidedEmail(val serviceApplicationId: ServiceApplicationId) :
         AsyncJob {
         override val user: AuthenticatedUser? = null
