@@ -47,6 +47,7 @@ import fi.espoo.evaka.shared.template.EvakaTemplateProvider
 import fi.espoo.evaka.shared.template.ITemplateProvider
 import fi.espoo.evaka.titania.TitaniaEmployeeIdConverter
 import io.opentelemetry.api.trace.Tracer
+import java.net.URI
 import org.jdbi.v3.core.Jdbi
 import org.springframework.beans.factory.ObjectProvider
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory
@@ -173,6 +174,13 @@ class EspooConfig {
         }
 
     @Bean
+    fun linkityEnv(espooEnv: EspooEnv, env: Environment): LinkityEnv? =
+        when (espooEnv.linkityEnabled) {
+            true -> LinkityEnv.fromEnvironment(env)
+            false -> null
+        }
+
+    @Bean
     fun featureConfig(): FeatureConfig =
         FeatureConfig(
             valueDecisionCapacityFactorEnabled = false,
@@ -273,6 +281,7 @@ data class EspooEnv(
     val invoiceIntegrationEnabled: Boolean,
     val patuIntegrationEnabled: Boolean,
     val biIntegrationEnabled: Boolean,
+    val linkityEnabled: Boolean,
 ) {
     companion object {
         fun fromEnvironment(env: Environment): EspooEnv =
@@ -284,6 +293,7 @@ data class EspooEnv(
                     ) ?: true,
                 patuIntegrationEnabled = env.lookup("espoo.integration.patu.enabled") ?: false,
                 biIntegrationEnabled = env.lookup("espoo.integration.bi.enabled") ?: false,
+                linkityEnabled = env.lookup("espoo.integration.linkity.enabled") ?: false,
             )
     }
 }
@@ -338,6 +348,16 @@ data class EspooPatuIntegrationEnv(
                 url = env.lookup("fi.espoo.integration.patu.url"),
                 username = env.lookup("fi.espoo.integration.patu.username"),
                 password = Sensitive(env.lookup("fi.espoo.integration.patu.password")),
+            )
+    }
+}
+
+data class LinkityEnv(val url: URI, val apiKey: Sensitive<String>) {
+    companion object {
+        fun fromEnvironment(env: Environment) =
+            LinkityEnv(
+                url = URI.create(env.lookup("espoo.integration.linkity.url")),
+                apiKey = Sensitive(env.lookup("espoo.integration.linkity.apiKey")),
             )
     }
 }
