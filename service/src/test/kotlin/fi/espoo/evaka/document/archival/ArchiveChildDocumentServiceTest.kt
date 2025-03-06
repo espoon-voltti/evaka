@@ -132,10 +132,8 @@ class ArchiveChildDocumentServiceTest {
                         type = DocumentType.VASU,
                         placementTypes = setOf(PlacementType.PRESCHOOL),
                         language = OfficialLanguage.FI,
-                        confidentiality = DocumentConfidentiality(
-                            durationYears = 10,
-                            basis = "Laki § 123",
-                        ),
+                        confidentiality =
+                            DocumentConfidentiality(durationYears = 10, basis = "Laki § 123"),
                         legalBasis = "",
                         validity = DateRange(start = LocalDate.parse("2022-08-01"), end = null),
                         published = true,
@@ -176,10 +174,7 @@ class ArchiveChildDocumentServiceTest {
                         type = EvakaUserType.EMPLOYEE,
                     ),
                 confidential = true,
-                confidentiality = DocumentConfidentiality(
-                    durationYears = 10,
-                    basis = "Laki § 123",
-                ),
+                confidentiality = DocumentConfidentiality(durationYears = 10, basis = "Laki § 123"),
                 downloadPath =
                     "/employee/child-documents/child-documents/child_document_c3cc95f8-f045-11ef-9114-87ea771c5c89.pdf/pdf",
                 receivedBy = DocumentOrigin.ELECTRONIC,
