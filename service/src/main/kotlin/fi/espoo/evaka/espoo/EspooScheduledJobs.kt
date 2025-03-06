@@ -6,6 +6,7 @@ package fi.espoo.evaka.espoo
 
 import fi.espoo.evaka.ScheduledJobsEnv
 import fi.espoo.evaka.espoo.bi.EspooBiTable
+import fi.espoo.evaka.linkity.generateDateRangesForStaffAttendancePlanQueries
 import fi.espoo.evaka.reports.patu.PatuReportingService
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.AsyncJobType
@@ -30,6 +31,10 @@ enum class EspooScheduledJob(
     PlanBiJobs(
         EspooScheduledJobs::planBiJobs,
         ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(1, 0))),
+    ),
+    GetStaffAttendancePlansFromLinkity(
+        EspooScheduledJobs::getStaffAttendancePlansFromLinkity,
+        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(1, 30))),
     ),
 }
 
@@ -61,6 +66,24 @@ class EspooScheduledJobs(
                 runAt = clock.now(),
                 retryCount = 1,
             )
+        }
+    }
+
+    fun getStaffAttendancePlansFromLinkity(db: Database.Connection, clock: EvakaClock) {
+        val weeksAhead = 6L
+        val daysInSingleRun = 7L
+        val startDate = clock.today()
+        val endDate = startDate.plusWeeks(weeksAhead).minusDays(1)
+
+        logger.info {
+            "Scheduling Linkity shifts fetch from $startDate to $endDate in $daysInSingleRun day chunks"
+        }
+        db.transaction { tx ->
+            val dateRanges =
+                generateDateRangesForStaffAttendancePlanQueries(startDate, endDate, daysInSingleRun)
+                    .map { EspooAsyncJob.GetStaffAttendancePlansFromLinkity(it) }
+
+            espooAsyncJobRunner.plan(tx, dateRanges, runAt = clock.now())
         }
     }
 }
