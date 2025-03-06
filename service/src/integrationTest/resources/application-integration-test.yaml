@@ -80,6 +80,15 @@ evaka:
           location: classpath:xroad/trustStore.jks
           password: password
           type: JKS
+    aromi:
+      enabled: true
+      sftp:
+        host: localhost
+        port: 2222
+        host_keys: AAAAC3NzaC1lZDI1NTE5AAAAICADdlntyAKbOUGQDkdzdhQBu12jZjb0KmxLyrklMXTq
+        username: foo
+        password: pass
+      file_pattern: "'upload/EVAKA'ddMMyyyy'.csv'"
   not_for_prod:
     force_unpublish_document_template_enabled: true
   jwt:
