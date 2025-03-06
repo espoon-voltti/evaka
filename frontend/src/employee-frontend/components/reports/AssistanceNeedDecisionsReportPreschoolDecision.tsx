@@ -146,20 +146,20 @@ const DecisionView = React.memo(function DecisionView({
         <FixedSpaceRow justifyContent="space-between" alignItems="center">
           <ReturnButton label={i18n.common.goBack} />
           {decision.hasDocument && (
-            <Button
-              appearance="inline"
-              text={i18n.common.download}
-              icon={faArrowDownToLine}
-              onClick={() => {
-                window.open(
-                  getAssistanceNeedPreschoolDecisionPdf({
-                    id: decision.id
-                  }).url.toString(),
-                  '_blank',
-                  'noopener,noreferrer'
-                )
-              }}
-            />
+            <a
+              href={getAssistanceNeedPreschoolDecisionPdf({
+                id: decision.id
+              }).url.toString()}
+              target="_blank"
+              rel="noreferrer"
+            >
+              <Button
+                appearance="inline"
+                icon={faArrowDownToLine}
+                text={i18n.common.download}
+                onClick={() => undefined}
+              />
+            </a>
           )}
         </FixedSpaceRow>
       </Container>

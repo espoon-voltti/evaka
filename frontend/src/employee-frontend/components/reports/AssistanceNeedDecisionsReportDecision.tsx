@@ -176,18 +176,18 @@ export default React.memo(function AssistanceNeedDecisionsReportDecision() {
                 <ReturnButton label={i18n.common.goBack} />
                 {assistanceNeedDecision.isSuccess &&
                   assistanceNeedDecision.value.decision.hasDocument && (
-                    <Button
-                      appearance="inline"
-                      text={i18n.common.download}
-                      icon={faArrowDownToLine}
-                      onClick={() => {
-                        window.open(
-                          getAssistanceNeedDecisionPdf({ id }).url.toString(),
-                          '_blank',
-                          'noopener,noreferrer'
-                        )
-                      }}
-                    />
+                    <a
+                      href={getAssistanceNeedDecisionPdf({ id }).url.toString()}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      <Button
+                        appearance="inline"
+                        icon={faArrowDownToLine}
+                        text={i18n.common.download}
+                        onClick={() => undefined}
+                      />
+                    </a>
                   )}
               </FixedSpaceRow>
 
