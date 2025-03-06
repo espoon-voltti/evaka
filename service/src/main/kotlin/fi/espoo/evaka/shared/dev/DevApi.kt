@@ -118,6 +118,7 @@ import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.pis.updatePersonFromVtj
 import fi.espoo.evaka.placement.PlacementPlanService
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.process.DocumentConfidentiality
 import fi.espoo.evaka.reservations.DailyReservationRequest
 import fi.espoo.evaka.reservations.ReservationInsert
 import fi.espoo.evaka.reservations.createReservationsAndAbsences
@@ -2398,7 +2399,7 @@ data class DevDocumentTemplate(
     val type: DocumentType = DocumentType.PEDAGOGICAL_ASSESSMENT,
     val placementTypes: Set<PlacementType> = PlacementType.entries.toSet(),
     val language: OfficialLanguage = OfficialLanguage.FI,
-    val confidential: Boolean = true,
+    val confidentiality: DocumentConfidentiality? = null,
     val legalBasis: String = "§15",
     val validity: DateRange,
     val processDefinitionNumber: String? = null,

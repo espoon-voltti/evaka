@@ -699,7 +699,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
         )
         assertEquals("Päätös tuesta varhaiskasvatuksessa", metadata.primaryDocument.name)
         assertEquals(assistanceWorker.evakaUserId, metadata.primaryDocument.createdBy?.id)
-        assertEquals(true, metadata.primaryDocument.confidential)
+        assertEquals(100, metadata.primaryDocument.confidentiality?.durationYears)
         assertEquals(
             "/employee/assistance-need-decision/${assistanceNeedDecision.id}/pdf",
             metadata.primaryDocument.downloadPath,

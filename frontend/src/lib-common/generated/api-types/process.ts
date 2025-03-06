@@ -44,10 +44,19 @@ export type ArchivedProcessState =
   | 'COMPLETED'
 
 /**
-* Generated from fi.espoo.evaka.process.ProcessMetadataController.DocumentMetadata
+* Generated from fi.espoo.evaka.process.DocumentConfidentiality
+*/
+export interface DocumentConfidentiality {
+  basis: string
+  durationYears: number
+}
+
+/**
+* Generated from fi.espoo.evaka.process.DocumentMetadata
 */
 export interface DocumentMetadata {
   confidential: boolean | null
+  confidentiality: DocumentConfidentiality | null
   createdAt: HelsinkiDateTime | null
   createdBy: EvakaUser | null
   documentId: UUID
@@ -57,14 +66,14 @@ export interface DocumentMetadata {
 }
 
 /**
-* Generated from fi.espoo.evaka.process.ProcessMetadataController.DocumentOrigin
+* Generated from fi.espoo.evaka.process.DocumentOrigin
 */
 export type DocumentOrigin =
   | 'ELECTRONIC'
   | 'PAPER'
 
 /**
-* Generated from fi.espoo.evaka.process.ProcessMetadataController.ProcessMetadata
+* Generated from fi.espoo.evaka.process.ProcessMetadata
 */
 export interface ProcessMetadata {
   primaryDocument: DocumentMetadata

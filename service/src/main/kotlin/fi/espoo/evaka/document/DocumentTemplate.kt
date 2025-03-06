@@ -10,6 +10,7 @@ import fi.espoo.evaka.ConstList
 import fi.espoo.evaka.document.childdocument.AnsweredQuestion
 import fi.espoo.evaka.document.childdocument.DocumentStatus
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.process.DocumentConfidentiality
 import fi.espoo.evaka.shared.DocumentTemplateId
 import fi.espoo.evaka.shared.HtmlBuilder
 import fi.espoo.evaka.shared.HtmlElement
@@ -17,6 +18,7 @@ import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.OfficialLanguage
 import java.time.format.DateTimeFormatter
+import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.json.Json
 
 private data class Translations(val yes: String, val no: String)
@@ -343,7 +345,7 @@ data class DocumentTemplate(
     val type: DocumentType,
     val placementTypes: Set<PlacementType>,
     val language: OfficialLanguage,
-    val confidential: Boolean,
+    @Nested("confidentiality") val confidentiality: DocumentConfidentiality?,
     val legalBasis: String,
     val validity: DateRange,
     val published: Boolean,
@@ -357,7 +359,7 @@ data class ExportedDocumentTemplate(
     val type: DocumentType,
     val placementTypes: Set<PlacementType>,
     val language: OfficialLanguage,
-    val confidential: Boolean,
+    val confidentiality: DocumentConfidentiality?,
     val legalBasis: String,
     val validity: DateRange,
     val processDefinitionNumber: String?,
@@ -370,7 +372,7 @@ data class DocumentTemplateBasicsRequest(
     val type: DocumentType,
     val placementTypes: Set<PlacementType>,
     val language: OfficialLanguage,
-    val confidential: Boolean,
+    val confidentiality: DocumentConfidentiality?,
     val legalBasis: String,
     val validity: DateRange,
     val processDefinitionNumber: String?,

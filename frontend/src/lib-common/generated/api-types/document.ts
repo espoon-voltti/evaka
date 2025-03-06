@@ -9,6 +9,7 @@ import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
 import { Action } from '../action'
 import { ChildDocumentId } from './shared'
+import { DocumentConfidentiality } from './process'
 import { DocumentTemplateId } from './shared'
 import { EmployeeId } from './shared'
 import { JsonOf } from '../../json'
@@ -220,7 +221,7 @@ export type DocumentStatus =
 */
 export interface DocumentTemplate {
   archiveDurationMonths: number | null
-  confidential: boolean
+  confidentiality: DocumentConfidentiality | null
   content: DocumentTemplateContent
   id: DocumentTemplateId
   language: OfficialLanguage
@@ -238,7 +239,7 @@ export interface DocumentTemplate {
 */
 export interface DocumentTemplateBasicsRequest {
   archiveDurationMonths: number | null
-  confidential: boolean
+  confidentiality: DocumentConfidentiality | null
   language: OfficialLanguage
   legalBasis: string
   name: string
@@ -299,7 +300,7 @@ export interface DocumentWriteLock {
 */
 export interface ExportedDocumentTemplate {
   archiveDurationMonths: number | null
-  confidential: boolean
+  confidentiality: DocumentConfidentiality | null
   content: DocumentTemplateContent
   language: OfficialLanguage
   legalBasis: string

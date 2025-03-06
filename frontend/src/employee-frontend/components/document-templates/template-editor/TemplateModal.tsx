@@ -63,6 +63,8 @@ export const documentTemplateForm = transformed(
     ),
     language: required(oneOf<OfficialLanguage>()),
     confidential: boolean(),
+    confidentialityDurationYears: required(value<string>()),
+    confidentialityBasis: required(value<string>()),
     legalBasis: string(),
     validity: required(openEndedLocalDateRange()),
     processDefinitionNumber: required(value<string>()),
@@ -75,20 +77,43 @@ export const documentTemplateForm = transformed(
       if (isNaN(archiveDurationMonths) || archiveDurationMonths < 1) {
         return ValidationError.field('archiveDurationMonths', 'integerFormat')
       }
-      const output: DocumentTemplateBasicsRequest = {
-        ...value,
-        processDefinitionNumber: value.processDefinitionNumber.trim(),
-        archiveDurationMonths: archiveDurationMonths
-      }
-      return ValidationSuccess.of(output)
-    } else {
-      const output: DocumentTemplateBasicsRequest = {
-        ...value,
-        processDefinitionNumber: null,
-        archiveDurationMonths: null
-      }
-      return ValidationSuccess.of(output)
     }
+
+    const confidential = value.confidential
+    if (confidential) {
+      const confidentialityDurationYears = parseInt(
+        value.confidentialityDurationYears
+      )
+      if (
+        isNaN(confidentialityDurationYears) ||
+        confidentialityDurationYears < 1
+      ) {
+        return ValidationError.field(
+          'confidentialityDurationYears',
+          'integerFormat'
+        )
+      }
+      if (value.confidentialityBasis.trim().length === 0) {
+        return ValidationError.field('confidentialityBasis', 'required')
+      }
+    }
+
+    const output: DocumentTemplateBasicsRequest = {
+      ...value,
+      processDefinitionNumber: archived
+        ? value.processDefinitionNumber.trim()
+        : null,
+      archiveDurationMonths: archived
+        ? parseInt(value.archiveDurationMonths)
+        : null,
+      confidentiality: confidential
+        ? {
+            durationYears: parseInt(value.confidentialityDurationYears),
+            basis: value.confidentialityBasis.trim()
+          }
+        : null
+    }
+    return ValidationSuccess.of(output)
   }
 )
 
@@ -154,7 +179,10 @@ export default React.memo(function TemplateModal({ onClose, mode }: Props) {
               domValue: mode.data.language,
               options: languageOptions
             },
-            confidential: mode.data.confidential,
+            confidential: mode.data.confidentiality !== null,
+            confidentialityDurationYears:
+              mode.data.confidentiality?.durationYears?.toString() ?? '',
+            confidentialityBasis: mode.data.confidentiality?.basis ?? '',
             legalBasis: mode.data.legalBasis,
             validity: openEndedLocalDateRange.fromRange(
               DateRange.parseJson(mode.data.validity)
@@ -175,6 +203,8 @@ export default React.memo(function TemplateModal({ onClose, mode }: Props) {
               options: languageOptions
             },
             confidential: true,
+            confidentialityDurationYears: '100',
+            confidentialityBasis: '',
             legalBasis: '',
             validity: openEndedLocalDateRange.empty(),
             processDefinitionNumber: '',
@@ -191,6 +221,8 @@ export default React.memo(function TemplateModal({ onClose, mode }: Props) {
     placementTypes,
     language,
     confidential,
+    confidentialityDurationYears,
+    confidentialityBasis,
     legalBasis,
     validity,
     processDefinitionNumber,
@@ -260,6 +292,29 @@ export default React.memo(function TemplateModal({ onClose, mode }: Props) {
         bind={confidential}
         label={i18n.documentTemplates.templateModal.confidential}
       />
+      {confidential.state && (
+        <>
+          <Gap />
+          <Label>
+            {i18n.documentTemplates.templateModal.confidentialityDuration}
+          </Label>
+          <InputFieldF
+            data-qa="confidentiality-duration-years"
+            bind={confidentialityDurationYears}
+            type="number"
+            hideErrorsBeforeTouched
+          />{' '}
+          <Gap />
+          <Label>
+            {i18n.documentTemplates.templateModal.confidentialityBasis}
+          </Label>
+          <InputFieldF
+            data-qa="confidentiality-basis"
+            bind={confidentialityBasis}
+            hideErrorsBeforeTouched
+          />
+        </>
+      )}
       <Gap />
       <ExpandingInfo
         info={i18n.documentTemplates.templateModal.processDefinitionNumberInfo}
