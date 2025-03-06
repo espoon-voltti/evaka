@@ -10,17 +10,22 @@ import com.jcraft.jsch.HostKeyRepository
 import com.jcraft.jsch.JSch
 import com.jcraft.jsch.UserInfo
 import fi.espoo.evaka.SftpEnv
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.BufferedReader
 import java.io.InputStream
 import java.nio.charset.Charset
 import java.util.*
 
+private val logger = KotlinLogging.logger {}
+
 class SftpClient(private val sftpEnv: SftpEnv) {
     fun put(inputStream: InputStream, filename: String) = execute { channel ->
+        logger.info { "Uploading $filename to ${sftpEnv.host}:${sftpEnv.port}" }
         channel.put(inputStream, filename)
     }
 
     fun getAsString(filename: String, encoding: Charset): String = execute { channel ->
+        logger.info { "Downloading $filename from ${sftpEnv.host}:${sftpEnv.port}" }
         channel.get(filename).bufferedReader(encoding).use(BufferedReader::readText)
     }
 
