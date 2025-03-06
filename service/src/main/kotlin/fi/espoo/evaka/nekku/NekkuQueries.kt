@@ -11,7 +11,7 @@ import org.jdbi.v3.core.mapper.PropagateNull
 data class CustomerNumbers(
     @PropagateNull val number: String,
     val name: String,
-    val customergroup: String,
+    val group: String,
     val unit_size: String,
 )
 
@@ -19,7 +19,7 @@ data class CustomerNumbers(
 fun fetchAndUpdateNekkuCustomers(client: NekkuClient, db: Database.Connection) {
     val customersFromNekku =
         client.getCustomers().map { it ->
-            CustomerNumbers(it.number, it.name, it.customergroup, it.unit_size)
+            CustomerNumbers(it.number, it.name, it.group, it.unit_size)
         }
 
     if (customersFromNekku.isEmpty())
@@ -62,7 +62,7 @@ INSERT INTO nekku_customer (number, name, customer_group, unit_size)
 VALUES (
     ${bind{it.number}},
     ${bind{it.name}},
-    ${bind{it.customergroup}},
+    ${bind{it.group}},
     ${bind{it.unit_size}}
 )
 ON CONFLICT (number) DO 
@@ -83,7 +83,7 @@ WHERE
 fun Database.Transaction.getNekkuCustomers(): List<NekkuCustomer> {
     return createQuery {
             sql(
-                "SELECT number, name, customer_group, unit_size FROM nekku_customer WHERE customer_group = 'Varhaiskasvatus'"
+                "SELECT number, name, customer_group AS \"group\", unit_size FROM nekku_customer WHERE customer_group = 'Varhaiskasvatus'"
             )
         }
         .toList<NekkuCustomer>()
