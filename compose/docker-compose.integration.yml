@@ -28,7 +28,6 @@ services:
       - ./test-results/:/evaka/service/build/test-results/
     depends_on:
       - db
-      - redis
       - s3-mock
       - sftp
     ipc: host
