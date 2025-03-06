@@ -500,6 +500,7 @@ export interface DevDaycare {
   operationTimes: (TimeRange | null)[]
   ophOrganizerOid: string | null
   ophUnitOid: string | null
+  partnerCode: string
   phone: string | null
   preschoolApplyPeriod: DateRange | null
   providerId: string
@@ -794,6 +795,7 @@ export interface DevPayment {
   unitIban: string | null
   unitId: DaycareId
   unitName: string
+  unitPartnerCode: string | null
   unitProviderId: string | null
 }
 

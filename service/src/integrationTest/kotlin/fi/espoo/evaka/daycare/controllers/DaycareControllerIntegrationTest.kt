@@ -922,5 +922,6 @@ private fun DaycareFields.Companion.fromDaycare(daycare: Daycare): DaycareFields
         businessId = daycare.businessId,
         iban = daycare.iban,
         providerId = daycare.providerId,
+        partnerCode = daycare.partnerCode,
         mealtimes = daycare.mealTimes,
     )

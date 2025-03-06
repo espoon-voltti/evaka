@@ -294,6 +294,7 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             assertEquals(null, payment.unit.businessId)
             assertEquals(null, payment.unit.iban)
             assertEquals(null, payment.unit.providerId)
+            assertEquals(null, payment.unit.partnerCode)
         }
 
         val confirmedPayments2 = createPaymentDrafts(janLast)
@@ -369,6 +370,7 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             assertEquals(null, payment.unit.businessId)
             assertEquals(null, payment.unit.iban)
             assertEquals(null, payment.unit.providerId)
+            assertEquals(null, payment.unit.partnerCode)
         }
     }
 
@@ -427,6 +429,7 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             assertEquals(testVoucherDaycare.businessId, payment.unit.businessId)
             assertEquals(testVoucherDaycare.iban, payment.unit.iban)
             assertEquals(testVoucherDaycare.providerId, payment.unit.providerId)
+            assertEquals(testVoucherDaycare.partnerCode, payment.unit.partnerCode)
             assertEquals(testVoucherDaycare.costCenter, payment.unit.costCenter)
         }
     }

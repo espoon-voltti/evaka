@@ -116,6 +116,7 @@ type FormData = {
   businessId: string
   iban: string
   providerId: string
+  partnerCode: string
 } & MealtimeData
 
 interface UnitDecisionCustomization {
@@ -684,6 +685,7 @@ function validateForm(
     businessId,
     iban,
     providerId,
+    partnerCode,
     providesShiftCare,
     shiftCareOpenOnHolidays
   } = form
@@ -746,6 +748,7 @@ function validateForm(
         businessId,
         iban,
         providerId,
+        partnerCode,
         mealtimes: {
           breakfast: mealtimeBreakfast,
           lunch: mealtimeLunch,
@@ -875,6 +878,7 @@ function toFormData(unit: Daycare | undefined): FormData {
     businessId: unit?.businessId ?? '',
     iban: unit?.iban ?? '',
     providerId: unit?.providerId ?? '',
+    partnerCode: unit?.partnerCode ?? '',
     mealtimeBreakfast: formatTimeRange(unit?.mealTimes.breakfast),
     mealtimeLunch: formatTimeRange(unit?.mealTimes.lunch),
     mealtimeSnack: formatTimeRange(unit?.mealTimes.snack),
@@ -1381,6 +1385,19 @@ export default function UnitEditor(props: Props) {
                           }
                         />
                       </div>
+                      <label htmlFor="private-service-voucher-partner-code">
+                        {i18n.unitEditor.label.partnerCode}
+                      </label>
+                      <div>
+                        <InputField
+                          id="private-service-voucher-partner-code"
+                          value={form.partnerCode}
+                          width="m"
+                          onChange={(value) =>
+                            updateForm({ partnerCode: value })
+                          }
+                        />
+                      </div>
                     </IndentedTable>
                   )}
               </div>
@@ -1405,6 +1422,10 @@ export default function UnitEditor(props: Props) {
             <FormPart>
               <div>{i18n.unitEditor.label.providerId}</div>
               <div>{form.providerId}</div>
+            </FormPart>
+            <FormPart>
+              <div>{i18n.unitEditor.label.partnerCode}</div>
+              <div>{form.partnerCode}</div>
             </FormPart>
           </>
         )}

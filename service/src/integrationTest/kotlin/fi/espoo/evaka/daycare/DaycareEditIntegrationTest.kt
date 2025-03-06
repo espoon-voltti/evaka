@@ -114,6 +114,7 @@ class DaycareEditIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             businessId = "Y-123456789",
             iban = "FI123456789",
             providerId = "123456789",
+            partnerCode = "abcdefg",
             mealtimes =
                 DaycareMealtimes(
                     breakfast = null,

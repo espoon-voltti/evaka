@@ -118,6 +118,7 @@ val testVoucherDaycare =
         businessId = "1234567-8",
         iban = "FI12 3456 7891 2345 67",
         providerId = "1234",
+        partnerCode = "abcdefg",
     )
 
 val testVoucherDaycare2 =
@@ -131,6 +132,7 @@ val testVoucherDaycare2 =
         businessId = "8765432-1-8",
         iban = "FI98 7654 3210 9876 54",
         providerId = "4321",
+        partnerCode = "gfedcba",
     )
 
 val testClub =
