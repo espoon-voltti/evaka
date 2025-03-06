@@ -177,7 +177,11 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
         db.transaction {
             it.execute {
                 sql(
-                    "UPDATE daycare SET invoiced_by_municipality = false WHERE id = ${bind(daycareId)}"
+                    """
+                    UPDATE daycare
+                    SET provider_type = 'MUNICIPAL', invoiced_by_municipality = false
+                    WHERE id = ${bind(daycareId)}
+                    """
                 )
             }
 
@@ -193,6 +197,33 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
 
         assertEquals(0, getEmails().size)
         assertEquals(0, getIncomeNotifications(fridgeHeadOfChildId).size)
+    }
+
+    @Test
+    fun `notification is sent to customers of private service voucher unit`() {
+        db.transaction {
+            it.execute {
+                sql(
+                    """
+                    UPDATE daycare
+                    SET provider_type = 'PRIVATE_SERVICE_VOUCHER', invoiced_by_municipality = false
+                    WHERE id = ${bind(daycareId)}
+                    """
+                )
+            }
+
+            it.insert(
+                DevIncome(
+                    personId = fridgeHeadOfChildId,
+                    modifiedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
+                    validFrom = clock.today().minusMonths(1),
+                    validTo = clock.today().plusWeeks(4),
+                )
+            )
+        }
+
+        assertEquals(1, getEmails().size)
+        assertEquals(1, getIncomeNotifications(fridgeHeadOfChildId).size)
     }
 
     @Test
