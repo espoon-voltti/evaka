@@ -230,7 +230,7 @@ export default React.memo(function PersonFinanceNotesAndMessages({
             setConfirmDeleteThread(undefined)
             clearUiMode()
           }}
-          data-qa="delete-finance-message-modal"
+          data-qa="delete-finance-thread-modal"
         />
       )}
 
@@ -402,7 +402,7 @@ export default React.memo(function PersonFinanceNotesAndMessages({
                               toggleUiMode(`finance-message-editor`)
                             }}
                             size="s"
-                            data-qa="reply-finance-thread"
+                            data-qa="reply-finance-thread-button"
                             aria-label={i18n.common.edit}
                           />
                           <IconOnlyButton
@@ -412,7 +412,7 @@ export default React.memo(function PersonFinanceNotesAndMessages({
                               toggleUiMode(`delete-finance-thread`)
                             }}
                             size="s"
-                            data-qa={`delete-finance-thread-${thread.id}`}
+                            data-qa="delete-finance-thread-button"
                             aria-label={i18n.common.remove}
                           />
                         </FixedSpaceRow>

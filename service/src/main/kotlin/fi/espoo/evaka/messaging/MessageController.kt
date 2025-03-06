@@ -680,6 +680,19 @@ class MessageController(
                             )
                         }
                     }
+                    if (senderAccountType == AccountType.FINANCE) {
+                        if (body.recipients.size > 1) {
+                            throw BadRequest(
+                                "Finance message accounts can only send messages to single recipient"
+                            )
+                        } else if (
+                            body.recipients.any { it.type != MessageRecipientType.CITIZEN }
+                        ) {
+                            throw BadRequest(
+                                "Finance message accounts can only send messages to citizens"
+                            )
+                        }
+                    }
 
                     val createdId =
                         messageService.sendMessageAsEmployee(
