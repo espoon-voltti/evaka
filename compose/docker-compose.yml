@@ -70,11 +70,6 @@ services:
       - ./sftp/ssh_host_rsa_key:/etc/ssh/ssh_host_rsa_key
     command: foo:pass:::upload
 
-  smtp:
-    image: mailhog/mailhog
-    ports:
-      - "8025:8025"
-
   dummy-idp:
     build:
       context: ../dummy-idp
