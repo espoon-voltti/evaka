@@ -81,6 +81,11 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             id = EmployeeId(UUID.randomUUID()),
             roles = setOf(UserRole.MESSAGING),
         )
+    private val financeAdmin =
+        AuthenticatedUser.Employee(
+            id = EmployeeId(UUID.randomUUID()),
+            roles = setOf(UserRole.FINANCE_ADMIN),
+        )
     private val person1 = AuthenticatedUser.Citizen(id = testAdult_1.id, CitizenAuthLevel.STRONG)
     private val person2 = AuthenticatedUser.Citizen(id = testAdult_2.id, CitizenAuthLevel.STRONG)
     private val person3 = AuthenticatedUser.Citizen(id = testAdult_3.id, CitizenAuthLevel.STRONG)
@@ -106,6 +111,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private lateinit var person7Account: MessageAccountId
     private lateinit var serviceWorkerAccount: MessageAccountId
     private lateinit var messagerAccount: MessageAccountId
+    private lateinit var financeAccount: MessageAccountId
 
     private fun insertChild(
         tx: Database.Transaction,
@@ -282,6 +288,8 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 tx.upsertEmployeeMessageAccount(serviceWorker.id, AccountType.SERVICE_WORKER)
             tx.insert(DevEmployee(id = messager.id, firstName = "Municipal", lastName = "Messager"))
             messagerAccount = tx.upsertEmployeeMessageAccount(messager.id, AccountType.MUNICIPAL)
+            tx.insert(DevEmployee(id = financeAdmin.id, firstName = "Finance", lastName = "Admin"))
+            financeAccount = tx.upsertEmployeeMessageAccount(financeAdmin.id, AccountType.FINANCE)
         }
     }
 
@@ -1742,6 +1750,70 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         // then
         assertEquals(0, getMessageCopies(employee1, group1Account, readTime).size)
+    }
+
+    @Test
+    fun `finance can send a message only to a single adult at a time`() {
+        postNewThread(
+            title = "title",
+            message = "content",
+            messageType = MessageType.MESSAGE,
+            sender = financeAccount,
+            recipients = listOf(MessageRecipient(MessageRecipientType.CITIZEN, testAdult_1.id)),
+            user = financeAdmin,
+        )
+
+        assertThrows<BadRequest> {
+            postNewThread(
+                title = "title",
+                message = "content",
+                messageType = MessageType.MESSAGE,
+                sender = financeAccount,
+                recipients =
+                    listOf(
+                        MessageRecipient(MessageRecipientType.CITIZEN, testAdult_1.id),
+                        MessageRecipient(MessageRecipientType.CITIZEN, testAdult_2.id),
+                    ),
+                user = financeAdmin,
+            )
+        }
+
+        assertEquals(1, getSentMessages(financeAccount, financeAdmin).size)
+    }
+
+    @Test
+    fun `citizen can reply to message from finance`() {
+        postNewThread(
+            title = "Vastaa heti",
+            message = "Viestin sisältö",
+            messageType = MessageType.MESSAGE,
+            sender = financeAccount,
+            recipients = listOf(MessageRecipient(MessageRecipientType.CITIZEN, testAdult_1.id)),
+            user = financeAdmin,
+        )
+        val thread = getRegularMessageThreads(person1)[0]
+        replyToMessage(
+            messageId = thread.messages.first().id,
+            content = "Vastaus",
+            recipientAccountIds = setOf(financeAccount),
+            user = person1,
+            now = clock.now(),
+        )
+        assertEquals(1, unreadMessagesCount(financeAccount, financeAdmin))
+    }
+
+    @Test
+    fun `finance cannot send messages to children`() {
+        assertThrows<BadRequest> {
+            postNewThread(
+                title = "title",
+                message = "content",
+                messageType = MessageType.MESSAGE,
+                sender = financeAccount,
+                recipients = listOf(MessageRecipient(MessageRecipientType.CHILD, testChild_1.id)),
+                user = financeAdmin,
+            )
+        }
     }
 
     private fun prepareGroupAccountAccessTest(
