@@ -2203,7 +2203,9 @@ sealed interface Action {
         DELETE_ACL_EARLY_CHILDHOOD_EDUCATION_SECRETARY(HasGlobalRole(ADMIN)),
         INSERT_ACL_STAFF(
             HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit(),
+            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY)
+                .withUnitProviderTypes(ProviderType.MUNICIPAL, ProviderType.MUNICIPAL_SCHOOL)
+                .inUnit(),
         ),
         DELETE_ACL_STAFF(
             HasGlobalRole(ADMIN),
