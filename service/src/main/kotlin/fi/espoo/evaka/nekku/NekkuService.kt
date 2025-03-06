@@ -30,6 +30,8 @@ class NekkuService(
 
     init {
         asyncJobRunner.registerHandler(::syncNekkuCustomers)
+        asyncJobRunner.registerHandler(::syncNekkuSpecialDiets)
+        asyncJobRunner.registerHandler(::syncNekkuProducts)
     }
 
     fun syncNekkuCustomers(
@@ -52,18 +54,80 @@ class NekkuService(
             )
         }
     }
+
+    fun syncNekkuSpecialDiets(
+        db: Database.Connection,
+        clock: EvakaClock,
+        job: AsyncJob.SyncNekkuSpecialDiets,
+    ) {
+        if (client == null) error("Cannot sync Nekku special diets: NekkuEnv is not configured")
+        fetchAndUpdateNekkuSpecialDiets(client, db)
+    }
+
+    fun planNekkuSpecialDietsSync(db: Database.Connection, clock: EvakaClock) {
+        db.transaction { tx ->
+            tx.removeUnclaimedJobs(setOf(AsyncJobType(AsyncJob.SyncNekkuSpecialDiets::class)))
+            asyncJobRunner.plan(
+                tx,
+                listOf(AsyncJob.SyncNekkuSpecialDiets()),
+                runAt = clock.now(),
+                retryCount = 1,
+            )
+        }
+    }
+
+    fun syncNekkuProducts(
+        db: Database.Connection,
+        clock: EvakaClock,
+        job: AsyncJob.SyncNekkuProducts,
+    ) {
+        if (client == null) error("Cannot sync Nekku products: NekkuEnv is not configured")
+        fetchAndUpdateProducts(client, db)
+    }
+
+    fun planNekkuProductSync(db: Database.Connection, clock: EvakaClock) {
+        db.transaction { tx ->
+            tx.removeUnclaimedJobs(setOf(AsyncJobType(AsyncJob.SyncNekkuProducts::class)))
+            asyncJobRunner.plan(
+                tx,
+                listOf(AsyncJob.SyncNekkuProducts()),
+                runAt = clock.now(),
+                retryCount = 1,
+            )
+        }
+    }
 }
 
 interface NekkuClient {
 
     fun getCustomers(): List<NekkuCustomer>
+
+    fun getSpecialDiets(): List<NekkuSpecialDiet>
+
+    fun getProducts(): List<NekkuProduct>
 }
+
+
 
 class NekkuHttpClient(private val env: NekkuEnv, private val jsonMapper: JsonMapper) : NekkuClient {
     val client = OkHttpClient()
 
     override fun getCustomers(): List<NekkuCustomer> {
         val request = getBaseRequest().get().url(env.url.resolve("customers").toString()).build()
+
+        return executeRequest(request)
+    }
+
+    override fun getSpecialDiets(): List<NekkuSpecialDiet> {
+        val request =
+            getBaseRequest().get().url(env.url.resolve("products/options").toString()).build()
+
+        return executeRequest(request)
+    }
+
+    override fun getProducts(): List<NekkuProduct> {
+        val request =
+            getBaseRequest().get().url(env.url.resolve("products").toString()).build()
 
         return executeRequest(request)
     }
@@ -110,3 +174,39 @@ data class NekkuCustomer(
     val group: String,
     val unit_size: String,
 )
+
+data class NekkuSpecialDiet(
+    val id: String,
+    val name: String,
+    val fields: List<NekkuSpecialDietsField>,
+)
+
+data class NekkuSpecialDietsField(
+    val id: String,
+    val name: String,
+    val type: NekkuSpecialDietType,
+    val options: List<NekkuSpecialDietOption>,
+)
+
+enum class NekkuSpecialDietType {
+    text,
+    checkboxlst,
+}
+
+data class NekkuSpecialDietOption(val weight: Int, val key: String, val value: String)
+
+data class NekkuProduct(
+    val name: String,
+    val sku: String,
+    val options_id: String,
+    val unit_size: String,
+    val meal_time: List<NekkuProductMealTime>,
+    val meal_type: String
+)
+
+enum class NekkuProductMealTime {
+    aamupala,
+    lounas,
+    välipala,
+    päivällinen
+}
