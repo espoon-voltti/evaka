@@ -26,12 +26,6 @@ beforeEach(async () => {
   await Fixture.person(testAdult).saveAdult()
   financeAdmin = await Fixture.employee().financeAdmin().save()
   await createMessageAccounts()
-
-  page = await Page.open({})
-  await employeeLogin(page, financeAdmin)
-
-  await page.goto(config.employeeUrl)
-  guardianPage = new GuardianInformationPage(page)
 })
 
 describe('person finance notes', () => {
@@ -50,6 +44,12 @@ describe('person finance notes', () => {
         }
       )
     }
+
+    page = await Page.open({})
+    await employeeLogin(page, financeAdmin)
+
+    await page.goto(config.employeeUrl)
+    guardianPage = new GuardianInformationPage(page)
 
     await createFinanceNoteFixture(createdAtFirst)
     await createFinanceNoteFixture(createdAtSecond)
@@ -121,5 +121,36 @@ describe('person finance messages', () => {
 
     await notesAndMessages.checkThreadLastMessageSentAt(0, mockedTime3)
     await notesAndMessages.checkThreadLastMessageSentAt(1, mockedTime2)
+  })
+
+  test('message thread can be archived', async () => {
+    const mockedTime = HelsinkiDateTime.of(2025, 3, 1, 10, 0, 0, 0)
+    page = await Page.open({ mockedTime })
+    await employeeLogin(page, financeAdmin)
+    await page.goto(config.employeeUrl)
+    guardianPage = new GuardianInformationPage(page)
+    await guardianPage.navigateToGuardian(testAdult.id)
+
+    let notesAndMessages = await guardianPage.openCollapsible(
+      'financeNotesAndMessages'
+    )
+    const messageEditor = await notesAndMessages.openNewMessageEditor()
+    await messageEditor.sendNewMessage({
+      title: 'New message',
+      content: 'New message'
+    })
+    await runPendingAsyncJobs(mockedTime.addMinutes(1))
+
+    const mockedTime2 = HelsinkiDateTime.of(2025, 3, 1, 11, 0, 0, 0)
+    page = await Page.open({ mockedTime: mockedTime2 })
+    await employeeLogin(page, financeAdmin)
+    await page.goto(config.employeeUrl)
+    guardianPage = new GuardianInformationPage(page)
+    await guardianPage.navigateToGuardian(testAdult.id)
+
+    notesAndMessages = await guardianPage.openCollapsible(
+      'financeNotesAndMessages'
+    )
+    await notesAndMessages.deleteThread()
   })
 })

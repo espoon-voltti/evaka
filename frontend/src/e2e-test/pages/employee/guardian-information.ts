@@ -661,7 +661,8 @@ class FinanceNotesAndMessagesSection extends Section {
   #noteCreatedAt = this.findAll(`[data-qa="finance-note-created-at"]`)
   #threadSentAt = this.findAll(`[data-qa="finance-thread-sent-at"]`)
   #newMessage = this.findByDataQa('send-finance-message-button')
-  #replyThread = this.findAll(`[data-qa="reply-finance-thread"]`)
+  #replyThread = this.findAll(`[data-qa="reply-finance-thread-button"]`)
+  #deleteThread = this.findAll(`[data-qa="delete-finance-thread-button"]`)
 
   async checkNoteCreatedAt(nth: number, expectedCreatedAt: HelsinkiDateTime) {
     await this.#noteCreatedAt
@@ -688,6 +689,13 @@ class FinanceNotesAndMessagesSection extends Section {
 
   getMessageEditor() {
     return new MessageEditor(this.page.findByDataQa('message-editor'))
+  }
+
+  async deleteThread() {
+    await this.#deleteThread.first().click()
+    await new Modal(
+      this.page.findByDataQa('delete-finance-thread-modal')
+    ).submit()
   }
 }
 
