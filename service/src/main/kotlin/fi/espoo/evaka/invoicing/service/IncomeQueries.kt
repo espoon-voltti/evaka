@@ -76,7 +76,7 @@ WITH latest_income AS (
     JOIN latest_income i ON i.person_id = fc_head.head_of_child OR i.person_id = fp_spouse.person_id
     WHERE between_start_and_end(${bind(checkForExpirationRange.asDateRange())}, i.valid_to)
      AND (i.valid_to + INTERVAL '1 day')::date BETWEEN pl.start_date AND pl.end_date
-     AND u.invoiced_by_municipality
+     AND (u.invoiced_by_municipality OR u.provider_type = 'PRIVATE_SERVICE_VOUCHER')
 )
 SELECT person_id, valid_to AS expiration_date
 FROM expiring_income_with_billable_placement_day_after_expiration expiring_income 
