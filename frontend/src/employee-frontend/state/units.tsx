@@ -44,7 +44,12 @@ const defaultState: UnitsState = {
 
 export const UnitsContext = createContext<UnitsState>(defaultState)
 
-export type SearchColumn = 'name' | 'area.name' | 'address' | 'type'
+export type SearchColumn =
+  | 'name'
+  | 'area.name'
+  | 'visitingAddress.streetAddress'
+  | 'visitingAddress.postOffice'
+  | 'type'
 
 export const UnitsContextProvider = React.memo(function UnitsContextProvider({
   children
