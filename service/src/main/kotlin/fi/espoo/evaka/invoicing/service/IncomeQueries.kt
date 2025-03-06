@@ -58,6 +58,7 @@ WITH latest_income AS (
     FROM placement pl
     JOIN service_need sn ON pl.id = sn.placement_id AND daterange(sn.start_date, sn.end_date, '[]') @> ${bind(dayAfterExpiration)}
     JOIN service_need_option sno ON sn.option_id = sno.id AND sno.fee_coefficient > 0
+    JOIN daycare u ON u.id = pl.unit_id
     
     -- head of child
     JOIN fridge_child fc_head ON (
@@ -75,6 +76,7 @@ WITH latest_income AS (
     JOIN latest_income i ON i.person_id = fc_head.head_of_child OR i.person_id = fp_spouse.person_id
     WHERE between_start_and_end(${bind(checkForExpirationRange.asDateRange())}, i.valid_to)
      AND (i.valid_to + INTERVAL '1 day')::date BETWEEN pl.start_date AND pl.end_date
+     AND u.invoiced_by_municipality
 )
 SELECT person_id, valid_to AS expiration_date
 FROM expiring_income_with_billable_placement_day_after_expiration expiring_income 
