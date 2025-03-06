@@ -6,7 +6,6 @@ package fi.espoo.evaka.nekku
 
 import fi.espoo.evaka.decision.logger
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.specialdiet.SpecialDiet
 import org.jdbi.v3.core.mapper.PropagateNull
 
 data class CustomerNumbers(
@@ -97,11 +96,12 @@ fun fetchAndUpdateNekkuSpecialDiets(client: NekkuClient, db: Database.Connection
     if (specialDietsFromNekku.isEmpty())
         error("Refusing to sync empty Nekku special diet list into database")
     db.transaction { tx ->
-//        val nulledSpecialDietsCount = tx.resetNekkuSpecialDiets(specialDietsFromNekku)
-//        if (nulledSpecialDietsCount != 0)
-//            logger.warn {
-//                "Nekku special diet list update caused $nulledSpecialDietsCount special diets to be set to null"
-//            }
+        //        val nulledSpecialDietsCount = tx.resetNekkuSpecialDiets(specialDietsFromNekku)
+        //        if (nulledSpecialDietsCount != 0)
+        //            logger.warn {
+        //                "Nekku special diet list update caused $nulledSpecialDietsCount special
+        // diets to be set to null"
+        //            }
         val deletedSpecialDietsCount = tx.setSpecialDiets(specialDietsFromNekku)
         logger.info {
             "Deleted: $deletedSpecialDietsCount Nekku special diets, inserted ${specialDietsFromNekku.size}"
@@ -117,22 +117,86 @@ fun Database.Transaction.setSpecialDiets(specialDiets: List<NekkuSpecialDiet>): 
     executeBatch(specialDiets) {
         sql(
             """
-//INSERT INTO nekku_customer (number, name, customer_group, unit_size)
-//VALUES (
-//    ${bind{it.number}},
-//    ${bind{it.name}},
-//    ${bind{it.customergroup}},
-//    ${bind{it.unit_size}}
-//)
-//ON CONFLICT (number) DO 
-//UPDATE SET
-//  name = excluded.name,
-//  customer_group = excluded.customer_group,
-//  unit_size = excluded.unit_size
-//WHERE
-//    nekku_customer.name <> excluded.name OR
-//    nekku_customer.customer_group <> excluded.customer_group OR
-//    nekku_customer.unit_size <> excluded.unit_size;
+INSERT INTO nekku_special_diet (id, name, type, weight, key, value)
+VALUES (
+    ${bind{it.id}},
+    ${bind{it.name}},
+    ${bind{it.type}},
+    ${bind{it.weight}},
+    ${bind{it.value}}
+)
+ON CONFLICT (id) DO 
+UPDATE SET
+  name = excluded.name,
+  type = excluded.type,
+  weight = excluded.weight,
+  customer_group = excluded.customer_group,
+  value = excluded.value
+WHERE
+    nekku_special_diet.name <> excluded.name OR
+    nekku_special_diet.type <> excluded.type OR
+    nekku_special_diet.weight <> excluded.weight OR
+    nekku_special_diet.customer_group <> excluded.customer_group OR
+    nekku_special_diet.value <> excluded.value;
+"""
+        )
+    }
+    return deletedCustomerCount
+}
+
+/** Throws an IllegalStateException if Nekku returns an empty product list. */
+fun fetchAndUpdateNekkuProducts(client: NekkuClient, db: Database.Connection) {
+    val productsFromNekku =
+        client.getProducts().map {
+            NekkuProduct(it.sku, it.name, it.unit_size, it.options_id, it.meal_type)
+        }
+
+    if (productsFromNekku.isEmpty())
+        error("Refusing to sync empty Nekku products list into database")
+    db.transaction { tx ->
+        //        val nulledSpecialDietsCount = tx.resetNekkuSpecialDiets(specialDietsFromNekku)
+        //        if (nulledSpecialDietsCount != 0)
+        //            logger.warn {
+        //                "Nekku special diet list update caused $nulledSpecialDietsCount special
+        // diets to be set to null"
+        //            }
+        val deletedSpecialDietsCount = tx.setProducts(productsFromNekku)
+        logger.info {
+            "Deleted: $deletedSpecialDietsCount Nekku special diets, inserted ${productsFromNekku.size}"
+        }
+    }
+}
+
+fun Database.Transaction.setProducts(products: List<NekkuProduct>): Int {
+    val newProducts = products.map { it.sku }
+    val deletedCustomerCount = execute {
+        sql("DELETE FROM nekku_product WHERE sku != ALL (${bind(newProducts)})")
+    }
+    executeBatch(products) {
+        sql(
+            """
+INSERT INTO nekku_product (sku, name, options_id, unit_size, meal_time, meal_type)
+VALUES (
+    ${bind{it.sku}},
+    ${bind{it.name}},
+    ${bind{it.options_id}},
+    ${bind{it.unit_size}},
+    ${bind{it.meal_time}},
+    ${bind{it.meal_type}}
+)
+ON CONFLICT (sku) DO 
+UPDATE SET
+  name = excluded.name,
+  options_id = excluded.options_id,
+  unit_size = excluded.unit_size,
+  meal_time = excluded.meal_time
+  meal_type = excluded.meal_type
+WHERE
+    nekku_product.name <> excluded.name OR
+    nekku_product.options_id <> excluded.options_id OR
+    nekku_product.unit_size <> excluded.unit_size OR
+    nekku_product.meal_time <> excluded.meal_time OR
+    nekku_product.meal_type <> excluded.unimeal_typet_size;
 """
         )
     }
