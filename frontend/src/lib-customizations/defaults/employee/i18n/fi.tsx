@@ -79,6 +79,7 @@ export const fi = {
     remove: 'Poista',
     doNotRemove: 'Älä poista',
     archive: 'Arkistoi',
+    download: 'Lataa',
     cancel: 'Peruuta',
     goBack: 'Palaa',
     confirm: 'Vahvista',

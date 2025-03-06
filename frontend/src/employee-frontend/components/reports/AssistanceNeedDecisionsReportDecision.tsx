@@ -31,12 +31,14 @@ import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { ModalType } from 'lib-components/molecules/modals/BaseModal'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { defaultMargins, Gap } from 'lib-components/white-space'
+import { faArrowDownToLine } from 'lib-icons'
 import { faQuestion, faTimes } from 'lib-icons'
 
 import {
   annulAssistanceNeedDecision,
   decideAssistanceNeedDecision,
   getAssistanceNeedDecision,
+  getAssistanceNeedDecisionPdf,
   markAssistanceNeedDecisionAsOpened,
   updateAssistanceNeedDecisionDecisionMaker
 } from '../../generated/api-clients/assistanceneed'
@@ -170,7 +172,24 @@ export default React.memo(function AssistanceNeedDecisionsReportDecision() {
         ({ decision, permittedActions }) => (
           <>
             <Content>
-              <ReturnButton label={i18n.common.goBack} />
+              <FixedSpaceRow justifyContent="space-between" alignItems="center">
+                <ReturnButton label={i18n.common.goBack} />
+                {assistanceNeedDecision.isSuccess &&
+                  assistanceNeedDecision.value.decision.hasDocument && (
+                    <a
+                      href={getAssistanceNeedDecisionPdf({ id }).url.toString()}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      <Button
+                        appearance="inline"
+                        icon={faArrowDownToLine}
+                        text={i18n.common.download}
+                        onClick={() => undefined}
+                      />
+                    </a>
+                  )}
+              </FixedSpaceRow>
 
               <I18nContext.Provider
                 value={{

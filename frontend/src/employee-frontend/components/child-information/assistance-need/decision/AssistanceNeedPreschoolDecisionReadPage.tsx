@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2023 City of Espoo
+// SPDX-FileCopyrightText: 2017-2025 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -11,7 +11,9 @@ import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import AssistanceNeedPreschoolDecisionReadOnly from 'lib-components/assistance-need-decision/AssistanceNeedPreschoolDecisionReadOnly'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
+import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { Container } from 'lib-components/layout/Container'
 import StickyFooter from 'lib-components/layout/StickyFooter'
 import {
@@ -20,7 +22,9 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import { Gap } from 'lib-components/white-space'
 import { translations } from 'lib-customizations/employee'
+import { faArrowDownToLine } from 'lib-icons'
 
+import { getAssistanceNeedPreschoolDecisionPdf } from '../../../../generated/api-clients/assistanceneed'
 import { useTranslation } from '../../../../state/i18n'
 import MetadataSection from '../../../archive-metadata/MetadataSection'
 import { renderResult } from '../../../async-rendering'
@@ -59,6 +63,27 @@ const DecisionReadView = React.memo(function DecisionReadView({
 
   return (
     <div>
+      <Container>
+        <FixedSpaceRow justifyContent="space-between" alignItems="center">
+          <ReturnButton label={i18n.common.goBack} />
+          {decision.hasDocument && (
+            <a
+              href={getAssistanceNeedPreschoolDecisionPdf({
+                id: decision.id
+              }).url.toString()}
+              target="_blank"
+              rel="noreferrer"
+            >
+              <Button
+                appearance="inline"
+                icon={faArrowDownToLine}
+                text={i18n.common.download}
+                onClick={() => undefined}
+              />
+            </a>
+          )}
+        </FixedSpaceRow>
+      </Container>
       <AssistanceNeedPreschoolDecisionReadOnly
         decision={decision}
         texts={
