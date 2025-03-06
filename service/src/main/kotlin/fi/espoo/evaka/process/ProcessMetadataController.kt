@@ -599,7 +599,7 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                                 type = column("created_by_type"),
                             )
                         },
-                    confidential = true,
+                    confidential = false,
                     confidentiality = null,
                     downloadPath =
                         column<String?>("document_key")?.let {
