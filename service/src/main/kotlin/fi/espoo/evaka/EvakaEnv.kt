@@ -593,7 +593,7 @@ data class AromiEnv(val sftp: SftpEnv, val filePattern: String) {
                     SftpEnv(
                         host = env.lookup("evaka.integration.aromi.sftp.host"),
                         port = env.lookup("evaka.integration.aromi.sftp.port") ?: 22,
-                        hostKey = env.lookup("evaka.integration.aromi.sftp.host_key"),
+                        hostKeys = env.lookup("evaka.integration.aromi.sftp.host_keys"),
                         username = env.lookup("evaka.integration.aromi.sftp.username"),
                         password = Sensitive(env.lookup("evaka.integration.aromi.sftp.password")),
                     ),
@@ -606,7 +606,7 @@ data class AromiEnv(val sftp: SftpEnv, val filePattern: String) {
 data class SftpEnv(
     val host: String,
     val port: Int,
-    val hostKey: String,
+    val hostKeys: List<String>,
     val username: String,
     val password: Sensitive<String>,
 )

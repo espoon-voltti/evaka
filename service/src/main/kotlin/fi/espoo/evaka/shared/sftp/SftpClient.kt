@@ -29,13 +29,13 @@ class SftpClient(private val sftpEnv: SftpEnv) {
             JSch().apply {
                 hostKeyRepository =
                     ReadOnlyHostKeyRepository(
-                        listOf(
+                        sftpEnv.hostKeys.map {
                             HostKey(
                                 "[${sftpEnv.host}]:${sftpEnv.port}",
                                 HostKey.GUESS,
-                                Base64.getDecoder().decode(sftpEnv.hostKey),
+                                Base64.getDecoder().decode(it),
                             )
-                        )
+                        }
                     )
             }
         val session = jsch.getSession(sftpEnv.username, sftpEnv.host, sftpEnv.port)
