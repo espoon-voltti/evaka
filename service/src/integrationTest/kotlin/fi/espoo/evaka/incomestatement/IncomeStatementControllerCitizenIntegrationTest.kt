@@ -16,6 +16,8 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevFridgePartnership
+import fi.espoo.evaka.shared.dev.DevIncomeStatement
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
@@ -960,6 +962,60 @@ WHERE id = ${bind(id)}
         assertEquals(getIncomeStatementChildren().size, 0)
     }
 
+    @Test
+    fun `partner income statement status`() {
+        assertEquals(
+            IncomeStatementControllerCitizen.PartnerIncomeStatementStatusResponse(partner = null),
+            getPartnerIncomeStatementStatus(),
+        )
+
+        db.transaction { tx ->
+            tx.insert(
+                DevFridgePartnership(
+                    first = testAdult_1.id,
+                    second = testAdult_2.id,
+                    startDate = clock.today().minusDays(1),
+                    endDate = null,
+                )
+            )
+        }
+
+        assertEquals(
+            IncomeStatementControllerCitizen.PartnerIncomeStatementStatusResponse(
+                partner =
+                    PartnerIncomeStatementStatus(
+                        name = "${testAdult_2.firstName} ${testAdult_2.lastName}",
+                        hasIncomeStatement = false,
+                    )
+            ),
+            getPartnerIncomeStatementStatus(),
+        )
+
+        db.transaction { tx ->
+            tx.insert(
+                DevIncomeStatement(
+                    personId = testAdult_2.id,
+                    data =
+                        IncomeStatementBody.HighestFee(
+                            startDate = clock.today().plusMonths(3),
+                            endDate = null,
+                        ),
+                )
+            )
+        }
+
+        assertEquals(
+            IncomeStatementControllerCitizen.PartnerIncomeStatementStatusResponse(
+                partner =
+                    PartnerIncomeStatementStatus(
+                        name = "${testAdult_2.firstName} ${testAdult_2.lastName}",
+                        hasIncomeStatement = true,
+                    )
+            ),
+            getPartnerIncomeStatementStatus(),
+        )
+    }
+
     private fun getIncomeStatements(page: Int = 1): PagedIncomeStatements {
         return incomeStatementControllerCitizen.getIncomeStatements(
             dbInstance(),
@@ -984,6 +1040,15 @@ WHERE id = ${bind(id)}
 
     private fun getIncomeStatement(id: IncomeStatementId): IncomeStatement {
         return incomeStatementControllerCitizen.getIncomeStatement(dbInstance(), citizen, clock, id)
+    }
+
+    private fun getPartnerIncomeStatementStatus():
+        IncomeStatementControllerCitizen.PartnerIncomeStatementStatusResponse {
+        return incomeStatementControllerCitizen.getPartnerIncomeStatementStatus(
+            dbInstance(),
+            citizen,
+            clock,
+        )
     }
 
     private fun getIncomeStatementChildren(): List<ChildBasicInfo> {

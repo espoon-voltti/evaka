@@ -1969,8 +1969,18 @@ const en: Translations = {
             Early childhood education fees
           </a>
         </p>
+        <strong>Important</strong>
+        <ul>
+          <li>
+            The fee is determined based on the income of all adults living at
+            the same address. You and your possible spouse living at the same
+            address must both declare your income separately.
+          </li>
+        </ul>
       </>
     ),
+    partnerNoIncomeStatement: (partnerName: string) =>
+      `${partnerName} has not sent an income statement. Not declaring their income may increase the fees that you pay.`,
     formTitle: 'Reporting income information',
     formDescription: (
       <>

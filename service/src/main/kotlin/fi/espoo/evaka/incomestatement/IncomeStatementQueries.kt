@@ -829,3 +829,27 @@ ORDER BY p.date_of_birth, p.last_name, p.first_name, p.id
         .bind("guardianId", guardianId)
         .bind("invoicedPlacementTypes", PlacementType.invoiced)
         .toList<ChildBasicInfo>()
+
+data class PartnerIncomeStatementStatus(val name: String, val hasIncomeStatement: Boolean)
+
+fun Database.Read.getPartnerIncomeStatementStatus(
+    personId: PersonId,
+    today: LocalDate,
+): PartnerIncomeStatementStatus? =
+    createQuery {
+            sql(
+                """
+    SELECT 
+        partner_first_name || ' ' || partner_last_name AS name,
+        EXISTS (
+            SELECT FROM income_statement i
+            WHERE i.person_id = fp.partner_person_id AND i.status <> 'DRAFT'::income_statement_status
+        ) AS has_income_statement
+    FROM fridge_partner_view fp
+    WHERE fp.person_id = ${bind(personId)} 
+        AND daterange(fp.start_date, fp.end_date, '[]') @> ${bind(today)}
+        AND NOT fp.conflict 
+"""
+            )
+        }
+        .exactlyOneOrNull()

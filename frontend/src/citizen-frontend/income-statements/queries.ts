@@ -16,7 +16,8 @@ import {
   getIncomeStatementStartDates,
   getIncomeStatements,
   updateIncomeStatement,
-  updateSentIncomeStatement
+  updateSentIncomeStatement,
+  getPartnerIncomeStatementStatus
 } from '../generated/api-clients/incomestatement'
 
 const q = new Queries()
@@ -24,6 +25,10 @@ const q = new Queries()
 // Guardian
 
 export const incomeStatementsQuery = q.query(getIncomeStatements)
+
+export const partnerIncomeStatementStatusQuery = q.query(
+  getPartnerIncomeStatementStatus
+)
 
 export const incomeStatementQuery = q.query(getIncomeStatement)
 
