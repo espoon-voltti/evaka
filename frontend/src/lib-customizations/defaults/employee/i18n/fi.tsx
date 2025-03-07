@@ -4548,6 +4548,7 @@ export const fi = {
       businessId: 'Y-tunnus',
       iban: 'Tilinumero',
       providerId: 'Toimittajanumero',
+      partnerCode: 'Kumppanikoodi',
       mealTime: {
         breakfast: 'Aamupala',
         lunch: 'Lounas',

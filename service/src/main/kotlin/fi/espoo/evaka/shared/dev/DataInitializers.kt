@@ -179,7 +179,7 @@ INSERT INTO daycare (
     unit_manager_name, unit_manager_phone, unit_manager_email,
     decision_daycare_name, decision_preschool_name, decision_handler, decision_handler_address,
     oph_unit_oid, oph_organizer_oid, operation_times, shift_care_operation_times, shift_care_open_on_holidays, enabled_pilot_features,
-    finance_decision_handler, business_id, iban, provider_id, mealtime_breakfast, mealtime_lunch, mealtime_snack,
+    finance_decision_handler, business_id, iban, provider_id, partner_code, mealtime_breakfast, mealtime_lunch, mealtime_snack,
     mealtime_supper, mealtime_evening_snack
 ) VALUES (
     ${bind(row.id)}, ${bind(row.name)}, ${bind(row.openingDate)}, ${bind(row.closingDate)}, ${bind(row.areaId)},
@@ -194,7 +194,7 @@ INSERT INTO daycare (
     ${bind(row.decisionCustomization.daycareName)}, ${bind(row.decisionCustomization.preschoolName)}, ${bind(row.decisionCustomization.handler)},
     ${bind(row.decisionCustomization.handlerAddress)}, ${bind(row.ophUnitOid)}, ${bind(row.ophOrganizerOid)},
     ${bind(row.operationTimes)}, ${bind(row.shiftCareOperationTimes)}, ${bind(row.shiftCareOpenOnHolidays)}, ${bind(row.enabledPilotFeatures)}::pilot_feature[], ${bind(row.financeDecisionHandler)}, ${bind(row.businessId)},
-    ${bind(row.iban)}, ${bind(row.providerId)}, ${bind(row.mealtimeBreakfast)}, ${bind(row.mealtimeLunch)}, ${bind(row.mealtimeSnack)},
+    ${bind(row.iban)}, ${bind(row.providerId)}, ${bind(row.partnerCode)}, ${bind(row.mealtimeBreakfast)}, ${bind(row.mealtimeLunch)}, ${bind(row.mealtimeSnack)},
     ${bind(row.mealtimeSupper)}, ${bind(row.mealtimeEveningSnack)}
 )
 RETURNING id
@@ -1337,8 +1337,8 @@ fun Database.Transaction.insert(row: DevPayment): PaymentId =
     createUpdate {
             sql(
                 """
-INSERT INTO payment (id, unit_id, unit_name, unit_business_id, unit_iban, unit_provider_id, period, number, amount, status, payment_date, due_date, sent_at, sent_by)
-VALUES (${bind(row.id)}, ${bind(row.unitId)}, ${bind(row.unitName)}, ${bind(row.unitBusinessId)}, ${bind(row.unitIban)}, ${bind(row.unitProviderId)}, ${bind(row.period)}, ${bind(row.number)}, ${bind(row.amount)}, ${bind(row.status)}, ${bind(row.paymentDate)}, ${bind(row.dueDate)}, ${bind(row.sentAt)}, ${bind(row.sentBy)})
+INSERT INTO payment (id, unit_id, unit_name, unit_business_id, unit_iban, unit_provider_id, unit_partner_code, period, number, amount, status, payment_date, due_date, sent_at, sent_by)
+VALUES (${bind(row.id)}, ${bind(row.unitId)}, ${bind(row.unitName)}, ${bind(row.unitBusinessId)}, ${bind(row.unitIban)}, ${bind(row.unitProviderId)}, ${bind(row.unitPartnerCode)}, ${bind(row.period)}, ${bind(row.number)}, ${bind(row.amount)}, ${bind(row.status)}, ${bind(row.paymentDate)}, ${bind(row.dueDate)}, ${bind(row.sentAt)}, ${bind(row.sentBy)})
 RETURNING id
 """
             )

@@ -42,7 +42,7 @@ fun Database.Read.readPaymentsByIdsWithFreshUnitData(ids: List<PaymentId>): List
                 """
 SELECT 
     p.id, p.created, p.updated, p.unit_id, 
-    d.name AS unit_name, d.business_id AS unit_business_id, d.iban AS unit_iban, d.provider_id AS unit_provider_id, d.type as unit_care_type, d.cost_center as unit_cost_center,
+    d.name AS unit_name, d.business_id AS unit_business_id, d.iban AS unit_iban, d.provider_id AS unit_provider_id, d.partner_code AS unit_partner_code, d.type as unit_care_type, d.cost_center as unit_cost_center,
     p.period, p.number, p.amount, p.status, p.payment_date, p.due_date, p.sent_at, p.sent_by
 FROM payment p
 JOIN daycare d ON d.id = p.unit_id
@@ -59,7 +59,7 @@ fun Database.Read.readPayments(): List<Payment> {
                 """
 SELECT
     p.id, p.created, p.updated,
-    p.unit_id, p.unit_name, p.unit_business_id, p.unit_iban, p.unit_provider_id,
+    p.unit_id, p.unit_name, p.unit_business_id, p.unit_iban, p.unit_provider_id, p.unit_partner_code,
     p.period, p.number, p.amount, p.status, p.payment_date, p.due_date, p.sent_at, p.sent_by,
     d.type as unit_care_type, d.cost_center as unit_cost_center
 FROM payment p
@@ -112,6 +112,7 @@ SELECT
     CASE WHEN p.status = 'SENT' THEN unit_business_id ELSE d.business_id END AS unit_business_id,
     CASE WHEN p.status = 'SENT' THEN unit_iban ELSE d.iban END AS unit_iban,
     CASE WHEN p.status = 'SENT' THEN unit_provider_id ELSE d.provider_id END AS unit_provider_id,
+    CASE WHEN p.status = 'SENT' THEN unit_partner_code ELSE d.partner_code END AS unit_partner_code,
     d.type AS unit_care_type,
     d.cost_center as unit_cost_center,
     p.period, p.number, p.amount, p.status, p.payment_date, p.due_date, p.sent_at, p.sent_by,
@@ -173,7 +174,8 @@ UPDATE payment SET
     unit_name = ${bind { it.unit.name }},
     unit_business_id = ${bind { it.unit.businessId }},
     unit_iban = ${bind { it.unit.iban }},
-    unit_provider_id = ${bind { it.unit.providerId }}
+    unit_provider_id = ${bind { it.unit.providerId }},
+    unit_partner_code = ${bind { it.unit.partnerCode }}
 WHERE id = ${bind { it.id }}
 """
         )

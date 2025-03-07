@@ -824,6 +824,7 @@ export interface PaymentUnit {
   iban: string | null
   id: DaycareId
   name: string
+  partnerCode: string | null
   providerId: string | null
 }
 

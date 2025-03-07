@@ -214,6 +214,7 @@ export interface Daycare {
   operationTimes: (TimeRange | null)[]
   ophOrganizerOid: string | null
   ophUnitOid: string | null
+  partnerCode: string
   phone: string | null
   preschoolApplyPeriod: DateRange | null
   preschoolManager: UnitManager
@@ -281,6 +282,7 @@ export interface DaycareFields {
   operationTimes: (TimeRange | null)[]
   ophOrganizerOid: string | null
   ophUnitOid: string | null
+  partnerCode: string
   phone: string | null
   preschoolApplyPeriod: DateRange | null
   preschoolManager: UnitManager

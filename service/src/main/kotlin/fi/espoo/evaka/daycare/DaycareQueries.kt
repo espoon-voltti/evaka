@@ -68,6 +68,7 @@ data class DaycareFields(
     val businessId: String,
     val iban: String,
     val providerId: String,
+    val partnerCode: String,
     val mealtimes: DaycareMealtimes,
 ) {
     fun validate() {
@@ -157,6 +158,7 @@ SELECT
   daycare.business_id,
   daycare.iban,
   daycare.provider_id,
+  daycare.partner_code,
   daycare.care_area_id, 
   finance_decision_handler.id AS finance_decision_handler_id,
   coalesce(finance_decision_handler.preferred_first_name, finance_decision_handler.first_name) AS finance_decision_handler_first_name,
@@ -313,6 +315,7 @@ SET
   business_id = ${bind(fields.businessId)},
   iban = ${bind(fields.iban)},
   provider_id = ${bind(fields.providerId)},
+  partner_code = ${bind(fields.partnerCode)},
   operation_times = ${bind(fields.operationTimes)},
   unit_manager_name = ${bind(fields.unitManager.name)},
   unit_manager_phone = ${bind(fields.unitManager.phone)},

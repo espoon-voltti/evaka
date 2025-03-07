@@ -77,6 +77,7 @@ data class Daycare(
     val businessId: String,
     val iban: String,
     val providerId: String,
+    val partnerCode: String,
     @Nested("mealtime_") override val mealTimes: DaycareMealtimes,
 ) : DaycareInfo
 
