@@ -149,6 +149,27 @@ WHERE rec.message_id = msg.id
         .execute()
 }
 
+fun Database.Transaction.markLastReceivedMessageUnread(
+    accountId: MessageAccountId,
+    threadId: MessageThreadId,
+) = execute {
+    sql(
+        """
+    UPDATE message_recipients
+    SET read_at = NULL
+    FROM (
+        SELECT mr.id
+        FROM message_recipients mr
+        JOIN message m ON mr.message_id = m.id
+        WHERE mr.recipient_id = ${bind(accountId)} AND m.thread_id = ${bind(threadId)}
+        ORDER BY m.sent_at DESC
+        LIMIT 1
+    ) AS to_unread
+    WHERE message_recipients.id = to_unread.id
+"""
+    )
+}
+
 fun Database.Transaction.moveThreadToFolder(
     accountId: MessageAccountId,
     threadId: MessageThreadId,

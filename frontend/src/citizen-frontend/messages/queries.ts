@@ -10,6 +10,7 @@ import {
   getReceivedMessages,
   getReceivers,
   getUnreadMessages,
+  markLastReceivedMessageInThreadUnread,
   markThreadRead,
   newMessage,
   replyToThread
@@ -31,6 +32,11 @@ export const unreadMessagesCountQuery = q.query(getUnreadMessages)
 export const markThreadReadMutation = q.mutation(markThreadRead, [
   unreadMessagesCountQuery
 ])
+
+export const markLastReceivedMessageInThreadUnreadMutation = q.mutation(
+  markLastReceivedMessageInThreadUnread,
+  [unreadMessagesCountQuery, receivedMessagesQuery]
+)
 
 export const sendMessageMutation = q.mutation(newMessage, [
   receivedMessagesQuery
