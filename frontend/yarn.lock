@@ -3851,15 +3851,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react-csv@npm:^1.1.3":
-  version: 1.1.3
-  resolution: "@types/react-csv@npm:1.1.3"
-  dependencies:
-    "@types/react": "npm:*"
-  checksum: 10/c9a50dac238a43c04b02f4af3077d7f05bd19a39892335280871f2a531ccc4b39e8122ed4f0930a2ad8ae7f3ff0cb76a9af573bab0a20a28aa9360c46df55f1e
-  languageName: node
-  linkType: hard
-
 "@types/react-dom@npm:^18.3.0":
   version: 18.3.0
   resolution: "@types/react-dom@npm:18.3.0"
@@ -6815,7 +6806,6 @@ __metadata:
     "@types/node": "npm:^22.10.2"
     "@types/punycode": "npm:^2.1.0"
     "@types/react": "npm:^18.3.1"
-    "@types/react-csv": "npm:^1.1.3"
     "@types/react-dom": "npm:^18.3.0"
     "@types/react-linkify": "npm:^1.0.1"
     "@types/react-onclickoutside": "npm:^6.7.10"
@@ -6875,7 +6865,6 @@ __metadata:
     punycode: "npm:^2.3.0"
     react: "npm:^18.3.1"
     react-chartjs-2: "npm:^5.3.0"
-    react-csv: "npm:^2.2.2"
     react-datepicker: "npm:^7.6.0"
     react-day-picker: "npm:^9.5.0"
     react-dom: "npm:^18.3.1"
@@ -10870,13 +10859,6 @@ __metadata:
   peerDependencies:
     react: ^15.3.0 || ^16.0.0 || ^17.0.0 || ^18.0.0
   checksum: 10/45411b2e1d5e77ce8586ef0fa6cef2d394da4660af90a2c0f044a2170a0b601ac023ac2bc62d6109201969329a8dbd13bd1a4bd4027be3980e4fde7c6a48bee3
-  languageName: node
-  linkType: hard
-
-"react-csv@npm:^2.2.2":
-  version: 2.2.2
-  resolution: "react-csv@npm:2.2.2"
-  checksum: 10/8c3708d6044f79a14a0d8e58924b95fab36b7435898008facb9ccb86081ab62a95ebbec62644e621e1589128fffda4f10d7d4a111ade2f861137391d00e18d66
   languageName: node
   linkType: hard
 

@@ -3,34 +3,17 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, { useEffect, useLayoutEffect, useState } from 'react'
-import { CSVLink } from 'react-csv'
+import React, { useCallback } from 'react'
 import styled from 'styled-components'
 
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { fontWeights } from 'lib-components/typography'
 import colors from 'lib-customizations/common'
 import { faFileSpreadsheet } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
 
-const separatorCharacter = ';'
-
-export function toHeaderlessCsv<T extends object>(
-  objectData: T[],
-  headerKeys: (keyof T)[]
-): string {
-  const data = objectData.map((object) =>
-    headerKeys.map((header) => String(object[header] ?? ''))
-  )
-  return data
-    .map((row) =>
-      row
-        .map((column) => column.replace(/"/g, '""'))
-        .map((column) => `"${column}"`)
-        .join(separatorCharacter)
-    )
-    .join(`\n`)
-}
+import { Column, toCsv } from './csv'
 
 const RowRightAligned = styled.div`
   display: flex;
@@ -48,62 +31,38 @@ const LinkText = styled.span`
 
 interface Props<T> {
   data: T[]
-  headers: { label: string; key: keyof T }[]
+  columns: Column<T>[]
   filename: string | (() => string)
   'data-qa'?: string
 }
 
-function ReportDownload<T extends object>({
+function ReportDownload<T>({
   data,
-  headers,
+  columns,
   filename,
   'data-qa': dataQa
 }: Props<T>) {
   const { i18n } = useTranslation()
-  const filenameStr = typeof filename === 'function' ? filename() : filename
-  const [reloadCSV, setReloadCSV] = useState(true)
 
-  /*
-    The CSVLink components needs to be unmounted every time its props change
-    as it doesn't recreate the file after the component has been mounted.
-  */
-  useLayoutEffect(() => {
-    if (!reloadCSV) setReloadCSV(true)
-  }, [data, headers, filenameStr]) // eslint-disable-line react-hooks/exhaustive-deps
-
-  useEffect(() => {
-    const handler = reloadCSV
-      ? setTimeout(() => setReloadCSV(false), 200)
-      : undefined
-    return () => {
-      if (handler) clearTimeout(handler)
-    }
-  }, [reloadCSV])
+  const downloadCsv = useCallback(() => {
+    const link = document.createElement('a')
+    link.download = typeof filename === 'function' ? filename() : filename
+    link.href = `data:text/csv;charset=utf-8,${toCsv(data, columns)}`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }, [data, filename, columns])
 
   return (
     <RowRightAligned>
-      <div data-qa={dataQa}>
-        {data.length > 0 && !reloadCSV ? (
-          <CSVLink
-            data={toHeaderlessCsv(
-              data,
-              headers.map((h) => h.key)
-            )}
-            headers={headers.map((h) => `"${h.label.replace(/"/g, '""')}"`)}
-            separator={separatorCharacter}
-            enclosingCharacter='"'
-            filename={filenameStr}
-          >
-            <FontAwesomeIcon icon={faFileSpreadsheet} size="lg" />
-            <LinkText>{i18n.reports.downloadButton}</LinkText>
-          </CSVLink>
-        ) : (
-          <DisabledLink>
-            <FontAwesomeIcon icon={faFileSpreadsheet} size="lg" />
-            <LinkText>{i18n.reports.downloadButton}</LinkText>
-          </DisabledLink>
-        )}
-      </div>
+      <Button
+        data-qa={dataQa}
+        icon={faFileSpreadsheet}
+        text={i18n.reports.downloadButton}
+        appearance="inline"
+        onClick={downloadCsv}
+        disabled={data.length === 0}
+      />
     </RowRightAligned>
   )
 }
