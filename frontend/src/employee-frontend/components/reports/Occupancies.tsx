@@ -6,6 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { addDays, isAfter, isWeekend, lastDayOfMonth } from 'date-fns'
 import mapValues from 'lodash/mapValues'
 import range from 'lodash/range'
+import uniq from 'lodash/uniq'
 import React, { useState } from 'react'
 import { Link } from 'react-router'
 import styled, { css } from 'styled-components'
@@ -176,26 +177,30 @@ interface DisplayCell {
   tooltip?: string
 }
 
+interface ReportRow {
+  areaName: string
+  unitName: string
+  groupName: string | null
+  cells: DisplayCell[]
+}
+
 function getDisplayCells(
   i18n: Translations,
   reportRows: OccupancyReportRow[],
   dates: Date[],
   usedValues: ValueOnReport
-): DisplayCell[][] {
+): ReportRow[] {
   return reportRows.map((row) => {
-    const nameCells: DisplayCell[] =
-      'groupId' in row
-        ? [
-            { value: row.areaName },
-            { value: row.unitName },
-            { value: row.groupName }
-          ]
-        : [{ value: row.areaName }, { value: row.unitName }]
+    const result: ReportRow = {
+      areaName: row.areaName,
+      unitName: row.unitName,
+      groupName: isGroupRow(row) ? row.groupName : null,
+      cells: []
+    }
     if (usedValues === 'raw') {
-      const cells = [...nameCells]
       for (const date of dates) {
         const occupancy = row.occupancies[toOccupancyKey(date)]
-        cells.push({
+        result.cells.push({
           value:
             typeof occupancy?.sumUnder3y === 'number'
               ? occupancy.sumUnder3y.toFixed(2).replace('.', ',')
@@ -203,21 +208,21 @@ function getDisplayCells(
           borderEdge: 'left',
           tooltip: i18n.reports.occupancies.sumUnder3y
         })
-        cells.push({
+        result.cells.push({
           value:
             typeof occupancy?.sumOver3y === 'number'
               ? occupancy.sumOver3y.toFixed(2).replace('.', ',')
               : '0',
           tooltip: i18n.reports.occupancies.sumOver3y
         })
-        cells.push({
+        result.cells.push({
           value:
             typeof occupancy?.sum === 'number'
               ? occupancy.sum.toFixed(2).replace('.', ',')
               : '0',
           tooltip: i18n.reports.occupancies.sum
         })
-        cells.push({
+        result.cells.push({
           value:
             typeof occupancy?.caretakers === 'number'
               ? occupancy.caretakers.toFixed(2).replace('.', ',')
@@ -226,20 +231,18 @@ function getDisplayCells(
           tooltip: i18n.reports.occupancies.caretakers
         })
       }
-      return cells
     } else {
       const average =
         usedValues === 'headcount'
           ? getHeadCountAverage(row, dates)
           : getOccupancyAverage(row, dates)
 
-      return [
-        ...nameCells,
+      // average
+      result.cells.push()
 
-        // average
+      // daily counts
+      result.cells.push(
         { value: formatAverage(average, usedValues) },
-
-        // daily values
         ...dates.map((date) => {
           const occupancy = row.occupancies[toOccupancyKey(date)]
 
@@ -261,8 +264,9 @@ function getDisplayCells(
             }
           }
         })
-      ]
+      )
     }
+    return result
   })
 }
 
@@ -389,15 +393,10 @@ export default React.memo(function Occupancies() {
   )
 
   const dates = getDisplayDates(filters.year, filters.month, filters.type)
-  const displayCells: DisplayCell[][] = rows
+  const reportRows: ReportRow[] = rows
     .map((rs) => getDisplayCells(i18n, rs, dates, usedValues))
     .getOrElse([])
-  const displayAreas = displayCells
-    .map((cell) => cell[0])
-    .filter(
-      ({ value }, index, self) =>
-        self.findIndex((cell) => cell.value === value) === index
-    )
+  const displayAreas = uniq(reportRows.map((row) => row.areaName))
   const averages = rows
     .map((rs) => calculateAverages(rs, dates, usedValues))
     .getOrElse<Averages>({ average: null, byArea: {} })
@@ -597,51 +596,42 @@ export default React.memo(function Occupancies() {
         ))}
 
         {renderResult(combine(rows, areas), ([rows, areas]) => {
-          const columnHeaders = [
-            { key: 'careAreaName', label: i18n.reports.common.careAreaName },
-            { key: 'unitName', label: i18n.reports.common.unitName },
-            {
-              key: 'groupName',
-              label:
-                filters.display === 'GROUPS'
-                  ? i18n.reports.common.groupName
-                  : undefined
-            },
-            {
-              key: 'totalValue',
-              label:
-                usedValues !== 'raw'
-                  ? i18n.reports.occupancies.average
-                  : undefined
-            },
-            ...dateCols.map((date) => ({
-              key: toOccupancyKey(date),
-              label: HelsinkiDateTime.fromSystemTzDate(date)
-                .toLocalDate()
-                .format('dd.MM.')
-            }))
-          ].filter(
-            (o): o is { key: string; label: string } => o.label !== undefined
-          )
-
-          const headerKeys = columnHeaders.map((c) => c.key)
-
           return (
             <>
               {filters.careAreaId !== null && (
                 <>
-                  <ReportDownload<Record<string, unknown>>
-                    data={displayCells.map((row) => {
-                      return Object.fromEntries(
-                        row
-                          .map((column) => column.value)
-                          .map((c, i) => [
-                            i < headerKeys.length - 1 ? headerKeys[i] : `${i}`,
-                            c
-                          ])
-                      )
-                    })}
-                    headers={columnHeaders}
+                  <ReportDownload
+                    data={reportRows}
+                    columns={[
+                      {
+                        value: (row) => row.areaName,
+                        label: i18n.reports.common.careAreaName
+                      },
+                      {
+                        value: (row) => row.unitName,
+                        label: i18n.reports.common.unitName
+                      },
+                      {
+                        value: (row) => row.groupName,
+                        label: i18n.reports.common.groupName,
+                        exclude: filters.display !== 'GROUPS'
+                      },
+                      {
+                        value: (row) => row.cells[0].value,
+                        label: i18n.reports.occupancies.average,
+                        exclude: usedValues === 'raw'
+                      },
+                      ...dateCols.map((date, i) => {
+                        // if usedValues != 'raw', the first column contains the average and we have to skip it here
+                        const index = i + (usedValues !== 'raw' ? 1 : 0)
+                        return {
+                          value: (row: ReportRow) => row.cells[index].value,
+                          label: HelsinkiDateTime.fromSystemTzDate(date)
+                            .toLocalDate()
+                            .format('dd.MM.')
+                        }
+                      })
+                    ]}
                     filename={getFilename(
                       i18n,
                       filters.year,
@@ -682,7 +672,7 @@ export default React.memo(function Occupancies() {
                       </Tr>
                     </Thead>
                     <Tbody>
-                      {displayAreas.map(({ value: areaName }) => (
+                      {displayAreas.map((areaName) => (
                         <React.Fragment key={areaName}>
                           {filters.careAreaId === undefined && (
                             <Tr>
@@ -755,9 +745,13 @@ export default React.memo(function Occupancies() {
                                       {row.unitName}
                                     </Link>
                                   </StyledTd>
-                                  {displayCells[rowNum]
-                                    .slice(2)
-                                    .map((cell, colNum) => (
+                                  {filters.display === 'GROUPS' && (
+                                    <StyledTd>
+                                      {reportRows[rowNum].groupName}
+                                    </StyledTd>
+                                  )}
+                                  {reportRows[rowNum].cells.map(
+                                    (cell, colNum) => (
                                       <StyledTd
                                         key={colNum}
                                         borderEdge={cell.borderEdge}
@@ -770,7 +764,8 @@ export default React.memo(function Occupancies() {
                                           <>{cell.value}</>
                                         )}
                                       </StyledTd>
-                                    ))}
+                                    )
+                                  )}
                                 </Tr>
                               )
                           )}
