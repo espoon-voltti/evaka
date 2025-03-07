@@ -698,93 +698,60 @@ const ReportByGroupTable = ({
 
   return (
     <>
-      <ReportDownload<Record<string, unknown>>
-        data={filteredRows.map((row) =>
-          /* eslint-disable-next-line @typescript-eslint/no-unsafe-return */
-          ({
-            ...row,
-            ...Object.fromEntries([
-              ...selectedDaycareColumns.map((level) => [
-                `DAYCARE-ASSISTANCE-${level}`,
-                row.daycareAssistanceCounts[level] ?? 0
-              ]),
-              ...selectedPreschoolColumns.map((level) => [
-                `PRESCHOOL-ASSISTANCE-${level}`,
-                row.preschoolAssistanceCounts[level] ?? 0
-              ]),
-              ...selectedOtherColumns.map((type) => [
-                `OTHER-ASSISTANCE-MEASURE-${type}`,
-                row.otherAssistanceMeasureCounts[type] ?? 0
-              ]),
-              ...report.actions.map(({ value }) => [
-                `ACTION-${value}`,
-                row.actionCounts[value] ?? 0
-              ])
-            ])
-          })
-        )}
-        headers={[
+      <ReportDownload
+        data={filteredRows}
+        columns={[
           {
             label: i18n.reports.common.careAreaName,
-            key: 'careAreaName'
+            value: (row) => row.careAreaName
           },
           {
             label: i18n.reports.common.unitName,
-            key: 'unitName'
+            value: (row) => row.unitName
           },
           {
             label: i18n.reports.common.groupName,
-            key: 'groupName'
+            value: (row) => row.groupName
           },
           ...selectedDaycareColumns.map((level) => ({
             label:
               i18n.childInformation.assistance.types.daycareAssistanceLevel[
                 level
               ],
-            key: `DAYCARE-ASSISTANCE-${level}`
+            value: (row: AssistanceNeedsAndActionsReportRow) =>
+              row.daycareAssistanceCounts[level] ?? 0
           })),
           ...selectedPreschoolColumns.map((level) => ({
             label:
               i18n.childInformation.assistance.types.preschoolAssistanceLevel[
                 level
               ],
-            key: `PRESCHOOL-ASSISTANCE-${level}`
+            value: (row: AssistanceNeedsAndActionsReportRow) =>
+              row.preschoolAssistanceCounts[level] ?? 0
           })),
           ...selectedOtherColumns.map((type) => ({
             label:
               i18n.childInformation.assistance.types.otherAssistanceMeasureType[
                 type
               ],
-            key: `OTHER-ASSISTANCE-MEASURE-${type}`
+            value: (row: AssistanceNeedsAndActionsReportRow) =>
+              row.otherAssistanceMeasureCounts[type] ?? 0
           })),
           ...report.actions.map((action) => ({
             label: action.nameFi,
-            key: `ACTION-${action.value}`
+            value: (row: AssistanceNeedsAndActionsReportRow) =>
+              row.actionCounts[action.value] ?? 0
           })),
-          ...(featureFlags.assistanceActionOther
-            ? [
-                {
-                  label:
-                    i18n.childInformation.assistanceAction.fields.actionTypes
-                      .OTHER,
-                  key: 'otherActionCount'
-                }
-              ]
-            : []),
+          {
+            label:
+              i18n.childInformation.assistanceAction.fields.actionTypes.OTHER,
+            value: (row) => row.otherActionCount,
+            exclude: !featureFlags.assistanceActionOther
+          },
           {
             label: i18n.reports.assistanceNeedsAndActions.actionMissing,
-            key: 'noActionCount'
-          },
-          ...(report.showAssistanceNeedVoucherCoefficient
-            ? [
-                {
-                  label:
-                    i18n.reports.assistanceNeedsAndActions
-                      .assistanceNeedVoucherCoefficient,
-                  key: 'assistanceNeedVoucherCoefficient'
-                }
-              ]
-            : [])
+            value: (row) => row.noActionCount
+          }
         ]}
         filename={filename}
       />
@@ -1106,101 +1073,75 @@ const ReportByChildTable = ({
 
   return (
     <>
-      <ReportDownload<Record<string, unknown>>
-        data={filteredRows.map((row) =>
-          /* eslint-disable-next-line @typescript-eslint/no-unsafe-return */
-          ({
-            ...row,
-            ...Object.fromEntries([
-              ...selectedDaycareColumns.map((level) => [
-                `DAYCARE-ASSISTANCE-${level}`,
-                row.daycareAssistanceCounts[level] ?? 0
-              ]),
-              ...selectedPreschoolColumns.map((level) => [
-                `PRESCHOOL-ASSISTANCE-${level}`,
-                row.preschoolAssistanceCounts[level] ?? 0
-              ]),
-              ...selectedOtherColumns.map((type) => [
-                `OTHER-ASSISTANCE-MEASURE-${type}`,
-                row.otherAssistanceMeasureCounts[type] ?? 0
-              ]),
-              ...report.actions.map((action) => [
-                `action-${action.value}`,
-                row.actions.includes(action.value) ? 1 : 0
-              ])
-            ])
-          })
-        )}
-        headers={[
+      <ReportDownload
+        data={filteredRows}
+        columns={[
           {
             label: i18n.reports.common.careAreaName,
-            key: 'careAreaName'
+            value: (row) => row.careAreaName
           },
           {
             label: i18n.reports.common.unitName,
-            key: 'unitName'
+            value: (row) => row.unitName
           },
           {
             label: i18n.reports.common.firstName,
-            key: 'childFirstName'
+            value: (row) => row.childFirstName
           },
           {
             label: i18n.reports.common.lastName,
-            key: 'childLastName'
+            value: (row) => row.childLastName
           },
           {
             label: i18n.reports.common.groupName,
-            key: 'groupName'
+            value: (row) => row.groupName
           },
           {
             label: i18n.reports.common.age,
-            key: 'childAge'
+            value: (row) => row.childAge
           },
           ...selectedDaycareColumns.map((level) => ({
             label:
               i18n.childInformation.assistance.types.daycareAssistanceLevel[
                 level
               ],
-            key: `DAYCARE-ASSISTANCE-${level}`
+            value: (row: AssistanceNeedsAndActionsReportRowByChild) =>
+              row.daycareAssistanceCounts[level] ?? 0
           })),
           ...selectedPreschoolColumns.map((level) => ({
             label:
               i18n.childInformation.assistance.types.preschoolAssistanceLevel[
                 level
               ],
-            key: `PRESCHOOL-ASSISTANCE-${level}`
+            value: (row: AssistanceNeedsAndActionsReportRowByChild) =>
+              row.preschoolAssistanceCounts[level] ?? 0
           })),
           ...selectedOtherColumns.map((type) => ({
             label:
               i18n.childInformation.assistance.types.otherAssistanceMeasureType[
                 type
               ],
-            key: `OTHER-ASSISTANCE-MEASURE-${type}`
+            value: (row: AssistanceNeedsAndActionsReportRowByChild) =>
+              row.otherAssistanceMeasureCounts[type] ?? 0
           })),
           ...report.actions.map((action) => ({
             label: action.nameFi,
-            key: `action-${action.value}`
+            value: (row: AssistanceNeedsAndActionsReportRowByChild) =>
+              row.actions.includes(action.value) ? 1 : 0
           })),
-          ...(featureFlags.assistanceActionOther
-            ? [
-                {
-                  label:
-                    i18n.childInformation.assistanceAction.fields.actionTypes
-                      .OTHER,
-                  key: 'otherAction'
-                }
-              ]
-            : []),
-          ...(report.showAssistanceNeedVoucherCoefficient
-            ? [
-                {
-                  label:
-                    i18n.reports.assistanceNeedsAndActions
-                      .assistanceNeedVoucherCoefficient,
-                  key: 'assistanceNeedVoucherCoefficient'
-                }
-              ]
-            : [])
+          {
+            label:
+              i18n.childInformation.assistanceAction.fields.actionTypes.OTHER,
+            value: (row) => row.otherAction,
+            exclude: !featureFlags.assistanceActionOther
+          },
+          {
+            label:
+              i18n.reports.assistanceNeedsAndActions
+                .assistanceNeedVoucherCoefficient,
+            value: (row) => row.assistanceNeedVoucherCoefficient,
+            exclude: !report.showAssistanceNeedVoucherCoefficient
+          }
         ]}
         filename={filename}
       />
