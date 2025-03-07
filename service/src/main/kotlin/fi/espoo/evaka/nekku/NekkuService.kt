@@ -5,12 +5,15 @@ package fi.espoo.evaka.nekku
 
 import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import fi.espoo.evaka.ConstList
 import fi.espoo.evaka.NekkuEnv
+import fi.espoo.evaka.mealintegration.MealType
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.AsyncJobType
 import fi.espoo.evaka.shared.async.removeUnclaimedJobs
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.EvakaClock
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.IOException
@@ -185,9 +188,12 @@ data class NekkuSpecialDietsField(
     val options: List<NekkuSpecialDietOption>,
 )
 
-enum class NekkuSpecialDietType {
-    text,
-    checkboxlst,
+@ConstList("nekku_special_diet_type")
+enum class NekkuSpecialDietType :DatabaseEnum {
+    TEXT,
+    CHECKBOXLIST;
+
+    override val sqlType: String = "nekku_special_diet_type"
 }
 
 data class NekkuSpecialDietOption(val weight: Int, val key: String, val value: String)
@@ -195,15 +201,14 @@ data class NekkuSpecialDietOption(val weight: Int, val key: String, val value: S
 data class NekkuProduct(
     val name: String,
     val sku: String,
-    val options_id: String,
+//    val options_id: ,
     val unit_size: String,
-    val meal_time: List<NekkuProductMealTime>,
-    val meal_type: String,
+    val meal_time: List<MealType>,
+    val meal_type: NekkuDietType,
 )
 
-enum class NekkuProductMealTime {
-    aamupala,
-    lounas,
-    välipala,
-    päivällinen,
+enum class NekkuDietType {
+    VEGETARIAN,
+    VEGAN,
+    DEFAULT
 }

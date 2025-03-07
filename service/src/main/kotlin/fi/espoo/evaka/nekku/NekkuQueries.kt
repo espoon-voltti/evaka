@@ -117,27 +117,27 @@ fun Database.Transaction.setSpecialDiets(specialDiets: List<NekkuSpecialDiet>): 
     executeBatch(specialDiets) {
         sql(
             """
-INSERT INTO nekku_special_diet (id, name, type, weight, key, value)
-VALUES (
-    ${bind{it.id}},
-    ${bind{it.name}},
-    ${bind{it.type}},
-    ${bind{it.weight}},
-    ${bind{it.value}}
-)
-ON CONFLICT (id) DO 
-UPDATE SET
-  name = excluded.name,
-  type = excluded.type,
-  weight = excluded.weight,
-  customer_group = excluded.customer_group,
-  value = excluded.value
-WHERE
-    nekku_special_diet.name <> excluded.name OR
-    nekku_special_diet.type <> excluded.type OR
-    nekku_special_diet.weight <> excluded.weight OR
-    nekku_special_diet.customer_group <> excluded.customer_group OR
-    nekku_special_diet.value <> excluded.value;
+//INSERT INTO nekku_special_diet (id, name, type, weight, key, value)
+//VALUES (
+//    ${bind{it.id}},
+//    ${bind{it.name}},
+//    ${bind{it.type}},
+//    ${bind{it.weight}},
+//    ${bind{it.value}}
+//)
+//ON CONFLICT (id) DO 
+//UPDATE SET
+//  name = excluded.name,
+//  type = excluded.type,
+//  weight = excluded.weight,
+//  customer_group = excluded.customer_group,
+//  value = excluded.value
+//WHERE
+//    nekku_special_diet.name <> excluded.name OR
+//    nekku_special_diet.type <> excluded.type OR
+//    nekku_special_diet.weight <> excluded.weight OR
+//    nekku_special_diet.customer_group <> excluded.customer_group OR
+//    nekku_special_diet.value <> excluded.value;
 """
         )
     }
