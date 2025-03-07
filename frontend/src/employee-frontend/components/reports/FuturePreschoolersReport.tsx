@@ -48,18 +48,33 @@ export default React.memo(function FuturePreschoolersReport() {
             <DownloadWrapper>
               <ReportDownload
                 data={rows}
-                headers={[
-                  { label: 'lapsen_id', key: 'id' },
-                  { label: 'lapsen_sukunimi', key: 'childLastName' },
-                  { label: 'lapsen_etunimi', key: 'childFirstName' },
-                  { label: 'lapsen_syntyma_pvm', key: 'childDateOfBirth' },
-                  { label: 'lapsen_kieli', key: 'childLanguage' },
-                  { label: 'lapsen_osoite', key: 'childAddress' },
-                  { label: 'postinumero', key: 'childPostalCode' },
-                  { label: 'toimipaikka', key: 'childPostOffice' },
-                  { label: 'toimintayksikon_id', key: 'unitId' },
-                  { label: 'toimintayksikon_nimi', key: 'unitName' },
-                  { label: 'ominaisuudet', key: 'options' }
+                columns={[
+                  { label: 'lapsen_id', value: (row) => row.id },
+                  {
+                    label: 'lapsen_sukunimi',
+                    value: (row) => row.childLastName
+                  },
+                  {
+                    label: 'lapsen_etunimi',
+                    value: (row) => row.childFirstName
+                  },
+                  {
+                    label: 'lapsen_syntyma_pvm',
+                    value: (row) => row.childDateOfBirth.format()
+                  },
+                  { label: 'lapsen_kieli', value: (row) => row.childLanguage },
+                  { label: 'lapsen_osoite', value: (row) => row.childAddress },
+                  { label: 'postinumero', value: (row) => row.childPostalCode },
+                  { label: 'toimipaikka', value: (row) => row.childPostOffice },
+                  { label: 'toimintayksikon_id', value: (row) => row.unitId },
+                  {
+                    label: 'toimintayksikon_nimi',
+                    value: (row) => row.unitName
+                  },
+                  {
+                    label: 'ominaisuudet',
+                    value: (row) => row.options.join(', ')
+                  }
                 ]}
                 filename="Esiopetusoppilaat_rakenne.csv"
               />
@@ -75,14 +90,17 @@ export default React.memo(function FuturePreschoolersReport() {
             <DownloadWrapper>
               <ReportDownload
                 data={rows}
-                headers={[
-                  { label: 'Id', key: 'id' },
-                  { label: 'Nimi', key: 'unitName' },
-                  { label: 'Lahiosoite', key: 'address' },
-                  { label: 'Postinumero', key: 'postalCode' },
-                  { label: 'Postitoimipaikka', key: 'postOffice' },
-                  { label: 'Paikkojen_lkm', key: 'unitSize' },
-                  { label: 'ominaisuudet', key: 'options' }
+                columns={[
+                  { label: 'Id', value: (row) => row.id },
+                  { label: 'Nimi', value: (row) => row.unitName },
+                  { label: 'Lahiosoite', value: (row) => row.address },
+                  { label: 'Postinumero', value: (row) => row.postalCode },
+                  { label: 'Postitoimipaikka', value: (row) => row.postOffice },
+                  { label: 'Paikkojen_lkm', value: (row) => row.unitSize },
+                  {
+                    label: 'ominaisuudet',
+                    value: (row) => row.options.join(', ')
+                  }
                 ]}
                 filename="Esiopetusyksikot.csv"
               />
@@ -98,12 +116,12 @@ export default React.memo(function FuturePreschoolersReport() {
             <DownloadWrapper>
               <ReportDownload
                 data={rows}
-                headers={[
-                  { label: 'Id', key: 'id' },
-                  { label: 'Nimi', key: 'unitName' },
-                  { label: 'Lahiosoite', key: 'address' },
-                  { label: 'Postinumero', key: 'postalCode' },
-                  { label: 'Postitoimipaikka', key: 'postOffice' }
+                columns={[
+                  { label: 'Id', value: (row) => row.id },
+                  { label: 'Nimi', value: (row) => row.unitName },
+                  { label: 'Lahiosoite', value: (row) => row.address },
+                  { label: 'Postinumero', value: (row) => row.postalCode },
+                  { label: 'Postitoimipaikka', value: (row) => row.postOffice }
                 ]}
                 filename="Toimintayksikot.csv"
               />

@@ -112,15 +112,15 @@ export default React.memo(function PartnersInDifferentAddress() {
           <>
             <ReportDownload
               data={filteredRows}
-              headers={[
-                { label: 'Palvelualue', key: 'careAreaName' },
-                { label: 'Yksikön nimi', key: 'unitName' },
-                { label: 'Sukunimi', key: 'firstName1' },
-                { label: 'Etunimi', key: 'lastName1' },
-                { label: 'Osoite', key: 'address1' },
-                { label: 'Puolison sukunimi', key: 'firstName2' },
-                { label: 'Puolison etunimi', key: 'lastName2' },
-                { label: 'Puolison osoite', key: 'address2' }
+              columns={[
+                { label: 'Palvelualue', value: (row) => row.careAreaName },
+                { label: 'Yksikön nimi', value: (row) => row.unitName },
+                { label: 'Sukunimi', value: (row) => row.firstName1 },
+                { label: 'Etunimi', value: (row) => row.lastName1 },
+                { label: 'Osoite', value: (row) => row.address1 },
+                { label: 'Puolison sukunimi', value: (row) => row.firstName2 },
+                { label: 'Puolison etunimi', value: (row) => row.lastName2 },
+                { label: 'Puolison osoite', value: (row) => row.address2 }
               ]}
               filename="Puolisot eri osoitteissa.csv"
             />

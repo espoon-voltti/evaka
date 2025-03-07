@@ -112,15 +112,27 @@ export default React.memo(function ChildrenInDifferentAddress() {
           <>
             <ReportDownload
               data={filteredRows}
-              headers={[
-                { label: 'Palvelualue', key: 'careAreaName' },
-                { label: 'Yksikön nimi', key: 'unitName' },
-                { label: 'Päämiehen sukunimi', key: 'firstNameParent' },
-                { label: 'Päämiehen etunimi', key: 'lastNameParent' },
-                { label: 'Päämiehen osoite', key: 'addressParent' },
-                { label: 'Lapsen sukunimi', key: 'firstNameChild' },
-                { label: 'Lapsen etunimi', key: 'lastNameChild' },
-                { label: 'Lapsen osoite', key: 'addressChild' }
+              columns={[
+                { label: 'Palvelualue', value: (row) => row.careAreaName },
+                { label: 'Yksikön nimi', value: (row) => row.unitName },
+                {
+                  label: 'Päämiehen sukunimi',
+                  value: (row) => row.firstNameParent
+                },
+                {
+                  label: 'Päämiehen etunimi',
+                  value: (row) => row.lastNameParent
+                },
+                {
+                  label: 'Päämiehen osoite',
+                  value: (row) => row.addressParent
+                },
+                {
+                  label: 'Lapsen sukunimi',
+                  value: (row) => row.firstNameChild
+                },
+                { label: 'Lapsen etunimi', value: (row) => row.lastNameChild },
+                { label: 'Lapsen osoite', value: (row) => row.addressChild }
               ]}
               filename="Lapset eri osoitteissa.csv"
             />

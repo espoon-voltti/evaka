@@ -175,13 +175,16 @@ export default React.memo(function EndedPlacements() {
                 placementEnd: row.placementEnd.format(),
                 nextPlacementStart: row.nextPlacementStart?.format()
               }))}
-              headers={[
-                { label: 'Lapsen sukunimi', key: 'lastName' },
-                { label: 'Lapsen etunimi', key: 'firstName' },
-                { label: 'Lopettaa varhaiskasvatuksessa', key: 'placementEnd' },
+              columns={[
+                { label: 'Lapsen sukunimi', value: (row) => row.lastName },
+                { label: 'Lapsen etunimi', value: (row) => row.firstName },
+                {
+                  label: 'Lopettaa varhaiskasvatuksessa',
+                  value: (row) => row.placementEnd
+                },
                 {
                   label: 'Jatkaa varhaiskasvatuksessa',
-                  key: 'nextPlacementStart'
+                  value: (row) => row.nextPlacementStart
                 }
               ]}
               filename={getFilename(filters.year, filters.month)}

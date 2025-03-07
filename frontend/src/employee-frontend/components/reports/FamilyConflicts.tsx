@@ -118,17 +118,20 @@ export default React.memo(function FamilyConflicts() {
                 partnerConflictCount: row.partnerConflictCount,
                 childConflictCount: row.childConflictCount
               }))}
-              headers={[
-                { label: 'Palvelualue', key: 'careAreaName' },
-                { label: 'Yksikön nimi', key: 'unitName' },
-                { label: 'Etunimi', key: 'firstName' },
-                { label: 'Sukunimi', key: 'lastName' },
-                { label: 'Hetu', key: 'ssn' },
+              columns={[
+                { label: 'Palvelualue', value: (row) => row.careAreaName },
+                { label: 'Yksikön nimi', value: (row) => row.unitName },
+                { label: 'Etunimi', value: (row) => row.firstName },
+                { label: 'Sukunimi', value: (row) => row.lastName },
+                { label: 'Hetu', value: (row) => row.ssn },
                 {
                   label: 'Konflikteja puolisoissa',
-                  key: 'partnerConflictCount'
+                  value: (row) => row.partnerConflictCount
                 },
-                { label: 'Konflikteja lapsissa', key: 'childConflictCount' }
+                {
+                  label: 'Konflikteja lapsissa',
+                  value: (row) => row.childConflictCount
+                }
               ]}
               filename="Perhekonfliktit.csv"
             />

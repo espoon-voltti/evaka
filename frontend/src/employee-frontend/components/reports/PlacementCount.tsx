@@ -305,13 +305,22 @@ export default React.memo(function PlacementCount() {
           <>
             <ReportDownload
               data={extractCsvRows()}
-              headers={[
-                { label: 'Alue', key: 'areaName' },
-                { label: 'Yksikkö', key: 'daycareName' },
-                { label: 'Alle 3v', key: 'placementCountUnder3v' },
-                { label: 'Vähintään 3v', key: 'placementCount3vAndOver' },
-                { label: 'Lapsia yhteensä', key: 'placementCount' },
-                { label: 'Laskennallinen määrä', key: 'calculatedPlacements' }
+              columns={[
+                { label: 'Alue', value: (row) => row.areaName },
+                { label: 'Yksikkö', value: (row) => row.daycareName },
+                { label: 'Alle 3v', value: (row) => row.placementCountUnder3v },
+                {
+                  label: 'Vähintään 3v',
+                  value: (row) => row.placementCount3vAndOver
+                },
+                {
+                  label: 'Lapsia yhteensä',
+                  value: (row) => row.placementCount
+                },
+                {
+                  label: 'Laskennallinen määrä',
+                  value: (row) => row.calculatedPlacements
+                }
               ]}
               filename={`sijoitusmaarat_${filters.examinationDate.formatIso()}.csv`}
             />

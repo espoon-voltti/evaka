@@ -32,12 +32,15 @@ export default React.memo(function IncompleteIncomes() {
           <>
             <ReportDownload<IncompleteIncomeDbRow>
               data={rows}
-              headers={[
-                { label: 'Etunimi', key: 'firstName' },
-                { label: 'Sukunimi', key: 'lastName' },
-                { label: 'Alkupäivämäärä', key: 'validFrom' },
-                { label: 'Päiväkoti', key: 'daycareName' },
-                { label: 'Palvelualue', key: 'careareaName' }
+              columns={[
+                { label: 'Etunimi', value: (row) => row.firstName },
+                { label: 'Sukunimi', value: (row) => row.lastName },
+                {
+                  label: 'Alkupäivämäärä',
+                  value: (row) => row.validFrom.format()
+                },
+                { label: 'Päiväkoti', value: (row) => row.daycareName },
+                { label: 'Palvelualue', value: (row) => row.careareaName }
               ]}
               filename="Puuttuvat_tulotiedot.csv"
             />

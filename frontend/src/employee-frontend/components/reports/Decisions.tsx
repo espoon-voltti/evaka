@@ -145,59 +145,71 @@ export default React.memo(function Decisions() {
                 providerType:
                   i18n.reports.common.unitProviderTypes[row.providerType]
               }))}
-              headers={[
+              columns={[
                 {
                   label: i18n.reports.common.careAreaName,
-                  key: 'careAreaName'
+                  value: (row) => row.careAreaName
                 },
-                { label: i18n.reports.common.unitName, key: 'unitName' },
+                {
+                  label: i18n.reports.common.unitName,
+                  value: (row) => row.unitName
+                },
                 {
                   label: i18n.reports.common.unitProviderType,
-                  key: 'providerType'
+                  value: (row) => row.providerType
                 },
                 {
                   label: i18n.reports.decisions.daycareUnder3,
-                  key: 'daycareUnder3'
+                  value: (row) => row.daycareUnder3
                 },
                 {
                   label: i18n.reports.decisions.daycareOver3,
-                  key: 'daycareOver3'
+                  value: (row) => row.daycareOver3
                 },
-                { label: i18n.reports.decisions.preschool, key: 'preschool' },
+                {
+                  label: i18n.reports.decisions.preschool,
+                  value: (row) => row.preschool
+                },
                 {
                   label: i18n.reports.decisions.preschoolDaycare,
-                  key: 'preschoolDaycare'
+                  value: (row) => row.preschoolDaycare
                 },
                 {
                   label: i18n.reports.decisions.connectedDaycareOnly,
-                  key: 'connectedDaycareOnly'
+                  value: (row) => row.connectedDaycareOnly
                 },
                 {
                   label: i18n.reports.decisions.preparatory,
-                  key: 'preparatory'
+                  value: (row) => row.preparatory
                 },
                 {
                   label: i18n.reports.decisions.preparatoryDaycare,
-                  key: 'preparatoryDaycare'
+                  value: (row) => row.preparatoryDaycare
                 },
-                { label: i18n.reports.decisions.club, key: 'club' },
+                {
+                  label: i18n.reports.decisions.club,
+                  value: (row) => row.club
+                },
                 {
                   label: i18n.reports.decisions.preference1,
-                  key: 'preference1'
+                  value: (row) => row.preference1
                 },
                 {
                   label: i18n.reports.decisions.preference2,
-                  key: 'preference2'
+                  value: (row) => row.preference2
                 },
                 {
                   label: i18n.reports.decisions.preference3,
-                  key: 'preference3'
+                  value: (row) => row.preference3
                 },
                 {
                   label: i18n.reports.decisions.preferenceNone,
-                  key: 'preferenceNone'
+                  value: (row) => row.preferenceNone
                 },
-                { label: i18n.reports.decisions.total, key: 'total' }
+                {
+                  label: i18n.reports.decisions.total,
+                  value: (row) => row.total
+                }
               ]}
               filename={`${
                 i18n.reports.decisions.title

@@ -90,46 +90,58 @@ export default React.memo(function FamilyContacts() {
                 guardian2Phone: row.guardian2?.phone ?? '',
                 guardian2Email: row.guardian2?.email ?? ''
               }))}
-              headers={[
-                { label: i18n.reports.familyContacts.name, key: 'name' },
-                { label: i18n.reports.familyContacts.ssn, key: 'ssn' },
-                { label: i18n.reports.familyContacts.group, key: 'groupName' },
-                { label: i18n.reports.familyContacts.address, key: 'address' },
+              columns={[
+                {
+                  label: i18n.reports.familyContacts.name,
+                  value: (row) => row.name
+                },
+                {
+                  label: i18n.reports.familyContacts.ssn,
+                  value: (row) => row.ssn
+                },
+                {
+                  label: i18n.reports.familyContacts.group,
+                  value: (row) => row.groupName
+                },
+                {
+                  label: i18n.reports.familyContacts.address,
+                  value: (row) => row.address
+                },
                 {
                   label: i18n.reports.familyContacts.headOfChild,
-                  key: 'headOfChildName'
+                  value: (row) => row.headOfChildName
                 },
                 {
                   label: `${i18n.reports.familyContacts.headOfChild}: ${i18n.reports.familyContacts.phone}`,
-                  key: 'headOfChildPhone'
+                  value: (row) => row.headOfChildPhone
                 },
                 {
                   label: `${i18n.reports.familyContacts.headOfChild}: ${i18n.reports.familyContacts.email}`,
-                  key: 'headOfChildEmail'
+                  value: (row) => row.headOfChildEmail
                 },
                 {
                   label: i18n.reports.familyContacts.guardian1,
-                  key: 'guardian1Name'
+                  value: (row) => row.guardian1Name
                 },
                 {
                   label: `${i18n.reports.familyContacts.guardian1}: ${i18n.reports.familyContacts.phone}`,
-                  key: 'guardian1Phone'
+                  value: (row) => row.guardian1Phone
                 },
                 {
                   label: `${i18n.reports.familyContacts.guardian1}: ${i18n.reports.familyContacts.email}`,
-                  key: 'guardian1Email'
+                  value: (row) => row.guardian1Email
                 },
                 {
                   label: i18n.reports.familyContacts.guardian2,
-                  key: 'guardian2Name'
+                  value: (row) => row.guardian2Name
                 },
                 {
                   label: `${i18n.reports.familyContacts.guardian2}: ${i18n.reports.familyContacts.phone}`,
-                  key: 'guardian2Phone'
+                  value: (row) => row.guardian2Phone
                 },
                 {
                   label: `${i18n.reports.familyContacts.guardian2}: ${i18n.reports.familyContacts.email}`,
-                  key: 'guardian2Email'
+                  value: (row) => row.guardian2Email
                 }
               ]}
               filename="Perheiden yhteystiedot.csv"

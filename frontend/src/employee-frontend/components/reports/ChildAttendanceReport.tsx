@@ -82,23 +82,26 @@ export default React.memo(function ChildAttendanceReport() {
                   ? i18n.absences.absenceTypes[row.nonbillableAbsence]
                   : ''
               }))}
-              headers={[
-                { key: 'date', label: i18n.reports.childAttendance.date },
+              columns={[
                 {
-                  key: 'reservations',
-                  label: i18n.reports.childAttendance.reservations
+                  label: i18n.reports.childAttendance.date,
+                  value: (row) => row.date
                 },
                 {
-                  key: 'attendances',
-                  label: i18n.reports.childAttendance.attendances
+                  label: i18n.reports.childAttendance.reservations,
+                  value: (row) => row.reservations
                 },
                 {
-                  key: 'absenceBillable',
-                  label: i18n.reports.childAttendance.absenceBillable
+                  label: i18n.reports.childAttendance.attendances,
+                  value: (row) => row.attendances
                 },
                 {
-                  key: 'absenceNonbillable',
-                  label: i18n.reports.childAttendance.absenceNonbillable
+                  label: i18n.reports.childAttendance.absenceBillable,
+                  value: (row) => row.absenceBillable
+                },
+                {
+                  label: i18n.reports.childAttendance.absenceNonbillable,
+                  value: (row) => row.absenceNonbillable
                 }
               ]}
               filename={`${i18n.reports.childAttendance.title}.csv`}

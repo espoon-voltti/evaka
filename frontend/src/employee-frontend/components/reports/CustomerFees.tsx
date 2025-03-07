@@ -139,14 +139,14 @@ const CustomerFeesInner = React.memo(function CustomerFeesInner({
                 ...row,
                 feeAmount: formatCents(row.feeAmount, true)
               }))}
-              headers={[
+              columns={[
                 {
                   label: i18n.reports.customerFees.fee,
-                  key: 'feeAmount'
+                  value: (row) => row.feeAmount
                 },
                 {
                   label: i18n.reports.customerFees.count,
-                  key: 'count'
+                  value: (row) => row.count
                 }
               ]}
               filename={
