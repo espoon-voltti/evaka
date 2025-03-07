@@ -2077,8 +2077,7 @@ const en: Translations = {
       agreeToHighestFee: 'I agree to the highest early education fee',
       highestFeeInfo:
         'I agree to pay the highest early education fee in accordance with the early education time, the valid Act on Client Charges in Healthcare and Social Welfare and the decisions of the City Board for the time being until I declare otherwise or until the early education of my child ends. (No need to provide income information)',
-      grossIncome: 'Determination of the client fee by gross income',
-      entrepreneurIncome: "Entrepreneur's income information"
+      grossIncome: 'Determination of the client fee by gross income'
     },
     childIncome: {
       childAttachments: 'Child income information attached *',
@@ -2150,12 +2149,12 @@ const en: Translations = {
         'Estimate of other income sources per month, eg. "Rent 150, child home care allowance 300"'
     },
     entrepreneurIncome: {
+      entrepreneurSelectTitle: 'Are you an entrepreneur?',
+      entrepreneurYes: 'Yes, I am a full-time or part-time entrepreneur',
+      entrepreneurNo: 'No, I am not an entrepreneur',
       title: "Filling in the entrepreneur's income information",
       description:
         'If necessary, you can fill in the information for more than one company by ticking the boxes that apply to all of your companies.',
-      fullTimeLabel: 'Are the business activities full-time or part-time?',
-      fullTime: 'Full-time',
-      partTime: 'Part-time',
       startOfEntrepreneurship: 'Business activities started',
       companyName: 'Name(s) of company',
       businessId: 'Business ID / IDs',
@@ -2392,9 +2391,6 @@ const en: Translations = {
       otherIncomeInfo: 'Estimate of other income',
 
       entrepreneurTitle: "Entrepreneur's income information",
-      fullTimeLabel: 'Are the business activities full-time or part-time',
-      fullTime: 'Full-time',
-      partTime: 'Part-time',
       startOfEntrepreneurship: 'Business activities started',
       companyName: 'Name(s) of company',
       businessId: 'Business ID / IDs',

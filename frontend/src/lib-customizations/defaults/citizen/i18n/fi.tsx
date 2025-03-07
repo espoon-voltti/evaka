@@ -2319,8 +2319,7 @@ export default {
       agreeToHighestFee: 'Suostun korkeimpaan varhaiskasvatusmaksuun',
       highestFeeInfo:
         'Suostun maksamaan varhaiskasvatusajan ja kulloinkin voimassa olevan asiakasmaksulain ja kaupungin hallituksen päätösten mukaista korkeinta varhaiskasvatusmaksua, joka on voimassa toistaiseksi siihen saakka, kunnes toisin ilmoitan tai kunnes lapseni varhaiskasvatus päättyy. (Tulotietoja ei tarvitse toimittaa)',
-      grossIncome: 'Maksun määritteleminen bruttotulojen mukaan',
-      entrepreneurIncome: 'Yrittäjän tulotiedot'
+      grossIncome: 'Maksun määritteleminen bruttotulojen mukaan'
     },
     childIncome: {
       childAttachments: 'Lapsen tulotiedot liitteinä *',
@@ -2391,12 +2390,12 @@ export default {
         'Kirjoita tähän arviot muiden tulojen määristä €/kk, esim. "Vuokratulot 150, lasten kotihoidontuki 300"'
     },
     entrepreneurIncome: {
+      entrepreneurSelectTitle: 'Oletko yrittäjä?',
+      entrepreneurYes: 'Kyllä, olen päätoiminen tai sivutoiminen yrittäjä',
+      entrepreneurNo: 'En ole yrittäjä',
       title: 'Yrittäjän tulotietojen täyttäminen',
       description:
         'Tällä lomakkeella voit tarvittaessa täyttää tiedot myös useammalle yritykselle valitsemalla kaikkia yrityksiäsi koskevat kohdat.',
-      fullTimeLabel: 'Onko yritystoiminta päätoimista vai sivutoimista?',
-      fullTime: 'Päätoimista',
-      partTime: 'Sivutoimista',
       startOfEntrepreneurship: 'Yrittäjyys alkanut',
       companyName: 'Yrityksen / yritysten nimi',
       businessId: 'Y-tunnus / Y-tunnukset',
@@ -2622,9 +2621,6 @@ export default {
       otherIncomeInfo: 'Arviot muista tuloista',
 
       entrepreneurTitle: 'Yrittäjän tulotiedot',
-      fullTimeLabel: 'Onko yritystoiminta päätoimista vai sivutoimista',
-      fullTime: 'Päätoimista',
-      partTime: 'Sivutoimista',
       startOfEntrepreneurship: 'Yrittäjyys alkanut',
       companyName: 'Yrityksen / yritysten nimi',
       businessId: 'Y-tunnus / Y-tunnukset',
