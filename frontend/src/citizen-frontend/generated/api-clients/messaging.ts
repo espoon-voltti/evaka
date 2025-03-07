@@ -95,6 +95,22 @@ export async function getUnreadMessages(): Promise<number> {
 
 
 /**
+* Generated from fi.espoo.evaka.messaging.MessageControllerCitizen.markLastReceivedMessageInThreadUnread
+*/
+export async function markLastReceivedMessageInThreadUnread(
+  request: {
+    threadId: MessageThreadId
+  }
+): Promise<void> {
+  const { data: json } = await client.request<JsonOf<void>>({
+    url: uri`/citizen/messages/threads/${request.threadId}/last-received-message/read`.toString(),
+    method: 'PUT'
+  })
+  return json
+}
+
+
+/**
 * Generated from fi.espoo.evaka.messaging.MessageControllerCitizen.markThreadRead
 */
 export async function markThreadRead(

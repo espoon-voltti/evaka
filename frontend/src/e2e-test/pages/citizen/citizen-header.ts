@@ -11,7 +11,9 @@ export default class CitizenHeader {
   #languageMenuToggle: Element
   #languageOptionList: Element
   #childrenNav: Element
+  #messagesNav: Element
   #unreadChildrenCount: Element
+  #unreadMessagesCount: Element
   #subNavMenu: Element
   constructor(
     private readonly page: Page,
@@ -20,8 +22,12 @@ export default class CitizenHeader {
     this.#languageMenuToggle = page.findByDataQa('button-select-language')
     this.#languageOptionList = page.findByDataQa('select-lang')
     this.#childrenNav = page.findByDataQa(`nav-children-${this.type}`)
+    this.#messagesNav = page.findByDataQa(`nav-messages-${this.type}`)
     this.#unreadChildrenCount = page.findByDataQa(
       `nav-children-${this.type}-notification-count`
+    )
+    this.#unreadMessagesCount = page.findByDataQa(
+      `nav-messages-${this.type}-notification-count`
     )
     this.#subNavMenu = page.findByDataQa(`sub-nav-menu-${this.type}`)
   }
@@ -133,6 +139,15 @@ export default class CitizenHeader {
       .findByDataQa('personal-details-notification')
       .waitUntilVisible()
     await this.#subNavMenu.click()
+  }
+
+  async assertUnreadMessagesCount(expectedCount: number) {
+    await this.#messagesNav.waitUntilVisible()
+    if (expectedCount !== 0) {
+      await this.#unreadMessagesCount.assertTextEquals(expectedCount.toString())
+    } else {
+      await waitUntilFalse(() => this.#unreadMessagesCount.visible)
+    }
   }
 
   async assertUnreadChildrenCount(expectedCount: number) {

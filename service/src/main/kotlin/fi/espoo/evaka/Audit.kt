@@ -366,6 +366,7 @@ enum class Audit(
     MessagingMyAccountsRead,
     MessagingUnreadMessagesRead,
     MessagingMarkMessagesReadWrite,
+    MessagingMarkMessagesUnreadWrite,
     MessagingArchiveMessageWrite,
     MessagingChangeFolder,
     MessagingMessageReceiversRead,

@@ -42,6 +42,7 @@ export default class CitizenMessagesPage {
   newMessageButton: Element
   fileUpload: Element
   #threadOutOfOfficeInfo: Element
+  markUnreadButton: Element
   constructor(private readonly page: Page) {
     this.messageReplyContent = new TextInput(
       page.findByDataQa('message-reply-content')
@@ -74,6 +75,7 @@ export default class CitizenMessagesPage {
     this.#threadOutOfOfficeInfo = page
       .findByDataQa('thread-reader')
       .findByDataQa('out-of-office-info')
+    this.markUnreadButton = page.findByDataQa('mark-unread-btn')
   }
 
   replyButtonTag = 'message-reply-editor-btn'

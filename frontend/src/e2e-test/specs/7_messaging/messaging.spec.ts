@@ -42,6 +42,7 @@ import {
   DevEmployee,
   DevPlacement
 } from '../../generated/api-types'
+import CitizenHeader from '../../pages/citizen/citizen-header'
 import CitizenMessagesPage from '../../pages/citizen/citizen-messages'
 import MessagesPage from '../../pages/employee/messages/messages-page'
 import { waitUntilEqual } from '../../utils'
@@ -794,6 +795,31 @@ describe('Sending and receiving messages', () => {
           'message-sent-notification',
           'Viesti lähetetty'
         )
+      })
+
+      test('Citizen can mark message as unread', async () => {
+        await openSupervisorPage(mockedDateAt10)
+        await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
+        const messagesPage = new MessagesPage(unitSupervisorPage)
+        const messageEditor = await messagesPage.openMessageEditor()
+        await messageEditor.sendNewMessage(defaultMessage)
+        await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
+
+        await openCitizen(mockedDateAt11)
+        await citizenPage.goto(config.enduserMessagesUrl)
+        const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+        const header = new CitizenHeader(citizenPage, 'desktop')
+
+        await header.assertUnreadMessagesCount(1)
+
+        await citizenMessagesPage.openFirstThread()
+        await header.assertUnreadMessagesCount(0)
+
+        await citizenMessagesPage.markUnreadButton.click()
+        await header.assertUnreadMessagesCount(1)
+
+        await citizenMessagesPage.openFirstThread()
+        await header.assertUnreadMessagesCount(0)
       })
 
       describe('Messages can be deleted / archived', () => {

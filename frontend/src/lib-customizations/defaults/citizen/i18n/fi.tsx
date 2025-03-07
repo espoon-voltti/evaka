@@ -544,6 +544,7 @@ export default {
       BULLETIN: 'Tiedote'
     },
     deleteThread: 'Poista viestiketju',
+    markUnread: 'Merkitse lukemattomaksi',
     staffAnnotation: 'Henkilökunta',
     threadList: {
       participants: 'Osallistujat',

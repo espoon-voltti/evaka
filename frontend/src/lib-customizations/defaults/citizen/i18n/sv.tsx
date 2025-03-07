@@ -540,6 +540,7 @@ const sv: Translations = {
     },
     staffAnnotation: 'Personal',
     deleteThread: 'Radera meddelandetråden',
+    markUnread: 'Markera som oläst',
     threadList: {
       participants: 'Deltagare',
       title: 'Ämne',
