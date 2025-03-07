@@ -172,7 +172,6 @@ export default React.memo(function ServiceNeedItem({
                 initialState={editorState.form}
                 close={closeEditor}
                 existingVoucherValues={voucherValuesList}
-                latestVoucherValue={latestVouchervalue}
               />
             ) : null}
             {voucherValuesList
@@ -190,7 +189,6 @@ export default React.memo(function ServiceNeedItem({
                     close={closeEditor}
                     key={i}
                     existingVoucherValues={voucherValuesList}
-                    latestVoucherValue={latestVouchervalue}
                   />
                 ) : (
                   <Tr key={i} data-qa={`voucher-value-row-${i}`}>

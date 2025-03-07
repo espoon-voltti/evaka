@@ -172,6 +172,26 @@ class VoucherValueIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
     }
 
     @Test
+    fun `should throw when adding a voucher value that starts after a gap`() {
+        addVoucherValue(testVoucherValue)
+        assertThrows<BadRequest> {
+            addVoucherValue(
+                testVoucherValue.copy(
+                    range = DateRange(testVoucherValue.range.end!!.plusDays(2), null)
+                )
+            )
+        }
+    }
+
+    @Test
+    fun `should work when adding a voucher value that starts right after previous one`() {
+        addVoucherValue(testVoucherValue)
+        addVoucherValue(
+            testVoucherValue.copy(range = DateRange(testVoucherValue.range.end!!.plusDays(1), null))
+        )
+    }
+
+    @Test
     fun `should work when service need option has no prior voucher values`() {
         db.transaction { tx -> tx.deleteTestVoucherValues() }
         addVoucherValue(testVoucherValue)

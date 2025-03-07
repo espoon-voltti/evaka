@@ -1,8 +1,9 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2025 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useState } from 'react'
+import orderBy from 'lodash/orderBy'
+import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import DateRange from 'lib-common/date-range'
@@ -34,7 +35,6 @@ export type VoucherValueEditorProps = {
   initialState: FormState
   close: () => void
   existingVoucherValues: ServiceNeedOptionVoucherValueRangeWithId[]
-  latestVoucherValue: ServiceNeedOptionVoucherValueRangeWithId | null
 }
 
 export default React.memo(function VoucherValueEditor({
@@ -42,14 +42,30 @@ export default React.memo(function VoucherValueEditor({
   id,
   initialState,
   close,
-  existingVoucherValues,
-  latestVoucherValue
+  existingVoucherValues
 }: VoucherValueEditorProps) {
   const [editorState, setEditorState] = useState<FormState>(initialState)
+
+  const existingExcludingThis = useMemo(
+    () =>
+      existingVoucherValues.filter((voucherValue) => voucherValue.id !== id),
+    [existingVoucherValues, id]
+  )
+
+  const latestVoucherValue = useMemo(
+    () =>
+      orderBy(
+        existingExcludingThis,
+        ({ voucherValues }) => voucherValues.range.start,
+        ['desc']
+      )[0] ?? null,
+    [existingExcludingThis]
+  )
+
   const validationResult = validateForm(
     i18n,
     editorState,
-    existingVoucherValues.filter((voucherValue) => voucherValue.id !== id),
+    existingExcludingThis,
     latestVoucherValue
   )
 

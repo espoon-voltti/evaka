@@ -182,7 +182,7 @@ class FinanceBasicsController(private val accessControl: AccessControl) {
 
                             if (
                                 latest.voucherValues.range.end != null &&
-                                    body.range.start != latest.voucherValues.range.start.plusDays(1)
+                                    body.range.start != latest.voucherValues.range.end.plusDays(1)
                             )
                                 throw BadRequest(
                                     "New voucher value can't leave a gap in validities"
