@@ -280,7 +280,7 @@ internal class LinkityServiceTest : FullApplicationTest(resetDbBeforeEach = true
         val period = FiniteDateRange(now.minusDays(1).toLocalDate(), now.toLocalDate())
 
         val client = MockLinkityClient()
-        sendWorkLogsToLinkity(period, db, client)
+        sendStaffAttendancesToLinkity(period, db, client)
 
         val expected =
             setOf(
@@ -327,7 +327,7 @@ internal class LinkityServiceTest : FullApplicationTest(resetDbBeforeEach = true
         val endDate = startDate.plusWeeks(6).minusDays(1)
         val chunkSizeDays = 7L
         val ranges =
-            generateDateRangesForStaffAttendancePlanQueries(startDate, endDate, chunkSizeDays)
+            generateDateRangesForStaffAttendancePlanRequests(startDate, endDate, chunkSizeDays)
                 .toList()
         val expected =
             listOf(

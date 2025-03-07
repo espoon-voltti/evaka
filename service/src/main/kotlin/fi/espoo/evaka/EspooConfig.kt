@@ -260,7 +260,10 @@ class EspooConfig {
         patuReportingService: PatuReportingService,
         espooAsyncJobRunner: AsyncJobRunner<EspooAsyncJob>,
         env: ScheduledJobsEnv<EspooScheduledJob>,
-    ): EspooScheduledJobs = EspooScheduledJobs(patuReportingService, espooAsyncJobRunner, env)
+        linkityEnv: LinkityEnv?,
+        jsonMapper: JsonMapper,
+    ): EspooScheduledJobs =
+        EspooScheduledJobs(patuReportingService, espooAsyncJobRunner, env, linkityEnv, jsonMapper)
 
     @Bean fun espooMealTypeMapper(): MealTypeMapper = DefaultMealTypeMapper
 

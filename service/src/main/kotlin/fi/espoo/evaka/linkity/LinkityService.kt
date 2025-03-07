@@ -38,7 +38,7 @@ class LinkitySyncService(val linkityEnv: LinkityEnv?, val jsonMapper: JsonMapper
     }
 }
 
-fun generateDateRangesForStaffAttendancePlanQueries(
+fun generateDateRangesForStaffAttendancePlanRequests(
     startDate: LocalDate,
     endDate: LocalDate,
     chunkSizeDays: Long,
@@ -115,7 +115,11 @@ private fun filterValidShifts(
     return validShifts
 }
 
-fun sendWorkLogsToLinkity(period: FiniteDateRange, db: Database.Connection, client: LinkityClient) {
+fun sendStaffAttendancesToLinkity(
+    period: FiniteDateRange,
+    db: Database.Connection,
+    client: LinkityClient,
+) {
     lateinit var attendances: Map<EmployeeId, List<ExportableAttendance>>
     lateinit var plans: Map<EmployeeId, List<StaffAttendancePlan>>
 

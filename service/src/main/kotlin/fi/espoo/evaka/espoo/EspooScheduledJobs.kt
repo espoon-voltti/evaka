@@ -4,9 +4,13 @@
 
 package fi.espoo.evaka.espoo
 
+import com.fasterxml.jackson.databind.json.JsonMapper
+import fi.espoo.evaka.LinkityEnv
 import fi.espoo.evaka.ScheduledJobsEnv
 import fi.espoo.evaka.espoo.bi.EspooBiTable
-import fi.espoo.evaka.linkity.generateDateRangesForStaffAttendancePlanQueries
+import fi.espoo.evaka.linkity.LinkityHttpClient
+import fi.espoo.evaka.linkity.generateDateRangesForStaffAttendancePlanRequests
+import fi.espoo.evaka.linkity.sendStaffAttendancesToLinkity
 import fi.espoo.evaka.reports.patu.PatuReportingService
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.AsyncJobType
@@ -14,6 +18,7 @@ import fi.espoo.evaka.shared.async.removeUnclaimedJobs
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.job.JobSchedule
 import fi.espoo.evaka.shared.job.ScheduledJobDefinition
 import fi.espoo.evaka.shared.job.ScheduledJobSettings
@@ -36,12 +41,18 @@ enum class EspooScheduledJob(
         EspooScheduledJobs::getStaffAttendancePlansFromLinkity,
         ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(1, 30))),
     ),
+    SendStaffAttendancesToLinkity(
+        EspooScheduledJobs::sendStaffAttendancesToLinkity,
+        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(9, 22))),
+    ),
 }
 
 class EspooScheduledJobs(
     private val patuReportingService: PatuReportingService,
     private val espooAsyncJobRunner: AsyncJobRunner<EspooAsyncJob>,
     env: ScheduledJobsEnv<EspooScheduledJob>,
+    private val linkityEnv: LinkityEnv?,
+    private val jsonMapper: JsonMapper,
 ) : JobSchedule {
     override val jobs: List<ScheduledJobDefinition> =
         env.jobs.map {
@@ -80,10 +91,26 @@ class EspooScheduledJobs(
         }
         db.transaction { tx ->
             val dateRanges =
-                generateDateRangesForStaffAttendancePlanQueries(startDate, endDate, daysInSingleRun)
+                generateDateRangesForStaffAttendancePlanRequests(
+                        startDate,
+                        endDate,
+                        daysInSingleRun,
+                    )
                     .map { EspooAsyncJob.GetStaffAttendancePlansFromLinkity(it) }
 
             espooAsyncJobRunner.plan(tx, dateRanges, runAt = clock.now())
         }
+    }
+
+    fun sendStaffAttendancesToLinkity(db: Database.Connection, clock: EvakaClock) {
+        val today = clock.today()
+        val period = FiniteDateRange(today.minusWeeks(6), today)
+        if (linkityEnv == null) {
+            logger.warn { "Linkity environment not configured" }
+            return
+        }
+        val linkityClient = LinkityHttpClient(linkityEnv, jsonMapper)
+        logger.info { "Sending staff attendances to Linkity for period $period" }
+        sendStaffAttendancesToLinkity(period, db, linkityClient)
     }
 }
