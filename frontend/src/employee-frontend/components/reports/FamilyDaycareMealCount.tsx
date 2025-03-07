@@ -349,39 +349,39 @@ export default React.memo(function FamilyDaycareMealCount() {
                   filteredAreaResult,
                   filteredDaycareResults
                 )}
-                headers={[
+                columns={[
                   {
                     label: i18n.reports.familyDaycareMealCount.careArea,
-                    key: 'areaName'
+                    value: (row) => row.areaName
                   },
                   {
                     label: i18n.reports.familyDaycareMealCount.daycareName,
-                    key: 'daycareName'
+                    value: (row) => row.daycareName
                   },
                   {
                     label: i18n.reports.familyDaycareMealCount.firstName,
-                    key: 'firstName'
+                    value: (row) => row.firstName
                   },
                   {
                     label: i18n.reports.familyDaycareMealCount.lastName,
-                    key: 'lastName'
+                    value: (row) => row.lastName
                   },
                   {
                     label:
                       i18n.reports.familyDaycareMealCount.breakfastCountHeader,
-                    key: 'breakfastCount'
+                    value: (row) => row.breakfastCount
                   },
                   {
                     label: i18n.reports.familyDaycareMealCount.lunchCountHeader,
-                    key: 'lunchCount'
+                    value: (row) => row.lunchCount
                   },
                   {
                     label: i18n.reports.familyDaycareMealCount.snackCountHeader,
-                    key: 'snackCount'
+                    value: (row) => row.snackCount
                   },
                   {
                     label: i18n.reports.familyDaycareMealCount.totalHeader,
-                    key: 'total'
+                    value: (row) => row.total
                   }
                 ]}
                 filename={`ateriaraportti_${filters.startDate.formatIso()}-${filters.endDate.formatIso()}.csv`}

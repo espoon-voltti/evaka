@@ -145,14 +145,14 @@ export default React.memo(function MissingServiceNeed() {
             <>
               <ReportDownload
                 data={filteredRows}
-                headers={[
-                  { label: 'Palvelualue', key: 'careAreaName' },
-                  { label: 'Yksikön nimi', key: 'unitName' },
-                  { label: 'Lapsen sukunimi', key: 'lastName' },
-                  { label: 'Lapsen etunimi', key: 'firstName' },
+                columns={[
+                  { label: 'Palvelualue', value: (row) => row.careAreaName },
+                  { label: 'Yksikön nimi', value: (row) => row.unitName },
+                  { label: 'Lapsen sukunimi', value: (row) => row.lastName },
+                  { label: 'Lapsen etunimi', value: (row) => row.firstName },
                   {
                     label: 'Puutteellisia päiviä',
-                    key: 'daysWithoutServiceNeed'
+                    value: (row) => row.daysWithoutServiceNeed
                   }
                 ]}
                 filename={`Puuttuvat palveluntarpeet ${filters.from.formatIso()}-${

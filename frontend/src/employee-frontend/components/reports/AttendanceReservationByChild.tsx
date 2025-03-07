@@ -289,38 +289,35 @@ export default React.memo(function AttendanceReservationByChild() {
                     )
                   )
                 )}
-                headers={[
-                  ...(report.length > 0 && report[0].groupId !== null
-                    ? [
-                        {
-                          label: i18n.reports.common.groupName,
-                          key: 'groupName' as const
-                        }
-                      ]
-                    : []),
+                columns={[
+                  {
+                    label: i18n.reports.common.groupName,
+                    value: (row) => row.groupName,
+                    exclude: report.length === 0 || report[0].groupId === null
+                  },
                   {
                     label: i18n.reports.common.child,
-                    key: 'childName'
+                    value: (row) => row.childName
                   },
                   {
                     label: i18n.reports.common.date,
-                    key: 'date'
+                    value: (row) => row.date
                   },
                   {
                     label: i18n.reports.attendanceReservationByChild.absence,
-                    key: 'fullDayAbsence'
+                    value: (row) => row.fullDayAbsence
                   },
                   {
                     label:
                       i18n.reports.attendanceReservationByChild
                         .reservationStartTime,
-                    key: 'reservationStartTime'
+                    value: (row) => row.reservationStartTime
                   },
                   {
                     label:
                       i18n.reports.attendanceReservationByChild
                         .reservationEndTime,
-                    key: 'reservationEndTime'
+                    value: (row) => row.reservationEndTime
                   }
                 ]}
                 filename={`${i18n.reports.attendanceReservationByChild.title} ${

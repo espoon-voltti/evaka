@@ -76,76 +76,91 @@ export default React.memo(function MissingHeadOfFamily() {
                   ? i18n.common.yes
                   : i18n.common.no
               }))}
-              headers={[
-                { label: i18n.reports.units.name, key: 'name' },
-                { label: i18n.reports.units.careAreaName, key: 'careAreaName' },
+              columns={[
+                { label: i18n.reports.units.name, value: (row) => row.name },
+                {
+                  label: i18n.reports.units.careAreaName,
+                  value: (row) => row.careAreaName
+                },
                 {
                   label: i18n.reports.units.careTypeCentre,
-                  key: 'careTypeCentre'
+                  value: (row) => row.careTypeCentre
                 },
                 {
                   label: i18n.reports.units.careTypeFamilyStr,
-                  key: 'careTypeFamily'
+                  value: (row) => row.careTypeFamily
                 },
                 {
                   label: i18n.reports.units.careTypeGroupFamilyStr,
-                  key: 'careTypeGroupFamily'
+                  value: (row) => row.careTypeGroupFamily
                 },
-                { label: i18n.reports.units.careTypeClub, key: 'careTypeClub' },
+                {
+                  label: i18n.reports.units.careTypeClub,
+                  value: (row) => row.careTypeClub
+                },
                 {
                   label: i18n.reports.units.careTypePreschool,
-                  key: 'careTypePreschool'
+                  value: (row) => row.careTypePreschool
                 },
                 {
                   label: i18n.reports.units.careTypePreparatoryEducation,
-                  key: 'careTypePreparatoryEducation'
+                  value: (row) => row.careTypePreparatoryEducation
                 },
-                { label: i18n.reports.units.clubApplyStr, key: 'clubApply' },
+                {
+                  label: i18n.reports.units.clubApplyStr,
+                  value: (row) => row.clubApply
+                },
                 {
                   label: i18n.reports.units.daycareApplyStr,
-                  key: 'daycareApply'
+                  value: (row) => row.daycareApply
                 },
                 {
                   label: i18n.reports.units.preschoolApplyStr,
-                  key: 'preschoolApply'
+                  value: (row) => row.preschoolApply
                 },
-                { label: i18n.reports.units.providerType, key: 'providerType' },
+                {
+                  label: i18n.reports.units.providerType,
+                  value: (row) => row.providerType
+                },
                 {
                   label: i18n.reports.units.uploadToVarda,
-                  key: 'uploadToVarda'
+                  value: (row) => row.uploadToVarda
                 },
                 {
                   label: i18n.reports.units.uploadChildrenToVarda,
-                  key: 'uploadChildrenToVarda'
+                  value: (row) => row.uploadChildrenToVarda
                 },
                 {
                   label: i18n.reports.units.uploadToKoski,
-                  key: 'uploadToKoski'
+                  value: (row) => row.uploadToKoski
                 },
                 {
                   label: i18n.reports.units.ophUnitOid,
-                  key: 'ophUnitOid'
+                  value: (row) => row.ophUnitOid
                 },
                 {
                   label: i18n.reports.units.ophOrganizerOid,
-                  key: 'ophOrganizerOid'
+                  value: (row) => row.ophOrganizerOid
                 },
                 {
                   label: i18n.reports.units.invoicedByMunicipality,
-                  key: 'invoicedByMunicipality'
+                  value: (row) => row.invoicedByMunicipality
                 },
-                { label: i18n.reports.units.costCenter, key: 'costCenter' },
+                {
+                  label: i18n.reports.units.costCenter,
+                  value: (row) => row.costCenter
+                },
                 {
                   label: i18n.reports.units.address,
-                  key: 'address'
+                  value: (row) => row.address
                 },
                 {
                   label: i18n.reports.units.unitManagerName,
-                  key: 'unitManagerName'
+                  value: (row) => row.unitManagerName
                 },
                 {
                   label: i18n.reports.units.unitManagerPhone,
-                  key: 'unitManagerPhone'
+                  value: (row) => row.unitManagerPhone
                 }
               ]}
               filename="Yksiköt.csv"

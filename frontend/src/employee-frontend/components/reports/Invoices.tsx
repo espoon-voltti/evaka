@@ -77,13 +77,19 @@ export default React.memo(function ReportInvoices() {
           <>
             <ReportDownload<InvoiceReportRow>
               data={report.value.reportRows}
-              headers={[
-                { label: 'Alue', key: 'areaCode' },
-                { label: 'Laskuja', key: 'amountOfInvoices' },
-                { label: 'Summa', key: 'totalSumCents' },
-                { label: 'Hetuttomia', key: 'amountWithoutSSN' },
-                { label: 'Osoitteettomia', key: 'amountWithoutAddress' },
-                { label: 'Nollalaskuja', key: 'amountWithZeroPrice' }
+              columns={[
+                { label: 'Alue', value: (row) => row.areaCode },
+                { label: 'Laskuja', value: (row) => row.amountOfInvoices },
+                { label: 'Summa', value: (row) => row.totalSumCents },
+                { label: 'Hetuttomia', value: (row) => row.amountWithoutSSN },
+                {
+                  label: 'Osoitteettomia',
+                  value: (row) => row.amountWithoutAddress
+                },
+                {
+                  label: 'Nollalaskuja',
+                  value: (row) => row.amountWithZeroPrice
+                }
               ]}
               filename={`Laskujen_täsmäytys ${filters.yearMonth.formatIso()}.csv`}
             />

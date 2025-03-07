@@ -266,18 +266,30 @@ const PreschoolAbsenceGrid = ({
     <>
       <ReportDownload
         data={report}
-        headers={[
-          { key: 'firstName', label: i18n.reports.preschoolAbsences.firstName },
-          { key: 'lastName', label: i18n.reports.preschoolAbsences.lastName },
-          { key: 'TOTAL', label: i18n.reports.preschoolAbsences.total },
+        columns={[
           {
-            key: 'OTHER_ABSENCE',
-            label: i18n.absences.absenceTypes.OTHER_ABSENCE
+            label: i18n.reports.preschoolAbsences.firstName,
+            value: (row) => row.firstName
           },
-          { key: 'SICKLEAVE', label: i18n.absences.absenceTypes.SICKLEAVE },
           {
-            key: 'UNKNOWN_ABSENCE',
-            label: i18n.absences.absenceTypes.UNKNOWN_ABSENCE
+            label: i18n.reports.preschoolAbsences.lastName,
+            value: (row) => row.lastName
+          },
+          {
+            label: i18n.reports.preschoolAbsences.total,
+            value: (row) => row.TOTAL
+          },
+          {
+            label: i18n.absences.absenceTypes.OTHER_ABSENCE,
+            value: (row) => row.OTHER_ABSENCE
+          },
+          {
+            label: i18n.absences.absenceTypes.SICKLEAVE,
+            value: (row) => row.SICKLEAVE
+          },
+          {
+            label: i18n.absences.absenceTypes.UNKNOWN_ABSENCE,
+            value: (row) => row.UNKNOWN_ABSENCE
           }
         ]}
         filename={`${i18n.reports.preschoolAbsences.title} ${daycare.name} ${term.format()}.csv`}

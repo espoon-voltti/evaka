@@ -281,38 +281,35 @@ export default React.memo(function AttendanceReservation() {
                 ...row,
                 dateTime: row.dateTime.format()
               }))}
-              headers={[
-                ...(filters.groupIds.length > 0
-                  ? [
-                      {
-                        label: i18n.reports.common.groupName,
-                        key: 'groupName' as const
-                      }
-                    ]
-                  : []),
+              columns={[
+                {
+                  label: i18n.reports.common.groupName,
+                  value: (row) => row.groupName,
+                  exclude: filters.groupIds.length === 0
+                },
                 {
                   label: i18n.reports.common.clock,
-                  key: 'dateTime'
+                  value: (row) => row.dateTime
                 },
                 {
                   label: i18n.reports.common.under3y,
-                  key: 'childCountUnder3'
+                  value: (row) => row.childCountUnder3
                 },
                 {
                   label: i18n.reports.common.over3y,
-                  key: 'childCountOver3'
+                  value: (row) => row.childCountOver3
                 },
                 {
                   label: i18n.reports.common.totalShort,
-                  key: 'childCount'
+                  value: (row) => row.childCount
                 },
                 {
                   label: i18n.reports.attendanceReservation.capacityFactor,
-                  key: 'capacityFactor'
+                  value: (row) => row.capacityFactor
                 },
                 {
                   label: i18n.reports.attendanceReservation.staffCountRequired,
-                  key: 'staffCountRequired'
+                  value: (row) => row.staffCountRequired
                 }
               ]}
               filename={`${i18n.reports.attendanceReservation.title} ${
