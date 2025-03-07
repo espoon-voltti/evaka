@@ -105,11 +105,52 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             assertEquals("small", customers.first().unit_size)
         }
     }
+
+    @Test
+    fun `Nekku special diets sync does not sync empty data`() {
+        val client = TestNekkuClient()
+        assertThrows<Exception> { fetchAndUpdateNekkuSpecialDiets(client, db) }
+    }
+
+    @Test
+    fun `Nekku special diets sync does sync non-empty data`() {
+        val client =
+            TestNekkuClient(
+                specialDiets =
+                    listOf(
+                        NekkuSpecialDiet(
+                            //TODO
+                        )
+                    )
+            )
+        fetchAndUpdateNekkuCustomers(client, db)
+        db.transaction { tx ->
+            val customers = tx.getNekkuCustomers().toSet()
+            assertEquals(1, customers.size)
+        }
+    }
+
+
 }
 
-class TestNekkuClient(private val customers: List<NekkuCustomer> = emptyList()) : NekkuClient {
+
+
+
+class TestNekkuClient(
+    private val customers: List<NekkuCustomer> = emptyList(),
+    private val specialDiets: List<NekkuSpecialDiet> = emptyList(),
+    private val products: List<NekkuProduct> = emptyList()
+) : NekkuClient {
 
     override fun getCustomers(): List<NekkuCustomer> {
         return customers
+    }
+
+    override fun getSpecialDiets(): List<NekkuSpecialDiet> {
+        return specialDiets
+    }
+
+    override fun getProducts(): List<NekkuProduct> {
+        return products
     }
 }
