@@ -4,6 +4,7 @@ CREATE TABLE nekku_special_diet
     name        text    NOT NULL,
     type        text    NOT NULL,
     weight      integer,
+    field_id     text
     key         text,
     value       text
 );
