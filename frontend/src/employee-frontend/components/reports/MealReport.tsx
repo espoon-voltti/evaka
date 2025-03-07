@@ -6,7 +6,10 @@ import React, { useContext, useState } from 'react'
 
 import { Action } from 'lib-common/generated/action'
 import { Daycare } from 'lib-common/generated/api-types/daycare'
-import { MealReportData } from 'lib-common/generated/api-types/reports'
+import {
+  MealReportData,
+  MealReportRow
+} from 'lib-common/generated/api-types/reports'
 import { DaycareId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
@@ -122,20 +125,40 @@ const MealReportData = ({
     }))
 
     // Shared column definitions for both ReportDownload and HTML-table
-    const columns = {
-      mealName: i18n.reports.meals.headings.mealName,
-      mealId: i18n.reports.meals.headings.mealId,
-      mealCount: i18n.reports.meals.headings.mealCount,
-      dietId: i18n.reports.meals.headings.dietId,
-      dietAbbreviation: i18n.reports.meals.headings.dietAbbreviation,
-      mealTextureId: i18n.reports.meals.headings.mealTextureId,
-      mealTextureName: i18n.reports.meals.headings.mealTextureName,
-      additionalInfo: i18n.reports.meals.headings.additionalInfo
-    }
-    const headers = Object.entries(columns).map(([columnKey, label]) => ({
-      label: label,
-      key: columnKey as keyof typeof columns
-    }))
+    const columns = [
+      {
+        label: i18n.reports.meals.headings.mealName,
+        value: (row: MealReportRow) => i18n.reports.meals.mealName[row.mealType]
+      },
+      {
+        label: i18n.reports.meals.headings.mealId,
+        value: (row: MealReportRow) => row.mealId
+      },
+      {
+        label: i18n.reports.meals.headings.mealCount,
+        value: (row: MealReportRow) => row.mealCount
+      },
+      {
+        label: i18n.reports.meals.headings.dietId,
+        value: (row: MealReportRow) => row.dietId
+      },
+      {
+        label: i18n.reports.meals.headings.dietAbbreviation,
+        value: (row: MealReportRow) => row.dietAbbreviation
+      },
+      {
+        label: i18n.reports.meals.headings.mealTextureId,
+        value: (row: MealReportRow) => row.mealTextureId
+      },
+      {
+        label: i18n.reports.meals.headings.mealTextureName,
+        value: (row: MealReportRow) => row.mealTextureName
+      },
+      {
+        label: i18n.reports.meals.headings.additionalInfo,
+        value: (row: MealReportRow) => row.additionalInfo
+      }
+    ]
     return (
       <>
         <H2>
@@ -162,15 +185,15 @@ const MealReportData = ({
             )}
           <ReportDownload
             data={tableData}
-            headers={headers}
+            columns={columns}
             filename={`${i18n.reports.meals.title} ${report.reportName} ${report.date.formatIso()}.csv`}
           />
         </FixedSpaceRow>
         <TableScrollable>
           <Thead>
             <Tr>
-              {Object.values(columns).map((columnHeading, columnIndex) => (
-                <Th key={columnIndex}>{columnHeading}</Th>
+              {columns.map((column, columnIndex) => (
+                <Th key={columnIndex}>{column.label}</Th>
               ))}
             </Tr>
           </Thead>
@@ -178,10 +201,8 @@ const MealReportData = ({
             {tableData.length > 0 ? (
               tableData.map((row, rowIndex) => (
                 <Tr key={`${rowIndex}`}>
-                  {Object.keys(columns).map((columnKey, columnIndex) => (
-                    <Td key={columnIndex}>
-                      {row[columnKey as keyof typeof columns]}
-                    </Td>
+                  {columns.map((column, columnIndex) => (
+                    <Td key={columnIndex}>{column.value(row)}</Td>
                   ))}
                 </Tr>
               ))
