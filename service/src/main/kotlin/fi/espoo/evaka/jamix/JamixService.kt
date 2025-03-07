@@ -48,7 +48,6 @@ import org.springframework.stereotype.Service
 
 private val logger = KotlinLogging.logger {}
 
-val loggerWarner: (String) -> Unit = { s -> logger.warn { s } }
 
 @Service
 class JamixService(
@@ -194,7 +193,6 @@ fun fetchAndUpdateJamixDiets(
 fun fetchAndUpdateJamixTextures(
     client: JamixClient,
     db: Database.Connection,
-    warner: (s: String) -> Unit = loggerWarner,
 ) {
     val texturesFromJamix =
         client.getTextures().map { it -> MealTexture(it.modelId, it.fields.textureName) }
@@ -204,9 +202,9 @@ fun fetchAndUpdateJamixTextures(
     db.transaction { tx ->
         val nulledChildrenCount = tx.resetMealTexturesNotContainedWithin(texturesFromJamix)
         if (nulledChildrenCount != 0)
-            warner(
+            logger.warn {
                 "Jamix meal texture list update caused $nulledChildrenCount child meal texture to be set to null"
-            )
+            }
         val deletedMealTexturesCount = tx.setMealTextures(texturesFromJamix)
         logger.info {
             "Deleted: $deletedMealTexturesCount meal textures, inserted ${texturesFromJamix.size}"
