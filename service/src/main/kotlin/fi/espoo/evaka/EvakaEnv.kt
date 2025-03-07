@@ -31,7 +31,6 @@ data class EvakaEnv(
     val jamixEnabled: Boolean,
     val aromiEnabled: Boolean,
     val särmäEnabled: Boolean,
-    val linkityEnabled: Boolean,
     val nekkuEnabled: Boolean,
     val forceUnpublishDocumentTemplateEnabled: Boolean,
     val asyncJobRunnerDisabled: Boolean,
@@ -57,7 +56,6 @@ data class EvakaEnv(
                 jamixEnabled = env.lookup("evaka.integration.jamix.enabled") ?: false,
                 aromiEnabled = env.lookup("evaka.integration.aromi.enabled") ?: false,
                 särmäEnabled = env.lookup("evaka.integration.särmä.enabled") ?: false,
-                linkityEnabled = env.lookup("evaka.integration.linkity.enabled") ?: false,
                 nekkuEnabled = env.lookup("evaka.integration.nekku.enabled") ?: false,
                 forceUnpublishDocumentTemplateEnabled =
                     env.lookup("evaka.not_for_prod.force_unpublish_document_template_enabled")
@@ -678,16 +676,6 @@ data class ArchiveEnv(
             ArchiveEnv(
                 url = URI.create(env.lookup("evaka.integration.särmä.url")),
                 useMockClient = env.lookup("evaka.integration.särmä.use_mock_client") ?: false,
-            )
-    }
-}
-
-data class LinkityEnv(val url: URI, val apiKey: Sensitive<String>) {
-    companion object {
-        fun fromEnvironment(env: Environment) =
-            LinkityEnv(
-                url = URI.create(env.lookup("evaka.integration.linkity.url")),
-                apiKey = Sensitive(env.lookup("evaka.integration.linkity.apiKey")),
             )
     }
 }

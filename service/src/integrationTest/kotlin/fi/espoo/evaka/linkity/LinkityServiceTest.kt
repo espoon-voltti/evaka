@@ -320,4 +320,24 @@ internal class LinkityServiceTest : FullApplicationTest(resetDbBeforeEach = true
 
         assertEquals(expected, client.getPreviouslyPostedWorkLogs().toSet())
     }
+
+    @Test
+    fun `date ranges for plan queries`() {
+        val startDate = LocalDate.now()
+        val endDate = startDate.plusWeeks(6).minusDays(1)
+        val chunkSizeDays = 7L
+        val ranges =
+            generateDateRangesForStaffAttendancePlanQueries(startDate, endDate, chunkSizeDays)
+                .toList()
+        val expected =
+            listOf(
+                FiniteDateRange(startDate, startDate.plusDays(6)),
+                FiniteDateRange(startDate.plusDays(7), startDate.plusDays(13)),
+                FiniteDateRange(startDate.plusDays(14), startDate.plusDays(20)),
+                FiniteDateRange(startDate.plusDays(21), startDate.plusDays(27)),
+                FiniteDateRange(startDate.plusDays(28), startDate.plusDays(34)),
+                FiniteDateRange(startDate.plusDays(35), startDate.plusDays(41)),
+            )
+        assertEquals(expected, ranges)
+    }
 }

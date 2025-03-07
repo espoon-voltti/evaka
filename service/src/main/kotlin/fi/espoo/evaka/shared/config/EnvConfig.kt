@@ -15,7 +15,6 @@ import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.JamixEnv
 import fi.espoo.evaka.JwtEnv
 import fi.espoo.evaka.KoskiEnv
-import fi.espoo.evaka.LinkityEnv
 import fi.espoo.evaka.NekkuEnv
 import fi.espoo.evaka.OphEnv
 import fi.espoo.evaka.ScheduledJobsEnv
@@ -108,13 +107,6 @@ class EnvConfig {
     fun archiveEnv(evakaEnv: EvakaEnv, env: Environment): ArchiveEnv? =
         when (evakaEnv.särmäEnabled) {
             true -> ArchiveEnv.fromEnvironment(env)
-            false -> null
-        }
-
-    @Bean
-    fun linkityEnv(evakaEnv: EvakaEnv, env: Environment): LinkityEnv? =
-        when (evakaEnv.linkityEnabled) {
-            true -> LinkityEnv.fromEnvironment(env)
             false -> null
         }
 

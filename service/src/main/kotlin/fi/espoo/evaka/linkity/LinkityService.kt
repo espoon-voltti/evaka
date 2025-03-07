@@ -4,17 +4,49 @@
 
 package fi.espoo.evaka.linkity
 
+import com.fasterxml.jackson.databind.json.JsonMapper
+import fi.espoo.evaka.LinkityEnv
 import fi.espoo.evaka.attendance.*
+import fi.espoo.evaka.espoo.EspooAsyncJob
 import fi.espoo.evaka.pis.getEmployeeIdsByNumbers
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.utils.partitionIndexed
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Duration
+import java.time.LocalDate
+import org.springframework.stereotype.Service
 
 private val logger = KotlinLogging.logger {}
 private val MAX_DRIFT: Duration = Duration.ofMinutes(5)
+
+@Service
+class LinkitySyncService(val linkityEnv: LinkityEnv?, val jsonMapper: JsonMapper) {
+    fun getStaffAttendancePlans(
+        db: Database.Connection,
+        clock: EvakaClock,
+        msg: EspooAsyncJob.GetStaffAttendancePlansFromLinkity,
+    ) {
+        if (linkityEnv == null) {
+            logger.warn { "Linkity environment not configured" }
+            return
+        }
+        val client = LinkityHttpClient(linkityEnv!!, jsonMapper)
+        updateStaffAttendancePlansFromLinkity(msg.period, db, client)
+    }
+}
+
+fun generateDateRangesForStaffAttendancePlanQueries(
+    startDate: LocalDate,
+    endDate: LocalDate,
+    chunkSizeDays: Long,
+): Sequence<FiniteDateRange> {
+    return generateSequence(startDate) { it.plusDays(chunkSizeDays) }
+        .takeWhile { it <= endDate }
+        .map { FiniteDateRange(it, minOf(it.plusDays(chunkSizeDays - 1), endDate)) }
+}
 
 fun updateStaffAttendancePlansFromLinkity(
     period: FiniteDateRange,
