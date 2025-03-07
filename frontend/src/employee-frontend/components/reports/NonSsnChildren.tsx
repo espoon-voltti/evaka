@@ -74,26 +74,26 @@ export default React.memo(function NonSsnChildren() {
                 dateOfBirth: row.dateOfBirth.format(),
                 lastSentToVarda: row.lastSentToVarda?.format() ?? '-'
               }))}
-              headers={[
+              columns={[
                 {
                   label: i18n.reports.common.lastName,
-                  key: 'lastName'
+                  value: (row) => row.lastName
                 },
                 {
                   label: i18n.reports.common.firstName,
-                  key: 'firstName'
+                  value: (row) => row.firstName
                 },
                 {
                   label: i18n.reports.nonSsnChildren.dateOfBirth,
-                  key: 'dateOfBirth'
+                  value: (row) => row.dateOfBirth
                 },
                 {
                   label: i18n.reports.nonSsnChildren.personOid,
-                  key: 'ophPersonOid'
+                  value: (row) => row.ophPersonOid
                 },
                 {
                   label: i18n.reports.nonSsnChildren.lastSentToVarda,
-                  key: 'lastSentToVarda'
+                  value: (row) => row.lastSentToVarda
                 }
               ]}
               filename={`Hetuttomat lapset ${LocalDate.todayInHelsinkiTz().formatIso()}.csv`}

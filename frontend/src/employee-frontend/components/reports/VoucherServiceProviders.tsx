@@ -252,32 +252,34 @@ export default React.memo(function VoucherServiceProviders() {
 
             <ReportDownload
               data={mappedData}
-              headers={[
-                { label: i18n.reports.common.careAreaName, key: 'areaName' },
-                { label: i18n.reports.common.unitName, key: 'unitName' },
+              columns={[
+                {
+                  label: i18n.reports.common.careAreaName,
+                  value: (row) => row.areaName
+                },
+                {
+                  label: i18n.reports.common.unitName,
+                  value: (row) => row.unitName
+                },
                 {
                   label: i18n.reports.voucherServiceProviders.childCount,
-                  key: 'childCount'
+                  value: (row) => row.childCount
                 },
-                ...(featureFlags.voucherValueSeparation
-                  ? [
-                      {
-                        label:
-                          i18n.reports.voucherServiceProviders
-                            .sumBeforeAssistanceNeed,
-                        key: 'sumBeforeAssistanceNeed' as const
-                      },
-                      {
-                        label:
-                          i18n.reports.voucherServiceProviders
-                            .assistanceNeedSum,
-                        key: 'assistanceNeedSum' as const
-                      }
-                    ]
-                  : []),
+                {
+                  label:
+                    i18n.reports.voucherServiceProviders
+                      .sumBeforeAssistanceNeed,
+                  value: (row) => row.sumBeforeAssistanceNeed,
+                  exclude: !featureFlags.voucherValueSeparation
+                },
+                {
+                  label: i18n.reports.voucherServiceProviders.assistanceNeedSum,
+                  value: (row) => row.assistanceNeedSum,
+                  exclude: !featureFlags.voucherValueSeparation
+                },
                 {
                   label: i18n.reports.voucherServiceProviders.unitVoucherSum,
-                  key: 'sum'
+                  value: (row) => row.sum
                 }
               ]}
               filename={getFilename(

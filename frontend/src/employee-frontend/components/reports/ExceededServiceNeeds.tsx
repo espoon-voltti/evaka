@@ -134,19 +134,22 @@ const Report = React.memo(function Report({
                   ),
                   ...row
                 }))}
-                headers={[
-                  { key: 'childName', label: i18n.reports.common.childName },
+                columns={[
                   {
-                    key: 'serviceNeedHoursPerMonth',
-                    label: i18n.reports.exceededServiceNeed.serviceNeedHours
+                    label: i18n.reports.common.childName,
+                    value: (row) => row.childName
                   },
                   {
-                    key: 'usedServiceHours',
-                    label: i18n.reports.exceededServiceNeed.usedServiceHours
+                    label: i18n.reports.exceededServiceNeed.serviceNeedHours,
+                    value: (row) => row.serviceNeedHoursPerMonth
                   },
                   {
-                    key: 'excessHours',
-                    label: i18n.reports.exceededServiceNeed.excessHours
+                    label: i18n.reports.exceededServiceNeed.usedServiceHours,
+                    value: (row) => row.usedServiceHours
+                  },
+                  {
+                    label: i18n.reports.exceededServiceNeed.excessHours,
+                    value: (row) => row.excessHours
                   }
                 ]}
                 filename={() => {

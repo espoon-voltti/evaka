@@ -91,19 +91,19 @@ export default React.memo(function MissingHeadOfFamily() {
                   .map((range) => range.format())
                   .join(', ')
               }))}
-              headers={[
+              columns={[
                 {
                   label: i18n.reports.missingHeadOfFamily.childLastName,
-                  key: 'lastName'
+                  value: (row) => row.lastName
                 },
                 {
                   label: i18n.reports.missingHeadOfFamily.childFirstName,
-                  key: 'firstName'
+                  value: (row) => row.firstName
                 },
                 {
                   label:
                     i18n.reports.missingHeadOfFamily.daysWithoutHeadOfFamily,
-                  key: 'rangesWithoutHead'
+                  value: (row) => row.rangesWithoutHead
                 }
               ]}
               filename={

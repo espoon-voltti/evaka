@@ -82,15 +82,18 @@ export default React.memo(function ReportSextet() {
           <>
             <ReportDownload
               data={report}
-              headers={[
-                { label: i18n.reports.sextet.unitName, key: 'unitName' },
+              columns={[
+                {
+                  label: i18n.reports.sextet.unitName,
+                  value: (row) => row.unitName
+                },
                 {
                   label: i18n.reports.sextet.placementType,
-                  key: 'placementType'
+                  value: (row) => row.placementType
                 },
                 {
                   label: i18n.reports.sextet.attendanceDays,
-                  key: 'attendanceDays'
+                  value: (row) => row.attendanceDays
                 }
               ]}
               filename={`kuusikkovertailu-${year ?? ''}-${

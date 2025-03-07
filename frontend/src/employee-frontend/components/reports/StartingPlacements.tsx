@@ -289,23 +289,26 @@ const StartingPlacements = React.memo(function StartingPlacements({
                 lastName: row.lastName,
                 placementStart: row.placementStart.format()
               }))}
-              headers={[
+              columns={[
                 {
                   label: i18n.reports.common.careAreaName,
-                  key: 'careAreaName'
+                  value: (row) => row.careAreaName
                 },
-                { label: i18n.reports.common.unitName, key: 'unitName' },
+                {
+                  label: i18n.reports.common.unitName,
+                  value: (row) => row.unitName
+                },
                 {
                   label: i18n.reports.startingPlacements.childLastName,
-                  key: 'lastName'
+                  value: (row) => row.lastName
                 },
                 {
                   label: i18n.reports.startingPlacements.childFirstName,
-                  key: 'firstName'
+                  value: (row) => row.firstName
                 },
                 {
                   label: i18n.reports.startingPlacements.placementStart,
-                  key: 'placementStart'
+                  value: (row) => row.placementStart
                 }
               ]}
               filename={getFilename(i18n, filters.year, filters.month)}

@@ -305,79 +305,77 @@ export default React.memo(function VoucherServiceProviderUnit() {
                     )
                   }
                 ]}
-                headers={[
+                columns={[
                   {
                     label:
                       i18n.reports.voucherServiceProviderUnit.childLastName,
-                    key: 'childLastName'
+                    value: (row) => row.childLastName
                   },
                   {
                     label:
                       i18n.reports.voucherServiceProviderUnit.childFirstName,
-                    key: 'childFirstName'
+                    value: (row) => row.childFirstName
                   },
                   {
                     label: i18n.reports.common.groupName,
-                    key: 'childGroupName'
+                    value: (row) => row.childGroupName
                   },
                   {
                     label: i18n.reports.voucherServiceProviderUnit.note,
-                    key: 'note'
+                    value: (row) => row.note
                   },
                   {
                     label: i18n.reports.voucherServiceProviderUnit.start,
-                    key: 'start'
+                    value: (row) => row.start
                   },
                   {
                     label: i18n.reports.voucherServiceProviderUnit.end,
-                    key: 'end'
+                    value: (row) => row.end
                   },
                   {
                     label: i18n.reports.voucherServiceProviderUnit.numberOfDays,
-                    key: 'numberOfDays'
+                    value: (row) => row.numberOfDays
                   },
                   {
                     label: i18n.reports.voucherServiceProviderUnit.serviceNeed,
-                    key: 'serviceNeedDescription'
+                    value: (row) => row.serviceNeedDescription
                   },
                   {
                     label:
                       i18n.reports.voucherServiceProviderUnit.assistanceNeed,
-                    key: 'assistanceNeedCapacityFactor'
+                    value: (row) => row.assistanceNeedCapacityFactor
                   },
                   {
                     label:
                       i18n.reports.voucherServiceProviderUnit
                         .serviceVoucherValue,
-                    key: 'serviceVoucherValue'
+                    value: (row) => row.serviceVoucherValue
                   },
                   {
                     label:
                       i18n.reports.voucherServiceProviderUnit
                         .serviceVoucherFinalCoPayment,
-                    key: 'serviceVoucherFinalCoPayment'
+                    value: (row) => row.serviceVoucherFinalCoPayment
                   },
-                  ...(featureFlags.voucherValueSeparation
-                    ? [
-                        {
-                          label:
-                            i18n.reports.voucherServiceProviderUnit
-                              .serviceVoucherRealizedValueBeforeAssistanceNeed,
-                          key: 'realizedAmountBeforeAssistanceNeed' as const
-                        },
-                        {
-                          label:
-                            i18n.reports.voucherServiceProviderUnit
-                              .serviceVoucherRealizedAssistanceNeedValue,
-                          key: 'realizedAssistanceNeedAmount' as const
-                        }
-                      ]
-                    : []),
+                  {
+                    label:
+                      i18n.reports.voucherServiceProviderUnit
+                        .serviceVoucherRealizedValueBeforeAssistanceNeed,
+                    value: (row) => row.realizedAmountBeforeAssistanceNeed,
+                    exclude: !featureFlags.voucherValueSeparation
+                  },
+                  {
+                    label:
+                      i18n.reports.voucherServiceProviderUnit
+                        .serviceVoucherRealizedAssistanceNeedValue,
+                    value: (row) => row.realizedAssistanceNeedAmount,
+                    exclude: !featureFlags.voucherValueSeparation
+                  },
                   {
                     label:
                       i18n.reports.voucherServiceProviderUnit
                         .serviceVoucherRealizedValue,
-                    key: 'realizedAmount'
+                    value: (row) => row.realizedAmount
                   }
                 ]}
                 filename={`${filters.year}-${filters.month} palveluseteliraportti ${unitName}.csv`}
