@@ -417,6 +417,7 @@ export default React.memo(
                     appearance="inline"
                     icon={faEnvelope}
                     text={i18n.messages.markUnread}
+                    data-qa="mark-unread-btn"
                     mutation={markLastReceivedMessageInThreadUnreadMutation}
                     onClick={() => ({ threadId })}
                     onSuccess={() => navigate('/messages')}
