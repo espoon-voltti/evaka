@@ -18,9 +18,10 @@ data class CustomerNumbers(
 /** Throws an IllegalStateException if Nekku returns an empty texture list. */
 fun fetchAndUpdateNekkuCustomers(client: NekkuClient, db: Database.Connection) {
     val customersFromNekku =
-        client.getCustomers().map { it ->
-            CustomerNumbers(it.number, it.name, it.group, it.unit_size)
-        }
+        client
+            .getCustomers()
+            .map { it -> CustomerNumbers(it.number, it.name, it.group, it.unit_size) }
+            .filter { it.group.contains("Varhaiskasvatus") }
 
     if (customersFromNekku.isEmpty())
         error("Refusing to sync empty Nekku customer list into database")
@@ -82,9 +83,7 @@ WHERE
 
 fun Database.Transaction.getNekkuCustomers(): List<NekkuCustomer> {
     return createQuery {
-            sql(
-                "SELECT number, name, customer_group AS \"group\", unit_size FROM nekku_customer WHERE customer_group = 'Varhaiskasvatus'"
-            )
+            sql("SELECT number, name, customer_group AS \"group\", unit_size FROM nekku_customer")
         }
         .toList<NekkuCustomer>()
 }
