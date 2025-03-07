@@ -223,9 +223,17 @@ internal class LinkityServiceTest : FullApplicationTest(resetDbBeforeEach = true
         val now = HelsinkiDateTime.now()
         db.transaction { tx ->
             val group = DevDaycareGroup(daycareId = daycare.id)
-            val employee2 = DevEmployee(employeeNumber = null)
+            val employee2 = DevEmployee(employeeNumber = "SARASTIA_2")
+            val employee3 = DevEmployee(employeeNumber = null)
+            val daycare2 = DevDaycare(areaId = area.id, enabledPilotFeatures = setOf())
+            val group2 = DevDaycareGroup(daycareId = daycare2.id)
+            tx.insert(daycare2)
             tx.insert(group)
+            tx.insert(group2)
             tx.insert(employee2)
+            tx.insert(employee3)
+            tx.insertDaycareAclRow(daycare2.id, employee2.id, UserRole.STAFF)
+            tx.insertDaycareAclRow(daycare.id, employee3.id, UserRole.STAFF)
             tx.insertStaffAttendancePlans(
                 listOf(
                     StaffAttendancePlan(
@@ -308,10 +316,19 @@ internal class LinkityServiceTest : FullApplicationTest(resetDbBeforeEach = true
             // 7th
             upsertStaffAttendance(
                 tx,
-                employee2,
+                employee3,
                 group.id,
                 now.minusHours(4),
                 now.minusHours(3),
+                StaffAttendanceType.PRESENT,
+            )
+            // 8th
+            upsertStaffAttendance(
+                tx,
+                employee2,
+                group2.id,
+                now.minusHours(5),
+                now.minusHours(4),
                 StaffAttendanceType.PRESENT,
             )
         }
@@ -354,6 +371,7 @@ internal class LinkityServiceTest : FullApplicationTest(resetDbBeforeEach = true
                 ),
                 // 6th attendance is not included because it has not ended yet
                 // 7th attendance is not included because the employee has no employee number
+                // 8th attendance is not included because the employee is not in an enabled daycare
             )
 
         assertEquals(expected, client.getPreviouslyPostedWorkLogs().toSet())

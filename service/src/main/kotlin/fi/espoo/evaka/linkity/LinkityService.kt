@@ -123,7 +123,7 @@ fun sendStaffAttendancesToLinkity(
     lateinit var plans: Map<EmployeeId, List<StaffAttendancePlan>>
 
     db.transaction { tx ->
-        attendances = tx.getStaffAttendances(period).groupBy { it.employeeId }
+        attendances = tx.getStaffAttendancesForEnabledDaycares(period).groupBy { it.employeeId }
         val employeeIds = attendances.keys
         plans =
             tx.findStaffAttendancePlansBy(period = period, employeeIds = employeeIds).groupBy {
