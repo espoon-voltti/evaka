@@ -7,6 +7,7 @@ package fi.espoo.evaka.reports
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.absence.AbsenceType
+import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.insertServiceNeedOptions
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.serviceneed.ShiftCareType
@@ -42,7 +43,7 @@ class SextetReportTest : PureJdbiTest(resetDbBeforeEach = true) {
             tx.insert(testDecisionMaker_1)
             tx.insert(testArea)
             tx.insert(testDaycare)
-            tx.insert(testDaycare2)
+            tx.insert(testDaycare2.copy(providerType = ProviderType.PURCHASED))
             tx.insert(testRoundTheClockDaycare)
             listOf(
                     testChild_1,
@@ -219,6 +220,7 @@ class SextetReportTest : PureJdbiTest(resetDbBeforeEach = true) {
                     from = LocalDate.of(2021, 1, 1),
                     to = LocalDate.of(2021, 12, 31),
                     placementType = PlacementType.DAYCARE,
+                    unitProviderTypes = null,
                 )
             }
 
@@ -242,6 +244,7 @@ class SextetReportTest : PureJdbiTest(resetDbBeforeEach = true) {
                     from = LocalDate.of(2021, 1, 1),
                     to = LocalDate.of(2021, 12, 31),
                     placementType = PlacementType.PRESCHOOL_DAYCARE,
+                    unitProviderTypes = null,
                 )
             }
 
@@ -261,6 +264,78 @@ class SextetReportTest : PureJdbiTest(resetDbBeforeEach = true) {
                 ),
             ),
             report2,
+        )
+
+        val report3 =
+            db.read {
+                it.sextetReport(
+                    from = LocalDate.of(2021, 1, 1),
+                    to = LocalDate.of(2021, 12, 31),
+                    placementType = PlacementType.PRESCHOOL_DAYCARE,
+                    unitProviderTypes = setOf(ProviderType.MUNICIPAL),
+                )
+            }
+
+        assertEquals(
+            listOf(
+                SextetReportRow(
+                    testDaycare.id,
+                    testDaycare.name,
+                    PlacementType.PRESCHOOL_DAYCARE,
+                    9 + 5 + 10,
+                )
+            ),
+            report3,
+        )
+
+        val report4 =
+            db.read {
+                it.sextetReport(
+                    from = LocalDate.of(2021, 1, 1),
+                    to = LocalDate.of(2021, 12, 31),
+                    placementType = PlacementType.PRESCHOOL_DAYCARE,
+                    unitProviderTypes = setOf(ProviderType.PURCHASED),
+                )
+            }
+
+        assertEquals(
+            listOf(
+                SextetReportRow(
+                    testDaycare2.id,
+                    testDaycare2.name,
+                    PlacementType.PRESCHOOL_DAYCARE,
+                    5,
+                )
+            ),
+            report4,
+        )
+
+        val report5 =
+            db.read {
+                it.sextetReport(
+                    from = LocalDate.of(2021, 1, 1),
+                    to = LocalDate.of(2021, 12, 31),
+                    placementType = PlacementType.PRESCHOOL_DAYCARE,
+                    unitProviderTypes = setOf(ProviderType.MUNICIPAL, ProviderType.PURCHASED),
+                )
+            }
+
+        assertEquals(
+            listOf(
+                SextetReportRow(
+                    testDaycare.id,
+                    testDaycare.name,
+                    PlacementType.PRESCHOOL_DAYCARE,
+                    9 + 5 + 10,
+                ),
+                SextetReportRow(
+                    testDaycare2.id,
+                    testDaycare2.name,
+                    PlacementType.PRESCHOOL_DAYCARE,
+                    5,
+                ),
+            ),
+            report5,
         )
     }
 }

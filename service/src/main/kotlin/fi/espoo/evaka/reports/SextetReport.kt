@@ -5,6 +5,7 @@
 package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -29,6 +30,7 @@ class SextetReportController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @RequestParam year: Int,
         @RequestParam placementType: PlacementType,
+        @RequestParam(required = false) unitProviderTypes: Set<ProviderType>?,
     ): List<SextetReportRow> {
         return db.connect { dbc ->
                 dbc.read {
@@ -44,6 +46,7 @@ class SextetReportController(private val accessControl: AccessControl) {
                         LocalDate.of(year, 1, 1),
                         LocalDate.of(year, 12, 31),
                         placementType,
+                        unitProviderTypes,
                     )
                 }
             }
@@ -60,6 +63,7 @@ fun Database.Read.sextetReport(
     from: LocalDate,
     to: LocalDate,
     placementType: PlacementType,
+    unitProviderTypes: Set<ProviderType>?,
 ): List<SextetReportRow> {
     val holidays = getHolidays(FiniteDateRange(from, to))
 
@@ -80,6 +84,13 @@ fun Database.Read.sextetReport(
                 )
             }
         }
+
+    val unitPredicates =
+        Predicate.allNotNull(
+            unitProviderTypes?.let {
+                Predicate { table -> where("$table.provider_type = ANY (${bind(it)})") }
+            }
+        )
 
     return createQuery {
             sql(
@@ -130,6 +141,7 @@ WHERE ${predicate(absencePredicate.forTable("ep"))} AND (
     (ep.has_shift_care AND d.shift_care_open_on_holidays) OR ep.date != ALL (${bind(holidays)})
 )
 AND ep.placement_type = ${bind(placementType)}
+AND ${predicate(unitPredicates.forTable("d"))}
 GROUP BY ep.unit_id, d.name
 ORDER BY d.name
     """

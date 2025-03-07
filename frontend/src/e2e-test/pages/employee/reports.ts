@@ -5,6 +5,8 @@
 import assert from 'assert'
 
 import { ApplicationStatus } from 'lib-common/generated/api-types/application'
+import { ProviderType } from 'lib-common/generated/api-types/daycare'
+import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { DaycareId, GroupId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 
@@ -86,6 +88,11 @@ export default class ReportsPage {
   async openEndedPlacementsReport() {
     await this.page.findByDataQa('report-ended-placements').click()
     return new EndedPlacementsReport(this.page)
+  }
+
+  async openSextetReport() {
+    await this.page.findByDataQa('report-sextet').click()
+    return new SextetReport(this.page)
   }
 }
 
@@ -842,5 +849,42 @@ export class EndedPlacementsReport {
           .assertTextEquals(data.nextPlacementStart.format())
       })
     )
+  }
+}
+
+export class SextetReport {
+  constructor(private page: Page) {}
+
+  async selectYear(year: number) {
+    const combobox = new Combobox(this.page.findByDataQa('filter-year'))
+    await combobox.fillAndSelectFirst(`${year}`)
+  }
+
+  async selectPlacementType(placementType: PlacementType) {
+    const combobox = new Combobox(
+      this.page.findByDataQa('filter-placement-type')
+    )
+    await combobox.click()
+    await combobox.fillAndSelectItem(
+      '',
+      `filter-placement-type-${placementType}`
+    )
+  }
+
+  async toggleUnitProviderType(unitProviderType: ProviderType) {
+    const checkbox = new Checkbox(
+      this.page.findByDataQa(`filter-unit-provider-type-${unitProviderType}`)
+    )
+    await checkbox.click()
+  }
+
+  async assertRows(expected: string[]) {
+    const rows = this.page.findAllByDataQa('data-rows')
+    await rows.assertTextsEqual(expected)
+  }
+
+  async assertSum(expected: number) {
+    const sum = this.page.findByDataQa('data-sum')
+    await sum.assertTextEquals(`${expected}`)
   }
 }
