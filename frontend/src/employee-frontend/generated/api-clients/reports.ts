@@ -1026,12 +1026,14 @@ export async function getServiceVoucherReportForUnit(
 export async function getSextetReport(
   request: {
     year: number,
-    placementType: PlacementType
+    placementType: PlacementType,
+    unitProviderTypes?: ProviderType[] | null
   }
 ): Promise<SextetReportRow[]> {
   const params = createUrlSearchParams(
     ['year', request.year.toString()],
-    ['placementType', request.placementType.toString()]
+    ['placementType', request.placementType.toString()],
+    ...(request.unitProviderTypes?.map((e): [string, string | null | undefined] => ['unitProviderTypes', e.toString()]) ?? [])
   )
   const { data: json } = await client.request<JsonOf<SextetReportRow[]>>({
     url: uri`/employee/reports/sextet`.toString(),
