@@ -174,22 +174,31 @@ const PlacementGuaranteeTable = ({
     <>
       <ReportDownload
         data={sortedRows}
-        headers={[
+        columns={[
           {
             label: i18n.reports.common.careAreaName,
-            key: 'areaName'
+            value: (row) => row.areaName
           },
           {
             label: i18n.reports.common.unitName,
-            key: 'unitName'
+            value: (row) => row.unitName
           },
-          { label: i18n.reports.common.lastName, key: 'childLastName' },
-          { label: i18n.reports.common.firstName, key: 'childFirstName' },
+          {
+            label: i18n.reports.common.lastName,
+            value: (row) => row.childLastName
+          },
+          {
+            label: i18n.reports.common.firstName,
+            value: (row) => row.childFirstName
+          },
           {
             label: i18n.reports.common.startDate,
-            key: 'placementStartDate'
+            value: (row) => row.placementStartDate.format()
           },
-          { label: i18n.reports.common.endDate, key: 'placementEndDate' }
+          {
+            label: i18n.reports.common.endDate,
+            value: (row) => row.placementEndDate.format()
+          }
         ]}
         filename={`Varhaiskasvatuspaikkatakuu ${date.formatIso()}.csv`}
       />

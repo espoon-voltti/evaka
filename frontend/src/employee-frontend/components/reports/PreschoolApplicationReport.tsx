@@ -91,43 +91,43 @@ const PreschoolApplicationReportTable = ({
             ? i18n.common.yes
             : i18n.common.no
         }))}
-        headers={[
+        columns={[
           {
             label:
               i18n.reports.preschoolApplications.columns.applicationUnitName,
-            key: 'applicationUnitName'
+            value: (row) => row.applicationUnitName
           },
           {
             label: i18n.reports.preschoolApplications.columns.childLastName,
-            key: 'childLastName'
+            value: (row) => row.childLastName
           },
           {
             label: i18n.reports.preschoolApplications.columns.childFirstName,
-            key: 'childFirstName'
+            value: (row) => row.childFirstName
           },
           {
             label: i18n.reports.preschoolApplications.columns.childDateOfBirth,
-            key: 'childDateOfBirth'
+            value: (row) => row.childDateOfBirth.format()
           },
           {
             label:
               i18n.reports.preschoolApplications.columns.childStreetAddress,
-            key: 'childStreetAddress'
+            value: (row) => row.childStreetAddress
           },
           {
             label:
               i18n.reports.preschoolApplications.columns.childPostalCodeFull,
-            key: 'childPostalCode'
+            value: (row) => row.childPostalCode
           },
           {
             label: i18n.reports.preschoolApplications.columns.currentUnitName,
-            key: 'currentUnitName'
+            value: (row) => row.currentUnitName
           },
           {
             label:
               i18n.reports.preschoolApplications.columns
                 .isDaycareAssistanceNeed,
-            key: 'hasAssistanceNeed'
+            value: (row) => row.hasAssistanceNeed
           }
         ]}
         filename={`${
