@@ -459,21 +459,19 @@ class DraftInvoiceGenerator(
         assert(periodAttendanceDates.size <= childInput.dailyFeeDivisor)
         val forceMajeureDays = childInput.absenceCountInPeriod(period, dailyRefundAbsenceTypes)
 
-        val under2YearOldPeriod =
-            FiniteDateRange(
-                    childInput.child.dateOfBirth,
-                    childInput.child.dateOfBirth.plusYears(2).minusDays(1),
-                )
+        // Parental leave is allowed for the first two years, including the child's second birthday
+        val parentalLeaveAllowedPeriod =
+            FiniteDateRange(childInput.child.dateOfBirth, childInput.child.dateOfBirth.plusYears(2))
                 .intersection(period)
 
-        val parentLeaveDays =
-            if (under2YearOldPeriod != null) {
-                childInput.absenceCountInPeriod(under2YearOldPeriod, parentLeaveAbsenceTypes)
+        val parentalLeaveDays =
+            if (parentalLeaveAllowedPeriod != null) {
+                childInput.absenceCountInPeriod(parentalLeaveAllowedPeriod, parentLeaveAbsenceTypes)
             } else {
                 0
             }
 
-        val refundedDayCount = forceMajeureDays + parentLeaveDays
+        val refundedDayCount = forceMajeureDays + parentalLeaveDays
         if (refundedDayCount == 0) return listOf()
 
         val (amount, unitPrice) =
