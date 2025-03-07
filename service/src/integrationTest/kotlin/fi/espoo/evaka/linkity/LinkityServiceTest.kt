@@ -7,23 +7,46 @@ package fi.espoo.evaka.linkity
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.attendance.*
 import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.*
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.security.PilotFeature
 import java.time.LocalDate
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 internal class LinkityServiceTest : FullApplicationTest(resetDbBeforeEach = true) {
+    val employeeNumber = "SARASTIA_1"
+    lateinit var employee: DevEmployee
+    lateinit var area: DevCareArea
+    lateinit var daycare: DevDaycare
+
+    @BeforeEach
+    fun beforeEach() {
+        employee = DevEmployee(employeeNumber = employeeNumber)
+        area = DevCareArea()
+        daycare =
+            DevDaycare(
+                areaId = area.id,
+                enabledPilotFeatures = setOf(PilotFeature.STAFF_ATTENDANCE_INTEGRATION),
+            )
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(employee)
+            tx.insertDaycareAclRow(daycare.id, employee.id, UserRole.STAFF)
+        }
+    }
+
     @Test
     fun `new plans from Linkity replace old plans`() {
         val today = LocalDate.now()
-        val employeeNumber = "SARASTIA_1"
-        val employee = DevEmployee(employeeNumber = employeeNumber)
         db.transaction { tx ->
-            tx.insert(employee)
             tx.insertStaffAttendancePlans(
                 sequenceOf(-1, 0, 1, 2)
                     .map { days ->
@@ -67,9 +90,6 @@ internal class LinkityServiceTest : FullApplicationTest(resetDbBeforeEach = true
     @Test
     fun `new plans with unknown sarastia id are ignored`() {
         val today = LocalDate.now()
-        val employeeNumber = "SARASTIA_2"
-        val employee = DevEmployee(employeeNumber = employeeNumber)
-        db.transaction { tx -> tx.insert(employee) }
         val period = FiniteDateRange(today, today.plusDays(1))
         val shifts =
             listOf(
@@ -93,9 +113,6 @@ internal class LinkityServiceTest : FullApplicationTest(resetDbBeforeEach = true
     @Test
     fun `new plans with invalid times are ignored`() {
         val today = LocalDate.now()
-        val employeeNumber = "SARASTIA_3"
-        val employee = DevEmployee(employeeNumber = employeeNumber)
-        db.transaction { tx -> tx.insert(employee) }
         val period = FiniteDateRange(today, today.plusDays(1))
         val shifts =
             listOf(
@@ -119,9 +136,6 @@ internal class LinkityServiceTest : FullApplicationTest(resetDbBeforeEach = true
     @Test
     fun `new plans with overlapping times are ignored`() {
         val today = LocalDate.now()
-        val employeeNumber = "SARASTIA_4"
-        val employee = DevEmployee(employeeNumber = employeeNumber)
-        db.transaction { tx -> tx.insert(employee) }
         val period = FiniteDateRange(today, today.plusDays(1))
         val shifts =
             listOf(
@@ -151,6 +165,37 @@ internal class LinkityServiceTest : FullApplicationTest(resetDbBeforeEach = true
         assertTrue { plans.any { it.description == "Uusi" && it.startTime.hour == 8 } }
     }
 
+    @Test
+    fun `new plans for employees in disabled daycares are ignored`() {
+        val today = LocalDate.now()
+        val employeeNumber2 = "SARASTIA_2"
+        val employee2 = DevEmployee(employeeNumber = employeeNumber2)
+        val daycare2 = DevDaycare(areaId = area.id, enabledPilotFeatures = setOf())
+        db.transaction { tx ->
+            tx.insert(daycare2)
+            tx.insert(employee2)
+            tx.insertDaycareAclRow(daycare2.id, employee2.id, UserRole.STAFF)
+        }
+        val period = FiniteDateRange(today, today.plusDays(1))
+        val shifts =
+            listOf(
+                Shift(
+                    employeeNumber2,
+                    "WORK_SHIFT_1",
+                    HelsinkiDateTime.of(today.atTime(8, 0)),
+                    HelsinkiDateTime.of(today.atTime(16, 0)),
+                    ShiftType.PRESENT,
+                    "Uusi",
+                )
+            )
+        val client = MockLinkityClient(shifts)
+        updateStaffAttendancePlansFromLinkity(period, db, client)
+
+        val plans = db.transaction { tx -> tx.findStaffAttendancePlansBy() }
+        // There will be no plans
+        assertEquals(0, plans.size)
+    }
+
     private fun upsertStaffAttendance(
         tx: Database.Transaction,
         employee: DevEmployee,
@@ -176,17 +221,10 @@ internal class LinkityServiceTest : FullApplicationTest(resetDbBeforeEach = true
     @Test
     fun `relevant attendances are sent to Linkity`() {
         val now = HelsinkiDateTime.now()
-        val employeeNumber = "SARASTIA_1"
         db.transaction { tx ->
-            val area = DevCareArea()
-            val unit = DevDaycare(areaId = area.id)
-            val group = DevDaycareGroup(daycareId = unit.id)
-            val employee = DevEmployee(employeeNumber = employeeNumber)
+            val group = DevDaycareGroup(daycareId = daycare.id)
             val employee2 = DevEmployee(employeeNumber = null)
-            tx.insert(area)
-            tx.insert(unit)
             tx.insert(group)
-            tx.insert(employee)
             tx.insert(employee2)
             tx.insertStaffAttendancePlans(
                 listOf(

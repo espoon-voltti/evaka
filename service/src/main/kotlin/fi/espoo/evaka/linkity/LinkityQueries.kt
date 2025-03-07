@@ -36,3 +36,24 @@ WHERE emp.employee_number IS NOT NULL AND ${bind(range.asHelsinkiDateTimeRange()
         }
         .toList()
 }
+
+fun Database.Read.getEmployeeIdsForEnabledDaycares(
+    employeeNumbers: Collection<String>
+): Map<String, EmployeeId> {
+    return createQuery {
+            sql(
+                """
+SELECT id, employee_number
+FROM employee e
+WHERE employee_number = ANY (${bind(employeeNumbers)})
+    AND EXISTS (
+        SELECT
+        FROM daycare_acl acl
+        JOIN daycare d ON acl.daycare_id = d.id
+        WHERE acl.employee_id = e.id AND 'STAFF_ATTENDANCE_INTEGRATION' = ANY(d.enabled_pilot_features)
+    )
+            """
+            )
+        }
+        .toMap { columnPair("employee_number", "id") }
+}
