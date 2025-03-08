@@ -410,6 +410,7 @@ export interface StaffMember {
   plannedAttendances: PlannedStaffAttendance[]
   present: GroupId | null
   spanningPlans: HelsinkiDateTimeRange[]
+  unitIds: DaycareId[]
 }
 
 /**

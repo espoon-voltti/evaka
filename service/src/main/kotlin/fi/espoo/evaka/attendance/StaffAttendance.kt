@@ -5,6 +5,7 @@
 package fi.espoo.evaka.attendance
 
 import fi.espoo.evaka.ConstList
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.StaffAttendanceExternalId
@@ -42,6 +43,13 @@ data class CurrentDayStaffAttendanceResponse(
     val extraAttendances: List<ExternalStaffMember>,
 )
 
+data class PlannedStaffAttendanceResponse(
+    val staff: List<StaffMember>,
+    val extraAttendances: List<ExternalStaffMember>,
+)
+
+data class PlannedEmployee(val employeeId: EmployeeId)
+
 data class ExternalStaffMember(
     val id: StaffAttendanceExternalId,
     val name: String,
@@ -54,6 +62,7 @@ data class StaffMember(
     val employeeId: EmployeeId,
     val firstName: String,
     val lastName: String,
+    val unitIds: List<DaycareId>,
     val groupIds: List<GroupId>,
     val occupancyEffect: Boolean,
     @Nested("attendance") val latestCurrentDayAttendance: StaffMemberAttendance?,
