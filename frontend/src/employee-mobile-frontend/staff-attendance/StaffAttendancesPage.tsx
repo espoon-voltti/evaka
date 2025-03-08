@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2025 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -31,33 +31,105 @@ const StaticIconContainer = styled.div`
   right: 8px;
 `
 
+type PrimaryTab = 'today' | 'planned'
 type StatusTab = 'present' | 'absent'
 
-interface Props {
+type Props = {
   unitOrGroup: UnitOrGroup
-  tab: StatusTab
-}
+  primaryTab: PrimaryTab
+} & (
+  | {
+      primaryTab: 'today'
+      statusTab: StatusTab
+    }
+  | {
+      primaryTab: 'planned'
+    }
+)
 
-export default React.memo(function StaffAttendancesPage({
-  unitOrGroup,
-  tab
-}: Props) {
-  const navigate = useNavigate()
+export default React.memo(function StaffAttendancesPage(props: Props) {
   const { i18n } = useTranslation()
+  const navigate = useNavigate()
+  const unitOrGroup = props.unitOrGroup
   const unitId = unitOrGroup.unitId
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
-
-  const staffAttendanceResponse = useQueryResult(
-    staffAttendanceQuery({ unitId })
-  )
 
   const changeGroup = useCallback(
     (group: GroupInfo | undefined) => {
       void navigate(
-        routes.staffAttendances(toUnitOrGroup(unitId, group?.id), tab).value
+        props.primaryTab === 'today'
+          ? routes.staffAttendancesToday(
+              toUnitOrGroup(unitId, group?.id),
+              props.statusTab
+            ).value
+          : routes.staffAttendancesPlanned(toUnitOrGroup(unitId, group?.id))
+              .value
       )
     },
-    [navigate, tab, unitId]
+    [navigate, props, unitId]
+  )
+
+  const selectedGroup = useMemo(
+    () =>
+      unitInfoResponse
+        .map(({ groups }) =>
+          unitOrGroup.type === 'unit'
+            ? undefined
+            : groups.find((g) => g.id === unitOrGroup.id)
+        )
+        .getOrElse(undefined),
+    [unitOrGroup, unitInfoResponse]
+  )
+
+  const tabs = useMemo(
+    () => [
+      {
+        id: 'today',
+        link: routes.staffAttendancesToday(unitOrGroup, 'absent'),
+        label: i18n.attendances.views.TODAY
+      },
+      {
+        id: 'planned',
+        link: routes.staffAttendancesPlanned(unitOrGroup),
+        label: i18n.attendances.views.NEXT_DAYS
+      }
+    ],
+    [unitOrGroup, i18n]
+  )
+
+  return (
+    <PageWithNavigation
+      unitOrGroup={unitOrGroup}
+      selected="staff"
+      selectedGroup={selectedGroup}
+      onChangeGroup={changeGroup}
+    >
+      <TabLinks tabs={tabs} mobile />
+      {props.primaryTab === 'today' ? (
+        <StaffAttendancesToday
+          unitOrGroup={unitOrGroup}
+          tab={props.statusTab}
+        />
+      ) : (
+        <div>todo</div>
+      )}
+    </PageWithNavigation>
+  )
+})
+
+const StaffAttendancesToday = React.memo(function StaffAttendancesToday({
+  unitOrGroup,
+  tab
+}: {
+  unitOrGroup: UnitOrGroup
+  tab: StatusTab
+}) {
+  const { i18n } = useTranslation()
+  const navigate = useNavigate()
+  const unitId = unitOrGroup.unitId
+
+  const staffAttendanceResponse = useQueryResult(
+    staffAttendanceQuery({ unitId })
   )
 
   const navigateToExternalMemberArrival = useCallback(
@@ -85,12 +157,12 @@ export default React.memo(function StaffAttendancesPage({
     () => [
       {
         id: 'absent',
-        link: routes.staffAttendances(unitOrGroup, 'absent'),
+        link: routes.staffAttendancesToday(unitOrGroup, 'absent'),
         label: i18n.attendances.types.ABSENT
       },
       {
         id: 'present',
-        link: routes.staffAttendances(unitOrGroup, 'present'),
+        link: routes.staffAttendancesToday(unitOrGroup, 'present'),
         label: (
           <>
             {i18n.attendances.types.PRESENT}
@@ -127,25 +199,8 @@ export default React.memo(function StaffAttendancesPage({
     [unitOrGroup, tab, staffAttendanceResponse]
   )
 
-  const selectedGroup = useMemo(
-    () =>
-      unitInfoResponse
-        .map(({ groups }) =>
-          unitOrGroup.type === 'unit'
-            ? undefined
-            : groups.find((g) => g.id === unitOrGroup.id)
-        )
-        .getOrElse(undefined),
-    [unitOrGroup, unitInfoResponse]
-  )
-
   return (
-    <PageWithNavigation
-      unitOrGroup={unitOrGroup}
-      selected="staff"
-      selectedGroup={selectedGroup}
-      onChangeGroup={changeGroup}
-    >
+    <>
       <TabLinks tabs={tabs} mobile />
       {renderResult(filteredStaff, (staff) => (
         <FixedSpaceColumn spacing="zero">
@@ -172,6 +227,6 @@ export default React.memo(function StaffAttendancesPage({
           {i18n.attendances.staff.externalPerson}
         </LegacyButton>
       </StaticIconContainer>
-    </PageWithNavigation>
+    </>
   )
 })
