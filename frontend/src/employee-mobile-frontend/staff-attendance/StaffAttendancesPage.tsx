@@ -23,6 +23,7 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import { TabLinks } from 'lib-components/molecules/Tabs'
 import { fontWeights } from 'lib-components/typography'
+import { fasExclamationTriangle } from 'lib-icons'
 import { faChevronDown, faChevronUp } from 'lib-icons'
 import { faPlus } from 'lib-icons'
 
@@ -352,17 +353,17 @@ const StaffAttendancesPlanned = React.memo(function StaffAttendancesPlanned({
             </div>
           </DayRow>
           {expandedDate?.isEqual(date) && (
-            <ExpandedStaff>
+            <ExpandedStaff spacing="L">
               {sortBy(
                 staff.filter((s) => s.plans.length > 0),
                 (s) => s.firstName,
                 (s) => s.lastName
               ).map((s) => (
-                <Fragment key={s.employeeId}>
+                <FixedSpaceColumn key={s.employeeId} spacing="xxs">
                   <FixedSpaceRow justifyContent="space-between">
                     <StaffCol1>
                       <FixedSpaceRow spacing="zero" alignItems="center">
-                        <OccupancyIconWrapper>
+                        <IconWrapper>
                           {s.occupancyEffect && (
                             <RoundIcon
                               content="K"
@@ -371,7 +372,7 @@ const StaffAttendancesPlanned = React.memo(function StaffAttendancesPlanned({
                               size="s"
                             />
                           )}
-                        </OccupancyIconWrapper>
+                        </IconWrapper>
                         <StaffName>{`${s.firstName} ${s.lastName}`}</StaffName>
                       </FixedSpaceRow>
                     </StaffCol1>
@@ -386,7 +387,20 @@ const StaffAttendancesPlanned = React.memo(function StaffAttendancesPlanned({
                       </FixedSpaceColumn>
                     </StaffCol2>
                   </FixedSpaceRow>
-                </Fragment>
+                  {s.confidence !== 'full' && (
+                    <FixedSpaceRow spacing="zero" alignItems="center">
+                      <IconWrapper>
+                        <FontAwesomeIcon
+                          icon={fasExclamationTriangle}
+                          color={theme.colors.status.warning}
+                        />
+                      </IconWrapper>
+                      <span>
+                        {i18n.attendances.staff.planWarnings[s.confidence]}
+                      </span>
+                    </FixedSpaceRow>
+                  )}
+                </FixedSpaceColumn>
               ))}
 
               {staff.some((s) => s.plans.length > 0) &&
@@ -401,7 +415,7 @@ const StaffAttendancesPlanned = React.memo(function StaffAttendancesPlanned({
                   <FixedSpaceRow justifyContent="space-between">
                     <StaffCol1 $absent>
                       <FixedSpaceRow spacing="zero" alignItems="center">
-                        <OccupancyIconWrapper>
+                        <IconWrapper>
                           {s.occupancyEffect && (
                             <RoundIcon
                               content="K"
@@ -410,7 +424,7 @@ const StaffAttendancesPlanned = React.memo(function StaffAttendancesPlanned({
                               size="s"
                             />
                           )}
-                        </OccupancyIconWrapper>
+                        </IconWrapper>
                         <StaffName>{`${s.firstName} ${s.lastName}`}</StaffName>
                       </FixedSpaceRow>
                     </StaffCol1>
@@ -486,8 +500,11 @@ const StaffName = styled.div`
   white-space: nowrap;
 `
 
-const OccupancyIconWrapper = styled.div`
-  min-width: 30px;
+const IconWrapper = styled.div`
+  min-width: 36px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 `
 
 const NoPlansSeparator = styled(HorizontalLine)`
