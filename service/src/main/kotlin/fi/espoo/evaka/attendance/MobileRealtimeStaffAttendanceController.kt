@@ -22,7 +22,6 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
-import fi.espoo.evaka.shared.domain.toFiniteDateRange
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import java.math.BigDecimal
@@ -46,8 +45,11 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
         user: AuthenticatedUser.MobileDevice,
         clock: EvakaClock,
         @RequestParam unitId: DaycareId,
-        @RequestParam date: LocalDate?,
+        @RequestParam startDate: LocalDate? = null,
+        @RequestParam endDate: LocalDate? = null,
     ): CurrentDayStaffAttendanceResponse {
+        val today = clock.today()
+        val dateRange = FiniteDateRange(startDate ?: today, endDate ?: today)
         return db.connect { dbc ->
                 dbc.read { tx ->
                     ac.requirePermissionFor(
@@ -61,7 +63,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                         staff =
                             tx.getStaffAttendances(
                                 unitId = unitId,
-                                dateRange = (date ?: clock.today()).toFiniteDateRange(),
+                                dateRange = dateRange,
                                 now = clock.now(),
                             ),
                         extraAttendances = tx.getExternalStaffAttendances(unitId),
