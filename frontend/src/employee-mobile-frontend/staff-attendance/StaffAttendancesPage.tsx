@@ -3,15 +3,24 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, { useCallback, useMemo } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
-import styled from 'styled-components'
+import styled, { useTheme } from 'styled-components'
 
+import { Result } from 'lib-common/api'
 import { GroupInfo } from 'lib-common/generated/api-types/attendance'
+import { EmployeeId } from 'lib-common/generated/api-types/shared'
+import LocalDate from 'lib-common/local-date'
+import LocalTime from 'lib-common/local-time'
 import { useQueryResult } from 'lib-common/query'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
-import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import {
+  FixedSpaceColumn,
+  FixedSpaceRow
+} from 'lib-components/layout/flex-helpers'
 import { TabLinks } from 'lib-components/molecules/Tabs'
+import { fontWeights } from 'lib-components/typography'
+import { faChevronDown, faChevronUp } from 'lib-icons'
 import { faPlus } from 'lib-icons'
 
 import { routes } from '../App'
@@ -111,7 +120,7 @@ export default React.memo(function StaffAttendancesPage(props: Props) {
           tab={props.statusTab}
         />
       ) : (
-        <div>todo</div>
+        <StaffAttendancesPlanned unitOrGroup={unitOrGroup} />
       )}
     </PageWithNavigation>
   )
@@ -126,10 +135,9 @@ const StaffAttendancesToday = React.memo(function StaffAttendancesToday({
 }) {
   const { i18n } = useTranslation()
   const navigate = useNavigate()
-  const unitId = unitOrGroup.unitId
 
   const staffAttendanceResponse = useQueryResult(
-    staffAttendanceQuery({ unitId })
+    staffAttendanceQuery({ unitId: unitOrGroup.unitId })
   )
 
   const navigateToExternalMemberArrival = useCallback(
@@ -230,3 +238,144 @@ const StaffAttendancesToday = React.memo(function StaffAttendancesToday({
     </>
   )
 })
+
+interface StaffMemberDay {
+  employeeId: EmployeeId
+  firstName: string
+  lastName: string
+  occupancyEffect: boolean
+  plans: {
+    start: LocalTime | null // null if started on previous day
+    end: LocalTime | null // null if ends on the next day
+  }[]
+  confidence: 'full' | 'maybeInOtherGroup' | 'maybeInOtherUnit'
+}
+
+interface StaffMembersByDate {
+  date: LocalDate
+  staff: StaffMemberDay[]
+}
+
+const StaffAttendancesPlanned = React.memo(function StaffAttendancesPlanned({
+  unitOrGroup
+}: {
+  unitOrGroup: UnitOrGroup
+}) {
+  const { i18n, lang } = useTranslation()
+  const theme = useTheme()
+  const today = LocalDate.todayInHelsinkiTz()
+
+  const [expandedDate, setExpandedDate] = useState<LocalDate | null>(null)
+
+  const staffAttendanceResponse = useQueryResult(
+    staffAttendanceQuery({
+      unitId: unitOrGroup.unitId,
+      startDate: today,
+      endDate: today.addDays(5)
+    })
+  )
+
+  const staffMemberDays: Result<StaffMembersByDate[]> = useMemo(
+    () =>
+      staffAttendanceResponse.map((res) =>
+        [1, 2, 3, 4, 5].map((i) => {
+          const date = today.addDays(i)
+          return {
+            date,
+            staff: res.staff
+              .filter(
+                (s) =>
+                  unitOrGroup.type !== 'group' ||
+                  s.groupIds.includes(unitOrGroup.id)
+              )
+              .map((s) => ({
+                employeeId: s.employeeId,
+                firstName: s.firstName,
+                lastName: s.lastName,
+                occupancyEffect: s.occupancyEffect,
+                plans: s.plannedAttendances
+                  .filter(
+                    (p) =>
+                      p.start.toLocalDate().isEqual(date) ||
+                      p.end.toLocalDate().isEqual(date)
+                  )
+                  .map((p) => ({
+                    start: p.start.toLocalDate().isEqual(date)
+                      ? p.start.toLocalTime()
+                      : null,
+                    end: p.end.toLocalDate().isEqual(date)
+                      ? p.end.toLocalTime()
+                      : null
+                  })),
+                confidence:
+                  s.unitIds.length > 1
+                    ? 'maybeInOtherUnit'
+                    : s.groupIds.length > 1
+                      ? 'maybeInOtherGroup'
+                      : 'full'
+              }))
+          }
+        })
+      ),
+    [unitOrGroup, staffAttendanceResponse, today]
+  )
+
+  return renderResult(staffMemberDays, (days) => (
+    <FixedSpaceColumn spacing="xxs">
+      <HeaderRow>
+        <DayRowCol1 />
+        <DayRowCol2>{i18n.attendances.staff.plannedCount}</DayRowCol2>
+        <div />
+      </HeaderRow>
+      {days.map(({ date, staff }) => (
+        <>
+          <DayRow
+            key={date.formatIso()}
+            onClick={() =>
+              setExpandedDate(expandedDate?.isEqual(date) ? null : date)
+            }
+            $open={expandedDate?.isEqual(date) ?? false}
+          >
+            <DayRowCol1>{date.formatExotic('EEEEEE d.M.', lang)}</DayRowCol1>
+            <DayRowCol2>
+              {staff.filter(({ plans }) => plans.length > 0).length}
+            </DayRowCol2>
+            <div>
+              <FontAwesomeIcon
+                icon={expandedDate?.isEqual(date) ? faChevronUp : faChevronDown}
+                color={theme.colors.main.m2}
+                style={{ fontSize: '24px' }}
+              />
+            </div>
+          </DayRow>
+
+        </>
+      ))}
+    </FixedSpaceColumn>
+  ))
+})
+
+const HeaderRow = styled(FixedSpaceRow)`
+  padding: 16px 8px 8px;
+  font-size: 14px;
+  color: ${(p) => p.theme.colors.grayscale.g70};
+  font-weight: ${fontWeights.bold};
+  line-height: 1.3em;
+  text-transform: uppercase;
+  vertical-align: middle;
+`
+const DayRow = styled(FixedSpaceRow)<{ $open: boolean }>`
+  border-left: 4px solid
+    ${(p) => (p.$open ? p.theme.colors.main.m2 : 'transparent')};
+  cursor: pointer;
+  padding: 8px;
+  background-color: ${(p) => p.theme.colors.grayscale.g0};
+`
+
+const DayRowCol1 = styled.div`
+  width: 30%;
+`
+
+const DayRowCol2 = styled.div`
+  width: 50%;
+`
