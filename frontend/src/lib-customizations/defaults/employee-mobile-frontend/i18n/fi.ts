@@ -331,7 +331,8 @@ export const fi = {
       openAttendanceInAnotherUnitWarning: 'Avoin kirjaus ',
       openAttendanceInAnotherUnitWarningCont:
         '. Kirjaus on päätettävä ennen uuden lisäystä.',
-      plannedCount: 'Suunniteltuja työvuoroja'
+      plannedCount: 'Suunniteltuja työvuoroja',
+      noPlan: 'Ei suunnitteltua työvuoroa'
     },
     timeDiffTooBigNotification:
       'Voit tehdä sisäänkirjauksen +/- 30 min päähän nykyhetkestä. Kirjauksia voi tarvittaessa muokata työpöytäselaimen kautta.',

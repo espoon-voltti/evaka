@@ -3,9 +3,10 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, { useCallback, useMemo, useState } from 'react'
+import sortBy from 'lodash/sortBy'
+import React, { Fragment, useCallback, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
-import styled, { useTheme } from 'styled-components'
+import styled, { css, useTheme } from 'styled-components'
 
 import { Result } from 'lib-common/api'
 import { GroupInfo } from 'lib-common/generated/api-types/attendance'
@@ -13,6 +14,8 @@ import { EmployeeId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { useQueryResult } from 'lib-common/query'
+import HorizontalLine from 'lib-components/atoms/HorizontalLine'
+import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import {
   FixedSpaceColumn,
@@ -348,7 +351,77 @@ const StaffAttendancesPlanned = React.memo(function StaffAttendancesPlanned({
               />
             </div>
           </DayRow>
+          {expandedDate?.isEqual(date) && (
+            <ExpandedStaff>
+              {sortBy(
+                staff.filter((s) => s.plans.length > 0),
+                (s) => s.firstName,
+                (s) => s.lastName
+              ).map((s) => (
+                <Fragment key={s.employeeId}>
+                  <FixedSpaceRow justifyContent="space-between">
+                    <StaffCol1>
+                      <FixedSpaceRow spacing="zero" alignItems="center">
+                        <OccupancyIconWrapper>
+                          {s.occupancyEffect && (
+                            <RoundIcon
+                              content="K"
+                              active={true}
+                              color={theme.colors.accents.a3emerald}
+                              size="s"
+                            />
+                          )}
+                        </OccupancyIconWrapper>
+                        <StaffName>{`${s.firstName} ${s.lastName}`}</StaffName>
+                      </FixedSpaceRow>
+                    </StaffCol1>
+                    <StaffCol2>
+                      <FixedSpaceColumn spacing="zero">
+                        {s.plans.map((p, i) => (
+                          <div key={i}>
+                            {`${p.start?.format() ?? '→'} - ${p.end?.format() ?? '→'}`}
+                            {i < s.plans.length - 1 && ', '}
+                          </div>
+                        ))}
+                      </FixedSpaceColumn>
+                    </StaffCol2>
+                  </FixedSpaceRow>
+                </Fragment>
+              ))}
 
+              {staff.some((s) => s.plans.length > 0) &&
+                staff.some((s) => s.plans.length === 0) && <NoPlansSeparator />}
+
+              {sortBy(
+                staff.filter((s) => s.plans.length === 0),
+                (s) => s.firstName,
+                (s) => s.lastName
+              ).map((s) => (
+                <Fragment key={s.employeeId}>
+                  <FixedSpaceRow justifyContent="space-between">
+                    <StaffCol1 $absent>
+                      <FixedSpaceRow spacing="zero" alignItems="center">
+                        <OccupancyIconWrapper>
+                          {s.occupancyEffect && (
+                            <RoundIcon
+                              content="K"
+                              active={true}
+                              color={theme.colors.accents.a3emerald}
+                              size="s"
+                            />
+                          )}
+                        </OccupancyIconWrapper>
+                        <StaffName>{`${s.firstName} ${s.lastName}`}</StaffName>
+                      </FixedSpaceRow>
+                    </StaffCol1>
+                    <StaffCol2 $absent>
+                      {i18n.attendances.staff.noPlan}
+                    </StaffCol2>
+                  </FixedSpaceRow>
+                </Fragment>
+              ))}
+            </ExpandedStaff>
+          )}
         </>
       ))}
     </FixedSpaceColumn>
@@ -378,4 +451,46 @@ const DayRowCol1 = styled.div`
 
 const DayRowCol2 = styled.div`
   width: 50%;
+`
+
+const ExpandedStaff = styled(FixedSpaceColumn)`
+  padding: 8px;
+  background-color: ${(p) => p.theme.colors.grayscale.g0};
+`
+
+const StaffCol = styled.div<{ $absent?: boolean }>`
+  ${(p) =>
+    p.$absent
+      ? css`
+          color: ${p.theme.colors.grayscale.g70};
+        `
+      : ''}
+`
+
+const StaffCol1 = styled(StaffCol)`
+  width: 60%;
+  min-width: 60%;
+  max-width: 60%;
+`
+
+const StaffCol2 = styled(StaffCol)`
+  width: 35%;
+  min-width: 35%;
+  max-width: 35%;
+`
+
+const StaffName = styled.div`
+  font-weight: ${fontWeights.semibold};
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`
+
+const OccupancyIconWrapper = styled.div`
+  min-width: 30px;
+`
+
+const NoPlansSeparator = styled(HorizontalLine)`
+  margin-block-start: 8px;
+  margin-block-end: 16px;
 `
