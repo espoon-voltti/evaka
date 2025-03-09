@@ -304,15 +304,32 @@ function StaffAttendanceRouter({ unitOrGroup }: { unitOrGroup: UnitOrGroup }) {
   return (
     <Routes>
       <Route
-        path="absent"
+        path="today/absent"
         element={
-          <StaffAttendancesPage tab="absent" unitOrGroup={unitOrGroup} />
+          <StaffAttendancesPage
+            primaryTab="today"
+            statusTab="absent"
+            unitOrGroup={unitOrGroup}
+          />
         }
       />
       <Route
-        path="present"
+        path="today/present"
         element={
-          <StaffAttendancesPage tab="present" unitOrGroup={unitOrGroup} />
+          <StaffAttendancesPage
+            primaryTab="today"
+            statusTab="present"
+            unitOrGroup={unitOrGroup}
+          />
+        }
+      />
+      <Route
+        path="planned"
+        element={
+          <StaffAttendancesPage
+            primaryTab="planned"
+            unitOrGroup={unitOrGroup}
+          />
         }
       />
       <Route
@@ -345,7 +362,7 @@ function StaffAttendanceRouter({ unitOrGroup }: { unitOrGroup: UnitOrGroup }) {
         path=":employeeId/mark-departed"
         element={<StaffMarkDepartedPage unitOrGroup={unitOrGroup} />}
       />
-      <Route index element={<Navigate replace to="absent" />} />
+      <Route index element={<Navigate replace to="today/absent" />} />
     </Routes>
   )
 }
@@ -439,8 +456,14 @@ export const routes = {
   staffAttendanceRoot(unitOrGroup: UnitOrGroup): Uri {
     return uri`${this.unitOrGroup(unitOrGroup)}/staff-attendance`
   },
-  staffAttendances(unitOrGroup: UnitOrGroup, tab: 'absent' | 'present'): Uri {
-    return uri`${this.staffAttendanceRoot(unitOrGroup)}/${tab}`
+  staffAttendancesToday(
+    unitOrGroup: UnitOrGroup,
+    tab: 'absent' | 'present'
+  ): Uri {
+    return uri`${this.staffAttendanceRoot(unitOrGroup)}/today/${tab}`
+  },
+  staffAttendancesPlanned(unitOrGroup: UnitOrGroup): Uri {
+    return uri`${this.staffAttendanceRoot(unitOrGroup)}/planned`
   },
   externalStaffAttendances(unitOrGroup: UnitOrGroup): Uri {
     return uri`${this.staffAttendanceRoot(unitOrGroup)}/external`

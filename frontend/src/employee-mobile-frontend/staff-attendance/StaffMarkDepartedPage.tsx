@@ -181,7 +181,7 @@ export default React.memo(function StaffMarkDepartedPage({
               return (
                 <Navigate
                   replace
-                  to={routes.staffAttendances(unitOrGroup, 'absent').value}
+                  to={routes.staffAttendancesToday(unitOrGroup, 'absent').value}
                 />
               )
             }

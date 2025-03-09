@@ -247,12 +247,14 @@ export async function returnToPresent(
 export async function getAttendancesByUnit(
   request: {
     unitId: DaycareId,
-    date?: LocalDate | null
+    startDate?: LocalDate | null,
+    endDate?: LocalDate | null
   }
 ): Promise<CurrentDayStaffAttendanceResponse> {
   const params = createUrlSearchParams(
     ['unitId', request.unitId],
-    ['date', request.date?.formatIso()]
+    ['startDate', request.startDate?.formatIso()],
+    ['endDate', request.endDate?.formatIso()]
   )
   const { data: json } = await client.request<JsonOf<CurrentDayStaffAttendanceResponse>>({
     url: uri`/employee-mobile/realtime-staff-attendances`.toString(),
