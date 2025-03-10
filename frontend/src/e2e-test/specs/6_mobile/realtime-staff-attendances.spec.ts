@@ -386,7 +386,7 @@ describe('Realtime staff attendance page', () => {
 
     // Within 30min from now so ok
     await staffAttendancePage.setArrivalTime('12:30')
-    await staffAttendancePage.selectGroup(testDaycareGroup.id)
+    await staffAttendancePage.selectArrivalGroup(testDaycareGroup.id)
     await staffAttendancePage.assertDoneButtonEnabled(true)
 
     // 1min too far in the future
@@ -421,14 +421,14 @@ describe('Realtime staff attendance page', () => {
 
     // Within 30min from planned start so ok, type required
     await staffAttendancePage.setArrivalTime('07:30')
-    await staffAttendancePage.selectGroup(testDaycareGroup.id)
+    await staffAttendancePage.selectArrivalGroup(testDaycareGroup.id)
     await staffAttendancePage.assertDoneButtonEnabled(false)
     await staffAttendancePage.selectAttendanceType('JUSTIFIED_CHANGE')
     await staffAttendancePage.assertDoneButtonEnabled(true)
 
     // Within 5min from planned start so ok, type not required
     await staffAttendancePage.setArrivalTime('07:55')
-    await staffAttendancePage.selectGroup(testDaycareGroup.id)
+    await staffAttendancePage.selectArrivalGroup(testDaycareGroup.id)
     await staffAttendancePage.assertDoneButtonEnabled(true)
 
     // Not ok because >+-30min from current time
@@ -466,12 +466,12 @@ describe('Realtime staff attendance page', () => {
 
     // Within 5min from planned start so ok, type not required
     await staffAttendancePage.setArrivalTime('08:00')
-    await staffAttendancePage.selectGroup(testDaycareGroup.id)
+    await staffAttendancePage.selectArrivalGroup(testDaycareGroup.id)
     await staffAttendancePage.assertDoneButtonEnabled(true)
 
     // More than 5min from planned start, type is not required but can be selected
     await staffAttendancePage.setArrivalTime('08:15')
-    await staffAttendancePage.selectGroup(testDaycareGroup.id)
+    await staffAttendancePage.selectArrivalGroup(testDaycareGroup.id)
     await staffAttendancePage.assertDoneButtonEnabled(true)
     await staffAttendancePage.selectAttendanceType('JUSTIFIED_CHANGE')
     await staffAttendancePage.assertDoneButtonEnabled(true)
@@ -665,7 +665,7 @@ describe('Realtime staff attendance page', () => {
     await staffAttendancePage.clickStaffArrivedAndSetPin(pin)
 
     await staffAttendancePage.setArrivalTime('15:00')
-    await staffAttendancePage.selectGroup(testDaycareGroup.id)
+    await staffAttendancePage.selectArrivalGroup(testDaycareGroup.id)
     await staffAttendancePage.assertDoneButtonEnabled(true)
     await staffAttendancePage.clickDoneButton()
     await staffAttendancePage.assertAttendanceTimeTextShown(
@@ -693,7 +693,7 @@ describe('Realtime staff attendance page', () => {
     await staffAttendancePage.clickStaffArrivedAndSetPin(pin)
 
     await staffAttendancePage.setArrivalTime('12:04')
-    await staffAttendancePage.selectGroup(testDaycareGroup.id)
+    await staffAttendancePage.selectArrivalGroup(testDaycareGroup.id)
     await staffAttendancePage.assertDoneButtonEnabled(true)
     await staffAttendancePage.selectAttendanceType('TRAINING')
     await staffAttendancePage.clickDoneButton()

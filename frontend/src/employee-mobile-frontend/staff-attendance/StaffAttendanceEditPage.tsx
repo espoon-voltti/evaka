@@ -237,7 +237,7 @@ export default React.memo(function StaffAttendanceEditPage({
   const unitId = unitOrGroup.unitId
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
   const staffAttendanceResponse = useQueryResult(
-    staffAttendanceQuery({ unitId, date })
+    staffAttendanceQuery({ unitId, startDate: date, endDate: date })
   )
   const combinedResult = useMemo(
     () =>
