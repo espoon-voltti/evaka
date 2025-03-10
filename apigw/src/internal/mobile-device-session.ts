@@ -56,7 +56,7 @@ export const refreshMobileSession = (sessions: Sessions<'employee-mobile'>) =>
   toMiddleware(async (req, res) => {
     const user = sessions.getUser(req)
     if (!user) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-assignment
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const token = req.signedCookies[mobileLongTermCookieName]
       if (token) {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
