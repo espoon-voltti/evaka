@@ -4,7 +4,7 @@
 
 export type CsvValue = string | number | null | undefined
 
-const separator = ','
+const separator = ';'
 const quote = '"'
 
 export type ColumnCommon = { label: string; exclude?: boolean }
