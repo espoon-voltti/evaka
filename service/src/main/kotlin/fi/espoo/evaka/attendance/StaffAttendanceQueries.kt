@@ -195,7 +195,7 @@ fun Database.Transaction.upsertStaffAttendance(
     departedAutomatically: Boolean = false,
     modifiedAt: HelsinkiDateTime,
     modifiedBy: EvakaUserId,
-): StaffAttendanceRealtimeChange =
+): StaffAttendanceRealtimeChange? =
     if (attendanceId == null) {
         createUpdate {
                 sql(
@@ -258,7 +258,7 @@ RETURNING old.id AS old_id, old.employee_id AS old_employee_id, old.group_id AS 
                 )
             }
             .executeAndReturnGeneratedKeys()
-            .exactlyOne<StaffAttendanceRealtimeChange>()
+            .exactlyOneOrNull<StaffAttendanceRealtimeChange>()
     }
 
 fun Database.Transaction.deleteStaffAttendance(
