@@ -26,10 +26,10 @@
     "cookie-parser": "^1.4.6",
     "date-fns": "^4.1.0",
     "dd-trace": "^5.41.1",
-    "express": "^4.20.0",
+    "express": "^4.21.2",
     "express-basic-auth": "^1.2.1",
     "express-http-proxy": "^2.1.1",
-    "express-session": "^1.18.0",
+    "express-session": "^1.18.1",
     "fast-xml-parser": "^5.0.6",
     "helmet": "^8.0.0",
     "jsonwebtoken": "^9.0.0",
@@ -52,7 +52,7 @@
     "@jest/globals": "^29.7.0",
     "@types/cookie-parser": "^1.4.3",
     "@types/express-http-proxy": "^1.6.3",
-    "@types/express-session": "^1.18.0",
+    "@types/express-session": "^1.18.1",
     "@types/jsonwebtoken": "^9.0.2",
     "@types/lodash": "^4.17.0",
     "@types/node": "^22.13.0",
@@ -80,6 +80,9 @@
     "typescript-eslint": "^8.26.0",
     "xml-crypto": "^6.0.0",
     "xml2js": "^0.6.0"
+  },
+  "resolutions": {
+    "express/cookie@npm:0.7.1": "0.7.2"
   },
   "jest-junit": {
     "outputDirectory": "./build/test-reports/",
