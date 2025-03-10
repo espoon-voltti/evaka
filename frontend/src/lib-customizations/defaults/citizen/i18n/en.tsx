@@ -542,6 +542,7 @@ const en: Translations = {
       BULLETIN: 'Bulletin'
     },
     deleteThread: 'Delete thread',
+    markUnread: 'Mark as unread',
     staffAnnotation: 'Staff',
     threadList: {
       participants: 'Participants',

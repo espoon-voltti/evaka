@@ -12,6 +12,7 @@ import React, {
   useRef,
   useState
 } from 'react'
+import { useNavigate } from 'react-router'
 import styled, { css } from 'styled-components'
 
 import { useBoolean } from 'lib-common/form/hooks'
@@ -34,6 +35,7 @@ import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Linkify from 'lib-components/atoms/Linkify'
 import { ScreenReaderOnly } from 'lib-components/atoms/ScreenReaderOnly'
 import { Button } from 'lib-components/atoms/buttons/Button'
+import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import { desktopMin } from 'lib-components/breakpoints'
 import {
   FixedSpaceColumn,
@@ -49,14 +51,17 @@ import { fontWeights, H2, InformationText } from 'lib-components/typography'
 import { useRecipients } from 'lib-components/utils/useReplyRecipients'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors, { theme } from 'lib-customizations/common'
-import { faTrash } from 'lib-icons'
+import { faTrash, faEnvelope } from 'lib-icons'
 
 import { getAttachmentUrl } from '../attachments'
 import { Translations, useTranslation } from '../localization'
 
 import { ConfirmDeleteThread } from './ConfirmDeleteThread'
 import { isPrimaryRecipient } from './MessageEditor'
-import { replyToThreadMutation } from './queries'
+import {
+  markLastReceivedMessageInThreadUnreadMutation,
+  replyToThreadMutation
+} from './queries'
 import { MessageContext } from './state'
 
 const TitleRow = styled.div`
@@ -248,6 +253,7 @@ export default React.memo(
     ref
   ) {
     const i18n = useTranslation()
+    const navigate = useNavigate()
     const { setReplyContent, getReplyContent } = useContext(MessageContext)
     const { addTimedNotification } = useContext(NotificationsContext)
 
@@ -406,14 +412,25 @@ export default React.memo(
                   onClick={closeThread}
                   text={i18n.messages.thread.close}
                 />
-                <Button
-                  appearance="inline"
-                  icon={faTrash}
-                  data-qa="delete-thread-btn"
-                  className="delete-btn"
-                  onClick={() => setConfirmDelete(true)}
-                  text={i18n.messages.deleteThread}
-                />
+                <FixedSpaceRow>
+                  <MutateButton
+                    appearance="inline"
+                    icon={faEnvelope}
+                    text={i18n.messages.markUnread}
+                    data-qa="mark-unread-btn"
+                    mutation={markLastReceivedMessageInThreadUnreadMutation}
+                    onClick={() => ({ threadId })}
+                    onSuccess={() => navigate('/messages')}
+                  />
+                  <Button
+                    appearance="inline"
+                    icon={faTrash}
+                    data-qa="delete-thread-btn"
+                    className="delete-btn"
+                    onClick={() => setConfirmDelete(true)}
+                    text={i18n.messages.deleteThread}
+                  />
+                </FixedSpaceRow>
               </ActionRow>
               <Gap size="m" />
             </>

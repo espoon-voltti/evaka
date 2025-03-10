@@ -21,6 +21,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.Forbidden
+import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.springframework.web.bind.annotation.GetMapping
@@ -104,6 +105,30 @@ class MessageControllerCitizen(
             }
             .also { accountId ->
                 Audit.MessagingMarkMessagesReadWrite.log(
+                    targetId = AuditId(listOf(accountId, threadId))
+                )
+            }
+    }
+
+    @PutMapping("/threads/{threadId}/last-received-message/read")
+    fun markLastReceivedMessageInThreadUnread(
+        db: Database,
+        user: AuthenticatedUser.Citizen,
+        clock: EvakaClock,
+        @PathVariable threadId: MessageThreadId,
+    ) {
+        db.connect { dbc ->
+                val accountId = dbc.read { it.getCitizenMessageAccount(user.id) }
+                dbc.transaction { it.markLastReceivedMessageUnread(accountId, threadId) }
+                    .also { updated ->
+                        if (updated == 0) {
+                            throw NotFound("No message to mark unread")
+                        }
+                    }
+                accountId
+            }
+            .also { accountId ->
+                Audit.MessagingMarkMessagesUnreadWrite.log(
                     targetId = AuditId(listOf(accountId, threadId))
                 )
             }
