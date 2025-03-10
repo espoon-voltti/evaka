@@ -4,7 +4,7 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import sortBy from 'lodash/sortBy'
-import React, { Fragment, useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
 import styled, { css, useTheme } from 'styled-components'
 
@@ -334,6 +334,7 @@ const StaffAttendancesPlanned = React.memo(function StaffAttendancesPlanned({
       {days.map(({ date, staff }) => (
         <>
           <DayRow
+            data-qa={`date-row-${date.formatIso()}`}
             key={date.formatIso()}
             onClick={() =>
               setExpandedDate(expandedDate?.isEqual(date) ? null : date)
@@ -341,7 +342,7 @@ const StaffAttendancesPlanned = React.memo(function StaffAttendancesPlanned({
             $open={expandedDate?.isEqual(date) ?? false}
           >
             <DayRowCol1>{date.formatExotic('EEEEEE d.M.', lang)}</DayRowCol1>
-            <DayRowCol2>
+            <DayRowCol2 data-qa="present-count">
               {staff.filter(({ plans }) => plans.length > 0).length}
             </DayRowCol2>
             <div>
@@ -353,13 +354,20 @@ const StaffAttendancesPlanned = React.memo(function StaffAttendancesPlanned({
             </div>
           </DayRow>
           {expandedDate?.isEqual(date) && (
-            <ExpandedStaff spacing="L">
+            <ExpandedStaff
+              spacing="L"
+              data-qa={`expanded-date-${date.formatIso()}`}
+            >
               {sortBy(
                 staff.filter((s) => s.plans.length > 0),
                 (s) => s.firstName,
                 (s) => s.lastName
               ).map((s) => (
-                <FixedSpaceColumn key={s.employeeId} spacing="xxs">
+                <FixedSpaceColumn
+                  key={s.employeeId}
+                  spacing="xxs"
+                  data-qa={`present-employee-${s.employeeId}`}
+                >
                   <FixedSpaceRow justifyContent="space-between">
                     <StaffCol1>
                       <FixedSpaceRow spacing="zero" alignItems="center">
@@ -395,7 +403,7 @@ const StaffAttendancesPlanned = React.memo(function StaffAttendancesPlanned({
                           color={theme.colors.status.warning}
                         />
                       </IconWrapper>
-                      <span>
+                      <span data-qa="confidence-warning">
                         {i18n.attendances.staff.planWarnings[s.confidence]}
                       </span>
                     </FixedSpaceRow>
@@ -411,28 +419,28 @@ const StaffAttendancesPlanned = React.memo(function StaffAttendancesPlanned({
                 (s) => s.firstName,
                 (s) => s.lastName
               ).map((s) => (
-                <Fragment key={s.employeeId}>
-                  <FixedSpaceRow justifyContent="space-between">
-                    <StaffCol1 $absent>
-                      <FixedSpaceRow spacing="zero" alignItems="center">
-                        <IconWrapper>
-                          {s.occupancyEffect && (
-                            <RoundIcon
-                              content="K"
-                              active={true}
-                              color={theme.colors.accents.a3emerald}
-                              size="s"
-                            />
-                          )}
-                        </IconWrapper>
-                        <StaffName>{`${s.firstName} ${s.lastName}`}</StaffName>
-                      </FixedSpaceRow>
-                    </StaffCol1>
-                    <StaffCol2 $absent>
-                      {i18n.attendances.staff.noPlan}
-                    </StaffCol2>
-                  </FixedSpaceRow>
-                </Fragment>
+                <FixedSpaceRow
+                  justifyContent="space-between"
+                  key={s.employeeId}
+                  data-qa={`absent-employee-${s.employeeId}`}
+                >
+                  <StaffCol1 $absent>
+                    <FixedSpaceRow spacing="zero" alignItems="center">
+                      <IconWrapper>
+                        {s.occupancyEffect && (
+                          <RoundIcon
+                            content="K"
+                            active={true}
+                            color={theme.colors.accents.a3emerald}
+                            size="s"
+                          />
+                        )}
+                      </IconWrapper>
+                      <StaffName>{`${s.firstName} ${s.lastName}`}</StaffName>
+                    </FixedSpaceRow>
+                  </StaffCol1>
+                  <StaffCol2 $absent>{i18n.attendances.staff.noPlan}</StaffCol2>
+                </FixedSpaceRow>
               ))}
             </ExpandedStaff>
           )}

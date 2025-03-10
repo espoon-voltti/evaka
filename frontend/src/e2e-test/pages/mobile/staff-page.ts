@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { StaffAttendanceType } from 'lib-common/generated/api-types/attendance'
+import { EmployeeId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
@@ -27,7 +28,8 @@ export class StaffAttendancePage {
   departureTime: Element
 
   #addNewExternalMemberButton: Element
-  #tabs: { present: Element; absent: Element }
+  #primaryTabs: { today: Element; planned: Element }
+  #todayTabs: { present: Element; absent: Element }
   pinInput: Element
 
   previousAttendancesPage: {
@@ -90,7 +92,11 @@ export class StaffAttendancePage {
     this.#addNewExternalMemberButton = page.findByDataQa(
       'add-external-member-btn'
     )
-    this.#tabs = {
+    this.#primaryTabs = {
+      today: page.findByDataQa('today-tab'),
+      planned: page.findByDataQa('planned-tab')
+    }
+    this.#todayTabs = {
       present: page.findByDataQa('present-tab'),
       absent: page.findByDataQa('absent-tab')
     }
@@ -211,7 +217,7 @@ export class StaffAttendancePage {
   }
 
   async assertPresentStaffCount(expected: number) {
-    await this.#tabs.present.assertTextEquals(`LÄSNÄ\n(${expected})`)
+    await this.#todayTabs.present.assertTextEquals(`LÄSNÄ\n(${expected})`)
   }
 
   async openStaffPage(name: string) {
@@ -222,8 +228,12 @@ export class StaffAttendancePage {
     await this.anyMemberPage.status.assertTextEquals(expected)
   }
 
+  async selectPrimaryTab(tab: 'today' | 'planned') {
+    await this.#primaryTabs[tab].click()
+  }
+
   async selectTab(tab: 'present' | 'absent') {
-    await this.#tabs[tab].click()
+    await this.#todayTabs[tab].click()
   }
 
   async goBackFromMemberPage() {
@@ -348,7 +358,7 @@ export class StaffAttendancePage {
     )
   }
 
-  async selectGroup(groupId: string) {
+  async selectArrivalGroup(groupId: string) {
     await this.staffArrivalPage.groupSelect.selectOption(groupId)
   }
 
@@ -416,5 +426,39 @@ export class StaffAttendanceEditPage {
     await this.page.findByDataQa('save').click()
     await new PinInput(this.page.findByDataQa('pin-input')).fill(pinCode)
     await new AsyncButton(this.page.findByDataQa('confirm')).click()
+  }
+}
+
+export class PlannedAttendancesPage {
+  private page: Page
+
+  constructor(page: Page) {
+    this.page = page
+  }
+
+  getDateRow(date: LocalDate) {
+    return this.page.findByDataQa(`date-row-${date.formatIso()}`)
+  }
+
+  getExpandedDate(date: LocalDate) {
+    return this.page.findByDataQa(`expanded-date-${date.formatIso()}`)
+  }
+
+  getPresentEmployee(date: LocalDate, id: EmployeeId) {
+    return this.getExpandedDate(date).findByDataQa(`present-employee-${id}`)
+  }
+
+  getAbsentEmployee(date: LocalDate, id: EmployeeId) {
+    return this.getExpandedDate(date).findByDataQa(`absent-employee-${id}`)
+  }
+
+  getConfidenceWarning(date: LocalDate, id: EmployeeId) {
+    return this.getPresentEmployee(date, id).findByDataQa('confidence-warning')
+  }
+
+  async assertPresentCount(date: LocalDate, count: number) {
+    return this.getDateRow(date)
+      .findByDataQa('present-count')
+      .assertTextEquals(count.toString())
   }
 }
