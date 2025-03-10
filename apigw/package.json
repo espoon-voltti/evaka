@@ -23,7 +23,7 @@
     "@node-saml/node-saml": "^5.0.0",
     "axios": "^1.8.2",
     "connect-redis": "^8.0.0",
-    "cookie-parser": "^1.4.6",
+    "cookie-parser": "^1.4.7",
     "date-fns": "^4.1.0",
     "dd-trace": "^5.41.1",
     "express": "^4.21.2",
@@ -50,7 +50,7 @@
   "devDependencies": {
     "@eslint/js": "^9.22.0",
     "@jest/globals": "^29.7.0",
-    "@types/cookie-parser": "^1.4.3",
+    "@types/cookie-parser": "^1.4.8",
     "@types/express-http-proxy": "^1.6.3",
     "@types/express-session": "^1.18.1",
     "@types/jsonwebtoken": "^9.0.2",
