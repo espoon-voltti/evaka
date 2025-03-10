@@ -91,17 +91,26 @@ fun Database.Transaction.getNekkuCustomers(): List<NekkuCustomer> {
 /** Throws an IllegalStateException if Nekku returns an empty special diet list. */
 fun fetchAndUpdateNekkuSpecialDiets(client: NekkuClient, db: Database.Connection) {
     val specialDietsFromNekku =
-        client.getSpecialDiets().map { NekkuSpecialDiet(it.id, it.name, it.fields) }
+        client.getSpecialDiets().map {
+            NekkuSpecialDiet(
+                it.id,
+                it.name,
+                it.fields.map { field ->
+                    NekkuSpecialDietsField(
+                        field.id,
+                        field.name,
+                        field.type,
+                        field.options?.map { option ->
+                            NekkuSpecialDietOption(option.weight, option.key, option.value)
+                        },
+                    )
+                },
+            )
+        }
 
     if (specialDietsFromNekku.isEmpty())
         error("Refusing to sync empty Nekku special diet list into database")
     db.transaction { tx ->
-        //        val nulledSpecialDietsCount = tx.resetNekkuSpecialDiets(specialDietsFromNekku)
-        //        if (nulledSpecialDietsCount != 0)
-        //            logger.warn {
-        //                "Nekku special diet list update caused $nulledSpecialDietsCount special
-        // diets to be set to null"
-        //            }
         val deletedSpecialDietsCount = tx.setSpecialDiets(specialDietsFromNekku)
         logger.info {
             "Deleted: $deletedSpecialDietsCount Nekku special diets, inserted ${specialDietsFromNekku.size}"
@@ -117,88 +126,17 @@ fun Database.Transaction.setSpecialDiets(specialDiets: List<NekkuSpecialDiet>): 
     executeBatch(specialDiets) {
         sql(
             """
-//INSERT INTO nekku_special_diet (id, name, type, weight, key, value)
-//VALUES (
-//    ${bind{it.id}},
-//    ${bind{it.name}},
-//    ${bind{it.type}},
-//    ${bind{it.weight}},
-//    ${bind{it.value}}
-//)
-//ON CONFLICT (id) DO 
-//UPDATE SET
-//  name = excluded.name,
-//  type = excluded.type,
-//  weight = excluded.weight,
-//  customer_group = excluded.customer_group,
-//  value = excluded.value
-//WHERE
-//    nekku_special_diet.name <> excluded.name OR
-//    nekku_special_diet.type <> excluded.type OR
-//    nekku_special_diet.weight <> excluded.weight OR
-//    nekku_special_diet.customer_group <> excluded.customer_group OR
-//    nekku_special_diet.value <> excluded.value;
+                
 """
         )
     }
     return deletedCustomerCount
 }
 
-/** Throws an IllegalStateException if Nekku returns an empty product list. */
-fun fetchAndUpdateNekkuProducts(client: NekkuClient, db: Database.Connection) {
-    val productsFromNekku =
-        client.getProducts().map {
-            NekkuProduct(it.sku, it.name, it.unit_size, it.options_id, it.meal_type)
-        }
-
-    if (productsFromNekku.isEmpty())
-        error("Refusing to sync empty Nekku products list into database")
-    db.transaction { tx ->
-        //        val nulledSpecialDietsCount = tx.resetNekkuSpecialDiets(specialDietsFromNekku)
-        //        if (nulledSpecialDietsCount != 0)
-        //            logger.warn {
-        //                "Nekku special diet list update caused $nulledSpecialDietsCount special
-        // diets to be set to null"
-        //            }
-        val deletedSpecialDietsCount = tx.setProducts(productsFromNekku)
-        logger.info {
-            "Deleted: $deletedSpecialDietsCount Nekku special diets, inserted ${productsFromNekku.size}"
-        }
-    }
-}
-
-fun Database.Transaction.setProducts(products: List<NekkuProduct>): Int {
-    val newProducts = products.map { it.sku }
-    val deletedCustomerCount = execute {
-        sql("DELETE FROM nekku_product WHERE sku != ALL (${bind(newProducts)})")
-    }
-    executeBatch(products) {
-        sql(
-            """
-INSERT INTO nekku_product (sku, name, options_id, unit_size, meal_time, meal_type)
-VALUES (
-    ${bind{it.sku}},
-    ${bind{it.name}},
-    ${bind{it.options_id}},
-    ${bind{it.unit_size}},
-    ${bind{it.meal_time}},
-    ${bind{it.meal_type}}
-)
-ON CONFLICT (sku) DO 
-UPDATE SET
-  name = excluded.name,
-  options_id = excluded.options_id,
-  unit_size = excluded.unit_size,
-  meal_time = excluded.meal_time
-  meal_type = excluded.meal_type
-WHERE
-    nekku_product.name <> excluded.name OR
-    nekku_product.options_id <> excluded.options_id OR
-    nekku_product.unit_size <> excluded.unit_size OR
-    nekku_product.meal_time <> excluded.meal_time OR
-    nekku_product.meal_type <> excluded.unimeal_typet_size;
-"""
-        )
-    }
-    return deletedCustomerCount
-}
+//INSERT INTO nekku_special_diet (id, name) VALUES ('diet1', 'Diet 1');
+//
+//INSERT INTO nekku_special_diets_field (id, name, type, diet_id) VALUES ('field1', 'Field 1', 'TEXT', 'diet1');
+//INSERT INTO nekku_special_diet_option (weight, key, value, field_id) VALUES (1, 'key1', 'value1', 'field1');
+//INSERT INTO nekku_special_diet_option (weight, key, value, field_id) VALUES (2, 'key2', 'value2', 'field1');
+//
+//INSERT INTO nekku_special_diets_field (id, name, type, diet_id) VALUES ('field2', 'Field 2', 'CHECKBOXLIST', 'diet1');
