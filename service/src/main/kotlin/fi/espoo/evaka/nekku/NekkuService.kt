@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import fi.espoo.evaka.ConstList
 import fi.espoo.evaka.NekkuEnv
-import fi.espoo.evaka.mealintegration.MealType
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.AsyncJobType
@@ -34,7 +33,6 @@ class NekkuService(
     init {
         asyncJobRunner.registerHandler(::syncNekkuCustomers)
         asyncJobRunner.registerHandler(::syncNekkuSpecialDiets)
-        asyncJobRunner.registerHandler(::syncNekkuProducts)
     }
 
     fun syncNekkuCustomers(
@@ -78,27 +76,6 @@ class NekkuService(
             )
         }
     }
-
-    fun syncNekkuProducts(
-        db: Database.Connection,
-        clock: EvakaClock,
-        job: AsyncJob.SyncNekkuProducts,
-    ) {
-        if (client == null) error("Cannot sync Nekku products: NekkuEnv is not configured")
-        fetchAndUpdateNekkuProducts(client, db)
-    }
-
-    fun planNekkuProductSync(db: Database.Connection, clock: EvakaClock) {
-        db.transaction { tx ->
-            tx.removeUnclaimedJobs(setOf(AsyncJobType(AsyncJob.SyncNekkuProducts::class)))
-            asyncJobRunner.plan(
-                tx,
-                listOf(AsyncJob.SyncNekkuProducts()),
-                runAt = clock.now(),
-                retryCount = 1,
-            )
-        }
-    }
 }
 
 interface NekkuClient {
@@ -106,8 +83,6 @@ interface NekkuClient {
     fun getCustomers(): List<NekkuCustomer>
 
     fun getSpecialDiets(): List<NekkuSpecialDiet>
-
-    fun getProducts(): List<NekkuProduct>
 }
 
 class NekkuHttpClient(private val env: NekkuEnv, private val jsonMapper: JsonMapper) : NekkuClient {
@@ -122,12 +97,6 @@ class NekkuHttpClient(private val env: NekkuEnv, private val jsonMapper: JsonMap
     override fun getSpecialDiets(): List<NekkuSpecialDiet> {
         val request =
             getBaseRequest().get().url(env.url.resolve("products/options").toString()).build()
-
-        return executeRequest(request)
-    }
-
-    override fun getProducts(): List<NekkuProduct> {
-        val request = getBaseRequest().get().url(env.url.resolve("products").toString()).build()
 
         return executeRequest(request)
     }
@@ -185,11 +154,11 @@ data class NekkuSpecialDietsField(
     val id: String,
     val name: String,
     val type: NekkuSpecialDietType,
-    val options: List<NekkuSpecialDietOption>,
+    val options: List<NekkuSpecialDietOption>?,
 )
 
 @ConstList("nekku_special_diet_type")
-enum class NekkuSpecialDietType :DatabaseEnum {
+enum class NekkuSpecialDietType : DatabaseEnum {
     TEXT,
     CHECKBOXLIST;
 
@@ -197,18 +166,3 @@ enum class NekkuSpecialDietType :DatabaseEnum {
 }
 
 data class NekkuSpecialDietOption(val weight: Int, val key: String, val value: String)
-
-data class NekkuProduct(
-    val name: String,
-    val sku: String,
-//    val options_id: ,
-    val unit_size: String,
-    val meal_time: List<MealType>,
-    val meal_type: NekkuDietType,
-)
-
-enum class NekkuDietType {
-    VEGETARIAN,
-    VEGAN,
-    DEFAULT
-}
