@@ -2348,7 +2348,7 @@ export default {
       provideAttachments:
         'Toimitan tiedot liitteinä, ja tietoni saa tarkastaa Kelasta tarvittaessa',
       noIncome:
-        'Minulla ei ole mitään tuloja tai tukia. Tietoni saa tarkastaa tulorekisterisä sekä Kelasta.',
+        'Minulla ei ole mitään tuloja tai tukia. Tietoni saa tarkastaa tulorekisteristä sekä Kelasta.',
       noIncomeDescription: 'Kuvaile tilannettasi tarkemmin',
       attachmentsVerificationInfo:
         'Tulotiedot tarkistetaan vähintään vuoden välein.',
@@ -2614,7 +2614,7 @@ export default {
       attachmentsAndKela:
         'Toimitan tiedot liitteinä ja tietoni saa tarkastaa Kelasta',
       noIncomeTitle:
-        'Minulla ei ole mitään tuloja tai tukia. Tietoni saa tarkastaa tulorekisterisä sekä Kelasta.',
+        'Minulla ei ole mitään tuloja tai tukia. Tietoni saa tarkastaa tulorekisteristä sekä Kelasta.',
       noIncomeDescription: 'Kuvaile tilannettasi tarkemmin',
       grossEstimatedIncome: 'Arvio bruttotuloista',
       otherIncome: 'Muut tulot',
