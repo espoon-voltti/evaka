@@ -30,11 +30,13 @@ describe('toCsv', () => {
       ]
     )
     const expected =
+      '\uFEFF' +
       [
         'Name;"""Age""";"Sur;name";Info',
         'Pekka;4;"Iso;kylä";"sekä ""että"" kä"',
         '"Tee-\nmu";6;Isokylä;"foo;bar;""baz"""'
-      ].join('\n') + '\n'
+      ].join('\n') +
+      '\n'
 
     expect(csv).toEqual(expected)
   })

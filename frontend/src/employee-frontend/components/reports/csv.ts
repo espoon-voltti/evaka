@@ -6,6 +6,7 @@ export type CsvValue = string | number | null | undefined
 
 const separator = ';'
 const quote = '"'
+const byteOrderMark = '\uFEFF'
 
 export type ColumnCommon = { label: string; exclude?: boolean }
 
@@ -26,7 +27,7 @@ export function toCsv<T>(data: T[], columns: Column<T>[]) {
       .map((col) => escape(str(col.value(row))))
       .join(separator)
   )
-  return [headerRow, ...dataRows].join('\n') + '\n'
+  return byteOrderMark + [headerRow, ...dataRows].join('\n') + '\n'
 }
 
 function str(value: CsvValue): string {
