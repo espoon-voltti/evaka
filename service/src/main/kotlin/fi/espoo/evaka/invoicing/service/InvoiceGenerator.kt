@@ -184,8 +184,7 @@ class InvoiceGenerator(
             }
         val zeroInvoices =
             // Sent non-zero invoices that don't have a corresponding draft invoice -> add a
-            // zero-priced
-            // replacement draft
+            // zero-priced replacement draft
             sentInvoices.values
                 .filterNot { it.totalPrice == 0 }
                 .filterNot { headsOfFamilyWithInvoices.contains(it.headOfFamily.id) }
