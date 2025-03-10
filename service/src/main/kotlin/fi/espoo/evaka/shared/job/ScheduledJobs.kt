@@ -154,14 +154,6 @@ enum class ScheduledJob(
             retryCount = 1,
         ),
     ),
-    SyncNekkuProducts(
-        ScheduledJobs::syncNekkuProducts,
-        ScheduledJobSettings(
-            enabled = false,
-            schedule = JobSchedule.cron("0 */10 7-17 * * *"),
-            retryCount = 1,
-        ),
-    ),
     SendAromiOrders(
         ScheduledJobs::sendAromiOrders,
         ScheduledJobSettings(enabled = false, schedule = JobSchedule.daily(LocalTime.of(0, 15))),
@@ -437,10 +429,6 @@ WHERE id IN (SELECT id FROM attendances_to_end)
 
     fun syncNekkuSpecialDiets(db: Database.Connection, clock: EvakaClock) {
         nekkuService.planNekkuSpecialDietsSync(db, clock)
-    }
-
-    fun syncNekkuProducts(db: Database.Connection, clock: EvakaClock) {
-        nekkuService.planNekkuProductSync(db, clock)
     }
 
     fun sendPendingDecisionReminderEmails(db: Database.Connection, clock: EvakaClock) {
