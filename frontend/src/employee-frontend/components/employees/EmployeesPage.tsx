@@ -190,27 +190,30 @@ export default React.memo(function EmployeesPage() {
               </ResultCount>
               {employees.isSuccess && (
                 <ReportDownload
-                  data={employees.value.map((employee) => ({
-                    ...employee,
-                    name: `${employee.lastName} ${employee.firstName}`,
-                    rights: [
-                      ...sortBy(
-                        employee.globalRoles.map(
-                          (role) => i18n.roles.adRoles[role]
-                        )
-                      ),
-                      ...sortBy(
-                        employee.daycareRoles.map(
-                          (role) =>
-                            `${role.daycareName} (${i18n.roles.adRoles[role.role].toLowerCase()})`
-                        )
-                      )
-                    ].join(', ')
-                  }))}
-                  headers={[
-                    { label: i18n.employees.name, key: 'name' },
-                    { label: i18n.employees.email, key: 'email' },
-                    { label: i18n.employees.rights, key: 'rights' }
+                  data={employees.value}
+                  columns={[
+                    {
+                      label: i18n.employees.name,
+                      value: (row) => `${row.lastName} ${row.firstName}`
+                    },
+                    { label: i18n.employees.email, value: (row) => row.email },
+                    {
+                      label: i18n.employees.rights,
+                      value: (row) =>
+                        [
+                          ...sortBy(
+                            row.globalRoles.map(
+                              (role) => i18n.roles.adRoles[role]
+                            )
+                          ),
+                          ...sortBy(
+                            row.daycareRoles.map(
+                              (role) =>
+                                `${role.daycareName} (${i18n.roles.adRoles[role.role].toLowerCase()})`
+                            )
+                          )
+                        ].join(', ')
+                    }
                   ]}
                   filename={`Käyttäjät-${HelsinkiDateTime.now().format()}.csv`}
                 />

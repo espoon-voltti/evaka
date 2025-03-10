@@ -145,33 +145,39 @@ export default React.memo(function Applications() {
                 unitProviderType:
                   i18n.reports.common.unitProviderTypes[row.unitProviderType]
               }))}
-              headers={[
+              columns={[
                 {
                   label: i18n.reports.common.careAreaName,
-                  key: 'careAreaName'
+                  value: (row) => row.careAreaName
                 },
-                { label: i18n.reports.common.unitName, key: 'unitName' },
+                {
+                  label: i18n.reports.common.unitName,
+                  value: (row) => row.unitName
+                },
                 {
                   label: i18n.reports.common.unitProviderType,
-                  key: 'unitProviderType'
+                  value: (row) => row.unitProviderType
                 },
                 {
                   label: i18n.reports.applications.under3Years,
-                  key: 'under3Years'
+                  value: (row) => row.under3Years
                 },
                 {
                   label: i18n.reports.applications.over3Years,
-                  key: 'over3Years'
+                  value: (row) => row.over3Years
                 },
                 {
                   label: i18n.reports.applications.preschool,
-                  key: 'preschool'
+                  value: (row) => row.preschool
                 },
                 {
                   label: i18n.reports.applications.club,
-                  key: 'club'
+                  value: (row) => row.club
                 },
-                { label: i18n.reports.applications.totalChildren, key: 'total' }
+                {
+                  label: i18n.reports.applications.totalChildren,
+                  value: (row) => row.total
+                }
               ]}
               filename={`${
                 i18n.reports.applications.title

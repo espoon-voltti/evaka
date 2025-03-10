@@ -72,20 +72,21 @@ export default React.memo(function ServiceNeeds() {
         {rows.isSuccess && (
           <>
             <ReportDownload
-              data={rows.value.map((row) => ({
-                ...row
-              }))}
-              headers={[
-                { label: 'Palvelualue', key: 'careAreaName' },
-                { label: 'Yksikkö', key: 'unitName' },
-                { label: 'Ikä', key: 'age' },
-                { label: 'Kokopäiväinen', key: 'fullDay' },
-                { label: 'Osapäiväinen', key: 'partDay' },
-                { label: 'Kokoviikkoinen', key: 'fullWeek' },
-                { label: 'Osaviikkoinen', key: 'partWeek' },
-                { label: 'Vuorohoito', key: 'shiftCare' },
-                { label: 'Palveluntarve puuttuu', key: 'missingServiceNeed' },
-                { label: 'Lapsia yhteensä', key: 'total' }
+              data={rows.value}
+              columns={[
+                { label: 'Palvelualue', value: (row) => row.careAreaName },
+                { label: 'Yksikkö', value: (row) => row.unitName },
+                { label: 'Ikä', value: (row) => row.age },
+                { label: 'Kokopäiväinen', value: (row) => row.fullDay },
+                { label: 'Osapäiväinen', value: (row) => row.partDay },
+                { label: 'Kokoviikkoinen', value: (row) => row.fullWeek },
+                { label: 'Osaviikkoinen', value: (row) => row.partWeek },
+                { label: 'Vuorohoito', value: (row) => row.shiftCare },
+                {
+                  label: 'Palveluntarve puuttuu',
+                  value: (row) => row.missingServiceNeed
+                },
+                { label: 'Lapsia yhteensä', value: (row) => row.total }
               ]}
               filename={`Lapsien palvelutarpeet ja iät yksiköissä ${filters.date.formatIso()}.csv`}
             />

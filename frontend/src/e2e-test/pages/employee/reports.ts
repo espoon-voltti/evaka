@@ -297,7 +297,7 @@ export class VoucherServiceProvidersReport {
     this.#month = new Select(page.findByDataQa('select-month'))
     this.#year = new Select(page.findByDataQa('select-year'))
     this.#area = new Select(page.findByDataQa('select-area'))
-    this.#downloadCsvLink = page.find('[data-qa="download-csv"] a')
+    this.#downloadCsvLink = page.findByDataQa('download-csv')
   }
 
   async selectMonth(month: 'Tammikuu') {

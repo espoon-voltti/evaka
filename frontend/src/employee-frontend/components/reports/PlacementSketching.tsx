@@ -267,101 +267,100 @@ export default React.memo(function PlacementSketching() {
                     otherPreferredUnits: formatOtherPreferredUnits(row),
                     additionalInfo: row.additionalInfo
                   }))}
-                  headers={[
+                  columns={[
                     {
                       label: i18n.reports.placementSketching.preferredUnit,
-                      key: 'requestedUnitName'
+                      value: (row) => row.requestedUnitName
                     },
                     {
                       label: i18n.reports.placementSketching.currentUnit,
-                      key: 'currentUnitName'
+                      value: (row) => row.currentUnitName
                     },
-                    { label: i18n.reports.common.childName, key: 'childName' },
+                    {
+                      label: i18n.reports.common.childName,
+                      value: (row) => row.childName
+                    },
                     {
                       label: i18n.reports.placementSketching.dob,
-                      key: 'childDob'
+                      value: (row) => row.childDob.format()
                     },
                     {
                       label: i18n.reports.placementSketching.streetAddress,
-                      key: 'childStreetAddr'
+                      value: (row) => row.childStreetAddr
                     },
                     {
                       label: i18n.reports.placementSketching.postalCode,
-                      key: 'childPostalCode'
+                      value: (row) => row.childPostalCode
                     },
                     {
                       label: `${i18n.reports.placementSketching.tel} / ${i18n.reports.placementSketching.email}`,
-                      key: 'contact'
+                      value: (row) => row.contact
                     },
-                    ...(showServiceNeedOption
-                      ? ([
-                          {
-                            label:
-                              i18n.reports.placementSketching.serviceNeedOption,
-                            key: 'serviceNeedOption'
-                          }
-                        ] as const)
-                      : []),
+                    {
+                      label: i18n.reports.placementSketching.serviceNeedOption,
+                      value: (row) => row.serviceNeedOption,
+                      exclude: !showServiceNeedOption
+                    },
                     {
                       label: i18n.reports.placementSketching.assistanceNeed,
-                      key: 'assistanceNeeded'
+                      value: (row) => row.assistanceNeeded
                     },
                     {
                       label: i18n.reports.placementSketching.preparatory,
-                      key: 'preparatoryEducation'
+                      value: (row) => row.preparatoryEducation
                     },
                     {
                       label: i18n.reports.placementSketching.siblingBasis,
-                      key: 'siblingBasis'
+                      value: (row) => row.siblingBasis
                     },
                     {
                       label: i18n.reports.placementSketching.connected,
-                      key: 'connectedDaycare'
+                      value: (row) => row.connectedDaycare
                     },
                     {
                       label: i18n.reports.placementSketching.applicationStatus,
-                      key: 'applicationStatus'
+                      value: (row) => row.applicationStatus
                     },
                     {
                       label: i18n.reports.placementSketching.preferredStartDate,
-                      key: 'preferredStartDate'
+                      value: (row) => row.preferredStartDate.format()
                     },
                     {
                       label: i18n.reports.placementSketching.sentDate,
-                      key: 'sentDate'
+                      value: (row) => row.sentDate.format()
                     },
                     {
                       label: i18n.reports.common.careAreaName,
-                      key: 'areaName'
+                      value: (row) => row.areaName
                     },
                     {
                       label:
                         i18n.reports.placementSketching.otherPreferredUnits,
-                      key: 'otherPreferredUnits'
+                      value: (row) => row.otherPreferredUnits
                     },
                     {
                       label: i18n.reports.placementSketching.additionalInfo,
-                      key: 'additionalInfo'
+                      value: (row) => row.additionalInfo
                     },
                     {
                       label: i18n.reports.placementSketching.childMovingDate,
-                      key: 'childMovingDate'
+                      value: (row) => row.childMovingDate?.format()
                     },
                     {
                       label:
                         i18n.reports.placementSketching
                           .childCorrectedStreetAddress,
-                      key: 'childCorrectedStreetAddress'
+                      value: (row) => row.childCorrectedStreetAddress
                     },
                     {
                       label:
                         i18n.reports.placementSketching
                           .childCorrectedPostalCode,
-                      key: 'childCorrectedPostalCode'
+                      value: (row) => row.childCorrectedPostalCode
                     },
                     {
                       label: i18n.reports.placementSketching.childCorrectedCity,
-                      key: 'childCorrectedCity'
+                      value: (row) => row.childCorrectedCity
                     }
                   ]}
                   filename={`sijoitushahmottelu_${filters.placementStartDate.formatIso()}-${

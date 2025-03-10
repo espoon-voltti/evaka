@@ -77,26 +77,26 @@ export default React.memo(function Presences() {
                       ? 'ei'
                       : null
               }))}
-              headers={[
+              columns={[
                 {
                   label: i18n.reports.presence.date,
-                  key: 'date'
+                  value: (row) => row.date
                 },
                 {
                   label: i18n.reports.presence.SSN,
-                  key: 'socialSecurityNumber'
+                  value: (row) => row.socialSecurityNumber
                 },
                 {
                   label: i18n.reports.presence.daycareId,
-                  key: 'daycareId'
+                  value: (row) => row.daycareId
                 },
                 {
                   label: i18n.reports.presence.daycareGroupName,
-                  key: 'daycareGroupName'
+                  value: (row) => row.daycareGroupName
                 },
                 {
                   label: i18n.reports.presence.present,
-                  key: 'present'
+                  value: (row) => row.present
                 }
               ]}
               filename={`${

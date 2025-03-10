@@ -99,96 +99,139 @@ export default React.memo(function Raw() {
         ) : (
           renderResult(report, (rows) => (
             <ReportDownload
-              data={rows.map((row) => ({
-                ...row,
-                day: row.day.format(),
-                childLink: `${window.location.protocol}//${window.location.host}/employee/child-information/${row.childId}`,
-                hasSocialSecurityNumber: mapYesNo(row.hasSocialSecurityNumber),
-                dateOfBirth: row.dateOfBirth?.format(),
-                placementType: i18n.placement.type[row.placementType],
-                unitType:
-                  row.unitType && i18n.reports.common.unitTypes[row.unitType],
-                unitProviderType:
-                  i18n.reports.common.unitProviderTypes[row.unitProviderType],
-                caretakersPlanned: mapFloat(row.caretakersPlanned),
-                caretakersRealized: mapFloat(row.caretakersRealized),
-                hasServiceNeed: mapYesNo(row.hasServiceNeed),
-                partDay: mapYesNo(row.partDay),
-                partWeek: mapYesNo(row.partWeek),
-                shiftCare: mapYesNo(row.shiftCare),
-                hoursPerWeek: mapFloat(row.hoursPerWeek),
-                hasAssistanceNeed: mapYesNo(row.hasAssistanceNeed),
-                assistanceNeedVoucherCoefficient: mapFloat(
-                  row.assistanceNeedVoucherCoefficient
-                ),
-                capacityFactor: mapFloat(row.capacityFactor),
-                groupSize: mapFloat(row.capacity),
-                realizedCapacity: mapFloat(row.realizedCapacity),
-                absencePaid:
-                  row.absencePaid &&
-                  i18n.absences.absenceTypes[row.absencePaid],
-                absenceFree:
-                  row.absenceFree && i18n.absences.absenceTypes[row.absenceFree]
-              }))}
-              headers={[
-                { label: 'Päivämäärä', key: 'day' },
-                { label: 'Lapsen id', key: 'childId' },
-                { label: 'Linkki lapseen', key: 'childLink' },
-                { label: 'Sukunimi', key: 'lastName' },
-                { label: 'Etunimi', key: 'firstName' },
-                { label: 'Hetu', key: 'hasSocialSecurityNumber' },
-                { label: 'Syntymäaika', key: 'dateOfBirth' },
-                { label: 'Ikä', key: 'age' },
-                { label: 'Kieli', key: 'language' },
-                { label: 'Postinumero', key: 'postalCode' },
-                { label: 'Postitoimipaikka', key: 'postOffice' },
-                { label: 'Sijoitustyyppi', key: 'placementType' },
-                { label: 'Sijoitettu yksikköön', key: 'unitId' },
-                { label: 'Yksikkö', key: 'unitName' },
-                { label: 'Palvelualue', key: 'careArea' },
-                { label: 'Toimintamuoto', key: 'unitType' },
-                { label: 'Järjestämismuoto', key: 'unitProviderType' },
-                { label: 'Kustannuspaikka', key: 'costCenter' },
-                { label: 'Sijoitettu ryhmään', key: 'daycareGroupId' },
-                { label: 'Ryhmä', key: 'groupName' },
+              data={rows}
+              columns={[
+                { label: 'Päivämäärä', value: (row) => row.day.format() },
+                { label: 'Lapsen id', value: (row) => row.childId },
+                {
+                  label: 'Linkki lapseen',
+                  value: (row) =>
+                    `${window.location.protocol}//${window.location.host}/employee/child-information/${row.childId}`
+                },
+                { label: 'Sukunimi', value: (row) => row.lastName },
+                { label: 'Etunimi', value: (row) => row.firstName },
+                {
+                  label: 'Hetu',
+                  value: (row) => mapYesNo(row.hasSocialSecurityNumber)
+                },
+                {
+                  label: 'Syntymäaika',
+                  value: (row) => row.dateOfBirth?.format()
+                },
+                { label: 'Ikä', value: (row) => row.age },
+                { label: 'Kieli', value: (row) => row.language },
+                { label: 'Postinumero', value: (row) => row.postalCode },
+                { label: 'Postitoimipaikka', value: (row) => row.postOffice },
+                {
+                  label: 'Sijoitustyyppi',
+                  value: (row) => i18n.placement.type[row.placementType]
+                },
+                { label: 'Sijoitettu yksikköön', value: (row) => row.unitId },
+                { label: 'Yksikkö', value: (row) => row.unitName },
+                { label: 'Palvelualue', value: (row) => row.careArea },
+                {
+                  label: 'Toimintamuoto',
+                  value: (row) =>
+                    row.unitType
+                      ? i18n.reports.common.unitTypes[row.unitType]
+                      : ''
+                },
+                {
+                  label: 'Järjestämismuoto',
+                  value: (row) =>
+                    i18n.reports.common.unitProviderTypes[row.unitProviderType]
+                },
+                { label: 'Kustannuspaikka', value: (row) => row.costCenter },
+                {
+                  label: 'Sijoitettu ryhmään',
+                  value: (row) => row.daycareGroupId
+                },
+                { label: 'Ryhmä', value: (row) => row.groupName },
                 {
                   label: 'Henkilökuntaa ryhmässä',
-                  key: 'caretakersPlanned'
+                  value: (row) => mapFloat(row.caretakersPlanned)
                 },
-                { label: 'Henkilökuntaa läsnä', key: 'caretakersRealized' },
-                { label: 'Varahoidossa yksikössä', key: 'backupUnitId' },
-                { label: 'Varahoidossa ryhmässä', key: 'backupGroupId' },
-                { label: 'Palveluntarve merkitty', key: 'hasServiceNeed' },
-                { label: 'Palveluntarve', key: 'serviceNeed' },
-                { label: 'Osapäiväinen', key: 'partDay' },
-                { label: 'Osaviikkoinen', key: 'partWeek' },
-                { label: 'Vuorohoito', key: 'shiftCare' },
-                { label: 'Tunteja viikossa', key: 'hoursPerWeek' },
-                { label: 'Tuentarve', key: 'hasAssistanceNeed' },
+                {
+                  label: 'Henkilökuntaa läsnä',
+                  value: (row) => mapFloat(row.caretakersRealized)
+                },
+                {
+                  label: 'Varahoidossa yksikössä',
+                  value: (row) => row.backupUnitId
+                },
+                {
+                  label: 'Varahoidossa ryhmässä',
+                  value: (row) => row.backupGroupId
+                },
+                {
+                  label: 'Palveluntarve merkitty',
+                  value: (row) => mapYesNo(row.hasServiceNeed)
+                },
+                { label: 'Palveluntarve', value: (row) => row.serviceNeed },
+                {
+                  label: 'Osapäiväinen',
+                  value: (row) => mapYesNo(row.partDay)
+                },
+                {
+                  label: 'Osaviikkoinen',
+                  value: (row) => mapYesNo(row.partWeek)
+                },
+                {
+                  label: 'Vuorohoito',
+                  value: (row) => mapYesNo(row.shiftCare)
+                },
+                {
+                  label: 'Tunteja viikossa',
+                  value: (row) => mapFloat(row.hoursPerWeek)
+                },
+                {
+                  label: 'Tuentarve',
+                  value: (row) => mapYesNo(row.hasAssistanceNeed)
+                },
                 {
                   label: 'Palvelusetelikerroin',
-                  key: 'assistanceNeedVoucherCoefficient'
+                  value: (row) => mapFloat(row.assistanceNeedVoucherCoefficient)
                 },
-                { label: 'Tuentarpeen kerroin', key: 'capacityFactor' },
-                { label: 'Lapsen kapasiteetti', key: 'capacity' },
+                {
+                  label: 'Tuentarpeen kerroin',
+                  value: (row) => mapFloat(row.capacityFactor)
+                },
+                {
+                  label: 'Lapsen kapasiteetti',
+                  value: (row) => mapFloat(row.capacity)
+                },
                 {
                   label: 'Lapsen kapasiteetti (käyttö)',
-                  key: 'realizedCapacity'
+                  value: (row) => mapFloat(row.realizedCapacity)
                 },
-                { label: 'Poissa maksullisesta', key: 'absencePaid' },
-                { label: 'Poissa maksuttomasta', key: 'absenceFree' },
-                { label: 'Henkilöstömitoitus', key: 'staffDimensioning' },
-                { label: 'Kotikunta', key: 'municipalityOfResidence' },
-                featureFlags.aromiIntegration
-                  ? {
-                      label: 'Ryhmäkohtainen Aromin asiakastunniste',
-                      key: 'aromiCustomerId'
-                    }
-                  : null
-              ].filter(
-                (h): h is { label: string; key: keyof RawReportRow } =>
-                  h !== null
-              )}
+                {
+                  label: 'Poissa maksullisesta',
+                  value: (row) =>
+                    row.absencePaid
+                      ? i18n.absences.absenceTypes[row.absencePaid]
+                      : ''
+                },
+                {
+                  label: 'Poissa maksuttomasta',
+                  value: (row) =>
+                    row.absenceFree
+                      ? i18n.absences.absenceTypes[row.absenceFree]
+                      : ''
+                },
+                {
+                  label: 'Henkilöstömitoitus',
+                  value: (row) => row.staffDimensioning
+                },
+                {
+                  label: 'Kotikunta',
+                  value: (row) => row.municipalityOfResidence
+                },
+                {
+                  label: 'Ryhmäkohtainen Aromin asiakastunniste',
+                  value: (row) => row.aromiCustomerId,
+                  exclude: !featureFlags.aromiIntegration
+                }
+              ]}
               filename={`${
                 i18n.reports.raw.title
               } ${filters.from.formatIso()}-${filters.to.formatIso()}.csv`}

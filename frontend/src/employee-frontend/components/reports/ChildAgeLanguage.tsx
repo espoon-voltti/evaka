@@ -130,38 +130,41 @@ export default React.memo(function ChildAgeLanguage() {
                 unitProviderType:
                   i18n.reports.common.unitProviderTypes[row.unitProviderType]
               }))}
-              headers={[
-                { label: 'Palvelualue', key: 'careAreaName' },
-                { label: 'Yksikkö', key: 'unitName' },
-                { label: 'Toimintamuoto', key: 'unitType' },
-                { label: 'Järjestemäismuoto', key: 'unitProviderType' },
+              columns={[
+                { label: 'Palvelualue', value: (row) => row.careAreaName },
+                { label: 'Yksikkö', value: (row) => row.unitName },
+                { label: 'Toimintamuoto', value: (row) => row.unitType },
+                {
+                  label: 'Järjestemäismuoto',
+                  value: (row) => row.unitProviderType
+                },
 
-                { label: 'fi 0v', key: 'fi_0y' },
-                { label: 'fi 1v', key: 'fi_1y' },
-                { label: 'fi 2v', key: 'fi_2y' },
-                { label: 'fi 3v', key: 'fi_3y' },
-                { label: 'fi 4v', key: 'fi_4y' },
-                { label: 'fi 5v', key: 'fi_5y' },
-                { label: 'fi 6v', key: 'fi_6y' },
-                { label: 'fi 7v', key: 'fi_7y' },
+                { label: 'fi 0v', value: (row) => row.fi_0y },
+                { label: 'fi 1v', value: (row) => row.fi_1y },
+                { label: 'fi 2v', value: (row) => row.fi_2y },
+                { label: 'fi 3v', value: (row) => row.fi_3y },
+                { label: 'fi 4v', value: (row) => row.fi_4y },
+                { label: 'fi 5v', value: (row) => row.fi_5y },
+                { label: 'fi 6v', value: (row) => row.fi_6y },
+                { label: 'fi 7v', value: (row) => row.fi_7y },
 
-                { label: 'sv 0v', key: 'sv_0y' },
-                { label: 'sv 1v', key: 'sv_1y' },
-                { label: 'sv 2v', key: 'sv_2y' },
-                { label: 'sv 3v', key: 'sv_3y' },
-                { label: 'sv 4v', key: 'sv_4y' },
-                { label: 'sv 5v', key: 'sv_5y' },
-                { label: 'sv 6v', key: 'sv_6y' },
-                { label: 'sv 7v', key: 'sv_7y' },
+                { label: 'sv 0v', value: (row) => row.sv_0y },
+                { label: 'sv 1v', value: (row) => row.sv_1y },
+                { label: 'sv 2v', value: (row) => row.sv_2y },
+                { label: 'sv 3v', value: (row) => row.sv_3y },
+                { label: 'sv 4v', value: (row) => row.sv_4y },
+                { label: 'sv 5v', value: (row) => row.sv_5y },
+                { label: 'sv 6v', value: (row) => row.sv_6y },
+                { label: 'sv 7v', value: (row) => row.sv_7y },
 
-                { label: 'muu 0v', key: 'other_0y' },
-                { label: 'muu 1v', key: 'other_1y' },
-                { label: 'muu 2v', key: 'other_2y' },
-                { label: 'muu 3v', key: 'other_3y' },
-                { label: 'muu 4v', key: 'other_4y' },
-                { label: 'muu 5v', key: 'other_5y' },
-                { label: 'muu 6v', key: 'other_6y' },
-                { label: 'muu 7v', key: 'other_7y' }
+                { label: 'muu 0v', value: (row) => row.other_0y },
+                { label: 'muu 1v', value: (row) => row.other_1y },
+                { label: 'muu 2v', value: (row) => row.other_2y },
+                { label: 'muu 3v', value: (row) => row.other_3y },
+                { label: 'muu 4v', value: (row) => row.other_4y },
+                { label: 'muu 5v', value: (row) => row.other_5y },
+                { label: 'muu 6v', value: (row) => row.other_6y },
+                { label: 'muu 7v', value: (row) => row.other_7y }
               ]}
               filename={`Lapsien kielet ja iät yksiköissä ${filters.date.formatIso()}.csv`}
             />
