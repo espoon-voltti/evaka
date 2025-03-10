@@ -582,7 +582,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
                 { it.departedAddedAt },
                 { it.departedModifiedAt },
             )
-            .containsExactly(Tuple(attendance.new.id, arrivalAddedAt, arrivalAddedAt, null, null))
+            .containsExactly(Tuple(attendance!!.new.id, arrivalAddedAt, arrivalAddedAt, null, null))
     }
 
     @Test
@@ -625,7 +625,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
                 { it.departedAddedAt },
                 { it.departedModifiedAt },
             )
-            .containsExactly(Tuple(attendance.new.id, addedAt, addedAt, addedAt, addedAt))
+            .containsExactly(Tuple(attendance!!.new.id, addedAt, addedAt, addedAt, addedAt))
     }
 
     @Test
@@ -856,6 +856,57 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
                 { it.departedModifiedAt },
             )
             .containsExactly(Tuple(attendanceId, null, null, null, departureModifiedAt))
+    }
+
+    @Test
+    fun `upsertStaffAttendance update works with unmodified data`() {
+        val (unitId, groupId, user) = initUpsertStaffAttendanceTestData()
+        val clock =
+            MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2024, 12, 20), LocalTime.of(8, 0)))
+        val arrivalTime = clock.now()
+        val arrivalAddedAt = arrivalTime.plusMinutes(2)
+        val attendance =
+            DevStaffAttendance(
+                employeeId = user.id,
+                groupId = groupId,
+                arrived = arrivalTime,
+                departed = null,
+                modifiedAt = arrivalAddedAt,
+                modifiedBy = user.evakaUserId,
+            )
+        val attendanceId = db.transaction { tx -> tx.insert(attendance) }
+
+        db.transaction { tx ->
+            tx.upsertStaffAttendance(
+                attendanceId = attendanceId,
+                employeeId = attendance.employeeId,
+                groupId = attendance.groupId,
+                arrivalTime = attendance.arrived,
+                departureTime = attendance.departed,
+                occupancyCoefficient = attendance.occupancyCoefficient,
+                type = attendance.type,
+                departedAutomatically = attendance.departedAutomatically,
+                modifiedAt = arrivalAddedAt,
+                modifiedBy = user.evakaUserId,
+            )
+        }
+
+        assertThat(
+                db.read { tx ->
+                    tx.getStaffAttendancesForDateRange(
+                        unitId,
+                        clock.today().let { FiniteDateRange(it, it) },
+                    )
+                }
+            )
+            .extracting(
+                { it.id },
+                { it.arrivedAddedAt },
+                { it.arrivedModifiedAt },
+                { it.departedAddedAt },
+                { it.departedModifiedAt },
+            )
+            .containsExactly(Tuple(attendanceId, arrivalAddedAt, arrivalAddedAt, null, null))
     }
 
     private fun initUpsertStaffAttendanceTestData():

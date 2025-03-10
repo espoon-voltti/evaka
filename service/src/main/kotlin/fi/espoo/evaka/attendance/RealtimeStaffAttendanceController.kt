@@ -233,7 +233,7 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                     )
 
                     val updates =
-                        body.entries.map { entry ->
+                        body.entries.mapNotNull { entry ->
                             val occupancyCoefficient =
                                 if (entry.hasStaffOccupancyEffect) occupancyCoefficientSeven
                                 else occupancyCoefficientZero

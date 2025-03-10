@@ -171,7 +171,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                                 )
                                 ?: BigDecimal.ZERO
                         val updates =
-                            attendances.map { attendance ->
+                            attendances.mapNotNull { attendance ->
                                 tx.upsertStaffAttendance(
                                     attendance.id,
                                     attendance.employeeId,
@@ -244,7 +244,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                         )
                     val occupancyCoefficient = ongoingAttendance.occupancyCoefficient
                     val updates =
-                        attendances.map { attendance ->
+                        attendances.mapNotNull { attendance ->
                             tx.upsertStaffAttendance(
                                 attendance.id,
                                 attendance.employeeId,
@@ -326,7 +326,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                     val deleted = deletedIds.map { tx.deleteStaffAttendance(it) }
 
                     val updated =
-                        body.rows.map { attendance ->
+                        body.rows.mapNotNull { attendance ->
                             tx.upsertStaffAttendance(
                                 attendanceId = null,
                                 employeeId = body.employeeId,
