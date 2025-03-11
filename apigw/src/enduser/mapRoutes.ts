@@ -90,7 +90,7 @@ router.get(
 router.post(
   '/query',
   digitransitApiEnabled
-    ? createDigitransitProxy('/routing/v1/routers/finland/index/graphql')
+    ? createDigitransitProxy('/routing/v2/finland/gtfs/v1')
     : enableDevApi
       ? createProxy({
           getUserHeader: () => undefined,
