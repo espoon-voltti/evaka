@@ -520,13 +520,6 @@ const customizations: CitizenCustomizations = {
           </MultiLineCheckboxLabel>
         ),
         incomeType: {
-          description: (
-            <>
-              Jos olet yrittäjä, mutta sinulla on myös muita tuloja, valitse
-              sekä <strong>Yrittäjän tulotiedot</strong>, että{' '}
-              <strong>Asiakasmaksun määritteleminen tulojen mukaan</strong>.
-            </>
-          ),
           grossIncome: 'Maksun määritteleminen tulojen mukaan'
         },
         grossIncome: {
@@ -1058,13 +1051,6 @@ const customizations: CitizenCustomizations = {
           </MultiLineCheckboxLabel>
         ),
         incomeType: {
-          description: (
-            <>
-              Om du är företagare men har också andra inkomster, välj både{' '}
-              <strong>Företagarens inkomstuppgifter</strong>, och{' '}
-              <strong>Fastställande av klientavgiften enligt inkomster</strong>.
-            </>
-          ),
           grossIncome: 'Fastställande av avgiften enligt inkomster'
         },
         grossIncome: {
@@ -1635,13 +1621,6 @@ const customizations: CitizenCustomizations = {
           </MultiLineCheckboxLabel>
         ),
         incomeType: {
-          description: (
-            <>
-              If you are an entrepreneur but also have other income, choose both{' '}
-              <strong>Entrepreneur&apos;s income information</strong>, and{' '}
-              <strong>Determination of the client fee by income</strong>.
-            </>
-          ),
           grossIncome: 'Determination of the client fee by income'
         },
         grossIncome: {
