@@ -135,6 +135,7 @@ export const testTranslations: Translations = {
     phone: '',
     email: '',
     preferredStartDate: '',
+    connectedPreferredStartDate: '',
     timeFormat: '',
     timeRequired: '',
     dateTooEarly: '',

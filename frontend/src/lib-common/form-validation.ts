@@ -30,6 +30,7 @@ export type ErrorKey =
   | 'timeRequired'
   | 'unitNotSelected'
   | 'preferredStartDate'
+  | 'connectedPreferredStartDate'
   | 'emailsDoNotMatch'
   | 'httpUrl'
   | 'openAttendance'

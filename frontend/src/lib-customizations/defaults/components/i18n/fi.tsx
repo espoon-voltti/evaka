@@ -152,6 +152,8 @@ const components: Translations = {
     phone: 'Virheellinen numero',
     email: 'Virheellinen sähköpostiosoite',
     preferredStartDate: 'Aloituspäivä ei ole sallittu',
+    connectedPreferredStartDate:
+      'Voit hakea täydentävää varhaiskasvatusta lapsen esiopetuksen alkamisesta alkaen.',
     timeFormat: 'Tarkista',
     timeRequired: 'Pakollinen',
     dateTooEarly: 'Valitse myöhäisempi päivä',

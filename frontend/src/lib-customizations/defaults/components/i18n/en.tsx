@@ -155,6 +155,8 @@ const components: Translations = {
     phone: 'Invalid telephone number',
     email: 'Invalid email',
     preferredStartDate: 'Invalid preferred start date',
+    connectedPreferredStartDate:
+      "You can apply for supplementary early childhood education from the start of your child's preschool education.",
     timeFormat: 'Check',
     timeRequired: 'Required',
     dateTooEarly: 'Pick a later date',
