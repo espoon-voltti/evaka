@@ -18,7 +18,9 @@ data class ExportableAttendance(
     val sarastiaId: String,
 )
 
-fun Database.Read.getStaffAttendances(range: FiniteDateRange): List<ExportableAttendance> {
+fun Database.Read.getStaffAttendancesForEnabledDaycares(
+    range: FiniteDateRange
+): List<ExportableAttendance> {
     return createQuery {
             sql(
                 """ 
@@ -30,9 +32,38 @@ SELECT
     emp.employee_number as sarastia_id
 FROM staff_attendance_realtime sa
 JOIN employee emp ON sa.employee_id = emp.id
-WHERE emp.employee_number IS NOT NULL AND ${bind(range.asHelsinkiDateTimeRange())} @> arrived and departed IS NOT NULL
+WHERE emp.employee_number IS NOT NULL 
+    AND ${bind(range.asHelsinkiDateTimeRange())} @> arrived 
+    AND departed IS NOT NULL
+    AND EXISTS (
+        SELECT
+        FROM daycare_acl acl
+        JOIN daycare d ON acl.daycare_id = d.id
+        WHERE acl.employee_id = emp.id AND 'STAFF_ATTENDANCE_INTEGRATION' = ANY(d.enabled_pilot_features)
+    )
 """
             )
         }
         .toList()
+}
+
+fun Database.Read.getEmployeeIdsForEnabledDaycares(
+    employeeNumbers: Collection<String>
+): Map<String, EmployeeId> {
+    return createQuery {
+            sql(
+                """
+SELECT id, employee_number
+FROM employee e
+WHERE employee_number = ANY (${bind(employeeNumbers)})
+    AND EXISTS (
+        SELECT
+        FROM daycare_acl acl
+        JOIN daycare d ON acl.daycare_id = d.id
+        WHERE acl.employee_id = e.id AND 'STAFF_ATTENDANCE_INTEGRATION' = ANY(d.enabled_pilot_features)
+    )
+            """
+            )
+        }
+        .toMap { columnPair("employee_number", "id") }
 }

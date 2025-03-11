@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.json.JsonMapper
 import fi.espoo.evaka.LinkityEnv
 import fi.espoo.evaka.attendance.*
 import fi.espoo.evaka.espoo.EspooAsyncJob
-import fi.espoo.evaka.pis.getEmployeeIdsByNumbers
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
@@ -58,7 +57,7 @@ fun updateStaffAttendancePlansFromLinkity(
     val sarastiaIds = linkityShifts.map { it.sarastiaId }.toSet()
 
     db.transaction { tx ->
-        val sarastiaIdToEmployeeId = tx.getEmployeeIdsByNumbers(sarastiaIds)
+        val sarastiaIdToEmployeeId = tx.getEmployeeIdsForEnabledDaycares(sarastiaIds)
 
         val shifts = filterValidShifts(linkityShifts, sarastiaIdToEmployeeId)
 
@@ -93,7 +92,7 @@ private fun filterValidShifts(
         shifts.partition { sarastiaIdToEmployeeId.containsKey(it.sarastiaId) }
     if (withUnknownSarastiaId.isNotEmpty()) {
         logger.info {
-            "No employee found for Sarastia IDs: ${withUnknownSarastiaId.map { it.sarastiaId }}"
+            "No employee found from any enabled daycare for Sarastia IDs: ${withUnknownSarastiaId.map { it.sarastiaId }}"
         }
     }
     val (validTimesShifts, invalidTimesShifts) =
@@ -124,7 +123,7 @@ fun sendStaffAttendancesToLinkity(
     lateinit var plans: Map<EmployeeId, List<StaffAttendancePlan>>
 
     db.transaction { tx ->
-        attendances = tx.getStaffAttendances(period).groupBy { it.employeeId }
+        attendances = tx.getStaffAttendancesForEnabledDaycares(period).groupBy { it.employeeId }
         val employeeIds = attendances.keys
         plans =
             tx.findStaffAttendancePlansBy(period = period, employeeIds = employeeIds).groupBy {
