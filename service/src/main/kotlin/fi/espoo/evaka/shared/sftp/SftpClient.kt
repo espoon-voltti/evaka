@@ -30,21 +30,19 @@ class SftpClient(private val sftpEnv: SftpEnv) {
     }
 
     private fun <T> execute(callback: (channel: ChannelSftp) -> T): T {
+        val hostKeyAlias = "${sftpEnv.host}:${sftpEnv.port}"
         val jsch =
             JSch().apply {
                 hostKeyRepository =
                     ReadOnlyHostKeyRepository(
                         sftpEnv.hostKeys.map {
-                            HostKey(
-                                "[${sftpEnv.host}]:${sftpEnv.port}",
-                                HostKey.GUESS,
-                                Base64.getDecoder().decode(it),
-                            )
+                            HostKey(hostKeyAlias, HostKey.GUESS, Base64.getDecoder().decode(it))
                         }
                     )
             }
         val session = jsch.getSession(sftpEnv.username, sftpEnv.host, sftpEnv.port)
         session.setPassword(sftpEnv.password.value)
+        session.hostKeyAlias = hostKeyAlias
         try {
             session.connect()
             val channel = session.openChannel("sftp") as ChannelSftp
