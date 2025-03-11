@@ -1092,28 +1092,6 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
     fun putDigitransitAutocomplete(@RequestBody mockResponse: MockDigitransit.Autocomplete) =
         digitransit.setAutocomplete(mockResponse)
 
-    @PostMapping("/digitransit/query")
-    fun postDigitransitQuery(@RequestBody body: String): String {
-        return if (body.matches(Regex("^\\{\\s*plan\\("))) {
-            "7"
-        } else {
-            val rex = Regex("(id.*):\\s*plan\\(")
-            val contents =
-                rex.findAll(body)
-                    .mapIndexed { ix, match ->
-                        """
-                        "${match.groupValues[1]}": {
-                            "itineraries": [{
-                                "legs":[{"distance": $ix}]
-                            }]
-                        }
-                    """
-                    }
-                    .joinToString(",")
-            "{ \"data\": { $contents } }"
-        }
-    }
-
     @PostMapping("/family-contact")
     fun createFamilyContact(db: Database, @RequestBody contacts: List<DevFamilyContact>) {
         db.connect { dbc -> dbc.transaction { contacts.forEach { contact -> it.insert(contact) } } }

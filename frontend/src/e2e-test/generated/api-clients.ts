@@ -1966,27 +1966,6 @@ export async function postChildStickyNote(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.postDigitransitQuery
-*/
-export async function postDigitransitQuery(
-  request: {
-    body: string
-  }
-): Promise<string> {
-  try {
-    const { data: json } = await devClient.request<JsonOf<string>>({
-      url: uri`/digitransit/query`.toString(),
-      method: 'POST',
-      data: request.body satisfies JsonCompatible<string>
-    })
-    return json
-  } catch (e) {
-    throw new DevApiError(e)
-  }
-}
-
-
-/**
 * Generated from fi.espoo.evaka.shared.dev.DevApi.postGroupNote
 */
 export async function postGroupNote(
