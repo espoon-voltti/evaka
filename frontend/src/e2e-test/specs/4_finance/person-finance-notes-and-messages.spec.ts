@@ -112,11 +112,9 @@ describe('person finance messages', () => {
       'financeNotesAndMessages'
     )
 
-    messageEditor = await notesAndMessages.openReplyMessageEditor()
-    await messageEditor.sendNewMessage({
-      title: 'Reply to first message',
-      content: 'Reply to first message'
-    })
+    await notesAndMessages.openReplyMessageEditor()
+    await notesAndMessages.fillReplyContent('Reply to first message')
+    await notesAndMessages.sendReply()
     await runPendingAsyncJobs(mockedTime3.addMinutes(1))
 
     await notesAndMessages.checkThreadLastMessageSentAt(0, mockedTime3)
