@@ -5,43 +5,36 @@ plugins {
     java
 }
 
-configurations {
-    create("jaxb")
+val generatedSources = layout.buildDirectory.dir("generated/sources/java/main")
+val xsd2java: Configuration by configurations.creating
+
+sourceSets {
+    main {
+        java.srcDir(generatedSources)
+    }
 }
 
 dependencies {
-    "jaxb"("com.sun.xml.bind:jaxb-xjc:4.0.5")
-    "jaxb"("com.sun.xml.bind:jaxb-impl:4.0.5")
+    xsd2java("com.sun.xml.bind:jaxb-xjc:4.0.5")
+    xsd2java("com.sun.xml.bind:jaxb-impl:4.0.5")
     implementation("jakarta.xml.bind:jakarta.xml.bind-api:4.0.2")
 }
 
-tasks.register("generateJaxb") {
-    val outputDir = layout.buildDirectory.dir("generated-sources/jaxb")
+tasks.register<JavaExec>("generateJaxb") {
     val schemaDir = project.file("src/main/schema")
     
+    mainClass.set("com.sun.tools.xjc.Driver")
+    classpath = xsd2java
+    args = listOf(
+        "-d", generatedSources.get().toString(),
+        "-p", "fi.espoo.evaka.sarma.model",
+        schemaDir.toString()
+    )
+
     inputs.dir(schemaDir)
-    outputs.dir(outputDir)
-    
-    doLast {
-        outputDir.get().asFile.mkdirs()
-        
-        ant.withGroovyBuilder {
-            "taskdef"(
-                "name" to "xjc",
-                "classname" to "com.sun.tools.xjc.XJCTask",
-                "classpath" to configurations["jaxb"].asPath
-            )
-            "xjc"(
-                "destdir" to outputDir.get().asFile,
-                "package" to "fi.espoo.evaka.sarma.model"
-            ) {
-                "schema"("dir" to schemaDir, "includes" to "**/*.xsd")
-            }
-        }
-    }
+    outputs.dir(generatedSources)
 }
 
 tasks.named("compileJava") {
     dependsOn("generateJaxb")
-    sourceSets.main.get().java.srcDir(layout.buildDirectory.dir("generated-sources/jaxb"))
-} 
+}
