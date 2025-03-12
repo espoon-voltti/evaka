@@ -125,8 +125,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                                 NekkuSpecialDietsField(
                                     "17A9ACF0-DE9E-4C07-882E-C8C47351D009",
                                     "Muu erityisruokavalio, mikä?",
-                                    NekkuSpecialDietType.TEXT,
-                                    null,
+                                    NekkuSpecialDietType.TEXT
                                 ),
                                 NekkuSpecialDietsField(
                                     "AE1FE5FE-9619-4D7A-9043-A6B0C615156B",
@@ -166,8 +165,8 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             )
         fetchAndUpdateNekkuSpecialDiets(client, db)
         db.transaction { tx ->
-            //            val customers = tx.getNekkuCustomers().toSet()
-            //            assertEquals(1, customers.size)
+            val specialDiets = tx.getNekkuSpecialDiets().toSet()
+            assertEquals(1, specialDiets.size)
         }
     }
 }
