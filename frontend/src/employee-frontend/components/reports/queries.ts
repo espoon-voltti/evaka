@@ -33,6 +33,7 @@ import {
   getNonSsnChildrenReportRows,
   getOccupancyGroupReport,
   getOccupancyUnitReport,
+  getPartnersInDifferentAddressReport,
   getPermittedReports,
   getPlacementGuaranteeReport,
   getPlacementSketchingReport,
@@ -190,3 +191,7 @@ export const serviceVoucherReportForUnitQuery = q.query(
 )
 
 export const serviceNeedReportQuery = q.query(getServiceNeedReport)
+
+export const partnersInDifferentAddressReportQuery = q.query(
+  getPartnersInDifferentAddressReport
+)
