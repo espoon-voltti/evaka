@@ -5,25 +5,23 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import range from 'lodash/range'
 import sortBy from 'lodash/sortBy'
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { Link, useLocation } from 'react-router'
 import styled from 'styled-components'
 
-import { Loading, Result, wrapResult } from 'lib-common/api'
 import {
   VoucherReportRowType,
-  ServiceVoucherUnitReport,
   ServiceVoucherValueRow
 } from 'lib-common/generated/api-types/reports'
 import { DaycareId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { formatCents } from 'lib-common/money'
+import { useQueryResult } from 'lib-common/query'
 import { Arg0 } from 'lib-common/types'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import { formatDecimal } from 'lib-common/utils/number'
 import { useSyncQueryParams } from 'lib-common/utils/useSyncQueryParams'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
-import Loader from 'lib-components/atoms/Loader'
 import Tooltip, { TooltipWithoutAnchor } from 'lib-components/atoms/Tooltip'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Select from 'lib-components/atoms/dropdowns/Select'
@@ -50,13 +48,11 @@ import ReportDownload from '../../components/reports/ReportDownload'
 import { getServiceVoucherReportForUnit } from '../../generated/api-clients/reports'
 import { useTranslation } from '../../state/i18n'
 import { formatName } from '../../utils'
+import { renderResult } from '../async-rendering'
 import { AgeIndicatorChip } from '../common/AgeIndicatorChip'
 
 import { FilterLabel, FilterRow, TableScrollable } from './common'
-
-const getServiceVoucherReportForUnitResult = wrapResult(
-  getServiceVoucherReportForUnit
-)
+import { serviceVoucherReportForUnitQuery } from './queries'
 
 type VoucherServiceProviderUnitFilters = Omit<
   Arg0<typeof getServiceVoucherReportForUnit>,
@@ -130,9 +126,6 @@ export default React.memo(function VoucherServiceProviderUnit() {
   const location = useLocation()
   const { i18n } = useTranslation()
   const unitId = useIdRouteParam<DaycareId>('unitId')
-  const [report, setReport] = useState<Result<ServiceVoucherUnitReport>>(
-    Loading.of()
-  )
   const [sort, setSort] = useState<'child' | 'group'>('child')
 
   const sortOnClick = (prop: 'child' | 'group') => () => {
@@ -141,13 +134,6 @@ export default React.memo(function VoucherServiceProviderUnit() {
     }
   }
 
-  const sortedReport = report.map((rs) =>
-    sort === 'group'
-      ? { ...rs, rows: sortBy(rs.rows, 'childGroupName') }
-      : { ...rs, rows: sortBy(rs.rows, ['childLastName', 'childFirstName']) }
-  )
-
-  const [unitName, setUnitName] = useState<string>('')
   const [filters, setFilters] = useState<VoucherServiceProviderUnitFilters>(
     () => {
       const { search } = location
@@ -172,17 +158,18 @@ export default React.memo(function VoucherServiceProviderUnit() {
   )
   useSyncQueryParams(memoizedFilters)
 
-  useEffect(() => {
-    setReport(Loading.of())
-    void getServiceVoucherReportForUnitResult({ unitId, ...filters }).then(
-      (res) => {
-        setReport(res)
-        if (res.isSuccess && res.value.rows.length > 0) {
-          setUnitName(res.value.rows[0].unitName)
-        }
-      }
-    )
-  }, [filters]) // eslint-disable-line react-hooks/exhaustive-deps
+  const report = useQueryResult(
+    serviceVoucherReportForUnitQuery({ unitId, ...filters })
+  )
+  const sortedReport = report.map((rs) =>
+    sort === 'group'
+      ? { ...rs, rows: sortBy(rs.rows, 'childGroupName') }
+      : { ...rs, rows: sortBy(rs.rows, ['childLastName', 'childFirstName']) }
+  )
+  const unitName = useMemo(
+    () => report.map((r) => r.rows[0].unitName).getOrElse(''),
+    [report]
+  )
 
   return (
     <Container>
@@ -239,21 +226,19 @@ export default React.memo(function VoucherServiceProviderUnit() {
 
         <HorizontalLine slim />
 
-        {sortedReport.isLoading && <Loader />}
-        {sortedReport.isFailure && <span>{i18n.common.loadingFailed}</span>}
-        {sortedReport.isSuccess && (
+        {renderResult(sortedReport, (sortedReport) => (
           <>
             <SumRow>
               <FixedSpaceRow>
                 <strong>{i18n.reports.voucherServiceProviderUnit.total}</strong>
                 <strong>
-                  {formatCents(sortedReport.value.voucherTotal, true)} €
+                  {formatCents(sortedReport.voucherTotal, true)} €
                 </strong>
               </FixedSpaceRow>
 
               <ReportDownload
                 data={[
-                  ...sortedReport.value.rows.map((r) => ({
+                  ...sortedReport.rows.map((r) => ({
                     ...r,
                     start: r.realizedPeriod.start.format(),
                     end: r.realizedPeriod.end.format(),
@@ -299,10 +284,7 @@ export default React.memo(function VoucherServiceProviderUnit() {
                     serviceVoucherFinalCoPayment: null,
                     realizedAmountBeforeAssistanceNeed: null,
                     realizedAssistanceNeedAmount: null,
-                    realizedAmount: formatCents(
-                      sortedReport.value.voucherTotal,
-                      true
-                    )
+                    realizedAmount: formatCents(sortedReport.voucherTotal, true)
                   }
                 ]}
                 columns={[
@@ -442,7 +424,7 @@ export default React.memo(function VoucherServiceProviderUnit() {
                 </Tr>
               </Thead>
               <Tbody>
-                {sortedReport.value.rows.map((row: ServiceVoucherValueRow) => {
+                {sortedReport.rows.map((row: ServiceVoucherValueRow) => {
                   const rowType =
                     row.isNew && row.type === 'ORIGINAL' ? 'NEW' : row.type
 
@@ -532,7 +514,7 @@ export default React.memo(function VoucherServiceProviderUnit() {
               </Tbody>
             </TableScrollable>
           </>
-        )}
+        ))}
       </ContentArea>
     </Container>
   )
