@@ -90,13 +90,8 @@ router.get(
 router.post(
   '/query',
   digitransitApiEnabled
-    ? createDigitransitProxy('/routing/v1/routers/finland/index/graphql')
-    : enableDevApi
-      ? createProxy({
-          getUserHeader: () => undefined,
-          path: '/dev-api/digitransit/query'
-        })
-      : (_, res) => res.status(404)
+    ? createDigitransitProxy('/routing/v2/finland/gtfs/v1')
+    : (_, res) => res.status(404)
 )
 
 export default router

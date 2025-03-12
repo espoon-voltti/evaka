@@ -17,6 +17,11 @@ import {
   UnitWithStraightDistance
 } from './distances'
 
+// Digitransit limits the maximum duration of a walk to 1.5 hours.
+// To increase the range of the search, we increase the speed of walking.
+// We're only interested in the distance, so the speed doesn't matter.
+const digitransitMaxSpeed = 300
+
 type AutocompleteResponse = {
   features: {
     geometry: {
@@ -68,10 +73,10 @@ type ItineraryResponse = {
   data: Record<
     string,
     {
-      itineraries: {
-        legs: {
-          distance: number
-        }[]
+      edges: {
+        node: {
+          walkDistance: number
+        }
       }[]
     }
   >
@@ -112,25 +117,43 @@ export async function fetchUnitsWithDistances(
   ${unitsToQuery
     .map(
       ({ id, location }) => `
-    ${uuidToKey(id)}: plan(
-      from: {
-        lat: ${startLocation.lat},
-        lon: ${startLocation.lon}
-      },
-      to: {
-        lat: ${location?.lat ?? 0},
-        lon: ${location?.lon ?? 0}
-      },
-      modes: "WALK"
-    ) {
-      itineraries{
-        legs {
-          distance
+  ${uuidToKey(id)}: planConnection(
+    origin: {
+      location: {
+        coordinate: {
+          latitude: ${startLocation.lat}
+          longitude: ${startLocation.lon}
         }
       }
     }
+    destination: {
+      location: {
+        coordinate: {
+          latitude: ${location?.lat ?? 0}
+          longitude: ${location?.lon ?? 0}
+        }
+      }
+    }
+    modes: {
+      direct: WALK
+      directOnly: true
+    }
+    preferences: {
+      street: {
+        walk: {
+          speed: ${digitransitMaxSpeed}
+        }
+      }
+    }
+  ) {
+    edges {
+      node {
+        walkDistance
+      }
+    }
+  }
 
-  `
+`
     )
     .join('')}
 }`
@@ -156,18 +179,14 @@ export async function fetchUnitsWithDistances(
             drivingDistance: null
           }
 
-        const itineraries = plan.itineraries
-        if (itineraries.length === 0)
+        const edges = plan.edges
+        if (edges.length === 0)
           return {
             ...unit,
             drivingDistance: null
           }
 
-        const itinerary = itineraries[0]
-        const drivingDistance = itinerary.legs.reduce(
-          (acc, leg) => acc + leg.distance,
-          0
-        )
+        const drivingDistance = edges[0].node.walkDistance
         return {
           ...unit,
           drivingDistance
@@ -182,23 +201,41 @@ export const fetchDistance = async (
 ): Promise<number> => {
   const query = `
 {
-    plan(
-      from: {
-        lat: ${startLocation.lat},
-        lon: ${startLocation.lon}
-      },
-      to: {
-        lat: ${endLocation.lat},
-        lon: ${endLocation.lon}
-      },
-      modes: "WALK"
-    ) {
-      itineraries{
-        legs {
-          distance
+  planConnection(
+    origin: {
+      location: {
+        coordinate: {
+          latitude: ${startLocation.lat}
+          longitude: ${startLocation.lon}
         }
       }
     }
+    destination: {
+      location: {
+        coordinate: {
+          latitude: ${endLocation.lat}
+          longitude: ${endLocation.lon}
+        }
+      }
+    }
+    modes: {
+      direct: WALK
+      directOnly: true
+    }
+    preferences: {
+      street: {
+        walk: {
+          speed: ${digitransitMaxSpeed}
+        }
+      }
+    }
+  ) {
+    edges {
+      node {
+        walkDistance
+      }
+    }
+  }
 }`
 
   return axios
@@ -214,12 +251,12 @@ export const fetchDistance = async (
       }
     )
     .then((res) => {
-      const plan = res.data.data.plan
-      if (!plan) throw Error('No plan found')
+      const planConnection = res.data.data.planConnection
+      if (!planConnection) throw Error('No planConnection found')
 
-      const itineraries = plan.itineraries
-      if (itineraries.length === 0) throw Error('No itineraries found')
+      const edges = planConnection.edges
+      if (edges.length === 0) throw Error('No edges found')
 
-      return itineraries[0].legs.reduce((acc, leg) => acc + leg.distance, 0)
+      return edges[0].node.walkDistance
     })
 }
