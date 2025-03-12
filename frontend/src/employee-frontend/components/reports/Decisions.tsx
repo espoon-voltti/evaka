@@ -2,15 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { Link } from 'react-router'
 import styled from 'styled-components'
 
-import { Loading, Result, wrapResult } from 'lib-common/api'
 import { DecisionsReportRow } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
-import { useRestApi } from 'lib-common/utils/useRestApi'
-import Loader from 'lib-components/atoms/Loader'
+import { useQueryResult } from 'lib-common/query'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
@@ -21,15 +19,14 @@ import { InfoBox } from 'lib-components/molecules/MessageBoxes'
 import { Gap } from 'lib-components/white-space'
 
 import ReportDownload from '../../components/reports/ReportDownload'
-import { getDecisionsReport } from '../../generated/api-clients/reports'
 import { useTranslation } from '../../state/i18n'
 import { PeriodFilters } from '../../types/reports'
 import { distinct, reducePropertySum } from '../../utils'
+import { renderResult } from '../async-rendering'
 import { FlexRow } from '../common/styled/containers'
 
 import { FilterLabel, FilterRow, TableFooter, TableScrollable } from './common'
-
-const getDecisionsReportResult = wrapResult(getDecisionsReport)
+import { decisionReportQuery } from './queries'
 
 interface DisplayFilters {
   careArea: string
@@ -45,7 +42,6 @@ const Wrapper = styled.div`
 
 export default React.memo(function Decisions() {
   const { i18n } = useTranslation()
-  const [rows, setRows] = useState<Result<DecisionsReportRow[]>>(Loading.of())
   const [filters, setFilters] = useState<PeriodFilters>({
     from: LocalDate.todayInSystemTz(),
     to: LocalDate.todayInSystemTz().addMonths(4)
@@ -53,18 +49,19 @@ export default React.memo(function Decisions() {
 
   const [displayFilters, setDisplayFilters] =
     useState<DisplayFilters>(emptyDisplayFilters)
-  const displayFilter = (row: DecisionsReportRow): boolean =>
-    !(displayFilters.careArea && row.careAreaName !== displayFilters.careArea)
+  const displayFilter = useCallback(
+    (row: DecisionsReportRow): boolean =>
+      !(
+        displayFilters.careArea && row.careAreaName !== displayFilters.careArea
+      ),
+    [displayFilters.careArea]
+  )
 
-  const loadReport = useRestApi(getDecisionsReportResult, setRows)
+  const rows = useQueryResult(decisionReportQuery(filters))
 
-  useEffect(() => {
-    void loadReport(filters)
-  }, [loadReport, filters])
-
-  const filteredRows: DecisionsReportRow[] = useMemo(
-    () => rows.map((rs) => rs.filter(displayFilter)).getOrElse([]),
-    [rows, displayFilters] // eslint-disable-line react-hooks/exhaustive-deps
+  const filteredRows = useMemo(
+    () => rows.map((rs) => rs.filter(displayFilter)),
+    [rows, displayFilter]
   )
 
   return (
@@ -135,16 +132,10 @@ export default React.memo(function Decisions() {
         <Gap />
         <InfoBox message={i18n.reports.decisions.ageInfo} thin />
 
-        {rows.isLoading && <Loader />}
-        {rows.isFailure && <span>{i18n.common.loadingFailed}</span>}
-        {rows.isSuccess && (
+        {renderResult(filteredRows, (filteredRows) => (
           <>
             <ReportDownload
-              data={filteredRows.map((row) => ({
-                ...row,
-                providerType:
-                  i18n.reports.common.unitProviderTypes[row.providerType]
-              }))}
+              data={filteredRows}
               columns={[
                 {
                   label: i18n.reports.common.careAreaName,
@@ -156,7 +147,8 @@ export default React.memo(function Decisions() {
                 },
                 {
                   label: i18n.reports.common.unitProviderType,
-                  value: (row) => row.providerType
+                  value: (row) =>
+                    i18n.reports.common.unitProviderTypes[row.providerType]
                 },
                 {
                   label: i18n.reports.decisions.daycareUnder3,
@@ -310,7 +302,7 @@ export default React.memo(function Decisions() {
               </TableFooter>
             </TableScrollable>
           </>
-        )}
+        ))}
       </ContentArea>
     </Container>
   )

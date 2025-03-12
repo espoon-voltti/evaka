@@ -14,6 +14,7 @@ import {
   getChildDocumentsReport,
   getChildDocumentsReportTemplateOptions,
   getCustomerFeesReport,
+  getDecisionsReport,
   getExceededServiceNeedReportRows,
   getExceededServiceNeedReportUnits,
   getFamilyContactsReport,
@@ -171,3 +172,5 @@ export const missingServiceNeedReportQuery = q.query(
 export const manualDuplicationReportQuery = q.query(getManualDuplicationReport)
 
 export const familyDaycareMealReportQuery = q.query(getFamilyDaycareMealReport)
+
+export const decisionReportQuery = q.query(getDecisionsReport)
