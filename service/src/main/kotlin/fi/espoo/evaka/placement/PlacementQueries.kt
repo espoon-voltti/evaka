@@ -42,7 +42,7 @@ fun Database.Read.getPlacementSummary(childId: ChildId): List<PlacementSummary> 
     return createQuery {
             sql(
                 """
-SELECT p.id, p.type, p.child_id, d.id AS unit_id, d.name AS unit_name, p.start_date, p.end_date
+SELECT p.id, p.type, p.child_id, d.id AS unit_id, d.name AS unit_name, p.start_date, p.end_date, 'RESERVATIONS' = ANY(d.enabled_pilot_features) AS reservations_enabled
 FROM placement p
 JOIN daycare d on p.unit_id = d.id
 WHERE p.child_id = ${bind(childId)}

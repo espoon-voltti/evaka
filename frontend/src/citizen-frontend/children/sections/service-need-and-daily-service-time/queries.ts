@@ -4,8 +4,14 @@
 
 import { Queries } from 'lib-common/query'
 
-import { getChildAttendanceSummary } from '../../../generated/api-clients/children'
+import {
+  getChildAttendanceSummary,
+  getChildDailyServiceTimes,
+  getChildServiceNeeds
+} from '../../../generated/api-clients/children'
 
 const q = new Queries()
 
+export const childServiceNeedsQuery = q.query(getChildServiceNeeds)
 export const attendanceSummaryQuery = q.query(getChildAttendanceSummary)
+export const childDailyServiceTimesQuery = q.query(getChildDailyServiceTimes)

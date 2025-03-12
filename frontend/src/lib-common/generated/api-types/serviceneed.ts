@@ -215,6 +215,7 @@ export interface ServiceNeedSummary {
   contractDaysPerMonth: number | null
   endDate: LocalDate
   option: ServiceNeedOptionPublicInfo | null
+  reservationsEnabled: boolean
   startDate: LocalDate
   unitName: string
 }

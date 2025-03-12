@@ -83,7 +83,9 @@ export default React.memo(function AttendanceSummaryTable({
                 (sn) =>
                   attendanceSummaryRange.overlaps(
                     new FiniteDateRange(sn.startDate, sn.endDate)
-                  ) && sn.contractDaysPerMonth !== null
+                  ) &&
+                  sn.contractDaysPerMonth !== null &&
+                  sn.reservationsEnabled
               )}
               attendanceSummary={attendanceSummary}
             />
