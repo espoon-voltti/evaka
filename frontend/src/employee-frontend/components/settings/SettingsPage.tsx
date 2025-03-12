@@ -19,9 +19,8 @@ import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { H1 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
-import { getSettings, putSettings } from '../generated/api-clients/setting'
-
-import { renderResult } from './async-rendering'
+import { getSettings, putSettings } from '../../generated/api-clients/setting'
+import { renderResult } from '../async-rendering'
 
 const getSettingsResult = wrapResult(getSettings)
 const putSettingsResult = wrapResult(putSettings)
