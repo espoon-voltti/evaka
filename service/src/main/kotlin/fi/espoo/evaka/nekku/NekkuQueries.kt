@@ -115,10 +115,12 @@ fun fetchAndUpdateNekkuSpecialDiets(client: NekkuClient, db: Database.Connection
     db.transaction { tx ->
 
         tx.setSpecialDiets(specialDietsFromNekku)
-        // Save nekku fields
+
         tx.setSpecialDietFields(specialDietsFromNekku.map { it.id to it.fields })
 
         // Save nekku options
+        //tx.setSpecialDietOptions()
+
 
     }
 }
@@ -182,3 +184,33 @@ INSERT INTO nekku_special_diet_field (
         "Inserted Nekku special diet fields ${specialDietFields.size}"
     }
  }
+
+fun Database.Transaction.setSpecialDietOptions(specialDietOptions: List<Pair<String, List<NekkuSpecialDietOption>>>){
+
+    val batchRows: Sequence<Pair<String, NekkuSpecialDietOption>> =
+        specialDietOptions.asSequence().flatMap { (fieldId, options) ->
+            options.map { option -> Pair(fieldId, option) }
+        }
+
+    executeBatch(batchRows) {
+        sql(
+            """
+INSERT INTO nekku_special_diet_option (
+    field_id,
+    weight,
+    key,
+    value
+) VALUES (
+    ${bind { (fieldId, _) ->  fieldId}},
+    ${bind { (_, option) ->  option.weight }},
+    ${bind { (_, option) ->  option.key }},
+    ${bind { (_, option) ->  option.value }}
+)
+ """
+        )
+    }
+
+    logger.info {
+        "Inserted Nekku special diet options ${specialDietOptions.size}"
+    }
+}
