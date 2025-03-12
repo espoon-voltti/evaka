@@ -5,6 +5,7 @@
 import { Queries } from 'lib-common/query'
 
 import { sendJamixOrders } from '../../generated/api-clients/jamix'
+import { mergePeople, safeDeletePerson } from '../../generated/api-clients/pis'
 import {
   clearTitaniaErrors,
   getAssistanceNeedDecisionsReport,
@@ -16,6 +17,7 @@ import {
   getChildDocumentsReportTemplateOptions,
   getCustomerFeesReport,
   getDecisionsReport,
+  getDuplicatePeopleReport,
   getEndedPlacementsReport,
   getExceededServiceNeedReportRows,
   getExceededServiceNeedReportUnits,
@@ -204,3 +206,13 @@ export const placementCountReportQuery = q.query(getPlacementCountReport)
 export const familyConflictsReportQuery = q.query(getFamilyConflictsReport)
 
 export const endedPlacementsReportQuery = q.query(getEndedPlacementsReport)
+
+export const duplicatePeopleReportQuery = q.query(getDuplicatePeopleReport)
+
+export const mergePeopleMutation = q.mutation(mergePeople, [
+  duplicatePeopleReportQuery.prefix
+])
+
+export const safeDeletePersonMutation = q.mutation(safeDeletePerson, [
+  duplicatePeopleReportQuery.prefix
+])

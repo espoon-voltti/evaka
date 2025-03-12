@@ -2,16 +2,15 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useContext, useEffect, useState } from 'react'
+import React, { useContext, useState } from 'react'
 import { Link } from 'react-router'
 import styled from 'styled-components'
 
-import { Loading, Result, wrapResult } from 'lib-common/api'
 import { DuplicatePeopleReportRow } from 'lib-common/generated/api-types/reports'
 import { PersonId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
+import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { Arg0 } from 'lib-common/types'
-import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
@@ -24,16 +23,17 @@ import { featureFlags } from 'lib-customizations/employee'
 import { faQuestion } from 'lib-icons'
 
 import { PROFILE_AGE_THRESHOLD_DEFAULT } from '../../constants'
-import { mergePeople, safeDeletePerson } from '../../generated/api-clients/pis'
 import { getDuplicatePeopleReport } from '../../generated/api-clients/reports'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
+import { renderResult } from '../async-rendering'
 
 import { FilterRow, TableScrollable } from './common'
-
-const getDuplicatePeopleReportResult = wrapResult(getDuplicatePeopleReport)
-const safeDeletePersonResult = wrapResult(safeDeletePerson)
-const mergePeopleResult = wrapResult(mergePeople)
+import {
+  duplicatePeopleReportQuery,
+  mergePeopleMutation,
+  safeDeletePersonMutation
+} from './queries'
 
 type DuplicatePeopleFilters = Arg0<typeof getDuplicatePeopleReport>
 
@@ -63,9 +63,6 @@ const isChild = (dateOfBirth: LocalDate) => {
 
 export default React.memo(function DuplicatePeople() {
   const { i18n } = useTranslation()
-  const [rows, setRows] = useState<Result<DuplicatePeopleReportRow[]>>(
-    Loading.of()
-  )
   const [duplicate, setDuplicate] = useState<Selection | null>(null)
   const [master, setMaster] = useState<Selection | null>(null)
   const [deleteId, setDeleteId] = useState<PersonId | null>(null)
@@ -75,14 +72,11 @@ export default React.memo(function DuplicatePeople() {
     showIntentionalDuplicates: !featureFlags.personDuplicate
   })
 
-  const loadData = useCallback(() => {
-    setRows(Loading.of())
-    void getDuplicatePeopleReportResult(filters).then(setRows)
-  }, [filters])
-
-  useEffect(() => {
-    loadData()
-  }, [loadData])
+  const rows = useQueryResult(duplicatePeopleReportQuery(filters))
+  const { mutateAsync: safeDeletePerson } = useMutationResult(
+    safeDeletePersonMutation
+  )
+  const { mutateAsync: mergePeople } = useMutationResult(mergePeopleMutation)
 
   return (
     <Container>
@@ -103,9 +97,7 @@ export default React.memo(function DuplicatePeople() {
             />
           </FilterRow>
         )}
-        {rows.isLoading && <Loader />}
-        {rows.isFailure && <span>{i18n.common.loadingFailed}</span>}
-        {rows.isSuccess && (
+        {renderResult(rows, (rows) => (
           <>
             <TableScrollable>
               <Thead>
@@ -117,8 +109,8 @@ export default React.memo(function DuplicatePeople() {
                   <Th />
                   <Th />
 
-                  {rows.isSuccess && rows.value.length > 0
-                    ? rows.value[0].referenceCounts
+                  {rows.length > 0
+                    ? rows[0].referenceCounts
                         .map(({ table, column }) => `${table}.${column}`)
                         .map((key) => (
                           <Th key={key}>
@@ -131,7 +123,7 @@ export default React.memo(function DuplicatePeople() {
                 </Tr>
               </Thead>
               <Tbody>
-                {rows.value.map((row: DuplicatePeopleReportRow) => (
+                {rows.map((row: DuplicatePeopleReportRow) => (
                   <StyledRow key={row.id} odd={row.groupIndex % 2 !== 0}>
                     <NoWrapTd>
                       <Link
@@ -212,12 +204,12 @@ export default React.memo(function DuplicatePeople() {
                 }}
                 resolve={{
                   action: () => {
-                    const masterId = rows.value.find(
+                    const masterId = rows.find(
                       (row) =>
                         row.groupIndex === master.group &&
                         row.duplicateNumber === master.row
                     )?.id
-                    const duplicateId = rows.value.find(
+                    const duplicateId = rows.find(
                       (row) =>
                         row.groupIndex === duplicate.group &&
                         row.duplicateNumber === duplicate.row
@@ -227,7 +219,7 @@ export default React.memo(function DuplicatePeople() {
                     setDuplicate(null)
 
                     if (masterId && duplicateId) {
-                      void mergePeopleResult({
+                      void mergePeople({
                         body: { master: masterId, duplicate: duplicateId }
                       }).then((res) => {
                         if (res.isFailure) {
@@ -238,7 +230,6 @@ export default React.memo(function DuplicatePeople() {
                             resolveLabel: i18n.common.ok
                           })
                         }
-                        loadData()
                       })
                     }
                   },
@@ -259,9 +250,7 @@ export default React.memo(function DuplicatePeople() {
                 }}
                 resolve={{
                   action: () => {
-                    void safeDeletePersonResult({ personId: deleteId }).then(
-                      loadData
-                    )
+                    void safeDeletePerson({ personId: deleteId })
                     setDeleteId(null)
                   },
                   label: i18n.common.remove
@@ -269,7 +258,7 @@ export default React.memo(function DuplicatePeople() {
               />
             )}
           </>
-        )}
+        ))}
       </ContentArea>
     </Container>
   )
