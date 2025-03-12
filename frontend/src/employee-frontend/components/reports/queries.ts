@@ -12,6 +12,7 @@ import {
   getAssistanceNeedsAndActionsReport,
   getAssistanceNeedsAndActionsReportByChild,
   getAttendanceReservationReportByChild,
+  getChildAgeLanguageReport,
   getChildAttendanceReport,
   getChildDocumentsReport,
   getChildDocumentsReportTemplateOptions,
@@ -221,3 +222,5 @@ export const safeDeletePersonMutation = q.mutation(safeDeletePerson, [
 export const childrenInDifferentAddressReportQuery = q.query(
   getChildrenInDifferentAddressReport
 )
+
+export const childAgeLanguageReportQuery = q.query(getChildAgeLanguageReport)

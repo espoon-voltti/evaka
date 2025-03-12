@@ -2,14 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { Link } from 'react-router'
 import styled from 'styled-components'
 
-import { Loading, Result, wrapResult } from 'lib-common/api'
 import { ChildAgeLanguageReportRow } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
-import Loader from 'lib-components/atoms/Loader'
+import { useQueryResult } from 'lib-common/query'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
@@ -18,14 +17,13 @@ import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 
 import ReportDownload from '../../components/reports/ReportDownload'
-import { getChildAgeLanguageReport } from '../../generated/api-clients/reports'
 import { useTranslation } from '../../state/i18n'
 import { DateFilters } from '../../types/reports'
 import { distinct, reducePropertySum } from '../../utils'
+import { renderResult } from '../async-rendering'
 
 import { FilterLabel, FilterRow, TableFooter, TableScrollable } from './common'
-
-const getChildAgeLanguageReportResult = wrapResult(getChildAgeLanguageReport)
+import { childAgeLanguageReportQuery } from './queries'
 
 interface DisplayFilters {
   careArea: string
@@ -41,27 +39,29 @@ const Wrapper = styled.div`
 
 export default React.memo(function ChildAgeLanguage() {
   const { i18n } = useTranslation()
-  const [rows, setRows] = useState<Result<ChildAgeLanguageReportRow[]>>(
-    Loading.of()
-  )
-  const [filters, setFilters] = useState<DateFilters>({
+  const [filters, _setFilters] = useState<DateFilters>({
     date: LocalDate.todayInSystemTz()
   })
-
   const [displayFilters, setDisplayFilters] =
     useState<DisplayFilters>(emptyDisplayFilters)
-  const displayFilter = (row: ChildAgeLanguageReportRow): boolean =>
-    !(displayFilters.careArea && row.careAreaName !== displayFilters.careArea)
+  const displayFilter = useCallback(
+    (row: ChildAgeLanguageReportRow): boolean =>
+      !(
+        displayFilters.careArea && row.careAreaName !== displayFilters.careArea
+      ),
+    [displayFilters.careArea]
+  )
 
-  useEffect(() => {
-    setRows(Loading.of())
+  const setFilters = useCallback((filters: DateFilters) => {
     setDisplayFilters(emptyDisplayFilters)
-    void getChildAgeLanguageReportResult(filters).then(setRows)
-  }, [filters])
+    _setFilters(filters)
+  }, [])
 
-  const filteredRows: ChildAgeLanguageReportRow[] = useMemo(
-    () => rows.map((rs) => rs.filter(displayFilter)).getOrElse([]),
-    [rows, displayFilters] // eslint-disable-line react-hooks/exhaustive-deps
+  const rows = useQueryResult(childAgeLanguageReportQuery(filters))
+
+  const filteredRows = useMemo(
+    () => rows.map((rs) => rs.filter(displayFilter)),
+    [rows, displayFilter]
   )
 
   return (
@@ -117,9 +117,7 @@ export default React.memo(function ChildAgeLanguage() {
           </Wrapper>
         </FilterRow>
 
-        {rows.isLoading && <Loader />}
-        {rows.isFailure && <span>{i18n.common.loadingFailed}</span>}
-        {rows.isSuccess && (
+        {renderResult(filteredRows, (filteredRows) => (
           <>
             <ReportDownload
               data={filteredRows.map((row) => ({
@@ -290,7 +288,7 @@ export default React.memo(function ChildAgeLanguage() {
               </TableFooter>
             </TableScrollable>
           </>
-        )}
+        ))}
       </ContentArea>
     </Container>
   )
