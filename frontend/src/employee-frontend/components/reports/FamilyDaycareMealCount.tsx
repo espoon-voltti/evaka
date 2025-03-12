@@ -7,13 +7,12 @@ import React, { useMemo, useState } from 'react'
 import { Link } from 'react-router'
 import styled from 'styled-components'
 
-import { wrapResult } from 'lib-common/api'
 import {
   FamilyDaycareMealAreaResult,
   FamilyDaycareMealDaycareResult
 } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
-import { useApiState } from 'lib-common/utils/useRestApi'
+import { useQueryResult } from 'lib-common/query'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
@@ -23,13 +22,11 @@ import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { faChevronDown, faChevronUp } from 'lib-icons'
 
 import ReportDownload from '../../components/reports/ReportDownload'
-import { getFamilyDaycareMealReport } from '../../generated/api-clients/reports'
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 
 import { FilterLabel, FilterRow, TableScrollable } from './common'
-
-const getFamilyDaycareMealReportResult = wrapResult(getFamilyDaycareMealReport)
+import { familyDaycareMealReportQuery } from './queries'
 
 interface FamilyDaycareMealCountReportFilters {
   startDate: LocalDate
@@ -104,10 +101,7 @@ export default React.memo(function FamilyDaycareMealCount() {
 
   const [daycaresOpen, setDaycaresOpen] = useState<Record<string, boolean>>({})
 
-  const [reportResult] = useApiState(
-    () => getFamilyDaycareMealReportResult(filters),
-    [filters]
-  )
+  const reportResult = useQueryResult(familyDaycareMealReportQuery(filters))
 
   const countTotalsFromResults = (
     filteredAreaResults: {

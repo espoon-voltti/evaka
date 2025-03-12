@@ -17,6 +17,7 @@ import {
   getExceededServiceNeedReportRows,
   getExceededServiceNeedReportUnits,
   getFamilyContactsReport,
+  getFamilyDaycareMealReport,
   getFuturePreschoolersReport,
   getFuturePreschoolersSourceUnitsReport,
   getFuturePreschoolersUnitsReport,
@@ -168,3 +169,5 @@ export const missingServiceNeedReportQuery = q.query(
 )
 
 export const manualDuplicationReportQuery = q.query(getManualDuplicationReport)
+
+export const familyDaycareMealReportQuery = q.query(getFamilyDaycareMealReport)
