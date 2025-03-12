@@ -5,6 +5,7 @@
 package fi.espoo.evaka.nekku
 
 import fi.espoo.evaka.decision.logger
+import fi.espoo.evaka.invoicing.domain.DraftInvoiceRow
 import fi.espoo.evaka.shared.db.Database
 import org.jdbi.v3.core.mapper.PropagateNull
 
@@ -111,22 +112,18 @@ fun fetchAndUpdateNekkuSpecialDiets(client: NekkuClient, db: Database.Connection
     if (specialDietsFromNekku.isEmpty())
         error("Refusing to sync empty Nekku special diet list into database")
 
-
-
     db.transaction { tx ->
-        val nekkuSpecialDietIds = tx.setSpecialDiets(specialDietsFromNekku)
 
+        tx.setSpecialDiets(specialDietsFromNekku)
         // Save nekku fields
-
-//        tx.setSpecialDietFields(specialDietsFromNekku)
+        tx.setSpecialDietFields(specialDietsFromNekku.map { it.id to it.fields })
 
         // Save nekku options
 
     }
-
 }
 
-fun Database.Transaction.setSpecialDiets(specialDiets: List<NekkuSpecialDiet>): List<String> {
+fun Database.Transaction.setSpecialDiets(specialDiets: List<NekkuSpecialDiet>) {
     val newSpecialDiets = specialDiets.map { it.id }
     val deletedSpecialDietsCount = execute {
         sql("DELETE FROM nekku_special_diet WHERE id != ALL (${bind(newSpecialDiets)})")
@@ -140,7 +137,7 @@ fun Database.Transaction.setSpecialDiets(specialDiets: List<NekkuSpecialDiet>): 
 ) VALUES (
     ${bind { it.id }},
     ${bind { it.name }}
-) RETURNING id
+)
 """
         )
     }
@@ -148,37 +145,40 @@ fun Database.Transaction.setSpecialDiets(specialDiets: List<NekkuSpecialDiet>): 
     logger.info {
         "Deleted: $deletedSpecialDietsCount Nekku special diets, inserted ${specialDiets.size}"
     }
-
-    return newSpecialDiets
 }
 
+fun Database.Transaction.getNekkuSpecialDiets(): Int {
+    val count = execute { sql("SELECT count(*) FROM nekku_special_diet") }
+    return count
+}
 
-fun Database.Transaction.getNekkuSpecialDiets(): List<NekkuSpecialDiet> {
-    return createQuery {
-        sql("SELECT id, name, null as fields FROM nekku_special_diet")
+ fun Database.Transaction.setSpecialDietFields(specialDietFields: List<Pair<String, List<NekkuSpecialDietsField>>>){
+
+     val batchRows: Sequence<Pair<String, NekkuSpecialDietsField>> =
+         specialDietFields.asSequence().flatMap { (dietId, fields) ->
+             fields.map { field -> Pair(dietId, field) }
+         }
+
+
+    executeBatch(batchRows) {
+        sql(
+            """
+INSERT INTO nekku_special_diet_field (
+    diet_id,
+    id,
+    name,
+    type
+) VALUES (
+    ${bind { (dietId, _) ->  dietId}},
+    ${bind { (_, field) ->  field.id }},
+    ${bind { (_, field) ->  field.name }},
+    ${bind { (_, field) ->  field.type }}
+)
+ """
+        )
     }
-        .toList<NekkuSpecialDiet>()
-}
 
-
-
-//fun Database.Transaction.setSpecialDietFields(specialDiets: List<NekkuSpecialDiet>) {
-//    val newSpecialDietFields = specialDiets.map { it.fields }
-//    val deletedSpecialDietsCount = execute {
-//        sql("DELETE FROM nekku_special_diets_field WHERE id != ALL (${bind(newSpecialDietFields)})")
-//    }
-//    executeBatch(newSpecialDietFields) {
-//        sql(
-//            """
-//
-//"""
-//        )
-//    }
-//
-//    logger.info {
-//        "Deleted: $deletedSpecialDietsCount Nekku special diets, inserted ${specialDiets.size}"
-//    }
-//
-//    return newSpecialDiets
-//}
-
+    logger.info {
+        "Inserted Nekku special diet fields ${specialDietFields.size}"
+    }
+ }
