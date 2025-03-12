@@ -11,7 +11,6 @@ import { formatCents } from 'lib-common/money'
 import { useQueryResult } from 'lib-common/query'
 import { Arg0 } from 'lib-common/types'
 import YearMonth from 'lib-common/year-month'
-import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
@@ -21,6 +20,7 @@ import { Th, Tr, Td, Thead, Tbody } from 'lib-components/layout/Table'
 import ReportDownload from '../../components/reports/ReportDownload'
 import { getInvoiceReport } from '../../generated/api-clients/reports'
 import { useTranslation } from '../../state/i18n'
+import { renderResult } from '../async-rendering'
 
 import { FilterLabel, FilterRow, TableScrollable } from './common'
 import { invoicesReportQuery } from './queries'
@@ -71,12 +71,10 @@ export default React.memo(function ReportInvoices() {
             }}
           />
         </FilterRow>
-        {report.isLoading && <Loader />}
-        {report.isFailure && <span>{i18n.common.loadingFailed}</span>}
-        {report.isSuccess && (
+        {renderResult(report, (report) => (
           <>
             <ReportDownload<InvoiceReportRow>
-              data={report.value.reportRows}
+              data={report.reportRows}
               columns={[
                 { label: 'Alue', value: (row) => row.areaCode },
                 { label: 'Laskuja', value: (row) => row.amountOfInvoices },
@@ -105,7 +103,7 @@ export default React.memo(function ReportInvoices() {
                 </Tr>
               </Thead>
               <Tbody>
-                {orderBy(report.value.reportRows, ['areaCode']).map(
+                {orderBy(report.reportRows, ['areaCode']).map(
                   (row: InvoiceReportRow) => (
                     <Tr key={row.areaCode}>
                       <Td>{row.areaCode}</Td>
@@ -119,16 +117,16 @@ export default React.memo(function ReportInvoices() {
                 )}
                 <Tr>
                   <Td />
-                  <Td>{report.value.totalAmountOfInvoices}</Td>
-                  <Td>{formatCents(report.value.totalSumCents)}</Td>
-                  <Td>{report.value.totalAmountWithoutSSN}</Td>
-                  <Td>{report.value.totalAmountWithoutAddress}</Td>
-                  <Td>{report.value.totalAmountWithZeroPrice}</Td>
+                  <Td>{report.totalAmountOfInvoices}</Td>
+                  <Td>{formatCents(report.totalSumCents)}</Td>
+                  <Td>{report.totalAmountWithoutSSN}</Td>
+                  <Td>{report.totalAmountWithoutAddress}</Td>
+                  <Td>{report.totalAmountWithZeroPrice}</Td>
                 </Tr>
               </Tbody>
             </TableScrollable>
           </>
-        )}
+        ))}
       </ContentArea>
     </Container>
   )
