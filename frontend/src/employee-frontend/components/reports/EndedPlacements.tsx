@@ -4,15 +4,15 @@
 
 import range from 'lodash/range'
 import sortBy from 'lodash/sortBy'
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { Link } from 'react-router'
 import styled from 'styled-components'
 
-import { Loading, Result, Success, wrapResult } from 'lib-common/api'
+import { combine } from 'lib-common/api'
 import { EndedPlacementsReportRow } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
+import { useQueryResult } from 'lib-common/query'
 import { Arg0 } from 'lib-common/types'
-import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
@@ -22,12 +22,12 @@ import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { getEndedPlacementsReport } from '../../generated/api-clients/reports'
 import { useTranslation } from '../../state/i18n'
 import { distinct } from '../../utils'
+import { renderResult } from '../async-rendering'
 import { FlexRow } from '../common/styled/containers'
 import ReportDownload from '../reports/ReportDownload'
 
 import { FilterLabel, FilterRow, RowCountInfo, TableScrollable } from './common'
-
-const getEndedPlacementsReportResult = wrapResult(getEndedPlacementsReport)
+import { endedPlacementsReportQuery } from './queries'
 
 type PlacementsReportFilters = Arg0<typeof getEndedPlacementsReport>
 
@@ -49,9 +49,6 @@ function getFilename(year: number, month: number) {
 
 export default React.memo(function EndedPlacements() {
   const { i18n } = useTranslation()
-  const [rows, setRows] = useState<Result<EndedPlacementsReportRow[]>>(
-    Success.of([])
-  )
   const today = LocalDate.todayInSystemTz()
   const [filters, setFilters] = useState<PlacementsReportFilters>({
     year: today.year,
@@ -69,22 +66,24 @@ export default React.memo(function EndedPlacements() {
   const [displayFilters, setDisplayFilters] =
     useState<DisplayFilters>(emptyDisplayFilters)
 
-  const displayFilter = (row: EndedPlacementsReportRow): boolean =>
-    !(displayFilters.careArea && row.areaName !== displayFilters.careArea)
+  const displayFilter = useCallback(
+    (row: EndedPlacementsReportRow): boolean =>
+      !(displayFilters.careArea && row.areaName !== displayFilters.careArea),
+    [displayFilters.careArea]
+  )
 
-  useEffect(() => {
-    setRows(Loading.of())
-    void getEndedPlacementsReportResult(filters).then(setRows)
-  }, [filters])
+  const rows = useQueryResult(endedPlacementsReportQuery(filters))
 
-  const filteredRows: EndedPlacementsReportRow[] = useMemo(
+  const filteredRows = useMemo(
     () =>
-      sortBy(rows.getOrElse([]).filter(displayFilter), [
-        (row) => row.areaName,
-        (row) => row.firstName,
-        (row) => row.lastName
-      ]),
-    [rows, displayFilters] // eslint-disable-line react-hooks/exhaustive-deps
+      rows.map((rows) =>
+        sortBy(rows.filter(displayFilter), [
+          (row) => row.areaName,
+          (row) => row.firstName,
+          (row) => row.lastName
+        ])
+      ),
+    [rows, displayFilter]
   )
 
   return (
@@ -165,9 +164,7 @@ export default React.memo(function EndedPlacements() {
           </FlexRow>
         </FilterRow>
 
-        {rows.isLoading && <Loader />}
-        {rows.isFailure && <span>{i18n.common.loadingFailed}</span>}
-        {rows.isSuccess && (
+        {renderResult(combine(rows, filteredRows), ([rows, filteredRows]) => (
           <>
             <ReportDownload
               data={filteredRows.map((row) => ({
@@ -220,9 +217,9 @@ export default React.memo(function EndedPlacements() {
                 ))}
               </Tbody>
             </TableScrollable>
-            <RowCountInfo rowCount={rows.value.length} />
+            <RowCountInfo rowCount={rows.length} />
           </>
-        )}
+        ))}
       </ContentArea>
     </Container>
   )
