@@ -23,6 +23,7 @@ import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { H4, Label } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/employeeMobile'
+import { faCalendar } from 'lib-icons'
 
 import { routes } from '../App'
 import { renderResult } from '../async-rendering'
@@ -240,6 +241,20 @@ export default React.memo(function StaffMemberPage({
                     onClick={() =>
                       navigate(
                         routes.staffPreviousAttendances(
+                          unitOrGroup,
+                          staffMember.employeeId
+                        ).value
+                      )
+                    }
+                  />
+                  <Button
+                    data-qa="planned-attendances"
+                    appearance="inline"
+                    text={i18n.attendances.staff.nextDays}
+                    icon={faCalendar}
+                    onClick={() =>
+                      navigate(
+                        routes.staffPlannedAttendances(
                           unitOrGroup,
                           staffMember.employeeId
                         ).value

@@ -6,10 +6,13 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import sortBy from 'lodash/sortBy'
 import React, { useCallback, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
-import styled, { css, useTheme } from 'styled-components'
+import styled, { useTheme } from 'styled-components'
 
 import { Result } from 'lib-common/api'
-import { GroupInfo } from 'lib-common/generated/api-types/attendance'
+import {
+  GroupInfo,
+  StaffAttendanceType
+} from 'lib-common/generated/api-types/attendance'
 import { EmployeeId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
@@ -21,6 +24,7 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
+import { InfoBox } from 'lib-components/molecules/MessageBoxes'
 import { TabLinks } from 'lib-components/molecules/Tabs'
 import { fontWeights } from 'lib-components/typography'
 import { fasExclamationTriangle } from 'lib-icons'
@@ -251,6 +255,7 @@ interface StaffMemberDay {
   plans: {
     start: LocalTime | null // null if started on previous day
     end: LocalTime | null // null if ends on the next day
+    type: StaffAttendanceType
   }[]
   confidence: 'full' | 'maybeInOtherGroup' | 'maybeInOtherUnit'
 }
@@ -309,7 +314,8 @@ const StaffAttendancesPlanned = React.memo(function StaffAttendancesPlanned({
                       : null,
                     end: p.end.toLocalDate().isEqual(date)
                       ? p.end.toLocalTime()
-                      : null
+                      : null,
+                    type: p.type
                   })),
                 confidence:
                   s.unitIds.length > 1
@@ -326,11 +332,9 @@ const StaffAttendancesPlanned = React.memo(function StaffAttendancesPlanned({
 
   return renderResult(staffMemberDays, (days) => (
     <FixedSpaceColumn spacing="xxs">
-      <HeaderRow>
-        <DayRowCol1 />
-        <DayRowCol2>{i18n.attendances.staff.plannedCount}</DayRowCol2>
-        <div />
-      </HeaderRow>
+      <DayRow>
+        <InfoBox message={i18n.attendances.staff.plansInfo} noMargin thin />
+      </DayRow>
       {days.map(({ date, staff }) => (
         <>
           <DayRow
@@ -339,12 +343,11 @@ const StaffAttendancesPlanned = React.memo(function StaffAttendancesPlanned({
             onClick={() =>
               setExpandedDate(expandedDate?.isEqual(date) ? null : date)
             }
+            justifyContent="space-between"
+            alignItems="center"
             $open={expandedDate?.isEqual(date) ?? false}
           >
-            <DayRowCol1>{date.formatExotic('EEEEEE d.M.', lang)}</DayRowCol1>
-            <DayRowCol2 data-qa="present-count">
-              {staff.filter(({ plans }) => plans.length > 0).length}
-            </DayRowCol2>
+            <div>{date.formatExotic('EEEEEE d.M.', lang)}</div>
             <div>
               <FontAwesomeIcon
                 icon={expandedDate?.isEqual(date) ? faChevronUp : faChevronDown}
@@ -365,36 +368,23 @@ const StaffAttendancesPlanned = React.memo(function StaffAttendancesPlanned({
               ).map((s) => (
                 <FixedSpaceColumn
                   key={s.employeeId}
-                  spacing="xxs"
+                  spacing="xs"
                   data-qa={`present-employee-${s.employeeId}`}
                 >
-                  <FixedSpaceRow justifyContent="space-between">
-                    <StaffCol1>
-                      <FixedSpaceRow spacing="zero" alignItems="center">
-                        <IconWrapper>
-                          {s.occupancyEffect && (
-                            <RoundIcon
-                              content="K"
-                              active={true}
-                              color={theme.colors.accents.a3emerald}
-                              size="s"
-                            />
-                          )}
-                        </IconWrapper>
-                        <StaffName>{`${s.firstName} ${s.lastName}`}</StaffName>
-                      </FixedSpaceRow>
-                    </StaffCol1>
-                    <StaffCol2>
-                      <FixedSpaceColumn spacing="zero">
-                        {s.plans.map((p, i) => (
-                          <div key={i}>
-                            {`${p.start?.format() ?? '→'} - ${p.end?.format() ?? '→'}`}
-                            {i < s.plans.length - 1 && ', '}
-                          </div>
-                        ))}
-                      </FixedSpaceColumn>
-                    </StaffCol2>
+                  <FixedSpaceRow spacing="zero" alignItems="center">
+                    <IconWrapper>
+                      {s.occupancyEffect && (
+                        <RoundIcon
+                          content="K"
+                          active={true}
+                          color={theme.colors.accents.a3emerald}
+                          size="s"
+                        />
+                      )}
+                    </IconWrapper>
+                    <StaffName>{`${s.firstName} ${s.lastName}`}</StaffName>
                   </FixedSpaceRow>
+
                   {s.confidence !== 'full' && (
                     <FixedSpaceRow spacing="zero" alignItems="center">
                       <IconWrapper>
@@ -408,6 +398,13 @@ const StaffAttendancesPlanned = React.memo(function StaffAttendancesPlanned({
                       </span>
                     </FixedSpaceRow>
                   )}
+
+                  {s.plans.map((p, i) => (
+                    <DetailsRow key={i} alignItems="center">
+                      <PlanType>{i18n.attendances.staffTypes[p.type]}</PlanType>
+                      <div>{`${p.start?.format() ?? '→'} - ${p.end?.format() ?? '→'}`}</div>
+                    </DetailsRow>
+                  ))}
                 </FixedSpaceColumn>
               ))}
 
@@ -419,12 +416,11 @@ const StaffAttendancesPlanned = React.memo(function StaffAttendancesPlanned({
                 (s) => s.firstName,
                 (s) => s.lastName
               ).map((s) => (
-                <FixedSpaceRow
-                  justifyContent="space-between"
+                <AbsentStaff
                   key={s.employeeId}
                   data-qa={`absent-employee-${s.employeeId}`}
                 >
-                  <StaffCol1 $absent>
+                  <FixedSpaceColumn spacing="xxs">
                     <FixedSpaceRow spacing="zero" alignItems="center">
                       <IconWrapper>
                         {s.occupancyEffect && (
@@ -438,9 +434,9 @@ const StaffAttendancesPlanned = React.memo(function StaffAttendancesPlanned({
                       </IconWrapper>
                       <StaffName>{`${s.firstName} ${s.lastName}`}</StaffName>
                     </FixedSpaceRow>
-                  </StaffCol1>
-                  <StaffCol2 $absent>{i18n.attendances.staff.noPlan}</StaffCol2>
-                </FixedSpaceRow>
+                    <DetailsRow>{i18n.attendances.staff.noPlan}</DetailsRow>
+                  </FixedSpaceColumn>
+                </AbsentStaff>
               ))}
             </ExpandedStaff>
           )}
@@ -450,55 +446,20 @@ const StaffAttendancesPlanned = React.memo(function StaffAttendancesPlanned({
   ))
 })
 
-const HeaderRow = styled(FixedSpaceRow)`
-  padding: 16px 8px 8px;
-  font-size: 14px;
-  color: ${(p) => p.theme.colors.grayscale.g70};
-  font-weight: ${fontWeights.bold};
-  line-height: 1.3em;
-  text-transform: uppercase;
-  vertical-align: middle;
-`
 const DayRow = styled(FixedSpaceRow)<{ $open: boolean }>`
   border-left: 4px solid
     ${(p) => (p.$open ? p.theme.colors.main.m2 : 'transparent')};
-  cursor: pointer;
-  padding: 8px;
+  padding: 16px;
   background-color: ${(p) => p.theme.colors.grayscale.g0};
-`
-
-const DayRowCol1 = styled.div`
-  width: 30%;
-`
-
-const DayRowCol2 = styled.div`
-  width: 50%;
 `
 
 const ExpandedStaff = styled(FixedSpaceColumn)`
-  padding: 8px;
+  padding: 16px 8px;
   background-color: ${(p) => p.theme.colors.grayscale.g0};
 `
 
-const StaffCol = styled.div<{ $absent?: boolean }>`
-  ${(p) =>
-    p.$absent
-      ? css`
-          color: ${p.theme.colors.grayscale.g70};
-        `
-      : ''}
-`
-
-const StaffCol1 = styled(StaffCol)`
-  width: 60%;
-  min-width: 60%;
-  max-width: 60%;
-`
-
-const StaffCol2 = styled(StaffCol)`
-  width: 35%;
-  min-width: 35%;
-  max-width: 35%;
+const AbsentStaff = styled.div`
+  color: ${(p) => p.theme.colors.grayscale.g70};
 `
 
 const StaffName = styled.div`
@@ -508,11 +469,19 @@ const StaffName = styled.div`
   white-space: nowrap;
 `
 
+const PlanType = styled.div`
+  width: 30%;
+`
+
 const IconWrapper = styled.div`
-  min-width: 36px;
+  min-width: 40px;
   display: flex;
   justify-content: center;
   align-items: center;
+`
+
+const DetailsRow = styled(FixedSpaceRow)`
+  padding-left: 40px;
 `
 
 const NoPlansSeparator = styled(HorizontalLine)`

@@ -297,6 +297,7 @@ export const fi = {
         wrongPin: 'Väärä PIN-koodi'
       },
       previousDays: 'Aiemmat kirjaukset',
+      nextDays: 'Tulevat työvuorot ja poissaolot',
       continuationAttendance: '* edellisenä päivänä alkanut kirjaus',
       editContinuationAttendance: 'Siirry muokkaamaan',
       absent: 'Poissa',
@@ -331,12 +332,17 @@ export const fi = {
       openAttendanceInAnotherUnitWarning: 'Avoin kirjaus ',
       openAttendanceInAnotherUnitWarningCont:
         '. Kirjaus on päätettävä ennen uuden lisäystä.',
-      plannedCount: 'Suunniteltuja työvuoroja',
-      noPlan: 'Ei suunnitteltua työvuoroa',
+      noPlan: 'Ei suunniteltua työvuoroa',
       planWarnings: {
         maybeInOtherUnit: 'Työvuoro voi olla toisessa yksikössä',
         maybeInOtherGroup: 'Työvuoro voi olla toisessa ryhmässä'
-      }
+      },
+      plansInfo:
+        'Ainoastaan työvuorojärjestelmään merkityt poissaolot näkyvät listalla.',
+      staffMemberPlanInfo:
+        'Sisältää vain työvuorojärjestelmään suunnitellut poissaolot.',
+      staffMemberMultipleUnits:
+        'Tällä henkilöllä näkyvät työvuorot voivat olla toisessa yksikössä'
     },
     timeDiffTooBigNotification:
       'Voit tehdä sisäänkirjauksen +/- 30 min päähän nykyhetkestä. Kirjauksia voi tarvittaessa muokata työpöytäselaimen kautta.',
