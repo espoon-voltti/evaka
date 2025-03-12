@@ -163,6 +163,11 @@ export default React.memo(function ServiceTimeSubSectionPreschool({
                 }
                 minDate={minDate}
                 maxDate={maxDate}
+                initialMonth={
+                  formData.connectedDaycarePreferredStartDate ??
+                  formData.preferredStartDate ??
+                  undefined
+                }
                 data-qa="connectedDaycarePreferredStartDate-input"
                 id={labelId}
                 required={true}

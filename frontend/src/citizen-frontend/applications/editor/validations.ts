@@ -70,6 +70,29 @@ const preferredStartDateValidator =
       ? undefined
       : err
 
+const isInSameTerm = (
+  date1: LocalDate,
+  date2: LocalDate,
+  terms: FiniteDateRange[]
+) => {
+  const term1 = terms.find((term) => term.includes(date1))
+  const term2 = terms.find((term) => term.includes(date2))
+  return term1 === term2
+}
+
+const connectedDaycarePreferredStartDateValidator =
+  (preferredStartDate: LocalDate | null, terms?: FiniteDateRange[]) =>
+  (
+    val: LocalDate | null,
+    err: ErrorKey = 'connectedPreferredStartDate'
+  ): ErrorKey | undefined =>
+    val &&
+    preferredStartDate &&
+    terms &&
+    (val === preferredStartDate || isInSameTerm(val, preferredStartDate, terms))
+      ? undefined
+      : err
+
 export const getUrgencyAttachmentValidStatus = (
   urgent: boolean,
   urgencyAttachments: ApplicationAttachment[]
@@ -118,7 +141,20 @@ export const validateApplication = (
         apiData.type === 'PRESCHOOL' &&
         featureFlags.preschoolApplication.connectedDaycarePreferredStartDate &&
         form.serviceNeed.connectedDaycare
-          ? required(form.serviceNeed.connectedDaycarePreferredStartDate)
+          ? validate(
+              form.serviceNeed.connectedDaycarePreferredStartDate,
+              required,
+              preferredStartDateValidator(
+                apiData.status !== 'CREATED'
+                  ? apiData.form.preferences.connectedDaycarePreferredStartDate
+                  : null,
+                terms
+              ),
+              connectedDaycarePreferredStartDateValidator(
+                form.serviceNeed.preferredStartDate,
+                terms
+              )
+            )
           : undefined,
       serviceNeedOption:
         (apiData.type === 'PRESCHOOL' &&

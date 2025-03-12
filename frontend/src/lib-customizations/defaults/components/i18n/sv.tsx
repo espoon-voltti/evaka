@@ -155,6 +155,8 @@ const components: Translations = {
     phone: 'Ogiltigt telefonnummer',
     email: 'Ogiltig e-postadress',
     preferredStartDate: 'Ogiltigt datum',
+    connectedPreferredStartDate:
+      'Du kan ansöka om kompletterande förskoleutbildning från början av ditt barns förskoleutbildning',
     timeFormat: 'Kolla',
     timeRequired: 'Nödvändig',
     dateTooEarly: 'Välj ett senare datum',

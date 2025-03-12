@@ -1367,6 +1367,22 @@ class ApplicationStateService(
             if (!canApplyForPreferredDate) {
                 throw BadRequest("Cannot apply to preschool on $preferredStartDate at the moment")
             }
+
+            val connectedDaycarePreferredStartDate =
+                application.preferences.connectedDaycarePreferredStartDate
+            if (
+                connectedDaycarePreferredStartDate != null &&
+                    connectedDaycarePreferredStartDate != preferredStartDate &&
+                    validateApplicationPeriod
+            ) {
+                val connectedPreschoolTerm =
+                    tx.getActivePreschoolTermAt(connectedDaycarePreferredStartDate)
+                if (connectedPreschoolTerm != activePreschoolTerm) {
+                    throw BadRequest(
+                        "Cannot apply to different preschool term for connected daycare"
+                    )
+                }
+            }
         }
 
         if (type == ApplicationType.CLUB && preferredStartDate != null) {

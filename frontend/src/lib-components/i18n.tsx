@@ -131,6 +131,7 @@ export interface Translations {
     phone: string
     email: string
     preferredStartDate: string
+    connectedPreferredStartDate: string
     timeFormat: string
     timeRequired: string
     dateTooEarly: string
