@@ -2306,16 +2306,6 @@ const sv: Translations = {
     incomeStatementMissing:
       'Om ditt barn har inkomst, anmäl det med en inkomstredovisning.',
     incomeType: {
-      description: (
-        <>
-          Om du är företagare men har också andra inkomster, välj både{' '}
-          <strong>Företagarens inkomstuppgifter</strong>, och{' '}
-          <strong>
-            Fastställande av klientavgiften enligt bruttoinkomster
-          </strong>
-          .
-        </>
-      ),
       startDate: 'Gäller från och med',
       endDate: 'Upphör att gälla',
       title: 'Grunder för klientavgiften',

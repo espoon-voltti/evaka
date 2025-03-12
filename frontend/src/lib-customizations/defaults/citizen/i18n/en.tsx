@@ -2065,13 +2065,6 @@ const en: Translations = {
     incomeStatementMissing:
       'If your child has income, report it with an income statement.',
     incomeType: {
-      description: (
-        <>
-          If you are an entrepreneur but also have other income, choose both{' '}
-          <strong>Entrepreneur&apos;s income information</strong>, and{' '}
-          <strong>Determination of the client fee by gross income</strong>.
-        </>
-      ),
       startDate: 'Valid as of',
       endDate: 'Valid until',
       title: 'Grounds for the client fee',

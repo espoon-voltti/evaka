@@ -2008,7 +2008,8 @@ export const fi = {
     feeBasis: 'Asiakasmaksun peruste',
 
     grossTitle: 'Bruttotulot',
-    noIncomeTitle: 'Ei mitään tuloja tai tukia',
+    noIncomeTitle:
+      'Ei mitään tuloja tai tukia, tiedot saa tarkastaa tulorekisteristä ja Kelasta',
     noIncomeDescription: 'Kuvaile tilannettasi tarkemmin',
     incomeSource: 'Tietojen toimitus',
     incomesRegister:
@@ -2070,7 +2071,6 @@ export const fi = {
     lightEntrepreneur: 'Kevytyrittäjyys',
     attachments: 'Liitteet',
 
-    noIncome: 'Ei mitään tuloja tai tukia',
     estimatedMonthlyIncome: 'Keskimääräiset tulot €/kk',
     timeRange: 'Aikavälillä',
 

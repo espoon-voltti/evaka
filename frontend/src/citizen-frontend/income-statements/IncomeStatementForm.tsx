@@ -491,8 +491,6 @@ const IncomeTypeSelection = React.memo(
           <Gap size="L" />
           <H3 noMargin>{t.income.incomeType.title}</H3>
           <Gap size="s" />
-          <P noMargin>{t.income.incomeType.description}</P>
-          <Gap size="s" />
           <Radio
             label={t.income.incomeType.agreeToHighestFee}
             data-qa="highest-fee-checkbox"
