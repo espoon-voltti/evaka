@@ -13,15 +13,14 @@ import { PlacementGuaranteeReportRow } from 'lib-common/generated/api-types/repo
 import { DaycareId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
-import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
-import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { SortableTh, Tbody, Td, Thead, Tr } from 'lib-components/layout/Table'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 
+import { renderResult } from '../async-rendering'
 import { unitsQuery } from '../unit/queries'
 
 import ReportDownload from './ReportDownload'
@@ -86,28 +85,24 @@ const PlacementGuaranteeFilters = ({
       </FilterRow>
       <FilterRow>
         <FilterLabel>{i18n.reports.common.unitName}</FilterLabel>
-        {sortedUnits.mapAll({
-          loading: () => <Loader />,
-          failure: () => <ErrorSegment />,
-          success: (units) => (
-            <Combobox
-              items={units}
-              onChange={(selectedItem) => {
-                setFilters({
-                  ...filters,
-                  unitId: selectedItem !== null ? selectedItem.id : null
-                })
-              }}
-              selectedItem={
-                units.find((unit) => unit.id === filters.unitId) ?? null
-              }
-              getItemLabel={(item) => item.name}
-              placeholder={i18n.filters.unitPlaceholder}
-              clearable
-              data-qa="unit-selector"
-            />
-          )
-        })}
+        {renderResult(sortedUnits, (units) => (
+          <Combobox
+            items={units}
+            onChange={(selectedItem) => {
+              setFilters({
+                ...filters,
+                unitId: selectedItem !== null ? selectedItem.id : null
+              })
+            }}
+            selectedItem={
+              units.find((unit) => unit.id === filters.unitId) ?? null
+            }
+            getItemLabel={(item) => item.name}
+            placeholder={i18n.filters.unitPlaceholder}
+            clearable
+            data-qa="unit-selector"
+          />
+        ))}
       </FilterRow>
     </>
   )
@@ -119,17 +114,9 @@ const PlacementGuaranteeData = ({
   filters: PlacementGuaranteeReportFilters
 }) => {
   const reportResult = useQueryResult(placementGuaranteeReportQuery(filters))
-  return (
-    <>
-      {reportResult.mapAll({
-        loading: () => <Loader />,
-        failure: () => <ErrorSegment />,
-        success: (rows) => (
-          <PlacementGuaranteeTable date={filters.date} rows={rows} />
-        )
-      })}
-    </>
-  )
+  return renderResult(reportResult, (rows) => (
+    <PlacementGuaranteeTable date={filters.date} rows={rows} />
+  ))
 }
 
 interface PlacementGuaranteeReportSort {
