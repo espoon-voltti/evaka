@@ -7,6 +7,7 @@ import { Queries } from 'lib-common/query'
 import { sendJamixOrders } from '../../generated/api-clients/jamix'
 import {
   clearTitaniaErrors,
+  getAssistanceNeedDecisionsReport,
   getAssistanceNeedsAndActionsReport,
   getAssistanceNeedsAndActionsReportByChild,
   getAttendanceReservationReportByChild,
@@ -174,3 +175,7 @@ export const manualDuplicationReportQuery = q.query(getManualDuplicationReport)
 export const familyDaycareMealReportQuery = q.query(getFamilyDaycareMealReport)
 
 export const decisionReportQuery = q.query(getDecisionsReport)
+
+export const assistanceNeedDecisionsReportQuery = q.query(
+  getAssistanceNeedDecisionsReport
+)

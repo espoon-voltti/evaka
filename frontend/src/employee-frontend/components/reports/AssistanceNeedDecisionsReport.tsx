@@ -7,14 +7,13 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router'
 import styled from 'styled-components'
 
-import { wrapResult } from 'lib-common/api'
 import {
   AssistanceNeedDecisionStatus,
   assistanceNeedDecisionStatuses
 } from 'lib-common/generated/api-types/assistanceneed'
 import { SortDirection } from 'lib-common/generated/api-types/invoicing'
 import { AssistanceNeedDecisionsReportRow } from 'lib-common/generated/api-types/reports'
-import { useApiState } from 'lib-common/utils/useRestApi'
+import { useQueryResult } from 'lib-common/query'
 import { AssistanceNeedDecisionStatusChip } from 'lib-components/assistance-need-decision/AssistanceNeedDecisionStatusChip'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
@@ -32,16 +31,12 @@ import {
 } from 'lib-components/layout/Table'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 
-import { getAssistanceNeedDecisionsReport } from '../../generated/api-clients/reports'
 import { useTranslation } from '../../state/i18n'
 import { distinct } from '../../utils'
 import { renderResult } from '../async-rendering'
 
 import { FilterLabel, FilterRow } from './common'
-
-const getAssistanceNeedDecisionsReportResult = wrapResult(
-  getAssistanceNeedDecisionsReport
-)
+import { assistanceNeedDecisionsReportQuery } from './queries'
 
 const Wrapper = styled.div`
   width: 100%;
@@ -66,7 +61,7 @@ const RelativeTr = styled(Tr)`
 
 export default React.memo(function AssistanceNeedDecisionsReport() {
   const { i18n } = useTranslation()
-  const [report] = useApiState(getAssistanceNeedDecisionsReportResult, [])
+  const report = useQueryResult(assistanceNeedDecisionsReportQuery())
   const [careAreaFilter, setCareAreaFilter] = useState<string>()
   const [searchParams, setSearchParams] = useSearchParams()
 
