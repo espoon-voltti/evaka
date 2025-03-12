@@ -8,6 +8,7 @@ import { sendJamixOrders } from '../../generated/api-clients/jamix'
 import { mergePeople, safeDeletePerson } from '../../generated/api-clients/pis'
 import {
   clearTitaniaErrors,
+  getApplicationsReport,
   getAssistanceNeedDecisionsReport,
   getAssistanceNeedsAndActionsReport,
   getAssistanceNeedsAndActionsReportByChild,
@@ -224,3 +225,5 @@ export const childrenInDifferentAddressReportQuery = q.query(
 )
 
 export const childAgeLanguageReportQuery = q.query(getChildAgeLanguageReport)
+
+export const applicationsReportQuery = q.query(getApplicationsReport)
