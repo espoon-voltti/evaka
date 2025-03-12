@@ -449,6 +449,7 @@ sealed interface AsyncJob : AsyncJobPayload {
                     SendJamixOrder::class,
                     SyncJamixDiets::class,
                     SyncNekkuCustomers::class,
+                    SyncNekkuSpecialDiets::class,
                     SendPatuReport::class,
                     UpdateFromVtj::class,
                     UploadToKoski::class,

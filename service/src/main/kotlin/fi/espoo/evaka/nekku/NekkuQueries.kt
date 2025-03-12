@@ -110,33 +110,75 @@ fun fetchAndUpdateNekkuSpecialDiets(client: NekkuClient, db: Database.Connection
 
     if (specialDietsFromNekku.isEmpty())
         error("Refusing to sync empty Nekku special diet list into database")
+
+
+
     db.transaction { tx ->
-        val deletedSpecialDietsCount = tx.setSpecialDiets(specialDietsFromNekku)
-        logger.info {
-            "Deleted: $deletedSpecialDietsCount Nekku special diets, inserted ${specialDietsFromNekku.size}"
-        }
+        val nekkuSpecialDietIds = tx.setSpecialDiets(specialDietsFromNekku)
+
+        // Save nekku fields
+
+//        tx.setSpecialDietFields(specialDietsFromNekku)
+
+        // Save nekku options
+
     }
+
 }
 
-fun Database.Transaction.setSpecialDiets(specialDiets: List<NekkuSpecialDiet>): Int {
+fun Database.Transaction.setSpecialDiets(specialDiets: List<NekkuSpecialDiet>): List<String> {
     val newSpecialDiets = specialDiets.map { it.id }
-    val deletedCustomerCount = execute {
-        sql("DELETE FROM nekku_special_diet WHERE number != ALL (${bind(newSpecialDiets)})")
+    val deletedSpecialDietsCount = execute {
+        sql("DELETE FROM nekku_special_diet WHERE id != ALL (${bind(newSpecialDiets)})")
     }
     executeBatch(specialDiets) {
         sql(
             """
-                
+    INSERT INTO nekku_special_diet (
+    id,
+    name
+) VALUES (
+    ${bind { it.id }},
+    ${bind { it.name }}
+) RETURNING id
 """
         )
     }
-    return deletedCustomerCount
+
+    logger.info {
+        "Deleted: $deletedSpecialDietsCount Nekku special diets, inserted ${specialDiets.size}"
+    }
+
+    return newSpecialDiets
 }
 
-//INSERT INTO nekku_special_diet (id, name) VALUES ('diet1', 'Diet 1');
+
+fun Database.Transaction.getNekkuSpecialDiets(): List<NekkuSpecialDiet> {
+    return createQuery {
+        sql("SELECT id, name, null as fields FROM nekku_special_diet")
+    }
+        .toList<NekkuSpecialDiet>()
+}
+
+
+
+//fun Database.Transaction.setSpecialDietFields(specialDiets: List<NekkuSpecialDiet>) {
+//    val newSpecialDietFields = specialDiets.map { it.fields }
+//    val deletedSpecialDietsCount = execute {
+//        sql("DELETE FROM nekku_special_diets_field WHERE id != ALL (${bind(newSpecialDietFields)})")
+//    }
+//    executeBatch(newSpecialDietFields) {
+//        sql(
+//            """
 //
-//INSERT INTO nekku_special_diets_field (id, name, type, diet_id) VALUES ('field1', 'Field 1', 'TEXT', 'diet1');
-//INSERT INTO nekku_special_diet_option (weight, key, value, field_id) VALUES (1, 'key1', 'value1', 'field1');
-//INSERT INTO nekku_special_diet_option (weight, key, value, field_id) VALUES (2, 'key2', 'value2', 'field1');
+//"""
+//        )
+//    }
 //
-//INSERT INTO nekku_special_diets_field (id, name, type, diet_id) VALUES ('field2', 'Field 2', 'CHECKBOXLIST', 'diet1');
+//    logger.info {
+//        "Deleted: $deletedSpecialDietsCount Nekku special diets, inserted ${specialDiets.size}"
+//    }
+//
+//    return newSpecialDiets
+//}
+

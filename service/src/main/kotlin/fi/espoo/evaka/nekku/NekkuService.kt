@@ -154,7 +154,7 @@ data class NekkuSpecialDietsField(
     val id: String,
     val name: String,
     val type: NekkuSpecialDietType,
-    val options: List<NekkuSpecialDietOption>?,
+    val options: List<NekkuSpecialDietOption>? = null,
 )
 
 @ConstList("nekku_special_diet_type")
