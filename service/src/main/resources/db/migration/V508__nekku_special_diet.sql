@@ -5,16 +5,16 @@ CREATE TABLE nekku_special_diet (
     name TEXT NOT NULL
 );
 
-CREATE TABLE nekku_special_diets_field (
+CREATE TABLE nekku_special_diet_field (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
     type nekku_special_diet_type NOT NULL,
-    diet_id TEXT REFERENCES nekku_special_diet(id)
+    diet_id TEXT REFERENCES nekku_special_diet(id) ON DELETE CASCADE
 );
 
 CREATE TABLE nekku_special_diet_option (
     weight INT NOT NULL,
     key TEXT NOT NULL,
     value TEXT NOT NULL,
-    field_id TEXT REFERENCES nekku_special_diets_field(id)
+    field_id TEXT REFERENCES nekku_special_diet_field(id) ON DELETE CASCADE
 );
