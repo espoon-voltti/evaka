@@ -147,7 +147,9 @@ export default function BottomNavbar({
                 selected={selected === 'staff'}
                 onClick={() =>
                   selected !== 'staff' &&
-                  navigate(routes.staffAttendances(unitOrGroup, 'absent').value)
+                  navigate(
+                    routes.staffAttendancesToday(unitOrGroup, 'absent').value
+                  )
                 }
               >
                 <CustomIcon

@@ -44,6 +44,10 @@ SELECT DISTINCT
     att.type AS attendance_type,
     att.departed_automatically AS attendance_departed_automatically,
     att.occupancy_coefficient AS attendance_occupancy_coefficient,
+    coalesce(
+        (SELECT array_agg(acl.daycare_id) FROM daycare_acl acl WHERE acl.employee_id = e.id), 
+        '{}'::uuid[]
+    ) AS unit_ids,
     coalesce(dgacl.group_ids, '{}'::uuid[]) AS group_ids,
     EXISTS (
         SELECT 1 

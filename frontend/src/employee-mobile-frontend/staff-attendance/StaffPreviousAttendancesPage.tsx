@@ -60,7 +60,7 @@ export default React.memo(function StaffPreviousAttendancesPage({
     ([unitInfo, staffMember]) => {
       return (
         <StaffMemberPageContainer
-          back={routes.staffAttendances(unitOrGroup, 'present').value}
+          back={routes.staffAttendancesToday(unitOrGroup, 'present').value}
         >
           <EmployeeCardBackground staff={toStaff(staffMember)} />
           <Gap />
