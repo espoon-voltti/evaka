@@ -47,7 +47,7 @@ class LinkityHttpClient(private val env: LinkityEnv, private val jsonMapper: Jso
 
         logger.debug { "Getting shifts from Linkity URL: $url" }
 
-        val req = Request.Builder().url(url).get().build()
+        val req = Request.Builder().url(url).get().header("x-api-key", env.apiKey.value).build()
 
         return httpClient.newCall(req).execute().use { response ->
             if (!response.isSuccessful) {
@@ -81,6 +81,7 @@ class LinkityHttpClient(private val env: LinkityEnv, private val jsonMapper: Jso
                         .writeValueAsString(workLogs)
                         .toRequestBody("application/json".toMediaType())
                 )
+                .header("x-api-key", env.apiKey.value)
                 .build()
 
         return httpClient.newCall(req).execute().use { response ->
