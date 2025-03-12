@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { getServiceNeedOptionPublicInfos } from 'employee-frontend/generated/api-clients/serviceneed'
 import { Queries } from 'lib-common/query'
 
 import {
@@ -32,4 +33,8 @@ export const cancelApplicationMutation = q.mutation(cancelApplication, [
 export const updateServiceWorkerNoteMutation = q.mutation(
   updateServiceWorkerNote,
   [getApplicationSummariesQuery.prefix]
+)
+
+export const serviceNeedPublicInfosQuery = q.query(
+  getServiceNeedOptionPublicInfos
 )
