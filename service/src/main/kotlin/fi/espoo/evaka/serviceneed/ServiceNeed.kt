@@ -66,6 +66,7 @@ data class ServiceNeedSummary(
     @Nested("option") val option: ServiceNeedOptionPublicInfo?,
     val contractDaysPerMonth: Int?,
     val unitName: String,
+    val reservationsEnabled: Boolean,
 )
 
 data class ServiceNeedChildRange(val childId: ChildId, val dateRange: FiniteDateRange)

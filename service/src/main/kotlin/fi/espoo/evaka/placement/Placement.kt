@@ -34,4 +34,5 @@ data class PlacementSummary(
     @Nested("unit") val unit: Unit,
     val startDate: LocalDate,
     val endDate: LocalDate,
+    val reservationsEnabled: Boolean,
 )

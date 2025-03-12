@@ -6,10 +6,9 @@ import React, { useState } from 'react'
 
 import ResponsiveWholePageCollapsible from 'citizen-frontend/children/ResponsiveWholePageCollapsible'
 import { useTranslation } from 'citizen-frontend/localization'
-import { combine, Failure, Result, Success, wrapResult } from 'lib-common/api'
+import { combine, Failure, Result, Success } from 'lib-common/api'
 import { ChildId } from 'lib-common/generated/api-types/shared'
-import { useQueryResult } from 'lib-common/query'
-import { useApiState } from 'lib-common/utils/useRestApi'
+import { constantQuery, useQueryResult } from 'lib-common/query'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import Spinner from 'lib-components/atoms/state/Spinner'
@@ -22,24 +21,18 @@ import { Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/citizen'
 
 import { renderResult } from '../../../async-rendering'
-import {
-  getChildDailyServiceTimes,
-  getChildServiceNeeds
-} from '../../../generated/api-clients/children'
 import { childrenQuery, childServiceApplicationsQuery } from '../../queries'
 
 import AttendanceSummaryTable from './AttendanceSummaryTable'
 import DailyServiceTimeTable from './DailyServiceTimeTable'
 import ServiceApplications from './ServiceApplications'
 import ServiceNeedTable from './ServiceNeedTable'
+import { childDailyServiceTimesQuery, childServiceNeedsQuery } from './queries'
 
 interface ServiceNeedProps {
   childId: ChildId
   showServiceTimes: boolean
 }
-
-const getChildServiceNeedsResult = wrapResult(getChildServiceNeeds)
-const getChildDailyServiceTimesResult = wrapResult(getChildDailyServiceTimes)
 
 export default React.memo(function ServiceNeedAndDailyServiceTimeSection({
   childId,
@@ -47,25 +40,25 @@ export default React.memo(function ServiceNeedAndDailyServiceTimeSection({
 }: ServiceNeedProps) {
   const t = useTranslation()
   const [open, setOpen] = useState(false)
-  const [serviceNeedsResponse] = useApiState(
-    () => getChildServiceNeedsResult({ childId }),
-    [childId]
+  const serviceNeedsResponse = useQueryResult(
+    childServiceNeedsQuery({ childId })
   )
-  const [dailyServiceTimesResponse] = useApiState(
-    () =>
-      showServiceTimes
-        ? getChildDailyServiceTimesResult({ childId })
-        : Promise.resolve(Success.of([])),
-    [childId, showServiceTimes]
+  const dailyServiceTimesResponse = useQueryResult(
+    showServiceTimes
+      ? childDailyServiceTimesQuery({ childId })
+      : constantQuery([])
   )
 
-  const hasContractDays = serviceNeedsResponse
-    .map((serviceNeeds) =>
-      serviceNeeds.some(
-        ({ contractDaysPerMonth }) => contractDaysPerMonth !== null
+  const showAttendanceSummary =
+    featureFlags.citizenAttendanceSummary &&
+    serviceNeedsResponse
+      .map((serviceNeeds) =>
+        serviceNeeds.some(
+          ({ contractDaysPerMonth, reservationsEnabled }) =>
+            contractDaysPerMonth !== null && reservationsEnabled
+        )
       )
-    )
-    .getOrElse(false)
+      .getOrElse(false)
 
   const serviceApplications = useQueryResult(
     childServiceApplicationsQuery({ childId })
@@ -101,7 +94,7 @@ export default React.memo(function ServiceNeedAndDailyServiceTimeSection({
           <ServiceNeedTable serviceNeeds={serviceNeeds} />
         )
       })}
-      {featureFlags.citizenAttendanceSummary && hasContractDays && (
+      {showAttendanceSummary && (
         <>
           <Gap size="s" />
           <AttendanceSummaryTable

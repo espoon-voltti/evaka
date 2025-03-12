@@ -124,6 +124,7 @@ class ChildControllerCitizen(private val accessControl: AccessControl) {
                     defaultServiceNeedOption?.let { sno -> ServiceNeedOptionPublicInfo.of(sno) },
                     defaultServiceNeedOption?.contractDaysPerMonth,
                     placement.unit.name,
+                    placement.reservationsEnabled,
                 )
             }
         }

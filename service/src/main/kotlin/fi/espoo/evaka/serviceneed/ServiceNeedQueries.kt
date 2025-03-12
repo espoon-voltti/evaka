@@ -76,7 +76,8 @@ SELECT
     sno.valid_from AS option_valid_from,
     sno.valid_to AS option_valid_to,
     sno.contract_days_per_month,
-    u.name AS unit_name
+    u.name AS unit_name,
+    'RESERVATIONS' = ANY(u.enabled_pilot_features) AS reservations_enabled
 FROM service_need sn
 JOIN service_need_option sno ON sno.id = sn.option_id
 JOIN placement p ON p.id = sn.placement_id

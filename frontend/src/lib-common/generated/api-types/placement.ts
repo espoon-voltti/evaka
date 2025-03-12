@@ -267,6 +267,7 @@ export interface PlacementSummary {
   childId: PersonId
   endDate: LocalDate
   id: PlacementId
+  reservationsEnabled: boolean
   startDate: LocalDate
   type: PlacementType
   unit: Unit
