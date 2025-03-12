@@ -25,6 +25,7 @@ import {
   getInvoiceReport,
   getMealReportByUnit,
   getMissingHeadOfFamilyReport,
+  getMissingServiceNeedReport,
   getNonSsnChildrenReportRows,
   getOccupancyGroupReport,
   getOccupancyUnitReport,
@@ -159,4 +160,8 @@ export const tampereRegionalSurveyAgeReport = q.query(
 
 export const tampereRegionalSurveyYearlyReport = q.query(
   getTampereRegionalSurveyYearlyStatistics
+)
+
+export const missingServiceNeedReportQuery = q.query(
+  getMissingServiceNeedReport
 )

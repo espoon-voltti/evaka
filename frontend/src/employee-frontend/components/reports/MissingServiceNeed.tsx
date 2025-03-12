@@ -6,11 +6,10 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router'
 import styled from 'styled-components'
 
-import { wrapResult } from 'lib-common/api'
 import { MissingServiceNeedReportRow } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
+import { useQueryResult } from 'lib-common/query'
 import { Arg0 } from 'lib-common/types'
-import { useApiState } from 'lib-common/utils/useRestApi'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
@@ -29,10 +28,7 @@ import { distinct } from '../../utils'
 import { renderResult } from '../async-rendering'
 
 import { FilterLabel, FilterRow, RowCountInfo, TableScrollable } from './common'
-
-const getMissingServiceNeedReportResult = wrapResult(
-  getMissingServiceNeedReport
-)
+import { missingServiceNeedReportQuery } from './queries'
 
 type MissingServiceNeedReportFilters = Arg0<typeof getMissingServiceNeedReport>
 
@@ -54,10 +50,7 @@ export default React.memo(function MissingServiceNeed() {
     from: LocalDate.todayInSystemTz().subMonths(1).withDate(1),
     to: LocalDate.todayInSystemTz().addMonths(2).lastDayOfMonth()
   })
-  const [rows] = useApiState(
-    () => getMissingServiceNeedReportResult(filters),
-    [filters]
-  )
+  const rows = useQueryResult(missingServiceNeedReportQuery(filters))
 
   const [displayFilters, setDisplayFilters] =
     useState<DisplayFilters>(emptyDisplayFilters)
