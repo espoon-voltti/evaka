@@ -4,19 +4,16 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import sortBy from 'lodash/sortBy'
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { Link } from 'react-router'
 import styled from 'styled-components'
 
-import { Loading, Result, wrapResult } from 'lib-common/api'
+import { Result } from 'lib-common/api'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
-import {
-  PlacementCountAreaResult,
-  PlacementCountReportResult
-} from 'lib-common/generated/api-types/reports'
+import { PlacementCountAreaResult } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
+import { useQueryResult } from 'lib-common/query'
 import { Arg0 } from 'lib-common/types'
-import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
@@ -29,10 +26,10 @@ import { faChevronDown, faChevronUp } from 'lib-icons'
 import ReportDownload from '../../components/reports/ReportDownload'
 import { getPlacementCountReport } from '../../generated/api-clients/reports'
 import { useTranslation } from '../../state/i18n'
+import { renderResult } from '../async-rendering'
 
 import { FilterLabel, FilterRow, TableScrollable } from './common'
-
-const getPlacementCountReportResult = wrapResult(getPlacementCountReport)
+import { placementCountReportQuery } from './queries'
 
 type PlacementCountReportFilters = Arg0<typeof getPlacementCountReport>
 
@@ -99,29 +96,29 @@ interface CsvReportRow {
 
 export default React.memo(function PlacementCount() {
   const { i18n, lang } = useTranslation()
-  const [result, setResult] = useState<Result<PlacementCountReportResult>>(
-    Loading.of()
-  )
   const currentLocalDate = LocalDate.todayInSystemTz()
-  const [filters, setFilters] = useState<PlacementCountReportFilters>({
+  const [filters, _setFilters] = useState<PlacementCountReportFilters>({
     examinationDate: currentLocalDate,
     providerTypes: [],
     placementTypes: []
   })
-
   const [displayFilters, setDisplayFilters] =
     useState<DisplayFilters>(emptyDisplayFilters)
-  const displayFilter = (row: PlacementCountAreaResult): boolean =>
-    displayFilters.careAreas.length === 0 ||
-    displayFilters.careAreas.map((ca) => ca.areaId).includes(row.areaId)
+  const setFilters = useCallback((filters: PlacementCountReportFilters) => {
+    _setFilters(filters)
+    setDisplayFilters(emptyDisplayFilters)
+  }, [])
+
+  const displayFilter = useCallback(
+    (row: PlacementCountAreaResult): boolean =>
+      displayFilters.careAreas.length === 0 ||
+      displayFilters.careAreas.map((ca) => ca.areaId).includes(row.areaId),
+    [displayFilters.careAreas]
+  )
 
   const [areasOpen, setAreasOpen] = useState<Record<string, boolean>>({})
 
-  useEffect(() => {
-    setResult(Loading.of())
-    setDisplayFilters(emptyDisplayFilters)
-    void getPlacementCountReportResult(filters).then(setResult)
-  }, [filters])
+  const result = useQueryResult(placementCountReportQuery(filters))
 
   const countTotalsFromAreaResults = (
     filteredAreaResults: PlacementCountAreaResult[]
@@ -144,27 +141,35 @@ export default React.memo(function PlacementCount() {
       }
     )
 
-  const { fullAreaResults, filteredAreaResults, filteredTotals } = useMemo(
+  type Mapped = {
+    fullAreaResults: PlacementCountAreaResult[]
+    filteredAreaResults: PlacementCountAreaResult[]
+    filteredTotals: {
+      placementCount: number
+      placementCountUnder3v: number
+      placementCount3vAndOver: number
+      calculatedPlacements: number
+    }
+  }
+
+  const mappedResult: Result<Mapped> = useMemo(
     () =>
-      result
-        .map((rs) => {
-          const fullAreaResults = rs.areaResults
-          const filteredAreaResults = fullAreaResults.filter(displayFilter)
-          return {
-            fullAreaResults,
-            filteredAreaResults,
-            filteredTotals: countTotalsFromAreaResults(filteredAreaResults)
-          }
-        })
-        .getOrElse({
-          fullAreaResults: [],
-          filteredAreaResults: [],
-          filteredTotals: countTotalsFromAreaResults([])
-        }),
-    [result, displayFilters] // eslint-disable-line react-hooks/exhaustive-deps
+      result.map((rs) => {
+        const fullAreaResults = rs.areaResults
+        const filteredAreaResults = fullAreaResults.filter(displayFilter)
+        return {
+          fullAreaResults,
+          filteredAreaResults,
+          filteredTotals: countTotalsFromAreaResults(filteredAreaResults)
+        }
+      }),
+    [result, displayFilter]
   )
 
-  const extractCsvRows = (): CsvReportRow[] => {
+  const extractCsvRows = ({
+    filteredAreaResults,
+    filteredTotals
+  }: Mapped): CsvReportRow[] => {
     const areaRows = filteredAreaResults.flatMap((areaResult) => [
       ...areaResult.daycareResults.map((daycareResult) => ({
         ...daycareResult,
@@ -278,20 +283,28 @@ export default React.memo(function PlacementCount() {
           <FilterLabel>{i18n.reports.placementCount.careArea}</FilterLabel>
           <Wrapper>
             <MultiSelect
-              options={fullAreaResults.map((ar) => ({
-                areaId: ar.areaId,
-                areaName: ar.areaName
-              }))}
+              options={mappedResult
+                .map((r) =>
+                  r.fullAreaResults.map((ar) => ({
+                    areaId: ar.areaId,
+                    areaName: ar.areaName
+                  }))
+                )
+                .getOrElse([])}
               onChange={(selections) =>
                 setDisplayFilters({
                   ...displayFilters,
                   careAreas: selections
                 })
               }
-              value={filteredAreaResults.map((ar) => ({
-                areaId: ar.areaId,
-                areaName: ar.areaName
-              }))}
+              value={mappedResult
+                .map((r) =>
+                  r.filteredAreaResults.map((ar) => ({
+                    areaId: ar.areaId,
+                    areaName: ar.areaName
+                  }))
+                )
+                .getOrElse([])}
               getOptionId={(careArea) => careArea.areaId}
               getOptionLabel={(careArea) => careArea.areaName}
               placeholder={i18n.reports.placementCount.noCareAreasFound}
@@ -299,12 +312,10 @@ export default React.memo(function PlacementCount() {
           </Wrapper>
         </FilterRow>
 
-        {result.isLoading && <Loader />}
-        {result.isFailure && <span>{i18n.common.loadingFailed}</span>}
-        {result.isSuccess && (
+        {renderResult(mappedResult, (mappedResult) => (
           <>
             <ReportDownload
-              data={extractCsvRows()}
+              data={extractCsvRows(mappedResult)}
               columns={[
                 { label: 'Alue', value: (row) => row.areaName },
                 { label: 'Yksikkö', value: (row) => row.daycareName },
@@ -335,7 +346,7 @@ export default React.memo(function PlacementCount() {
                 </Tr>
               </Thead>
               <Tbody>
-                {filteredAreaResults.map((area: PlacementCountAreaResult) => (
+                {mappedResult.filteredAreaResults.map((area) => (
                   <React.Fragment key={area.areaName}>
                     <Tr key={area.areaId} data-qa={area.areaId}>
                       <Td>
@@ -392,20 +403,28 @@ export default React.memo(function PlacementCount() {
                 ))}
               </Tbody>
 
-              {filteredTotals && (
+              {mappedResult.filteredTotals && (
                 <StyledTfoot>
                   <Tr>
                     <BoldTd>{i18n.reports.common.total}</BoldTd>
-                    <BoldTd>{filteredTotals.placementCountUnder3v}</BoldTd>
-                    <BoldTd>{filteredTotals.placementCount3vAndOver}</BoldTd>
-                    <BoldTd>{filteredTotals.placementCount}</BoldTd>
-                    <BoldTd>{filteredTotals.calculatedPlacements}</BoldTd>
+                    <BoldTd>
+                      {mappedResult.filteredTotals.placementCountUnder3v}
+                    </BoldTd>
+                    <BoldTd>
+                      {mappedResult.filteredTotals.placementCount3vAndOver}
+                    </BoldTd>
+                    <BoldTd>
+                      {mappedResult.filteredTotals.placementCount}
+                    </BoldTd>
+                    <BoldTd>
+                      {mappedResult.filteredTotals.calculatedPlacements}
+                    </BoldTd>
                   </Tr>
                 </StyledTfoot>
               )}
             </TableScrollable>
           </>
-        )}
+        ))}
       </ContentArea>
     </Container>
   )

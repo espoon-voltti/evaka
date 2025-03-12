@@ -35,6 +35,7 @@ import {
   getOccupancyUnitReport,
   getPartnersInDifferentAddressReport,
   getPermittedReports,
+  getPlacementCountReport,
   getPlacementGuaranteeReport,
   getPlacementSketchingReport,
   getPreschoolAbsenceReport,
@@ -195,3 +196,5 @@ export const serviceNeedReportQuery = q.query(getServiceNeedReport)
 export const partnersInDifferentAddressReportQuery = q.query(
   getPartnersInDifferentAddressReport
 )
+
+export const placementCountReportQuery = q.query(getPlacementCountReport)
