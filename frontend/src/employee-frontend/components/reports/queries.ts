@@ -15,6 +15,7 @@ import {
   getChildAttendanceReport,
   getChildDocumentsReport,
   getChildDocumentsReportTemplateOptions,
+  getChildrenInDifferentAddressReport,
   getCustomerFeesReport,
   getDecisionsReport,
   getDuplicatePeopleReport,
@@ -216,3 +217,7 @@ export const mergePeopleMutation = q.mutation(mergePeople, [
 export const safeDeletePersonMutation = q.mutation(safeDeletePerson, [
   duplicatePeopleReportQuery.prefix
 ])
+
+export const childrenInDifferentAddressReportQuery = q.query(
+  getChildrenInDifferentAddressReport
+)
