@@ -2,12 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useState } from 'react'
 
-import { Loading, Result, wrapResult } from 'lib-common/api'
 import { ServiceNeedReportRow } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
-import Loader from 'lib-components/atoms/Loader'
+import { useQueryResult } from 'lib-common/query'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
@@ -15,44 +14,19 @@ import { Th, Tr, Td, Thead, Tbody } from 'lib-components/layout/Table'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 
 import ReportDownload from '../../components/reports/ReportDownload'
-import { getServiceNeedReport } from '../../generated/api-clients/reports'
 import { useTranslation } from '../../state/i18n'
 import { DateFilters } from '../../types/reports'
+import { renderResult } from '../async-rendering'
 
 import { FilterLabel, FilterRow, TableScrollable } from './common'
-
-const getServiceNeedReportResult = wrapResult(getServiceNeedReport)
-
-interface DisplayFilters {
-  careArea: string
-}
-
-const emptyDisplayFilters: DisplayFilters = {
-  careArea: ''
-}
+import { serviceNeedReportQuery } from './queries'
 
 export default React.memo(function ServiceNeeds() {
   const { i18n } = useTranslation()
-  const [rows, setRows] = useState<Result<ServiceNeedReportRow[]>>(Loading.of())
   const [filters, setFilters] = useState<DateFilters>({
     date: LocalDate.todayInSystemTz()
   })
-
-  const [displayFilters, setDisplayFilters] =
-    useState<DisplayFilters>(emptyDisplayFilters)
-  const displayFilter = (row: ServiceNeedReportRow): boolean =>
-    !(displayFilters.careArea && row.careAreaName !== displayFilters.careArea)
-
-  useEffect(() => {
-    setRows(Loading.of())
-    setDisplayFilters(emptyDisplayFilters)
-    void getServiceNeedReportResult(filters).then(setRows)
-  }, [filters])
-
-  const filteredRows: ServiceNeedReportRow[] = useMemo(
-    () => rows.map((rs) => rs.filter(displayFilter)).getOrElse([]),
-    [rows, displayFilters] // eslint-disable-line react-hooks/exhaustive-deps
-  )
+  const rows = useQueryResult(serviceNeedReportQuery(filters))
 
   return (
     <Container>
@@ -67,12 +41,10 @@ export default React.memo(function ServiceNeeds() {
           />
         </FilterRow>
 
-        {rows.isLoading && <Loader />}
-        {rows.isFailure && <span>{i18n.common.loadingFailed}</span>}
-        {rows.isSuccess && (
+        {renderResult(rows, (rows) => (
           <>
             <ReportDownload
-              data={rows.value}
+              data={rows}
               columns={[
                 { label: 'Palvelualue', value: (row) => row.careAreaName },
                 { label: 'Yksikkö', value: (row) => row.unitName },
@@ -108,7 +80,7 @@ export default React.memo(function ServiceNeeds() {
                 </Tr>
               </Thead>
               <Tbody>
-                {filteredRows.map((row: ServiceNeedReportRow) => (
+                {rows.map((row: ServiceNeedReportRow) => (
                   <Tr key={`${row.unitName}:${row.age}`}>
                     <Td>{row.careAreaName}</Td>
                     <Td>{row.unitName}</Td>
@@ -137,7 +109,7 @@ export default React.memo(function ServiceNeeds() {
               </Tbody>
             </TableScrollable>
           </>
-        )}
+        ))}
       </ContentArea>
     </Container>
   )
