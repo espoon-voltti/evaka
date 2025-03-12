@@ -18,6 +18,7 @@ import {
   getDecisionsReport,
   getExceededServiceNeedReportRows,
   getExceededServiceNeedReportUnits,
+  getFamilyConflictsReport,
   getFamilyContactsReport,
   getFamilyDaycareMealReport,
   getFuturePreschoolersReport,
@@ -198,3 +199,5 @@ export const partnersInDifferentAddressReportQuery = q.query(
 )
 
 export const placementCountReportQuery = q.query(getPlacementCountReport)
+
+export const familyConflictsReportQuery = q.query(getFamilyConflictsReport)
