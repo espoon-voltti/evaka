@@ -8,14 +8,13 @@ import React, { useCallback, useMemo, useState } from 'react'
 import { Link } from 'react-router'
 import styled from 'styled-components'
 
-import { wrapResult } from 'lib-common/api'
 import { SortDirection } from 'lib-common/generated/api-types/invoicing'
 import {
   ManualDuplicationReportRow,
   ManualDuplicationReportViewMode
 } from 'lib-common/generated/api-types/reports'
+import { useQueryResult } from 'lib-common/query'
 import { Arg0 } from 'lib-common/types'
-import { useApiState } from 'lib-common/utils/useRestApi'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
@@ -35,8 +34,7 @@ import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 
 import { FilterLabel, FilterRow, TableScrollable } from './common'
-
-const getManualDuplicationReportResult = wrapResult(getManualDuplicationReport)
+import { manualDuplicationReportQuery } from './queries'
 
 type ManualDuplicationReportFilters = Required<
   Arg0<typeof getManualDuplicationReport>
@@ -55,10 +53,7 @@ export default React.memo(function ManualDuplicationReport() {
   const [filters, setFilters] = useState<ManualDuplicationReportFilters>({
     viewMode: 'NONDUPLICATED'
   })
-  const [reportResult] = useApiState(
-    () => getManualDuplicationReportResult(filters),
-    [filters]
-  )
+  const reportResult = useQueryResult(manualDuplicationReportQuery(filters))
 
   const [sortColumns, setSortColumns] = useState<ReportColumnKey[]>([
     'connectedDaycareName',

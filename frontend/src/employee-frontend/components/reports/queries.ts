@@ -23,6 +23,7 @@ import {
   getHolidayPeriodAttendanceReport,
   getIncompleteIncomeReport,
   getInvoiceReport,
+  getManualDuplicationReport,
   getMealReportByUnit,
   getMissingHeadOfFamilyReport,
   getMissingServiceNeedReport,
@@ -165,3 +166,5 @@ export const tampereRegionalSurveyYearlyReport = q.query(
 export const missingServiceNeedReportQuery = q.query(
   getMissingServiceNeedReport
 )
+
+export const manualDuplicationReportQuery = q.query(getManualDuplicationReport)
