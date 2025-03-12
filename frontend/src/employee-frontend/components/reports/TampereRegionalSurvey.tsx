@@ -78,6 +78,13 @@ export default React.memo(function TampereRegionalSurveyReport() {
     today.year - 1
   )
 
+  const formatYearlyHeader = (headerText: string) =>
+    `${headerText} ${t.yearlyStatisticsColumns.statDay}`
+  const formatLanguageHeader = (headerText: string) =>
+    `${headerText} ${t.ageStatisticColumns.languageStatDay}`
+  const formatMonthlyHeader = (headerText: string) =>
+    `${headerText} ${t.monthlyColumns.statDay}`
+
   const yearOptions = range(
     LocalDate.todayInSystemTz().year,
     LocalDate.todayInSystemTz().year - 4,
@@ -194,35 +201,51 @@ export default React.memo(function TampereRegionalSurveyReport() {
                       value: (row) => row.month
                     },
                     {
-                      label: t.monthlyColumns.municipalOver3FullTimeCount,
+                      label: formatMonthlyHeader(
+                        t.monthlyColumns.municipalOver3FullTimeCount
+                      ),
                       value: (row) => row.municipalOver3FullTimeCount
                     },
                     {
-                      label: t.monthlyColumns.municipalOver3PartTimeCount,
+                      label: formatMonthlyHeader(
+                        t.monthlyColumns.municipalOver3PartTimeCount
+                      ),
                       value: (row) => row.municipalOver3PartTimeCount
                     },
                     {
-                      label: t.monthlyColumns.municipalUnder3FullTimeCount,
+                      label: formatMonthlyHeader(
+                        t.monthlyColumns.municipalUnder3FullTimeCount
+                      ),
                       value: (row) => row.municipalUnder3FullTimeCount
                     },
                     {
-                      label: t.monthlyColumns.municipalUnder3PartTimeCount,
+                      label: formatMonthlyHeader(
+                        t.monthlyColumns.municipalUnder3PartTimeCount
+                      ),
                       value: (row) => row.municipalUnder3PartTimeCount
                     },
                     {
-                      label: t.monthlyColumns.familyOver3Count,
+                      label: formatMonthlyHeader(
+                        t.monthlyColumns.familyOver3Count
+                      ),
                       value: (row) => row.familyOver3Count
                     },
                     {
-                      label: t.monthlyColumns.familyUnder3Count,
+                      label: formatMonthlyHeader(
+                        t.monthlyColumns.familyUnder3Count
+                      ),
                       value: (row) => row.familyUnder3Count
                     },
                     {
-                      label: t.monthlyColumns.municipalShiftCareCount,
+                      label: formatMonthlyHeader(
+                        t.monthlyColumns.municipalShiftCareCount
+                      ),
                       value: (row) => row.municipalShiftCareCount
                     },
                     {
-                      label: t.monthlyColumns.assistanceCount,
+                      label: formatMonthlyHeader(
+                        t.monthlyColumns.assistanceCount
+                      ),
                       value: (row) => row.assistanceCount
                     }
                   ]}
@@ -247,55 +270,77 @@ export default React.memo(function TampereRegionalSurveyReport() {
                   data={result.ageStatistics}
                   columns={[
                     {
-                      label: t.ageStatisticColumns.voucherUnder3Count,
+                      label: formatYearlyHeader(
+                        t.ageStatisticColumns.voucherUnder3Count
+                      ),
                       value: (row) => row.voucherUnder3Count
                     },
                     {
-                      label: t.ageStatisticColumns.voucherOver3Count,
+                      label: formatYearlyHeader(
+                        t.ageStatisticColumns.voucherOver3Count
+                      ),
                       value: (row) => row.voucherOver3Count
                     },
                     {
-                      label: t.ageStatisticColumns.purchasedUnder3Count,
+                      label: formatYearlyHeader(
+                        t.ageStatisticColumns.purchasedUnder3Count
+                      ),
                       value: (row) => row.purchasedUnder3Count
                     },
                     {
-                      label: t.ageStatisticColumns.purchasedOver3Count,
+                      label: formatYearlyHeader(
+                        t.ageStatisticColumns.purchasedOver3Count
+                      ),
                       value: (row) => row.purchasedOver3Count
                     },
                     {
-                      label: t.ageStatisticColumns.clubUnder3Count,
+                      label: formatYearlyHeader(
+                        t.ageStatisticColumns.clubUnder3Count
+                      ),
                       value: (row) => row.clubUnder3Count
                     },
                     {
-                      label: t.ageStatisticColumns.clubOver3Count,
+                      label: formatYearlyHeader(
+                        t.ageStatisticColumns.clubOver3Count
+                      ),
                       value: (row) => row.clubOver3Count
                     },
                     {
-                      label: t.ageStatisticColumns.nonNativeLanguageUnder3Count,
+                      label: formatLanguageHeader(
+                        t.ageStatisticColumns.nonNativeLanguageUnder3Count
+                      ),
                       value: (row) => row.nonNativeLanguageUnder3Count
                     },
                     {
-                      label: t.ageStatisticColumns.nonNativeLanguageOver3Count,
+                      label: formatLanguageHeader(
+                        t.ageStatisticColumns.nonNativeLanguageOver3Count
+                      ),
                       value: (row) => row.nonNativeLanguageOver3Count
                     },
                     {
-                      label: t.ageStatisticColumns.effectiveCareDaysUnder3Count,
+                      label: formatYearlyHeader(
+                        t.ageStatisticColumns.effectiveCareDaysUnder3Count
+                      ),
                       value: (row) => row.effectiveCareDaysUnder3Count
                     },
                     {
-                      label: t.ageStatisticColumns.effectiveCareDaysOver3Count,
+                      label: formatYearlyHeader(
+                        t.ageStatisticColumns.effectiveCareDaysOver3Count
+                      ),
                       value: (row) => row.effectiveCareDaysOver3Count
                     },
                     {
-                      label:
+                      label: formatYearlyHeader(
                         t.ageStatisticColumns
-                          .effectiveFamilyDaycareDaysUnder3Count,
+                          .effectiveFamilyDaycareDaysUnder3Count
+                      ),
                       value: (row) => row.effectiveFamilyDaycareDaysUnder3Count
                     },
                     {
-                      label:
+                      label: formatYearlyHeader(
                         t.ageStatisticColumns
-                          .effectiveFamilyDaycareDaysOver3Count,
+                          .effectiveFamilyDaycareDaysOver3Count
+                      ),
                       value: (row) => row.effectiveFamilyDaycareDaysOver3Count
                     }
                   ]}
@@ -320,94 +365,118 @@ export default React.memo(function TampereRegionalSurveyReport() {
                   data={result.yearlyStatistics}
                   columns={[
                     {
-                      label: t.yearlyStatisticsColumns.voucherTotalCount,
+                      label: formatYearlyHeader(
+                        t.yearlyStatisticsColumns.voucherTotalCount
+                      ),
                       value: (row) => row.voucherTotalCount
                     },
                     {
-                      label: t.yearlyStatisticsColumns.voucherAssistanceCount,
+                      label: formatYearlyHeader(
+                        t.yearlyStatisticsColumns.voucherAssistanceCount
+                      ),
                       value: (row) => row.voucherAssistanceCount
                     },
                     {
-                      label: t.yearlyStatisticsColumns.voucher5YearOldCount,
+                      label: formatYearlyHeader(
+                        t.yearlyStatisticsColumns.voucher5YearOldCount
+                      ),
                       value: (row) => row.voucher5YearOldCount
                     },
                     {
-                      label: t.yearlyStatisticsColumns.purchased5YearlOldCount,
+                      label: formatYearlyHeader(
+                        t.yearlyStatisticsColumns.purchased5YearlOldCount
+                      ),
                       value: (row) => row.purchased5YearOldCount
                     },
                     {
-                      label: t.yearlyStatisticsColumns.municipal5YearOldCount,
+                      label: formatYearlyHeader(
+                        t.yearlyStatisticsColumns.municipal5YearOldCount
+                      ),
                       value: (row) => row.municipal5YearOldCount
                     },
                     {
-                      label: t.yearlyStatisticsColumns.familyCare5YearOldCount,
+                      label: formatYearlyHeader(
+                        t.yearlyStatisticsColumns.familyCare5YearOldCount
+                      ),
                       value: (row) => row.familyCare5YearOldCount
                     },
                     {
-                      label: t.yearlyStatisticsColumns.club5YearOldCount,
+                      label: formatYearlyHeader(
+                        t.yearlyStatisticsColumns.club5YearOldCount
+                      ),
                       value: (row) => row.club5YearOldCount
                     },
                     {
-                      label:
-                        t.yearlyStatisticsColumns.preschoolDaycareUnitCareCount,
+                      label: formatYearlyHeader(
+                        t.yearlyStatisticsColumns.preschoolDaycareUnitCareCount
+                      ),
                       value: (row) => row.preschoolDaycareUnitCareCount
                     },
                     {
-                      label:
+                      label: formatYearlyHeader(
                         t.yearlyStatisticsColumns
-                          .preschoolDaycareSchoolCareCount,
+                          .preschoolDaycareSchoolCareCount
+                      ),
                       value: (row) => row.preschoolDaycareSchoolCareCount
                     },
                     {
-                      label:
+                      label: formatYearlyHeader(
                         t.yearlyStatisticsColumns
-                          .preschoolDaycareFamilyCareCount,
+                          .preschoolDaycareFamilyCareCount
+                      ),
                       value: (row) => row.preschoolDaycareFamilyCareCount
                     },
                     {
-                      label:
+                      label: formatYearlyHeader(
                         t.yearlyStatisticsColumns
-                          .preschoolDaycareSchoolShiftCareCount,
+                          .preschoolDaycareSchoolShiftCareCount
+                      ),
                       value: (row) => row.preschoolDaycareSchoolShiftCareCount
                     },
                     {
-                      label:
+                      label: formatYearlyHeader(
                         t.yearlyStatisticsColumns
-                          .preschoolDaycareUnitShiftCareCount,
+                          .preschoolDaycareUnitShiftCareCount
+                      ),
                       value: (row) => row.preschoolDaycareUnitShiftCareCount
                     },
                     {
-                      label:
-                        t.yearlyStatisticsColumns.voucherGeneralAssistanceCount,
+                      label: formatYearlyHeader(
+                        t.yearlyStatisticsColumns.voucherGeneralAssistanceCount
+                      ),
                       value: (row) => row.voucherGeneralAssistanceCount
                     },
                     {
-                      label:
-                        t.yearlyStatisticsColumns.voucherSpecialAssistanceCount,
+                      label: formatYearlyHeader(
+                        t.yearlyStatisticsColumns.voucherSpecialAssistanceCount
+                      ),
                       value: (row) => row.voucherSpecialAssistanceCount
                     },
                     {
-                      label:
-                        t.yearlyStatisticsColumns
-                          .voucherEnhancedAssistanceCount,
+                      label: formatYearlyHeader(
+                        t.yearlyStatisticsColumns.voucherEnhancedAssistanceCount
+                      ),
                       value: (row) => row.voucherEnhancedAssistanceCount
                     },
                     {
-                      label:
+                      label: formatYearlyHeader(
                         t.yearlyStatisticsColumns
-                          .municipalGeneralAssistanceCount,
+                          .municipalGeneralAssistanceCount
+                      ),
                       value: (row) => row.municipalGeneralAssistanceCount
                     },
                     {
-                      label:
+                      label: formatYearlyHeader(
                         t.yearlyStatisticsColumns
-                          .municipalSpecialAssistanceCount,
+                          .municipalSpecialAssistanceCount
+                      ),
                       value: (row) => row.municipalSpecialAssistanceCount
                     },
                     {
-                      label:
+                      label: formatYearlyHeader(
                         t.yearlyStatisticsColumns
-                          .municipalEnhancedAssistanceCount,
+                          .municipalEnhancedAssistanceCount
+                      ),
                       value: (row) => row.municipalEnhancedAssistanceCount
                     }
                   ]}
