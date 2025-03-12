@@ -38,6 +38,7 @@ import {
   getPlacementSketchingReport,
   getPreschoolAbsenceReport,
   getPreschoolApplicationReport,
+  getPresenceReport,
   getServiceVoucherReportForAllUnits,
   getSextetReport,
   getStartingPlacementsReport,
@@ -179,3 +180,5 @@ export const decisionReportQuery = q.query(getDecisionsReport)
 export const assistanceNeedDecisionsReportQuery = q.query(
   getAssistanceNeedDecisionsReport
 )
+
+export const presenceReportQuery = q.query(getPresenceReport)

@@ -2,39 +2,32 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 
-import { Loading, Result, wrapResult } from 'lib-common/api'
-import { PresenceReportRow } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
-import Loader from 'lib-components/atoms/Loader'
+import { useQueryResult } from 'lib-common/query'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 
 import ReportDownload from '../../components/reports/ReportDownload'
-import { getPresenceReport } from '../../generated/api-clients/reports'
 import { useTranslation } from '../../state/i18n'
 import { PeriodFilters } from '../../types/reports'
+import { renderResult } from '../async-rendering'
 import { FlexRow } from '../common/styled/containers'
 
 import { FilterLabel, FilterRow } from './common'
-
-const getPresenceReportResult = wrapResult(getPresenceReport)
+import { presenceReportQuery } from './queries'
 
 export default React.memo(function Presences() {
   const { i18n } = useTranslation()
-  const [rows, setRows] = useState<Result<PresenceReportRow[]>>(Loading.of())
   const [filters, setFilters] = useState<PeriodFilters>({
     from: LocalDate.todayInSystemTz().subWeeks(1),
     to: LocalDate.todayInSystemTz()
   })
 
-  useEffect(() => {
-    setRows(Loading.of())
-    void getPresenceReportResult(filters).then(setRows)
-  }, [filters])
+  const rows = useQueryResult(presenceReportQuery(filters))
 
   return (
     <Container>
@@ -58,29 +51,14 @@ export default React.memo(function Presences() {
           </FlexRow>
         </FilterRow>
 
-        {rows.isLoading && <Loader />}
-        {rows.isFailure && (
-          <span>
-            {i18n.common.loadingFailed}. {i18n.reports.presence.info}
-          </span>
-        )}
-        {rows.isSuccess && (
+        {renderResult(rows, (rows) => (
           <>
             <ReportDownload
-              data={rows.value.map((row) => ({
-                ...row,
-                date: row.date.formatIso(),
-                present:
-                  row.present === true
-                    ? 'kyllä'
-                    : row.present === false
-                      ? 'ei'
-                      : null
-              }))}
+              data={rows}
               columns={[
                 {
                   label: i18n.reports.presence.date,
-                  value: (row) => row.date
+                  value: (row) => row.date.formatIso()
                 },
                 {
                   label: i18n.reports.presence.SSN,
@@ -96,7 +74,12 @@ export default React.memo(function Presences() {
                 },
                 {
                   label: i18n.reports.presence.present,
-                  value: (row) => row.present
+                  value: (row) =>
+                    row.present === true
+                      ? 'kyllä'
+                      : row.present === false
+                        ? 'ei'
+                        : null
                 }
               ]}
               filename={`${
@@ -104,7 +87,7 @@ export default React.memo(function Presences() {
               } ${filters.from.formatIso()}-${filters.to.formatIso()}.csv`}
             />
           </>
-        )}
+        ))}
       </ContentArea>
     </Container>
   )
