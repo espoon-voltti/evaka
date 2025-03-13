@@ -746,10 +746,23 @@ class ApplicationControllerV2(
                             ),
                         )
                     val applications = tx.getApplicationUnitSummaries(unitId)
+                    val transferApplications =
+                        if (
+                            accessControl.hasPermissionFor(
+                                tx,
+                                user,
+                                clock,
+                                Action.Unit.READ_TRANSFER_APPLICATIONS,
+                                unitId,
+                            )
+                        )
+                            tx.getTransferApplicationUnitSummaries(unitId, clock.today())
+                        else null
                     UnitApplications(
                         placementProposals = placementProposals,
                         placementPlans = placementPlans,
                         applications = applications,
+                        transferApplications = transferApplications,
                     )
                 }
             }
@@ -840,4 +853,5 @@ data class UnitApplications(
     val placementProposals: List<PlacementPlanDetails>,
     val placementPlans: List<PlacementPlanDetails>,
     val applications: List<ApplicationUnitSummary>,
+    val transferApplications: List<TransferApplicationUnitSummary>?,
 )
