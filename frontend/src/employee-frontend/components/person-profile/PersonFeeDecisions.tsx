@@ -7,7 +7,7 @@ import React, { useCallback, useContext, useState } from 'react'
 import { Link } from 'react-router'
 import styled from 'styled-components'
 
-import { PersonContext } from 'employee-frontend/state/person'
+import { PersonContext } from 'employee-frontend/components/person-profile/state'
 import { wrapResult } from 'lib-common/api'
 import { FeeDecision } from 'lib-common/generated/api-types/invoicing'
 import { PersonId } from 'lib-common/generated/api-types/shared'
@@ -30,8 +30,9 @@ import {
 } from '../../generated/api-clients/invoicing'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
-import { DateTd, StatusTd } from '../PersonProfile'
 import { renderResult } from '../async-rendering'
+
+import { DateTd, StatusTd } from './PersonProfile'
 
 const getHeadOfFamilyFeeDecisionsResult = wrapResult(
   getHeadOfFamilyFeeDecisions

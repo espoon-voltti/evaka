@@ -25,7 +25,7 @@ import {
   getFamilyByPerson,
   getParentships,
   getPerson
-} from '../generated/api-clients/pis'
+} from '../../generated/api-clients/pis'
 
 const getPersonResult = wrapResult(getPerson)
 const getFamilyByPersonResult = wrapResult(getFamilyByPerson)

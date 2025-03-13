@@ -6,7 +6,7 @@ import orderBy from 'lodash/orderBy'
 import React, { useContext, useState } from 'react'
 import { Link } from 'react-router'
 
-import { PersonContext } from 'employee-frontend/state/person'
+import { PersonContext } from 'employee-frontend/components/person-profile/state'
 import { UserContext } from 'employee-frontend/state/user'
 import { PersonId } from 'lib-common/generated/api-types/shared'
 import { formatCents } from 'lib-common/money'
@@ -19,10 +19,10 @@ import { H2 } from 'lib-components/typography'
 import { faRefresh } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
-import { StatusTd } from '../PersonProfile'
 import { renderResult } from '../async-rendering'
 import { formatInvoicePeriod } from '../invoice/utils'
 
+import { StatusTd } from './PersonProfile'
 import {
   createReplacementDraftsForHeadOfFamilyMutation,
   headOfFamilyInvoicesQuery

@@ -13,9 +13,9 @@ import { H3 } from 'lib-components/typography'
 
 import { useTranslation } from '../../state/i18n'
 import { getStatusLabelByDateRange } from '../../utils/date'
-import { NameTd } from '../PersonProfile'
 import { renderResult } from '../async-rendering'
 import StatusLabel from '../common/StatusLabel'
+import { NameTd } from '../person-profile/PersonProfile'
 
 import { getFosterParentsQuery } from './queries'
 

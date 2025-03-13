@@ -21,8 +21,9 @@ import { faFileAlt } from 'lib-icons'
 
 import { getGuardianApplicationSummaries } from '../../generated/api-clients/application'
 import { useTranslation } from '../../state/i18n'
-import { DateTd, NameTd, StatusTd } from '../PersonProfile'
 import { renderResult } from '../async-rendering'
+
+import { DateTd, NameTd, StatusTd } from './PersonProfile'
 
 const getGuardianApplicationSummariesResult = wrapResult(
   getGuardianApplicationSummaries

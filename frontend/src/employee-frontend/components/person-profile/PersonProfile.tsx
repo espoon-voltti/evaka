@@ -21,31 +21,27 @@ import {
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { faListTimeline } from 'lib-icons'
 
-import CircularLabel from '../components/common/CircularLabel'
-import WarningLabel from '../components/common/WarningLabel'
-import PersonApplications from '../components/person-profile/PersonApplications'
-import PersonDecisions from '../components/person-profile/PersonDecisions'
-import PersonDependants from '../components/person-profile/PersonDependants'
-import PersonFeeDecisions from '../components/person-profile/PersonFeeDecisions'
-import PersonFridgeChild from '../components/person-profile/PersonFridgeChild'
-import PersonFridgeHead from '../components/person-profile/PersonFridgeHead'
-import PersonFridgePartner from '../components/person-profile/PersonFridgePartner'
-import PersonIncome from '../components/person-profile/PersonIncome'
-import PersonInvoices from '../components/person-profile/PersonInvoices'
-import { useTranslation } from '../state/i18n'
-import {
-  PersonContext,
-  PersonContextProvider,
-  PersonState
-} from '../state/person'
-import { UserContext } from '../state/user'
+import { useTranslation } from '../../state/i18n'
+import { UserContext } from '../../state/user'
+import CircularLabel from '../common/CircularLabel'
+import WarningLabel from '../common/WarningLabel'
+import { getLayout, Layouts } from '../layouts'
 
-import { getLayout, Layouts } from './layouts'
-import FosterChildren from './person-profile/FosterChildren'
-import FamilyOverview from './person-profile/PersonFamilyOverview'
-import PersonFinanceNotesAndMessages from './person-profile/PersonFinanceNotesAndMessages'
-import PersonInvoiceCorrections from './person-profile/PersonInvoiceCorrections'
-import PersonVoucherValueDecisions from './person-profile/PersonVoucherValueDecisions'
+import FosterChildren from './FosterChildren'
+import PersonApplications from './PersonApplications'
+import PersonDecisions from './PersonDecisions'
+import PersonDependants from './PersonDependants'
+import FamilyOverview from './PersonFamilyOverview'
+import PersonFeeDecisions from './PersonFeeDecisions'
+import PersonFinanceNotesAndMessages from './PersonFinanceNotesAndMessages'
+import PersonFridgeChild from './PersonFridgeChild'
+import PersonFridgeHead from './PersonFridgeHead'
+import PersonFridgePartner from './PersonFridgePartner'
+import PersonIncome from './PersonIncome'
+import PersonInvoiceCorrections from './PersonInvoiceCorrections'
+import PersonInvoices from './PersonInvoices'
+import PersonVoucherValueDecisions from './PersonVoucherValueDecisions'
+import { PersonContext, PersonContextProvider, PersonState } from './state'
 
 export const NameTd = styled(Td)`
   width: 30%;
