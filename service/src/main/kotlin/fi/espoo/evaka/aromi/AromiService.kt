@@ -17,8 +17,9 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
-import fi.espoo.evaka.shared.sftp.SftpClient
 import fi.espoo.evaka.shared.domain.TimeRange
+import fi.espoo.evaka.shared.domain.getHolidays
+import fi.espoo.evaka.shared.sftp.SftpClient
 import java.io.ByteArrayOutputStream
 import java.io.PrintWriter
 import java.nio.charset.StandardCharsets
@@ -69,6 +70,7 @@ class AromiService(private val aromiEnv: AromiEnv?) {
                         name = key.second,
                         operationDays = rows.first().operationDays,
                         shiftCareOperationDays = rows.first().shiftCareOperationDays,
+                        shiftCareOpenOnHolidays = rows.first().shiftCareOpenOnHolidays,
                         aromiGroups =
                             rows.map {
                                 AromiReportingGroup(
@@ -82,18 +84,20 @@ class AromiService(private val aromiEnv: AromiEnv?) {
 
         val fullAromidata =
             getAttendanceReservationReportByChild(
-                tx,
-                range,
-                aromiUnits.associateBy { it.unitId },
-                aromiUnits.flatMap { it.aromiGroups }.map { it.groupId },
-            ).map {
-                val customerId = aromiGroupMap[it.groupId]?.aromiCustomerId!!
-                AromiGroupAttendanceData(
-                groupId = it.groupId,
-                groupName = it.groupName,
-                aromiCustomerId = customerId,
-                attendanceData = it.items,
-            ) }
+                    tx,
+                    range,
+                    aromiUnits.associateBy { it.unitId },
+                    aromiUnits.flatMap { it.aromiGroups }.map { it.groupId },
+                )
+                .map {
+                    val customerId = aromiGroupMap[it.groupId]?.aromiCustomerId!!
+                    AromiGroupAttendanceData(
+                        groupId = it.groupId,
+                        groupName = it.groupName,
+                        aromiCustomerId = customerId,
+                        attendanceData = it.items,
+                    )
+                }
 
         return AromiMealOrderData(report = fullAromidata)
     }
@@ -105,13 +109,13 @@ class AromiService(private val aromiEnv: AromiEnv?) {
 
     private fun printRecords(printer: CSVPrinter, data: AromiMealOrderData) {
         data.report.forEach { groupData ->
-                groupData.attendanceData
-                    .filterNot { it.fullDayAbsence }
-                    .forEach {
-                        printRecord(printer, it, groupData.groupName, groupData.aromiCustomerId)
-                    }
-            }
+            groupData.attendanceData
+                .filterNot { it.fullDayAbsence }
+                .forEach {
+                    printRecord(printer, it, groupData.groupName, groupData.aromiCustomerId)
+                }
         }
+    }
 
     private fun printRecord(
         printer: CSVPrinter,
@@ -150,6 +154,7 @@ data class AromiReportingUnit(
     val name: String,
     val operationDays: Set<Int>,
     val shiftCareOperationDays: Set<Int>?,
+    val shiftCareOpenOnHolidays: Boolean,
     val aromiGroups: List<AromiReportingGroup>,
 )
 
@@ -160,6 +165,7 @@ private data class AromiReportingRow(
     val daycareName: String,
     val operationDays: Set<Int>,
     val shiftCareOperationDays: Set<Int>?,
+    val shiftCareOpenOnHolidays: Boolean,
     val groupId: GroupId,
     val groupName: String,
     val aromiCustomerId: String,
@@ -174,6 +180,7 @@ SELECT
     d.name AS daycare_name,
     d.operation_days,
     d.shift_care_operation_days,
+    d.shift_care_open_on_holidays,
     dg.id AS group_id,
     dg.name AS group_name,
     dg.aromi_customer_id
@@ -341,6 +348,7 @@ fun getAttendanceReservationReportByChild(
     val placementStuff = tx.getChildPlacementDays(range, groupIds)
     val allChildren = placementStuff.map { it.childId }.toSet()
     val childInfoMap = tx.getChildInfo(allChildren).associateBy { it.childId }
+    val holidays = getHolidays(range)
 
     // shift care info from service need
     val serviceNeedsMap =
@@ -361,38 +369,45 @@ fun getAttendanceReservationReportByChild(
 
     // iterate placements and figure out service days?
     val rows =
-        placementStuff.flatMap { placementInfo ->
-            val aromiReportingUnit = aromiUnits[placementInfo.daycareId]!!
+        placementStuff.flatMap { placementDayOfChild ->
+            val isHoliday = holidays.contains(placementDayOfChild.date)
+            val aromiReportingUnit = aromiUnits[placementDayOfChild.daycareId]!!
             val hasShiftCare =
-                (serviceNeedsMap[placementInfo.childId]
-                    ?.firstOrNull { it.range.includes(placementInfo.date) }
+                (serviceNeedsMap[placementDayOfChild.childId]
+                    ?.firstOrNull { it.range.includes(placementDayOfChild.date) }
                     ?.shiftCare ?: ShiftCareType.NONE) != ShiftCareType.NONE
             val operationDays =
                 aromiReportingUnit.shiftCareOperationDays.takeIf { hasShiftCare }
                     ?: aromiReportingUnit.operationDays
-            if (!operationDays.contains(placementInfo.date.dayOfWeek.value)) {
+
+            val isUnitOpen =
+                operationDays.contains(placementDayOfChild.date.dayOfWeek.value) &&
+                    (!isHoliday || aromiReportingUnit.shiftCareOpenOnHolidays)
+
+            if (!isUnitOpen || (isHoliday && !hasShiftCare)) {
                 return@flatMap emptyList()
             }
 
             val reservations =
-                (reservationsMap[Pair(placementInfo.childId, placementInfo.date)] ?: emptyList())
+                (reservationsMap[Pair(placementDayOfChild.childId, placementDayOfChild.date)]
+                        ?: emptyList())
                     .map { it.reservation.asTimeRange() }
                     .sortedBy { it?.start }
 
             val absenceCategories =
-                absences[placementInfo.childId]?.get(placementInfo.date) ?: emptySet()
+                absences[placementDayOfChild.childId]?.get(placementDayOfChild.date) ?: emptySet()
             val fullDayAbsence =
-                absenceCategories == placementInfo.placementType.absenceCategories()
+                absenceCategories == placementDayOfChild.placementType.absenceCategories()
 
             val entry = { reservation: TimeRange?, isAbsent: Boolean ->
                 ChildAttendanceEntry(
-                    childId = placementInfo.childId,
-                    groupId = placementInfo.groupId,
-                    groupName = placementInfo.groupName,
-                    date = placementInfo.date,
+                    childId = placementDayOfChild.childId,
+                    groupId = placementDayOfChild.groupId,
+                    groupName = placementDayOfChild.groupName,
+                    date = placementDayOfChild.date,
                     reservation = reservation,
                     fullDayAbsence = isAbsent,
-                    backupCare = placementInfo.backupCare,
+                    backupCare = placementDayOfChild.backupCare,
                 )
             }
             if (fullDayAbsence) {
