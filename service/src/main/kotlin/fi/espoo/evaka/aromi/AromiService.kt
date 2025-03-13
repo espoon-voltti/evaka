@@ -115,13 +115,7 @@ class AromiService(private val aromiEnv: AromiEnv?) {
                 groupData.attendanceData
                     .filterNot { it.fullDayAbsence }
                     .forEach {
-                        printRecord(
-                            printer,
-                            it,
-                            unitData.daycareName,
-                            groupData.groupName,
-                            groupData.aromiCustomerId,
-                        )
+                        printRecord(printer, it, groupData.groupName, groupData.aromiCustomerId)
                     }
             }
         }
@@ -130,7 +124,6 @@ class AromiService(private val aromiEnv: AromiEnv?) {
     private fun printRecord(
         printer: CSVPrinter,
         item: AttendanceReservationReportByChildItem,
-        unitName: String,
         groupName: String,
         aromiCustomerId: String,
     ) {
@@ -154,7 +147,7 @@ class AromiService(private val aromiEnv: AromiEnv?) {
             null, // Tyhjää, ei käytössä
             null, // Informaatio lähettävästä järjestelmästä, tyhjää, ei käytössä
             groupName, // Päiväkotiryhmä
-            null, // Toimituspisteen nimi
+            groupName, // Toimituspisteen nimi
             reservation.end.toLocalTime().format(endTimeFormatter), // Hoidosta lähdön kellonaika
         )
     }
