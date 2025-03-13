@@ -6,7 +6,7 @@ CREATE TABLE nekku_special_diet (
 );
 
 CREATE TABLE nekku_special_diet_field (
-    id TEXT PRIMARY KEY,
+    id TEXT PRIMARY KEY ,
     name TEXT NOT NULL,
     type nekku_special_diet_type NOT NULL,
     diet_id TEXT REFERENCES nekku_special_diet(id) ON DELETE CASCADE
@@ -18,3 +18,5 @@ CREATE TABLE nekku_special_diet_option (
     value TEXT NOT NULL,
     field_id TEXT REFERENCES nekku_special_diet_field(id) ON DELETE CASCADE
 );
+
+ALTER TABLE nekku_special_diet_option ADD CONSTRAINT unique_field_value UNIQUE (field_id, value);
