@@ -154,7 +154,7 @@ class AromiService(private val aromiEnv: AromiEnv?) {
             null, // Tyhjää, ei käytössä
             null, // Informaatio lähettävästä järjestelmästä, tyhjää, ei käytössä
             groupName, // Päiväkotiryhmä
-            null, // Toimituspisteen nimi
+            unitName, // Toimituspisteen nimi
             reservation.end.toLocalTime().format(endTimeFormatter), // Hoidosta lähdön kellonaika
         )
     }
