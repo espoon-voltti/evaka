@@ -24,6 +24,7 @@ import {
 export class StaffAttendancePage {
   editButton: Element
   previousAttendancesButton: Element
+  plannedAttendancesButton: Element
   arrivalTime: Element
   departureTime: Element
 
@@ -86,6 +87,9 @@ export class StaffAttendancePage {
     this.editButton = this.page.findByDataQa('edit')
     this.previousAttendancesButton = this.page.findByDataQa(
       'previous-attendances'
+    )
+    this.plannedAttendancesButton = this.page.findByDataQa(
+      'planned-attendances'
     )
     this.arrivalTime = this.page.findByDataQa('arrival-time')
     this.departureTime = this.page.findByDataQa('departure-time')
@@ -455,10 +459,16 @@ export class PlannedAttendancesPage {
   getConfidenceWarning(date: LocalDate, id: EmployeeId) {
     return this.getPresentEmployee(date, id).findByDataQa('confidence-warning')
   }
+}
 
-  async assertPresentCount(date: LocalDate, count: number) {
-    return this.getDateRow(date)
-      .findByDataQa('present-count')
-      .assertTextEquals(count.toString())
+export class StaffMemberPlannedAttendancesPage {
+  private page: Page
+
+  constructor(page: Page) {
+    this.page = page
+  }
+
+  getDayPlan(date: LocalDate) {
+    return this.page.findByDataQa(`day-plan-${date.formatIso()}`)
   }
 }

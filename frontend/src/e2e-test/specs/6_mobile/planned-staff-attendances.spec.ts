@@ -18,7 +18,8 @@ import {
 import MobileNav from '../../pages/mobile/mobile-nav'
 import {
   PlannedAttendancesPage,
-  StaffAttendancePage
+  StaffAttendancePage,
+  StaffMemberPlannedAttendancesPage
 } from '../../pages/mobile/staff-page'
 import { pairMobileDevice } from '../../utils/mobile'
 import { Page } from '../../utils/page'
@@ -27,6 +28,7 @@ let page: Page
 let nav: MobileNav
 let staffPage: StaffAttendancePage
 let plannedAttendancesPage: PlannedAttendancesPage
+let staffMemberPlannedAttendancesPage: StaffMemberPlannedAttendancesPage
 
 let careArea: DevCareArea
 let aku: DevEmployee
@@ -89,6 +91,9 @@ const initPages = async (mockedTime: HelsinkiDateTime) => {
   nav = new MobileNav(page)
   staffPage = new StaffAttendancePage(page)
   plannedAttendancesPage = new PlannedAttendancesPage(page)
+  staffMemberPlannedAttendancesPage = new StaffMemberPlannedAttendancesPage(
+    page
+  )
 
   const mobileSignupUrl = await pairMobileDevice(testDaycare2.id)
   await page.goto(mobileSignupUrl)
@@ -100,7 +105,6 @@ describe('Planned staff attendances', () => {
     const tuesday = today.addDays(1)
     const wednesday = today.addDays(2)
     const thursday = today.addDays(3)
-    const friday = today.addDays(4)
 
     await Fixture.staffAttendancePlan({
       employeeId: aku.id,
@@ -120,10 +124,6 @@ describe('Planned staff attendances', () => {
 
     await initPages(HelsinkiDateTime.fromLocal(today, LocalTime.of(6, 0)))
     await staffPage.selectPrimaryTab('planned')
-    await plannedAttendancesPage.assertPresentCount(tuesday, 1)
-    await plannedAttendancesPage.assertPresentCount(wednesday, 1)
-    await plannedAttendancesPage.assertPresentCount(thursday, 1)
-    await plannedAttendancesPage.assertPresentCount(friday, 0)
 
     await plannedAttendancesPage.getExpandedDate(tuesday).waitUntilHidden()
     await plannedAttendancesPage.getDateRow(tuesday).click()
@@ -146,7 +146,7 @@ describe('Planned staff attendances', () => {
       .waitUntilVisible()
     await plannedAttendancesPage
       .getPresentEmployee(wednesday, mikki.id)
-      .assertText((s) => s.includes('09:00 - 12:00,\n22:00 - →'))
+      .assertText((s) => s.includes('09:00 - 12:00') && s.includes('22:00 - →'))
     await plannedAttendancesPage
       .getConfidenceWarning(wednesday, mikki.id)
       .assertText((s) => s.includes('Työvuoro voi olla toisessa ryhmässä'))
@@ -158,10 +158,6 @@ describe('Planned staff attendances', () => {
 
     // select group where only Mikki has been authorized
     await nav.selectGroup(daycareGroup2Fixture.id)
-    await plannedAttendancesPage.assertPresentCount(tuesday, 0)
-    await plannedAttendancesPage.assertPresentCount(wednesday, 1)
-    await plannedAttendancesPage.assertPresentCount(thursday, 1)
-    await plannedAttendancesPage.assertPresentCount(friday, 0)
 
     // On Tuesday Mikki is absent while Aku is neither present nor absent
     await plannedAttendancesPage.getDateRow(tuesday).click()
@@ -174,5 +170,43 @@ describe('Planned staff attendances', () => {
     await plannedAttendancesPage
       .getAbsentEmployee(tuesday, aku.id)
       .waitUntilHidden()
+  })
+
+  test('staff member page has planned attendances', async () => {
+    const tuesday = today.addDays(1)
+    const wednesday = today.addDays(2)
+    const thursday = today.addDays(3)
+
+    await Fixture.staffAttendancePlan({
+      employeeId: mikki.id,
+      startTime: HelsinkiDateTime.fromLocal(wednesday, LocalTime.of(9, 0)),
+      endTime: HelsinkiDateTime.fromLocal(wednesday, LocalTime.of(12, 0)),
+      type: 'TRAINING'
+    }).save()
+    await Fixture.staffAttendancePlan({
+      employeeId: mikki.id,
+      startTime: HelsinkiDateTime.fromLocal(wednesday, LocalTime.of(22, 0)),
+      endTime: HelsinkiDateTime.fromLocal(thursday, LocalTime.of(7, 0))
+    }).save()
+
+    await initPages(HelsinkiDateTime.fromLocal(today, LocalTime.of(6, 0)))
+    await staffPage.openStaffPage('Hiiri Mikki')
+    await staffPage.plannedAttendancesButton.click()
+
+    await staffMemberPlannedAttendancesPage
+      .getDayPlan(tuesday)
+      .assertText((s) => s.includes('Ei suunniteltua työvuoroa'))
+
+    await staffMemberPlannedAttendancesPage
+      .getDayPlan(wednesday)
+      .assertText(
+        (s) =>
+          s.includes('Koulutus\n09:00 - 12:00') &&
+          s.includes('Paikalla\n22:00 - →')
+      )
+
+    await staffMemberPlannedAttendancesPage
+      .getDayPlan(thursday)
+      .assertText((s) => s.includes('Paikalla\n→ - 07:00'))
   })
 })

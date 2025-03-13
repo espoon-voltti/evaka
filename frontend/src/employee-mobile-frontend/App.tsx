@@ -68,6 +68,7 @@ import StaffAttendancesPage from './staff-attendance/StaffAttendancesPage'
 import StaffMarkArrivedPage from './staff-attendance/StaffMarkArrivedPage'
 import StaffMarkDepartedPage from './staff-attendance/StaffMarkDepartedPage'
 import StaffMemberPage from './staff-attendance/StaffMemberPage'
+import StaffMemberPlannedAttendancesPage from './staff-attendance/StaffMemberPlannedAttendancesPage'
 import StaffPreviousAttendancesPage from './staff-attendance/StaffPreviousAttendancesPage'
 import { ChildAttendanceUIState } from './types'
 import UnitList from './units/UnitList'
@@ -351,6 +352,12 @@ function StaffAttendanceRouter({ unitOrGroup }: { unitOrGroup: UnitOrGroup }) {
         element={<StaffPreviousAttendancesPage unitOrGroup={unitOrGroup} />}
       />
       <Route
+        path=":employeeId/planned"
+        element={
+          <StaffMemberPlannedAttendancesPage unitOrGroup={unitOrGroup} />
+        }
+      />
+      <Route
         path=":employeeId/edit"
         element={<StaffAttendanceEditPage unitOrGroup={unitOrGroup} />}
       />
@@ -489,6 +496,9 @@ export const routes = {
   },
   staffPreviousAttendances(unitOrGroup: UnitOrGroup, employeeId: UUID): Uri {
     return uri`${this.staffAttendance(unitOrGroup, employeeId)}/previous`
+  },
+  staffPlannedAttendances(unitOrGroup: UnitOrGroup, employeeId: UUID): Uri {
+    return uri`${this.staffAttendance(unitOrGroup, employeeId)}/planned`
   },
   messages(unitOrGroup: UnitOrGroup): Uri {
     return uri`${this.unitOrGroup(unitOrGroup)}/messages`
