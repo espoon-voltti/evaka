@@ -15,8 +15,8 @@ import { PersonSummary } from 'lib-common/generated/api-types/pis'
 import { useDebounce } from 'lib-common/utils/useDebounce'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 
-import { searchPerson } from '../generated/api-clients/pis'
-import { SearchOrder } from '../types'
+import { searchPerson } from '../../generated/api-clients/pis'
+import { SearchOrder } from '../../types'
 
 const searchPersonResult = wrapResult(searchPerson)
 
