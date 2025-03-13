@@ -139,6 +139,11 @@ fun Database.Transaction.setSpecialDiets(specialDiets: List<NekkuSpecialDiet>) {
     ${bind { it.id }},
     ${bind { it.name }}
 )
+ON CONFLICT (id) DO 
+UPDATE SET
+  name = excluded.name
+WHERE
+    nekku_special_diet.name <> excluded.name;
 """
         )
     }
@@ -148,14 +153,20 @@ fun Database.Transaction.setSpecialDiets(specialDiets: List<NekkuSpecialDiet>) {
     }
 }
 
-fun Database.Transaction.getNekkuSpecialDiets(): Int {
-    val count = execute { sql("SELECT count(*) FROM nekku_special_diet") }
-    return count
+fun Database.Transaction.getNekkuSpecialOptions(): List<NekkuSpecialDietOption> {
+    return createQuery { sql("SELECT weight, key, value FROM nekku_special_diet_option") }
+        .toList<NekkuSpecialDietOption>()
 }
 
 fun Database.Transaction.setSpecialDietFields(
     specialDietFields: List<Pair<String, List<NekkuSpecialDietsField>>>
 ) {
+    val newSpecialDietFieldIds = specialDietFields.flatMap { it.second }.map { it.id }
+    val deletedSpecialDietFieldsCount = execute {
+        sql(
+            "DELETE FROM nekku_special_diet_field WHERE id != ALL (${bind(newSpecialDietFieldIds)})"
+        )
+    }
 
     val batchRows: Sequence<Pair<String, NekkuSpecialDietsField>> =
         specialDietFields.asSequence().flatMap { (dietId, fields) ->
@@ -176,16 +187,37 @@ INSERT INTO nekku_special_diet_field (
     ${bind { (_, field) ->  field.name }},
     ${bind { (_, field) ->  field.type }}
 )
- """
+ON CONFLICT (id) DO 
+UPDATE SET
+  name = excluded.name,
+  type = excluded.type
+WHERE
+    nekku_special_diet_field.name <> excluded.name OR 
+    nekku_special_diet_field.type <> excluded.type;
+
+"""
         )
     }
 
-    logger.info { "Inserted Nekku special diet fields ${specialDietFields.size}" }
+    logger.info {
+        "\"Deleted: $deletedSpecialDietFieldsCount Nekku special diet fields, inserted ${specialDietFields.size}"
+    }
 }
 
 fun Database.Transaction.setSpecialDietOptions(
     specialDietOptions: List<Pair<String, List<NekkuSpecialDietOption>>>
 ) {
+
+    executeBatch(specialDietOptions) {
+        sql(
+            """
+DELETE FROM nekku_special_diet_option 
+WHERE field_id = ${bind { (fieldId, _) -> fieldId}} 
+AND value != ALL(${bind { (_, option) -> option.map { it.value } }});
+            """
+                .trimIndent()
+        )
+    }
 
     val batchRows: Sequence<Pair<String, NekkuSpecialDietOption>> =
         specialDietOptions.asSequence().flatMap { (fieldId, options) ->
@@ -206,9 +238,17 @@ INSERT INTO nekku_special_diet_option (
     ${bind { (_, option) ->  option.key }},
     ${bind { (_, option) ->  option.value }}
 )
+ON CONFLICT (field_id, value) DO
+UPDATE SET
+key = excluded.key,
+value = excluded.value
+WHERE
+nekku_special_diet_option.key <> excluded.key OR
+nekku_special_diet_option.value <> excluded.value;
  """
         )
     }
 
-    logger.info { "Inserted Nekku special diet options ${specialDietOptions.size}" }
+    //    logger.info { "Deleted: $deletedSpecialOptionsCount Nekku special diet options, inserted
+    // ${specialDietOptions.size}" }
 }

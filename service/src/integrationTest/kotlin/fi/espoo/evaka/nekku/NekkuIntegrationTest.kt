@@ -165,8 +165,222 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             )
         fetchAndUpdateNekkuSpecialDiets(client, db)
         db.transaction { tx ->
-            val specialDiets = tx.getNekkuSpecialDiets()
-            assertEquals(1, specialDiets)
+            val specialDiets = tx.getNekkuSpecialOptions().toSet()
+            assertEquals(5, specialDiets.size)
+        }
+    }
+
+    @Test
+    fun `Nekku special diets sync does update data`() {
+        var client =
+            TestNekkuClient(
+                specialDiets =
+                    listOf(
+                        NekkuSpecialDiet(
+                            "2",
+                            "Päiväkodit er.",
+                            listOf(
+                                NekkuSpecialDietsField(
+                                    "17A9ACF0-DE9E-4C07-882E-C8C47351D009",
+                                    "Muu erityisruokavalio, mikä?",
+                                    NekkuSpecialDietType.TEXT,
+                                ),
+                                NekkuSpecialDietsField(
+                                    "AE1FE5FE-9619-4D7A-9043-A6B0C615156B",
+                                    "Erityisruokavaliot",
+                                    NekkuSpecialDietType.CHECKBOXLIST,
+                                    listOf(
+                                        NekkuSpecialDietOption(
+                                            1,
+                                            "Kananmunaton ruokavalio",
+                                            "Kananmunaton ruokavalio",
+                                        ),
+                                        NekkuSpecialDietOption(
+                                            2,
+                                            "Sianlihaton ruokavalio",
+                                            "Sianlihaton ruokavalio",
+                                        ),
+                                        NekkuSpecialDietOption(
+                                            3,
+                                            "Luontaisesti gluteeniton ruokavalio",
+                                            "Luontaisesti gluteeniton ruokavalio",
+                                        ),
+                                        NekkuSpecialDietOption(
+                                            4,
+                                            "Maitoallergisen ruokavalio",
+                                            "Maitoallergisen ruokavalio",
+                                        ),
+                                        NekkuSpecialDietOption(
+                                            5,
+                                            "Laktoositon ruokavalio",
+                                            "Laktoositon ruokavalio",
+                                        ),
+                                    ),
+                                ),
+                            ),
+                        )
+                    )
+            )
+        fetchAndUpdateNekkuSpecialDiets(client, db)
+        db.transaction { tx ->
+            val specialDiets = tx.getNekkuSpecialOptions().toSet()
+            assertEquals(5, specialDiets.size)
+        }
+
+        client =
+            TestNekkuClient(
+                specialDiets =
+                    listOf(
+                        NekkuSpecialDiet(
+                            "2",
+                            "Päiväkodit erikois",
+                            listOf(
+                                NekkuSpecialDietsField(
+                                    "17A9ACF0-DE9E-4C07-882E-C8C47351D009",
+                                    "Muu erityisruokavalio, mikä?",
+                                    NekkuSpecialDietType.TEXT,
+                                ),
+                                NekkuSpecialDietsField(
+                                    "AE1FE5FE-9619-4D7A-9043-A6B0C615156B",
+                                    "Erityisruokavaliot",
+                                    NekkuSpecialDietType.CHECKBOXLIST,
+                                    listOf(
+                                        NekkuSpecialDietOption(
+                                            1,
+                                            "Kananmunaton ruokavalio",
+                                            "Kananmunaton ruokavalio",
+                                        ),
+                                        NekkuSpecialDietOption(
+                                            2,
+                                            "Sianlihaton ruokavalio",
+                                            "Sianlihaton ruokavalio",
+                                        ),
+                                        NekkuSpecialDietOption(
+                                            3,
+                                            "Luontaisesti gluteeniton ruokavalio",
+                                            "Luontaisesti gluteeniton ruokavalio",
+                                        ),
+                                        NekkuSpecialDietOption(
+                                            4,
+                                            "Maitoallergisen ruokavalio",
+                                            "Maitoallergisen ruokavalio",
+                                        ),
+                                        NekkuSpecialDietOption(
+                                            5,
+                                            "Laktoositon ruokavalio",
+                                            "Laktoositon ruokavalio",
+                                        ),
+                                    ),
+                                ),
+                            ),
+                        )
+                    )
+            )
+        fetchAndUpdateNekkuSpecialDiets(client, db)
+        db.transaction { tx ->
+            val specialDiets = tx.getNekkuSpecialOptions().toSet()
+            assertEquals(5, specialDiets.size)
+        }
+    }
+
+    @Test
+    fun `Nekku special diets sync removes old data and creates new data`() {
+        var client =
+            TestNekkuClient(
+                specialDiets =
+                    listOf(
+                        NekkuSpecialDiet(
+                            "2",
+                            "Päiväkodit er.",
+                            listOf(
+                                NekkuSpecialDietsField(
+                                    "17A9ACF0-DE9E-4C07-882E-C8C47351D009",
+                                    "Muu erityisruokavalio, mikä?",
+                                    NekkuSpecialDietType.TEXT,
+                                ),
+                                NekkuSpecialDietsField(
+                                    "AE1FE5FE-9619-4D7A-9043-A6B0C615156B",
+                                    "Erityisruokavaliot",
+                                    NekkuSpecialDietType.CHECKBOXLIST,
+                                    listOf(
+                                        NekkuSpecialDietOption(
+                                            1,
+                                            "Kananmunaton ruokavalio",
+                                            "Kananmunaton ruokavalio",
+                                        ),
+                                        NekkuSpecialDietOption(
+                                            2,
+                                            "Sianlihaton ruokavalio",
+                                            "Sianlihaton ruokavalio",
+                                        ),
+                                        NekkuSpecialDietOption(
+                                            3,
+                                            "Luontaisesti gluteeniton ruokavalio",
+                                            "Luontaisesti gluteeniton ruokavalio",
+                                        ),
+                                        NekkuSpecialDietOption(
+                                            4,
+                                            "Maitoallergisen ruokavalio",
+                                            "Maitoallergisen ruokavalio",
+                                        ),
+                                        NekkuSpecialDietOption(
+                                            5,
+                                            "Laktoositon ruokavalio",
+                                            "Laktoositon ruokavalio",
+                                        ),
+                                    ),
+                                ),
+                            ),
+                        )
+                    )
+            )
+        fetchAndUpdateNekkuSpecialDiets(client, db)
+
+        db.transaction { tx ->
+            val specialDiets = tx.getNekkuSpecialOptions().toSet()
+            assertEquals(5, specialDiets.size)
+        }
+
+        client =
+            TestNekkuClient(
+                specialDiets =
+                    listOf(
+                        NekkuSpecialDiet(
+                            "2",
+                            "Päiväkodit er.",
+                            listOf(
+                                NekkuSpecialDietsField(
+                                    "17A9ACF0-DE9E-4C07-882E-C8C47351D009",
+                                    "Muu erityisruokavalio, mikä?",
+                                    NekkuSpecialDietType.TEXT,
+                                ),
+                                NekkuSpecialDietsField(
+                                    "AE1FE5FE-9619-4D7A-9043-A6B0C615156B",
+                                    "Erityisruokavaliot",
+                                    NekkuSpecialDietType.CHECKBOXLIST,
+                                    listOf(
+                                        NekkuSpecialDietOption(
+                                            1,
+                                            "Kananmunaton ruokavalio",
+                                            "Kananmunaton ruokavalio",
+                                        ),
+                                        NekkuSpecialDietOption(
+                                            2,
+                                            "Sianlihaton ruokavalio",
+                                            "Sianlihaton ruokavalio",
+                                        ),
+                                    ),
+                                ),
+                            ),
+                        )
+                    )
+            )
+
+        fetchAndUpdateNekkuSpecialDiets(client, db)
+
+        db.transaction { tx ->
+            val specialDiets = tx.getNekkuSpecialOptions().toSet()
+            assertEquals(2, specialDiets.size)
         }
     }
 }
