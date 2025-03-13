@@ -5,7 +5,6 @@
 package fi.espoo.evaka.nekku
 
 import fi.espoo.evaka.decision.logger
-import fi.espoo.evaka.invoicing.domain.DraftInvoiceRow
 import fi.espoo.evaka.shared.db.Database
 import org.jdbi.v3.core.mapper.PropagateNull
 
@@ -113,15 +112,15 @@ fun fetchAndUpdateNekkuSpecialDiets(client: NekkuClient, db: Database.Connection
         error("Refusing to sync empty Nekku special diet list into database")
 
     db.transaction { tx ->
-
         tx.setSpecialDiets(specialDietsFromNekku)
 
         tx.setSpecialDietFields(specialDietsFromNekku.map { it.id to it.fields })
 
-        // Save nekku options
-        //tx.setSpecialDietOptions()
-
-
+        tx.setSpecialDietOptions(
+            specialDietsFromNekku
+                .flatMap { it.fields }
+                .mapNotNull { if (it.options == null) null else it.id to it.options }
+        )
     }
 }
 
@@ -154,13 +153,14 @@ fun Database.Transaction.getNekkuSpecialDiets(): Int {
     return count
 }
 
- fun Database.Transaction.setSpecialDietFields(specialDietFields: List<Pair<String, List<NekkuSpecialDietsField>>>){
+fun Database.Transaction.setSpecialDietFields(
+    specialDietFields: List<Pair<String, List<NekkuSpecialDietsField>>>
+) {
 
-     val batchRows: Sequence<Pair<String, NekkuSpecialDietsField>> =
-         specialDietFields.asSequence().flatMap { (dietId, fields) ->
-             fields.map { field -> Pair(dietId, field) }
-         }
-
+    val batchRows: Sequence<Pair<String, NekkuSpecialDietsField>> =
+        specialDietFields.asSequence().flatMap { (dietId, fields) ->
+            fields.map { field -> Pair(dietId, field) }
+        }
 
     executeBatch(batchRows) {
         sql(
@@ -180,12 +180,12 @@ INSERT INTO nekku_special_diet_field (
         )
     }
 
-    logger.info {
-        "Inserted Nekku special diet fields ${specialDietFields.size}"
-    }
- }
+    logger.info { "Inserted Nekku special diet fields ${specialDietFields.size}" }
+}
 
-fun Database.Transaction.setSpecialDietOptions(specialDietOptions: List<Pair<String, List<NekkuSpecialDietOption>>>){
+fun Database.Transaction.setSpecialDietOptions(
+    specialDietOptions: List<Pair<String, List<NekkuSpecialDietOption>>>
+) {
 
     val batchRows: Sequence<Pair<String, NekkuSpecialDietOption>> =
         specialDietOptions.asSequence().flatMap { (fieldId, options) ->
@@ -210,7 +210,5 @@ INSERT INTO nekku_special_diet_option (
         )
     }
 
-    logger.info {
-        "Inserted Nekku special diet options ${specialDietOptions.size}"
-    }
+    logger.info { "Inserted Nekku special diet options ${specialDietOptions.size}" }
 }
