@@ -21,9 +21,10 @@ import { H2 } from 'lib-components/typography'
 
 import LabelValueList from '../../components/common/LabelValueList'
 import { Translations, useTranslation } from '../../state/i18n'
-import { PersonContext } from '../../state/person'
 import { formatName } from '../../utils'
 import { renderResult } from '../async-rendering'
+
+import { PersonContext } from './state'
 
 type FamilyOverviewPersonRole = 'HEAD' | 'PARTNER' | 'CHILD'
 

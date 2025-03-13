@@ -27,7 +27,6 @@ import { faPen, faTrash } from 'lib-icons'
 import { faQuestion } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
-import { PersonContext } from '../../state/person'
 import { UIContext } from '../../state/ui'
 import { formatParagraphs } from '../../utils/html-utils'
 import { renderResult } from '../async-rendering'
@@ -39,6 +38,7 @@ import {
   financeNotesQuery,
   updateFinanceNoteMutation
 } from './queries'
+import { PersonContext } from './state'
 
 interface Props {
   id: PersonId

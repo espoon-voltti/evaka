@@ -25,11 +25,12 @@ import {
   retryParentship
 } from '../../generated/api-clients/pis'
 import { useTranslation } from '../../state/i18n'
-import { PersonContext } from '../../state/person'
 import { UIContext } from '../../state/ui'
 import { formatName } from '../../utils'
-import { ButtonsTd, DateTd, NameTd } from '../PersonProfile'
 import { renderResult } from '../async-rendering'
+
+import { ButtonsTd, DateTd, NameTd } from './PersonProfile'
+import { PersonContext } from './state'
 
 const deleteParentshipResult = wrapResult(deleteParentship)
 const retryParentshipResult = wrapResult(retryParentship)

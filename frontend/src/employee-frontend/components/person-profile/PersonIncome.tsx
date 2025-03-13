@@ -31,7 +31,6 @@ import {
 } from '../../generated/api-clients/invoicing'
 import { getChildPlacementPeriods } from '../../generated/api-clients/placement'
 import { useTranslation } from '../../state/i18n'
-import { PersonContext } from '../../state/person'
 import { UIContext } from '../../state/ui'
 import { useIncomeTypeOptions } from '../../utils/income'
 import { renderResult } from '../async-rendering'
@@ -40,6 +39,7 @@ import IncomeStatementsTable from './IncomeStatementsTable'
 import IncomeList from './income/IncomeList'
 import { getMissingIncomePeriodsString } from './income/missingIncomePeriodUtils'
 import { incomeCoefficientMultipliersQuery } from './queries'
+import { PersonContext } from './state'
 
 const getChildPlacementPeriodsResult = wrapResult(getChildPlacementPeriods)
 const createIncomeResult = wrapResult(createIncome)

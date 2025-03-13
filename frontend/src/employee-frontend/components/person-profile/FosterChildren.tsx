@@ -30,12 +30,13 @@ import {
   updateFosterParentRelationshipValidity
 } from '../../generated/api-clients/pis'
 import { useTranslation } from '../../state/i18n'
-import { PersonContext } from '../../state/person'
 import { UIContext } from '../../state/ui'
-import { NameTd } from '../PersonProfile'
 import { renderResult } from '../async-rendering'
 import { DbPersonSearch } from '../common/PersonSearch'
 import Toolbar from '../common/Toolbar'
+
+import { NameTd } from './PersonProfile'
+import { PersonContext } from './state'
 
 const createFosterParentRelationshipResult = wrapResult(
   createFosterParentRelationship

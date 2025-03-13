@@ -21,9 +21,9 @@ import { ChildContext } from '../../state'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
 import { RequireRole } from '../../utils/roles'
-import { DateTd, NameTd, StatusTd } from '../PersonProfile'
 import { renderResult } from '../async-rendering'
 import { inferApplicationType } from '../person-profile/PersonApplications'
+import { DateTd, NameTd, StatusTd } from '../person-profile/PersonProfile'
 
 import { getChildApplicationSummariesQuery } from './queries'
 

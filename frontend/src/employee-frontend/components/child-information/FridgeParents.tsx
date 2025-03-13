@@ -14,8 +14,8 @@ import StatusLabel from '../../components/common/StatusLabel'
 import { ChildContext, ChildState } from '../../state/child'
 import { useTranslation } from '../../state/i18n'
 import { getStatusLabelByDateRange } from '../../utils/date'
-import { NameTd } from '../PersonProfile'
 import { renderResult } from '../async-rendering'
+import { NameTd } from '../person-profile/PersonProfile'
 
 const FridgeParents = React.memo(function FridgeParents() {
   const { i18n } = useTranslation()
