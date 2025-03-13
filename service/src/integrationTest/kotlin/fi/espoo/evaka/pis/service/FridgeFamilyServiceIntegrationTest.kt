@@ -14,6 +14,7 @@ import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.dev.DevFosterParent
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
@@ -77,6 +78,42 @@ class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach
         db.read {
             assertEquals(
                 1,
+                it.getParentships(adult1.id, child1.id, false, DateRange(mockToday.today(), null))
+                    .size,
+            )
+            assertEquals(
+                1,
+                it.getParentships(adult1.id, child2.id, false, DateRange(mockToday.today(), null))
+                    .size,
+            )
+        }
+    }
+
+    @Test
+    fun `Do not add fridge parentships automatically for children with foster parent`() {
+        MockPersonDetailsService.addDependants(adult1.identity, child1.identity, child2.identity)
+
+        db.transaction { tx ->
+            tx.insert(
+                DevFosterParent(
+                    childId = child1.id,
+                    parentId = adult2.id,
+                    validDuring =
+                        DateRange(
+                            mockToday.today().minusMonths(1),
+                            mockToday.today().plusMonths(1),
+                        ),
+                    modifiedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
+                    modifiedAt = mockToday.now(),
+                )
+            )
+        }
+
+        fridgeFamilyService.doVTJRefresh(db, AsyncJob.VTJRefresh(adult1.id), mockToday)
+
+        db.read {
+            assertEquals(
+                0,
                 it.getParentships(adult1.id, child1.id, false, DateRange(mockToday.today(), null))
                     .size,
             )

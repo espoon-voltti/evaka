@@ -6,6 +6,7 @@ package fi.espoo.evaka.pis.service
 
 import fi.espoo.evaka.pis.Creator
 import fi.espoo.evaka.pis.getDependantGuardians
+import fi.espoo.evaka.pis.getFosterParents
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.personIsHeadOfFamily
 import fi.espoo.evaka.shared.ChildId
@@ -129,23 +130,30 @@ class FridgeFamilyService(
 
             val children = targetPerson.children + (partner?.children ?: emptyList())
 
-            val currentFridgeChildren = db.read { getCurrentFridgeChildren(it, clock, head.id) }
-            val newChildrenInSameAddress =
-                children
-                    .asSequence()
-                    .distinct()
-                    .filter { child -> !child.socialSecurityNumber.isNullOrBlank() }
-                    .filter { child -> child.dateOfBirth.isAfter(clock.today().minusYears(18)) }
-                    .filter {
-                        personService.personsLiveInTheSameAddress(
-                            it.toPersonDTO(),
-                            head.toPersonDTO(),
-                        )
-                    }
-                    .filter { !currentFridgeChildren.contains(it.id) }
-                    .toList()
+            val newChildrenInSameAddressWithoutFosterParent =
+                db.read { tx ->
+                    val currentFridgeChildren = getCurrentFridgeChildren(tx, clock, head.id)
+                    children
+                        .asSequence()
+                        .distinct()
+                        .filter { child -> !child.socialSecurityNumber.isNullOrBlank() }
+                        .filter { child -> child.dateOfBirth.isAfter(clock.today().minusYears(18)) }
+                        .filter {
+                            personService.personsLiveInTheSameAddress(
+                                it.toPersonDTO(),
+                                head.toPersonDTO(),
+                            )
+                        }
+                        .filter { !currentFridgeChildren.contains(it.id) }
+                        .filter { child ->
+                            tx.getFosterParents(child.id).none {
+                                it.validDuring.includes(clock.today())
+                            }
+                        }
+                        .toList()
+                }
 
-            newChildrenInSameAddress.forEach { child ->
+            newChildrenInSameAddressWithoutFosterParent.forEach { child ->
                 try {
                     val startDate =
                         if (
