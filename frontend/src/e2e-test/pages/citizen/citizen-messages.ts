@@ -228,6 +228,21 @@ export default class CitizenMessagesPage {
       (t) => t.includes(ooo.name) && t.includes(ooo.period.format())
     )
   }
+
+  async downloadFirstAttachment(): Promise<Buffer> {
+    const [download] = await Promise.all([
+      this.page.waitForDownload(),
+      this.page.findAll('[data-qa="attachment"]').first().click()
+    ])
+    return await download.createReadStream().then((stream) => {
+      const chunks: Buffer[] = []
+      return new Promise<Buffer>((resolve, reject) => {
+        stream.on('data', (chunk: Buffer) => chunks.push(Buffer.from(chunk)))
+        stream.on('end', () => resolve(Buffer.concat(chunks)))
+        stream.on('error', reject)
+      })
+    })
+  }
 }
 
 export class CitizenMessageEditor extends Element {

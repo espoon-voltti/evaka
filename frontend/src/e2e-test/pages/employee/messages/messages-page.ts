@@ -323,7 +323,7 @@ export class MessageEditor extends Element {
   }
 
   async addAttachment() {
-    const testFileName = 'test_file.png'
+    const testFileName = 'test_file.odt'
     const testFilePath = `src/e2e-test/assets/${testFileName}`
     await new FileInput(
       this.fileUpload.find('[data-qa="btn-upload-file"]')
