@@ -6,6 +6,7 @@ import React, { useContext, useState } from 'react'
 import { Link } from 'react-router'
 import styled from 'styled-components'
 
+import { useQueryResult } from 'lib-common/query'
 import { getAge } from 'lib-common/utils/local-date'
 import Loader from 'lib-components/atoms/Loader'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
@@ -30,6 +31,7 @@ import { RequireRole } from '../../utils/roles'
 import AddVTJPersonModal from './AddVTJPersonModal'
 import CreatePersonModal from './CreatePersonModal'
 import { CustomersContext } from './customers'
+import { searchPersonQuery } from './queries'
 
 const TopBar = styled.div`
   display: flex;
@@ -54,17 +56,16 @@ export default React.memo(function Search() {
   const {
     searchTerm,
     setSearchTerm,
-    useCustomerSearch,
-    customers,
     sortColumn,
     sortDirection,
-    sortToggle
+    sortToggle,
+    personSearchParams
   } = useContext(CustomersContext)
+  const customers = useQueryResult(searchPersonQuery(personSearchParams))
+
   const [showAddPersonFromVTJModal, setShowAddPersonFromVTJModal] =
     useState(false)
   const [showCreatePersonModal, setShowCreatePersonModal] = useState(false)
-
-  useCustomerSearch()
 
   return (
     <Container>
