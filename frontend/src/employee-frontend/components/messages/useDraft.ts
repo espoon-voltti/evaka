@@ -4,16 +4,17 @@
 
 import { useCallback, useEffect, useState } from 'react'
 
-import { Result } from 'lib-common/api'
 import { UpdatableDraftContent } from 'lib-common/generated/api-types/messaging'
 import {
   MessageAccountId,
   MessageDraftId
 } from 'lib-common/generated/api-types/shared'
+import { useMutation } from 'lib-common/query'
 import { isAutomatedTest } from 'lib-common/utils/helpers'
 import { useDebouncedCallback } from 'lib-common/utils/useDebouncedCallback'
-import { useRestApi } from 'lib-common/utils/useRestApi'
 import { SaveDraftParams } from 'lib-components/messages/types'
+
+import { initDraftMutation, saveDraftMutation } from './queries'
 
 type SaveState = 'clean' | 'dirty' | 'saving'
 
@@ -28,15 +29,7 @@ const draftToSaveParams = (
   draftId: id
 })
 
-export function useDraft({
-  initialId,
-  saveDraftRaw,
-  initDraftRaw
-}: {
-  initialId: MessageDraftId | null
-  saveDraftRaw: (params: SaveDraftParams) => Promise<Result<void>>
-  initDraftRaw: (accountId: MessageAccountId) => Promise<Result<MessageDraftId>>
-}): {
+export function useDraft(initialId: MessageDraftId | null): {
   draftId: MessageDraftId | null
   saveDraft: () => void
   wasModified: boolean
@@ -48,33 +41,34 @@ export function useDraft({
   const [draft, setDraft] = useState<Draft>()
   const [wasModified, setWasModified] = useState(false)
 
-  const initDraft = useRestApi(initDraftRaw, (res) => {
-    if (res.isSuccess) {
-      setId(res.value)
-      setInitializing(false)
-    }
-  })
+  const { mutateAsync: initDraft } = useMutation(initDraftMutation)
+  const { mutateAsync: saveDraft } = useMutation(saveDraftMutation)
+
   // initialize draft when needed
   const [initializing, setInitializing] = useState<boolean>(false)
   useEffect(() => {
     if (!id && saveState === 'dirty' && !initializing && draft) {
       setInitializing(true)
-      void initDraft(draft.accountId)
+      void initDraft({ accountId: draft.accountId }).then((draftId) => {
+        setId(draftId)
+        setInitializing(false)
+      })
     }
   }, [id, initDraft, draft, saveState, initializing])
 
-  const save = useRestApi(saveDraftRaw, (res: Result<void>) => {
-    if (res.isSuccess) {
-      setWasModified(true)
-      setSaveState('clean')
-    }
-  })
   const saveNow = useCallback(
     (params: SaveDraftParams) => {
       setSaveState('saving')
-      void save(params)
+      void saveDraft({
+        draftId: params.draftId,
+        accountId: params.accountId,
+        body: params.content
+      }).then(() => {
+        setWasModified(true)
+        setSaveState('clean')
+      })
     },
-    [save]
+    [saveDraft]
   )
   const debounceInterval = isAutomatedTest ? 200 : 2000
   const [debouncedSave] = useDebouncedCallback(saveNow, debounceInterval)

@@ -7,7 +7,6 @@ import isEqual from 'lodash/isEqual'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import { Result } from 'lib-common/api'
 import { useBoolean } from 'lib-common/form/hooks'
 import { UpdateStateFn } from 'lib-common/form-state'
 import { Attachment } from 'lib-common/generated/api-types/attachment'
@@ -54,7 +53,6 @@ import {
   SelectorNode,
   selectedNodeToReceiver
 } from 'lib-components/messages/SelectorNode'
-import { SaveDraftParams } from 'lib-components/messages/types'
 import {
   ExpandingInfoBox,
   InlineInfoButton
@@ -189,7 +187,6 @@ interface Props {
   defaultSender: SelectOption<MessageAccountId>
   draftContent?: DraftContent
   getAttachmentUrl: (attachmentId: AttachmentId, fileName: string) => string
-  initDraftRaw: (accountId: MessageAccountId) => Promise<Result<MessageDraftId>>
   accounts: AuthorizedMessageAccount[]
   folders: MessageThreadFolder[]
   onClose: (didChanges: boolean) => void
@@ -199,7 +196,6 @@ interface Props {
     msg: PostMessageBody,
     initialFolder: MessageThreadFolderId | null
   ) => void
-  saveDraftRaw: (params: SaveDraftParams) => Promise<Result<void>>
   saveMessageAttachment: (draftId: MessageDraftId) => UploadHandler
   sending: boolean
   defaultTitle?: string
@@ -210,13 +206,11 @@ export default React.memo(function MessageEditor({
   defaultSender,
   draftContent,
   getAttachmentUrl,
-  initDraftRaw,
   accounts,
   folders,
   onClose,
   onDiscard,
   onSend,
-  saveDraftRaw,
   saveMessageAttachment,
   sending,
   defaultTitle = ''
@@ -254,11 +248,7 @@ export default React.memo(function MessageEditor({
     saveDraft,
     state: draftState,
     wasModified: draftWasModified
-  } = useDraft({
-    initialId: draftContent?.id ?? null,
-    saveDraftRaw,
-    initDraftRaw
-  })
+  } = useDraft(draftContent?.id ?? null)
   const updateMessage = useCallback<UpdateStateFn<Message>>(
     (changes) => {
       const updatedMessage = { ...message, ...changes }
