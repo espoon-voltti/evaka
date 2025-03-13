@@ -22,13 +22,14 @@ import {
 import { Gap } from 'lib-components/white-space'
 import { faSearch } from 'lib-icons'
 
-import AddVTJPersonModal from '../components/person-search/AddVTJPersonModal'
-import CreatePersonModal from '../components/person-search/CreatePersonModal'
-import { PROFILE_AGE_THRESHOLD_DEFAULT } from '../constants'
-import { CustomersContext } from '../state/customers'
-import { useTranslation } from '../state/i18n'
-import { formatName } from '../utils'
-import { RequireRole } from '../utils/roles'
+import { PROFILE_AGE_THRESHOLD_DEFAULT } from '../../constants'
+import { useTranslation } from '../../state/i18n'
+import { formatName } from '../../utils'
+import { RequireRole } from '../../utils/roles'
+
+import AddVTJPersonModal from './AddVTJPersonModal'
+import CreatePersonModal from './CreatePersonModal'
+import { CustomersContext } from './customers'
 
 const TopBar = styled.div`
   display: flex;
