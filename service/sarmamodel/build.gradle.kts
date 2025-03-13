@@ -3,26 +3,38 @@
 
 plugins {
     java
-    id("org.unbroken-dome.xjc") version "2.0.0"
 }
 
-repositories {
-    mavenCentral()
-}
-
-dependencies {
-    implementation(platform(project(":evaka-bom")))
-    implementation("jakarta.xml.bind:jakarta.xml.bind-api")
-    xjcTool("com.sun.xml.bind:jaxb-xjc:3.0.2")
-    xjcTool("com.sun.xml.bind:jaxb-impl:3.0.2")
-}
+val generatedSources = layout.buildDirectory.dir("generated/sources/java/main")
+val xsd2java: Configuration by configurations.creating
 
 sourceSets {
     main {
-        xjcTargetPackage.set("fi.espoo.evaka.sarma.model")
+        java.srcDir(generatedSources)
     }
 }
 
+dependencies {
+    xsd2java("com.sun.xml.bind:jaxb-xjc:4.0.5")
+    xsd2java("com.sun.xml.bind:jaxb-impl:4.0.5")
+    implementation("jakarta.xml.bind:jakarta.xml.bind-api:4.0.2")
+}
+
+tasks.register<JavaExec>("generateJaxb") {
+    val schemaDir = project.file("src/main/schema")
+    
+    mainClass.set("com.sun.tools.xjc.Driver")
+    classpath = xsd2java
+    args = listOf(
+        "-d", generatedSources.get().toString(),
+        "-p", "fi.espoo.evaka.sarma.model",
+        schemaDir.toString()
+    )
+
+    inputs.dir(schemaDir)
+    outputs.dir(generatedSources)
+}
+
 tasks.named("compileJava") {
-    dependsOn("xjcGenerate")
-} 
+    dependsOn("generateJaxb")
+}
