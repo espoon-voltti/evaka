@@ -55,7 +55,6 @@ import {
   selectedNodeToReceiver
 } from 'lib-components/messages/SelectorNode'
 import { SaveDraftParams } from 'lib-components/messages/types'
-import { Draft, useDraft } from 'lib-components/messages/useDraft'
 import {
   ExpandingInfoBox,
   InlineInfoButton
@@ -84,6 +83,7 @@ import {
 import { useTranslation } from '../../state/i18n'
 
 import { createMessagePreflightCheckQuery } from './queries'
+import { Draft, useDraft } from './useDraft'
 
 type Message = Omit<UpdatableDraftContent, 'recipients' | 'recipientNames'> & {
   sender: SelectOption<MessageAccountId>
