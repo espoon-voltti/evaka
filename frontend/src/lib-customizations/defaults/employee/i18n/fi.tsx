@@ -4425,7 +4425,8 @@ export const fi = {
         familyOver3Count: '3v ja yli lasten määrä perhepäivähoidossa',
         municipalShiftCareCount: 'Vuorohoidossa olevien määrä',
         assistanceCount:
-          'Tehostetun ja erityisen tuen lapset / Eritystä tai kasvun ja oppimisen tukea tarvitsevat lapset'
+          'Tehostetun ja erityisen tuen lapset / Eritystä tai kasvun ja oppimisen tukea tarvitsevat lapset',
+        statDay: '(tilanne kuun viimeinen päivä)'
       },
       ageStatisticColumns: {
         voucherUnder3Count: 'Alle 3v palvelusetelipaikkojen määrä',
@@ -4441,7 +4442,8 @@ export const fi = {
         effectiveFamilyDaycareDaysUnder3Count:
           'Alle 3v perhepäivähoidon hoitopäivät',
         effectiveFamilyDaycareDaysOver3Count:
-          '3v ja yli perhepäivähoidon hoitopäivät'
+          '3v ja yli perhepäivähoidon hoitopäivät',
+        languageStatDay: '(tilanne 30.11.)'
       },
       yearlyStatisticsColumns: {
         voucherTotalCount: 'Palvelusetelien määrä',
@@ -4472,7 +4474,8 @@ export const fi = {
         municipalSpecialAssistanceCount:
           'Erityisen tuen lapsimäärä (kunnallinen)',
         municipalEnhancedAssistanceCount:
-          'Tehostetun tuen lapsimäärä (kunnallinen)'
+          'Tehostetun tuen lapsimäärä (kunnallinen)',
+        statDay: '(tilanne 15.12.)'
       }
     }
   },
