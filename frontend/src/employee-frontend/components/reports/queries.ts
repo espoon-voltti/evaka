@@ -5,35 +5,52 @@
 import { Queries } from 'lib-common/query'
 
 import { sendJamixOrders } from '../../generated/api-clients/jamix'
+import { mergePeople, safeDeletePerson } from '../../generated/api-clients/pis'
 import {
   clearTitaniaErrors,
+  getApplicationsReport,
+  getAssistanceNeedDecisionsReport,
   getAssistanceNeedsAndActionsReport,
   getAssistanceNeedsAndActionsReportByChild,
   getAttendanceReservationReportByChild,
+  getChildAgeLanguageReport,
   getChildAttendanceReport,
   getChildDocumentsReport,
   getChildDocumentsReportTemplateOptions,
+  getChildrenInDifferentAddressReport,
   getCustomerFeesReport,
+  getDecisionsReport,
+  getDuplicatePeopleReport,
+  getEndedPlacementsReport,
   getExceededServiceNeedReportRows,
   getExceededServiceNeedReportUnits,
+  getFamilyConflictsReport,
   getFamilyContactsReport,
+  getFamilyDaycareMealReport,
   getFuturePreschoolersReport,
   getFuturePreschoolersSourceUnitsReport,
   getFuturePreschoolersUnitsReport,
   getHolidayPeriodAttendanceReport,
   getIncompleteIncomeReport,
   getInvoiceReport,
+  getManualDuplicationReport,
   getMealReportByUnit,
   getMissingHeadOfFamilyReport,
+  getMissingServiceNeedReport,
   getNonSsnChildrenReportRows,
   getOccupancyGroupReport,
   getOccupancyUnitReport,
+  getPartnersInDifferentAddressReport,
   getPermittedReports,
+  getPlacementCountReport,
   getPlacementGuaranteeReport,
   getPlacementSketchingReport,
   getPreschoolAbsenceReport,
   getPreschoolApplicationReport,
+  getPresenceReport,
+  getServiceNeedReport,
   getServiceVoucherReportForAllUnits,
+  getServiceVoucherReportForUnit,
   getSextetReport,
   getStartingPlacementsReport,
   getTampereRegionalSurveyAgeStatistics,
@@ -160,3 +177,53 @@ export const tampereRegionalSurveyAgeReport = q.query(
 export const tampereRegionalSurveyYearlyReport = q.query(
   getTampereRegionalSurveyYearlyStatistics
 )
+
+export const missingServiceNeedReportQuery = q.query(
+  getMissingServiceNeedReport
+)
+
+export const manualDuplicationReportQuery = q.query(getManualDuplicationReport)
+
+export const familyDaycareMealReportQuery = q.query(getFamilyDaycareMealReport)
+
+export const decisionReportQuery = q.query(getDecisionsReport)
+
+export const assistanceNeedDecisionsReportQuery = q.query(
+  getAssistanceNeedDecisionsReport
+)
+
+export const presenceReportQuery = q.query(getPresenceReport)
+
+export const serviceVoucherReportForUnitQuery = q.query(
+  getServiceVoucherReportForUnit
+)
+
+export const serviceNeedReportQuery = q.query(getServiceNeedReport)
+
+export const partnersInDifferentAddressReportQuery = q.query(
+  getPartnersInDifferentAddressReport
+)
+
+export const placementCountReportQuery = q.query(getPlacementCountReport)
+
+export const familyConflictsReportQuery = q.query(getFamilyConflictsReport)
+
+export const endedPlacementsReportQuery = q.query(getEndedPlacementsReport)
+
+export const duplicatePeopleReportQuery = q.query(getDuplicatePeopleReport)
+
+export const mergePeopleMutation = q.mutation(mergePeople, [
+  duplicatePeopleReportQuery.prefix
+])
+
+export const safeDeletePersonMutation = q.mutation(safeDeletePerson, [
+  duplicatePeopleReportQuery.prefix
+])
+
+export const childrenInDifferentAddressReportQuery = q.query(
+  getChildrenInDifferentAddressReport
+)
+
+export const childAgeLanguageReportQuery = q.query(getChildAgeLanguageReport)
+
+export const applicationsReportQuery = q.query(getApplicationsReport)

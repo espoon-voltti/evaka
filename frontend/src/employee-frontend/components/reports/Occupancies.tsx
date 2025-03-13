@@ -237,12 +237,11 @@ function getDisplayCells(
           ? getHeadCountAverage(row, dates)
           : getOccupancyAverage(row, dates)
 
-      // average
-      result.cells.push()
-
-      // daily counts
       result.cells.push(
+        // average
         { value: formatAverage(average, usedValues) },
+
+        // daily counts
         ...dates.map((date) => {
           const occupancy = row.occupancies[toOccupancyKey(date)]
 

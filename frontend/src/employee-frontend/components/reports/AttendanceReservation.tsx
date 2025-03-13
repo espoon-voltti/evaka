@@ -12,7 +12,14 @@ import React, {
 } from 'react'
 import styled from 'styled-components'
 
-import { Failure, Loading, Result, Success, wrapResult } from 'lib-common/api'
+import {
+  combine,
+  Failure,
+  Loading,
+  Result,
+  Success,
+  wrapResult
+} from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { AttendanceReservationReportRow } from 'lib-common/generated/api-types/reports'
 import { DaycareId, GroupId } from 'lib-common/generated/api-types/shared'
@@ -21,7 +28,6 @@ import LocalDate from 'lib-common/local-date'
 import { constantQuery, useQueryResult } from 'lib-common/query'
 import { formatDecimal } from 'lib-common/utils/number'
 import { scrollRefIntoView } from 'lib-common/utils/scrolling'
-import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
@@ -34,6 +40,7 @@ import DateRangePicker from 'lib-components/molecules/date-picker/DateRangePicke
 import ReportDownload from '../../components/reports/ReportDownload'
 import { getAttendanceReservationReportByUnit } from '../../generated/api-clients/reports'
 import { useTranslation } from '../../state/i18n'
+import { renderResult } from '../async-rendering'
 import { FlexRow } from '../common/styled/containers'
 import { unitGroupsQuery, unitsQuery } from '../unit/queries'
 
@@ -120,80 +127,90 @@ export default React.memo(function AttendanceReservation() {
 
   const filteredRows = useMemo(
     () =>
-      report
-        .map<AttendanceReservationReportUiRow[]>((data) =>
-          data.map((row) => ({
-            ...row,
-            capacityFactor: formatDecimal(row.capacityFactor),
-            staffCountRequired: formatDecimal(row.staffCountRequired)
-          }))
-        )
-        .getOrElse<AttendanceReservationReportUiRow[]>([]),
+      report.map<AttendanceReservationReportUiRow[]>((data) =>
+        data.map((row) => ({
+          ...row,
+          capacityFactor: formatDecimal(row.capacityFactor),
+          staffCountRequired: formatDecimal(row.staffCountRequired)
+        }))
+      ),
     [report]
   )
 
   const filteredUnits = units
     .map((data) => data.sort((a, b) => a.name.localeCompare(b.name, lang)))
     .getOrElse([])
+
   const filteredGroups = groups
     .map((data) => data.sort((a, b) => a.name.localeCompare(b.name, lang)))
     .getOrElse([])
 
-  const dates = filteredRows
-    .map((row) => row.dateTime.toLocalDate().format(dateFormat, lang))
-    .filter((value, index, array) => array.indexOf(value) === index)
+  const tableComponents = useMemo(
+    () =>
+      filteredRows.map((filteredRows) => {
+        const dates = filteredRows
+          .map((row) => row.dateTime.toLocalDate().format(dateFormat, lang))
+          .filter((value, index, array) => array.indexOf(value) === index)
 
-  const rowsByGroupAndTime = filteredRows.reduce<
-    Record<string, Map<string, AttendanceReservationReportUiRow[]>>
-  >((data, row) => {
-    const groupKey = row.groupId ?? 'ungrouped'
-    const map = data[groupKey] ?? new Map()
-    const time = row.dateTime.toLocalTime().format(timeFormat)
-    const rows = map.get(time) ?? []
-    rows.push(row)
-    map.set(time, rows)
-    data[groupKey] = map
-    return data
-  }, {})
-  const entries = Object.entries(rowsByGroupAndTime)
-  const showGroupTitle = entries.length > 1
+        const rowsByGroupAndTime = filteredRows.reduce<
+          Record<string, Map<string, AttendanceReservationReportUiRow[]>>
+        >((data, row) => {
+          const groupKey = row.groupId ?? 'ungrouped'
+          const map = data[groupKey] ?? new Map()
+          const time = row.dateTime.toLocalTime().format(timeFormat)
+          const rows = map.get(time) ?? []
+          rows.push(row)
+          map.set(time, rows)
+          data[groupKey] = map
+          return data
+        }, {})
+        const entries = Object.entries(rowsByGroupAndTime)
+        const showGroupTitle = entries.length > 1
 
-  const tableComponents = entries.map(([groupId, rowsByTime]) => {
-    const groupName = showGroupTitle
-      ? (filteredGroups.find((group) => group.id === groupId)?.name ??
-        i18n.reports.attendanceReservation.ungrouped)
-      : undefined
-    return (
-      <TableScrollable
-        key={groupId}
-        data-qa="report-attendance-reservation-table"
-      >
-        <Thead sticky>
-          <Tr>
-            <Th>{groupName}</Th>
-            {dates.map((date) => (
-              <Th key={date} colSpan={5} align="center">
-                {date}
-              </Th>
-            ))}
-          </Tr>
-          <Tr>
-            <Th stickyColumn>{i18n.reports.common.clock}</Th>
-            {dates.map((date) => (
-              <React.Fragment key={date}>
-                <Th>{i18n.reports.common.under3y}</Th>
-                <Th>{i18n.reports.common.over3y}</Th>
-                <Th>{i18n.reports.common.totalShort}</Th>
-                <Th>{i18n.reports.attendanceReservation.capacityFactor}</Th>
-                <Th>{i18n.reports.attendanceReservation.staffCountRequired}</Th>
-              </React.Fragment>
-            ))}
-          </Tr>
-        </Thead>
-        <Tbody>{getTableBody(rowsByTime, autoScrollRef)}</Tbody>
-      </TableScrollable>
-    )
-  })
+        const tableComponents = entries.map(([groupId, rowsByTime]) => {
+          const groupName = showGroupTitle
+            ? (filteredGroups.find((group) => group.id === groupId)?.name ??
+              i18n.reports.attendanceReservation.ungrouped)
+            : undefined
+          return (
+            <TableScrollable
+              key={groupId}
+              data-qa="report-attendance-reservation-table"
+            >
+              <Thead sticky>
+                <Tr>
+                  <Th>{groupName}</Th>
+                  {dates.map((date) => (
+                    <Th key={date} colSpan={5} align="center">
+                      {date}
+                    </Th>
+                  ))}
+                </Tr>
+                <Tr>
+                  <Th stickyColumn>{i18n.reports.common.clock}</Th>
+                  {dates.map((date) => (
+                    <React.Fragment key={date}>
+                      <Th>{i18n.reports.common.under3y}</Th>
+                      <Th>{i18n.reports.common.over3y}</Th>
+                      <Th>{i18n.reports.common.totalShort}</Th>
+                      <Th>
+                        {i18n.reports.attendanceReservation.capacityFactor}
+                      </Th>
+                      <Th>
+                        {i18n.reports.attendanceReservation.staffCountRequired}
+                      </Th>
+                    </React.Fragment>
+                  ))}
+                </Tr>
+              </Thead>
+              <Tbody>{getTableBody(rowsByTime, autoScrollRef)}</Tbody>
+            </TableScrollable>
+          )
+        })
+        return tableComponents
+      }),
+    [filteredGroups, filteredRows, i18n, lang]
+  )
 
   return (
     <Container>
@@ -269,56 +286,62 @@ export default React.memo(function AttendanceReservation() {
           />
         </FilterRow>
 
-        {unitId !== null && report.isLoading && <Loader />}
-        {report.isFailure && <div>{i18n.common.loadingFailed}</div>}
         {tooLongRange && (
           <div>{i18n.reports.attendanceReservation.tooLongRange}</div>
         )}
-        {report.isSuccess && (
-          <>
-            <ReportDownload
-              data={filteredRows.map((row) => ({
-                ...row,
-                dateTime: row.dateTime.format()
-              }))}
-              columns={[
-                {
-                  label: i18n.reports.common.groupName,
-                  value: (row) => row.groupName,
-                  exclude: filters.groupIds.length === 0
-                },
-                {
-                  label: i18n.reports.common.clock,
-                  value: (row) => row.dateTime
-                },
-                {
-                  label: i18n.reports.common.under3y,
-                  value: (row) => row.childCountUnder3
-                },
-                {
-                  label: i18n.reports.common.over3y,
-                  value: (row) => row.childCountOver3
-                },
-                {
-                  label: i18n.reports.common.totalShort,
-                  value: (row) => row.childCount
-                },
-                {
-                  label: i18n.reports.attendanceReservation.capacityFactor,
-                  value: (row) => row.capacityFactor
-                },
-                {
-                  label: i18n.reports.attendanceReservation.staffCountRequired,
-                  value: (row) => row.staffCountRequired
-                }
-              ]}
-              filename={`${i18n.reports.attendanceReservation.title} ${
-                filteredUnits.find((unit) => unit.id === unitId)?.name ?? ''
-              } ${filters.range.start.formatIso()}-${filters.range.end.formatIso()}.csv`}
-            />
-            {tableComponents}
-          </>
-        )}
+        {unitId !== null
+          ? renderResult(
+              combine(filteredRows, tableComponents),
+              ([filteredRows, tableComponents]) => (
+                <>
+                  <ReportDownload
+                    data={filteredRows.map((row) => ({
+                      ...row,
+                      dateTime: row.dateTime.format()
+                    }))}
+                    columns={[
+                      {
+                        label: i18n.reports.common.groupName,
+                        value: (row) => row.groupName,
+                        exclude: filters.groupIds.length === 0
+                      },
+                      {
+                        label: i18n.reports.common.clock,
+                        value: (row) => row.dateTime
+                      },
+                      {
+                        label: i18n.reports.common.under3y,
+                        value: (row) => row.childCountUnder3
+                      },
+                      {
+                        label: i18n.reports.common.over3y,
+                        value: (row) => row.childCountOver3
+                      },
+                      {
+                        label: i18n.reports.common.totalShort,
+                        value: (row) => row.childCount
+                      },
+                      {
+                        label:
+                          i18n.reports.attendanceReservation.capacityFactor,
+                        value: (row) => row.capacityFactor
+                      },
+                      {
+                        label:
+                          i18n.reports.attendanceReservation.staffCountRequired,
+                        value: (row) => row.staffCountRequired
+                      }
+                    ]}
+                    filename={`${i18n.reports.attendanceReservation.title} ${
+                      filteredUnits.find((unit) => unit.id === unitId)?.name ??
+                      ''
+                    } ${filters.range.start.formatIso()}-${filters.range.end.formatIso()}.csv`}
+                  />
+                  {tableComponents}
+                </>
+              )
+            )
+          : null}
       </ContentArea>
     </Container>
   )

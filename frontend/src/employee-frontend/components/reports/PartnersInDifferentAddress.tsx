@@ -2,13 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { Link } from 'react-router'
 import styled from 'styled-components'
 
-import { Loading, Result, wrapResult } from 'lib-common/api'
 import { PartnersInDifferentAddressReportRow } from 'lib-common/generated/api-types/reports'
-import Loader from 'lib-components/atoms/Loader'
+import { useQueryResult } from 'lib-common/query'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
@@ -16,15 +15,12 @@ import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 
 import ReportDownload from '../../components/reports/ReportDownload'
-import { getPartnersInDifferentAddressReport } from '../../generated/api-clients/reports'
 import { useTranslation } from '../../state/i18n'
 import { distinct } from '../../utils'
+import { renderResult } from '../async-rendering'
 
 import { FilterLabel, FilterRow, RowCountInfo, TableScrollable } from './common'
-
-const getPartnersInDifferentAddressReportResult = wrapResult(
-  getPartnersInDifferentAddressReport
-)
+import { partnersInDifferentAddressReportQuery } from './queries'
 
 interface DisplayFilters {
   careArea: string
@@ -40,24 +36,22 @@ const Wrapper = styled.div`
 
 export default React.memo(function PartnersInDifferentAddress() {
   const { i18n } = useTranslation()
-  const [rows, setRows] = useState<
-    Result<PartnersInDifferentAddressReportRow[]>
-  >(Loading.of())
 
   const [displayFilters, setDisplayFilters] =
     useState<DisplayFilters>(emptyDisplayFilters)
-  const displayFilter = (row: PartnersInDifferentAddressReportRow): boolean =>
-    !(displayFilters.careArea && row.careAreaName !== displayFilters.careArea)
+  const displayFilter = useCallback(
+    (row: PartnersInDifferentAddressReportRow): boolean =>
+      !(
+        displayFilters.careArea && row.careAreaName !== displayFilters.careArea
+      ),
+    [displayFilters.careArea]
+  )
 
-  useEffect(() => {
-    setRows(Loading.of())
-    setDisplayFilters(emptyDisplayFilters)
-    void getPartnersInDifferentAddressReportResult().then(setRows)
-  }, [])
+  const rows = useQueryResult(partnersInDifferentAddressReportQuery())
 
-  const filteredRows: PartnersInDifferentAddressReportRow[] = useMemo(
-    () => rows.map((rs) => rs.filter(displayFilter)).getOrElse([]),
-    [rows, displayFilters] // eslint-disable-line react-hooks/exhaustive-deps
+  const filteredRows = useMemo(
+    () => rows.map((rs) => rs.filter(displayFilter)),
+    [rows, displayFilter]
   )
 
   return (
@@ -106,9 +100,7 @@ export default React.memo(function PartnersInDifferentAddress() {
           </Wrapper>
         </FilterRow>
 
-        {rows.isLoading && <Loader />}
-        {rows.isFailure && <span>{i18n.common.loadingFailed}</span>}
-        {rows.isSuccess && (
+        {renderResult(filteredRows, (filteredRows) => (
           <>
             <ReportDownload
               data={filteredRows}
@@ -162,7 +154,7 @@ export default React.memo(function PartnersInDifferentAddress() {
             </TableScrollable>
             <RowCountInfo rowCount={filteredRows.length} />
           </>
-        )}
+        ))}
       </ContentArea>
     </Container>
   )
