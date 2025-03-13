@@ -200,16 +200,11 @@ class ArchiveChildDocumentService(
                                             if (documentMetadata.confidential == true)
                                                 DisclosureLevelType.CONFIDENTIAL
                                             else DisclosureLevelType.PUBLIC
-                                        // TODO lue tämä confidentiality.durationYears kentästä kun
-                                        // https://github.com/espoon-voltti/evaka/pull/6416 on
-                                        // masterissa
                                         disclosurePeriod =
-                                            if (documentMetadata.confidential == true) "100"
-                                            else null
-                                        // TODO lue tämä confidentiality.basis kentästä kun
-                                        // https://github.com/espoon-voltti/evaka/pull/6416 on
-                                        // masterissa
-                                        // disclosureReason = "JulkL 24 § 1 mom. 32 k"
+                                            documentMetadata.confidentiality
+                                                ?.durationYears
+                                                .toString()
+                                        disclosureReason = documentMetadata.confidentiality?.basis
                                     }
                                 // TODO Evaka_Särmä_metatietomääritykset.xlsx sanotaan, että nämä
                                 // tulisi olla "Ei turvallisuusluokiteltu". Tarvitaan oikea versio
