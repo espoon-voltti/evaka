@@ -8,7 +8,8 @@ const plugin = {
     'no-page-pause': require('./rules/no-page-pause'),
     'no-testonly': require('./rules/no-testonly'),
     'no-relative-lib-imports': require('./rules/no-relative-lib-imports'),
-    'no-icons-imports': require('./rules/no-icons-imports')
+    'no-icons-imports': require('./rules/no-icons-imports'),
+    'no-localdate-triple-equals': require('./rules/no-localdate-triple-equals')
   },
   configs: {}
 }
@@ -22,7 +23,8 @@ Object.assign(plugin.configs, {
       '@evaka/no-page-pause': 'error',
       '@evaka/no-testonly': 'error',
       '@evaka/no-relative-lib-imports': 'error',
-      '@evaka/no-icons-imports': 'error'
+      '@evaka/no-icons-imports': 'error',
+      '@evaka/no-localdate-triple-equals': 'error'
     }
   }
 })
