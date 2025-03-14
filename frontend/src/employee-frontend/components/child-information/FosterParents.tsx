@@ -15,7 +15,7 @@ import { useTranslation } from '../../state/i18n'
 import { getStatusLabelByDateRange } from '../../utils/date'
 import { renderResult } from '../async-rendering'
 import StatusLabel from '../common/StatusLabel'
-import { NameTd } from '../person-profile/PersonProfile'
+import { NameTd } from '../person-profile/common'
 
 import { getFosterParentsQuery } from './queries'
 

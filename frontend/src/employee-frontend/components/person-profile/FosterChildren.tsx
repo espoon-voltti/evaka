@@ -35,7 +35,7 @@ import { renderResult } from '../async-rendering'
 import { DbPersonSearch } from '../common/PersonSearch'
 import Toolbar from '../common/Toolbar'
 
-import { NameTd } from './PersonProfile'
+import { NameTd } from './common'
 import { PersonContext } from './state'
 
 const createFosterParentRelationshipResult = wrapResult(

@@ -23,7 +23,7 @@ import { UIContext } from '../../state/ui'
 import { RequireRole } from '../../utils/roles'
 import { renderResult } from '../async-rendering'
 import { inferApplicationType } from '../person-profile/PersonApplications'
-import { DateTd, NameTd, StatusTd } from '../person-profile/PersonProfile'
+import { DateTd, NameTd, StatusTd } from '../person-profile/common'
 
 import { getChildApplicationSummariesQuery } from './queries'
 

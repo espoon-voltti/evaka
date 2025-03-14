@@ -4,7 +4,6 @@
 
 import React, { useContext, useMemo } from 'react'
 import { useNavigate } from 'react-router'
-import styled from 'styled-components'
 
 import { Action } from 'lib-common/generated/action'
 import { PersonId } from 'lib-common/generated/api-types/shared'
@@ -13,12 +12,11 @@ import { getAge } from 'lib-common/utils/local-date'
 import Title from 'lib-components/atoms/Title'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { Container, ContentArea } from 'lib-components/layout/Container'
-import { Td } from 'lib-components/layout/Table'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import { defaultMargins, Gap } from 'lib-components/white-space'
+import { Gap } from 'lib-components/white-space'
 import { faListTimeline } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
@@ -41,37 +39,8 @@ import PersonIncome from './PersonIncome'
 import PersonInvoiceCorrections from './PersonInvoiceCorrections'
 import PersonInvoices from './PersonInvoices'
 import PersonVoucherValueDecisions from './PersonVoucherValueDecisions'
+import { HeaderRow, InfoLabelContainer } from './common'
 import { PersonContext, PersonContextProvider, PersonState } from './state'
-
-export const NameTd = styled(Td)`
-  width: 30%;
-`
-
-export const DateTd = styled(Td)`
-  width: 12%;
-`
-
-export const ButtonsTd = styled(Td)`
-  width: 13%;
-`
-
-export const StatusTd = styled(Td)`
-  width: 13%;
-`
-
-export const HeaderRow = styled.div`
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-`
-
-export const InfoLabelContainer = styled.div`
-  display: flex;
-
-  > div:not(:last-child) {
-    margin-right: ${defaultMargins.xs};
-  }
-`
 
 interface SectionProps {
   id: PersonId

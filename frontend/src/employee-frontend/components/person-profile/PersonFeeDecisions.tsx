@@ -32,7 +32,7 @@ import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
 import { renderResult } from '../async-rendering'
 
-import { DateTd, StatusTd } from './PersonProfile'
+import { DateTd, StatusTd } from './common'
 
 const getHeadOfFamilyFeeDecisionsResult = wrapResult(
   getHeadOfFamilyFeeDecisions

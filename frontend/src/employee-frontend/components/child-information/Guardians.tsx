@@ -31,7 +31,7 @@ import { ChildContext } from '../../state'
 import { useTranslation } from '../../state/i18n'
 import { formatName } from '../../utils'
 import { renderResult } from '../async-rendering'
-import { NameTd } from '../person-profile/PersonProfile'
+import { NameTd } from '../person-profile/common'
 
 const getPersonGuardiansResult = wrapResult(getPersonGuardians)
 const updateGuardianEvakaRightsResult = wrapResult(updateGuardianEvakaRights)
