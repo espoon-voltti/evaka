@@ -622,8 +622,14 @@ const en: Translations = {
       transferApplicationInfo: {
         DAYCARE:
           'Your child already has a place in the City of Espoo’s early childhood education. Use this application to apply for a transfer to another early childhood education unit.',
-        PRESCHOOL:
-          'Your child already has a place in pre-primary education. Use this application to apply for early childhood education <strong>connected to pre-primary education</strong> or a transfer to another pre-primary education unit.'
+        PRESCHOOL: (
+          <span>
+            Your child already has a place in pre-primary education. Use this
+            application to apply for early childhood education{' '}
+            <strong>connected to pre-primary education</strong> or a transfer to
+            another pre-primary education unit.
+          </span>
+        )
       },
       create: 'Apply',
       daycare4monthWarning: 'The application processing time is 4 months.',

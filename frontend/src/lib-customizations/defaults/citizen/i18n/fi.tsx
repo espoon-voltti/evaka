@@ -625,8 +625,13 @@ export default {
       transferApplicationInfo: {
         DAYCARE:
           'Lapsella on jo paikka Espoon varhaiskasvatuksessa. Tällä hakemuksella voit hakea siirtoa toiseen varhaiskasvatusta tarjoavaan yksikköön Espoossa.',
-        PRESCHOOL:
-          'Lapsella on jo esiopetuspaikka. Tällä hakemuksella voit hakea esiopetukseen liittyvää varhaiskasvatusta tai siirtoa toiseen esiopetusta tarjoavaan yksikköön.'
+        PRESCHOOL: (
+          <span>
+            Lapsella on jo esiopetuspaikka. Tällä hakemuksella voit hakea{' '}
+            <strong>esiopetukseen liittyvää</strong> varhaiskasvatusta tai
+            siirtoa toiseen esiopetusta tarjoavaan yksikköön.
+          </span>
+        )
       },
       create: 'Tee hakemus',
       daycare4monthWarning: 'Hakemuksen käsittelyaika on 4 kuukautta.',
