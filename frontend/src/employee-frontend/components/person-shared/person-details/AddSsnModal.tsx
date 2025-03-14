@@ -5,19 +5,16 @@
 import React, { useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
 
-import { wrapResult } from 'lib-common/api'
-import { PersonJSON } from 'lib-common/generated/api-types/pis'
 import { PersonId } from 'lib-common/generated/api-types/shared'
+import { useMutationResult } from 'lib-common/query'
 import InputField from 'lib-components/atoms/form/InputField'
 import FormModal from 'lib-components/molecules/modals/FormModal'
 import colors from 'lib-customizations/common'
 
-import { addSsn } from '../../../generated/api-clients/pis'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
 import { isSsnValid } from '../../../utils/validation/validations'
-
-const addSsnResult = wrapResult(addSsn)
+import { addSsnMutation } from '../../person-profile/queries'
 
 const Error = styled.div`
   display: flex;
@@ -28,10 +25,9 @@ const Error = styled.div`
 
 interface Props {
   personId: PersonId
-  onUpdateComplete?: (data: PersonJSON) => void
 }
 
-function AddSsnModal({ personId, onUpdateComplete }: Props) {
+function AddSsnModal({ personId }: Props) {
   const { i18n } = useTranslation()
   const { clearUiMode } = useContext(UIContext)
   const [ssn, setSsn] = useState<string>('')
@@ -42,13 +38,14 @@ function AddSsnModal({ personId, onUpdateComplete }: Props) {
     setError(undefined)
   }, [ssn])
 
+  const { mutateAsync: addSsn } = useMutationResult(addSsnMutation)
+
   const submit = () => {
     let isMounted = true
     setSubmitting(true)
-    void addSsnResult({ personId, body: { ssn } })
+    void addSsn({ personId, body: { ssn } })
       .then((result) => {
         if (result.isSuccess) {
-          if (onUpdateComplete) onUpdateComplete(result.value)
           clearUiMode()
           isMounted = false
         } else if (result.isFailure) {

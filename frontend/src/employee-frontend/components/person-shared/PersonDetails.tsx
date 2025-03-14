@@ -13,18 +13,18 @@ import React, {
 import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
-import { Loading, Result, Success, wrapResult } from 'lib-common/api'
 import { UpdateStateFn } from 'lib-common/form-state'
 import { Action } from 'lib-common/generated/action'
 import { PersonJSON } from 'lib-common/generated/api-types/pis'
 import { isoLanguages } from 'lib-common/generated/language'
 import LocalDate from 'lib-common/local-date'
+import { useMutation } from 'lib-common/query'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
+import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
 import Radio from 'lib-components/atoms/form/Radio'
-import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
@@ -39,24 +39,15 @@ import { faCalendar, faCopy, faFileAlt, faPen, faSync } from 'lib-icons'
 
 import LabelValueList from '../../components/common/LabelValueList'
 import AddSsnModal from '../../components/person-shared/person-details/AddSsnModal'
-import {
-  disableSsn,
-  duplicatePerson,
-  getAddressPagePdf,
-  getPersonIdentity,
-  updatePersonAndFamilyFromVtj,
-  updatePersonDetails
-} from '../../generated/api-clients/pis'
+import { getAddressPagePdf } from '../../generated/api-clients/pis'
 import { useTranslation } from '../../state/i18n'
 import { UIContext, UiState } from '../../state/ui'
-
-const getPersonIdentityResult = wrapResult(getPersonIdentity)
-const updatePersonDetailsResult = wrapResult(updatePersonDetails)
-const updatePersonAndFamilyFromVtjResult = wrapResult(
-  updatePersonAndFamilyFromVtj
-)
-const disableSsnResult = wrapResult(disableSsn)
-const duplicatePersonResult = wrapResult(duplicatePerson)
+import {
+  disableSsnMutation,
+  duplicatePersonMutation,
+  updatePersonAndFamilyFromVtjMutation,
+  updatePersonDetailsMutation
+} from '../person-profile/queries'
 
 const PostalCodeAndOffice = styled.div`
   display: flex;
@@ -75,7 +66,6 @@ const PostalCodeAndOffice = styled.div`
 interface Props {
   person: PersonJSON
   isChild: boolean
-  onUpdateComplete: (data: PersonJSON) => void
   permittedActions: Set<Action.Child | Action.Person>
 }
 
@@ -111,7 +101,6 @@ const ButtonSpacer = styled.div`
 export default React.memo(function PersonDetails({
   person,
   isChild,
-  onUpdateComplete,
   permittedActions
 }: Props) {
   const { i18n } = useTranslation()
@@ -136,36 +125,15 @@ export default React.memo(function PersonDetails({
     forceManualFeeDecisions: false,
     ophPersonOid: ''
   })
-  const [ssnDisableRequest, setSsnDisableRequest] = useState<Result<void>>(
-    Success.of()
-  )
-  const disableSsnAdding = useCallback(
-    (disabled: boolean) => {
-      setSsnDisableRequest(Loading.of())
-      void disableSsnResult({ personId: person.id, body: { disabled } }).then(
-        (result) => {
-          setSsnDisableRequest(result)
+  const { mutate: disableSsnAdding, isPending: disablingSsn } =
+    useMutation(disableSsnMutation)
 
-          if (result.isSuccess) {
-            onUpdateComplete({
-              ...person,
-              ssnAddingDisabled: disabled
-            })
-          }
-        }
-      )
-    },
-    [person, onUpdateComplete, setSsnDisableRequest]
-  )
   const [showSsnAddingDisabledInfo, setShowSsnAddingDisabledInfo] =
     useState(false)
   const toggleShowSsnAddingDisabledInfo = useCallback(
     () => setShowSsnAddingDisabledInfo((state) => !state),
     [setShowSsnAddingDisabledInfo]
   )
-
-  const [duplicateOngoing, setDuplicateOngoing] = useState<boolean>(false)
-  const [vtjUpdateOngoing, setVtjUpdateOngoing] = useState<boolean>(false)
 
   useEffect(() => {
     if (editing) {
@@ -202,48 +170,6 @@ export default React.memo(function PersonDetails({
     })
   }
 
-  const onSubmit = () => {
-    void updatePersonDetailsResult({ personId: person.id, body: form }).then(
-      (res) => {
-        if (res.isSuccess) {
-          onUpdateComplete(res.value)
-          clearUiMode()
-        }
-      }
-    )
-  }
-
-  const onDuplicate = () => {
-    setDuplicateOngoing(true)
-    void duplicatePersonResult({ personId: person.id }).then((response) => {
-      setDuplicateOngoing(false)
-      if (response.isSuccess) {
-        void navigate(`/child-information/${response.value}`)
-      }
-    })
-  }
-
-  const onVtjUpdate = () => {
-    setVtjUpdateOngoing(true)
-    void updatePersonAndFamilyFromVtjResult({ personId: person.id }).then(
-      (updateResponse) => {
-        if (updateResponse.isSuccess) {
-          void getPersonIdentityResult({ personId: person.id }).then(
-            (getResponse) => {
-              setVtjUpdateOngoing(false)
-              if (getResponse.isSuccess) {
-                onUpdateComplete(getResponse.value)
-                clearUiMode()
-              }
-            }
-          )
-        } else {
-          setVtjUpdateOngoing(false)
-        }
-      }
-    )
-  }
-
   const canEditPersonalDetails = permittedActions.has('UPDATE_PERSONAL_DETAILS')
 
   const language = useMemo(
@@ -259,9 +185,7 @@ export default React.memo(function PersonDetails({
 
   return (
     <>
-      {uiMode === 'add-ssn-modal' && (
-        <AddSsnModal personId={person.id} onUpdateComplete={onUpdateComplete} />
-      )}
+      {uiMode === 'add-ssn-modal' && <AddSsnModal personId={person.id} />}
       <RightAlignedRow>
         {featureFlags.personDuplicate &&
         permittedActions.has('DUPLICATE') &&
@@ -269,16 +193,16 @@ export default React.memo(function PersonDetails({
         isChild &&
         uiMode !== 'person-details-editing' ? (
           <ButtonSpacer>
-            {duplicateOngoing ? (
-              <SpinnerSegment margin="xxs" />
-            ) : (
-              <Button
-                appearance="inline"
-                icon={faCopy}
-                onClick={onDuplicate}
-                text={i18n.personProfile.duplicate}
-              />
-            )}
+            <MutateButton
+              appearance="inline"
+              icon={faCopy}
+              mutation={duplicatePersonMutation}
+              onClick={() => ({ personId: person.id })}
+              onSuccess={(personId) => {
+                void navigate(`/child-information/${personId}`)
+              }}
+              text={i18n.personProfile.duplicate}
+            />
           </ButtonSpacer>
         ) : null}
         {isChild &&
@@ -298,17 +222,15 @@ export default React.memo(function PersonDetails({
         {permittedActions.has('UPDATE_FROM_VTJ') &&
         uiMode !== 'person-details-editing' ? (
           <ButtonSpacer>
-            {vtjUpdateOngoing ? (
-              <SpinnerSegment margin="xxs" />
-            ) : (
-              <Button
-                appearance="inline"
-                icon={faSync}
-                onClick={onVtjUpdate}
-                data-qa="update-from-vtj-button"
-                text={i18n.personProfile.updateFromVtj}
-              />
-            )}
+            <MutateButton
+              appearance="inline"
+              icon={faSync}
+              mutation={updatePersonAndFamilyFromVtjMutation}
+              onClick={() => ({ personId: person.id })}
+              onSuccess={clearUiMode}
+              data-qa="update-from-vtj-button"
+              text={i18n.personProfile.updateFromVtj}
+            />
           </ButtonSpacer>
         ) : null}
         {permittedActions.has('DOWNLOAD_ADDRESS_PAGE') &&
@@ -427,8 +349,13 @@ export default React.memo(function PersonDetails({
                     <Checkbox
                       checked={person.ssnAddingDisabled}
                       label={i18n.personProfile.ssnAddingDisabledCheckbox}
-                      disabled={ssnDisableRequest.isLoading}
-                      onChange={disableSsnAdding}
+                      disabled={disablingSsn}
+                      onChange={(checked) =>
+                        disableSsnAdding({
+                          personId: person.id,
+                          body: { disabled: checked }
+                        })
+                      }
                       data-qa="disable-ssn-adding"
                     />
                     <InfoButton
@@ -709,10 +636,12 @@ export default React.memo(function PersonDetails({
               onClick={() => clearUiMode()}
               text={i18n.common.cancel}
             />
-            <LegacyButton
+            <MutateButton
               primary
               disabled={false}
-              onClick={() => onSubmit()}
+              mutation={updatePersonDetailsMutation}
+              onClick={() => ({ personId: person.id, body: form })}
+              onSuccess={clearUiMode}
               data-qa="confirm-edited-person-button"
               text={i18n.common.confirm}
             />

@@ -20,8 +20,108 @@ import {
   getPersonInvoiceCorrections,
   updateInvoiceCorrectionNote
 } from '../../generated/api-clients/invoicing'
+import {
+  addSsn,
+  createParentship,
+  createPartnership,
+  deleteParentship,
+  deletePartnership,
+  disableSsn,
+  duplicatePerson,
+  getFamilyByPerson,
+  getParentships,
+  getPartnerships,
+  getPerson,
+  retryParentship,
+  retryPartnership,
+  updateParentship,
+  updatePartnership,
+  updatePersonAndFamilyFromVtj,
+  updatePersonDetails
+} from '../../generated/api-clients/pis'
 
 const q = new Queries()
+
+export const personQuery = q.query(getPerson)
+
+export const familyByPersonQuery = q.query(getFamilyByPerson)
+
+export const parentshipsQuery = q.query(getParentships)
+
+export const updatePersonDetailsMutation = q.mutation(updatePersonDetails, [
+  ({ personId }) => personQuery({ personId })
+])
+
+export const updatePersonAndFamilyFromVtjMutation = q.mutation(
+  updatePersonAndFamilyFromVtj,
+  [
+    ({ personId }) => personQuery({ personId }),
+    ({ personId }) => familyByPersonQuery({ id: personId }),
+    ({ personId }) => parentshipsQuery({ headOfChildId: personId })
+  ]
+)
+
+export const disableSsnMutation = q.mutation(disableSsn, [
+  ({ personId }) => personQuery({ personId })
+])
+
+export const duplicatePersonMutation = q.mutation(duplicatePerson)
+
+export const addSsnMutation = q.mutation(addSsn)
+
+export const createParentshipMutation = q.mutation(createParentship, [
+  ({ body }) => familyByPersonQuery({ id: body.headOfChildId }),
+  ({ body }) => parentshipsQuery({ headOfChildId: body.headOfChildId })
+])
+
+export const updateParentshipMutation = q.parametricMutation<{
+  headOfChildId: PersonId
+}>()(updateParentship, [
+  ({ headOfChildId }) => familyByPersonQuery({ id: headOfChildId }),
+  ({ headOfChildId }) => parentshipsQuery({ headOfChildId })
+])
+
+export const deleteParentshipMutation = q.parametricMutation<{
+  headOfChildId: PersonId
+}>()(deleteParentship, [
+  ({ headOfChildId }) => familyByPersonQuery({ id: headOfChildId }),
+  ({ headOfChildId }) => parentshipsQuery({ headOfChildId })
+])
+
+export const retryParentshipMutation = q.parametricMutation<{
+  headOfChildId: PersonId
+}>()(retryParentship, [
+  ({ headOfChildId }) => familyByPersonQuery({ id: headOfChildId }),
+  ({ headOfChildId }) => parentshipsQuery({ headOfChildId })
+])
+
+export const partnershipsQuery = q.query(getPartnerships)
+
+export const createPartnershipMutation = q.mutation(createPartnership, [
+  ({ body }) => partnershipsQuery({ personId: body.person1Id }),
+  ({ body }) => familyByPersonQuery({ id: body.person1Id })
+])
+
+export const updatePartnershipMutation = q.parametricMutation<{
+  personId: PersonId
+}>()(updatePartnership, [
+  ({ personId }) => partnershipsQuery({ personId }),
+  ({ personId }) => familyByPersonQuery({ id: personId })
+])
+
+export const deletePartnershipMutation = q.parametricMutation<{
+  personId: PersonId
+}>()(deletePartnership, [
+  ({ personId }) => partnershipsQuery({ personId }),
+  ({ personId }) => familyByPersonQuery({ id: personId })
+])
+
+export const retryPartnershipMutation = q.parametricMutation<{
+  personId: PersonId
+}>()(retryPartnership, [
+  ({ personId }) => partnershipsQuery({ personId }),
+  ({ personId }) => familyByPersonQuery({ id: personId })
+])
 
 export const incomeCoefficientMultipliersQuery = q.query(getIncomeMultipliers)
 

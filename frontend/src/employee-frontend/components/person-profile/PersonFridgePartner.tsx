@@ -7,10 +7,9 @@ import React, { useContext, useMemo, useState } from 'react'
 import { Link } from 'react-router'
 import styled from 'styled-components'
 
-import { wrapResult } from 'lib-common/api'
 import { PersonJSON } from 'lib-common/generated/api-types/pis'
 import { PartnershipId, PersonId } from 'lib-common/generated/api-types/shared'
-import { useApiState } from 'lib-common/utils/useRestApi'
+import { useMutationResult, useQueryResult } from 'lib-common/query'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
@@ -21,22 +20,18 @@ import { faQuestion } from 'lib-icons'
 
 import Toolbar from '../../components/common/Toolbar'
 import FridgePartnerModal from '../../components/person-profile/person-fridge-partner/FridgePartnerModal'
-import {
-  deletePartnership,
-  getPartnerships,
-  retryPartnership
-} from '../../generated/api-clients/pis'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
 import { formatName } from '../../utils'
 import { renderResult } from '../async-rendering'
 
 import { ButtonsTd, DateTd, NameTd } from './PersonProfile'
+import {
+  deletePartnershipMutation,
+  partnershipsQuery,
+  retryPartnershipMutation
+} from './queries'
 import { PersonContext } from './state'
-
-const getPartnershipsResult = wrapResult(getPartnerships)
-const deletePartnershipResult = wrapResult(deletePartnership)
-const retryPartnershipResult = wrapResult(retryPartnership)
 
 const TopBar = styled.div`
   display: flex;
@@ -54,22 +49,14 @@ const PersonFridgePartner = React.memo(function PersonFridgePartner({
   open: startOpen
 }: Props) {
   const { i18n } = useTranslation()
-  const { reloadFamily, permittedActions } = useContext(PersonContext)
+  const { permittedActions } = useContext(PersonContext)
   const { uiMode, toggleUiMode, clearUiMode, setErrorMessage } =
     useContext(UIContext)
   const [open, setOpen] = useState(startOpen)
-  const [partnerships, loadData] = useApiState(
-    () => getPartnershipsResult({ personId: id }),
-    [id]
-  )
+
+  const partnerships = useQueryResult(partnershipsQuery({ personId: id }))
   const [selectedPartnershipId, setSelectedPartnershipId] =
     useState<PartnershipId>()
-
-  // FIXME: This component shouldn't know about family's dependency on its data
-  const reload = () => {
-    void loadData()
-    reloadFamily()
-  }
 
   const selectedPartnership = useMemo(
     () =>
@@ -83,15 +70,21 @@ const PersonFridgePartner = React.memo(function PersonFridgePartner({
     [partnerships, selectedPartnershipId]
   )
 
+  const { mutateAsync: deletePartnership } = useMutationResult(
+    deletePartnershipMutation
+  )
+  const { mutateAsync: retryPartnership } = useMutationResult(
+    retryPartnershipMutation
+  )
+
   return (
     <div>
       {uiMode === 'add-fridge-partner' ? (
-        <FridgePartnerModal headPersonId={id} onSuccess={reload} />
+        <FridgePartnerModal headPersonId={id} />
       ) : uiMode === `edit-fridge-partner-${selectedPartnershipId}` ? (
         <FridgePartnerModal
           partnership={selectedPartnership}
           headPersonId={id}
-          onSuccess={reload}
         />
       ) : uiMode === `remove-fridge-partner-${selectedPartnershipId}` ? (
         <InfoModal
@@ -102,7 +95,8 @@ const PersonFridgePartner = React.memo(function PersonFridgePartner({
           reject={{ action: () => clearUiMode(), label: i18n.common.cancel }}
           resolve={{
             action: () =>
-              deletePartnershipResult({
+              deletePartnership({
+                personId: id,
                 partnershipId: selectedPartnershipId!
               }).then((res) => {
                 clearUiMode()
@@ -113,8 +107,6 @@ const PersonFridgePartner = React.memo(function PersonFridgePartner({
                     text: i18n.common.tryAgain,
                     resolveLabel: i18n.common.ok
                   })
-                } else {
-                  reload()
                 }
               }),
             label: i18n.common.remove
@@ -215,9 +207,10 @@ const PersonFridgePartner = React.memo(function PersonFridgePartner({
                             onRetry={
                               fridgePartner.conflict
                                 ? () => {
-                                    void retryPartnershipResult({
+                                    void retryPartnership({
+                                      personId: id,
                                       partnershipId: fridgePartner.id
-                                    }).then(() => reload())
+                                    })
                                   }
                                 : undefined
                             }

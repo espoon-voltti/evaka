@@ -2,53 +2,32 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, {
-  createContext,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState
-} from 'react'
+import React, { createContext, useMemo } from 'react'
 
-import { Loading, Result, wrapResult } from 'lib-common/api'
+import { Loading, Result } from 'lib-common/api'
 import { Action } from 'lib-common/generated/action'
 import {
   FamilyOverview,
   ParentshipWithPermittedActions,
-  PersonJSON,
-  PersonResponse
+  PersonJSON
 } from 'lib-common/generated/api-types/pis'
 import { PersonId } from 'lib-common/generated/api-types/shared'
-import { useApiState, useRestApi } from 'lib-common/utils/useRestApi'
+import { pendingQuery, useQueryResult } from 'lib-common/query'
 
-import {
-  getFamilyByPerson,
-  getParentships,
-  getPerson
-} from '../../generated/api-clients/pis'
-
-const getPersonResult = wrapResult(getPerson)
-const getFamilyByPersonResult = wrapResult(getFamilyByPerson)
-const getParentshipsResult = wrapResult(getParentships)
+import { familyByPersonQuery, parentshipsQuery, personQuery } from './queries'
 
 export interface PersonState {
   person: Result<PersonJSON>
   permittedActions: Set<Action.Person>
   family: Result<FamilyOverview>
   fridgeChildren: Result<ParentshipWithPermittedActions[]>
-  setPerson: (person: PersonJSON) => void
-  reloadFamily: () => void
-  reloadFridgeChildren: () => void
 }
 
 const defaultState: PersonState = {
   person: Loading.of(),
   permittedActions: new Set(),
   family: Loading.of(),
-  fridgeChildren: Loading.of(),
-  setPerson: () => undefined,
-  reloadFamily: () => undefined,
-  reloadFridgeChildren: () => undefined
+  fridgeChildren: Loading.of()
 }
 
 const emptyPermittedActions = new Set<Action.Person>()
@@ -62,82 +41,40 @@ export const PersonContextProvider = React.memo(function PersonContextProvider({
   id: PersonId
   children: React.JSX.Element
 }) {
-  const [personResponse, setPersonResponse] = useState<Result<PersonResponse>>(
-    Loading.of()
-  )
-  const [permittedActions, setPermittedActions] = useState<Set<Action.Person>>(
-    emptyPermittedActions
-  )
-  const setFullPersonResponse = useCallback(
-    (response: Result<PersonResponse>) => {
-      setPermittedActions(
-        response
-          .map(({ permittedActions }) => new Set(permittedActions))
-          .getOrElse(emptyPermittedActions)
-      )
-      setPersonResponse(response)
-    },
-    []
-  )
-  const loadPerson = useRestApi(getPersonResult, setFullPersonResponse)
-  useEffect(() => {
-    void loadPerson({ personId: id })
-  }, [loadPerson, id])
-
-  const [family, reloadFamily] = useApiState(
-    async () =>
-      permittedActions.has('READ_FAMILY_OVERVIEW')
-        ? getFamilyByPersonResult({ id })
-        : Loading.of<FamilyOverview>(),
-    [id, permittedActions]
-  )
-
-  const [fridgeChildren, loadFridgeChildren] = useApiState(
-    async () =>
-      permittedActions.has('READ_PARENTSHIPS')
-        ? getParentshipsResult({ headOfChildId: id })
-        : Loading.of<ParentshipWithPermittedActions[]>(),
-    [id, permittedActions]
-  )
-
-  const reloadFridgeChildren = useCallback(() => {
-    void reloadFamily()
-    void loadFridgeChildren()
-  }, [reloadFamily, loadFridgeChildren])
+  const personResponse = useQueryResult(personQuery({ personId: id }))
 
   const person = useMemo(
     () => personResponse.map((response) => response.person),
     [personResponse]
   )
-  const setPerson = useCallback(
-    (person: PersonJSON) => {
-      setPersonResponse((prev) =>
-        prev.map((response) => ({ ...response, person }))
-      )
-      void reloadFamily()
-    },
-    [reloadFamily]
+  const permittedActions = useMemo(
+    () =>
+      personResponse
+        .map(({ permittedActions }) => new Set(permittedActions))
+        .getOrElse(emptyPermittedActions),
+    [personResponse]
+  )
+
+  const family = useQueryResult(
+    permittedActions.has('READ_FAMILY_OVERVIEW')
+      ? familyByPersonQuery({ id })
+      : pendingQuery<FamilyOverview>()
+  )
+
+  const fridgeChildren = useQueryResult(
+    permittedActions.has('READ_PARENTSHIPS')
+      ? parentshipsQuery({ headOfChildId: id })
+      : pendingQuery<ParentshipWithPermittedActions[]>()
   )
 
   const value = useMemo<PersonState>(
     () => ({
       person,
-      setPerson,
       permittedActions,
       family,
-      fridgeChildren,
-      reloadFamily,
-      reloadFridgeChildren
+      fridgeChildren
     }),
-    [
-      person,
-      setPerson,
-      permittedActions,
-      family,
-      fridgeChildren,
-      reloadFamily,
-      reloadFridgeChildren
-    ]
+    [person, permittedActions, family, fridgeChildren]
   )
 
   return (
