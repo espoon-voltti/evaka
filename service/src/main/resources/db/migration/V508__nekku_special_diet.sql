@@ -25,4 +25,4 @@ CREATE INDEX idx$nekku_special_diet_option_field
     ON nekku_special_diet_option (field_id);
 
 CREATE INDEX idx$nekku_special_diet_field_diet
-    ON nekku_special_diet_field (id);
+    ON nekku_special_diet_field (diet_id);
