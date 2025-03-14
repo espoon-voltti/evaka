@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import fs from 'fs'
+
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   DaycareId,
@@ -162,14 +164,16 @@ async function openSupervisorPage(mockedTime: HelsinkiDateTime) {
 
 async function openCitizenPage(mockedTime: HelsinkiDateTime) {
   citizenPage = await Page.open({
-    mockedTime: mockedTime
+    mockedTime: mockedTime,
+    ignoreHTTPSErrors: true
   })
   await enduserLogin(citizenPage, testAdult)
 }
 
 async function openCitizenPageWeak(mockedTime: HelsinkiDateTime) {
   citizenPage = await Page.open({
-    mockedTime: mockedTime
+    mockedTime: mockedTime,
+    ignoreHTTPSErrors: true
   })
   await enduserLoginWeak(citizenPage, credentials)
 }
@@ -355,6 +359,15 @@ describe('Sending and receiving messages', () => {
           () => citizenMessagesPage.getThreadAttachmentCount(),
           2
         )
+
+        // Download and verify first attachment
+        await citizenMessagesPage.openFirstThread()
+        const downloadedContent =
+          await citizenMessagesPage.downloadFirstAttachment()
+        const originalContent = await fs.promises.readFile(
+          'src/e2e-test/assets/test_file.odt'
+        )
+        expect(downloadedContent).toEqual(originalContent)
       })
 
       test('Employee can discard thread reply', async () => {
