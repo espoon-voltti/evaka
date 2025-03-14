@@ -182,10 +182,10 @@ INSERT INTO nekku_special_diet_field (
     name,
     type
 ) VALUES (
-    ${bind { (dietId, _) ->  dietId}},
-    ${bind { (_, field) ->  field.id }},
-    ${bind { (_, field) ->  field.name }},
-    ${bind { (_, field) ->  field.type }}
+    ${bind { (dietId, _) -> dietId}},
+    ${bind { (_, field) -> field.id }},
+    ${bind { (_, field) -> field.name }},
+    ${bind { (_, field) -> field.type }}
 )
 ON CONFLICT (id) DO 
 UPDATE SET
@@ -234,10 +234,10 @@ INSERT INTO nekku_special_diet_option (
     key,
     value
 ) VALUES (
-    ${bind { (fieldId, _) ->  fieldId}},
-    ${bind { (_, option) ->  option.weight }},
-    ${bind { (_, option) ->  option.key }},
-    ${bind { (_, option) ->  option.value }}
+    ${bind { (fieldId, _) -> fieldId}},
+    ${bind { (_, option) -> option.weight }},
+    ${bind { (_, option) -> option.key }},
+    ${bind { (_, option) -> option.value }}
 )
 ON CONFLICT (field_id, value) DO
 UPDATE SET
