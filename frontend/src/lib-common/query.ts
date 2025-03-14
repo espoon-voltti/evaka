@@ -407,12 +407,25 @@ export function useMutationResult<Arg, Data>(
   return { ...rest, mutateAsync: mutateAsyncResult }
 }
 
-export function constantQuery<R>(result: R): UseQueryOptions<R, unknown> {
+/**
+ * Immediately resolves with the given constant value
+ */
+export function constantQuery<R>(value: R): UseQueryOptions<R, unknown> {
   return {
-    queryFn: () => Promise.resolve(result),
-    queryKey: ['builtin', 'constant', result],
-    initialData: result,
+    queryFn: () => Promise.resolve(value),
+    queryKey: ['builtin', 'constant', value],
+    initialData: value,
     staleTime: Infinity
+  }
+}
+
+/**
+ * Stays in the pending state forever
+ */
+export function pendingQuery<R>(): UseQueryOptions<R, unknown> {
+  return {
+    queryFn: foreverPending,
+    queryKey: ['builtin', 'pending']
   }
 }
 
