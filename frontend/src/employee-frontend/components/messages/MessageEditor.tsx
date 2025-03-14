@@ -233,7 +233,7 @@ export default React.memo(function MessageEditor({
   )
   const [filtersVisible, useFiltersVisible] = useBoolean(false)
   const [yearOfBirthTree, setYearOfBirthTree] = useState<TreeNode[]>(
-    [...Array(8).keys()].map<TreeNode>((n) => ({
+    [...Array(9).keys()].map<TreeNode>((n) => ({
       text: LocalDate.todayInHelsinkiTz().year - n + '',
       key: LocalDate.todayInHelsinkiTz().year - n + '',
       checked: false,
