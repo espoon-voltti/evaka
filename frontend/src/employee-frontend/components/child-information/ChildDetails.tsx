@@ -22,8 +22,7 @@ interface Props {
 
 export default React.memo(function ChildDetails({ id }: Props) {
   const { i18n } = useTranslation()
-  const { person, setPerson, permittedActions } =
-    useContext<ChildState>(ChildContext)
+  const { person, permittedActions } = useContext<ChildState>(ChildContext)
 
   const [open, setOpen] = useState(true)
 
@@ -40,7 +39,6 @@ export default React.memo(function ChildDetails({ id }: Props) {
           <PersonDetails
             person={person}
             isChild={true}
-            onUpdateComplete={setPerson}
             permittedActions={permittedActions}
           />
         ))}

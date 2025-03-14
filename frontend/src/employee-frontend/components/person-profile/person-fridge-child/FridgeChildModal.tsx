@@ -2,39 +2,32 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useState, useContext, useEffect, useMemo } from 'react'
+import React, { useState, useContext, useMemo } from 'react'
 
-import { Loading, Result, wrapResult } from 'lib-common/api'
+import { Result } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import { UpdateStateFn } from 'lib-common/form-state'
 import { Parentship, PersonSummary } from 'lib-common/generated/api-types/pis'
 import { PersonId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
+import { useMutationResult } from 'lib-common/query'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import FormModal from 'lib-components/molecules/modals/FormModal'
 import { Gap } from 'lib-components/white-space'
 import { faChild } from 'lib-icons'
 
 import { DbPersonSearch as PersonSearch } from '../../../components/common/PersonSearch'
-import {
-  createParentship,
-  getPersonIdentity,
-  updateParentship
-} from '../../../generated/api-clients/pis'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
 import { formatName } from '../../../utils'
 import RetroactiveConfirmation, {
   isChangeRetroactive
 } from '../../common/RetroactiveConfirmation'
-
-const getPersonIdentityResult = wrapResult(getPersonIdentity)
-const createParentshipResult = wrapResult(createParentship)
-const updateParentshipResult = wrapResult(updateParentship)
+import { createParentshipMutation, updateParentshipMutation } from '../queries'
+import { PersonContext } from '../state'
 
 interface Props {
   headPersonId: PersonId
-  onSuccess: () => void
   parentship?: Parentship
 }
 
@@ -44,12 +37,10 @@ export interface FridgeChildForm {
   endDate: LocalDate
 }
 
-function FridgeChildModal({ headPersonId, onSuccess, parentship }: Props) {
+function FridgeChildModal({ headPersonId, parentship }: Props) {
   const { i18n } = useTranslation()
   const { clearUiMode, setErrorMessage } = useContext(UIContext)
-  const [personData, setPersonData] = useState<Result<PersonSummary>>(
-    Loading.of()
-  )
+  const { person } = useContext(PersonContext)
   const initialForm: FridgeChildForm = useMemo(
     () => ({
       child: parentship && parentship.child,
@@ -93,7 +84,7 @@ function FridgeChildModal({ headPersonId, onSuccess, parentship }: Props) {
       )
     }
 
-    const headDateOfDeath = personData
+    const headDateOfDeath = person
       .map((p) => p.dateOfDeath)
       .getOrElse(undefined)
 
@@ -106,23 +97,27 @@ function FridgeChildModal({ headPersonId, onSuccess, parentship }: Props) {
     }
 
     return errors
-  }, [i18n, personData, form])
+  }, [i18n, person, form])
 
   const [errorStatusCode, setErrorStatusCode] = useState<number>()
 
-  useEffect(() => {
-    void getPersonIdentityResult({ personId: headPersonId }).then(setPersonData)
-  }, [headPersonId, setPersonData])
+  const { mutateAsync: updateParentship } = useMutationResult(
+    updateParentshipMutation
+  )
+  const { mutateAsync: createParentship } = useMutationResult(
+    createParentshipMutation
+  )
 
   const childFormActions = () => {
     if (!form.child) return
 
     const apiCall = parentship
-      ? updateParentshipResult({
+      ? updateParentship({
+          headOfChildId: headPersonId,
           id: parentship.id,
           body: { startDate: form.startDate, endDate: form.endDate }
         })
-      : createParentshipResult({
+      : createParentship({
           body: {
             headOfChildId: headPersonId,
             childId: form.child.id,
@@ -148,7 +143,6 @@ function FridgeChildModal({ headPersonId, onSuccess, parentship }: Props) {
         }
       } else {
         clearUiMode()
-        onSuccess()
       }
     })
   }

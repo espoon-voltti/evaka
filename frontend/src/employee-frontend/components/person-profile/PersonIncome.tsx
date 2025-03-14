@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { useQueryClient } from '@tanstack/react-query'
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
 
@@ -38,7 +39,10 @@ import { renderResult } from '../async-rendering'
 import IncomeStatementsTable from './IncomeStatementsTable'
 import IncomeList from './income/IncomeList'
 import { getMissingIncomePeriodsString } from './income/missingIncomePeriodUtils'
-import { incomeCoefficientMultipliersQuery } from './queries'
+import {
+  familyByPersonQuery,
+  incomeCoefficientMultipliersQuery
+} from './queries'
 import { PersonContext } from './state'
 
 const getChildPlacementPeriodsResult = wrapResult(getChildPlacementPeriods)
@@ -138,7 +142,6 @@ export const Incomes = React.memo(function Incomes({
 }) {
   const { i18n } = useTranslation()
   const { setErrorMessage } = useContext(UIContext)
-  const { reloadFamily } = useContext(PersonContext)
   const [incomes, loadIncomes] = useApiState(
     () => getPersonIncomesResult({ personId }),
     [personId]
@@ -163,11 +166,13 @@ export const Incomes = React.memo(function Incomes({
     [openIncomeRows]
   )
 
+  const queryClient = useQueryClient()
+
   // FIXME: This component shouldn't know about family's dependency on its data
   const reloadIncomes = useCallback(() => {
     void loadIncomes()
-    reloadFamily()
-  }, [loadIncomes, reloadFamily])
+    void queryClient.invalidateQueries(familyByPersonQuery({ id: personId }))
+  }, [loadIncomes, personId, queryClient])
   useEffect(reloadIncomes, [reloadIncomes])
 
   useEffect(() => {
