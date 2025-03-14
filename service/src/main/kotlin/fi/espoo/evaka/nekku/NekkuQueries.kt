@@ -200,7 +200,7 @@ WHERE
     }
 
     logger.info {
-        "\"Deleted: $deletedSpecialDietFieldsCount Nekku special diet fields, inserted ${specialDietFields.size}"
+        "Deleted: $deletedSpecialDietFieldsCount Nekku special diet fields, inserted ${specialDietFields.size}"
     }
 }
 
@@ -208,16 +208,17 @@ fun Database.Transaction.setSpecialDietOptions(
     specialDietOptions: List<Pair<String, List<NekkuSpecialDietOption>>>
 ) {
 
-    executeBatch(specialDietOptions) {
-        sql(
-            """
+    val deletedSpecialOptionsCount =
+        executeBatch(specialDietOptions) {
+            sql(
+                """
 DELETE FROM nekku_special_diet_option 
 WHERE field_id = ${bind { (fieldId, _) -> fieldId}} 
 AND value != ALL(${bind { (_, option) -> option.map { it.value } }});
             """
-                .trimIndent()
-        )
-    }
+                    .trimIndent()
+            )
+        }
 
     val batchRows: Sequence<Pair<String, NekkuSpecialDietOption>> =
         specialDietOptions.asSequence().flatMap { (fieldId, options) ->
@@ -249,6 +250,7 @@ nekku_special_diet_option.value <> excluded.value;
         )
     }
 
-    //    logger.info { "Deleted: $deletedSpecialOptionsCount Nekku special diet options, inserted
-    // ${specialDietOptions.size}" }
+    logger.info {
+        "Deleted: ${deletedSpecialOptionsCount.size} Nekku special diet options, inserted ${specialDietOptions.size}"
+    }
 }

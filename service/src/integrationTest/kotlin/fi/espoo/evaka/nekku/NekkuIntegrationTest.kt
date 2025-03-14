@@ -383,6 +383,150 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             assertEquals(2, specialDiets.size)
         }
     }
+
+    @Test
+    fun `Nekku special diets sync adds new special diet objects`() {
+        var client =
+            TestNekkuClient(
+                specialDiets =
+                    listOf(
+                        NekkuSpecialDiet(
+                            "2",
+                            "Päiväkodit er.",
+                            listOf(
+                                NekkuSpecialDietsField(
+                                    "17A9ACF0-DE9E-4C07-882E-C8C47351D009",
+                                    "Muu erityisruokavalio, mikä?",
+                                    NekkuSpecialDietType.TEXT,
+                                ),
+                                NekkuSpecialDietsField(
+                                    "AE1FE5FE-9619-4D7A-9043-A6B0C615156B",
+                                    "Erityisruokavaliot",
+                                    NekkuSpecialDietType.CHECKBOXLIST,
+                                    listOf(
+                                        NekkuSpecialDietOption(
+                                            1,
+                                            "Kananmunaton ruokavalio",
+                                            "Kananmunaton ruokavalio",
+                                        ),
+                                        NekkuSpecialDietOption(
+                                            2,
+                                            "Sianlihaton ruokavalio",
+                                            "Sianlihaton ruokavalio",
+                                        ),
+                                        NekkuSpecialDietOption(
+                                            3,
+                                            "Luontaisesti gluteeniton ruokavalio",
+                                            "Luontaisesti gluteeniton ruokavalio",
+                                        ),
+                                        NekkuSpecialDietOption(
+                                            4,
+                                            "Maitoallergisen ruokavalio",
+                                            "Maitoallergisen ruokavalio",
+                                        ),
+                                        NekkuSpecialDietOption(
+                                            5,
+                                            "Laktoositon ruokavalio",
+                                            "Laktoositon ruokavalio",
+                                        ),
+                                    ),
+                                ),
+                            ),
+                        )
+                    )
+            )
+        fetchAndUpdateNekkuSpecialDiets(client, db)
+
+        db.transaction { tx ->
+            val nekkuSpecialDietOptions = tx.getNekkuSpecialOptions().toSet()
+            assertEquals(5, nekkuSpecialDietOptions.size)
+        }
+
+        client =
+            TestNekkuClient(
+                specialDiets =
+                    listOf(
+                        NekkuSpecialDiet(
+                            "2",
+                            "Päiväkodit er.",
+                            listOf(
+                                NekkuSpecialDietsField(
+                                    "17A9ACF0-DE9E-4C07-882E-C8C47351D009",
+                                    "Muu erityisruokavalio, mikä?",
+                                    NekkuSpecialDietType.TEXT,
+                                ),
+                                NekkuSpecialDietsField(
+                                    "AE1FE5FE-9619-4D7A-9043-A6B0C615156B",
+                                    "Erityisruokavaliot",
+                                    NekkuSpecialDietType.CHECKBOXLIST,
+                                    listOf(
+                                        NekkuSpecialDietOption(
+                                            1,
+                                            "Kananmunaton ruokavalio",
+                                            "Kananmunaton ruokavalio",
+                                        ),
+                                        NekkuSpecialDietOption(
+                                            2,
+                                            "Sianlihaton ruokavalio",
+                                            "Sianlihaton ruokavalio",
+                                        ),
+                                        NekkuSpecialDietOption(
+                                            3,
+                                            "Luontaisesti gluteeniton ruokavalio",
+                                            "Luontaisesti gluteeniton ruokavalio",
+                                        ),
+                                        NekkuSpecialDietOption(
+                                            4,
+                                            "Maitoallergisen ruokavalio",
+                                            "Maitoallergisen ruokavalio",
+                                        ),
+                                        NekkuSpecialDietOption(
+                                            5,
+                                            "Laktoositon ruokavalio",
+                                            "Laktoositon ruokavalio",
+                                        ),
+                                    ),
+                                ),
+                            ),
+                        ),
+                        NekkuSpecialDiet(
+                            "3",
+                            "Päiväkodit erikoiset",
+                            listOf(
+                                NekkuSpecialDietsField(
+                                    "17A9ACF0-DE9E-4C07-882E-C8C47351D008",
+                                    "Muu erityisruokavalio, mikä?",
+                                    NekkuSpecialDietType.TEXT,
+                                ),
+                                NekkuSpecialDietsField(
+                                    "AE1FE5FE-9619-4D7A-9043-A6B0C6151566",
+                                    "Erityisruokavaliot",
+                                    NekkuSpecialDietType.CHECKBOXLIST,
+                                    listOf(
+                                        NekkuSpecialDietOption(
+                                            1,
+                                            "Kananmunaton ruokavalio",
+                                            "Kananmunaton ruokavalio",
+                                        ),
+                                        NekkuSpecialDietOption(
+                                            2,
+                                            "Sianlihaton ruokavalio",
+                                            "Sianlihaton ruokavalio",
+                                        ),
+                                    ),
+                                ),
+                            ),
+                        ),
+                    )
+            )
+
+        fetchAndUpdateNekkuSpecialDiets(client, db)
+
+        db.transaction { tx ->
+            val nekkuSpecialDietOptions = tx.getNekkuSpecialOptions().toSet()
+            assertEquals(7, nekkuSpecialDietOptions.size)
+        }
+    }
 }
 
 class TestNekkuClient(
