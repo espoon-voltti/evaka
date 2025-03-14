@@ -74,6 +74,7 @@ describe('LocalDate', () => {
     expect(duplicate >= middle).toBeTruthy()
 
     // Unfortunately equals operators don't work
+    // eslint-disable-next-line @evaka/no-localdate-triple-equals
     expect(duplicate === middle).toBeFalsy()
   })
 })

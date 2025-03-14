@@ -89,7 +89,8 @@ const connectedDaycarePreferredStartDateValidator =
     val &&
     preferredStartDate &&
     terms &&
-    (val === preferredStartDate || isInSameTerm(val, preferredStartDate, terms))
+    (val.isEqual(preferredStartDate) ||
+      isInSameTerm(val, preferredStartDate, terms))
       ? undefined
       : err
 
