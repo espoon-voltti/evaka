@@ -1408,7 +1408,7 @@ fun Database.Read.getMessageAccountsForRecipients(
         recipients: List<MessageRecipient>
     ): Map<MessageRecipientType, List<Id<*>>> {
         val recipientMap =
-            MessageRecipientType.values().associateWith { emptyList<Id<*>>() }.toMutableMap()
+            MessageRecipientType.entries.associateWith { emptyList<Id<*>>() }.toMutableMap()
         recipients
             .groupBy { it.type }
             .forEach { (type, recipients) -> recipientMap[type] = recipients.map { it.id } }
@@ -1451,11 +1451,13 @@ WITH sender AS (
     JOIN daycare d ON pl.unit_id = d.id
     LEFT JOIN person p ON p.id = pl.child_id
     LEFT JOIN service_need sn ON sn.placement_id = pl.placement_id AND daterange(sn.start_date, sn.end_date, '[]') @> ${bind(date)}
+    JOIN sender ON TRUE
     WHERE (d.care_area_id = ANY(${bind(currentRecipients[MessageRecipientType.AREA])}) 
         OR pl.unit_id = ANY(${bind(currentRecipients[MessageRecipientType.UNIT])})
         OR pl.group_id = ANY(${bind(currentRecipients[MessageRecipientType.GROUP])})
         OR pl.child_id = ANY(${bind(currentRecipients[MessageRecipientType.CHILD])}))
     AND ${predicate(filterPredicates)}
+    AND (sender.type = 'MUNICIPAL'::message_account_type OR pl.group_id IS NOT NULL)
     AND (
         EXISTS (
             SELECT 1
@@ -1486,12 +1488,14 @@ WITH sender AS (
     LEFT JOIN daycare_group_placement dgp ON pl.id = dgp.daycare_placement_id
     LEFT JOIN person p ON p.id = pl.child_id
     LEFT JOIN service_need sn ON false
+    JOIN sender ON TRUE
     WHERE (pl.start_date > ${bind(date)} OR dgp.start_date > ${bind(date)})
         AND (d.care_area_id = ANY(${bind(starterRecipients[MessageRecipientType.AREA])})
             OR pl.unit_id = ANY(${bind(starterRecipients[MessageRecipientType.UNIT])})
             OR dgp.daycare_group_id = ANY(${bind(starterRecipients[MessageRecipientType.GROUP])})
             OR pl.child_id = ANY(${bind(starterRecipients[MessageRecipientType.CHILD])}))
     AND ${predicate(filterPredicates)}
+    AND (sender.type = 'MUNICIPAL'::message_account_type OR dgp.daycare_group_id IS NOT NULL)
     AND (
         EXISTS (
             SELECT 1
