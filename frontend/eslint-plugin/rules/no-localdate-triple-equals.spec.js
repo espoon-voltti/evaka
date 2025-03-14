@@ -37,6 +37,15 @@ ruleTester.run('no-localdate-triple-equals', rule, {
     {
       code: `
         import LocalDate from './local-date'
+        function foo(param: LocalDate | undefined) {
+          return (param === undefined)
+        }
+
+      `
+    },
+    {
+      code: `
+        import LocalDate from './local-date'
         const isInSameTerm = (
           date1: LocalDate,
           date2: LocalDate,
@@ -72,6 +81,21 @@ ruleTester.run('no-localdate-triple-equals', rule, {
           return (param === date2)
         }
         foo(date1)
+      `,
+      errors: [
+        {
+          messageId: 'noTripleEquals'
+        }
+      ]
+    },
+    {
+      code: `
+        import LocalDate from './local-date'
+        const validator = (preferredStartDate: LocalDate | null) =>
+          (val: LocalDate | null): string | undefined =>
+            val && preferredStartDate && (val === preferredStartDate)
+              ? undefined
+              : 'error'
       `,
       errors: [
         {

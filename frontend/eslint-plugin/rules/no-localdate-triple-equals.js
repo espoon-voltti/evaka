@@ -20,6 +20,21 @@ module.exports = {
   create(context) {
     let hasLocalDateImport = false
     let localDateIdentifier = null
+    const localDateVariables = new Set()
+
+    const isLocalDateType = (typeAnnotation) => {
+      if (!typeAnnotation) return false
+
+      if (typeAnnotation.type === 'TSTypeReference') {
+        return typeAnnotation.typeName.name === 'LocalDate'
+      }
+
+      if (typeAnnotation.type === 'TSUnionType') {
+        return typeAnnotation.types.some(isLocalDateType)
+      }
+
+      return false
+    }
 
     return {
       ImportDeclaration(node) {
@@ -28,6 +43,30 @@ module.exports = {
           if (node.specifiers[0] && node.specifiers[0].local) {
             localDateIdentifier = node.specifiers[0].local.name
           }
+        }
+      },
+      VariableDeclarator(node) {
+        if (
+          node.init &&
+          node.init.type === 'CallExpression' &&
+          node.init.callee.type === 'MemberExpression' &&
+          node.init.callee.object.name === localDateIdentifier &&
+          node.init.callee.property.name === 'of'
+        ) {
+          localDateVariables.add(node.id.name)
+        }
+      },
+      TSParameterProperty(node) {
+        if (
+          node.parameter.type === 'Identifier' &&
+          isLocalDateType(node.parameter.typeAnnotation?.typeAnnotation)
+        ) {
+          localDateVariables.add(node.parameter.name)
+        }
+      },
+      Identifier(node) {
+        if (isLocalDateType(node.typeAnnotation?.typeAnnotation)) {
+          localDateVariables.add(node.name)
         }
       },
       BinaryExpression(node) {
@@ -39,14 +78,16 @@ module.exports = {
           return
         }
 
-        // Check if either operand is a LocalDate instance by looking for LocalDate.of() calls
+        // Check if either operand is a LocalDate instance
         const isLocalDateInstance = (expr) => {
+          if (expr.type === 'Identifier') {
+            return localDateVariables.has(expr.name)
+          }
           return (
-            expr.type === 'Identifier' ||
-            (expr.type === 'CallExpression' &&
-              expr.callee.type === 'MemberExpression' &&
-              expr.callee.object.name === localDateIdentifier &&
-              expr.callee.property.name === 'of')
+            expr.type === 'CallExpression' &&
+            expr.callee.type === 'MemberExpression' &&
+            expr.callee.object.name === localDateIdentifier &&
+            expr.callee.property.name === 'of'
           )
         }
 
