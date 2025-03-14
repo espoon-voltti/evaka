@@ -805,12 +805,24 @@ export type TransferApplicationFilter =
   | 'ALL'
 
 /**
+* Generated from fi.espoo.evaka.application.TransferApplicationUnitSummary
+*/
+export interface TransferApplicationUnitSummary {
+  applicationId: ApplicationId
+  dateOfBirth: LocalDate
+  firstName: string
+  lastName: string
+  preferredStartDate: LocalDate
+}
+
+/**
 * Generated from fi.espoo.evaka.application.UnitApplications
 */
 export interface UnitApplications {
   applications: ApplicationUnitSummary[]
   placementPlans: PlacementPlanDetails[]
   placementProposals: PlacementPlanDetails[]
+  transferApplications: TransferApplicationUnitSummary[] | null
 }
 
 /**
@@ -1113,11 +1125,21 @@ export function deserializeJsonSearchApplicationRequest(json: JsonOf<SearchAppli
 }
 
 
+export function deserializeJsonTransferApplicationUnitSummary(json: JsonOf<TransferApplicationUnitSummary>): TransferApplicationUnitSummary {
+  return {
+    ...json,
+    dateOfBirth: LocalDate.parseIso(json.dateOfBirth),
+    preferredStartDate: LocalDate.parseIso(json.preferredStartDate)
+  }
+}
+
+
 export function deserializeJsonUnitApplications(json: JsonOf<UnitApplications>): UnitApplications {
   return {
     ...json,
     applications: json.applications.map(e => deserializeJsonApplicationUnitSummary(e)),
     placementPlans: json.placementPlans.map(e => deserializeJsonPlacementPlanDetails(e)),
-    placementProposals: json.placementProposals.map(e => deserializeJsonPlacementPlanDetails(e))
+    placementProposals: json.placementProposals.map(e => deserializeJsonPlacementPlanDetails(e)),
+    transferApplications: (json.transferApplications != null) ? json.transferApplications.map(e => deserializeJsonTransferApplicationUnitSummary(e)) : null
   }
 }

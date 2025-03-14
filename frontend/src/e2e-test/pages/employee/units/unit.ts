@@ -2,7 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { ApplicationType } from 'lib-common/generated/api-types/application'
+import {
+  ApplicationType,
+  TransferApplicationUnitSummary
+} from 'lib-common/generated/api-types/application'
 import { CareType } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -824,6 +827,7 @@ class TemporaryEmployeeRow extends Element {
 export class ApplicationProcessPage {
   waitingConfirmation: WaitingConfirmationSection
   placementProposals: PlacementProposalsSection
+  transferApplications: TransferApplicationsSection
   serviceApplications: ServiceApplicationsSection
 
   constructor(private readonly page: Page) {
@@ -831,6 +835,9 @@ export class ApplicationProcessPage {
       page.findByDataQa('waiting-confirmation-section')
     )
     this.placementProposals = new PlacementProposalsSection(this.page)
+    this.transferApplications = new TransferApplicationsSection(
+      page.findByDataQa('transfer-applications-section')
+    )
     this.serviceApplications = new ServiceApplicationsSection(this.page)
   }
 
@@ -944,6 +951,18 @@ class PlacementProposalsSection {
       () =>
         this.#placementProposalTable.findAll('[data-qa="child-name"]').count(),
       expected
+    )
+  }
+}
+
+class TransferApplicationsSection extends Element {
+  async assertTable(expected: TransferApplicationUnitSummary[]) {
+    const rows = this.findAllByDataQa('transfer-application-row')
+    await rows.assertTextsEqual(
+      expected.map(
+        (row) =>
+          `${row.lastName} ${row.firstName}\n${row.dateOfBirth.format()}\n\t${row.preferredStartDate.format()}`
+      )
     )
   }
 }

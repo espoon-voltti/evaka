@@ -2061,6 +2061,7 @@ sealed interface Action {
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(UNIT_SUPERVISOR).inUnit(),
         ),
+        READ_TRANSFER_APPLICATIONS(HasGlobalRole(ADMIN, SERVICE_WORKER)),
         READ_SERVICE_APPLICATIONS(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR)

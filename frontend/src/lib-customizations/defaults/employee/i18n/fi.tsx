@@ -2368,6 +2368,11 @@ export const fi = {
       status: 'Tila',
       extendedCare: 'Vuorohoito'
     },
+    transferApplications: {
+      title: 'Siirtohakemukset',
+      child: 'Lapsen nimi/synt.aika',
+      startDate: 'Aloitus'
+    },
     serviceApplications: {
       title: 'Käsittelyä odottavat palveluntarpeen muutoshakemukset',
       child: 'Lapsi',

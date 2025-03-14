@@ -18,6 +18,7 @@ import { renderResult } from '../async-rendering'
 import TabApplications from './TabApplications'
 import TabPlacementProposals from './TabPlacementProposals'
 import TabServiceApplications from './TabServiceApplications'
+import TabTransferApplications from './TabTransferApplications'
 import TabWaitingConfirmation from './TabWaitingConfirmation'
 import { unitApplicationsQuery } from './queries'
 
@@ -59,7 +60,15 @@ const DaycareApplications = React.memo(function DaycareApplications({
   const applications = useQueryResult(unitApplicationsQuery({ unitId }))
   return renderResult(
     applications,
-    ({ placementPlans, placementProposals, applications }, isReloading) => (
+    (
+      {
+        placementPlans,
+        placementProposals,
+        applications,
+        transferApplications
+      },
+      isReloading
+    ) => (
       <div data-qa="daycare-applications" data-isloading={isReloading}>
         <Gap size="m" />
         <TabWaitingConfirmation placementPlans={placementPlans} />
@@ -70,6 +79,14 @@ const DaycareApplications = React.memo(function DaycareApplications({
         />
         <Gap size="m" />
         <TabApplications applications={applications} />
+        {transferApplications !== null && (
+          <>
+            <Gap size="m" />
+            <TabTransferApplications
+              transferApplications={transferApplications}
+            />
+          </>
+        )}
       </div>
     )
   )
