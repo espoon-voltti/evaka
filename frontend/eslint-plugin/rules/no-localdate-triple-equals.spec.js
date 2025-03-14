@@ -40,7 +40,6 @@ ruleTester.run('no-localdate-triple-equals', rule, {
         function foo(param: LocalDate | undefined) {
           return (param === undefined)
         }
-
       `
     },
     {
