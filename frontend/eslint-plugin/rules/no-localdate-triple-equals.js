@@ -36,6 +36,18 @@ module.exports = {
       return false
     }
 
+    const isLocalDateFactoryCall = (node) => {
+      return (
+        node &&
+        node.type === 'CallExpression' &&
+        node.callee.type === 'MemberExpression' &&
+        node.callee.object.name === localDateIdentifier &&
+        ['of', 'parseIso', 'today', 'tomorrow', 'yesterday'].includes(
+          node.callee.property.name
+        )
+      )
+    }
+
     return {
       ImportDeclaration(node) {
         if (node.source.value.endsWith('local-date')) {
@@ -46,13 +58,7 @@ module.exports = {
         }
       },
       VariableDeclarator(node) {
-        if (
-          node.init &&
-          node.init.type === 'CallExpression' &&
-          node.init.callee.type === 'MemberExpression' &&
-          node.init.callee.object.name === localDateIdentifier &&
-          node.init.callee.property.name === 'of'
-        ) {
+        if (isLocalDateFactoryCall(node.init)) {
           localDateVariables.add(node.id.name)
         }
       },
@@ -83,12 +89,7 @@ module.exports = {
           if (expr.type === 'Identifier') {
             return localDateVariables.has(expr.name)
           }
-          return (
-            expr.type === 'CallExpression' &&
-            expr.callee.type === 'MemberExpression' &&
-            expr.callee.object.name === localDateIdentifier &&
-            expr.callee.property.name === 'of'
-          )
+          return isLocalDateFactoryCall(expr)
         }
 
         if (isLocalDateInstance(node.left) && isLocalDateInstance(node.right)) {

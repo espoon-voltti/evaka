@@ -102,6 +102,23 @@ ruleTester.run('no-localdate-triple-equals', rule, {
           messageId: 'noTripleEquals'
         }
       ]
+    },
+    {
+      code: `
+        import LocalDate from './local-date'
+        describe('LocalDate', () => {
+          it('supports comparisons', () => {
+            const middle = LocalDate.of(2020, 7, 7)
+            const duplicate = LocalDate.parseIso(middle.formatIso())
+            expect(duplicate === middle).toBeFalsy()
+          })
+        })
+      `,
+      errors: [
+        {
+          messageId: 'noTripleEquals'
+        }
+      ]
     }
   ]
 })
