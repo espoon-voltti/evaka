@@ -36,16 +36,54 @@ module.exports = {
       return false
     }
 
+    const LOCALDATE_STATIC_METHODS = [
+      'of',
+      'parseIso',
+      'parseFiOrThrow',
+      'parseFiOrNull',
+      'parseNullableIso',
+      'tryParseIso',
+      'tryCreate',
+      'fromSystemTzDate',
+      'todayInSystemTz',
+      'todayInHelsinkiTz'
+    ]
+
+    const LOCALDATE_INSTANCE_METHODS = [
+      'withDate',
+      'addDays',
+      'subDays',
+      'startOfMonth',
+      'lastDayOfMonth'
+    ]
+
     const isLocalDateFactoryCall = (node) => {
-      return (
-        node &&
+      if (!node) return false
+
+      // Check for static method calls (LocalDate.of(), etc.)
+      if (
         node.type === 'CallExpression' &&
         node.callee.type === 'MemberExpression' &&
         node.callee.object.name === localDateIdentifier &&
-        ['of', 'parseIso', 'today', 'tomorrow', 'yesterday'].includes(
-          node.callee.property.name
+        LOCALDATE_STATIC_METHODS.includes(node.callee.property.name)
+      ) {
+        return true
+      }
+
+      // Check for instance method calls (date.addDays(), etc.)
+      if (
+        node.type === 'CallExpression' &&
+        node.callee.type === 'MemberExpression' &&
+        LOCALDATE_INSTANCE_METHODS.includes(node.callee.property.name)
+      ) {
+        // Check if the object is a LocalDate instance
+        return (
+          node.callee.object.type === 'Identifier' &&
+          localDateVariables.has(node.callee.object.name)
         )
-      )
+      }
+
+      return false
     }
 
     return {
