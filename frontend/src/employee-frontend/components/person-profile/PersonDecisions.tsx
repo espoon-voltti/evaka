@@ -18,7 +18,7 @@ import { getDecisionsByGuardian } from '../../generated/api-clients/decision'
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 
-import { DateTd, NameTd, StatusTd } from './PersonProfile'
+import { DateTd, NameTd, StatusTd } from './common'
 
 const getDecisionsByGuardianResult = wrapResult(getDecisionsByGuardian)
 

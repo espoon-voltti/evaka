@@ -23,7 +23,7 @@ import { getGuardianApplicationSummaries } from '../../generated/api-clients/app
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 
-import { DateTd, NameTd, StatusTd } from './PersonProfile'
+import { DateTd, NameTd, StatusTd } from './common'
 
 const getGuardianApplicationSummariesResult = wrapResult(
   getGuardianApplicationSummaries

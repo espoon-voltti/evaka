@@ -22,7 +22,7 @@ import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 import { formatInvoicePeriod } from '../invoice/utils'
 
-import { StatusTd } from './PersonProfile'
+import { StatusTd } from './common'
 import {
   createReplacementDraftsForHeadOfFamilyMutation,
   headOfFamilyInvoicesQuery

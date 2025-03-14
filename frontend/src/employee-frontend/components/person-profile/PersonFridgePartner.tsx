@@ -25,7 +25,7 @@ import { UIContext } from '../../state/ui'
 import { formatName } from '../../utils'
 import { renderResult } from '../async-rendering'
 
-import { ButtonsTd, DateTd, NameTd } from './PersonProfile'
+import { ButtonsTd, DateTd, NameTd } from './common'
 import {
   deletePartnershipMutation,
   partnershipsQuery,
