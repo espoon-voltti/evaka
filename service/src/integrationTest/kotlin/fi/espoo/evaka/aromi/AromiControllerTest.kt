@@ -7,6 +7,7 @@ package fi.espoo.evaka.aromi
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.daycare.CareType
+import fi.espoo.evaka.daycare.insertPreschoolTerm
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.shared.DaycareId
@@ -14,6 +15,7 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.dev.DevAbsence
 import fi.espoo.evaka.shared.dev.DevBackupCare
 import fi.espoo.evaka.shared.dev.DevCareArea
@@ -61,7 +63,18 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @BeforeEach
     fun setup() {
-        db.transaction { tx -> tx.insertServiceNeedOption(snDefaultDaycare) }
+        val preschoolTerm = FiniteDateRange(LocalDate.of(2024, 8, 3), LocalDate.of(2025, 5, 31))
+        val termBreak = FiniteDateRange(LocalDate.of(2024, 12, 2), LocalDate.of(2024, 12, 3))
+        db.transaction { tx ->
+            tx.insertServiceNeedOption(snDefaultDaycare)
+            tx.insertPreschoolTerm(
+                preschoolTerm,
+                preschoolTerm,
+                preschoolTerm,
+                preschoolTerm,
+                DateSet.of(termBreak),
+            )
+        }
         admin =
             db.transaction { tx ->
                 val employee = DevEmployee(roles = setOf(UserRole.ADMIN))
@@ -94,6 +107,7 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                         areaId = areaId,
                         name = "EO-lafka A",
                         type = setOf(CareType.PRESCHOOL, CareType.CENTRE),
+                        dailyPreschoolTime = TimeRange(LocalTime.of(9, 0), LocalTime.of(13, 0)),
                     )
                 )
             }
@@ -304,8 +318,8 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
 
             tx.insert(
                     DevPerson(
-                        lastName = "Sanna",
-                        firstName = "Satunnainen",
+                        firstName = "Sanna",
+                        lastName = "Satunnainen",
                         ssn = null,
                         dateOfBirth = dateOfBirthSanna,
                         id = PersonId(UUID.fromString("2d2afda1-2319-4d7c-a8b6-47045a5c82c2")),
@@ -370,7 +384,7 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                         DevAbsence(
                             childId = childId,
                             date = LocalDate.of(2024, 12, 4),
-                            absenceCategory = AbsenceCategory.NONBILLABLE,
+                            absenceCategory = AbsenceCategory.BILLABLE,
                         )
                     )
                     // bc to a non-aromi group
