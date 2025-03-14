@@ -119,7 +119,7 @@ const features: Features = {
     forceUnpublishDocumentTemplate: false,
     invoiceDisplayAccountNumber: true,
     serviceApplications: false,
-    multiSelectDeparture: false,
+    multiSelectDeparture: true,
     archiveIntegrationEnabled: false,
     aromiIntegration: false
   }
