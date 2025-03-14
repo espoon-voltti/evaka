@@ -22,7 +22,7 @@ module.exports = {
     let localDateIdentifier = null
     const localDateVariables = new Set()
 
-    const isLocalDateType = (typeAnnotation) => {
+    const isLocalDateTypeAnnotation = (typeAnnotation) => {
       if (!typeAnnotation) return false
 
       if (typeAnnotation.type === 'TSTypeReference') {
@@ -30,57 +30,28 @@ module.exports = {
       }
 
       if (typeAnnotation.type === 'TSUnionType') {
-        return typeAnnotation.types.some(isLocalDateType)
+        return typeAnnotation.types.some(isLocalDateTypeAnnotation)
       }
 
       return false
     }
 
-    const LOCALDATE_STATIC_METHODS = [
-      'of',
-      'parseIso',
-      'parseFiOrThrow',
-      'parseFiOrNull',
-      'parseNullableIso',
-      'tryParseIso',
-      'tryCreate',
-      'fromSystemTzDate',
-      'todayInSystemTz',
-      'todayInHelsinkiTz'
-    ]
-
-    const LOCALDATE_INSTANCE_METHODS = [
-      'withDate',
-      'addDays',
-      'subDays',
-      'startOfMonth',
-      'lastDayOfMonth'
-    ]
-
-    const isLocalDateFactoryCall = (node) => {
+    const isLocalDateInstance = (node) => {
       if (!node) return false
 
-      // Check for static method calls (LocalDate.of(), etc.)
-      if (
-        node.type === 'CallExpression' &&
-        node.callee.type === 'MemberExpression' &&
-        node.callee.object.name === localDateIdentifier &&
-        LOCALDATE_STATIC_METHODS.includes(node.callee.property.name)
-      ) {
+      // Check if it's a variable we know is a LocalDate
+      if (node.type === 'Identifier' && localDateVariables.has(node.name)) {
         return true
       }
 
-      // Check for instance method calls (date.addDays(), etc.)
+      // Check if it's a direct LocalDate constructor call or static method
       if (
         node.type === 'CallExpression' &&
-        node.callee.type === 'MemberExpression' &&
-        LOCALDATE_INSTANCE_METHODS.includes(node.callee.property.name)
+        node.callee?.type === 'MemberExpression' &&
+        node.callee.object?.type === 'Identifier' &&
+        node.callee.object.name === localDateIdentifier
       ) {
-        // Check if the object is a LocalDate instance
-        return (
-          node.callee.object.type === 'Identifier' &&
-          localDateVariables.has(node.callee.object.name)
-        )
+        return true
       }
 
       return false
@@ -90,46 +61,44 @@ module.exports = {
       ImportDeclaration(node) {
         if (node.source.value.endsWith('local-date')) {
           hasLocalDateImport = true
-          if (node.specifiers[0] && node.specifiers[0].local) {
+          if (node.specifiers?.[0]?.local) {
             localDateIdentifier = node.specifiers[0].local.name
           }
         }
       },
+
       VariableDeclarator(node) {
-        if (isLocalDateFactoryCall(node.init)) {
+        // Track variables initialized with LocalDate instances
+        if (node.init && isLocalDateInstance(node.init)) {
           localDateVariables.add(node.id.name)
         }
       },
+
       TSParameterProperty(node) {
+        // Track parameters with LocalDate type
         if (
-          node.parameter.type === 'Identifier' &&
-          isLocalDateType(node.parameter.typeAnnotation?.typeAnnotation)
+          node.parameter?.type === 'Identifier' &&
+          isLocalDateTypeAnnotation(
+            node.parameter.typeAnnotation?.typeAnnotation
+          )
         ) {
           localDateVariables.add(node.parameter.name)
         }
       },
+
       Identifier(node) {
-        if (isLocalDateType(node.typeAnnotation?.typeAnnotation)) {
+        // Track variables with LocalDate type annotation
+        if (isLocalDateTypeAnnotation(node.typeAnnotation?.typeAnnotation)) {
           localDateVariables.add(node.name)
         }
       },
+
       BinaryExpression(node) {
-        if (
-          !hasLocalDateImport ||
-          !localDateIdentifier ||
-          node.operator !== '==='
-        ) {
+        if (!hasLocalDateImport || node.operator !== '===') {
           return
         }
 
-        // Check if either operand is a LocalDate instance
-        const isLocalDateInstance = (expr) => {
-          if (expr.type === 'Identifier') {
-            return localDateVariables.has(expr.name)
-          }
-          return isLocalDateFactoryCall(expr)
-        }
-
+        // Check if both operands are LocalDate instances
         if (isLocalDateInstance(node.left) && isLocalDateInstance(node.right)) {
           context.report({
             node,
