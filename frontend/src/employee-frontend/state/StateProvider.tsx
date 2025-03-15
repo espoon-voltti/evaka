@@ -8,9 +8,9 @@ import { AssistanceNeedDecisionReportContextProvider } from 'employee-frontend/c
 import { NotificationsContextProvider } from 'lib-components/Notifications'
 
 import { MessageContextProvider } from '../components/messages/MessageContext'
+import { CustomersContextProvider } from '../components/person-search/customers'
 
 import { ApplicationUIContextProvider } from './application-ui'
-import { CustomersContextProvider } from './customers'
 import { InvoicingUIContextProvider } from './invoicing-ui'
 import { TitleContextProvider } from './title'
 import { UIContextProvider } from './ui'

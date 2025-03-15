@@ -18,8 +18,9 @@ import { H2 } from 'lib-components/typography'
 import { getPersonDependants } from '../../generated/api-clients/pis'
 import { useTranslation } from '../../state/i18n'
 import { formatName } from '../../utils'
-import { NameTd } from '../PersonProfile'
 import { renderResult } from '../async-rendering'
+
+import { NameTd } from './common'
 
 const getPersonDependantsResult = wrapResult(getPersonDependants)
 

@@ -10,14 +10,14 @@ import { H2 } from 'lib-components/typography'
 
 import PersonDetails from '../../components/person-shared/PersonDetails'
 import { useTranslation } from '../../state/i18n'
-import { PersonContext, PersonState } from '../../state/person'
 import { TitleContext, TitleState } from '../../state/title'
 import { renderResult } from '../async-rendering'
 
+import { PersonContext, PersonState } from './state'
+
 export default React.memo(function PersonFridgeHead() {
   const { i18n } = useTranslation()
-  const { person, setPerson, permittedActions } =
-    useContext<PersonState>(PersonContext)
+  const { person, permittedActions } = useContext<PersonState>(PersonContext)
   const { setTitle, formatTitleName } = useContext<TitleState>(TitleContext)
   const [open, setOpen] = useState(true)
 
@@ -45,7 +45,6 @@ export default React.memo(function PersonFridgeHead() {
           <PersonDetails
             person={person}
             isChild={false}
-            onUpdateComplete={setPerson}
             permittedActions={permittedActions}
           />
         ))}

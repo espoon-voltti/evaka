@@ -2,23 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-  createContext
-} from 'react'
+import React, { useCallback, useMemo, useState, createContext } from 'react'
 
-import { Result, Success, wrapResult } from 'lib-common/api'
-import { PersonSummary } from 'lib-common/generated/api-types/pis'
 import { useDebounce } from 'lib-common/utils/useDebounce'
-import { useRestApi } from 'lib-common/utils/useRestApi'
 
-import { searchPerson } from '../generated/api-clients/pis'
-import { SearchOrder } from '../types'
-
-const searchPersonResult = wrapResult(searchPerson)
+import { SearchOrder } from '../../types'
 
 export type SearchColumn =
   | 'last_name,first_name'
@@ -27,27 +15,33 @@ export type SearchColumn =
   | 'social_security_number'
 
 export interface CustomersState {
-  customers: Result<PersonSummary[]>
-  setCustomers: (request: Result<PersonSummary[]>) => void
-  useCustomerSearch: () => void
   searchTerm: string
   setSearchTerm: (term: string) => void
-  debouncedSearchTerm: string
   sortColumn: SearchColumn
   sortDirection: SearchOrder
   sortToggle: (column: SearchColumn) => () => void
+  personSearchParams: {
+    body: {
+      searchTerm: string
+      orderBy: SearchColumn
+      sortDirection: SearchOrder
+    }
+  }
 }
 
 const defaultState: CustomersState = {
-  customers: Success.of([]),
-  setCustomers: () => undefined,
-  useCustomerSearch: () => undefined,
   searchTerm: '',
   setSearchTerm: () => undefined,
-  debouncedSearchTerm: '',
   sortColumn: 'last_name,first_name',
   sortDirection: 'ASC',
-  sortToggle: () => () => undefined
+  sortToggle: () => () => undefined,
+  personSearchParams: {
+    body: {
+      searchTerm: '',
+      orderBy: 'last_name,first_name',
+      sortDirection: 'ASC'
+    }
+  }
 }
 
 export const CustomersContext = createContext<CustomersState>(defaultState)
@@ -58,9 +52,6 @@ export const CustomersContextProvider = React.memo(
   }: {
     children: React.JSX.Element
   }) {
-    const [customers, setCustomers] = useState<Result<PersonSummary[]>>(
-      defaultState.customers
-    )
     const [searchTerm, setSearchTerm] = useState<string>(
       defaultState.searchTerm
     )
@@ -69,6 +60,17 @@ export const CustomersContextProvider = React.memo(
     )
     const [sortDirection, setSortDirection] = useState<SearchOrder>('ASC')
     const debouncedSearchTerm = useDebounce(searchTerm, 500)
+
+    const personSearchParams = useMemo(
+      () => ({
+        body: {
+          searchTerm: debouncedSearchTerm,
+          orderBy: sortColumn,
+          sortDirection
+        }
+      }),
+      [debouncedSearchTerm, sortColumn, sortDirection]
+    )
 
     const sortToggle = useCallback(
       (column: SearchColumn) => () => {
@@ -80,37 +82,17 @@ export const CustomersContextProvider = React.memo(
       [sortColumn, sortDirection, setSortColumn, setSortDirection]
     )
 
-    const value = useMemo(() => {
-      const useCustomerSearch = () => {
-        const searchCustomers = useRestApi(searchPersonResult, setCustomers)
-        useEffect(() => {
-          void searchCustomers({
-            body: { searchTerm, orderBy: sortColumn, sortDirection }
-          })
-        }, [debouncedSearchTerm, sortColumn, sortDirection]) // eslint-disable-line react-hooks/exhaustive-deps
-      }
-
-      return {
-        customers,
-        setCustomers,
-        useCustomerSearch,
+    const value = useMemo(
+      () => ({
         searchTerm,
         setSearchTerm,
-        debouncedSearchTerm,
         sortColumn,
         sortDirection,
-        sortToggle
-      }
-    }, [
-      customers,
-      setCustomers,
-      searchTerm,
-      setSearchTerm,
-      debouncedSearchTerm,
-      sortColumn,
-      sortDirection,
-      sortToggle
-    ])
+        sortToggle,
+        personSearchParams
+      }),
+      [personSearchParams, searchTerm, sortColumn, sortDirection, sortToggle]
+    )
 
     return (
       <CustomersContext.Provider value={value}>

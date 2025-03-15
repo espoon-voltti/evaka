@@ -57,7 +57,6 @@ import { Gap } from 'lib-components/white-space'
 import { faCommentAlt, fasCommentAltLines, faTrash } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
-import { PersonContext } from '../../state/person'
 import { renderResult } from '../async-rendering'
 import { invoiceCodesQuery } from '../invoices/queries'
 
@@ -67,6 +66,7 @@ import {
   invoiceCorrectionsQuery,
   updateInvoiceCorrectionNoteMutation
 } from './queries'
+import { PersonContext } from './state'
 
 interface EditTarget {
   childId: UUID

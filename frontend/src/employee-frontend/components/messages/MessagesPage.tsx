@@ -29,8 +29,6 @@ import { defaultMargins } from 'lib-components/white-space'
 
 import { getAttachmentUrl, messageAttachment } from '../../api/attachments'
 import {
-  initDraftMessage,
-  updateDraftMessage,
   createMessage,
   deleteDraftMessage
 } from '../../generated/api-clients/messaging'
@@ -46,8 +44,6 @@ import Sidebar from './Sidebar'
 import MessageList from './ThreadListContainer'
 
 const getPersonIdentityResult = wrapResult(getPersonIdentity)
-const initDraftMessageResult = wrapResult(initDraftMessage)
-const updateDraftMessageResult = wrapResult(updateDraftMessage)
 const deleteDraftMessageResult = wrapResult(deleteDraftMessage)
 const createMessageResult = wrapResult(createMessage)
 
@@ -246,21 +242,11 @@ export default React.memo(function MessagesPage({
               }}
               draftContent={selectedDraft}
               getAttachmentUrl={getAttachmentUrl}
-              initDraftRaw={(accountId) =>
-                initDraftMessageResult({ accountId })
-              }
               accounts={accounts.value}
               folders={folders.value}
               onClose={onHide}
               onDiscard={onDiscard}
               onSend={onSend}
-              saveDraftRaw={(params) =>
-                updateDraftMessageResult({
-                  accountId: params.accountId,
-                  draftId: params.draftId,
-                  body: params.content
-                })
-              }
               saveMessageAttachment={messageAttachment}
               sending={sending}
               defaultTitle={prefilledTitle ?? undefined}
