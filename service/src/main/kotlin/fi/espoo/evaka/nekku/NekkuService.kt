@@ -87,6 +87,19 @@ class NekkuService(
         if (client == null) error("Cannot sync Nekku products: NekkuEnv is not configured")
         fetchAndUpdateNekkuProducts(client, db)
     }
+
+    fun planNekkuProductsSync(db: Database.Connection, clock: EvakaClock) {
+        db.transaction { tx ->
+            tx.removeUnclaimedJobs(setOf(AsyncJobType(AsyncJob.SyncNekkuProducts::class)))
+            asyncJobRunner.plan(
+                tx,
+                listOf(AsyncJob.SyncNekkuProducts()),
+                runAt = clock.now(),
+                retryCount = 1,
+            )
+        }
+    }
+
 }
 
 interface NekkuClient {
@@ -110,6 +123,12 @@ class NekkuHttpClient(private val env: NekkuEnv, private val jsonMapper: JsonMap
     override fun getSpecialDiets(): List<NekkuSpecialDiet> {
         val request =
             getBaseRequest().get().url(env.url.resolve("products/options").toString()).build()
+
+        return executeRequest(request)
+    }
+
+    override fun getProducts(): List<NekkuProduct> {
+        val request = getBaseRequest().get().url(env.url.resolve("products").toString()).build()
 
         return executeRequest(request)
     }
@@ -189,5 +208,8 @@ data class NekkuProduct(
 )
 
 enum class NekkuProductMealTime {
-
+    aamupala,
+    lounas,
+    päivällinen,
+    iltapala,
 }

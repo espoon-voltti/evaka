@@ -239,3 +239,20 @@ nekku_special_diet_option.key <> excluded.key;
         "Deleted: ${deletedSpecialOptionsCount.size} Nekku special diet options, inserted ${specialDietOptions.size}"
     }
 }
+
+/** Throws an IllegalStateException if Nekku returns an empty texture list. */
+fun fetchAndUpdateNekkuProducts(client: NekkuClient, db: Database.Connection) {
+    val productsFromNekku =
+        client
+            .getProducts()
+            .map { NekkuProduct(it.number, it.name, it.group, it.unit_size) }
+
+    if (productsFromNekku.isEmpty())
+        error("Refusing to sync empty Nekku product list into database")
+    db.transaction { tx ->
+        val deletedCustomerCount = tx.setProductNumbers(productsFromNekku)
+        logger.info {
+            "Deleted: $deletedCustomerCount Nekku customer numbers, inserted ${productsFromNekku.size}"
+        }
+    }
+}
