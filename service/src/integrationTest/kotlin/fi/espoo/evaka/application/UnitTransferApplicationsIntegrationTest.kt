@@ -7,7 +7,6 @@ package fi.espoo.evaka.application
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.application.persistence.daycare.Apply
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
-import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -38,9 +37,9 @@ class UnitTransferApplicationsIntegrationTest : FullApplicationTest(resetDbBefor
     @Autowired private lateinit var applicationController: ApplicationControllerV2
 
     private lateinit var admin: AuthenticatedUser.Employee
-    private lateinit var areaId: AreaId
-    private lateinit var placementUnit1Id: DaycareId
-    private lateinit var applicationUnit1Id: DaycareId
+    private val area = DevCareArea()
+    private val placementUnit1 = DevDaycare(areaId = area.id)
+    private val applicationUnit1 = DevDaycare(areaId = area.id)
 
     @BeforeEach
     fun setup() {
@@ -48,9 +47,11 @@ class UnitTransferApplicationsIntegrationTest : FullApplicationTest(resetDbBefor
             db.transaction { tx ->
                 DevEmployee(roles = setOf(UserRole.ADMIN)).also { tx.insert(it) }.user
             }
-        areaId = db.transaction { tx -> tx.insert(DevCareArea()) }
-        placementUnit1Id = db.transaction { tx -> tx.insert(DevDaycare(areaId = areaId)) }
-        applicationUnit1Id = db.transaction { tx -> tx.insert(DevDaycare(areaId = areaId)) }
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(placementUnit1)
+            tx.insert(applicationUnit1)
+        }
     }
 
     @Nested
@@ -67,7 +68,7 @@ class UnitTransferApplicationsIntegrationTest : FullApplicationTest(resetDbBefor
                 tx.insert(
                     DevPlacement(
                         childId = child.id,
-                        unitId = placementUnit1Id,
+                        unitId = placementUnit1.id,
                         startDate = LocalDate.of(2020, 1, 1),
                         endDate = LocalDate.of(2025, 12, 31),
                     )
@@ -87,7 +88,7 @@ class UnitTransferApplicationsIntegrationTest : FullApplicationTest(resetDbBefor
                                 type = ApplicationType.DAYCARE,
                                 child = child.toDaycareFormChild(),
                                 guardian = guardian.toDaycareFormAdult(restricted = false),
-                                apply = Apply(preferredUnits = listOf(applicationUnit1Id)),
+                                apply = Apply(preferredUnits = listOf(applicationUnit1.id)),
                                 preferredStartDate = preferredStartDate,
                             ),
                     )
@@ -116,7 +117,7 @@ class UnitTransferApplicationsIntegrationTest : FullApplicationTest(resetDbBefor
                     val employee = DevEmployee()
                     tx.insert(
                         employee,
-                        unitRoles = mapOf(placementUnit1Id to UserRole.UNIT_SUPERVISOR),
+                        unitRoles = mapOf(placementUnit1.id to UserRole.UNIT_SUPERVISOR),
                     )
                     employee.user
                 }
@@ -128,7 +129,7 @@ class UnitTransferApplicationsIntegrationTest : FullApplicationTest(resetDbBefor
             val staff =
                 db.transaction { tx ->
                     val employee = DevEmployee()
-                    tx.insert(employee, unitRoles = mapOf(placementUnit1Id to UserRole.STAFF))
+                    tx.insert(employee, unitRoles = mapOf(placementUnit1.id to UserRole.STAFF))
                     employee.user
                 }
             assertThrows<Forbidden> { getUnitApplications(user = staff) }
@@ -162,13 +163,13 @@ class UnitTransferApplicationsIntegrationTest : FullApplicationTest(resetDbBefor
         fun `getUnitApplications returns empty transfer applications for unit in application`() {
             assertEquals(
                 emptyList(),
-                getUnitApplications(unitId = applicationUnit1Id).transferApplications,
+                getUnitApplications(unitId = applicationUnit1.id).transferApplications,
             )
         }
 
         @Test
         fun `getUnitApplications returns empty transfer applications for another placement unit`() {
-            val placementUnit2Id = db.transaction { tx -> tx.insert(DevDaycare(areaId = areaId)) }
+            val placementUnit2Id = db.transaction { tx -> tx.insert(DevDaycare(areaId = area.id)) }
             assertEquals(
                 emptyList(),
                 getUnitApplications(unitId = placementUnit2Id).transferApplications,
@@ -180,6 +181,6 @@ class UnitTransferApplicationsIntegrationTest : FullApplicationTest(resetDbBefor
         user: AuthenticatedUser.Employee = admin,
         clock: EvakaClock =
             MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2020, 8, 10), LocalTime.of(8, 0))),
-        unitId: DaycareId = placementUnit1Id,
+        unitId: DaycareId = placementUnit1.id,
     ) = applicationController.getUnitApplications(dbInstance(), user, clock, unitId)
 }
