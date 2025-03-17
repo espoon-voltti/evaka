@@ -11,7 +11,6 @@ import React, {
   useRef,
   useState
 } from 'react'
-import styled from 'styled-components'
 
 import {
   PlacementPlanConfirmationStatus,
@@ -28,25 +27,23 @@ import {
 import InputField from 'lib-components/atoms/form/InputField'
 import Radio from 'lib-components/atoms/form/Radio'
 import { Table, Tbody, Th, Thead, Tr } from 'lib-components/layout/Table'
-import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import {
+  FixedSpaceColumn,
+  FixedSpaceRow
+} from 'lib-components/layout/flex-helpers'
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
-import { Label, P } from 'lib-components/typography'
+import { Bold, Italic, Label, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { placementPlanRejectReasons } from 'lib-customizations/employee'
 
 import PlacementProposalRow from '../../../components/unit/tab-placement-proposals/PlacementProposalRow'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
+import StickyActionBar from '../../common/StickyActionBar'
 import {
   acceptPlacementProposalMutation,
   respondToPlacementProposalMutation
 } from '../queries'
-
-const ButtonRow = styled.div`
-  display: flex;
-  width: 100%;
-  justify-content: flex-end;
-`
 
 interface DynamicState {
   confirmation: PlacementPlanConfirmationStatus
@@ -171,6 +168,19 @@ export default React.memo(function PlacementProposals({
     setModalOpen(false)
   }, [])
 
+  const summary = useMemo(
+    () =>
+      Object.values(confirmationStates).reduce(
+        ({ accepted, rejected }, { confirmation }) => ({
+          accepted: accepted + (confirmation === 'ACCEPTED' ? 1 : 0),
+          rejected:
+            rejected + (confirmation === 'REJECTED_NOT_CONFIRMED' ? 1 : 0)
+        }),
+        { accepted: 0, rejected: 0 }
+      ),
+    [confirmationStates]
+  )
+
   return (
     <>
       {modalOpen && (
@@ -293,27 +303,40 @@ export default React.memo(function PlacementProposals({
           </Tbody>
         </Table>
       </div>
-      <Gap />
 
       {placementPlans.length > 0 && (
-        <ButtonRow>
-          <MutateButton
-            data-qa="placement-proposals-accept-button"
-            mutation={acceptPlacementProposalMutation}
-            onClick={() => ({
-              unitId,
-              body: {
-                rejectReasonTranslations:
-                  i18n.unit.placementProposals.rejectReasons
-              }
-            })}
-            onSuccess={() => undefined}
-            onFailure={onAcceptFailure}
-            disabled={acceptDisabled}
-            text={i18n.unit.placementProposals.acceptAllButton}
-            primary
-          />
-        </ButtonRow>
+        <StickyActionBar align="right">
+          <FixedSpaceRow alignItems="center" justifyContent="space-between">
+            {(summary.accepted > 0 || summary.rejected > 0) && (
+              <>
+                <div>
+                  <Bold>{i18n.unit.placementProposals.acceptAllTitle}</Bold>
+                </div>
+                <div>
+                  <Italic>
+                    {i18n.unit.placementProposals.acceptAllSummary(summary)}
+                  </Italic>
+                </div>
+              </>
+            )}
+            <MutateButton
+              data-qa="placement-proposals-accept-button"
+              mutation={acceptPlacementProposalMutation}
+              onClick={() => ({
+                unitId,
+                body: {
+                  rejectReasonTranslations:
+                    i18n.unit.placementProposals.rejectReasons
+                }
+              })}
+              onSuccess={() => undefined}
+              onFailure={onAcceptFailure}
+              disabled={acceptDisabled}
+              text={i18n.unit.placementProposals.acceptAllButton}
+              primary
+            />
+          </FixedSpaceRow>
+        </StickyActionBar>
       )}
     </>
   )
