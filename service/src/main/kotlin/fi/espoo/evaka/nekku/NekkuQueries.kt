@@ -227,12 +227,10 @@ INSERT INTO nekku_special_diet_option (
 ON CONFLICT (field_id, value) DO
 UPDATE SET
 weight = excluded.weight,
-key = excluded.key,
-value = excluded.value
+key = excluded.key
 WHERE
 nekku_special_diet_option.weight <> excluded.weight OR
-nekku_special_diet_option.key <> excluded.key OR
-nekku_special_diet_option.value <> excluded.value;
+nekku_special_diet_option.key <> excluded.key;
  """
         )
     }
