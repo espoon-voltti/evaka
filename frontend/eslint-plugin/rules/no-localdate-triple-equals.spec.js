@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-const { RuleTester } = require('@typescript-eslint/rule-tester')
+const { RuleTester } = require('eslint')
 
 const rule = require('./no-localdate-triple-equals')
 
