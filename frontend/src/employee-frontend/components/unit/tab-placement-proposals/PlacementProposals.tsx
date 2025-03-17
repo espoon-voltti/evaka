@@ -3,14 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import sortBy from 'lodash/sortBy'
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState
-} from 'react'
+import React, { useCallback, useContext, useMemo, useState } from 'react'
 
 import {
   PlacementPlanConfirmationStatus,
@@ -19,7 +12,6 @@ import {
 } from 'lib-common/generated/api-types/placement'
 import { ApplicationId, DaycareId } from 'lib-common/generated/api-types/shared'
 import { useMutationResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 import {
   MutateButton,
   cancelMutation
@@ -45,9 +37,10 @@ import {
   respondToPlacementProposalMutation
 } from '../queries'
 
-interface DynamicState {
-  confirmation: PlacementPlanConfirmationStatus
-  submitting: boolean
+interface Summary {
+  confirmationStates: Record<ApplicationId, PlacementPlanConfirmationStatus>
+  accepted: number
+  rejected: number
 }
 
 type Props = {
@@ -68,49 +61,35 @@ export default React.memo(function PlacementProposals({
   const [currentApplicationId, setCurrentApplicationId] =
     useState<ApplicationId | null>(null)
 
-  const isMounted = useRef(true)
-  useEffect(
-    () => () => {
-      isMounted.current = false
-    },
-    []
-  )
-
-  const [confirmationStates, setConfirmationStates] = useState<
-    Record<UUID, DynamicState>
-  >({})
-
-  useEffect(() => {
-    setConfirmationStates(
-      placementPlans.reduce(
+  const summary = useMemo(
+    () =>
+      placementPlans.reduce<Summary>(
         (map, plan) => ({
-          ...map,
-          [plan.applicationId]: {
-            confirmation: plan.unitConfirmationStatus,
-            submitting: false
-          }
+          confirmationStates: {
+            ...map.confirmationStates,
+            [plan.applicationId]: plan.unitConfirmationStatus
+          },
+          accepted:
+            map.accepted + (plan.unitConfirmationStatus === 'ACCEPTED' ? 1 : 0),
+          rejected:
+            map.rejected +
+            (plan.unitConfirmationStatus === 'REJECTED_NOT_CONFIRMED' ? 1 : 0)
         }),
-        {}
-      )
-    )
-  }, [placementPlans, setConfirmationStates])
-
-  const { mutateAsync: respondToPlacementProposal } = useMutationResult(
-    respondToPlacementProposalMutation
+        { confirmationStates: {}, accepted: 0, rejected: 0 }
+      ),
+    [placementPlans]
   )
+
+  const {
+    mutateAsync: respondToPlacementProposal,
+    isPending: respondToPlacementProposalIsPending
+  } = useMutationResult(respondToPlacementProposalMutation)
 
   const sendConfirmation = async (
     applicationId: ApplicationId,
     status: PlacementPlanConfirmationStatus
   ) => {
-    setConfirmationStates((state) => ({
-      ...state,
-      [applicationId]: {
-        ...state[applicationId],
-        submitting: true
-      }
-    }))
-    const result = await respondToPlacementProposal({
+    await respondToPlacementProposal({
       unitId,
       applicationId,
       body: {
@@ -119,24 +98,6 @@ export default React.memo(function PlacementProposals({
         otherReason: null
       }
     })
-    if (!isMounted.current) return
-    if (result.isSuccess) {
-      setConfirmationStates((state) => ({
-        ...state,
-        [applicationId]: {
-          confirmation: status,
-          submitting: false
-        }
-      }))
-    } else {
-      setConfirmationStates((state) => ({
-        ...state,
-        [applicationId]: {
-          ...state[applicationId],
-          submitting: false
-        }
-      }))
-    }
   }
 
   const onAcceptFailure = useCallback(() => {
@@ -149,13 +110,9 @@ export default React.memo(function PlacementProposals({
 
   const acceptDisabled = useMemo(
     () =>
-      Object.values(confirmationStates).some((state) => state.submitting) ||
-      !Object.values(confirmationStates).some(
-        (state) =>
-          state.confirmation === 'ACCEPTED' ||
-          state.confirmation === 'REJECTED_NOT_CONFIRMED'
-      ),
-    [confirmationStates]
+      respondToPlacementProposalIsPending ||
+      (summary.accepted === 0 && summary.rejected === 0),
+    [summary, respondToPlacementProposalIsPending]
   )
 
   const sortedRows = sortBy(placementPlans, [
@@ -168,19 +125,6 @@ export default React.memo(function PlacementProposals({
     setModalOpen(false)
   }, [])
 
-  const summary = useMemo(
-    () =>
-      Object.values(confirmationStates).reduce(
-        ({ accepted, rejected }, { confirmation }) => ({
-          accepted: accepted + (confirmation === 'ACCEPTED' ? 1 : 0),
-          rejected:
-            rejected + (confirmation === 'REJECTED_NOT_CONFIRMED' ? 1 : 0)
-        }),
-        { accepted: 0, rejected: 0 }
-      ),
-    [confirmationStates]
-  )
-
   return (
     <>
       {modalOpen && (
@@ -191,13 +135,6 @@ export default React.memo(function PlacementProposals({
             if (reason == null || currentApplicationId == null) {
               return cancelMutation
             }
-            setConfirmationStates((state) => ({
-              ...state,
-              [currentApplicationId]: {
-                ...state[currentApplicationId],
-                submitting: true
-              }
-            }))
             return {
               unitId,
               applicationId: currentApplicationId,
@@ -210,24 +147,10 @@ export default React.memo(function PlacementProposals({
           }}
           onSuccess={() => {
             if (currentApplicationId === null) return
-            setConfirmationStates((state) => ({
-              ...state,
-              [currentApplicationId]: {
-                confirmation: 'REJECTED_NOT_CONFIRMED',
-                submitting: false
-              }
-            }))
             closeModal()
           }}
           onFailure={() => {
             if (currentApplicationId === null) return
-            setConfirmationStates((state) => ({
-              ...state,
-              [currentApplicationId]: {
-                ...state[currentApplicationId],
-                submitting: false
-              }
-            }))
           }}
           resolveLabel={i18n.common.save}
           resolveDisabled={!reason || (reason === 'OTHER' && !otherReason)}
@@ -286,11 +209,9 @@ export default React.memo(function PlacementProposals({
                 key={p.id}
                 placementPlan={p}
                 confirmationState={
-                  confirmationStates[p.applicationId]?.confirmation ?? null
+                  summary.confirmationStates[p.applicationId] ?? null
                 }
-                submitting={
-                  confirmationStates[p.applicationId]?.submitting ?? false
-                }
+                submitting={respondToPlacementProposalIsPending}
                 openModal={() => {
                   setCurrentApplicationId(p.applicationId)
                   setModalOpen(true)
