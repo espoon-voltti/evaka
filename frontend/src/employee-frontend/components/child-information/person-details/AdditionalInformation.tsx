@@ -13,10 +13,10 @@ import {
   SpecialDiet
 } from 'lib-common/generated/api-types/specialdiet'
 import { IsoLanguage, isoLanguages } from 'lib-common/generated/language'
-import { useMutationResult, useQueryResult } from 'lib-common/query'
-import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
+import { useQueryResult } from 'lib-common/query'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
+import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import TextArea from 'lib-components/atoms/form/TextArea'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
@@ -95,9 +95,6 @@ export default React.memo(function AdditionalInformation({ childId }: Props) {
   const additionalInformation = useQueryResult(
     getAdditionalInfoQuery({ childId })
   )
-  const { mutateAsync: updateAdditionalInfo } = useMutationResult(
-    updateAdditionalInfoMutation
-  )
   const { uiMode, toggleUiMode, clearUiMode } = useContext<UiState>(UIContext)
   const [form, setForm] = useState<AdditionalInformation>({
     additionalInfo: '',
@@ -130,11 +127,6 @@ export default React.memo(function AdditionalInformation({ childId }: Props) {
       toggleUiMode('child-additional-details-editing')
     }
   }, [additionalInformation, toggleUiMode])
-
-  const onSubmit = useCallback(
-    () => updateAdditionalInfo({ childId, body: form }),
-    [childId, form, updateAdditionalInfo]
-  )
 
   const valueWidth = '600px'
 
@@ -385,10 +377,11 @@ export default React.memo(function AdditionalInformation({ childId }: Props) {
             <RightAlignedRow>
               <FixedSpaceRow>
                 <LegacyButton onClick={clearUiMode} text={i18n.common.cancel} />
-                <AsyncButton
+                <MutateButton
                   primary
                   disabled={false}
-                  onClick={onSubmit}
+                  mutation={updateAdditionalInfoMutation}
+                  onClick={() => ({ childId, body: form })}
                   onSuccess={clearUiMode}
                   data-qa="confirm-edited-child-button"
                   text={i18n.common.confirm}

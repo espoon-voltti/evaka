@@ -59,13 +59,15 @@ export const updatePersonAndFamilyFromVtjMutation = q.mutation(
   updatePersonAndFamilyFromVtj,
   [
     ({ personId }) => personQuery({ personId }),
+    ({ personId }) => childQuery({ childId: personId }),
     ({ personId }) => familyByPersonQuery({ id: personId }),
     ({ personId }) => parentshipsQuery({ headOfChildId: personId })
   ]
 )
 
 export const disableSsnMutation = q.mutation(disableSsn, [
-  ({ personId }) => personQuery({ personId })
+  ({ personId }) => personQuery({ personId }),
+  ({ personId }) => childQuery({ childId: personId })
 ])
 
 export const duplicatePersonMutation = q.mutation(duplicatePerson)
