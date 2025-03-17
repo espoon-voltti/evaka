@@ -34,6 +34,7 @@ class NekkuService(
     init {
         asyncJobRunner.registerHandler(::syncNekkuCustomers)
         asyncJobRunner.registerHandler(::syncNekkuSpecialDiets)
+        asyncJobRunner.registerHandler(::syncNekkuProducts)
     }
 
     fun syncNekkuCustomers(
@@ -77,6 +78,15 @@ class NekkuService(
             )
         }
     }
+
+    fun syncNekkuProducts(
+        db: Database.Connection,
+        clock: EvakaClock,
+        job: AsyncJob.SyncNekkuProducts,
+    ) {
+        if (client == null) error("Cannot sync Nekku products: NekkuEnv is not configured")
+        fetchAndUpdateNekkuProducts(client, db)
+    }
 }
 
 interface NekkuClient {
@@ -84,6 +94,8 @@ interface NekkuClient {
     fun getCustomers(): List<NekkuCustomer>
 
     fun getSpecialDiets(): List<NekkuSpecialDiet>
+
+    fun getProducts(): List<NekkuProduct>
 }
 
 class NekkuHttpClient(private val env: NekkuEnv, private val jsonMapper: JsonMapper) : NekkuClient {
@@ -167,3 +179,15 @@ enum class NekkuSpecialDietType(@JsonValue val description: String) : DatabaseEn
 }
 
 data class NekkuSpecialDietOption(val weight: Int, val key: String, val value: String)
+
+data class NekkuProduct(
+    val name: String,
+    val sku: String,
+    val options_id: String ,
+    val meal_time: NekkuProductMealTime? = null,
+    val meal_type: String,
+)
+
+enum class NekkuProductMealTime {
+
+}
