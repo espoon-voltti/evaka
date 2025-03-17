@@ -12,6 +12,7 @@ import fi.espoo.evaka.insertServiceNeedOptionVoucherValues
 import fi.espoo.evaka.insertServiceNeedOptions
 import fi.espoo.evaka.invoicing.calculateMonthlyAmount
 import fi.espoo.evaka.invoicing.controller.VoucherValueDecisionController
+import fi.espoo.evaka.invoicing.data.getHeadOfFamilyVoucherValueDecisions
 import fi.espoo.evaka.invoicing.domain.FeeAlterationType
 import fi.espoo.evaka.invoicing.domain.FeeThresholds
 import fi.espoo.evaka.invoicing.domain.IncomeCoefficient
@@ -86,7 +87,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
     @Autowired
     private lateinit var coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider
 
-    private val employee = DevEmployee()
+    private val employee = DevEmployee(roles = setOf(UserRole.ADMIN))
     private val clock = MockEvakaClock(2021, 1, 1, 15, 0)
 
     @BeforeEach
@@ -842,6 +843,61 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
             .containsExactlyInAnyOrder(
                 Tuple(subPeriod1, emptySet<VoucherValueDecisionDifference>()),
                 Tuple(subPeriod2, setOf(VoucherValueDecisionDifference.INCOME)),
+            )
+    }
+
+    @Test
+    fun `overlapping 2025-03 does not cause income difference or splitting`() {
+        val period = FiniteDateRange(LocalDate.of(2025, 1, 1), LocalDate.of(2025, 12, 31))
+        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
+        insertIncome(testAdult_1.id, 10000, period.asDateRange())
+
+        val subPeriod1 = period.copy(end = LocalDate.of(2025, 6, 30))
+        insertPlacement(testChild_1.id, subPeriod1, PlacementType.DAYCARE, testVoucherDaycare.id)
+
+        db.transaction { tx ->
+            generator.generateNewDecisionsForAdult(tx, testAdult_1.id)
+
+            // old code did not store income id
+            tx.execute {
+                sql(
+                    """
+                UPDATE voucher_value_decision SET head_of_family_income = head_of_family_income - 'id'
+            """
+                )
+            }
+        }
+        voucherValueDecisionController.sendVoucherValueDecisionDrafts(
+            dbInstance(),
+            employee.user,
+            clock,
+            db.read { it.getHeadOfFamilyVoucherValueDecisions(testAdult_1.id) }.map { it.id },
+            null,
+        )
+
+        val subPeriod2 = period.copy(start = LocalDate.of(2025, 7, 1))
+        insertPlacement(
+            testChild_1.id,
+            subPeriod2,
+            PlacementType.DAYCARE_PART_TIME,
+            testVoucherDaycare.id,
+        )
+
+        db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, testAdult_1.id) }
+
+        assertThat(getAllVoucherValueDecisions())
+            .extracting({ FiniteDateRange(it.validFrom, it.validTo) }, { it.difference })
+            .containsExactlyInAnyOrder(
+                Tuple(subPeriod1, emptySet<VoucherValueDecisionDifference>()),
+                Tuple(
+                    subPeriod2,
+                    setOf(
+                        VoucherValueDecisionDifference.PLACEMENT,
+                        VoucherValueDecisionDifference.VOUCHER_VALUE,
+                        VoucherValueDecisionDifference.SERVICE_NEED,
+                    ),
+                ),
             )
     }
 
