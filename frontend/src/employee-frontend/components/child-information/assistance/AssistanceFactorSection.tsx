@@ -26,13 +26,13 @@ import {
   InlineInfoButton
 } from 'lib-components/molecules/ExpandingInfo'
 
-import { ChildContext, ChildState } from '../../../state/child'
 import { useTranslation } from '../../../state/i18n'
 import { renderResult } from '../../async-rendering'
 import {
   createAssistanceFactorMutation,
   updateAssistanceFactorMutation
 } from '../queries'
+import { ChildContext, ChildState } from '../state'
 
 import { AssistanceFactorForm } from './AssistanceFactorForm'
 import { AssistanceFactorRow } from './AssistanceFactorRow'

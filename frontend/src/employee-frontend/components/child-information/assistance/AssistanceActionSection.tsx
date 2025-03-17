@@ -5,7 +5,10 @@
 import React, { useContext, useMemo, useRef } from 'react'
 import styled from 'styled-components'
 
-import { ChildContext, ChildState } from 'employee-frontend/state/child'
+import {
+  ChildContext,
+  ChildState
+} from 'employee-frontend/components/child-information/state'
 import { combine, Result } from 'lib-common/api'
 import { AssistanceActionResponse } from 'lib-common/generated/api-types/assistanceaction'
 import { ChildId } from 'lib-common/generated/api-types/shared'

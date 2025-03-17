@@ -2,8 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { ChildContext } from '../components/child-information/state'
+
 import StateProvider from './StateProvider'
-import { ChildContext } from './child'
 import { I18nContext } from './i18n'
 
 export { StateProvider, ChildContext, I18nContext }

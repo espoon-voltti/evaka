@@ -24,13 +24,13 @@ import { PlacementResponse } from 'lib-common/generated/api-types/placement'
 import { ChildId } from 'lib-common/generated/api-types/shared'
 import { useApiState, useRestApi } from 'lib-common/utils/useRestApi'
 
-import { getChildBackupCares } from '../generated/api-clients/backupcare'
-import { getChild } from '../generated/api-clients/daycare'
+import { getChildBackupCares } from '../../generated/api-clients/backupcare'
+import { getChild } from '../../generated/api-clients/daycare'
 import {
   getParentships,
   getPersonGuardians
-} from '../generated/api-clients/pis'
-import { getChildPlacements } from '../generated/api-clients/placement'
+} from '../../generated/api-clients/pis'
+import { getChildPlacements } from '../../generated/api-clients/placement'
 
 const getChildResult = wrapResult(getChild)
 const getPersonGuardiansResult = wrapResult(getPersonGuardians)

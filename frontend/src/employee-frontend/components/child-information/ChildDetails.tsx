@@ -12,9 +12,10 @@ import { Gap } from 'lib-components/white-space'
 
 import AdditionalInformation from '../../components/child-information/person-details/AdditionalInformation'
 import PersonDetails from '../../components/person-shared/PersonDetails'
-import { ChildContext, ChildState } from '../../state/child'
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
+
+import { ChildContext, ChildState } from './state'
 
 interface Props {
   id: ChildId

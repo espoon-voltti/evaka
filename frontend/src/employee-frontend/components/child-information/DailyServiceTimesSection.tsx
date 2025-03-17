@@ -5,7 +5,10 @@
 import orderBy from 'lodash/orderBy'
 import React, { useContext, useState } from 'react'
 
-import { ChildContext, ChildState } from 'employee-frontend/state/child'
+import {
+  ChildContext,
+  ChildState
+} from 'employee-frontend/components/child-information/state'
 import {
   ChildId,
   DailyServiceTimeId

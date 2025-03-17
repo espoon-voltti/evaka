@@ -17,12 +17,13 @@ import { Gap } from 'lib-components/white-space'
 import CreatePlacementModal from '../../components/child-information/placements/CreatePlacementModal'
 import PlacementRow from '../../components/child-information/placements/PlacementRow'
 import { serviceNeedsQuery } from '../../queries'
-import { ChildContext, ChildState } from '../../state/child'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
 import { UserContext } from '../../state/user'
 import { renderResult } from '../async-rendering'
 import { FlexRow } from '../common/styled/containers'
+
+import { ChildContext, ChildState } from './state'
 
 interface Props {
   childId: ChildId

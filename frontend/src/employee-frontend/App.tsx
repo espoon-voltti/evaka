@@ -18,7 +18,6 @@ import { theme } from 'lib-customizations/common'
 import { featureFlags } from 'lib-customizations/employee'
 
 import ApplicationPage from './components/ApplicationPage'
-import ChildInformation from './components/ChildInformation'
 import EmployeeRoute from './components/EmployeeRoute'
 import FinancePage from './components/FinancePage'
 import { Footer } from './components/Footer'
@@ -38,6 +37,7 @@ import {
   ChildDocumentEditView,
   ChildDocumentReadView
 } from './components/child-documents/ChildDocumentEditor'
+import ChildInformation from './components/child-information/ChildInformation'
 import AssistanceNeedDecisionEditPage from './components/child-information/assistance-need/decision/AssistanceNeedDecisionEditPage'
 import AssistanceNeedDecisionPage from './components/child-information/assistance-need/decision/AssistanceNeedDecisionPage'
 import AssistanceNeedPreschoolDecisionEditPage from './components/child-information/assistance-need/decision/AssistanceNeedPreschoolDecisionEditPage'

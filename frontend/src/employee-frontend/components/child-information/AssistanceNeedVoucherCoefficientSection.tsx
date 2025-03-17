@@ -6,7 +6,10 @@ import orderBy from 'lodash/orderBy'
 import React, { useContext, useRef, useState } from 'react'
 import styled from 'styled-components'
 
-import { ChildContext, ChildState } from 'employee-frontend/state/child'
+import {
+  ChildContext,
+  ChildState
+} from 'employee-frontend/components/child-information/state'
 import { UIContext } from 'employee-frontend/state/ui'
 import { AssistanceNeedVoucherCoefficient } from 'lib-common/generated/api-types/assistanceneed'
 import {
