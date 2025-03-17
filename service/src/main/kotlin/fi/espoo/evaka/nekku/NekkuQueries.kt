@@ -90,23 +90,8 @@ fun Database.Transaction.getNekkuCustomers(): List<NekkuCustomer> {
 
 /** Throws an IllegalStateException if Nekku returns an empty special diet list. */
 fun fetchAndUpdateNekkuSpecialDiets(client: NekkuClient, db: Database.Connection) {
-    val specialDietsFromNekku =
-        client.getSpecialDiets().map {
-            NekkuSpecialDiet(
-                it.id,
-                it.name,
-                it.fields.map { field ->
-                    NekkuSpecialDietsField(
-                        field.id,
-                        field.name,
-                        field.type,
-                        field.options?.map { option ->
-                            NekkuSpecialDietOption(option.weight, option.key, option.value)
-                        },
-                    )
-                },
-            )
-        }
+
+    val specialDietsFromNekku = client.getSpecialDiets()
 
     if (specialDietsFromNekku.isEmpty())
         error("Refusing to sync empty Nekku special diet list into database")
