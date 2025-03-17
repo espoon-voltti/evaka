@@ -19,7 +19,7 @@ CREATE TABLE nekku_special_diet_option (
     field_id TEXT REFERENCES nekku_special_diet_field(id) ON DELETE CASCADE
 );
 
-ALTER TABLE nekku_special_diet_option ADD CONSTRAINT unique_field_value UNIQUE (field_id, value);
+ALTER TABLE nekku_special_diet_option ADD CONSTRAINT uniq$unique_field_value UNIQUE (field_id, value);
 
 CREATE INDEX idx$nekku_special_diet_option_field
     ON nekku_special_diet_option (field_id);
