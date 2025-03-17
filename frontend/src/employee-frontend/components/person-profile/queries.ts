@@ -17,6 +17,7 @@ import {
   deleteInvoiceCorrection,
   getHeadOfFamilyInvoices,
   getIncomeMultipliers,
+  getIncomeTypeOptions,
   getPersonInvoiceCorrections,
   updateInvoiceCorrectionNote
 } from '../../generated/api-clients/invoicing'
@@ -169,3 +170,5 @@ export const updateFinanceNoteMutation = q.parametricMutation<{
 export const deleteFinanceNoteMutation = q.parametricMutation<{
   id: PersonId
 }>()(deleteFinanceNote, [({ id }) => financeNotesQuery({ personId: id })])
+
+export const incomeTypeOptionsQuery = q.query(getIncomeTypeOptions)

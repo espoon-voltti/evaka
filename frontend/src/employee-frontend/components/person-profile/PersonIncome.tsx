@@ -33,7 +33,6 @@ import {
 import { getChildPlacementPeriods } from '../../generated/api-clients/placement'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
-import { useIncomeTypeOptions } from '../../utils/income'
 import { renderResult } from '../async-rendering'
 
 import IncomeStatementsTable from './IncomeStatementsTable'
@@ -41,7 +40,8 @@ import IncomeList from './income/IncomeList'
 import { getMissingIncomePeriodsString } from './income/missingIncomePeriodUtils'
 import {
   familyByPersonQuery,
-  incomeCoefficientMultipliersQuery
+  incomeCoefficientMultipliersQuery,
+  incomeTypeOptionsQuery
 } from './queries'
 import { PersonContext } from './state'
 
@@ -196,7 +196,7 @@ export const Incomes = React.memo(function Incomes({
     }
   }, [i18n, incomes, childPlacementPeriods, setErrorMessage])
 
-  const incomeTypeOptions = useIncomeTypeOptions()
+  const incomeTypeOptions = useQueryResult(incomeTypeOptionsQuery())
   const coefficientMultipliers = useQueryResult(
     incomeCoefficientMultipliersQuery()
   )
