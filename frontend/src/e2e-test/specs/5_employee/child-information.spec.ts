@@ -47,7 +47,6 @@ beforeEach(async () => {
   await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()
   await Fixture.family(familyWithTwoGuardians).save()
-  await Fixture.person(testChildDeceased).saveChild()
   await Fixture.person(testChildNoSsn).saveChild()
   await createDaycareGroups({ body: [testDaycareGroup] })
   admin = await Fixture.employee().admin().save()
@@ -170,6 +169,7 @@ describe('Child Information - edit additional information', () => {
 
 describe('Child Information - deceased child', () => {
   test('Deceased child indicator is shown', async () => {
+    await Fixture.person(testChildDeceased).saveChild({ updateMockVtj: true })
     await page.goto(
       config.employeeUrl + '/child-information/' + testChildDeceased.id
     )

@@ -5,20 +5,19 @@
 import React, { useContext } from 'react'
 import styled from 'styled-components'
 
-import { wrapResult } from 'lib-common/api'
 import { Action } from 'lib-common/generated/action'
 import { ChildBackupCare } from 'lib-common/generated/api-types/backupcare'
 import { ChildId } from 'lib-common/generated/api-types/shared'
+import { useMutationResult } from 'lib-common/query'
 import Title from 'lib-components/atoms/Title'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { faQuestion } from 'lib-icons'
 
 import BackupCareForm from '../../../components/child-information/backup-care/BackupCareForm'
 import Toolbar from '../../../components/common/Toolbar'
-import { deleteBackupCare } from '../../../generated/api-clients/backupcare'
-import { ChildContext } from '../../../state'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
+import { deleteBackupCareMutation } from '../queries'
 
 export interface Props {
   childId: ChildId
@@ -56,7 +55,10 @@ export default function BackupCareRow({
 }: Props) {
   const { i18n } = useTranslation()
   const { uiMode, toggleUiMode, clearUiMode } = useContext(UIContext)
-  const { loadBackupCares } = useContext(ChildContext)
+
+  const { mutateAsync: deleteBackupCare } = useMutationResult(
+    deleteBackupCareMutation
+  )
 
   return (
     <div>
@@ -71,9 +73,7 @@ export default function BackupCareRow({
           reject={{ action: () => clearUiMode(), label: i18n.common.cancel }}
           resolve={{
             action: () =>
-              wrapResult(deleteBackupCare)({ id: backupCare.id })
-                .then(() => clearUiMode())
-                .then(() => loadBackupCares()),
+              deleteBackupCare({ id: backupCare.id }).then(() => clearUiMode()),
             label: i18n.common.remove
           }}
         />

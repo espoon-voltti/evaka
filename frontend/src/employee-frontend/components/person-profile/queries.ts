@@ -39,6 +39,7 @@ import {
   updatePersonAndFamilyFromVtj,
   updatePersonDetails
 } from '../../generated/api-clients/pis'
+import { childQuery } from '../child-information/queries'
 
 const q = new Queries()
 
@@ -49,7 +50,8 @@ export const familyByPersonQuery = q.query(getFamilyByPerson)
 export const parentshipsQuery = q.query(getParentships)
 
 export const updatePersonDetailsMutation = q.mutation(updatePersonDetails, [
-  ({ personId }) => personQuery({ personId })
+  ({ personId }) => personQuery({ personId }),
+  ({ personId }) => childQuery({ childId: personId })
 ])
 
 export const updatePersonAndFamilyFromVtjMutation = q.mutation(
@@ -67,7 +69,10 @@ export const disableSsnMutation = q.mutation(disableSsn, [
 
 export const duplicatePersonMutation = q.mutation(duplicatePerson)
 
-export const addSsnMutation = q.mutation(addSsn)
+export const addSsnMutation = q.mutation(addSsn, [
+  ({ personId }) => personQuery({ personId }),
+  ({ personId }) => childQuery({ childId: personId })
+])
 
 export const createParentshipMutation = q.mutation(createParentship, [
   ({ body }) => familyByPersonQuery({ id: body.headOfChildId }),

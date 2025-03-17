@@ -76,14 +76,14 @@ import { rangesOverlap } from '../../../../utils/date'
 import { isPartDayPlacement } from '../../../../utils/placements'
 import { requireRole } from '../../../../utils/roles'
 import { renderResult } from '../../../async-rendering'
+import { updateBackupCareMutation } from '../../../child-information/queries'
 import { AgeIndicatorChip } from '../../../common/AgeIndicatorChip'
 import { CareTypeChip } from '../../../common/CareTypeLabel'
 import { DataList } from '../../../common/DataList'
 import { StatusIconContainer } from '../../../common/StatusIconContainer'
 import {
   deleteGroupMutation,
-  deleteGroupPlacementMutation,
-  updateBackupCareMutation
+  deleteGroupPlacementMutation
 } from '../../queries'
 import NotesModal from '../notes/NotesModal'
 

@@ -30,7 +30,7 @@ beforeEach(async () => {
 
   await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()
-  await Fixture.person(testChild).saveChild()
+  await Fixture.person(testChild).saveChild({ updateMockVtj: true })
   personId = testChild.id
 
   const financeAdmin = await Fixture.employee().financeAdmin().save()

@@ -3,6 +3,18 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import {
+  createBackupCare,
+  deleteBackupCare,
+  getChildBackupCares,
+  updateBackupCare
+} from 'employee-frontend/generated/api-clients/backupcare'
+import {
+  createPlacement,
+  deletePlacement,
+  getChildPlacements,
+  updatePlacementById
+} from 'employee-frontend/generated/api-clients/placement'
+import {
   ChildId,
   DaycareId,
   PersonId
@@ -59,6 +71,7 @@ import {
 } from '../../generated/api-clients/dailyservicetimes'
 import {
   getAdditionalInfo,
+  getChild,
   getUnits,
   updateAdditionalInfo
 } from '../../generated/api-clients/daycare'
@@ -80,7 +93,10 @@ import {
   getFeeAlterations,
   updateFeeAlteration
 } from '../../generated/api-clients/invoicing'
-import { getFosterParents } from '../../generated/api-clients/pis'
+import {
+  getFosterParents,
+  getPersonGuardians
+} from '../../generated/api-clients/pis'
 import {
   getAssistanceNeedDecisionMetadata,
   getAssistanceNeedPreschoolDecisionMetadata,
@@ -88,11 +104,69 @@ import {
 } from '../../generated/api-clients/process'
 import {
   acceptServiceApplication,
+  deleteServiceNeed,
   getChildServiceApplications,
+  postServiceNeed,
+  putServiceNeed,
   rejectServiceApplication
 } from '../../generated/api-clients/serviceneed'
+import { unitGroupDetailsQuery, unitNotificationsQuery } from '../unit/queries'
 
 const q = new Queries()
+
+export const childQuery = q.query(getChild)
+
+export const deleteServiceNeedMutation = q.mutation(deleteServiceNeed, [])
+
+export const guardiansQuery = q.query(getPersonGuardians)
+
+export const placementsQuery = q.query(getChildPlacements)
+
+export const createPlacementMutation = q.mutation(createPlacement, [
+  ({ body }) => placementsQuery({ childId: body.childId }),
+  // Refresh permitted actions
+  ({ body }) => childQuery({ childId: body.childId })
+])
+
+export const backupCaresQuery = q.query(getChildBackupCares)
+
+export const createBackupCareMutation = q.mutation(createBackupCare, [
+  backupCaresQuery.prefix
+])
+
+export const updateBackupCareMutation = q.parametricMutation<{
+  unitId: DaycareId
+}>()(updateBackupCare, [
+  ({ unitId }) => unitNotificationsQuery({ daycareId: unitId }),
+  unitGroupDetailsQuery.prefix,
+  backupCaresQuery.prefix
+])
+
+export const deleteBackupCareMutation = q.mutation(deleteBackupCare, [
+  backupCaresQuery.prefix
+])
+
+export const updatePlacementMutation = q.mutation(updatePlacementById, [
+  placementsQuery.prefix,
+  backupCaresQuery.prefix,
+  // Refresh permitted actions
+  childQuery.prefix
+])
+
+export const deletePlacementMutation = q.mutation(deletePlacement, [
+  placementsQuery.prefix,
+  backupCaresQuery.prefix,
+  // Refresh permitted actions
+  childQuery.prefix
+])
+
+export const createServiceNeedMutation = q.mutation(postServiceNeed, [
+  placementsQuery.prefix
+])
+
+export const updateServiceNeedMutation = q.mutation(putServiceNeed, [
+  placementsQuery.prefix
+])
 
 export const childDocumentsQuery = q.query(getDocuments)
 
@@ -156,7 +230,8 @@ export const childServiceApplicationsQuery = q.query(
 export const acceptServiceApplicationsMutation = q.parametricMutation<{
   childId: ChildId
 }>()(acceptServiceApplication, [
-  ({ childId }) => childServiceApplicationsQuery({ childId })
+  ({ childId }) => childServiceApplicationsQuery({ childId }),
+  ({ childId }) => placementsQuery({ childId })
 ])
 
 export const rejectServiceApplicationsMutation = q.parametricMutation<{

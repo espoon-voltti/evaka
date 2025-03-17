@@ -136,9 +136,6 @@ const AcceptanceModal = React.memo(function AcceptanceModal({
 }) {
   const { i18n } = useTranslation()
 
-  // Should be replaced with query invalidations later
-  const { loadPlacements } = useContext(ChildContext)
-
   const form = useForm(
     acceptanceForm,
     () => ({
@@ -187,10 +184,7 @@ const AcceptanceModal = React.memo(function AcceptanceModal({
         }
       })}
       rejectAction={onClose}
-      onSuccess={() => {
-        onClose()
-        loadPlacements()
-      }}
+      onSuccess={onClose}
     >
       <FixedSpaceColumn spacing="L">
         <div>

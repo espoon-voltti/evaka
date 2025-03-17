@@ -15,7 +15,7 @@ import { faChild, faExchange } from 'lib-icons'
 import { useTranslation } from '../../../../state/i18n'
 import { UIContext } from '../../../../state/ui'
 import { formatName } from '../../../../utils'
-import { updateBackupCareMutation } from '../../queries'
+import { updateBackupCareMutation } from '../../../child-information/queries'
 
 interface Props {
   unitId: DaycareId

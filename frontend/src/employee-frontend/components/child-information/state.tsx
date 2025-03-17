@@ -3,53 +3,37 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import sortBy from 'lodash/sortBy'
-import React, {
-  createContext,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState
-} from 'react'
+import React, { createContext, useMemo } from 'react'
 
-import { Loading, Result, wrapResult } from 'lib-common/api'
+import { Loading, Result } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { Action } from 'lib-common/generated/action'
-import { ChildBackupCareResponse } from 'lib-common/generated/api-types/backupcare'
-import { ChildResponse } from 'lib-common/generated/api-types/daycare'
 import {
+  ChildBackupCareResponse,
+  ChildBackupCaresResponse
+} from 'lib-common/generated/api-types/backupcare'
+import {
+  GuardiansResponse,
   ParentshipWithPermittedActions,
   PersonJSON
 } from 'lib-common/generated/api-types/pis'
 import { PlacementResponse } from 'lib-common/generated/api-types/placement'
 import { ChildId } from 'lib-common/generated/api-types/shared'
-import { useApiState, useRestApi } from 'lib-common/utils/useRestApi'
+import { pendingQuery, useQueryResult } from 'lib-common/query'
 
-import { getChildBackupCares } from '../../generated/api-clients/backupcare'
-import { getChild } from '../../generated/api-clients/daycare'
-import {
-  getParentships,
-  getPersonGuardians
-} from '../../generated/api-clients/pis'
-import { getChildPlacements } from '../../generated/api-clients/placement'
+import { parentshipsQuery } from '../person-profile/queries'
 
-const getChildResult = wrapResult(getChild)
-const getPersonGuardiansResult = wrapResult(getPersonGuardians)
-const getChildPlacementsResult = wrapResult(getChildPlacements)
-const getParentshipsResult = wrapResult(getParentships)
+import { backupCaresQuery } from './queries'
+import { childQuery, guardiansQuery, placementsQuery } from './queries'
 
 export interface ChildState {
   childId: ChildId | undefined
   person: Result<PersonJSON>
-  setPerson: (value: PersonJSON) => void
   permittedActions: Set<Action.Child | Action.Person>
   placements: Result<PlacementResponse>
-  loadPlacements: () => void
   parentships: Result<ParentshipWithPermittedActions[]>
   backupCares: Result<ChildBackupCareResponse[]>
-  loadBackupCares: () => Promise<Result<unknown>>
   guardians: Result<PersonJSON[]>
-  reloadGuardians: () => Promise<Result<unknown>>
-  reloadPermittedActions: () => void
   assistanceNeedVoucherCoefficientsEnabled: Result<boolean>
   consecutivePlacementRanges: FiniteDateRange[]
 }
@@ -59,16 +43,11 @@ const emptyPermittedActions = new Set<Action.Child | Action.Person>()
 const defaultState: ChildState = {
   childId: undefined,
   person: Loading.of(),
-  setPerson: () => undefined,
   permittedActions: emptyPermittedActions,
   placements: Loading.of(),
-  loadPlacements: () => undefined,
   parentships: Loading.of(),
   backupCares: Loading.of(),
-  loadBackupCares: () => Promise.resolve(Loading.of()),
   guardians: Loading.of(),
-  reloadGuardians: () => Promise.resolve(Loading.of()),
-  reloadPermittedActions: () => undefined,
   assistanceNeedVoucherCoefficientsEnabled: Loading.of(),
   consecutivePlacementRanges: []
 }
@@ -82,100 +61,55 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
   id: ChildId
   children: React.ReactNode
 }) {
-  const [childResponse, setChildResponse] = useState<Result<ChildResponse>>(
-    Loading.of()
-  )
-  const [permittedActions, setPermittedActions] = useState<
-    Set<Action.Child | Action.Person>
-  >(emptyPermittedActions)
-  const [
-    assistanceNeedVoucherCoefficientsEnabled,
-    setAssistanceNeedVoucherCoefficientsEnabled
-  ] = useState<Result<boolean>>(Loading.of())
-
-  const updatePermittedActions = useCallback(
-    (response: Result<ChildResponse>) => {
-      setPermittedActions(
-        response
-          .map(
-            ({ permittedActions, permittedPersonActions }) =>
-              new Set([...permittedActions, ...permittedPersonActions])
-          )
-          .getOrElse(emptyPermittedActions)
+  const childResponse = useQueryResult(childQuery({ childId: id }))
+  const permittedActions = useMemo(() => {
+    return childResponse
+      .map(
+        ({ permittedActions, permittedPersonActions }) =>
+          new Set([...permittedActions, ...permittedPersonActions])
       )
-    },
-    []
+      .getOrElse(emptyPermittedActions)
+  }, [childResponse])
+  const assistanceNeedVoucherCoefficientsEnabled = useMemo(
+    () =>
+      childResponse.map((res) => res.assistanceNeedVoucherCoefficientsEnabled),
+    [childResponse]
   )
-
-  const setFullChildResponse = useCallback(
-    (response: Result<ChildResponse>) => {
-      updatePermittedActions(response)
-      setChildResponse(response)
-      setAssistanceNeedVoucherCoefficientsEnabled(
-        response.map((res) => res.assistanceNeedVoucherCoefficientsEnabled)
-      )
-    },
-    [updatePermittedActions]
-  )
-  const loadChild = useRestApi(getChildResult, setFullChildResponse)
-  useEffect(() => {
-    void loadChild({ childId: id })
-  }, [loadChild, id])
-
-  const reloadPermittedActions = useCallback(() => {
-    void getChildResult({ childId: id }).then(updatePermittedActions)
-  }, [id, updatePermittedActions])
 
   const person = useMemo(
     () => childResponse.map((response) => response.person),
     [childResponse]
   )
-  const setPerson = useCallback(
-    (person: PersonJSON) =>
-      setChildResponse((prev) =>
-        prev.map((child) => ({
-          ...child,
-          person
-        }))
-      ),
-    []
+
+  const placements = useQueryResult(
+    permittedActions.has('READ_PLACEMENT')
+      ? placementsQuery({ childId: id })
+      : pendingQuery<PlacementResponse>()
+  )
+  const parentships = useQueryResult(
+    permittedActions.has('READ_PARENTSHIPS')
+      ? parentshipsQuery({ childId: id })
+      : pendingQuery<ParentshipWithPermittedActions[]>()
   )
 
-  const [placements, loadPlacements] = useApiState(
-    async () =>
-      permittedActions.has('READ_PLACEMENT')
-        ? await getChildPlacementsResult({
-            childId: id
-          })
-        : Loading.of<PlacementResponse>(),
-    [id, permittedActions]
+  const _backupCares = useQueryResult(
+    permittedActions.has('READ_BACKUP_CARE')
+      ? backupCaresQuery({ childId: id })
+      : pendingQuery<ChildBackupCaresResponse>()
   )
-  const [parentships] = useApiState(
-    async (): Promise<Result<ParentshipWithPermittedActions[]>> =>
-      permittedActions.has('READ_PARENTSHIPS')
-        ? await getParentshipsResult({ childId: id })
-        : Loading.of(),
-    [id, permittedActions]
+  const backupCares = useMemo(
+    () => _backupCares.map(({ backupCares }) => backupCares),
+    [_backupCares]
   )
 
-  const [backupCares, loadBackupCares] = useApiState(
-    async () =>
-      permittedActions.has('READ_BACKUP_CARE')
-        ? wrapResult(getChildBackupCares)({ childId: id }).then((res) =>
-            res.map((x) => x.backupCares)
-          )
-        : Loading.of<ChildBackupCareResponse[]>(),
-    [id, permittedActions]
+  const _guardians = useQueryResult(
+    permittedActions.has('READ_GUARDIANS')
+      ? guardiansQuery({ personId: id })
+      : pendingQuery<GuardiansResponse>()
   )
-
-  const [guardians, reloadGuardians] = useApiState(
-    async () =>
-      permittedActions.has('READ_GUARDIANS')
-        ? (await getPersonGuardiansResult({ personId: id })).map(
-            ({ guardians }) => guardians
-          )
-        : Loading.of<PersonJSON[]>(),
-    [id, permittedActions]
+  const guardians = useMemo(
+    () => _guardians.map(({ guardians }) => guardians),
+    [_guardians]
   )
 
   const consecutivePlacementRanges = useMemo(
@@ -216,34 +150,24 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
     (): ChildState => ({
       childId: id,
       person,
-      setPerson,
       permittedActions,
       placements,
-      loadPlacements,
       parentships,
       backupCares,
-      loadBackupCares,
       guardians,
-      reloadGuardians,
-      reloadPermittedActions,
       assistanceNeedVoucherCoefficientsEnabled,
       consecutivePlacementRanges
     }),
     [
       id,
       person,
-      setPerson,
       permittedActions,
       placements,
-      loadPlacements,
       parentships,
       backupCares,
       guardians,
-      reloadGuardians,
-      reloadPermittedActions,
       assistanceNeedVoucherCoefficientsEnabled,
-      consecutivePlacementRanges,
-      loadBackupCares
+      consecutivePlacementRanges
     ]
   )
 

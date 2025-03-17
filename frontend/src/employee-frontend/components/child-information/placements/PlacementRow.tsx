@@ -8,7 +8,7 @@ import { Link } from 'react-router'
 import styled from 'styled-components'
 
 import { ChildContext } from 'employee-frontend/state'
-import { Failure, wrapResult } from 'lib-common/api'
+import { Failure } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { Action } from 'lib-common/generated/action'
@@ -18,10 +18,11 @@ import {
 } from 'lib-common/generated/api-types/placement'
 import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
 import LocalDate from 'lib-common/local-date'
+import { useMutationResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import UnorderedList from 'lib-components/atoms/UnorderedList'
-import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
+import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
@@ -33,10 +34,6 @@ import Toolbar from '../../../components/common/Toolbar'
 import ToolbarAccordion, {
   RestrictedToolbar
 } from '../../../components/common/ToolbarAccordion'
-import {
-  deletePlacement,
-  updatePlacementById
-} from '../../../generated/api-clients/placement'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext, UiState } from '../../../state/ui'
 import {
@@ -47,11 +44,9 @@ import { InputWarning } from '../../common/InputWarning'
 import RetroactiveConfirmation, {
   isChangeRetroactive
 } from '../../common/RetroactiveConfirmation'
+import { deletePlacementMutation, updatePlacementMutation } from '../queries'
 
 import ServiceNeeds from './ServiceNeeds'
-
-const updatePlacementResult = wrapResult(updatePlacementById)
-const deletePlacementResult = wrapResult(deletePlacement)
 
 interface PlacementUpdate {
   startDate: LocalDate
@@ -62,7 +57,6 @@ interface Props {
   placement: DaycarePlacementWithDetails
   permittedActions: Action.Placement[]
   permittedServiceNeedActions: Partial<Record<string, Action.ServiceNeed[]>>
-  onRefreshNeeded: () => void
   otherPlacementRanges: FiniteDateRange[]
   serviceNeedOptions: ServiceNeedOption[]
 }
@@ -116,13 +110,12 @@ export default React.memo(function PlacementRow({
   placement,
   permittedActions,
   permittedServiceNeedActions,
-  onRefreshNeeded,
   otherPlacementRanges,
   serviceNeedOptions
 }: Props) {
   const { i18n } = useTranslation()
   const { setErrorMessage } = useContext<UiState>(UIContext)
-  const { backupCares, loadBackupCares } = useContext(ChildContext)
+  const { backupCares } = useContext(ChildContext)
 
   const expandedAtStart = isActiveDateRange(
     placement.startDate,
@@ -162,8 +155,7 @@ export default React.memo(function PlacementRow({
 
   const onSuccess = useCallback(() => {
     setEditing(false)
-    onRefreshNeeded()
-  }, [onRefreshNeeded])
+  }, [])
 
   const onFailure = useCallback(
     (res: Failure<unknown>) => {
@@ -187,24 +179,14 @@ export default React.memo(function PlacementRow({
     [i18n, setErrorMessage]
   )
 
-  const submitUpdate = useCallback(
-    () =>
-      updatePlacementResult({ placementId: placement.id, body: form }).then(
-        (res) => {
-          if (res.isSuccess) {
-            return loadBackupCares()
-          }
-          return res
-        }
-      ),
-    [placement.id, form, loadBackupCares]
+  const { mutateAsync: deletePlacement } = useMutationResult(
+    deletePlacementMutation
   )
 
   function submitDelete() {
-    void deletePlacementResult({ placementId: placement.id }).then((res) => {
+    void deletePlacement({ placementId: placement.id }).then((res) => {
       if (res.isSuccess) {
         setConfirmingDelete(false)
-        onRefreshNeeded()
       }
     })
   }
@@ -485,9 +467,13 @@ export default React.memo(function PlacementRow({
                 onClick={() => setEditing(false)}
                 text={i18n.common.cancel}
               />
-              <AsyncButton
+              <MutateButton
                 primary
-                onClick={submitUpdate}
+                mutation={updatePlacementMutation}
+                onClick={() => ({
+                  placementId: placement.id,
+                  body: form
+                })}
                 onSuccess={onSuccess}
                 onFailure={onFailure}
                 text={i18n.common.save}
@@ -503,7 +489,6 @@ export default React.memo(function PlacementRow({
           placement={placement}
           permittedPlacementActions={permittedActions}
           permittedServiceNeedActions={permittedServiceNeedActions}
-          reload={onRefreshNeeded}
           serviceNeedOptions={serviceNeedOptions}
         />
       </ToolbarAccordion>

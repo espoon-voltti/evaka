@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import orderBy from 'lodash/orderBy'
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext, useState } from 'react'
 
 import { ChildId } from 'lib-common/generated/api-types/shared'
 import Loader from 'lib-components/atoms/Loader'
@@ -24,15 +24,10 @@ export interface Props {
 
 export default function BackupCare({ childId, startOpen }: Props) {
   const { i18n } = useTranslation()
-  const { backupCares, loadBackupCares, permittedActions } =
-    useContext(ChildContext)
+  const { backupCares, permittedActions } = useContext(ChildContext)
   const { uiMode, toggleUiMode } = useContext(UIContext)
 
   const [open, setOpen] = useState(startOpen)
-
-  useEffect(() => {
-    void loadBackupCares()
-  }, [childId, loadBackupCares])
 
   return (
     <CollapsibleContentArea
