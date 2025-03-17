@@ -989,7 +989,7 @@ FROM application
 JOIN person child ON application.child_id = child.id
 JOIN placement ON child.id = placement.child_id
 WHERE application.transferapplication
-  AND application.status = ANY('{SENT,WAITING_PLACEMENT,WAITING_DECISION}')
+  AND application.status = ANY('{SENT,WAITING_PLACEMENT,WAITING_UNIT_CONFIRMATION,WAITING_DECISION,WAITING_MAILING,WAITING_CONFIRMATION}')
   AND NOT application.document -> 'apply' -> 'preferredUnits' ?? ${bind(unitId.toString())}
   AND placement.unit_id = ${bind(unitId)}
   AND ${bind(date)} BETWEEN placement.start_date AND placement.end_date
