@@ -41,6 +41,12 @@ import {
   updatePersonDetails
 } from '../../generated/api-clients/pis'
 import { childQuery } from '../child-information/queries'
+import {
+  deleteDraftMessage,
+  getDraftMessages,
+  initDraftMessage,
+  updateDraftMessage
+} from '../../generated/api-clients/messaging'
 
 const q = new Queries()
 
@@ -174,3 +180,14 @@ export const deleteFinanceNoteMutation = q.parametricMutation<{
 }>()(deleteFinanceNote, [({ id }) => financeNotesQuery({ personId: id })])
 
 export const incomeTypeOptionsQuery = q.query(getIncomeTypeOptions)
+
+export const messageDraftsQuery = q.query(getDraftMessages)
+export const initDraftMessageMutation = q.mutation(initDraftMessage, [
+  messageDraftsQuery
+])
+export const updateDraftMessageMutation = q.mutation(updateDraftMessage, [
+  messageDraftsQuery
+])
+export const deleteDraftMessageMutation = q.mutation(deleteDraftMessage, [
+  messageDraftsQuery
+])

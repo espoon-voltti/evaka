@@ -8,10 +8,11 @@ import React, { useCallback, useContext, useMemo, useState } from 'react'
 import { Link } from 'react-router'
 import styled, { useTheme } from 'styled-components'
 
-import { combine, wrapResult } from 'lib-common/api'
+import { combine } from 'lib-common/api'
 import { Action } from 'lib-common/generated/action'
 import { FinanceNote } from 'lib-common/generated/api-types/finance'
 import {
+  DraftContent,
   MessageThread,
   PostMessageBody
 } from 'lib-common/generated/api-types/messaging'
@@ -23,7 +24,9 @@ import {
 } from 'lib-common/generated/api-types/shared'
 import {
   cancelMutation,
+  constantQuery,
   invalidateDependencies,
+  useMutationResult,
   useQueryResult
 } from 'lib-common/query'
 import { isAutomatedTest } from 'lib-common/utils/helpers'
@@ -49,11 +52,6 @@ import { faEnvelope, faPen, faQuestion, faReply, faTrash } from 'lib-icons'
 import { faChevronDown, faChevronUp } from 'lib-icons'
 
 import { getAttachmentUrl, messageAttachment } from '../../api/attachments'
-import {
-  deleteDraftMessage,
-  initDraftMessage,
-  updateDraftMessage
-} from '../../generated/api-clients/messaging'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
 import { formatPersonName } from '../../utils'
@@ -71,15 +69,15 @@ import {
 
 import {
   createFinanceNoteMutation,
+  deleteDraftMessageMutation,
   deleteFinanceNoteMutation,
   financeNotesQuery,
+  initDraftMessageMutation,
+  messageDraftsQuery,
+  updateDraftMessageMutation,
   updateFinanceNoteMutation
 } from './queries'
 import { PersonContext } from './state'
-
-const initDraftMessageResult = wrapResult(initDraftMessage)
-const updateDraftMessageResult = wrapResult(updateDraftMessage)
-const deleteDraftMessageResult = wrapResult(deleteDraftMessage)
 
 interface Props {
   id: PersonId
@@ -94,8 +92,7 @@ export default React.memo(function PersonFinanceNotesAndMessages({
   const { person, permittedActions } = useContext(PersonContext)
   const { uiMode, toggleUiMode, clearUiMode, setErrorMessage } =
     useContext(UIContext)
-  const { selectedDraft, refreshMessages, financeAccount } =
-    useContext(MessageContext)
+  const { refreshMessages, financeAccount } = useContext(MessageContext)
   const [open, setIsOpen] = useState(startOpen)
   const financeNotes = useQueryResult(financeNotesQuery({ personId: id }))
   const [text, setText] = useState<string>('')
@@ -105,6 +102,11 @@ export default React.memo(function PersonFinanceNotesAndMessages({
   const [thread, setThread] = useState<MessageThread>()
   const [confirmDeleteThread, setConfirmDeleteThread] =
     useState<MessageThreadId>()
+  const messageDrafts = useQueryResult(
+    financeAccount
+      ? messageDraftsQuery({ accountId: financeAccount?.account.id })
+      : constantQuery([])
+  )
 
   const onSuccessTimeout = isAutomatedTest ? 10 : 800 // same as used in async-button-behaviour
 
@@ -117,6 +119,26 @@ export default React.memo(function PersonFinanceNotesAndMessages({
     }
     return undefined
   }, [person, i18n])
+
+  const draftContent = useMemo((): DraftContent | undefined => {
+    return personName && messageDrafts.isSuccess
+      ? messageDrafts.value.find(
+          (draft) =>
+            draft.recipientNames.length === 1 &&
+            draft.recipientNames[0] === personName
+        )
+      : undefined
+  }, [personName, messageDrafts])
+
+  const { mutateAsync: initDraftMessageResult } = useMutationResult(
+    initDraftMessageMutation
+  )
+  const { mutateAsync: updateDraftMessageResult } = useMutationResult(
+    updateDraftMessageMutation
+  )
+  const { mutateAsync: deleteDraftMessageResult } = useMutationResult(
+    deleteDraftMessageMutation
+  )
 
   const queryClient = useQueryClient()
   const { mutateAsync: createThread } = useMutation({
@@ -252,7 +274,7 @@ export default React.memo(function PersonFinanceNotesAndMessages({
               value: financeAccount.account.id,
               label: financeAccount.account.name
             }}
-            draftContent={selectedDraft}
+            draftContent={draftContent}
             getAttachmentUrl={getAttachmentUrl}
             initDraftRaw={(accountId) => initDraftMessageResult({ accountId })}
             accounts={[financeAccount]}
