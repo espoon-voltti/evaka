@@ -902,6 +902,52 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
     }
 
     @Test
+    fun `income starting 2025-03 does not cause unnecessary draft`() {
+        val period = FiniteDateRange(LocalDate.of(2025, 3, 1), LocalDate.of(2025, 12, 31))
+        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
+        insertIncome(testAdult_1.id, 10000, period.asDateRange())
+        insertPlacement(testChild_1.id, period, PlacementType.DAYCARE, testVoucherDaycare.id)
+
+        db.transaction { tx ->
+            generator.generateNewDecisionsForAdult(tx, testAdult_1.id)
+
+            // old code did not store income id
+            tx.execute {
+                sql(
+                    """
+                UPDATE voucher_value_decision SET head_of_family_income = head_of_family_income - 'id'
+            """
+                )
+            }
+        }
+        voucherValueDecisionController.sendVoucherValueDecisionDrafts(
+            dbInstance(),
+            employee.user,
+            clock,
+            db.read { it.getHeadOfFamilyVoucherValueDecisions(testAdult_1.id) }.map { it.id },
+            null,
+        )
+        asyncJobRunner.runPendingJobsSync(clock)
+
+        db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, testAdult_1.id) }
+
+        assertThat(getAllVoucherValueDecisions())
+            .extracting(
+                { FiniteDateRange(it.validFrom, it.validTo) },
+                { it.status },
+                { it.difference },
+            )
+            .containsExactly(
+                Tuple(
+                    period,
+                    VoucherValueDecisionStatus.SENT,
+                    emptySet<VoucherValueDecisionDifference>(),
+                )
+            )
+    }
+
+    @Test
     fun `child income difference`() {
         val period = FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
         val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
