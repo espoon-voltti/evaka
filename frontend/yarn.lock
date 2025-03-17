@@ -6872,7 +6872,7 @@ __metadata:
     react-focus-on: "npm:^3.9.4"
     react-image-crop: "npm:^11.0.6"
     react-leaflet: "npm:^4.2.1"
-    react-router: "npm:^7.1.1"
+    react-router: "npm:^7.3.0"
     react-select: "npm:^5.9.0"
     seamless-scroll-polyfill: "npm:2.3.4"
     style-loader: "npm:^4.0.0"
@@ -11019,9 +11019,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-router@npm:^7.1.1":
-  version: 7.1.1
-  resolution: "react-router@npm:7.1.1"
+"react-router@npm:^7.3.0":
+  version: 7.3.0
+  resolution: "react-router@npm:7.3.0"
   dependencies:
     "@types/cookie": "npm:^0.6.0"
     cookie: "npm:^1.0.1"
@@ -11033,7 +11033,7 @@ __metadata:
   peerDependenciesMeta:
     react-dom:
       optional: true
-  checksum: 10/f12e229d79bd6de561e697b64556959361365610450c12bfd89116fccca8428728d7c372a096eff570a917ef02473ef4f5145beb6a2881d6935f69fe25bebcfd
+  checksum: 10/f7694785f95b989e55c0ae058c36c5f523e318109aea26f4e1567a3c50dcbff769417c54451d976990c507f83499bfe7bc4ec9bea52b2fabab4e6da57d21b231
   languageName: node
   linkType: hard
 
