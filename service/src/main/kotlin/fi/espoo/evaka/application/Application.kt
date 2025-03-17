@@ -225,6 +225,14 @@ data class ApplicationUnitSummary(
     val status: ApplicationStatus,
 )
 
+data class TransferApplicationUnitSummary(
+    val applicationId: ApplicationId,
+    val firstName: String,
+    val lastName: String,
+    val dateOfBirth: LocalDate,
+    val preferredStartDate: LocalDate,
+)
+
 data class CitizenApplicationSummary(
     val applicationId: ApplicationId,
     val type: ApplicationType,

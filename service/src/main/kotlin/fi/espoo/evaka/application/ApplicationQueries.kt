@@ -975,6 +975,29 @@ fun Database.Read.getApplicationUnitSummaries(unitId: DaycareId): List<Applicati
         }
 }
 
+fun Database.Read.getTransferApplicationUnitSummaries(unitId: DaycareId, date: LocalDate) =
+    createQuery {
+            sql(
+                """
+SELECT
+  application.id AS application_id,
+  child.first_name,
+  child.last_name,
+  child.date_of_birth,
+  (application.document ->> 'preferredStartDate')::date as preferred_start_date
+FROM application
+JOIN person child ON application.child_id = child.id
+JOIN placement ON child.id = placement.child_id
+WHERE application.transferapplication
+  AND application.status = ANY('{SENT,WAITING_PLACEMENT,WAITING_UNIT_CONFIRMATION,WAITING_DECISION,WAITING_MAILING,WAITING_CONFIRMATION}')
+  AND NOT application.document -> 'apply' -> 'preferredUnits' ?? ${bind(unitId.toString())}
+  AND placement.unit_id = ${bind(unitId)}
+  AND ${bind(date)} BETWEEN placement.start_date AND placement.end_date
+"""
+            )
+        }
+        .toList<TransferApplicationUnitSummary>()
+
 @JsonIgnoreProperties(ignoreUnknown = true) data class FormWithType(val type: String)
 
 fun Row.mapRequestedPlacementType(colName: String): PlacementType =
