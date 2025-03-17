@@ -243,9 +243,7 @@ nekku_special_diet_option.key <> excluded.key;
 /** Throws an IllegalStateException if Nekku returns an empty texture list. */
 fun fetchAndUpdateNekkuProducts(client: NekkuClient, db: Database.Connection) {
     val productsFromNekku =
-        client
-            .getProducts()
-            .map { NekkuProduct(it.number, it.name, it.group, it.unit_size) }
+        client.getProducts()
 
     if (productsFromNekku.isEmpty())
         error("Refusing to sync empty Nekku product list into database")
@@ -255,4 +253,37 @@ fun fetchAndUpdateNekkuProducts(client: NekkuClient, db: Database.Connection) {
             "Deleted: $deletedCustomerCount Nekku customer numbers, inserted ${productsFromNekku.size}"
         }
     }
+}
+
+fun Database.Transaction.setProductNumbers(customerNumbers: List<NekkuProduct>): Int {
+    val newProductNumbers = customerNumbers.map { it.number }
+    val deletedCustomerCount = execute {
+        sql("DELETE FROM nekku_product WHERE number != ALL (${bind(newProductNumbers)})")
+    }
+    executeBatch(customerNumbers) {
+        sql(
+            """
+INSERT INTO nekku_product (sku, name, options_id, unit_size, meal_time, meal_type)
+VALUES (
+    ${bind{it.sku}},
+    ${bind{it.name}},
+    ${bind{it.options_id}},
+    ${bind{it.unit_size}},
+    ${bind{it.meal_time}},
+    ${bind{it.meal_type}},
+    
+)
+ON CONFLICT (number) DO 
+UPDATE SET
+  name = excluded.name,
+  customer_group = excluded.customer_group,
+  unit_size = excluded.unit_size
+WHERE
+    nekku_customer.name <> excluded.name OR
+    nekku_customer.customer_group <> excluded.customer_group OR
+    nekku_customer.unit_size <> excluded.unit_size;
+"""
+        )
+    }
+    return deletedCustomerCount
 }

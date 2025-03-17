@@ -203,6 +203,7 @@ data class NekkuProduct(
     val name: String,
     val sku: String,
     val options_id: String ,
+    val unit_size: String,
     val meal_time: NekkuProductMealTime? = null,
     val meal_type: String,
 )
