@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 package fi.espoo.evaka.nekku
 
+import com.fasterxml.jackson.annotation.JsonValue
 import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import fi.espoo.evaka.ConstList
@@ -158,9 +159,9 @@ data class NekkuSpecialDietsField(
 )
 
 @ConstList("nekku_special_diet_type")
-enum class NekkuSpecialDietType : DatabaseEnum {
-    TEXT,
-    CHECKBOXLIST;
+enum class NekkuSpecialDietType(@JsonValue val description: String) : DatabaseEnum {
+    TEXT("text"),
+    CHECKBOXLIST("checkboxlst");
 
     override val sqlType: String = "nekku_special_diet_type"
 }
