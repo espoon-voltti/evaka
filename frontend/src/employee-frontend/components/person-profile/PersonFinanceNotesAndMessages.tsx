@@ -62,19 +62,17 @@ import { MessageContext } from '../messages/MessageContext'
 import MessageEditor from '../messages/MessageEditor'
 import {
   createFinanceThreadMutation,
+  deleteDraftMutation,
   deleteFinanceThreadMutation,
+  draftsQuery,
   financeThreadsQuery,
   replyToFinanceThreadMutation
 } from '../messages/queries'
 
 import {
   createFinanceNoteMutation,
-  deleteDraftMessageMutation,
   deleteFinanceNoteMutation,
   financeNotesQuery,
-  initDraftMessageMutation,
-  messageDraftsQuery,
-  updateDraftMessageMutation,
   updateFinanceNoteMutation
 } from './queries'
 import { PersonContext } from './state'
@@ -104,7 +102,7 @@ export default React.memo(function PersonFinanceNotesAndMessages({
     useState<MessageThreadId>()
   const messageDrafts = useQueryResult(
     financeAccount
-      ? messageDraftsQuery({ accountId: financeAccount?.account.id })
+      ? draftsQuery({ accountId: financeAccount?.account.id })
       : constantQuery([])
   )
 
@@ -130,15 +128,8 @@ export default React.memo(function PersonFinanceNotesAndMessages({
       : undefined
   }, [personName, messageDrafts])
 
-  const { mutateAsync: initDraftMessageResult } = useMutationResult(
-    initDraftMessageMutation
-  )
-  const { mutateAsync: updateDraftMessageResult } = useMutationResult(
-    updateDraftMessageMutation
-  )
-  const { mutateAsync: deleteDraftMessageResult } = useMutationResult(
-    deleteDraftMessageMutation
-  )
+  const { mutateAsync: deleteDraftResult } =
+    useMutationResult(deleteDraftMutation)
 
   const queryClient = useQueryClient()
   const { mutateAsync: createThread } = useMutation({
@@ -276,24 +267,16 @@ export default React.memo(function PersonFinanceNotesAndMessages({
             }}
             draftContent={draftContent}
             getAttachmentUrl={getAttachmentUrl}
-            initDraftRaw={(accountId) => initDraftMessageResult({ accountId })}
             accounts={[financeAccount]}
             folders={[]}
             onClose={() => clearUiMode()}
             onDiscard={(accountId, draftId) => {
               clearUiMode()
-              void deleteDraftMessageResult({ accountId, draftId }).then(() => {
+              void deleteDraftResult({ accountId, draftId }).then(() => {
                 refreshMessages(accountId)
               })
             }}
             onSend={onSend}
-            saveDraftRaw={(params) =>
-              updateDraftMessageResult({
-                accountId: params.accountId,
-                draftId: params.draftId,
-                body: params.content
-              })
-            }
             saveMessageAttachment={messageAttachment}
             sending={sending}
             defaultTitle={thread ? thread.title : ''}

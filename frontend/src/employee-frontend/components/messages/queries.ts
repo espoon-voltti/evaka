@@ -9,7 +9,7 @@ import {
   archiveThread,
   createMessage,
   createMessagePreflightCheck,
-  deleteDraftMessage,
+  deleteDraftMessage, getDraftMessages,
   getFinanceMessagesWithPerson,
   initDraftMessage,
   replyToThread,
@@ -24,11 +24,13 @@ export const createMessagePreflightCheckQuery = q.query(
 
 export const replyToThreadMutation = q.mutation(replyToThread)
 
-export const initDraftMutation = q.mutation(initDraftMessage, [])
+export const draftsQuery = q.query(getDraftMessages)
 
-export const saveDraftMutation = q.mutation(updateDraftMessage, [])
+export const initDraftMutation = q.mutation(initDraftMessage, [draftsQuery])
 
-export const deleteDraftMutation = q.mutation(deleteDraftMessage, [])
+export const saveDraftMutation = q.mutation(updateDraftMessage, [draftsQuery])
+
+export const deleteDraftMutation = q.mutation(deleteDraftMessage, [draftsQuery])
 
 export const financeThreadsQuery = q.query(getFinanceMessagesWithPerson)
 
