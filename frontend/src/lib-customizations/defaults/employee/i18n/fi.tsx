@@ -2369,7 +2369,7 @@ export const fi = {
       extendedCare: 'Vuorohoito'
     },
     transferApplications: {
-      title: 'Siirtohakemukset',
+      title: 'Siirtoa muualle hakeneet',
       child: 'Lapsen nimi/synt.aika',
       startDate: 'Aloitus'
     },
