@@ -1,14 +1,22 @@
+# SPDX-FileCopyrightText: 2017-2025 City of Espoo
+#
+# SPDX-License-Identifier: LGPL-2.1-or-later
+
 pre-commit:
-  parallel: true
   jobs:
-    - run: yarn exec eslint --max-warnings 0 {staged_files}
-      glob: frontend/**/*.{ts,tsx,js,mjs}
-      root: frontend
-    - run: ./gradlew ktfmtPrecommit --include-only=$(echo {staged_files} | tr ' ' ',')
-      glob: service/**/*.kt
-      root: service
-      stage_fixed: true
-    - run: ./list-migrations.sh
-      glob: service/src/main/resources/db/migration/*.sql
-      root: service
+    - group:
+        parallel: true
+        jobs:
+          - run: yarn exec eslint --max-warnings 0 {staged_files}
+            glob: frontend/**/*.{ts,tsx,js,mjs}
+            root: frontend
+          - run: ./gradlew ktfmtPrecommit --include-only=$(echo {staged_files} | tr ' ' ',')
+            glob: service/**/*.kt
+            root: service
+            stage_fixed: true
+          - run: ./list-migrations.sh
+            glob: service/src/main/resources/db/migration/*.sql
+            root: service
+            stage_fixed: true
+    - run: ./bin/add-license-headers.sh {staged_files}
       stage_fixed: true

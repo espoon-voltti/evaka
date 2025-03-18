@@ -7,7 +7,7 @@
 set -euo pipefail
 
 # Configuration
-REUSE_VERSION="2.1.0"
+REUSE_VERSION="5"
 REUSE_YEARS=${REUSE_YEARS:-"2017-$(date +"%Y")"}
 
 REUSE_IMAGE="fsfe/reuse:${REUSE_VERSION}"
@@ -27,14 +27,17 @@ fi
 REPO_PREFIX=${PWD#"${REPO_ROOT}"}
 
 if [ "${1:-X}" = '--help' ]; then
-  echo 'Usage: ./bin/add-license-headers.sh [OPTIONS]'
+  echo 'Usage: ./bin/add-license-headers.sh [OPTIONS] [FILE_PATHS...]'
   echo ''
-  echo 'Helper script to attempt automatically adding missing license headers to all source code files.'
+  echo 'Helper script to attempt automatically adding missing license headers to source code files.'
   echo 'Any missing license files are downloaded automatically to LICENSES/.'
   echo ''
   echo 'Options:'
   echo "    --lint-only     Only lint for missing headers, don't attempt to add anything"
   echo '    --help          Print this help'
+  echo ''
+  echo 'If FILE_PATHS are provided, only those files will be checked and updated.'
+  echo 'Otherwise, all files in the repository will be processed.'
   exit 0
 fi
 
@@ -50,13 +53,52 @@ function addheader() {
 
 # MAIN SCRIPT
 
+# Handle options and file paths
+LINT_ONLY=false
+FILES=()
+
+for arg in "$@"; do
+    if [ "$arg" = "--lint-only" ]; then
+        LINT_ONLY=true
+    elif [[ "$arg" != --* ]]; then
+        FILES+=("$arg")
+    fi
+done
+
+# If specific files were provided, check only those
+if [ ${#FILES[@]} -gt 0 ]; then
+    if [ "$LINT_ONLY" = true ]; then
+        # Check specific files in lint-only mode
+        run_reuse lint-file "${FILES[@]}"
+        exit $?
+    else
+        # Process specific files
+        for file in "${FILES[@]}"; do
+            if [ -f "$file" ]; then
+                # Check if file already has a license header
+                if ! run_reuse lint-file "$file" &>/dev/null; then
+                    echo "Adding license header to $file"
+                    addheader "$file"
+                else
+                    echo "File already compliant: $file"
+                fi
+            else
+                echo "Warning: File not found: $file"
+            fi
+        done
+        echo "Finished processing specified files"
+        exit 0
+    fi
+fi
+
+# Process all files when no specific files provided
 set +e
 REUSE_OUTPUT=$(run_reuse lint)
 REUSE_EXIT_CODE="$?"
 set -e
 
 # No need to continue if everything was OK, or we are just linting
-if [ "$REUSE_EXIT_CODE" = 0 ] || [ "${1:-X}" = "--lint-only" ]; then
+if [ "$REUSE_EXIT_CODE" = 0 ] || [ "$LINT_ONLY" = true ]; then
     echo "OK - $REUSE_OUTPUT"
     exit "$REUSE_EXIT_CODE"
 fi
