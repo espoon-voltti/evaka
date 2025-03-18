@@ -30,13 +30,13 @@ import {
 } from 'lib-components/molecules/ExpandingInfo'
 import { otherAssistanceMeasureTypes } from 'lib-customizations/employee'
 
-import { ChildContext, ChildState } from '../../../state/child'
 import { useTranslation } from '../../../state/i18n'
 import { renderResult } from '../../async-rendering'
 import {
   createOtherAssistanceMeasureMutation,
   updateOtherAssistanceMeasureMutation
 } from '../queries'
+import { ChildContext, ChildState } from '../state'
 
 import { OtherAssistanceMeasureForm } from './OtherAssistanceMeasureForm'
 import { OtherAssistanceMeasureRow } from './OtherAssistanceMeasureRow'

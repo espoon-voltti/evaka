@@ -4,7 +4,6 @@
 
 import React, { useContext, useMemo } from 'react'
 import { useNavigate } from 'react-router'
-import styled from 'styled-components'
 
 import { Action } from 'lib-common/generated/action'
 import { PersonId } from 'lib-common/generated/api-types/shared'
@@ -13,69 +12,35 @@ import { getAge } from 'lib-common/utils/local-date'
 import Title from 'lib-components/atoms/Title'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { Container, ContentArea } from 'lib-components/layout/Container'
-import { Td } from 'lib-components/layout/Table'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import { defaultMargins, Gap } from 'lib-components/white-space'
+import { Gap } from 'lib-components/white-space'
 import { faListTimeline } from 'lib-icons'
 
-import CircularLabel from '../components/common/CircularLabel'
-import WarningLabel from '../components/common/WarningLabel'
-import PersonApplications from '../components/person-profile/PersonApplications'
-import PersonDecisions from '../components/person-profile/PersonDecisions'
-import PersonDependants from '../components/person-profile/PersonDependants'
-import PersonFeeDecisions from '../components/person-profile/PersonFeeDecisions'
-import PersonFridgeChild from '../components/person-profile/PersonFridgeChild'
-import PersonFridgeHead from '../components/person-profile/PersonFridgeHead'
-import PersonFridgePartner from '../components/person-profile/PersonFridgePartner'
-import PersonIncome from '../components/person-profile/PersonIncome'
-import PersonInvoices from '../components/person-profile/PersonInvoices'
-import { useTranslation } from '../state/i18n'
-import {
-  PersonContext,
-  PersonContextProvider,
-  PersonState
-} from '../state/person'
-import { UserContext } from '../state/user'
+import { useTranslation } from '../../state/i18n'
+import { UserContext } from '../../state/user'
+import CircularLabel from '../common/CircularLabel'
+import WarningLabel from '../common/WarningLabel'
+import { getLayout, Layouts } from '../layouts'
 
-import { getLayout, Layouts } from './layouts'
-import FosterChildren from './person-profile/FosterChildren'
-import FamilyOverview from './person-profile/PersonFamilyOverview'
-import PersonFinanceNotesAndMessages from './person-profile/PersonFinanceNotesAndMessages'
-import PersonInvoiceCorrections from './person-profile/PersonInvoiceCorrections'
-import PersonVoucherValueDecisions from './person-profile/PersonVoucherValueDecisions'
-
-export const NameTd = styled(Td)`
-  width: 30%;
-`
-
-export const DateTd = styled(Td)`
-  width: 12%;
-`
-
-export const ButtonsTd = styled(Td)`
-  width: 13%;
-`
-
-export const StatusTd = styled(Td)`
-  width: 13%;
-`
-
-export const HeaderRow = styled.div`
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-`
-
-export const InfoLabelContainer = styled.div`
-  display: flex;
-
-  > div:not(:last-child) {
-    margin-right: ${defaultMargins.xs};
-  }
-`
+import FosterChildren from './FosterChildren'
+import PersonApplications from './PersonApplications'
+import PersonDecisions from './PersonDecisions'
+import PersonDependants from './PersonDependants'
+import FamilyOverview from './PersonFamilyOverview'
+import PersonFeeDecisions from './PersonFeeDecisions'
+import PersonFinanceNotesAndMessages from './PersonFinanceNotesAndMessages'
+import PersonFridgeChild from './PersonFridgeChild'
+import PersonFridgeHead from './PersonFridgeHead'
+import PersonFridgePartner from './PersonFridgePartner'
+import PersonIncome from './PersonIncome'
+import PersonInvoiceCorrections from './PersonInvoiceCorrections'
+import PersonInvoices from './PersonInvoices'
+import PersonVoucherValueDecisions from './PersonVoucherValueDecisions'
+import { HeaderRow, InfoLabelContainer } from './common'
+import { PersonContext, PersonContextProvider, PersonState } from './state'
 
 interface SectionProps {
   id: PersonId

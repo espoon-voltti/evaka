@@ -12,9 +12,10 @@ import { Gap } from 'lib-components/white-space'
 
 import AdditionalInformation from '../../components/child-information/person-details/AdditionalInformation'
 import PersonDetails from '../../components/person-shared/PersonDetails'
-import { ChildContext, ChildState } from '../../state/child'
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
+
+import { ChildContext, ChildState } from './state'
 
 interface Props {
   id: ChildId
@@ -22,8 +23,7 @@ interface Props {
 
 export default React.memo(function ChildDetails({ id }: Props) {
   const { i18n } = useTranslation()
-  const { person, setPerson, permittedActions } =
-    useContext<ChildState>(ChildContext)
+  const { person, permittedActions } = useContext<ChildState>(ChildContext)
 
   const [open, setOpen] = useState(true)
 
@@ -40,7 +40,6 @@ export default React.memo(function ChildDetails({ id }: Props) {
           <PersonDetails
             person={person}
             isChild={true}
-            onUpdateComplete={setPerson}
             permittedActions={permittedActions}
           />
         ))}

@@ -7,7 +7,7 @@ import React, { useCallback, useContext, useState } from 'react'
 import { Link } from 'react-router'
 import styled from 'styled-components'
 
-import { PersonContext } from 'employee-frontend/state/person'
+import { PersonContext } from 'employee-frontend/components/person-profile/state'
 import { wrapResult } from 'lib-common/api'
 import { PersonId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'

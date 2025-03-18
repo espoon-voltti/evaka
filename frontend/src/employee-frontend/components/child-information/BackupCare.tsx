@@ -3,10 +3,9 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import orderBy from 'lodash/orderBy'
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext, useState } from 'react'
 
 import { ChildId } from 'lib-common/generated/api-types/shared'
-import Loader from 'lib-components/atoms/Loader'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { H2 } from 'lib-components/typography'
@@ -16,6 +15,7 @@ import BackupCareRow from '../../components/child-information/backup-care/Backup
 import { ChildContext } from '../../state'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
+import { renderResult } from '../async-rendering'
 
 export interface Props {
   childId: ChildId
@@ -24,15 +24,10 @@ export interface Props {
 
 export default function BackupCare({ childId, startOpen }: Props) {
   const { i18n } = useTranslation()
-  const { backupCares, loadBackupCares, permittedActions } =
-    useContext(ChildContext)
+  const { backupCares, permittedActions } = useContext(ChildContext)
   const { uiMode, toggleUiMode } = useContext(UIContext)
 
   const [open, setOpen] = useState(startOpen)
-
-  useEffect(() => {
-    void loadBackupCares()
-  }, [childId, loadBackupCares])
 
   return (
     <CollapsibleContentArea
@@ -43,9 +38,7 @@ export default function BackupCare({ childId, startOpen }: Props) {
       paddingVertical="L"
       data-qa="backup-cares-collapsible"
     >
-      {backupCares.isLoading && <Loader />}
-      {backupCares.isFailure && <div>{i18n.common.loadingFailed}</div>}
-      {backupCares.isSuccess && (
+      {renderResult(backupCares, (backupCares) => (
         <div data-qa="backup-cares">
           {permittedActions.has('CREATE_BACKUP_CARE') && (
             <AddButtonRow
@@ -58,20 +51,18 @@ export default function BackupCare({ childId, startOpen }: Props) {
           {uiMode === 'create-new-backup-care' && (
             <BackupCareForm childId={childId} />
           )}
-          {orderBy(
-            backupCares.value,
-            (x) => x.backupCare.period.start,
-            'desc'
-          ).map((backupCare) => (
-            <BackupCareRow
-              childId={childId}
-              key={backupCare.backupCare.id}
-              backupCare={backupCare.backupCare}
-              permittedActions={backupCare.permittedActions}
-            />
-          ))}
+          {orderBy(backupCares, (x) => x.backupCare.period.start, 'desc').map(
+            (backupCare) => (
+              <BackupCareRow
+                childId={childId}
+                key={backupCare.backupCare.id}
+                backupCare={backupCare.backupCare}
+                permittedActions={backupCare.permittedActions}
+              />
+            )
+          )}
         </div>
-      )}
+      ))}
     </CollapsibleContentArea>
   )
 }

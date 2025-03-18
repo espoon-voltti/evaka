@@ -10,7 +10,7 @@ import { getServiceNeedOptions } from './generated/api-clients/serviceneed'
 
 const q = new Queries()
 
-export const serviceNeedsQuery = q.query(getServiceNeedOptions)
+export const serviceNeedOptionsQuery = q.query(getServiceNeedOptions)
 
 export const getAssistanceActionOptionsQuery = q.query(
   getAssistanceActionOptions

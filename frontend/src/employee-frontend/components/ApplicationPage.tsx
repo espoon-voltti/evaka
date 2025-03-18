@@ -5,7 +5,7 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
 
-import { combine, Loading, Result, Success, wrapResult } from 'lib-common/api'
+import { combine, Loading, Result, wrapResult } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   ApplicationDetails,
@@ -14,14 +14,13 @@ import {
 } from 'lib-common/generated/api-types/application'
 import { PublicUnit } from 'lib-common/generated/api-types/daycare'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
-import { ServiceNeedOptionPublicInfo } from 'lib-common/generated/api-types/serviceneed'
 import { ApplicationId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
-import { useQueryResult } from 'lib-common/query'
+import { constantQuery, useQueryResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import { scrollToPos } from 'lib-common/utils/scrolling'
 import { useDebounce } from 'lib-common/utils/useDebounce'
-import { useApiState, useRestApi } from 'lib-common/utils/useRestApi'
+import { useApiState } from 'lib-common/utils/useRestApi'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
@@ -42,19 +41,16 @@ import {
   getPreschoolTerms
 } from '../generated/api-clients/daycare'
 import { getThreadByApplicationId } from '../generated/api-clients/messaging'
-import { getServiceNeedOptionPublicInfos } from '../generated/api-clients/serviceneed'
 import { Translations, useTranslation } from '../state/i18n'
 import { TitleContext, TitleState } from '../state/title'
 import { asUnitType } from '../types/daycare'
 import { isSsnValid, isTimeValid } from '../utils/validation/validations'
 
 import { applicationMetadataQuery } from './application-page/queries'
+import { serviceNeedPublicInfosQuery } from './applications/queries'
 import MetadataSection from './archive-metadata/MetadataSection'
 import { renderResult, UnwrapResult } from './async-rendering'
 
-const getServiceNeedOptionPublicInfosResult = wrapResult(
-  getServiceNeedOptionPublicInfos
-)
 const getApplicationResult = wrapResult(getApplicationDetails)
 const getClubTermsResult = wrapResult(getClubTerms)
 const getPreschoolTermsResult = wrapResult(getPreschoolTerms)
@@ -208,15 +204,6 @@ export default React.memo(function ApplicationPage() {
     scrollToPos({ left: 0, top: position })
   }, [application]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const [serviceNeedOptions, setServiceNeedOptions] = useState<
-    Result<ServiceNeedOptionPublicInfo[]>
-  >(Loading.of())
-
-  const loadServiceNeedOptions = useRestApi(
-    getServiceNeedOptionPublicInfosResult,
-    setServiceNeedOptions
-  )
-
   const shouldLoadServiceNeedOptions =
     editedApplication !== undefined &&
     ((editedApplication.type === 'DAYCARE' &&
@@ -224,20 +211,13 @@ export default React.memo(function ApplicationPage() {
       (editedApplication.type === 'PRESCHOOL' &&
         featureFlags.preschoolApplication.serviceNeedOption))
 
-  useEffect(() => {
-    if (shouldLoadServiceNeedOptions) {
-      void loadServiceNeedOptions({
-        placementTypes: placementTypeFilters[editedApplication.type]
-      })
-    } else {
-      setServiceNeedOptions((prev) => (prev.isLoading ? Success.of([]) : prev))
-    }
-  }, [
-    setServiceNeedOptions,
-    loadServiceNeedOptions,
-    shouldLoadServiceNeedOptions,
-    editedApplication?.type
-  ])
+  const serviceNeedOptions = useQueryResult(
+    shouldLoadServiceNeedOptions
+      ? serviceNeedPublicInfosQuery({
+          placementTypes: placementTypeFilters[editedApplication.type]
+        })
+      : constantQuery([])
+  )
 
   const getSendMessageUrl = useCallback(
     (applicationData: ApplicationResponse) => {

@@ -6,9 +6,9 @@ import orderBy from 'lodash/orderBy'
 import React, { useContext, useState } from 'react'
 import { Link } from 'react-router'
 
-import { wrapResult } from 'lib-common/api'
 import { ParentshipWithPermittedActions } from 'lib-common/generated/api-types/pis'
 import { ParentshipId, PersonId } from 'lib-common/generated/api-types/shared'
+import { useMutationResult } from 'lib-common/query'
 import { getAge } from 'lib-common/utils/local-date'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
@@ -20,19 +20,14 @@ import { faQuestion } from 'lib-icons'
 
 import Toolbar from '../../components/common/Toolbar'
 import FridgeChildModal from '../../components/person-profile/person-fridge-child/FridgeChildModal'
-import {
-  deleteParentship,
-  retryParentship
-} from '../../generated/api-clients/pis'
 import { useTranslation } from '../../state/i18n'
-import { PersonContext } from '../../state/person'
 import { UIContext } from '../../state/ui'
 import { formatName } from '../../utils'
-import { ButtonsTd, DateTd, NameTd } from '../PersonProfile'
 import { renderResult } from '../async-rendering'
 
-const deleteParentshipResult = wrapResult(deleteParentship)
-const retryParentshipResult = wrapResult(retryParentship)
+import { ButtonsTd, DateTd, NameTd } from './common'
+import { deleteParentshipMutation, retryParentshipMutation } from './queries'
+import { PersonContext } from './state'
 
 interface Props {
   id: PersonId
@@ -44,8 +39,7 @@ export default React.memo(function PersonFridgeChild({
   open: startOpen
 }: Props) {
   const { i18n } = useTranslation()
-  const { fridgeChildren, reloadFridgeChildren, permittedActions } =
-    useContext(PersonContext)
+  const { fridgeChildren, permittedActions } = useContext(PersonContext)
   const { uiMode, toggleUiMode, clearUiMode, setErrorMessage } =
     useContext(UIContext)
   const [open, setOpen] = useState(startOpen)
@@ -57,15 +51,21 @@ export default React.memo(function PersonFridgeChild({
       .map((ps) => ps.find(({ data }) => data.id === id)?.data)
       .getOrElse(undefined)
 
+  const { mutateAsync: deleteParentship } = useMutationResult(
+    deleteParentshipMutation
+  )
+  const { mutateAsync: retryParentship } = useMutationResult(
+    retryParentshipMutation
+  )
+
   return (
     <div>
       {uiMode === 'add-fridge-child' ? (
-        <FridgeChildModal headPersonId={id} onSuccess={reloadFridgeChildren} />
+        <FridgeChildModal headPersonId={id} />
       ) : uiMode === `edit-fridge-child-${selectedParentshipId}` ? (
         <FridgeChildModal
           parentship={getFridgeChildById(selectedParentshipId)}
           headPersonId={id}
-          onSuccess={reloadFridgeChildren}
         />
       ) : uiMode === `remove-fridge-child-${selectedParentshipId}` ? (
         <InfoModal
@@ -76,21 +76,20 @@ export default React.memo(function PersonFridgeChild({
           reject={{ action: () => clearUiMode(), label: i18n.common.cancel }}
           resolve={{
             action: () =>
-              deleteParentshipResult({ id: selectedParentshipId! }).then(
-                (res) => {
-                  clearUiMode()
-                  if (res.isFailure) {
-                    setErrorMessage({
-                      type: 'error',
-                      title: i18n.personProfile.fridgeChild.error.remove.title,
-                      text: i18n.common.tryAgain,
-                      resolveLabel: i18n.common.ok
-                    })
-                  } else {
-                    reloadFridgeChildren()
-                  }
+              deleteParentship({
+                headOfChildId: id,
+                id: selectedParentshipId!
+              }).then((res) => {
+                clearUiMode()
+                if (res.isFailure) {
+                  setErrorMessage({
+                    type: 'error',
+                    title: i18n.personProfile.fridgeChild.error.remove.title,
+                    text: i18n.common.tryAgain,
+                    resolveLabel: i18n.common.ok
+                  })
                 }
-              ),
+              }),
             label: i18n.common.remove
           }}
         />
@@ -192,9 +191,10 @@ export default React.memo(function PersonFridgeChild({
                           onRetry={
                             fridgeChild.conflict
                               ? () => {
-                                  void retryParentshipResult({
+                                  void retryParentship({
+                                    headOfChildId: id,
                                     id: fridgeChild.id
-                                  }).then(reloadFridgeChildren)
+                                  })
                                 }
                               : undefined
                           }

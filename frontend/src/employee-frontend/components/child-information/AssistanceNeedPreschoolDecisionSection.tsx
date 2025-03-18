@@ -6,7 +6,10 @@ import orderBy from 'lodash/orderBy'
 import React, { useContext, useRef, useState } from 'react'
 import { useNavigate } from 'react-router'
 
-import { ChildState, ChildContext } from 'employee-frontend/state/child'
+import {
+  ChildState,
+  ChildContext
+} from 'employee-frontend/components/child-information/state'
 import {
   AssistanceNeedPreschoolDecisionId,
   ChildId

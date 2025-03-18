@@ -6,7 +6,6 @@ import orderBy from 'lodash/orderBy'
 import React, { useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import { wrapResult } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { Action } from 'lib-common/generated/action'
 import { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
@@ -16,6 +15,7 @@ import {
 } from 'lib-common/generated/api-types/serviceneed'
 import { ServiceNeedId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
+import { useMutationResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { Table, Tbody, Th, Thead, Tr } from 'lib-components/layout/Table'
@@ -23,20 +23,17 @@ import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { H4 } from 'lib-components/typography'
 import { faPlus, faQuestion } from 'lib-icons'
 
-import { deleteServiceNeed } from '../../../generated/api-clients/serviceneed'
 import { useTranslation } from '../../../state/i18n'
+import { deleteServiceNeedMutation } from '../queries'
 
 import MissingServiceNeedRow from './service-needs/MissingServiceNeedRow'
 import ServiceNeedEditorRow from './service-needs/ServiceNeedEditorRow'
 import ServiceNeedReadRow from './service-needs/ServiceNeedReadRow'
 
-const deleteServiceNeedResult = wrapResult(deleteServiceNeed)
-
 interface Props {
   placement: DaycarePlacementWithDetails
   permittedPlacementActions: Action.Placement[]
   permittedServiceNeedActions: Partial<Record<UUID, Action.ServiceNeed[]>>
-  reload: () => void
   serviceNeedOptions: ServiceNeedOption[]
 }
 
@@ -44,7 +41,6 @@ export default React.memo(function ServiceNeeds({
   placement,
   permittedPlacementActions,
   permittedServiceNeedActions,
-  reload,
   serviceNeedOptions
 }: Props) {
   const { i18n } = useTranslation()
@@ -77,6 +73,10 @@ export default React.memo(function ServiceNeeds({
 
   const createAllowed = permittedPlacementActions.includes(
     'CREATE_SERVICE_NEED'
+  )
+
+  const { mutateAsync: deleteServiceNeed } = useMutationResult(
+    deleteServiceNeedMutation
   )
 
   // if only default option exists service needs are not relevant and do not need to be rendered
@@ -113,7 +113,6 @@ export default React.memo(function ServiceNeeds({
               options={options}
               onSuccess={() => {
                 setCreatingNew(false)
-                reload()
               }}
               onCancel={() => setCreatingNew(false)}
             />
@@ -133,7 +132,6 @@ export default React.memo(function ServiceNeeds({
                   editedServiceNeed={sn}
                   onSuccess={() => {
                     setEditingId(null)
-                    reload()
                   }}
                   onCancel={() => setEditingId(null)}
                   editingId={editingId}
@@ -157,7 +155,6 @@ export default React.memo(function ServiceNeeds({
                 initialRange={sn}
                 onSuccess={() => {
                   setCreatingNew(false)
-                  reload()
                 }}
                 onCancel={() => setCreatingNew(false)}
               />
@@ -182,9 +179,9 @@ export default React.memo(function ServiceNeeds({
           icon={faQuestion}
           resolve={{
             action: () =>
-              deleteServiceNeedResult({ id: deletingId })
-                .then(reload)
-                .finally(() => setDeletingId(null)),
+              deleteServiceNeed({ id: deletingId }).finally(() =>
+                setDeletingId(null)
+              ),
             label: t.deleteServiceNeed.btn
           }}
           reject={{

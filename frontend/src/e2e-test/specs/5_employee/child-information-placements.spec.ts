@@ -117,7 +117,7 @@ describe('Child Information placement create (feature flag place guarantee = tru
     const area = await Fixture.careArea().save()
     const unit = await Fixture.daycare({ areaId: area.id }).save()
     const { name: unitName } = unit
-    const child = await Fixture.person().saveChild()
+    const child = await Fixture.person().saveChild({ updateMockVtj: true })
     const childId = child.id
 
     const page = await openPage()
@@ -162,7 +162,7 @@ describe('Child Information placement create (feature flag place guarantee = tru
     const area = await Fixture.careArea().save()
     const unit = await Fixture.daycare({ areaId: area.id }).save()
     const { name: unitName } = unit
-    const child = await Fixture.person().saveChild()
+    const child = await Fixture.person().saveChild({ updateMockVtj: true })
     const childId = child.id
 
     const page = await openPage()
@@ -186,7 +186,7 @@ describe('Child Information placement create (feature flag place guarantee = tru
     const area = await Fixture.careArea().save()
     const unit = await Fixture.daycare({ areaId: area.id }).save()
     const { name: unitName } = unit
-    const child = await Fixture.person().saveChild()
+    const child = await Fixture.person().saveChild({ updateMockVtj: true })
     const childId = child.id
 
     const page = await openPage()
@@ -224,7 +224,7 @@ describe('Child Information placement create (feature flag place guarantee = fal
     const area = await Fixture.careArea().save()
     const unit = await Fixture.daycare({ areaId: area.id }).save()
     const unitName = unit.name
-    const child = await Fixture.person().saveChild()
+    const child = await Fixture.person().saveChild({ updateMockVtj: true })
     const childId = child.id
 
     const page = await openPage()
@@ -259,7 +259,7 @@ describe('Child Information placement create (feature flag place guarantee = fal
     const area = await Fixture.careArea().save()
     const unit = await Fixture.daycare({ areaId: area.id }).save()
     const unitName = unit.name
-    const child = await Fixture.person().saveChild()
+    const child = await Fixture.person().saveChild({ updateMockVtj: true })
     const childId = child.id
 
     const page = await openPage()

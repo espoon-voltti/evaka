@@ -16,8 +16,9 @@ import { H2 } from 'lib-components/typography'
 
 import { getDecisionsByGuardian } from '../../generated/api-clients/decision'
 import { useTranslation } from '../../state/i18n'
-import { DateTd, NameTd, StatusTd } from '../PersonProfile'
 import { renderResult } from '../async-rendering'
+
+import { DateTd, NameTd, StatusTd } from './common'
 
 const getDecisionsByGuardianResult = wrapResult(getDecisionsByGuardian)
 

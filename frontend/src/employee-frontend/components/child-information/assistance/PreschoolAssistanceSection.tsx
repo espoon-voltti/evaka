@@ -21,13 +21,13 @@ import Title from 'lib-components/atoms/Title'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 import { Table, Tbody, Th, Thead, Tr } from 'lib-components/layout/Table'
 
-import { ChildContext, ChildState } from '../../../state/child'
 import { useTranslation } from '../../../state/i18n'
 import { renderResult } from '../../async-rendering'
 import {
   createPreschoolAssistanceMutation,
   updatePreschoolAssistanceMutation
 } from '../queries'
+import { ChildContext, ChildState } from '../state'
 
 import { PreschoolAssistanceForm } from './PreschoolAssistanceForm'
 import { PreschoolAssistanceRow } from './PreschoolAssistanceRow'

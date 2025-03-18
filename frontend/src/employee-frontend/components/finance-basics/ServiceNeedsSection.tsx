@@ -11,7 +11,7 @@ import { useQueryResult } from 'lib-common/query'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { H2 } from 'lib-components/typography'
 
-import { serviceNeedsQuery } from '../../queries'
+import { serviceNeedOptionsQuery } from '../../queries'
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 
@@ -23,7 +23,7 @@ export default React.memo(function ServiceNeedsSection() {
 
   const [open, useOpen] = useBoolean(false)
 
-  const serviceNeedData = useQueryResult(serviceNeedsQuery())
+  const serviceNeedData = useQueryResult(serviceNeedOptionsQuery())
   const vouchervalueData = useQueryResult(voucherValuesQuery())
 
   const stableDistinct = (

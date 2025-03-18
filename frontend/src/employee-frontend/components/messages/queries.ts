@@ -6,7 +6,10 @@ import { Queries } from 'lib-common/query'
 
 import {
   createMessagePreflightCheck,
-  replyToThread
+  deleteDraftMessage,
+  initDraftMessage,
+  replyToThread,
+  updateDraftMessage
 } from '../../generated/api-clients/messaging'
 
 const q = new Queries()
@@ -16,3 +19,9 @@ export const createMessagePreflightCheckQuery = q.query(
 )
 
 export const replyToThreadMutation = q.mutation(replyToThread)
+
+export const initDraftMutation = q.mutation(initDraftMessage, [])
+
+export const saveDraftMutation = q.mutation(updateDraftMessage, [])
+
+export const deleteDraftMutation = q.mutation(deleteDraftMessage, [])

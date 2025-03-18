@@ -5,7 +5,6 @@
 import React, { useCallback, useContext, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import { wrapResult } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { boolean, localDateRange } from 'lib-common/form/fields'
@@ -23,6 +22,7 @@ import {
   ServiceNeedOptionId
 } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
+import { useMutationResult } from 'lib-common/query'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { SelectF } from 'lib-components/atoms/dropdowns/Select'
 import Checkbox, { CheckboxF } from 'lib-components/atoms/form/Checkbox'
@@ -38,18 +38,15 @@ import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { featureFlags } from 'lib-customizations/employee'
 import { faExclamation } from 'lib-icons'
 
-import {
-  postServiceNeed,
-  putServiceNeed
-} from '../../../../generated/api-clients/serviceneed'
 import { useTranslation } from '../../../../state/i18n'
 import { UIContext } from '../../../../state/ui'
 import RetroactiveConfirmation, {
   isChangeRetroactive
 } from '../../../common/RetroactiveConfirmation'
-
-const postServiceNeedResult = wrapResult(postServiceNeed)
-const putServiceNeedResult = wrapResult(putServiceNeed)
+import {
+  createServiceNeedMutation,
+  updateServiceNeedMutation
+} from '../../queries'
 
 const serviceNeedForm = object({
   range: required(localDateRange()),
@@ -246,13 +243,20 @@ function ServiceNeedEditorRow({
     }
   }
 
+  const { mutateAsync: createServiceNeed } = useMutationResult(
+    createServiceNeedMutation
+  )
+  const { mutateAsync: updateServiceNeed } = useMutationResult(
+    updateServiceNeedMutation
+  )
+
   const onConfirmSave = () => {
     if (!formIsValid) return
 
     setSubmitting(true)
 
     const request = editingId
-      ? putServiceNeedResult({
+      ? updateServiceNeed({
           id: editingId,
           body: {
             startDate: range.value().start,
@@ -262,7 +266,7 @@ function ServiceNeedEditorRow({
             partWeek: partWeek.value()
           }
         })
-      : postServiceNeedResult({
+      : createServiceNeed({
           body: {
             placementId: placement.id,
             startDate: range.value().start,

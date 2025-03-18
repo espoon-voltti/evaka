@@ -11,11 +11,12 @@ import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { H3 } from 'lib-components/typography'
 
 import StatusLabel from '../../components/common/StatusLabel'
-import { ChildContext, ChildState } from '../../state/child'
 import { useTranslation } from '../../state/i18n'
 import { getStatusLabelByDateRange } from '../../utils/date'
-import { NameTd } from '../PersonProfile'
 import { renderResult } from '../async-rendering'
+import { NameTd } from '../person-profile/common'
+
+import { ChildContext, ChildState } from './state'
 
 const FridgeParents = React.memo(function FridgeParents() {
   const { i18n } = useTranslation()

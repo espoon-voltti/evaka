@@ -5,13 +5,12 @@
 import React, { useContext, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import { wrapResult } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { ChildId, DaycareId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
-import { useQueryResult } from 'lib-common/query'
+import { useMutationResult, useQueryResult } from 'lib-common/query'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
@@ -25,19 +24,16 @@ import colors from 'lib-customizations/common'
 import { featureFlags, placementTypes } from 'lib-customizations/employee'
 import { faMapMarkerAlt } from 'lib-icons'
 
-import { createPlacement } from '../../../generated/api-clients/placement'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
 import RetroactiveConfirmation, {
   isChangeRetroactive
 } from '../../common/RetroactiveConfirmation'
 import { unitsQuery } from '../../unit/queries'
-
-const createPlacementResult = wrapResult(createPlacement)
+import { createPlacementMutation } from '../queries'
 
 export interface Props {
   childId: ChildId
-  reload: () => unknown
 }
 
 interface Form {
@@ -48,7 +44,7 @@ interface Form {
   placeGuarantee: boolean
 }
 
-function CreatePlacementModal({ childId, reload }: Props) {
+function CreatePlacementModal({ childId }: Props) {
   const { i18n } = useTranslation()
   const { clearUiMode } = useContext(UIContext)
   const units = useQueryResult(unitsQuery({ includeClosed: true }))
@@ -59,7 +55,6 @@ function CreatePlacementModal({ childId, reload }: Props) {
     endDate: null,
     placeGuarantee: false
   })
-  const [submitting, setSubmitting] = useState<boolean>(false)
   const retroactive = useMemo(
     () =>
       isChangeRetroactive(
@@ -117,11 +112,13 @@ function CreatePlacementModal({ childId, reload }: Props) {
     return errors
   }, [i18n, form])
 
+  const { mutateAsync: createPlacement, isPending: submitting } =
+    useMutationResult(createPlacementMutation)
+
   const submitForm = () => {
     if (!form.unit?.id) return
 
-    setSubmitting(true)
-    createPlacementResult({
+    void createPlacement({
       body: {
         childId,
         type: form.type,
@@ -130,15 +127,11 @@ function CreatePlacementModal({ childId, reload }: Props) {
         endDate: form.endDate!,
         placeGuarantee: form.placeGuarantee
       }
+    }).then((res) => {
+      if (res.isSuccess) {
+        clearUiMode()
+      }
     })
-      .then((res) => {
-        setSubmitting(false)
-        if (res.isSuccess) {
-          reload()
-          clearUiMode()
-        }
-      })
-      .catch(() => setSubmitting(false))
   }
 
   return (

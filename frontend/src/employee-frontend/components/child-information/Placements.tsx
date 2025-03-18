@@ -16,13 +16,14 @@ import { Gap } from 'lib-components/white-space'
 
 import CreatePlacementModal from '../../components/child-information/placements/CreatePlacementModal'
 import PlacementRow from '../../components/child-information/placements/PlacementRow'
-import { serviceNeedsQuery } from '../../queries'
-import { ChildContext, ChildState } from '../../state/child'
+import { serviceNeedOptionsQuery } from '../../queries'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
 import { UserContext } from '../../state/user'
 import { renderResult } from '../async-rendering'
 import { FlexRow } from '../common/styled/containers'
+
+import { ChildContext, ChildState } from './state'
 
 interface Props {
   childId: ChildId
@@ -32,13 +33,8 @@ interface Props {
 export default React.memo(function Placements({ childId, startOpen }: Props) {
   const { i18n } = useTranslation()
   const { user } = useContext(UserContext)
-  const {
-    placements,
-    loadPlacements,
-    reloadPermittedActions,
-    loadBackupCares
-  } = useContext<ChildState>(ChildContext)
-  const serviceNeedOptions = useQueryResult(serviceNeedsQuery())
+  const { placements } = useContext<ChildState>(ChildContext)
+  const serviceNeedOptions = useQueryResult(serviceNeedOptionsQuery())
   const { uiMode, toggleUiMode } = useContext(UIContext)
 
   const [open, setOpen] = useState(startOpen)
@@ -80,11 +76,6 @@ export default React.memo(function Placements({ childId, startOpen }: Props) {
                       permittedServiceNeedActions={
                         placements.permittedServiceNeedActions
                       }
-                      onRefreshNeeded={() => {
-                        loadPlacements()
-                        void loadBackupCares()
-                        reloadPermittedActions()
-                      }}
                       otherPlacementRanges={placements.placements
                         .filter((p2) => p2.id !== p.id)
                         .map(
@@ -103,13 +94,7 @@ export default React.memo(function Placements({ childId, startOpen }: Props) {
         )}
       </CollapsibleContentArea>
       {uiMode === 'create-new-placement' && (
-        <CreatePlacementModal
-          childId={childId}
-          reload={() => {
-            loadPlacements()
-            reloadPermittedActions()
-          }}
-        />
+        <CreatePlacementModal childId={childId} />
       )}
     </div>
   )

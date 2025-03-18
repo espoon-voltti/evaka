@@ -23,10 +23,8 @@ import { EVAKA_START } from '../../../../constants'
 import { useTranslation } from '../../../../state/i18n'
 import { UIContext } from '../../../../state/ui'
 import { formatName } from '../../../../utils'
-import {
-  createGroupPlacementMutation,
-  updateBackupCareMutation
-} from '../../queries'
+import { updateBackupCareMutation } from '../../../child-information/queries'
+import { createGroupPlacementMutation } from '../../queries'
 import { MissingPlacement } from '../types'
 
 const FieldWrapper = styled.section`

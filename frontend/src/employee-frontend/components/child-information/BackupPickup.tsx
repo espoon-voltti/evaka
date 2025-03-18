@@ -11,8 +11,6 @@ import { useMutationResult, useQueryResult } from 'lib-common/query'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import InputField from 'lib-components/atoms/form/InputField'
-import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
-import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import {
   FixedSpaceColumn,
@@ -27,6 +25,7 @@ import { ChildContext } from '../../state'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
 import { RequireRole } from '../../utils/roles'
+import { renderResult } from '../async-rendering'
 import { FlexRow } from '../common/styled/containers'
 
 import {
@@ -189,9 +188,7 @@ function BackupPickup({ childId }: BackupPickupProps) {
 
   return (
     <>
-      {backupPickups.isLoading && <SpinnerSegment />}
-      {backupPickups.isFailure && <ErrorSegment />}
-      {backupPickups.isSuccess && (
+      {renderResult(backupPickups, (backupPickups) => (
         <>
           <FlexRow justifyContent="space-between">
             <H3 noMargin>{i18n.childInformation.backupPickups.title}</H3>
@@ -203,7 +200,7 @@ function BackupPickup({ childId }: BackupPickupProps) {
               />
             )}
           </FlexRow>
-          {backupPickups.value.length > 0 && (
+          {backupPickups.length > 0 && (
             <Table>
               <Thead>
                 <Tr>
@@ -215,7 +212,7 @@ function BackupPickup({ childId }: BackupPickupProps) {
                 </Tr>
               </Thead>
               <Tbody>
-                {backupPickups.value.map((row) => (
+                {backupPickups.map((row) => (
                   <Tr
                     key={row.id}
                     data-qa={`table-backup-pickup-row-${row.name}`}
@@ -246,7 +243,7 @@ function BackupPickup({ childId }: BackupPickupProps) {
             </Table>
           )}
         </>
-      )}
+      ))}
       {uiMode === `create-backup-pickup` && <CreateBackupPickupModal />}
       {uiMode === `remove-backup-pickup` && <DeleteBackupPickupModal />}
       {uiMode === `edit-backup-pickup` && <EditBackupPickupModal />}

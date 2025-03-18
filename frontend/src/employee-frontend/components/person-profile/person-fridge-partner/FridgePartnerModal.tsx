@@ -2,14 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useState, useContext, useEffect, useMemo } from 'react'
+import React, { useState, useContext, useMemo } from 'react'
 
-import { Loading, Result, wrapResult } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import { UpdateStateFn } from 'lib-common/form-state'
 import { Partnership, PersonSummary } from 'lib-common/generated/api-types/pis'
 import { PersonId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
+import { useMutationResult } from 'lib-common/query'
 import {
   DatePickerDeprecated,
   DatePickerClearableDeprecated
@@ -19,25 +19,20 @@ import { Gap } from 'lib-components/white-space'
 import { faPen, faUser } from 'lib-icons'
 
 import { DbPersonSearch as PersonSearch } from '../../../components/common/PersonSearch'
-import {
-  createPartnership,
-  getPersonIdentity,
-  updatePartnership
-} from '../../../generated/api-clients/pis'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
 import { formatName } from '../../../utils'
 import RetroactiveConfirmation, {
   isChangeRetroactive
 } from '../../common/RetroactiveConfirmation'
-
-const getPersonIdentityResult = wrapResult(getPersonIdentity)
-const createPartnershipResult = wrapResult(createPartnership)
-const updatePartnershipResult = wrapResult(updatePartnership)
+import {
+  createPartnershipMutation,
+  updatePartnershipMutation
+} from '../queries'
+import { PersonContext } from '../state'
 
 interface Props {
   headPersonId: PersonId
-  onSuccess: () => void
   partnership?: Partnership
 }
 
@@ -47,12 +42,10 @@ export interface FridgePartnerForm {
   endDate: LocalDate | null
 }
 
-function FridgePartnerModal({ partnership, onSuccess, headPersonId }: Props) {
+function FridgePartnerModal({ partnership, headPersonId }: Props) {
   const { i18n } = useTranslation()
   const { clearUiMode, setErrorMessage } = useContext(UIContext)
-  const [personData, setPersonData] = useState<Result<PersonSummary>>(
-    Loading.of()
-  )
+  const { person } = useContext(PersonContext)
   const initialForm: FridgePartnerForm = useMemo(
     () => ({
       partner:
@@ -98,7 +91,7 @@ function FridgePartnerModal({ partnership, onSuccess, headPersonId }: Props) {
       )
     }
 
-    const headDateOfDeath = personData
+    const headDateOfDeath = person
       .map((p) => p.dateOfDeath)
       .getOrElse(undefined)
 
@@ -114,23 +107,27 @@ function FridgePartnerModal({ partnership, onSuccess, headPersonId }: Props) {
     }
 
     return errors
-  }, [i18n, personData, form])
+  }, [i18n, person, form])
 
   const [errorStatusCode, setErrorStatusCode] = useState<number>()
 
-  useEffect(() => {
-    void getPersonIdentityResult({ personId: headPersonId }).then(setPersonData)
-  }, [headPersonId, setPersonData])
+  const { mutateAsync: updatePartnership } = useMutationResult(
+    updatePartnershipMutation
+  )
+  const { mutateAsync: createPartnership } = useMutationResult(
+    createPartnershipMutation
+  )
 
   const onSubmit = () => {
     if (!form.partner) return
 
     const apiCall = partnership
-      ? updatePartnershipResult({
+      ? updatePartnership({
+          personId: headPersonId,
           partnershipId: partnership.id,
           body: { startDate: form.startDate, endDate: form.endDate }
         })
-      : createPartnershipResult({
+      : createPartnership({
           body: {
             person1Id: headPersonId,
             person2Id: form.partner.id,
@@ -156,7 +153,6 @@ function FridgePartnerModal({ partnership, onSuccess, headPersonId }: Props) {
         }
       } else {
         clearUiMode()
-        onSuccess()
       }
     })
   }

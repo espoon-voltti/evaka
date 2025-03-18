@@ -7,7 +7,10 @@ import React, { useContext, useRef, useState } from 'react'
 import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
-import { ChildState, ChildContext } from 'employee-frontend/state/child'
+import {
+  ChildState,
+  ChildContext
+} from 'employee-frontend/components/child-information/state'
 import { wrapResult } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import {

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import orderBy from 'lodash/orderBy'
-import React, { useCallback, useContext, useMemo, useState } from 'react'
+import React, { useContext, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
@@ -39,11 +39,8 @@ import {
   isDateRangeInverted,
   isDateRangeOverlappingWithExisting
 } from '../../../utils/validation/validations'
-import {
-  createBackupCareMutation,
-  updateBackupCareMutation
-} from '../../unit/queries'
 import { unitsQuery } from '../queries'
+import { createBackupCareMutation, updateBackupCareMutation } from '../queries'
 
 export interface Props {
   childId: ChildId
@@ -81,8 +78,7 @@ const ActionButtons = styled(FixedSpaceRow)`
 export default function BackupCareForm({ childId, backupCare }: Props) {
   const { i18n } = useTranslation()
   const { uiMode, clearUiMode } = useContext(UIContext)
-  const { backupCares, consecutivePlacementRanges, loadBackupCares } =
-    useContext(ChildContext)
+  const { backupCares, consecutivePlacementRanges } = useContext(ChildContext)
 
   const units = useQueryResult(
     unitsQuery({
@@ -146,11 +142,6 @@ export default function BackupCareForm({ childId, backupCare }: Props) {
     setFormState(newState)
     validateForm(newState)
   }
-
-  const submitSuccess = useCallback(() => {
-    clearUiMode()
-    return loadBackupCares()
-  }, [clearUiMode, loadBackupCares])
 
   const options = useMemo(
     () =>
@@ -246,7 +237,7 @@ export default function BackupCareForm({ childId, backupCare }: Props) {
             type="submit"
             mutation={createOrUpdateBackupCare}
             onClick={onClick}
-            onSuccess={submitSuccess}
+            onSuccess={clearUiMode}
             disabled={formErrors.length > 0 || !formState.unit}
             data-qa="submit-backup-care-form"
             text={i18n.common.confirm}

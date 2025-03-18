@@ -4,7 +4,10 @@
 
 import React, { useCallback, useContext, useRef, useState } from 'react'
 
-import { ChildContext, ChildState } from 'employee-frontend/state/child'
+import {
+  ChildContext,
+  ChildState
+} from 'employee-frontend/components/child-information/state'
 import { FeeAlteration } from 'lib-common/generated/api-types/invoicing'
 import { ChildId } from 'lib-common/generated/api-types/shared'
 import { useMutationResult, useQueryResult } from 'lib-common/query'

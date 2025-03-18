@@ -42,7 +42,7 @@ describe('child document with person duplicate', () => {
       enabledPilotFeatures: ['VASU_AND_PEDADOC']
     }).save()
 
-    child = await Fixture.person().saveChild()
+    child = await Fixture.person().saveChild({ updateMockVtj: true })
     await Fixture.placement({
       childId: child.id,
       unitId: daycare.id,

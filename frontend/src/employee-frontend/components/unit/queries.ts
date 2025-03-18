@@ -12,10 +12,6 @@ import {
 } from '../../generated/api-clients/application'
 import { getOpenGroupAttendance } from '../../generated/api-clients/attendance'
 import {
-  createBackupCare,
-  updateBackupCare
-} from '../../generated/api-clients/backupcare'
-import {
   addFullAclForRole,
   createDaycare,
   createGroup,
@@ -231,15 +227,6 @@ export const unitAttendanceReservationsQuery = q.query(
 
 export const postReservationsMutation = q.mutation(postReservations, [
   unitAttendanceReservationsQuery.prefix
-])
-
-export const createBackupCareMutation = q.mutation(createBackupCare)
-
-export const updateBackupCareMutation = q.parametricMutation<{
-  unitId: DaycareId
-}>()(updateBackupCare, [
-  ({ unitId }) => unitNotificationsQuery({ daycareId: unitId }),
-  unitGroupDetailsQuery.prefix
 ])
 
 export const childDateExpectedAbsencesQuery = q.query(getExpectedAbsences)
