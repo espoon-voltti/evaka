@@ -242,8 +242,7 @@ nekku_special_diet_option.key <> excluded.key;
 
 /** Throws an IllegalStateException if Nekku returns an empty texture list. */
 fun fetchAndUpdateNekkuProducts(client: NekkuClient, db: Database.Connection) {
-    val productsFromNekku =
-        client.getProducts()
+    val productsFromNekku = client.getProducts()
 
     if (productsFromNekku.isEmpty())
         error("Refusing to sync empty Nekku product list into database")
@@ -256,9 +255,9 @@ fun fetchAndUpdateNekkuProducts(client: NekkuClient, db: Database.Connection) {
 }
 
 fun Database.Transaction.setProductNumbers(customerNumbers: List<NekkuProduct>): Int {
-    val newProductNumbers = customerNumbers.map { it.number }
+    val newProductNumbers = customerNumbers.map { it.sku }
     val deletedCustomerCount = execute {
-        sql("DELETE FROM nekku_product WHERE number != ALL (${bind(newProductNumbers)})")
+        sql("DELETE FROM nekku_product WHERE sku != ALL (${bind(newProductNumbers)})")
     }
     executeBatch(customerNumbers) {
         sql(
@@ -270,20 +269,30 @@ VALUES (
     ${bind{it.options_id}},
     ${bind{it.unit_size}},
     ${bind{it.meal_time}},
-    ${bind{it.meal_type}},
-    
+    ${bind{it.meal_type}}
 )
-ON CONFLICT (number) DO 
+ON CONFLICT (sku) DO 
 UPDATE SET
   name = excluded.name,
-  customer_group = excluded.customer_group,
-  unit_size = excluded.unit_size
+  options_id = excluded.options_id,
+  unit_size = excluded.unit_size,
+  meal_time = excluded.meal_time,
+  meal_type = excluded.meal_type
 WHERE
-    nekku_customer.name <> excluded.name OR
-    nekku_customer.customer_group <> excluded.customer_group OR
-    nekku_customer.unit_size <> excluded.unit_size;
+    nekku_product.name <> excluded.name OR
+    nekku_product.options_id <> excluded.options_id OR
+    nekku_product.unit_size <> excluded.unit_size OR 
+    nekku_product.meal_time <> excluded.meal_time OR 
+    nekku_product.meal_type <> excluded.meal_type;
 """
         )
     }
     return deletedCustomerCount
+}
+
+fun Database.Transaction.getNekkuProducts(): List<NekkuProduct> {
+    return createQuery {
+            sql("SELECT sku, name, options_id, unit_size, meal_time, meal_type FROM nekku_product")
+        }
+        .toList<NekkuProduct>()
 }

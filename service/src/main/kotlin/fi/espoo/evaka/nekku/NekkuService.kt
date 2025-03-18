@@ -99,7 +99,6 @@ class NekkuService(
             )
         }
     }
-
 }
 
 interface NekkuClient {
@@ -202,15 +201,27 @@ data class NekkuSpecialDietOption(val weight: Int, val key: String, val value: S
 data class NekkuProduct(
     val name: String,
     val sku: String,
-    val options_id: String ,
+    val options_id: String,
     val unit_size: String,
-    val meal_time: NekkuProductMealTime? = null,
-    val meal_type: String,
+    val meal_time: List<NekkuProductMealTime>? = null,
+    val meal_type: NekkuProductMealType? = null,
 )
 
-enum class NekkuProductMealTime {
-    aamupala,
-    lounas,
-    päivällinen,
-    iltapala,
+@ConstList("nekku_product_meal_time")
+enum class NekkuProductMealTime(@JsonValue val description: String) : DatabaseEnum {
+    BREAKFAST("aamupala"),
+    LUNCH("lounas"),
+    SNACK("välipala"),
+    DINNER("päivällinen"),
+    SUPPER("iltapala");
+
+    override val sqlType: String = "nekku_product_meal_time"
+}
+
+@ConstList("nekku_product_meal_type")
+enum class NekkuProductMealType(@JsonValue val description: String) : DatabaseEnum {
+    VEGAN("vegaani"),
+    VEGETABLE("kasvis");
+
+    override val sqlType: String = "nekku_product_meal_type"
 }

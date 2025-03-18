@@ -342,11 +342,77 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             assertEquals(7, nekkuSpecialDietOptions.size)
         }
     }
+
+    fun getNekkuProducts(): List<NekkuProduct> {
+        val nekkuProducts = mutableListOf<NekkuProduct>()
+
+        nekkuProducts.add(
+            NekkuProduct(
+                "Ateriapalvelu 1 kasvis",
+                "31000010",
+                "",
+                "small",
+                listOf(
+                    NekkuProductMealTime.BREAKFAST,
+                    NekkuProductMealTime.LUNCH,
+                    NekkuProductMealTime.SNACK,
+                ),
+                NekkuProductMealType.VEGETABLE,
+            )
+        )
+
+        nekkuProducts.add(
+            NekkuProduct(
+                "Ateriapalvelu 1 kasvis er",
+                "31000011",
+                "2",
+                "small",
+                listOf(
+                    NekkuProductMealTime.BREAKFAST,
+                    NekkuProductMealTime.LUNCH,
+                    NekkuProductMealTime.SNACK,
+                ),
+                NekkuProductMealType.VEGETABLE,
+            )
+        )
+
+        nekkuProducts.add(
+            NekkuProduct(
+                "Päivällinen vegaani päiväkoti",
+                "31000008",
+                "",
+                "large",
+                listOf(NekkuProductMealTime.DINNER),
+                NekkuProductMealType.VEGAN,
+            )
+        )
+
+        nekkuProducts.add(NekkuProduct("Lounas kasvis er", "31001011", "2", "medium", null, null))
+
+        return nekkuProducts
+    }
+
+    @Test
+    fun `Nekku product sync does not sync empty data`() {
+        val client = TestNekkuClient()
+        assertThrows<Exception> { fetchAndUpdateNekkuProducts(client, db) }
+    }
+
+    @Test
+    fun `Nekku product sync does sync non-empty data`() {
+        val client = TestNekkuClient(nekkuProducts = getNekkuProducts())
+        fetchAndUpdateNekkuProducts(client, db)
+        db.transaction { tx ->
+            val products = tx.getNekkuProducts()
+            assertEquals(4, products.size)
+        }
+    }
 }
 
 class TestNekkuClient(
     private val customers: List<NekkuCustomer> = emptyList(),
     private val specialDiets: List<NekkuSpecialDiet> = emptyList(),
+    private val nekkuProducts: List<NekkuProduct> = emptyList(),
 ) : NekkuClient {
 
     override fun getCustomers(): List<NekkuCustomer> {
@@ -355,5 +421,9 @@ class TestNekkuClient(
 
     override fun getSpecialDiets(): List<NekkuSpecialDiet> {
         return specialDiets
+    }
+
+    override fun getProducts(): List<NekkuProduct> {
+        return nekkuProducts
     }
 }
