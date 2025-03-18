@@ -1,0 +1,14 @@
+pre-commit:
+  parallel: true
+  jobs:
+    - run: yarn exec eslint --max-warnings 0 {staged_files}
+      glob: frontend/**/*.{ts,tsx,js,mjs}
+      root: frontend
+    - run: ./gradlew ktfmtPrecommit --include-only=$(echo {staged_files} | tr ' ' ',')
+      glob: service/**/*.kt
+      root: service
+      stage_fixed: true
+    - run: ./list-migrations.sh
+      glob: service/src/main/resources/db/migration/*.sql
+      root: service
+      stage_fixed: true
