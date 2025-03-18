@@ -252,8 +252,11 @@ SELECT
 FROM realized_placement_one(${bind(date)}) rp
 JOIN daycare_group dg ON dg.id = rp.group_id
 JOIN person p ON p.id = rp.child_id
+JOIN daycare d ON rp.unit_id = d.id
 LEFT JOIN service_need sn ON sn.placement_id = rp.placement_id AND daterange(sn.start_date, sn.end_date, '[]') @> ${bind(date)}
-WHERE dg.aromi_customer_id IS NOT NULL
+WHERE dg.aromi_customer_id IS NOT NULL 
+AND daterange(dg.start_date, dg.end_date, '[]') @> ${bind(date)}
+AND daterange(d.opening_date, d.closing_date, '[]') @> ${bind(date)}
                     """
             )
         }
@@ -297,7 +300,7 @@ private fun Database.Read.getAromiChildInfos(
     }
 }
 
-fun getAttendancePredictionRows(
+private fun getAttendancePredictionRows(
     tx: Database.Read,
     range: FiniteDateRange,
     aromiUnitMap: Map<DaycareId, AromiReportingUnit>,

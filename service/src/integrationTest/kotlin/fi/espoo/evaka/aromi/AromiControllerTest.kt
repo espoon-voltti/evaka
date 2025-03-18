@@ -11,7 +11,6 @@ import fi.espoo.evaka.daycare.insertPreschoolTerm
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.shared.DaycareId
-import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -56,25 +55,18 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
     private lateinit var today: LocalDate
     private lateinit var clock: EvakaClock
 
+    private lateinit var area: DevCareArea
     private lateinit var unitId: DaycareId
     private lateinit var unitId2: DaycareId
-    private lateinit var groupId1: GroupId
-    private lateinit var groupId2: GroupId
+    private lateinit var group1: DevDaycareGroup
+    private lateinit var group2: DevDaycareGroup
+    private lateinit var group3: DevDaycareGroup
+    private lateinit var groupEO: DevDaycareGroup
+    private lateinit var groupEO2: DevDaycareGroup
+    private lateinit var groupEO3: DevDaycareGroup
 
     @BeforeEach
     fun setup() {
-        val preschoolTerm = FiniteDateRange(LocalDate.of(2024, 8, 3), LocalDate.of(2025, 5, 31))
-        val termBreak = FiniteDateRange(LocalDate.of(2024, 12, 2), LocalDate.of(2024, 12, 3))
-        db.transaction { tx ->
-            tx.insertServiceNeedOption(snDefaultDaycare)
-            tx.insertPreschoolTerm(
-                preschoolTerm,
-                preschoolTerm,
-                preschoolTerm,
-                preschoolTerm,
-                DateSet.of(termBreak),
-            )
-        }
         admin =
             db.transaction { tx ->
                 val employee = DevEmployee(roles = setOf(UserRole.ADMIN))
@@ -84,16 +76,17 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
         today = LocalDate.of(2024, 11, 30)
         clock = MockEvakaClock(HelsinkiDateTime.of(today, LocalTime.of(12, 18)))
 
-        val areaId = db.transaction { tx -> tx.insert(DevCareArea()) }
+        area = DevCareArea()
+        db.transaction { tx -> tx.insert(area) }
         unitId =
             db.transaction { tx ->
                 tx.insert(
                     DevDaycare(
-                        areaId = areaId,
+                        areaId = area.id,
                         name = "Päiväkoti A",
                         shiftCareOpenOnHolidays = true,
                         shiftCareOperationTimes =
-                            List(7) { TimeRange(LocalTime.of(7, 0), LocalTime.of(17, 0)) },
+                            List(7) { TimeRange(LocalTime.of(7, 0), LocalTime.of(23, 0)) },
                         operationTimes =
                             List(5) { TimeRange(LocalTime.of(7, 0), LocalTime.of(17, 0)) } +
                                 listOf(null, null),
@@ -104,69 +97,263 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
             db.transaction { tx ->
                 tx.insert(
                     DevDaycare(
-                        areaId = areaId,
+                        areaId = area.id,
                         name = "EO-lafka A",
                         type = setOf(CareType.PRESCHOOL, CareType.CENTRE),
                         dailyPreschoolTime = TimeRange(LocalTime.of(9, 0), LocalTime.of(13, 0)),
                     )
                 )
             }
-        groupId1 =
-            db.transaction { tx ->
-                tx.insert(
-                    DevDaycareGroup(
-                        daycareId = unitId,
-                        name = "Ryhmä A1",
-                        aromiCustomerId = "PvkA_PK",
-                    )
-                )
-            }
-        groupId2 =
-            db.transaction { tx ->
-                tx.insert(
-                    DevDaycareGroup(
-                        daycareId = unitId,
-                        name = "Ryhmä A2",
-                        aromiCustomerId = "PvkA_EO",
-                    )
-                )
-            }
-        val groupId3 =
-            db.transaction { tx ->
-                tx.insert(
-                    DevDaycareGroup(daycareId = unitId, name = "Ryhmä A3", aromiCustomerId = null)
-                )
-            }
+        group1 = DevDaycareGroup(daycareId = unitId, name = "Ryhmä A1", aromiCustomerId = "PvkA_PK")
+        group2 = DevDaycareGroup(daycareId = unitId, name = "Ryhmä A2", aromiCustomerId = "PvkA_EO")
+        group3 = DevDaycareGroup(daycareId = unitId, name = "Väistöryhmä", aromiCustomerId = null)
+
+        groupEO =
+            DevDaycareGroup(daycareId = unitId2, name = "Ryhmä E1", aromiCustomerId = "EolA_EO")
+        groupEO2 =
+            DevDaycareGroup(daycareId = unitId2, name = "Ryhmä E2", aromiCustomerId = "EolA_EO")
+        groupEO3 =
+            DevDaycareGroup(daycareId = unitId2, name = "Ryhmä E3", aromiCustomerId = "EolA_PK")
+
         db.transaction { tx ->
-            val eoGroupAId =
-                tx.insert(
-                    DevDaycareGroup(
-                        daycareId = unitId2,
-                        name = "Ryhmä E1",
-                        aromiCustomerId = "EolA_EO",
-                    )
+            tx.insertServiceNeedOption(snDefaultDaycare)
+            listOf(groupEO, groupEO2, groupEO3, group1, group2, group3).forEach { tx.insert(it) }
+        }
+    }
+
+    @Test
+    fun `shift care attendance prediction works`() {
+        // both intermittent and full shift care service needs have attendance on weekends and
+        // holidays
+        val placementEnd = LocalDate.of(2027, 7, 31)
+        db.transaction { tx ->
+            val sannaTestPerson =
+                DevPerson(
+                    firstName = "Sanna",
+                    lastName = "Satunnainen",
+                    ssn = null,
+                    dateOfBirth = LocalDate.of(2019, 3, 1),
+                    id = PersonId(UUID.fromString("2d2afda1-2319-4d7c-a8b6-47045a5c82c2")),
                 )
-            val eoGroupBId =
+            val teemuTestPerson =
+                DevPerson(
+                    firstName = "Teemu",
+                    lastName = "Täysivuoroinen",
+                    ssn = null,
+                    dateOfBirth = LocalDate.of(2020, 5, 1),
+                    id = PersonId(UUID.fromString("b707a2ac-c411-4ac8-a38a-840d0767f8bb")),
+                )
+
+            tx.insert(sannaTestPerson, DevPersonType.CHILD).also { childId ->
+                val placementId =
+                    tx.insert(
+                        DevPlacement(
+                            childId = childId,
+                            unitId = unitId,
+                            startDate = sannaTestPerson.dateOfBirth,
+                            endDate = placementEnd,
+                            type = PlacementType.DAYCARE,
+                        )
+                    )
                 tx.insert(
-                    DevDaycareGroup(
-                        daycareId = unitId2,
-                        name = "Ryhmä E2",
-                        aromiCustomerId = "EolA_EO",
+                    DevServiceNeed(
+                        placementId = placementId,
+                        startDate = sannaTestPerson.dateOfBirth,
+                        endDate = placementEnd,
+                        shiftCare = ShiftCareType.INTERMITTENT,
+                        optionId = snDefaultDaycare.id,
+                        confirmedBy = admin.evakaUserId,
                     )
                 )
 
-            val eoGroupCId =
                 tx.insert(
-                    DevDaycareGroup(
-                        daycareId = unitId2,
-                        name = "Ryhmä E3",
-                        aromiCustomerId = "EolA_PK",
+                    DevDaycareGroupPlacement(
+                        daycarePlacementId = placementId,
+                        daycareGroupId = group2.id,
+                        startDate = sannaTestPerson.dateOfBirth,
+                        endDate = placementEnd,
+                    )
+                )
+                tx.insert(
+                    DevReservation(
+                        childId = childId,
+                        date = LocalDate.of(2024, 12, 2),
+                        startTime = LocalTime.of(8, 0),
+                        endTime = LocalTime.of(11, 0),
+                        createdBy = admin.evakaUserId,
                     )
                 )
 
+                tx.insert(
+                    DevAbsence(
+                        childId = childId,
+                        date = LocalDate.of(2024, 12, 3),
+                        absenceCategory = AbsenceCategory.BILLABLE,
+                    )
+                )
+            }
+
+            tx.insert(teemuTestPerson, DevPersonType.CHILD).also { childId ->
+                val placementId =
+                    tx.insert(
+                        DevPlacement(
+                            childId = childId,
+                            unitId = unitId,
+                            startDate = teemuTestPerson.dateOfBirth,
+                            endDate = placementEnd,
+                            type = PlacementType.DAYCARE,
+                        )
+                    )
+                tx.insert(
+                    DevServiceNeed(
+                        placementId = placementId,
+                        startDate = teemuTestPerson.dateOfBirth,
+                        endDate = placementEnd,
+                        shiftCare = ShiftCareType.FULL,
+                        optionId = snDefaultDaycare.id,
+                        confirmedBy = admin.evakaUserId,
+                    )
+                )
+
+                tx.insert(
+                    DevDaycareGroupPlacement(
+                        daycarePlacementId = placementId,
+                        daycareGroupId = group1.id,
+                        startDate = teemuTestPerson.dateOfBirth,
+                        endDate = placementEnd,
+                    )
+                )
+                tx.insert(
+                    DevReservation(
+                        childId = childId,
+                        date = LocalDate.of(2024, 12, 2),
+                        startTime = LocalTime.of(18, 0),
+                        endTime = LocalTime.of(23, 0),
+                        createdBy = admin.evakaUserId,
+                    )
+                )
+
+                tx.insert(
+                    DevReservation(
+                        childId = childId,
+                        date = LocalDate.of(2024, 12, 2),
+                        startTime = LocalTime.of(8, 0),
+                        endTime = LocalTime.of(11, 0),
+                        createdBy = admin.evakaUserId,
+                    )
+                )
+
+                tx.insert(
+                    DevAbsence(
+                        childId = childId,
+                        date = LocalDate.of(2024, 12, 4),
+                        absenceCategory = AbsenceCategory.BILLABLE,
+                    )
+                )
+            }
+        }
+
+        assertEquals(
+            getExpectedCsv("aromi/shift_care_cases.csv"),
+            getMealOrders(FiniteDateRange(LocalDate.of(2024, 11, 30), LocalDate.of(2024, 12, 8))),
+        )
+    }
+
+    @Test
+    fun `backup care attendance prediction works`() {
+        // backup care changes group details and bc in a non-aromi group removes attendance entry
+        val placementEnd = LocalDate.of(2027, 7, 31)
+        db.transaction { tx ->
+            val valtoTestPerson =
+                DevPerson(
+                    firstName = "Valto",
+                    lastName = "Varasijoittuja",
+                    ssn = null,
+                    dateOfBirth = LocalDate.of(2019, 3, 1),
+                    id = PersonId(UUID.fromString("2d2afda1-2319-4d7c-a8b6-47045a5c82c2")),
+                )
+
+            tx.insert(valtoTestPerson, DevPersonType.CHILD).also { childId ->
+                val placementId =
+                    tx.insert(
+                        DevPlacement(
+                            childId = childId,
+                            unitId = unitId,
+                            startDate = valtoTestPerson.dateOfBirth,
+                            endDate = placementEnd,
+                            type = PlacementType.DAYCARE,
+                        )
+                    )
+                tx.insert(
+                    DevServiceNeed(
+                        placementId = placementId,
+                        startDate = valtoTestPerson.dateOfBirth,
+                        endDate = placementEnd,
+                        shiftCare = ShiftCareType.NONE,
+                        optionId = snDefaultDaycare.id,
+                        confirmedBy = admin.evakaUserId,
+                    )
+                )
+
+                tx.insert(
+                    DevDaycareGroupPlacement(
+                        daycarePlacementId = placementId,
+                        daycareGroupId = group2.id,
+                        startDate = valtoTestPerson.dateOfBirth,
+                        endDate = placementEnd,
+                    )
+                )
+                tx.insert(
+                    DevReservation(
+                        childId = childId,
+                        date = LocalDate.of(2024, 12, 2),
+                        startTime = LocalTime.of(8, 0),
+                        endTime = LocalTime.of(11, 0),
+                        createdBy = admin.evakaUserId,
+                    )
+                )
+
+                tx.insert(
+                    DevAbsence(
+                        childId = childId,
+                        date = LocalDate.of(2024, 12, 3),
+                        absenceCategory = AbsenceCategory.BILLABLE,
+                    )
+                )
+
+                tx.insert(
+                    DevBackupCare(
+                        childId = childId,
+                        unitId = unitId2,
+                        groupId = groupEO.id,
+                        period =
+                            FiniteDateRange(LocalDate.of(2024, 12, 2), LocalDate.of(2024, 12, 3)),
+                    )
+                )
+
+                tx.insert(
+                    DevBackupCare(
+                        childId = childId,
+                        unitId = unitId,
+                        groupId = group3.id,
+                        period =
+                            FiniteDateRange(LocalDate.of(2024, 12, 5), LocalDate.of(2024, 12, 5)),
+                    )
+                )
+            }
+        }
+
+        assertEquals(
+            getExpectedCsv("aromi/backup_care_cases.csv"),
+            getMealOrders(FiniteDateRange(LocalDate.of(2024, 11, 30), LocalDate.of(2024, 12, 8))),
+        )
+    }
+
+    @Test
+    fun `basic attendance prediction works`() {
+        db.transaction { tx ->
             val dateOfBirthHarri = LocalDate.of(2021, 7, 2)
             val dateOfBirthElina = LocalDate.of(2020, 3, 1)
-            val dateOfBirthSanna = LocalDate.of(2019, 3, 1)
             val placementEnd = LocalDate.of(2027, 7, 31)
             tx.insert(
                     DevPerson(
@@ -194,7 +381,6 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                             placementId = placementId,
                             startDate = dateOfBirthHarri,
                             endDate = placementEnd,
-                            shiftCare = ShiftCareType.FULL,
                             optionId = snDefaultDaycare.id,
                             confirmedBy = admin.evakaUserId,
                         )
@@ -202,7 +388,7 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                     tx.insert(
                         DevDaycareGroupPlacement(
                             daycarePlacementId = placementId,
-                            daycareGroupId = groupId1,
+                            daycareGroupId = group1.id,
                             startDate = dateOfBirthHarri,
                             endDate = LocalDate.of(2024, 12, 4),
                         )
@@ -210,7 +396,7 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                     tx.insert(
                         DevDaycareGroupPlacement(
                             daycarePlacementId = placementId,
-                            daycareGroupId = groupId2,
+                            daycareGroupId = group2.id,
                             startDate = LocalDate.of(2024, 12, 5),
                             endDate = placementEnd,
                         )
@@ -229,6 +415,15 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                             childId = childId,
                             date = LocalDate.of(2024, 12, 3),
                             startTime = LocalTime.of(8, 0),
+                            endTime = LocalTime.of(12, 0),
+                            createdBy = admin.evakaUserId,
+                        )
+                    )
+                    tx.insert(
+                        DevReservation(
+                            childId = childId,
+                            date = LocalDate.of(2024, 12, 3),
+                            startTime = LocalTime.of(14, 0),
                             endTime = LocalTime.of(16, 0),
                             createdBy = admin.evakaUserId,
                         )
@@ -238,18 +433,6 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                             childId = childId,
                             date = LocalDate.of(2024, 12, 4),
                             absenceCategory = AbsenceCategory.BILLABLE,
-                        )
-                    )
-                    tx.insert(
-                        DevBackupCare(
-                            childId = childId,
-                            unitId = unitId2,
-                            groupId = eoGroupCId,
-                            period =
-                                FiniteDateRange(
-                                    LocalDate.of(2024, 12, 5),
-                                    LocalDate.of(2024, 12, 5),
-                                ),
                         )
                     )
                 }
@@ -276,7 +459,7 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                     tx.insert(
                         DevDaycareGroupPlacement(
                             daycarePlacementId = placementId,
-                            daycareGroupId = eoGroupAId,
+                            daycareGroupId = groupEO.id,
                             startDate = dateOfBirthElina,
                             endDate = LocalDate.of(2024, 12, 2),
                         )
@@ -284,7 +467,7 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                     tx.insert(
                         DevDaycareGroupPlacement(
                             daycarePlacementId = placementId,
-                            daycareGroupId = eoGroupBId,
+                            daycareGroupId = groupEO2.id,
                             startDate = LocalDate.of(2024, 12, 3),
                             endDate = placementEnd,
                         )
@@ -315,111 +498,233 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                         )
                     )
                 }
-
-            tx.insert(
-                    DevPerson(
-                        firstName = "Sanna",
-                        lastName = "Satunnainen",
-                        ssn = null,
-                        dateOfBirth = dateOfBirthSanna,
-                        id = PersonId(UUID.fromString("2d2afda1-2319-4d7c-a8b6-47045a5c82c2")),
-                    ),
-                    DevPersonType.CHILD,
-                )
-                .also { childId ->
-                    val placementId =
-                        tx.insert(
-                            DevPlacement(
-                                childId = childId,
-                                unitId = unitId2,
-                                startDate = dateOfBirthSanna,
-                                endDate = placementEnd,
-                                type = PlacementType.PRESCHOOL_DAYCARE,
-                            )
-                        )
-                    tx.insert(
-                        DevServiceNeed(
-                            placementId = placementId,
-                            startDate = dateOfBirthSanna,
-                            endDate = placementEnd,
-                            shiftCare = ShiftCareType.INTERMITTENT,
-                            optionId = snDefaultDaycare.id,
-                            confirmedBy = admin.evakaUserId,
-                        )
-                    )
-
-                    tx.insert(
-                        DevDaycareGroupPlacement(
-                            daycarePlacementId = placementId,
-                            daycareGroupId = eoGroupBId,
-                            startDate = dateOfBirthSanna,
-                            endDate = placementEnd,
-                        )
-                    )
-                    tx.insert(
-                        DevReservation(
-                            childId = childId,
-                            date = LocalDate.of(2024, 12, 2),
-                            startTime = LocalTime.of(8, 0),
-                            endTime = LocalTime.of(11, 0),
-                            createdBy = admin.evakaUserId,
-                        )
-                    )
-                    tx.insert(
-                        DevAbsence(
-                            childId = childId,
-                            date = LocalDate.of(2024, 12, 3),
-                            absenceCategory = AbsenceCategory.BILLABLE,
-                        )
-                    )
-                    tx.insert(
-                        DevAbsence(
-                            childId = childId,
-                            date = LocalDate.of(2024, 12, 3),
-                            absenceCategory = AbsenceCategory.NONBILLABLE,
-                        )
-                    )
-                    // non-relevant absence category
-                    tx.insert(
-                        DevAbsence(
-                            childId = childId,
-                            date = LocalDate.of(2024, 12, 4),
-                            absenceCategory = AbsenceCategory.BILLABLE,
-                        )
-                    )
-                    // bc to a non-aromi group
-                    tx.insert(
-                        DevBackupCare(
-                            childId = childId,
-                            unitId = unitId,
-                            groupId = groupId3,
-                            period =
-                                FiniteDateRange(
-                                    LocalDate.of(2024, 12, 5),
-                                    LocalDate.of(2024, 12, 5),
-                                ),
-                        )
-                    )
-                    tx.insert(
-                        DevBackupCare(
-                            childId = childId,
-                            unitId = unitId,
-                            groupId = groupId2,
-                            period =
-                                FiniteDateRange(
-                                    LocalDate.of(2024, 12, 6),
-                                    LocalDate.of(2024, 12, 8),
-                                ),
-                        )
-                    )
-                }
         }
+
+        assertEquals(
+            getExpectedCsv("aromi/basic_cases.csv"),
+            getMealOrders(FiniteDateRange(LocalDate.of(2024, 11, 30), LocalDate.of(2024, 12, 8))),
+        )
     }
 
     @Test
-    fun `ok admin`() {
+    fun `preschool attendance prediction works, daily preschool times, term break`() {
+        val preschoolTerm = FiniteDateRange(LocalDate.of(2024, 8, 3), LocalDate.of(2025, 5, 31))
+        val termBreak = FiniteDateRange(LocalDate.of(2024, 12, 2), LocalDate.of(2024, 12, 3))
+        val testPersonPawol =
+            DevPerson(
+                firstName = "Pawol",
+                lastName = "Pelkkä-Esiopetus",
+                ssn = null,
+                dateOfBirth = LocalDate.of(2019, 3, 1),
+                id = PersonId(UUID.fromString("94720a00-e83f-45ac-a51c-016404a52d37")),
+            )
+
+        val testPersonTytti =
+            DevPerson(
+                firstName = "Tytti",
+                lastName = "Täydentävä",
+                ssn = null,
+                dateOfBirth = LocalDate.of(2019, 5, 13),
+                id = PersonId(UUID.fromString("2b9dc19f-b12f-4008-9b92-0b6bb9dbaeef")),
+            )
+        db.transaction { tx ->
+            tx.insertPreschoolTerm(
+                preschoolTerm,
+                preschoolTerm,
+                preschoolTerm,
+                preschoolTerm,
+                DateSet.of(termBreak),
+            )
+
+            tx.insert(testPersonPawol, DevPersonType.CHILD).also { childId ->
+                val placement =
+                    DevPlacement(
+                        childId = childId,
+                        unitId = unitId2,
+                        startDate = LocalDate.of(2024, 8, 5),
+                        endDate = LocalDate.of(2025, 5, 5),
+                        type = PlacementType.PRESCHOOL,
+                    )
+                tx.insert(placement)
+
+                tx.insert(
+                    DevDaycareGroupPlacement(
+                        daycarePlacementId = placement.id,
+                        daycareGroupId = groupEO2.id,
+                        startDate = placement.startDate,
+                        endDate = placement.endDate,
+                    )
+                )
+
+                tx.insert(
+                    DevAbsence(
+                        childId = childId,
+                        date = LocalDate.of(2024, 12, 3),
+                        absenceCategory = AbsenceCategory.NONBILLABLE,
+                    )
+                )
+            }
+
+            tx.insert(testPersonTytti, DevPersonType.CHILD).also { childId ->
+                val placement =
+                    DevPlacement(
+                        childId = childId,
+                        unitId = unitId2,
+                        startDate = LocalDate.of(2024, 8, 5),
+                        endDate = LocalDate.of(2025, 5, 5),
+                        type = PlacementType.PRESCHOOL_DAYCARE,
+                    )
+                tx.insert(placement)
+
+                tx.insert(
+                    DevDaycareGroupPlacement(
+                        daycarePlacementId = placement.id,
+                        daycareGroupId = groupEO2.id,
+                        startDate = placement.startDate,
+                        endDate = placement.endDate,
+                    )
+                )
+                tx.insert(
+                    DevAbsence(
+                        childId = childId,
+                        date = LocalDate.of(2024, 12, 4),
+                        absenceCategory = AbsenceCategory.NONBILLABLE,
+                    )
+                )
+                tx.insert(
+                    DevAbsence(
+                        childId = childId,
+                        date = LocalDate.of(2024, 12, 4),
+                        absenceCategory = AbsenceCategory.BILLABLE,
+                    )
+                )
+
+                tx.insert(
+                    DevReservation(
+                        childId = childId,
+                        date = LocalDate.of(2024, 12, 3),
+                        startTime = LocalTime.of(8, 0),
+                        endTime = LocalTime.of(13, 0),
+                        createdBy = admin.evakaUserId,
+                    )
+                )
+                tx.insert(
+                    DevReservation(
+                        childId = childId,
+                        date = LocalDate.of(2024, 12, 3),
+                        startTime = LocalTime.of(14, 0),
+                        endTime = LocalTime.of(17, 0),
+                        createdBy = admin.evakaUserId,
+                    )
+                )
+            }
+        }
+
         assertEquals(
-            getExpectedCsv("aromi/ok-admin.csv"),
+            getExpectedCsv("aromi/preschool_cases.csv"),
+            getMealOrders(FiniteDateRange(LocalDate.of(2024, 11, 30), LocalDate.of(2024, 12, 8))),
+        )
+    }
+
+    @Test
+    fun `closing unit and group attendance prediction works`() {
+        // unit closes 2024-12-04,
+        // one group closes 2024-12-03, another stays open,
+        // report range 2024-11-30 - 2024-12-08
+
+        val suleimanTestPerson =
+            DevPerson(
+                firstName = "Suleiman",
+                lastName = "Sulkeutuva",
+                ssn = null,
+                dateOfBirth = LocalDate.of(2022, 1, 1),
+                id = PersonId(UUID.fromString("73304871-cae2-42dc-a347-7409351a5c73")),
+            )
+        val tariqTestPerson =
+            DevPerson(
+                firstName = "Tariq",
+                lastName = "Tavallinen",
+                ssn = null,
+                dateOfBirth = LocalDate.of(2022, 1, 1),
+                id = PersonId(UUID.fromString("5054840e-6da7-4f0c-86a7-4d56ee399880")),
+            )
+
+        val closingUnit =
+            DevDaycare(
+                areaId = area.id,
+                name = "Sulkeutuva yksikkö",
+                type = setOf(CareType.CENTRE),
+                dailyPreschoolTime = TimeRange(LocalTime.of(9, 0), LocalTime.of(13, 0)),
+                openingDate = LocalDate.of(2024, 1, 1),
+                closingDate = LocalDate.of(2024, 12, 4),
+                operationTimes =
+                    List(5) { TimeRange(LocalTime.of(7, 0), LocalTime.of(17, 0)) } +
+                        listOf(null, null),
+            )
+        val closingGroup =
+            DevDaycareGroup(
+                daycareId = closingUnit.id,
+                name = "Closing group",
+                aromiCustomerId = "CC_PK",
+                startDate = LocalDate.of(2024, 1, 1),
+                endDate = LocalDate.of(2024, 12, 3),
+            )
+        val regularGroup =
+            DevDaycareGroup(
+                daycareId = closingUnit.id,
+                name = "Regular group",
+                aromiCustomerId = "CR_PK",
+                startDate = LocalDate.of(2024, 1, 1),
+                endDate = LocalDate.of(2024, 12, 4),
+            )
+
+        db.transaction { tx ->
+            tx.insert(closingUnit)
+            tx.insert(closingGroup)
+            tx.insert(regularGroup)
+
+            tx.insert(suleimanTestPerson, DevPersonType.CHILD).also { childId ->
+                val placement =
+                    DevPlacement(
+                        childId = childId,
+                        unitId = closingUnit.id,
+                        type = PlacementType.DAYCARE,
+                        startDate = LocalDate.of(2024, 11, 30),
+                        endDate = LocalDate.of(2024, 12, 31),
+                    )
+                tx.insert(placement)
+                tx.insert(
+                    DevDaycareGroupPlacement(
+                        daycarePlacementId = placement.id,
+                        startDate = placement.startDate,
+                        endDate = placement.endDate,
+                        daycareGroupId = closingGroup.id,
+                    )
+                )
+            }
+            tx.insert(tariqTestPerson, DevPersonType.CHILD).also { childId ->
+                val placement =
+                    DevPlacement(
+                        childId = childId,
+                        unitId = closingUnit.id,
+                        type = PlacementType.DAYCARE,
+                        startDate = LocalDate.of(2024, 11, 30),
+                        endDate = LocalDate.of(2024, 12, 31),
+                    )
+                tx.insert(placement)
+                tx.insert(
+                    DevDaycareGroupPlacement(
+                        daycarePlacementId = placement.id,
+                        startDate = placement.startDate,
+                        endDate = placement.endDate,
+                        daycareGroupId = regularGroup.id,
+                    )
+                )
+            }
+        }
+
+        assertEquals(
+            getExpectedCsv("aromi/unit_closing_cases.csv"),
             getMealOrders(FiniteDateRange(LocalDate.of(2024, 11, 30), LocalDate.of(2024, 12, 8))),
         )
     }
@@ -444,7 +749,7 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                 tx.insert(
                     employee,
                     unitRoles = mapOf(unitId to UserRole.STAFF),
-                    groupAcl = mapOf(unitId to listOf(groupId1, groupId2)),
+                    groupAcl = mapOf(unitId to listOf(group1.id, group2.id)),
                 )
                 employee.user
             }
