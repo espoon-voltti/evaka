@@ -10,7 +10,6 @@ import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { ServiceNeedOptionPublicInfo } from 'lib-common/generated/api-types/serviceneed'
 import { ApplicationId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
-import LocalDate from 'lib-common/local-date'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import { useUniqueId } from 'lib-common/utils/useUniqueId'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
@@ -31,7 +30,6 @@ import { featureFlags } from 'lib-customizations/citizen'
 import { getAttachmentUrl, applicationAttachment } from '../../../attachments'
 import { errorToInputInfo } from '../../../input-info-helper'
 import { useLang, useTranslation } from '../../../localization'
-import { isValidPreferredStartDate } from '../validations'
 
 import { ServiceNeedSectionProps } from './ServiceNeedSection'
 
@@ -44,14 +42,12 @@ type ServiceTimeSubSectionProps = Omit<ServiceNeedSectionProps, 'type'>
 const applicationType = 'PRESCHOOL'
 
 export default React.memo(function ServiceTimeSubSectionPreschool({
-  originalPreferredStartDate,
   minDate,
   maxDate,
   formData,
   updateFormData,
   errors,
   verificationRequested,
-  terms,
   serviceNeedOptions
 }: ServiceTimeSubSectionProps) {
   const [lang] = useLang()
@@ -152,15 +148,6 @@ export default React.memo(function ServiceTimeSubSectionPreschool({
                   t.validationErrors
                 )}
                 hideErrorsBeforeTouched={!verificationRequested}
-                isInvalidDate={(date: LocalDate) =>
-                  isValidPreferredStartDate(
-                    date,
-                    originalPreferredStartDate,
-                    terms
-                  )
-                    ? null
-                    : t.validationErrors.unselectableDate
-                }
                 minDate={minDate}
                 maxDate={maxDate}
                 initialMonth={

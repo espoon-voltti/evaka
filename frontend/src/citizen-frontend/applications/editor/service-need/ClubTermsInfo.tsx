@@ -5,18 +5,18 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import FiniteDateRange from 'lib-common/finite-date-range'
 import { Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
 import { useTranslation } from '../../../localization'
+import { Term } from '../ApplicationEditor'
 
 const Ul = styled.ul`
   margin: 0;
 `
 
 interface Props {
-  clubTerms: FiniteDateRange[]
+  clubTerms: Term[]
 }
 
 export function ClubTermsInfo({ clubTerms }: Props) {
@@ -34,7 +34,7 @@ export function ClubTermsInfo({ clubTerms }: Props) {
       <Gap size="s" />
       <Ul data-qa="club-terms">
         {clubTerms.map((term, i) => (
-          <li key={i}>{term.format()}</li>
+          <li key={i}>{term.extendedTerm.format()}</li>
         ))}
       </Ul>
       <Gap size="m" />
