@@ -213,7 +213,7 @@ async function initCitizenPage(mockedTime: HelsinkiDateTime) {
   await enduserLogin(citizenPage, testAdult)
 }
 
-describe('Message editor in child page', () => {
+describe('Messages in child page', () => {
   beforeEach(async () => {
     const mobileSignupUrl = await pairMobileDevice(testDaycare.id)
     await page.goto(mobileSignupUrl)
@@ -245,6 +245,23 @@ describe('Message editor in child page', () => {
     await citizenPage.goto(config.enduserMessagesUrl)
     const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
     await citizenMessagesPage.assertThreadContent(message)
+  })
+  test('Employee sees a received message', async () => {
+    await initCitizenPage(mockedDateAt10)
+    await citizenSendsMessageToGroup()
+    await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
+    await citizenPage.close()
+
+    await listPage.selectChild(child.id)
+    await childPage.messagesLink.click()
+    await pinLoginPage.login(employeeName, pin)
+    await childMessagesPage
+      .thread(0)
+      .assertText((s) => s.includes('Testiviestin sisältö'))
+    await childMessagesPage.thread(0).click()
+    await threadView.singleMessageContents
+      .nth(0)
+      .assertText((s) => s.includes('Testiviestin sisältö'))
   })
 })
 
