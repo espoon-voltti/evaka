@@ -33,9 +33,8 @@ import { unitProviderTypes } from 'lib-customizations/employee'
 import {
   getUnitFeatures,
   updateUnitFeatures
-} from '../generated/api-clients/daycare'
-
-import { renderResult } from './async-rendering'
+} from '../../generated/api-clients/daycare'
+import { renderResult } from '../async-rendering'
 
 const getUnitFeaturesResult = wrapResult(getUnitFeatures)
 const updateUnitFeaturesResult = wrapResult(updateUnitFeatures)
