@@ -555,7 +555,7 @@ export const fi = {
     }
   },
   childButtons: {
-    newMessage: 'Uusi viesti'
+    messages: 'Viestit'
   },
   fileUpload: {
     upload: {

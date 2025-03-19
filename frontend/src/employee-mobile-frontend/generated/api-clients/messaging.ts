@@ -18,6 +18,7 @@ import { MessageThread } from 'lib-common/generated/api-types/messaging'
 import { MessageThreadId } from 'lib-common/generated/api-types/shared'
 import { PagedMessageThreads } from 'lib-common/generated/api-types/messaging'
 import { PagedSentMessages } from 'lib-common/generated/api-types/messaging'
+import { PersonId } from 'lib-common/generated/api-types/shared'
 import { PostMessageBody } from 'lib-common/generated/api-types/messaging'
 import { PostMessagePreflightBody } from 'lib-common/generated/api-types/messaging'
 import { PostMessagePreflightResponse } from 'lib-common/generated/api-types/messaging'
@@ -127,11 +128,13 @@ export async function getDraftMessages(
 export async function getReceivedMessages(
   request: {
     accountId: MessageAccountId,
-    page: number
+    page: number,
+    childId?: PersonId | null
   }
 ): Promise<PagedMessageThreads> {
   const params = createUrlSearchParams(
-    ['page', request.page.toString()]
+    ['page', request.page.toString()],
+    ['childId', request.childId]
   )
   const { data: json } = await client.request<JsonOf<PagedMessageThreads>>({
     url: uri`/employee-mobile/messages/${request.accountId}/received`.toString(),

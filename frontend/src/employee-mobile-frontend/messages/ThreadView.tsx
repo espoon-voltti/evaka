@@ -90,7 +90,7 @@ export const ReceivedThreadPage = React.memo(function ReceivedThreadPage({
           <ReceivedThread
             accountId={selectedAccount.account.id}
             thread={thread}
-            onBack={() => navigate(routes.messages(unitOrGroup).value)}
+            onBack={() => navigate(-1)}
             unitId={unitOrGroup.unitId}
           />
         </ContentArea>
