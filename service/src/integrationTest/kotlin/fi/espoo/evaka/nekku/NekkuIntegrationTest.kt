@@ -407,6 +407,100 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             assertEquals(4, products.size)
         }
     }
+
+    @Test
+    fun `Nekku product deletes old products`() {
+        var client = TestNekkuClient(nekkuProducts = getNekkuProducts())
+        fetchAndUpdateNekkuProducts(client, db)
+        db.transaction { tx ->
+            val products = tx.getNekkuProducts()
+            assertEquals(4, products.size)
+        }
+
+        client =
+            TestNekkuClient(
+                nekkuProducts =
+                    listOf(
+                        NekkuProduct(
+                            "Ateriapalvelu 1 kasvis",
+                            "31000010",
+                            "",
+                            "small",
+                            listOf(
+                                NekkuProductMealTime.BREAKFAST,
+                                NekkuProductMealTime.LUNCH,
+                                NekkuProductMealTime.SNACK,
+                            ),
+                            NekkuProductMealType.VEGETABLE,
+                        ),
+                        NekkuProduct(
+                            "Päivällinen vegaani päiväkoti",
+                            "31000008",
+                            "",
+                            "large",
+                            listOf(NekkuProductMealTime.DINNER),
+                            NekkuProductMealType.VEGAN,
+                        ),
+                    )
+            )
+        fetchAndUpdateNekkuProducts(client, db)
+        db.transaction { tx ->
+            val products = tx.getNekkuProducts()
+            assertEquals(2, products.size)
+        }
+    }
+
+    @Test
+    fun `Nekku product updates values for old products`() {
+        var client =
+            TestNekkuClient(
+                nekkuProducts =
+                    listOf(
+                        NekkuProduct(
+                            "Ateriapalvelu 1 kasvis",
+                            "31000010",
+                            "",
+                            "small",
+                            listOf(
+                                NekkuProductMealTime.BREAKFAST,
+                                NekkuProductMealTime.LUNCH,
+                                NekkuProductMealTime.SNACK,
+                            ),
+                            NekkuProductMealType.VEGETABLE,
+                        )
+                    )
+            )
+        fetchAndUpdateNekkuProducts(client, db)
+        db.transaction { tx ->
+            val products = tx.getNekkuProducts()
+            assertEquals(1, products.size)
+        }
+
+        client =
+            TestNekkuClient(
+                nekkuProducts =
+                    listOf(
+                        NekkuProduct(
+                            "Ateriapalvelu 1 vegaani",
+                            "31000010",
+                            "2",
+                            "medium",
+                            null,
+                            NekkuProductMealType.VEGAN,
+                        )
+                    )
+            )
+        fetchAndUpdateNekkuProducts(client, db)
+        db.transaction { tx ->
+            val products = tx.getNekkuProducts()
+            assertEquals("Ateriapalvelu 1 vegaani", products[0].name)
+            assertEquals("2", products[0].options_id)
+            assertEquals("medium", products[0].unit_size)
+            assertEquals(null, products[0].meal_time)
+            assertEquals(NekkuProductMealType.VEGAN, products[0].meal_type)
+        }
+
+    }
 }
 
 class TestNekkuClient(
