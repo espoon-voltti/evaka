@@ -499,7 +499,6 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             assertEquals(null, products[0].meal_time)
             assertEquals(NekkuProductMealType.VEGAN, products[0].meal_type)
         }
-
     }
 }
 
