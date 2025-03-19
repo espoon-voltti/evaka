@@ -17,7 +17,6 @@ import { useKeepSessionAlive } from 'lib-components/useKeepSessionAlive'
 import { theme } from 'lib-customizations/common'
 import { featureFlags } from 'lib-customizations/employee'
 
-import ApplicationPage from './components/ApplicationPage'
 import EmployeeRoute from './components/EmployeeRoute'
 import FinancePage from './components/FinancePage'
 import { Footer } from './components/Footer'
@@ -31,6 +30,7 @@ import Reports from './components/Reports'
 import UnitPage from './components/UnitPage'
 import Units from './components/Units'
 import WelcomePage from './components/WelcomePage'
+import ApplicationPage from './components/application-page/ApplicationPage'
 import ApplicationsPage from './components/applications/ApplicationsPage'
 import {
   ChildDocumentEditView,

@@ -29,27 +29,27 @@ import { Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/employee'
 import { faEnvelope } from 'lib-icons'
 
-import ApplicationActionsBar from '../components/application-page/ApplicationActionsBar'
-import ApplicationEditView from '../components/application-page/ApplicationEditView'
-import ApplicationNotes from '../components/application-page/ApplicationNotes'
-import ApplicationReadView from '../components/application-page/ApplicationReadView'
-import { getEmployeeUrlPrefix } from '../constants'
-import { getApplicationDetails } from '../generated/api-clients/application'
+import { getEmployeeUrlPrefix } from '../../constants'
+import { getApplicationDetails } from '../../generated/api-clients/application'
 import {
   getApplicationUnits,
   getClubTerms,
   getPreschoolTerms
-} from '../generated/api-clients/daycare'
-import { getThreadByApplicationId } from '../generated/api-clients/messaging'
-import { Translations, useTranslation } from '../state/i18n'
-import { TitleContext, TitleState } from '../state/title'
-import { asUnitType } from '../types/daycare'
-import { isSsnValid, isTimeValid } from '../utils/validation/validations'
+} from '../../generated/api-clients/daycare'
+import { getThreadByApplicationId } from '../../generated/api-clients/messaging'
+import { Translations, useTranslation } from '../../state/i18n'
+import { TitleContext, TitleState } from '../../state/title'
+import { asUnitType } from '../../types/daycare'
+import { isSsnValid, isTimeValid } from '../../utils/validation/validations'
+import { serviceNeedPublicInfosQuery } from '../applications/queries'
+import MetadataSection from '../archive-metadata/MetadataSection'
+import { renderResult, UnwrapResult } from '../async-rendering'
 
-import { applicationMetadataQuery } from './application-page/queries'
-import { serviceNeedPublicInfosQuery } from './applications/queries'
-import MetadataSection from './archive-metadata/MetadataSection'
-import { renderResult, UnwrapResult } from './async-rendering'
+import ApplicationActionsBar from './ApplicationActionsBar'
+import ApplicationEditView from './ApplicationEditView'
+import ApplicationNotes from './ApplicationNotes'
+import ApplicationReadView from './ApplicationReadView'
+import { applicationMetadataQuery } from './queries'
 
 const getApplicationResult = wrapResult(getApplicationDetails)
 const getClubTermsResult = wrapResult(getClubTerms)
