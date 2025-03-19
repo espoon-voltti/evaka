@@ -23,18 +23,22 @@ import {
 } from '../../generated/api-clients/invoicing'
 import {
   addSsn,
+  createFosterParentRelationship,
   createParentship,
   createPartnership,
+  deleteFosterParentRelationship,
   deleteParentship,
   deletePartnership,
   disableSsn,
   duplicatePerson,
   getFamilyByPerson,
+  getFosterChildren,
   getParentships,
   getPartnerships,
   getPerson,
   retryParentship,
   retryPartnership,
+  updateFosterParentRelationshipValidity,
   updateParentship,
   updatePartnership,
   updatePersonAndFamilyFromVtj,
@@ -129,6 +133,26 @@ export const retryPartnershipMutation = q.parametricMutation<{
 }>()(retryPartnership, [
   ({ personId }) => partnershipsQuery({ personId }),
   ({ personId }) => familyByPersonQuery({ id: personId })
+])
+
+export const fosterChildrenQuery = q.query(getFosterChildren)
+
+export const createFosterParentRelationshipMutation = q.mutation(
+  createFosterParentRelationship,
+  [({ body: { parentId } }) => fosterChildrenQuery({ parentId })]
+)
+
+export const updateFosterParentRelationshipValidityMutation =
+  q.parametricMutation<{
+    parentId: PersonId
+  }>()(updateFosterParentRelationshipValidity, [
+    ({ parentId }) => fosterChildrenQuery({ parentId })
+  ])
+
+export const deleteFosterParentRelationshipMutation = q.parametricMutation<{
+  parentId: PersonId
+}>()(deleteFosterParentRelationship, [
+  ({ parentId }) => fosterChildrenQuery({ parentId })
 ])
 
 export const incomeCoefficientMultipliersQuery = q.query(getIncomeMultipliers)
