@@ -2321,6 +2321,14 @@ export const fi = {
       application: 'Hakemus'
     },
     placementProposals: {
+      acceptAllTitle: 'Valitut sijoitusehdotukset',
+      acceptAllSummary: ({
+        accepted,
+        rejected
+      }: {
+        accepted: number
+        rejected: number
+      }) => `${accepted} hyväksytään, ${rejected} hylätään`,
       acceptAllButton: 'Vahvista valinnat',
       application: 'Hakemus',
       birthday: 'Syntymäaika',
