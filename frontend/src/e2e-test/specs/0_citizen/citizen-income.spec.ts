@@ -137,8 +137,8 @@ describe.each(envs)('Citizen income (%s)', (env) => {
 
     const incomeStatementsPage = new IncomeStatementsPage(page, env)
     await incomeStatementsPage.createNewIncomeStatement()
-    await incomeStatementsPage.setValidFromDate(today.format())
     await incomeStatementsPage.selectIncomeStatementType('highest-fee')
+    await incomeStatementsPage.setValidFromDate(today.format())
     await incomeStatementsPage.checkAssured()
     await incomeStatementsPage.submit()
 

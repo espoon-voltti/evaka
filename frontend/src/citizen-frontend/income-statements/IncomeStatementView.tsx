@@ -77,12 +77,12 @@ const IncomeStatementView2 = React.memo(function IncomeStatementView2({
             <H1>{t.income.view.title}</H1>
           </FixedSpaceRow>
           <Row
-            label={t.income.view.startDate}
-            value={incomeStatement.startDate.format()}
-          />
-          <Row
             label={t.income.view.feeBasis}
             value={t.income.view.statementTypes[incomeStatement.type]}
+          />
+          <Row
+            label={t.income.view.startDate}
+            value={incomeStatement.startDate.format()}
           />
           {incomeStatement.type === 'INCOME' && (
             <IncomeInfo incomeStatement={incomeStatement} />
