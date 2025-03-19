@@ -22,5 +22,12 @@ export default React.memo(function ChildNameBackButton({
     `${child.firstName} ${child.lastName}` +
     (child.preferredName ? ` (${child.preferredName})` : '')
 
-  return <BackButtonInline onClick={onClick} icon={faArrowLeft} text={text} />
+  return (
+    <BackButtonInline
+      onClick={onClick}
+      icon={faArrowLeft}
+      text={text}
+      data-qa="child-name-back-button"
+    />
+  )
 })

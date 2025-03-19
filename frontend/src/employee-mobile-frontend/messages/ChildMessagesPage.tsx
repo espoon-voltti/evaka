@@ -96,6 +96,7 @@ const ChildMessagesPage = React.memo(function ChildMessagesPage({
               onClick={() =>
                 navigate(routes.newChildMessage(unitId, child.id).value)
               }
+              data-qa="new-message-button"
             />
           </>
         )}

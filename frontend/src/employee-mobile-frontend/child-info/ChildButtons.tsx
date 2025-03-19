@@ -46,7 +46,7 @@ export default React.memo(function ChildButtons({
         {unit.features.includes('MOBILE_MESSAGING') ? (
           <Link
             to={routes.childMessages(unitId, child.id).value}
-            data-qa="link-child-message"
+            data-qa="link-child-messages"
           >
             <RoundIcon
               content={faComments}
