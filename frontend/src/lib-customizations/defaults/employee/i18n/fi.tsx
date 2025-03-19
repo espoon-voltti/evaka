@@ -1704,8 +1704,7 @@ export const fi = {
       showMessages: 'Näytä kaikki viestit',
       hideMessages: 'Piilota kaikki viestit',
       confirmDeleteNote: 'Haluatko varmasti poistaa muistiinpanon',
-      confirmDeleteMessage: 'Haluatko varmasti poistaa viestin',
-      confirmDeleteThread: 'Haluatko varmasti poistaa viestiketjun',
+      confirmArchiveThread: 'Haluatko varmasti siirtää viestiketjun arkistoon',
       note: 'Muistiinpano',
       created: 'Luotu',
       inEdit: 'Muokattavana'

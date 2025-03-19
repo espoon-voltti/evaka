@@ -666,7 +666,7 @@ class FinanceNotesAndMessagesSection extends Section {
     this.findByDataQa('message-reply-content')
   )
   #sendReplyButton = this.findByDataQa('message-send-btn')
-  #deleteThread = this.findAll(`[data-qa="delete-finance-thread-button"]`)
+  #deleteThread = this.findAll(`[data-qa="archive-finance-thread-button"]`)
 
   async checkNoteCreatedAt(nth: number, expectedCreatedAt: HelsinkiDateTime) {
     await this.#noteCreatedAt
@@ -704,9 +704,7 @@ class FinanceNotesAndMessagesSection extends Section {
 
   async deleteThread() {
     await this.#deleteThread.first().click()
-    await new Modal(
-      this.page.findByDataQa('delete-finance-thread-modal')
-    ).submit()
+    await new Modal(this.page.findByDataQa('modal')).submit()
   }
 }
 

@@ -87,14 +87,6 @@ export default React.memo(function MessageEditor({
   const i18n = useTranslation()
   const user = useUser()
 
-  // const childIds = useMemo(
-  //   () =>
-  //     Object.keys(
-  //       receiverOptions.childrenToMessageAccounts
-  //     ) as (keyof typeof receiverOptions.childrenToMessageAccounts)[],
-  //   [receiverOptions]
-  // )
-
   const childIds = useMemo(
     () =>
       receiverOptions.childrenToMessageAccounts

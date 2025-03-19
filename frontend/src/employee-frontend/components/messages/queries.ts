@@ -13,6 +13,7 @@ import {
   getDraftMessages,
   getFinanceMessagesWithPerson,
   initDraftMessage,
+  markThreadRead,
   replyToThread,
   updateDraftMessage
 } from '../../generated/api-clients/messaging'
@@ -22,6 +23,8 @@ const q = new Queries()
 export const createMessagePreflightCheckQuery = q.query(
   createMessagePreflightCheck
 )
+
+export const markThreadReadMutation = q.mutation(markThreadRead)
 
 export const replyToThreadMutation = q.mutation(replyToThread)
 
@@ -43,6 +46,6 @@ export const replyToFinanceThreadMutation = q.parametricMutation<{
   id: PersonId
 }>()(replyToThread, [({ id }) => financeThreadsQuery({ personId: id })])
 
-export const deleteFinanceThreadMutation = q.parametricMutation<{
+export const archiveFinanceThreadMutation = q.parametricMutation<{
   id: PersonId
 }>()(archiveThread, [({ id }) => financeThreadsQuery({ personId: id })])

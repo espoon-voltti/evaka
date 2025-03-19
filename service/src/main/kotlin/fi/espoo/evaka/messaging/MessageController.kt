@@ -441,16 +441,13 @@ class MessageController(
                 val accountId =
                     dbc.read { it.getFinanceAccountId() } ?: throw NotFound("No account found")
                 requireMessageAccountAccess(dbc, user, clock, accountId)
-                var page = 1
-                val result = mutableListOf<MessageThread>()
-                do {
-                    val threads =
-                        dbc.read {
+                val threads =
+                    dbc.read {
                             val personAccountId = it.getCitizenMessageAccount(personId)
                             it.getThreads(
                                 accountId,
                                 pageSize = 200,
-                                page,
+                                page = 1,
                                 featureConfig.municipalMessageAccountName,
                                 featureConfig.serviceWorkerMessageAccountName,
                                 featureConfig.financeMessageAccountName,
@@ -458,17 +455,15 @@ class MessageController(
                                 messagesSortDirection = SortDirection.DESC,
                             )
                         }
-                    result.addAll(threads.data)
-                    page++
-                } while (page <= threads.pages)
-                accountId to result
+                        .data
+                accountId to threads
             }
-            .let { (accountId, result) ->
+            .let { (accountId, threads) ->
                 Audit.MessagingMessagesInFolderRead.log(
                     targetId = AuditId(accountId),
-                    meta = mapOf("total" to result.size),
+                    meta = mapOf("total" to threads.size),
                 )
-                result
+                threads
             }
     }
 

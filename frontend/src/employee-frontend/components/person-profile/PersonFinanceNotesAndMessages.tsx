@@ -10,20 +10,20 @@ import styled, { useTheme } from 'styled-components'
 
 import { combine } from 'lib-common/api'
 import { Action } from 'lib-common/generated/action'
-import { FinanceNote } from 'lib-common/generated/api-types/finance'
+import {
+  FinanceNote,
+  FinanceNoteResponse
+} from 'lib-common/generated/api-types/finance'
 import {
   DraftContent,
   MessageThread,
   PostMessageBody
 } from 'lib-common/generated/api-types/messaging'
 import {
-  FinanceNoteId,
   MessageAccountId,
-  MessageThreadId,
   PersonId
 } from 'lib-common/generated/api-types/shared'
 import {
-  cancelMutation,
   constantQuery,
   invalidateDependencies,
   useMutationResult,
@@ -44,12 +44,19 @@ import {
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import MessageReplyEditor from 'lib-components/messages/MessageReplyEditor'
-import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
+import { ConfirmedMutation } from 'lib-components/molecules/ConfirmedMutation'
 import { H2, Label, Light } from 'lib-components/typography'
 import { useRecipients } from 'lib-components/utils/useReplyRecipients'
 import { Gap } from 'lib-components/white-space'
-import { faEnvelope, faPen, faQuestion, faReply, faTrash } from 'lib-icons'
-import { faChevronDown, faChevronUp } from 'lib-icons'
+import {
+  faBoxArchive,
+  faChevronDown,
+  faChevronUp,
+  faEnvelope,
+  faPen,
+  faReply,
+  faTrash
+} from 'lib-icons'
 
 import { getAttachmentUrl, messageAttachment } from '../../api/attachments'
 import { useTranslation } from '../../state/i18n'
@@ -63,9 +70,10 @@ import MessageEditor from '../messages/MessageEditor'
 import {
   createFinanceThreadMutation,
   deleteDraftMutation,
-  deleteFinanceThreadMutation,
+  archiveFinanceThreadMutation,
   draftsQuery,
   financeThreadsQuery,
+  markThreadReadMutation,
   replyToFinanceThreadMutation
 } from '../messages/queries'
 
@@ -94,29 +102,47 @@ export default React.memo(function PersonFinanceNotesAndMessages({
   const [open, setIsOpen] = useState(startOpen)
   const financeNotes = useQueryResult(financeNotesQuery({ personId: id }))
   const [text, setText] = useState<string>('')
-  const [confirmDeleteNote, setConfirmDeleteNote] = useState<FinanceNoteId>()
   const financeMessages = useQueryResult(financeThreadsQuery({ personId: id }))
   const [sending, setSending] = useState(false)
   const [thread, setThread] = useState<MessageThread>()
-  const [confirmDeleteThread, setConfirmDeleteThread] =
-    useState<MessageThreadId>()
   const messageDrafts = useQueryResult(
     financeAccount
       ? draftsQuery({ accountId: financeAccount?.account.id })
       : constantQuery([])
   )
 
+  const { mutateAsync: markThreadRead } = useMutationResult(
+    markThreadReadMutation
+  )
+
+  const financeThreads = useMemo(() => {
+    if (financeMessages.isSuccess && financeAccount) {
+      financeMessages.value.forEach((thread) => {
+        if (
+          thread.messages.some(
+            (m) => !m.readAt && m.sender.id !== financeAccount?.account.id
+          )
+        ) {
+          void markThreadRead({
+            accountId: financeAccount.account.id,
+            threadId: thread.id
+          })
+        }
+      })
+      refreshMessages(financeAccount.account.id)
+    }
+    return financeMessages
+  }, [financeAccount, financeMessages, markThreadRead, refreshMessages])
+
   const onSuccessTimeout = isAutomatedTest ? 10 : 800 // same as used in async-button-behaviour
 
-  const personName = useMemo((): string | undefined => {
-    if (person.isSuccess) {
-      const p = person.getOrElse(null)
-      if (p !== null) {
-        return formatPersonName(p, i18n, true)
-      }
-    }
-    return undefined
-  }, [person, i18n])
+  const personName = useMemo(
+    () =>
+      person
+        .map((p) => (p ? formatPersonName(p, i18n, true) : undefined))
+        .getOrElse(undefined),
+    [person, i18n]
+  )
 
   const draftContent = useMemo((): DraftContent | undefined => {
     return personName && messageDrafts.isSuccess
@@ -183,68 +209,14 @@ export default React.memo(function PersonFinanceNotesAndMessages({
     ]
   )
 
+  function isMessageThread(
+    item: MessageThread | FinanceNoteResponse
+  ): item is MessageThread {
+    return (item as MessageThread).messages !== undefined
+  }
+
   return (
     <>
-      {uiMode.startsWith('delete-finance-note') && (
-        <MutateFormModal
-          type="warning"
-          title={i18n.personProfile.financeNotesAndMessages.confirmDeleteNote}
-          icon={faQuestion}
-          resolveMutation={deleteFinanceNoteMutation}
-          resolveAction={() =>
-            confirmDeleteNote !== undefined
-              ? {
-                  id,
-                  noteId: confirmDeleteNote
-                }
-              : cancelMutation
-          }
-          resolveLabel={i18n.common.remove}
-          resolveDisabled={false}
-          rejectAction={() => {
-            setConfirmDeleteNote(undefined)
-            clearUiMode()
-          }}
-          rejectLabel={i18n.common.cancel}
-          onSuccess={() => {
-            setConfirmDeleteNote(undefined)
-            clearUiMode()
-          }}
-          data-qa="delete-finance-note-modal"
-        />
-      )}
-
-      {uiMode.startsWith('delete-finance-thread') && (
-        <MutateFormModal
-          type="warning"
-          title={i18n.personProfile.financeNotesAndMessages.confirmDeleteThread}
-          icon={faQuestion}
-          resolveMutation={deleteFinanceThreadMutation}
-          resolveAction={() =>
-            confirmDeleteThread !== undefined && financeAccount !== undefined
-              ? {
-                  id,
-                  accountId: financeAccount.account.id,
-                  threadId: confirmDeleteThread
-                }
-              : cancelMutation
-          }
-          resolveLabel={i18n.common.remove}
-          resolveDisabled={false}
-          rejectAction={() => {
-            setConfirmDeleteThread(undefined)
-            clearUiMode()
-          }}
-          rejectLabel={i18n.common.cancel}
-          onSuccess={() => {
-            refreshMessages(financeAccount?.account.id)
-            setConfirmDeleteThread(undefined)
-            clearUiMode()
-          }}
-          data-qa="delete-finance-thread-modal"
-        />
-      )}
-
       {uiMode === 'new-finance-message-editor' &&
         financeAccount &&
         personName !== undefined && (
@@ -362,28 +334,29 @@ export default React.memo(function PersonFinanceNotesAndMessages({
         )}
 
         {renderResult(
-          combine(financeMessages, financeNotes),
+          combine(financeThreads, financeNotes),
           ([threads, notes]) => (
             // list note items eiter edit or view mode
             <>
               {financeAccount &&
                 [...threads, ...notes]
                   .sort((a, b) => {
-                    const dateA =
-                      'messages' in a ? a.messages[0].sentAt : a.note.createdAt
-                    const dateB =
-                      'messages' in b ? b.messages[0].sentAt : b.note.createdAt
+                    const dateA = isMessageThread(a)
+                      ? a.messages[0].sentAt
+                      : a.note.createdAt
+                    const dateB = isMessageThread(b)
+                      ? b.messages[0].sentAt
+                      : b.note.createdAt
                     return dateB.formatIso().localeCompare(dateA.formatIso())
                   })
-                  .map((v) =>
-                    'messages' in v ? (
+                  .map((item) =>
+                    isMessageThread(item) ? (
                       <SingleThread
-                        key={v.id}
+                        key={item.id}
                         id={id}
-                        thread={v}
+                        thread={item}
                         financeAccountId={financeAccount?.account.id}
                         setThread={setThread}
-                        setConfirmDeleteThread={setConfirmDeleteThread}
                         refreshMessages={refreshMessages}
                         uiMode={uiMode}
                         clearUiMode={clearUiMode}
@@ -391,13 +364,12 @@ export default React.memo(function PersonFinanceNotesAndMessages({
                       />
                     ) : (
                       <SingleNote
-                        key={v.note.id}
+                        key={item.note.id}
                         id={id}
-                        note={v.note}
-                        permittedActions={v.permittedActions}
+                        note={item.note}
+                        permittedActions={item.permittedActions}
                         text={text}
                         setText={setText}
-                        setConfirmDeleteNote={setConfirmDeleteNote}
                         uiMode={uiMode}
                         clearUiMode={clearUiMode}
                         toggleUiMode={toggleUiMode}
@@ -417,7 +389,6 @@ const SingleThread = React.memo(function SingleThread({
   thread,
   financeAccountId,
   setThread,
-  setConfirmDeleteThread,
   refreshMessages,
   uiMode,
   clearUiMode,
@@ -427,7 +398,6 @@ const SingleThread = React.memo(function SingleThread({
   thread: MessageThread
   financeAccountId: MessageAccountId
   setThread: (thread: MessageThread) => void
-  setConfirmDeleteThread: (id: MessageThreadId) => void
   refreshMessages: (id: MessageAccountId) => void
   uiMode: string
   clearUiMode: () => void
@@ -471,12 +441,12 @@ const SingleThread = React.memo(function SingleThread({
             </UnderlinedLink>
             )
           </Label>
-          <Light style={{ fontSize: '14px' }}>
+          <SmallLight>
             <span data-qa="finance-thread-sent-at">
               {thread.messages[0].sentAt.format()}
             </span>
             , {thread.messages[0].sender.name}
-          </Light>
+          </SmallLight>
         </FixedSpaceColumn>
         <FixedSpaceRow spacing="xs">
           <IconOnlyButton
@@ -489,15 +459,23 @@ const SingleThread = React.memo(function SingleThread({
             data-qa="reply-finance-thread-button"
             aria-label={i18n.common.edit}
           />
-          <IconOnlyButton
-            icon={faTrash}
-            onClick={() => {
-              setConfirmDeleteThread(thread.id)
-              toggleUiMode(`delete-finance-thread`)
+          <ConfirmedMutation
+            buttonStyle="ICON"
+            icon={faBoxArchive}
+            buttonAltText={i18n.common.remove}
+            data-qa="archive-finance-thread-button"
+            confirmationTitle={
+              i18n.personProfile.financeNotesAndMessages.confirmArchiveThread
+            }
+            mutation={archiveFinanceThreadMutation}
+            onClick={() => ({
+              id,
+              accountId: financeAccountId,
+              threadId: thread.id
+            })}
+            onSuccess={() => {
+              refreshMessages(financeAccountId)
             }}
-            size="s"
-            data-qa="delete-finance-thread-button"
-            aria-label={i18n.common.remove}
           />
         </FixedSpaceRow>
       </FlexRow>
@@ -552,9 +530,9 @@ const SingleThread = React.memo(function SingleThread({
                   paddingVertical="s"
                   data-qa="finance-message"
                 >
-                  <Light style={{ fontSize: '14px' }}>
+                  <SmallLight>
                     {m.sentAt.format()}, {m.sender.name}
-                  </Light>
+                  </SmallLight>
                   <div>{formatParagraphs(m.content)}</div>
                 </BorderedMessageArea>
               ))}
@@ -590,7 +568,6 @@ const SingleNote = React.memo(function SingleNote({
   permittedActions,
   text,
   setText,
-  setConfirmDeleteNote,
   uiMode,
   clearUiMode,
   toggleUiMode
@@ -600,7 +577,6 @@ const SingleNote = React.memo(function SingleNote({
   permittedActions: Action.FinanceNote[]
   text: string
   setText: (text: string) => void
-  setConfirmDeleteNote: (id: FinanceNoteId) => void
   uiMode: string
   clearUiMode: () => void
   toggleUiMode: (mode: string) => void
@@ -618,17 +594,17 @@ const SingleNote = React.memo(function SingleNote({
       <FlexRow justifyContent="space-between">
         <FixedSpaceColumn spacing="xxs">
           <Label>{i18n.personProfile.financeNotesAndMessages.note}</Label>
-          <Light style={{ fontSize: '14px' }}>
+          <SmallLight>
             {i18n.personProfile.financeNotesAndMessages.created}{' '}
             <span data-qa="finance-note-created-at">
               {note.createdAt.format()}
             </span>
             , {note.createdByName}
-          </Light>
+          </SmallLight>
           {uiMode === `edit-finance-note_${note.id}` && (
-            <Light style={{ fontSize: '14px' }}>
+            <SmallLight>
               {i18n.personProfile.financeNotesAndMessages.inEdit}
-            </Light>
+            </SmallLight>
           )}
         </FixedSpaceColumn>
 
@@ -645,16 +621,19 @@ const SingleNote = React.memo(function SingleNote({
               data-qa="edit-finance-note"
               aria-label={i18n.common.edit}
             />
-            <IconOnlyButton
+            <ConfirmedMutation
+              buttonStyle="ICON"
               icon={faTrash}
-              onClick={() => {
-                setConfirmDeleteNote(note.id)
-                toggleUiMode(`delete-finance-note-${note.id}`)
-              }}
-              disabled={!permittedActions.includes('DELETE')}
-              size="s"
-              data-qa="delete-finance-note"
-              aria-label={i18n.common.remove}
+              buttonAltText={i18n.common.remove}
+              data-qa="delete-finance-note-button"
+              confirmationTitle={
+                i18n.personProfile.financeNotesAndMessages.confirmDeleteNote
+              }
+              mutation={deleteFinanceNoteMutation}
+              onClick={() => ({
+                id,
+                noteId: note.id
+              })}
             />
           </FixedSpaceRow>
         )}
@@ -716,7 +695,9 @@ const AccordionToggle = styled.span`
   color: ${(p) => p.theme.colors.main.m2};
   cursor: pointer;
 `
-
+const SmallLight = styled(Light)`
+  font-size: 14px;
+`
 const UnderlinedLink = styled(Link)`
   font-weight: normal;
   text-decoration: underline;

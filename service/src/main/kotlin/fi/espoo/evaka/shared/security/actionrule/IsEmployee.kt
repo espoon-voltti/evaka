@@ -257,7 +257,7 @@ WHERE e.id = ${bind(user.id)} AND e.roles && '{SERVICE_WORKER}'::user_role[]
 SELECT acc.id
 FROM employee e 
 JOIN message_account acc ON acc.type = 'FINANCE'
-WHERE e.id = ${bind(user.id)} AND e.roles && '{ADMIN, FINANCE_ADMIN, FINANCE_STAFF}'::user_role[]
+WHERE e.id = ${bind(user.id)} AND e.roles && '{FINANCE_ADMIN}'::user_role[]
                 """
                     .trimIndent()
             )

@@ -490,6 +490,24 @@ fun Database.Read.getThreads(
     personAccountId: MessageAccountId? = null,
     messagesSortDirection: SortDirection = SortDirection.ASC,
 ): PagedMessageThreads {
+    val personAccountPredicate =
+        if (personAccountId != null) {
+            Predicate {
+                where(
+                    """
+EXISTS (
+    SELECT 1
+    FROM message_thread_participant tp2
+    WHERE tp2.participant_id = ${bind(personAccountId)}
+    AND tp2.thread_id = $it.thread_id
+)
+                    """
+                        .trimIndent()
+                )
+            }
+        } else {
+            Predicate.alwaysTrue()
+        }
     val threads =
         createQuery {
                 sql(
@@ -517,11 +535,8 @@ SELECT
 FROM message_thread_participant tp
 JOIN message_thread t on t.id = tp.thread_id
 LEFT JOIN application a ON t.application_id = a.id
-WHERE CASE
-    WHEN ${bind(personAccountId)} IS NULL THEN tp.participant_id = ${bind(accountId)}
-    ELSE tp.participant_id = ${bind(accountId)} 
-        AND EXISTS (SELECT 1 FROM message_thread_participant tp2 WHERE tp2.participant_id = ${bind(personAccountId)} and tp2.thread_id = tp.thread_id)
-END
+WHERE tp.participant_id = ${bind(accountId)}
+AND ${predicate(personAccountPredicate.forTable("tp"))}
 AND tp.folder_id IS NOT DISTINCT FROM ${bind(folderId)}
 AND EXISTS (SELECT 1 FROM message m WHERE m.thread_id = t.id AND (m.sender_id = ${bind(accountId)} OR m.sent_at IS NOT NULL))
 ORDER BY tp.last_message_timestamp DESC
