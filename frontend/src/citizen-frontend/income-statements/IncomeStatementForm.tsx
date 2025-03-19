@@ -46,6 +46,7 @@ import {
   H3,
   H4,
   Label,
+  LabelLike,
   P
 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
@@ -417,12 +418,82 @@ const IncomeTypeSelection = React.memo(
       [formData, validateEndDate, t]
     )
 
+    const dateRange = useCallback(
+      (isHighestFee: boolean) => {
+        return (
+          <Indent>
+            <FixedSpaceRow spacing="XL">
+              <div>
+                <Label htmlFor="start-date">
+                  {isHighestFee
+                    ? t.income.incomeType.startDate
+                    : t.income.incomeType.starts}{' '}
+                  *
+                </Label>
+                <Gap size="xs" />
+                <DatePicker
+                  id="start-date"
+                  data-qa="income-start-date"
+                  date={formData.startDate}
+                  onChange={onStartDateChange}
+                  info={startDateInputInfo}
+                  hideErrorsBeforeTouched={!showFormErrors}
+                  locale={lang}
+                  required={true}
+                  isInvalidDate={(d) =>
+                    isValidStartDate(d)
+                      ? null
+                      : t.validationErrors.unselectableDate
+                  }
+                />
+              </div>
+              <div>
+                <Label htmlFor="end-date">{`${isHighestFee ? t.income.incomeType.endDate : t.income.incomeType.ends}${isEndDateRequired ? ' *' : ''}`}</Label>
+                <Gap size="xs" />
+                <DatePicker
+                  id="end-date"
+                  data-qa="income-end-date"
+                  date={formData.endDate}
+                  onChange={onEndDateChange}
+                  minDate={formData.startDate ?? undefined}
+                  hideErrorsBeforeTouched={false}
+                  locale={lang}
+                  info={endDateInputInfo}
+                  isInvalidDate={(d) =>
+                    errorToInputInfo(validateEndDate(d), t.validationErrors)
+                      ?.text || null
+                  }
+                  required={isEndDateRequired}
+                />
+              </div>
+            </FixedSpaceRow>
+          </Indent>
+        )
+      },
+      [
+        endDateInputInfo,
+        formData.endDate,
+        formData.startDate,
+        isEndDateRequired,
+        isValidStartDate,
+        lang,
+        onEndDateChange,
+        onStartDateChange,
+        showFormErrors,
+        startDateInputInfo,
+        t,
+        validateEndDate
+      ]
+    )
+
     return (
       <ContentArea opaque paddingVertical="L" ref={ref}>
         <FixedSpaceColumn spacing="zero">
           <H2 noMargin data-qa="title">
             {t.income.incomeInfo}
           </H2>
+          <Gap size="s" />
+          <P noMargin>{t.income.incomeInstructions}</P>
           <Gap size="s" />
           {showFormErrors && (
             <>
@@ -434,50 +505,8 @@ const IncomeTypeSelection = React.memo(
               <Gap size="s" />
             </>
           )}
-          <P noMargin>{t.income.incomeInstructions}</P>
+          <LabelLike>{t.income.incomeType.title} *</LabelLike>
           <Gap size="s" />
-          <FixedSpaceRow spacing="XL">
-            <div>
-              <Label htmlFor="start-date">
-                {t.income.incomeType.startDate} *
-              </Label>
-              <Gap size="xs" />
-              <DatePicker
-                id="start-date"
-                data-qa="income-start-date"
-                date={formData.startDate}
-                onChange={onStartDateChange}
-                info={startDateInputInfo}
-                hideErrorsBeforeTouched={!showFormErrors}
-                locale={lang}
-                required={true}
-                isInvalidDate={(d) =>
-                  isValidStartDate(d)
-                    ? null
-                    : t.validationErrors.unselectableDate
-                }
-              />
-            </div>
-            <div>
-              <Label htmlFor="end-date">{`${t.income.incomeType.endDate}${isEndDateRequired ? ' *' : ''}`}</Label>
-              <Gap size="xs" />
-              <DatePicker
-                id="end-date"
-                data-qa="income-end-date"
-                date={formData.endDate}
-                onChange={onEndDateChange}
-                minDate={formData.startDate ?? undefined}
-                hideErrorsBeforeTouched={false}
-                locale={lang}
-                info={endDateInputInfo}
-                isInvalidDate={(d) =>
-                  errorToInputInfo(validateEndDate(d), t.validationErrors)
-                    ?.text || null
-                }
-                required={isEndDateRequired}
-              />
-            </div>
-          </FixedSpaceRow>
           {invalidDateRange && (
             <>
               <Gap size="s" />
@@ -488,9 +517,6 @@ const IncomeTypeSelection = React.memo(
               />
             </>
           )}
-          <Gap size="L" />
-          <H3 noMargin>{t.income.incomeType.title}</H3>
-          <Gap size="s" />
           <Radio
             label={t.income.incomeType.agreeToHighestFee}
             data-qa="highest-fee-checkbox"
@@ -500,9 +526,9 @@ const IncomeTypeSelection = React.memo(
           {formData.highestFeeSelected && (
             <>
               <Gap size="s" />
-              <HighestFeeInfo>
-                {t.income.incomeType.highestFeeInfo}
-              </HighestFeeInfo>
+              <FeeInfo>{t.income.incomeType.highestFeeInfo}</FeeInfo>
+              <Gap size="s" />
+              {dateRange(true)}
             </>
           )}
           <Gap size="s" />
@@ -512,6 +538,14 @@ const IncomeTypeSelection = React.memo(
             data-qa="gross-income-checkbox"
             onChange={onSelectGross}
           />
+          {formData.grossSelected && (
+            <>
+              <Gap size="s" />
+              <FeeInfo>{t.income.incomeNotifyForPeriod}</FeeInfo>
+              <Gap size="s" />
+              {dateRange(false)}
+            </>
+          )}
         </FixedSpaceColumn>
       </ContentArea>
     )
@@ -1314,7 +1348,7 @@ const OtherInfo = React.memo(function OtherInfo({
   )
 })
 
-const HighestFeeInfo = styled(P).attrs({ noMargin: true })`
+const FeeInfo = styled(P).attrs({ noMargin: true })`
   margin-left: ${defaultMargins.XL};
 `
 

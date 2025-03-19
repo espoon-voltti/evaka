@@ -67,8 +67,8 @@ describe.each(envs)('Income statements', (env) => {
     test('Highest fee', async () => {
       await header.selectTab('income')
       await incomeStatementsPage.createNewIncomeStatement()
-      await incomeStatementsPage.setValidFromDate(startDate)
       await incomeStatementsPage.selectIncomeStatementType('highest-fee')
+      await incomeStatementsPage.setValidFromDate(startDate)
       await incomeStatementsPage.checkAssured()
       await incomeStatementsPage.submit()
 
@@ -80,6 +80,8 @@ describe.each(envs)('Income statements', (env) => {
 
       await incomeStatementsPage.createNewIncomeStatement()
 
+      await incomeStatementsPage.selectIncomeStatementType('gross-income')
+
       // Start date can be max 1y from now so an error is shown
       await incomeStatementsPage.setValidFromDate(
         now.toLocalDate().subMonths(12).subDays(1).format('d.M.yyyy')
@@ -88,9 +90,7 @@ describe.each(envs)('Income statements', (env) => {
 
       await incomeStatementsPage.setValidFromDate(startDate)
       await incomeStatementsPage.incomeStartDateInfo.waitUntilHidden()
-      await incomeStatementsPage.incomeEndDateInfo.waitUntilHidden()
 
-      await incomeStatementsPage.selectIncomeStatementType('gross-income')
       await incomeStatementsPage.incomeEndDateInfo.waitUntilVisible()
 
       await incomeStatementsPage.checkIncomesRegisterConsent()
@@ -114,9 +114,9 @@ describe.each(envs)('Income statements', (env) => {
     test('Limited liability company', async () => {
       await header.selectTab('income')
       await incomeStatementsPage.createNewIncomeStatement()
+      await incomeStatementsPage.selectIncomeStatementType('gross-income')
       await incomeStatementsPage.setValidFromDate(startDate)
       await incomeStatementsPage.setValidToDate(endDate)
-      await incomeStatementsPage.selectIncomeStatementType('gross-income')
       await incomeStatementsPage.checkIncomesRegisterConsent()
       await incomeStatementsPage.setGrossIncomeEstimate(1500)
       await incomeStatementsPage.setEntrepreneur(true)
@@ -158,9 +158,9 @@ describe.each(envs)('Income statements', (env) => {
     test('Self employed', async () => {
       await header.selectTab('income')
       await incomeStatementsPage.createNewIncomeStatement()
+      await incomeStatementsPage.selectIncomeStatementType('gross-income')
       await incomeStatementsPage.setValidFromDate(startDate)
       await incomeStatementsPage.setValidToDate(endDate)
-      await incomeStatementsPage.selectIncomeStatementType('gross-income')
       await incomeStatementsPage.checkIncomesRegisterConsent()
       await incomeStatementsPage.setGrossIncomeEstimate(1500)
       await incomeStatementsPage.setEntrepreneur(true)
@@ -199,9 +199,9 @@ describe.each(envs)('Income statements', (env) => {
     test('Light entrepreneur', async () => {
       await header.selectTab('income')
       await incomeStatementsPage.createNewIncomeStatement()
+      await incomeStatementsPage.selectIncomeStatementType('gross-income')
       await incomeStatementsPage.setValidFromDate(startDate)
       await incomeStatementsPage.setValidToDate(endDate)
-      await incomeStatementsPage.selectIncomeStatementType('gross-income')
       await incomeStatementsPage.checkIncomesRegisterConsent()
       await incomeStatementsPage.setGrossIncomeEstimate(1500)
       await incomeStatementsPage.setEntrepreneur(true)
@@ -236,9 +236,9 @@ describe.each(envs)('Income statements', (env) => {
     test('Partnership', async () => {
       await header.selectTab('income')
       await incomeStatementsPage.createNewIncomeStatement()
+      await incomeStatementsPage.selectIncomeStatementType('gross-income')
       await incomeStatementsPage.setValidFromDate(startDate)
       await incomeStatementsPage.setValidToDate(endDate)
-      await incomeStatementsPage.selectIncomeStatementType('gross-income')
       await incomeStatementsPage.checkIncomesRegisterConsent()
       await incomeStatementsPage.setGrossIncomeEstimate(1500)
       await incomeStatementsPage.setEntrepreneur(true)
@@ -275,8 +275,8 @@ describe.each(envs)('Income statements', (env) => {
     test('No need to check assured', async () => {
       await header.selectTab('income')
       await incomeStatementsPage.createNewIncomeStatement()
-      await incomeStatementsPage.setValidFromDate(startDate)
       await incomeStatementsPage.selectIncomeStatementType('highest-fee')
+      await incomeStatementsPage.setValidFromDate(startDate)
       await incomeStatementsPage.saveDraft()
 
       await assertIncomeStatementCreated(startDate, null, env)

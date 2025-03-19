@@ -2070,10 +2070,13 @@ const en: Translations = {
     childIncomeInfo: "Validity of the child's income information",
     incomeStatementMissing:
       'If your child has income, report it with an income statement.',
+    incomeNotifyForPeriod: 'I declare my income for the following period',
     incomeType: {
       startDate: 'Valid as of',
       endDate: 'Valid until',
-      title: 'Grounds for the client fee',
+      starts: 'Starts on',
+      ends: 'Ends on',
+      title: 'Grounds for the early childhood education fee',
       agreeToHighestFee: 'I agree to the highest early education fee',
       highestFeeInfo:
         'I agree to pay the highest early education fee in accordance with the early education time, the valid Act on Client Charges in Healthcare and Social Welfare and the decisions of the City Board for the time being until I declare otherwise or until the early education of my child ends. (No need to provide income information)',
