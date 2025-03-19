@@ -1,11 +1,11 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2025 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
 
-import { combine, Loading, Result, wrapResult } from 'lib-common/api'
+import { combine } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   ApplicationDetails,
@@ -16,11 +16,14 @@ import { PublicUnit } from 'lib-common/generated/api-types/daycare'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { ApplicationId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
-import { constantQuery, useQueryResult } from 'lib-common/query'
+import {
+  constantQuery,
+  pendingQuery,
+  useChainedQuery,
+  useQueryResult
+} from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
-import { scrollToPos } from 'lib-common/utils/scrolling'
 import { useDebounce } from 'lib-common/utils/useDebounce'
-import { useApiState } from 'lib-common/utils/useRestApi'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
@@ -30,32 +33,26 @@ import { featureFlags } from 'lib-customizations/employee'
 import { faEnvelope } from 'lib-icons'
 
 import { getEmployeeUrlPrefix } from '../../constants'
-import { getApplicationDetails } from '../../generated/api-clients/application'
-import {
-  getApplicationUnits,
-  getClubTerms,
-  getPreschoolTerms
-} from '../../generated/api-clients/daycare'
-import { getThreadByApplicationId } from '../../generated/api-clients/messaging'
 import { Translations, useTranslation } from '../../state/i18n'
 import { TitleContext, TitleState } from '../../state/title'
 import { asUnitType } from '../../types/daycare'
 import { isSsnValid, isTimeValid } from '../../utils/validation/validations'
 import { serviceNeedPublicInfosQuery } from '../applications/queries'
 import MetadataSection from '../archive-metadata/MetadataSection'
-import { renderResult, UnwrapResult } from '../async-rendering'
+import { renderResult } from '../async-rendering'
 
 import ApplicationActionsBar from './ApplicationActionsBar'
 import ApplicationEditView from './ApplicationEditView'
 import ApplicationNotes from './ApplicationNotes'
 import ApplicationReadView from './ApplicationReadView'
-import { applicationMetadataQuery } from './queries'
-
-const getApplicationResult = wrapResult(getApplicationDetails)
-const getClubTermsResult = wrapResult(getClubTerms)
-const getPreschoolTermsResult = wrapResult(getPreschoolTerms)
-const getApplicationUnitsResult = wrapResult(getApplicationUnits)
-const getThreadByApplicationIdResult = wrapResult(getThreadByApplicationId)
+import {
+  applicationDetailsQuery,
+  applicationMetadataQuery,
+  applicationUnitsQuery,
+  clubTermsQuery,
+  preschoolTermsQuery,
+  threadByApplicationIdQuery
+} from './queries'
 
 const ApplicationArea = styled(ContentArea)`
   width: 77%;
@@ -97,95 +94,75 @@ export default React.memo(function ApplicationPage() {
 
   const { i18n } = useTranslation()
   const { setTitle, formatTitleName } = useContext<TitleState>(TitleContext)
-  const [position, setPosition] = useState(0)
-  const [application, setApplication] = useState<Result<ApplicationResponse>>(
-    Loading.of()
-  )
-  const creatingNew = window.location.href.includes('create=true')
+
+  const creatingNew = window.location.href.includes('create=true') // fixme
   const [editing, setEditing] = useState(creatingNew)
   const [editedApplication, setEditedApplication] =
     useState<ApplicationDetails>()
   const [validationErrors, setValidationErrors] = useState<
     Record<string, string>
   >({})
-  const [units, setUnits] = useState<Result<PublicUnit[]>>(Loading.of())
 
-  const [messageThread] = useApiState(
-    () => getThreadByApplicationIdResult({ applicationId }),
-    [applicationId]
+  const application = useQueryResult(applicationDetailsQuery({ applicationId }))
+
+  useEffect(() => {
+    if (application.isSuccess) {
+      const { firstName, lastName } =
+        application.value.application.form.child.person
+      setTitle(
+        `${i18n.application.tabTitle} - ${formatTitleName(firstName, lastName)}`
+      )
+      setEditedApplication(application.value.application)
+    }
+  }, [application, formatTitleName, i18n.application.tabTitle, setTitle])
+
+  const messageThread = useQueryResult(
+    threadByApplicationIdQuery({ applicationId })
   )
 
-  useEffect(() => {
-    if (editing && editedApplication?.type) {
-      const applicationType =
-        editedApplication.type === 'PRESCHOOL' &&
-        editedApplication.form.preferences.preparatory
-          ? 'PREPARATORY'
-          : editedApplication.type
+  const preschoolTerms = useChainedQuery(
+    application.map((a) =>
+      a.application.type === 'PRESCHOOL'
+        ? preschoolTermsQuery()
+        : constantQuery([])
+    )
+  )
 
-      void getApplicationUnitsResult({
-        type: asUnitType(applicationType),
-        date:
-          editedApplication.form.preferences.preferredStartDate ??
-          LocalDate.todayInSystemTz(),
-        shiftCare: null
-      }).then(setUnits)
-    }
-  }, [
-    editing,
-    editedApplication?.type,
-    editedApplication?.form.preferences.preferredStartDate,
-    editedApplication?.form.preferences.preparatory
-  ])
+  const clubTerms = useChainedQuery(
+    application.map((a) =>
+      a.application.type === 'CLUB' ? clubTermsQuery() : constantQuery([])
+    )
+  )
 
-  const [terms, setTerms] = useState<FiniteDateRange[]>()
-  useEffect(() => {
-    switch (
-      application.map(({ application: { type } }) => type).getOrElse(undefined)
-    ) {
-      case 'PRESCHOOL':
-        void getPreschoolTermsResult().then((res) =>
-          setTerms(
-            res
-              .map((terms) => terms.map((term) => term.extendedTerm))
-              .getOrElse([])
-          )
-        )
-        break
-      case 'CLUB':
-        void getClubTermsResult().then((res) =>
-          setTerms(
-            res.map((terms) => terms.map(({ term }) => term)).getOrElse([])
-          )
-        )
-        break
-    }
-  }, [application, setTerms])
+  const terms = combine(application, preschoolTerms, clubTerms)
+    .map(([application, preschoolTerms, clubTerms]) =>
+      application.application.type === 'PRESCHOOL'
+        ? preschoolTerms.map((term) => term.extendedTerm)
+        : application.application.type === 'CLUB'
+          ? clubTerms.map(({ term }) => term)
+          : undefined
+    )
+    .getOrElse(undefined)
+
+  const units = useQueryResult(
+    editing && editedApplication
+      ? applicationUnitsQuery({
+          type: asUnitType(
+            editedApplication.type === 'PRESCHOOL' &&
+              editedApplication.form.preferences.preparatory
+              ? 'PREPARATORY'
+              : editedApplication.type
+          ),
+          date:
+            editedApplication.form.preferences.preferredStartDate ??
+            LocalDate.todayInSystemTz(),
+          shiftCare: null
+        })
+      : pendingQuery<PublicUnit[]>()
+  )
 
   // this is used because text inputs become too sluggish without it
   const debouncedEditedApplication = useDebounce(editedApplication, 50)
-
-  const reloadApplication = () => {
-    setPosition(window.scrollY)
-
-    setApplication(Loading.of())
-    void getApplicationResult({ applicationId }).then((result) => {
-      setApplication(result)
-      if (result.isSuccess) {
-        const { firstName, lastName } =
-          result.value.application.form.child.person
-        setTitle(
-          `${i18n.application.tabTitle} - ${formatTitleName(
-            firstName,
-            lastName
-          )}`
-        )
-        setEditedApplication(result.value.application)
-      }
-    })
-  }
-
-  useEffect(reloadApplication, [applicationId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (debouncedEditedApplication && units.isSuccess) {
@@ -199,10 +176,6 @@ export default React.memo(function ApplicationPage() {
       )
     }
   }, [debouncedEditedApplication]) // eslint-disable-line react-hooks/exhaustive-deps
-
-  useEffect(() => {
-    scrollToPos({ left: 0, top: position })
-  }, [application]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const shouldLoadServiceNeedOptions =
     editedApplication !== undefined &&
@@ -260,10 +233,7 @@ export default React.memo(function ApplicationPage() {
                     />
                   ) : null
                 ) : (
-                  <ApplicationReadView
-                    application={applicationData}
-                    reloadApplication={reloadApplication}
-                  />
+                  <ApplicationReadView application={applicationData} />
                 )}
               </ApplicationArea>
               {(applicationData.permittedActions.includes('READ_NOTES') ||
@@ -304,25 +274,17 @@ export default React.memo(function ApplicationPage() {
           )}
       </Container>
       <Gap />
-      <UnwrapResult
-        result={application}
-        loading={() => null}
-        failure={() => null}
-      >
-        {(application) =>
-          application.permittedActions.includes('UPDATE') &&
-          editedApplication ? (
-            <ApplicationActionsBar
-              applicationStatus={application.application.status}
-              editing={editing}
-              setEditing={setEditing}
-              editedApplication={editedApplication}
-              reloadApplication={reloadApplication}
-              errors={Object.keys(validationErrors).length > 0}
-            />
-          ) : null
-        }
-      </UnwrapResult>
+      {application.isSuccess &&
+        application.value.permittedActions.includes('UPDATE') &&
+        editedApplication && (
+          <ApplicationActionsBar
+            applicationStatus={application.value.application.status}
+            editing={editing}
+            setEditing={setEditing}
+            editedApplication={editedApplication}
+            errors={Object.keys(validationErrors).length > 0}
+          />
+        )}
     </>
   )
 })

@@ -38,7 +38,6 @@ type Props = {
   editing: boolean
   setEditing: (v: boolean) => void
   editedApplication: ApplicationDetails
-  reloadApplication: () => void
   errors: boolean
 }
 
@@ -47,7 +46,6 @@ export default React.memo(function ApplicationActionsBar({
   editing,
   setEditing,
   editedApplication,
-  reloadApplication,
   errors
 }: Props) {
   const navigate = useNavigate()
@@ -93,7 +91,7 @@ export default React.memo(function ApplicationActionsBar({
             disabled={
               editedApplication.confidential === null && confidential === null
             }
-            onSuccess={reloadApplication}
+            onSuccess={() => undefined}
             text={i18n.applications.actions.setVerified}
             primary
             data-qa="set-verified-btn"
@@ -159,7 +157,6 @@ export default React.memo(function ApplicationActionsBar({
           }
           onSuccess={() => {
             setEditing(false)
-            reloadApplication()
           }}
           primary
           data-qa="save-application"

@@ -27,13 +27,11 @@ const rejectDecisionResult = wrapResult(rejectDecision)
 interface Props {
   applicationId: ApplicationId
   decision: Decision
-  reloadApplication: () => void
 }
 
 export default React.memo(function DecisionResponse({
   applicationId,
-  decision,
-  reloadApplication
+  decision
 }: Props) {
   const { i18n } = useTranslation()
   const [accept, setAccept] = useState(true)
@@ -79,7 +77,7 @@ export default React.memo(function DecisionResponse({
       />
       <AsyncButton
         onClick={onSubmit}
-        onSuccess={reloadApplication}
+        onSuccess={() => undefined}
         text={i18n.application.decisions.response.submit}
         primary
         data-qa="decision-send-answer-button"

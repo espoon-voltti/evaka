@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2024 City of Espoo
+// SPDX-FileCopyrightText: 2017-2025 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -8,12 +8,29 @@ import { Queries } from 'lib-common/query'
 import {
   createNote,
   deleteNote,
+  getApplicationDetails,
   getNotes,
   updateNote
 } from '../../generated/api-clients/application'
+import {
+  getApplicationUnits,
+  getClubTerms,
+  getPreschoolTerms
+} from '../../generated/api-clients/daycare'
+import { getThreadByApplicationId } from '../../generated/api-clients/messaging'
 import { getApplicationMetadata } from '../../generated/api-clients/process'
 
 const q = new Queries()
+
+export const clubTermsQuery = q.query(getClubTerms)
+
+export const preschoolTermsQuery = q.query(getPreschoolTerms)
+
+export const applicationDetailsQuery = q.query(getApplicationDetails)
+
+export const applicationUnitsQuery = q.query(getApplicationUnits)
+
+export const threadByApplicationIdQuery = q.query(getThreadByApplicationId)
 
 export const applicationMetadataQuery = q.query(getApplicationMetadata)
 

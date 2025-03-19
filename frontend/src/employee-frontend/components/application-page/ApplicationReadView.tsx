@@ -68,12 +68,10 @@ function BooleanValue({
 
 interface PreschoolApplicationProps {
   application: ApplicationResponse
-  reloadApplication: () => void
 }
 
 export default React.memo(function ApplicationReadView({
-  application,
-  reloadApplication
+  application
 }: PreschoolApplicationProps) {
   const { i18n } = useTranslation()
 
@@ -606,7 +604,6 @@ export default React.memo(function ApplicationReadView({
       <ApplicationDecisionsSection
         applicationId={application.application.id}
         decisions={decisions}
-        reloadApplication={reloadApplication}
         applicationStatus={application.application.status}
       />
 
