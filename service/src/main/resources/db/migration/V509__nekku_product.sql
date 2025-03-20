@@ -9,5 +9,5 @@ CREATE TABLE nekku_product
     options_id      text,
     unit_size       text,
     meal_time       nekku_product_meal_time[],
-    meal_type       text
+    meal_type       nekku_product_meal_type
 );

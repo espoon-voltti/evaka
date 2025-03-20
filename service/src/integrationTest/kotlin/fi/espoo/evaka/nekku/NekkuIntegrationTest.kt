@@ -343,10 +343,8 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         }
     }
 
-    fun getNekkuProducts(): List<NekkuProduct> {
-        val nekkuProducts = mutableListOf<NekkuProduct>()
-
-        nekkuProducts.add(
+    val nekkuProducts =
+        listOf(
             NekkuProduct(
                 "Ateriapalvelu 1 kasvis",
                 "31000010",
@@ -358,10 +356,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     NekkuProductMealTime.SNACK,
                 ),
                 NekkuProductMealType.VEGETABLE,
-            )
-        )
-
-        nekkuProducts.add(
+            ),
             NekkuProduct(
                 "Ateriapalvelu 1 kasvis er",
                 "31000011",
@@ -373,10 +368,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     NekkuProductMealTime.SNACK,
                 ),
                 NekkuProductMealType.VEGETABLE,
-            )
-        )
-
-        nekkuProducts.add(
+            ),
             NekkuProduct(
                 "Päivällinen vegaani päiväkoti",
                 "31000008",
@@ -384,13 +376,9 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 "large",
                 listOf(NekkuProductMealTime.DINNER),
                 NekkuProductMealType.VEGAN,
-            )
+            ),
+            NekkuProduct("Lounas kasvis er", "31001011", "2", "medium", null, null),
         )
-
-        nekkuProducts.add(NekkuProduct("Lounas kasvis er", "31001011", "2", "medium", null, null))
-
-        return nekkuProducts
-    }
 
     @Test
     fun `Nekku product sync does not sync empty data`() {
@@ -400,7 +388,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `Nekku product sync does sync non-empty data`() {
-        val client = TestNekkuClient(nekkuProducts = getNekkuProducts())
+        val client = TestNekkuClient(nekkuProducts = nekkuProducts)
         fetchAndUpdateNekkuProducts(client, db)
         db.transaction { tx ->
             val products = tx.getNekkuProducts()
@@ -410,7 +398,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `Nekku product deletes old products`() {
-        var client = TestNekkuClient(nekkuProducts = getNekkuProducts())
+        var client = TestNekkuClient(nekkuProducts = nekkuProducts)
         fetchAndUpdateNekkuProducts(client, db)
         db.transaction { tx ->
             val products = tx.getNekkuProducts()

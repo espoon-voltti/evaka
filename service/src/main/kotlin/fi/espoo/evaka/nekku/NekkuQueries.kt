@@ -240,26 +240,26 @@ nekku_special_diet_option.key <> excluded.key;
     }
 }
 
-/** Throws an IllegalStateException if Nekku returns an empty texture list. */
+/** Throws an IllegalStateException if Nekku returns an empty product list. */
 fun fetchAndUpdateNekkuProducts(client: NekkuClient, db: Database.Connection) {
     val productsFromNekku = client.getProducts()
 
     if (productsFromNekku.isEmpty())
         error("Refusing to sync empty Nekku product list into database")
     db.transaction { tx ->
-        val deletedCustomerCount = tx.setProductNumbers(productsFromNekku)
+        val deletedProductCount = tx.setProductNumbers(productsFromNekku)
         logger.info {
-            "Deleted: $deletedCustomerCount Nekku customer numbers, inserted ${productsFromNekku.size}"
+            "Deleted: $deletedProductCount Nekku customer numbers, inserted ${productsFromNekku.size}"
         }
     }
 }
 
-fun Database.Transaction.setProductNumbers(customerNumbers: List<NekkuProduct>): Int {
-    val newProductNumbers = customerNumbers.map { it.sku }
-    val deletedCustomerCount = execute {
+fun Database.Transaction.setProductNumbers(productNumbers: List<NekkuProduct>): Int {
+    val newProductNumbers = productNumbers.map { it.sku }
+    val deletedProductCount = execute {
         sql("DELETE FROM nekku_product WHERE sku != ALL (${bind(newProductNumbers)})")
     }
-    executeBatch(customerNumbers) {
+    executeBatch(productNumbers) {
         sql(
             """
 INSERT INTO nekku_product (sku, name, options_id, unit_size, meal_time, meal_type)
@@ -287,7 +287,7 @@ WHERE
 """
         )
     }
-    return deletedCustomerCount
+    return deletedProductCount
 }
 
 fun Database.Transaction.getNekkuProducts(): List<NekkuProduct> {
