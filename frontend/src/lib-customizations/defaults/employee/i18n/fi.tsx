@@ -2379,7 +2379,7 @@ export const fi = {
     transferApplications: {
       title: 'Siirtoa muualle hakeneet',
       child: 'Lapsen nimi/synt.aika',
-      startDate: 'Aloitus'
+      startDate: 'Toive aloituspäivästä, ei vielä sijoitusta'
     },
     serviceApplications: {
       title: 'Käsittelyä odottavat palveluntarpeen muutoshakemukset',
