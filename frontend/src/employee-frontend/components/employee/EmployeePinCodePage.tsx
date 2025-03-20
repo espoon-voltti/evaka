@@ -1,15 +1,14 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2025 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { unstable_usePrompt as usePrompt } from 'react-router'
 
-import { wrapResult } from 'lib-common/api'
+import { useQueryResult } from 'lib-common/query'
 import Title from 'lib-components/atoms/Title'
-import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
-import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
+import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import InputField, { InputInfo } from 'lib-components/atoms/form/InputField'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
@@ -18,12 +17,10 @@ import { Label, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { faLockAlt } from 'lib-icons'
 
-import { isPinLocked, upsertPinCode } from '../../generated/api-clients/pis'
 import { useTranslation } from '../../state/i18n'
 import { useWarnOnUnsavedChanges } from '../../utils/useWarnOnUnsavedChanges'
 
-const isPinLockedResult = wrapResult(isPinLocked)
-const upsertPinCodeResult = wrapResult(upsertPinCode)
+import { isPinLockedQuery, upsertPinCodeMutation } from './queries'
 
 const badPins = [
   '1234',
@@ -47,12 +44,8 @@ export default React.memo(function EmployeePinCodePage() {
   const { i18n } = useTranslation()
   const [pin, setPin] = useState<string>('')
   const [error, setError] = useState<boolean>(false)
-  const [pinLocked, setPinLocked] = useState<boolean>(false)
+  const pinLocked = useQueryResult(isPinLockedQuery()).getOrElse(false)
   const [dirty, setDirty] = useState<boolean>(false)
-
-  useEffect(() => {
-    void isPinLockedResult().then((res) => res.map(setPinLocked))
-  }, [setPinLocked])
 
   function errorCheck(pin: string) {
     if (!isValidPinCode(pin)) {
@@ -62,12 +55,6 @@ export default React.memo(function EmployeePinCodePage() {
     }
     setPin(pin)
     setDirty(pin.length > 0)
-  }
-
-  function savePinCode() {
-    return upsertPinCodeResult({ body: { pin } })
-      .then(() => setDirty(false))
-      .then(isPinLockedResult)
   }
 
   function getInputInfo(): InputInfo | undefined {
@@ -120,20 +107,22 @@ export default React.memo(function EmployeePinCodePage() {
           />
         </FixedSpaceColumn>
         <Gap size="L" />
-        {pin.length !== 4 || error ? (
-          <LegacyButton primary text={i18n.pinCode.button} disabled />
-        ) : (
-          <AsyncButton
-            primary
-            text={i18n.pinCode.button}
-            onClick={savePinCode}
-            onSuccess={(isLocked) => {
-              setPinLocked(isLocked)
-              setError(false)
-            }}
-            data-qa="send-pin-button"
-          />
-        )}
+        <MutateButton
+          primary
+          text={i18n.pinCode.button}
+          disabled={pin.length !== 4 || error}
+          mutation={upsertPinCodeMutation}
+          onClick={() => ({
+            body: {
+              pin
+            }
+          })}
+          onSuccess={() => {
+            setDirty(false)
+            setError(false)
+          }}
+          data-qa="send-pin-button"
+        />
         <Gap size="L" />
       </ContentArea>
     </Container>

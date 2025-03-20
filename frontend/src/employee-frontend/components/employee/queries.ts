@@ -6,7 +6,9 @@ import { Queries } from 'lib-common/query'
 
 import {
   getEmployeePreferredFirstName,
-  setEmployeePreferredFirstName
+  isPinLocked,
+  setEmployeePreferredFirstName,
+  upsertPinCode
 } from '../../generated/api-clients/pis'
 
 const q = new Queries()
@@ -19,3 +21,9 @@ export const setEmployeePreferredFirstNameMutation = q.mutation(
   setEmployeePreferredFirstName,
   [employeePreferredFirstNameQuery]
 )
+
+export const isPinLockedQuery = q.query(isPinLocked)
+
+export const upsertPinCodeMutation = q.mutation(upsertPinCode, [
+  isPinLockedQuery
+])
