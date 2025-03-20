@@ -10,6 +10,10 @@ import {
   deleteNote,
   getApplicationDetails,
   getNotes,
+  sendApplication,
+  setApplicationVerified,
+  updateAndSendApplication,
+  updateApplication,
   updateNote
 } from '../../generated/api-clients/application'
 import {
@@ -27,6 +31,24 @@ export const clubTermsQuery = q.query(getClubTerms)
 export const preschoolTermsQuery = q.query(getPreschoolTerms)
 
 export const applicationDetailsQuery = q.query(getApplicationDetails)
+
+export const updateApplicationMutation = q.mutation(updateApplication, [
+  ({ applicationId }) => applicationDetailsQuery({ applicationId })
+])
+
+export const sendApplicationMutation = q.mutation(sendApplication, [
+  ({ applicationId }) => applicationDetailsQuery({ applicationId })
+])
+
+export const updateAndSendApplicationMutation = q.mutation(
+  updateAndSendApplication,
+  [({ applicationId }) => applicationDetailsQuery({ applicationId })]
+)
+
+export const setApplicationVerifiedMutation = q.mutation(
+  setApplicationVerified,
+  [({ applicationId }) => applicationDetailsQuery({ applicationId })]
+)
 
 export const applicationUnitsQuery = q.query(getApplicationUnits)
 
