@@ -363,6 +363,24 @@ export async function simpleBatchAction(
 
 
 /**
+* Generated from fi.espoo.evaka.application.ApplicationControllerV2.updateAndSendApplication
+*/
+export async function updateAndSendApplication(
+  request: {
+    applicationId: ApplicationId,
+    body: ApplicationUpdate
+  }
+): Promise<void> {
+  const { data: json } = await client.request<JsonOf<void>>({
+    url: uri`/employee/applications/${request.applicationId}/actions/update-and-send-application`.toString(),
+    method: 'PUT',
+    data: request.body satisfies JsonCompatible<ApplicationUpdate>
+  })
+  return json
+}
+
+
+/**
 * Generated from fi.espoo.evaka.application.ApplicationControllerV2.updateApplication
 */
 export async function updateApplication(
