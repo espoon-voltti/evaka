@@ -28,15 +28,16 @@ import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { faPen, faQuestion, faTrash } from 'lib-icons'
 
-import StatusLabel from '../components/common/StatusLabel'
-import GroupCaretakersModal from '../components/group-caretakers/GroupCaretakersModal'
 import {
   getCaretakers,
   removeCaretakers
-} from '../generated/api-clients/daycare'
-import { useTranslation } from '../state/i18n'
-import { TitleContext, TitleState } from '../state/title'
-import { getStatusLabelByDateRange } from '../utils/date'
+} from '../../../generated/api-clients/daycare'
+import { useTranslation } from '../../../state/i18n'
+import { TitleContext, TitleState } from '../../../state/title'
+import { getStatusLabelByDateRange } from '../../../utils/date'
+import StatusLabel from '../../common/StatusLabel'
+
+import GroupCaretakersModal from './GroupCaretakersModal'
 
 const getCaretakersResult = wrapResult(getCaretakers)
 const removeCaretakersResult = wrapResult(removeCaretakers)

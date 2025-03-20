@@ -21,8 +21,8 @@ import { faPen, faPlus } from 'lib-icons'
 import {
   createCaretakers,
   updateCaretakers
-} from '../../generated/api-clients/daycare'
-import { useTranslation } from '../../state/i18n'
+} from '../../../generated/api-clients/daycare'
+import { useTranslation } from '../../../state/i18n'
 
 const createCaretakersResult = wrapResult(createCaretakers)
 const updateCaretakersResult = wrapResult(updateCaretakers)
