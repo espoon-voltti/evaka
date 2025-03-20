@@ -1,46 +1,33 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2025 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
 
-import { Loading, Result, wrapResult } from 'lib-common/api'
-import {
-  CaretakerAmount,
-  CaretakersResponse
-} from 'lib-common/generated/api-types/daycare'
-import {
-  DaycareCaretakerId,
-  DaycareId,
-  GroupId
-} from 'lib-common/generated/api-types/shared'
+import { CaretakerAmount } from 'lib-common/generated/api-types/daycare'
+import { DaycareId, GroupId } from 'lib-common/generated/api-types/shared'
+import { useQueryResult } from 'lib-common/query'
 import { capitalizeFirstLetter } from 'lib-common/string'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
-import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
-import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import InfoModal from 'lib-components/molecules/modals/InfoModal'
-import { faPen, faQuestion, faTrash } from 'lib-icons'
+import { ConfirmedMutation } from 'lib-components/molecules/ConfirmedMutation'
+import { faPen, faTrash } from 'lib-icons'
 
-import {
-  getCaretakers,
-  removeCaretakers
-} from '../../../generated/api-clients/daycare'
 import { useTranslation } from '../../../state/i18n'
 import { TitleContext, TitleState } from '../../../state/title'
 import { getStatusLabelByDateRange } from '../../../utils/date'
+import { renderResult } from '../../async-rendering'
 import StatusLabel from '../../common/StatusLabel'
 
 import GroupCaretakersModal from './GroupCaretakersModal'
-
-const getCaretakersResult = wrapResult(getCaretakers)
-const removeCaretakersResult = wrapResult(removeCaretakers)
+import { caretakersQuery, removeCaretakersMutation } from './queries'
 
 const NarrowContainer = styled.div`
   max-width: 900px;
@@ -76,50 +63,32 @@ export default React.memo(function GroupCaretakers() {
   const groupId = useIdRouteParam<GroupId>('groupId')
   const { i18n } = useTranslation()
   const { setTitle } = useContext<TitleState>(TitleContext)
-  const [caretakers, setCaretakers] = useState<Result<CaretakersResponse>>(
-    Loading.of()
+  const caretakers = useQueryResult(
+    caretakersQuery({ daycareId: unitId, groupId })
   )
   const [modalOpen, setModalOpen] = useState<boolean>(false)
-  const [rowToDelete, setRowToDelete] = useState<CaretakerAmount | null>(null)
   const [rowToEdit, setRowToEdit] = useState<CaretakerAmount | null>(null)
 
-  const loadData = () => {
-    setCaretakers(Loading.of())
-    void getCaretakersResult({ daycareId: unitId, groupId }).then(
-      (response) => {
-        setCaretakers(response)
-        if (response.isSuccess) setTitle(response.value.groupName)
-      }
-    )
-  }
-
   useEffect(() => {
-    loadData()
-  }, [unitId, groupId]) // eslint-disable-line react-hooks/exhaustive-deps
-
-  const deleteRow = (id: DaycareCaretakerId) => {
-    void removeCaretakersResult({ daycareId: unitId, groupId, id }).then(
-      loadData
-    )
-    setRowToDelete(null)
-  }
+    if (caretakers.isSuccess) {
+      setTitle(caretakers.value.groupName)
+    }
+  }, [caretakers, setTitle])
 
   return (
     <Container>
       <ReturnButton label={i18n.common.goBack} />
       <ContentArea opaque>
-        {caretakers.isLoading && <Loader />}
-        {caretakers.isFailure && <span>{i18n.common.error.unknown}</span>}
-        {caretakers.isSuccess && (
+        {renderResult(caretakers, (caretakers) => (
           <NarrowContainer>
             <Title size={2}>{i18n.titles.groupCaretakers}</Title>
             <Title size={3}>
-              {caretakers.value.unitName} |{' '}
-              {capitalizeFirstLetter(caretakers.value.groupName)}
+              {caretakers.unitName} |{' '}
+              {capitalizeFirstLetter(caretakers.groupName)}
             </Title>
             <p>{i18n.groupCaretakers.info}</p>
             <FlexRowRightAlign>
-              <LegacyButton
+              <Button
                 onClick={() => setModalOpen(true)}
                 text={i18n.groupCaretakers.create}
               />
@@ -134,7 +103,7 @@ export default React.memo(function GroupCaretakers() {
                 </Tr>
               </Thead>
               <Tbody>
-                {caretakers.value.caretakers.map((row) => (
+                {caretakers.caretakers.map((row) => (
                   <Tr key={row.id}>
                     <StyledTd>{row.startDate.format()}</StyledTd>
                     <StyledTd>
@@ -156,10 +125,19 @@ export default React.memo(function GroupCaretakers() {
                             icon={faPen}
                             aria-label={i18n.common.edit}
                           />
-                          <IconOnlyButton
-                            onClick={() => setRowToDelete(row)}
+                          <ConfirmedMutation
+                            buttonStyle="ICON"
                             icon={faTrash}
-                            aria-label={i18n.common.remove}
+                            confirmationTitle={
+                              i18n.groupCaretakers.confirmDelete
+                            }
+                            mutation={removeCaretakersMutation}
+                            onClick={() => ({
+                              daycareId: unitId,
+                              groupId,
+                              id: row.id
+                            })}
+                            buttonAltText={i18n.common.remove}
                           />
                         </FixedSpaceRow>
                       </div>
@@ -175,7 +153,6 @@ export default React.memo(function GroupCaretakers() {
                 groupId={groupId}
                 existing={rowToEdit}
                 onSuccess={() => {
-                  loadData()
                   setModalOpen(false)
                   setRowToEdit(null)
                 }}
@@ -185,24 +162,8 @@ export default React.memo(function GroupCaretakers() {
                 }}
               />
             )}
-
-            {rowToDelete && (
-              <InfoModal
-                type="warning"
-                title={i18n.groupCaretakers.confirmDelete}
-                icon={faQuestion}
-                reject={{
-                  action: () => setRowToDelete(null),
-                  label: i18n.common.cancel
-                }}
-                resolve={{
-                  action: () => deleteRow(rowToDelete?.id),
-                  label: i18n.common.remove
-                }}
-              />
-            )}
           </NarrowContainer>
-        )}
+        ))}
       </ContentArea>
     </Container>
   )
