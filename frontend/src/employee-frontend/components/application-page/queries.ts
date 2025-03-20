@@ -35,30 +35,42 @@ export const preschoolTermsQuery = q.query(getPreschoolTerms)
 
 export const applicationDetailsQuery = q.query(getApplicationDetails)
 
+export const applicationMetadataQuery = q.query(getApplicationMetadata)
+
 export const updateApplicationMutation = q.mutation(updateApplication, [
-  ({ applicationId }) => applicationDetailsQuery({ applicationId })
+  ({ applicationId }) => applicationDetailsQuery({ applicationId }),
+  ({ applicationId }) => applicationMetadataQuery({ applicationId })
 ])
 
 export const sendApplicationMutation = q.mutation(sendApplication, [
-  ({ applicationId }) => applicationDetailsQuery({ applicationId })
+  ({ applicationId }) => applicationDetailsQuery({ applicationId }),
+  ({ applicationId }) => applicationMetadataQuery({ applicationId })
 ])
 
 export const updateAndSendApplicationMutation = q.mutation(
   updateAndSendApplication,
-  [({ applicationId }) => applicationDetailsQuery({ applicationId })]
+  [
+    ({ applicationId }) => applicationDetailsQuery({ applicationId }),
+    ({ applicationId }) => applicationMetadataQuery({ applicationId })
+  ]
 )
 
 export const setApplicationVerifiedMutation = q.mutation(
   setApplicationVerified,
-  [({ applicationId }) => applicationDetailsQuery({ applicationId })]
+  [
+    ({ applicationId }) => applicationDetailsQuery({ applicationId }),
+    ({ applicationId }) => applicationMetadataQuery({ applicationId })
+  ]
 )
 
 export const acceptDecisionMutation = q.mutation(acceptDecision, [
-  ({ applicationId }) => applicationDetailsQuery({ applicationId })
+  ({ applicationId }) => applicationDetailsQuery({ applicationId }),
+  ({ applicationId }) => applicationMetadataQuery({ applicationId })
 ])
 
 export const rejectDecisionMutation = q.mutation(rejectDecision, [
-  ({ applicationId }) => applicationDetailsQuery({ applicationId })
+  ({ applicationId }) => applicationDetailsQuery({ applicationId }),
+  ({ applicationId }) => applicationMetadataQuery({ applicationId })
 ])
 
 export const applicationUnitsQuery = q.query(getApplicationUnits)
@@ -66,8 +78,6 @@ export const applicationUnitsQuery = q.query(getApplicationUnits)
 export const personIdentityQuery = q.query(getPersonIdentity)
 
 export const threadByApplicationIdQuery = q.query(getThreadByApplicationId)
-
-export const applicationMetadataQuery = q.query(getApplicationMetadata)
 
 export const applicationNotesQuery = q.query(getNotes)
 
