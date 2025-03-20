@@ -49,15 +49,15 @@ import FileUpload, { fileIcon } from 'lib-components/molecules/FileUpload'
 import { H1, H2, H3, Label, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 
-import { getAttachmentUrl, incomeStatementAttachment } from '../api/attachments'
+import { getAttachmentUrl, incomeStatementAttachment } from '../../api/attachments'
 import {
   getIncomeStatement,
   setIncomeStatementHandled
-} from '../generated/api-clients/incomestatement'
-import { getPersonIdentity } from '../generated/api-clients/pis'
-import { Translations, useTranslation } from '../state/i18n'
+} from '../../generated/api-clients/incomestatement'
+import { getPersonIdentity } from '../../generated/api-clients/pis'
+import { Translations, useTranslation } from '../../state/i18n'
 
-import { renderResult } from './async-rendering'
+import { renderResult } from '../async-rendering'
 
 const getPersonIdentityResult = wrapResult(getPersonIdentity)
 const getIncomeStatementResult = wrapResult(getIncomeStatement)
