@@ -7,7 +7,7 @@ import React, { useCallback, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
-import { combine, Result, wrapResult } from 'lib-common/api'
+import { combine } from 'lib-common/api'
 import { Attachment } from 'lib-common/generated/api-types/attachment'
 import {
   Accountant,
@@ -32,11 +32,9 @@ import {
   fromIncomeStatement
 } from 'lib-common/income-statements/form'
 import { useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
-import { useApiState } from 'lib-common/utils/useRestApi'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
-import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
+import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
 import Container, { ContentArea } from 'lib-components/layout/Container'
@@ -54,16 +52,14 @@ import {
   getAttachmentUrl,
   incomeStatementAttachment
 } from '../../api/attachments'
-import {
-  getIncomeStatement,
-  setIncomeStatementHandled
-} from '../../generated/api-clients/incomestatement'
 import { personIdentityQuery } from '../../queries'
 import { Translations, useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 
-const getIncomeStatementResult = wrapResult(getIncomeStatement)
-const setIncomeStatementHandledResult = wrapResult(setIncomeStatementHandled)
+import {
+  incomeStatementQuery,
+  setIncomeStatementHandledMutation
+} from './queries'
 
 export default React.memo(function IncomeStatementPage() {
   const personId = useIdRouteParam<PersonId>('personId')
@@ -73,15 +69,8 @@ export default React.memo(function IncomeStatementPage() {
   const navigate = useNavigate()
 
   const person = useQueryResult(personIdentityQuery({ personId }))
-  const [incomeStatement, loadIncomeStatement] = useApiState(
-    () => getIncomeStatementResult({ incomeStatementId }),
-    [incomeStatementId]
-  )
-
-  const onUpdateHandled = useCallback(
-    (body: SetIncomeStatementHandledBody) =>
-      setIncomeStatementHandledResult({ incomeStatementId, body }),
-    [incomeStatementId]
+  const incomeStatement = useQueryResult(
+    incomeStatementQuery({ incomeStatementId })
   )
 
   const navigateToPersonProfile = useCallback(
@@ -131,8 +120,6 @@ export default React.memo(function IncomeStatementPage() {
                     attachments={incomeStatement.attachments.filter(
                       (attachment) => attachment.uploadedByEmployee
                     )}
-                    onUploaded={loadIncomeStatement}
-                    onDeleted={loadIncomeStatement}
                   />
                 </ContentArea>
               </>
@@ -140,7 +127,7 @@ export default React.memo(function IncomeStatementPage() {
             <Gap size="L" />
             <ContentArea opaque>
               <HandlerNotesForm
-                onSave={onUpdateHandled}
+                incomeStatementId={incomeStatementId}
                 onSuccess={() => navigateToPersonProfile(incomeStatement)}
                 initialValues={{
                   handled: incomeStatement.status === 'HANDLED',
@@ -511,14 +498,10 @@ const FileIcon = styled(FontAwesomeIcon)`
 
 function EmployeeAttachments({
   incomeStatementId,
-  attachments,
-  onUploaded,
-  onDeleted
+  attachments
 }: {
   incomeStatementId: IncomeStatementId
   attachments: Attachment[]
-  onUploaded: (attachment: Attachment) => void
-  onDeleted: (id: UUID) => void
 }) {
   const { i18n } = useTranslation()
 
@@ -529,8 +512,6 @@ function EmployeeAttachments({
       <FileUpload
         files={attachments}
         uploadHandler={incomeStatementAttachment(incomeStatementId, 'OTHER')}
-        onUploaded={onUploaded}
-        onDeleted={onDeleted}
         getDownloadUrl={getAttachmentUrl}
       />
     </>
@@ -538,11 +519,11 @@ function EmployeeAttachments({
 }
 
 function HandlerNotesForm({
-  onSave,
+  incomeStatementId,
   onSuccess,
   initialValues
 }: {
-  onSave: (params: SetIncomeStatementHandledBody) => Promise<Result<void>>
+  incomeStatementId: IncomeStatementId
   onSuccess: () => void
   initialValues: SetIncomeStatementHandledBody
 }) {
@@ -571,9 +552,13 @@ function HandlerNotesForm({
         onChange={(handlerNote) => setState((old) => ({ ...old, handlerNote }))}
       />
 
-      <AsyncButton
+      <MutateButton
+        mutation={setIncomeStatementHandledMutation}
         primary
-        onClick={() => onSave(state)}
+        onClick={() => ({
+          incomeStatementId,
+          body: state
+        })}
         onSuccess={onSuccess}
         text={i18n.common.save}
         textInProgress={i18n.common.saving}
