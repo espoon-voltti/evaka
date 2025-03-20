@@ -24,7 +24,6 @@ import {
   getPreschoolTerms
 } from '../../generated/api-clients/daycare'
 import { getThreadByApplicationId } from '../../generated/api-clients/messaging'
-import { getPersonIdentity } from '../../generated/api-clients/pis'
 import { getApplicationMetadata } from '../../generated/api-clients/process'
 
 const q = new Queries()
@@ -74,8 +73,6 @@ export const rejectDecisionMutation = q.mutation(rejectDecision, [
 ])
 
 export const applicationUnitsQuery = q.query(getApplicationUnits)
-
-export const personIdentityQuery = q.query(getPersonIdentity)
 
 export const threadByApplicationIdQuery = q.query(getThreadByApplicationId)
 

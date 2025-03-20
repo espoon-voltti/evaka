@@ -12,11 +12,10 @@ import { pendingQuery, useQueryResult } from 'lib-common/query'
 import ListGrid from 'lib-components/layout/ListGrid'
 import { Dimmed, H4, Label } from 'lib-components/typography'
 
+import { personIdentityQuery } from '../../queries'
 import { useTranslation } from '../../state/i18n'
 import { formatName } from '../../utils'
 import { renderResult } from '../async-rendering'
-
-import { personIdentityQuery } from './queries'
 
 interface VTJGuardianProps {
   guardianId: PersonId | undefined | null

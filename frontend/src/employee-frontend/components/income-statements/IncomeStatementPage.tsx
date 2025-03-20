@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2025 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -31,6 +31,7 @@ import {
   computeRequiredAttachments,
   fromIncomeStatement
 } from 'lib-common/income-statements/form'
+import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -49,17 +50,18 @@ import FileUpload, { fileIcon } from 'lib-components/molecules/FileUpload'
 import { H1, H2, H3, Label, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 
-import { getAttachmentUrl, incomeStatementAttachment } from '../../api/attachments'
+import {
+  getAttachmentUrl,
+  incomeStatementAttachment
+} from '../../api/attachments'
 import {
   getIncomeStatement,
   setIncomeStatementHandled
 } from '../../generated/api-clients/incomestatement'
-import { getPersonIdentity } from '../../generated/api-clients/pis'
+import { personIdentityQuery } from '../../queries'
 import { Translations, useTranslation } from '../../state/i18n'
-
 import { renderResult } from '../async-rendering'
 
-const getPersonIdentityResult = wrapResult(getPersonIdentity)
 const getIncomeStatementResult = wrapResult(getIncomeStatement)
 const setIncomeStatementHandledResult = wrapResult(setIncomeStatementHandled)
 
@@ -70,10 +72,7 @@ export default React.memo(function IncomeStatementPage() {
   const { i18n } = useTranslation()
   const navigate = useNavigate()
 
-  const [person] = useApiState(
-    () => getPersonIdentityResult({ personId }),
-    [personId]
-  )
+  const person = useQueryResult(personIdentityQuery({ personId }))
   const [incomeStatement, loadIncomeStatement] = useApiState(
     () => getIncomeStatementResult({ incomeStatementId }),
     [incomeStatementId]
