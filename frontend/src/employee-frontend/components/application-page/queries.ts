@@ -6,10 +6,12 @@ import { ApplicationId } from 'lib-common/generated/api-types/shared'
 import { Queries } from 'lib-common/query'
 
 import {
+  acceptDecision,
   createNote,
   deleteNote,
   getApplicationDetails,
   getNotes,
+  rejectDecision,
   sendApplication,
   setApplicationVerified,
   updateAndSendApplication,
@@ -50,6 +52,14 @@ export const setApplicationVerifiedMutation = q.mutation(
   setApplicationVerified,
   [({ applicationId }) => applicationDetailsQuery({ applicationId })]
 )
+
+export const acceptDecisionMutation = q.mutation(acceptDecision, [
+  ({ applicationId }) => applicationDetailsQuery({ applicationId })
+])
+
+export const rejectDecisionMutation = q.mutation(rejectDecision, [
+  ({ applicationId }) => applicationDetailsQuery({ applicationId })
+])
 
 export const applicationUnitsQuery = q.query(getApplicationUnits)
 
