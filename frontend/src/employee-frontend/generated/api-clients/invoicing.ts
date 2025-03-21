@@ -18,7 +18,6 @@ import { FeeDecisionTypeRequest } from 'lib-common/generated/api-types/invoicing
 import { FeeThresholds } from 'lib-common/generated/api-types/invoicing'
 import { FeeThresholdsId } from 'lib-common/generated/api-types/shared'
 import { FeeThresholdsWithId } from 'lib-common/generated/api-types/invoicing'
-import { GenerateDecisionsBody } from 'lib-common/generated/api-types/invoicing'
 import { IncomeCoefficient } from 'lib-common/generated/api-types/invoicing'
 import { IncomeId } from 'lib-common/generated/api-types/shared'
 import { IncomeNotification } from 'lib-common/generated/api-types/invoicing'
@@ -317,23 +316,6 @@ export async function unignoreFeeDecisionDrafts(
     url: uri`/employee/fee-decisions/unignore`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<FeeDecisionId[]>
-  })
-  return json
-}
-
-
-/**
-* Generated from fi.espoo.evaka.invoicing.controller.FeeDecisionGeneratorController.generateDecisions
-*/
-export async function generateDecisions(
-  request: {
-    body: GenerateDecisionsBody
-  }
-): Promise<void> {
-  const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/employee/fee-decision-generator/generate`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<GenerateDecisionsBody>
   })
   return json
 }
