@@ -4,12 +4,10 @@
 
 package fi.espoo.evaka.daycare.controllers
 
-import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.daycare.UnitStub
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.daycare.domain.ProviderType
-import fi.espoo.evaka.daycare.getAllApplicableUnits
 import fi.espoo.evaka.daycare.getApplicationUnits
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.DaycareId
@@ -20,7 +18,6 @@ import fi.espoo.evaka.shared.domain.DateRange
 import java.time.LocalDate
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
@@ -37,14 +34,6 @@ class LocationController {
         return db.connect { dbc ->
             dbc.read { it.getApplicationUnits(type, date, shiftCare, onlyApplicable = false) }
         }
-    }
-
-    @GetMapping("/employee/public/units/{applicationType}")
-    fun getAllApplicableUnits(
-        db: Database,
-        @PathVariable applicationType: ApplicationType,
-    ): List<PublicUnit> {
-        return db.connect { dbc -> dbc.read { it.getAllApplicableUnits(applicationType) } }
     }
 
     @GetMapping("/employee/areas")
