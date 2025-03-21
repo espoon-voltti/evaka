@@ -6,10 +6,6 @@ import orderBy from 'lodash/orderBy'
 import React, { useMemo } from 'react'
 import styled from 'styled-components'
 
-import {
-  AttendanceChild,
-  AttendanceStatus
-} from 'lib-common/generated/api-types/attendance'
 import { DayReservationStatisticsResult } from 'lib-common/generated/api-types/reservations'
 import colors from 'lib-customizations/common'
 
@@ -17,10 +13,6 @@ import { useTranslation } from '../common/i18n'
 import { UnitOrGroup } from '../common/unit-or-group'
 
 import DayListItem, { ChevronBox, DateBox } from './DayListItem'
-
-export interface ListItem extends AttendanceChild {
-  status: AttendanceStatus
-}
 
 interface Props {
   unitOrGroup: UnitOrGroup
@@ -89,10 +81,10 @@ const NoMarginList = styled.ol`
   margin-top: 0;
 
   li {
-    margin-bottom: 0px;
+    margin-bottom: 0;
 
     &:last-child {
-      margin-bottom: 0px;
+      margin-bottom: 0;
     }
   }
 `

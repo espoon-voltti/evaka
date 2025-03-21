@@ -8,8 +8,6 @@ const separator = ';'
 const quote = '"'
 const byteOrderMark = '\uFEFF'
 
-export type ColumnCommon = { label: string; exclude?: boolean }
-
 export interface Column<T> {
   label: string
   value: (row: T) => CsvValue

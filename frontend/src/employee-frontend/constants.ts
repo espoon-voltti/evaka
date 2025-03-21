@@ -8,8 +8,6 @@ export const EVAKA_START = LocalDate.of(2020, 3, 1)
 
 export const MAX_DATE = LocalDate.of(2099, 12, 31)
 
-export const ENTER_PRESS = 13
-
 export const PROFILE_AGE_THRESHOLD_DEFAULT = 13
 
 export function getEmployeeUrlPrefix(): string {
