@@ -65,7 +65,7 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
     @Test
     fun `admin can get employee`() {
         val employee = db.transaction { it.createEmployee(requestFromEmployee(employee1)) }
-        assertEquals(employee, getEmployee(employee.id))
+        assertEquals(employee.firstName, getEmployeeDetails(employee.id).firstName)
     }
 
     @Test
@@ -279,7 +279,7 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                 email = "test@example.com",
             )
         val response = createSsnEmployee(request)
-        val employee = getEmployee(response.id)
+        val employee = getEmployeeDetails(response.id)
         assertEquals(request.firstName, employee.firstName)
         assertEquals(request.lastName, employee.lastName)
         assertEquals(request.email, employee.email)
@@ -290,8 +290,8 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
 
     fun getEmployees() = employeeController.getEmployees(dbInstance(), adminUser, clock)
 
-    fun getEmployee(id: EmployeeId) =
-        employeeController.getEmployee(dbInstance(), adminUser, clock, id)
+    fun getEmployeeDetails(id: EmployeeId) =
+        employeeController.getEmployeeDetails(dbInstance(), adminUser, clock, id)
 
     fun upsertEmployeeDaycareRoles(
         id: EmployeeId,
@@ -321,9 +321,6 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
 
     fun deleteEmployeeDaycareRoles(id: EmployeeId, daycareId: DaycareId?) =
         employeeController.deleteEmployeeDaycareRoles(dbInstance(), adminUser, clock, id, daycareId)
-
-    fun getEmployeeDetails(id: EmployeeId) =
-        employeeController.getEmployeeDetails(dbInstance(), adminUser, clock, id)
 
     fun createSsnEmployee(employee: NewSsnEmployee) =
         employeeController.createSsnEmployee(dbInstance(), adminUser, clock, employee)
