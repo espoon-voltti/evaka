@@ -5,27 +5,22 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
 
-import { wrapResult } from 'lib-common/api'
 import { CaretakerAmount } from 'lib-common/generated/api-types/daycare'
 import { DaycareId, GroupId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
+import { first, second, useSelectMutation } from 'lib-common/query'
 import InputField from 'lib-components/atoms/form/InputField'
 import {
   DatePickerDeprecated,
   DatePickerClearableDeprecated
 } from 'lib-components/molecules/DatePickerDeprecated'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
-import FormModal from 'lib-components/molecules/modals/FormModal'
+import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { faPen, faPlus } from 'lib-icons'
 
-import {
-  createCaretakers,
-  updateCaretakers
-} from '../../generated/api-clients/daycare'
-import { useTranslation } from '../../state/i18n'
+import { useTranslation } from '../../../state/i18n'
 
-const createCaretakersResult = wrapResult(createCaretakers)
-const updateCaretakersResult = wrapResult(updateCaretakers)
+import { createCaretakersMutation, updateCaretakersMutation } from './queries'
 
 const NumberInputContainer = styled.div`
   width: 150px;
@@ -69,7 +64,6 @@ function GroupCaretakersModal({
           amount: '3'
         }
   )
-  const [submitting, setSubmitting] = useState<boolean>(false)
   const [conflict, setConflict] = useState<boolean>(false)
 
   const assignForm = <K extends keyof FormState>(
@@ -81,37 +75,34 @@ function GroupCaretakersModal({
     })
   }
 
-  const submit = () => {
-    setSubmitting(true)
-    setConflict(false)
-    void (
-      existing
-        ? updateCaretakersResult({
-            id: existing.id,
-            daycareId: unitId,
-            groupId,
-            body: {
-              startDate: form.startDate,
-              endDate: form.endDate,
-              amount: parseFloat(form.amount)
-            }
-          })
-        : createCaretakersResult({
-            daycareId: unitId,
-            groupId,
-            body: {
-              startDate: form.startDate,
-              endDate: form.endDate,
-              amount: parseFloat(form.amount)
-            }
-          })
-    )
-      .then((res) => {
-        if (res.isSuccess) onSuccess()
-        if (res.isFailure && res.statusCode === 409) setConflict(true)
+  const [mutation, action] = useSelectMutation(
+    () => (existing ? first(existing.id) : second()),
+    [
+      updateCaretakersMutation,
+      (id) => ({
+        id,
+        daycareId: unitId,
+        groupId,
+        body: {
+          startDate: form.startDate,
+          endDate: form.endDate,
+          amount: parseFloat(form.amount)
+        }
       })
-      .finally(() => setSubmitting(false))
-  }
+    ],
+    [
+      createCaretakersMutation,
+      () => ({
+        daycareId: unitId,
+        groupId,
+        body: {
+          startDate: form.startDate,
+          endDate: form.endDate,
+          amount: parseFloat(form.amount)
+        }
+      })
+    ]
+  )
 
   const invalidAmount =
     !numberRegex.test(form.amount) || Number(form.amount.replace(',', '.')) < 0
@@ -129,15 +120,23 @@ function GroupCaretakersModal({
     !editingHistory
 
   return (
-    <FormModal
+    <MutateFormModal
       title={existing ? i18n.groupCaretakers.edit : i18n.groupCaretakers.create}
       icon={existing ? faPen : faPlus}
       type="info"
-      resolveAction={submit}
+      resolveMutation={mutation}
+      resolveAction={() => {
+        setConflict(false)
+        return action()
+      }}
       resolveLabel={i18n.common.confirm}
-      resolveDisabled={hasErrors || submitting}
+      resolveDisabled={hasErrors}
       rejectAction={onReject}
       rejectLabel={i18n.common.cancel}
+      onSuccess={onSuccess}
+      onFailure={(res) => {
+        if (res.statusCode === 409) setConflict(true)
+      }}
     >
       <section>
         <div className="bold">{i18n.common.form.startDate}</div>
@@ -182,7 +181,7 @@ function GroupCaretakersModal({
       {editingActive && (
         <AlertBox message={i18n.groupCaretakers.editActiveWarning} />
       )}
-    </FormModal>
+    </MutateFormModal>
   )
 }
 

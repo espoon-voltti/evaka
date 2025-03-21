@@ -14,7 +14,7 @@ import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { H1, Label } from 'lib-components/typography'
 
 import { useTranslation } from '../../../../state/i18n'
-import { isValidPinCode } from '../../../employee/EmployeePinCodePage'
+import { isValidPinCode } from '../../../employee-pin-code/EmployeePinCodePage'
 import { updateTemporaryEmployeeMutation } from '../../queries'
 
 import { useGroupOptions } from './common'

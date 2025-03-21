@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2025 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -6,7 +6,6 @@ import orderBy from 'lodash/orderBy'
 import React, { useCallback, useContext, useState } from 'react'
 import { Link } from 'react-router'
 
-import { wrapResult } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import {
   ChildId,
@@ -14,21 +13,15 @@ import {
   PersonId
 } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
-import { useApiState } from 'lib-common/utils/useRestApi'
+import { cancelMutation, useQueryResult } from 'lib-common/query'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import DateRangePicker from 'lib-components/molecules/date-picker/DateRangePicker'
-import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
+import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { H2, Label, P } from 'lib-components/typography'
 
-import {
-  createFosterParentRelationship,
-  deleteFosterParentRelationship,
-  getFosterChildren,
-  updateFosterParentRelationshipValidity
-} from '../../generated/api-clients/pis'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
 import { renderResult } from '../async-rendering'
@@ -36,18 +29,13 @@ import { DbPersonSearch } from '../common/PersonSearch'
 import Toolbar from '../common/Toolbar'
 
 import { NameTd } from './common'
+import {
+  createFosterParentRelationshipMutation,
+  deleteFosterParentRelationshipMutation,
+  fosterChildrenQuery,
+  updateFosterParentRelationshipValidityMutation
+} from './queries'
 import { PersonContext } from './state'
-
-const createFosterParentRelationshipResult = wrapResult(
-  createFosterParentRelationship
-)
-const deleteFosterParentRelationshipResult = wrapResult(
-  deleteFosterParentRelationship
-)
-const getFosterChildrenResult = wrapResult(getFosterChildren)
-const updateFosterParentRelationshipResult = wrapResult(
-  updateFosterParentRelationshipValidity
-)
 
 interface Props {
   id: PersonId
@@ -67,10 +55,7 @@ export default React.memo(function FosterChildren({
     validDuring: DateRange
   }>()
   const [deleting, setDeleting] = useState<FosterParentId>()
-  const [fosterChildren, reloadFosterChildren] = useApiState(
-    () => getFosterChildrenResult({ parentId: id }),
-    [id]
-  )
+  const fosterChildren = useQueryResult(fosterChildrenQuery({ parentId: id }))
 
   const startEditing = useCallback(
     (id: FosterParentId, validDuring: DateRange) => {
@@ -101,24 +86,20 @@ export default React.memo(function FosterChildren({
   return (
     <>
       {uiMode === 'add-foster-child' && (
-        <FosterChildCreationModal
-          parentId={id}
-          reload={reloadFosterChildren}
-          close={clearUiMode}
-        />
+        <FosterChildCreationModal parentId={id} close={clearUiMode} />
       )}
       {uiMode === 'edit-foster-child' && editing !== undefined && (
         <FosterChildEditingModal
           id={editing.id}
+          parentId={id}
           initialValidDuring={editing?.validDuring}
-          reload={reloadFosterChildren}
           close={stopEditing}
         />
       )}
       {uiMode === 'delete-foster-child' && deleting !== undefined && (
         <FosterChildDeleteConfirmationModal
           id={deleting}
-          reload={reloadFosterChildren}
+          parentId={id}
           close={stopDeleting}
         />
       )}
@@ -221,11 +202,9 @@ export default React.memo(function FosterChildren({
 
 const FosterChildCreationModal = React.memo(function FosterChildCreationModal({
   parentId,
-  reload,
   close
 }: {
   parentId: PersonId
-  reload: () => Promise<unknown>
   close: () => void
 }) {
   const { i18n, lang } = useTranslation()
@@ -237,29 +216,23 @@ const FosterChildCreationModal = React.memo(function FosterChildCreationModal({
     validDuring: new DateRange(LocalDate.todayInHelsinkiTz(), null)
   })
 
-  const onSuccess = useCallback(() => {
-    void reload().then(close)
-  }, [reload, close])
-
   return (
-    <AsyncFormModal
+    <MutateFormModal
       title={i18n.personProfile.fosterChildren.addFosterChildTitle}
-      resolveAction={() => {
-        const childId = form.childId
-        if (childId === null) {
-          return
-        }
-
-        return createFosterParentRelationshipResult({
-          body: {
-            parentId: parentId,
-            childId,
-            validDuring: form.validDuring
-          }
-        })
-      }}
+      resolveMutation={createFosterParentRelationshipMutation}
+      resolveAction={() =>
+        form.childId
+          ? {
+              body: {
+                parentId: parentId,
+                childId: form.childId,
+                validDuring: form.validDuring
+              }
+            }
+          : cancelMutation
+      }
       resolveLabel={i18n.common.confirm}
-      onSuccess={onSuccess}
+      onSuccess={close}
       rejectAction={close}
       rejectLabel={i18n.common.cancel}
       resolveDisabled={form.childId === null}
@@ -287,36 +260,31 @@ const FosterChildCreationModal = React.memo(function FosterChildCreationModal({
         }
         locale={lang}
       />
-    </AsyncFormModal>
+    </MutateFormModal>
   )
 })
 
 const FosterChildEditingModal = React.memo(function FosterChildEditingModal({
   id,
+  parentId,
   initialValidDuring,
-  reload,
   close
 }: {
   id: FosterParentId
+  parentId: PersonId
   initialValidDuring: DateRange
-  reload: () => Promise<unknown>
   close: () => void
 }) {
   const { i18n, lang } = useTranslation()
   const [validDuring, setValidDuring] = useState(initialValidDuring)
 
-  const onSuccess = useCallback(() => {
-    void reload().then(close)
-  }, [reload, close])
-
   return (
-    <AsyncFormModal
+    <MutateFormModal
       title={i18n.personProfile.fosterChildren.updateFosterChildTitle}
-      resolveAction={() =>
-        updateFosterParentRelationshipResult({ id, body: validDuring })
-      }
+      resolveMutation={updateFosterParentRelationshipValidityMutation}
+      resolveAction={() => ({ id, parentId, body: validDuring })}
       resolveLabel={i18n.common.confirm}
-      onSuccess={onSuccess}
+      onSuccess={close}
       rejectAction={close}
       rejectLabel={i18n.common.cancel}
       data-qa="edit-foster-child-modal"
@@ -330,38 +298,35 @@ const FosterChildEditingModal = React.memo(function FosterChildEditingModal({
         }
         locale={lang}
       />
-    </AsyncFormModal>
+    </MutateFormModal>
   )
 })
 
 const FosterChildDeleteConfirmationModal = React.memo(
   function FosterChildDeleteConfirmationModal({
     id,
-    reload,
+    parentId,
     close
   }: {
     id: FosterParentId
-    reload: () => Promise<unknown>
+    parentId: PersonId
     close: () => void
   }) {
     const { i18n } = useTranslation()
 
-    const onSuccess = useCallback(() => {
-      void reload().then(close)
-    }, [reload, close])
-
     return (
-      <AsyncFormModal
-        title={i18n.personProfile.fosterChildren.updateFosterChildTitle}
-        resolveAction={() => deleteFosterParentRelationshipResult({ id })}
+      <MutateFormModal
+        title={i18n.personProfile.fosterChildren.deleteFosterChildTitle}
+        resolveMutation={deleteFosterParentRelationshipMutation}
+        resolveAction={() => ({ id, parentId })}
         resolveLabel={i18n.common.confirm}
-        onSuccess={onSuccess}
+        onSuccess={close}
         rejectAction={close}
         rejectLabel={i18n.common.cancel}
         data-qa="delete-foster-child-modal"
       >
         <P>{i18n.personProfile.fosterChildren.deleteFosterChildParagraph}</P>
-      </AsyncFormModal>
+      </MutateFormModal>
     )
   }
 )

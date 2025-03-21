@@ -384,6 +384,37 @@ class ApplicationControllerV2(
         }
     }
 
+    @PutMapping("/{applicationId}/actions/update-and-send-application")
+    fun updateAndSendApplication(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable applicationId: ApplicationId,
+        @RequestBody application: ApplicationUpdate,
+    ) {
+        db.connect { dbc ->
+            dbc.transaction {
+                accessControl.requirePermissionFor(
+                    it,
+                    user,
+                    clock,
+                    Action.Application.UPDATE,
+                    applicationId,
+                )
+                applicationStateService.updateApplicationContentsServiceWorker(
+                    it,
+                    user,
+                    clock.now(),
+                    applicationId,
+                    application,
+                    user.evakaUserId,
+                )
+                applicationStateService.sendApplication(it, user, clock, applicationId)
+            }
+        }
+        Audit.ApplicationUpdate.log(targetId = AuditId(applicationId))
+    }
+
     @PostMapping("/{applicationId}/actions/set-verified")
     fun setApplicationVerified(
         db: Database,

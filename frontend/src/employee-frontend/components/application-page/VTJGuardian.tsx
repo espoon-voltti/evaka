@@ -1,30 +1,21 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2025 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
 import { Link } from 'react-router'
 
-import { isLoading, Loading, Result, wrapResult } from 'lib-common/api'
+import { isLoading } from 'lib-common/api'
 import { PersonJSON } from 'lib-common/generated/api-types/pis'
 import { PersonId } from 'lib-common/generated/api-types/shared'
-import { useApiState } from 'lib-common/utils/useRestApi'
+import { pendingQuery, useQueryResult } from 'lib-common/query'
 import ListGrid from 'lib-components/layout/ListGrid'
 import { Dimmed, H4, Label } from 'lib-components/typography'
 
-import { getPersonIdentity } from '../../generated/api-clients/pis'
+import { personIdentityQuery } from '../../queries'
 import { useTranslation } from '../../state/i18n'
 import { formatName } from '../../utils'
 import { renderResult } from '../async-rendering'
-
-const getPersonIdentityResult = wrapResult(getPersonIdentity)
-
-async function maybeGetPerson(
-  personId: PersonId | undefined | null
-): Promise<Result<PersonJSON>> {
-  if (personId) return getPersonIdentityResult({ personId })
-  return Loading.of()
-}
 
 interface VTJGuardianProps {
   guardianId: PersonId | undefined | null
@@ -36,9 +27,10 @@ export default React.memo(function VTJGuardian({
   otherGuardianLivesInSameAddress
 }: VTJGuardianProps) {
   const { i18n } = useTranslation()
-  const [guardianResult] = useApiState(
-    () => maybeGetPerson(guardianId),
-    [guardianId]
+  const guardianResult = useQueryResult(
+    guardianId
+      ? personIdentityQuery({ personId: guardianId })
+      : pendingQuery<PersonJSON>()
   )
 
   return (

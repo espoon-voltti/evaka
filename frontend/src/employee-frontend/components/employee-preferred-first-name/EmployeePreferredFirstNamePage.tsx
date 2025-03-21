@@ -1,39 +1,29 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2025 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useEffect, useState } from 'react'
 
-import { wrapResult } from 'lib-common/api'
-import { useApiState } from 'lib-common/utils/useRestApi'
+import { useQueryResult } from 'lib-common/query'
 import Title from 'lib-components/atoms/Title'
-import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
+import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { Label, P } from 'lib-components/typography'
 
-import {
-  getEmployeePreferredFirstName,
-  setEmployeePreferredFirstName
-} from '../../generated/api-clients/pis'
 import { useTranslation } from '../../state/i18n'
 import { UserContext } from '../../state/user'
 
-const getEmployeePreferredFirstNameResult = wrapResult(
-  getEmployeePreferredFirstName
-)
-const setEmployeePreferredFirstNameResult = wrapResult(
-  setEmployeePreferredFirstName
-)
+import {
+  employeePreferredFirstNameQuery,
+  setEmployeePreferredFirstNameMutation
+} from './queries'
 
 export default React.memo(function EmployeePreferredFirstNamePage() {
   const { i18n } = useTranslation()
   const { refreshAuthStatus } = useContext(UserContext)
-  const [preferredFirstName, loadPreferredFirstName] = useApiState(
-    getEmployeePreferredFirstNameResult,
-    []
-  )
+  const preferredFirstName = useQueryResult(employeePreferredFirstNameQuery())
 
   const [selectedPreferredFirstName, setSelectedPreferredFirstName] = useState<
     string | null
@@ -50,11 +40,6 @@ export default React.memo(function EmployeePreferredFirstNamePage() {
       setSelectedPreferredFirstName(initialPreferredFirstName)
     }
   }, [preferredFirstName])
-
-  const onSave = () =>
-    setEmployeePreferredFirstNameResult({
-      body: { preferredFirstName: selectedPreferredFirstName }
-    }).then(loadPreferredFirstName)
 
   const disableConfirm = () =>
     preferredFirstName.isSuccess
@@ -85,11 +70,16 @@ export default React.memo(function EmployeePreferredFirstNamePage() {
             onChange={(value) => setSelectedPreferredFirstName(value)}
             data-qa="select-preferred-first-name"
           />
-          <AsyncButton
+          <MutateButton
             primary
             disabled={disableConfirm()}
             text={i18n.preferredFirstName.confirm}
-            onClick={onSave}
+            mutation={setEmployeePreferredFirstNameMutation}
+            onClick={() => ({
+              body: {
+                preferredFirstName: selectedPreferredFirstName
+              }
+            })}
             onSuccess={() => refreshAuthStatus()}
             data-qa="confirm-button"
           />

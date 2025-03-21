@@ -50,7 +50,6 @@ const SurveyFormSectionGroup = styled(FixedSpaceColumn).attrs({ spacing: 'L' })`
 export const WidthLimiter = styled.div`
   max-width: 400px;
 `
-export type DiscussionSurveyEditMode = 'create' | 'reserve'
 
 const getTreeSelectionAsRecord = (
   tree: TreeNode[]

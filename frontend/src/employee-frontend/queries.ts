@@ -5,7 +5,7 @@
 import { Queries } from 'lib-common/query'
 
 import { getAssistanceActionOptions } from './generated/api-clients/assistance'
-import { getEmployees } from './generated/api-clients/pis'
+import { getEmployees, getPersonIdentity } from './generated/api-clients/pis'
 import { getServiceNeedOptions } from './generated/api-clients/serviceneed'
 
 const q = new Queries()
@@ -17,3 +17,5 @@ export const getAssistanceActionOptionsQuery = q.query(
 )
 
 export const getEmployeesQuery = q.query(getEmployees)
+
+export const personIdentityQuery = q.query(getPersonIdentity)

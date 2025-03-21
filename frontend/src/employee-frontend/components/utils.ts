@@ -2,10 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-export function unique<T>(xs: T[]): T[] {
-  return xs.filter((x, i) => xs.indexOf(x) === i)
-}
-
 export function textAreaRows(
   text: string,
   minRows = 1,

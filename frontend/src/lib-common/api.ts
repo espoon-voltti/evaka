@@ -4,10 +4,6 @@
 
 import axios from 'axios'
 
-export interface Response<T> {
-  data: T
-}
-
 export type Result<T> = Loading<T> | Failure<T> | Success<T>
 
 export class Loading<T> {

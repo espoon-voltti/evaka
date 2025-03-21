@@ -342,10 +342,6 @@ export const ReservationGridItem = React.memo(function ReservationGridItem({
   )
 })
 
-export const LineContainer = styled.div`
-  padding: 0;
-  margin: 0;
-`
 const ReservationGrid = styled.div`
   display: grid;
   grid-template-columns: 3fr 2fr 1fr;

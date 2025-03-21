@@ -40,7 +40,3 @@ const Footer = styled.footer`
 const ContentContainer = styled(Container)`
   padding: ${defaultMargins.xs} 0;
 `
-
-export const StickyFooterContainer = styled.div`
-  padding: ${defaultMargins.xs};
-`

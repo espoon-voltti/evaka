@@ -60,15 +60,6 @@ const ChildBox = styled.div`
   background-color: ${colors.grayscale.g0};
 `
 
-export const ChevronBox = styled.div`
-  min-width: 32px;
-  padding: 0;
-`
-
-export const DateBox = styled.div`
-  min-width: 70px;
-`
-
 const AgeRoundIcon = styled(RoundIcon)`
   &.m {
     font-size: 14px;
