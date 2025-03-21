@@ -34,6 +34,7 @@ class NekkuService(
     init {
         asyncJobRunner.registerHandler(::syncNekkuCustomers)
         asyncJobRunner.registerHandler(::syncNekkuSpecialDiets)
+        asyncJobRunner.registerHandler(::syncNekkuProducts)
     }
 
     fun syncNekkuCustomers(
@@ -77,6 +78,27 @@ class NekkuService(
             )
         }
     }
+
+    fun syncNekkuProducts(
+        db: Database.Connection,
+        clock: EvakaClock,
+        job: AsyncJob.SyncNekkuProducts,
+    ) {
+        if (client == null) error("Cannot sync Nekku products: NekkuEnv is not configured")
+        fetchAndUpdateNekkuProducts(client, db)
+    }
+
+    fun planNekkuProductsSync(db: Database.Connection, clock: EvakaClock) {
+        db.transaction { tx ->
+            tx.removeUnclaimedJobs(setOf(AsyncJobType(AsyncJob.SyncNekkuProducts::class)))
+            asyncJobRunner.plan(
+                tx,
+                listOf(AsyncJob.SyncNekkuProducts()),
+                runAt = clock.now(),
+                retryCount = 1,
+            )
+        }
+    }
 }
 
 interface NekkuClient {
@@ -84,6 +106,8 @@ interface NekkuClient {
     fun getCustomers(): List<NekkuCustomer>
 
     fun getSpecialDiets(): List<NekkuSpecialDiet>
+
+    fun getProducts(): List<NekkuProduct>
 }
 
 class NekkuHttpClient(private val env: NekkuEnv, private val jsonMapper: JsonMapper) : NekkuClient {
@@ -98,6 +122,12 @@ class NekkuHttpClient(private val env: NekkuEnv, private val jsonMapper: JsonMap
     override fun getSpecialDiets(): List<NekkuSpecialDiet> {
         val request =
             getBaseRequest().get().url(env.url.resolve("products/options").toString()).build()
+
+        return executeRequest(request)
+    }
+
+    override fun getProducts(): List<NekkuProduct> {
+        val request = getBaseRequest().get().url(env.url.resolve("products").toString()).build()
 
         return executeRequest(request)
     }
@@ -167,3 +197,31 @@ enum class NekkuSpecialDietType(@JsonValue val description: String) : DatabaseEn
 }
 
 data class NekkuSpecialDietOption(val weight: Int, val key: String, val value: String)
+
+data class NekkuProduct(
+    val name: String,
+    val sku: String,
+    val options_id: String,
+    val unit_size: String,
+    val meal_time: List<NekkuProductMealTime>? = null,
+    val meal_type: NekkuProductMealType? = null,
+)
+
+@ConstList("nekku_product_meal_time")
+enum class NekkuProductMealTime(@JsonValue val description: String) : DatabaseEnum {
+    BREAKFAST("aamupala"),
+    LUNCH("lounas"),
+    SNACK("välipala"),
+    DINNER("päivällinen"),
+    SUPPER("iltapala");
+
+    override val sqlType: String = "nekku_product_meal_time"
+}
+
+@ConstList("nekku_product_meal_type")
+enum class NekkuProductMealType(@JsonValue val description: String) : DatabaseEnum {
+    VEGAN("vegaani"),
+    VEGETABLE("kasvis");
+
+    override val sqlType: String = "nekku_product_meal_type"
+}

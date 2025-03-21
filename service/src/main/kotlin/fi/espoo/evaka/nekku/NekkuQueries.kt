@@ -239,3 +239,60 @@ nekku_special_diet_option.key <> excluded.key;
         "Deleted: ${deletedSpecialOptionsCount.size} Nekku special diet options, inserted ${specialDietOptions.size}"
     }
 }
+
+/** Throws an IllegalStateException if Nekku returns an empty product list. */
+fun fetchAndUpdateNekkuProducts(client: NekkuClient, db: Database.Connection) {
+    val productsFromNekku = client.getProducts()
+
+    if (productsFromNekku.isEmpty())
+        error("Refusing to sync empty Nekku product list into database")
+    db.transaction { tx ->
+        val deletedProductCount = tx.setProductNumbers(productsFromNekku)
+        logger.info {
+            "Deleted: $deletedProductCount Nekku customer numbers, inserted ${productsFromNekku.size}"
+        }
+    }
+}
+
+fun Database.Transaction.setProductNumbers(productNumbers: List<NekkuProduct>): Int {
+    val newProductNumbers = productNumbers.map { it.sku }
+    val deletedProductCount = execute {
+        sql("DELETE FROM nekku_product WHERE sku != ALL (${bind(newProductNumbers)})")
+    }
+    executeBatch(productNumbers) {
+        sql(
+            """
+INSERT INTO nekku_product (sku, name, options_id, unit_size, meal_time, meal_type)
+VALUES (
+    ${bind{it.sku}},
+    ${bind{it.name}},
+    ${bind{it.options_id}},
+    ${bind{it.unit_size}},
+    ${bind{it.meal_time}},
+    ${bind{it.meal_type}}
+)
+ON CONFLICT (sku) DO 
+UPDATE SET
+  name = excluded.name,
+  options_id = excluded.options_id,
+  unit_size = excluded.unit_size,
+  meal_time = excluded.meal_time,
+  meal_type = excluded.meal_type
+WHERE
+    nekku_product.name <> excluded.name OR
+    nekku_product.options_id <> excluded.options_id OR
+    nekku_product.unit_size <> excluded.unit_size OR 
+    nekku_product.meal_time <> excluded.meal_time OR 
+    nekku_product.meal_type <> excluded.meal_type;
+"""
+        )
+    }
+    return deletedProductCount
+}
+
+fun Database.Transaction.getNekkuProducts(): List<NekkuProduct> {
+    return createQuery {
+            sql("SELECT sku, name, options_id, unit_size, meal_time, meal_type FROM nekku_product")
+        }
+        .toList<NekkuProduct>()
+}
