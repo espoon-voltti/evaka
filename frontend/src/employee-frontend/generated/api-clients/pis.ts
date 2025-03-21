@@ -28,7 +28,6 @@ import { GuardiansResponse } from 'lib-common/generated/api-types/pis'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
 import { MergeRequest } from 'lib-common/generated/api-types/pis'
-import { NewEmployee } from 'lib-common/generated/api-types/pis'
 import { NewSsnEmployee } from 'lib-common/generated/api-types/pis'
 import { Parentship } from 'lib-common/generated/api-types/pis'
 import { ParentshipId } from 'lib-common/generated/api-types/shared'
@@ -84,23 +83,6 @@ export async function activateEmployee(
     method: 'PUT'
   })
   return json
-}
-
-
-/**
-* Generated from fi.espoo.evaka.pis.controllers.EmployeeController.createEmployee
-*/
-export async function createEmployee(
-  request: {
-    body: NewEmployee
-  }
-): Promise<Employee> {
-  const { data: json } = await client.request<JsonOf<Employee>>({
-    url: uri`/employee/employees`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<NewEmployee>
-  })
-  return deserializeJsonEmployee(json)
 }
 
 
