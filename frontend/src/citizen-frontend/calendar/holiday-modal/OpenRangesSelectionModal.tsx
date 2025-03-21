@@ -78,6 +78,7 @@ export default React.memo(function OpenRangesSelectionModal({
     <ModalAccessibilityWrapper>
       <MutateFormModal
         mobileFullScreen
+        width="wide"
         title={questionnaire.title[lang]}
         resolveMutation={answerOpenRangesQuestionnaireMutation}
         resolveAction={() => ({
