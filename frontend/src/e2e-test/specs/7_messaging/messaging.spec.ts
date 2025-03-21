@@ -206,7 +206,10 @@ describe('Sending and receiving messages', () => {
 
         await openCitizen(mockedDateAt11)
         await citizenPage.goto(config.enduserMessagesUrl)
-        const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+        const citizenMessagesPage = new CitizenMessagesPage(
+          citizenPage,
+          'desktop'
+        )
         await citizenMessagesPage.assertThreadContent(defaultMessage)
         await citizenMessagesPage.replyToFirstThread(defaultReply)
         await runPendingAsyncJobs(mockedDateAt11.addMinutes(1))
@@ -267,7 +270,10 @@ describe('Sending and receiving messages', () => {
 
         await openCitizen(mockedDateAt11)
         await citizenPage.goto(config.enduserMessagesUrl)
-        const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+        const citizenMessagesPage = new CitizenMessagesPage(
+          citizenPage,
+          'desktop'
+        )
         await citizenMessagesPage.assertThreadContent(defaultMessage)
         await citizenMessagesPage.replyToFirstThread(defaultReply)
         await runPendingAsyncJobs(mockedDateAt11.addMinutes(1))
@@ -305,7 +311,10 @@ describe('Sending and receiving messages', () => {
 
         await openCitizen(mockedDateAt10)
         await citizenPage.goto(config.enduserMessagesUrl)
-        const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+        const citizenMessagesPage = new CitizenMessagesPage(
+          citizenPage,
+          'desktop'
+        )
         await citizenMessagesPage.sendNewMessage(
           'Test message',
           'Test message content',
@@ -326,7 +335,10 @@ describe('Sending and receiving messages', () => {
 
         await openCitizen(mockedDateAt11)
         await citizenPage.goto(config.enduserMessagesUrl)
-        const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+        const citizenMessagesPage = new CitizenMessagesPage(
+          citizenPage,
+          'desktop'
+        )
         await citizenMessagesPage.assertThreadContent(message)
         await citizenMessagesPage.replyToFirstThread(defaultReply)
         await runPendingAsyncJobs(mockedDateAt11.addMinutes(1))
@@ -353,7 +365,10 @@ describe('Sending and receiving messages', () => {
 
         await openCitizen(mockedDateAt11)
         await citizenPage.goto(config.enduserMessagesUrl)
-        const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+        const citizenMessagesPage = new CitizenMessagesPage(
+          citizenPage,
+          'desktop'
+        )
         await citizenMessagesPage.assertThreadContent(defaultMessage)
         await waitUntilEqual(
           () => citizenMessagesPage.getThreadAttachmentCount(),
@@ -380,7 +395,10 @@ describe('Sending and receiving messages', () => {
 
         await openCitizen(mockedDateAt11)
         await citizenPage.goto(config.enduserMessagesUrl)
-        const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+        const citizenMessagesPage = new CitizenMessagesPage(
+          citizenPage,
+          'desktop'
+        )
         await citizenMessagesPage.assertThreadContent(defaultMessage)
         await citizenMessagesPage.replyToFirstThread(defaultReply)
         await runPendingAsyncJobs(mockedDateAt11.addMinutes(1))
@@ -402,7 +420,10 @@ describe('Sending and receiving messages', () => {
         const receivers = ['Esimies Essi']
         await openCitizen(mockedDateAt10)
         await citizenPage.goto(config.enduserMessagesUrl)
-        const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+        const citizenMessagesPage = new CitizenMessagesPage(
+          citizenPage,
+          'desktop'
+        )
         await citizenMessagesPage.sendNewMessage(
           defaultTitle,
           defaultContent,
@@ -429,7 +450,10 @@ describe('Sending and receiving messages', () => {
         const receivers = ['Esimies Essi']
         await openCitizen(tenDaysbeforePlacementAt10)
         await citizenPage.goto(config.enduserMessagesUrl)
-        const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+        const citizenMessagesPage = new CitizenMessagesPage(
+          citizenPage,
+          'desktop'
+        )
         await citizenMessagesPage.sendNewMessage(
           defaultTitle,
           defaultContent,
@@ -460,7 +484,10 @@ describe('Sending and receiving messages', () => {
         )
         await openCitizen(tenDaysBeforePlacementAt12)
         await citizenPage.goto(config.enduserMessagesUrl)
-        const citizenMessagesPageLater = new CitizenMessagesPage(citizenPage)
+        const citizenMessagesPageLater = new CitizenMessagesPage(
+          citizenPage,
+          'desktop'
+        )
         await citizenMessagesPageLater.openFirstThread()
         await waitUntilEqual(
           () => citizenMessagesPageLater.getMessageCount(),
@@ -473,7 +500,10 @@ describe('Sending and receiving messages', () => {
         const receivers = ['Esimies Essi']
         await openCitizen(mockedDateAt10)
         await citizenPage.goto(config.enduserMessagesUrl)
-        const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+        const citizenMessagesPage = new CitizenMessagesPage(
+          citizenPage,
+          'desktop'
+        )
         await citizenMessagesPage.sendNewMessage(
           defaultTitle,
           defaultContent,
@@ -506,7 +536,10 @@ describe('Sending and receiving messages', () => {
         const receivers = ['Esimies Essi']
         await openCitizen(mockedDateAt10)
         await citizenPage.goto(config.enduserMessagesUrl)
-        const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+        const citizenMessagesPage = new CitizenMessagesPage(
+          citizenPage,
+          'desktop'
+        )
         await citizenMessagesPage.sendNewMessage(
           defaultTitle,
           defaultContent,
@@ -529,7 +562,10 @@ describe('Sending and receiving messages', () => {
         const receivers = ['Esimies Essi']
         await openCitizen(mockedDateAt10)
         await citizenPage.goto(config.enduserMessagesUrl)
-        const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+        const citizenMessagesPage = new CitizenMessagesPage(
+          citizenPage,
+          'desktop'
+        )
         await citizenMessagesPage.sendNewMessage(
           defaultTitle,
           defaultContent,
@@ -575,7 +611,10 @@ describe('Sending and receiving messages', () => {
         const recipients = ['Esimies Essi']
         await openCitizen(mockedDateAt10)
         await citizenPage.goto(config.enduserMessagesUrl)
-        const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+        const citizenMessagesPage = new CitizenMessagesPage(
+          citizenPage,
+          'desktop'
+        )
         const editor = await citizenMessagesPage.createNewMessage()
         await editor.assertChildrenSelectable([testChild.id, testChild2.id])
 
@@ -646,7 +685,10 @@ describe('Sending and receiving messages', () => {
 
         await openCitizen(mockedDateAt10)
         await citizenPage.goto(config.enduserMessagesUrl)
-        const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+        const citizenMessagesPage = new CitizenMessagesPage(
+          citizenPage,
+          'desktop'
+        )
         const editor = await citizenMessagesPage.createNewMessage()
         await editor.assertChildrenSelectable([
           testChild.id,
@@ -708,7 +750,8 @@ describe('Sending and receiving messages', () => {
         await openCitizen(dayAfterPlacementEnds)
         await citizenPage.goto(config.enduserMessagesUrl)
         const citizenMessagesPageAfterPlacement = new CitizenMessagesPage(
-          citizenPage
+          citizenPage,
+          'desktop'
         )
         const editor =
           await citizenMessagesPageAfterPlacement.createNewMessage()
@@ -724,7 +767,10 @@ describe('Sending and receiving messages', () => {
         const recipients = ['Esimies Essi']
         await openCitizen(mockedDateAt10)
         await citizenPage.goto(config.enduserMessagesUrl)
-        const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+        const citizenMessagesPage = new CitizenMessagesPage(
+          citizenPage,
+          'desktop'
+        )
         const editor = await citizenMessagesPage.createNewMessage()
         await editor.selectRecipients(recipients)
         await editor
@@ -751,7 +797,10 @@ describe('Sending and receiving messages', () => {
         const receivers = ['Esimies Essi', 'Kosmiset vakiot (Henkilökunta)']
         await openCitizen(mockedDateAt10)
         await citizenPage.goto(config.enduserMessagesUrl)
-        const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+        const citizenMessagesPage = new CitizenMessagesPage(
+          citizenPage,
+          'desktop'
+        )
         await citizenMessagesPage.sendNewMessage(
           defaultTitle,
           defaultContent,
@@ -780,7 +829,10 @@ describe('Sending and receiving messages', () => {
 
         await openCitizen(mockedDateAt11)
         await citizenPage.goto(config.enduserMessagesUrl)
-        const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+        const citizenMessagesPage = new CitizenMessagesPage(
+          citizenPage,
+          'desktop'
+        )
         await citizenMessagesPage.startReplyToFirstThread()
         await citizenMessagesPage.discardMessageButton.waitUntilVisible()
         await citizenMessagesPage.messageReplyContent.fill(defaultContent)
@@ -800,7 +852,10 @@ describe('Sending and receiving messages', () => {
 
         await openCitizen(mockedDateAt11)
         await citizenPage.goto(config.enduserMessagesUrl)
-        const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+        const citizenMessagesPage = new CitizenMessagesPage(
+          citizenPage,
+          'desktop'
+        )
         await citizenMessagesPage.assertThreadContent(defaultMessage)
         await citizenMessagesPage.replyToFirstThread(defaultReply)
         await citizenMessagesPage.assertAriaLiveExistsAndIncludesNotification()
@@ -820,7 +875,10 @@ describe('Sending and receiving messages', () => {
 
         await openCitizen(mockedDateAt11)
         await citizenPage.goto(config.enduserMessagesUrl)
-        const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+        const citizenMessagesPage = new CitizenMessagesPage(
+          citizenPage,
+          'desktop'
+        )
         const header = new CitizenHeader(citizenPage, 'desktop')
 
         await header.assertUnreadMessagesCount(1)
@@ -846,7 +904,10 @@ describe('Sending and receiving messages', () => {
 
           await openCitizen(mockedDateAt11)
           await citizenPage.goto(config.enduserMessagesUrl)
-          const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+          const citizenMessagesPage = new CitizenMessagesPage(
+            citizenPage,
+            'desktop'
+          )
           await citizenMessagesPage.assertThreadContent(defaultMessage)
           await citizenMessagesPage.deleteFirstThread()
           await citizenMessagesPage.confirmThreadDeletion()
@@ -862,7 +923,10 @@ describe('Sending and receiving messages', () => {
 
           await openCitizen(mockedDateAt11)
           await citizenPage.goto(config.enduserMessagesUrl)
-          const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+          const citizenMessagesPage = new CitizenMessagesPage(
+            citizenPage,
+            'desktop'
+          )
           await citizenMessagesPage.assertThreadContent(defaultMessage)
           await citizenMessagesPage.deleteFirstThread()
           await citizenMessagesPage.confirmThreadDeletion()
@@ -885,7 +949,10 @@ describe('Sending and receiving messages', () => {
       await citizenPage.page.evaluate(() => {
         if (window.evaka) window.evaka.keepSessionAliveThrottleTime = 300
       })
-      const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+      const citizenMessagesPage = new CitizenMessagesPage(
+        citizenPage,
+        'desktop'
+      )
       const editor = await citizenMessagesPage.createNewMessage()
       const initialExpiry = await citizenMessagesPage.getSessionExpiry()
 

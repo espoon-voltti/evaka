@@ -258,7 +258,10 @@ test('Foster parent can receive and reply to messages', async () => {
   await runPendingAsyncJobs(mockedNow)
 
   await activeRelationshipPage.goto(config.enduserMessagesUrl)
-  const citizenMessagesPage = new CitizenMessagesPage(activeRelationshipPage)
+  const citizenMessagesPage = new CitizenMessagesPage(
+    activeRelationshipPage,
+    'desktop'
+  )
   await citizenMessagesPage.assertThreadContent(message)
   const reply = 'Message reply'
   await citizenMessagesPage.replyToFirstThread(reply)
@@ -278,7 +281,8 @@ test('Foster parent can receive and reply to messages', async () => {
   const { endedRelationshipPage } = await openEndedRelationshipPage()
   await endedRelationshipPage.goto(config.enduserMessagesUrl)
   const endedCitizenMessagesPage = new CitizenMessagesPage(
-    endedRelationshipPage
+    endedRelationshipPage,
+    'desktop'
   )
   await endedCitizenMessagesPage.openFirstThread()
   await endedCitizenMessagesPage.assertOpenReplyEditorButtonIsHidden()

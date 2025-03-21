@@ -109,7 +109,10 @@ describe('Service Worker Messaging', () => {
       await openCitizenPage(mockedTime.addHours(1))
       const header = new CitizenHeader(citizenPage)
       await header.selectTab('messages')
-      const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+      const citizenMessagesPage = new CitizenMessagesPage(
+        citizenPage,
+        'desktop'
+      )
       await citizenMessagesPage.openFirstThread()
       await citizenMessagesPage.assertThreadContent({ title, content })
     })
@@ -129,7 +132,10 @@ describe('Service Worker Messaging', () => {
       await openCitizenPage(mockedTime.addHours(1))
       const header = new CitizenHeader(citizenPage)
       await header.selectTab('messages')
-      const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+      const citizenMessagesPage = new CitizenMessagesPage(
+        citizenPage,
+        'desktop'
+      )
       await citizenMessagesPage.newMessageButton.assertDisabled(true)
     })
 
@@ -161,7 +167,10 @@ describe('Service Worker Messaging', () => {
       await openCitizenPage(mockedTime.addHours(1))
       const header = new CitizenHeader(citizenPage)
       await header.selectTab('messages')
-      const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+      const citizenMessagesPage = new CitizenMessagesPage(
+        citizenPage,
+        'desktop'
+      )
       await citizenMessagesPage.openFirstThread()
       await citizenMessagesPage.replyToFirstThread('This is my reply')
       await citizenPage.findByDataQa('timed-toast-close-button').click()
@@ -279,7 +288,10 @@ describe('Service Worker Messaging', () => {
       await openCitizenPage(mockedTime.addHours(1))
       const header = new CitizenHeader(citizenPage)
       await header.selectTab('messages')
-      const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+      const citizenMessagesPage = new CitizenMessagesPage(
+        citizenPage,
+        'desktop'
+      )
       await citizenMessagesPage.openFirstThread()
       await citizenMessagesPage.assertThreadContent({ title, content })
       const replyContent = 'This is my reply'
@@ -308,7 +320,10 @@ describe('Service Worker Messaging', () => {
       await openCitizenPage(mockedTime.addHours(1))
       const header = new CitizenHeader(citizenPage)
       await header.selectTab('messages')
-      const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+      const citizenMessagesPage = new CitizenMessagesPage(
+        citizenPage,
+        'desktop'
+      )
       await citizenMessagesPage.openFirstThread()
       await citizenMessagesPage.assertThreadContent({ title, content })
       await citizenMessagesPage.replyToFirstThread('This is a reply')

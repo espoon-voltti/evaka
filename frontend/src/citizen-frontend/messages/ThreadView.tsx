@@ -392,7 +392,7 @@ export default React.memo(
           messages.length > 0 && (
             <>
               <Gap size="s" />
-              <MobileAndTablet>
+              <MobileAndTablet data-qa="message-thread-actions-mobile">
                 <FixedSpaceColumn alignItems="center">
                   {messageType === 'MESSAGE' && allowReply ? (
                     <Button
@@ -432,7 +432,7 @@ export default React.memo(
                   />
                 </FixedSpaceColumn>
               </MobileAndTablet>
-              <Desktop>
+              <Desktop data-qa="message-thread-actions-desktop">
                 <ActionRow justifyContent="space-between">
                   {messageType === 'MESSAGE' && allowReply ? (
                     <Button
