@@ -178,22 +178,6 @@ export async function deleteEmployeeScheduledDaycareRole(
 
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.EmployeeController.getEmployee
-*/
-export async function getEmployee(
-  request: {
-    id: EmployeeId
-  }
-): Promise<Employee> {
-  const { data: json } = await client.request<JsonOf<Employee>>({
-    url: uri`/employee/employees/${request.id}`.toString(),
-    method: 'GET'
-  })
-  return deserializeJsonEmployee(json)
-}
-
-
-/**
 * Generated from fi.espoo.evaka.pis.controllers.EmployeeController.getEmployeeDetails
 */
 export async function getEmployeeDetails(

@@ -99,22 +99,6 @@ class EmployeeController(private val accessControl: AccessControl) {
             .also { Audit.EmployeesRead.log() }
     }
 
-    @GetMapping("/{id}")
-    fun getEmployee(
-        db: Database,
-        user: AuthenticatedUser.Employee,
-        clock: EvakaClock,
-        @PathVariable id: EmployeeId,
-    ): Employee {
-        return db.connect { dbc ->
-                dbc.read {
-                    accessControl.requirePermissionFor(it, user, clock, Action.Employee.READ, id)
-                    it.getEmployee(id)
-                } ?: throw NotFound()
-            }
-            .also { Audit.EmployeeRead.log(targetId = AuditId(id)) }
-    }
-
     @PutMapping("/{id}/global-roles")
     fun updateEmployeeGlobalRoles(
         db: Database,
