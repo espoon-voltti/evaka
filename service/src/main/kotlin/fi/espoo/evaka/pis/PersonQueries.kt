@@ -14,7 +14,6 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.Row
 import fi.espoo.evaka.shared.db.freeTextSearchQuery
-import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.utils.applyIf
 import java.time.LocalDate
@@ -239,19 +238,6 @@ RETURNING id
             )
         }
         .exactlyOne<PersonId>()
-}
-
-fun Database.Transaction.createEmptyPerson(evakaClock: EvakaClock): PersonDTO {
-    return createQuery {
-            sql(
-                """
-INSERT INTO person (first_name, last_name, email, date_of_birth)
-VALUES ('Etunimi', 'Sukunimi', '', ${bind(evakaClock.today())})
-RETURNING *
-"""
-            )
-        }
-        .exactlyOne(toPersonDTO)
 }
 
 fun Database.Transaction.createPersonFromVtj(person: PersonDTO): PersonDTO {

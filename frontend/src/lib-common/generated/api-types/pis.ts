@@ -502,14 +502,6 @@ export interface PersonAddressDTO {
 }
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.PersonController.PersonIdentityResponseJSON
-*/
-export interface PersonIdentityResponseJSON {
-  id: PersonId
-  socialSecurityNumber: string | null
-}
-
-/**
 * Generated from fi.espoo.evaka.pis.service.PersonJSON
 */
 export interface PersonJSON {

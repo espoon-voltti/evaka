@@ -13,7 +13,6 @@ import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.identity.isValidSSN
 import fi.espoo.evaka.pdfgen.PdfGenerator
 import fi.espoo.evaka.pis.PersonSummary
-import fi.espoo.evaka.pis.createEmptyPerson
 import fi.espoo.evaka.pis.createFosterParentRelationship
 import fi.espoo.evaka.pis.createPerson
 import fi.espoo.evaka.pis.duplicatePerson
@@ -70,22 +69,6 @@ class PersonController(
     private val pdfGenerator: PdfGenerator,
     private val evakaEnv: EvakaEnv,
 ) {
-    @PostMapping
-    fun createEmpty(
-        db: Database,
-        user: AuthenticatedUser.Employee,
-        clock: EvakaClock,
-    ): PersonIdentityResponseJSON {
-        return db.connect { dbc ->
-                dbc.transaction {
-                    accessControl.requirePermissionFor(it, user, clock, Action.Global.CREATE_PERSON)
-                    createEmptyPerson(it, clock)
-                }
-            }
-            .let { PersonIdentityResponseJSON.from(it) }
-            .also { Audit.PersonCreate.log(targetId = AuditId(it.id)) }
-    }
-
     @GetMapping("/{personId}")
     fun getPerson(
         db: Database,

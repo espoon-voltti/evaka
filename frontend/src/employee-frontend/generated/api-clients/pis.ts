@@ -38,7 +38,6 @@ import { PartnershipRequest } from 'lib-common/generated/api-types/pis'
 import { PartnershipUpdateRequest } from 'lib-common/generated/api-types/pis'
 import { PartnershipWithPermittedActions } from 'lib-common/generated/api-types/pis'
 import { PersonId } from 'lib-common/generated/api-types/shared'
-import { PersonIdentityResponseJSON } from 'lib-common/generated/api-types/pis'
 import { PersonJSON } from 'lib-common/generated/api-types/pis'
 import { PersonPatch } from 'lib-common/generated/api-types/pis'
 import { PersonResponse } from 'lib-common/generated/api-types/pis'
@@ -668,18 +667,6 @@ export async function addSsn(
     data: request.body satisfies JsonCompatible<AddSsnRequest>
   })
   return deserializeJsonPersonJSON(json)
-}
-
-
-/**
-* Generated from fi.espoo.evaka.pis.controllers.PersonController.createEmpty
-*/
-export async function createEmpty(): Promise<PersonIdentityResponseJSON> {
-  const { data: json } = await client.request<JsonOf<PersonIdentityResponseJSON>>({
-    url: uri`/employee/person`.toString(),
-    method: 'POST'
-  })
-  return json
 }
 
 
