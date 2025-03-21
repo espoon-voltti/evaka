@@ -11,3 +11,5 @@ CREATE TABLE nekku_product
     meal_time       nekku_product_meal_time[],
     meal_type       nekku_product_meal_type
 );
+
+CREATE INDEX fk$nekku_product_options_id ON nekku_product(options_id);
