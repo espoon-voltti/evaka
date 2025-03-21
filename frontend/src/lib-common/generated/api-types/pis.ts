@@ -394,20 +394,6 @@ export type ModifySource =
   | 'DVV'
 
 /**
-* Generated from fi.espoo.evaka.pis.NewEmployee
-*/
-export interface NewEmployee {
-  active: boolean
-  email: string | null
-  employeeNumber: string | null
-  externalId: string | null
-  firstName: string
-  lastName: string
-  roles: UserRole[]
-  temporaryInUnitId: DaycareId | null
-}
-
-/**
 * Generated from fi.espoo.evaka.pis.NewSsnEmployee
 */
 export interface NewSsnEmployee {

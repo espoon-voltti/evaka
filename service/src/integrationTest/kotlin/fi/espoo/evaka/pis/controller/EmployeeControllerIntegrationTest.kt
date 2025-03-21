@@ -15,6 +15,7 @@ import fi.espoo.evaka.pis.NewEmployee
 import fi.espoo.evaka.pis.NewSsnEmployee
 import fi.espoo.evaka.pis.ScheduledDaycareRole
 import fi.espoo.evaka.pis.controllers.EmployeeController
+import fi.espoo.evaka.pis.createEmployee
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -50,18 +51,11 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
     }
 
     @Test
-    fun `admin can add employee`() {
-        val emp = createEmployee(requestFromEmployee(employee1))
-        assertEquals(employee1.firstName, emp.firstName)
-        assertEquals(employee1.lastName, emp.lastName)
-        assertEquals(employee1.email, emp.email)
-        assertEquals(employee1.externalId, emp.externalId)
-    }
-
-    @Test
     fun `admin gets all employees`() {
-        createEmployee(requestFromEmployee(employee1))
-        createEmployee(requestFromEmployee(employee2))
+        db.transaction {
+            it.createEmployee(requestFromEmployee(employee1))
+            it.createEmployee(requestFromEmployee(employee2))
+        }
         val employees = getEmployees()
         assertEquals(2, employees.size)
         assertEquals(employee1.email, employees[0].email)
@@ -69,16 +63,14 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
     }
 
     @Test
-    fun `admin can first create, then get employee`() {
-        assertEquals(0, getEmployees().size)
-        val responseCreate = createEmployee(requestFromEmployee(employee1))
-        assertEquals(1, getEmployees().size)
-        assertEquals(responseCreate.id, getEmployee(responseCreate.id).id)
+    fun `admin can get employee`() {
+        val employee = db.transaction { it.createEmployee(requestFromEmployee(employee1)) }
+        assertEquals(employee, getEmployee(employee.id))
     }
 
     @Test
     fun `admin can not delete employee without SSN (AD user)`() {
-        val employee = createEmployee(requestFromEmployee(employee1))
+        val employee = db.transaction { it.createEmployee(requestFromEmployee(employee1)) }
 
         assertThrows<BadRequest> { deleteEmployee(employee.id) }
     }
@@ -300,9 +292,6 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
 
     fun getEmployee(id: EmployeeId) =
         employeeController.getEmployee(dbInstance(), adminUser, clock, id)
-
-    fun createEmployee(employee: NewEmployee) =
-        employeeController.createEmployee(dbInstance(), adminUser, clock, employee)
 
     fun upsertEmployeeDaycareRoles(
         id: EmployeeId,

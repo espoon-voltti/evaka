@@ -11,9 +11,7 @@ import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.messaging.upsertEmployeeMessageAccount
 import fi.espoo.evaka.pis.Employee
 import fi.espoo.evaka.pis.EmployeeWithDaycareRoles
-import fi.espoo.evaka.pis.NewEmployee
 import fi.espoo.evaka.pis.NewSsnEmployee
-import fi.espoo.evaka.pis.createEmployee
 import fi.espoo.evaka.pis.createEmployeeWithSsn
 import fi.espoo.evaka.pis.deactivateEmployeeRemoveRolesAndPin
 import fi.espoo.evaka.pis.deleteEmployee
@@ -324,27 +322,6 @@ class EmployeeController(private val accessControl: AccessControl) {
                 } ?: throw NotFound("employee $id not found")
             }
             .also { Audit.EmployeeRead.log(targetId = AuditId(id)) }
-    }
-
-    @PostMapping("")
-    fun createEmployee(
-        db: Database,
-        user: AuthenticatedUser.Employee,
-        clock: EvakaClock,
-        @RequestBody employee: NewEmployee,
-    ): Employee {
-        return db.connect { dbc ->
-                dbc.transaction {
-                    accessControl.requirePermissionFor(
-                        it,
-                        user,
-                        clock,
-                        Action.Global.CREATE_EMPLOYEE,
-                    )
-                    it.createEmployee(employee)
-                }
-            }
-            .also { Audit.EmployeeCreate.log(targetId = AuditId(it.id)) }
     }
 
     @DeleteMapping("/{id}")
