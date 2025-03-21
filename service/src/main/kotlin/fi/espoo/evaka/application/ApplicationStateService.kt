@@ -1382,6 +1382,21 @@ class ApplicationStateService(
                         "Cannot apply to different preschool term for connected daycare"
                     )
                 }
+                if (
+                    connectedDaycarePreferredStartDate.isBefore(preferredStartDate) &&
+                        // special case when extended term starts before actual preschool term
+                        // e.g. term.start = 2025-08-06 & extendedTerm.start = 2025-08-01
+                        // -> preferredStartDate = 2025-08-06 & connectedDaycarePreferredStartDate
+                        // from 2025-08-01 to 2025-08-05 is also valid
+                        (activePreschoolTerm.extendedTerm.start ==
+                            activePreschoolTerm.finnishPreschool.start ||
+                            activePreschoolTerm.finnishPreschool.start != preferredStartDate ||
+                            !activePreschoolTerm.extendedTerm.includes(
+                                connectedDaycarePreferredStartDate
+                            ))
+                ) {
+                    throw BadRequest("Cannot apply to connected daycare before preschool")
+                }
             }
         }
 

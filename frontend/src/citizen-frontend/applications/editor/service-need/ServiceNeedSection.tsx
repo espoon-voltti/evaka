@@ -5,7 +5,6 @@
 import React from 'react'
 
 import { ServiceNeedFormData } from 'lib-common/api-types/application/ApplicationFormData'
-import FiniteDateRange from 'lib-common/finite-date-range'
 import { UpdateStateFn } from 'lib-common/form-state'
 import { getErrorCount } from 'lib-common/form-validation'
 import {
@@ -22,6 +21,7 @@ import PreferredStartSubSection from '../../../applications/editor/service-need/
 import ServiceTimeSubSectionDaycare from '../../../applications/editor/service-need/ServiceTimeSubSectionDaycare'
 import ServiceTimeSubSectionPreschool from '../../../applications/editor/service-need/ServiceTimeSubSectionPreschool'
 import { useTranslation } from '../../../localization'
+import { Term } from '../ApplicationEditor'
 import { ApplicationFormDataErrors } from '../validations'
 
 export type ServiceNeedSectionProps = {
@@ -34,7 +34,7 @@ export type ServiceNeedSectionProps = {
   updateFormData: UpdateStateFn<ServiceNeedFormData>
   errors: ApplicationFormDataErrors['serviceNeed']
   verificationRequested: boolean
-  terms?: FiniteDateRange[]
+  terms?: Term[]
   serviceNeedOptions: ServiceNeedOptionPublicInfo[]
 }
 

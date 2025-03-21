@@ -79,7 +79,12 @@ export type ApplicationFormProps = {
   originalPreferredStartDate: LocalDate | null
   minDate: LocalDate
   maxDate: LocalDate
-  terms?: FiniteDateRange[]
+  terms?: Term[]
+}
+
+export interface Term {
+  term: FiniteDateRange
+  extendedTerm: FiniteDateRange
 }
 
 const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
@@ -98,7 +103,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
   const { data: clubTerms } = useQuery(clubTermsQuery(), {
     enabled: application.type === 'CLUB'
   })
-  const terms = useMemo(() => {
+  const terms = useMemo<Term[] | undefined>(() => {
     switch (application.type) {
       case 'PRESCHOOL':
         return (preschoolTerms ?? [])
@@ -109,13 +114,19 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
               extendedTerm.end.isEqualOrAfter(today)
             )
           })
-          .map((term) => term.extendedTerm)
+          .map((term) => ({
+            term: term.finnishPreschool,
+            extendedTerm: term.extendedTerm
+          }))
       case 'CLUB':
         return (clubTerms ?? [])
           .filter(({ term }) =>
             term.end.isEqualOrAfter(LocalDate.todayInHelsinkiTz())
           )
-          .map(({ term }) => term)
+          .map(({ term }) => ({
+            term,
+            extendedTerm: term
+          }))
       default:
         return undefined
     }
@@ -145,14 +156,17 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
 
   const minDate = useMemo(() => {
     const minPreferred = minPreferredStartDate(originalPreferredStartDate)
-    const minTermDate = terms && minBy(terms, (term) => term.start)?.start
+    const minTermDate =
+      terms &&
+      minBy(terms, (term) => term.extendedTerm.start)?.extendedTerm.start
 
     return minTermDate?.isAfter(minPreferred) ? minTermDate : minPreferred
   }, [terms, originalPreferredStartDate])
 
   const maxDate = useMemo(() => {
     const maxPreferred = maxPreferredStartDate()
-    const maxTermDate = terms && maxBy(terms, (term) => term.end)?.end
+    const maxTermDate =
+      terms && maxBy(terms, (term) => term.extendedTerm.end)?.extendedTerm.end
 
     return maxTermDate?.isBefore(maxPreferred) ? maxTermDate : maxPreferred
   }, [terms])

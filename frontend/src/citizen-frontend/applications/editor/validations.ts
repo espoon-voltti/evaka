@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
-import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   email,
   emailVerificationCheck,
@@ -24,6 +23,8 @@ import {
 } from 'lib-common/generated/api-types/application'
 import LocalDate from 'lib-common/local-date'
 import { featureFlags } from 'lib-customizations/citizen'
+
+import { Term } from './ApplicationEditor'
 
 export type ApplicationFormDataErrors = {
   [section in keyof ApplicationFormData]: ErrorsOf<ApplicationFormData[section]>
@@ -46,7 +47,7 @@ export const maxPreferredStartDate = (): LocalDate =>
 export const isValidPreferredStartDate = (
   date: LocalDate,
   originalPreferredStartDate: LocalDate | null,
-  terms?: FiniteDateRange[]
+  terms?: Term[]
 ): boolean => {
   if (date.isBefore(minPreferredStartDate(originalPreferredStartDate)))
     return false
@@ -54,14 +55,14 @@ export const isValidPreferredStartDate = (
   if (date.isAfter(maxPreferredStartDate())) return false
 
   if (terms !== undefined) {
-    return terms.some((term) => term.includes(date))
+    return terms.some((term) => term.extendedTerm.includes(date))
   }
 
   return true
 }
 
 const preferredStartDateValidator =
-  (originalPreferredStartDate: LocalDate | null, terms?: FiniteDateRange[]) =>
+  (originalPreferredStartDate: LocalDate | null, terms?: Term[]) =>
   (
     val: LocalDate | null,
     err: ErrorKey = 'preferredStartDate'
@@ -70,28 +71,40 @@ const preferredStartDateValidator =
       ? undefined
       : err
 
-const isInSameTerm = (
-  date1: LocalDate,
-  date2: LocalDate,
-  terms: FiniteDateRange[]
-) => {
-  const term1 = terms.find((term) => term.includes(date1))
-  const term2 = terms.find((term) => term.includes(date2))
-  return term1 === term2
-}
-
 const connectedDaycarePreferredStartDateValidator =
-  (preferredStartDate: LocalDate | null, terms?: FiniteDateRange[]) =>
+  (preferredStartDate: LocalDate | null, terms?: Term[]) =>
   (
     val: LocalDate | null,
     err: ErrorKey = 'connectedPreferredStartDate'
-  ): ErrorKey | undefined =>
-    val &&
-    preferredStartDate &&
-    terms &&
-    (val === preferredStartDate || isInSameTerm(val, preferredStartDate, terms))
-      ? undefined
-      : err
+  ): ErrorKey | undefined => {
+    if (val === null || preferredStartDate === null || terms === undefined) {
+      return undefined
+    }
+    if (val.isEqual(preferredStartDate)) {
+      return undefined
+    }
+    const preschoolTerm = terms.find((term) =>
+      term.extendedTerm.includes(preferredStartDate)
+    )
+    if (preschoolTerm === undefined) {
+      return undefined
+    }
+    const daycareTerm = terms.find((term) => term.extendedTerm.includes(val))
+    if (
+      daycareTerm?.extendedTerm.isEqual(preschoolTerm.extendedTerm) &&
+      (val.isAfter(preferredStartDate) ||
+        // special case when extended term starts before actual preschool term
+        // e.g. term.start = 2025-08-06 & extendedTerm.start = 2025-08-01
+        // -> preferredStartDate = 2025-08-06 & connectedDaycarePreferredStartDate
+        // from 2025-08-01 to 2025-08-05 is also valid
+        (preschoolTerm.extendedTerm.start.isBefore(preschoolTerm.term.start) &&
+          preschoolTerm.term.start.isEqual(preferredStartDate) &&
+          preschoolTerm.extendedTerm.includes(val)))
+    ) {
+      return undefined
+    }
+    return err
+  }
 
 export const getUrgencyAttachmentValidStatus = (
   urgent: boolean,
@@ -116,7 +129,7 @@ export const getShiftCareAttachmentsValidStatus = (
 export const validateApplication = (
   apiData: ApplicationDetailsGen,
   form: ApplicationFormData,
-  terms?: FiniteDateRange[]
+  terms?: Term[]
 ): ApplicationFormDataErrors => {
   const requireFullFamily =
     apiData.type === 'DAYCARE' ||
@@ -144,12 +157,6 @@ export const validateApplication = (
           ? validate(
               form.serviceNeed.connectedDaycarePreferredStartDate,
               required,
-              preferredStartDateValidator(
-                apiData.status !== 'CREATED'
-                  ? apiData.form.preferences.connectedDaycarePreferredStartDate
-                  : null,
-                terms
-              ),
               connectedDaycarePreferredStartDateValidator(
                 form.serviceNeed.preferredStartDate,
                 terms

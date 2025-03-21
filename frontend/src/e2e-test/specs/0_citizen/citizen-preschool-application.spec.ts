@@ -138,3 +138,80 @@ describe('Citizen preschool applications', () => {
     await page.findByDataQa('guardianEmail-input-info').waitUntilVisible()
   })
 })
+
+describe('Citizen preschool applications - connected daycare preferred start date', () => {
+  const testCases = [
+    {
+      name: 'can be same as preschool preferred start date',
+      preferredStartDate: LocalDate.of(2021, 8, 11),
+      connectedDaycarePreferredStartDate: LocalDate.of(2021, 8, 11),
+      isValid: true
+    },
+    {
+      name: 'can be after preschool preferred start date',
+      preferredStartDate: LocalDate.of(2021, 8, 11),
+      connectedDaycarePreferredStartDate: LocalDate.of(2021, 8, 12),
+      isValid: true
+    },
+    {
+      name: 'can be before preschool preferred start date when preschool preferred start date is term start',
+      preferredStartDate: LocalDate.of(2021, 8, 11),
+      connectedDaycarePreferredStartDate: LocalDate.of(2021, 8, 10),
+      isValid: true
+    },
+    {
+      name: 'cannot be before preschool term',
+      preferredStartDate: LocalDate.of(2021, 8, 11),
+      connectedDaycarePreferredStartDate: LocalDate.of(2021, 7, 31),
+      isValid: false
+    },
+    {
+      name: 'cannot be before preschool preferred start date when preschool preferred start date is in the middle of term',
+      preferredStartDate: LocalDate.of(2021, 8, 12),
+      connectedDaycarePreferredStartDate: LocalDate.of(2021, 8, 11),
+      isValid: false
+    }
+  ]
+
+  test.each(testCases)(
+    '$name',
+    async ({
+      preferredStartDate,
+      connectedDaycarePreferredStartDate,
+      isValid
+    }) => {
+      await header.selectTab('applications')
+      const editorPage = await applicationsPage.createApplication(
+        testChild.id,
+        'PRESCHOOL'
+      )
+      const applicationId = editorPage.getNewApplicationId()
+      await editorPage.fillData({
+        ...minimalPreschoolForm.form,
+        serviceNeed: {
+          ...minimalPreschoolForm.form.serviceNeed,
+          preferredStartDate: preferredStartDate.format(),
+          connectedDaycare: true,
+          connectedDaycarePreferredStartDate:
+            connectedDaycarePreferredStartDate.format(),
+          startTime: '08:00',
+          endTime: '16:00'
+        }
+      })
+
+      if (isValid) {
+        await editorPage.verifyAndSend({ hasOtherGuardian: true })
+        const application = await getApplication({ applicationId })
+        expect(application.form.preferences.preferredStartDate).toEqual(
+          preferredStartDate
+        )
+        expect(
+          application.form.preferences.connectedDaycarePreferredStartDate
+        ).toEqual(connectedDaycarePreferredStartDate)
+      } else {
+        await editorPage.goToVerification()
+        await editorPage.assertErrorsExist()
+      }
+    }
+  )
+})
