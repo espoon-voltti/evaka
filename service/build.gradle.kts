@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import com.ncorti.ktfmt.gradle.tasks.KtfmtFormatTask
 import java.util.regex.Pattern
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
@@ -210,6 +211,11 @@ allprojects {
                 }
         }
     }
+}
+
+tasks.register<KtfmtFormatTask>("ktfmtPrecommit") {
+    source = project.fileTree(rootDir)
+    include("**/*.kt")
 }
 
 tasks.getByName<Jar>("jar") { archiveClassifier.set("") }
