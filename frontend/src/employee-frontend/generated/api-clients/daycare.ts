@@ -7,7 +7,6 @@
 import LocalDate from 'lib-common/local-date'
 import { AclUpdate } from 'lib-common/generated/api-types/daycare'
 import { AdditionalInformation } from 'lib-common/generated/api-types/daycare'
-import { ApplicationType } from 'lib-common/generated/api-types/application'
 import { ApplicationUnitType } from 'lib-common/generated/api-types/daycare'
 import { AreaId } from 'lib-common/generated/api-types/shared'
 import { AreaJSON } from 'lib-common/generated/api-types/daycare'
@@ -459,22 +458,6 @@ export async function updateUnitFeatures(
     data: request.body satisfies JsonCompatible<UpdateFeaturesRequest>
   })
   return json
-}
-
-
-/**
-* Generated from fi.espoo.evaka.daycare.controllers.LocationController.getAllApplicableUnits
-*/
-export async function getAllApplicableUnits(
-  request: {
-    applicationType: ApplicationType
-  }
-): Promise<PublicUnit[]> {
-  const { data: json } = await client.request<JsonOf<PublicUnit[]>>({
-    url: uri`/employee/public/units/${request.applicationType}`.toString(),
-    method: 'GET'
-  })
-  return json.map(e => deserializeJsonPublicUnit(e))
 }
 
 
