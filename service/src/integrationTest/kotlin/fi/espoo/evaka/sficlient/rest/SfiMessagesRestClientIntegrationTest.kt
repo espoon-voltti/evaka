@@ -110,18 +110,31 @@ class SfiMessagesRestClientIntegrationTest : FullApplicationTest(resetDbBeforeEa
             assertEquals(message.messageId, it.first().key)
             val (_, captured) = it.first().value
             assertEquals(
-                NewMessageFromClientOrganisation(
+                MultichannelMessageRequestBody(
                     externalId = message.messageId,
                     electronic =
-                        NewElectronicMessage(
+                        ElectronicPart(
                             title = message.messageHeader,
                             body = message.messageContent,
-                            files = listOf(FileReference(fileId)),
+                            attachments = listOf(AttachmentReference(fileId)),
+                            bodyFormat = BodyFormat.TEXT,
+                            messageServiceType = MessageServiceType.NORMAL,
+                            notifications =
+                                MessageNotifications(
+                                    senderDetailsInNotifications =
+                                        SenderDetailsInNotifications.ORGANIZATION_AND_SERVICE_NAME,
+                                    unreadMessageNotification =
+                                        UnreadMessageNotification(
+                                            reminder = Reminder.DEFAULT_REMINDER
+                                        ),
+                                ),
+                            replyAllowedBy = ReplyAllowedBy.NO_ONE,
+                            visibility = Visibility.RECIPIENT_ONLY,
                         ),
                     paperMail =
-                        NewNormalPaperMail(
-                            createCoverPage = true,
-                            files = listOf(FileReference(fileId)),
+                        PaperMailPart(
+                            createAddressPage = true,
+                            attachments = listOf(AttachmentReference(fileId)),
                             printingAndEnvelopingService =
                                 PrintingAndEnvelopingService(
                                     PostiMessaging(
@@ -149,6 +162,10 @@ class SfiMessagesRestClientIntegrationTest : FullApplicationTest(resetDbBeforeEa
                                         city = sfiEnv.contactOrganization.postOffice!!,
                                     )
                                 ),
+                            colorPrinting = true,
+                            messageServiceType = MessageServiceType.NORMAL,
+                            rotateLandscapePages = false,
+                            twoSidedPrinting = true,
                         ),
                     recipient = Recipient(id = message.ssn),
                     sender = Sender(serviceId = sfiEnv.serviceIdentifier),

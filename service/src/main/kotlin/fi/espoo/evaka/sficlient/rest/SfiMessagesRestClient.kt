@@ -71,17 +71,30 @@ class Config(env: SfiEnv) {
         )
     val restUsername = requireNotNull(env.restUsername) { "SFI REST username must be set" }
 
-    fun messageRequestBody(msg: SfiMessage, file: FileReference) =
-        NewMessageFromClientOrganisation(
+    fun messageRequestBody(msg: SfiMessage, attachment: AttachmentReference) =
+        MultichannelMessageRequestBody(
             msg.messageId,
-            NewElectronicMessage(
-                title = msg.messageHeader,
+            ElectronicPart(
+                attachments = listOf(attachment),
                 body = msg.messageContent,
-                files = listOf(file),
+                bodyFormat = BodyFormat.TEXT,
+                messageServiceType = MessageServiceType.NORMAL,
+                notifications =
+                    MessageNotifications(
+                        senderDetailsInNotifications =
+                            SenderDetailsInNotifications.ORGANIZATION_AND_SERVICE_NAME,
+                        unreadMessageNotification =
+                            UnreadMessageNotification(reminder = Reminder.DEFAULT_REMINDER),
+                    ),
+                replyAllowedBy = ReplyAllowedBy.NO_ONE,
+                title = msg.messageHeader,
+                visibility = Visibility.RECIPIENT_ONLY,
             ),
-            NewNormalPaperMail(
-                createCoverPage = true,
-                listOf(file),
+            PaperMailPart(
+                attachments = listOf(attachment),
+                colorPrinting = true,
+                createAddressPage = true,
+                messageServiceType = MessageServiceType.NORMAL,
                 printingAndEnvelopingService,
                 NewPaperMailRecipient(
                     Address(
@@ -92,7 +105,9 @@ class Config(env: SfiEnv) {
                         countryCode = msg.countryCode,
                     )
                 ),
-                paperMailSender,
+                rotateLandscapePages = false,
+                sender = paperMailSender,
+                twoSidedPrinting = true,
             ),
             Recipient(id = msg.ssn),
             sender,
@@ -185,13 +200,13 @@ class SfiMessagesRestClient(
             }
     }
 
-    private fun uploadFile(fileName: String, pdfBytes: ByteArray): FileReference {
+    private fun uploadFile(fileName: String, pdfBytes: ByteArray): AttachmentReference {
         logger.info { "Uploading file $fileName (${pdfBytes.size} bytes)" }
 
         httpClient
             .newCall(
                 Request.Builder()
-                    .url(config.urls.files)
+                    .url(config.urls.attachments)
                     .header("Authorization", authorizationHeader.get().value)
                     .header("Accept", "application/json")
                     .post(pdfUploadBody(fileName, pdfBytes))
@@ -200,8 +215,7 @@ class SfiMessagesRestClient(
             .execute()
             .use { response ->
                 if (response.isSuccessful) {
-                    val body = jsonResponseBody<NewFileResponse>(response)
-                    return FileReference(body.fileId)
+                    return jsonResponseBody<AttachmentReference>(response)
                 } else {
                     val body = jsonResponseBody<ApiError>(response)
                     error(
@@ -220,7 +234,7 @@ class SfiMessagesRestClient(
             "Sending SFI message about ${msg.documentId} with messageId: ${msg.messageId}"
         }
 
-        val fileReference = uploadFile(msg.documentDisplayName, pdfBytes)
+        val attachmentReference = uploadFile(msg.documentDisplayName, pdfBytes)
 
         httpClient
             .newCall(
@@ -228,7 +242,7 @@ class SfiMessagesRestClient(
                     .url(config.urls.messages)
                     .header("Authorization", authorizationHeader.get().value)
                     .header("Accept", "application/json")
-                    .post(jsonRequestBody(config.messageRequestBody(msg, fileReference)))
+                    .post(jsonRequestBody(config.messageRequestBody(msg, attachmentReference)))
                     .build()
             )
             .execute()
