@@ -40,6 +40,7 @@ import fi.espoo.evaka.shared.dev.DevPreschoolTerm
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.MockEvakaClock
+import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.job.ScheduledJobs
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
@@ -72,7 +73,15 @@ class PlacementToolServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
     final val employee =
         DevEmployee(id = EmployeeId(UUID.randomUUID()), firstName = "Test", lastName = "Employee")
     private val admin = AuthenticatedUser.Employee(employee.id, setOf(UserRole.ADMIN))
-    val serviceNeedOption =
+    val defaultServiceNeedOption =
+        ServiceNeedOption(
+            ServiceNeedOptionId(UUID.randomUUID()),
+            "Esiopetus ja liittyvä varhaiskasvatus",
+            "Esiopetus ja liittyvä varhaiskasvatus",
+            "Esiopetus ja liittyvä varhaiskasvatus",
+            PlacementType.PRESCHOOL_DAYCARE,
+        )
+    val nonDefaultServiceNeedOption =
         ServiceNeedOption(
             ServiceNeedOptionId(UUID.randomUUID()),
             "Esiopetus ja liittyvä varhaiskasvatus",
@@ -148,12 +157,39 @@ class PlacementToolServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             )
             tx.insert(
                 fi.espoo.evaka.serviceneed.ServiceNeedOption(
-                    id = serviceNeedOption.id,
-                    nameFi = "Esiopetus ja liittyvä varhaiskasvatus",
-                    nameSv = "Esiopetus ja liittyvä varhaiskasvatus",
-                    nameEn = "Esiopetus ja liittyvä varhaiskasvatus",
-                    validPlacementType = PlacementType.PRESCHOOL_DAYCARE,
+                    id = defaultServiceNeedOption.id,
+                    nameFi = defaultServiceNeedOption.nameFi,
+                    nameSv = defaultServiceNeedOption.nameSv,
+                    nameEn = defaultServiceNeedOption.nameEn,
+                    validPlacementType = defaultServiceNeedOption.validPlacementType!!,
                     defaultOption = true,
+                    feeCoefficient = BigDecimal("0.80"),
+                    occupancyCoefficient = BigDecimal("1.00"),
+                    occupancyCoefficientUnder3y = BigDecimal("1.75"),
+                    realizedOccupancyCoefficient = BigDecimal("1.00"),
+                    realizedOccupancyCoefficientUnder3y = BigDecimal("1.75"),
+                    daycareHoursPerWeek = 25,
+                    contractDaysPerMonth = null,
+                    daycareHoursPerMonth = null,
+                    partDay = false,
+                    partWeek = false,
+                    feeDescriptionFi = "",
+                    feeDescriptionSv = "",
+                    voucherValueDescriptionFi = "",
+                    voucherValueDescriptionSv = "",
+                    validFrom = LocalDate.of(2000, 1, 1),
+                    validTo = null,
+                    showForCitizen = true,
+                )
+            )
+            tx.insert(
+                fi.espoo.evaka.serviceneed.ServiceNeedOption(
+                    id = nonDefaultServiceNeedOption.id,
+                    nameFi = nonDefaultServiceNeedOption.nameFi,
+                    nameSv = nonDefaultServiceNeedOption.nameSv,
+                    nameEn = nonDefaultServiceNeedOption.nameEn,
+                    validPlacementType = nonDefaultServiceNeedOption.validPlacementType!!,
+                    defaultOption = false,
                     feeCoefficient = BigDecimal("0.80"),
                     occupancyCoefficient = BigDecimal("1.00"),
                     occupancyCoefficientUnder3y = BigDecimal("1.75"),
@@ -290,7 +326,14 @@ class PlacementToolServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
     fun `create application with one guardian`() {
         insertPersonData()
         val data = PlacementToolData(childId = child.id, preschoolId = unit.id)
-        service.createApplication(db, admin, clock, data, serviceNeedOption.id, preschoolTerm.id)
+        service.createApplication(
+            db,
+            admin,
+            clock,
+            data,
+            defaultServiceNeedOption.id,
+            preschoolTerm.id,
+        )
 
         clock.tick()
         asyncJobRunner.runPendingJobsSync(clock)
@@ -344,7 +387,14 @@ class PlacementToolServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             MockPersonDetailsService.addDependants(adult2, child)
         }
         val data = PlacementToolData(childId = child.id, preschoolId = unit.id)
-        service.createApplication(db, admin, clock, data, serviceNeedOption.id, preschoolTerm.id)
+        service.createApplication(
+            db,
+            admin,
+            clock,
+            data,
+            defaultServiceNeedOption.id,
+            preschoolTerm.id,
+        )
 
         clock.tick()
         asyncJobRunner.runPendingJobsSync(clock)
@@ -369,7 +419,14 @@ class PlacementToolServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         whenever(featureConfig.placementToolApplicationStatus)
             .thenReturn(ApplicationStatus.WAITING_DECISION)
         val data = PlacementToolData(childId = child.id, preschoolId = unit.id)
-        service.createApplication(db, admin, clock, data, serviceNeedOption.id, preschoolTerm.id)
+        service.createApplication(
+            db,
+            admin,
+            clock,
+            data,
+            defaultServiceNeedOption.id,
+            preschoolTerm.id,
+        )
 
         clock.tick()
         asyncJobRunner.runPendingJobsSync(clock)
@@ -415,7 +472,7 @@ class PlacementToolServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 admin,
                 clock,
                 data,
-                serviceNeedOption.id,
+                defaultServiceNeedOption.id,
                 preschoolTerm.id,
             )
         }
@@ -431,7 +488,7 @@ class PlacementToolServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 admin,
                 clock,
                 data,
-                serviceNeedOption.id,
+                defaultServiceNeedOption.id,
                 preschoolTerm.id,
             )
         }
@@ -475,6 +532,11 @@ ${child.ssn!!};${unit.id}
         assertEquals(summary.preferredUnitId, unit.id)
         val child = db.read { it.getPersonBySSN(child.ssn!!) }
         assertEquals(summary.childId, child!!.id)
+        val application = db.read { tx -> tx.fetchApplicationDetails(summary.applicationId) }
+        assertEquals(
+            defaultServiceNeedOption,
+            application?.form?.preferences?.serviceNeed?.serviceNeedOption,
+        )
 
         val validationPost =
             controller.validatePlacementToolApplications(dbInstance(), admin, clock, file)
@@ -528,6 +590,64 @@ ${child.ssn!!};${unit.id}
             controller.validatePlacementToolApplications(dbInstance(), admin, clock, file)
         assertEquals(1, validationPost.count)
         assertEquals(1, validationPost.existing)
+    }
+
+    @Test
+    fun `service need option can be configured`() {
+        whenever(evakaEnv.placementToolServiceNeedOptionId)
+            .thenReturn(nonDefaultServiceNeedOption.id)
+
+        insertPersonData()
+        val file =
+            MockMultipartFile(
+                "test.csv",
+                """
+lapsen_id;esiopetusyksikon_id
+${child.id};${unit.id}
+        """
+                    .trimIndent()
+                    .toByteArray(StandardCharsets.UTF_8),
+            )
+
+        controller.createPlacementToolApplications(dbInstance(), admin, clock, file)
+        asyncJobRunner.runPendingJobsSync(clock)
+
+        val applicationSummaries =
+            db.read {
+                val person = it.getPersonBySSN(adult.ssn!!)
+                it.fetchApplicationSummariesForGuardian(person!!.id)
+            }
+        assertEquals(1, applicationSummaries.size)
+        val summary = applicationSummaries.first()
+        val application = db.read { tx -> tx.fetchApplicationDetails(summary.applicationId) }
+        assertEquals(
+            nonDefaultServiceNeedOption,
+            application?.form?.preferences?.serviceNeed?.serviceNeedOption,
+        )
+    }
+
+    @Test
+    fun `unknown service need option id throws not found`() {
+        val serviceNeedOptionId = ServiceNeedOptionId(UUID.randomUUID())
+        whenever(evakaEnv.placementToolServiceNeedOptionId).thenReturn(serviceNeedOptionId)
+
+        insertPersonData()
+        val file =
+            MockMultipartFile(
+                "test.csv",
+                """
+lapsen_id;esiopetusyksikon_id
+${child.id};${unit.id}
+        """
+                    .trimIndent()
+                    .toByteArray(StandardCharsets.UTF_8),
+            )
+
+        val exception =
+            assertThrows<NotFound> {
+                controller.createPlacementToolApplications(dbInstance(), admin, clock, file)
+            }
+        assertEquals("No service need option found: $serviceNeedOptionId", exception.message)
     }
 
     @Test
