@@ -77,27 +77,39 @@ fun <Decision : FinanceDecision<Decision>> filterAndMergeDrafts(
     activeDecisions: List<Decision>,
     ignoredDrafts: List<Decision>,
     minDate: LocalDate,
+    nrOfDaysDecisionCanBeSentInAdvance: Long,
 ): List<Decision> {
     if (newDrafts.isEmpty()) return emptyList()
 
     return newDrafts
         .filterNot { draft ->
-            existsActiveDuplicateThatWillRemainEffective(draft, activeDecisions, newDrafts)
+            existsActiveDuplicateThatWillRemainEffective(
+                draft,
+                activeDecisions,
+                newDrafts,
+                nrOfDaysDecisionCanBeSentInAdvance,
+            )
         }
         .filterNot { draft ->
             // drop empty drafts unless there exists an active decision that overlaps
             draft.isEmpty() && activeDecisions.none { it.validDuring.overlaps(draft.validDuring) }
         }
-        .let(::mergeAdjacentIdenticalDrafts)
+        .let { mergeAdjacentIdenticalDrafts(it, nrOfDaysDecisionCanBeSentInAdvance) }
         .filterNot { draft ->
-            existsActiveDuplicateThatWillRemainEffective(draft, activeDecisions, newDrafts)
+            existsActiveDuplicateThatWillRemainEffective(
+                draft,
+                activeDecisions,
+                newDrafts,
+                nrOfDaysDecisionCanBeSentInAdvance,
+            )
         }
         .mapNotNull { draft ->
             draft.validDuring.intersection(DateRange(minDate, null))?.let { draft.withValidity(it) }
         }
         .filter { newDraft ->
             !ignoredDrafts.any {
-                it.validDuring == newDraft.validDuring && it.contentEquals(newDraft)
+                it.validDuring == newDraft.validDuring &&
+                    it.contentEquals(newDraft, nrOfDaysDecisionCanBeSentInAdvance)
             }
         }
 }
@@ -106,16 +118,18 @@ fun <Decision : FinanceDecision<Decision>> existsActiveDuplicateThatWillRemainEf
     draft: Decision,
     activeDecisions: List<Decision>,
     drafts: List<Decision>,
+    nrOfDaysDecisionCanBeSentInAdvance: Long,
 ): Boolean {
     val activeDuplicate =
         activeDecisions.find {
-            it.validDuring.contains(draft.validDuring) && it.contentEquals(draft)
+            it.validDuring.contains(draft.validDuring) &&
+                it.contentEquals(draft, nrOfDaysDecisionCanBeSentInAdvance)
         } ?: return false
 
     val nonIdenticalDraftsOverlappingActive =
         drafts.filter {
             it.validDuring.overlaps(activeDuplicate.validDuring) &&
-                !it.contentEquals(activeDuplicate)
+                !it.contentEquals(activeDuplicate, nrOfDaysDecisionCanBeSentInAdvance)
         }
 
     val activeValidUntil =
@@ -132,7 +146,8 @@ fun <Decision : FinanceDecision<Decision>> existsActiveDuplicateThatWillRemainEf
 }
 
 fun <Decision : FinanceDecision<Decision>> mergeAdjacentIdenticalDrafts(
-    decisions: List<Decision>
+    decisions: List<Decision>,
+    nrOfDaysDecisionCanBeSentInAdvance: Long,
 ): List<Decision> {
     return decisions
         .sortedBy { it.validFrom }
@@ -141,7 +156,7 @@ fun <Decision : FinanceDecision<Decision>> mergeAdjacentIdenticalDrafts(
             if (
                 prev != null &&
                     periodsCanMerge(prev.validDuring, next.validDuring) &&
-                    prev.contentEquals(next)
+                    prev.contentEquals(next, nrOfDaysDecisionCanBeSentInAdvance)
             ) {
                 acc.dropLast(1) + prev.withValidity(FiniteDateRange(prev.validFrom, next.validTo))
             } else {
@@ -153,7 +168,11 @@ fun <Decision : FinanceDecision<Decision>> mergeAdjacentIdenticalDrafts(
 fun <Decision : FinanceDecision<Decision>, Difference> Decision.getDifferencesToPrevious(
     newDrafts: List<Decision>,
     existingActiveDecisions: List<Decision>,
-    getDifferences: (decision1: Decision, decision2: Decision) -> Set<Difference>,
+    getDifferences:
+        (decision1: Decision, decision2: Decision, nrOfDaysDecisionCanBeSentInAdvance: Long) -> Set<
+                Difference
+            >,
+    nrOfDaysDecisionCanBeSentInAdvance: Long,
 ): Set<Difference> {
     if (this.isEmpty()) {
         return emptySet()
@@ -164,7 +183,7 @@ fun <Decision : FinanceDecision<Decision>, Difference> Decision.getDifferencesTo
             .filter { other ->
                 !other.isEmpty() && periodsCanMerge(other.validDuring, this.validDuring)
             }
-            .flatMap { other -> getDifferences(other, this) }
+            .flatMap { other -> getDifferences(other, this, nrOfDaysDecisionCanBeSentInAdvance) }
 
     if (draftDifferences.isNotEmpty()) {
         return draftDifferences.toSet()
@@ -173,18 +192,20 @@ fun <Decision : FinanceDecision<Decision>, Difference> Decision.getDifferencesTo
     val activeDifferences =
         existingActiveDecisions
             .filter { active -> periodsCanMerge(active.validDuring, this.validDuring) }
-            .flatMap { active -> getDifferences(active, this) }
+            .flatMap { active -> getDifferences(active, this, nrOfDaysDecisionCanBeSentInAdvance) }
 
     return activeDifferences.toSet()
 }
 
 /** If there exists identical old draft, copy id and created date from it */
 fun <Decision : FinanceDecision<Decision>> Decision.withMetadataFromExisting(
-    existingDrafts: List<Decision>
+    existingDrafts: List<Decision>,
+    nrOfDaysDecisionCanBeSentInAdvance: Long,
 ): Decision {
     val duplicateOldDraft =
         existingDrafts.find { oldDraft ->
-            contentEquals(oldDraft) && validDuring == oldDraft.validDuring
+            contentEquals(oldDraft, nrOfDaysDecisionCanBeSentInAdvance) &&
+                validDuring == oldDraft.validDuring
         }
 
     return duplicateOldDraft?.let { this.withId(it.id.raw).withCreated(it.created) } ?: this

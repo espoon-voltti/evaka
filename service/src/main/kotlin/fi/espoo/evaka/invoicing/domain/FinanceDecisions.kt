@@ -26,7 +26,7 @@ interface FinanceDecision<Decision : FinanceDecision<Decision>> {
 
     fun withCreated(created: HelsinkiDateTime): Decision
 
-    fun contentEquals(decision: Decision): Boolean
+    fun contentEquals(decision: Decision, nrOfDaysDecisionCanBeSentInAdvance: Long): Boolean
 
     fun overlapsWith(other: Decision): Boolean
 
@@ -36,11 +36,6 @@ interface FinanceDecision<Decision : FinanceDecision<Decision>> {
 
     fun annul(): Decision
 }
-
-fun <Decision : FinanceDecision<Decision>> decisionContentsAreEqual(
-    decision1: Decision,
-    decision2: Decision,
-): Boolean = decision1.contentEquals(decision2)
 
 fun <Decision : FinanceDecision<Decision>> updateEndDatesOrAnnulConflictingDecisions(
     newDecisions: List<Decision>,
