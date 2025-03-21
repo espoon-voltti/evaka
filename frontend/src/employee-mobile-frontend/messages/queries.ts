@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import {
+  ChildId,
   EmployeeId,
   MessageAccountId,
   MessageThreadId
@@ -37,8 +38,9 @@ export const messagingAccountsQuery = q.parametricQuery<
 )
 
 export const receivedMessagesQuery = q.pagedInfiniteQuery(
-  (accountId: MessageAccountId) => (page: number) =>
-    getReceivedMessages({ accountId, page }),
+  (accountId: MessageAccountId, childId: ChildId | null = null) =>
+    (page: number) =>
+      getReceivedMessages({ accountId, page, childId }),
   (thread) => thread.id
 )
 

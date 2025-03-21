@@ -1,8 +1,7 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2025 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, {
   useCallback,
   useContext,
@@ -21,7 +20,6 @@ import {
 } from 'lib-common/generated/api-types/messaging'
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import { ContentArea } from 'lib-components/layout/Container'
 import { Tabs } from 'lib-components/molecules/Tabs'
 import { defaultMargins } from 'lib-components/white-space'
@@ -29,11 +27,12 @@ import { faPlus } from 'lib-icons'
 
 import { routes } from '../App'
 import { renderResult } from '../async-rendering'
-import BottomNavbar, { bottomNavBarHeight } from '../common/BottomNavbar'
+import BottomNavbar from '../common/BottomNavbar'
 import { PageWithNavigation } from '../common/PageWithNavigation'
 import TopBar from '../common/TopBar'
 import { useTranslation } from '../common/i18n'
 import { UnitOrGroup, toUnitOrGroup } from '../common/unit-or-group'
+import { FloatingPrimaryActionButton } from '../pairing/components'
 import { unitInfoQuery } from '../units/queries'
 
 import DraftMessagesList from './DraftMessagesList'
@@ -198,14 +197,12 @@ export default function MessagesPage({
                       onSelectDraft={selectDraftMessage}
                     />
                   )}
-                  <HoverButton
-                    primary
+                  <FloatingPrimaryActionButton
+                    text={i18n.messages.newMessage}
+                    icon={faPlus}
                     onClick={onNewMessageClick}
                     data-qa="new-message-btn"
-                  >
-                    <FontAwesomeIcon icon={faPlus} />
-                    {i18n.messages.newMessage}
-                  </HoverButton>
+                  />
                 </ContentArea>
               </PageWithNavigation>
             )
@@ -245,12 +242,4 @@ export default function MessagesPage({
 
 const NoAccounts = styled.div`
   padding: ${defaultMargins.m} ${defaultMargins.s};
-`
-
-const HoverButton = styled(LegacyButton)`
-  position: fixed;
-  bottom: calc(${defaultMargins.s} + ${bottomNavBarHeight}px);
-  right: ${defaultMargins.s};
-  border-radius: 40px;
-  box-shadow: 0 4px 4px 0 ${(p) => p.theme.colors.grayscale.g15};
 `

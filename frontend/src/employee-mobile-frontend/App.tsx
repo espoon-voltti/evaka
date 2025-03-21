@@ -50,6 +50,7 @@ import ChildNotes from './child-notes/ChildNotes'
 import { I18nContextProvider, useTranslation } from './common/i18n'
 import { ServiceWorkerContextProvider } from './common/service-worker'
 import { UnitOrGroup, toUnitOrGroup } from './common/unit-or-group'
+import ChildMessagesPage from './messages/ChildMessagesPage'
 import MessagesPage from './messages/MessagesPage'
 import NewChildMessagePage from './messages/NewChildMessagePage'
 import NewMessagePage from './messages/NewMessagePage'
@@ -297,6 +298,14 @@ function ChildRouter({ unitId }: { unitId: DaycareId }) {
           </RequirePinAuth>
         }
       />
+      <Route
+        path="/received-messages"
+        element={
+          <RequirePinAuth unitId={unitId}>
+            <ChildMessagesPage unitId={unitId} childId={childId} />
+          </RequirePinAuth>
+        }
+      />
     </Routes>
   )
 }
@@ -456,6 +465,9 @@ export const routes = {
   },
   newChildMessage(unitId: UUID, child: UUID): Uri {
     return uri`${this.child(unitId, child)}/new-message`
+  },
+  childMessages(unitId: UUID, child: UUID): Uri {
+    return uri`${this.child(unitId, child)}/received-messages`
   },
   childSensitiveInfo(unitId: UUID, child: UUID): Uri {
     return uri`${this.child(unitId, child)}/info`

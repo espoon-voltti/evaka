@@ -19,7 +19,7 @@ export default class MobileChildPage {
   markReservationsLink: Element
   markAbsentBeforehandLink: Element
   sensitiveInfoLink: Element
-  messageEditorLink: Element
+  messagesLink: Element
   notesLink: Element
   notesExistsBubble: Element
   saveNoteButton: Element
@@ -56,7 +56,7 @@ export default class MobileChildPage {
     this.markReservationsLink = page.findByDataQa('mark-reservations')
     this.markAbsentBeforehandLink = page.findByDataQa('mark-absent-beforehand')
     this.sensitiveInfoLink = page.findByDataQa('link-child-sensitive-info')
-    this.messageEditorLink = page.findByDataQa('link-new-message')
+    this.messagesLink = page.findByDataQa('link-child-messages')
     this.notesLink = page.findByDataQa('link-child-daycare-daily-note')
     this.notesExistsBubble = page.findByDataQa('daily-note-icon-bubble')
     this.saveNoteButton = page.findByDataQa('create-daily-note-btn')

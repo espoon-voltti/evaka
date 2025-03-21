@@ -11,6 +11,7 @@ import {
   MessageAccount,
   MessageThread
 } from 'lib-common/generated/api-types/messaging'
+import { ChildId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { useMutation, usePagedInfiniteQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
@@ -38,12 +39,14 @@ interface Props {
   groupAccounts: AuthorizedMessageAccount[]
   account: MessageAccount
   onSelectThread: (threadId: UUID) => void
+  childId?: ChildId
 }
 
 export default React.memo(function ReceivedThreadsList({
   groupAccounts,
   account,
-  onSelectThread
+  onSelectThread,
+  childId
 }: Props) {
   const { i18n } = useTranslation()
 
@@ -52,7 +55,9 @@ export default React.memo(function ReceivedThreadsList({
     hasNextPage,
     fetchNextPage,
     transform
-  } = usePagedInfiniteQueryResult(receivedMessagesQuery(account.id))
+  } = usePagedInfiniteQueryResult(
+    receivedMessagesQuery(account.id, childId ?? null)
+  )
 
   const { mutate: markThreadRead } = useMutation(markThreadReadMutation)
 
