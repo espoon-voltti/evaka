@@ -70,6 +70,9 @@ data class ApplicationSummary(
     val placementPlanStartDate: LocalDate?,
     val placementPlanUnitName: String?,
     val currentPlacementUnit: PreferredUnit?,
+    val streetAddress: String?,
+    val postalCode: String?,
+    val postOffice: String?,
 )
 
 data class PlacementProposalStatus(

@@ -315,12 +315,15 @@ export interface ApplicationSummary {
   placementPlanUnitName: string | null
   placementProposalStatus: PlacementProposalStatus | null
   placementType: PlacementType
+  postOffice: string | null
+  postalCode: string | null
   preferredUnits: PreferredUnit[]
   serviceNeed: ServiceNeedOption | null
   serviceWorkerNote: string
   siblingBasis: boolean
   startDate: LocalDate | null
   status: ApplicationStatus
+  streetAddress: string | null
   transferApplication: boolean
   type: ApplicationType
   urgent: boolean
