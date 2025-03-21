@@ -394,20 +394,6 @@ export type ModifySource =
   | 'DVV'
 
 /**
-* Generated from fi.espoo.evaka.pis.NewEmployee
-*/
-export interface NewEmployee {
-  active: boolean
-  email: string | null
-  employeeNumber: string | null
-  externalId: string | null
-  firstName: string
-  lastName: string
-  roles: UserRole[]
-  temporaryInUnitId: DaycareId | null
-}
-
-/**
 * Generated from fi.espoo.evaka.pis.NewSsnEmployee
 */
 export interface NewSsnEmployee {
@@ -424,20 +410,6 @@ export type Origin =
   | 'VTJ'
   | 'MUNICIPAL'
   | 'EVAKA'
-
-/**
-* Generated from fi.espoo.evaka.pis.service.Parentship
-*/
-export interface Parentship {
-  child: PersonJSON
-  childId: PersonId
-  conflict: boolean
-  endDate: LocalDate
-  headOfChild: PersonJSON
-  headOfChildId: PersonId
-  id: ParentshipId
-  startDate: LocalDate
-}
 
 /**
 * Generated from fi.espoo.evaka.pis.service.ParentshipDetailed
@@ -527,14 +499,6 @@ export interface PersonAddressDTO {
   postalCode: string
   residenceCode: string
   streetAddress: string
-}
-
-/**
-* Generated from fi.espoo.evaka.pis.controllers.PersonController.PersonIdentityResponseJSON
-*/
-export interface PersonIdentityResponseJSON {
-  id: PersonId
-  socialSecurityNumber: string | null
 }
 
 /**
@@ -853,17 +817,6 @@ export function deserializeJsonGuardiansResponse(json: JsonOf<GuardiansResponse>
     ...json,
     blockedGuardians: (json.blockedGuardians != null) ? json.blockedGuardians.map(e => deserializeJsonPersonJSON(e)) : null,
     guardians: json.guardians.map(e => deserializeJsonPersonJSON(e))
-  }
-}
-
-
-export function deserializeJsonParentship(json: JsonOf<Parentship>): Parentship {
-  return {
-    ...json,
-    child: deserializeJsonPersonJSON(json.child),
-    endDate: LocalDate.parseIso(json.endDate),
-    headOfChild: deserializeJsonPersonJSON(json.headOfChild),
-    startDate: LocalDate.parseIso(json.startDate)
   }
 }
 

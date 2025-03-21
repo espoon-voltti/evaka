@@ -481,13 +481,6 @@ export interface UpdateDecisionMakerForAssistanceNeedDecisionRequest {
   title: string
 }
 
-/**
-* Generated from fi.espoo.evaka.assistanceneed.preschooldecision.AssistanceNeedPreschoolDecisionController.UpdateDecisionMakerForAssistanceNeedPreschoolDecisionRequest
-*/
-export interface UpdateDecisionMakerForAssistanceNeedPreschoolDecisionRequest {
-  title: string
-}
-
 
 export function deserializeJsonAssistanceNeedDecision(json: JsonOf<AssistanceNeedDecision>): AssistanceNeedDecision {
   return {

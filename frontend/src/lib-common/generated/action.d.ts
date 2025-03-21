@@ -31,7 +31,6 @@ export type Global =
   | 'FETCH_INCOME_STATEMENTS_AWAITING_HANDLER'
   | 'FINANCE_BASICS_PAGE'
   | 'FINANCE_PAGE'
-  | 'GENERATE_FEE_DECISIONS'
   | 'HOLIDAY_AND_TERM_PERIODS_PAGE'
   | 'MESSAGES_PAGE'
   | 'OUT_OF_OFFICE_PAGE'
@@ -174,7 +173,6 @@ export type AssistanceNeedPreschoolDecision =
   | 'REVERT_TO_UNSENT'
   | 'SEND'
   | 'UPDATE'
-  | 'UPDATE_DECISION_MAKER'
 
 export type AssistanceNeedVoucherCoefficient =
   | 'DELETE'
@@ -347,13 +345,11 @@ export type Pairing = 'POST_RESPONSE'
 export type Parentship =
   | 'DELETE'
   | 'DELETE_CONFLICTED_PARENTSHIP'
-  | 'READ'
   | 'RETRY'
   | 'UPDATE'
 
 export type Partnership =
   | 'DELETE'
-  | 'READ'
   | 'RETRY'
   | 'UPDATE'
 

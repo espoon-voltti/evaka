@@ -28,6 +28,7 @@ import {
   uploadIncomeStatementAttachmentEmployee,
   uploadInvoiceAttachmentEmployee,
   uploadMessageAttachment,
+  uploadOrphanFeeAlterationAttachment,
   uploadOrphanIncomeAttachment,
   uploadPedagogicalDocumentAttachment
 } from '../generated/api-clients/attachment'
@@ -106,7 +107,7 @@ export function feeAlterationAttachment(
           { file, feeAlterationId },
           { onUploadProgress }
         )
-      : uploadOrphanIncomeAttachment({ file }, { onUploadProgress })
+      : uploadOrphanFeeAlterationAttachment({ file }, { onUploadProgress })
   )
 }
 

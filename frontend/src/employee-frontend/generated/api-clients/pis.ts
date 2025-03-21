@@ -28,20 +28,16 @@ import { GuardiansResponse } from 'lib-common/generated/api-types/pis'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
 import { MergeRequest } from 'lib-common/generated/api-types/pis'
-import { NewEmployee } from 'lib-common/generated/api-types/pis'
 import { NewSsnEmployee } from 'lib-common/generated/api-types/pis'
-import { Parentship } from 'lib-common/generated/api-types/pis'
 import { ParentshipId } from 'lib-common/generated/api-types/shared'
 import { ParentshipRequest } from 'lib-common/generated/api-types/pis'
 import { ParentshipUpdateRequest } from 'lib-common/generated/api-types/pis'
 import { ParentshipWithPermittedActions } from 'lib-common/generated/api-types/pis'
-import { Partnership } from 'lib-common/generated/api-types/pis'
 import { PartnershipId } from 'lib-common/generated/api-types/shared'
 import { PartnershipRequest } from 'lib-common/generated/api-types/pis'
 import { PartnershipUpdateRequest } from 'lib-common/generated/api-types/pis'
 import { PartnershipWithPermittedActions } from 'lib-common/generated/api-types/pis'
 import { PersonId } from 'lib-common/generated/api-types/shared'
-import { PersonIdentityResponseJSON } from 'lib-common/generated/api-types/pis'
 import { PersonJSON } from 'lib-common/generated/api-types/pis'
 import { PersonPatch } from 'lib-common/generated/api-types/pis'
 import { PersonResponse } from 'lib-common/generated/api-types/pis'
@@ -60,9 +56,7 @@ import { deserializeJsonEmployeeWithDaycareRoles } from 'lib-common/generated/ap
 import { deserializeJsonFamilyOverview } from 'lib-common/generated/api-types/pis'
 import { deserializeJsonFosterParentRelationship } from 'lib-common/generated/api-types/pis'
 import { deserializeJsonGuardiansResponse } from 'lib-common/generated/api-types/pis'
-import { deserializeJsonParentship } from 'lib-common/generated/api-types/pis'
 import { deserializeJsonParentshipWithPermittedActions } from 'lib-common/generated/api-types/pis'
-import { deserializeJsonPartnership } from 'lib-common/generated/api-types/pis'
 import { deserializeJsonPartnershipWithPermittedActions } from 'lib-common/generated/api-types/pis'
 import { deserializeJsonPersonJSON } from 'lib-common/generated/api-types/pis'
 import { deserializeJsonPersonResponse } from 'lib-common/generated/api-types/pis'
@@ -84,23 +78,6 @@ export async function activateEmployee(
     method: 'PUT'
   })
   return json
-}
-
-
-/**
-* Generated from fi.espoo.evaka.pis.controllers.EmployeeController.createEmployee
-*/
-export async function createEmployee(
-  request: {
-    body: NewEmployee
-  }
-): Promise<Employee> {
-  const { data: json } = await client.request<JsonOf<Employee>>({
-    url: uri`/employee/employees`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<NewEmployee>
-  })
-  return deserializeJsonEmployee(json)
 }
 
 
@@ -192,22 +169,6 @@ export async function deleteEmployeeScheduledDaycareRole(
     params
   })
   return json
-}
-
-
-/**
-* Generated from fi.espoo.evaka.pis.controllers.EmployeeController.getEmployee
-*/
-export async function getEmployee(
-  request: {
-    id: EmployeeId
-  }
-): Promise<Employee> {
-  const { data: json } = await client.request<JsonOf<Employee>>({
-    url: uri`/employee/employees/${request.id}`.toString(),
-    method: 'GET'
-  })
-  return deserializeJsonEmployee(json)
 }
 
 
@@ -549,22 +510,6 @@ export async function deleteParentship(
 
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.ParentshipController.getParentship
-*/
-export async function getParentship(
-  request: {
-    id: ParentshipId
-  }
-): Promise<Parentship> {
-  const { data: json } = await client.request<JsonOf<Parentship>>({
-    url: uri`/employee/parentships/${request.id}`.toString(),
-    method: 'GET'
-  })
-  return deserializeJsonParentship(json)
-}
-
-
-/**
 * Generated from fi.espoo.evaka.pis.controllers.ParentshipController.getParentships
 */
 export async function getParentships(
@@ -654,22 +599,6 @@ export async function deletePartnership(
 
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.PartnershipsController.getPartnership
-*/
-export async function getPartnership(
-  request: {
-    partnershipId: PartnershipId
-  }
-): Promise<Partnership> {
-  const { data: json } = await client.request<JsonOf<Partnership>>({
-    url: uri`/employee/partnerships/${request.partnershipId}`.toString(),
-    method: 'GET'
-  })
-  return deserializeJsonPartnership(json)
-}
-
-
-/**
 * Generated from fi.espoo.evaka.pis.controllers.PartnershipsController.getPartnerships
 */
 export async function getPartnerships(
@@ -738,18 +667,6 @@ export async function addSsn(
     data: request.body satisfies JsonCompatible<AddSsnRequest>
   })
   return deserializeJsonPersonJSON(json)
-}
-
-
-/**
-* Generated from fi.espoo.evaka.pis.controllers.PersonController.createEmpty
-*/
-export async function createEmpty(): Promise<PersonIdentityResponseJSON> {
-  const { data: json } = await client.request<JsonOf<PersonIdentityResponseJSON>>({
-    url: uri`/employee/person`.toString(),
-    method: 'POST'
-  })
-  return json
 }
 
 

@@ -5,11 +5,9 @@
 package fi.espoo.evaka.invoicing.messaging
 
 import fi.espoo.evaka.invoicing.service.FinanceDecisionGenerator
-import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Component
@@ -40,28 +38,4 @@ class FeeDecisionGenerationJobProcessor(
             }
         }
     }
-}
-
-fun planFinanceDecisionGeneration(
-    tx: Database.Transaction,
-    clock: EvakaClock,
-    asyncJobRunner: AsyncJobRunner<AsyncJob>,
-    dateRange: DateRange,
-    targetHeadsOfFamily: List<PersonId>,
-) {
-    val heads =
-        targetHeadsOfFamily.ifEmpty {
-            tx.createQuery {
-                    sql(
-                        "SELECT head_of_child FROM fridge_child WHERE daterange(start_date, end_date, '[]') && ${bind(dateRange)} AND conflict = false"
-                    )
-                }
-                .toList<PersonId>()
-        }
-
-    asyncJobRunner.plan(
-        tx,
-        heads.distinct().map { AsyncJob.GenerateFinanceDecisions.forAdult(it, dateRange) },
-        runAt = clock.now(),
-    )
 }

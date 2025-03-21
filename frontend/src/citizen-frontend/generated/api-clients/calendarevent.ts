@@ -5,8 +5,6 @@
 // GENERATED FILE: no manual modifications
 
 import LocalDate from 'lib-common/local-date'
-import { CalendarEventId } from 'lib-common/generated/api-types/shared'
-import { CalendarEventTime } from 'lib-common/generated/api-types/calendarevent'
 import { CalendarEventTimeCitizenReservationForm } from 'lib-common/generated/api-types/calendarevent'
 import { CalendarEventTimeId } from 'lib-common/generated/api-types/shared'
 import { CitizenCalendarEvent } from 'lib-common/generated/api-types/calendarevent'
@@ -15,7 +13,6 @@ import { JsonOf } from 'lib-common/json'
 import { PersonId } from 'lib-common/generated/api-types/shared'
 import { client } from '../../api-client'
 import { createUrlSearchParams } from 'lib-common/api'
-import { deserializeJsonCalendarEventTime } from 'lib-common/generated/api-types/calendarevent'
 import { deserializeJsonCitizenCalendarEvent } from 'lib-common/generated/api-types/calendarevent'
 import { uri } from 'lib-common/uri'
 
@@ -78,25 +75,4 @@ export async function getCitizenCalendarEvents(
     params
   })
   return json.map(e => deserializeJsonCitizenCalendarEvent(e))
-}
-
-
-/**
-* Generated from fi.espoo.evaka.calendarevent.CalendarEventController.getReservableCalendarEventTimes
-*/
-export async function getReservableCalendarEventTimes(
-  request: {
-    eventId: CalendarEventId,
-    childId: PersonId
-  }
-): Promise<CalendarEventTime[]> {
-  const params = createUrlSearchParams(
-    ['childId', request.childId]
-  )
-  const { data: json } = await client.request<JsonOf<CalendarEventTime[]>>({
-    url: uri`/citizen/calendar-event/${request.eventId}/time`.toString(),
-    method: 'GET',
-    params
-  })
-  return json.map(e => deserializeJsonCalendarEventTime(e))
 }
