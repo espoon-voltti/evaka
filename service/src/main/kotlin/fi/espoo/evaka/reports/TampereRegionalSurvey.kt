@@ -181,6 +181,7 @@ class TampereRegionalSurvey(private val accessControl: AccessControl) {
                                     """
                                     )
                                 },
+                            daycarePred = Predicate { where("$it.type && '{CENTRE}'") },
                         )
 
                     val yearlyRange =
@@ -532,6 +533,7 @@ WITH child_rows AS (SELECT pl.child_id,
                                        ON pl.type = default_sno.valid_placement_type AND default_sno.default_option
                     WHERE pl.type = ANY ('{DAYCARE,PRESCHOOL_DAYCARE,PRESCHOOL_DAYCARE_ONLY}')
                       AND d.provider_type = ANY ('{MUNICIPAL}')
+                      AND NOT (d.type && '{FAMILY,GROUP_FAMILY}'::care_types[])
                       AND daterange(pl.start_date, pl.end_date, '[]') && ${bind(range)})
 SELECT extract(MONTH FROM day)                                            AS month,
        count(DISTINCT row.child_id)
@@ -626,7 +628,7 @@ SELECT count(pl.child_id) as placement_count
 FROM placement pl
          JOIN daycare d ON pl.unit_id = d.id
 WHERE ${predicate(daycarePred.forTable("d"))}
-  AND pl.type = ANY ('{DAYCARE,PRESCHOOL_DAYCARE,PRESCHOOL_DAYCARE_ONLY}')
+  AND pl.type = ANY ('{DAYCARE}')
   AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(statDay)}
   AND (EXISTS (SELECT FROM assistance_factor af WHERE af.child_id = pl.child_id AND af.valid_during @> ${bind(statDay)})
     OR EXISTS (SELECT
@@ -656,6 +658,7 @@ WITH child_rows AS (SELECT pl.child_id,
                              JOIN daycare d ON pl.unit_id = d.id
                     WHERE pl.type = ANY ('{DAYCARE,PRESCHOOL_DAYCARE,PRESCHOOL_DAYCARE_ONLY}')
                       AND d.type && '{FAMILY,GROUP_FAMILY}'::care_types[]
+                      AND d.provider_type = ANY ('{MUNICIPAL}')
                       AND daterange(pl.start_date, pl.end_date, '[]') && ${bind(range)})
 SELECT extract(MONTH FROM day)                                             AS month,
        count(DISTINCT row.child_id)
@@ -840,7 +843,7 @@ FROM placement pl
             ON da.child_id = pl.child_id
                 AND da.valid_during @> ${bind(statDay)}
 WHERE ${predicate(daycarePred.forTable("d"))}
-  AND pl.type = ANY ('{DAYCARE,PRESCHOOL_DAYCARE,PRESCHOOL_DAYCARE_ONLY}')
+  AND pl.type = ANY ('{DAYCARE}')
   AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(statDay)}
                 """
                 )
