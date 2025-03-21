@@ -173,7 +173,6 @@ export type AssistanceNeedPreschoolDecision =
   | 'REVERT_TO_UNSENT'
   | 'SEND'
   | 'UPDATE'
-  | 'UPDATE_DECISION_MAKER'
 
 export type AssistanceNeedVoucherCoefficient =
   | 'DELETE'

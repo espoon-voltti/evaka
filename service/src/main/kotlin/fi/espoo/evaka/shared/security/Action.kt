@@ -853,7 +853,6 @@ sealed interface Action {
         READ_METADATA(HasGlobalRole(ADMIN)),
         DECIDE(IsEmployee.andIsDecisionMakerForAssistanceNeedPreschoolDecision()),
         MARK_AS_OPENED(IsEmployee.andIsDecisionMakerForAssistanceNeedPreschoolDecision()),
-        UPDATE_DECISION_MAKER(HasGlobalRole(ADMIN)),
         ANNUL(
             HasGlobalRole(ADMIN),
             IsEmployee.andIsDecisionMakerForAssistanceNeedPreschoolDecision(),

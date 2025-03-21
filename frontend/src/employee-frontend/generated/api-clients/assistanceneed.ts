@@ -27,7 +27,6 @@ import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
 import { PersonId } from 'lib-common/generated/api-types/shared'
 import { UpdateDecisionMakerForAssistanceNeedDecisionRequest } from 'lib-common/generated/api-types/assistanceneed'
-import { UpdateDecisionMakerForAssistanceNeedPreschoolDecisionRequest } from 'lib-common/generated/api-types/assistanceneed'
 import { Uri } from 'lib-common/uri'
 import { client } from '../../api/client'
 import { deserializeJsonAssistanceNeedDecision } from 'lib-common/generated/api-types/assistanceneed'
@@ -449,24 +448,6 @@ export async function updateAssistanceNeedPreschoolDecision(
     url: uri`/employee/assistance-need-preschool-decisions/${request.id}`.toString(),
     method: 'PUT',
     data: request.body satisfies JsonCompatible<AssistanceNeedPreschoolDecisionForm>
-  })
-  return json
-}
-
-
-/**
-* Generated from fi.espoo.evaka.assistanceneed.preschooldecision.AssistanceNeedPreschoolDecisionController.updateAssistanceNeedPreschoolDecisionDecisionMaker
-*/
-export async function updateAssistanceNeedPreschoolDecisionDecisionMaker(
-  request: {
-    id: AssistanceNeedPreschoolDecisionId,
-    body: UpdateDecisionMakerForAssistanceNeedPreschoolDecisionRequest
-  }
-): Promise<void> {
-  const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/employee/assistance-need-preschool-decisions/${request.id}/decision-maker`.toString(),
-    method: 'PUT',
-    data: request.body satisfies JsonCompatible<UpdateDecisionMakerForAssistanceNeedPreschoolDecisionRequest>
   })
   return json
 }
