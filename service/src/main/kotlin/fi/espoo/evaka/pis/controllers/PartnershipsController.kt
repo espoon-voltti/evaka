@@ -130,28 +130,6 @@ class PartnershipsController(
             }
     }
 
-    @GetMapping("/{partnershipId}")
-    fun getPartnership(
-        db: Database,
-        user: AuthenticatedUser.Employee,
-        clock: EvakaClock,
-        @PathVariable partnershipId: PartnershipId,
-    ): Partnership {
-        return db.connect { dbc ->
-                dbc.read {
-                    accessControl.requirePermissionFor(
-                        it,
-                        user,
-                        clock,
-                        Action.Partnership.READ,
-                        partnershipId,
-                    )
-                    it.getPartnership(partnershipId)
-                } ?: throw NotFound()
-            }
-            .also { Audit.PartnerShipsRead.log(targetId = AuditId(partnershipId)) }
-    }
-
     @PutMapping("/{partnershipId}")
     fun updatePartnership(
         db: Database,

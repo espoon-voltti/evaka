@@ -351,7 +351,6 @@ export type Parentship =
 
 export type Partnership =
   | 'DELETE'
-  | 'READ'
   | 'RETRY'
   | 'UPDATE'
 

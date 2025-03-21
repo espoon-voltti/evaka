@@ -8,6 +8,7 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.pis.Creator
 import fi.espoo.evaka.pis.controllers.PartnershipsController
 import fi.espoo.evaka.pis.createPartnership
+import fi.espoo.evaka.pis.getPartnership
 import fi.espoo.evaka.pis.getPartnershipsForPerson
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.ParentshipId
@@ -223,7 +224,7 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
         controller.updatePartnership(dbInstance(), user, clock, partnership1.id, requestBody)
 
         // partnership1 should have new dates
-        val fetched1 = controller.getPartnership(dbInstance(), user, clock, partnership1.id)
+        val fetched1 = db.read { it.getPartnership(partnership1.id) }!!
         assertEquals(newStartDate, fetched1.startDate)
         assertEquals(newEndDate, fetched1.endDate)
     }
