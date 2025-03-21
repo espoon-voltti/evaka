@@ -2311,10 +2311,13 @@ export default {
     childIncomeInfo: 'Lapsen tulotietojen voimassaoloaika',
     incomeStatementMissing:
       'Jos lapsellasi on tuloja, ilmoita se tuloselvityksellä.',
+    incomeNotifyForPeriod: 'Ilmoitan tuloni seuraavalle ajalle',
     incomeType: {
-      startDate: 'Voimassa alkaen',
-      endDate: 'Voimassaolo päättyy',
-      title: 'Asiakasmaksun perusteet',
+      startDate: 'Alkaen',
+      endDate: 'Päättyen',
+      starts: 'Alkaa',
+      ends: 'Päättyy',
+      title: 'Varhaiskasvatusmaksun perusteet',
       agreeToHighestFee: 'Suostun korkeimpaan varhaiskasvatusmaksuun',
       highestFeeInfo:
         'Suostun maksamaan varhaiskasvatusajan ja kulloinkin voimassa olevan asiakasmaksulain ja kaupungin hallituksen päätösten mukaista korkeinta varhaiskasvatusmaksua, joka on voimassa toistaiseksi siihen saakka, kunnes toisin ilmoitan tai kunnes lapseni varhaiskasvatus päättyy. (Tulotietoja ei tarvitse toimittaa)',
