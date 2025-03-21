@@ -14,6 +14,7 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import { Action } from 'lib-common/generated/action'
 import { UnitBackupCare } from 'lib-common/generated/api-types/backupcare'
 import { Caretakers, Daycare } from 'lib-common/generated/api-types/daycare'
+import { NekkuUnitNumber } from 'lib-common/generated/api-types/nekku'
 import {
   ChildDailyNote,
   NotesByGroupResponse
@@ -105,6 +106,7 @@ interface Props {
   permittedActions: Action.Group[]
   permittedBackupCareActions: Partial<Record<UUID, Action.BackupCare[]>>
   permittedGroupPlacementActions: Partial<Record<UUID, Action.Placement[]>>
+  nekkuUnits: NekkuUnitNumber[]
 }
 
 export interface GroupWithDetails extends DaycareGroupWithPlacements {
@@ -165,7 +167,8 @@ export default React.memo(function Group({
   permittedActions,
   permittedBackupCareActions,
   permittedGroupPlacementActions,
-  unitChildrenCapacityFactors
+  unitChildrenCapacityFactors,
+  nekkuUnits
 }: Props) {
   const mobileEnabled = unit.enabledPilotFeatures.includes('MOBILE')
   const { i18n } = useTranslation()
@@ -244,7 +247,7 @@ export default React.memo(function Group({
       data-status={open ? 'open' : 'closed'}
     >
       {uiMode === `update-group-${group.id}` && (
-        <GroupUpdateModal group={group} />
+        <GroupUpdateModal group={group} nekkuUnits={nekkuUnits} />
       )}
       {notesModal && (
         <NotesModal

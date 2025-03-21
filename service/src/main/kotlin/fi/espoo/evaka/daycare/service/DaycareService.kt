@@ -79,6 +79,7 @@ data class DaycareGroup(
     val deletable: Boolean,
     val jamixCustomerNumber: Int?,
     val aromiCustomerId: String?,
+    val nekkuCustomerNumber: String?,
 )
 
 data class Caretakers(val minimum: Double, val maximum: Double) {

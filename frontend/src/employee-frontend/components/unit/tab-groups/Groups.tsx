@@ -14,6 +14,7 @@ import {
   Daycare,
   DaycareGroup
 } from 'lib-common/generated/api-types/daycare'
+import { NekkuUnitNumber } from 'lib-common/generated/api-types/nekku'
 import { OccupancyResponse } from 'lib-common/generated/api-types/occupancy'
 import { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
 import { useQueryResult } from 'lib-common/query'
@@ -61,6 +62,7 @@ function renderGroups(
   openGroups: Record<string, boolean>,
   setOpenGroups: React.Dispatch<React.SetStateAction<Record<string, boolean>>>,
   unitChildrenCapacities: UnitChildrenCapacityFactors[],
+  nekkuUnits: NekkuUnitNumber[],
   confirmedOccupancies?: Partial<Record<string, OccupancyResponse>>,
   realizedOccupancies?: Partial<Record<string, OccupancyResponse>>
 ) {
@@ -98,6 +100,7 @@ function renderGroups(
           permittedBackupCareActions={permittedBackupCareActions}
           permittedGroupPlacementActions={permittedGroupPlacementActions}
           unitChildrenCapacityFactors={unitChildrenCapacities}
+          nekkuUnits={nekkuUnits}
         />
       ))}
     </div>
@@ -121,6 +124,7 @@ type Props = {
   permittedBackupCareActions: Partial<Record<UUID, Action.BackupCare[]>>
   permittedGroupPlacementActions: Partial<Record<UUID, Action.GroupPlacement[]>>
   unitChildrenCapacityFactors: UnitChildrenCapacityFactors[]
+  nekkuUnits: NekkuUnitNumber[]
 }
 
 export default React.memo(function Groups({
@@ -139,7 +143,8 @@ export default React.memo(function Groups({
   setOpenGroups,
   permittedBackupCareActions,
   permittedGroupPlacementActions,
-  unitChildrenCapacityFactors
+  unitChildrenCapacityFactors,
+  nekkuUnits
 }: Props) {
   const { i18n } = useTranslation()
   const { uiMode, toggleUiMode } = useContext(UIContext)
@@ -255,6 +260,7 @@ export default React.memo(function Groups({
         openGroups,
         setOpenGroups,
         unitChildrenCapacityFactors,
+        nekkuUnits,
         groupConfirmedOccupancies,
         groupRealizedOccupancies
       )}
