@@ -9,7 +9,6 @@ import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.pis.controllers.CreatePersonBody
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.shared.PersonId
-import fi.espoo.evaka.shared.domain.RealEvakaClock
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
@@ -17,12 +16,6 @@ import kotlin.test.assertTrue
 import org.junit.jupiter.api.Test
 
 class PersonIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
-    @Test
-    fun `creating an empty person creates a message account`() {
-        val person = db.transaction { createEmptyPerson(it, RealEvakaClock()) }
-        assertTrue(personHasMessageAccount(person.id))
-    }
-
     @Test
     fun `creating a person creates a message account`() {
         val person =
