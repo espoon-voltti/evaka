@@ -206,7 +206,7 @@ beforeEach(async () => {
 })
 
 async function initCitizenPage(mockedTime: HelsinkiDateTime) {
-  citizenPage = await Page.open({ mockedTime })
+  citizenPage = await Page.open({ mockedTime, viewport: mobileViewport })
   await enduserLogin(citizenPage, testAdult)
 }
 
@@ -236,7 +236,7 @@ describe('Message editor in child page', () => {
 
     await initCitizenPage(mockedDateAt12)
     await citizenPage.goto(config.enduserMessagesUrl)
-    const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+    const citizenMessagesPage = new CitizenMessagesPage(citizenPage, 'mobile')
     await citizenMessagesPage.assertThreadContent(message)
   })
 })
@@ -537,7 +537,7 @@ describe('Personal mobile device', () => {
 
 async function citizenSendsMessageToGroup() {
   await citizenPage.goto(config.enduserMessagesUrl)
-  const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+  const citizenMessagesPage = new CitizenMessagesPage(citizenPage, 'mobile')
   const title = 'Otsikko'
   const content = 'Testiviestin sisältö'
   const childIds = [child.id]
@@ -553,7 +553,7 @@ async function citizenSendsMessageToGroup() {
 
 async function citizenSendsMessageToGroup2() {
   await citizenPage.goto(config.enduserMessagesUrl)
-  const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+  const citizenMessagesPage = new CitizenMessagesPage(citizenPage, 'mobile')
   const title = 'Hei ryhmä 2'
   const content = 'Testiviestin sisältö'
   const childIds = [child2.id]
@@ -574,7 +574,7 @@ async function citizenSeesMessage(message: {
 }) {
   await initCitizenPage(mockedDateAt12)
   await citizenPage.goto(config.enduserMessagesUrl)
-  const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+  const citizenMessagesPage = new CitizenMessagesPage(citizenPage, 'mobile')
   await citizenMessagesPage.assertThreadContent(message)
 }
 

@@ -84,7 +84,7 @@ export default React.memo(function ThreadList({
               text={t.messages.messageEditor.newMessage}
               onClick={() => setEditorVisible(true)}
               primary
-              data-qa="new-message-btn"
+              data-qa="new-message-btn-desktop"
               id="new-message-btn"
               disabled={!newMessageButtonEnabled}
             />
@@ -95,7 +95,7 @@ export default React.memo(function ThreadList({
           <FloatingButton
             onClick={() => setEditorVisible(true)}
             primary
-            data-qa="new-message-btn"
+            data-qa="new-message-btn-mobile"
             disabled={!newMessageButtonEnabled}
           >
             <FixedSpaceRow spacing="xs" alignItems="center">

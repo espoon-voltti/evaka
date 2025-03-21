@@ -124,7 +124,7 @@ function getSupervisorName() {
 async function getCitizenMessageEditor(citizenPage: Page) {
   await enduserLogin(citizenPage, testAdult)
   await citizenPage.goto(config.enduserMessagesUrl)
-  const messagesPage = new CitizenMessagesPage(citizenPage)
+  const messagesPage = new CitizenMessagesPage(citizenPage, 'desktop')
   const editor = await messagesPage.createNewMessage()
   const supervisorName = getSupervisorName()
   await editor.selectRecipients([supervisorName])

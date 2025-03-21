@@ -7,6 +7,7 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   Element,
   ElementCollection,
+  EnvType,
   FileInput,
   MultiSelect,
   Page,
@@ -16,12 +17,12 @@ import {
 export class MockStrongAuthPage {
   constructor(private readonly page: Page) {}
 
-  async login(ssn: string) {
+  async login(ssn: string, env: EnvType) {
     await this.page.find(`[id="${ssn}"]`).locator.check()
     await this.page.find('[type=submit]').findText('Kirjaudu').click()
     await this.page.find('[type=submit]').findText('Jatka').click()
     await this.page.findByDataQa('header-city-logo').waitUntilVisible()
-    return new CitizenMessagesPage(this.page)
+    return new CitizenMessagesPage(this.page, env)
   }
 }
 export default class CitizenMessagesPage {
@@ -43,7 +44,13 @@ export default class CitizenMessagesPage {
   fileUpload: Element
   #threadOutOfOfficeInfo: Element
   markUnreadButton: Element
-  constructor(private readonly page: Page) {
+  constructor(
+    private readonly page: Page,
+    env: EnvType
+  ) {
+    const messageThreadActions = this.page.findByDataQa(
+      `message-thread-actions-${env}`
+    )
     this.messageReplyContent = new TextInput(
       page.findByDataQa('message-reply-content')
     )
@@ -53,8 +60,10 @@ export default class CitizenMessagesPage {
       'redacted-thread-reader-title'
     )
     this.#strongAuthLink = page.findByDataQa('strong-auth-link')
-    this.#openReplyEditorButton = page.findByDataQa(`${this.replyButtonTag}`)
-    this.#openReplyEditorButtonHidden = page.findByDataQa(
+    this.#openReplyEditorButton = messageThreadActions.findByDataQa(
+      `${this.replyButtonTag}`
+    )
+    this.#openReplyEditorButtonHidden = messageThreadActions.findByDataQa(
       `${this.replyButtonTag}-hidden`
     )
     this.#sendReplyButton = page.findByDataQa('message-send-btn')
@@ -70,12 +79,12 @@ export default class CitizenMessagesPage {
     this.#threadChildren = page
       .findByDataQa('thread-reader')
       .findAllByDataQa('thread-child')
-    this.newMessageButton = page.findAllByDataQa('new-message-btn').first()
+    this.newMessageButton = page.findByDataQa(`new-message-btn-${env}`)
     this.fileUpload = page.findByDataQa('upload-message-attachment')
     this.#threadOutOfOfficeInfo = page
       .findByDataQa('thread-reader')
       .findByDataQa('out-of-office-info')
-    this.markUnreadButton = page.findByDataQa('mark-unread-btn')
+    this.markUnreadButton = messageThreadActions.findByDataQa('mark-unread-btn')
   }
 
   replyButtonTag = 'message-reply-editor-btn'

@@ -160,7 +160,7 @@ describe('Municipal messaging -', () => {
 
     await openCitizenPage(messageReadTime)
     await citizenPage.goto(config.enduserMessagesUrl)
-    const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+    const citizenMessagesPage = new CitizenMessagesPage(citizenPage, 'desktop')
     await citizenMessagesPage.assertThreadContent(defaultMessage)
   })
 
