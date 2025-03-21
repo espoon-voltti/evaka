@@ -319,14 +319,25 @@ const ApplicationsList = React.memo(function Applications({
         </Td>
         <Td>
           <FixedSpaceColumn spacing="xs">
-            <Bold>
-              {formatName(
-                application.firstName,
-                application.lastName,
-                i18n,
-                true
-              )}
-            </Bold>
+            <Tooltip
+              tooltip={
+                <div>
+                  <div>{application.streetAddress}</div>
+                  <div>
+                    {application.postalCode} {application.postOffice}
+                  </div>
+                </div>
+              }
+            >
+              <Bold>
+                {formatName(
+                  application.firstName,
+                  application.lastName,
+                  i18n,
+                  true
+                )}
+              </Bold>
+            </Tooltip>
             {dateOfBirthInfo(application)}
           </FixedSpaceColumn>
         </Td>
