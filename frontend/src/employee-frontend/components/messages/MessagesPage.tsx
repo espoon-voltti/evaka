@@ -191,6 +191,21 @@ export default React.memo(function MessagesPage({
     if (selectedAccount === undefined) {
       return undefined
     }
+    if (selectedAccount.account.type === 'FINANCE' && selectedDraft) {
+      return [
+        {
+          accountId: selectedAccount.account.id,
+          receivers: selectedDraft.recipients.map((recipient, i) => {
+            return {
+              id: recipient.accountId,
+              name: selectedDraft.recipientNames[i],
+              type: 'CITIZEN'
+            }
+          })
+        }
+      ]
+    }
+
     if (prefilledRecipient) {
       if (!prefilledRecipientPerson.isSuccess) {
         return undefined
@@ -213,11 +228,12 @@ export default React.memo(function MessagesPage({
     }
     return receivers
   }, [
+    i18n,
     prefilledRecipient,
     prefilledRecipientPerson,
     receivers,
     selectedAccount,
-    i18n
+    selectedDraft
   ])
 
   return (

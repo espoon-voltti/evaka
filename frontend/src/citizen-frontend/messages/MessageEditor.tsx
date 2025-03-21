@@ -89,9 +89,9 @@ export default React.memo(function MessageEditor({
 
   const childIds = useMemo(
     () =>
-      Object.keys(
-        receiverOptions.childrenToMessageAccounts
-      ) as (keyof typeof receiverOptions.childrenToMessageAccounts)[],
+      receiverOptions.childrenToMessageAccounts
+        .filter((c) => c.childId !== null)
+        .map((c) => c.childId!),
     [receiverOptions]
   )
 
@@ -143,9 +143,9 @@ export default React.memo(function MessageEditor({
     const newMessageAuthorized =
       (accountId: MessageAccountId) =>
       (childId: PersonId): boolean =>
-        receiverOptions.childrenToMessageAccounts[childId]?.newMessage.includes(
-          accountId
-        ) ?? false
+        receiverOptions.childrenToMessageAccounts
+          .find((value) => value.childId === childId)
+          ?.newMessage.includes(accountId) ?? false
 
     // Can send to groups which are recipients for at least one of the selected children,
     // as long as all the children and thus groups are in the same unit.
@@ -249,9 +249,11 @@ export default React.memo(function MessageEditor({
                                   (accountId) =>
                                     children.every(
                                       (childId) =>
-                                        receiverOptions.childrenToMessageAccounts[
-                                          childId
-                                        ]?.newMessage.includes(accountId) ??
+                                        receiverOptions.childrenToMessageAccounts
+                                          .find(
+                                            (value) => value.childId === childId
+                                          )
+                                          ?.newMessage.includes(accountId) ??
                                         false
                                     )
                                 )

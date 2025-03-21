@@ -7,6 +7,7 @@ package fi.espoo.evaka.messaging
 import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.application.getCitizenChildren
 import fi.espoo.evaka.attachment.Attachment
+import fi.espoo.evaka.invoicing.controller.SortDirection
 import fi.espoo.evaka.messaging.MessageController.MessageThreadFolder
 import fi.espoo.evaka.shared.*
 import fi.espoo.evaka.shared.db.Database
@@ -217,6 +218,7 @@ fun Database.Transaction.insertMessage(
     recipientNames: List<String>,
     municipalAccountName: String,
     serviceWorkerAccountName: String,
+    financeAccountName: String,
     sentAt: HelsinkiDateTime? =
         null, // Only needed because some tests bypass the message service and controllers
     repliesToMessageId: MessageId? = null,
@@ -233,6 +235,7 @@ SELECT
     CASE 
         WHEN name_view.type = 'MUNICIPAL' THEN ${bind(municipalAccountName)} 
         WHEN name_view.type = 'SERVICE_WORKER' THEN ${bind(serviceWorkerAccountName)} 
+        WHEN name_view.type = 'FINANCE' THEN ${bind(financeAccountName)}
         ELSE name_view.name 
     END,
     ${bind(repliesToMessageId)},
@@ -382,6 +385,7 @@ fun Database.Transaction.insertThreadsWithMessages(
     applicationId: ApplicationId?,
     municipalAccountName: String,
     serviceWorkerAccountName: String,
+    financeAccountName: String,
 ): List<Pair<MessageThreadId, MessageId>> =
     prepareBatch(1..count) { // range is *inclusive*
             sql(
@@ -398,6 +402,7 @@ SELECT
     CASE 
         WHEN name_view.type = 'MUNICIPAL' THEN ${bind(municipalAccountName)}
         WHEN name_view.type = 'SERVICE_WORKER' THEN ${bind(serviceWorkerAccountName)}
+        WHEN name_view.type = 'FINANCE' THEN ${bind(financeAccountName)}
         ELSE name_view.name
     END,
     NULL,
@@ -480,8 +485,29 @@ fun Database.Read.getThreads(
     page: Int,
     municipalAccountName: String,
     serviceWorkerAccountName: String,
+    financeAccountName: String,
     folderId: MessageThreadFolderId? = null,
+    personAccountId: MessageAccountId? = null,
+    messagesSortDirection: SortDirection = SortDirection.ASC,
 ): PagedMessageThreads {
+    val personAccountPredicate =
+        if (personAccountId != null) {
+            Predicate {
+                where(
+                    """
+EXISTS (
+    SELECT 1
+    FROM message_thread_participant tp2
+    WHERE tp2.participant_id = ${bind(personAccountId)}
+    AND tp2.thread_id = $it.thread_id
+)
+                    """
+                        .trimIndent()
+                )
+            }
+        } else {
+            Predicate.alwaysTrue()
+        }
     val threads =
         createQuery {
                 sql(
@@ -491,8 +517,8 @@ SELECT
     t.id,
     t.title,
     t.message_type AS type,
-    t.urgent, 
-    t.sensitive, 
+    t.urgent,
+    t.sensitive,
     t.is_copy,
     a.status as application_status,
     coalesce((
@@ -509,7 +535,9 @@ SELECT
 FROM message_thread_participant tp
 JOIN message_thread t on t.id = tp.thread_id
 LEFT JOIN application a ON t.application_id = a.id
-WHERE tp.participant_id = ${bind(accountId)} AND tp.folder_id IS NOT DISTINCT FROM ${bind(folderId)}
+WHERE tp.participant_id = ${bind(accountId)}
+AND ${predicate(personAccountPredicate.forTable("tp"))}
+AND tp.folder_id IS NOT DISTINCT FROM ${bind(folderId)}
 AND EXISTS (SELECT 1 FROM message m WHERE m.thread_id = t.id AND (m.sender_id = ${bind(accountId)} OR m.sent_at IS NOT NULL))
 ORDER BY tp.last_message_timestamp DESC
 LIMIT ${bind(pageSize)} OFFSET ${bind((page - 1) * pageSize)}
@@ -524,6 +552,8 @@ LIMIT ${bind(pageSize)} OFFSET ${bind((page - 1) * pageSize)}
             threads.data.map { it.id },
             municipalAccountName,
             serviceWorkerAccountName,
+            financeAccountName,
+            messagesSortDirection,
         )
     return combineThreadsAndMessages(accountId, threads, messagesByThread)
 }
@@ -560,6 +590,7 @@ fun Database.Read.getReceivedThreads(
     page: Int,
     municipalAccountName: String,
     serviceWorkerAccountName: String,
+    financeAccountName: String,
     folderId: MessageThreadFolderId? = null,
     accountAccessLimit: AccountAccessLimit = AccountAccessLimit.NoFurtherLimit,
 ): PagedMessageThreads {
@@ -613,6 +644,7 @@ LIMIT ${bind(pageSize)} OFFSET ${bind((page - 1) * pageSize)}
             threads.data.map { it.id },
             municipalAccountName,
             serviceWorkerAccountName,
+            financeAccountName,
         )
     return combineThreadsAndMessages(accountId, threads, messagesByThread)
 }
@@ -622,8 +654,11 @@ private fun Database.Read.getThreadMessages(
     threadIds: List<MessageThreadId>,
     municipalAccountName: String,
     serviceWorkerAccountName: String,
+    financeAccountName: String,
+    sortDirection: SortDirection = SortDirection.ASC,
 ): Map<MessageThreadId, List<Message>> {
     if (threadIds.isEmpty()) return mapOf()
+    val sortDir = sortDirection.name
     return createQuery {
             sql(
                 """
@@ -639,6 +674,7 @@ SELECT
             'name', CASE 
                 WHEN mav.type = 'MUNICIPAL' THEN ${bind(municipalAccountName)}
                 WHEN mav.type = 'SERVICE_WORKER' THEN ${bind(serviceWorkerAccountName)}
+                WHEN mav.type = 'FINANCE' THEN ${bind(financeAccountName)}
                 ELSE mav.name 
             END,
             'type', mav.type
@@ -653,6 +689,7 @@ SELECT
                 'name', CASE
                     WHEN mav.type = 'MUNICIPAL' THEN ${bind(municipalAccountName)} 
                     WHEN mav.type = 'SERVICE_WORKER' THEN ${bind(serviceWorkerAccountName)}
+                    WHEN mav.type = 'FINANCE' THEN ${bind(financeAccountName)}
                     ELSE mav.name
                 END,
                 'type', mav.type
@@ -678,7 +715,7 @@ WHERE
         WHERE mr.message_id = m.id AND mr.recipient_id = ${bind(accountId)}
     )) AND
     (m.sender_id = ${bind(accountId)} OR m.sent_at IS NOT NULL)
-ORDER BY m.sent_at
+ORDER BY m.sent_at $sortDir
 """
             )
         }
@@ -800,6 +837,7 @@ fun Database.Read.getSentMessage(
     senderId: MessageAccountId,
     messageId: MessageId,
     serviceWorkerAccountName: String,
+    financeAccountName: String,
 ): Message {
     return createQuery {
             sql(
@@ -810,12 +848,12 @@ SELECT
     COALESCE(m.sent_at, m.created) AS sent_at,  -- use the created timestamp until the asyncjob marks the message as sent
     mc.content,
     (
-        SELECT jsonb_build_object('id', mav.id, 'name', CASE mav.type WHEN 'SERVICE_WORKER' THEN ${bind(serviceWorkerAccountName)} ELSE mav.name END, 'type', mav.type)
+        SELECT jsonb_build_object('id', mav.id, 'name', CASE mav.type WHEN 'SERVICE_WORKER' THEN ${bind(serviceWorkerAccountName)} WHEN 'FINANCE' THEN ${bind(financeAccountName)} ELSE mav.name END, 'type', mav.type)
         FROM message_account_view mav
         WHERE mav.id = m.sender_id
     ) AS sender,
     (
-        SELECT jsonb_agg(jsonb_build_object('id', mav.id, 'name', CASE mav.type WHEN 'SERVICE_WORKER' THEN ${bind(serviceWorkerAccountName)} ELSE mav.name END, 'type', mav.type))
+        SELECT jsonb_agg(jsonb_build_object('id', mav.id, 'name', CASE mav.type WHEN 'SERVICE_WORKER' THEN ${bind(serviceWorkerAccountName)} WHEN 'FINANCE' THEN ${bind(financeAccountName)} ELSE mav.name END, 'type', mav.type))
         FROM message_recipients mr
         JOIN message_account_view mav ON mav.id = mr.recipient_id
         WHERE mr.message_id = m.id
@@ -1094,6 +1132,7 @@ fun Database.Read.getMessageThread(
     threadId: MessageThreadId,
     municipalAccountName: String,
     serviceWorkerAccountName: String,
+    financeAccountName: String,
 ): MessageThread {
     val thread =
         createQuery {
@@ -1132,6 +1171,7 @@ WHERE t.id = ${bind(threadId)} AND tp.participant_id = ${bind(accountId)}
             listOf(thread.id),
             municipalAccountName,
             serviceWorkerAccountName,
+            financeAccountName,
         )
     return combineThreadsAndMessages(
             accountId,
@@ -1147,6 +1187,7 @@ fun Database.Read.getMessageThreadByApplicationId(
     applicationId: ApplicationId,
     municipalAccountName: String,
     serviceWorkerAccountName: String,
+    financeAccountName: String,
 ): MessageThread? {
     val thread =
         createQuery {
@@ -1187,6 +1228,7 @@ LIMIT 1
                 listOf(thread.id),
                 municipalAccountName,
                 serviceWorkerAccountName,
+                financeAccountName,
             )
         return combineThreadsAndMessages(
                 accountId,

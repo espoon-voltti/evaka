@@ -318,7 +318,15 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
     private fun receivedThreadCounts(accountIds: List<MessageAccountId>): List<Int> =
         db.read { tx ->
             accountIds.map {
-                tx.getReceivedThreads(it, 10, 1, "Espoo", "Espoon palveluohjaus").total
+                tx.getReceivedThreads(
+                        it,
+                        10,
+                        1,
+                        "Espoo",
+                        "Espoon palveluohjaus",
+                        "Espoon asiakasmaksut",
+                    )
+                    .total
             }
         }
 
@@ -326,7 +334,15 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
         db.read { tx ->
             accountIds.map {
                 val archiveFolderId = tx.getArchiveFolderId(it)
-                tx.getReceivedThreads(it, 10, 1, "Espoo", "Espoon palveluohjaus", archiveFolderId)
+                tx.getReceivedThreads(
+                        it,
+                        10,
+                        1,
+                        "Espoo",
+                        "Espoon palveluohjaus",
+                        "Espoon asiakasmaksut",
+                        archiveFolderId,
+                    )
                     .total
             }
         }
@@ -363,7 +379,17 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
         asyncJobRunner.runPendingJobsSync(MockEvakaClock(now))
         db.transaction { tx ->
             val threadId =
-                tx.getThreads(senderAccount, 1, 1, "Espoo", "Espoon palveluohjaus").data.first().id
+                tx.getThreads(
+                        senderAccount,
+                        1,
+                        1,
+                        "Espoo",
+                        "Espoon palveluohjaus",
+                        "Espoon asiakasmaksut",
+                    )
+                    .data
+                    .first()
+                    .id
             tx.archiveThread(receiverDuplicateAccount, threadId)
         }
 

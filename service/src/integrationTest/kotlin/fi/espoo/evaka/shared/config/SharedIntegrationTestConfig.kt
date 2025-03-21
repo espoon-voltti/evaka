@@ -244,6 +244,8 @@ val testFeatureConfig =
         municipalMessageAccountName = "Espoon kaupunki - Esbo stad - City of Espoo",
         serviceWorkerMessageAccountName =
             "Varhaiskasvatuksen palveluohjaus - Småbarnspedagogikens servicehandledning - Early childhood education service guidance",
+        financeMessageAccountName =
+            "Varhaiskasvatuksen asiakasmaksut - Småbarnspedagogikens avgifter - Early childhood education fees",
         applyPlacementUnitFromDecision = false,
         preferredStartRelativeApplicationDueDate = false,
         fiveYearsOldDaycareEnabled = true,
