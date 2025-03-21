@@ -51,6 +51,7 @@ fun generateAndInsertVoucherValueDecisionsV2(
     financeMinDate: LocalDate,
     valueDecisionCapacityFactorEnabled: Boolean,
     childId: ChildId,
+    nrOfDaysVoucherValueDecisionCanBeSentInAdvance: Long,
     retroactiveOverride: LocalDate? = null, // allows extending beyond normal min date
 ) {
     val existingDecisions = tx.findValueDecisionsForChild(childId = childId, lockForUpdate = true)
@@ -73,6 +74,8 @@ fun generateAndInsertVoucherValueDecisionsV2(
             minDate =
                 if (retroactiveOverride != null) minOf(retroactiveOverride, financeMinDate)
                 else financeMinDate,
+            nrOfDaysVoucherValueDecisionCanBeSentInAdvance =
+                nrOfDaysVoucherValueDecisionCanBeSentInAdvance,
         )
 
     tx.deleteValueDecisions(existingDrafts.map { it.id })
@@ -89,6 +92,7 @@ fun generateVoucherValueDecisionsDrafts(
     existingDrafts: List<VoucherValueDecision>,
     ignoredDrafts: List<VoucherValueDecision>,
     minDate: LocalDate,
+    nrOfDaysVoucherValueDecisionCanBeSentInAdvance: Long,
 ): List<VoucherValueDecision> {
     val voucherBases =
         getVoucherBases(
@@ -108,8 +112,14 @@ fun generateVoucherValueDecisionsDrafts(
             activeDecisions = activeDecisions,
             ignoredDrafts = ignoredDrafts,
             minDate = minDate,
+            nrOfDaysDecisionCanBeSentInAdvance = nrOfDaysVoucherValueDecisionCanBeSentInAdvance,
         )
-        .map { it.withMetadataFromExisting(existingDrafts) }
+        .map {
+            it.withMetadataFromExisting(
+                existingDrafts,
+                nrOfDaysVoucherValueDecisionCanBeSentInAdvance,
+            )
+        }
         .map {
             it.copy(
                 difference =
@@ -117,6 +127,8 @@ fun generateVoucherValueDecisionsDrafts(
                         newDrafts = newDrafts,
                         existingActiveDecisions = activeDecisions,
                         getDifferences = VoucherValueDecisionDifference::getDifference,
+                        nrOfDaysDecisionCanBeSentInAdvance =
+                            nrOfDaysVoucherValueDecisionCanBeSentInAdvance,
                     )
             )
         }

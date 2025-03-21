@@ -66,8 +66,16 @@ data class VoucherValueDecision(
 
     override fun withCreated(created: HelsinkiDateTime) = this.copy(created = created)
 
-    override fun contentEquals(decision: VoucherValueDecision): Boolean =
-        VoucherValueDecisionDifference.getDifference(this, decision).isEmpty()
+    override fun contentEquals(
+        decision: VoucherValueDecision,
+        nrOfDaysDecisionCanBeSentInAdvance: Long,
+    ): Boolean =
+        VoucherValueDecisionDifference.getDifference(
+                this,
+                decision,
+                nrOfDaysDecisionCanBeSentInAdvance,
+            )
+            .isEmpty()
 
     override fun overlapsWith(other: VoucherValueDecision): Boolean {
         return this.child.id == other.child.id &&
@@ -157,14 +165,24 @@ enum class VoucherValueDecisionStatus : DatabaseEnum {
 
 @ConstList("voucherValueDecisionDifferences")
 enum class VoucherValueDecisionDifference(
-    val contentEquals: (d1: VoucherValueDecision, d2: VoucherValueDecision) -> Boolean
+    val contentEquals:
+        (
+            d1: VoucherValueDecision,
+            d2: VoucherValueDecision,
+            nrOfDaysVoucherValueDecisionCanBeSentInAdvance: Long,
+        ) -> Boolean
 ) : DatabaseEnum {
-    GUARDIANS({ d1, d2 ->
+    GUARDIANS({ d1, d2, _ ->
         setOf(d1.headOfFamilyId, d1.partnerId) == setOf(d2.headOfFamilyId, d2.partnerId)
     }),
-    INCOME({ d1, d2 ->
+    INCOME({ d1, d2, nrOfDaysVoucherValueDecisionCanBeSentInAdvance ->
         val logic =
-            if (d2.validFrom < LocalDate.of(2025, 3, 1)) IncomeComparisonVersion.V1
+            if (
+                d2.validFrom <
+                    LocalDate.of(2025, 3, 1)
+                        .plusDays(nrOfDaysVoucherValueDecisionCanBeSentInAdvance)
+            )
+                IncomeComparisonVersion.V1
             else IncomeComparisonVersion.V2
         setOf(
             d1.headOfFamilyIncome?.effectiveComparable(logic),
@@ -176,20 +194,20 @@ enum class VoucherValueDecisionDifference(
             ) &&
             d1.childIncome?.effectiveComparable(logic) == d2.childIncome?.effectiveComparable(logic)
     }),
-    FAMILY_SIZE({ d1, d2 -> d1.familySize == d2.familySize }),
-    PLACEMENT({ d1, d2 -> d1.placement == d2.placement }),
-    SERVICE_NEED({ d1, d2 -> d1.serviceNeed == d2.serviceNeed }),
-    SIBLING_DISCOUNT({ d1, d2 -> d1.siblingDiscount == d2.siblingDiscount }),
-    CO_PAYMENT({ d1, d2 -> d1.coPayment == d2.coPayment }),
-    FEE_ALTERATIONS({ d1, d2 -> d1.feeAlterations == d2.feeAlterations }),
-    FINAL_CO_PAYMENT({ d1, d2 -> d1.finalCoPayment == d2.finalCoPayment }),
-    BASE_VALUE({ d1, d2 -> d1.baseValue == d2.baseValue }),
-    VOUCHER_VALUE({ d1, d2 ->
+    FAMILY_SIZE({ d1, d2, _ -> d1.familySize == d2.familySize }),
+    PLACEMENT({ d1, d2, _ -> d1.placement == d2.placement }),
+    SERVICE_NEED({ d1, d2, _ -> d1.serviceNeed == d2.serviceNeed }),
+    SIBLING_DISCOUNT({ d1, d2, _ -> d1.siblingDiscount == d2.siblingDiscount }),
+    CO_PAYMENT({ d1, d2, _ -> d1.coPayment == d2.coPayment }),
+    FEE_ALTERATIONS({ d1, d2, _ -> d1.feeAlterations == d2.feeAlterations }),
+    FINAL_CO_PAYMENT({ d1, d2, _ -> d1.finalCoPayment == d2.finalCoPayment }),
+    BASE_VALUE({ d1, d2, _ -> d1.baseValue == d2.baseValue }),
+    VOUCHER_VALUE({ d1, d2, _ ->
         // Voucher value rounding was added later, so the values need to be rounded before comparing
         // them to consider old decisions as not changed
         roundToEuros(BigDecimal(d1.voucherValue)) == roundToEuros(BigDecimal(d2.voucherValue))
     }),
-    FEE_THRESHOLDS({ d1, d2 -> d1.feeThresholds == d2.feeThresholds });
+    FEE_THRESHOLDS({ d1, d2, _ -> d1.feeThresholds == d2.feeThresholds });
 
     override val sqlType: String = "voucher_value_decision_difference"
 
@@ -197,11 +215,20 @@ enum class VoucherValueDecisionDifference(
         fun getDifference(
             d1: VoucherValueDecision,
             d2: VoucherValueDecision,
+            nrOfDaysVoucherValueDecisionCanBeSentInAdvance: Long,
         ): Set<VoucherValueDecisionDifference> {
             if (d1.isEmpty() && d2.isEmpty()) {
-                return if (GUARDIANS.contentEquals(d1, d2)) emptySet() else setOf(GUARDIANS)
+                return if (
+                    GUARDIANS.contentEquals(d1, d2, nrOfDaysVoucherValueDecisionCanBeSentInAdvance)
+                )
+                    emptySet()
+                else setOf(GUARDIANS)
             }
-            return values().filterNot { it.contentEquals(d1, d2) }.toSet()
+            return values()
+                .filterNot {
+                    it.contentEquals(d1, d2, nrOfDaysVoucherValueDecisionCanBeSentInAdvance)
+                }
+                .toSet()
         }
     }
 }
