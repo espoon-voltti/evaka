@@ -26,5 +26,6 @@ This repository uses [Lefthook](https://lefthook.dev/) for configuring git hooks
 
 To enable the hooks, follow these steps:
 
-1. Install the Lefthook binary using the instructions on the Lefthook website.
-2. Run `lefthook install` in the repository root.
+1. Install the Lefthook [binary](https://lefthook.dev/installation/index.html) using the instructions on the Lefthook website.
+2. Install `reuse` [binary](https://reuse.readthedocs.io/en/stable/readme.html#install) for the automatic license check.
+3. Run `lefthook install` in the repository root.
