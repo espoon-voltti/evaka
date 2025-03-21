@@ -33,7 +33,6 @@ import { ParentshipId } from 'lib-common/generated/api-types/shared'
 import { ParentshipRequest } from 'lib-common/generated/api-types/pis'
 import { ParentshipUpdateRequest } from 'lib-common/generated/api-types/pis'
 import { ParentshipWithPermittedActions } from 'lib-common/generated/api-types/pis'
-import { Partnership } from 'lib-common/generated/api-types/pis'
 import { PartnershipId } from 'lib-common/generated/api-types/shared'
 import { PartnershipRequest } from 'lib-common/generated/api-types/pis'
 import { PartnershipUpdateRequest } from 'lib-common/generated/api-types/pis'
@@ -59,7 +58,6 @@ import { deserializeJsonFamilyOverview } from 'lib-common/generated/api-types/pi
 import { deserializeJsonFosterParentRelationship } from 'lib-common/generated/api-types/pis'
 import { deserializeJsonGuardiansResponse } from 'lib-common/generated/api-types/pis'
 import { deserializeJsonParentshipWithPermittedActions } from 'lib-common/generated/api-types/pis'
-import { deserializeJsonPartnership } from 'lib-common/generated/api-types/pis'
 import { deserializeJsonPartnershipWithPermittedActions } from 'lib-common/generated/api-types/pis'
 import { deserializeJsonPersonJSON } from 'lib-common/generated/api-types/pis'
 import { deserializeJsonPersonResponse } from 'lib-common/generated/api-types/pis'
@@ -598,22 +596,6 @@ export async function deletePartnership(
     method: 'DELETE'
   })
   return json
-}
-
-
-/**
-* Generated from fi.espoo.evaka.pis.controllers.PartnershipsController.getPartnership
-*/
-export async function getPartnership(
-  request: {
-    partnershipId: PartnershipId
-  }
-): Promise<Partnership> {
-  const { data: json } = await client.request<JsonOf<Partnership>>({
-    url: uri`/employee/partnerships/${request.partnershipId}`.toString(),
-    method: 'GET'
-  })
-  return deserializeJsonPartnership(json)
 }
 
 
