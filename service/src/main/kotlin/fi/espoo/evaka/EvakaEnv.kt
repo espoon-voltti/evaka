@@ -6,6 +6,7 @@ package fi.espoo.evaka
 
 import com.fasterxml.jackson.annotation.JsonValue
 import fi.espoo.evaka.daycare.domain.Language
+import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.domain.Rectangle
 import fi.espoo.evaka.shared.job.JobSchedule
 import fi.espoo.evaka.shared.job.ScheduledJobSettings
@@ -16,6 +17,7 @@ import java.time.Duration
 import java.time.LocalDate
 import java.time.YearMonth
 import java.util.Locale
+import java.util.UUID
 import org.springframework.core.env.Environment
 import org.springframework.core.io.UrlResource
 
@@ -45,6 +47,7 @@ data class EvakaEnv(
     val personAddressEnvelopeWindowPosition: Rectangle,
     val replacementInvoicesStart: YearMonth?,
     val passwordBlacklistDirectory: String?,
+    val placementToolServiceNeedOptionId: ServiceNeedOptionId?,
 ) {
     companion object {
         fun fromEnvironment(env: Environment): EvakaEnv {
@@ -84,6 +87,10 @@ data class EvakaEnv(
                         YearMonth.parse(it)
                     },
                 passwordBlacklistDirectory = env.lookup("evaka.password_blacklist_directory"),
+                placementToolServiceNeedOptionId =
+                    env.lookup<String?>("evaka.placement_tool.service_need_option_id")?.let {
+                        ServiceNeedOptionId(UUID.fromString(it))
+                    },
             )
         }
     }

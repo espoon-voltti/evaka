@@ -5,6 +5,7 @@
 package fi.espoo.evaka.application
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.daycare.PreschoolTerm
 import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.daycare.getPreschoolTerm
@@ -53,6 +54,7 @@ class PlacementToolService(
     private val personService: PersonService,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val fridgeFamilyService: FridgeFamilyService,
+    private val evakaEnv: EvakaEnv,
 ) {
     init {
         asyncJobRunner.registerHandler(::doCreatePlacementToolApplications)
@@ -110,15 +112,21 @@ WHERE application.type = 'PRESCHOOL'
         file: MultipartFile,
     ) {
         val serviceNeedOptions = tx.getServiceNeedOptions()
-        val defaultServiceNeedOptionId =
-            serviceNeedOptions
-                .firstOrNull {
-                    it.validPlacementType == PlacementType.PRESCHOOL_DAYCARE && it.defaultOption
+        val serviceNeedOptionId =
+            if (evakaEnv.placementToolServiceNeedOptionId != null) {
+                evakaEnv.placementToolServiceNeedOptionId.takeIf {
+                    serviceNeedOptions.any { option -> option.id == it }
                 }
-                ?.id
-        if (null == defaultServiceNeedOptionId) {
-            throw NotFound("No default service need option found")
-        }
+                    ?: throw NotFound(
+                        "No service need option found: ${evakaEnv.placementToolServiceNeedOptionId}"
+                    )
+            } else {
+                serviceNeedOptions
+                    .firstOrNull {
+                        it.validPlacementType == PlacementType.PRESCHOOL_DAYCARE && it.defaultOption
+                    }
+                    ?.id ?: throw NotFound("No default service need option found")
+            }
         val nextPreschoolTermId =
             findNextPreschoolTerm(tx, clock.today())?.id
                 ?: throw NotFound("No next preschool term found")
@@ -133,7 +141,7 @@ WHERE application.type = 'PRESCHOOL'
                                 user,
                                 childIdentifier,
                                 preschoolId,
-                                defaultServiceNeedOptionId,
+                                serviceNeedOptionId,
                                 nextPreschoolTermId,
                             )
                         else ->
@@ -143,7 +151,7 @@ WHERE application.type = 'PRESCHOOL'
                                     ChildId(UUID.fromString(childIdentifier)),
                                     preschoolId,
                                 ),
-                                defaultServiceNeedOptionId,
+                                serviceNeedOptionId,
                                 nextPreschoolTermId,
                             )
                     }

@@ -60,7 +60,7 @@ abstract class FullApplicationTest(private val resetDbBeforeEach: Boolean) {
 
     @Autowired protected lateinit var env: Environment
 
-    @Autowired protected lateinit var evakaEnv: EvakaEnv
+    @MockitoSpyBean protected lateinit var evakaEnv: EvakaEnv
 
     @Autowired protected lateinit var tracer: Tracer
 
