@@ -88,6 +88,11 @@ fun Database.Transaction.getNekkuCustomers(): List<NekkuCustomer> {
         .toList<NekkuCustomer>()
 }
 
+fun Database.Read.getNekkuUnitNumbers(): List<NekkuUnitNumber> {
+    return createQuery { sql("SELECT number, name FROM nekku_customer ORDER BY name ASC") }
+        .toList<NekkuUnitNumber>()
+}
+
 /** Throws an IllegalStateException if Nekku returns an empty special diet list. */
 fun fetchAndUpdateNekkuSpecialDiets(client: NekkuClient, db: Database.Connection) {
 

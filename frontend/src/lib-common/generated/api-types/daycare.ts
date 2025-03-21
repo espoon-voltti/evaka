@@ -311,6 +311,7 @@ export interface DaycareGroup {
   id: GroupId
   jamixCustomerNumber: number | null
   name: string
+  nekkuCustomerNumber: string | null
   startDate: LocalDate
 }
 
@@ -388,6 +389,7 @@ export interface GroupUpdateRequest {
   endDate: LocalDate | null
   jamixCustomerNumber: number | null
   name: string
+  nekkuCustomerNumber: string | null
   startDate: LocalDate
 }
 

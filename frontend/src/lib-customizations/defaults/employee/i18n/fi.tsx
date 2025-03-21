@@ -2580,7 +2580,8 @@ export const fi = {
         jamixTitle: 'Ruokatilausten asiakasnumero',
         aromiPlaceholder: 'Aromin asiakastunnus',
         aromiTitle: 'Aromi-ruokatilausten asiakastunnus',
-        nekkuPlaceholder: 'Nekku asiakasnumero'
+        nekkuUnitTitle: 'Nekku-ruokatilausten yksikkö',
+        nekkuCustomerNumberTitle: 'Nekku-ruokatilausten asiakasnumero'
       },
       startDate: 'Perustettu',
       endDate: 'Viimeinen toimintapäivä',

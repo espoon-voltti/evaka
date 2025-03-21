@@ -390,6 +390,7 @@ enum class Audit(
     MobileDevicesRead,
     MobileDevicesRename,
     MobileDevicesDelete,
+    NekkuUnitsRead,
     NonSsnChildrenReport,
     NoteCreate,
     NoteDelete,

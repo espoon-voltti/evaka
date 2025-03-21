@@ -19,7 +19,7 @@ private fun Database.Read.createDaycareGroupQuery(
     sql(
         """
 SELECT
-  id, daycare_id, name, start_date, end_date, jamix_customer_number, aromi_customer_id,
+  id, daycare_id, name, start_date, end_date, jamix_customer_number, aromi_customer_id, nekku_customer_number,
   (
     NOT exists(SELECT FROM backup_care WHERE group_id = daycare_group.id) AND
     NOT exists(SELECT FROM daycare_group_placement WHERE daycare_group_id = daycare_group.id) AND
@@ -74,12 +74,13 @@ fun Database.Transaction.updateGroup(
     endDate: LocalDate?,
     jamixCustomerNumber: Int?,
     aromiCustomerId: String?,
+    nekkuCustomerNumber: String?,
 ) {
     createUpdate {
             sql(
                 """
 UPDATE daycare_group
-SET name = ${bind(name)}, start_date = ${bind(startDate)}, end_date = ${bind(endDate)}, jamix_customer_number = ${bind(jamixCustomerNumber)}, aromi_customer_id = ${bind(aromiCustomerId)}
+SET name = ${bind(name)}, start_date = ${bind(startDate)}, end_date = ${bind(endDate)}, jamix_customer_number = ${bind(jamixCustomerNumber)}, aromi_customer_id = ${bind(aromiCustomerId)}, nekku_customer_number = ${bind(nekkuCustomerNumber)}
 WHERE id = ${bind(groupId)}
         """
             )

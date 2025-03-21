@@ -744,6 +744,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 jamixCustomerNumber = group.jamixCustomerNumber,
                 aromiCustomerId = null,
                 user = admin.user,
+                nekkuCustomerNumber = null,
             )
 
         assertNull(editedGroup.aromiCustomerId)
@@ -758,6 +759,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 jamixCustomerNumber = group.jamixCustomerNumber,
                 aromiCustomerId = aromiPreschoolCustomerId,
                 user = admin.user,
+                nekkuCustomerNumber = null,
             )
 
         assertEquals(aromiPreschoolCustomerId, editedGroup2.aromiCustomerId)
@@ -823,6 +825,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         endDate: LocalDate? = null,
         aromiCustomerId: String? = null,
         jamixCustomerNumber: Int? = null,
+        nekkuCustomerNumber: String? = null,
     ): DaycareGroup {
         daycareController.updateGroup(
             dbInstance(),
@@ -836,6 +839,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 aromiCustomerId = aromiCustomerId,
                 jamixCustomerNumber = jamixCustomerNumber,
                 endDate = endDate,
+                nekkuCustomerNumber = nekkuCustomerNumber,
             ),
         )
         return daycareController.getGroups(dbInstance(), user, RealEvakaClock(), daycareId).first {
