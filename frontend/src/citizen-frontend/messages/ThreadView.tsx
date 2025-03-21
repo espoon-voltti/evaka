@@ -42,6 +42,10 @@ import {
   FixedSpaceFlexWrap,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
+import {
+  Desktop,
+  MobileAndTablet
+} from 'lib-components/layout/responsive-layout'
 import { MessageCharacteristics } from 'lib-components/messages/MessageCharacteristics'
 import MessageReplyEditor from 'lib-components/messages/MessageReplyEditor'
 import { ThreadContainer } from 'lib-components/messages/ThreadListItem'
@@ -117,10 +121,6 @@ const MessageContent = styled.div`
 
 const ActionRow = styled(FixedSpaceRow)`
   margin: 0 28px 0 28px;
-`
-
-const ReplyToThreadButton = styled(Button)`
-  align-self: flex-start;
 `
 
 const messageContainerStyles = css`
@@ -392,27 +392,27 @@ export default React.memo(
           messages.length > 0 && (
             <>
               <Gap size="s" />
-              <ActionRow justifyContent="space-between">
-                {messageType === 'MESSAGE' && allowReply ? (
-                  <ReplyToThreadButton
-                    appearance="inline"
-                    icon={faReply}
-                    onClick={useReplyEditorVisible.on}
-                    data-qa="message-reply-editor-btn"
-                    text={i18n.messages.thread.reply}
+              <MobileAndTablet>
+                <FixedSpaceColumn alignItems="center">
+                  {messageType === 'MESSAGE' && allowReply ? (
+                    <Button
+                      appearance="button"
+                      primary
+                      onClick={useReplyEditorVisible.on}
+                      data-qa="message-reply-editor-btn"
+                      text={i18n.messages.thread.reply}
+                    />
+                  ) : (
+                    <div data-qa="message-reply-editor-btn-hidden" />
+                  )}
+                  <ScreenReaderButton
+                    onClick={focusThreadTitle}
+                    text={i18n.messages.thread.jumpToBeginning}
                   />
-                ) : (
-                  <div data-qa="message-reply-editor-btn-hidden" />
-                )}
-                <ScreenReaderButton
-                  onClick={focusThreadTitle}
-                  text={i18n.messages.thread.jumpToBeginning}
-                />
-                <ScreenReaderButton
-                  onClick={closeThread}
-                  text={i18n.messages.thread.close}
-                />
-                <FixedSpaceRow>
+                  <ScreenReaderButton
+                    onClick={closeThread}
+                    text={i18n.messages.thread.close}
+                  />
                   <MutateButton
                     appearance="inline"
                     icon={faEnvelope}
@@ -430,8 +430,50 @@ export default React.memo(
                     onClick={() => setConfirmDelete(true)}
                     text={i18n.messages.deleteThread}
                   />
-                </FixedSpaceRow>
-              </ActionRow>
+                </FixedSpaceColumn>
+              </MobileAndTablet>
+              <Desktop>
+                <ActionRow justifyContent="space-between">
+                  {messageType === 'MESSAGE' && allowReply ? (
+                    <Button
+                      appearance="inline"
+                      icon={faReply}
+                      onClick={useReplyEditorVisible.on}
+                      data-qa="message-reply-editor-btn"
+                      text={i18n.messages.thread.reply}
+                    />
+                  ) : (
+                    <div data-qa="message-reply-editor-btn-hidden" />
+                  )}
+                  <ScreenReaderButton
+                    onClick={focusThreadTitle}
+                    text={i18n.messages.thread.jumpToBeginning}
+                  />
+                  <ScreenReaderButton
+                    onClick={closeThread}
+                    text={i18n.messages.thread.close}
+                  />
+                  <FixedSpaceRow>
+                    <MutateButton
+                      appearance="inline"
+                      icon={faEnvelope}
+                      text={i18n.messages.markUnread}
+                      data-qa="mark-unread-btn"
+                      mutation={markLastReceivedMessageInThreadUnreadMutation}
+                      onClick={() => ({ threadId })}
+                      onSuccess={() => navigate('/messages')}
+                    />
+                    <Button
+                      appearance="inline"
+                      icon={faTrash}
+                      data-qa="delete-thread-btn"
+                      className="delete-btn"
+                      onClick={() => setConfirmDelete(true)}
+                      text={i18n.messages.deleteThread}
+                    />
+                  </FixedSpaceRow>
+                </ActionRow>
+              </Desktop>
               <Gap size="m" />
             </>
           )
