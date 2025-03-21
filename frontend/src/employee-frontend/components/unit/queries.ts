@@ -44,6 +44,7 @@ import {
   updateTemporaryEmployee,
   updateUnitClosingDate
 } from '../../generated/api-clients/daycare'
+import { getNekkuUnitNumbers } from '../../generated/api-clients/nekku'
 import {
   getOccupancyPeriodsSpeculated,
   getUnitOccupancies,
@@ -167,6 +168,8 @@ export const unitServiceApplicationsQuery = q.query(
 )
 
 export const unitGroupDetailsQuery = q.query(getUnitGroupDetails)
+
+export const nekkuUnitNumbersQuery = q.query(getNekkuUnitNumbers)
 
 export const createGroupPlacementMutation = q.parametricMutation<{
   unitId: DaycareId

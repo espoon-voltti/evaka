@@ -145,6 +145,8 @@ data class NekkuCustomer(
     val unit_size: String,
 )
 
+data class NekkuUnitNumber(val number: String, val name: String)
+
 data class NekkuSpecialDiet(
     val id: String,
     val name: String,

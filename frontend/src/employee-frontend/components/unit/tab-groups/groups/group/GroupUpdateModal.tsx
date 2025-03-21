@@ -5,7 +5,9 @@
 import React, { useState, useContext } from 'react'
 
 import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
+import { NekkuUnitNumber } from 'lib-common/generated/api-types/nekku'
 import LocalDate from 'lib-common/local-date'
+import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import InputField from 'lib-components/atoms/form/InputField'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import {
@@ -25,9 +27,13 @@ import { updateGroupMutation } from '../../../queries'
 
 interface Props {
   group: DaycareGroup
+  nekkuUnits: NekkuUnitNumber[]
 }
 
-export default React.memo(function GroupUpdateModal({ group }: Props) {
+export default React.memo(function GroupUpdateModal({
+  group,
+  nekkuUnits
+}: Props) {
   const { i18n } = useTranslation()
   const { clearUiMode } = useContext(UIContext)
 
@@ -37,12 +43,14 @@ export default React.memo(function GroupUpdateModal({ group }: Props) {
     endDate: LocalDate | null
     jamixCustomerNumber: number | null
     aromiCustomerId: string | null
+    nekkuCustomerNumber: string | null
   }>({
     name: group.name,
     startDate: group.startDate,
     endDate: group.endDate,
     jamixCustomerNumber: group.jamixCustomerNumber,
-    aromiCustomerId: group.aromiCustomerId
+    aromiCustomerId: group.aromiCustomerId,
+    nekkuCustomerNumber: group.nekkuCustomerNumber
   })
 
   return (
@@ -147,6 +155,36 @@ export default React.memo(function GroupUpdateModal({ group }: Props) {
                   />
                 </>
               )}
+            </>
+          )}
+          {featureFlags.nekkuIntegration && (
+            <>
+              <Gap size="s" />
+              <div className="bold">
+                {i18n.unit.groups.updateModal.nekkuUnitTitle}
+              </div>
+              <Combobox
+                items={nekkuUnits}
+                selectedItem={
+                  data.nekkuCustomerNumber
+                    ? nekkuUnits.find(
+                        (item) => item.number === data.nekkuCustomerNumber
+                      )
+                    : null
+                }
+                getItemLabel={(item) => (item ? item.name : '')}
+                onChange={(option) =>
+                  setData((prev) => ({
+                    ...prev,
+                    nekkuCustomerNumber: option?.number || null
+                  }))
+                }
+              />
+              <Gap size="s" />
+              <div className="bold">
+                {i18n.unit.groups.updateModal.nekkuCustomerNumberTitle}
+              </div>
+              <div>{data.nekkuCustomerNumber || '-'}</div>
             </>
           )}
         </section>
