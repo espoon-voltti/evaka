@@ -18,7 +18,6 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
-import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import java.time.LocalDate
@@ -124,22 +123,6 @@ class ParentshipController(
                     meta = mapOf("count" to it.size),
                 )
             }
-    }
-
-    @GetMapping("/{id}")
-    fun getParentship(
-        db: Database,
-        user: AuthenticatedUser.Employee,
-        clock: EvakaClock,
-        @PathVariable id: ParentshipId,
-    ): Parentship {
-        return db.connect { dbc ->
-                dbc.read {
-                    accessControl.requirePermissionFor(it, user, clock, Action.Parentship.READ, id)
-                    it.getParentship(id)
-                } ?: throw NotFound()
-            }
-            .also { Audit.ParentShipsRead.log(targetId = AuditId(id)) }
     }
 
     @PutMapping("/{id}")
