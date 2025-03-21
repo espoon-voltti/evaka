@@ -390,14 +390,6 @@ export const financeDecisionTypes = [
 export type FinanceDecisionType = typeof financeDecisionTypes[number]
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.GenerateDecisionsBody
-*/
-export interface GenerateDecisionsBody {
-  starting: string
-  targetHeads: (PersonId | null)[]
-}
-
-/**
 * Generated from fi.espoo.evaka.invoicing.domain.Income
 */
 export interface Income {
