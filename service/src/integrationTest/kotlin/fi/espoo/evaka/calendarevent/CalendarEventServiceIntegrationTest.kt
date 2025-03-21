@@ -3336,16 +3336,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
     private fun getReservableCalendarEventTimes(
         calendarEventId: CalendarEventId,
         childId: ChildId,
-        user: AuthenticatedUser.Citizen = guardian,
-        clock: EvakaClock = this.clock,
-    ) =
-        calendarEventController.getReservableCalendarEventTimes(
-            dbInstance(),
-            user,
-            clock,
-            calendarEventId,
-            childId,
-        )
+    ) = db.read { it.getReservableCalendarEventTimes(calendarEventId, childId) }
 
     private fun addEventTimeAsEmployee(
         form: CalendarEventTimeForm,

@@ -733,34 +733,6 @@ class CalendarEventController(
             }
     }
 
-    @GetMapping("/citizen/calendar-event/{eventId}/time")
-    fun getReservableCalendarEventTimes(
-        db: Database,
-        user: AuthenticatedUser.Citizen,
-        clock: EvakaClock,
-        @PathVariable eventId: CalendarEventId,
-        @RequestParam childId: ChildId,
-    ): List<CalendarEventTime> {
-        return db.connect { dbc ->
-                dbc.read { tx ->
-                    accessControl.requirePermissionFor(
-                        tx,
-                        user,
-                        clock,
-                        Action.Citizen.CalendarEvent.READ,
-                        eventId,
-                    )
-                    tx.getReservableCalendarEventTimes(eventId, childId)
-                }
-            }
-            .also {
-                Audit.CalendarEventTimeRead.log(
-                    targetId = AuditId(eventId),
-                    objectId = AuditId(childId),
-                )
-            }
-    }
-
     @PostMapping("/citizen/calendar-event/reservation")
     fun addCalendarEventTimeReservation(
         db: Database,
