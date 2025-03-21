@@ -346,7 +346,6 @@ export type Pairing = 'POST_RESPONSE'
 export type Parentship =
   | 'DELETE'
   | 'DELETE_CONFLICTED_PARENTSHIP'
-  | 'READ'
   | 'RETRY'
   | 'UPDATE'
 

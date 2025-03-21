@@ -1753,11 +1753,6 @@ sealed interface Action {
             HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN),
             HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfParentship(),
         ),
-        READ(
-            HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY)
-                .inPlacementUnitOfChildOfParentship(),
-        ),
         RETRY(
             HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN),
             HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfParentship(),
