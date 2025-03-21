@@ -18,7 +18,6 @@ import fi.espoo.evaka.process.insertProcessHistoryRow
 import fi.espoo.evaka.shared.ArchiveProcessType
 import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
 import fi.espoo.evaka.shared.ChildId
-import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -452,47 +451,6 @@ class AssistanceNeedPreschoolDecisionController(
                 }
             }
             .also { Audit.ChildAssistanceNeedPreschoolDecisionDelete.log(targetId = AuditId(id)) }
-    }
-
-    // TODO: Unused endpoint?
-    @PutMapping("/employee/assistance-need-preschool-decisions/{id}/decision-maker")
-    fun updateAssistanceNeedPreschoolDecisionDecisionMaker(
-        db: Database,
-        user: AuthenticatedUser.Employee,
-        clock: EvakaClock,
-        @PathVariable id: AssistanceNeedPreschoolDecisionId,
-        @RequestBody body: UpdateDecisionMakerForAssistanceNeedPreschoolDecisionRequest,
-    ) {
-        return db.connect { dbc ->
-                dbc.transaction { tx ->
-                    accessControl.requirePermissionFor(
-                        tx,
-                        user,
-                        clock,
-                        Action.AssistanceNeedPreschoolDecision.UPDATE_DECISION_MAKER,
-                        id,
-                    )
-                    val decision = tx.getAssistanceNeedPreschoolDecisionById(id)
-
-                    if (decision.status.isDecided() || decision.sentForDecision == null) {
-                        throw BadRequest(
-                            "Decision maker cannot be changed for already-decided or unsent decisions"
-                        )
-                    }
-
-                    tx.updateAssistanceNeedPreschoolDecision(
-                        id,
-                        decision.form.copy(
-                            decisionMakerEmployeeId = EmployeeId(user.rawId()),
-                            decisionMakerTitle = body.title,
-                        ),
-                        decisionMakerHasOpened = true,
-                    )
-                }
-            }
-            .also {
-                Audit.ChildAssistanceNeedDecisionUpdateDecisionMaker.log(targetId = AuditId(id))
-            }
     }
 
     @GetMapping("/employee/assistance-need-preschool-decisions/{id}/decision-maker-options")
