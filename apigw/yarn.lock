@@ -425,20 +425,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@datadog/libdatadog@npm:^0.4.0":
-  version: 0.4.0
-  resolution: "@datadog/libdatadog@npm:0.4.0"
-  checksum: 10/f56b58fdc24e136a47cde999726d6cbf2478cb9bbe0179b2c8b82b4d97f7b036e732c80a1191ad2241913e92a097adc554bcb75024ff73b0e493f0adee1495d3
+"@datadog/libdatadog@npm:^0.5.0":
+  version: 0.5.0
+  resolution: "@datadog/libdatadog@npm:0.5.0"
+  checksum: 10/94069076c9921d8fbbce103482f0215c5c361ab0efb6c87c77063ac259e1bc3d2be3a4b87fde3167e9d449c944a9009eca9d9063d8f3ecbac1f599a3a085d989
   languageName: node
   linkType: hard
 
-"@datadog/native-appsec@npm:8.4.0":
-  version: 8.4.0
-  resolution: "@datadog/native-appsec@npm:8.4.0"
+"@datadog/native-appsec@npm:8.5.0":
+  version: 8.5.0
+  resolution: "@datadog/native-appsec@npm:8.5.0"
   dependencies:
     node-gyp: "npm:latest"
     node-gyp-build: "npm:^3.9.0"
-  checksum: 10/03e15913e04c08000e27b75c2140fe7e15899c480a20e8ddacbbca12524fc260badedad1ac67160fa495a290ab9fb546acec781d1f7cebda3ccec25d8e08470a
+  checksum: 10/1099b68ff4ebb1dfd03b51e96635eb69e5dc11f8b34b4fbea3044ef62cec780496d5d8cb12d5e2efb0c82fac8f8b509738f9fac081487d89df8314e1d4f6b870
   languageName: node
   linkType: hard
 
@@ -473,9 +473,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@datadog/pprof@npm:5.5.1":
-  version: 5.5.1
-  resolution: "@datadog/pprof@npm:5.5.1"
+"@datadog/pprof@npm:5.6.0":
+  version: 5.6.0
+  resolution: "@datadog/pprof@npm:5.6.0"
   dependencies:
     delay: "npm:^5.0.0"
     node-gyp: "npm:latest"
@@ -483,7 +483,7 @@ __metadata:
     p-limit: "npm:^3.1.0"
     pprof-format: "npm:^2.1.0"
     source-map: "npm:^0.7.4"
-  checksum: 10/9848b1f702b887decb29c39718401234dcebe6a3663601ed17ec0b9835a83a11024d736578aa584ecc084ce008e4d05838d5f10f65ba7c4ccc5b8fc1b4aa9a1c
+  checksum: 10/950dd104f192142816b75be174dbf9e55dcad7c280f1b756bb56dd27343d65a8d54d34b52109a67cd68272ec872c5d5b46f3fea20d31d289a891d3b01605e9a8
   languageName: node
   linkType: hard
 
@@ -1775,7 +1775,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"acorn@npm:^8.14.0, acorn@npm:^8.4.1, acorn@npm:^8.8.2":
+"acorn@npm:^8.14.0, acorn@npm:^8.4.1":
   version: 8.14.0
   resolution: "acorn@npm:8.14.0"
   bin:
@@ -2674,16 +2674,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dd-trace@npm:^5.40.0":
-  version: 5.40.0
-  resolution: "dd-trace@npm:5.40.0"
+"dd-trace@npm:^5.43.0":
+  version: 5.43.0
+  resolution: "dd-trace@npm:5.43.0"
   dependencies:
-    "@datadog/libdatadog": "npm:^0.4.0"
-    "@datadog/native-appsec": "npm:8.4.0"
+    "@datadog/libdatadog": "npm:^0.5.0"
+    "@datadog/native-appsec": "npm:8.5.0"
     "@datadog/native-iast-rewriter": "npm:2.8.0"
     "@datadog/native-iast-taint-tracking": "npm:3.3.0"
     "@datadog/native-metrics": "npm:^3.1.0"
-    "@datadog/pprof": "npm:5.5.1"
+    "@datadog/pprof": "npm:5.6.0"
     "@datadog/sketches-js": "npm:^2.1.0"
     "@isaacs/ttlcache": "npm:^1.4.1"
     "@opentelemetry/api": "npm:>=1.0.0 <1.9.0"
@@ -2691,7 +2691,7 @@ __metadata:
     crypto-randomuuid: "npm:^1.0.0"
     dc-polyfill: "npm:^0.1.4"
     ignore: "npm:^5.2.4"
-    import-in-the-middle: "npm:1.11.2"
+    import-in-the-middle: "npm:1.13.1"
     istanbul-lib-coverage: "npm:3.2.0"
     jest-docblock: "npm:^29.7.0"
     koalas: "npm:^1.0.2"
@@ -2710,7 +2710,7 @@ __metadata:
     source-map: "npm:^0.7.4"
     tlhunter-sorted-set: "npm:^0.1.0"
     ttl-set: "npm:^1.0.0"
-  checksum: 10/1e1ca3ae7c034efd8e480710bd6d31ed57ff3b14e3eb1b44d045f2fa8f7e15ba6726f664120cacf64b80533fe0605b38493224b1fffa58e785e394fb67d353ab
+  checksum: 10/52c25e4186e5d789bc4c7a4d77f41549e83aff64a93893f4eeee736882f75c8b51ce04f4959c07d642f71257e1ea352107512c496c8505e84732c4a0602c65f3
   languageName: node
   linkType: hard
 
@@ -3367,7 +3367,7 @@ __metadata:
     connect-redis: "npm:^8.0.0"
     cookie-parser: "npm:^1.4.7"
     date-fns: "npm:^4.1.0"
-    dd-trace: "npm:^5.40.0"
+    dd-trace: "npm:^5.43.0"
     eslint: "npm:^9.23.0"
     eslint-config-prettier: "npm:^10.1.1"
     eslint-plugin-import: "npm:^2.31.0"
@@ -4153,15 +4153,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"import-in-the-middle@npm:1.11.2":
-  version: 1.11.2
-  resolution: "import-in-the-middle@npm:1.11.2"
+"import-in-the-middle@npm:1.13.1":
+  version: 1.13.1
+  resolution: "import-in-the-middle@npm:1.13.1"
   dependencies:
-    acorn: "npm:^8.8.2"
+    acorn: "npm:^8.14.0"
     acorn-import-attributes: "npm:^1.9.5"
     cjs-module-lexer: "npm:^1.2.2"
     module-details-from-path: "npm:^1.0.3"
-  checksum: 10/ebd1aaba4441e54db124670e13038127f5283b686d83276dc004cd9d3bb1747e63ac37935c3c58885b52aedf48e669093d24ffe4b5849adef744d79ee67445ad
+  checksum: 10/fea083fb2d6a9607702e3f4d675b19c52f3ebc271c9050f2a041966910bfd04047b100b13112f10109415c87c312206a8591d4a883fdedeb1f27e6637a96c852
   languageName: node
   linkType: hard
 
