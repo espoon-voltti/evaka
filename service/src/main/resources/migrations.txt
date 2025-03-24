@@ -505,3 +505,5 @@ V506__daycare_partner_code.sql
 V507__replaced_invoice_id_unique.sql
 V508__nekku_special_diet.sql
 V509__nekku_product.sql
+V510__finance_message_account_type.sql
+V511__finance_message_account.sql

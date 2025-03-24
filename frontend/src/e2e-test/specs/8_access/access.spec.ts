@@ -64,7 +64,7 @@ describe('Child information page', () => {
     })
   })
 
-  test('FinanceAdmin sees units, search, finance and reports tabs', async () => {
+  test('FinanceAdmin sees units, search, finance, reports and messages tabs', async () => {
     const financeAdmin = await Fixture.employee().financeAdmin().save()
     await employeeLogin(page, financeAdmin)
     await page.goto(config.employeeUrl)
@@ -74,7 +74,7 @@ describe('Child information page', () => {
       search: true,
       finance: true,
       reports: true,
-      messages: false
+      messages: true
     })
   })
 

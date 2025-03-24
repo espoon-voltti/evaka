@@ -5,28 +5,27 @@
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
 import config from '../../config'
+import { runPendingAsyncJobs } from '../../dev-api'
 import { Fixture, testAdult } from '../../dev-api/fixtures'
 import {
   createFinanceNotes,
+  createMessageAccounts,
   resetServiceState
 } from '../../generated/api-clients'
+import { DevEmployee } from '../../generated/api-types'
 import GuardianInformationPage from '../../pages/employee/guardian-information'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
 let page: Page
 let guardianPage: GuardianInformationPage
+let financeAdmin: DevEmployee
 
 beforeEach(async () => {
   await resetServiceState()
   await Fixture.person(testAdult).saveAdult()
-  const financeAdmin = await Fixture.employee().financeAdmin().save()
-
-  page = await Page.open({})
-  await employeeLogin(page, financeAdmin)
-
-  await page.goto(config.employeeUrl)
-  guardianPage = new GuardianInformationPage(page)
+  financeAdmin = await Fixture.employee().financeAdmin().save()
+  await createMessageAccounts()
 })
 
 describe('person finance notes', () => {
@@ -46,15 +45,110 @@ describe('person finance notes', () => {
       )
     }
 
+    page = await Page.open({})
+    await employeeLogin(page, financeAdmin)
+
+    await page.goto(config.employeeUrl)
+    guardianPage = new GuardianInformationPage(page)
+
     await createFinanceNoteFixture(createdAtFirst)
     await createFinanceNoteFixture(createdAtSecond)
     await createFinanceNoteFixture(createdAtThird)
 
     await guardianPage.navigateToGuardian(testAdult.id)
-    const notes = await guardianPage.openCollapsible('financeNotesAndMessages')
+    const notesAndMessages = await guardianPage.openCollapsible(
+      'financeNotesAndMessages'
+    )
 
-    await notes.checkNoteCreatedAt(0, createdAtThird)
-    await notes.checkNoteCreatedAt(1, createdAtSecond)
-    await notes.checkNoteCreatedAt(2, createdAtFirst)
+    await notesAndMessages.checkNoteCreatedAt(0, createdAtThird)
+    await notesAndMessages.checkNoteCreatedAt(1, createdAtSecond)
+    await notesAndMessages.checkNoteCreatedAt(2, createdAtFirst)
+  })
+})
+
+describe('person finance messages', () => {
+  test('Message threads are sorted by latest message sent date', async () => {
+    const mockedTime1 = HelsinkiDateTime.of(2025, 3, 1, 10, 0, 0, 0)
+    page = await Page.open({ mockedTime: mockedTime1 })
+    await employeeLogin(page, financeAdmin)
+    await page.goto(config.employeeUrl)
+    guardianPage = new GuardianInformationPage(page)
+    await guardianPage.navigateToGuardian(testAdult.id)
+    let notesAndMessages = await guardianPage.openCollapsible(
+      'financeNotesAndMessages'
+    )
+
+    let messageEditor = await notesAndMessages.openNewMessageEditor()
+    await messageEditor.sendNewMessage({
+      title: 'First message sent',
+      content: 'First message sent'
+    })
+    await runPendingAsyncJobs(mockedTime1.addMinutes(1))
+
+    const mockedTime2 = HelsinkiDateTime.of(2025, 3, 1, 11, 0, 0, 0)
+    page = await Page.open({ mockedTime: mockedTime2 })
+    await employeeLogin(page, financeAdmin)
+    await page.goto(config.employeeUrl)
+    guardianPage = new GuardianInformationPage(page)
+    await guardianPage.navigateToGuardian(testAdult.id)
+    notesAndMessages = await guardianPage.openCollapsible(
+      'financeNotesAndMessages'
+    )
+
+    messageEditor = await notesAndMessages.openNewMessageEditor()
+    await messageEditor.sendNewMessage({
+      title: 'Second message sent',
+      content: 'Second message sent'
+    })
+    await runPendingAsyncJobs(mockedTime2.addMinutes(1))
+
+    const mockedTime3 = HelsinkiDateTime.of(2025, 3, 1, 12, 0, 0, 0)
+    page = await Page.open({ mockedTime: mockedTime3 })
+    await employeeLogin(page, financeAdmin)
+    await page.goto(config.employeeUrl)
+    guardianPage = new GuardianInformationPage(page)
+    await guardianPage.navigateToGuardian(testAdult.id)
+    notesAndMessages = await guardianPage.openCollapsible(
+      'financeNotesAndMessages'
+    )
+
+    await notesAndMessages.openReplyMessageEditor()
+    await notesAndMessages.fillReplyContent('Reply to first message')
+    await notesAndMessages.sendReply()
+    await runPendingAsyncJobs(mockedTime3.addMinutes(1))
+
+    await notesAndMessages.checkThreadLastMessageSentAt(0, mockedTime3)
+    await notesAndMessages.checkThreadLastMessageSentAt(1, mockedTime2)
+  })
+
+  test('message thread can be archived', async () => {
+    const mockedTime = HelsinkiDateTime.of(2025, 3, 1, 10, 0, 0, 0)
+    page = await Page.open({ mockedTime })
+    await employeeLogin(page, financeAdmin)
+    await page.goto(config.employeeUrl)
+    guardianPage = new GuardianInformationPage(page)
+    await guardianPage.navigateToGuardian(testAdult.id)
+
+    let notesAndMessages = await guardianPage.openCollapsible(
+      'financeNotesAndMessages'
+    )
+    const messageEditor = await notesAndMessages.openNewMessageEditor()
+    await messageEditor.sendNewMessage({
+      title: 'New message',
+      content: 'New message'
+    })
+    await runPendingAsyncJobs(mockedTime.addMinutes(1))
+
+    const mockedTime2 = HelsinkiDateTime.of(2025, 3, 1, 11, 0, 0, 0)
+    page = await Page.open({ mockedTime: mockedTime2 })
+    await employeeLogin(page, financeAdmin)
+    await page.goto(config.employeeUrl)
+    guardianPage = new GuardianInformationPage(page)
+    await guardianPage.navigateToGuardian(testAdult.id)
+
+    notesAndMessages = await guardianPage.openCollapsible(
+      'financeNotesAndMessages'
+    )
+    await notesAndMessages.deleteThread()
   })
 })

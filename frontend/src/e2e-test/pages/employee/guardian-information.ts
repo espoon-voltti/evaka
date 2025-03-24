@@ -23,6 +23,7 @@ import {
 } from '../../utils/page'
 
 import { IncomeStatementPage } from './IncomeStatementPage'
+import { MessageEditor } from './messages/messages-page'
 import { TimelinePage } from './timeline/timeline-page'
 
 export default class GuardianInformationPage {
@@ -658,11 +659,52 @@ class InvoiceCorrectionNoteModal extends Modal {
 
 class FinanceNotesAndMessagesSection extends Section {
   #noteCreatedAt = this.findAll(`[data-qa="finance-note-created-at"]`)
+  #threadSentAt = this.findAll(`[data-qa="finance-thread-sent-at"]`)
+  #newMessage = this.findByDataQa('send-finance-message-button')
+  #replyThread = this.findAll(`[data-qa="reply-finance-thread-button"]`)
+  #messageReplyContent = new TextInput(
+    this.findByDataQa('message-reply-content')
+  )
+  #sendReplyButton = this.findByDataQa('message-send-btn')
+  #deleteThread = this.findAll(`[data-qa="archive-finance-thread-button"]`)
 
   async checkNoteCreatedAt(nth: number, expectedCreatedAt: HelsinkiDateTime) {
     await this.#noteCreatedAt
       .nth(nth)
       .assertTextEquals(expectedCreatedAt.format())
+  }
+
+  async checkThreadLastMessageSentAt(
+    nth: number,
+    expectedSentAt: HelsinkiDateTime
+  ) {
+    await this.#threadSentAt.nth(nth).assertTextEquals(expectedSentAt.format())
+  }
+
+  async openNewMessageEditor() {
+    await this.#newMessage.click()
+    return this.getMessageEditor()
+  }
+
+  getMessageEditor() {
+    return new MessageEditor(this.page.findByDataQa('message-editor'))
+  }
+
+  async openReplyMessageEditor() {
+    await this.#replyThread.last().click()
+  }
+
+  async fillReplyContent(content: string) {
+    await this.#messageReplyContent.fill(content)
+  }
+
+  async sendReply() {
+    await this.#sendReplyButton.click()
+  }
+
+  async deleteThread() {
+    await this.#deleteThread.first().click()
+    await new Modal(this.page.findByDataQa('modal')).submit()
   }
 }
 
