@@ -7,6 +7,7 @@ package fi.espoo.evaka.shared.security.actionrule
 import fi.espoo.evaka.shared.ApplicationNoteId
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
+import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.FinanceNoteId
@@ -334,6 +335,17 @@ SELECT EXISTS (
     JOIN daycare_acl targetacl ON useracl.daycare_id = targetacl.daycare_id
     WHERE useracl.employee_id = ${bind(user.id)}
 """
+            )
+        }
+
+    fun uploaderOfAttachment() =
+        rule<AttachmentId> { employee, _ ->
+            sql(
+                """
+SELECT id
+FROM attachment
+WHERE uploaded_by = ${bind(employee.evakaUserId)}
+            """
             )
         }
 }

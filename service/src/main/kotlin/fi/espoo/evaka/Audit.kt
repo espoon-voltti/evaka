@@ -282,7 +282,6 @@ enum class Audit(
     FamilyContactsUpdate,
     FamilyDaycareMealReport,
     FeeDecisionConfirm,
-    FeeDecisionGenerate,
     FeeDecisionHeadOfFamilyRead,
     FeeDecisionHeadOfFamilyCreateRetroactive,
     FeeDecisionIgnore,

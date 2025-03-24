@@ -194,7 +194,6 @@ sealed interface Action {
         UPDATE_VOUCHER_VALUE(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
         DELETE_VOUCHER_VALUE(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
         SEARCH_FEE_DECISIONS(HasGlobalRole(ADMIN, FINANCE_ADMIN, FINANCE_STAFF)),
-        GENERATE_FEE_DECISIONS(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
         SEARCH_VOUCHER_VALUE_DECISIONS(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
         READ_FINANCE_DECISION_HANDLERS(
             HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, FINANCE_STAFF),
@@ -854,7 +853,6 @@ sealed interface Action {
         READ_METADATA(HasGlobalRole(ADMIN)),
         DECIDE(IsEmployee.andIsDecisionMakerForAssistanceNeedPreschoolDecision()),
         MARK_AS_OPENED(IsEmployee.andIsDecisionMakerForAssistanceNeedPreschoolDecision()),
-        UPDATE_DECISION_MAKER(HasGlobalRole(ADMIN)),
         ANNUL(
             HasGlobalRole(ADMIN),
             IsEmployee.andIsDecisionMakerForAssistanceNeedPreschoolDecision(),
@@ -903,7 +901,10 @@ sealed interface Action {
             IsCitizen(allowWeakLogin = false).fosterParentOfChildOfPedagogicalDocumentOfAttachment(),
         ),
         READ_FEE_ALTERATION_ATTACHMENT(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
-        DELETE_ORPHAN_ATTACHMENT(IsCitizen(allowWeakLogin = false).uploaderOfAttachment()),
+        DELETE_ORPHAN_ATTACHMENT(
+            IsEmployee.uploaderOfAttachment(),
+            IsCitizen(allowWeakLogin = false).uploaderOfAttachment(),
+        ),
         DELETE_APPLICATION_ATTACHMENT(
             HasGlobalRole(ADMIN),
             HasGlobalRole(SERVICE_WORKER).andAttachmentWasUploadedByAnyEmployee(),
@@ -1755,11 +1756,6 @@ sealed interface Action {
             HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN),
             HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfParentship(),
         ),
-        READ(
-            HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY)
-                .inPlacementUnitOfChildOfParentship(),
-        ),
         RETRY(
             HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN),
             HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfParentship(),
@@ -1775,11 +1771,6 @@ sealed interface Action {
     enum class Partnership(override vararg val defaultRules: ScopedActionRule<in PartnershipId>) :
         ScopedAction<PartnershipId> {
         DELETE(HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN)),
-        READ(
-            HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY)
-                .inPlacementUnitOfChildOfPartnership(),
-        ),
         RETRY(
             HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN),
             HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfPartnership(),

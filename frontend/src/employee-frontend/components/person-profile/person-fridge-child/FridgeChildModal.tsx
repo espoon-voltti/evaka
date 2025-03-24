@@ -7,7 +7,10 @@ import React, { useState, useContext, useMemo } from 'react'
 import { Result } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import { UpdateStateFn } from 'lib-common/form-state'
-import { Parentship, PersonSummary } from 'lib-common/generated/api-types/pis'
+import {
+  ParentshipDetailed,
+  PersonSummary
+} from 'lib-common/generated/api-types/pis'
 import { PersonId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useMutationResult } from 'lib-common/query'
@@ -28,7 +31,7 @@ import { PersonContext } from '../state'
 
 interface Props {
   headPersonId: PersonId
-  parentship?: Parentship
+  parentship?: ParentshipDetailed
 }
 
 export interface FridgeChildForm {
