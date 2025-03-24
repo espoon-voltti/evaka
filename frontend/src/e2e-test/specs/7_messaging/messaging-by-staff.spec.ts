@@ -191,7 +191,10 @@ describe('Sending and receiving messages', () => {
 
         await initCitizen(mockedDateAt11)
         await citizenPage.goto(config.enduserMessagesUrl)
-        const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+        const citizenMessagesPage = new CitizenMessagesPage(
+          citizenPage,
+          'desktop'
+        )
         await citizenMessagesPage.assertThreadContent(defaultMessage)
         await citizenMessagesPage.replyToFirstThread(defaultReply)
         await waitUntilEqual(() => citizenMessagesPage.getMessageCount(), 2)
@@ -215,7 +218,10 @@ describe('Sending and receiving messages', () => {
 
         await initCitizen(mockedDateAt11)
         await citizenPage.goto(config.enduserMessagesUrl)
-        const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+        const citizenMessagesPage = new CitizenMessagesPage(
+          citizenPage,
+          'desktop'
+        )
         await citizenMessagesPage.assertThreadContent(defaultMessage)
         await citizenMessagesPage.replyToFirstThread(defaultReply)
         await waitUntilEqual(() => citizenMessagesPage.getMessageCount(), 2)
@@ -285,7 +291,7 @@ describe('Sending and receiving messages', () => {
     // Verify that the message is received by the starter child
     await initCitizenPage(mockedDateAt11)
     await citizenPage.goto(config.enduserMessagesUrl)
-    const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+    const citizenMessagesPage = new CitizenMessagesPage(citizenPage, 'desktop')
     await citizenMessagesPage.assertThreadContent({
       title: 'Aloittavalle otsikko',
       content: 'Sisältö'
@@ -359,7 +365,7 @@ describe('Sending and receiving messages', () => {
     // Verify that the message is received by the starter
     await initCitizenPage(mockedDateAt11)
     await citizenPage.goto(config.enduserMessagesUrl)
-    const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+    const citizenMessagesPage = new CitizenMessagesPage(citizenPage, 'desktop')
     await citizenMessagesPage.assertThreadContent({
       title: 'Aloittavalle otsikko',
       content: 'Sisältö',
@@ -407,11 +413,14 @@ describe('Sending and receiving sensitive messages', () => {
 
     await initCitizenPageWeak(mockedDateAt11)
     await citizenPage.goto(config.enduserMessagesUrl)
-    const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+    const citizenMessagesPage = new CitizenMessagesPage(citizenPage, 'desktop')
     await citizenMessagesPage.assertThreadIsRedacted()
 
     const authPage = await citizenMessagesPage.openStrongAuthPage()
-    const strongAuthCitizenMessagePage = await authPage.login(testAdult.ssn!)
+    const strongAuthCitizenMessagePage = await authPage.login(
+      testAdult.ssn!,
+      'desktop'
+    )
 
     await strongAuthCitizenMessagePage.assertThreadContent(sensitiveMessage)
   })
@@ -537,7 +546,7 @@ describe('Additional filters', () => {
 
     await initOtherCitizenPage(mockedDateAt11, testAdult2)
     await citizenPage.goto(config.enduserMessagesUrl)
-    const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+    const citizenMessagesPage = new CitizenMessagesPage(citizenPage, 'desktop')
     await citizenMessagesPage.assertThreadContent(message)
     await waitUntilEqual(() => citizenMessagesPage.getMessageCount(), 1)
   })
@@ -579,7 +588,7 @@ describe('Additional filters', () => {
 
     await initOtherCitizenPage(mockedDateAt11, testAdult2)
     await citizenPage.goto(config.enduserMessagesUrl)
-    const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+    const citizenMessagesPage = new CitizenMessagesPage(citizenPage, 'desktop')
     await citizenMessagesPage.assertInboxIsEmpty()
   })
 })
