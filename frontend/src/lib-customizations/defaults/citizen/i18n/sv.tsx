@@ -2313,10 +2313,13 @@ const sv: Translations = {
     childIncomeInfo: 'Giltigheten av barnets inkomstinformation',
     incomeStatementMissing:
       'Om ditt barn har inkomst, anmäl det med en inkomstredovisning.',
+    incomeNotifyForPeriod: 'Jag anmäler mina inkomster för följande period',
     incomeType: {
-      startDate: 'Gäller från och med',
-      endDate: 'Upphör att gälla',
-      title: 'Grunder för klientavgiften',
+      startDate: 'Från och med',
+      endDate: 'Till och med',
+      starts: 'Börjar',
+      ends: 'Slutar',
+      title: 'Grunder för småbarnspedagogikavgiften',
       agreeToHighestFee:
         'Jag samtycker till den högsta avgiften för småbarnspedagogik',
       highestFeeInfo:
