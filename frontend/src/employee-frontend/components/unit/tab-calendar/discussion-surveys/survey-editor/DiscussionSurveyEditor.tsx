@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useMemo, useRef, useState } from 'react'
-import styled from 'styled-components'
 
 import { renderResult } from 'employee-frontend/components/async-rendering'
 import { unitGroupDetailsQuery } from 'employee-frontend/components/unit/queries'
@@ -21,11 +20,6 @@ import Container, { ContentArea } from 'lib-components/layout/Container'
 import { groupDiscussionReservationDaysQuery } from '../../queries'
 
 import DiscussionTimesForm from './DiscussionTimesForm'
-
-export const WidthLimiter = styled.div`
-  max-width: 400px;
-`
-export type DiscussionSurveyEditMode = 'create' | 'edit'
 
 const getCalendarHorizon = () => {
   const today = LocalDate.todayInSystemTz()

@@ -50,11 +50,6 @@ export const treeNodeInfo = (): Form<
     lastName: string()
   })
 
-export const basicInfoForm = object({
-  title: required(string()),
-  description: required(string())
-})
-
 export const calendarEventTimeForm = object({
   id: value<UUID>(),
   childId: value<UUID | null>(),
@@ -66,10 +61,6 @@ export const eventTimeArray = array(calendarEventTimeForm)
 
 export const timesForm = object({
   times: eventTimeArray
-})
-
-export const attendeeForm = object({
-  attendees: array(recursive(treeNodeInfo))
 })
 
 const nonEmptyStringValidator = (value: string) =>

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2025 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -6,13 +6,12 @@ import React, { useState } from 'react'
 import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
-import { Success, wrapResult } from 'lib-common/api'
 import {
   ApplicationDetails,
   ApplicationStatus
 } from 'lib-common/generated/api-types/application'
-import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
-import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
+import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import Radio from 'lib-components/atoms/form/Radio'
 import StickyFooter from 'lib-components/layout/StickyFooter'
 import {
@@ -22,23 +21,19 @@ import {
 import { Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
-import {
-  sendApplication,
-  setApplicationVerified,
-  updateApplication
-} from '../../generated/api-clients/application'
 import { useTranslation } from '../../state/i18n'
 
-const updateApplicationResult = wrapResult(updateApplication)
-const sendApplicationResult = wrapResult(sendApplication)
-const setApplicationVerifiedResult = wrapResult(setApplicationVerified)
+import {
+  setApplicationVerifiedMutation,
+  updateAndSendApplicationMutation,
+  updateApplicationMutation
+} from './queries'
 
 type Props = {
   applicationStatus: ApplicationStatus
   editing: boolean
   setEditing: (v: boolean) => void
   editedApplication: ApplicationDetails
-  reloadApplication: () => void
   errors: boolean
 }
 
@@ -47,7 +42,6 @@ export default React.memo(function ApplicationActionsBar({
   editing,
   setEditing,
   editedApplication,
-  reloadApplication,
   errors
 }: Props) {
   const navigate = useNavigate()
@@ -83,17 +77,16 @@ export default React.memo(function ApplicationActionsBar({
               </FixedSpaceRow>
             </FixedSpaceColumn>
           )}
-          <AsyncButton
-            onClick={() =>
-              setApplicationVerifiedResult({
-                applicationId: editedApplication.id,
-                confidential: confidential
-              })
-            }
+          <MutateButton
+            mutation={setApplicationVerifiedMutation}
+            onClick={() => ({
+              applicationId: editedApplication.id,
+              confidential: confidential
+            })}
             disabled={
               editedApplication.confidential === null && confidential === null
             }
-            onSuccess={reloadApplication}
+            onSuccess={() => undefined}
             text={i18n.applications.actions.setVerified}
             primary
             data-qa="set-verified-btn"
@@ -107,7 +100,7 @@ export default React.memo(function ApplicationActionsBar({
         !editing &&
         (applicationStatus === 'CREATED' || applicationStatus === 'SENT'),
       component: (
-        <LegacyButton
+        <Button
           onClick={() => setEditing(true)}
           text={i18n.common.edit}
           primary
@@ -119,48 +112,35 @@ export default React.memo(function ApplicationActionsBar({
       id: 'cancel-editing',
       enabled: editing && applicationStatus !== 'CREATED',
       component: (
-        <LegacyButton
-          onClick={() => setEditing(false)}
-          text={i18n.common.cancel}
-        />
+        <Button onClick={() => setEditing(false)} text={i18n.common.cancel} />
       )
     },
     {
       id: 'cancel-new-application',
       enabled: editing && applicationStatus === 'CREATED',
       component: (
-        <LegacyButton onClick={() => navigate(-1)} text={i18n.common.cancel} />
+        <Button onClick={() => navigate(-1)} text={i18n.common.cancel} />
       )
     },
     {
       id: 'save-application',
       enabled: editing,
       component: (
-        <AsyncButton
+        <MutateButton
+          mutation={
+            editedApplication.status === 'CREATED'
+              ? updateAndSendApplicationMutation
+              : updateApplicationMutation
+          }
+          onClick={() => ({
+            applicationId: editedApplication.id,
+            body: editedApplication
+          })}
           text={i18n.common.save}
           textInProgress={i18n.common.saving}
           textDone={i18n.common.saved}
           disabled={!editedApplication || errors}
-          onClick={() =>
-            updateApplicationResult({
-              applicationId: editedApplication.id,
-              body: editedApplication
-            }).then((result) => {
-              if (result.isSuccess) {
-                return editedApplication.status === 'CREATED'
-                  ? sendApplicationResult({
-                      applicationId: editedApplication.id
-                    })
-                  : Success.of()
-              } else {
-                return result
-              }
-            })
-          }
-          onSuccess={() => {
-            setEditing(false)
-            reloadApplication()
-          }}
+          onSuccess={() => setEditing(false)}
           primary
           data-qa="save-application"
         />

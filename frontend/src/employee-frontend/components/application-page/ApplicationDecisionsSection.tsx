@@ -45,14 +45,12 @@ const isDownloadAvailable = (decision: Decision) =>
 type Props = {
   applicationId: ApplicationId
   decisions: Decision[]
-  reloadApplication: () => void
   applicationStatus: ApplicationStatus
 }
 
 export default React.memo(function ApplicationDecisionsSection({
   applicationId,
   decisions,
-  reloadApplication,
   applicationStatus
 }: Props) {
   const { i18n } = useTranslation()
@@ -124,7 +122,6 @@ export default React.memo(function ApplicationDecisionsSection({
                     <DecisionResponse
                       applicationId={applicationId}
                       decision={decision}
-                      reloadApplication={reloadApplication}
                     />
                   )}
                 </>

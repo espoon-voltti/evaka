@@ -4,7 +4,6 @@
 
 import styled, { css } from 'styled-components'
 
-import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Title from 'lib-components/atoms/Title'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import LegacyInlineButton from 'lib-components/atoms/buttons/LegacyInlineButton'
@@ -64,7 +63,7 @@ export const ArrivalTime = styled.span`
   font-style: normal;
   font-weight: ${fontWeights.medium};
   line-height: 27px;
-  letter-spacing: 0em;
+  letter-spacing: 0;
   display: flex;
   flex-direction: row;
   color: ${colors.grayscale.g70};
@@ -73,11 +72,6 @@ export const ArrivalTime = styled.span`
     margin-right: ${defaultMargins.xs};
     font-weight: ${fontWeights.semibold};
   }
-`
-
-export const CustomHorizontalLine = styled(HorizontalLine)`
-  margin-bottom: 14px;
-  margin-top: 14px;
 `
 
 export const ServiceTime = styled.div`

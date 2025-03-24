@@ -1,27 +1,22 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2025 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import isEqual from 'lodash/isEqual'
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { Link } from 'react-router'
 import styled from 'styled-components'
 
 import { useTranslation } from 'employee-frontend/state/i18n'
-import { Failure, wrapResult } from 'lib-common/api'
 import {
   CareType,
   careTypes,
-  ProviderType
+  ProviderType,
+  UpdateFeaturesRequest
 } from 'lib-common/generated/api-types/daycare'
-import {
-  DaycareId,
-  PilotFeature,
-  pilotFeatures
-} from 'lib-common/generated/api-types/shared'
-import { useApiState } from 'lib-common/utils/useRestApi'
-import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
-import { Button } from 'lib-components/atoms/buttons/Button'
+import { pilotFeatures } from 'lib-common/generated/api-types/shared'
+import { cancelMutation, useMutation, useQueryResult } from 'lib-common/query'
+import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import { ContentArea } from 'lib-components/layout/Container'
@@ -30,15 +25,9 @@ import { H1, LabelLike } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { unitProviderTypes } from 'lib-customizations/employee'
 
-import {
-  getUnitFeatures,
-  updateUnitFeatures
-} from '../generated/api-clients/daycare'
+import { renderResult } from '../async-rendering'
 
-import { renderResult } from './async-rendering'
-
-const getUnitFeaturesResult = wrapResult(getUnitFeatures)
-const updateUnitFeaturesResult = wrapResult(updateUnitFeatures)
+import { unitFeaturesQuery, updateUnitFeaturesMutation } from './queries'
 
 const StyledContentArea = styled(ContentArea)`
   display: flex;
@@ -54,36 +43,12 @@ const TableContainer = styled.div`
 export default React.memo(function UnitFeaturesPage() {
   const { i18n } = useTranslation()
 
-  const [units, reloadUnits] = useApiState(getUnitFeaturesResult, [])
-
-  const [submitting, setSubmitting] = useState(false)
-
-  const [undoAction, setUndoAction] =
-    useState<[DaycareId[], PilotFeature[], boolean]>()
-
-  const updateFeatures = useCallback(
-    async (
-      unitIds: DaycareId[],
-      features: PilotFeature[],
-      enable: boolean,
-      isUndoAction = false
-    ) => {
-      setSubmitting(true)
-
-      const result = await updateUnitFeaturesResult({
-        body: { unitIds, features, enable }
-      })
-      if (!isUndoAction) {
-        setUndoAction([unitIds, features, !enable])
-      }
-
-      void reloadUnits()
-      setSubmitting(false)
-
-      return result
-    },
-    [reloadUnits]
+  const units = useQueryResult(unitFeaturesQuery())
+  const { mutateAsync: updateUnitFeatures, isPending } = useMutation(
+    updateUnitFeaturesMutation
   )
+
+  const [undoAction, setUndoAction] = useState<UpdateFeaturesRequest>()
 
   const [filteredProviderTypes, setFilteredProviderTypes] =
     useState<ProviderType[]>(unitProviderTypes)
@@ -105,24 +70,6 @@ export default React.memo(function UnitFeaturesPage() {
           ),
     [filteredProviderTypes, filteredCareTypes, units]
   )
-
-  const undo = useCallback(() => {
-    if (!undoAction)
-      return Promise.resolve(
-        Failure.of<void>({
-          message: 'No undo action'
-        })
-      )
-
-    const promise = updateFeatures(
-      undoAction[0],
-      undoAction[1],
-      undoAction[2],
-      true
-    )
-    setUndoAction(undefined)
-    return promise
-  }, [undoAction, updateFeatures])
 
   return (
     <div>
@@ -157,10 +104,17 @@ export default React.memo(function UnitFeaturesPage() {
 
         <Gap size="s" />
 
-        <AsyncButton
+        <MutateButton
           disabled={!undoAction}
-          onClick={undo}
-          onSuccess={reloadUnits}
+          mutation={updateUnitFeaturesMutation}
+          onClick={() =>
+            undoAction
+              ? {
+                  body: undoAction
+                }
+              : cancelMutation
+          }
+          onSuccess={() => setUndoAction(undefined)}
           text={i18n.unitFeatures.page.undo}
         />
         <Gap size="s" />
@@ -180,19 +134,27 @@ export default React.memo(function UnitFeaturesPage() {
                         <div>{i18n.unitFeatures.pilotFeatures[f]}</div>
                         <Gap size="xs" />
                         <div>
-                          <Button
+                          <MutateButton
                             appearance="link"
+                            mutation={updateUnitFeaturesMutation}
                             onClick={() => {
-                              void updateFeatures(
-                                units
+                              const request = {
+                                unitIds: units
                                   .filter(
                                     ({ features }) =>
                                       features.includes(f) === allSelected
                                   )
                                   .map(({ id }) => id),
-                                [f],
-                                !allSelected
-                              )
+                                features: [f],
+                                enable: !allSelected
+                              }
+                              setUndoAction({
+                                ...request,
+                                enable: !request.enable
+                              })
+                              return {
+                                body: request
+                              }
                             }}
                             text={
                               allSelected
@@ -219,10 +181,19 @@ export default React.memo(function UnitFeaturesPage() {
                           label={f}
                           hiddenLabel
                           checked={unit.features.includes(f)}
-                          onChange={(value) =>
-                            updateFeatures([unit.id], [f], value)
-                          }
-                          disabled={submitting}
+                          onChange={(value) => {
+                            const request = {
+                              unitIds: [unit.id],
+                              features: [f],
+                              enable: value
+                            }
+                            setUndoAction({
+                              ...request,
+                              enable: !request.enable
+                            })
+                            void updateUnitFeatures({ body: request })
+                          }}
+                          disabled={isPending}
                         />
                       </Td>
                     ))}

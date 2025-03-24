@@ -4,7 +4,7 @@
 
 import React, { useState } from 'react'
 
-import { isValidPinCode } from 'employee-frontend/components/employee/EmployeePinCodePage'
+import { isValidPinCode } from 'employee-frontend/components/employee-pin-code/EmployeePinCodePage'
 import { Action } from 'lib-common/generated/action'
 import { DaycareGroupResponse } from 'lib-common/generated/api-types/daycare'
 import { DaycareId } from 'lib-common/generated/api-types/shared'
