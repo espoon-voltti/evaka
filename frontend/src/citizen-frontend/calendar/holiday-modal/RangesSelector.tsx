@@ -93,8 +93,7 @@ export const RangeSelector = React.memo(function RangeSelector({
       rangesOverlap: i18n.calendar.holidayModal.rangesOverlap
     },
     {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      onUpdate: (prevState, nextState, form) => {
+      onUpdate: (_, nextState, form) => {
         const shape = form.shape()
         const next = shape.ranges.validate(nextState.ranges)
 
