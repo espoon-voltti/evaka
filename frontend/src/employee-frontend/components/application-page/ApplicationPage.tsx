@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useContext, useEffect, useState } from 'react'
+import { useSearchParams } from 'react-router'
 import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
@@ -95,7 +96,8 @@ export default React.memo(function ApplicationPage() {
   const { i18n } = useTranslation()
   const { setTitle, formatTitleName } = useContext<TitleState>(TitleContext)
 
-  const creatingNew = window.location.href.includes('create=true') // fixme
+  const [searchParams] = useSearchParams()
+  const creatingNew = searchParams.get('create') === 'true'
   const [editing, setEditing] = useState(creatingNew)
   const [editedApplication, setEditedApplication] =
     useState<ApplicationDetails>()
