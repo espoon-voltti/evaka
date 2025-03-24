@@ -184,10 +184,19 @@ fun Database.Read.getReplacingInvoiceFor(id: InvoiceId): InvoiceDetailed? {
         .exactlyOneOrNull()
 }
 
-fun Database.Read.getSentInvoicesOfMonth(month: YearMonth): List<InvoiceDetailed> {
+fun Database.Read.getSentInvoicesOfMonth(
+    month: YearMonth,
+    headOfFamilyId: PersonId? = null,
+): List<InvoiceDetailed> {
     val periodStart = month.atDay(1)
     val periodEnd = month.atEndOfMonth()
     val statuses = listOf(InvoiceStatus.SENT, InvoiceStatus.WAITING_FOR_SENDING)
+    val headOfFamilyFilter =
+        if (headOfFamilyId != null) {
+            PredicateSql { where("head_of_family = ${bind(headOfFamilyId)}") }
+        } else {
+            PredicateSql.alwaysTrue()
+        }
     return createQuery {
             invoiceDetailedQuery(
                 Predicate {
@@ -195,7 +204,8 @@ fun Database.Read.getSentInvoicesOfMonth(month: YearMonth): List<InvoiceDetailed
                         """
                             $it.period_start = ${bind(periodStart)} AND
                             $it.period_end = ${bind(periodEnd)} AND
-                            $it.status = ANY (${bind(statuses)})
+                            $it.status = ANY (${bind(statuses)}) AND
+                            ${predicate(headOfFamilyFilter)}
                             """
                     )
                 }

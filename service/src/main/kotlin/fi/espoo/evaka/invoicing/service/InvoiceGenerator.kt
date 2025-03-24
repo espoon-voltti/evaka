@@ -106,11 +106,18 @@ class InvoiceGenerator(
                 tracer.withSpan("calculateInvoiceData") {
                     calculateInvoiceData(tx, month, headOfFamilyId)
                 }
-            val draft =
-                createReplacementDraftInvoices(tx, month, invoiceCalculationData).firstOrNull()
+            val drafts =
+                createReplacementDraftInvoices(tx, month, invoiceCalculationData, headOfFamilyId)
+            check(drafts.size <= 1) {
+                "Generated multiple replacement draft invoices for $headOfFamilyId in month $month"
+            }
+            val draft = drafts.firstOrNull()
 
             tx.deleteDraftInvoices(month, InvoiceStatus.REPLACEMENT_DRAFT, headOfFamilyId)
             if (draft != null) {
+                check(draft.headOfFamily == headOfFamilyId) {
+                    "Generated replacement draft invoice for wrong head of family (${draft.headOfFamily} instead of $headOfFamilyId)"
+                }
                 tx.insertDraftInvoices(
                     status = InvoiceStatus.REPLACEMENT_DRAFT,
                     invoices = listOf(draft),
@@ -153,6 +160,7 @@ class InvoiceGenerator(
         tx: Database.Transaction,
         month: YearMonth,
         invoiceCalculationData: DraftInvoiceGenerator.InvoiceGeneratorInput,
+        headOfFamilyId: PersonId? = null, // null means generate for all heads of family
     ): List<DraftInvoice> {
         val invoices = draftInvoiceGenerator.generateDraftInvoices(invoiceCalculationData)
 
@@ -161,7 +169,8 @@ class InvoiceGenerator(
                 applyCorrectionsForMonth(tx, month, invoices, invoiceCalculationData.areaIds)
             }
         val headsOfFamilyWithInvoices = invoicesWithCorrections.map { it.headOfFamily }.toSet()
-        val sentInvoices = tx.getSentInvoicesOfMonth(month).associateBy { it.headOfFamily.id }
+        val sentInvoices =
+            tx.getSentInvoicesOfMonth(month, headOfFamilyId).associateBy { it.headOfFamily.id }
 
         val newOrReplacedInvoices =
             invoicesWithCorrections.mapNotNull { invoice ->
