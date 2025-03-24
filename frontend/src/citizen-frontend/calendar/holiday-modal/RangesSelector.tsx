@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import isEqual from 'lodash/isEqual'
 import React, { useCallback, useContext } from 'react'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
@@ -14,6 +13,7 @@ import {
   ValidationError,
   ValidationSuccess
 } from 'lib-common/form/types'
+import LocalDate from 'lib-common/local-date'
 import UnderRowStatusIcon from 'lib-components/atoms/StatusIcon'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { InputFieldUnderRow } from 'lib-components/atoms/form/InputField'
@@ -93,22 +93,13 @@ export const RangeSelector = React.memo(function RangeSelector({
       rangesOverlap: i18n.calendar.holidayModal.rangesOverlap
     },
     {
-      onUpdate: (prevState, nextState, form) => {
+      onUpdate: (_, nextState, form) => {
         const shape = form.shape()
-        const prev = shape.ranges.validate(prevState.ranges)
         const next = shape.ranges.validate(nextState.ranges)
 
         if (!next.isValid) return nextState
         const ranges = next.value
-
-        if (!prev.isValid) return nextState
-
-        const prevRanges = prev.value
-        if (!isEqual(prevRanges, ranges)) {
-          onSelectRanges(ranges)
-        } else {
-          onSelectRanges(ranges)
-        }
+        onSelectRanges(ranges)
 
         return nextState
       }
@@ -147,6 +138,9 @@ export const RangeSelector = React.memo(function RangeSelector({
             bind={range}
             locale={lang}
             data-qa={`range-input-${i + 1}`}
+            initialMonth={
+              LocalDate.parseFiOrNull(range.state.start) ?? period.start
+            }
           />
 
           <Button
