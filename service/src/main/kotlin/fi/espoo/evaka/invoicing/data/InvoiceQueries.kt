@@ -465,7 +465,7 @@ fun Database.Transaction.deleteDraftInvoices(
     month: YearMonth,
     status: InvoiceStatus,
     headOfFamilyId: PersonId? = null, // null means all
-) {
+): Int {
     require(status == InvoiceStatus.DRAFT || status == InvoiceStatus.REPLACEMENT_DRAFT)
     val headOfFamilyFilter =
         if (headOfFamilyId != null) {
@@ -473,7 +473,7 @@ fun Database.Transaction.deleteDraftInvoices(
         } else {
             PredicateSql.alwaysTrue()
         }
-    execute {
+    return execute {
         sql(
             "DELETE FROM invoice WHERE status = ${bind(status)} AND period_start = ${bind(month)} AND ${predicate(headOfFamilyFilter)}"
         )

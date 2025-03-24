@@ -102,20 +102,37 @@ class InvoiceGenerator(
         headOfFamilyId: PersonId,
     ) =
         forReplaceableMonths(dbc, today) { tx, month ->
+            logger.info {
+                "Generating replacement draft invoices for $headOfFamilyId in month $month"
+            }
+
             val invoiceCalculationData =
                 tracer.withSpan("calculateInvoiceData") {
                     calculateInvoiceData(tx, month, headOfFamilyId)
                 }
-            val draft =
-                createReplacementDraftInvoices(tx, month, invoiceCalculationData).firstOrNull()
+            val drafts = createReplacementDraftInvoices(tx, month, invoiceCalculationData)
+            logger.info { "Generated ${drafts.size} replacement draft invoices" }
+            check(drafts.size <= 1) {
+                "Generated multiple replacement draft invoices for $headOfFamilyId in month $month"
+            }
 
-            tx.deleteDraftInvoices(month, InvoiceStatus.REPLACEMENT_DRAFT, headOfFamilyId)
+            val deletedCount =
+                tx.deleteDraftInvoices(month, InvoiceStatus.REPLACEMENT_DRAFT, headOfFamilyId)
+            logger.info { "Deleted $deletedCount existing replacement draft invoices" }
+
+            val draft = drafts.firstOrNull()
             if (draft != null) {
-                tx.insertDraftInvoices(
-                    status = InvoiceStatus.REPLACEMENT_DRAFT,
-                    invoices = listOf(draft),
-                    relatedFeeDecisions = invoiceCalculationData.decisionIds,
-                )
+                check(draft.headOfFamily == headOfFamilyId) {
+                    "Generated replacement draft invoice for $headOfFamilyId in month $month, but the invoice is for ${draft.headOfFamily}"
+                }
+                val invoiceId =
+                    tx.insertDraftInvoices(
+                            status = InvoiceStatus.REPLACEMENT_DRAFT,
+                            invoices = listOf(draft),
+                            relatedFeeDecisions = invoiceCalculationData.decisionIds,
+                        )
+                        .single()
+                logger.info { "Inserted replacement draft invoice $invoiceId" }
             }
         }
 
