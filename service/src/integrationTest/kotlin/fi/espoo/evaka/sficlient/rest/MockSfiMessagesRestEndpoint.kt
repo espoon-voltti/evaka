@@ -62,7 +62,7 @@ class MockSfiMessagesRestEndpoint {
         }
 
     @PostMapping(
-        "/v1/files",
+        "/v2/attachments",
         consumes = [MediaType.MULTIPART_FORM_DATA_VALUE],
         produces = [MediaType.APPLICATION_JSON_VALUE],
     )
@@ -76,18 +76,18 @@ class MockSfiMessagesRestEndpoint {
             } else {
                 val id = UUID.randomUUID()
                 files[id] = CapturedFile(file.originalFilename, file.bytes)
-                ResponseEntity.ok(NewFileResponse(id))
+                ResponseEntity.ok(AttachmentReference(id))
             }
         }
 
     @PostMapping(
-        "/v1/messages",
+        "/v2/messages",
         consumes = [MediaType.APPLICATION_JSON_VALUE],
         produces = [MediaType.APPLICATION_JSON_VALUE],
     )
     fun sendMessage(
         @RequestHeader("Authorization") authorization: String?,
-        @RequestBody body: NewMessageFromClientOrganisation,
+        @RequestBody body: MultichannelMessageRequestBody,
     ): ResponseEntity<Any> =
         lock.withLock {
             if (!tokens.contains(authorization?.removePrefix("Bearer "))) {
@@ -110,7 +110,7 @@ class MockSfiMessagesRestEndpoint {
         private val tokens = mutableSetOf<AccessToken>()
         private val files = mutableMapOf<FileId, CapturedFile>()
         private val messages =
-            mutableMapOf<ExternalId, Pair<MessageId, NewMessageFromClientOrganisation>>()
+            mutableMapOf<ExternalId, Pair<MessageId, MultichannelMessageRequestBody>>()
         private var nextMessageId: MessageId = 1L
         private var password: String = DEFAULT_PASSWORD
 

@@ -16,7 +16,7 @@ import okhttp3.RequestBody.Companion.toRequestBody
 // https://api.messages-qa.suomi.fi/api-docs
 data class ApiUrls(
     val token: HttpUrl,
-    val files: HttpUrl,
+    val attachments: HttpUrl,
     val messages: HttpUrl,
     val changePassword: HttpUrl,
 ) {
@@ -25,8 +25,8 @@ data class ApiUrls(
     ) : this(
         token = base.newBuilder().addPathSegments("v1/token").build(),
         changePassword = base.newBuilder().addPathSegments("v1/change-password").build(),
-        files = base.newBuilder().addPathSegments("v1/files").build(),
-        messages = base.newBuilder().addPathSegments("v1/messages").build(),
+        attachments = base.newBuilder().addPathSegments("v2/attachments").build(),
+        messages = base.newBuilder().addPathSegments("v2/messages").build(),
     )
 }
 
@@ -39,7 +39,7 @@ data class ApiError(
 )
 
 // https://api.messages-qa.suomi.fi/api-docs#model-ValidationError
-data class ValidationError(val error: String)
+data class ValidationError(val error: String, val errorCode: String?)
 
 // https://api.messages-qa.suomi.fi/api-docs#model-AccessTokenRequestBody
 data class AccessTokenRequestBody(val username: String, val password: String)
@@ -56,24 +56,21 @@ data class AccessTokenResponse(
 
 private val pdfMediaType = "application/pdf".toMediaType()
 
-// https://api.messages-qa.suomi.fi/api-docs#operations-messages-postV1Files
+// https://api.messages-qa.suomi.fi/api-docs#operations-messages-postV3Attachments
 fun pdfUploadBody(fileName: String, pdfBytes: ByteArray) =
     MultipartBody.Builder()
         .setType(MultipartBody.FORM)
         .addFormDataPart("file", fileName, pdfBytes.toRequestBody(pdfMediaType))
         .build()
 
-// https://api.messages-qa.suomi.fi/api-docs#model-NewFileResponse
-data class NewFileResponse(val fileId: UUID)
+// https://api.messages.suomi.fi/api-docs/#model-messages.api.rest.v2.AttachmentReference
+data class AttachmentReference(val attachmentId: UUID)
 
-// https://api.messages-qa.suomi.fi/api-docs#model-FileReference
-data class FileReference(val fileId: UUID)
-
-// https://api.messages-qa.suomi.fi/api-docs#model-NewMessageFromClientOrganisation
-data class NewMessageFromClientOrganisation(
+// https://api.messages-qa.suomi.fi/api-docs#model-model-messages.api.rest.v2.MultichannelMessageRequestBody
+data class MultichannelMessageRequestBody(
     val externalId: String,
-    val electronic: NewElectronicMessage,
-    val paperMail: NewNormalPaperMail,
+    val electronic: ElectronicPart,
+    val paperMail: PaperMailPart,
     val recipient: Recipient,
     val sender: Sender,
 ) {
@@ -85,18 +82,55 @@ data class NewMessageFromClientOrganisation(
 // https://api.messages-qa.suomi.fi/api-docs#model-MessageResponse
 data class MessageResponse(val messageId: Long)
 
-// https://api.messages-qa.suomi.fi/api-docs#model-NewElectronicMessage
-data class NewElectronicMessage(
-    val title: String,
+// https://api.messages-qa.suomi.fi/api-docs#model-messages.api.rest.v2.ElectronicPart
+data class ElectronicPart(
+    val attachments: List<AttachmentReference>,
     val body: String,
-    val files: List<FileReference>,
-    val visibility: Visibility = Visibility.RECIPIENT_ONLY,
+    val bodyFormat: BodyFormat = BodyFormat.TEXT,
+    val messageServiceType: MessageServiceType = MessageServiceType.NORMAL,
+    val notifications: MessageNotifications,
+    val replyAllowedBy: ReplyAllowedBy,
+    val title: String,
+    val visibility: Visibility,
 ) {
     init {
         require(title.isNotBlank()) { "title must not be blank" }
         require(body.isNotBlank()) { "body must not be blank" }
-        require(files.size == 1) { "files must contain exactly one file" }
+        require(attachments.size == 1) { "attachments must contain exactly one attachment" }
     }
+}
+
+enum class BodyFormat(@JsonValue val jsonValue: String) {
+    TEXT("Text"),
+    MARKDOWN("Markdown"),
+}
+
+enum class MessageServiceType(@JsonValue val jsonValue: String) {
+    NORMAL("Normal"),
+    VERIFIABLE("Verifiable"),
+}
+
+// https://api.messages-qa.suomi.fi/api-docs#model-messages.api.rest.v2.MessageNotifications
+data class MessageNotifications(
+    val senderDetailsInNotifications: SenderDetailsInNotifications,
+    val unreadMessageNotification: UnreadMessageNotification,
+)
+
+enum class ReplyAllowedBy(@JsonValue val jsonValue: String) {
+    ANYONE("Anyone"),
+    NO_ONE("No one"),
+}
+
+enum class SenderDetailsInNotifications(@JsonValue val jsonValue: String) {
+    ORGANIZATION_AND_SERVICE_NAME("Organisation and service name"),
+    NONE("None"),
+}
+
+data class UnreadMessageNotification(val reminder: Reminder)
+
+enum class Reminder(@JsonValue val jsonValue: String) {
+    DEFAULT_REMINDER("Default reminder"),
+    NO_REMINDERS("No reminders"),
 }
 
 enum class Visibility(@JsonValue val jsonValue: String) {
@@ -104,23 +138,27 @@ enum class Visibility(@JsonValue val jsonValue: String) {
     RECIPIENT_ONLY("Recipient only"),
 }
 
-// https://api.messages-qa.suomi.fi/api-docs#model-NewNormalPaperMail
-data class NewNormalPaperMail(
-    val createCoverPage: Boolean,
-    val files: List<FileReference>,
+// https://api.messages-qa.suomi.fi/api-docs#model-messages.api.rest.v2.PaperMailPart
+data class PaperMailPart(
+    val attachments: List<AttachmentReference>,
+    val colorPrinting: Boolean,
+    val createAddressPage: Boolean,
+    val messageServiceType: MessageServiceType,
     val printingAndEnvelopingService: PrintingAndEnvelopingService,
     val recipient: NewPaperMailRecipient,
+    val rotateLandscapePages: Boolean,
     val sender: NewPaperMailSender,
+    val twoSidedPrinting: Boolean,
 ) {
     init {
-        require(files.size == 1) { "files must contain exactly one file" }
+        require(attachments.size == 1) { "attachments must contain exactly one attachment" }
     }
 }
 
-// https://api.messages-qa.suomi.fi/api-docs#model-PrintingAndEnvelopingService
+// https://api.messages-qa.suomi.fi/api-docs#model-messages.api.rest.v2.PrintingAndEnvelopingService
 data class PrintingAndEnvelopingService(val postiMessaging: PostiMessaging)
 
-// https://api.messages-qa.suomi.fi/api-docs#model-PostiMessaging
+// https://api.messages-qa.suomi.fi/api-docs#model-messages.api.rest.v2.PostiMessaging
 data class PostiMessaging(
     val contactDetails: ContactDetails,
     val username: String,
@@ -132,20 +170,20 @@ data class PostiMessaging(
     }
 }
 
-// https://api.messages-qa.suomi.fi/api-docs#model-ContactDetails
+// https://api.messages-qa.suomi.fi/api-docs#model-messages.api.rest.v2.ContactDetails
 data class ContactDetails(val email: String) {
     init {
         require(email.isNotBlank()) { "email must not be blank" }
     }
 }
 
-// https://api.messages-qa.suomi.fi/api-docs#model-NewPaperMailRecipient
+// https://api.messages-qa.suomi.fi/api-docs#model-messages.api.rest.v2.NewPaperMailRecipient
 data class NewPaperMailRecipient(val address: Address)
 
-// https://api.messages-qa.suomi.fi/api-docs#model-NewPaperMailSender
+// https://api.messages-qa.suomi.fi/api-docs#model-messages.api.rest.v2.PaperMailPart
 data class NewPaperMailSender(val address: Address)
 
-// https://api.messages-qa.suomi.fi/api-docs#model-Sender
+// https://api.messages-qa.suomi.fi/api-docs#model-messages.api.rest.v2.Recipient
 data class Recipient(
     /** SSN */
     val id: String
@@ -155,14 +193,14 @@ data class Recipient(
     }
 }
 
-// https://api.messages-qa.suomi.fi/api-docs#model-Sender
+// https://api.messages-qa.suomi.fi/api-docs#model-messages.api.rest.v2.Sender
 data class Sender(val serviceId: String) {
     init {
         require(serviceId.isNotBlank()) { "serviceId must not be blank" }
     }
 }
 
-// https://api.messages-qa.suomi.fi/api-docs#model-Address
+// https://api.messages-qa.suomi.fi/api-docs#model-messages.api.rest.v2.Address
 data class Address(
     val name: String,
     /** Second address row. Used to specify, for example, addressee company or department. */
