@@ -5,9 +5,22 @@
 // GENERATED FILE: no manual modifications
 
 import { JsonOf } from 'lib-common/json'
+import { NekkuMealType } from 'lib-common/generated/api-types/nekku'
 import { NekkuUnitNumber } from 'lib-common/generated/api-types/nekku'
 import { client } from '../../api/client'
 import { uri } from 'lib-common/uri'
+
+
+/**
+* Generated from fi.espoo.evaka.nekku.NekkuController.getNekkuMealTypes
+*/
+export async function getNekkuMealTypes(): Promise<NekkuMealType[]> {
+  const { data: json } = await client.request<JsonOf<NekkuMealType[]>>({
+    url: uri`/employee/nekku/meal-types`.toString(),
+    method: 'GET'
+  })
+  return json
+}
 
 
 /**

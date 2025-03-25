@@ -5,6 +5,24 @@
 // GENERATED FILE: no manual modifications
 
 /**
+* Generated from fi.espoo.evaka.nekku.NekkuMealType
+*/
+export interface NekkuMealType {
+  name: string
+  type: NekkuProductMealType | null
+}
+
+/**
+* Generated from fi.espoo.evaka.nekku.NekkuProductMealType
+*/
+export const nekku_product_meal_type = [
+  'VEGAN',
+  'VEGETABLE'
+] as const
+
+export type NekkuProductMealType = typeof nekku_product_meal_type[number]
+
+/**
 * Generated from fi.espoo.evaka.nekku.NekkuUnitNumber
 */
 export interface NekkuUnitNumber {

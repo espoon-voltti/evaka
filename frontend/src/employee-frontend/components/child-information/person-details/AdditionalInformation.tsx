@@ -37,7 +37,11 @@ import {
   updateAdditionalInfoMutation
 } from '../queries'
 
-import { mealTexturesQuery, specialDietsQuery } from './queries'
+import {
+  mealTexturesQuery,
+  nekkuDietTypesquery,
+  specialDietsQuery
+} from './queries'
 
 const TextAreaInput = styled(TextArea)`
   width: 100%;
@@ -105,7 +109,8 @@ export default React.memo(function AdditionalInformation({ childId }: Props) {
     languageAtHome: '',
     languageAtHomeDetails: '',
     specialDiet: null,
-    mealTexture: null
+    mealTexture: null,
+    nekkuDiet: null
   })
 
   const editing = uiMode === 'child-additional-details-editing'
@@ -122,7 +127,8 @@ export default React.memo(function AdditionalInformation({ childId }: Props) {
         languageAtHomeDetails:
           additionalInformation.value.languageAtHomeDetails,
         specialDiet: additionalInformation.value.specialDiet,
-        mealTexture: additionalInformation.value.mealTexture
+        mealTexture: additionalInformation.value.mealTexture,
+        nekkuDiet: additionalInformation.value.nekkuDiet
       })
       toggleUiMode('child-additional-details-editing')
     }
@@ -148,6 +154,8 @@ export default React.memo(function AdditionalInformation({ childId }: Props) {
     () => sortBy(mealTextures, getMealTextureCaption),
     [mealTextures]
   )
+
+  const nekkuDiets = useQueryResult(nekkuDietTypesquery()).getOrElse([])
 
   return (
     <div data-qa="additional-information-section">
@@ -365,6 +373,39 @@ export default React.memo(function AdditionalInformation({ childId }: Props) {
                             {data.mealTexture
                               ? getMealTextureCaption(data.mealTexture)
                               : '-'}
+                          </div>
+                        </>
+                      )
+                    }
+                  ]
+                : []),
+              ...(featureFlags.nekkuIntegration
+                ? [
+                    {
+                      label: i18n.childInformation.personDetails.nekkuDiet,
+                      value: editing ? (
+                        <>
+                          <Combobox
+                            data-qa="nekku-diet-input"
+                            items={nekkuDiets}
+                            selectedItem={nekkuDiets.find(
+                              (value) => value.type === form.nekkuDiet
+                            )}
+                            onChange={(diet) =>
+                              setForm({
+                                ...form,
+                                nekkuDiet: diet?.type ?? null
+                              })
+                            }
+                            getItemLabel={(diet) => diet?.name ?? '-'}
+                          />
+                        </>
+                      ) : (
+                        <>
+                          <div data-qa="nekku-diet-display">
+                            {nekkuDiets.find(
+                              (value) => value.type === data.nekkuDiet
+                            )?.name ?? '-'}
                           </div>
                         </>
                       )

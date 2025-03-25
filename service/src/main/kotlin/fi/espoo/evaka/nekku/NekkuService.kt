@@ -209,6 +209,8 @@ data class NekkuProduct(
     val meal_type: NekkuProductMealType? = null,
 )
 
+data class NekkuMealType(val type: NekkuProductMealType?, val name: String)
+
 @ConstList("nekku_product_meal_time")
 enum class NekkuProductMealTime(@JsonValue val description: String) : DatabaseEnum {
     BREAKFAST("aamupala"),

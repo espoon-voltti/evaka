@@ -4,6 +4,7 @@
 
 import { Queries } from 'lib-common/query'
 
+import { getNekkuMealTypes } from '../../../generated/api-clients/nekku'
 import {
   getDiets,
   getMealTextures
@@ -14,3 +15,5 @@ const q = new Queries()
 export const specialDietsQuery = q.query(getDiets)
 
 export const mealTexturesQuery = q.query(getMealTextures)
+
+export const nekkuDietTypesquery = q.query(getNekkuMealTypes)

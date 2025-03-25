@@ -39,4 +39,12 @@ class NekkuController(private val accessControl: AccessControl) {
             }
             .also { Audit.NekkuUnitsRead.log() }
     }
+
+    @GetMapping("/employee/nekku/meal-types")
+    fun getNekkuMealTypes(user: AuthenticatedUser.Employee): List<NekkuMealType> {
+        return listOf(NekkuMealType(null, "Seka")) +
+            NekkuProductMealType.entries.map {
+                NekkuMealType(it, it.description.replaceFirstChar { it.uppercaseChar() })
+            }
+    }
 }

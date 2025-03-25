@@ -24,6 +24,7 @@ import { JsonOf } from '../../json'
 import { MealTexture } from './specialdiet'
 import { MissingBackupGroupPlacement } from './placement'
 import { MissingGroupPlacement } from './placement'
+import { NekkuProductMealType } from './nekku'
 import { OccupancyResponse } from './occupancy'
 import { PersonJSON } from './pis'
 import { PilotFeature } from './shared'
@@ -62,6 +63,7 @@ export interface AdditionalInformation {
   languageAtHomeDetails: string
   mealTexture: MealTexture | null
   medication: string
+  nekkuDiet: NekkuProductMealType | null
   preferredName: string
   specialDiet: SpecialDiet | null
 }
