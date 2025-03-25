@@ -20,7 +20,7 @@ import okhttp3.RequestBody.Companion.toRequestBody
 interface LinkityClient {
     fun getShifts(period: FiniteDateRange): List<Shift>
 
-    fun postStampings(stampings: Collection<Stamping>)
+    fun postStampings(batch: StampingBatch)
 }
 
 class LinkityHttpClient(private val env: LinkityEnv, private val jsonMapper: JsonMapper) :
@@ -62,7 +62,7 @@ class LinkityHttpClient(private val env: LinkityEnv, private val jsonMapper: Jso
         }
     }
 
-    override fun postStampings(stampings: Collection<Stamping>) {
+    override fun postStampings(batch: StampingBatch) {
         val url =
             env.url
                 .ensureTrailingSlash()
@@ -78,7 +78,7 @@ class LinkityHttpClient(private val env: LinkityEnv, private val jsonMapper: Jso
                 .url(url)
                 .post(
                     jsonMapper
-                        .writeValueAsString(stampings)
+                        .writeValueAsString(batch)
                         .toRequestBody("application/json".toMediaType())
                 )
                 .header("x-api-key", env.apiKey.value)

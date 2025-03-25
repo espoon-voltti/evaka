@@ -12,6 +12,7 @@ import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.utils.partitionIndexed
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Duration
@@ -131,7 +132,13 @@ fun sendStaffAttendancesToLinkity(
             }
     }
     val stampings = roundAttendancesToPlans(attendances, plans)
-    client.postStampings(stampings)
+    client.postStampings(
+        StampingBatch(
+            HelsinkiDateTime.atStartOfDay(period.start),
+            HelsinkiDateTime.atStartOfDay(period.end.plusDays(1)),
+            stampings,
+        )
+    )
     logger.debug { "Posted ${stampings.size} stampings to Linkity" }
 }
 
