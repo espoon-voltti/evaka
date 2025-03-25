@@ -5,10 +5,8 @@
 // GENERATED FILE: no manual modifications
 
 import { AxiosProgressEvent } from 'axios'
-import { ChildImageId } from 'lib-common/generated/api-types/shared'
 import { JsonOf } from 'lib-common/json'
 import { PersonId } from 'lib-common/generated/api-types/shared'
-import { Uri } from 'lib-common/uri'
 import { client } from '../../client'
 import { createFormData } from 'lib-common/api'
 import { uri } from 'lib-common/uri'
@@ -27,20 +25,6 @@ export async function deleteImage(
     method: 'DELETE'
   })
   return json
-}
-
-
-/**
-* Generated from fi.espoo.evaka.childimages.ChildImageController.getImage
-*/
-export function getImage(
-  request: {
-    imageId: ChildImageId
-  }
-): { url: Uri } {
-  return {
-    url: uri`/employee-mobile/child-images/${request.imageId}`.withBaseUrl(client.defaults.baseURL ?? '')
-  }
 }
 
 

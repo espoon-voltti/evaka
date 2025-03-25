@@ -6,6 +6,7 @@ package fi.espoo.evaka.childimages
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
+import fi.espoo.evaka.ExcludeCodeGen
 import fi.espoo.evaka.s3.DocumentKey
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.s3.checkFileContentType
@@ -109,6 +110,7 @@ class ChildImageController(
         @PathVariable imageId: ChildImageId,
     ): ResponseEntity<Any> = getImageInternal(db, user, clock, imageId)
 
+    @ExcludeCodeGen
     @GetMapping("/employee-mobile/child-images/{imageId}")
     fun getImage(
         db: Database,
