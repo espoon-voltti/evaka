@@ -34,12 +34,6 @@ export class DiscussionSurveyListPage {
     this.surveyList = page.findByDataQa('discussion-survey-list')
   }
 
-  async waitUntilLoaded() {
-    await this.page
-      .find('[data-qa="discussion-survey-ist"][data-isloading="false"]')
-      .waitUntilVisible()
-  }
-
   async openDiscussionSurvey(surveyId: string) {
     const surveyItem = this.surveyList.findByDataQa(`survey-${surveyId}`)
     await surveyItem.click()
@@ -82,10 +76,6 @@ export class CreateDiscussionSurveyEditor {
       page.findByDataQa('survey-attendees-select')
     )
     this.newTimesCalendar = page.findByDataQa('survey-times-calendar')
-  }
-
-  async waitUntilLoaded() {
-    await this.submitSurveyButton.waitUntilVisible()
   }
 
   async addEventTime(date: LocalDate, index: number, eventTime: TestEventTime) {
@@ -261,7 +251,6 @@ export class CalendarDayEventTimeEditor extends Element {
 
 export class ReservationDayEventTimeEditor extends CalendarDayEventTimeEditor {
   submitButton = this.findByDataQa('event-time-submit')
-  deleteButton = this.findByDataQa('event-time-delete')
 }
 
 export class ReserveModal extends Element {
@@ -277,14 +266,6 @@ export class ReserveModal extends Element {
     await this.addReservationSelectButton.click()
     await this.reservationSelect.selectOption(reserveeName)
     await this.submitButton.click()
-  }
-
-  async deleteReservedEventTime() {
-    await this.deleteButton.click()
-    const confirmDeleteModal = new Modal(
-      this.findByDataQa('confirm-delete-modal').findByDataQa('modal')
-    )
-    await confirmDeleteModal.submit()
   }
 
   async deleteEventTime() {

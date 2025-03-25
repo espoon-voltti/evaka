@@ -249,10 +249,6 @@ export class GroupCollapsible extends Element {
     }
   }
 
-  async removeGroupPlacement(n: number) {
-    await this.#childRows.nth(n).find('[data-qa="remove-btn"]').click()
-  }
-
   async openMonthCalendar() {
     await this.#monthCalendarButton.click()
     return new UnitMonthCalendarPage(this.page)

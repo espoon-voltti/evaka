@@ -4,17 +4,6 @@
 
 const baseUrl = 'http://localhost:9090'
 
-export async function deleteAllDummyIdpUsers(): Promise<void> {
-  const res = await fetch(`${baseUrl}/idp/users/clear`, {
-    method: 'POST'
-  })
-  if (!res.ok) {
-    throw new Error(
-      `Failed to delete dummy-idp users: ${res.status} ${res.statusText}: ${await res.text()}`
-    )
-  }
-}
-
 export async function upsertDummyIdpUser(user: {
   ssn: string
   commonName: string

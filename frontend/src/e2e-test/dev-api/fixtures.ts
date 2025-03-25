@@ -2018,13 +2018,6 @@ export const preschoolTerm2023: DevPreschoolTerm = {
   ]
 }
 
-export const preschoolTerms = [
-  preschoolTerm2020,
-  preschoolTerm2021,
-  preschoolTerm2022,
-  preschoolTerm2023
-]
-
 export const clubTerm2020: ClubTerm = {
   id: randomId(),
   term: new FiniteDateRange(

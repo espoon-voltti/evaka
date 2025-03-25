@@ -16,7 +16,6 @@ export default class ChildAttendancePage {
   #markDepartedLink: Element
   markDepartedButton: Element
   #markAbsentButton: Element
-  #childStatusLabel: Element
   #setTimeInput: TextInput
   stickyNotes: ElementCollection
   dailyNote: Element
@@ -29,7 +28,6 @@ export default class ChildAttendancePage {
     this.#markDepartedLink = page.findByDataQa('mark-departed-link')
     this.markDepartedButton = page.findByDataQa('mark-departed-btn')
     this.#markAbsentButton = page.findByDataQa('mark-absent-btn')
-    this.#childStatusLabel = page.findByDataQa('child-status')
     this.#setTimeInput = new TextInput(page.findByDataQa('set-time'))
     this.stickyNotes = page.findAllByDataQa('sticky-note')
     this.dailyNote = page.findByDataQa('daily-note')
@@ -83,10 +81,6 @@ export default class ChildAttendancePage {
 
   async assertNoChildrenPresentIndicatorIsShown() {
     await waitUntilTrue(() => this.#noChildrenIndicator.visible)
-  }
-
-  async assertChildStatusLabelIsShown(expectedText: string) {
-    await this.#childStatusLabel.assertTextEquals(expectedText)
   }
 
   // time format: "09:46"

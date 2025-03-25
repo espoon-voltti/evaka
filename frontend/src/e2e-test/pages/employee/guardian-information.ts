@@ -315,7 +315,6 @@ export class IncomeSection extends Section {
   #incomeDateRange: Element
   #saveIncomeButton: Element
   #cancelIncomeButton: Element
-  #toggleIncomeItemButton: Element
   #incomeSum: Element
   #expensesSum: Element
   #editIncomeItemButton: Element
@@ -328,7 +327,6 @@ export class IncomeSection extends Section {
     this.#incomeDateRange = page.findByDataQa('income-date-range')
     this.#saveIncomeButton = page.findByDataQa('save-income')
     this.#cancelIncomeButton = page.findByDataQa('cancel-income-edit')
-    this.#toggleIncomeItemButton = page.findByDataQa('toggle-income-item')
     this.#incomeSum = page.findByDataQa('income-sum-income')
     this.#expensesSum = page.findByDataQa('income-sum-expenses')
     this.#editIncomeItemButton = page.findByDataQa('edit-income-item')
@@ -437,10 +435,6 @@ export class IncomeSection extends Section {
       .find('[data-qa="delete-income-item"]')
       .click()
     await this.find('[data-qa="modal-okBtn"]').click()
-  }
-
-  async toggleIncome() {
-    await this.#toggleIncomeItemButton.click()
   }
 
   async getIncomeSum() {

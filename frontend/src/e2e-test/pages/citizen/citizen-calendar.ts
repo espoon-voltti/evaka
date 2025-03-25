@@ -36,7 +36,6 @@ export default class CitizenCalendarPage {
   reservationModal: Element
   #holidayCtas: ElementCollection
   #expiringIncomeCta: Element
-  #dailyServiceTimeNotifications: ElementCollection
   #dailyServiceTimeNotificationModal: Element
   discussionSurveyModal: Element
   discussionReservationModal: Element
@@ -53,9 +52,6 @@ export default class CitizenCalendarPage {
     this.reservationModal = page.findByDataQa('reservation-modal')
     this.#holidayCtas = page.findAllByDataQa('holiday-period-cta')
     this.#expiringIncomeCta = page.findByDataQa('expiring-income-cta')
-    this.#dailyServiceTimeNotifications = page.findAllByDataQa(
-      'daily-service-time-notification'
-    )
     this.#dailyServiceTimeNotificationModal = page.findByDataQa(
       'daily-service-time-notification-modal'
     )
@@ -344,10 +340,6 @@ export default class CitizenCalendarPage {
     return this.#discussionsCta.text
   }
 
-  async clickActiveDiscussionsCta(): Promise<void> {
-    return await this.#discussionsCta.click()
-  }
-
   async assertHolidayCtaNotVisible(): Promise<void> {
     await this.page
       .find('[data-holiday-period-cta-status]')
@@ -360,10 +352,6 @@ export default class CitizenCalendarPage {
       .find('[data-expiring-income-cta-status]')
       .assertAttributeEquals('data-expiring-income-cta-status', 'success')
     await this.#expiringIncomeCta.waitUntilHidden()
-  }
-
-  async getDailyServiceTimeNotificationContent(nth: number): Promise<string> {
-    return this.#dailyServiceTimeNotifications.nth(nth).text
   }
 
   async getDailyServiceTimeNotificationModalContent(): Promise<string> {
@@ -719,10 +707,6 @@ class AbsencesModal {
 
   async submit() {
     await this.#modalSendButton.click()
-  }
-
-  getAbsenceTypeRequiredError() {
-    return this.absenceTypeRequiredError
   }
 }
 

@@ -9,8 +9,6 @@ export default class CitizenPedagogicalDocumentsPage {
 
   readonly #date = (id: string) =>
     this.page.findByDataQa(`pedagogical-document-date-${id}`)
-  readonly #childName = (id: string) =>
-    this.page.findByDataQa(`pedagogical-document-child-name-${id}`)
   readonly #description = (id: string) =>
     this.page.findByDataQa(`pedagogical-document-description-${id}`)
   readonly #downloadAttachment = (id: string) =>
@@ -27,17 +25,5 @@ export default class CitizenPedagogicalDocumentsPage {
 
   async downloadAttachment(id: string) {
     await this.#downloadAttachment(id).click()
-  }
-
-  async assertChildNameIsNotShown(id: string) {
-    await this.#childName(id).waitUntilHidden()
-  }
-
-  async assertChildNameIsShown(id: string) {
-    await this.#childName(id).waitUntilVisible()
-  }
-
-  async assertChildNameIs(id: string, expectedName: string) {
-    await this.#childName(id).assertTextEquals(expectedName)
   }
 }

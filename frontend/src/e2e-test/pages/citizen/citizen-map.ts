@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { DevDaycare } from '../../generated/api-types'
-import { delay, waitUntilEqual } from '../../utils'
+import { waitUntilEqual } from '../../utils'
 import {
   Element,
   Page,
@@ -55,54 +55,8 @@ export default class CitizenMapPage {
 
 class Map extends Element {
   static readonly MAX_ZOOM_ATTEMPTS = 30
-  readonly #zoomIn = this.find('.leaflet-control-zoom-in')
-  readonly #zoomOut = this.find('.leaflet-control-zoom-out')
 
   readonly addressMarker = this.find('[data-qa="map-marker-address"]')
-
-  get zoomInDisabled(): Promise<boolean> {
-    return this.#zoomIn.evaluate((el) =>
-      el.classList.contains('leaflet-disabled')
-    )
-  }
-
-  get zoomOutDisabled(): Promise<boolean> {
-    return this.#zoomOut.evaluate((el) =>
-      el.classList.contains('leaflet-disabled')
-    )
-  }
-
-  async zoomOut(times: number | null = null) {
-    let attempts = times ?? Map.MAX_ZOOM_ATTEMPTS
-    while (attempts > 0) {
-      if (await this.zoomOutDisabled) {
-        return
-      }
-      await this.#zoomOut.click()
-      attempts--
-      if (attempts === 0) return
-      await delay(100)
-    }
-    throw new Error(`Failed to zoom out after ${attempts} attempts`)
-  }
-
-  async zoomIn(times: number | null = null) {
-    let attempts = times ?? Map.MAX_ZOOM_ATTEMPTS
-    while (attempts > 0) {
-      if (await this.zoomInDisabled) {
-        return
-      }
-      await this.#zoomIn.click()
-      attempts--
-      if (attempts === 0) return
-      await delay(100)
-    }
-    throw new Error(`Failed to zoom in after ${attempts} attempts`)
-  }
-
-  async zoomInFully() {
-    return this.zoomIn()
-  }
 
   markerFor(daycare: DevDaycare) {
     return this.find(`[title="${daycare.name}"]`)

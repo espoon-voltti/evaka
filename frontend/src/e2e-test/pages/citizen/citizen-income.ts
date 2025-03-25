@@ -162,10 +162,6 @@ export default class CitizenIncomePage {
     await this.toggleCheckbox('entrepreneur-partnership', check)
   }
 
-  async toggleSelfEmployedEstimatedIncome(check: boolean) {
-    await this.toggleCheckbox('self-employed-estimated-income', check)
-  }
-
   async toggleSelfEmployedAttachments(check: boolean) {
     await this.toggleCheckbox('self-employed-attachments', check)
   }

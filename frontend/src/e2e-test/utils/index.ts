@@ -126,17 +126,6 @@ export async function waitUntilFalse(f: () => Promise<boolean>) {
 }
 
 /**
- * Calls the given function until it succeeds with a resolved promise
- */
-export async function waitUntilSuccess<T>(f: () => Promise<T>) {
-  return waitForCondition(
-    f,
-    () => true,
-    () => null
-  )
-}
-
-/**
  * Bounding box of an element.
  *
  * Roughly equivalent to {@type DOMRect}.

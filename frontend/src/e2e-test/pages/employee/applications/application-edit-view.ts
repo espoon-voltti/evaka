@@ -156,14 +156,6 @@ export default class ApplicationEditView {
       .assertTextEquals(fileName)
   }
 
-  async assertUrgencyAttachmentReceivedAtVisible(fileName: string) {
-    const attachment = this.page.findByDataQa(`urgent-attachment-${fileName}`)
-    await attachment.waitUntilVisible()
-    await attachment
-      .find('[data-qa="attachment-received-at"]')
-      .waitUntilVisible()
-  }
-
   async setShiftCareNeeded() {
     if (await this.#shiftCareCheckbox.checked) {
       return

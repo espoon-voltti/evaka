@@ -83,12 +83,6 @@ export class UnitChildReservationsTable extends Element {
     ).findAllByDataQa('in-other-group')
   }
 
-  missingReservations(childId: UUID) {
-    return this.findAllByDataQa(
-      `reservation-row-child-${childId}`
-    ).findAllByDataQa('reservation-missing')
-  }
-
   missingHolidayReservations(childId: UUID) {
     return this.findAllByDataQa(
       `reservation-row-child-${childId}`
@@ -109,11 +103,6 @@ export class UnitChildReservationsTable extends Element {
       cell.findByDataQa('attendance-start').text,
       cell.findByDataQa('attendance-end').text
     ])
-  }
-
-  getBackupCareRequiredWarning(date: LocalDate, row: number): Promise<string> {
-    const cell = this.#attendanceCell(date, row)
-    return cell.findByDataQa('backup-care-required-warning').text
   }
 
   getTotalCounts(): ElementCollection {
@@ -174,8 +163,6 @@ export class ChildDatePresenceModal extends Modal {
   billableAbsenceType = new Select(
     this.findByDataQa('billable-absence').findByDataQa('type-select')
   )
-  billableAbsenceRemove =
-    this.findByDataQa('billable-absence').findByDataQa('remove-btn')
 
   addNonbillableAbsenceBtn = this.findByDataQa('add-nonbillable-absence')
   nonbillableAbsenceType = new Select(

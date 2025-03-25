@@ -331,7 +331,6 @@ export class StaffAttendanceDetailsModal extends Element {
   openAttendanceInAnotherUnitWarning = this.findByDataQa(
     'open-attendance-in-another-unit-warning'
   )
-  arrivalTimeInputInfo = this.findByDataQa('arrival-time-input-info')
   continuationAttendance = this.findByDataQa('continuation-attendance')
   newAttendanceButton = this.findByDataQa('new-attendance')
 
@@ -463,10 +462,6 @@ export class StaffAttendanceAddPersonModal extends Element {
 
   async save() {
     await this.findByDataQa('add-person-save-btn').click()
-  }
-
-  async cancel() {
-    await this.findByDataQa('add-person-cancel-btn').click()
   }
 
   async timeErrorVisible() {
