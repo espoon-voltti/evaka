@@ -4,6 +4,7 @@
 
 package evaka.codegen.api
 
+import fi.espoo.evaka.ExcludeCodeGen
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.domain.EvakaClock
 import kotlin.reflect.KClass
@@ -266,7 +267,9 @@ private fun RequestMappingHandlerMapping.getEndpointMetadata(): List<EndpointMet
             val usesClock = kotlinMethod.parameters.any { it.type == typeOf<EvakaClock>() }
             paths
                 .flatMap { path -> methods.map { method -> Pair(path, method) } }
-                .map { (path, method) ->
+                .mapNotNull { (path, method) ->
+                    if (kotlinMethod.hasAnnotation<ExcludeCodeGen>()) return@mapNotNull null
+
                     EndpointMetadata(
                         controllerClass = controllerClass,
                         controllerMethod = kotlinMethod,
