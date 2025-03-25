@@ -63,7 +63,8 @@ UPDATE child SET
     language_at_home = ${bind(child.additionalInformation.languageAtHome)}, 
     language_at_home_details = ${bind(child.additionalInformation.languageAtHomeDetails)}, 
     diet_id = ${bind(child.additionalInformation.specialDiet?.id)}, 
-    meal_texture_id = ${bind(child.additionalInformation.mealTexture?.id)}
+    meal_texture_id = ${bind(child.additionalInformation.mealTexture?.id)},
+    nekku_diet = ${bind(child.additionalInformation.nekkuDiet)}
 WHERE id = ${bind(child.id)}
 """
         )
