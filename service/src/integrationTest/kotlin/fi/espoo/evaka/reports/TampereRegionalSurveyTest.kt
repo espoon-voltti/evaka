@@ -14,6 +14,8 @@ import fi.espoo.evaka.serviceneed.ServiceNeedOption
 import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.shared.AssistanceActionOptionId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.PlacementId
+import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -55,6 +57,14 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
         MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2025, 1, 1), LocalTime.of(12, 15)))
 
     private val startDate = LocalDate.of(2024, 9, 15)
+
+    val actionOption40 =
+        DevAssistanceActionOption(
+            value = "40",
+            nameFi = "Henkilökuntalisäys tai -muutos",
+            descriptionFi = "Henkilökuntalisäys tai -muutos",
+            id = AssistanceActionOptionId(UUID.randomUUID()),
+        )
 
     private final val fullTimeSno =
         ServiceNeedOption(
@@ -102,7 +112,20 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
     @Test
     fun `Monthly municipal age and part time report results are correct`() {
         val testUnitData = initTestUnitData(startDate)
-        initTestPlacementData(startDate, testUnitData[0])
+        val testChildData = initTestPlacementData(startDate, testUnitData[0])
+
+        db.transaction { tx ->
+            // add a family care placement that should not show up
+            tx.insert(
+                DevPlacement(
+                    childId = testChildData[4].first.id,
+                    unitId = testUnitData[2],
+                    startDate = startDate,
+                    endDate = startDate.plusYears(5),
+                )
+            )
+        }
+
         val results =
             tampereRegionalSurvey.getTampereRegionalSurveyMonthlyStatistics(
                 dbInstance(),
@@ -147,12 +170,45 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
     }
 
     @Test
-    fun `Monthly family daycare report results are correct`() {
+    fun `Monthly municipal family daycare report results are correct`() {
         val testUnitData = initTestUnitData(startDate)
         val testChildren = initTestPlacementData(startDate, testUnitData[0])
 
-        // add family daycare placements for 2 children: 1 under and over 3
+        val testChildPauliina =
+            DevPerson(
+                firstName = "Pauliina",
+                lastName = "Palveluseteli",
+                ssn = null,
+                dateOfBirth = startDate.minusYears(3),
+            )
+
+        val voucherArea = DevCareArea(name = "Area Voucher", shortName = "Area Voucher")
+        val voucherFamilyUnit =
+            DevDaycare(
+                name = "Voucher family daycare",
+                openingDate = startDate.minusYears(1),
+                areaId = voucherArea.id,
+                type = setOf(CareType.FAMILY),
+                providerType = ProviderType.PRIVATE_SERVICE_VOUCHER,
+            )
+
         db.transaction { tx ->
+            // add a non-municipal placement that should not show up
+            tx.insert(voucherArea)
+            tx.insert(voucherFamilyUnit)
+
+            tx.insert(testChildPauliina, DevPersonType.CHILD)
+            tx.insert(
+                DevPlacement(
+                    startDate = startDate.plusMonths(2),
+                    endDate = startDate.plusMonths(4),
+                    unitId = voucherFamilyUnit.id,
+                    childId = testChildPauliina.id,
+                    type = PlacementType.DAYCARE,
+                )
+            )
+
+            // add family daycare placements for 2 children: 1 under and over 3
             tx.insert(
                 DevPlacement(
                     startDate = startDate.plusMonths(2),
@@ -308,7 +364,37 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
         )
 
         // add some non-compliant data that should not show up
+        val newArea = DevCareArea(name = "Testcarearea", shortName = "tca")
+        val voucherSchool =
+            DevDaycare(
+                name = "Palsekoulu",
+                type = setOf(CareType.PRESCHOOL),
+                providerType = ProviderType.PRIVATE_SERVICE_VOUCHER,
+                openingDate = startDate.minusYears(3),
+                areaId = newArea.id,
+            )
+
+        val testChildTyyrikki =
+            DevPerson(
+                firstName = "Tyyrikki",
+                lastName = "Täydentävässäoleva",
+                dateOfBirth = startDate.minusYears(2),
+            )
+
         db.transaction { tx ->
+            tx.insert(newArea)
+            tx.insert(voucherSchool)
+            tx.insert(testChildTyyrikki, DevPersonType.CHILD)
+            tx.insert(
+                DevPlacement(
+                    childId = testChildTyyrikki.id,
+                    unitId = voucherSchool.id,
+                    type = PlacementType.PRESCHOOL_DAYCARE,
+                    startDate = startDate,
+                    endDate = startDate.plusYears(2),
+                )
+            )
+
             val testChildCecilia =
                 DevPerson(
                     dateOfBirth = startDate.minusYears(2),
@@ -370,7 +456,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
     }
 
     @Test
-    fun `Purchased age distribution results are correct `() {
+    fun `Purchased age distribution results are correct`() {
         val testUnitData = initTestUnitData(startDate)
         initTestPlacementData(
             startDate,
@@ -379,7 +465,37 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
         )
 
         // add some non-compliant data that should not show up
+        val newArea = DevCareArea(name = "Testcarearea", shortName = "tca")
+        val purchasedSchool =
+            DevDaycare(
+                name = "Ostokoulu",
+                type = setOf(CareType.PRESCHOOL),
+                providerType = ProviderType.PURCHASED,
+                openingDate = startDate.minusYears(3),
+                areaId = newArea.id,
+            )
+
+        val testChildTyyrikki =
+            DevPerson(
+                firstName = "Tyyrikki",
+                lastName = "Täydentävässäoleva",
+                dateOfBirth = startDate.minusYears(2),
+            )
+
         db.transaction { tx ->
+            tx.insert(newArea)
+            tx.insert(purchasedSchool)
+            tx.insert(testChildTyyrikki, DevPersonType.CHILD)
+            tx.insert(
+                DevPlacement(
+                    childId = testChildTyyrikki.id,
+                    unitId = purchasedSchool.id,
+                    type = PlacementType.PRESCHOOL_DAYCARE,
+                    startDate = startDate,
+                    endDate = startDate.plusYears(2),
+                )
+            )
+
             val testChildCecilia =
                 DevPerson(
                     dateOfBirth = startDate.minusYears(2),
@@ -448,6 +564,28 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
             testUnitData[0],
             FiniteDateRange(startDate, startDate.plusYears(1)),
         )
+
+        val testChildRodrik =
+            DevPerson(
+                firstName = "Rodrik",
+                lastName = "Bokmal",
+                language = "no",
+                dateOfBirth = startDate.minusYears(2),
+                ssn = null,
+            )
+
+        db.transaction { tx ->
+            tx.insert(testChildRodrik, DevPersonType.CHILD)
+            tx.insert(
+                DevPlacement(
+                    childId = testChildRodrik.id,
+                    unitId = testUnitData[5],
+                    type = PlacementType.PRESCHOOL_DAYCARE,
+                    startDate = startDate,
+                    endDate = startDate.plusYears(3),
+                )
+            )
+        }
 
         val results =
             tampereRegionalSurvey.getTampereRegionalSurveyAgeStatistics(
@@ -566,8 +704,17 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                     language = "fi",
                 )
 
+            val testChildKerstin =
+                DevPerson(
+                    dateOfBirth = startDate.minusYears(4),
+                    firstName = "Kerstin",
+                    lastName = "Koulullatäydentävässä",
+                    language = "fi",
+                )
+
             tx.insert(testChildCecilia, DevPersonType.CHILD)
             tx.insert(testChildElmo, DevPersonType.CHILD)
+            tx.insert(testChildKerstin, DevPersonType.CHILD)
 
             val placementC =
                 DevPlacement(
@@ -587,8 +734,18 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                     endDate = startDate.plusYears(1),
                 )
 
+            val placementK =
+                DevPlacement(
+                    type = PlacementType.PRESCHOOL_DAYCARE,
+                    childId = testChildKerstin.id,
+                    unitId = testUnitData[5],
+                    startDate = startDate,
+                    endDate = startDate.plusYears(1),
+                )
+
             tx.insert(placementC)
             tx.insert(placementV)
+            tx.insert(placementK)
 
             val aapo = testPlacementData[0].first
             // add full day absence to see that it is not counted as a care day
@@ -659,6 +816,8 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
         // Cecil  (>3y) 23 + 21
         val expectedResults = Pair(74, 88)
 
+        // not included: Cecilia (placement type CLUB), Elmo (placement type PRESCHOOL), Kerstin
+        // (non-CENTRE unit)
         val assistanceResults =
             Pair(
                 results.ageStatistics.first().effectiveCareDaysUnder3Count,
@@ -733,6 +892,108 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
             Pair(
                 results.ageStatistics.first().effectiveFamilyDaycareDaysUnder3Count,
                 results.ageStatistics.first().effectiveFamilyDaycareDaysOver3Count,
+            )
+
+        assertEquals(expectedResults, careDayResults)
+    }
+
+    @Test
+    fun `Daycare care day counts work for shift care unit`() {
+        // test that non-shift care children count only for non-shift care days
+        val octFirst = LocalDate.of(2024, 10, 1)
+        initTestUnitData(octFirst)
+        val testArea = DevCareArea(name = "test", shortName = "test")
+        val shiftCareUnit =
+            DevDaycare(
+                name = "Shift care daycare",
+                areaId = testArea.id,
+                openingDate = octFirst.minusDays(7),
+                type = setOf(CareType.CENTRE, CareType.PRESCHOOL),
+                operationTimes =
+                    List(5) { TimeRange(LocalTime.of(8, 0), LocalTime.of(18, 0)) } +
+                        List(2) { null },
+                shiftCareOperationTimes =
+                    List(7) { TimeRange(LocalTime.of(8, 0), LocalTime.of(23, 0)) },
+                shiftCareOpenOnHolidays = true,
+                enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS),
+            )
+        val testChildPaavo = DevPerson(firstName = "Paavo", lastName = "Päivälapsi")
+        val testChildVeera = DevPerson(firstName = "Veera", lastName = "Vuorolapsi")
+        val testChildSiiri = DevPerson(firstName = "Siiri", lastName = "Satunnainen")
+
+        db.transaction { tx ->
+            tx.insert(admin)
+            tx.insert(fullTimeSno)
+            tx.insert(testArea)
+            tx.insert(shiftCareUnit)
+
+            tx.insert(testChildPaavo, DevPersonType.CHILD)
+            tx.insert(testChildVeera, DevPersonType.CHILD)
+            tx.insert(testChildSiiri, DevPersonType.CHILD)
+
+            val shiftCarePlacement =
+                DevPlacement(
+                    unitId = shiftCareUnit.id,
+                    childId = testChildVeera.id,
+                    startDate = LocalDate.of(2024, 1, 1),
+                    endDate = LocalDate.of(2024, 1, 31),
+                )
+
+            val daycarePlacement =
+                DevPlacement(
+                    unitId = shiftCareUnit.id,
+                    childId = testChildPaavo.id,
+                    startDate = LocalDate.of(2024, 1, 1),
+                    endDate = LocalDate.of(2024, 1, 31),
+                )
+
+            val shiftCareServiceNeed =
+                DevServiceNeed(
+                    shiftCare = ShiftCareType.FULL,
+                    placementId = shiftCarePlacement.id,
+                    startDate = shiftCarePlacement.startDate,
+                    endDate = shiftCarePlacement.endDate,
+                    optionId = fullTimeSno.id,
+                    confirmedBy = admin.evakaUserId,
+                )
+
+            tx.insert(daycarePlacement)
+            tx.insert(shiftCarePlacement)
+            tx.insert(shiftCareServiceNeed)
+            val siiriPlacementId =
+                tx.insert(
+                    shiftCarePlacement.copy(
+                        id = PlacementId(UUID.randomUUID()),
+                        childId = testChildSiiri.id,
+                    )
+                )
+            tx.insert(
+                shiftCareServiceNeed.copy(
+                    id = ServiceNeedId(UUID.randomUUID()),
+                    placementId = siiriPlacementId,
+                    shiftCare = ShiftCareType.INTERMITTENT,
+                )
+            )
+        }
+
+        val results =
+            tampereRegionalSurvey.getTampereRegionalSurveyAgeStatistics(
+                dbInstance(),
+                adminLoginUser,
+                mockClock,
+                year = startDate.year,
+            )
+
+        //                                       january 2024
+        // Paavo (NONE) (>3y): 22 business days + 0 weekend days + 0 holidays = 22
+        // Veera (FULL) (>3y): 22 business days + 8 weekend days + 1 holidays = 31
+        // Siiri (INT.) (>3y): 22 business days + 8 weekend days + 1 holidays = 31
+        val expectedResults = Pair(0, 84)
+
+        val careDayResults =
+            Pair(
+                results.ageStatistics.first().effectiveCareDaysUnder3Count,
+                results.ageStatistics.first().effectiveCareDaysOver3Count,
             )
 
         assertEquals(expectedResults, careDayResults)
@@ -935,6 +1196,36 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                 )
             )
 
+            // add action 40 case that should show up
+
+            val testChildTahto =
+                DevPerson(
+                    dateOfBirth = startDate.minusYears(2),
+                    firstName = "Tahto",
+                    lastName = "Tukitoimi",
+                    language = "fi",
+                )
+
+            tx.insert(testChildTahto, DevPersonType.CHILD)
+            tx.insert(
+                DevPlacement(
+                    childId = testChildTahto.id,
+                    type = PlacementType.DAYCARE,
+                    unitId = testUnitData[3],
+                    startDate = defaultPlacementDuration.start,
+                    endDate = defaultPlacementDuration.end,
+                )
+            )
+
+            tx.insert(
+                DevAssistanceAction(
+                    childId = testChildTahto.id,
+                    startDate = defaultPlacementDuration.start,
+                    endDate = defaultPlacementDuration.end,
+                    actions = setOf(actionOption40.value),
+                )
+            )
+
             // add a test child with an assistance factor that should not show up
             val testChildKaarina =
                 DevPerson(
@@ -975,17 +1266,21 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                 year = startDate.year,
             )
 
-        // Bertil (action 40) + Cecil (action 10) + Aapo (factor)
+        // shown: Tahto (action 40) + Cecil (action 10) + Aapo (factor)
+        // not shown: Bertil (placement type), Kaarina (daycare provider type)
         assertEquals(3, results.yearlyStatistics.first().voucherAssistanceCount)
     }
 
     @Test
     fun `Municipal assistance level counts are correct`() {
+
         val octFirst = LocalDate.of(2024, 10, 1)
         val testUnitData = initTestUnitData(octFirst)
         val defaultPlacementDuration =
             FiniteDateRange(octFirst, octFirst.plusMonths(3).minusDays(1))
 
+        // base data adds daycare assistance to Cecil with level GENERAL_SUPPORT that should NOT
+        // show up
         val childTestData =
             initTestPlacementData(
                 start = octFirst,
@@ -995,7 +1290,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
             )
 
         db.transaction { tx ->
-            // add daycare assistance periods that should show up for Aapo, Bertil and Ville
+            // add daycare assistance period that should show up for Aapo
             tx.insert(
                 DevDaycareAssistance(
                     childId = childTestData[0].first.id,
@@ -1008,6 +1303,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                 )
             )
 
+            // add assistance to Bertil that should NOT show up because of placement type
             tx.insert(
                 DevDaycareAssistance(
                     childId = childTestData[1].first.id,
@@ -1020,10 +1316,11 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                 )
             )
 
+            // add daycare assistance period that should show up for Ville
             tx.insert(
                 DevPlacement(
                     childId = childTestData[3].first.id,
-                    type = PlacementType.PRESCHOOL_DAYCARE_ONLY,
+                    type = PlacementType.DAYCARE,
                     unitId = testUnitData[0],
                     startDate = defaultPlacementDuration.start,
                     endDate = defaultPlacementDuration.end,
@@ -1041,7 +1338,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                 )
             )
 
-            // add a daycare assistance period that should not show up for family care Fabio
+            // add a daycare assistance period that should NOT show up for Fabio (family care)
             tx.insert(
                 DevPlacement(
                     childId = childTestData[4].first.id,
@@ -1063,19 +1360,19 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                 )
             )
 
-            // add a voucher daycare assistance period that should not show up
-            val testChildKaarina =
+            // add a voucher daycare assistance period that should NOT show up
+            val testChildPirjo =
                 DevPerson(
                     dateOfBirth = startDate.minusYears(2),
-                    firstName = "Kaarina",
-                    lastName = "Kunnallinen",
+                    firstName = "Pirjo",
+                    lastName = "Palse",
                     language = "fi",
                 )
 
-            tx.insert(testChildKaarina, DevPersonType.CHILD)
+            tx.insert(testChildPirjo, DevPersonType.CHILD)
             tx.insert(
                 DevPlacement(
-                    childId = testChildKaarina.id,
+                    childId = testChildPirjo.id,
                     type = PlacementType.DAYCARE,
                     unitId = testUnitData[3],
                     startDate = defaultPlacementDuration.start,
@@ -1084,13 +1381,44 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
             )
             tx.insert(
                 DevDaycareAssistance(
-                    childId = testChildKaarina.id,
+                    childId = testChildPirjo.id,
                     validDuring =
                         FiniteDateRange(
                             defaultPlacementDuration.start,
                             defaultPlacementDuration.end,
                         ),
                     level = DaycareAssistanceLevel.SPECIAL_SUPPORT,
+                )
+            )
+
+            // add INTENSIFIED SUPPORT for DAYCARE placement that should show up
+            val testChildTerho =
+                DevPerson(
+                    dateOfBirth = startDate.minusYears(2),
+                    firstName = "Terho",
+                    lastName = "Tehostettu",
+                    language = "fi",
+                )
+
+            tx.insert(testChildTerho, DevPersonType.CHILD)
+            tx.insert(
+                DevPlacement(
+                    childId = testChildTerho.id,
+                    type = PlacementType.DAYCARE,
+                    unitId = testUnitData[0],
+                    startDate = defaultPlacementDuration.start,
+                    endDate = defaultPlacementDuration.end,
+                )
+            )
+            tx.insert(
+                DevDaycareAssistance(
+                    childId = testChildTerho.id,
+                    validDuring =
+                        FiniteDateRange(
+                            defaultPlacementDuration.start,
+                            defaultPlacementDuration.end,
+                        ),
+                    level = DaycareAssistanceLevel.INTENSIFIED_SUPPORT,
                 )
             )
         }
@@ -1103,7 +1431,9 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                 year = startDate.year,
             )
 
-        // Aapo (GENERAL), Bertil (INTENSIFIED), Ville (SPECIAL)
+        // shown: Aapo (GENERAL_WITH_DECISION), Terho (INTENSIFIED), Ville (SPECIAL)
+        // not shown: Bertil (wrong placement type), Cecil (wrong level), Fabio (wrong unit type),
+        // Pirjo (wrong provider type)
         assertEquals(1, results.yearlyStatistics.first().municipalGeneralAssistanceCount)
         assertEquals(1, results.yearlyStatistics.first().municipalSpecialAssistanceCount)
         assertEquals(1, results.yearlyStatistics.first().municipalEnhancedAssistanceCount)
@@ -1125,7 +1455,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
             )
 
         db.transaction { tx ->
-            // add daycare assistance periods that should show up for Aapo, Bertil and Ville
+            // add daycare assistance periods that should show up for Aapo, Terho and Ville
             tx.insert(
                 DevDaycareAssistance(
                     childId = childTestData[0].first.id,
@@ -1153,7 +1483,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
             tx.insert(
                 DevPlacement(
                     childId = childTestData[3].first.id,
-                    type = PlacementType.PRESCHOOL_DAYCARE_ONLY,
+                    type = PlacementType.DAYCARE,
                     unitId = testUnitData[3],
                     startDate = defaultPlacementDuration.start,
                     endDate = defaultPlacementDuration.end,
@@ -1168,6 +1498,37 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                             defaultPlacementDuration.end,
                         ),
                     level = DaycareAssistanceLevel.SPECIAL_SUPPORT,
+                )
+            )
+
+            // add INTENSIFIED SUPPORT for DAYCARE placement that should show up
+            val testChildTerho =
+                DevPerson(
+                    dateOfBirth = startDate.minusYears(2),
+                    firstName = "Terho",
+                    lastName = "Tehostettu",
+                    language = "fi",
+                )
+
+            tx.insert(testChildTerho, DevPersonType.CHILD)
+            tx.insert(
+                DevPlacement(
+                    childId = testChildTerho.id,
+                    type = PlacementType.DAYCARE,
+                    unitId = testUnitData[3],
+                    startDate = defaultPlacementDuration.start,
+                    endDate = defaultPlacementDuration.end,
+                )
+            )
+            tx.insert(
+                DevDaycareAssistance(
+                    childId = testChildTerho.id,
+                    validDuring =
+                        FiniteDateRange(
+                            defaultPlacementDuration.start,
+                            defaultPlacementDuration.end,
+                        ),
+                    level = DaycareAssistanceLevel.INTENSIFIED_SUPPORT,
                 )
             )
 
@@ -1233,7 +1594,9 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                 year = startDate.year,
             )
 
-        // Aapo (GENERAL), Bertil (INTENSIFIED), Ville (SPECIAL)
+        // shown: Aapo (GENERAL), Terho (INTENSIFIED), Ville (SPECIAL)
+        // not shown: Bertil (wrong placement type), Cecil (wrong level), Fabio (wrong unit type),
+        // Kaarina (wrong provider type)
         assertEquals(1, results.yearlyStatistics.first().voucherGeneralAssistanceCount)
         assertEquals(1, results.yearlyStatistics.first().voucherSpecialAssistanceCount)
         assertEquals(1, results.yearlyStatistics.first().voucherEnhancedAssistanceCount)
@@ -1604,14 +1967,6 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                 id = AssistanceActionOptionId(UUID.randomUUID()),
             )
 
-        val actionOption40 =
-            DevAssistanceActionOption(
-                value = "40",
-                nameFi = "Henkilökuntalisäys tai -muutos",
-                descriptionFi = "Henkilökuntalisäys tai -muutos",
-                id = AssistanceActionOptionId(UUID.randomUUID()),
-            )
-
         val partTimeSno =
             ServiceNeedOption(
                 id = ServiceNeedOptionId(UUID.randomUUID()),
@@ -1724,7 +2079,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
             tx.insert(testChildFabio, DevPersonType.CHILD)
 
             // Aapo:   2v, no sn, DAYCARE placement, 09-15 -> 11-15
-            // Bertil: 4v, 2x part time sn, DAYCARE placement, 09-15 -> 11-15
+            // Bertil: 4v, 2x part time sn, PRESCHOOL_DAYCARE_ONLY placement, 09-15 -> 11-15
             // Cecil:  4v, no sn, 2x DAYCARE placement, 09-15 -> 11-15
 
             val placementA =
@@ -1829,6 +2184,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                             defaultPlacementDuration.start,
                             defaultPlacementDuration.end,
                         ),
+                    level = DaycareAssistanceLevel.GENERAL_SUPPORT,
                 )
             )
 
