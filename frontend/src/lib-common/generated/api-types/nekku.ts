@@ -16,8 +16,8 @@ export interface NekkuMealType {
 * Generated from fi.espoo.evaka.nekku.NekkuProductMealType
 */
 export const nekku_product_meal_type = [
-  'VEGAN',
-  'VEGETABLE'
+  'vegaani',
+  'kasvis'
 ] as const
 
 export type NekkuProductMealType = typeof nekku_product_meal_type[number]
