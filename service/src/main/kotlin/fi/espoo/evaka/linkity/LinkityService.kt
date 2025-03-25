@@ -130,15 +130,15 @@ fun sendStaffAttendancesToLinkity(
                 it.employeeId
             }
     }
-    val workLogs = roundAttendancesToPlans(attendances, plans)
-    client.postWorkLogs(workLogs)
-    logger.debug { "Posted ${workLogs.size} work logs to Linkity" }
+    val stampings = roundAttendancesToPlans(attendances, plans)
+    client.postStampings(stampings)
+    logger.debug { "Posted ${stampings.size} stampings to Linkity" }
 }
 
 private fun roundAttendancesToPlans(
     attendances: Map<EmployeeId, List<ExportableAttendance>>,
     plans: Map<EmployeeId, List<StaffAttendancePlan>>,
-): List<WorkLog> {
+): List<Stamping> {
     return attendances.flatMap { (employeeId, attendances) ->
         val plannedTimes =
             plans[employeeId]?.flatMap { listOf(it.startTime, it.endTime) }?.toSet() ?: emptySet()
@@ -153,7 +153,7 @@ private fun roundAttendancesToPlans(
                 plannedTimes.find { it.durationSince(attendance.departed).abs() <= MAX_DRIFT }
                     ?: attendance.departed
 
-            WorkLog(
+            Stamping(
                 sarastiaId = attendance.sarastiaId,
                 startTime = roundedArrivalTime,
                 endTime = roundedDepartureTime,
@@ -161,9 +161,9 @@ private fun roundAttendancesToPlans(
                     when (attendance.type) {
                         StaffAttendanceType.PRESENT,
                         StaffAttendanceType.OVERTIME,
-                        StaffAttendanceType.JUSTIFIED_CHANGE -> WorkLogType.PRESENT
-                        StaffAttendanceType.TRAINING -> WorkLogType.TRAINING
-                        StaffAttendanceType.OTHER_WORK -> WorkLogType.OTHER_WORK
+                        StaffAttendanceType.JUSTIFIED_CHANGE -> StampingType.PRESENT
+                        StaffAttendanceType.TRAINING -> StampingType.TRAINING
+                        StaffAttendanceType.OTHER_WORK -> StampingType.OTHER_WORK
                     },
             )
         }
