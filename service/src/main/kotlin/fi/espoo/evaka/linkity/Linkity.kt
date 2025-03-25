@@ -32,3 +32,9 @@ data class Stamping(
     val endTime: HelsinkiDateTime,
     val type: StampingType,
 )
+
+data class StampingBatch(
+    val rangeStartTime: HelsinkiDateTime,
+    val rangeEndTime: HelsinkiDateTime,
+    val stampings: List<Stamping>,
+)

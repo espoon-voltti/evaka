@@ -338,43 +338,57 @@ internal class LinkityServiceTest : FullApplicationTest(resetDbBeforeEach = true
         sendStaffAttendancesToLinkity(period, db, client)
 
         val expected =
-            setOf(
-                // 1st attendance is not included because it started before the period
-                // 2nd attendance start is not rounded to any plan because diff > 5 min, but end is
-                // rounded
-                Stamping(
-                    employeeNumber,
-                    now.minusDays(1).minusHours(3).plusMinutes(6),
-                    now.minusDays(1),
-                    StampingType.PRESENT,
-                ),
-                // 3rd attendance start and end are rounded to times from different plans
-                Stamping(
-                    employeeNumber,
-                    now.minusDays(1),
-                    now.minusDays(1).plusHours(3),
-                    StampingType.PRESENT,
-                ),
-                // 4th attendance is rounded to the matching plan
-                Stamping(
-                    employeeNumber,
-                    now.minusDays(1).plusHours(3),
-                    now.minusDays(1).plusHours(5),
-                    StampingType.OTHER_WORK,
-                ),
-                // 5th attendance start is not rounded because no matching plan, but end is rounded
-                Stamping(
-                    employeeNumber,
-                    now.minusHours(2).minusMinutes(3),
-                    now.minusHours(1),
-                    StampingType.TRAINING,
-                ),
-                // 6th attendance is not included because it has not ended yet
-                // 7th attendance is not included because the employee has no employee number
-                // 8th attendance is not included because the employee is not in an enabled daycare
+            StampingBatch(
+                now.minusDays(1).atStartOfDay(),
+                now.plusDays(1).atStartOfDay(),
+                listOf(
+                        // 1st attendance is not included because it started before the period
+                        // 2nd attendance start is not rounded to any plan because diff > 5 min, but
+                        // end is rounded
+                        Stamping(
+                            employeeNumber,
+                            now.minusDays(1).minusHours(3).plusMinutes(6),
+                            now.minusDays(1),
+                            StampingType.PRESENT,
+                        ),
+                        // 3rd attendance start and end are rounded to times from different plans
+                        Stamping(
+                            employeeNumber,
+                            now.minusDays(1),
+                            now.minusDays(1).plusHours(3),
+                            StampingType.PRESENT,
+                        ),
+                        // 4th attendance is rounded to the matching plan
+                        Stamping(
+                            employeeNumber,
+                            now.minusDays(1).plusHours(3),
+                            now.minusDays(1).plusHours(5),
+                            StampingType.OTHER_WORK,
+                        ),
+                        // 5th attendance start is not rounded because no matching plan, but end is
+                        // rounded
+                        Stamping(
+                            employeeNumber,
+                            now.minusHours(2).minusMinutes(3),
+                            now.minusHours(1),
+                            StampingType.TRAINING,
+                        ),
+                        // 6th attendance is not included because it has not ended yet
+                        // 7th attendance is not included because the employee has no employee
+                        // number
+                        // 8th attendance is not included because the employee is not in an enabled
+                        // daycare
+                    )
+                    .sortedBy { it.startTime },
             )
 
-        assertEquals(expected, client.getPreviouslyPostedStampingss().toSet())
+        // The stampings are sorted by start time for easier comparison
+        assertEquals(
+            expected,
+            client.getPreviouslyPostedStampings()?.let { batch ->
+                batch.copy(stampings = batch.stampings.sortedBy { it.startTime })
+            },
+        )
     }
 
     @Test
