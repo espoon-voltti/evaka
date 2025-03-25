@@ -99,8 +99,6 @@ import { PreschoolAssistanceLevel } from 'lib-common/generated/api-types/assista
 import { PreschoolTermId } from 'lib-common/generated/api-types/shared'
 import { ProviderType } from 'lib-common/generated/api-types/daycare'
 import { PushNotificationCategory } from 'lib-common/generated/api-types/webpush'
-import { ServiceApplicationDecisionStatus } from 'lib-common/generated/api-types/serviceneed'
-import { ServiceApplicationId } from 'lib-common/generated/api-types/shared'
 import { ServiceNeedId } from 'lib-common/generated/api-types/shared'
 import { ServiceNeedOptionId } from 'lib-common/generated/api-types/shared'
 import { ServiceOptions } from 'lib-common/generated/api-types/assistanceneed'
@@ -144,16 +142,6 @@ export interface Caretaker {
   endDate: LocalDate | null
   groupId: GroupId
   startDate: LocalDate
-}
-
-/**
-* Generated from fi.espoo.evaka.shared.dev.Citizen
-*/
-export interface Citizen {
-  dependantCount: number
-  firstName: string
-  lastName: string
-  ssn: string
 }
 
 /**
@@ -913,23 +901,6 @@ export interface DevPreschoolTerm {
 }
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevServiceApplication
-*/
-export interface DevServiceApplication {
-  additionalInfo: string
-  childId: PersonId
-  decidedAt: HelsinkiDateTime | null
-  decidedBy: EmployeeId | null
-  decisionStatus: ServiceApplicationDecisionStatus | null
-  id: ServiceApplicationId
-  personId: PersonId
-  rejectedReason: string | null
-  sentAt: HelsinkiDateTime
-  serviceNeedOptionId: ServiceNeedOptionId
-  startDate: LocalDate
-}
-
-/**
 * Generated from fi.espoo.evaka.shared.dev.DevServiceNeed
 */
 export interface DevServiceNeed {
@@ -1009,29 +980,6 @@ export interface EmailContent {
   subject: string
   text: string
 }
-
-/**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.EmailMessageFilter
-*/
-export type EmailMessageFilter =
-  | 'pendingDecisionNotification'
-  | 'clubApplicationReceived'
-  | 'daycareApplicationReceived'
-  | 'preschoolApplicationReceived'
-  | 'assistanceNeedDecisionNotification'
-  | 'assistanceNeedPreschoolDecisionNotification'
-  | 'missingReservationsNotification'
-  | 'messageNotification'
-  | 'pedagogicalDocumentNotification'
-  | 'outdatedIncomeNotification'
-  | 'calendarEventNotification'
-  | 'financeDecisionNotification'
-  | 'discussionTimeReservation'
-  | 'discussionTimeCancellation'
-  | 'discussionSurveyCreation'
-  | 'discussionTimeReservationReminder'
-  | 'serviceApplicationAcceptedNotification'
-  | 'serviceApplicationRejectedNotification'
 
 /**
 * Generated from fi.espoo.evaka.shared.dev.MockDigitransit.Feature
@@ -1198,15 +1146,6 @@ export interface VoucherValueDecision {
 export interface VoucherValueDecisionPlacement {
   type: PlacementType
   unitId: DaycareId
-}
-
-/**
-* Generated from fi.espoo.evaka.shared.dev.VtjPersonSummary
-*/
-export interface VtjPersonSummary {
-  firstName: string
-  lastName: string
-  ssn: string
 }
 
 
@@ -1596,16 +1535,6 @@ export function deserializeJsonDevPreschoolTerm(json: JsonOf<DevPreschoolTerm>):
     finnishPreschool: FiniteDateRange.parseJson(json.finnishPreschool),
     swedishPreschool: FiniteDateRange.parseJson(json.swedishPreschool),
     termBreaks: json.termBreaks.map((x) => FiniteDateRange.parseJson(x))
-  }
-}
-
-
-export function deserializeJsonDevServiceApplication(json: JsonOf<DevServiceApplication>): DevServiceApplication {
-  return {
-    ...json,
-    decidedAt: (json.decidedAt != null) ? HelsinkiDateTime.parseIso(json.decidedAt) : null,
-    sentAt: HelsinkiDateTime.parseIso(json.sentAt),
-    startDate: LocalDate.parseIso(json.startDate)
   }
 }
 

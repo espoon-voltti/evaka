@@ -6,6 +6,7 @@ package fi.espoo.evaka.shared.dev
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import fi.espoo.evaka.EvakaEnv
+import fi.espoo.evaka.ExcludeCodeGen
 import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.absence.getAbsencesOfChildByDate
@@ -110,12 +111,9 @@ import fi.espoo.evaka.pairing.respondPairingChallengeCreateDevice
 import fi.espoo.evaka.pis.EmailMessageType
 import fi.espoo.evaka.pis.Employee
 import fi.espoo.evaka.pis.controllers.PersonalDataControllerCitizen
-import fi.espoo.evaka.pis.createPersonFromVtj
 import fi.espoo.evaka.pis.getEmployees
-import fi.espoo.evaka.pis.getPersonBySSN
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.pis.service.PersonService
-import fi.espoo.evaka.pis.updatePersonFromVtj
 import fi.espoo.evaka.placement.PlacementPlanService
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.process.DocumentConfidentiality
@@ -190,7 +188,6 @@ import fi.espoo.evaka.shared.auth.*
 import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.psqlCause
-import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Coordinate
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
@@ -271,6 +268,7 @@ class DevApi(
         }
     }
 
+    @ExcludeCodeGen
     @GetMapping("/")
     fun healthCheck() {
         // HTTP 200
@@ -637,23 +635,6 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
         }
     }
 
-    @PostMapping("/person")
-    fun upsertPerson(db: Database, @RequestBody body: DevPerson): PersonId {
-        if (body.ssn == null) throw BadRequest("SSN is required for using this endpoint")
-        return db.connect { dbc ->
-            dbc.transaction { tx ->
-                val person = tx.getPersonBySSN(body.ssn)
-                val personDTO = body.toPersonDTO()
-
-                if (person != null) {
-                    tx.updatePersonFromVtj(personDTO).id
-                } else {
-                    createPersonFromVtj(tx, personDTO).id
-                }
-            }
-        }
-    }
-
     @PostMapping("/person/create")
     fun createPerson(
         db: Database,
@@ -668,6 +649,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
         db.connect { dbc -> dbc.transaction { tx -> parentships.forEach { tx.insert(it) } } }
     }
 
+    @ExcludeCodeGen // used from api-gw
     @GetMapping("/employee")
     fun getEmployees(db: Database): List<Employee> {
         return db.connect { dbc -> dbc.read { it.getEmployees() } }
@@ -678,16 +660,14 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
         return db.connect { dbc -> dbc.transaction { it.insert(body) } }
     }
 
-    @GetMapping("/citizen/ssn/{ssn}")
-    fun getCitizen(@PathVariable ssn: String): Citizen =
-        Citizen.from(MockPersonDetailsService.getPerson(ssn) ?: throw NotFound())
-
+    @ExcludeCodeGen // used from api-gw
     @GetMapping("/citizen")
     fun getCitizens(): List<Citizen> =
         MockPersonDetailsService.getAllPersons()
             .filter { it.guardians.isEmpty() }
             .map(Citizen::from)
 
+    @ExcludeCodeGen // used from api-gw
     @GetMapping("/vtj-person")
     fun getVtjPersons(): List<VtjPersonSummary> =
         MockPersonDetailsService.getAllPersons()
@@ -1090,6 +1070,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
         }
     }
 
+    @ExcludeCodeGen // used from api-gw
     @GetMapping("/digitransit/autocomplete")
     fun digitransitAutocomplete() = digitransit.autocomplete()
 
@@ -1217,16 +1198,6 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
     @PostMapping("/service-need")
     fun createServiceNeeds(db: Database, @RequestBody serviceNeeds: List<DevServiceNeed>) {
         db.connect { dbc -> dbc.transaction { tx -> serviceNeeds.forEach { tx.insert(it) } } }
-    }
-
-    @PostMapping("/service-applications")
-    fun createServiceApplications(
-        db: Database,
-        @RequestBody serviceApplications: List<DevServiceApplication>,
-    ) {
-        db.connect { dbc ->
-            dbc.transaction { tx -> serviceApplications.forEach { tx.insert(it) } }
-        }
     }
 
     @PostMapping("/service-need-option")
@@ -1457,6 +1428,7 @@ VALUES (${bind(body.id)}, ${bind(body.guardianId)})
         serviceApplicationRejectedNotification,
     }
 
+    @ExcludeCodeGen // used manually
     @GetMapping("/email-content", produces = [MediaType.TEXT_HTML_VALUE])
     fun getEmails(
         @RequestParam message: EmailMessageFilter = EmailMessageFilter.pendingDecisionNotification,

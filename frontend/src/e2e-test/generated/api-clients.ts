@@ -21,7 +21,6 @@ import { ChildDailyNoteId } from 'lib-common/generated/api-types/shared'
 import { ChildDocumentId } from 'lib-common/generated/api-types/shared'
 import { ChildStickyNoteBody } from 'lib-common/generated/api-types/note'
 import { ChildStickyNoteId } from 'lib-common/generated/api-types/shared'
-import { Citizen } from './api-types'
 import { DailyReservationRequest } from 'lib-common/generated/api-types/reservations'
 import { DailyServiceTimeId } from 'lib-common/generated/api-types/shared'
 import { DaycareAclInsert } from './api-types'
@@ -80,7 +79,6 @@ import { DevPersonalMobileDevice } from './api-types'
 import { DevPlacement } from './api-types'
 import { DevPreschoolAssistance } from './api-types'
 import { DevPreschoolTerm } from './api-types'
-import { DevServiceApplication } from './api-types'
 import { DevServiceNeed } from './api-types'
 import { DevStaffAttendance } from './api-types'
 import { DevStaffAttendancePlan } from './api-types'
@@ -88,8 +86,6 @@ import { DevTerminatePlacementRequest } from './api-types'
 import { DevUpsertStaffOccupancyCoefficient } from './api-types'
 import { DocumentTemplateId } from 'lib-common/generated/api-types/shared'
 import { Email } from './api-types'
-import { EmailMessageFilter } from './api-types'
-import { Employee } from 'lib-common/generated/api-types/pis'
 import { EmployeeId } from 'lib-common/generated/api-types/shared'
 import { FeeDecision } from 'lib-common/generated/api-types/invoicing'
 import { FeeThresholds } from 'lib-common/generated/api-types/invoicing'
@@ -125,15 +121,12 @@ import { StaffAttendanceRealtimeId } from 'lib-common/generated/api-types/shared
 import { StaffMemberAttendance } from 'lib-common/generated/api-types/attendance'
 import { UpdateIncomeStatementHandledBody } from './api-types'
 import { UpdateWeakLoginCredentialsRequest } from 'lib-common/generated/api-types/pis'
-import { Uri } from 'lib-common/uri'
 import { VoucherValueDecision } from './api-types'
-import { VtjPersonSummary } from './api-types'
 import { createFormData } from 'lib-common/api'
 import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonAbsence } from 'lib-common/generated/api-types/absence'
 import { deserializeJsonApplicationDetails } from 'lib-common/generated/api-types/application'
 import { deserializeJsonDecision } from 'lib-common/generated/api-types/decision'
-import { deserializeJsonEmployee } from 'lib-common/generated/api-types/pis'
 import { deserializeJsonPairing } from 'lib-common/generated/api-types/pairing'
 import { deserializeJsonStaffMemberAttendance } from 'lib-common/generated/api-types/attendance'
 import { devClient } from '../dev-api'
@@ -1447,27 +1440,6 @@ export async function createPreschoolTerm(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.createServiceApplications
-*/
-export async function createServiceApplications(
-  request: {
-    body: DevServiceApplication[]
-  }
-): Promise<void> {
-  try {
-    const { data: json } = await devClient.request<JsonOf<void>>({
-      url: uri`/service-applications`.toString(),
-      method: 'POST',
-      data: request.body satisfies JsonCompatible<DevServiceApplication[]>
-    })
-    return json
-  } catch (e) {
-    throw new DevApiError(e)
-  }
-}
-
-
-/**
 * Generated from fi.espoo.evaka.shared.dev.DevApi.createServiceNeedOption
 */
 export async function createServiceNeedOption(
@@ -1587,22 +1559,6 @@ export async function deletePlacement(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.digitransitAutocomplete
-*/
-export async function digitransitAutocomplete(): Promise<Autocomplete> {
-  try {
-    const { data: json } = await devClient.request<JsonOf<Autocomplete>>({
-      url: uri`/digitransit/autocomplete`.toString(),
-      method: 'GET'
-    })
-    return json
-  } catch (e) {
-    throw new DevApiError(e)
-  }
-}
-
-
-/**
 * Generated from fi.espoo.evaka.shared.dev.DevApi.forceFullVtjRefresh
 */
 export async function forceFullVtjRefresh(
@@ -1708,77 +1664,6 @@ export async function getApplicationDecisions(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.getCitizen
-*/
-export async function getCitizen(
-  request: {
-    ssn: string
-  }
-): Promise<Citizen> {
-  try {
-    const { data: json } = await devClient.request<JsonOf<Citizen>>({
-      url: uri`/citizen/ssn/${request.ssn}`.toString(),
-      method: 'GET'
-    })
-    return json
-  } catch (e) {
-    throw new DevApiError(e)
-  }
-}
-
-
-/**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.getCitizens
-*/
-export async function getCitizens(): Promise<Citizen[]> {
-  try {
-    const { data: json } = await devClient.request<JsonOf<Citizen[]>>({
-      url: uri`/citizen`.toString(),
-      method: 'GET'
-    })
-    return json
-  } catch (e) {
-    throw new DevApiError(e)
-  }
-}
-
-
-/**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.getEmails
-*/
-export function getEmails(
-  request: {
-    message?: EmailMessageFilter | null,
-    format?: string | null
-  }
-): { url: Uri } {
-  const params = createUrlSearchParams(
-    ['message', request.message?.toString()],
-    ['format', request.format?.toString()]
-  )
-  return {
-    url: uri`/email-content`.withBaseUrl(devClient.defaults.baseURL ?? '').appendQuery(params)
-  }
-}
-
-
-/**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.getEmployees
-*/
-export async function getEmployees(): Promise<Employee[]> {
-  try {
-    const { data: json } = await devClient.request<JsonOf<Employee[]>>({
-      url: uri`/employee`.toString(),
-      method: 'GET'
-    })
-    return json.map(e => deserializeJsonEmployee(e))
-  } catch (e) {
-    throw new DevApiError(e)
-  }
-}
-
-
-/**
 * Generated from fi.espoo.evaka.shared.dev.DevApi.getMessages
 */
 export async function getMessages(): Promise<SfiMessage[]> {
@@ -1820,38 +1705,6 @@ export async function getStaffAttendances(): Promise<StaffMemberAttendance[]> {
       method: 'GET'
     })
     return json.map(e => deserializeJsonStaffMemberAttendance(e))
-  } catch (e) {
-    throw new DevApiError(e)
-  }
-}
-
-
-/**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.getVtjPersons
-*/
-export async function getVtjPersons(): Promise<VtjPersonSummary[]> {
-  try {
-    const { data: json } = await devClient.request<JsonOf<VtjPersonSummary[]>>({
-      url: uri`/vtj-person`.toString(),
-      method: 'GET'
-    })
-    return json
-  } catch (e) {
-    throw new DevApiError(e)
-  }
-}
-
-
-/**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.healthCheck
-*/
-export async function healthCheck(): Promise<void> {
-  try {
-    const { data: json } = await devClient.request<JsonOf<void>>({
-      url: uri`/`.toString(),
-      method: 'GET'
-    })
-    return json
   } catch (e) {
     throw new DevApiError(e)
   }
@@ -2376,27 +2229,6 @@ export async function upsertPasswordBlacklist(
       method: 'PUT',
       headers: { EvakaMockedTime: options?.mockedTime?.formatIso() },
       data: request.body satisfies JsonCompatible<string[]>
-    })
-    return json
-  } catch (e) {
-    throw new DevApiError(e)
-  }
-}
-
-
-/**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.upsertPerson
-*/
-export async function upsertPerson(
-  request: {
-    body: DevPerson
-  }
-): Promise<PersonId> {
-  try {
-    const { data: json } = await devClient.request<JsonOf<PersonId>>({
-      url: uri`/person`.toString(),
-      method: 'POST',
-      data: request.body satisfies JsonCompatible<DevPerson>
     })
     return json
   } catch (e) {
