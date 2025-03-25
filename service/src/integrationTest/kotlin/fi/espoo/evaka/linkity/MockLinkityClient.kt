@@ -7,7 +7,7 @@ package fi.espoo.evaka.linkity
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 
 class MockLinkityClient(private val shifts: List<Shift> = emptyList()) : LinkityClient {
-    private val workLogs: MutableList<WorkLog> = mutableListOf()
+    private val stampings: MutableList<Stamping> = mutableListOf()
 
     override fun getShifts(period: FiniteDateRange): List<Shift> {
         return shifts.filter {
@@ -16,12 +16,12 @@ class MockLinkityClient(private val shifts: List<Shift> = emptyList()) : Linkity
         }
     }
 
-    override fun postWorkLogs(workLogs: Collection<WorkLog>) {
-        this.workLogs.clear()
-        this.workLogs.addAll(workLogs)
+    override fun postStampings(stampings: Collection<Stamping>) {
+        this.stampings.clear()
+        this.stampings.addAll(stampings)
     }
 
-    fun getPreviouslyPostedWorkLogs(): List<WorkLog> {
-        return workLogs.toList()
+    fun getPreviouslyPostedStampingss(): List<Stamping> {
+        return stampings.toList()
     }
 }

@@ -130,9 +130,9 @@ fun sendStaffAttendancesToLinkity(
                 it.employeeId
             }
     }
-    val workLogs = roundAttendancesToPlans(attendances, plans)
-    client.postWorkLogs(workLogs)
-    logger.debug { "Posted ${workLogs.size} work logs to Linkity" }
+    val stampings = roundAttendancesToPlans(attendances, plans)
+    client.postStampings(stampings)
+    logger.debug { "Posted ${stampings.size} work logs to Linkity" }
 }
 
 private fun roundAttendancesToPlans(

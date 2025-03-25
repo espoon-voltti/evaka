@@ -11,7 +11,7 @@ enum class ShiftType {
     TRAINING,
 }
 
-enum class WorkLogType {
+enum class StampingType {
     PRESENT,
     TRAINING,
     OTHER_WORK,
@@ -26,9 +26,9 @@ data class Shift(
     val notes: String? = null,
 )
 
-data class WorkLog(
+data class Stamping(
     val sarastiaId: String,
     val startTime: HelsinkiDateTime,
     val endTime: HelsinkiDateTime,
-    val type: WorkLogType,
+    val type: StampingType,
 )
