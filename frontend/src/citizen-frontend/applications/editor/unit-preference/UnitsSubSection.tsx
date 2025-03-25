@@ -5,6 +5,7 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
 
+import { PreferredUnit } from 'lib-common/generated/api-types/application'
 import { PublicUnit } from 'lib-common/generated/api-types/daycare'
 import { SelectionChip } from 'lib-components/atoms/Chip'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
@@ -127,7 +128,10 @@ export default React.memo(function UnitsSubSection({
                   if (selected.length <= maxUnits) {
                     updateFormData((prev) => ({
                       ...prev,
-                      preferredUnits: selected
+                      preferredUnits: updatePreferredUnits(
+                        prev.preferredUnits,
+                        selected
+                      )
                     }))
                   }
                 }}
@@ -241,6 +245,25 @@ export default React.memo(function UnitsSubSection({
     </>
   )
 })
+
+function updatePreferredUnits(
+  prev: PreferredUnit[],
+  next: PreferredUnit[]
+): PreferredUnit[] {
+  // <MultiSelect> doesn't preserve the order in which items are selected, so this function tries to do it manually.
+  // In practice, the items should be added/removed one at a time, but there's limited support here to handle
+  // additions/removals of multiple items at once.
+
+  if (next.length > prev.length) {
+    const added = next.filter(
+      (u) => prev.find((u2) => u2.id === u.id) === undefined
+    )
+    return [...prev, ...added]
+  } else if (next.length < prev.length) {
+    return prev.filter((u) => next.find((u2) => u2.id === u.id) !== undefined)
+  }
+  return prev
+}
 
 const FixedWidthDiv = styled.div`
   width: 100%;
