@@ -20,7 +20,6 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.xml.bind.JAXBContext
-import jakarta.xml.bind.Marshaller
 import java.io.StringWriter
 import java.nio.file.Paths
 import java.time.ZoneId
@@ -37,11 +36,11 @@ private fun HelsinkiDateTime.asXMLGregorianCalendar(): XMLGregorianCalendar {
             zdt.year,
             zdt.monthValue,
             zdt.dayOfMonth,
-            zdt.hour,
-            zdt.minute,
-            zdt.second,
-            zdt.nano / 1000000,
-            zdt.offset.totalSeconds / 60,
+            javax.xml.datatype.DatatypeConstants.FIELD_UNDEFINED,
+            javax.xml.datatype.DatatypeConstants.FIELD_UNDEFINED,
+            javax.xml.datatype.DatatypeConstants.FIELD_UNDEFINED,
+            javax.xml.datatype.DatatypeConstants.FIELD_UNDEFINED,
+            javax.xml.datatype.DatatypeConstants.FIELD_UNDEFINED,
         )
 }
 
@@ -63,11 +62,289 @@ class ArchiveChildDocumentService(
             val context = JAXBContext.newInstance(RecordMetadataInstance::class.java)
             val marshaller =
                 context.createMarshaller().apply {
-                    setProperty(Marshaller.JAXB_FRAGMENT, true) // Remove XML declaration
+                    // Use namespaces in a similar way as our example xml files. TODO check if this
+                    // is actually needed
+                    setProperty(
+                        "org.glassfish.jaxb.namespacePrefixMapper",
+                        object : org.glassfish.jaxb.runtime.marshaller.NamespacePrefixMapper() {
+                            override fun getPreferredPrefix(
+                                namespaceUri: String,
+                                suggestion: String?,
+                                requirePrefix: Boolean,
+                            ): String {
+                                return when (namespaceUri) {
+                                    "http://www.avaintec.com/2005/x-archive/record-metadata-instance/2.0" ->
+                                        "ns0"
+                                    "http://www.avaintec.com/2004/records-schedule-fi/1.0" -> "at0"
+                                    else -> suggestion ?: "ns"
+                                }
+                            }
+                        },
+                    )
                 }
             return StringWriter().use { writer ->
                 marshaller.marshal(metadata, writer)
                 writer.toString()
+            }
+        }
+
+        private fun createPolicyRule(
+            timeSpan: Short,
+            triggerEvent: String,
+            action: PolicyConfiguration.Rules.Rule.Action,
+        ): PolicyConfiguration.Rules.Rule {
+            return PolicyConfiguration.Rules.Rule().apply {
+                this.timeSpan = timeSpan
+                this.triggerEvent = triggerEvent
+                this.action = action
+            }
+        }
+
+        private fun createPolicyAction(
+            actionType: String,
+            actionArgument: String? = null,
+            actionAnnotation: String? = null,
+        ): PolicyConfiguration.Rules.Rule.Action {
+            return PolicyConfiguration.Rules.Rule.Action().apply {
+                this.actionType = actionType
+                if (actionArgument != null) {
+                    actionArguments =
+                        PolicyConfiguration.Rules.Rule.Action.ActionArguments().apply {
+                            this.actionArgument = actionArgument
+                        }
+                }
+                if (actionAnnotation != null) {
+                    this.actionAnnotation = actionAnnotation
+                }
+            }
+        }
+
+        private fun createDisclosurePolicy(
+            documentMetadata: DocumentMetadata
+        ): DisclosurePolicyType {
+            return DisclosurePolicyType().apply {
+                policyConfiguration =
+                    PolicyConfiguration().apply {
+                        policyName = "DisclosurePolicy"
+                        // 'public' mikäli julkinen
+                        initialTargetState =
+                            if (documentMetadata.confidential == true) "confidential" else "public"
+                        rules =
+                            PolicyConfiguration.Rules().apply {
+                                rule =
+                                    createPolicyRule(
+                                        // defaultataan -> 100; '0' mikäli julkinen tai pysyvästi
+                                        // salainen
+                                        timeSpan =
+                                            if (documentMetadata.confidential == true)
+                                                documentMetadata.confidentiality
+                                                    ?.durationYears
+                                                    ?.toShort() ?: 100
+                                            else 0,
+                                        // vuotta asiakirjan laatimisesta creation.created
+                                        triggerEvent = "YearsFromRecordCreation",
+                                        action =
+                                            createPolicyAction(
+                                                actionType = "SetTargetStateToArgument",
+                                                actionArgument = "public",
+                                                actionAnnotation =
+                                                    documentMetadata.confidentiality?.basis
+                                                        ?: "JulkL 24 § 1 mom. 32 k",
+                                            ),
+                                    )
+                            }
+                    }
+            }
+        }
+
+        private fun createInformationSecurityPolicy(): InformationSecurityPolicyType {
+            return InformationSecurityPolicyType().apply {
+                policyConfiguration =
+                    PolicyConfiguration().apply {
+                        policyName = "InformationSecurityPolicy"
+                        initialTargetState = "notSecurityClassified"
+                        rules =
+                            PolicyConfiguration.Rules().apply {
+                                rule =
+                                    createPolicyRule(
+                                        timeSpan = 0,
+                                        triggerEvent = "InPerpetuity",
+                                        action =
+                                            createPolicyAction(
+                                                actionType = "SetTargetStateToArgument",
+                                                actionArgument = "notSecurityClassified",
+                                            ),
+                                    )
+                            }
+                    }
+            }
+        }
+
+        private fun createRetentionPolicy(): RetentionPolicyType {
+            return RetentionPolicyType().apply {
+                policyConfiguration =
+                    PolicyConfiguration().apply {
+                        policyName = "RetentionPolicy"
+                        rules =
+                            PolicyConfiguration.Rules().apply {
+                                rule =
+                                    createPolicyRule(
+                                        timeSpan = 0,
+                                        triggerEvent = "InPerpetuity",
+                                        action =
+                                            createPolicyAction(
+                                                actionType = "AddTimeSpanToTarget",
+                                                actionAnnotation = "KA/13089/07.01.01.03.01/2018",
+                                            ),
+                                    )
+                            }
+                    }
+            }
+        }
+
+        private fun createProtectionPolicy(): ProtectionPolicyType {
+            return ProtectionPolicyType().apply {
+                policyConfiguration =
+                    PolicyConfiguration().apply {
+                        policyName = "ProtectionPolicy"
+                        initialTargetState = "3"
+                        rules =
+                            PolicyConfiguration.Rules().apply {
+                                rule =
+                                    createPolicyRule(
+                                        timeSpan = 0,
+                                        triggerEvent = "InPerpetuity",
+                                        action =
+                                            createPolicyAction(
+                                                actionType = "SetTargetStateToArgument",
+                                                actionArgument = "3",
+                                            ),
+                                    )
+                            }
+                    }
+            }
+        }
+
+        private fun createAgents(
+            archivedProcess: ArchivedProcess?
+        ): StandardMetadataType.DocumentDescription.Agents {
+            return StandardMetadataType.DocumentDescription.Agents().apply {
+                // Get unique agents by their ID to avoid duplicates
+                archivedProcess
+                    ?.history
+                    ?.map { it.enteredBy }
+                    ?.distinctBy { it.id }
+                    ?.forEach { user ->
+                        agent.add(
+                            AgentType().apply {
+                                corporateName =
+                                    "Suomenkielisen varhaiskasvatuksen tulosyksikkö" // TODO Mistä
+                                // tieto suomi
+                                // / ruotsi
+                                // yksiköstä
+                                role = "Henkilökunta" // TODO pitäisikö tämän olla tarkempi rooli?
+                                name = user.name
+                            }
+                        )
+                    }
+            }
+        }
+
+        private fun createDocumentDescription(
+            document: ChildDocumentDetails,
+            documentMetadata: DocumentMetadata,
+            archivedProcess: ArchivedProcess?,
+            childIdentifier: ExternalIdentifier,
+            childBirthDate: java.time.LocalDate?,
+        ): StandardMetadataType.DocumentDescription {
+            return StandardMetadataType.DocumentDescription().apply {
+                // Basic document info
+                title = documentMetadata.name
+                documentType = "Suunnitelma" // From Evaka_Särmä_metatietomääritykset.xlsx
+                documentTypeSpecifier =
+                    "Varhaiskasvatussuunnitelma" // From Evaka_Särmä_metatietomääritykset.xlsx
+                personalData =
+                    PersonalDataType.CONTAINS_PERSONAL_INFORMATION // TODO md_instance.xml:
+                // containsPersonalInformation tai
+                // containsSensitivePersonalInformation.
+                // Mistä tämä tulisi päätellä?
+                language = document.template.language.isoLanguage.alpha2
+
+                // From Evaka_Särmä_metatietomääritykset.xlsx
+                dataManagement = "Palvelujen tiedonhallinta"
+                dataSource = "Varhaiskasvatuksen tietovaranto"
+                registerName = "Varhaiskasvatuksen asiakastietorekisteri"
+                personalDataCollectionReason =
+                    "Rekisterinpitäjän lakisääteisten velvoitteiden noudattaminen"
+
+                // Child's information
+                firstName = document.child.firstName
+                lastName = document.child.lastName
+                socialSecurityNumber =
+                    if (childIdentifier is ExternalIdentifier.SSN) childIdentifier.ssn else null
+                birthDate =
+                    childBirthDate?.let { date ->
+                        DatatypeFactory.newInstance()
+                            .newXMLGregorianCalendar(
+                                date.year,
+                                date.monthValue,
+                                date.dayOfMonth,
+                                javax.xml.datatype.DatatypeConstants.FIELD_UNDEFINED,
+                                javax.xml.datatype.DatatypeConstants.FIELD_UNDEFINED,
+                                javax.xml.datatype.DatatypeConstants.FIELD_UNDEFINED,
+                                javax.xml.datatype.DatatypeConstants.FIELD_UNDEFINED,
+                                javax.xml.datatype.DatatypeConstants.FIELD_UNDEFINED,
+                            )
+                    }
+                agents = createAgents(archivedProcess)
+            }
+        }
+
+        private fun createFormat(filename: String): StandardMetadataType.Format {
+            return StandardMetadataType.Format().apply {
+                recordType = ResourceTypeType.DIGITAL
+                mimeType = AcceptedMimeTypeType.APPLICATION_PDF
+                this.fileName = filename
+                fileFormat = AcceptedFileFormatType.NOT_APPLICABLE
+            }
+        }
+
+        private fun createCreation(
+            documentMetadata: DocumentMetadata
+        ): StandardMetadataType.Creation {
+            return StandardMetadataType.Creation().apply {
+                created = documentMetadata.createdAt?.asXMLGregorianCalendar()
+                originatingSystem = "Varhaiskasvatuksen toiminnanohjausjärjestelmä"
+            }
+        }
+
+        private fun createPolicies(
+            documentMetadata: DocumentMetadata
+        ): StandardMetadataType.Policies {
+            return StandardMetadataType.Policies().apply {
+                // Salassapitosääntö
+                disclosurePolicy = createDisclosurePolicy(documentMetadata)
+                // Turvallisuussääntö
+                informationSecurityPolicy = createInformationSecurityPolicy()
+                // Säilytyssääntö
+                retentionPolicy = createRetentionPolicy()
+                // Suojeluluokkasääntö
+                protectionPolicy = createProtectionPolicy()
+            }
+        }
+
+        private fun createCaseFile(
+            documentMetadata: DocumentMetadata,
+            archivedProcess: ArchivedProcess?,
+        ): CaseFileType {
+            return CaseFileType().apply {
+                caseCreated = documentMetadata.createdAt?.asXMLGregorianCalendar()
+                caseFinished =
+                    archivedProcess
+                        ?.history
+                        ?.find { it.state == ArchivedProcessState.COMPLETED }
+                        ?.enteredAt
+                        ?.asXMLGregorianCalendar()
             }
         }
 
@@ -77,11 +354,8 @@ class ArchiveChildDocumentService(
             archivedProcess: ArchivedProcess?,
             filename: String,
             childIdentifier: ExternalIdentifier,
+            birthDate: java.time.LocalDate?,
         ): RecordMetadataInstance {
-
-            // TODO TOS numero + vuosi koodi täytyis laittaa johonkin
-            // TODO tulisiko tieto documentMetadata.organization eli "Espoon kaupungin esiopetus ja
-            // varhaiskasvatus" laittaa johonkin?
             return RecordMetadataInstance().apply {
                 standardMetadata =
                     StandardMetadataType().apply {
@@ -96,150 +370,17 @@ class ArchiveChildDocumentService(
                                 recordIdentifier = document.id.toString()
                             }
                         documentDescription =
-                            StandardMetadataType.DocumentDescription().apply {
-                                // Basic document info
-                                title = documentMetadata.name
-                                documentType =
-                                    "Suunnitelma" // From Evaka_Särmä_metatietomääritykset.xlsx
-                                documentTypeSpecifier = "Varhaiskasvatussuunnitelma" // From
-                                // Evaka_Särmä_metatietomääritykset.xlsx
-                                personalData = PersonalDataType.CONTAINS_PERSONAL_INFORMATION
-                                language = document.template.language.isoLanguage.alpha2
-
-                                // From Evaka_Särmä_metatietomääritykset.xlsx
-                                dataManagement = "Palvelujen tiedonhallinta"
-                                dataSource = "Varhaiskasvatuksen tietovaranto"
-                                registerName = "Varhaiskasvatuksen asiakastietorekisteri"
-                                personalDataCollectionReason =
-                                    "Rekisterinpitäjän lakisääteisten velvoitteiden noudattaminen"
-
-                                // Child's information
-                                firstName = document.child.firstName
-                                lastName = document.child.lastName
-                                socialSecurityNumber =
-                                    if (childIdentifier is ExternalIdentifier.SSN)
-                                        childIdentifier.ssn
-                                    else null
-                                // TODO add birthDate once schema field is known
-                                // birthDate?.let { birthDate = it.toString() }
-                                agents =
-                                    StandardMetadataType.DocumentDescription.Agents().apply {
-                                        // Get unique agents by their ID to avoid duplicates
-                                        archivedProcess
-                                            ?.history
-                                            ?.map { it.enteredBy }
-                                            ?.distinctBy { it.id }
-                                            ?.forEach { user ->
-                                                agent.add(
-                                                    AgentType().apply {
-                                                        corporateName =
-                                                            "Suomenkielisen varhaiskasvatuksen tulosyksikkö" // TODO Mistä tieto suomi / ruotsi yksiköstä
-                                                        role =
-                                                            "Henkilökunta" // TODO pitäisikö tämän
-                                                        // olla tarkempi rooli?
-                                                        name = user.name
-                                                    }
-                                                )
-                                            }
-                                    }
-                            }
-                        format =
-                            StandardMetadataType.Format().apply {
-                                recordType = ResourceTypeType.DIGITAL
-                                mimeType = AcceptedMimeTypeType.APPLICATION_PDF
-                                fileName = filename
-                                fileFormat =
-                                    AcceptedFileFormatType
-                                        .PDF // TODO Evaka_Särmä_metatietomääritykset.xlsx
-                                // ohjeistetaan: Asetetaan arvo "not applicable"
-                            }
-
-                        // Creation and handling information
-                        creation =
-                            StandardMetadataType.Creation().apply {
-                                created = documentMetadata.createdAt?.asXMLGregorianCalendar()
-                                originatingSystem = "Varhaiskasvatuksen toiminnanohjausjärjestelmä"
-                            }
-                        // TODO miten eventAgent saa asetettua niin, että se menee schema
-                        // validoinnista läpi?
-                        //                        history =
-                        //                            StandardMetadataType.History().apply {
-                        //                                event.addAll(
-                        //                                    archivedProcess?.history?.map {
-                        // archiveProcessHistoryEntry ->
-                        //                                        HistoryEventType().apply {
-                        //                                            eventDateTime =
-                        //
-                        // archiveProcessHistoryEntry.enteredAt
-                        //
-                        // .asXMLGregorianCalendar()
-                        //                                            eventType =
-                        // archiveProcessHistoryEntry.state.name
-                        //                                            eventTxId =
-                        // "rowIndex_${archiveProcessHistoryEntry.rowIndex}"
-                        //                                            eventAgent =
-                        // HistoryEventType.EventAgent().apply {
-                        //                                                any = JAXBElement(
-                        //                                                    QName("", "text"),
-                        //                                                    String::class.java,
-                        //
-                        // archiveProcessHistoryEntry.enteredBy.name
-                        //                                                )
-                        //                                            }
-                        //                                        }
-                        //                                    } ?: emptyList()
-                        //                                )
-                        //                            }
-
-                        // Security and retention policies
-                        policies =
-                            StandardMetadataType.Policies().apply {
-                                disclosurePolicy =
-                                    DisclosurePolicyType().apply {
-                                        disclosureLevel =
-                                            if (documentMetadata.confidential == true)
-                                                DisclosureLevelType.CONFIDENTIAL
-                                            else DisclosureLevelType.PUBLIC
-                                        disclosurePeriod =
-                                            documentMetadata.confidentiality
-                                                ?.durationYears
-                                                .toString()
-                                        disclosureReason = documentMetadata.confidentiality?.basis
-                                    }
-                                // TODO Evaka_Särmä_metatietomääritykset.xlsx sanotaan, että nämä
-                                // tulisi olla "Ei turvallisuusluokiteltu". Tarvitaan oikea versio
-                                // include-policies.xsd:stä jotta tähän saadaan asetettua oikeat
-                                // arvot
-                                informationSecurityPolicy =
-                                    InformationSecurityPolicyType().apply {
-                                        securityLevel = InformationSecurityLevelType.UNCLASSIFIED
-                                    }
-                                // TODO tarvitaanko näitä XML puolelle?
-                                // Evaka_Särmä_metatietomääritykset.xlsx sanotaan, että nämä tulisi
-                                // tulla PUT sanoman headereissa
-                                retentionPolicy =
-                                    RetentionPolicyType().apply {
-                                        retentionPeriod = "100"
-                                        retentionReason = "InPerpetuity"
-                                    }
-                                // TODO Evaka_Särmä_metatietomääritykset.xlsx sanoo, että tämä tulee
-                                // olla "3". Tarvitaan oikea versio include-policies.xsd:stä jotta
-                                // tähän saadaan asetettua oikeat arvot
-                                protectionPolicy =
-                                    ProtectionPolicyType().apply {
-                                        protectionLevel = ProtectionLevelType.HIGH
-                                    }
-                            }
-                        caseFile =
-                            CaseFileType().apply {
-                                caseCreated = documentMetadata.createdAt?.asXMLGregorianCalendar()
-                                caseFinished =
-                                    archivedProcess
-                                        ?.history
-                                        ?.find { it.state == ArchivedProcessState.COMPLETED }
-                                        ?.enteredAt
-                                        ?.asXMLGregorianCalendar()
-                            }
+                            createDocumentDescription(
+                                document,
+                                documentMetadata,
+                                archivedProcess,
+                                childIdentifier,
+                                birthDate,
+                            )
+                        format = createFormat(filename)
+                        creation = createCreation(documentMetadata)
+                        policies = createPolicies(documentMetadata)
+                        caseFile = createCaseFile(documentMetadata, archivedProcess)
                     }
             }
         }
@@ -289,7 +430,7 @@ class ArchiveChildDocumentService(
             "yleinen" // TODO ei vielä varmuudella tiedossa. Muissa Särmä integraatioissa käytetty
         // esim. "taloushallinto" tai "paatoksenteko"
         val classId =
-            "12.01.SL1.RT34" // Arvo perustuu Evaka_Särmä_metatietomääritykset.xlsx -tiedostoon
+            "12.06.01.SL1.RT34" // Arvo perustuu Evaka_Särmä_metatietomääritykset.xlsx -tiedostoon
         val virtualArchiveId =
             "YLEINEN" // Arvo perustuu Evaka_Särmä_metatietomääritykset.xlsx -tiedostoon
 
@@ -301,6 +442,7 @@ class ArchiveChildDocumentService(
                 archivedProcess,
                 Paths.get(documentContent.name).fileName.toString(),
                 childInfo.identity,
+                childInfo.dateOfBirth,
             )
         val metadataXml = marshalMetadata(metadata)
         logger.info { "Generated metadata XML: $metadataXml" }
@@ -308,6 +450,7 @@ class ArchiveChildDocumentService(
         val (responseCode, responseBody) =
             client.putDocument(documentContent, metadataXml, masterId, classId, virtualArchiveId)
         logger.info { "Response code: $responseCode" }
+        logger.info { "Response body: $responseBody" }
 
         if (responseCode == 200) {
             db.transaction { tx -> tx.markDocumentAsArchived(documentId, HelsinkiDateTime.now()) }

@@ -336,7 +336,7 @@ describe('Employee - Child documents', () => {
     await modal.validityStartInput.fill('01.08.2022')
     await modal.confidentialityDurationYearsInput.fill('100')
     await modal.confidentialityBasisInput.fill('Joku laki §300')
-    await modal.processDefinitionNumberInput.fill('1234')
+    await modal.processDefinitionNumberInput.fill('12.06.01')
     await modal.archiveDurationMonthsInput.fill('1320')
     await modal.confirmCreateButton.click()
     await documentTemplatesPage.openTemplate(documentName)

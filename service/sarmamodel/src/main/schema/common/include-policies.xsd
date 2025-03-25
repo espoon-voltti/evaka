@@ -7,66 +7,89 @@
     <!-- Information Security Level Type -->
     <xs:simpleType name="InformationSecurityLevelType">
         <xs:restriction base="xs:string">
-            <xs:enumeration value="ST I"/>
-            <xs:enumeration value="ST II"/>
-            <xs:enumeration value="ST III"/>
-            <xs:enumeration value="ST IV"/>
-            <xs:enumeration value="Unclassified"/>
+            <xs:enumeration value="notSecurityClassified"/>
         </xs:restriction>
     </xs:simpleType>
 
     <!-- Disclosure Level Type -->
     <xs:simpleType name="DisclosureLevelType">
         <xs:restriction base="xs:string">
-            <xs:enumeration value="Public"/>
-            <xs:enumeration value="Internal"/>
-            <xs:enumeration value="Confidential"/>
-            <xs:enumeration value="Secret"/>
+            <xs:enumeration value="public"/>
+            <xs:enumeration value="confidential"/>
         </xs:restriction>
     </xs:simpleType>
 
     <!-- Protection Level Type -->
     <xs:simpleType name="ProtectionLevelType">
         <xs:restriction base="xs:string">
-            <xs:enumeration value="Basic"/>
-            <xs:enumeration value="Enhanced"/>
-            <xs:enumeration value="High"/>
+            <xs:enumeration value="3"/>
         </xs:restriction>
     </xs:simpleType>
+
+    <!-- Policy Configuration Type -->
+    <xs:element name="PolicyConfiguration">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="PolicyName" type="xs:string"/>
+                <xs:element name="InitialTargetState" type="xs:string" minOccurs="0"/>
+                <xs:element name="Rules">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="Rule">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="TimeSpan" type="xs:unsignedByte"/>
+                                        <xs:element name="TriggerEvent" type="xs:string"/>
+                                        <xs:element name="Action">
+                                            <xs:complexType>
+                                                <xs:sequence>
+                                                    <xs:element name="ActionType" type="xs:string"/>
+                                                    <xs:element name="ActionArguments" minOccurs="0">
+                                                        <xs:complexType>
+                                                            <xs:sequence>
+                                                                <xs:element name="ActionArgument" type="xs:string"/>
+                                                            </xs:sequence>
+                                                        </xs:complexType>
+                                                    </xs:element>
+                                                    <xs:element name="ActionAnnotation" type="xs:string" minOccurs="0"/>
+                                                </xs:sequence>
+                                            </xs:complexType>
+                                        </xs:element>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
 
     <!-- Retention Policy Type -->
     <xs:complexType name="RetentionPolicyType">
         <xs:sequence>
-            <xs:element name="retentionPeriod" type="xs:string"/>
-            <xs:element name="retentionTrigger" type="xs:string" minOccurs="0"/>
-            <xs:element name="retentionReason" type="xs:string" minOccurs="0"/>
+            <xs:element ref="rs:PolicyConfiguration"/>
         </xs:sequence>
     </xs:complexType>
 
     <!-- Disclosure Policy Type -->
     <xs:complexType name="DisclosurePolicyType">
         <xs:sequence>
-            <xs:element name="disclosureLevel" type="rs:DisclosureLevelType"/>
-            <xs:element name="disclosureReason" type="xs:string" minOccurs="0"/>
-            <xs:element name="disclosurePeriod" type="xs:string" minOccurs="0"/>
+            <xs:element ref="rs:PolicyConfiguration"/>
         </xs:sequence>
     </xs:complexType>
 
     <!-- Information Security Policy Type -->
     <xs:complexType name="InformationSecurityPolicyType">
         <xs:sequence>
-            <xs:element name="securityLevel" type="rs:InformationSecurityLevelType"/>
-            <xs:element name="securityReason" type="xs:string" minOccurs="0"/>
-            <xs:element name="securityPeriod" type="xs:string" minOccurs="0"/>
+            <xs:element ref="rs:PolicyConfiguration"/>
         </xs:sequence>
     </xs:complexType>
 
     <!-- Protection Policy Type -->
     <xs:complexType name="ProtectionPolicyType">
         <xs:sequence>
-            <xs:element name="protectionLevel" type="rs:ProtectionLevelType"/>
-            <xs:element name="protectionReason" type="xs:string" minOccurs="0"/>
-            <xs:element name="protectionMeasures" type="xs:string" minOccurs="0"/>
+            <xs:element ref="rs:PolicyConfiguration"/>
         </xs:sequence>
     </xs:complexType>
 

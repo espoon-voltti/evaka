@@ -226,6 +226,7 @@ class ArchiveChildDocumentServiceTest {
                 archivedProcess,
                 filename,
                 ExternalIdentifier.SSN.getInstance("160616A978U"),
+                LocalDate.of(2020, 2, 1),
             )
 
         val metadataXml = marshalMetadata(metadata)

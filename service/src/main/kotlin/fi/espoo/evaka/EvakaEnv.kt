@@ -676,6 +676,8 @@ data class ArchiveEnv(
     /** URL up to the endpoint name e.g. http://10.0.0.10/archive-core */
     val url: URI,
     val useMockClient: Boolean,
+    val userId: String,
+    val userRole: String,
 ) {
 
     companion object {
@@ -683,6 +685,8 @@ data class ArchiveEnv(
             ArchiveEnv(
                 url = URI.create(env.lookup("evaka.integration.särmä.url")),
                 useMockClient = env.lookup("evaka.integration.särmä.use_mock_client") ?: false,
+                userId = env.lookup("evaka.integration.särmä.user_id"),
+                userRole = env.lookup("evaka.integration.särmä.user_role"),
             )
     }
 }
