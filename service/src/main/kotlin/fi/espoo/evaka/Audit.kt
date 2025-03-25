@@ -480,7 +480,6 @@ enum class Audit(
     SettingsRead,
     SettingsUpdate,
     SpecialDietsRead,
-    SpecialDietsUpdate,
     MealTexturesRead,
     ServiceWorkerNoteUpdate,
     SextetReportRead,
