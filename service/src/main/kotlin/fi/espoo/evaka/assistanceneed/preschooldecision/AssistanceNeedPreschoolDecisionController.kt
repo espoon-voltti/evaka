@@ -498,6 +498,4 @@ class AssistanceNeedPreschoolDecisionController(
     )
 
     data class AnnulAssistanceNeedPreschoolDecisionRequest(val reason: String)
-
-    data class UpdateDecisionMakerForAssistanceNeedPreschoolDecisionRequest(val title: String)
 }

@@ -356,30 +356,3 @@ fun firstOfMonthAfterThirdBirthday(dateOfBirth: LocalDate): LocalDate =
     }
 
 data class VoucherValue(val baseValue: Int, val coefficient: BigDecimal, val value: Int)
-
-fun getVoucherValues(
-    period: DateRange,
-    dateOfBirth: LocalDate,
-    voucherValues: ServiceNeedOptionVoucherValue,
-): VoucherValue {
-    val thirdBirthdayPeriodStart = firstOfMonthAfterThirdBirthday(dateOfBirth)
-    val periodStartInMiddleOfTargetPeriod =
-        period.includes(thirdBirthdayPeriodStart) &&
-            thirdBirthdayPeriodStart != period.start &&
-            thirdBirthdayPeriodStart != period.end
-
-    check(!periodStartInMiddleOfTargetPeriod) {
-        "Third birthday period start ($thirdBirthdayPeriodStart) is in the middle of the period ($period), cannot calculate an unambiguous age coefficient"
-    }
-
-    return when {
-        period.start < thirdBirthdayPeriodStart ->
-            VoucherValue(
-                voucherValues.baseValueUnder3y,
-                voucherValues.coefficientUnder3y,
-                voucherValues.valueUnder3y,
-            )
-        else ->
-            VoucherValue(voucherValues.baseValue, voucherValues.coefficient, voucherValues.value)
-    }
-}

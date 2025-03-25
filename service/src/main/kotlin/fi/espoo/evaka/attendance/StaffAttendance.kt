@@ -43,13 +43,6 @@ data class CurrentDayStaffAttendanceResponse(
     val extraAttendances: List<ExternalStaffMember>,
 )
 
-data class PlannedStaffAttendanceResponse(
-    val staff: List<StaffMember>,
-    val extraAttendances: List<ExternalStaffMember>,
-)
-
-data class PlannedEmployee(val employeeId: EmployeeId)
-
 data class ExternalStaffMember(
     val id: StaffAttendanceExternalId,
     val name: String,

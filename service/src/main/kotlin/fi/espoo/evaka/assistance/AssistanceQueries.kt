@@ -310,19 +310,6 @@ private val otherAssistanceSelectFields =
     e.type AS modified_by_type
 """
 
-fun Database.Read.getOtherAssistanceMeasures(child: ChildId): List<OtherAssistanceMeasure> =
-    createQuery {
-            sql(
-                """
-SELECT $otherAssistanceSelectFields
-FROM other_assistance_measure o
-LEFT JOIN evaka_user e ON o.modified_by = e.id
-WHERE child_id = ${bind(child)}
-"""
-            )
-        }
-        .toList<OtherAssistanceMeasure>()
-
 fun Database.Read.getOtherAssistanceMeasuresByChildId(
     child: ChildId,
     filter: AccessControlFilter<OtherAssistanceMeasureId>,

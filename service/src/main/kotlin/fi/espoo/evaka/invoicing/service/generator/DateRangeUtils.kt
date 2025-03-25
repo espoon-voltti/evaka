@@ -37,8 +37,3 @@ fun buildDateRanges(datesOfChange: Set<LocalDate>): List<DateRange> {
     val finalRange = datesOfChange.maxOrNull()?.let { DateRange(it, null) }
     return finiteRanges.map { it.asDateRange() } + listOfNotNull(finalRange)
 }
-
-fun buildDateRanges(vararg ranges: WithRange): List<DateRange> {
-    val datesOfChange = getDatesOfChange(*ranges)
-    return buildDateRanges(datesOfChange)
-}

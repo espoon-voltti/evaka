@@ -21,16 +21,6 @@ fun Database.Read.employeeNumbersQuery(employeeNumbers: Collection<String>): Dat
     }
 }
 
-fun Database.Read.getEmployeeIdsByNumbers(employeeNumbers: List<String>): Map<String, EmployeeId> {
-    return employeeNumbersQuery(employeeNumbers).toMap { columnPair("employee_number", "id") }
-}
-
-fun Database.Read.getEmployeeIdsByNumbersMapById(
-    employeeNumbers: Collection<String>
-): Map<EmployeeId, String> {
-    return employeeNumbersQuery(employeeNumbers).toMap { columnPair("id", "employee_number") }
-}
-
 fun Database.Read.findStaffAttendancePlansBy(
     employeeIds: Collection<EmployeeId>? = null,
     period: FiniteDateRange? = null,

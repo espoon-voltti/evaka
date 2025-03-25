@@ -14,14 +14,6 @@ import java.time.temporal.TemporalAdjusters.lastDayOfMonth
 
 fun orMax(date: LocalDate?): LocalDate = date ?: LocalDate.MAX
 
-fun minEndDate(first: LocalDate?, second: LocalDate?): LocalDate? {
-    return when {
-        first == null -> second
-        second == null -> first
-        else -> minOf(first, second)
-    }
-}
-
 fun maxEndDate(first: LocalDate?, second: LocalDate?): LocalDate? {
     return when {
         first == null || second == null -> null

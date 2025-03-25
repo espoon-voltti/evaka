@@ -25,7 +25,6 @@ import fi.espoo.evaka.shared.utils.EMAIL_PATTERN
 import fi.espoo.evaka.shared.utils.PHONE_PATTERN
 import fi.espoo.evaka.user.hasWeakCredentials
 import fi.espoo.evaka.user.updateWeakLoginCredentials
-import io.github.oshai.kotlinlogging.KotlinLogging
 import java.security.SecureRandom
 import java.time.Duration
 import kotlin.random.asKotlinRandom
@@ -45,7 +44,6 @@ class PersonalDataControllerCitizen(
     private val passwordSpecification: PasswordSpecification,
 ) {
     private val secureRandom = SecureRandom()
-    private val logger = KotlinLogging.logger {}
 
     @PutMapping
     fun updatePersonalData(

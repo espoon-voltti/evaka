@@ -5,7 +5,6 @@
 package fi.espoo.evaka.pis
 
 import fi.espoo.evaka.shared.PersonEmailVerificationId
-import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 
 data class EmailVerification(
@@ -14,7 +13,5 @@ data class EmailVerification(
     val expiresAt: HelsinkiDateTime,
     val sentAt: HelsinkiDateTime?,
 )
-
-data class EmailVerificationTarget(val person: PersonId, val email: String)
 
 data class NewEmailVerification(val verificationCode: String, val expiresAt: HelsinkiDateTime)

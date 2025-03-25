@@ -376,18 +376,6 @@ WHERE id = ${bind(attendanceId)}
     }
 }
 
-fun Database.Transaction.deleteExternalStaffAttendance(attendanceId: StaffAttendanceExternalId) {
-    createUpdate {
-            sql(
-                """
-DELETE FROM staff_attendance_external
-WHERE id = ${bind(attendanceId)}
-"""
-            )
-        }
-        .updateExactlyOne()
-}
-
 data class RawAttendance(
     val id: StaffAttendanceRealtimeId,
     val groupId: GroupId?,
