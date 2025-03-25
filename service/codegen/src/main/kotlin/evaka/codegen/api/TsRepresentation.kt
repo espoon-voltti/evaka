@@ -5,6 +5,7 @@
 package evaka.codegen.api
 
 import com.fasterxml.jackson.annotation.JsonIgnore
+import com.fasterxml.jackson.annotation.JsonValue
 import com.fasterxml.jackson.databind.jsontype.TypeSerializer
 import fi.espoo.evaka.ConstList
 import fi.espoo.evaka.ForceCodeGenType
@@ -176,7 +177,13 @@ data class TsStringEnum(
     ) : this(
         clazz,
         name = clazz.simpleName ?: error("no class name: $clazz"),
-        values = clazz.java.enumConstants.map { it.toString() },
+        values =
+            clazz.java.enumConstants.map {
+                it.javaClass.declaredFields
+                    .singleOrNull { f -> f.isAnnotationPresent(JsonValue::class.java) }
+                    ?.takeIf { field -> field.trySetAccessible() }
+                    ?.get(it) as? String ?: it.toString()
+            },
         constList = clazz.findAnnotation(),
     )
 }
