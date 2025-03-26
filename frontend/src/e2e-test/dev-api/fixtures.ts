@@ -1193,6 +1193,8 @@ export class Fixture {
         ]
       },
       publishedContent: null,
+      answeredAt: null,
+      answeredBy: null,
       ...initial
     })
   }

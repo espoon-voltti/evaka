@@ -38,9 +38,12 @@ fun Database.Read.getChildDocuments(childId: PersonId): List<ChildDocumentSummar
     return createQuery {
             sql(
                 """
-SELECT cd.id, cd.status, dt.type, cd.modified_at, cd.published_at, dt.id as template_id, dt.name as template_name
+SELECT cd.id, cd.status, dt.type, cd.modified_at, cd.published_at, dt.id as template_id, dt.name as template_name,
+    cd.answered_at,
+    answered_by.id AS answered_by_id, answered_by.name AS answered_by_name, answered_by.type AS answered_by_type
 FROM child_document cd
 JOIN document_template dt on cd.template_id = dt.id
+LEFT JOIN evaka_user answered_by ON cd.answered_by = answered_by.id
 WHERE cd.child_id = ${bind(childId)}
 """
             )

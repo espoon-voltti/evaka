@@ -113,7 +113,9 @@ describe('child document with person duplicate', () => {
     const childInformationPage = new ChildInformationPage(page)
     const childDocumentsSection =
       await childInformationPage.openCollapsible('childDocuments')
-    await childDocumentsSection.assertChildDocuments([{ id: hojksDocument.id }])
+    await childDocumentsSection.assertInternalChildDocuments([
+      { id: hojksDocument.id }
+    ])
   })
 
   it('admin can see all documents from duplicate and edit', async () => {
@@ -151,7 +153,7 @@ describe('child document with person duplicate', () => {
     const childInformationPage = new ChildInformationPage(page)
     const childDocumentsSection =
       await childInformationPage.openCollapsible('childDocuments')
-    await childDocumentsSection.assertChildDocuments([
+    await childDocumentsSection.assertInternalChildDocuments([
       { id: hojksDocument.id },
       { id: pedagogicalReportDocument.id },
       { id: pedagogicalAssessmentDocument.id }
