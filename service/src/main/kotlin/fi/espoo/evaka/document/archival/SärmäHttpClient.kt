@@ -12,6 +12,7 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
 
 class SärmäHttpClient(private val archiveEnv: ArchiveEnv?) : SärmäClientInterface {
+
     private val httpClient =
         OkHttpClient.Builder()
             .connectTimeout(Duration.ofMinutes(1))
@@ -35,8 +36,8 @@ class SärmäHttpClient(private val archiveEnv: ArchiveEnv?) : SärmäClientInte
                 .setType(MultipartBody.FORM)
                 .addFormDataPart("protocol_version", "1.0")
                 .addFormDataPart("operation_id", "PUT")
-                .addFormDataPart("user_id", "XXXX")
-                .addFormDataPart("user_role", "XXXX")
+                .addFormDataPart("user_id", archiveEnv.userId)
+                .addFormDataPart("user_role", archiveEnv.userRole)
                 .addFormDataPart("nr_of_instances", "1")
                 .addFormDataPart("instance_1_md_model_id", "standard")
                 .addFormDataPart("instance_1_md_model_version", "1.0")

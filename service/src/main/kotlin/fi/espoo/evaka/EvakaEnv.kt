@@ -58,7 +58,7 @@ data class EvakaEnv(
                 webPushEnabled = env.lookup("evaka.web_push.enabled") ?: false,
                 jamixEnabled = env.lookup("evaka.integration.jamix.enabled") ?: false,
                 aromiEnabled = env.lookup("evaka.integration.aromi.enabled") ?: false,
-                särmäEnabled = env.lookup("evaka.integration.särmä.enabled") ?: false,
+                särmäEnabled = env.lookup("evaka.integration.sarma.enabled") ?: false,
                 nekkuEnabled = env.lookup("evaka.integration.nekku.enabled") ?: false,
                 forceUnpublishDocumentTemplateEnabled =
                     env.lookup("evaka.not_for_prod.force_unpublish_document_template_enabled")
@@ -673,16 +673,20 @@ private fun snakeCaseName(job: Enum<*>): String =
         .joinToString(separator = "")
 
 data class ArchiveEnv(
-    /** URL up to the endpoint name e.g. http://10.0.0.10/archive-core */
+    /** URL up to the endpoint name e.g. http://10.0.0.10/archive-core/ */
     val url: URI,
     val useMockClient: Boolean,
+    val userId: String,
+    val userRole: String,
 ) {
 
     companion object {
         fun fromEnvironment(env: Environment) =
             ArchiveEnv(
-                url = URI.create(env.lookup("evaka.integration.särmä.url")),
-                useMockClient = env.lookup("evaka.integration.särmä.use_mock_client") ?: false,
+                url = URI.create(env.lookup("evaka.integration.sarma.url")),
+                useMockClient = env.lookup("evaka.integration.sarma.use_mock_client") ?: false,
+                userId = env.lookup("evaka.integration.sarma.user_id"),
+                userRole = env.lookup("evaka.integration.sarma.user_role"),
             )
     }
 }
