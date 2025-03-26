@@ -62,7 +62,8 @@ class ArchiveChildDocumentService(
             val context = JAXBContext.newInstance(RecordMetadataInstance::class.java)
             val marshaller =
                 context.createMarshaller().apply {
-                    // Use namespaces in a similar way as our example xml files. TODO check if this
+                    // Use namespaces in a similar way as the shared example xml files. TODO check
+                    // if this
                     // is actually needed
                     setProperty(
                         "org.glassfish.jaxb.namespacePrefixMapper",
@@ -126,22 +127,22 @@ class ArchiveChildDocumentService(
                 policyConfiguration =
                     PolicyConfiguration().apply {
                         policyName = "DisclosurePolicy"
-                        // 'public' mikäli julkinen
                         initialTargetState =
                             if (documentMetadata.confidential == true) "confidential" else "public"
                         rules =
                             PolicyConfiguration.Rules().apply {
                                 rule =
                                     createPolicyRule(
-                                        // defaultataan -> 100; '0' mikäli julkinen tai pysyvästi
-                                        // salainen
+                                        // according to Särmä specs, this should be set to 0 for
+                                        // public and permanently confidential documents. If not
+                                        // defined in metadata, we default to 100 years.
                                         timeSpan =
                                             if (documentMetadata.confidential == true)
                                                 documentMetadata.confidentiality
                                                     ?.durationYears
                                                     ?.toShort() ?: 100
                                             else 0,
-                                        // vuotta asiakirjan laatimisesta creation.created
+                                        // years from document creation (creation.created in xml)
                                         triggerEvent = "YearsFromRecordCreation",
                                         action =
                                             createPolicyAction(
@@ -237,11 +238,7 @@ class ArchiveChildDocumentService(
                     ?.forEach { user ->
                         agent.add(
                             AgentType().apply {
-                                corporateName =
-                                    "Suomenkielisen varhaiskasvatuksen tulosyksikkö" // TODO Mistä
-                                // tieto suomi
-                                // / ruotsi
-                                // yksiköstä
+                                corporateName = archivedProcess.organization
                                 role = "Henkilökunta" // TODO pitäisikö tämän olla tarkempi rooli?
                                 name = user.name
                             }
@@ -255,7 +252,7 @@ class ArchiveChildDocumentService(
             documentMetadata: DocumentMetadata,
             archivedProcess: ArchivedProcess?,
             childIdentifier: ExternalIdentifier,
-            childBirthDate: java.time.LocalDate?,
+            childBirthDate: java.time.LocalDate,
         ): StandardMetadataType.DocumentDescription {
             return StandardMetadataType.DocumentDescription().apply {
                 // Basic document info
@@ -283,7 +280,7 @@ class ArchiveChildDocumentService(
                 socialSecurityNumber =
                     if (childIdentifier is ExternalIdentifier.SSN) childIdentifier.ssn else null
                 birthDate =
-                    childBirthDate?.let { date ->
+                    childBirthDate.let { date ->
                         DatatypeFactory.newInstance()
                             .newXMLGregorianCalendar(
                                 date.year,
@@ -354,7 +351,7 @@ class ArchiveChildDocumentService(
             archivedProcess: ArchivedProcess?,
             filename: String,
             childIdentifier: ExternalIdentifier,
-            birthDate: java.time.LocalDate?,
+            birthDate: java.time.LocalDate,
         ): RecordMetadataInstance {
             return RecordMetadataInstance().apply {
                 standardMetadata =
@@ -427,12 +424,14 @@ class ArchiveChildDocumentService(
         val originalLocation = documentClient.locate(DocumentKey.ChildDocument(documentKey))
         val documentContent = documentClient.get(originalLocation)
         val masterId =
-            "yleinen" // TODO ei vielä varmuudella tiedossa. Muissa Särmä integraatioissa käytetty
-        // esim. "taloushallinto" tai "paatoksenteko"
+            "yleinen" // Defined as fixed value in Evaka_Särmä_metatietomääritykset.xlsx specs. TODO
+        // should be mapped from metadata
         val classId =
-            "12.06.01.SL1.RT34" // Arvo perustuu Evaka_Särmä_metatietomääritykset.xlsx -tiedostoon
+            "12.06.01.SL1.RT34" // Defined as fixed value in Evaka_Särmä_metatietomääritykset.xlsx
+        // specs. TODO should be mapped from metadata
         val virtualArchiveId =
-            "YLEINEN" // Arvo perustuu Evaka_Särmä_metatietomääritykset.xlsx -tiedostoon
+            "YLEINEN" // Defined as fixed value in Evaka_Särmä_metatietomääritykset.xlsx specs. TODO
+        // should be mapped from metadata
 
         // Create metadata object and convert to XML
         val metadata =
