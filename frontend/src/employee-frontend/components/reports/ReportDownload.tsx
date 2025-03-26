@@ -47,7 +47,7 @@ function ReportDownload<T>({
   const downloadCsv = useCallback(() => {
     const link = document.createElement('a')
     link.download = typeof filename === 'function' ? filename() : filename
-    link.href = `data:text/csv;charset=utf-8,${toCsv(data, columns)}`
+    link.href = `data:text/csv;charset=utf-8,${encodeURIComponent(toCsv(data, columns))}`
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
