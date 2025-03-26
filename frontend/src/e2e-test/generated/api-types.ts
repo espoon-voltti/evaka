@@ -404,6 +404,8 @@ export interface DevChildAttendance {
 * Generated from fi.espoo.evaka.shared.dev.DevChildDocument
 */
 export interface DevChildDocument {
+  answeredAt: HelsinkiDateTime | null
+  answeredBy: EvakaUserId | null
   childId: PersonId
   content: DocumentContent
   contentModifiedAt: HelsinkiDateTime
@@ -1278,6 +1280,7 @@ export function deserializeJsonDevChildAttendance(json: JsonOf<DevChildAttendanc
 export function deserializeJsonDevChildDocument(json: JsonOf<DevChildDocument>): DevChildDocument {
   return {
     ...json,
+    answeredAt: (json.answeredAt != null) ? HelsinkiDateTime.parseIso(json.answeredAt) : null,
     content: deserializeJsonDocumentContent(json.content),
     contentModifiedAt: HelsinkiDateTime.parseIso(json.contentModifiedAt),
     modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt),

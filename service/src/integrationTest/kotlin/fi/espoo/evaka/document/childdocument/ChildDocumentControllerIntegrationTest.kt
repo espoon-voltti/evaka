@@ -268,6 +268,8 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                     templateName = devTemplatePed.name,
                     modifiedAt = clock.now(),
                     publishedAt = null,
+                    answeredAt = null,
+                    answeredBy = null,
                 )
             ),
             summaries.map { it.data },

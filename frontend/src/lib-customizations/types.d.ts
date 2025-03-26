@@ -294,6 +294,11 @@ interface BaseFeatureFlags {
    * Enable support for document archival integration
    */
   archiveIntegrationEnabled?: boolean
+
+  /**
+   * Enable support for citizen child document types
+   */
+  citizenChildDocumentTypes?: boolean
 }
 
 export type FeatureFlags = DeepReadonly<BaseFeatureFlags>

@@ -334,6 +334,9 @@ enum class DocumentType(val statuses: List<DocumentStatus>) : DatabaseEnum {
     MIGRATED_LEOPS(listOf(DocumentStatus.COMPLETED)),
     VASU(listOf(DocumentStatus.DRAFT, DocumentStatus.PREPARED, DocumentStatus.COMPLETED)),
     LEOPS(listOf(DocumentStatus.DRAFT, DocumentStatus.PREPARED, DocumentStatus.COMPLETED)),
+    CITIZEN_BASIC(
+        listOf(DocumentStatus.DRAFT, DocumentStatus.CITIZEN_DRAFT, DocumentStatus.COMPLETED)
+    ),
     OTHER(listOf(DocumentStatus.DRAFT, DocumentStatus.COMPLETED));
 
     override val sqlType: String = "document_template_type"

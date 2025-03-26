@@ -37,6 +37,7 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import { ConfirmedMutation } from 'lib-components/molecules/ConfirmedMutation'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
+import { InfoBox } from 'lib-components/molecules/MessageBoxes'
 import { DateRangePickerF } from 'lib-components/molecules/date-picker/DateRangePicker'
 import { H1, H2, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
@@ -267,6 +268,11 @@ const BasicsSection = React.memo(function BasicsSection({
               }
             ]}
           />
+          {template.type === 'CITIZEN_BASIC' && (
+            <InfoBox
+              message={i18n.documentTemplates.documentTypeInfos.CITIZEN_BASIC}
+            />
+          )}
         </GrovingDiv>
         <FixedSpaceColumn spacing="xxs">
           <span>{template.legalBasis}</span>
