@@ -45,7 +45,10 @@ import { DateRangePickerF } from 'lib-components/molecules/date-picker/DateRange
 import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
 import { Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
-import { placementTypes as placementTypeValues } from 'lib-customizations/employee'
+import {
+  featureFlags,
+  placementTypes as placementTypeValues
+} from 'lib-customizations/employee'
 
 import { useTranslation } from '../../../state/i18n'
 import {
@@ -146,6 +149,11 @@ export default React.memo(function TemplateModal({ onClose, mode }: Props) {
     () =>
       documentTypes
         .filter((type) => !type.startsWith('MIGRATED_'))
+        .filter((type) =>
+          !featureFlags.citizenChildDocumentTypes
+            ? !type.startsWith('CITIZEN_')
+            : true
+        )
         .map((option) => ({
           domValue: option,
           value: option,

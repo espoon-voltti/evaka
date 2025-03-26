@@ -21,6 +21,7 @@ export function ChildDocumentStateChip({ status }: StateChipProps) {
   const statusColors: Record<DocumentStatus, string> = {
     DRAFT: colors.accents.a7mint,
     PREPARED: colors.accents.a4violet,
+    CITIZEN_DRAFT: colors.accents.a5orangeLight,
     COMPLETED: colors.grayscale.g15
   }
 

@@ -2,7 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { DocumentContent } from 'lib-common/generated/api-types/document'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import { evakaUserId } from 'lib-common/id-type'
 
 import config from '../../config'
 import {
@@ -99,7 +101,7 @@ describe('Employee - Child documents', () => {
     let childInformationPage = new ChildInformationPage(page)
     let childDocumentsSection =
       await childInformationPage.openCollapsible('childDocuments')
-    await childDocumentsSection.createDocumentButton.click()
+    await childDocumentsSection.createInternalDocumentButton.click()
     await childDocumentsSection.createModalTemplateSelect.assertTextEquals(
       'HOJKS 2022-2023'
     )
@@ -119,8 +121,8 @@ describe('Employee - Child documents', () => {
     // Assert status draft and unpublished, open the document again
     childDocumentsSection =
       await childInformationPage.openCollapsible('childDocuments')
-    await waitUntilEqual(childDocumentsSection.childDocumentsCount, 1)
-    let row = childDocumentsSection.childDocuments(0)
+    await waitUntilEqual(childDocumentsSection.internalChildDocumentsCount, 1)
+    let row = childDocumentsSection.internalChildDocuments(0)
     await row.status.assertTextEquals('Luonnos')
     await row.published.assertTextEquals('-')
     await row.openLink.click()
@@ -139,8 +141,8 @@ describe('Employee - Child documents', () => {
     await childDocument.returnButton.click()
     childDocumentsSection =
       await childInformationPage.openCollapsible('childDocuments')
-    await waitUntilEqual(childDocumentsSection.childDocumentsCount, 1)
-    row = childDocumentsSection.childDocuments(0)
+    await waitUntilEqual(childDocumentsSection.internalChildDocumentsCount, 1)
+    row = childDocumentsSection.internalChildDocuments(0)
     await row.status.assertTextEquals('Luonnos')
     await row.published.assertTextEquals(now.format())
     await page.close()
@@ -161,8 +163,8 @@ describe('Employee - Child documents', () => {
     childInformationPage = new ChildInformationPage(page)
     childDocumentsSection =
       await childInformationPage.openCollapsible('childDocuments')
-    await waitUntilEqual(childDocumentsSection.childDocumentsCount, 1)
-    row = childDocumentsSection.childDocuments(0)
+    await waitUntilEqual(childDocumentsSection.internalChildDocumentsCount, 1)
+    row = childDocumentsSection.internalChildDocuments(0)
     await row.status.assertTextEquals('Valmis')
     await row.published.assertTextEquals(later.format())
   })
@@ -180,7 +182,7 @@ describe('Employee - Child documents', () => {
     const childInformationPage = new ChildInformationPage(page)
     const childDocumentsSection =
       await childInformationPage.openCollapsible('childDocuments')
-    await childDocumentsSection.createDocumentButton.click()
+    await childDocumentsSection.createInternalDocumentButton.click()
     await childDocumentsSection.modalOk.click()
 
     // go to next status
@@ -203,7 +205,7 @@ describe('Employee - Child documents', () => {
     let childInformationPage = new ChildInformationPage(page)
     let childDocumentsSection =
       await childInformationPage.openCollapsible('childDocuments')
-    await childDocumentsSection.createDocumentButton.click()
+    await childDocumentsSection.createInternalDocumentButton.click()
     await childDocumentsSection.modalOk.click()
     let childDocument = new ChildDocumentPage(page)
     await childDocument.editButton.click()
@@ -218,8 +220,8 @@ describe('Employee - Child documents', () => {
     childInformationPage = new ChildInformationPage(page)
     childDocumentsSection =
       await childInformationPage.openCollapsible('childDocuments')
-    await waitUntilEqual(childDocumentsSection.childDocumentsCount, 1)
-    await childDocumentsSection.childDocuments(0).openLink.click()
+    await waitUntilEqual(childDocumentsSection.internalChildDocumentsCount, 1)
+    await childDocumentsSection.internalChildDocuments(0).openLink.click()
     childDocument = new ChildDocumentPage(page)
     await childDocument.editButton.click()
     await childDocument.closeConcurrentEditErrorModal()
@@ -233,8 +235,8 @@ describe('Employee - Child documents', () => {
     childInformationPage = new ChildInformationPage(page)
     childDocumentsSection =
       await childInformationPage.openCollapsible('childDocuments')
-    await waitUntilEqual(childDocumentsSection.childDocumentsCount, 1)
-    await childDocumentsSection.childDocuments(0).openLink.click()
+    await waitUntilEqual(childDocumentsSection.internalChildDocumentsCount, 1)
+    await childDocumentsSection.internalChildDocuments(0).openLink.click()
     childDocument = new ChildDocumentPage(page)
     await childDocument.editButton.click()
     await childDocument.previewButton.click()
@@ -367,7 +369,7 @@ describe('Employee - Child documents', () => {
     const childInformationPage = new ChildInformationPage(page)
     const childDocumentsSection =
       await childInformationPage.openCollapsible('childDocuments')
-    await childDocumentsSection.createDocumentButton.click()
+    await childDocumentsSection.createInternalDocumentButton.click()
     await childDocumentsSection.createModalTemplateSelect.assertTextEquals(
       'VASU 2022-2023'
     )
@@ -395,7 +397,7 @@ describe('Employee - Child documents', () => {
     const childInformationPage2 = new ChildInformationPage(page)
     const childDocumentsSection2 =
       await childInformationPage2.openCollapsible('childDocuments')
-    const row2 = childDocumentsSection2.childDocuments(0)
+    const row2 = childDocumentsSection2.internalChildDocuments(0)
     await row2.openLink.click()
     const childDocument2 = new ChildDocumentPage(page)
     await childDocument2.archiveButton.click()
@@ -408,5 +410,128 @@ describe('Employee - Child documents', () => {
     await childDocument3.archiveTooltip.assertText((text) =>
       text.includes('Asiakirja on arkistoitu ')
     )
+  })
+
+  test('Citizen basic can be sent without filling the form', async () => {
+    // create document template
+    page = await Page.open({
+      mockedTime: now,
+      employeeCustomizations: {
+        featureFlags: { citizenChildDocumentTypes: true }
+      }
+    })
+    await employeeLogin(page, admin)
+    await page.goto(config.employeeUrl)
+    const nav = new EmployeeNav(page)
+    await nav.openAndClickDropdownMenuItem('document-templates')
+
+    const documentTemplatesPage = new DocumentTemplatesListPage(page)
+    const modal = await documentTemplatesPage.openCreateModal()
+    const documentName = 'Lomake kuntalaiselle'
+    await modal.nameInput.fill(documentName)
+    await modal.typeSelect.selectOption('Kuntalaisen lomake - perus')
+    await modal.placementTypesSelect.fillAndSelectFirst('Esiopetus')
+    await modal.validityStartInput.fill('01.08.2022')
+    await modal.confidentialityDurationYearsInput.fill('100')
+    await modal.confidentialityBasisInput.fill('Joku laki §300')
+    await modal.confirmCreateButton.click()
+    await documentTemplatesPage.openTemplate(documentName)
+
+    const templateEditor = new DocumentTemplateEditorPage(page)
+    await templateEditor.createNewSectionButton.click()
+    const sectionName = 'Eka osio'
+    await templateEditor.sectionNameInput.fill(sectionName)
+    await templateEditor.confirmCreateSectionButton.click()
+
+    const section = templateEditor.getSection(sectionName)
+    await section.element.hover()
+    await section.createNewQuestionButton.click()
+    const questionName = 'Eka kysymys'
+    await templateEditor.questionLabelInput.fill(questionName)
+    await templateEditor.confirmCreateQuestionButton.click()
+
+    await templateEditor.publishCheckbox.check()
+    await templateEditor.saveButton.click()
+    await templateEditor.saveButton.waitUntilHidden()
+    await page.close()
+
+    // create child document and send to citizen
+    page = await Page.open({
+      mockedTime: now,
+      employeeCustomizations: {
+        featureFlags: { citizenChildDocumentTypes: true }
+      }
+    })
+    await employeeLogin(page, unitSupervisor)
+    await page.goto(`${config.employeeUrl}/child-information/${testChild2.id}`)
+    const childInformationPage = new ChildInformationPage(page)
+    const childDocumentsSection =
+      await childInformationPage.openCollapsible('childDocuments')
+    await childDocumentsSection.createExternalDocumentButton.click()
+    await childDocumentsSection.createModalTemplateSelect.assertTextEquals(
+      documentName
+    )
+    await childDocumentsSection.modalOk.click()
+    const childDocument = new ChildDocumentPage(page)
+    await childDocument.status.assertTextEquals('Luonnos')
+    await childDocument.goToNextStatus()
+    await childDocument.status.assertTextEquals('Täytettävänä huoltajalla')
+    await childDocument.returnButton.click()
+    await childInformationPage.openCollapsible('childDocuments')
+    await waitUntilEqual(childDocumentsSection.internalChildDocumentsCount, 0)
+    await waitUntilEqual(childDocumentsSection.externalChildDocumentsCount, 1)
+    const row = childDocumentsSection.externalChildDocuments(0)
+    await row.sent.assertTextEquals(now.toLocalDate().format())
+    await row.answered.assertTextEquals('Ei vastattu')
+    await row.status.assertTextEquals('Täytettävänä huoltajalla')
+  })
+
+  test('Citizen answered at is shown', async () => {
+    const template = await Fixture.documentTemplate({
+      type: 'CITIZEN_BASIC',
+      name: 'Lomake kuntalaiselle',
+      published: true
+    }).save()
+    const content: DocumentContent = {
+      answers: [
+        {
+          questionId: 'q1',
+          type: 'TEXT',
+          answer: 'test'
+        }
+      ]
+    }
+    const publishedAt = now.addHours(1)
+    const answeredAt = now.addHours(2)
+    const guardian = await Fixture.person({ ssn: null }).saveAdult()
+    await Fixture.childDocument({
+      templateId: template.id,
+      childId: testChild2.id,
+      status: 'COMPLETED',
+      content,
+      publishedAt,
+      publishedContent: content,
+      answeredAt,
+      answeredBy: evakaUserId(guardian.id)
+    }).save()
+
+    page = await Page.open({
+      mockedTime: now,
+      employeeCustomizations: {
+        featureFlags: { citizenChildDocumentTypes: true }
+      }
+    })
+    await employeeLogin(page, unitSupervisor)
+    await page.goto(`${config.employeeUrl}/child-information/${testChild2.id}`)
+    const childInformationPage = new ChildInformationPage(page)
+    const childDocumentsSection =
+      await childInformationPage.openCollapsible('childDocuments')
+    await waitUntilEqual(childDocumentsSection.externalChildDocumentsCount, 1)
+    const row = childDocumentsSection.externalChildDocuments(0)
+    await row.sent.assertTextEquals(publishedAt.toLocalDate().format())
+    await row.answered.assertTextEquals(
+      `${answeredAt.toLocalDate().format()}, ${guardian.lastName} ${guardian.firstName}`
+    )
+    await row.status.assertTextEquals('Valmis')
   })
 })

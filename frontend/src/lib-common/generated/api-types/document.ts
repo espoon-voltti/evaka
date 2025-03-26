@@ -12,6 +12,7 @@ import { ChildDocumentId } from './shared'
 import { DocumentConfidentiality } from './process'
 import { DocumentTemplateId } from './shared'
 import { EmployeeId } from './shared'
+import { EvakaUser } from './user'
 import { JsonOf } from '../../json'
 import { OfficialLanguage } from './shared'
 import { PersonId } from './shared'
@@ -168,6 +169,8 @@ export interface ChildDocumentDetails {
 * Generated from fi.espoo.evaka.document.childdocument.ChildDocumentSummary
 */
 export interface ChildDocumentSummary {
+  answeredAt: HelsinkiDateTime | null
+  answeredBy: EvakaUser | null
   id: ChildDocumentId
   modifiedAt: HelsinkiDateTime
   publishedAt: HelsinkiDateTime | null
@@ -214,6 +217,7 @@ export interface DocumentLockResponse {
 export type DocumentStatus =
   | 'DRAFT'
   | 'PREPARED'
+  | 'CITIZEN_DRAFT'
   | 'COMPLETED'
 
 /**
@@ -281,6 +285,7 @@ export const documentTypes = [
   'MIGRATED_LEOPS',
   'VASU',
   'LEOPS',
+  'CITIZEN_BASIC',
   'OTHER'
 ] as const
 
@@ -495,6 +500,7 @@ export function deserializeJsonChildDocumentDetails(json: JsonOf<ChildDocumentDe
 export function deserializeJsonChildDocumentSummary(json: JsonOf<ChildDocumentSummary>): ChildDocumentSummary {
   return {
     ...json,
+    answeredAt: (json.answeredAt != null) ? HelsinkiDateTime.parseIso(json.answeredAt) : null,
     modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt),
     publishedAt: (json.publishedAt != null) ? HelsinkiDateTime.parseIso(json.publishedAt) : null
   }

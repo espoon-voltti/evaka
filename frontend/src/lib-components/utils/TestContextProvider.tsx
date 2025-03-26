@@ -64,6 +64,7 @@ export const testTranslations: Translations = {
     documentStates: {
       DRAFT: '',
       PREPARED: '',
+      CITIZEN_DRAFT: '',
       COMPLETED: ''
     }
   },
