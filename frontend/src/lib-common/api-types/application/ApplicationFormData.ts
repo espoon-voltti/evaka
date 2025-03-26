@@ -10,12 +10,11 @@ import {
   ApplicationFormUpdate,
   CitizenChildren,
   OtherGuardianAgreementStatus,
+  PreferredUnit,
   ServiceNeedOption
 } from 'lib-common/generated/api-types/application'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import LocalDate from 'lib-common/local-date'
-
-import { DaycareId } from '../../generated/api-types/shared'
 
 export type ServiceNeedFormData = {
   preferredStartDate: LocalDate | null
@@ -43,7 +42,7 @@ export type UnitPreferenceFormData = {
   siblingName: string
   siblingSsn: string
   siblingUnit: string
-  preferredUnits: { id: DaycareId; name: string }[]
+  preferredUnits: PreferredUnit[]
 }
 
 export type SelectableOtherGuardianAgreementStatus = Exclude<
