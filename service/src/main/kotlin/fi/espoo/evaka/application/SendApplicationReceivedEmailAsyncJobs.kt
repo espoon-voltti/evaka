@@ -7,10 +7,7 @@ package fi.espoo.evaka.application
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.Database
-import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Component
-
-private val logger = KotlinLogging.logger {}
 
 @Component
 class SendApplicationReceivedEmailAsyncJobs(

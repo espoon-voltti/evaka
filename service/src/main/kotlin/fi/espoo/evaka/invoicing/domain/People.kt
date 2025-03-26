@@ -8,7 +8,6 @@ import fi.espoo.evaka.pis.HasDateOfBirth
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.PersonId
-import fi.espoo.evaka.shared.domain.DateRange
 import java.time.LocalDate
 import org.jdbi.v3.core.mapper.PropagateNull
 
@@ -52,14 +51,3 @@ data class PersonDetailed(
 
 fun addressUsable(streetAddress: String?, postalCode: String?, city: String?): Boolean =
     listOf(streetAddress, postalCode, city).none { it.isNullOrBlank() }
-
-data class FridgeFamily(
-    val headOfFamily: PersonId,
-    val partner: PersonId?,
-    val children: List<PersonBasic>,
-    val period: DateRange,
-) {
-    fun getSize(): Int {
-        return 1 + (if (partner != null) 1 else 0) + children.size
-    }
-}

@@ -38,8 +38,6 @@ data class UnitBackupCare(
     val missingServiceNeedDays: Int,
 )
 
-data class GroupBackupCare(val id: BackupCareId, val childId: ChildId, val period: FiniteDateRange)
-
 data class BackupCareChild(
     val id: ChildId,
     val firstName: String,

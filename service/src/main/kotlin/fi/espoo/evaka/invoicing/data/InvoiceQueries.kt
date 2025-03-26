@@ -214,30 +214,6 @@ fun Database.Read.getSentInvoicesOfMonth(
         .toList()
 }
 
-fun Database.Read.getSentInvoiceOfMonth(
-    month: YearMonth,
-    headOfFamilyId: PersonId,
-): InvoiceDetailed? {
-    val periodStart = month.atDay(1)
-    val periodEnd = month.atEndOfMonth()
-    val statuses = listOf(InvoiceStatus.SENT, InvoiceStatus.WAITING_FOR_SENDING)
-    return createQuery {
-            invoiceDetailedQuery(
-                Predicate {
-                    where(
-                        """
-                        $it.head_of_family = ${bind(headOfFamilyId)} AND
-                        $it.period_start = ${bind(periodStart)} AND
-                        $it.period_end = ${bind(periodEnd)} AND
-                        $it.status = ANY (${bind(statuses)})
-                        """
-                    )
-                }
-            )
-        }
-        .exactlyOneOrNull()
-}
-
 fun Database.Read.getInvoiceIdsByDates(
     range: FiniteDateRange,
     areas: List<String>,

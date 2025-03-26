@@ -6,6 +6,7 @@ import React, { useCallback, useState } from 'react'
 
 import { FinanceDecisionCitizenInfo } from 'lib-common/generated/api-types/application'
 import { FinanceDecisionType } from 'lib-common/generated/api-types/invoicing'
+import { fromUuid } from 'lib-common/id-type'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import ListGrid from 'lib-components/layout/ListGrid'
@@ -13,7 +14,10 @@ import { H3, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { faFileAlt } from 'lib-icons'
 
-import { API_URL } from '../../api-client'
+import {
+  downloadFeeDecisionPdf,
+  downloadVoucherValueDecisionPdf
+} from '../../generated/api-clients/application'
 import { useTranslation } from '../../localization'
 
 interface Props {
@@ -23,8 +27,10 @@ interface Props {
 
 const getDecisionUrl = (decisionId: string, type: FinanceDecisionType) =>
   type === 'FEE_DECISION'
-    ? `${API_URL}/citizen/fee-decisions/${decisionId}/download`
-    : `${API_URL}/citizen/voucher-value-decisions/${decisionId}/download`
+    ? downloadFeeDecisionPdf({ id: fromUuid(decisionId) }).url.toString()
+    : downloadVoucherValueDecisionPdf({
+        id: fromUuid(decisionId)
+      }).url.toString()
 
 export default React.memo(function FinanceDecision({
   decisionData,

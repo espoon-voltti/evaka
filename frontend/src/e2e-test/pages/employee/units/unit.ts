@@ -12,7 +12,7 @@ import { UUID } from 'lib-common/types'
 
 import config from '../../../config'
 import { postPairingChallenge } from '../../../generated/api-clients'
-import { waitUntilEqual, waitUntilFalse, waitUntilTrue } from '../../../utils'
+import { waitUntilEqual, waitUntilTrue } from '../../../utils'
 import {
   Checkbox,
   Combobox,
@@ -28,7 +28,6 @@ import {
 import { UnitCalendarPageBase } from './unit-calendar-page-base'
 import { DiscussionSurveyListPage } from './unit-discussion-survey-page'
 import { UnitGroupsPage } from './unit-groups-page'
-import { UnitMonthCalendarPage } from './unit-month-calendar-page'
 import { UnitWeekCalendarPage } from './unit-week-calendar-page'
 
 type UnitProviderType =
@@ -126,11 +125,6 @@ export class UnitCalendarPage extends UnitCalendarPageBase {
   async openWeekCalendar(): Promise<UnitWeekCalendarPage> {
     await this.weekModeButton.click()
     return new UnitWeekCalendarPage(this.page)
-  }
-
-  async openMonthCalendar(): Promise<UnitMonthCalendarPage> {
-    await this.monthModeButton.click()
-    return new UnitMonthCalendarPage(this.page)
   }
 }
 
@@ -244,7 +238,6 @@ export class UnitEditor {
   #managerNameInput: TextInput
   #managerPhoneInputField: TextInput
   #managerEmailInputField: TextInput
-  #checkInvoicedByMunicipality: Element
   #invoiceByMunicipality: Checkbox
   #closingDateInput: DatePickerDeprecated
   #unitHandlerAddressInput: TextInput
@@ -265,9 +258,6 @@ export class UnitEditor {
     )
     this.#managerEmailInputField = new TextInput(
       page.findByDataQa('qa-unit-manager-email-input-field')
-    )
-    this.#checkInvoicedByMunicipality = page.findByDataQa(
-      'check-invoice-by-municipality'
     )
     this.#invoiceByMunicipality = new Checkbox(
       page.findByDataQa('check-invoice-by-municipality')
@@ -314,21 +304,6 @@ export class UnitEditor {
   ) {
     await this.#shiftCareTimeInput(dayNumber, 'start').fill(start)
     await this.#shiftCareTimeInput(dayNumber, 'end').fill(end)
-  }
-
-  async assertShiftCareOperationChecked(dayIndex: number, checked: boolean) {
-    const checkbox = new Checkbox(
-      this.page.findByDataQa(`shift-care-operation-day-${dayIndex}`)
-    )
-    await checkbox.waitUntilChecked(checked)
-  }
-
-  async setProvidesShiftCare(on: boolean) {
-    if (on) {
-      await this.providesShiftCare.check()
-    } else {
-      await this.providesShiftCare.uncheck()
-    }
   }
 
   async clearDayTimeRange(dayNumber: number) {
@@ -449,10 +424,6 @@ export class UnitEditor {
     }
   }
 
-  async clickInvoicedByMunicipality() {
-    await this.#checkInvoicedByMunicipality.click()
-  }
-
   async submit() {
     await this.saveButton.click()
     return new UnitDetailsPage(this.page)
@@ -564,11 +535,6 @@ class AclSection extends Element {
     await new Modal(this.page.findByDataQa('confirm-delete')).submit()
   }
 
-  async deleteAclByIndex(index: number) {
-    await this.#tableRows.nth(index).findByDataQa('delete').click()
-    await new Modal(this.page.findByDataQa('confirm-delete')).submit()
-  }
-
   async assertRowFields(
     row: Element,
     fields: {
@@ -611,29 +577,8 @@ class AclSection extends Element {
     )
   }
 
-  async assertRowsExactly(
-    rows: {
-      name: string
-      email: string
-      role: AclRole
-      groups: string[]
-      occupancyCoefficient: boolean
-    }[]
-  ) {
-    await this.#tableRows.assertCount(rows.length)
-    await Promise.all(
-      rows.map((fields, index) =>
-        this.assertRowFields(this.#tableRows.nth(index), fields)
-      )
-    )
-  }
-
   getRow(id: UUID) {
     return new AclRow(this.#table.find(`[data-qa="acl-row-${id}"]`))
-  }
-
-  getRowByIndex(index: number) {
-    return new AclRow(this.#tableRows.nth(index))
   }
 }
 
@@ -655,8 +600,6 @@ class TemporaryEmployeesSection extends Element {
 
   #table = this.findByDataQa('temporary-employee-table')
   #tableRows = this.#table.findAll(`[data-qa^="temporary-employee-row-"]`)
-  #tableRow = (id: UUID) =>
-    this.#table.find(`[data-qa="temporary-employee-row-${id}"]`)
 
   #previousTemporaryEmployeeTable = this.findByDataQa(
     'previous-temporary-employee-table'
@@ -720,22 +663,6 @@ class TemporaryEmployeesSection extends Element {
     await waitUntilEqual(
       () => row.find('[data-qa="groups"] > div').findAll('div').allTexts(),
       fields.groups
-    )
-  }
-
-  async assertRows(
-    rows: {
-      id: UUID
-      name: string
-      groups: string[]
-      occupancyCoefficient: boolean
-    }[]
-  ) {
-    await waitUntilEqual(() => this.#tableRows.count(), rows.length)
-    await Promise.all(
-      rows.map((fields) =>
-        this.assertRowFields(this.#tableRow(fields.id), fields)
-      )
     )
   }
 
@@ -841,12 +768,6 @@ export class ApplicationProcessPage {
     this.serviceApplications = new ServiceApplicationsSection(this.page)
   }
 
-  async waitUntilLoaded() {
-    await this.page
-      .find('[data-qa="daycare-applications"][data-isloading="false"]')
-      .waitUntilVisible()
-  }
-
   async waitUntilVisible() {
     await this.waitingConfirmation.waitUntilVisible()
   }
@@ -909,10 +830,6 @@ class PlacementProposalsSection {
 
   async assertAcceptButtonDisabled() {
     await waitUntilTrue(() => this.#acceptButton.disabled)
-  }
-
-  async assertAcceptButtonEnabled() {
-    await waitUntilFalse(() => this.#acceptButton.disabled)
   }
 
   async clickAcceptButton() {

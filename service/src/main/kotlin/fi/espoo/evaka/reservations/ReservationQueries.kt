@@ -62,23 +62,6 @@ RETURNING id
         .executeAndReturn()
         .toList()
 
-fun Database.Transaction.clearReservationsForRangeExceptInHolidayPeriod(
-    childId: ChildId,
-    range: DateRange,
-): Int {
-    return createUpdate {
-            sql(
-                """
-                DELETE FROM attendance_reservation
-                WHERE child_id = ${bind(childId)}
-                AND between_start_and_end(${bind(range)}, date)
-                AND NOT EXISTS (SELECT 1 FROM holiday_period hp WHERE period @> date)
-                """
-            )
-        }
-        .execute()
-}
-
 fun Database.Transaction.deleteReservationsInRange(childId: ChildId, range: DateRange): Int {
     return createUpdate {
             sql(

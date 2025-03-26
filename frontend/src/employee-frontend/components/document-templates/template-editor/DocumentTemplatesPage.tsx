@@ -14,7 +14,6 @@ import { useBoolean, useForm } from 'lib-common/form/hooks'
 import { DocumentTemplateSummary } from 'lib-common/generated/api-types/document'
 import { DocumentTemplateId } from 'lib-common/generated/api-types/shared'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import Container, { ContentArea } from 'lib-components/layout/Container'
@@ -33,7 +32,7 @@ import {
   faTrash
 } from 'lib-icons'
 
-import { API_URL } from '../../../api/client'
+import { exportTemplate } from '../../../generated/api-clients/document'
 import { useTranslation } from '../../../state/i18n'
 import { renderResult } from '../../async-rendering'
 import { FlexRow } from '../../common/styled/containers'
@@ -45,10 +44,6 @@ import {
 
 import TemplateImportModal from './TemplateImportModal'
 import TemplateModal, { TemplateModalMode } from './TemplateModal'
-
-function exportDocumentTemplateUrl(id: UUID): string {
-  return `${API_URL}/employee/document-templates/${encodeURIComponent(id)}/export`
-}
 
 const validityForm = required(openEndedLocalDateRange())
 
@@ -115,7 +110,7 @@ const TemplateRow = React.memo(function TemplateRow({
     deleteDocumentTemplateMutation
   )
   const exportUrl = useMemo(
-    () => exportDocumentTemplateUrl(template.id),
+    () => exportTemplate({ templateId: template.id }).url.toString(),
     [template.id]
   )
 

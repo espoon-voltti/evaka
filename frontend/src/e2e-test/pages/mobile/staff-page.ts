@@ -263,10 +263,6 @@ export class StaffAttendancePage {
     await this.staffArrivalPage.arrivalTypeCheckbox(type).click()
   }
 
-  async assertArrivalTypeCheckboxVisible(type: StaffAttendanceType) {
-    await this.staffArrivalPage.arrivalTypeCheckbox(type).waitUntilVisible()
-  }
-
   async markStaffArrived(args: {
     pin: string
     time: string
@@ -283,10 +279,6 @@ export class StaffAttendancePage {
       await this.staffArrivalPage.occupancyEffectCheckbox.uncheck()
     }
     await this.anyArrivalPage.markArrived.click()
-  }
-
-  async assertMarkStaffArrivedDisabled() {
-    await this.staffMemberPage.markArrivedBtn.assertDisabled(true)
   }
 
   async markStaffDeparted(args: { pin: string; time?: string }) {

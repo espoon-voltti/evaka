@@ -162,12 +162,6 @@ export default class ApplicationReadView {
     await this.#applicationStatus.findText(text).waitUntilVisible()
   }
 
-  async assertUrgentAttachmentExists(fileName: string) {
-    await this.page
-      .find(`[data-qa="urgent-attachment-${fileName}"]`)
-      .waitUntilVisible()
-  }
-
   async assertUrgencyAttachmentReceivedAtVisible(
     fileName: string,
     byPaper = true
@@ -183,12 +177,6 @@ export default class ApplicationReadView {
         byPaper ? 'Toimitettu paperisena' : 'Toimitettu sähköisesti'
       )
     )
-  }
-
-  async assertUrgentAttachmentDoesNotExists(fileName: string) {
-    await this.page
-      .find(`[data-qa="urgent-attachment-${fileName}"]`)
-      .waitUntilHidden()
   }
 
   async assertExtendedCareAttachmentExists(fileName: string) {

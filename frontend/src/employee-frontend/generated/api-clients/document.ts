@@ -29,7 +29,6 @@ import { deserializeJsonChildDocumentWithPermittedActions } from 'lib-common/gen
 import { deserializeJsonDocumentLockResponse } from 'lib-common/generated/api-types/document'
 import { deserializeJsonDocumentTemplate } from 'lib-common/generated/api-types/document'
 import { deserializeJsonDocumentTemplateSummary } from 'lib-common/generated/api-types/document'
-import { deserializeJsonExportedDocumentTemplate } from 'lib-common/generated/api-types/document'
 import { uri } from 'lib-common/uri'
 
 
@@ -87,16 +86,14 @@ export async function duplicateTemplate(
 /**
 * Generated from fi.espoo.evaka.document.DocumentTemplateController.exportTemplate
 */
-export async function exportTemplate(
+export function exportTemplate(
   request: {
     templateId: DocumentTemplateId
   }
-): Promise<ExportedDocumentTemplate> {
-  const { data: json } = await client.request<JsonOf<ExportedDocumentTemplate>>({
-    url: uri`/employee/document-templates/${request.templateId}/export`.toString(),
-    method: 'GET'
-  })
-  return deserializeJsonExportedDocumentTemplate(json)
+): { url: Uri } {
+  return {
+    url: uri`/employee/document-templates/${request.templateId}/export`.withBaseUrl(client.defaults.baseURL ?? '')
+  }
 }
 
 

@@ -42,12 +42,6 @@ export default class ConfirmedDayReservationPage {
     await this.dayRow(date).findByDataQa('open-day-button').click()
   }
 
-  async assertChildItemExists(date: LocalDate, childId: UUID) {
-    await this.dayRow(date)
-      .findByDataQa(`child-item-${childId}`)
-      .waitUntilVisible()
-  }
-
   async assertChildDetails(
     date: LocalDate,
     childId: UUID,

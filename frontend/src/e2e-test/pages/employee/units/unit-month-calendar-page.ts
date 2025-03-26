@@ -15,35 +15,22 @@ import {
   Element,
   Modal,
   Radio,
-  Select,
   TextInput,
   Page
 } from '../../../utils/page'
 
 import { UnitCalendarPageBase } from './unit-calendar-page-base'
-import { UnitWeekCalendarPage } from './unit-week-calendar-page'
 
 export class UnitMonthCalendarPage extends UnitCalendarPageBase {
-  #unitName: Element
-  #groupSelector: Select
   previousWeekButton: Element
   nextWeekButton: Element
   #addAbsencesButton: Element
 
   constructor(page: Page) {
     super(page)
-    this.#unitName = page.findByDataQa('attendances-unit-name')
-    this.#groupSelector = new Select(
-      page.findByDataQa('attendances-group-select')
-    )
     this.previousWeekButton = page.findByDataQa('previous-week')
     this.nextWeekButton = page.findByDataQa('next-week')
     this.#addAbsencesButton = page.findByDataQa('add-absences-button')
-  }
-
-  async openWeekCalendar(): Promise<UnitWeekCalendarPage> {
-    await this.weekModeButton.click()
-    return new UnitWeekCalendarPage(this.page)
   }
 
   childRow = (childId: UUID) =>
@@ -55,14 +42,6 @@ export class UnitMonthCalendarPage extends UnitCalendarPageBase {
     )
 
   #staffAttendanceCells = this.page.findAll('[data-qa="staff-attendance-cell"]')
-
-  async assertUnitName(expectedName: string) {
-    await this.#unitName.assertTextEquals(expectedName)
-  }
-
-  async assertSelectedGroup(groupId: UUID) {
-    await waitUntilEqual(() => this.#groupSelector.selectedOption, groupId)
-  }
 
   async addAbsenceToChild(
     childId: UUID,

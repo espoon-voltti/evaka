@@ -256,66 +256,6 @@ export class DailyServiceTimeSection extends Section {
   }
 }
 
-export class DailyServiceTimesSectionEdit extends Section {
-  readonly #notSetRadio = this.find('[data-qa="radio-not-set"]')
-
-  readonly #regularRadio = new Radio(this.find('[data-qa="radio-regular"]'))
-  readonly #irregularRadio = new Radio(this.find('[data-qa="radio-irregular"]'))
-  readonly #submitButton = this.find('[data-qa="submit-button"]')
-
-  async selectTimeNotSet() {
-    await this.#notSetRadio.click()
-  }
-
-  async selectRegularTime() {
-    await this.#regularRadio.click()
-  }
-
-  async regularTimeIsSelected() {
-    return await this.#regularRadio.checked
-  }
-
-  async selectIrregularTime() {
-    await this.#irregularRadio.click()
-  }
-
-  #timeInput(which: string, startEnd: 'start' | 'end') {
-    return new TextInput(this.find(`[data-qa="${which}-${startEnd}"]`))
-  }
-
-  async fillTimeRange(which: string, start: string, end: string) {
-    await this.#timeInput(which, 'start').fill(start)
-    await this.#timeInput(which, 'end').fill(end)
-  }
-
-  #checkbox(day: string) {
-    return this.find(`[data-qa="${day}-checkbox"]`)
-  }
-
-  async selectDay(day: string) {
-    await this.#checkbox(day).click()
-  }
-
-  async dayIsSelected(day: string) {
-    return new Checkbox(this.#checkbox(day)).checked
-  }
-
-  async hasTimeRange(day: string, start: string, end: string) {
-    return (
-      (await this.#timeInput(day, 'start').inputValue) === start &&
-      (await this.#timeInput(day, 'end').inputValue) === end
-    )
-  }
-
-  get submitIsDisabled(): Promise<boolean> {
-    return this.#submitButton.disabled
-  }
-
-  async submit() {
-    await this.#submitButton.click()
-  }
-}
-
 export class PedagogicalDocumentsSection extends Section {
   readonly #startDate = this.find('[data-qa="pedagogical-document-start-date"]')
 
@@ -700,9 +640,6 @@ export class PlacementsSection extends Section {
     this.#serviceNeedRow(index).findByDataQa('part-week')
   addMissingServiceNeedButton = this.find(
     '[data-qa="add-new-missing-service-need"]'
-  )
-  serviceNeedStartDate = new DatePicker(
-    this.findByDataQa('service-need-range').findByDataQa('start-date')
   )
   serviceNeedEndDate = new DatePicker(
     this.findByDataQa('service-need-range').findByDataQa('end-date')

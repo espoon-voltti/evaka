@@ -62,8 +62,6 @@ export class FinancePage {
 }
 
 export class FeeDecisionsPage {
-  #feeDecisionListPage: Element
-  #navigateBackButton: Element
   #allFeeDecisionsToggle: Checkbox
   #sendFeeDecisionsButton: AsyncButton
   #openDecisionHandlerSelectModalButton: AsyncButton
@@ -71,8 +69,6 @@ export class FeeDecisionsPage {
   searchButton: Element
 
   constructor(private readonly page: Page) {
-    this.#feeDecisionListPage = page.findByDataQa('fee-decisions-page')
-    this.#navigateBackButton = page.findByDataQa('navigate-back')
     this.#allFeeDecisionsToggle = new Checkbox(
       page.findByDataQa('toggle-all-decisions')
     )
@@ -102,11 +98,6 @@ export class FeeDecisionsPage {
     const detailsPage = new FeeDecisionDetailsPage(popup)
     await detailsPage.waitUntilVisible()
     return detailsPage
-  }
-
-  async navigateBackFromDetails() {
-    await this.#navigateBackButton.click()
-    await this.#feeDecisionListPage.waitUntilVisible()
   }
 
   async toggleAllFeeDecisions(toggledOn: boolean) {
@@ -373,7 +364,6 @@ export class InvoicesPage {
   #openSendInvoicesDialogButton: Element
   #sendInvoicesDialog: Element
   #navigateBack: Element
-  #invoiceDetailsHeadOfFamily: Element
   #markInvoiceSentButton: AsyncButton
   #invoices: Element
   #sendInvoicesButton: AsyncButton
@@ -392,9 +382,6 @@ export class InvoicesPage {
     )
     this.#sendInvoicesDialog = page.findByDataQa('send-invoices-dialog')
     this.#navigateBack = page.findByDataQa('navigate-back')
-    this.#invoiceDetailsHeadOfFamily = page.findByDataQa(
-      'invoice-details-head-of-family'
-    )
     this.#markInvoiceSentButton = new AsyncButton(
       page.findByDataQa('invoice-actions-mark-sent')
     )
@@ -450,28 +437,9 @@ export class InvoicesPage {
     return new InvoiceDetailsPage(this.page)
   }
 
-  async assertInvoiceHeadOfFamily(fullName: string) {
-    await this.#invoiceDetailsPage.waitUntilVisible()
-    await this.#invoiceDetailsHeadOfFamily.assertTextEquals(fullName)
-  }
-
   async navigateBackToInvoices() {
     await this.#navigateBack.click()
     await this.#invoicesPage.waitUntilVisible()
-  }
-
-  async assertInvoiceRowCount(count: number) {
-    await waitUntilEqual(
-      () =>
-        this.page.findAll('[data-qa="invoice-details-invoice-row"]').count(),
-      count
-    )
-  }
-
-  async assertInvoiceTotal(total: number) {
-    await this.#invoiceInList
-      .find('[data-qa="invoice-total"]')
-      .assertTextEquals(this.formatFinnishDecimal(total))
   }
 
   async freeTextFilter(text: string) {
@@ -483,10 +451,6 @@ export class InvoicesPage {
   async markInvoiceSent() {
     await this.#markInvoiceSentButton.click()
     await this.#markInvoiceSentButton.waitUntilHidden()
-  }
-
-  private formatFinnishDecimal(number: number) {
-    return String(number).replace('.', ',')
   }
 }
 

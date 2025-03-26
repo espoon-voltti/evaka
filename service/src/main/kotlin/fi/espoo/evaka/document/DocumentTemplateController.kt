@@ -7,6 +7,7 @@ package fi.espoo.evaka.document
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.EvakaEnv
+import fi.espoo.evaka.ForcePlainGet
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ChildId
@@ -157,6 +158,7 @@ class DocumentTemplateController(
             ?: throw NotFound("Document template $templateId not found")
     }
 
+    @ForcePlainGet
     @GetMapping("/{templateId}/export")
     fun exportTemplate(
         db: Database,

@@ -35,10 +35,6 @@ export class CitizenChildIncomeStatementViewPage {
       .findByDataQa(`file-${name}`)
       .waitUntilVisible()
   }
-
-  async clickGoBack() {
-    await this.page.findText('Palaa').click()
-  }
 }
 
 export class CitizenChildIncomeStatementEditSentPage {
@@ -47,29 +43,13 @@ export class CitizenChildIncomeStatementEditSentPage {
   attachment: FileUpload
   saveButton: Element
 
-  constructor(private readonly page: Page) {
+  constructor(page: Page) {
     this.startDate = page.findByDataQa('start-date')
     this.otherInfoInput = new TextInput(page.findByDataQa('other-info'))
     this.attachment = new FileUpload(
       page.findByDataQa('attachment-section-CHILD_INCOME')
     )
     this.saveButton = page.findByDataQa('save-btn')
-  }
-
-  async assertAttachmentExists(name: string) {
-    await waitUntilTrue(async () =>
-      (
-        await this.page.findAllByDataQa('attachment-download-button').allTexts()
-      ).includes(name)
-    )
-  }
-
-  async clickEdit() {
-    await this.page.findByDataQa('edit-button').click()
-  }
-
-  async clickGoBack() {
-    await this.page.findText('Palaa').click()
   }
 }
 

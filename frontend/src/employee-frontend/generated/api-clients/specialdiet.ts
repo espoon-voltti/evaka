@@ -4,8 +4,6 @@
 
 // GENERATED FILE: no manual modifications
 
-import { JamixSpecialDiet } from 'lib-common/generated/api-types/jamix'
-import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
 import { MealTexture } from 'lib-common/generated/api-types/specialdiet'
 import { SpecialDiet } from 'lib-common/generated/api-types/specialdiet'
@@ -32,23 +30,6 @@ export async function getDiets(): Promise<SpecialDiet[]> {
   const { data: json } = await client.request<JsonOf<SpecialDiet[]>>({
     url: uri`/employee/diets`.toString(),
     method: 'GET'
-  })
-  return json
-}
-
-
-/**
-* Generated from fi.espoo.evaka.specialdiet.SpecialDietController.putDiets
-*/
-export async function putDiets(
-  request: {
-    body: JamixSpecialDiet[]
-  }
-): Promise<void> {
-  const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/employee/diets`.toString(),
-    method: 'PUT',
-    data: request.body satisfies JsonCompatible<JamixSpecialDiet[]>
   })
   return json
 }

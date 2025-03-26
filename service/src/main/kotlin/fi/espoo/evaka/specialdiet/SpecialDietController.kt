@@ -5,8 +5,6 @@
 package fi.espoo.evaka.specialdiet
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.jamix.JamixSpecialDiet
-import fi.espoo.evaka.jamix.cleanupJamixDietList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
@@ -17,34 +15,6 @@ import org.springframework.web.bind.annotation.*
 @RestController
 @RequestMapping("/employee/diets")
 class SpecialDietController(private val accessControl: AccessControl) {
-
-    /**
-     * There is no UI for this endpoint. The point of this endpoint is to digest a list of diets in
-     * the format Jamix API returns them from its GET /diets endpoint.
-     */
-    @PutMapping
-    fun putDiets(
-        db: Database,
-        user: AuthenticatedUser.Employee,
-        clock: EvakaClock,
-        @RequestBody specialDietList: List<JamixSpecialDiet>,
-    ) {
-        db.connect { dbc ->
-                dbc.transaction { tx ->
-                    accessControl.requirePermissionFor(
-                        tx,
-                        user,
-                        clock,
-                        Action.Global.UPDATE_SPECIAL_DIET_LIST,
-                    )
-                    val cleanedDietList = cleanupJamixDietList(specialDietList)
-                    tx.resetSpecialDietsNotContainedWithin(clock.today(), cleanedDietList)
-                    tx.setSpecialDiets(cleanedDietList)
-                }
-            }
-            .also { Audit.SpecialDietsUpdate.log() }
-    }
-
     @GetMapping
     fun getDiets(
         db: Database,

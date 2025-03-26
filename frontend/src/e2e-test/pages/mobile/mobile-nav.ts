@@ -24,10 +24,6 @@ export default class MobileNav {
     return this.page.findByDataQa(`group--${id}`)
   }
 
-  get selectedGroupName() {
-    return this.#groupSelectorButton.text
-  }
-
   async selectGroup(id: UUID) {
     await this.#groupSelectorButton.click()
     await this.groupWithId(id).click()

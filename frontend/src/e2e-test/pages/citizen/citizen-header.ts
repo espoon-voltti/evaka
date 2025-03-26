@@ -159,26 +159,6 @@ export default class CitizenHeader {
     }
   }
 
-  async assertChildUnreadCount(childId: string, expectedCount: number) {
-    await this.#childrenNav.waitUntilVisible()
-    if (await this.#childrenNav.findByDataQa('drop-down-icon').visible) {
-      await this.#toggleChildrenMenu()
-      const notification = this.page.findByDataQa(
-        `children-menu-${childId}-notification-count`
-      )
-      if (expectedCount !== 0) {
-        await notification.assertText(
-          (text) => text === expectedCount.toString()
-        )
-      } else {
-        await notification.waitUntilHidden()
-      }
-      await this.#toggleChildrenMenu()
-    } else {
-      await this.assertUnreadChildrenCount(expectedCount)
-    }
-  }
-
   async assertNoChildrenTab() {
     await this.#childrenNav.waitUntilHidden()
   }

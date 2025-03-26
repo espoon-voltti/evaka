@@ -22,7 +22,6 @@ import fi.espoo.evaka.pis.getPersonDuplicateOf
 import fi.espoo.evaka.pis.searchPeople
 import fi.espoo.evaka.pis.service.FridgeFamilyService
 import fi.espoo.evaka.pis.service.MergeService
-import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.pis.service.PersonJSON
 import fi.espoo.evaka.pis.service.PersonPatch
 import fi.espoo.evaka.pis.service.PersonService
@@ -665,16 +664,6 @@ class PersonController(
     data class AddSsnRequest(val ssn: String)
 
     data class DisableSsnRequest(val disabled: Boolean)
-
-    data class PersonIdentityResponseJSON(val id: PersonId, val socialSecurityNumber: String?) {
-        companion object {
-            fun from(person: PersonDTO): PersonIdentityResponseJSON =
-                PersonIdentityResponseJSON(
-                    id = person.id,
-                    socialSecurityNumber = (person.identity as? ExternalIdentifier.SSN)?.ssn,
-                )
-        }
-    }
 }
 
 data class SearchPersonBody(val searchTerm: String, val orderBy: String, val sortDirection: String)

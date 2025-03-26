@@ -181,7 +181,10 @@ class ParentshipControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         // child1 should have new dates
         val fetched1 =
-            controller.getParentships(dbInstance(), user, clock, childId = child.id).first().data
+            controller
+                .getParentships(dbInstance(), user, clock, childId = child.id)
+                .single { it.data.id == parentship.id }
+                .data
         assertEquals(newStartDate, fetched1.startDate)
         assertEquals(newEndDate, fetched1.endDate)
     }

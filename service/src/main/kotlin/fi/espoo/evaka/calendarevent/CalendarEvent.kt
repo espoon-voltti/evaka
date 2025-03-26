@@ -63,15 +63,6 @@ data class AttendingChild(
     val unitName: String?,
 )
 
-data class CitizenDiscussionSurvey(
-    val id: CalendarEventId,
-    val title: String,
-    val description: String,
-    val timesByChild: Map<ChildId, List<CalendarEventTime>>,
-    val eventType: CalendarEventType,
-    @Json val attendingChildren: Map<ChildId, List<AttendingChild>>,
-)
-
 data class CitizenCalendarEvent(
     val id: CalendarEventId,
     val title: String,
