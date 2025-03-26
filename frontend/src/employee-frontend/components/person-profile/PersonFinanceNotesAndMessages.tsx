@@ -102,7 +102,9 @@ export default React.memo(function PersonFinanceNotesAndMessages({
   const [open, setIsOpen] = useState(startOpen)
   const financeNotes = useQueryResult(financeNotesQuery({ personId: id }))
   const [text, setText] = useState<string>('')
-  const financeMessages = useQueryResult(financeThreadsQuery({ personId: id }))
+  const financeMessages = useQueryResult(
+    financeAccount ? financeThreadsQuery({ personId: id }) : constantQuery([])
+  )
   const [sending, setSending] = useState(false)
   const [thread, setThread] = useState<MessageThread>()
   const messageDrafts = useQueryResult(
@@ -293,7 +295,7 @@ export default React.memo(function PersonFinanceNotesAndMessages({
                 toggleUiMode('new-finance-message-editor')
               }}
               data-qa="send-finance-message-button"
-              disabled={false}
+              disabled={financeAccount === undefined}
             />
           </FlexRow>
         </BorderedContentArea>
@@ -338,44 +340,43 @@ export default React.memo(function PersonFinanceNotesAndMessages({
           ([threads, notes]) => (
             // list note items eiter edit or view mode
             <>
-              {financeAccount &&
-                [...threads, ...notes]
-                  .sort((a, b) => {
-                    const dateA = isMessageThread(a)
-                      ? a.messages[0].sentAt
-                      : a.note.createdAt
-                    const dateB = isMessageThread(b)
-                      ? b.messages[0].sentAt
-                      : b.note.createdAt
-                    return dateB.formatIso().localeCompare(dateA.formatIso())
-                  })
-                  .map((item) =>
-                    isMessageThread(item) ? (
-                      <SingleThread
-                        key={item.id}
-                        id={id}
-                        thread={item}
-                        financeAccountId={financeAccount?.account.id}
-                        setThread={setThread}
-                        refreshMessages={refreshMessages}
-                        uiMode={uiMode}
-                        clearUiMode={clearUiMode}
-                        toggleUiMode={toggleUiMode}
-                      />
-                    ) : (
-                      <SingleNote
-                        key={item.note.id}
-                        id={id}
-                        note={item.note}
-                        permittedActions={item.permittedActions}
-                        text={text}
-                        setText={setText}
-                        uiMode={uiMode}
-                        clearUiMode={clearUiMode}
-                        toggleUiMode={toggleUiMode}
-                      />
-                    )
-                  )}
+              {[...threads, ...notes]
+                .sort((a, b) => {
+                  const dateA = isMessageThread(a)
+                    ? a.messages[0].sentAt
+                    : a.note.createdAt
+                  const dateB = isMessageThread(b)
+                    ? b.messages[0].sentAt
+                    : b.note.createdAt
+                  return dateB.formatIso().localeCompare(dateA.formatIso())
+                })
+                .map((item) =>
+                  isMessageThread(item) ? (
+                    <SingleThread
+                      key={item.id}
+                      id={id}
+                      thread={item}
+                      financeAccountId={financeAccount!.account.id}
+                      setThread={setThread}
+                      refreshMessages={refreshMessages}
+                      uiMode={uiMode}
+                      clearUiMode={clearUiMode}
+                      toggleUiMode={toggleUiMode}
+                    />
+                  ) : (
+                    <SingleNote
+                      key={item.note.id}
+                      id={id}
+                      note={item.note}
+                      permittedActions={item.permittedActions}
+                      text={text}
+                      setText={setText}
+                      uiMode={uiMode}
+                      clearUiMode={clearUiMode}
+                      toggleUiMode={toggleUiMode}
+                    />
+                  )
+                )}
             </>
           )
         )}
