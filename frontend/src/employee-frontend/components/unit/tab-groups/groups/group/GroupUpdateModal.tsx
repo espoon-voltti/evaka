@@ -164,14 +164,11 @@ export default React.memo(function GroupUpdateModal({
                 {i18n.unit.groups.updateModal.nekkuUnitTitle}
               </div>
               <Combobox
+                clearable
                 items={nekkuUnits}
-                selectedItem={
-                  data.nekkuCustomerNumber
-                    ? nekkuUnits.find(
-                        (item) => item.number === data.nekkuCustomerNumber
-                      )
-                    : null
-                }
+                selectedItem={nekkuUnits.find(
+                  (item) => item.number === data.nekkuCustomerNumber
+                )}
                 getItemLabel={(item) => (item ? item.name : '')}
                 onChange={(option) =>
                   setData((prev) => ({
