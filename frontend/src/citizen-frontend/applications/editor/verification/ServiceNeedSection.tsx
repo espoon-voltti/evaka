@@ -26,11 +26,13 @@ import { ApplicationDataGridLabelWidth } from './const'
 type ServiceNeedSectionProps = {
   formData: ApplicationFormData
   type: ApplicationType
+  userIsApplicationGuardian: boolean
 }
 
 export default React.memo(function ServiceNeedSection({
   formData,
-  type
+  type,
+  userIsApplicationGuardian
 }: ServiceNeedSectionProps) {
   const t = useTranslation()
 
@@ -55,7 +57,12 @@ export default React.memo(function ServiceNeedSection({
         </Label>
         <span>{formData.serviceNeed.preferredStartDate?.format()}</span>
 
-        {type === 'DAYCARE' && <ServiceNeedUrgency formData={formData} />}
+        {type === 'DAYCARE' && (
+          <ServiceNeedUrgency
+            formData={formData}
+            userIsApplicationGuardian={userIsApplicationGuardian}
+          />
+        )}
         {type === 'CLUB' && (
           <>
             <Label>
@@ -98,7 +105,10 @@ export default React.memo(function ServiceNeedSection({
 
         {(type === 'DAYCARE' ||
           (type === 'PRESCHOOL' && formData.serviceNeed.connectedDaycare)) && (
-          <ServiceNeedShiftCare formData={formData} />
+          <ServiceNeedShiftCare
+            formData={formData}
+            userIsApplicationGuardian={userIsApplicationGuardian}
+          />
         )}
       </ListGrid>
 

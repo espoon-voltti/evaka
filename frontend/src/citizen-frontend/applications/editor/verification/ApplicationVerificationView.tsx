@@ -118,7 +118,11 @@ export default React.memo(function ApplicationVerificationViewDaycare({
       <ContentArea opaque>
         <BasicsSection application={application} formData={formData} />
         <HorizontalLine />
-        <ServiceNeedSection formData={formData} type={type} />
+        <ServiceNeedSection
+          formData={formData}
+          type={type}
+          userIsApplicationGuardian
+        />
         <HorizontalLine />
         <UnitPreferenceSection formData={formData.unitPreference} />
         <HorizontalLine />

@@ -14,11 +14,11 @@ import { waitUntilDefined, waitUntilEqual } from '../../utils'
 import { FormInput, Section, sections } from '../../utils/application-forms'
 import {
   Checkbox,
-  FileInput,
   Page,
   Radio,
   TextInput,
-  Element
+  Element,
+  FileUpload
 } from '../../utils/page'
 
 export default class CitizenApplicationsPage {
@@ -26,6 +26,7 @@ export default class CitizenApplicationsPage {
   #transferApplicationNotification: Element
   #duplicateApplicationNotification: Element
   #applicationTitle: Element
+
   constructor(private readonly page: Page) {
     this.#createNewApplicationButton = page.findByDataQa('submit')
     this.#transferApplicationNotification = page.findByDataQa(
@@ -139,10 +140,19 @@ export default class CitizenApplicationsPage {
 
 class CitizenApplicationReadView {
   contactInfoSection: Element
+  urgencyAttachments: Element
+  shiftCareAttachments: Element
   unitPreferenceSection: Element
   assistanceNeedDescription: TextInput
+
   constructor(readonly page: Page) {
     this.contactInfoSection = page.findByDataQa('contact-info-section')
+    this.urgencyAttachments = page.findByDataQa(
+      'service-need-urgency-attachments'
+    )
+    this.shiftCareAttachments = page.findByDataQa(
+      'service-need-shift-care-attachments'
+    )
     this.unitPreferenceSection = page.findByDataQa('unit-preference-section')
     this.assistanceNeedDescription = new TextInput(
       page.findByDataQa('assistance-need-description')
@@ -164,6 +174,7 @@ class CitizenApplicationEditor {
   saveAsDraftButton: Element
   modalOkBtn: Element
   guardianPhoneInput: TextInput
+
   constructor(private readonly page: Page) {
     this.#verifyButton = page.findByDataQa('verify-btn')
     this.#verifyCheckbox = new Checkbox(page.findByDataQa('verify-checkbox'))
@@ -419,11 +430,17 @@ class CitizenApplicationEditor {
   async markApplicationUrgentAndAddAttachment(attachmentFilePath: string) {
     await this.openSection('serviceNeed')
     await this.setCheckbox('urgent', true)
-    await new FileInput(
-      this.page.find(
-        '[data-qa="urgent-file-upload"] [data-qa="btn-upload-file"]'
-      )
-    ).setInputFiles(attachmentFilePath)
+    await new FileUpload(this.page.findByDataQa('urgent-file-upload')).upload(
+      attachmentFilePath
+    )
+  }
+
+  async selectShiftCareAndAddAttachment(attachmentFilePath: string) {
+    await this.openSection('serviceNeed')
+    await this.setCheckbox('shiftCare', true)
+    await new FileUpload(
+      this.page.findByDataQa('shift-care-file-upload')
+    ).upload(attachmentFilePath)
   }
 
   async assertAttachmentUploaded(attachmentFileName: string) {

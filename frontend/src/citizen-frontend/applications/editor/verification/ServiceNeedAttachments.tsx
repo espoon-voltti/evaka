@@ -15,6 +15,7 @@ import { useTranslation } from '../../../localization'
 
 type Props = {
   formData: ApplicationFormData
+  userIsApplicationGuardian: boolean
 }
 
 export const AttachmentList = styled.ul`
@@ -24,7 +25,8 @@ export const AttachmentList = styled.ul`
 `
 
 export const ServiceNeedUrgency = React.memo(function ServiceNeedUrgency({
-  formData
+  formData,
+  userIsApplicationGuardian
 }: Props) {
   const t = useTranslation()
 
@@ -40,40 +42,46 @@ export const ServiceNeedUrgency = React.memo(function ServiceNeedUrgency({
               .withoutUrgency}
       </span>
 
-      {formData.serviceNeed.urgent && featureFlags.urgencyAttachments && (
-        <>
+      {formData.serviceNeed.urgent &&
+        featureFlags.urgencyAttachments &&
+        userIsApplicationGuardian && (
           <>
-            <Label>
-              {t.applications.editor.verification.serviceNeed.attachments.label}
-            </Label>
-            <span>
-              {formData.serviceNeed.urgencyAttachments.length > 0 ? (
-                <AttachmentList>
-                  {formData.serviceNeed.urgencyAttachments.map((file) => (
-                    <li key={file.id}>
-                      <FileDownloadButton
-                        file={file}
-                        getFileUrl={getAttachmentUrl}
-                        data-qa="service-need-urgency-attachment-download"
-                        icon
-                      />
-                    </li>
-                  ))}
-                </AttachmentList>
-              ) : (
-                t.applications.editor.verification.serviceNeed.attachments
-                  .withoutAttachments
-              )}
-            </span>
+            <>
+              <Label>
+                {
+                  t.applications.editor.verification.serviceNeed.attachments
+                    .label
+                }
+              </Label>
+              <span data-qa="service-need-urgency-attachments">
+                {formData.serviceNeed.urgencyAttachments.length > 0 ? (
+                  <AttachmentList>
+                    {formData.serviceNeed.urgencyAttachments.map((file) => (
+                      <li key={file.id}>
+                        <FileDownloadButton
+                          file={file}
+                          getFileUrl={getAttachmentUrl}
+                          data-qa="service-need-urgency-attachment-download"
+                          icon
+                        />
+                      </li>
+                    ))}
+                  </AttachmentList>
+                ) : (
+                  t.applications.editor.verification.serviceNeed.attachments
+                    .withoutAttachments
+                )}
+              </span>
+            </>
           </>
-        </>
-      )}
+        )}
     </>
   )
 })
 
 export const ServiceNeedShiftCare = React.memo(function ServiceNeedShiftCare({
-  formData
+  formData,
+  userIsApplicationGuardian
 }: Props) {
   const t = useTranslation()
 
@@ -90,12 +98,12 @@ export const ServiceNeedShiftCare = React.memo(function ServiceNeedShiftCare({
               .withoutShiftCare}
       </span>
 
-      {formData.serviceNeed.shiftCare && (
+      {formData.serviceNeed.shiftCare && userIsApplicationGuardian && (
         <>
           <Label>
             {t.applications.editor.verification.serviceNeed.attachments.label}
           </Label>
-          <span>
+          <span data-qa="service-need-shift-care-attachments">
             {formData.serviceNeed.shiftCareAttachments.length > 0 ? (
               <AttachmentList>
                 {formData.serviceNeed.shiftCareAttachments.map((file) => (
