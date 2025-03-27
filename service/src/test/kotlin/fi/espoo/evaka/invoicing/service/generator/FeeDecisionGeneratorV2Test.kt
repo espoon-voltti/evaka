@@ -38,8 +38,7 @@ class FeeDecisionGeneratorV2Test {
         val f1 = feeDecision.copy(validDuring = FiniteDateRange(date(1), date(10)))
         val f2 = feeDecision.copy(validDuring = FiniteDateRange(date(11), date(20)))
         val f3 = feeDecision.copy(validDuring = FiniteDateRange(date(15), date(25)))
-        val merged =
-            mergeAdjacentIdenticalDrafts(listOf(f1, f2, f3), nrOfDaysDecisionCanBeSentInAdvance = 0)
+        val merged = mergeAdjacentIdenticalDrafts(listOf(f1, f2, f3))
         assertEquals(1, merged.size)
         assertEquals(date(1), merged.first().validFrom)
         assertEquals(date(25), merged.first().validTo)
@@ -49,8 +48,7 @@ class FeeDecisionGeneratorV2Test {
     fun `mergeAdjacentIdenticalDrafts does not merge if not adjacent`() {
         val f1 = feeDecision.copy(validDuring = FiniteDateRange(date(1), date(10)))
         val f2 = feeDecision.copy(validDuring = FiniteDateRange(date(12), date(20)))
-        val merged =
-            mergeAdjacentIdenticalDrafts(listOf(f1, f2), nrOfDaysDecisionCanBeSentInAdvance = 0)
+        val merged = mergeAdjacentIdenticalDrafts(listOf(f1, f2))
         assertEquals(listOf(f1, f2), merged)
     }
 
@@ -62,8 +60,7 @@ class FeeDecisionGeneratorV2Test {
                 validDuring = FiniteDateRange(date(11), date(20)),
                 partnerId = PersonId(UUID.randomUUID()),
             )
-        val merged =
-            mergeAdjacentIdenticalDrafts(listOf(f1, f2), nrOfDaysDecisionCanBeSentInAdvance = 0)
+        val merged = mergeAdjacentIdenticalDrafts(listOf(f1, f2))
         assertEquals(listOf(f1, f2), merged)
     }
 

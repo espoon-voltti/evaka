@@ -52,11 +52,6 @@ data class IncomeRequest(
     val attachments: List<Attachment> = listOf(),
 )
 
-enum class IncomeComparisonVersion {
-    V1,
-    V2,
-}
-
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class DecisionIncome(
     val id: IncomeId? = null,
@@ -66,17 +61,24 @@ data class DecisionIncome(
     val totalExpenses: Int,
     val total: Int,
     val worksAtECHA: Boolean,
-) {
-    fun effectiveComparable(version: IncomeComparisonVersion): DecisionIncome? =
-        when (version) {
-            IncomeComparisonVersion.V1 ->
-                when (this.effect) {
-                    IncomeEffect.NOT_AVAILABLE,
-                    IncomeEffect.INCOMPLETE -> null
-                    else -> this.copy(id = null)
-                }
-            IncomeComparisonVersion.V2 -> this
+)
+
+fun decisionIncomesEqual(income1: DecisionIncome?, income2: DecisionIncome?): Boolean {
+    if (income1?.id != null && income2?.id != null) {
+        // New logic: Incomes with different IDs are considered different
+        return income1 == income2
+    }
+
+    // Old logic: compare contents only
+    val i1 =
+        income1?.takeIf {
+            it.effect != IncomeEffect.NOT_AVAILABLE && it.effect != IncomeEffect.INCOMPLETE
         }
+    val i2 =
+        income2?.takeIf {
+            it.effect != IncomeEffect.NOT_AVAILABLE && it.effect != IncomeEffect.INCOMPLETE
+        }
+    return i1?.copy(id = null) == i2?.copy(id = null)
 }
 
 @JsonIgnoreProperties(ignoreUnknown = true)
