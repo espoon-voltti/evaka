@@ -8,6 +8,13 @@ import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import fi.espoo.evaka.ConstList
 import fi.espoo.evaka.NekkuEnv
+import fi.espoo.evaka.absence.AbsenceCategory
+import fi.espoo.evaka.daycare.DaycareMealtimes
+import fi.espoo.evaka.daycare.getDaycaresById
+import fi.espoo.evaka.daycare.getPreschoolTerms
+import fi.espoo.evaka.daycare.isUnitOperationDay
+import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.AsyncJobType
@@ -15,8 +22,14 @@ import fi.espoo.evaka.shared.async.removeUnclaimedJobs
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.TimeRange
+import fi.espoo.evaka.shared.domain.getHolidays
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.IOException
+import java.time.Duration
+import java.time.LocalDate
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.springframework.stereotype.Service
@@ -35,6 +48,7 @@ class NekkuService(
         asyncJobRunner.registerHandler(::syncNekkuCustomers)
         asyncJobRunner.registerHandler(::syncNekkuSpecialDiets)
         asyncJobRunner.registerHandler(::syncNekkuProducts)
+        asyncJobRunner.registerHandler(::sendNekkuOrder)
     }
 
     fun syncNekkuCustomers(
@@ -99,15 +113,85 @@ class NekkuService(
             )
         }
     }
+
+    fun planNekkuOrders(dbc: Database.Connection, clock: EvakaClock) {
+        if (client == null) error("Cannot plan Nekku order: NekkuEnv is not configured")
+        planNekkuOrderJobs(dbc, asyncJobRunner, client, clock.now())
+    }
+
+    fun planNekkuOrderJobs(
+        dbc: Database.Connection,
+        asyncJobRunner: AsyncJobRunner<AsyncJob>,
+        client: NekkuClient,
+        now: HelsinkiDateTime,
+    ) {
+        val range = now.toLocalDate().startOfNextWeek().twoWeekSpan()
+        dbc.transaction { tx ->
+            val customerGroupsAndNumbers = tx.getNekkuDaycareGroupIdCustomerNumberMapping(range)
+            asyncJobRunner.plan(
+                tx,
+                range.dates().flatMap { date ->
+                    customerGroupsAndNumbers.map { customerGroupsAndNumber ->
+                        AsyncJob.SendNekkuOrder(
+                            customerGroupId = customerGroupsAndNumber.first,
+                            customerNumber = customerGroupsAndNumber.second,
+                            date = date,
+                        )
+                    }
+                },
+                runAt = now,
+                retryInterval = Duration.ofHours(1),
+                retryCount = 3,
+            )
+        }
+    }
+
+    fun sendNekkuOrder(dbc: Database.Connection, clock: EvakaClock, job: AsyncJob.SendNekkuOrder) {
+        if (client == null) error("Cannot send Nekku order: NekkuEnv is not configured")
+        try {
+            createAndSendNekkuOrder(
+                client,
+                dbc,
+                customerNumber = job.customerNumber,
+                groupId = job.customerGroupId,
+                date = job.date,
+            )
+        } catch (e: Exception) {
+            logger.warn(e) {
+                "Failed to send meal order to Nekku: date=${job.date}, customerNumber=${job.customerNumber}, customerId=${job.customerId}, error=${e.localizedMessage}"
+            }
+            throw e
+        }
+    }
 }
 
 interface NekkuClient {
+
+    data class NekkuOrder(
+        val delivery_date: String,
+        val customer_id: String,
+        val group_id: String,
+        val items: List<Item>,
+        val description: String,
+    )
+
+    data class Item(
+        val product_sku: String,
+        val quantity: Int,
+        val product_options: List<ProductOption>,
+    )
+
+    data class ProductOption(val field_id: String, val value: String)
+
+    data class NekkuOrders(val orders: List<NekkuOrder>, val dry_run: Boolean)
 
     fun getCustomers(): List<NekkuCustomer>
 
     fun getSpecialDiets(): List<NekkuApiSpecialDiet>
 
     fun getProducts(): List<NekkuApiProduct>
+
+    fun createNekkuMealOrder(nekkuOrders: NekkuOrders)
 }
 
 class NekkuHttpClient(private val env: NekkuEnv, private val jsonMapper: JsonMapper) : NekkuClient {
@@ -130,6 +214,10 @@ class NekkuHttpClient(private val env: NekkuEnv, private val jsonMapper: JsonMap
         val request = getBaseRequest().get().url(env.url.resolve("products").toString()).build()
 
         return executeRequest(request)
+    }
+
+    override fun createNekkuMealOrder(nekkuOrders: NekkuClient.NekkuOrders) {
+        // Todo: create post with orders
     }
 
     private fun getBaseRequest() =
@@ -165,6 +253,87 @@ class NekkuHttpClient(private val env: NekkuEnv, private val jsonMapper: JsonMap
                 throw IOException("Failed to parse Nekku API response", e)
             }
         }
+    }
+}
+
+private fun LocalDate.startOfNextWeek(): LocalDate {
+    val daysUntilNextMonday = (8 - this.dayOfWeek.value) % 7
+    return this.plusDays(daysUntilNextMonday.toLong())
+}
+
+private fun LocalDate.twoWeekSpan(): FiniteDateRange {
+    val start = this.startOfNextWeek()
+    val end = start.plusDays(13)
+    return FiniteDateRange(start, end)
+}
+
+private fun createAndSendNekkuOrder(
+    client: NekkuClient,
+    dbc: Database.Connection,
+    customerNumber: String,
+    groupId: GroupId,
+    date: LocalDate,
+) {
+    val (preschoolTerms, children) =
+        dbc.read { tx ->
+            val preschoolTerms = tx.getPreschoolTerms()
+            val children = getNekkuChildInfos(tx, groupId, date)
+            preschoolTerms to children
+        }
+    val orders = null // Todo mapping
+
+    if (orders.isNotEmpty()) {
+        client.createNekkuMealOrder(orders)
+        logger.info {
+            "Sent Nekku order for date $date for customerNumber=$customerNumber customerId=$customerId"
+        }
+    } else {
+        logger.info {
+            "Skipped Nekku order with no rows for date $date for customerNumber=$customerNumber customerId=$customerId"
+        }
+    }
+}
+
+private fun getNekkuChildInfos(
+    tx: Database.Read,
+    nekkuGroupId: GroupId,
+    date: LocalDate,
+): List<NekkuChildInfo> {
+    val holidays = getHolidays(FiniteDateRange(date, date))
+
+    val childData = tx.getNekkuChildData(nekkuGroupId, date)
+    val unitIds = childData.map { it.unitId }.toSet()
+    val childIds = childData.map { it.childId }.toSet()
+
+    val specialDiets = tx.mealTypesForChildren(childIds)
+    val units = tx.getDaycaresById(unitIds)
+
+    return childData.mapNotNull { child ->
+        val unit = units[child.unitId] ?: error("Daycare not found for unitId ${child.unitId}")
+        if (
+            !isUnitOperationDay(
+                normalOperationDays = unit.operationDays,
+                shiftCareOperationDays = unit.shiftCareOperationDays,
+                shiftCareOpenOnHolidays = unit.shiftCareOpenOnHolidays,
+                holidays = holidays,
+                date = date,
+                childHasShiftCare = child.hasShiftCare,
+            )
+        )
+            return@mapNotNull null
+
+        NekkuChildInfo(
+            placementType = child.placementType,
+            firstName = child.firstName,
+            lastName = child.lastName,
+            reservations = child.reservations,
+            absences = child.absences,
+            dietInfo = specialDiets[child.childId], // replace
+            specialDiet = null, // replace
+            dailyPreschoolTime = unit.dailyPreschoolTime,
+            dailyPreparatoryTime = unit.dailyPreparatoryTime,
+            mealTimes = unit.mealTimes,
+        )
     }
 }
 
@@ -282,3 +451,16 @@ enum class NekkuProductMealType(val description: String) : DatabaseEnum {
 
     override val sqlType: String = "nekku_product_meal_type"
 }
+
+data class NekkuChildInfo(
+    val placementType: PlacementType,
+    val firstName: String,
+    val lastName: String,
+    val reservations: List<TimeRange>?,
+    val absences: Set<AbsenceCategory>?,
+    val dietInfo: String?, // check proper type
+    val specialDiet: String?, // check proper type
+    val dailyPreschoolTime: TimeRange?,
+    val dailyPreparatoryTime: TimeRange?,
+    val mealTimes: DaycareMealtimes,
+)
