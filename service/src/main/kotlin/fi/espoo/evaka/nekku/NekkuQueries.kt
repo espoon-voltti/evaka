@@ -4,9 +4,18 @@
 
 package fi.espoo.evaka.nekku
 
+import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.decision.logger
+import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.TimeRange
+import java.time.LocalDate
 import org.jdbi.v3.core.mapper.PropagateNull
+import org.jdbi.v3.json.Json
 
 data class CustomerNumbers(
     @PropagateNull val number: String,
@@ -301,3 +310,82 @@ fun Database.Transaction.getNekkuProducts(): List<NekkuProduct> {
         }
         .toList<NekkuProduct>()
 }
+
+fun Database.Read.getNekkuChildData(nekkuGroupId: GroupId, date: LocalDate): List<NekkuChildData> =
+    createQuery {
+            sql(
+                """
+SELECT
+    rp.child_id,
+    rp.unit_id,
+    rp.group_id,
+    rp.placement_type,
+    (sn.shift_care IS NOT NULL AND sn.shift_care != 'NONE') AS has_shift_care,
+    p.first_name,
+    p.last_name,
+    coalesce((
+        SELECT jsonb_agg(jsonb_build_object('start', ar.start_time, 'end', ar.end_time))
+        FROM attendance_reservation ar
+        JOIN evaka_user eu ON ar.created_by = eu.id
+        WHERE
+            ar.child_id = rp.child_id AND
+            ar.date = ${bind(date)} AND
+            -- Ignore NO_TIMES reservations
+            ar.start_time IS NOT NULL AND ar.end_time IS NOT NULL
+    ), '[]'::jsonb) AS reservations,
+    coalesce((
+        SELECT array_agg(a.category)
+        FROM absence a
+        WHERE a.child_id = rp.child_id AND a.date = ${bind(date)}
+    ), '{}'::absence_category[]) AS absences
+FROM realized_placement_one(${bind(date)}) rp
+JOIN daycare_group dg ON dg.id = rp.group_id
+JOIN person p ON p.id = rp.child_id
+LEFT JOIN service_need sn ON sn.placement_id = rp.placement_id AND daterange(sn.start_date, sn.end_date, '[]') @> ${bind(date)}
+WHERE dg.id = ${bind(nekkuGroupId)}
+}
+                    """
+            )
+        }
+        .toList()
+
+data class NekkuChildData(
+    val childId: ChildId,
+    val unitId: DaycareId,
+    val groupId: GroupId,
+    val placementType: PlacementType,
+    val hasShiftCare: Boolean,
+    val firstName: String,
+    val lastName: String,
+    @Json val reservations: List<TimeRange>,
+    val absences: Set<AbsenceCategory>,
+)
+
+fun Database.Read.getNekkuDaycareGroupIdCustomerNumberMapping(
+    range: FiniteDateRange
+): List<Pair<GroupId, String>> =
+    createQuery {
+            sql(
+                """
+                    SELECT dg.id, dg.nekku_customer_number  
+                    FROM daycare_group dg 
+                    JOIN daycare d ON d.id = dg.daycare_id
+                    WHERE dg.nekku_customer_number IS NOT NULL
+                      AND daterange(d.opening_date, d.closing_date, '[]') && ${bind(range)}
+                      AND daterange(dg.start_date, dg.end_date, '[]') && ${bind(range)}
+                """
+            )
+        }
+        .toList()
+
+fun Database.Read.mealTypesForChildren(childIds: Set<ChildId>): Map<ChildId, String> =
+    createQuery {
+            sql(
+                """
+SELECT child.id as child_id, nekku_diet
+FROM child JOIN special_diet ON child.diet_id = special_diet.id
+WHERE child.id = ANY (${bind(childIds)})
+"""
+            )
+        }
+        .toMap { column<ChildId>("child_id") to row<String>() }
