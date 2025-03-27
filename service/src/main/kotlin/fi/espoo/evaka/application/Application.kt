@@ -251,29 +251,6 @@ data class CitizenApplicationSummary(
     val transferApplication: Boolean,
 )
 
-fun fetchApplicationDetailsWithCurrentOtherGuardianInfoAndFilteredAttachments(
-    user: AuthenticatedUser,
-    tx: Database.Transaction,
-    personService: PersonService,
-    applicationId: ApplicationId,
-): ApplicationDetails? =
-    tx.fetchApplicationDetails(applicationId, includeCitizenAttachmentsOnly = true)?.let {
-        application ->
-        val otherGuardian =
-            personService.getOtherGuardian(tx, user, application.guardianId, application.childId)
-        application.copy(
-            hasOtherGuardian = otherGuardian != null,
-            otherGuardianLivesInSameAddress =
-                otherGuardian?.id?.let { otherGuardianId ->
-                    personService.personsLiveInTheSameAddress(
-                        tx,
-                        application.guardianId,
-                        otherGuardianId,
-                    )
-                },
-        )
-    }
-
 fun savePaperApplication(
     tx: Database.Transaction,
     user: AuthenticatedUser,

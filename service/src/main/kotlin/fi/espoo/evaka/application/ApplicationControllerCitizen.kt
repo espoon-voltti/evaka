@@ -164,12 +164,34 @@ class ApplicationControllerCitizen(
                         applicationId,
                     )
 
-                    fetchApplicationDetailsWithCurrentOtherGuardianInfoAndFilteredAttachments(
-                        user,
-                        tx,
-                        personService,
-                        applicationId,
-                    )
+                    val attachmentFilter =
+                        accessControl.getAuthorizationFilter(
+                            tx,
+                            user,
+                            clock,
+                            Action.Attachment.READ_APPLICATION_ATTACHMENT,
+                        )
+                    tx.fetchApplicationDetails(applicationId, attachmentFilter)?.let { application
+                        ->
+                        val otherGuardian =
+                            personService.getOtherGuardian(
+                                tx,
+                                user,
+                                application.guardianId,
+                                application.childId,
+                            )
+                        application.copy(
+                            hasOtherGuardian = otherGuardian != null,
+                            otherGuardianLivesInSameAddress =
+                                otherGuardian?.id?.let { otherGuardianId ->
+                                    personService.personsLiveInTheSameAddress(
+                                        tx,
+                                        application.guardianId,
+                                        otherGuardianId,
+                                    )
+                                },
+                        )
+                    }
                 }
             }
         Audit.ApplicationRead.log(targetId = AuditId(applicationId))
