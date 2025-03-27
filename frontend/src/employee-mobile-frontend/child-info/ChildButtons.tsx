@@ -45,14 +45,14 @@ export default React.memo(function ChildButtons({
       >
         {unit.features.includes('MOBILE_MESSAGING') ? (
           <Link
-            to={routes.newChildMessage(unitId, child.id).value}
-            data-qa="link-new-message"
+            to={routes.childMessages(unitId, child.id).value}
+            data-qa="link-child-messages"
           >
             <RoundIcon
               content={faComments}
               color={colors.main.m2}
               size="XL"
-              label={i18n.childButtons.newMessage}
+              label={i18n.childButtons.messages}
             />
           </Link>
         ) : (

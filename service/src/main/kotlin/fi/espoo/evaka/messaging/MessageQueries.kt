@@ -593,10 +593,25 @@ fun Database.Read.getReceivedThreads(
     financeAccountName: String,
     folderId: MessageThreadFolderId? = null,
     accountAccessLimit: AccountAccessLimit = AccountAccessLimit.NoFurtherLimit,
+    childId: ChildId? = null,
 ): PagedMessageThreads {
     val accountAccessPredicate =
         if (accountAccessLimit is AccountAccessLimit.AvailableFrom)
             Predicate { where("$it.last_message_timestamp >= ${bind(accountAccessLimit.date)}") }
+        else Predicate.alwaysTrue()
+
+    val childPredicate =
+        if (childId != null)
+            Predicate {
+                where(
+                    """
+            EXISTS(
+                SELECT FROM message_thread_children mtc 
+                WHERE mtc.thread_id = $it.id AND mtc.child_id = ${bind(childId)}
+            )
+        """
+                )
+            }
         else Predicate.alwaysTrue()
 
     val threads =
@@ -630,7 +645,7 @@ WHERE
     NOT t.is_copy AND
     tp.folder_id IS NOT DISTINCT FROM ${bind(folderId)} AND 
     EXISTS (SELECT 1 FROM message m WHERE m.thread_id = t.id AND m.sent_at IS NOT NULL) AND
-    ${predicate(accountAccessPredicate.forTable("tp"))}
+    ${predicate(accountAccessPredicate.forTable("tp").and(childPredicate.forTable("t")))}
 ORDER BY tp.last_message_timestamp DESC
 LIMIT ${bind(pageSize)} OFFSET ${bind((page - 1) * pageSize)}
         """

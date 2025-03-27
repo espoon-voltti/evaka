@@ -154,10 +154,11 @@ class MessageController(
         clock: EvakaClock,
         @PathVariable accountId: MessageAccountId,
         @RequestParam page: Int,
+        @RequestParam childId: ChildId? = null,
     ): PagedMessageThreads {
         return db.connect { dbc ->
             requireMessageAccountAccess(dbc, user, clock, accountId)
-            getReceivedMessages(dbc, user.employeeId!!, accountId, page)
+            getReceivedMessages(dbc, user.employeeId!!, accountId, page, childId)
         }
     }
 
@@ -166,6 +167,7 @@ class MessageController(
         employeeId: EmployeeId,
         accountId: MessageAccountId,
         page: Int,
+        childId: ChildId? = null,
     ): PagedMessageThreads {
         return dbc.read {
                 val accountAccessLimit = it.getAccountAccessLimit(accountId, employeeId)
@@ -177,6 +179,7 @@ class MessageController(
                     featureConfig.serviceWorkerMessageAccountName,
                     featureConfig.financeMessageAccountName,
                     accountAccessLimit = accountAccessLimit,
+                    childId = childId,
                 )
             }
             .also {

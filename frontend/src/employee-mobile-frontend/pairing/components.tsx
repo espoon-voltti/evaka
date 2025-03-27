@@ -5,11 +5,14 @@
 import { Link } from 'react-router'
 import styled from 'styled-components'
 
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { fontWeights } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
+
+import { bottomNavBarHeight } from '../common/BottomNavbar'
 
 export const FullHeightContainer = styled(Container)<{ spaced?: boolean }>`
   height: 100%;
@@ -42,6 +45,17 @@ export const WideLinkButton = styled(Link)<{ $primary?: boolean }>`
 export const BackButton = styled(IconOnlyButton)`
   color: ${colors.main.m1};
   position: absolute;
+`
+
+export const FloatingPrimaryActionButton = styled(Button).attrs({
+  appearance: 'button',
+  primary: true
+})`
+  position: fixed;
+  bottom: calc(${defaultMargins.s} + ${bottomNavBarHeight}px);
+  right: ${defaultMargins.s};
+  border-radius: 40px;
+  box-shadow: 0 4px 4px 0 #0f0f0f40;
 `
 
 export const TallContentArea = styled(ContentArea)<{ spaced?: boolean }>`

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2025 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -26,6 +26,7 @@ import {
 } from '../../generated/api-clients'
 import { DevDaycareGroup, DevPerson } from '../../generated/api-types'
 import CitizenMessagesPage from '../../pages/citizen/citizen-messages'
+import MobileChildMessagesPage from '../../pages/mobile/child-messages-page'
 import MobileChildPage from '../../pages/mobile/child-page'
 import MobileListPage from '../../pages/mobile/list-page'
 import MessageEditor from '../../pages/mobile/message-editor'
@@ -43,6 +44,7 @@ import { enduserLogin } from '../../utils/user'
 let page: Page
 let listPage: MobileListPage
 let childPage: MobileChildPage
+let childMessagesPage: MobileChildMessagesPage
 let citizenPage: Page
 let messageEditor: MessageEditor
 let messagesPage: MobileMessagesPage
@@ -197,6 +199,7 @@ beforeEach(async () => {
   })
   listPage = new MobileListPage(page)
   childPage = new MobileChildPage(page)
+  childMessagesPage = new MobileChildMessagesPage(page)
   unreadMessageCountsPage = new UnreadMobileMessagesPage(page)
   pinLoginPage = new PinLoginPage(page)
   messageEditor = new MessageEditor(page)
@@ -210,7 +213,7 @@ async function initCitizenPage(mockedTime: HelsinkiDateTime) {
   await enduserLogin(citizenPage, testAdult)
 }
 
-describe('Message editor in child page', () => {
+describe('Messages in child page', () => {
   beforeEach(async () => {
     const mobileSignupUrl = await pairMobileDevice(testDaycare.id)
     await page.goto(mobileSignupUrl)
@@ -218,19 +221,23 @@ describe('Message editor in child page', () => {
 
   test('Employee can open editor and send message', async () => {
     await listPage.selectChild(child.id)
-    await childPage.messageEditorLink.click()
+    await childPage.messagesLink.click()
     await pinLoginPage.login(employeeName, pin)
+    await childMessagesPage.newMessageButton.click()
     await messageEditor.fillMessage({ title: 'Foo', content: 'Bar' })
     await messageEditor.send.click()
+    await childMessagesPage.backButton.click()
     await childPage.waitUntilLoaded()
   })
   test('Employee can open editor and send an urgent message', async () => {
     const message = { title: 'Foo', content: 'Bar', urgent: true }
     await listPage.selectChild(child.id)
-    await childPage.messageEditorLink.click()
+    await childPage.messagesLink.click()
     await pinLoginPage.login(employeeName, pin)
+    await childMessagesPage.newMessageButton.click()
     await messageEditor.fillMessage(message)
     await messageEditor.send.click()
+    await childMessagesPage.backButton.click()
     await childPage.waitUntilLoaded()
     await runPendingAsyncJobs(mockedDateAt11.addMinutes(1))
 
@@ -238,6 +245,23 @@ describe('Message editor in child page', () => {
     await citizenPage.goto(config.enduserMessagesUrl)
     const citizenMessagesPage = new CitizenMessagesPage(citizenPage, 'mobile')
     await citizenMessagesPage.assertThreadContent(message)
+  })
+  test('Employee sees a received message', async () => {
+    await initCitizenPage(mockedDateAt10)
+    await citizenSendsMessageToGroup()
+    await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
+    await citizenPage.close()
+
+    await listPage.selectChild(child.id)
+    await childPage.messagesLink.click()
+    await pinLoginPage.login(employeeName, pin)
+    await childMessagesPage
+      .thread(0)
+      .assertText((s) => s.includes('Testiviestin sisältö'))
+    await childMessagesPage.thread(0).click()
+    await threadView.singleMessageContents
+      .nth(0)
+      .assertText((s) => s.includes('Testiviestin sisältö'))
   })
 })
 
