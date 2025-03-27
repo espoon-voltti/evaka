@@ -10,6 +10,7 @@ import fi.espoo.evaka.application.personHasSentApplicationWithId
 import fi.espoo.evaka.invoicing.controller.SortDirection
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AttachmentId
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.FeatureConfig
