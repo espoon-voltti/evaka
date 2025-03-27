@@ -150,11 +150,12 @@ export default React.memo(function ChildApplicationsBlock({
   }
 
   const applicationStatusToIcon = (
-    applicationStatus: ApplicationStatus
+    applicationStatus: ApplicationStatus,
+    decidable: boolean
   ): string => {
     switch (applicationStatus) {
       case 'ACTIVE':
-        return 'ACCEPTED'
+        return decidable ? 'PENDING' : 'ACCEPTED'
       case 'WAITING_PLACEMENT':
       case 'WAITING_DECISION':
       case 'WAITING_UNIT_CONFIRMATION':
@@ -239,23 +240,37 @@ export default React.memo(function ChildApplicationsBlock({
                     <RoundIcon
                       content={
                         applicationStatusIcon[
-                          applicationStatusToIcon(applicationStatus)
+                          applicationStatusToIcon(
+                            applicationStatus,
+                            decidableApplications.includes(applicationId)
+                          )
                         ].icon
                       }
                       color={
                         applicationStatusIcon[
-                          applicationStatusToIcon(applicationStatus)
+                          applicationStatusToIcon(
+                            applicationStatus,
+                            decidableApplications.includes(applicationId)
+                          )
                         ].color
                       }
                       size="m"
                     />
                     <Gap size="xs" horizontal={true} />
                     <Status data-qa={`application-status-${applicationId}`}>
-                      {t.applicationsList.status[applicationStatus]}
+                      {
+                        t.applicationsList.status[
+                          applicationStatus === 'ACTIVE' &&
+                          decidableApplications.includes(applicationId)
+                            ? 'WAITING_CONFIRMATION'
+                            : applicationStatus
+                        ]
+                      }
                     </Status>
                   </div>
 
-                  {applicationStatus === 'WAITING_CONFIRMATION' &&
+                  {(applicationStatus === 'WAITING_CONFIRMATION' ||
+                    applicationStatus === 'ACTIVE') &&
                     permittedActions[applicationId]?.includes(
                       'READ_DECISIONS'
                     ) &&
