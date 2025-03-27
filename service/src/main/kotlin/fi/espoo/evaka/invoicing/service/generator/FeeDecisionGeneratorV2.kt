@@ -47,7 +47,6 @@ fun generateAndInsertFeeDecisionsV2(
     coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider,
     financeMinDate: LocalDate,
     headOfFamilyId: PersonId,
-    nrOfDaysFeeDecisionCanBeSentInAdvance: Long,
     retroactiveOverride: LocalDate? = null, // allows extending beyond normal min date
 ) {
     val existingDecisions =
@@ -70,7 +69,6 @@ fun generateAndInsertFeeDecisionsV2(
             minDate =
                 if (retroactiveOverride != null) minOf(retroactiveOverride, financeMinDate)
                 else financeMinDate,
-            nrOfDaysFeeDecisionCanBeSentInAdvance = nrOfDaysFeeDecisionCanBeSentInAdvance,
         )
 
     tx.deleteFeeDecisions(existingDrafts.map { it.id })
@@ -86,7 +84,6 @@ fun generateFeeDecisionsDrafts(
     existingDrafts: List<FeeDecision>,
     ignoredDrafts: List<FeeDecision>,
     minDate: LocalDate,
-    nrOfDaysFeeDecisionCanBeSentInAdvance: Long,
 ): List<FeeDecision> {
     val feeBases =
         getFeeBases(
@@ -105,9 +102,8 @@ fun generateFeeDecisionsDrafts(
             activeDecisions = activeDecisions,
             ignoredDrafts = ignoredDrafts,
             minDate = minDate,
-            nrOfDaysDecisionCanBeSentInAdvance = nrOfDaysFeeDecisionCanBeSentInAdvance,
         )
-        .map { it.withMetadataFromExisting(existingDrafts, nrOfDaysFeeDecisionCanBeSentInAdvance) }
+        .map { it.withMetadataFromExisting(existingDrafts) }
         .map {
             it.copy(
                 difference =
@@ -115,7 +111,6 @@ fun generateFeeDecisionsDrafts(
                         newDrafts = newDrafts,
                         existingActiveDecisions = activeDecisions,
                         getDifferences = FeeDecisionDifference::getDifference,
-                        nrOfDaysDecisionCanBeSentInAdvance = nrOfDaysFeeDecisionCanBeSentInAdvance,
                     )
             )
         }

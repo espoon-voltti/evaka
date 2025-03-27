@@ -12,7 +12,6 @@ import fi.espoo.evaka.insertServiceNeedOptionVoucherValues
 import fi.espoo.evaka.insertServiceNeedOptions
 import fi.espoo.evaka.invoicing.calculateMonthlyAmount
 import fi.espoo.evaka.invoicing.controller.VoucherValueDecisionController
-import fi.espoo.evaka.invoicing.data.getHeadOfFamilyVoucherValueDecisions
 import fi.espoo.evaka.invoicing.domain.FeeAlterationType
 import fi.espoo.evaka.invoicing.domain.FeeThresholds
 import fi.espoo.evaka.invoicing.domain.IncomeCoefficient
@@ -22,6 +21,7 @@ import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDifference
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.placement.PlacementType.DAYCARE
 import fi.espoo.evaka.serviceNeedOptionVoucherValueCoefficients
 import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.shared.ChildId
@@ -806,145 +806,89 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
     }
 
     @Test
-    fun `partner income difference - identical incomes before 2025-03`() {
-        val period = FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
-        val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
-        val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
-        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
+    fun `partner income difference - decision is generated even if income changes to identical income`() {
+        val period = FiniteDateRange(LocalDate.of(2025, 5, 1), LocalDate.of(2025, 12, 31))
+        val incomePeriod1 = DateRange(period.start, null)
+        val clock = MockEvakaClock(HelsinkiDateTime.Companion.of(period.start, LocalTime.of(0, 0)))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
-        insertPlacement(testChild_1.id, period, PlacementType.DAYCARE, testVoucherDaycare.id)
-        insertPartnership(testAdult_1.id, testAdult_2.id, period.asDateRange(), clock.now())
-        insertIncome(testAdult_2.id, 10000, subPeriod1.asDateRange())
-        insertIncome(testAdult_2.id, 10000, subPeriod2.asDateRange())
+        insertPlacement(testChild_1.id, period, DAYCARE, testVoucherDaycare.id)
+        insertIncome(testAdult_1.id, 310200, incomePeriod1)
 
-        db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, testAdult_1.id) }
+        db.transaction { generator.generateNewDecisionsForAdult(it, testAdult_1.id) }
 
-        assertThat(getAllVoucherValueDecisions())
-            .extracting({ FiniteDateRange(it.validFrom, it.validTo) }, { it.difference })
-            .containsExactlyInAnyOrder(Tuple(period, emptySet<VoucherValueDecisionDifference>()))
-    }
+        val decisions = getAllVoucherValueDecisions()
+        assertEquals(1, decisions.size)
 
-    @Test
-    fun `partner income difference - identical incomes after 2025-03`() {
-        val period = FiniteDateRange(LocalDate.of(2025, 4, 1), LocalDate.of(2026, 12, 31))
-        val subPeriod1 = period.copy(end = LocalDate.of(2025, 6, 30))
-        val subPeriod2 = period.copy(start = LocalDate.of(2025, 7, 1))
-        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
-        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
-        insertPlacement(testChild_1.id, period, PlacementType.DAYCARE, testVoucherDaycare.id)
-        insertPartnership(testAdult_1.id, testAdult_2.id, period.asDateRange(), clock.now())
-        insertIncome(testAdult_2.id, 10000, subPeriod1.asDateRange())
-        insertIncome(testAdult_2.id, 10000, subPeriod2.asDateRange())
-
-        db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, testAdult_1.id) }
-
-        assertThat(getAllVoucherValueDecisions())
-            .extracting({ FiniteDateRange(it.validFrom, it.validTo) }, { it.difference })
-            .containsExactlyInAnyOrder(
-                Tuple(subPeriod1, emptySet<VoucherValueDecisionDifference>()),
-                Tuple(subPeriod2, setOf(VoucherValueDecisionDifference.INCOME)),
-            )
-    }
-
-    @Test
-    fun `overlapping 2025-03 does not cause income difference or splitting`() {
-        val period = FiniteDateRange(LocalDate.of(2025, 1, 1), LocalDate.of(2025, 12, 31))
-        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
-        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
-        insertIncome(testAdult_1.id, 10000, period.asDateRange())
-
-        val subPeriod1 = period.copy(end = LocalDate.of(2025, 6, 30))
-        insertPlacement(testChild_1.id, subPeriod1, PlacementType.DAYCARE, testVoucherDaycare.id)
-
-        db.transaction { tx ->
-            generator.generateNewDecisionsForAdult(tx, testAdult_1.id)
-
-            // old code did not store income id
-            tx.execute {
-                sql(
-                    """
-                UPDATE voucher_value_decision SET head_of_family_income = head_of_family_income - 'id'
-            """
-                )
-            }
-        }
         voucherValueDecisionController.sendVoucherValueDecisionDrafts(
             dbInstance(),
-            employee.user,
+            AuthenticatedUser.Employee(testDecisionMaker_2.id, setOf(UserRole.ADMIN)),
             clock,
-            db.read { it.getHeadOfFamilyVoucherValueDecisions(testAdult_1.id) }.map { it.id },
+            listOf(decisions.get(0).id),
             null,
         )
 
-        val subPeriod2 = period.copy(start = LocalDate.of(2025, 7, 1))
-        insertPlacement(
-            testChild_1.id,
-            subPeriod2,
-            PlacementType.DAYCARE_PART_TIME,
-            testVoucherDaycare.id,
-        )
-
-        db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, testAdult_1.id) }
-
-        assertThat(getAllVoucherValueDecisions())
-            .extracting({ FiniteDateRange(it.validFrom, it.validTo) }, { it.difference })
-            .containsExactlyInAnyOrder(
-                Tuple(subPeriod1, emptySet<VoucherValueDecisionDifference>()),
-                Tuple(
-                    subPeriod2,
-                    setOf(
-                        VoucherValueDecisionDifference.PLACEMENT,
-                        VoucherValueDecisionDifference.VOUCHER_VALUE,
-                        VoucherValueDecisionDifference.SERVICE_NEED,
-                    ),
-                ),
-            )
-    }
-
-    @Test
-    fun `income starting 2025-03 does not cause unnecessary draft`() {
-        val period = FiniteDateRange(LocalDate.of(2025, 3, 1), LocalDate.of(2025, 12, 31))
-        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
-        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
-        insertIncome(testAdult_1.id, 10000, period.asDateRange())
-        insertPlacement(testChild_1.id, period, PlacementType.DAYCARE, testVoucherDaycare.id)
-
-        db.transaction { tx ->
-            generator.generateNewDecisionsForAdult(tx, testAdult_1.id)
-
-            // old code did not store income id
-            tx.execute {
-                sql(
-                    """
-                UPDATE voucher_value_decision SET head_of_family_income = head_of_family_income - 'id'
-            """
-                )
-            }
-        }
-        voucherValueDecisionController.sendVoucherValueDecisionDrafts(
-            dbInstance(),
-            employee.user,
-            clock,
-            db.read { it.getHeadOfFamilyVoucherValueDecisions(testAdult_1.id) }.map { it.id },
-            null,
-        )
         asyncJobRunner.runPendingJobsSync(clock)
 
-        db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, testAdult_1.id) }
+        val incomePeriod2 = DateRange(period.start.plusMonths(3), null)
+        db.transaction {
+            it.execute {
+                sql("UPDATE income SET valid_to = ${bind(incomePeriod2.start.minusDays(1))}")
+            }
+        }
+        insertIncome(testAdult_1.id, 310200, incomePeriod2)
 
-        assertThat(getAllVoucherValueDecisions())
-            .extracting(
-                { FiniteDateRange(it.validFrom, it.validTo) },
-                { it.status },
-                { it.difference },
-            )
-            .containsExactly(
-                Tuple(
-                    period,
-                    VoucherValueDecisionStatus.SENT,
-                    emptySet<VoucherValueDecisionDifference>(),
+        db.transaction { generator.generateNewDecisionsForAdult(it, testAdult_1.id) }
+
+        assertEquals(2, getAllVoucherValueDecisions().size)
+    }
+
+    @Test
+    fun `partner income difference - if an income is missing id then old logic is used and a new decision is not generated if income changes to identical income`() {
+        val period = FiniteDateRange(LocalDate.of(2025, 5, 1), LocalDate.of(2025, 12, 31))
+        val incomePeriod1 = DateRange(period.start, null)
+        val clock = MockEvakaClock(HelsinkiDateTime.Companion.of(period.start, LocalTime.of(0, 0)))
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
+        insertPlacement(testChild_1.id, period, DAYCARE, testVoucherDaycare.id)
+        insertIncome(testAdult_1.id, 310200, incomePeriod1)
+
+        db.transaction { generator.generateNewDecisionsForAdult(it, testAdult_1.id) }
+
+        val decisions = getAllVoucherValueDecisions()
+        assertEquals(1, decisions.size)
+
+        voucherValueDecisionController.sendVoucherValueDecisionDrafts(
+            dbInstance(),
+            AuthenticatedUser.Employee(testDecisionMaker_2.id, setOf(UserRole.ADMIN)),
+            clock,
+            listOf(decisions.get(0).id),
+            null,
+        )
+
+        asyncJobRunner.runPendingJobsSync(clock)
+
+        db.transaction { tx ->
+            // old code did not store income id
+            tx.execute {
+                sql(
+                    """
+                UPDATE voucher_value_decision SET head_of_family_income = head_of_family_income - 'id'
+            """
                 )
-            )
+            }
+        }
+
+        val incomePeriod2 = DateRange(period.start.plusMonths(3), null)
+        db.transaction {
+            it.execute {
+                sql("UPDATE income SET valid_to = ${bind(incomePeriod2.start.minusDays(1))}")
+            }
+        }
+        insertIncome(testAdult_1.id, 310200, incomePeriod2)
+
+        db.transaction { generator.generateNewDecisionsForAdult(it, testAdult_1.id) }
+
+        // No new DRAFT is generated because the incomes are identical
+        assertEquals(1, getAllVoucherValueDecisions().size)
     }
 
     @Test

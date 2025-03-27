@@ -26,7 +26,6 @@ class FinanceDecisionGenerator(
     private val coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider,
     env: EvakaEnv,
     private val featureConfig: FeatureConfig,
-    private val evakaEnv: EvakaEnv,
 ) {
     private val feeDecisionMinDate = env.feeDecisionMinDate
 
@@ -84,7 +83,6 @@ FROM ids
             coefficientMultiplierProvider = coefficientMultiplierProvider,
             financeMinDate = feeDecisionMinDate,
             headOfFamilyId = headOfFamily,
-            nrOfDaysFeeDecisionCanBeSentInAdvance = evakaEnv.nrOfDaysFeeDecisionCanBeSentInAdvance,
             retroactiveOverride = from,
         )
     }
@@ -103,8 +101,6 @@ FROM ids
                 valueDecisionCapacityFactorEnabled =
                     featureConfig.valueDecisionCapacityFactorEnabled,
                 childId = childId,
-                nrOfDaysVoucherValueDecisionCanBeSentInAdvance =
-                    evakaEnv.nrOfDaysVoucherValueDecisionCanBeSentInAdvance,
                 retroactiveOverride = from,
             )
         }
@@ -128,8 +124,6 @@ FROM ids
                 coefficientMultiplierProvider = coefficientMultiplierProvider,
                 financeMinDate = feeDecisionMinDate,
                 headOfFamilyId = adult,
-                nrOfDaysFeeDecisionCanBeSentInAdvance =
-                    evakaEnv.nrOfDaysFeeDecisionCanBeSentInAdvance,
             )
         }
 
@@ -142,8 +136,6 @@ FROM ids
                 valueDecisionCapacityFactorEnabled =
                     featureConfig.valueDecisionCapacityFactorEnabled,
                 childId = childId,
-                nrOfDaysVoucherValueDecisionCanBeSentInAdvance =
-                    evakaEnv.nrOfDaysVoucherValueDecisionCanBeSentInAdvance,
             )
         }
     }
@@ -156,8 +148,6 @@ FROM ids
                 coefficientMultiplierProvider = coefficientMultiplierProvider,
                 financeMinDate = feeDecisionMinDate,
                 headOfFamilyId = adultId,
-                nrOfDaysFeeDecisionCanBeSentInAdvance =
-                    evakaEnv.nrOfDaysFeeDecisionCanBeSentInAdvance,
             )
         }
 
@@ -168,8 +158,6 @@ FROM ids
             financeMinDate = feeDecisionMinDate,
             valueDecisionCapacityFactorEnabled = featureConfig.valueDecisionCapacityFactorEnabled,
             childId = childId,
-            nrOfDaysVoucherValueDecisionCanBeSentInAdvance =
-                evakaEnv.nrOfDaysVoucherValueDecisionCanBeSentInAdvance,
         )
     }
 }

@@ -26,7 +26,7 @@ interface FinanceDecision<Decision : FinanceDecision<Decision>> {
 
     fun withCreated(created: HelsinkiDateTime): Decision
 
-    fun contentEquals(decision: Decision, nrOfDaysDecisionCanBeSentInAdvance: Long): Boolean
+    fun contentEquals(decision: Decision): Boolean
 
     fun overlapsWith(other: Decision): Boolean
 
