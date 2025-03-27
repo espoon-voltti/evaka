@@ -155,6 +155,9 @@ data class FeatureConfig(
 
     /** Type of holiday questionnaire */
     val holidayQuestionnaireType: QuestionnaireType = QuestionnaireType.FIXED_PERIOD,
+
+    /** Accept preschool decision without asking guardian confirmation */
+    val skipGuardianPreschoolDecisionApproval: Boolean = false,
 )
 
 enum class ArchiveProcessType {
