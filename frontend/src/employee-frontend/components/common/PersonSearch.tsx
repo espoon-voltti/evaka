@@ -1,69 +1,31 @@
-// SPDX-FileCopyrightText: 2017-2024 City of Espoo
+// SPDX-FileCopyrightText: 2017-2025 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import { Result, Success, wrapResult } from 'lib-common/api'
 import { PersonSummary } from 'lib-common/generated/api-types/pis'
 import { PersonId } from 'lib-common/generated/api-types/shared'
 import { tryFromUuid } from 'lib-common/id-type'
+import { constantQuery, useQueryResult } from 'lib-common/query'
 import { getAge } from 'lib-common/utils/local-date'
 import { useDebounce } from 'lib-common/utils/useDebounce'
-import { useRestApi } from 'lib-common/utils/useRestApi'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import { BaseProps } from 'lib-components/utils'
 
 import {
-  getOrCreatePersonBySsn,
-  getPersonIdentity,
-  searchPerson
-} from '../../generated/api-clients/pis'
+  personBySsnQuery,
+  personIdentityQuery,
+  searchPersonQuery
+} from '../../queries'
 import { useTranslation } from '../../state/i18n'
 import { formatName } from '../../utils'
 import { isSsnValid } from '../../utils/validation/validations'
 
-const getPersonIdentityResult = wrapResult(getPersonIdentity)
-const searchPersonResult = wrapResult(searchPerson)
-const getOrCreatePersonBySsnResult = wrapResult(getOrCreatePersonBySsn)
-
 const Container = styled.div`
   margin: 10px 0;
 `
-
-const searchFromVtj = async (q: string): Promise<Result<PersonSummary[]>> => {
-  if (isSsnValid(q.toUpperCase())) {
-    return await getOrCreatePersonBySsnResult({
-      body: { ssn: q.toUpperCase(), readonly: true }
-    }).then((res) => res.map((r) => [r]))
-  }
-
-  return Success.of([])
-}
-
-const search = async (q: string): Promise<Result<PersonSummary[]>> => {
-  if (isSsnValid(q.toUpperCase())) {
-    return await getOrCreatePersonBySsnResult({
-      body: { ssn: q.toUpperCase(), readonly: false }
-    }).then((res) => res.map((r) => [r]))
-  }
-
-  const personId = tryFromUuid<PersonId>(q)
-  if (personId !== undefined) {
-    return await getPersonIdentityResult({ personId }).then((res) =>
-      res.map((r) => [r])
-    )
-  }
-
-  return await searchPersonResult({
-    body: {
-      searchTerm: q,
-      orderBy: 'last_name,first_name',
-      sortDirection: 'ASC'
-    }
-  })
-}
 
 interface Props extends BaseProps {
   getItemDataQa: (item: PersonSummary) => string
@@ -71,41 +33,81 @@ interface Props extends BaseProps {
     inputValue: string,
     items: readonly PersonSummary[]
   ) => PersonSummary[]
-  searchFn: (q: string) => Promise<Result<PersonSummary[]>>
   onResult: (result: PersonSummary | undefined) => void
   onFocus?: (e: React.FocusEvent<HTMLElement>) => void
   ageLessThan?: number
   ageAtLeast?: number
   excludePeople?: PersonId[]
+  vtjReadOnlySearch: boolean
 }
 
 function PersonSearch({
   filterItems,
-  searchFn,
   onResult,
   onFocus,
   ageLessThan,
   ageAtLeast,
   excludePeople,
   'data-qa': dataQa,
-  getItemDataQa
+  getItemDataQa,
+  vtjReadOnlySearch
 }: Props) {
   const { i18n } = useTranslation()
   const [query, setQuery] = useState('')
-  const [persons, setPersons] = useState<Result<PersonSummary[]>>(
-    Success.of([])
-  )
   const [selectedPerson, setSelectedPerson] = useState<PersonSummary>()
   const debouncedQuery = useDebounce(query, 500)
+
+  const isSsn = useMemo(
+    () => isSsnValid(debouncedQuery.toUpperCase()),
+    [debouncedQuery]
+  )
+
+  const queryFn = useMemo(() => {
+    if (vtjReadOnlySearch) {
+      if (isSsn) {
+        return personBySsnQuery({
+          body: {
+            ssn: debouncedQuery.toUpperCase(),
+            readonly: true
+          }
+        })
+      } else {
+        return constantQuery([])
+      }
+    }
+
+    if (isSsn) {
+      return personBySsnQuery({
+        body: {
+          ssn: debouncedQuery.toUpperCase(),
+          readonly: false
+        }
+      })
+    }
+
+    const personId = tryFromUuid<PersonId>(debouncedQuery)
+    if (personId !== undefined) {
+      return personIdentityQuery({
+        personId
+      })
+    }
+
+    return searchPersonQuery({
+      body: {
+        searchTerm: debouncedQuery,
+        orderBy: 'last_name,first_name',
+        sortDirection: 'ASC'
+      }
+    })
+  }, [debouncedQuery, vtjReadOnlySearch, isSsn])
+
+  const persons = useQueryResult(queryFn).map((res) =>
+    Array.isArray(res) ? res : [res]
+  )
 
   useEffect(() => {
     onResult(selectedPerson)
   }, [selectedPerson]) // eslint-disable-line react-hooks/exhaustive-deps
-
-  const searchPeople = useRestApi(searchFn, setPersons)
-  useEffect(() => {
-    void searchPeople(debouncedQuery)
-  }, [searchPeople, debouncedQuery])
 
   const filterPeople = (people: PersonSummary[]) =>
     people.filter((person) => {
@@ -168,7 +170,7 @@ function PersonSearch({
 
 type PersonSearchProps = Omit<
   Props,
-  'filterItems' | 'getItemDataQa' | 'searchFn'
+  'filterItems' | 'getItemDataQa' | 'vtjReadOnlySearch'
 >
 
 export function DbPersonSearch(props: PersonSearchProps) {
@@ -183,7 +185,7 @@ export function DbPersonSearch(props: PersonSearchProps) {
       {...props}
       filterItems={filterItems}
       getItemDataQa={getItemDataQa}
-      searchFn={search}
+      vtjReadOnlySearch={false}
     />
   )
 }
@@ -203,7 +205,7 @@ export function VtjPersonSearch(props: PersonSearchProps) {
       {...props}
       filterItems={filterItems}
       getItemDataQa={getItemDataQa}
-      searchFn={searchFromVtj}
+      vtjReadOnlySearch={true}
     />
   )
 }
