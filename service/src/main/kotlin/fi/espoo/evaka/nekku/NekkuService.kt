@@ -295,12 +295,14 @@ private fun createAndSendNekkuOrder(
         tx.getGroupName(groupId)
     }
 
+    //Todo fetch products
+
 
     val order = NekkuClient.NekkuOrders(
         listOf(NekkuClient.NekkuOrder(delivery_date = date.toString(),
             customer_id = customerNumber,
             group_id =  groupId.toString(),
-            items = nekkuMealReportData(children, date, preschoolTerms),
+            items = nekkuMealReportData(children, date, preschoolTerms, ),
             description = groupName?:"")
         ),
         dry_run = false
@@ -322,6 +324,7 @@ fun nekkuMealReportData(
     children: Collection<NekkuChildInfo>,
     date: LocalDate,
     preschoolTerms: List<PreschoolTerm>,
+    dbc: Database.Connection,
 ): List<NekkuClient.Item> {
     val mealInfoMap =
         children
@@ -352,35 +355,20 @@ fun nekkuMealReportData(
                     childInfo.mealTimes,
                 )
                     .map {
-//                        MealInfo(
-//                            it,
-//                            additionalInfo =
-//                                if (
-//                                    childInfo.dietInfo != null || childInfo.mealTextureInfo != null
-//                                ) {
-//                                    childInfo.lastName + " " + childInfo.firstName
-//                                } else null,
-//                            dietId = childInfo.dietInfo?.id,
-//                            dietAbbreviation = childInfo.dietInfo?.abbreviation,
-//                            mealTextureId = childInfo.mealTextureInfo?.id,
-//                            mealTextureName = childInfo.mealTextureInfo?.name,
-//                        )
+                        NekkuMealInfo(
+                            //getNekkuProductNumber()
+                            //Todo: get product numbers from productlist.
+
+                        )
                     }
             }
             .groupBy { it }
             .mapValues { it.value.size }
 
     return mealInfoMap.map {
-//        MealReportRow(
-//            it.key.mealType,
-//            mealTypeMapper.toMealId(it.key.mealType, it.key.dietId != null),
-//            it.value,
-//            it.key.dietId,
-//            it.key.dietAbbreviation,
-//            it.key.additionalInfo,
-//            it.key.mealTextureId,
-//            it.key.mealTextureName,
-//        )
+        NekkuClient.Item(
+
+        )
     }
 }
 
@@ -591,4 +579,9 @@ data class NekkuChildInfo(
     val dailyPreschoolTime: TimeRange?,
     val dailyPreparatoryTime: TimeRange?,
     val mealTimes: DaycareMealtimes,
+)
+
+data class NekkuMealInfo(
+    val sku: String,
+    val options: List<NekkuClient.ProductOption>? = null,
 )
