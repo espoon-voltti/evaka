@@ -24,6 +24,7 @@ import { Gap } from 'lib-components/white-space'
 import { faSearch } from 'lib-icons'
 
 import { PROFILE_AGE_THRESHOLD_DEFAULT } from '../../constants'
+import { searchPersonQuery } from '../../queries'
 import { useTranslation } from '../../state/i18n'
 import { formatName } from '../../utils'
 import { RequireRole } from '../../utils/roles'
@@ -31,7 +32,6 @@ import { RequireRole } from '../../utils/roles'
 import AddVTJPersonModal from './AddVTJPersonModal'
 import CreatePersonModal from './CreatePersonModal'
 import { CustomersContext } from './customers'
-import { searchPersonQuery } from './queries'
 
 const TopBar = styled.div`
   display: flex;
