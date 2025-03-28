@@ -5,6 +5,7 @@
 package evaka.codegen.api
 
 import com.fasterxml.jackson.annotation.JsonIgnore
+import com.fasterxml.jackson.annotation.JsonValue
 import com.fasterxml.jackson.databind.jsontype.TypeSerializer
 import fi.espoo.evaka.ConstList
 import fi.espoo.evaka.ForceCodeGenType
@@ -176,7 +177,20 @@ data class TsStringEnum(
     ) : this(
         clazz,
         name = clazz.simpleName ?: error("no class name: $clazz"),
-        values = clazz.java.enumConstants.map { it.toString() },
+        values =
+            clazz.java.enumConstants.map {
+                if (
+                    it.javaClass.declaredFields.any { f ->
+                        f.isAnnotationPresent(JsonValue::class.java)
+                    }
+                ) {
+                    error(
+                        "Enum class ${clazz.simpleName} has a @JsonValue field. This is not supported. API types should only use simple enums."
+                    )
+                }
+
+                it.toString()
+            },
         constList = clazz.findAnnotation(),
     )
 }
