@@ -179,10 +179,17 @@ data class TsStringEnum(
         name = clazz.simpleName ?: error("no class name: $clazz"),
         values =
             clazz.java.enumConstants.map {
-                it.javaClass.declaredFields
-                    .singleOrNull { f -> f.isAnnotationPresent(JsonValue::class.java) }
-                    ?.takeIf { field -> field.trySetAccessible() }
-                    ?.get(it) as? String ?: it.toString()
+                if (
+                    it.javaClass.declaredFields.any { f ->
+                        f.isAnnotationPresent(JsonValue::class.java)
+                    }
+                ) {
+                    error(
+                        "Enum class ${clazz.simpleName} has a @JsonValue field. This is not supported. API types should only use simple enums."
+                    )
+                }
+
+                it.toString()
             },
         constList = clazz.findAnnotation(),
     )
