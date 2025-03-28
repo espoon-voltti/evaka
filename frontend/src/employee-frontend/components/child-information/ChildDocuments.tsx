@@ -13,7 +13,8 @@ import { oneOf, required } from 'lib-common/form/form'
 import { useForm } from 'lib-common/form/hooks'
 import {
   ChildDocumentSummaryWithPermittedActions,
-  DocumentTemplateSummary
+  DocumentTemplateSummary,
+  DocumentType
 } from 'lib-common/generated/api-types/document'
 import {
   ChildId,
@@ -211,7 +212,7 @@ const ChildDocumentTables = ({
                 doc.templateId === template.id && doc.status !== 'COMPLETED'
             ) && !template.type.startsWith('MIGRATED_')
         ),
-        (template) => !template.type.startsWith('CITIZEN_')
+        (template) => isInternal(template.type)
       ),
     [documents, templates]
   )
@@ -238,11 +239,7 @@ const ChildDocumentTables = ({
     validInternalTemplates
   ])
   const [internalDocuments, externalDocuments] = useMemo(
-    () =>
-      partition(
-        documents,
-        (document) => !document.data.type.startsWith('CITIZEN_')
-      ),
+    () => partition(documents, (document) => isInternal(document.data.type)),
     [documents]
   )
 
@@ -291,6 +288,22 @@ const ChildDocumentTables = ({
       )}
     </FixedSpaceColumn>
   )
+}
+
+const isInternal = (type: DocumentType): boolean => {
+  switch (type) {
+    case 'PEDAGOGICAL_REPORT':
+    case 'PEDAGOGICAL_ASSESSMENT':
+    case 'HOJKS':
+    case 'MIGRATED_VASU':
+    case 'MIGRATED_LEOPS':
+    case 'VASU':
+    case 'LEOPS':
+    case 'OTHER':
+      return true
+    case 'CITIZEN_BASIC':
+      return false
+  }
 }
 
 const CreationModal = React.memo(function CreationModal({
