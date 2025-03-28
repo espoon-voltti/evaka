@@ -343,6 +343,7 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
               })
             }
             getDownloadUrl={getAttachmentUrl}
+            data-qa="shift-care-file-upload"
           />
         </>
       )}

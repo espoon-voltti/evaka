@@ -293,7 +293,7 @@ describe('Citizen daycare applications', () => {
     await editorPage.assertUrgencyFileDownload()
   })
 
-  test('Other guardian can see an application after it has been sent, and cannot see person details', async () => {
+  test('Other guardian can see an application after it has been sent, and cannot see person details or attachments', async () => {
     await header.selectTab('applications')
     const editorPage = await applicationsPage.createApplication(
       testChild.id,
@@ -305,6 +305,8 @@ describe('Citizen daycare applications', () => {
       otherGuardianAgreementStatus: 'AGREED'
     })
     await editorPage.fillData(applicationForm.form)
+    await editorPage.markApplicationUrgentAndAddAttachment(testFilePath)
+    await editorPage.selectShiftCareAndAddAttachment(testFilePath)
     await editorPage.writeAssistanceNeedDescription('Child has assistance need')
     await editorPage.verifyAndSend({ hasOtherGuardian: true })
 
@@ -320,6 +322,8 @@ describe('Citizen daycare applications', () => {
 
     await applicationReadView.unitPreferenceSection.waitUntilVisible()
     await applicationReadView.contactInfoSection.waitUntilHidden()
+    await applicationReadView.urgencyAttachments.waitUntilHidden()
+    await applicationReadView.shiftCareAttachments.waitUntilHidden()
     await applicationReadView.assistanceNeedDescription.assertTextEquals('')
   })
 

@@ -20,6 +20,7 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.TerminatedPlacement
 import fi.espoo.evaka.shared.*
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.Predicate
 import fi.espoo.evaka.shared.db.PredicateSql
 import fi.espoo.evaka.shared.db.Row
 import fi.espoo.evaka.shared.db.personFreeTextSearchPredicate
@@ -27,6 +28,7 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import fi.espoo.evaka.shared.security.actionrule.forTable
+import fi.espoo.evaka.shared.security.actionrule.toPredicate
 import fi.espoo.evaka.user.EvakaUser
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.LocalDate
@@ -761,11 +763,10 @@ fun Database.Read.getCitizenChildren(today: LocalDate, citizenId: PersonId): Lis
 
 fun Database.Read.fetchApplicationDetails(
     applicationId: ApplicationId,
-    includeCitizenAttachmentsOnly: Boolean = false,
+    attachmentFilter: AccessControlFilter<AttachmentId>? =
+        null, // null means include all attachments
 ): ApplicationDetails? {
-    val attachmentWhereClause =
-        if (includeCitizenAttachmentsOnly) "WHERE eu.type = 'CITIZEN'" else ""
-
+    val attachmentPredicate = attachmentFilter?.toPredicate() ?: Predicate.alwaysTrue()
     val application =
         createQuery {
                 sql(
@@ -819,7 +820,7 @@ fun Database.Read.fetchApplicationDetails(
                         )) json
                         FROM attachment
                         JOIN evaka_user eu ON attachment.uploaded_by = eu.id
-                        $attachmentWhereClause
+                        WHERE ${predicate(attachmentPredicate.forTable("attachment"))}
                         GROUP BY application_id
                     ) att ON a.id = att.application_id
                     WHERE a.id = ${bind(applicationId)}

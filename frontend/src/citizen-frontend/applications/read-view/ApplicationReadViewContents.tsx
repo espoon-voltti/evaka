@@ -34,7 +34,7 @@ export default React.memo(function ApplicationReadViewContents({
   const { user } = useContext(AuthContext)
 
   const userIsApplicationGuardian = user
-    .map((u) => u && u.id === application.guardianId)
+    .map((u) => u?.id === application.guardianId)
     .getOrElse(false)
 
   return (
@@ -45,7 +45,11 @@ export default React.memo(function ApplicationReadViewContents({
           <H1>{t.applications.editor.heading.title[type]}</H1>
           <BasicsSection application={application} formData={formData} />
           <HorizontalLine />
-          <ServiceNeedSection formData={formData} type={type} />
+          <ServiceNeedSection
+            formData={formData}
+            type={type}
+            userIsApplicationGuardian={userIsApplicationGuardian}
+          />
           <HorizontalLine />
           <UnitPreferenceSection formData={formData.unitPreference} />
           <HorizontalLine />
