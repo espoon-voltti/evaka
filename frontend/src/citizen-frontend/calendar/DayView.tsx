@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import ical, { ICalCalendarMethod } from 'ical-generator'
+import { getZoneString } from 'icalzone'
 import partition from 'lodash/partition'
 import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
@@ -43,6 +45,7 @@ import {
   CalendarEventTimeId,
   ChildId
 } from 'lib-common/generated/api-types/shared'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import { formatFirstName } from 'lib-common/names'
 import { reservationHasTimes } from 'lib-common/reservations'
@@ -79,10 +82,18 @@ import {
   PlainModal
 } from 'lib-components/molecules/modals/BaseModal'
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
-import { H1, H2, H3, Label, LabelLike, P } from 'lib-components/typography'
+import {
+  fontWeights,
+  H1,
+  H2,
+  H3,
+  Label,
+  LabelLike,
+  P
+} from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/citizen'
-import { faQuestion, faTimes } from 'lib-icons'
+import { faCalendar, faQuestion, faTimes } from 'lib-icons'
 import { faChevronLeft, faChevronRight } from 'lib-icons'
 
 import ModalAccessibilityWrapper from '../ModalAccessibilityWrapper'
@@ -354,6 +365,13 @@ function Edit({
   )
 }
 
+interface CalendarEventExport {
+  title: string
+  description: string
+  start: HelsinkiDateTime
+  end: HelsinkiDateTime
+}
+
 interface DayModalProps {
   date: LocalDate
   dateActions: DateActions | undefined
@@ -399,6 +417,32 @@ const DayModal = React.memo(function DayModal({
         eventTimeId: null
       }),
     [setConfirmationModalState]
+  )
+
+  const downloadIcs = useCallback(
+    (event: CalendarEventExport) => {
+      const fileName = `${i18n.calendar.discussionTimeReservation.discussionTimeFileName}_${event.start.toLocalDate().formatIso()}.ics`
+      const calendar = ical()
+      calendar.method(ICalCalendarMethod.REQUEST)
+      calendar.timezone({
+        name: 'VTZ',
+        generator: (zoneName: string) => getZoneString(zoneName) ?? null
+      })
+      calendar.createEvent({
+        summary: event.title,
+        description: event.description,
+        start: event.start.formatIso(),
+        end: event.end.formatIso(),
+        timezone: 'Europe/Helsinki'
+      })
+      const link = document.createElement('a')
+      link.download = fileName
+      link.href = `data:text/calendar;charset=utf-8,${calendar.toString()}`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+    },
+    [i18n]
   )
 
   const { openReservationModal } = useCalendarModalState()
@@ -596,7 +640,7 @@ const DayModal = React.memo(function DayModal({
                                     key={event.id}
                                     data-qa={`event-${event.id}`}
                                   >
-                                    <LabelLike>
+                                    <EventBox>
                                       <WordBreakContainer>
                                         <P noMargin data-qa="title-text">
                                           {event.title}
@@ -606,54 +650,85 @@ const DayModal = React.memo(function DayModal({
                                         <DiscussionReservationContainer
                                           key={`reservation-${i}`}
                                         >
-                                          <div>
-                                            <P
-                                              noMargin
-                                              data-qa={`reservation-time-${rt.id}`}
-                                            >
-                                              {`${i18n.calendar.discussionTimeReservation.timePreDescriptor} ${rt.startTime.format()} - ${rt.endTime.format()}`}
-                                            </P>
-                                          </div>
+                                          <FixedSpaceRow
+                                            fullWidth
+                                            justifyContent="space-between"
+                                            alignItems="center"
+                                          >
+                                            <div>
+                                              <P
+                                                noMargin
+                                                data-qa={`reservation-time-${rt.id}`}
+                                              >
+                                                {`${i18n.calendar.discussionTimeReservation.timePreDescriptor} ${rt.startTime.format()} - ${rt.endTime.format()}`}
+                                              </P>
+                                            </div>
+                                            <Button
+                                              appearance="inline"
+                                              text={
+                                                i18n.calendar
+                                                  .discussionTimeReservation
+                                                  .calendarExportButtonLabel
+                                              }
+                                              onClick={() => {
+                                                downloadIcs({
+                                                  ...event,
+                                                  start:
+                                                    HelsinkiDateTime.fromLocal(
+                                                      rt.date,
+                                                      rt.startTime
+                                                    ),
+                                                  end: HelsinkiDateTime.fromLocal(
+                                                    rt.date,
+                                                    rt.endTime
+                                                  )
+                                                })
+                                              }}
+                                              icon={faCalendar}
+                                            />
+                                          </FixedSpaceRow>
                                           {rt.date.isEqualOrAfter(today) && (
                                             <>
-                                              <Button
-                                                appearance="inline"
-                                                data-qa={`reservation-cancel-button-${rt.id}`}
-                                                icon={faTimes}
-                                                text={
-                                                  i18n.calendar
-                                                    .discussionTimeReservation
-                                                    .cancelTimeButtonText
-                                                }
-                                                disabled={!rt.isEditable}
-                                                onClick={() => {
-                                                  if (rt.childId !== null) {
-                                                    onCancelClick(
-                                                      rt.childId,
-                                                      rt.id
-                                                    )
-                                                  }
-                                                }}
-                                              />
-                                              {!rt.isEditable && (
-                                                <InfoBox
-                                                  aria-label={
+                                              <FixedSpaceRow gap="m">
+                                                <Button
+                                                  appearance="inline"
+                                                  data-qa={`reservation-cancel-button-${rt.id}`}
+                                                  icon={faTimes}
+                                                  text={
                                                     i18n.calendar
                                                       .discussionTimeReservation
-                                                      .cancellationDeadlineInfoMessage
+                                                      .cancelTimeButtonText
                                                   }
-                                                  message={
-                                                    i18n.calendar
-                                                      .discussionTimeReservation
-                                                      .cancellationDeadlineInfoMessage
-                                                  }
+                                                  disabled={!rt.isEditable}
+                                                  onClick={() => {
+                                                    if (rt.childId !== null) {
+                                                      onCancelClick(
+                                                        rt.childId,
+                                                        rt.id
+                                                      )
+                                                    }
+                                                  }}
                                                 />
-                                              )}
+                                                {!rt.isEditable && (
+                                                  <InfoBox
+                                                    aria-label={
+                                                      i18n.calendar
+                                                        .discussionTimeReservation
+                                                        .cancellationDeadlineInfoMessage
+                                                    }
+                                                    message={
+                                                      i18n.calendar
+                                                        .discussionTimeReservation
+                                                        .cancellationDeadlineInfoMessage
+                                                    }
+                                                  />
+                                                )}
+                                              </FixedSpaceRow>
                                             </>
                                           )}
                                         </DiscussionReservationContainer>
                                       ))}
-                                    </LabelLike>
+                                    </EventBox>
                                     <P noMargin data-qa="event-description">
                                       {event.description}
                                     </P>
@@ -1096,6 +1171,7 @@ const SurveyContainer = styled.div`
   flex-direction: column;
   align-items: start;
   margin: 10px 0;
+  width: 100%;
 `
 
 const DiscussionReservationContainer = styled.div`
@@ -1103,6 +1179,7 @@ const DiscussionReservationContainer = styled.div`
   flex-direction: column;
   align-items: start;
   margin: 10px 0;
+  width: 100%;
 `
 
 export const WordBreakContainer = styled.div`
@@ -1115,4 +1192,8 @@ const TwoSpanGridItem = styled.div`
 
 const EditMultipleLink = styled(TwoSpanGridItem)`
   padding: ${defaultMargins.s} 0;
+`
+const EventBox = styled.div`
+  font-weight: ${fontWeights.semibold};
+  width: 100%;
 `

@@ -368,7 +368,9 @@ const sv: Translations = {
       confirmCancel: {
         title: 'Vill du avboka din bokning?',
         cancel: 'Avboka inte'
-      }
+      },
+      discussionTimeFileName: 'Diskussionstid',
+      calendarExportButtonLabel: 'Lägg till i kalender'
     },
     absenceMarkedByEmployee: 'Frånvaro markerad av personal',
     contactStaffToEditAbsence: 'Kontakta personalen om du vill ändra frånvaron',

@@ -6832,6 +6832,8 @@ __metadata:
     globals: "npm:^16.0.0"
     history: "npm:^5.3.0"
     html-webpack-plugin: "npm:^5.6.0"
+    ical-generator: "npm:^8.1.1"
+    icalzone: "npm:^0.0.1"
     intersection-observer: "npm:^0.12.2"
     jest: "npm:^29.7.0"
     jest-circus: "npm:^29.7.0"
@@ -7726,6 +7728,50 @@ __metadata:
   dependencies:
     ms: "npm:^2.0.0"
   checksum: 10/9c7a74a2827f9294c009266c82031030eae811ca87b0da3dceb8d6071b9bde22c9f3daef0469c3c533cc67a97d8a167cd9fc0389350e5f415f61a79b171ded16
+  languageName: node
+  linkType: hard
+
+"ical-generator@npm:^8.1.1":
+  version: 8.1.1
+  resolution: "ical-generator@npm:8.1.1"
+  dependencies:
+    uuid-random: "npm:^1.3.2"
+  peerDependencies:
+    "@touch4it/ical-timezones": ">=1.6.0"
+    "@types/luxon": ">= 1.26.0"
+    "@types/mocha": ">= 8.2.1"
+    dayjs: ">= 1.10.0"
+    luxon: ">= 1.26.0"
+    moment: ">= 2.29.0"
+    moment-timezone: ">= 0.5.33"
+    rrule: ">= 2.6.8"
+  peerDependenciesMeta:
+    "@touch4it/ical-timezones":
+      optional: true
+    "@types/luxon":
+      optional: true
+    "@types/mocha":
+      optional: true
+    "@types/node":
+      optional: true
+    dayjs:
+      optional: true
+    luxon:
+      optional: true
+    moment:
+      optional: true
+    moment-timezone:
+      optional: true
+    rrule:
+      optional: true
+  checksum: 10/c9ddc6f3345d6199345f8854c65302e0dc4f03ee027c2f38d70743c1b8df1fea0f5362c8bf98dfeea82f99e53af3274847448afd77ff830a4674a3bbf0be184a
+  languageName: node
+  linkType: hard
+
+"icalzone@npm:^0.0.1":
+  version: 0.0.1
+  resolution: "icalzone@npm:0.0.1"
+  checksum: 10/897c8ffb570494555c6e73c04907f9f4890b76c78482bea4a8b25bbd6a76bde8608f256112f9803796135a27fdd2df2d68cedf8dce77f96805fd933a57efc7c5
   languageName: node
   linkType: hard
 
@@ -12651,6 +12697,13 @@ __metadata:
   version: 1.0.1
   resolution: "utils-merge@npm:1.0.1"
   checksum: 10/5d6949693d58cb2e636a84f3ee1c6e7b2f9c16cb1d42d0ecb386d8c025c69e327205aa1c69e2868cc06a01e5e20681fbba55a4e0ed0cce913d60334024eae798
+  languageName: node
+  linkType: hard
+
+"uuid-random@npm:^1.3.2":
+  version: 1.3.2
+  resolution: "uuid-random@npm:1.3.2"
+  checksum: 10/9070c876651e1893f9255dddab2edc177ba34196660065be074050e4143405382b7f0f5fb922b666ebfd0794a6ef7b9f6acb627865df7b2978edb0da6b448f1d
   languageName: node
   linkType: hard
 
