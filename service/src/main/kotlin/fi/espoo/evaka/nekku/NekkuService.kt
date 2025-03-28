@@ -158,7 +158,9 @@ class NekkuService(
             )
         } catch (e: Exception) {
             logger.warn(e) {
-                "Failed to send meal order to Nekku: date=${job.date}, customerNumber=${job.customerNumber}, customerId=${job.customerId}, error=${e.localizedMessage}"
+                //        "Failed to send meal order to Nekku: date=${job.date},
+                // customerNumber=${job.customerNumber}, customerId=${job.customerId},
+                // error=${e.localizedMessage}"
             }
             throw e
         }
@@ -280,18 +282,18 @@ private fun createAndSendNekkuOrder(
             val children = getNekkuChildInfos(tx, groupId, date)
             preschoolTerms to children
         }
-    val orders = null // Todo mapping
-
-    if (orders.isNotEmpty()) {
-        client.createNekkuMealOrder(orders)
-        logger.info {
-            "Sent Nekku order for date $date for customerNumber=$customerNumber customerId=$customerId"
-        }
-    } else {
-        logger.info {
-            "Skipped Nekku order with no rows for date $date for customerNumber=$customerNumber customerId=$customerId"
-        }
-    }
+//    val orders = null // Todo mapping
+//
+//    if (orders.isNotEmpty()) {
+//        client.createNekkuMealOrder(orders)
+//        logger.info {
+//            "Sent Nekku order for date $date for customerNumber=$customerNumber customerId=$customerId"
+//        }
+//    } else {
+//        logger.info {
+//            "Skipped Nekku order with no rows for date $date for customerNumber=$customerNumber customerId=$customerId"
+//        }
+//    }
 }
 
 private fun getNekkuChildInfos(
