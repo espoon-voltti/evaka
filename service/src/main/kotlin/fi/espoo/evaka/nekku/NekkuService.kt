@@ -9,11 +9,21 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import fi.espoo.evaka.ConstList
 import fi.espoo.evaka.NekkuEnv
 import fi.espoo.evaka.absence.AbsenceCategory
+import fi.espoo.evaka.absence.getGroupName
 import fi.espoo.evaka.daycare.DaycareMealtimes
+import fi.espoo.evaka.daycare.PreschoolTerm
 import fi.espoo.evaka.daycare.getDaycaresById
 import fi.espoo.evaka.daycare.getPreschoolTerms
 import fi.espoo.evaka.daycare.isUnitOperationDay
+import fi.espoo.evaka.mealintegration.MealType
+import fi.espoo.evaka.mealintegration.MealTypeMapper
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.placement.ScheduleType
+import fi.espoo.evaka.reports.MealInfo
+import fi.espoo.evaka.reports.MealReportChildInfo
+import fi.espoo.evaka.reports.MealReportRow
+import fi.espoo.evaka.reports.childMeals
+import fi.espoo.evaka.reports.preschoolPlacementTypes
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -178,7 +188,7 @@ interface NekkuClient {
     data class Item(
         val product_sku: String,
         val quantity: Int,
-        val product_options: List<ProductOption>,
+        val product_options: List<ProductOption>?,
     )
 
     data class ProductOption(val field_id: String, val value: String)
@@ -273,7 +283,6 @@ private fun createAndSendNekkuOrder(
     customerNumber: String,
     groupId: GroupId,
     date: LocalDate,
-
 ) {
     val (preschoolTerms, children) =
         dbc.read { tx ->
@@ -281,14 +290,24 @@ private fun createAndSendNekkuOrder(
             val children = getNekkuChildInfos(tx, groupId, date)
             preschoolTerms to children
         }
-    val orders = NekkuClient.NekkuOrders(
-        NekkuClient.NekkuOrder(date,customerNumber, groupId,
-            nekkuMealReportData(children, date, preschoolTerms), children.map{ it.}),
+    val groupName =
+        dbc.read { tx ->
+        tx.getGroupName(groupId)
+    }
+
+
+    val order = NekkuClient.NekkuOrders(
+        listOf(NekkuClient.NekkuOrder(delivery_date = date.toString(),
+            customer_id = customerNumber,
+            group_id =  groupId.toString(),
+            items = nekkuMealReportData(children, date, preschoolTerms),
+            description = groupName?:"")
+        ),
         dry_run = false
     ) // Todo mapping
 
-    if (orders.isNotEmpty()) {
-        client.createNekkuMealOrder(orders)
+    if (order.orders.isNotEmpty()) {
+        client.createNekkuMealOrder(order)
         logger.info {
             "Sent Nekku order for date $date for customerNumber=$customerNumber groupId=$groupId"
         }
@@ -297,6 +316,110 @@ private fun createAndSendNekkuOrder(
             "Skipped Nekku order with no rows for date $date for customerNumber=$customerNumber groupId=$groupId"
         }
     }
+}
+
+fun nekkuMealReportData(
+    children: Collection<NekkuChildInfo>,
+    date: LocalDate,
+    preschoolTerms: List<PreschoolTerm>,
+): List<NekkuClient.Item> {
+    val mealInfoMap =
+        children
+            .flatMap { childInfo ->
+                val absenceRecord =
+                    childInfo.absences?.size == childInfo.placementType.absenceCategories().size
+
+                val scheduleType =
+                    childInfo.placementType.scheduleType(date, emptyList(), preschoolTerms)
+                val effectivelyAbsent =
+                    if (scheduleType == ScheduleType.TERM_BREAK) true else absenceRecord
+
+                // list of time ranges when child will be present according to fixed schedule or
+                // reservation times
+                val presentTimeRanges =
+                    if (scheduleType == ScheduleType.FIXED_SCHEDULE)
+                        listOfNotNull(
+                            childInfo.placementType.fixedScheduleRange(
+                                childInfo.dailyPreschoolTime,
+                                childInfo.dailyPreparatoryTime,
+                            )
+                        )
+                    else childInfo.reservations ?: emptyList()
+
+                nekkuChildMeals(
+                    presentTimeRanges,
+                    effectivelyAbsent,
+                    childInfo.mealTimes,
+                )
+                    .map {
+//                        MealInfo(
+//                            it,
+//                            additionalInfo =
+//                                if (
+//                                    childInfo.dietInfo != null || childInfo.mealTextureInfo != null
+//                                ) {
+//                                    childInfo.lastName + " " + childInfo.firstName
+//                                } else null,
+//                            dietId = childInfo.dietInfo?.id,
+//                            dietAbbreviation = childInfo.dietInfo?.abbreviation,
+//                            mealTextureId = childInfo.mealTextureInfo?.id,
+//                            mealTextureName = childInfo.mealTextureInfo?.name,
+//                        )
+                    }
+            }
+            .groupBy { it }
+            .mapValues { it.value.size }
+
+    return mealInfoMap.map {
+//        MealReportRow(
+//            it.key.mealType,
+//            mealTypeMapper.toMealId(it.key.mealType, it.key.dietId != null),
+//            it.value,
+//            it.key.dietId,
+//            it.key.dietAbbreviation,
+//            it.key.additionalInfo,
+//            it.key.mealTextureId,
+//            it.key.mealTextureName,
+//        )
+    }
+}
+
+private fun nekkuChildMeals(
+    presentTimeRanges: List<TimeRange>,
+    absent: Boolean,
+    mealtimes: DaycareMealtimes,
+): Set<NekkuProductMealTime> {
+    // if absent -> no meals
+    if (absent) {
+        return emptySet()
+    }
+    // if we don't have data about when child will be present, default to breakfast + lunch + snack
+    if (presentTimeRanges.isEmpty()) {
+        return setOf(
+            NekkuProductMealTime.BREAKFAST,
+            NekkuProductMealTime.LUNCH,
+            NekkuProductMealTime.SNACK,
+        )
+    }
+    // otherwise check unit meal times against the present time ranges
+    val meals = mutableSetOf<NekkuProductMealTime>()
+
+    fun addMealIfPresent(mealTime: TimeRange?, mealType: NekkuProductMealTime) {
+        if (mealTime != null && presentTimeRanges.any { it.overlaps(mealTime) }) {
+            meals.add(mealType)
+        }
+    }
+
+    addMealIfPresent(mealtimes.breakfast, NekkuProductMealTime.BREAKFAST)
+    addMealIfPresent(
+        mealtimes.lunch,
+        NekkuProductMealTime.LUNCH,
+    )
+    addMealIfPresent(mealtimes.snack, NekkuProductMealTime.SNACK)
+    addMealIfPresent(mealtimes.supper, NekkuProductMealTime.DINNER)
+    addMealIfPresent(mealtimes.eveningSnack, NekkuProductMealTime.SUPPER)
+
+    return meals
 }
 
 private fun getNekkuChildInfos(
