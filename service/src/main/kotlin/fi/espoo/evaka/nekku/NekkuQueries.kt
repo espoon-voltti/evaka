@@ -382,7 +382,7 @@ fun Database.Read.mealTypesForChildren(childIds: Set<ChildId>): Map<ChildId, Str
     createQuery {
             sql(
                 """
-SELECT child.id as child_id, nekku_diet
+SELECT child.id as child_id, child.nekku_diet
 FROM child JOIN special_diet ON child.diet_id = special_diet.id
 WHERE child.id = ANY (${bind(childIds)})
 """
