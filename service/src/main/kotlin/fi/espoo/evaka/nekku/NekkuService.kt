@@ -125,7 +125,7 @@ class NekkuService(
         client: NekkuClient,
         now: HelsinkiDateTime,
     ) {
-        val range = now.toLocalDate().startOfNextWeek().twoWeekSpan()
+        val range = now.toLocalDate().startOfNextWeek().weekSpan()
         dbc.transaction { tx ->
             val customerGroupsAndNumbers = tx.getNekkuDaycareGroupIdCustomerNumberMapping(range)
             asyncJobRunner.plan(
@@ -158,9 +158,7 @@ class NekkuService(
             )
         } catch (e: Exception) {
             logger.warn(e) {
-                //        "Failed to send meal order to Nekku: date=${job.date},
-                // customerNumber=${job.customerNumber}, customerId=${job.customerId},
-                // error=${e.localizedMessage}"
+                "Failed to send meal order to Nekku: date=${job.date}, customerNumber=${job.customerNumber}, groupId=${job.customerGroupId},error=${e.localizedMessage}"
             }
             throw e
         }
@@ -263,9 +261,9 @@ private fun LocalDate.startOfNextWeek(): LocalDate {
     return this.plusDays(daysUntilNextMonday.toLong())
 }
 
-private fun LocalDate.twoWeekSpan(): FiniteDateRange {
+private fun LocalDate.weekSpan(): FiniteDateRange {
     val start = this.startOfNextWeek()
-    val end = start.plusDays(13)
+    val end = start.plusDays(6)
     return FiniteDateRange(start, end)
 }
 
@@ -275,6 +273,7 @@ private fun createAndSendNekkuOrder(
     customerNumber: String,
     groupId: GroupId,
     date: LocalDate,
+
 ) {
     val (preschoolTerms, children) =
         dbc.read { tx ->
@@ -282,18 +281,22 @@ private fun createAndSendNekkuOrder(
             val children = getNekkuChildInfos(tx, groupId, date)
             preschoolTerms to children
         }
-//    val orders = null // Todo mapping
-//
-//    if (orders.isNotEmpty()) {
-//        client.createNekkuMealOrder(orders)
-//        logger.info {
-//            "Sent Nekku order for date $date for customerNumber=$customerNumber customerId=$customerId"
-//        }
-//    } else {
-//        logger.info {
-//            "Skipped Nekku order with no rows for date $date for customerNumber=$customerNumber customerId=$customerId"
-//        }
-//    }
+    val orders = NekkuClient.NekkuOrders(
+        NekkuClient.NekkuOrder(date,customerNumber, groupId,
+            nekkuMealReportData(children, date, preschoolTerms), children.map{ it.}),
+        dry_run = false
+    ) // Todo mapping
+
+    if (orders.isNotEmpty()) {
+        client.createNekkuMealOrder(orders)
+        logger.info {
+            "Sent Nekku order for date $date for customerNumber=$customerNumber groupId=$groupId"
+        }
+    } else {
+        logger.info {
+            "Skipped Nekku order with no rows for date $date for customerNumber=$customerNumber groupId=$groupId"
+        }
+    }
 }
 
 private fun getNekkuChildInfos(
@@ -307,7 +310,7 @@ private fun getNekkuChildInfos(
     val unitIds = childData.map { it.unitId }.toSet()
     val childIds = childData.map { it.childId }.toSet()
 
-    val specialDiets = tx.mealTypesForChildren(childIds)
+    val mealTypes = tx.mealTypesForChildren(childIds)
     val units = tx.getDaycaresById(unitIds)
 
     return childData.mapNotNull { child ->
@@ -330,7 +333,7 @@ private fun getNekkuChildInfos(
             lastName = child.lastName,
             reservations = child.reservations,
             absences = child.absences,
-            dietInfo = specialDiets[child.childId], // replace
+            mealType = mealTypes[child.childId],
             specialDiet = null, // replace
             dailyPreschoolTime = unit.dailyPreschoolTime,
             dailyPreparatoryTime = unit.dailyPreparatoryTime,
@@ -460,7 +463,7 @@ data class NekkuChildInfo(
     val lastName: String,
     val reservations: List<TimeRange>?,
     val absences: Set<AbsenceCategory>?,
-    val dietInfo: String?, // check proper type
+    val mealType: String?,
     val specialDiet: String?, // check proper type
     val dailyPreschoolTime: TimeRange?,
     val dailyPreparatoryTime: TimeRange?,
