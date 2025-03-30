@@ -69,7 +69,10 @@ export const renderBaseIconOnlyButton = (
     className={classNames(className, { disabled })}
     $size={size}
     $color={color}
-    onClick={onClick}
+    onClick={(e) => {
+      e.stopPropagation()
+      onClick(e)
+    }}
     {...props}
   >
     {children(icon, size)}

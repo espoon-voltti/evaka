@@ -65,6 +65,7 @@ import OutOfOfficePage from './components/out-of-office/OutOfOfficePage'
 import PaymentsPage from './components/payments/PaymentsPage'
 import PersonProfile from './components/person-profile/PersonProfile'
 import Search from './components/person-search/Search'
+import { PlacementDesktopPage } from './components/placement-desktop/PlacementDesktopPage'
 import PlacementDraftPage from './components/placement-draft/PlacementDraft'
 import PlacementToolPage from './components/placement-tool/PlacementToolPage'
 import ReportApplications from './components/reports/Applications'
@@ -443,6 +444,14 @@ export default createBrowserRouter(
           element: (
             <EmployeeRoute title="decision">
               <DecisionPage />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/placement-desktop',
+          element: (
+            <EmployeeRoute title="placementDraft">
+              <PlacementDesktopPage />
             </EmployeeRoute>
           )
         },

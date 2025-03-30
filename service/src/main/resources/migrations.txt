@@ -508,3 +508,4 @@ V509__nekku_product.sql
 V510__finance_message_account_type.sql
 V511__finance_message_account.sql
 V512__nekku_diet.sql
+V513__application_trial_placement_unit.sql

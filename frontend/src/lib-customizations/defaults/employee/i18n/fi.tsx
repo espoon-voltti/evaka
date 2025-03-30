@@ -63,6 +63,7 @@ export const fi = {
     clubTerm: 'Kerhon lukukausi',
     clubTerms: 'Kerhojen lukukaudet',
     placementTool: 'Optimointityökalu',
+    placementDesktop: 'Sijoittelutyöpöytä',
     outOfOffice: 'Poissaoloviesti'
   },
   common: {

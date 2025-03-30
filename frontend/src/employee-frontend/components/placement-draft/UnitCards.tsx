@@ -44,13 +44,26 @@ export default React.memo(function UnitCards({
 
   return (
     <FlexContainer data-qa="placement-list">
-      {placementDraft.preferredUnits.concat(additionalUnits).map((unit) => {
+      {[
+        ...(placementDraft.trialPlacementUnit &&
+        !placementDraft.preferredUnits.some(
+          (u) => u.id === placementDraft.trialPlacementUnit?.id
+        )
+          ? [placementDraft.trialPlacementUnit]
+          : []),
+        ...placementDraft.preferredUnits,
+        ...additionalUnits
+      ].map((unit) => {
         const isSelectedUnit = unitId === unit.id
+        const preferenceIndex = placementDraft.preferredUnits.findIndex(
+          (u) => u.id === unit.id
+        )
         return (
           <UnitCard
             applicationId={applicationId}
             unitId={unit.id}
             unitName={unit.name}
+            preferenceNumber={preferenceIndex < 0 ? null : preferenceIndex + 1}
             key={unit.id}
             period={period}
             preschoolDaycarePeriod={preschoolDaycarePeriod ?? undefined}

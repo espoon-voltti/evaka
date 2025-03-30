@@ -149,7 +149,7 @@ data class OccupancyGroupReportResultRow(
     val occupancies: Map<LocalDate, OccupancyValues>,
 )
 
-private fun Database.Read.calculateUnitOccupancyReport(
+fun Database.Read.calculateUnitOccupancyReport(
     today: LocalDate,
     areaId: AreaId?,
     providerType: ProviderType?,

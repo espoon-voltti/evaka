@@ -12,7 +12,7 @@ import React, {
   useMemo,
   useState
 } from 'react'
-import { Link, useNavigate } from 'react-router'
+import { Link, useNavigate, useSearchParams } from 'react-router'
 import styled from 'styled-components'
 
 import { isLoading, Loading, Result, Success, wrapResult } from 'lib-common/api'
@@ -117,6 +117,8 @@ export default React.memo(function PlacementDraft() {
   const applicationId = useIdRouteParam<ApplicationId>('id')
   const { i18n } = useTranslation()
   const navigate = useNavigate()
+  const [params] = useSearchParams()
+
   const [placementDraft, setPlacementDraft] = useState<
     Result<PlacementPlanDraftWithOverlaps>
   >(Loading.of())
@@ -156,10 +158,13 @@ export default React.memo(function PlacementDraft() {
     }))
   }
 
-  const redirectToMainPage = useCallback(
-    () => void navigate('/applications'),
-    [navigate]
-  )
+  const navigateBack = useCallback(() => {
+    if (params.has('placement-desktop')) {
+      void navigate('/placement-desktop')
+    } else {
+      void navigate('/applications')
+    }
+  }, [navigate, params])
 
   useEffect(() => {
     setPlacementDraft(Loading.of())
@@ -169,7 +174,7 @@ export default React.memo(function PlacementDraft() {
         setPlacementDraft(withoutOldPlacements)
         if (withoutOldPlacements.isSuccess) {
           setPlacement({
-            unitId: null,
+            unitId: withoutOldPlacements.value.trialPlacementUnit?.id ?? null,
             period: withoutOldPlacements.value.period,
             preschoolDaycarePeriod:
               withoutOldPlacements.value.preschoolDaycarePeriod
@@ -179,11 +184,11 @@ export default React.memo(function PlacementDraft() {
 
         // Application has already changed its status
         if (placementDraft.isFailure && placementDraft.statusCode === 409) {
-          redirectToMainPage()
+          navigateBack()
         }
       }
     )
-  }, [applicationId, redirectToMainPage])
+  }, [applicationId, navigateBack])
 
   useEffect(() => {
     if (placementDraft.isSuccess) {
@@ -393,7 +398,7 @@ export default React.memo(function PlacementDraft() {
                       body: validPlan!
                     })
                   }
-                  onSuccess={redirectToMainPage}
+                  onSuccess={navigateBack}
                   text={i18n.placementDraft.createPlacementDraft}
                 />
               </SendButtonContainer>

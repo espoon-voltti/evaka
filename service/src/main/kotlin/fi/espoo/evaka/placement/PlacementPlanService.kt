@@ -72,6 +72,19 @@ class PlacementPlanService(
                 )
         val preferredUnits =
             form.preferences.preferredUnits.map { PlacementDraftUnit(id = it.id, name = it.name) }
+        val trialPlacementUnit =
+            tx.createQuery {
+                    sql(
+                        """
+            SELECT d.id, d.name
+            FROM application a 
+            JOIN daycare d ON a.trial_placement_unit = d.id
+            WHERE a.id = ${bind(applicationId)}
+        """
+                    )
+                }
+                .exactlyOneOrNull<PlacementDraftUnit>()
+
         val placements = tx.getPlacementSummary(application.childId)
 
         val startDate = maxOf(minStartDate, form.preferences.preferredStartDate!!)
@@ -116,6 +129,7 @@ class PlacementPlanService(
                     child = child,
                     type = type,
                     preferredUnits = preferredUnits,
+                    trialPlacementUnit = trialPlacementUnit,
                     period = period,
                     preschoolDaycarePeriod = preschoolDaycarePeriod,
                     placements = placements,
@@ -139,6 +153,7 @@ class PlacementPlanService(
                     child = child,
                     type = type,
                     preferredUnits = preferredUnits,
+                    trialPlacementUnit = trialPlacementUnit,
                     period = period,
                     preschoolDaycarePeriod = null,
                     placements = placements,
@@ -154,6 +169,7 @@ class PlacementPlanService(
                     child = child,
                     type = type,
                     preferredUnits = preferredUnits,
+                    trialPlacementUnit = trialPlacementUnit,
                     period = period,
                     preschoolDaycarePeriod = null,
                     placements = placements,

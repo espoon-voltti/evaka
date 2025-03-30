@@ -239,6 +239,7 @@ export interface PlacementPlanDraft {
   placements: PlacementSummary[]
   preferredUnits: PlacementDraftUnit[]
   preschoolDaycarePeriod: FiniteDateRange | null
+  trialPlacementUnit: PlacementDraftUnit | null
   type: PlacementType
 }
 

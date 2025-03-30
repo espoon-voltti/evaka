@@ -13,6 +13,7 @@ data class PlacementPlanDraft(
     val type: PlacementType,
     val child: PlacementDraftChild,
     val preferredUnits: List<PlacementDraftUnit>,
+    val trialPlacementUnit: PlacementDraftUnit?,
     val period: FiniteDateRange,
     val preschoolDaycarePeriod: FiniteDateRange?,
     val placements: List<PlacementSummary>,

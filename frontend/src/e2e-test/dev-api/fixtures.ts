@@ -254,6 +254,7 @@ export class Fixture {
       mealtimeSnack: null,
       mealtimeSupper: null,
       mealtimeEveningSnack: null,
+      serviceWorkerNote: '',
       ...initial
     })
   }
@@ -2169,7 +2170,8 @@ export const testClub: DevDaycare = {
   mealtimeLunch: null,
   mealtimeSnack: null,
   mealtimeSupper: null,
-  mealtimeEveningSnack: null
+  mealtimeEveningSnack: null,
+  serviceWorkerNote: ''
 }
 
 export const testDaycare: DevDaycare = {
@@ -2263,7 +2265,8 @@ export const testDaycare: DevDaycare = {
   mealtimeLunch: null,
   mealtimeSnack: null,
   mealtimeSupper: null,
-  mealtimeEveningSnack: null
+  mealtimeEveningSnack: null,
+  serviceWorkerNote: ''
 }
 
 export const testDaycare2: DevDaycare = {
@@ -2349,7 +2352,8 @@ export const testDaycare2: DevDaycare = {
   mealtimeLunch: null,
   mealtimeSnack: null,
   mealtimeSupper: null,
-  mealtimeEveningSnack: null
+  mealtimeEveningSnack: null,
+  serviceWorkerNote: ''
 }
 
 export const testDaycarePrivateVoucher: DevDaycare = {
@@ -2434,7 +2438,8 @@ export const testDaycarePrivateVoucher: DevDaycare = {
   mealtimeLunch: null,
   mealtimeSnack: null,
   mealtimeSupper: null,
-  mealtimeEveningSnack: null
+  mealtimeEveningSnack: null,
+  serviceWorkerNote: ''
 }
 
 export const testPreschool: DevDaycare = {
@@ -2517,7 +2522,8 @@ export const testPreschool: DevDaycare = {
   mealtimeLunch: null,
   mealtimeSnack: null,
   mealtimeSupper: null,
-  mealtimeEveningSnack: null
+  mealtimeEveningSnack: null,
+  serviceWorkerNote: ''
 }
 
 export const testAdult = Fixture.person({
