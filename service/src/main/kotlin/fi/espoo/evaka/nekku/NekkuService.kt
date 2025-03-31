@@ -598,11 +598,20 @@ data class NekkuApiSpecialDietsField(
         NekkuSpecialDietsField(id, name, type.toEvaka(), options)
 }
 
+data class NekkuSpecialDietWithoutFields(val id: String, val name: String)
+
 data class NekkuSpecialDietsField(
     val id: String,
     val name: String,
     val type: NekkuSpecialDietType,
     val options: List<NekkuSpecialDietOption>? = null,
+)
+
+data class NekkuSpecialDietsFieldWithoutOptions(
+    val id: String,
+    val name: String,
+    val type: NekkuSpecialDietType,
+    val diet_id: String,
 )
 
 @ConstList("nekku_special_diet_type")
@@ -637,6 +646,13 @@ data class NekkuApiProduct(
     fun toEvaka(): NekkuProduct =
         NekkuProduct(name, sku, optionsId, unitSize, mealTime, mealType?.toEvaka())
 }
+
+data class NekkuSpecialDietOptionWithFieldId(
+    val weight: Int,
+    val key: String,
+    val value: String,
+    val fieldId: String,
+)
 
 data class NekkuProduct(
     val name: String,
@@ -704,3 +720,5 @@ data class NekkuOrderResult(
     val created: List<String>?,
     val cancelled: List<String>?,
 )
+
+data class NekkuSpecialDietChoices(val dietId: String, val fieldId: String, val value: String)

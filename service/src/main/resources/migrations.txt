@@ -514,3 +514,4 @@ V515__document_template_language_en.sql
 V516__drop_unused_tables.sql
 V517__nekku_eats_breakfast.sql
 V518__more_child_document_constraints.sql
+V519__nekku_special_diet_choices.sql

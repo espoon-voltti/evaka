@@ -636,6 +636,7 @@ export const fi = {
       nekkuEatsBreakfastYes: 'Kyllä',
       nekkuEatsBreakfastNo: 'Ei',
       nekkuDiet: 'Nekku-ruokatilauksen ruokavalio',
+      nekkuSpecialDiet: 'Nekku-erityisruokavalio',
       placeholder: {
         languageAtHome: 'Valitse kieli',
         languageAtHomeDetails: 'Lisätiedot kotikielestä',
@@ -3895,6 +3896,7 @@ export const fi = {
           'Laskun korjausrivejä (päämies)',
         'invoice_row.child': 'Lasku- rivejä',
         'koski_study_right.child_id': 'Koski opinto- oikeuksia',
+        'nekku_special_diet_choices.child_id': 'Nekku-erityis- ruokavalio',
         'pedagogical_document.child_id': 'Pedagogisia dokumentteja',
         'placement.child_id': 'Sijoituksia',
         'service_application.child_id': 'Palv.tarve hakemuksia (lapsena)',
