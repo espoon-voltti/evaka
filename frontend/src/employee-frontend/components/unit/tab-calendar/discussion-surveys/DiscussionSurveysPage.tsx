@@ -19,7 +19,7 @@ import { H1, H2 } from 'lib-components/typography'
 
 import { useTranslation } from '../../../../state/i18n'
 import { renderResult } from '../../../async-rendering'
-import { unitQuery } from '../../queries'
+import { daycareQuery } from '../../queries'
 import { groupDiscussionSurveysQuery } from '../queries'
 
 import DiscussionReservationSurveyItem from './DiscussionSurveyItem'
@@ -40,7 +40,7 @@ export default React.memo(function DiscussionReservationSurveysPage() {
   const { i18n } = useTranslation()
   const unitId = useIdRouteParam<DaycareId>('unitId')
   const groupId = useIdRouteParam<GroupId>('groupId')
-  const unitInformation = useQueryResult(unitQuery({ daycareId: unitId }))
+  const unitInformation = useQueryResult(daycareQuery({ daycareId: unitId }))
 
   const discussionSurveys = useQueryResult(
     groupDiscussionSurveysQuery({ unitId, groupId })

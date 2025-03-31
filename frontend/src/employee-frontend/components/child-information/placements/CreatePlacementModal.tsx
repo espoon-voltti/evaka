@@ -29,7 +29,7 @@ import { UIContext } from '../../../state/ui'
 import RetroactiveConfirmation, {
   isChangeRetroactive
 } from '../../common/RetroactiveConfirmation'
-import { unitsQuery } from '../../unit/queries'
+import { daycaresQuery } from '../../unit/queries'
 import { createPlacementMutation } from '../queries'
 
 export interface Props {
@@ -47,7 +47,7 @@ interface Form {
 function CreatePlacementModal({ childId }: Props) {
   const { i18n } = useTranslation()
   const { clearUiMode } = useContext(UIContext)
-  const units = useQueryResult(unitsQuery({ includeClosed: true }))
+  const units = useQueryResult(daycaresQuery({ includeClosed: true }))
   const [form, setForm] = useState<Form>({
     type: 'DAYCARE',
     unit: null,

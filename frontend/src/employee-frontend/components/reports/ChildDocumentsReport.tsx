@@ -34,7 +34,7 @@ import { faChevronDown, faChevronUp } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
-import { unitsQuery } from '../unit/queries'
+import { daycaresQuery } from '../unit/queries'
 
 import { FilterLabel, FilterRow } from './common'
 import {
@@ -45,7 +45,7 @@ import {
 export default React.memo(function ChildDocumentsReport() {
   const { i18n } = useTranslation()
 
-  const units = useQueryResult(unitsQuery({ includeClosed: false }))
+  const units = useQueryResult(daycaresQuery({ includeClosed: false }))
   const unitOptions = useMemo(
     () =>
       units.map((res) =>

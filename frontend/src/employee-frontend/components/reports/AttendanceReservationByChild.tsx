@@ -40,7 +40,7 @@ import { UserContext } from '../../state/user'
 import { formatName } from '../../utils'
 import { renderResult } from '../async-rendering'
 import { FlexRow } from '../common/styled/containers'
-import { unitGroupsQuery, unitsQuery } from '../unit/queries'
+import { unitGroupsQuery, daycaresQuery } from '../unit/queries'
 
 import { AttendanceReservationReportTd } from './AttendanceReservation'
 import ReportDownload, { BackendReportDownload } from './ReportDownload'
@@ -77,7 +77,7 @@ export default React.memo(function AttendanceReservationByChild() {
   const [startTime, setStartTime] = useState<string>('00:00')
   const [endTime, setEndTime] = useState<string>('23:59')
 
-  const units = useQueryResult(unitsQuery({ includeClosed: true }))
+  const units = useQueryResult(daycaresQuery({ includeClosed: true }))
   const groups = useQueryResult(
     unitId ? unitGroupsQuery({ daycareId: unitId }) : constantQuery([])
   )

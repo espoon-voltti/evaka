@@ -40,10 +40,10 @@ import {
   type getOccupancyGroupReport,
   type getOccupancyUnitReport
 } from '../../generated/api-clients/reports'
+import { areasQuery } from '../../queries'
 import { Translations, useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 import { FlexRow } from '../common/styled/containers'
-import { areaQuery } from '../unit/queries'
 
 import { FilterLabel, FilterRow, TableScrollable } from './common'
 import { occupancyGroupReportQuery, occupancyUnitReportQuery } from './queries'
@@ -370,7 +370,7 @@ type ReportMode = {
 
 export default React.memo(function Occupancies() {
   const { i18n } = useTranslation()
-  const areas = useQueryResult(areaQuery())
+  const areas = useQueryResult(areasQuery())
   const now = mockNow() ?? new Date()
   const [filters, setFilters] = useState<OccupancyReportFilters>({
     year: now.getFullYear(),

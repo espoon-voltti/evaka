@@ -5,8 +5,10 @@
 import { Queries } from 'lib-common/query'
 
 import { getAssistanceActionOptions } from './generated/api-clients/assistance'
+import { getAreas, getUnits } from './generated/api-clients/daycare'
 import {
   getEmployees,
+  getFinanceDecisionHandlers,
   getOrCreatePersonBySsn,
   getPersonDependants,
   getPersonIdentity,
@@ -16,7 +18,7 @@ import { getServiceNeedOptions } from './generated/api-clients/serviceneed'
 
 const q = new Queries()
 
-// These are common queries that do not need to be invalidated after mutations
+// These are common queries of semi-static data that generally do not need to be invalidated after mutations
 
 export const serviceNeedOptionsQuery = q.query(getServiceNeedOptions)
 
@@ -33,3 +35,9 @@ export const personBySsnQuery = q.query(getOrCreatePersonBySsn)
 export const searchPersonQuery = q.query(searchPerson)
 
 export const personDependantsQuery = q.query(getPersonDependants)
+
+export const areasQuery = q.query(getAreas)
+
+export const unitsQuery = q.query(getUnits)
+
+export const financeDecisionHandlersQuery = q.query(getFinanceDecisionHandlers)

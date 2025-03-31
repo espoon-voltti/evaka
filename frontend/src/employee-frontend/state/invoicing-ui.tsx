@@ -30,12 +30,11 @@ import {
   VoucherValueDecisionDifference,
   FeeDecisionDifference
 } from 'lib-common/generated/api-types/invoicing'
-import { Employee } from 'lib-common/generated/api-types/pis'
 import { DaycareId, EmployeeId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 
-import { areaQuery } from '../components/unit/queries'
+import { areasQuery, unitsQuery } from '../queries'
 
 import { UserContext } from './user'
 
@@ -151,11 +150,8 @@ export interface FinanceDecisionHandlerOption {
 }
 
 interface SharedState {
-  units: Result<UnitStub[]>
-  setUnits: Dispatch<SetStateAction<Result<UnitStub[]>>>
-  financeDecisionHandlers: Result<FinanceDecisionHandlerOption[]>
-  setFinanceDecisionHandlers: (handlers: Result<Employee[]>) => void
   availableAreas: Result<DaycareCareArea[]>
+  allDaycareUnits: Result<UnitStub[]>
 }
 
 interface UiState {
@@ -256,11 +252,8 @@ const defaultState: UiState = {
     confirmSearchFilters: () => undefined
   },
   shared: {
-    units: Loading.of(),
-    setUnits: () => undefined,
-    financeDecisionHandlers: Loading.of(),
-    setFinanceDecisionHandlers: () => undefined,
-    availableAreas: Loading.of()
+    availableAreas: Loading.of(),
+    allDaycareUnits: Loading.of()
   }
 }
 
@@ -416,25 +409,9 @@ export const InvoicingUIContextProvider = React.memo(
       )
     }, [setIncomeStatementSearchFilters])
 
-    const [units, setUnits] = useState<Result<UnitStub[]>>(
-      defaultState.shared.units
-    )
-    const [financeDecisionHandlers, setFinanceDecisionHandlers] = useState<
-      Result<FinanceDecisionHandlerOption[]>
-    >(defaultState.shared.financeDecisionHandlers)
-    const availableAreas = useQueryResult(areaQuery(), { enabled: loggedIn })
-
-    const setFinanceDecisionHandlersFromResult = useCallback(
-      (employeesResult: Result<Employee[]>) =>
-        setFinanceDecisionHandlers(
-          employeesResult.map((employees) =>
-            employees.map((e) => ({
-              value: e.id,
-              label: [e.firstName, e.lastName].join(' ')
-            }))
-          )
-        ),
-      [setFinanceDecisionHandlers]
+    const availableAreas = useQueryResult(areasQuery(), { enabled: loggedIn })
+    const allDaycareUnits = useQueryResult(
+      unitsQuery({ areaIds: null, type: 'DAYCARE', from: null })
     )
 
     const value = useMemo(
@@ -485,11 +462,8 @@ export const InvoicingUIContextProvider = React.memo(
           confirmSearchFilters: confirmIncomeStatementSearchFilters
         },
         shared: {
-          units,
-          setUnits,
-          financeDecisionHandlers,
-          setFinanceDecisionHandlers: setFinanceDecisionHandlersFromResult,
-          availableAreas
+          availableAreas,
+          allDaycareUnits
         }
       }),
       [
@@ -523,10 +497,8 @@ export const InvoicingUIContextProvider = React.memo(
         setIncomeStatementSearchFilters,
         clearIncomeStatementSearchFilters,
         confirmIncomeStatementSearchFilters,
-        units,
-        financeDecisionHandlers,
         availableAreas,
-        setFinanceDecisionHandlersFromResult
+        allDaycareUnits
       ]
     )
 

@@ -35,7 +35,7 @@ import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 import { FlexRow } from '../common/styled/containers'
 import { preschoolTermsQuery } from '../holiday-term-periods/queries'
-import { unitGroupsQuery, unitsQuery } from '../unit/queries'
+import { unitGroupsQuery, daycaresQuery } from '../unit/queries'
 
 import ReportDownload from './ReportDownload'
 import { FilterLabel, FilterRow, TableScrollable } from './common'
@@ -54,7 +54,7 @@ export default React.memo(function PreschoolAbsenceReport() {
     DaycareGroup | null | { name: string; id: GroupId | null }
   >(allOption)
   const [selectedTerm, setSelectedTerm] = useState<PreschoolTerm | null>(null)
-  const units = useQueryResult(unitsQuery({ includeClosed: true }))
+  const units = useQueryResult(daycaresQuery({ includeClosed: true }))
   const groups = useQueryResult(
     selectedUnit?.id
       ? unitGroupsQuery({ daycareId: selectedUnit.id })

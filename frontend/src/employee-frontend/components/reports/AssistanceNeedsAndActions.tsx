@@ -41,10 +41,11 @@ import {
 import { faChevronDown, faChevronUp } from 'lib-icons'
 
 import ReportDownload from '../../components/reports/ReportDownload'
+import { areasQuery } from '../../queries'
 import { useTranslation } from '../../state/i18n'
 import { reducePropertySum } from '../../utils'
 import { renderResult } from '../async-rendering'
-import { areaQuery, unitsQuery } from '../unit/queries'
+import { daycaresQuery } from '../unit/queries'
 
 import { FilterLabel, FilterRow, TableFooter, TableScrollable } from './common'
 import {
@@ -271,12 +272,12 @@ export default React.memo(function AssistanceNeedsAndActions() {
       preschoolAssistanceLevels: [],
       otherAssistanceMeasureTypes: []
     })
-  const areasResult = useQueryResult(areaQuery())
+  const areasResult = useQueryResult(areasQuery())
   const sortedAreas = useMemo(
     () => areasResult.map((areas) => sortBy(areas, (area) => area.name)),
     [areasResult]
   )
-  const unitsResult = useQueryResult(unitsQuery({ includeClosed: true }))
+  const unitsResult = useQueryResult(daycaresQuery({ includeClosed: true }))
   const sortedUnits = useMemo(
     () => unitsResult.map((units) => sortBy(units, (unit) => unit.name)),
     [unitsResult]

@@ -38,7 +38,7 @@ import { renderResult } from './async-rendering'
 import TabApplicationProcess from './unit/TabApplicationProcess'
 import TabCalendar from './unit/TabCalendar'
 import UnitServiceWorkerNote from './unit/UnitServiceWorkerNote'
-import { unitNotificationsQuery, unitQuery } from './unit/queries'
+import { unitNotificationsQuery, daycareQuery } from './unit/queries'
 
 const defaultTab = (unit: DaycareResponse) => {
   if (unit.permittedActions.includes('READ_ATTENDANCES')) return 'calendar'
@@ -53,7 +53,7 @@ export default React.memo(function UnitPage() {
   const { setTitle } = useContext<TitleState>(TitleContext)
   const { filters, setFilters } = useContext(UnitContext)
 
-  const unitInformation = useQueryResult(unitQuery({ daycareId: id }))
+  const unitInformation = useQueryResult(daycareQuery({ daycareId: id }))
 
   const unitNotifications = useQueryResult(
     unitNotificationsQuery({ daycareId: id })

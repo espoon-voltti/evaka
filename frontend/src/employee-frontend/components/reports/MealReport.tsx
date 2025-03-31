@@ -30,7 +30,7 @@ import { useTranslation } from '../../state/i18n'
 import { UserContext } from '../../state/user'
 import { renderResult } from '../async-rendering'
 import { FlexRow } from '../common/styled/containers'
-import { unitsQuery } from '../unit/queries'
+import { daycaresQuery } from '../unit/queries'
 
 import ReportDownload from './ReportDownload'
 import { FilterLabel, FilterRow, TableScrollable } from './common'
@@ -45,9 +45,9 @@ export default React.memo(function MealReport() {
   const { user } = useContext(UserContext)
 
   const [selectedUnit, setSelectedUnit] = useState<Daycare | null>(null)
-  const units = useQueryResult(unitsQuery({ includeClosed: false })).getOrElse(
-    []
-  )
+  const units = useQueryResult(
+    daycaresQuery({ includeClosed: false })
+  ).getOrElse([])
   const [date, setDate] = useState<LocalDate | null>(
     LocalDate.todayInHelsinkiTz()
   )

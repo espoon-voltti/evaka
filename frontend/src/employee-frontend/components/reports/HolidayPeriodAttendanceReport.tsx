@@ -42,7 +42,7 @@ import { faChevronRight, faChevronDown } from 'lib-icons'
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 import { holidayPeriodsQuery } from '../holiday-term-periods/queries'
-import { unitGroupsQuery, unitsQuery } from '../unit/queries'
+import { unitGroupsQuery, daycaresQuery } from '../unit/queries'
 
 import { FilterLabel, FilterRow, TableScrollable } from './common'
 import { holidayPeriodAttendanceReportQuery } from './queries'
@@ -62,7 +62,7 @@ export default React.memo(function HolidayPeriodAttendanceReport() {
   )
   const [selectedGroups, setSelectedGroups] = useState<GroupId[] | null>(null)
 
-  const units = useQueryResult(unitsQuery({ includeClosed: false }))
+  const units = useQueryResult(daycaresQuery({ includeClosed: false }))
   const periods = useQueryResult(holidayPeriodsQuery())
 
   const periodOptions = useMemo(

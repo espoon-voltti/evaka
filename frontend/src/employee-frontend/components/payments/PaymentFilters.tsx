@@ -5,7 +5,6 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { Fragment, useCallback, useContext, useEffect } from 'react'
 
-import { wrapResult } from 'lib-common/api'
 import {
   PaymentDistinctiveParams,
   PaymentStatus
@@ -21,13 +20,10 @@ import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { fasExclamationTriangle } from 'lib-icons'
 
-import { getUnits } from '../../generated/api-clients/daycare'
 import { useTranslation } from '../../state/i18n'
 import { InvoicingUiContext } from '../../state/invoicing-ui'
 import { AreaFilter, Filters, UnitFilter } from '../common/Filters'
 import { FlexRow } from '../common/styled/containers'
-
-const getUnitsResult = wrapResult(getUnits)
 
 export default React.memo(function PaymentFilters() {
   const {
@@ -37,16 +33,10 @@ export default React.memo(function PaymentFilters() {
       confirmSearchFilters,
       clearSearchFilters
     },
-    shared: { units, setUnits, availableAreas }
+    shared: { availableAreas, allDaycareUnits: units }
   } = useContext(InvoicingUiContext)
 
   const { i18n } = useTranslation()
-
-  useEffect(() => {
-    void getUnitsResult({ areaIds: null, type: 'DAYCARE', from: null }).then(
-      setUnits
-    )
-  }, [setUnits])
 
   // remove selected unit filter if the unit is not included in the selected areas
   useEffect(() => {

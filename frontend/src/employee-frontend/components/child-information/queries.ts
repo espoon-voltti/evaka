@@ -72,7 +72,6 @@ import {
 import {
   getAdditionalInfo,
   getChild,
-  getUnits,
   updateAdditionalInfo
 } from '../../generated/api-clients/daycare'
 import {
@@ -402,8 +401,6 @@ export const deleteAssistanceNeedPreschoolDecisionMutation =
       ({ id }) => assistanceNeedPreschoolDecisionQuery({ id })
     ]
   )
-
-export const unitsQuery = q.query(getUnits)
 
 export const getBackupPickupsQuery = q.query(getBackupPickups)
 

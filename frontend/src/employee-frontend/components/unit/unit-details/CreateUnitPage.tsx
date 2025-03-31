@@ -15,16 +15,16 @@ import {
 import { Container, ContentArea } from 'lib-components/layout/Container'
 
 import UnitEditor from '../../../components/unit/unit-details/UnitEditor'
-import { getEmployeesQuery } from '../../../queries'
+import { areasQuery, getEmployeesQuery } from '../../../queries'
 import { useTranslation } from '../../../state/i18n'
 import { FinanceDecisionHandlerOption } from '../../../state/invoicing-ui'
 import { renderResult } from '../../async-rendering'
-import { areaQuery, createUnitMutation } from '../queries'
+import { createUnitMutation } from '../queries'
 
 export default React.memo(function CreateUnitPage() {
   const { i18n } = useTranslation()
   const navigate = useNavigate()
-  const areas = useQueryResult(areaQuery())
+  const areas = useQueryResult(areasQuery())
   const [financeDecisionHandlerOptions, setFinanceDecisionHandlerOptions] =
     useState<Result<FinanceDecisionHandlerOption[]>>(Loading.of())
 

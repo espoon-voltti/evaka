@@ -21,7 +21,7 @@ import { DatePickerF } from 'lib-components/molecules/date-picker/DatePicker'
 import ReportDownload from '../../components/reports/ReportDownload'
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
-import { unitQuery } from '../unit/queries'
+import { daycareQuery } from '../unit/queries'
 
 import { FilterLabel, FilterRow, TableScrollable } from './common'
 import { familyContactsReportQuery } from './queries'
@@ -49,7 +49,7 @@ export default React.memo(function FamilyContacts() {
       : constantQuery([])
   )
 
-  const unit = useQueryResult(unitQuery({ daycareId: unitId }))
+  const unit = useQueryResult(daycareQuery({ daycareId: unitId }))
 
   return (
     <Container>
