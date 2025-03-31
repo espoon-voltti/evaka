@@ -386,6 +386,7 @@ sealed interface AsyncJob : AsyncJobPayload {
     data class SendNekkuOrder(
         val customerGroupId: GroupId,
         val customerNumber: String,
+        val unitSize: String,
         val date: LocalDate,
     ) : AsyncJob {
         override val user: AuthenticatedUser? = null
