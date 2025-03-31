@@ -1501,7 +1501,7 @@ class ApplicationStateService(
                     if (decision.type == DecisionType.PRESCHOOL) {
                         acceptDecision(
                             tx,
-                            user,
+                            AuthenticatedUser.SystemInternalUser,
                             clock,
                             application.id,
                             decisionId,

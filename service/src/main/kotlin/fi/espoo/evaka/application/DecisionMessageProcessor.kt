@@ -32,6 +32,7 @@ class DecisionMessageProcessor(
     ) =
         db.transaction { tx ->
             val decisionId = msg.decisionId
+            val skipGuardianApproval = msg.skipGuardianApproval
 
             decisionService.createDecisionPdf(tx, decisionId)
 
@@ -40,7 +41,7 @@ class DecisionMessageProcessor(
                 logger.info { "Sending decision pdf(s) for decision (id: $decisionId)." }
                 asyncJobRunner.plan(
                     tx,
-                    listOf(AsyncJob.SendDecision(decisionId)),
+                    listOf(AsyncJob.SendDecision(decisionId, skipGuardianApproval)),
                     runAt = clock.now(),
                 )
             }
@@ -49,8 +50,9 @@ class DecisionMessageProcessor(
     fun runSendJob(db: Database.Connection, clock: EvakaClock, msg: AsyncJob.SendDecision) =
         db.transaction { tx ->
             val decisionId = msg.decisionId
+            val skipGuardianApproval = msg.skipGuardianApproval
 
-            decisionService.deliverDecisionToGuardians(tx, clock, decisionId)
+            decisionService.deliverDecisionToGuardians(tx, clock, decisionId, skipGuardianApproval)
             logger.info { "Successfully sent decision(s) pdf for decision (id: $decisionId)." }
         }
 

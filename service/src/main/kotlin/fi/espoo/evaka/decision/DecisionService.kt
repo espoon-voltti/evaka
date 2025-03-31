@@ -33,6 +33,7 @@ import fi.espoo.evaka.setting.getSettings
 import fi.espoo.evaka.sficlient.SfiMessage
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DecisionId
+import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -61,6 +62,7 @@ class DecisionService(
     private val emailMessageProvider: IEmailMessageProvider,
     private val emailClient: EmailClient,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
+    private val featureConfig: FeatureConfig,
 ) {
     fun finalizeDecisions(
         tx: Database.Transaction,
@@ -70,9 +72,18 @@ class DecisionService(
         sendAsMessage: Boolean,
     ): List<DecisionId> {
         val decisionIds = tx.finalizeDecisions(applicationId, clock.today())
+        val skipGuardianApproval = featureConfig.skipGuardianPreschoolDecisionApproval
         asyncJobRunner.plan(
             tx,
-            decisionIds.map { AsyncJob.NotifyDecisionCreated(it, user, sendAsMessage) },
+            decisionIds.map { decisionId ->
+                val decision = tx.getDecision(decisionId)!!
+                AsyncJob.NotifyDecisionCreated(
+                    decisionId,
+                    user,
+                    sendAsMessage,
+                    skipGuardianApproval && decision.type == DecisionType.PRESCHOOL,
+                )
+            },
             runAt = clock.now(),
         )
         return decisionIds
@@ -161,6 +172,7 @@ class DecisionService(
         tx: Database.Transaction,
         clock: EvakaClock,
         decisionId: DecisionId,
+        skipGuardianApproval: Boolean,
     ) {
         val decision =
             tx.getDecision(decisionId) ?: throw NotFound("No decision with id: $decisionId")
@@ -185,7 +197,14 @@ class DecisionService(
             tx.getPersonById(application.guardianId)
                 ?: error("Guardian not found with id: ${application.guardianId}")
         if (currentGuardians.contains(applicationGuardian.id)) {
-            deliverDecisionToGuardian(tx, clock, decision, applicationGuardian, documentLocation)
+            deliverDecisionToGuardian(
+                tx,
+                clock,
+                decision,
+                applicationGuardian,
+                documentLocation,
+                skipGuardianApproval,
+            )
         } else {
             logger.warn {
                 "Skipping sending decision $decisionId to application guardian ${applicationGuardian.id} - not a current guardian or foster parent"
@@ -209,6 +228,7 @@ class DecisionService(
                             decision,
                             otherGuardian,
                             documentLocation,
+                            skipGuardianApproval,
                         )
                     } else {
                         logger.warn {
@@ -227,6 +247,7 @@ class DecisionService(
         decision: Decision,
         guardian: PersonDTO,
         documentLocation: DocumentLocation,
+        skipGuardianApproval: Boolean,
     ) {
         if (guardian.identity !is ExternalIdentifier.SSN) {
             logger.info {
@@ -254,7 +275,7 @@ class DecisionService(
                 postOffice = sendAddress.postOffice,
                 ssn = guardian.identity.ssn,
                 messageHeader = messageProvider.getDecisionHeader(lang),
-                messageContent = messageProvider.getDecisionContent(lang),
+                messageContent = messageProvider.getDecisionContent(lang, skipGuardianApproval),
             )
 
         asyncJobRunner.plan(tx, listOf(AsyncJob.SendMessage(message)), runAt = clock.now())
