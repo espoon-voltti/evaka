@@ -366,6 +366,22 @@ fun Database.Transaction.updateChildDocumentKey(id: ChildDocumentId, documentKey
         .updateExactlyOne()
 }
 
+fun Database.Transaction.setChildDocumentProcessId(
+    documentId: ChildDocumentId,
+    processId: ArchivedProcessId,
+) {
+    createUpdate {
+            sql(
+                """
+UPDATE child_document 
+SET process_id = ${bind(processId)} 
+WHERE id = ${bind(documentId)}
+"""
+            )
+        }
+        .updateExactlyOne()
+}
+
 fun Database.Transaction.resetChildDocumentKey(ids: List<ChildDocumentId>) {
     executeBatch(ids) {
         sql(

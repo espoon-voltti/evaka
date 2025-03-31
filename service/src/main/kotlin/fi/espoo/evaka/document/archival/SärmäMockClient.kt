@@ -14,6 +14,9 @@ class SärmäMockClient : SärmäClientInterface {
         classId: String,
         virtualArchiveId: String,
     ): Pair<Int, String?> {
-        return Pair(200, "OK")
+        return Pair(
+            200,
+            "status_message=Success.&transaction_id=2872934&protocol_version=1.0&status_code=200&instance_ids=354319&",
+        )
     }
 }
