@@ -2047,7 +2047,7 @@ export default function UnitEditor(props: Props) {
           decisionCustomization.handlerAddress
         )}
       </FormPart>
-      {featureFlags.jamixIntegration && (
+      {(featureFlags.jamixIntegration || featureFlags.nekkuIntegration) && (
         <>
           <H3>{i18n.unitEditor.title.mealOrderIntegration}</H3>
           <FormPart>
