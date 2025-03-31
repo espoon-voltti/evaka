@@ -37,6 +37,8 @@ import InvoiceFilters from './InvoiceFilters'
 import Invoices from './Invoices'
 import {
   invoicesQuery,
+  resendInvoicesByDateMutation,
+  resendInvoicesMutation,
   sendInvoicesByDateMutation,
   sendInvoicesMutation
 } from './queries'
@@ -75,6 +77,8 @@ export default React.memo(function InvoicesPage() {
   )
 
   const [showModal, { off: closeModal, on: openModal }] = useBoolean(false)
+  const [showResendModal, { off: closeResendModal, on: openResendModal }] =
+    useBoolean(false)
 
   const [fullAreaSelection, { set: setFullAreaSelection }] = useBoolean(false)
 
@@ -110,6 +114,10 @@ export default React.memo(function InvoicesPage() {
     .map((a) => a.data.some((b) => b.permittedActions.includes('DELETE')))
     .getOrElse(false)
 
+  const canResend = invoices
+    .map((a) => a.data.some((b) => b.permittedActions.includes('RESEND')))
+    .getOrElse(false)
+
   return (
     <Container data-qa="invoices-page">
       <ContentArea opaque>
@@ -130,8 +138,9 @@ export default React.memo(function InvoicesPage() {
                 setSortDirection={setSortDirection}
                 showCheckboxes={
                   (searchFilters.status === 'DRAFT' ||
+                    searchFilters.status === 'SENT' ||
                     searchFilters.status === 'WAITING_FOR_SENDING') &&
-                  (canSend || canDelete)
+                  (canSend || canDelete || canResend)
                 }
                 checked={checkedInvoices}
                 checkAll={checkAllOnPage}
@@ -144,9 +153,11 @@ export default React.memo(function InvoicesPage() {
             </ContentArea>
             <Actions
               openModal={openModal}
+              openResendModal={openResendModal}
               status={searchFilters.status}
               canSend={canSend}
               canDelete={canDelete}
+              canResend={canResend}
               checkedInvoices={checkedInvoices}
               clearCheckedInvoices={clearChecked}
               checkedAreas={searchFilters.area}
@@ -159,6 +170,17 @@ export default React.memo(function InvoicesPage() {
           onClose={closeModal}
           onSendDone={() => {
             closeModal()
+            clearChecked()
+          }}
+          checkedInvoices={checkedInvoices}
+          fullAreaSelection={fullAreaSelection}
+        />
+      ) : null}
+      {showResendModal ? (
+        <ResendModal
+          onClose={closeResendModal}
+          onSendDone={() => {
+            closeResendModal()
             clearChecked()
           }}
           checkedInvoices={checkedInvoices}
@@ -266,6 +288,71 @@ const Modal = React.memo(function Modal({
         ) : null}
       </ModalContent>
     </MutateFormModal>
+  )
+})
+
+const ResendModal = React.memo(function ResendModal({
+  onClose,
+  onSendDone,
+  checkedInvoices,
+  fullAreaSelection
+}: {
+  onClose: () => void
+  onSendDone: () => void
+  checkedInvoices: Set<InvoiceId>
+  fullAreaSelection: boolean
+}) {
+  const { i18n } = useTranslation()
+  const {
+    invoices: { searchFilters }
+  } = useContext(InvoicingUiContext)
+
+  const invoiceDate = LocalDate.todayInSystemTz()
+  const dueDate = LocalDate.todayInSystemTz().addBusinessDays(10)
+
+  const [mutation, onClick] = useSelectMutation(
+    () => (fullAreaSelection ? first() : second()),
+    [
+      resendInvoicesByDateMutation,
+      () => ({
+        body: {
+          dueDate,
+          invoiceDate,
+          areas: searchFilters.area,
+          from:
+            searchFilters.startDate &&
+            searchFilters.useCustomDatesForInvoiceSending
+              ? searchFilters.startDate
+              : LocalDate.todayInSystemTz().withDate(1),
+          to:
+            searchFilters.endDate &&
+            searchFilters.useCustomDatesForInvoiceSending
+              ? searchFilters.endDate
+              : LocalDate.todayInSystemTz().lastDayOfMonth()
+        }
+      })
+    ],
+    [
+      resendInvoicesMutation,
+      () => ({
+        body: [...checkedInvoices]
+      })
+    ]
+  )
+
+  return (
+    <MutateFormModal
+      type="info"
+      title={i18n.invoices.resendModal.title}
+      icon={faEnvelope}
+      resolveMutation={mutation}
+      resolveAction={onClick}
+      resolveLabel={i18n.common.confirm}
+      onSuccess={onSendDone}
+      rejectAction={onClose}
+      rejectLabel={i18n.common.cancel}
+      data-qa="resend-invoices-dialog"
+    />
   )
 })
 

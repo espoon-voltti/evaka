@@ -320,6 +320,7 @@ export type Invoice =
   | 'DELETE'
   | 'MARK_SENT'
   | 'READ'
+  | 'RESEND'
   | 'SEND'
   | 'UPLOAD_ATTACHMENT'
 

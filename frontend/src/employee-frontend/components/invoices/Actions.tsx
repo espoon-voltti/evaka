@@ -7,6 +7,7 @@ import styled from 'styled-components'
 
 import { InvoiceStatus } from 'lib-common/generated/api-types/invoicing'
 import { InvoiceId } from 'lib-common/generated/api-types/shared'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import { fontWeights } from 'lib-components/typography'
@@ -30,9 +31,11 @@ const CheckedRowsInfo = styled.div`
 
 type Props = {
   openModal: () => void
+  openResendModal: () => void
   status: InvoiceStatus
   canSend: boolean
   canDelete: boolean
+  canResend: boolean
   checkedInvoices: Set<InvoiceId>
   clearCheckedInvoices: () => void
   checkedAreas: string[]
@@ -41,9 +44,11 @@ type Props = {
 
 const Actions = React.memo(function Actions({
   openModal,
+  openResendModal,
   status,
   canSend,
   canDelete,
+  canResend,
   checkedInvoices,
   clearCheckedInvoices,
   checkedAreas,
@@ -93,6 +98,29 @@ const Actions = React.memo(function Actions({
           text={i18n.invoices.buttons.sendInvoice(checkedInvoices.size)}
           onClick={openModal}
           data-qa="open-send-invoices-dialog"
+        />
+      )}
+    </StickyActionBar>
+  ) : status === 'SENT' ? (
+    <StickyActionBar align="right">
+      {checkedInvoices.size > 0 ? (
+        <>
+          <CheckedRowsInfo>
+            {i18n.invoices.buttons.checked(checkedInvoices.size)}
+          </CheckedRowsInfo>
+          <Gap size="s" horizontal />
+        </>
+      ) : null}
+      {canResend && (
+        <Button
+          primary
+          text={i18n.invoices.buttons.resendInvoice(checkedInvoices.size)}
+          onClick={openResendModal}
+          disabled={
+            (!fullAreaSelection && checkedInvoices.size === 0) ||
+            (fullAreaSelection && checkedAreas.length === 0)
+          }
+          data-qa="send-again"
         />
       )}
     </StickyActionBar>
