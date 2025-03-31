@@ -15,6 +15,7 @@ const statusesByType: Record<DocumentType, DocumentStatus[]> = {
   MIGRATED_LEOPS: ['COMPLETED'],
   VASU: ['DRAFT', 'PREPARED', 'COMPLETED'],
   LEOPS: ['DRAFT', 'PREPARED', 'COMPLETED'],
+  CITIZEN_BASIC: ['DRAFT', 'CITIZEN_DRAFT', 'COMPLETED'],
   OTHER: ['DRAFT', 'COMPLETED']
 }
 
@@ -39,3 +40,16 @@ export const getPrevDocumentStatus = (
 
   return index > 0 ? statuses[index - 1] : null
 }
+
+export const getAllChildDocumentStatuses = (type: DocumentType) =>
+  statusesByType[type]
+
+const editable: Record<DocumentStatus, boolean> = {
+  DRAFT: true,
+  PREPARED: true,
+  CITIZEN_DRAFT: false,
+  COMPLETED: false
+}
+
+export const isChildDocumentEditable = (status: DocumentStatus) =>
+  editable[status]

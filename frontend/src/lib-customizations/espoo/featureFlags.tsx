@@ -47,7 +47,8 @@ const features: Features = {
     serviceApplications: true,
     multiSelectDeparture: true,
     archiveIntegrationEnabled: true,
-    aromiIntegration: true
+    aromiIntegration: true,
+    citizenChildDocumentTypes: true
   },
   staging: {
     environmentLabel: 'Staging',

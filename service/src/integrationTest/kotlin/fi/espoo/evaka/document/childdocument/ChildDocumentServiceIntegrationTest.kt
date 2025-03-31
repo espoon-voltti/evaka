@@ -123,6 +123,8 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     contentModifiedAt = clock.now(),
                     contentModifiedBy = null,
                     publishedAt = null,
+                    answeredAt = null,
+                    answeredBy = null,
                 )
             )
             tx.insert(
@@ -141,6 +143,8 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                             clock.today().minusMonths(1),
                             LocalTime.of(8, 0),
                         ),
+                    answeredAt = null,
+                    answeredBy = null,
                 )
             )
             tx.insert(
@@ -155,6 +159,8 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     contentModifiedAt = clock.now().minusMonths(1),
                     contentModifiedBy = null,
                     publishedAt = clock.now().minusMonths(1),
+                    answeredAt = null,
+                    answeredBy = null,
                 )
             )
         }
@@ -204,6 +210,8 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                             clock.today().minusMonths(1),
                             LocalTime.of(8, 0),
                         ),
+                    answeredAt = null,
+                    answeredBy = null,
                 )
             )
         }

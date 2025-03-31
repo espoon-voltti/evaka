@@ -76,7 +76,12 @@ import {
 } from '../child-information/queries'
 import { FlexRow } from '../common/styled/containers'
 
-import { getNextDocumentStatus, getPrevDocumentStatus } from './statuses'
+import {
+  getAllChildDocumentStatuses,
+  getNextDocumentStatus,
+  getPrevDocumentStatus,
+  isChildDocumentEditable
+} from './statuses'
 
 const ActionBar = styled.div`
   position: sticky;
@@ -426,6 +431,14 @@ const ChildDocumentReadViewInner = React.memo(
       () => getPrevDocumentStatus(document.template.type, document.status),
       [document.template.type, document.status]
     )
+    const allStatuses = useMemo(
+      () => getAllChildDocumentStatuses(document.template.type),
+      [document.template.type]
+    )
+    const isEditable = useMemo(
+      () => isChildDocumentEditable(document.status),
+      [document.status]
+    )
 
     const publishedUpToDate = useMemo(
       () =>
@@ -555,20 +568,20 @@ const ChildDocumentReadViewInner = React.memo(
               </FixedSpaceRow>
 
               <FixedSpaceRow>
-                {permittedActions.includes('UPDATE') &&
-                  document.status !== 'COMPLETED' && (
-                    <LegacyButton
-                      text={i18n.common.edit}
-                      onClick={() =>
-                        navigate(
-                          `/child-documents/${document.id}/edit${childIdFromUrl ? `?childId=${childIdFromUrl}` : ''}`
-                        )
-                      }
-                      data-qa="edit-button"
-                    />
-                  )}
+                {permittedActions.includes('UPDATE') && isEditable && (
+                  <LegacyButton
+                    text={i18n.common.edit}
+                    onClick={() =>
+                      navigate(
+                        `/child-documents/${document.id}/edit${childIdFromUrl ? `?childId=${childIdFromUrl}` : ''}`
+                      )
+                    }
+                    data-qa="edit-button"
+                  />
+                )}
                 {permittedActions.includes('PUBLISH') &&
-                  document.status !== 'COMPLETED' && (
+                  document.status !== 'COMPLETED' &&
+                  !allStatuses.includes('CITIZEN_DRAFT') && (
                     <ConfirmedMutation
                       buttonText={
                         i18n.childInformation.childDocuments.editor.publish

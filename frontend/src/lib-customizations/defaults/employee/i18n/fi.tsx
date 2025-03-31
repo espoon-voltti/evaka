@@ -839,15 +839,25 @@ export const fi = {
       }
     },
     childDocuments: {
-      title: 'Lapsen pedagogiset lomakkeet',
+      title: {
+        internal: 'Pedagogiset asiakirjat',
+        external: 'Huoltajien täytettävät asiakirjat'
+      },
       table: {
         document: 'Lomake',
         status: 'Tila',
         open: 'Avaa lomake',
         modified: 'Muokattu',
-        published: 'Julkaistu'
+        published: 'Julkaistu',
+        sent: 'Lähetetty',
+        notSent: 'Ei lähetetty',
+        answered: 'Vastattu',
+        notAnswered: 'Ei vastattu'
       },
-      addNew: 'Luo uusi lomake',
+      addNew: {
+        internal: 'Luo uusi pedagoginen asiakirja',
+        external: 'Luo huoltajille täytettävä asiakirja'
+      },
       select: 'Valitse lomake',
       removeConfirmation: 'Haluatko varmasti poistaa dokumentin?',
       statuses: {
@@ -874,11 +884,14 @@ export const fi = {
         goToNextStatus: {
           DRAFT: 'Julkaise luonnos-tilassa',
           PREPARED: 'Julkaise laadittu-tilassa',
+          CITIZEN_DRAFT: 'Lähetä kuntalaisen täytettäväksi',
           COMPLETED: 'Julkaise valmis-tilassa'
         },
         goToNextStatusConfirmTitle: {
           DRAFT: 'Haluatko varmasti julkaista asiakirjan luonnos-tilassa?',
           PREPARED: 'Haluatko varmasti julkaista asiakirjan laadittu-tilassa?',
+          CITIZEN_DRAFT:
+            'Haluatko varmasti julkaista asiakirjan kuntalaisen täytettäväksi -tilassa?',
           COMPLETED: 'Haluatko varmasti julkaista asiakirjan valmis-tilassa?'
         },
         goToCompletedConfirmText:
@@ -886,11 +899,14 @@ export const fi = {
         goToPrevStatus: {
           DRAFT: 'Palauta luonnokseksi',
           PREPARED: 'Palauta laadituksi',
+          CITIZEN_DRAFT: 'Palauta kuntalaisen täytettäväksi',
           COMPLETED: 'Palauta valmiiksi'
         },
         goToPrevStatusConfirmTitle: {
           DRAFT: 'Haluatko varmasti palauttaa asiakirjan luonnokseksi?',
           PREPARED: 'Haluatko varmasti palauttaa asiakirjan laadituksi?',
+          CITIZEN_DRAFT:
+            'Haluatko varmasti palauttaa asiakirjan kuntalaisen täytettäväksi?',
           COMPLETED: 'Haluatko varmasti palauttaa asiakirjan valmiiksi?'
         },
         deleteDraft: 'Poista luonnos',
@@ -1622,7 +1638,7 @@ export const fi = {
       edit: 'Muokkaa varahakijan tietoja',
       removeConfirmation: 'Haluatko varmasti poistaa varahakijan?'
     },
-    childDocumentsSectionTitle: 'Pedagogiset asiakirjat',
+    childDocumentsSectionTitle: 'Lapsen asiakirjat',
     pedagogicalDocument: {
       create: 'Lisää uusi',
       created: 'Lisätty',
@@ -4992,7 +5008,12 @@ export const fi = {
       MIGRATED_LEOPS: 'Esiopetuksen oppimissuunnitelma',
       VASU: 'Varhaiskasvatussuunnitelma',
       LEOPS: 'Esiopetuksen oppimissuunnitelma',
+      CITIZEN_BASIC: 'Kuntalaisen lomake - perus',
       OTHER: 'Muu lomake'
+    },
+    documentTypeInfos: {
+      CITIZEN_BASIC:
+        'Tämä on lomake, jonka sekä kuntalainen, että henkilökunta voivat täyttää. Halutessaan henkilökunta voi vastata kysymyksiin ensin, minkä jälkeen lomakkeen voi lähettää kuntalaiselle täytettäväksi eVakaan.'
     },
     languages: {
       FI: 'Suomenkielinen',

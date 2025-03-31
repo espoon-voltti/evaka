@@ -2376,6 +2376,8 @@ data class DevChildDocument(
     val contentModifiedAt: HelsinkiDateTime,
     val contentModifiedBy: EmployeeId?,
     val publishedAt: HelsinkiDateTime?,
+    val answeredAt: HelsinkiDateTime?,
+    val answeredBy: EvakaUserId?,
 )
 
 data class Citizen(

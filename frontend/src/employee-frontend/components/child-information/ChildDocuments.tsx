@@ -3,7 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import orderBy from 'lodash/orderBy'
-import React, { useState } from 'react'
+import partition from 'lodash/partition'
+import React, { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
@@ -12,7 +13,8 @@ import { oneOf, required } from 'lib-common/form/form'
 import { useForm } from 'lib-common/form/hooks'
 import {
   ChildDocumentSummaryWithPermittedActions,
-  DocumentTemplateSummary
+  DocumentTemplateSummary,
+  DocumentType
 } from 'lib-common/generated/api-types/document'
 import {
   ChildId,
@@ -29,9 +31,13 @@ import { Button } from 'lib-components/atoms/buttons/Button'
 import { SelectF } from 'lib-components/atoms/dropdowns/Select'
 import { ChildDocumentStateChip } from 'lib-components/document-templates/ChildDocumentStateChip'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
-import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import {
+  FixedSpaceColumn,
+  FixedSpaceRow
+} from 'lib-components/layout/flex-helpers'
 import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
-import { Label } from 'lib-components/typography'
+import { H3, Label } from 'lib-components/typography'
+import { featureFlags } from 'lib-customizations/employee'
 import { faFile } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
@@ -44,7 +50,7 @@ const WiderTd = styled(Td)`
   width: 50%;
 `
 
-const ChildDocuments = React.memo(function ChildDocuments({
+const InternalChildDocuments = React.memo(function InternalChildDocuments({
   childId,
   documents
 }: {
@@ -56,7 +62,7 @@ const ChildDocuments = React.memo(function ChildDocuments({
 
   return (
     <div>
-      <Table data-qa="table-of-child-documents">
+      <Table data-qa="table-of-internal-child-documents">
         <Thead>
           <Tr>
             <Th>{i18n.childInformation.childDocuments.table.document}</Th>
@@ -103,12 +109,211 @@ const ChildDocuments = React.memo(function ChildDocuments({
   )
 })
 
+const ExternalChildDocuments = React.memo(function ExternalChildDocuments({
+  childId,
+  documents
+}: {
+  childId: UUID
+  documents: ChildDocumentSummaryWithPermittedActions[]
+}) {
+  const { i18n } = useTranslation()
+  const navigate = useNavigate()
+
+  return (
+    <div>
+      <Table data-qa="table-of-external-child-documents">
+        <Thead>
+          <Tr>
+            <Th>{i18n.childInformation.childDocuments.table.document}</Th>
+            <Th>{i18n.childInformation.childDocuments.table.sent}</Th>
+            <Th>{i18n.childInformation.childDocuments.table.answered}</Th>
+            <Th>{i18n.childInformation.childDocuments.table.status}</Th>
+          </Tr>
+        </Thead>
+        <Tbody>
+          {orderBy(
+            documents,
+            (document) => document.data.modifiedAt,
+            'desc'
+          ).map(({ data: document, permittedActions }) => (
+            <Tr key={document.id} data-qa="child-document-row">
+              <WiderTd data-qa={`child-document-${document.id}`}>
+                <Button
+                  appearance="inline"
+                  aria-label={i18n.childInformation.childDocuments.table.open}
+                  text={document.templateName}
+                  icon={faFile}
+                  disabled={!permittedActions.includes('READ')}
+                  onClick={() =>
+                    navigate({
+                      pathname: `/child-documents/${document.id}`,
+                      search: `?childId=${childId}`
+                    })
+                  }
+                  data-qa="open-document"
+                />
+              </WiderTd>
+              <Td data-qa="document-sent-at">
+                {document.publishedAt !== null ? (
+                  <span>{document.publishedAt.toLocalDate().format()}</span>
+                ) : (
+                  <span>
+                    {i18n.childInformation.childDocuments.table.notSent}
+                  </span>
+                )}
+              </Td>
+              <Td data-qa="document-answered-at">
+                {document.answeredAt !== null ? (
+                  <>
+                    <span>{document.answeredAt?.toLocalDate().format()}</span>
+                    {document.answeredBy !== null && (
+                      <span>, {document.answeredBy.name}</span>
+                    )}
+                  </>
+                ) : (
+                  <span>
+                    {i18n.childInformation.childDocuments.table.notAnswered}
+                  </span>
+                )}
+              </Td>
+              <Td data-qa="document-status">
+                <ChildDocumentStateChip status={document.status} />
+              </Td>
+            </Tr>
+          ))}
+        </Tbody>
+      </Table>
+    </div>
+  )
+})
+
+const ChildDocumentTables = ({
+  childId,
+  hasCreatePermission,
+  documents,
+  templates
+}: {
+  childId: ChildId
+  hasCreatePermission: boolean
+  documents: ChildDocumentSummaryWithPermittedActions[]
+  templates: DocumentTemplateSummary[]
+}) => {
+  const { i18n } = useTranslation()
+  const [creationModalState, setCreationModalState] = useState<
+    'internal' | 'external' | undefined
+  >(undefined)
+  const [validInternalTemplates, validExternalTemplates] = useMemo(
+    () =>
+      partition(
+        templates.filter(
+          (template) =>
+            !documents.some(
+              ({ data: doc }) =>
+                doc.templateId === template.id && doc.status !== 'COMPLETED'
+            ) && !template.type.startsWith('MIGRATED_')
+        ),
+        (template) => isInternal(template.type)
+      ),
+    [documents, templates]
+  )
+  const [title, validTemplates] = useMemo(() => {
+    switch (creationModalState) {
+      case 'internal':
+        return [
+          i18n.childInformation.childDocuments.addNew.internal,
+          validInternalTemplates
+        ]
+      case 'external':
+        return [
+          i18n.childInformation.childDocuments.addNew.external,
+          validExternalTemplates
+        ]
+      case undefined:
+        return ['', []]
+    }
+  }, [
+    creationModalState,
+    i18n.childInformation.childDocuments.addNew.external,
+    i18n.childInformation.childDocuments.addNew.internal,
+    validExternalTemplates,
+    validInternalTemplates
+  ])
+  const [internalDocuments, externalDocuments] = useMemo(
+    () => partition(documents, (document) => isInternal(document.data.type)),
+    [documents]
+  )
+
+  return (
+    <FixedSpaceColumn>
+      {creationModalState && (
+        <CreationModal
+          childId={childId}
+          title={title}
+          templates={validTemplates}
+          onClose={() => setCreationModalState(undefined)}
+        />
+      )}
+
+      <FixedSpaceRow justifyContent="space-between">
+        <H3>{i18n.childInformation.childDocuments.title.internal}</H3>
+        {hasCreatePermission && (
+          <AddButtonRow
+            text={i18n.childInformation.childDocuments.addNew.internal}
+            onClick={() => setCreationModalState('internal')}
+            disabled={validInternalTemplates.length < 1}
+            data-qa="create-internal-document"
+          />
+        )}
+      </FixedSpaceRow>
+      <InternalChildDocuments childId={childId} documents={internalDocuments} />
+
+      {featureFlags.citizenChildDocumentTypes && (
+        <>
+          <FixedSpaceRow justifyContent="space-between">
+            <H3>{i18n.childInformation.childDocuments.title.external}</H3>
+            {hasCreatePermission && (
+              <AddButtonRow
+                text={i18n.childInformation.childDocuments.addNew.external}
+                onClick={() => setCreationModalState('external')}
+                disabled={validExternalTemplates.length < 1}
+                data-qa="create-external-document"
+              />
+            )}
+          </FixedSpaceRow>
+          <ExternalChildDocuments
+            childId={childId}
+            documents={externalDocuments}
+          />
+        </>
+      )}
+    </FixedSpaceColumn>
+  )
+}
+
+const isInternal = (type: DocumentType): boolean => {
+  switch (type) {
+    case 'PEDAGOGICAL_REPORT':
+    case 'PEDAGOGICAL_ASSESSMENT':
+    case 'HOJKS':
+    case 'MIGRATED_VASU':
+    case 'MIGRATED_LEOPS':
+    case 'VASU':
+    case 'LEOPS':
+    case 'OTHER':
+      return true
+    case 'CITIZEN_BASIC':
+      return false
+  }
+}
+
 const CreationModal = React.memo(function CreationModal({
   childId,
+  title,
   templates,
   onClose
 }: {
   childId: ChildId
+  title: string
   templates: DocumentTemplateSummary[]
   onClose: () => void
 }) {
@@ -147,7 +352,7 @@ const CreationModal = React.memo(function CreationModal({
 
   return (
     <AsyncFormModal
-      title={i18n.childInformation.childDocuments.addNew}
+      title={title}
       resolveAction={submit}
       onSuccess={onClose}
       resolveLabel={i18n.common.confirm}
@@ -170,50 +375,22 @@ export default React.memo(function ChildDocumentsList({
   childId: ChildId
   hasCreatePermission: boolean
 }) {
-  const { i18n } = useTranslation()
   const documentsResult = useQueryResult(childDocumentsQuery({ childId }))
   const documentTemplatesResult = useQueryResult(
     hasCreatePermission
       ? activeDocumentTemplateSummariesQuery({ childId })
       : constantQuery([])
   )
-  const [creationModalOpen, setCreationModalOpen] = useState(false)
 
   return renderResult(
     combine(documentsResult, documentTemplatesResult),
-    ([documents, templates]) => {
-      const validTemplates = templates.filter(
-        (template) =>
-          !documents.some(
-            ({ data: doc }) =>
-              doc.templateId === template.id && doc.status !== 'COMPLETED'
-          ) && !template.type.startsWith('MIGRATED_')
-      )
-
-      return (
-        <FixedSpaceColumn>
-          {hasCreatePermission && (
-            <>
-              <AddButtonRow
-                text={i18n.childInformation.childDocuments.addNew}
-                onClick={() => setCreationModalOpen(true)}
-                disabled={validTemplates.length < 1}
-                data-qa="create-document"
-              />
-
-              {creationModalOpen && (
-                <CreationModal
-                  childId={childId}
-                  templates={validTemplates}
-                  onClose={() => setCreationModalOpen(false)}
-                />
-              )}
-            </>
-          )}
-
-          <ChildDocuments childId={childId} documents={documents} />
-        </FixedSpaceColumn>
-      )
-    }
+    ([documents, templates]) => (
+      <ChildDocumentTables
+        childId={childId}
+        hasCreatePermission={hasCreatePermission}
+        documents={documents}
+        templates={templates}
+      />
+    )
   )
 })

@@ -16,6 +16,7 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.Action
+import fi.espoo.evaka.user.EvakaUser
 import java.time.LocalDate
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.json.Json
@@ -119,6 +120,7 @@ data class DocumentContent(val answers: List<AnsweredQuestion<*>>) {
 enum class DocumentStatus(val editable: Boolean) : DatabaseEnum {
     DRAFT(editable = true),
     PREPARED(editable = true),
+    CITIZEN_DRAFT(editable = false),
     COMPLETED(editable = false);
 
     override val sqlType: String = "child_document_status"
@@ -132,6 +134,8 @@ data class ChildDocumentSummary(
     val templateName: String,
     val modifiedAt: HelsinkiDateTime,
     val publishedAt: HelsinkiDateTime?,
+    val answeredAt: HelsinkiDateTime?,
+    @Nested("answered_by") val answeredBy: EvakaUser?,
 )
 
 data class ChildBasics(

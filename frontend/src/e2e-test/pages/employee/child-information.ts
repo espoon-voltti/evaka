@@ -330,22 +330,28 @@ export class PedagogicalDocumentsSection extends Section {
 }
 
 export class ChildDocumentsSection extends Section {
-  createDocumentButton: Element
+  createInternalDocumentButton: Element
+  createExternalDocumentButton: Element
   createModalTemplateSelect: Select
   modalOk: Element
 
   constructor(page: Page, root: Element) {
     super(page, root)
-    this.createDocumentButton = page.findByDataQa('create-document')
+    this.createInternalDocumentButton = page.findByDataQa(
+      'create-internal-document'
+    )
+    this.createExternalDocumentButton = page.findByDataQa(
+      'create-external-document'
+    )
     this.createModalTemplateSelect = new Select(
       page.findByDataQa('template-select')
     )
     this.modalOk = page.findByDataQa('modal-okBtn')
   }
 
-  async assertChildDocuments(expectedRows: { id: UUID }[]) {
+  async assertInternalChildDocuments(expectedRows: { id: UUID }[]) {
     const rows = this.page
-      .findByDataQa('table-of-child-documents')
+      .findByDataQa('table-of-internal-child-documents')
       .findAllByDataQa('child-document-row')
     await rows.assertCount(expectedRows.length)
     await Promise.all(
@@ -366,15 +372,15 @@ export class ChildDocumentsSection extends Section {
     return new ChildDocumentPage(this.page)
   }
 
-  readonly childDocumentsCount = () =>
+  readonly internalChildDocumentsCount = () =>
     this.page
-      .findByDataQa('table-of-child-documents')
+      .findByDataQa('table-of-internal-child-documents')
       .findAllByDataQa('child-document-row')
       .count()
 
-  childDocuments(nth: number) {
+  internalChildDocuments(nth: number) {
     const row = this.page
-      .findByDataQa('table-of-child-documents')
+      .findByDataQa('table-of-internal-child-documents')
       .findAllByDataQa('child-document-row')
       .nth(nth)
 
@@ -382,6 +388,26 @@ export class ChildDocumentsSection extends Section {
       openLink: row.findByDataQa('open-document'),
       status: row.findByDataQa('document-status'),
       published: row.findByDataQa('document-published-at')
+    }
+  }
+
+  readonly externalChildDocumentsCount = () =>
+    this.page
+      .findByDataQa('table-of-external-child-documents')
+      .findAllByDataQa('child-document-row')
+      .count()
+
+  externalChildDocuments(nth: number) {
+    const row = this.page
+      .findByDataQa('table-of-external-child-documents')
+      .findAllByDataQa('child-document-row')
+      .nth(nth)
+
+    return {
+      openLink: row.findByDataQa('open-document'),
+      status: row.findByDataQa('document-status'),
+      sent: row.findByDataQa('document-sent-at'),
+      answered: row.findByDataQa('document-answered-at')
     }
   }
 }
