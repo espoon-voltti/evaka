@@ -121,7 +121,7 @@ export default React.memo(function InvoicesPage() {
   return (
     <Container data-qa="invoices-page">
       <ContentArea opaque>
-        <InvoiceFilters />
+        <InvoiceFilters clearPreviousResults={clearChecked} />
       </ContentArea>
       <Gap size="XL" />
       {searchFilters &&
