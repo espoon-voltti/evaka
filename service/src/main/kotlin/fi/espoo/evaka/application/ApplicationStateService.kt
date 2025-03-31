@@ -894,13 +894,17 @@ class ApplicationStateService(
         decisionId: DecisionId,
         requestedStartDate: LocalDate,
     ) {
-        accessControl.requirePermissionFor(
-            tx,
-            user,
-            clock,
-            Action.Application.ACCEPT_DECISION,
-            applicationId,
-        )
+        if (user is AuthenticatedUser.SystemInternalUser) {
+            // automated decision
+        } else {
+            accessControl.requirePermissionFor(
+                tx,
+                user,
+                clock,
+                Action.Application.ACCEPT_DECISION,
+                applicationId,
+            )
+        }
 
         val application = getApplication(tx, applicationId)
         verifyStatus(application, setOf(WAITING_CONFIRMATION, ACTIVE))
@@ -1490,7 +1494,14 @@ class ApplicationStateService(
         val decisionDrafts = tx.fetchDecisionDrafts(application.id)
         return if (decisionDrafts.any { it.planned }) {
             val decisionIds =
-                decisionService.finalizeDecisions(tx, user, clock, application.id, sendBySfi)
+                decisionService.finalizeDecisions(
+                    tx,
+                    user,
+                    clock,
+                    application.id,
+                    sendBySfi,
+                    skipGuardian,
+                )
             tx.syncApplicationOtherGuardians(application.id, clock.today())
             val newStatus = if (sendBySfi) WAITING_CONFIRMATION else WAITING_MAILING
             tx.updateApplicationStatus(application.id, newStatus, user.evakaUserId, clock.now())

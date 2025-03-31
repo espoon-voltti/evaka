@@ -33,7 +33,6 @@ import fi.espoo.evaka.setting.getSettings
 import fi.espoo.evaka.sficlient.SfiMessage
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DecisionId
-import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -62,7 +61,6 @@ class DecisionService(
     private val emailMessageProvider: IEmailMessageProvider,
     private val emailClient: EmailClient,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
-    private val featureConfig: FeatureConfig,
 ) {
     fun finalizeDecisions(
         tx: Database.Transaction,
@@ -70,9 +68,9 @@ class DecisionService(
         clock: EvakaClock,
         applicationId: ApplicationId,
         sendAsMessage: Boolean,
+        skipGuardianApproval: Boolean,
     ): List<DecisionId> {
         val decisionIds = tx.finalizeDecisions(applicationId, clock.today())
-        val skipGuardianApproval = featureConfig.skipGuardianPreschoolDecisionApproval
         asyncJobRunner.plan(
             tx,
             decisionIds.map { decisionId ->
