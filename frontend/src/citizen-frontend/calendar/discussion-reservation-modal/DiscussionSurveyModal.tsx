@@ -45,6 +45,7 @@ import {
   CalendarModalCloseButton,
   CalendarModalSection
 } from '../CalendarModal'
+import { DiscussionTimeExportButton } from '../DiscussionTimeExport'
 import { deleteCalendarEventTimeReservationMutation } from '../queries'
 
 interface ChildWithSurveys {
@@ -315,7 +316,7 @@ const ChildSurveyElement = React.memo(function ChildSurveyElement({
             </span>
             {reservations.map((r) => (
               <FixedSpaceColumn key={r.id} alignItems="flex-start">
-                <div data-qa={`reservation-${r.id}`}>
+                <ReservationRow data-qa={`reservation-${r.id}`}>
                   {r.date.isBefore(today) ? (
                     <Light>
                       {`${r.date.format('EEEEEE d.M.', lang)}
@@ -323,13 +324,30 @@ const ChildSurveyElement = React.memo(function ChildSurveyElement({
                     ${r.startTime.format()} - ${r.endTime.format()}`}
                     </Light>
                   ) : (
-                    <Bold>
-                      {`${r.date.format('EEEEEE d.M.', lang)}
+                    <FixedSpaceRow
+                      fullWidth
+                      alignItems="center"
+                      justifyContent="space-between"
+                    >
+                      <div>
+                        <Bold>
+                          {`${r.date.format('EEEEEE d.M.', lang)}
                     ${i18n.calendar.discussionTimeReservation.timePreDescriptor}
                     ${r.startTime.format()} - ${r.endTime.format()}`}
-                    </Bold>
+                        </Bold>
+                      </div>
+                      <DiscussionTimeExportButton
+                        eventTitle={survey.title}
+                        discussionTime={r}
+                        eventAttendeeInfo={survey.attendingChildren?.[
+                          childId
+                        ]?.find(({ periods }) =>
+                          periods.some((period) => period.includes(r.date))
+                        )}
+                      />
+                    </FixedSpaceRow>
                   )}
-                </div>
+                </ReservationRow>
                 {r.date.isEqualOrAfter(today) && (
                   <>
                     <Button
@@ -411,4 +429,7 @@ const ReservationButtonContainer = styled.div`
 const SurveyElementContainer = styled(FixedSpaceColumn)`
   margin: 0 10px;
   word-break: break-word;
+`
+const ReservationRow = styled.div`
+  width: 100%;
 `

@@ -2,8 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import ical, { ICalCalendarMethod } from 'ical-generator'
-import { getZoneString } from 'icalzone'
 import partition from 'lodash/partition'
 import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
@@ -45,7 +43,6 @@ import {
   CalendarEventTimeId,
   ChildId
 } from 'lib-common/generated/api-types/shared'
-import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import { formatFirstName } from 'lib-common/names'
 import { reservationHasTimes } from 'lib-common/reservations'
@@ -93,7 +90,7 @@ import {
 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/citizen'
-import { faCalendar, faQuestion, faTimes } from 'lib-icons'
+import { faQuestion, faTimes } from 'lib-icons'
 import { faChevronLeft, faChevronRight } from 'lib-icons'
 
 import ModalAccessibilityWrapper from '../ModalAccessibilityWrapper'
@@ -103,6 +100,7 @@ import AttendanceInfo from './AttendanceInfo'
 import { BottomFooterContainer } from './BottomFooterContainer'
 import { CalendarModalBackground, CalendarModalSection } from './CalendarModal'
 import { useCalendarModalState } from './CalendarPage'
+import { DiscussionTimeExportButton } from './DiscussionTimeExport'
 import {
   ChildImageData,
   getChildImages,
@@ -365,13 +363,6 @@ function Edit({
   )
 }
 
-interface CalendarEventExport {
-  title: string
-  description: string
-  start: HelsinkiDateTime
-  end: HelsinkiDateTime
-}
-
 interface DayModalProps {
   date: LocalDate
   dateActions: DateActions | undefined
@@ -417,32 +408,6 @@ const DayModal = React.memo(function DayModal({
         eventTimeId: null
       }),
     [setConfirmationModalState]
-  )
-
-  const downloadIcs = useCallback(
-    (event: CalendarEventExport) => {
-      const fileName = `${i18n.calendar.discussionTimeReservation.discussionTimeFileName}_${event.start.toLocalDate().formatIso()}.ics`
-      const calendar = ical()
-      calendar.method(ICalCalendarMethod.REQUEST)
-      calendar.timezone({
-        name: 'VTZ',
-        generator: (zoneName: string) => getZoneString(zoneName) ?? null
-      })
-      calendar.createEvent({
-        summary: event.title,
-        description: event.description,
-        start: event.start.formatIso(),
-        end: event.end.formatIso(),
-        timezone: 'Europe/Helsinki'
-      })
-      const link = document.createElement('a')
-      link.download = fileName
-      link.href = `data:text/calendar;charset=utf-8,${calendar.toString()}`
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-    },
-    [i18n]
   )
 
   const { openReservationModal } = useCalendarModalState()
@@ -663,29 +628,15 @@ const DayModal = React.memo(function DayModal({
                                                 {`${i18n.calendar.discussionTimeReservation.timePreDescriptor} ${rt.startTime.format()} - ${rt.endTime.format()}`}
                                               </P>
                                             </div>
-                                            <Button
-                                              appearance="inline"
-                                              text={
-                                                i18n.calendar
-                                                  .discussionTimeReservation
-                                                  .calendarExportButtonLabel
-                                              }
-                                              onClick={() => {
-                                                downloadIcs({
-                                                  ...event,
-                                                  start:
-                                                    HelsinkiDateTime.fromLocal(
-                                                      rt.date,
-                                                      rt.startTime
-                                                    ),
-                                                  end: HelsinkiDateTime.fromLocal(
-                                                    rt.date,
-                                                    rt.endTime
-                                                  )
-                                                })
-                                              }}
-                                              icon={faCalendar}
-                                            />
+                                            {rt.date.isEqualOrAfter(today) && (
+                                              <DiscussionTimeExportButton
+                                                eventTitle={event.title}
+                                                discussionTime={rt}
+                                                eventAttendeeInfo={
+                                                  event.currentAttending
+                                                }
+                                              />
+                                            )}
                                           </FixedSpaceRow>
                                           {rt.date.isEqualOrAfter(today) && (
                                             <>
