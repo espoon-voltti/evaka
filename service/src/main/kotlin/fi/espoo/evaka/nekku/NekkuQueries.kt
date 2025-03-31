@@ -5,6 +5,7 @@
 package fi.espoo.evaka.nekku
 
 import fi.espoo.evaka.decision.logger
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.db.Database
 import org.jdbi.v3.core.mapper.PropagateNull
 
@@ -301,3 +302,23 @@ fun Database.Transaction.getNekkuProducts(): List<NekkuProduct> {
         }
         .toList<NekkuProduct>()
 }
+
+fun Database.Read.getNekkuSpecialDiets(): List<NekkuSpecialDietWithoutFields> =
+    createQuery { sql("SELECT id, name FROM nekku_special_diet") }
+        .toList<NekkuSpecialDietWithoutFields>()
+
+fun Database.Read.getNekkuSpecialDietFields(): List<NekkuSpecialDietsFieldWithoutOptions> =
+    createQuery { sql("SELECT id, name, type, diet_id FROM nekku_special_diet_field") }
+        .toList<NekkuSpecialDietsFieldWithoutOptions>()
+
+fun Database.Read.getNekkuSpecialDietOptions(): List<NekkuSpecialDietOptionWithFieldId> =
+    createQuery { sql("SELECT weight, key, value, field_id FROM nekku_special_diet_option") }
+        .toList<NekkuSpecialDietOptionWithFieldId>()
+
+fun Database.Read.getNekkuSpecialDietChoices(childId: ChildId): List<NekkuSpecialDietChoices> =
+    createQuery {
+            sql(
+                "SELECT diet_id, field_id, value FROM nekku_special_diet_choices WHERE child_id=${bind(childId)}"
+            )
+        }
+        .toList<NekkuSpecialDietChoices>()

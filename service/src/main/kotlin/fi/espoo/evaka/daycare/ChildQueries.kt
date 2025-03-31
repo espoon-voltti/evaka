@@ -5,20 +5,26 @@
 package fi.espoo.evaka.daycare
 
 import fi.espoo.evaka.daycare.controllers.Child
+import fi.espoo.evaka.nekku.getNekkuSpecialDietChoices
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.db.Database
 
-fun Database.Read.getChild(id: ChildId): Child? =
-    createQuery {
-            sql(
-                """
+fun Database.Read.getChild(id: ChildId): Child? {
+    val child =
+        createQuery {
+                sql(
+                    """
 SELECT child.*, person.preferred_name, special_diet.id as special_diet_id, special_diet.abbreviation as special_diet_abbreviation, meal_texture.name AS meal_texture_name
 FROM child JOIN person ON child.id = person.id LEFT JOIN special_diet on child.diet_id = special_diet.id LEFT JOIN meal_texture on child.meal_texture_id = meal_texture.id
 WHERE child.id = ${bind(id)}
 """
-            )
-        }
-        .exactlyOneOrNull<Child>()
+                )
+            }
+            .exactlyOneOrNull<Child>()
+    if (child != null)
+        child.additionalInformation.nekkuSpecialDietChoices = getNekkuSpecialDietChoices(id)
+    return child
+}
 
 fun Database.Transaction.createChild(child: Child) {
     execute {
@@ -67,6 +73,26 @@ UPDATE child SET
     nekku_diet = ${bind(child.additionalInformation.nekkuDiet)}
 WHERE id = ${bind(child.id)}
 """
+        )
+    }
+    execute {
+        sql(
+            """
+                DELETE FROM nekku_special_diet_choices WHERE child_id = ${bind(child.id)}
+            """
+        )
+    }
+    executeBatch(child.additionalInformation.nekkuSpecialDietChoices) {
+        sql(
+            """
+                INSERT INTO nekku_special_diet_choices (child_id, diet_id, field_id, value)
+                VALUES (
+                    ${bind(child.id)},
+                    ${bind{it.dietId}},
+                    ${bind{it.fieldId}},
+                    ${bind{it.value}}
+                )
+            """
         )
     }
 }
