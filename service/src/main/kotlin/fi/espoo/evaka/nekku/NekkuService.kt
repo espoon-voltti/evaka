@@ -105,9 +105,9 @@ interface NekkuClient {
 
     fun getCustomers(): List<NekkuCustomer>
 
-    fun getSpecialDiets(): List<NekkuSpecialDiet>
+    fun getSpecialDiets(): List<NekkuApiSpecialDiet>
 
-    fun getProducts(): List<NekkuProduct>
+    fun getProducts(): List<NekkuApiProduct>
 }
 
 class NekkuHttpClient(private val env: NekkuEnv, private val jsonMapper: JsonMapper) : NekkuClient {
@@ -119,14 +119,14 @@ class NekkuHttpClient(private val env: NekkuEnv, private val jsonMapper: JsonMap
         return executeRequest(request)
     }
 
-    override fun getSpecialDiets(): List<NekkuSpecialDiet> {
+    override fun getSpecialDiets(): List<NekkuApiSpecialDiet> {
         val request =
             getBaseRequest().get().url(env.url.resolve("products/options").toString()).build()
 
         return executeRequest(request)
     }
 
-    override fun getProducts(): List<NekkuProduct> {
+    override fun getProducts(): List<NekkuApiProduct> {
         val request = getBaseRequest().get().url(env.url.resolve("products").toString()).build()
 
         return executeRequest(request)
@@ -177,11 +177,29 @@ data class NekkuCustomer(
 
 data class NekkuUnitNumber(val number: String, val name: String)
 
+data class NekkuApiSpecialDiet(
+    val id: String,
+    val name: String,
+    val fields: List<NekkuApiSpecialDietsField>,
+) {
+    fun toEvaka(): NekkuSpecialDiet = NekkuSpecialDiet(id, name, fields.map { it.toEvaka() })
+}
+
 data class NekkuSpecialDiet(
     val id: String,
     val name: String,
     val fields: List<NekkuSpecialDietsField>,
 )
+
+data class NekkuApiSpecialDietsField(
+    val id: String,
+    val name: String,
+    val type: NekkuApiSpecialDietType,
+    val options: List<NekkuSpecialDietOption>? = null,
+) {
+    fun toEvaka(): NekkuSpecialDietsField =
+        NekkuSpecialDietsField(id, name, type.toEvaka(), options)
+}
 
 data class NekkuSpecialDietsField(
     val id: String,
@@ -191,14 +209,37 @@ data class NekkuSpecialDietsField(
 )
 
 @ConstList("nekku_special_diet_type")
-enum class NekkuSpecialDietType(@JsonValue val description: String) : DatabaseEnum {
-    TEXT("text"),
-    CHECKBOXLIST("checkboxlst");
+enum class NekkuSpecialDietType : DatabaseEnum {
+    TEXT,
+    CHECKBOXLIST;
 
     override val sqlType: String = "nekku_special_diet_type"
 }
 
+enum class NekkuApiSpecialDietType(@JsonValue val jsonValue: String) {
+    Text("text") {
+        override fun toEvaka(): NekkuSpecialDietType = NekkuSpecialDietType.TEXT
+    },
+    CheckBoxLst("checkboxlst") {
+        override fun toEvaka(): NekkuSpecialDietType = NekkuSpecialDietType.CHECKBOXLIST
+    };
+
+    abstract fun toEvaka(): NekkuSpecialDietType
+}
+
 data class NekkuSpecialDietOption(val weight: Int, val key: String, val value: String)
+
+data class NekkuApiProduct(
+    val name: String,
+    val sku: String,
+    val options_id: String,
+    val unit_size: String,
+    val meal_time: List<NekkuProductMealTime>? = null,
+    val meal_type: NekkuApiProductMealType? = null,
+) {
+    fun toEvaka(): NekkuProduct =
+        NekkuProduct(name, sku, options_id, unit_size, meal_time, meal_type?.toEvaka())
+}
 
 data class NekkuProduct(
     val name: String,
@@ -223,9 +264,21 @@ enum class NekkuProductMealTime(@JsonValue val description: String) : DatabaseEn
 }
 
 @ConstList("nekku_product_meal_type")
-enum class NekkuProductMealType(@JsonValue val description: String) : DatabaseEnum {
-    VEGAN("vegaani"),
-    VEGETABLE("kasvis");
+enum class NekkuApiProductMealType(@JsonValue val description: String) {
+    Vegaani("vegaani") {
+        override fun toEvaka(): NekkuProductMealType = NekkuProductMealType.VEGAN
+    },
+    Kasvis("kasvis") {
+        override fun toEvaka(): NekkuProductMealType = NekkuProductMealType.VEGETABLE
+    };
+
+    abstract fun toEvaka(): NekkuProductMealType
+}
+
+@ConstList("nekku_product_meal_type")
+enum class NekkuProductMealType(val description: String) : DatabaseEnum {
+    VEGAN("Vegaani"),
+    VEGETABLE("Kasvis");
 
     override val sqlType: String = "nekku_product_meal_type"
 }
