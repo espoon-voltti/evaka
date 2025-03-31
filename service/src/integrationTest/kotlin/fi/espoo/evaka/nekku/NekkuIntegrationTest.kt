@@ -390,7 +390,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     fun `Nekku product sync does sync non-empty data`() {
         val client = TestNekkuClient(nekkuProducts = nekkuProducts)
         fetchAndUpdateNekkuProducts(client, db)
-        db.transaction { tx ->
+        db.read { tx ->
             val products = tx.getNekkuProducts()
             assertEquals(4, products.size)
         }
@@ -400,7 +400,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     fun `Nekku product deletes old products`() {
         var client = TestNekkuClient(nekkuProducts = nekkuProducts)
         fetchAndUpdateNekkuProducts(client, db)
-        db.transaction { tx ->
+        db.read { tx ->
             val products = tx.getNekkuProducts()
             assertEquals(4, products.size)
         }
@@ -432,7 +432,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     )
             )
         fetchAndUpdateNekkuProducts(client, db)
-        db.transaction { tx ->
+        db.read { tx ->
             val products = tx.getNekkuProducts()
             assertEquals(2, products.size)
         }
@@ -459,7 +459,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     )
             )
         fetchAndUpdateNekkuProducts(client, db)
-        db.transaction { tx ->
+        db.read { tx ->
             val products = tx.getNekkuProducts()
             assertEquals(1, products.size)
         }

@@ -304,7 +304,7 @@ WHERE
     return deletedProductCount
 }
 
-fun Database.Transaction.getNekkuProducts(): List<NekkuProduct> {
+fun Database.Read.getNekkuProducts(): List<NekkuProduct> {
     return createQuery {
             sql("SELECT sku, name, options_id, unit_size, meal_time, meal_type FROM nekku_product")
         }
@@ -361,47 +361,59 @@ data class NekkuChildData(
     val absences: Set<AbsenceCategory>,
 )
 
+data class NekkuDaycareCustomerMapping(
+    val groupId: GroupId,
+    val customerNumber: String,
+    val unitSize: String,
+)
+
 fun Database.Read.getNekkuDaycareGroupIdCustomerNumberMapping(
     range: FiniteDateRange
-): List<Pair<GroupId, String>> =
+): List<NekkuDaycareCustomerMapping> =
     createQuery {
             sql(
                 """
-                    SELECT dg.id, dg.nekku_customer_number  
+                    SELECT dg.id, dg.nekku_customer_number, nc.unit_size  
                     FROM daycare_group dg 
                     JOIN daycare d ON d.id = dg.daycare_id
+                    JOIN nekku_customer nc ON nc.number = dg.nekku_customer_number
                     WHERE dg.nekku_customer_number IS NOT NULL
                       AND daterange(d.opening_date, d.closing_date, '[]') && ${bind(range)}
                       AND daterange(dg.start_date, dg.end_date, '[]') && ${bind(range)}
                 """
             )
         }
-        .toList()
+        .toList<NekkuDaycareCustomerMapping>()
 
-fun Database.Read.mealTypesForChildren(childIds: Set<ChildId>): Map<ChildId, String> =
+fun Database.Read.mealTypesForChildren(
+    childIds: Set<ChildId>
+): Map<ChildId, NekkuProductMealType?> =
     createQuery {
             sql(
                 """
 SELECT child.id as child_id, child.nekku_diet
-FROM child JOIN special_diet ON child.diet_id = special_diet.id
+FROM child
 WHERE child.id = ANY (${bind(childIds)})
 """
             )
         }
-        .toMap { column<ChildId>("child_id") to row<String>() }
+        .toMap { column<ChildId>("child_id") to row<NekkuProductMealType?>() }
 
-fun Database.Read.getNekkuProductNumber(customerSize: String,
-                                        optionsID : String?,
-                                        mealTime: NekkuProductMealTime,
-                                        mealType: NekkuMealType?): String =
+fun Database.Read.getNekkuProductNumber(
+    customerSize: String,
+    optionsID: String?,
+    mealTime: NekkuProductMealTime,
+    mealType: NekkuMealType?,
+): String =
     createQuery {
-        sql(
-            """
+            sql(
+                """
             SELECT sku FROM nekku_product 
             WHERE unit_size = ${bind(customerSize)} 
             AND ((options_id = ${bind(optionsID)}) OR (options_id IS NULL AND ${bind(optionsID)} IS NULL))
             AND ANY (meal_time) = ${bind(mealTime)}
             AND ((meal_type = ${bind(mealType)}) OR (meal_type IS NULL AND ${bind(mealType)} IS NULL))
 """
-        )
-    }.toString()
+            )
+        }
+        .toString()

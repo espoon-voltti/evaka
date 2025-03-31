@@ -15,15 +15,8 @@ import fi.espoo.evaka.daycare.PreschoolTerm
 import fi.espoo.evaka.daycare.getDaycaresById
 import fi.espoo.evaka.daycare.getPreschoolTerms
 import fi.espoo.evaka.daycare.isUnitOperationDay
-import fi.espoo.evaka.mealintegration.MealType
-import fi.espoo.evaka.mealintegration.MealTypeMapper
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.ScheduleType
-import fi.espoo.evaka.reports.MealInfo
-import fi.espoo.evaka.reports.MealReportChildInfo
-import fi.espoo.evaka.reports.MealReportRow
-import fi.espoo.evaka.reports.childMeals
-import fi.espoo.evaka.reports.preschoolPlacementTypes
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -137,14 +130,15 @@ class NekkuService(
     ) {
         val range = now.toLocalDate().startOfNextWeek().weekSpan()
         dbc.transaction { tx ->
-            val customerGroupsAndNumbers = tx.getNekkuDaycareGroupIdCustomerNumberMapping(range)
+            val nekkuDaycareCustomerMapping = tx.getNekkuDaycareGroupIdCustomerNumberMapping(range)
             asyncJobRunner.plan(
                 tx,
                 range.dates().flatMap { date ->
-                    customerGroupsAndNumbers.map { customerGroupsAndNumber ->
+                    nekkuDaycareCustomerMapping.map { customerGroupsAndNumber ->
                         AsyncJob.SendNekkuOrder(
-                            customerGroupId = customerGroupsAndNumber.first,
-                            customerNumber = customerGroupsAndNumber.second,
+                            customerGroupId = customerGroupsAndNumber.groupId,
+                            customerNumber = customerGroupsAndNumber.customerNumber,
+                            unitSize = customerGroupsAndNumber.unitSize,
                             date = date,
                         )
                     }
@@ -164,6 +158,7 @@ class NekkuService(
                 dbc,
                 customerNumber = job.customerNumber,
                 groupId = job.customerGroupId,
+                unitSize = job.unitSize,
                 date = job.date,
             )
         } catch (e: Exception) {
@@ -282,6 +277,7 @@ private fun createAndSendNekkuOrder(
     dbc: Database.Connection,
     customerNumber: String,
     groupId: GroupId,
+    unitSize: String,
     date: LocalDate,
 ) {
     val (preschoolTerms, children) =
@@ -290,23 +286,31 @@ private fun createAndSendNekkuOrder(
             val children = getNekkuChildInfos(tx, groupId, date)
             preschoolTerms to children
         }
-    val groupName =
-        dbc.read { tx ->
-        tx.getGroupName(groupId)
-    }
+    val groupName = dbc.read { tx -> tx.getGroupName(groupId) }
 
-    //Todo fetch products
+    // Todo fetch products
+    val nekkuProducts = dbc.read { tx -> tx.getNekkuProducts() }
 
-
-    val order = NekkuClient.NekkuOrders(
-        listOf(NekkuClient.NekkuOrder(delivery_date = date.toString(),
-            customer_id = customerNumber,
-            group_id =  groupId.toString(),
-            items = nekkuMealReportData(children, date, preschoolTerms, ),
-            description = groupName?:"")
-        ),
-        dry_run = false
-    ) // Todo mapping
+    val order =
+        NekkuClient.NekkuOrders(
+            listOf(
+                NekkuClient.NekkuOrder(
+                    delivery_date = date.toString(),
+                    customer_id = customerNumber,
+                    group_id = groupId.toString(),
+                    items =
+                        nekkuMealReportData(
+                            children,
+                            date,
+                            preschoolTerms,
+                            nekkuProducts,
+                            unitSize,
+                        ),
+                    description = groupName ?: "",
+                )
+            ),
+            dry_run = false,
+        )
 
     if (order.orders.isNotEmpty()) {
         client.createNekkuMealOrder(order)
@@ -324,7 +328,8 @@ fun nekkuMealReportData(
     children: Collection<NekkuChildInfo>,
     date: LocalDate,
     preschoolTerms: List<PreschoolTerm>,
-    dbc: Database.Connection,
+    nekkuProducts: List<NekkuProduct>,
+    unitSize: String,
 ): List<NekkuClient.Item> {
     val mealInfoMap =
         children
@@ -349,27 +354,56 @@ fun nekkuMealReportData(
                         )
                     else childInfo.reservations ?: emptyList()
 
-                nekkuChildMeals(
-                    presentTimeRanges,
-                    effectivelyAbsent,
-                    childInfo.mealTimes,
-                )
+                nekkuChildMeals(presentTimeRanges, effectivelyAbsent, childInfo.mealTimes)
                     .map {
                         NekkuMealInfo(
-                            //getNekkuProductNumber()
-                            //Todo: get product numbers from productlist.
-
+                            sku = getNekkuProductNumber(nekkuProducts, it, childInfo, unitSize),
+                            options = null, // getNekkuChildDiets() //Todo: get child diets
                         )
                     }
+                    .distinct()
             }
             .groupBy { it }
             .mapValues { it.value.size }
 
-    return mealInfoMap.map {
-        NekkuClient.Item(
+    return mealInfoMap.map { NekkuClient.Item(
+        product_sku = it.key.sku,
+        quantity = 0, // change this later
+        product_options = it.key.options
+    ) }
+}
 
-        )
+private fun getNekkuProductNumber(
+    nekkuProducts: List<NekkuProduct>,
+    nekkuProductMealTime: NekkuProductMealTime,
+    nekkuChildInfo: NekkuChildInfo,
+    unitSize: String,
+): String {
+
+    val filteredNekkuProducts =
+        nekkuProducts.filter {
+            it.meal_time?.contains(nekkuProductMealTime) ?: false &&
+                it.meal_type == nekkuChildInfo.mealType &&
+                it.options_id == nekkuChildInfo.optionsId &&
+                it.unit_size == unitSize
+        }
+
+    if (filteredNekkuProducts.isEmpty()) {
+        logger.info {
+            "Cannot find any Nekku Product from database with unitsize=$unitSize optionsId=${nekkuChildInfo.optionsId} mealtype=${nekkuChildInfo.mealType} mealtime=${nekkuProductMealTime.description}"
+        }
+        return ""
+    } else if (filteredNekkuProducts.count() > 1) {
+        logger.info {
+            "Found too many Nekku Products from database with unitsize=$unitSize optionsId=${nekkuChildInfo.optionsId} mealtype=${nekkuChildInfo.mealType} mealtime=${nekkuProductMealTime.description}"
+        }
+        return ""
     }
+    else
+    {
+        return filteredNekkuProducts.first().sku
+    }
+
 }
 
 private fun nekkuChildMeals(
@@ -399,10 +433,7 @@ private fun nekkuChildMeals(
     }
 
     addMealIfPresent(mealtimes.breakfast, NekkuProductMealTime.BREAKFAST)
-    addMealIfPresent(
-        mealtimes.lunch,
-        NekkuProductMealTime.LUNCH,
-    )
+    addMealIfPresent(mealtimes.lunch, NekkuProductMealTime.LUNCH)
     addMealIfPresent(mealtimes.snack, NekkuProductMealTime.SNACK)
     addMealIfPresent(mealtimes.supper, NekkuProductMealTime.DINNER)
     addMealIfPresent(mealtimes.eveningSnack, NekkuProductMealTime.SUPPER)
@@ -445,7 +476,8 @@ private fun getNekkuChildInfos(
             reservations = child.reservations,
             absences = child.absences,
             mealType = mealTypes[child.childId],
-            specialDiet = null, // replace
+            optionsId = null, // Todo: generate value here when ready
+            specialDiet = null, // Todo: generate value here when ready
             dailyPreschoolTime = unit.dailyPreschoolTime,
             dailyPreparatoryTime = unit.dailyPreparatoryTime,
             mealTimes = unit.mealTimes,
@@ -574,14 +606,12 @@ data class NekkuChildInfo(
     val lastName: String,
     val reservations: List<TimeRange>?,
     val absences: Set<AbsenceCategory>?,
-    val mealType: String?,
-    val specialDiet: String?, // check proper type
+    val mealType: NekkuProductMealType?,
+    val optionsId: String?, // Todo:check proper type
+    val specialDiet: String?, // Todo:check proper type
     val dailyPreschoolTime: TimeRange?,
     val dailyPreparatoryTime: TimeRange?,
     val mealTimes: DaycareMealtimes,
 )
 
-data class NekkuMealInfo(
-    val sku: String,
-    val options: List<NekkuClient.ProductOption>? = null,
-)
+data class NekkuMealInfo(val sku: String, val options: List<NekkuClient.ProductOption>? = null)
