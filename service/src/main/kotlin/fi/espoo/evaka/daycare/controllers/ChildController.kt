@@ -10,6 +10,7 @@ import fi.espoo.evaka.daycare.createChild
 import fi.espoo.evaka.daycare.getChild
 import fi.espoo.evaka.daycare.updateChild
 import fi.espoo.evaka.nekku.NekkuProductMealType
+import fi.espoo.evaka.nekku.NekkuSpecialDietChoices
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.service.PersonJSON
 import fi.espoo.evaka.pis.service.hideNonPermittedPersonData
@@ -25,6 +26,7 @@ import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.specialdiet.MealTexture
 import fi.espoo.evaka.specialdiet.SpecialDiet
 import org.jdbi.v3.core.mapper.Nested
+import org.jdbi.v3.json.Json
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PutMapping
@@ -165,4 +167,5 @@ data class AdditionalInformation(
     @Nested("meal_texture") val mealTexture: MealTexture? = null,
     val nekkuDiet: NekkuProductMealType? = null,
     val nekkuEatsBreakfast: Boolean = true,
+    @Json val nekkuSpecialDietChoices: List<NekkuSpecialDietChoices> = emptyList(),
 )

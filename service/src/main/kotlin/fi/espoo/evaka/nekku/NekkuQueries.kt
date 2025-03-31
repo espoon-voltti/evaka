@@ -407,3 +407,15 @@ WHERE child.id = ANY (${bind(childIds)})
             )
         }
         .toMap { column<ChildId>("child_id") to column<NekkuProductMealType?>("nekku_diet") }
+
+fun Database.Read.getNekkuSpecialDiets(): List<NekkuSpecialDietWithoutFields> =
+    createQuery { sql("SELECT id, name FROM nekku_special_diet") }
+        .toList<NekkuSpecialDietWithoutFields>()
+
+fun Database.Read.getNekkuSpecialDietFields(): List<NekkuSpecialDietsFieldWithoutOptions> =
+    createQuery { sql("SELECT id, name, type, diet_id FROM nekku_special_diet_field") }
+        .toList<NekkuSpecialDietsFieldWithoutOptions>()
+
+fun Database.Read.getNekkuSpecialDietOptions(): List<NekkuSpecialDietOptionWithFieldId> =
+    createQuery { sql("SELECT weight, key, value, field_id FROM nekku_special_diet_option") }
+        .toList<NekkuSpecialDietOptionWithFieldId>()

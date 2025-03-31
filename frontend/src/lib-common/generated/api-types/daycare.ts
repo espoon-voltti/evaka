@@ -25,6 +25,7 @@ import { MealTexture } from './specialdiet'
 import { MissingBackupGroupPlacement } from './placement'
 import { MissingGroupPlacement } from './placement'
 import { NekkuProductMealType } from './nekku'
+import { NekkuSpecialDietChoices } from './nekku'
 import { OccupancyResponse } from './occupancy'
 import { PersonJSON } from './pis'
 import { PilotFeature } from './shared'
@@ -65,6 +66,7 @@ export interface AdditionalInformation {
   medication: string
   nekkuDiet: NekkuProductMealType | null
   nekkuEatsBreakfast: boolean
+  nekkuSpecialDietChoices: NekkuSpecialDietChoices[]
   preferredName: string
   specialDiet: SpecialDiet | null
 }
