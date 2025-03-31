@@ -106,21 +106,21 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         }
     }
 
-    fun getNekkuSpecialDiet(): NekkuSpecialDiet {
-        var nekkuSpecialDiet =
-            NekkuSpecialDiet(
+    fun getNekkuSpecialDiet(): NekkuApiSpecialDiet {
+        val nekkuSpecialDiet =
+            NekkuApiSpecialDiet(
                 "2",
                 "Päiväkodit er.",
                 listOf(
-                    NekkuSpecialDietsField(
+                    NekkuApiSpecialDietsField(
                         "17A9ACF0-DE9E-4C07-882E-C8C47351D009",
                         "Muu erityisruokavalio, mikä?",
-                        NekkuSpecialDietType.TEXT,
+                        NekkuApiSpecialDietType.Text,
                     ),
-                    NekkuSpecialDietsField(
+                    NekkuApiSpecialDietsField(
                         "AE1FE5FE-9619-4D7A-9043-A6B0C615156B",
                         "Erityisruokavaliot",
-                        NekkuSpecialDietType.CHECKBOXLIST,
+                        NekkuApiSpecialDietType.CheckBoxLst,
                         listOf(
                             NekkuSpecialDietOption(
                                 1,
@@ -184,19 +184,19 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             TestNekkuClient(
                 specialDiets =
                     listOf(
-                        NekkuSpecialDiet(
+                        NekkuApiSpecialDiet(
                             "2",
                             "Päiväkodit erikois",
                             listOf(
-                                NekkuSpecialDietsField(
+                                NekkuApiSpecialDietsField(
                                     "17A9ACF0-DE9E-4C07-882E-C8C47351D009",
                                     "Muu erityisruokavalio, mikä?",
-                                    NekkuSpecialDietType.TEXT,
+                                    NekkuApiSpecialDietType.Text,
                                 ),
-                                NekkuSpecialDietsField(
+                                NekkuApiSpecialDietsField(
                                     "AE1FE5FE-9619-4D7A-9043-A6B0C615156B",
                                     "Erityisruokavaliot",
-                                    NekkuSpecialDietType.CHECKBOXLIST,
+                                    NekkuApiSpecialDietType.CheckBoxLst,
                                     listOf(
                                         NekkuSpecialDietOption(
                                             1,
@@ -250,19 +250,19 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             TestNekkuClient(
                 specialDiets =
                     listOf(
-                        NekkuSpecialDiet(
+                        NekkuApiSpecialDiet(
                             "2",
                             "Päiväkodit er.",
                             listOf(
-                                NekkuSpecialDietsField(
+                                NekkuApiSpecialDietsField(
                                     "17A9ACF0-DE9E-4C07-882E-C8C47351D009",
                                     "Muu erityisruokavalio, mikä?",
-                                    NekkuSpecialDietType.TEXT,
+                                    NekkuApiSpecialDietType.Text,
                                 ),
-                                NekkuSpecialDietsField(
+                                NekkuApiSpecialDietsField(
                                     "AE1FE5FE-9619-4D7A-9043-A6B0C615156B",
                                     "Erityisruokavaliot",
-                                    NekkuSpecialDietType.CHECKBOXLIST,
+                                    NekkuApiSpecialDietType.CheckBoxLst,
                                     listOf(
                                         NekkuSpecialDietOption(
                                             1,
@@ -304,19 +304,19 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 specialDiets =
                     listOf(
                         getNekkuSpecialDiet(),
-                        NekkuSpecialDiet(
+                        NekkuApiSpecialDiet(
                             "3",
                             "Päiväkodit erikoiset",
                             listOf(
-                                NekkuSpecialDietsField(
+                                NekkuApiSpecialDietsField(
                                     "17A9ACF0-DE9E-4C07-882E-C8C47351D008",
                                     "Muu erityisruokavalio, mikä?",
-                                    NekkuSpecialDietType.TEXT,
+                                    NekkuApiSpecialDietType.Text,
                                 ),
-                                NekkuSpecialDietsField(
+                                NekkuApiSpecialDietsField(
                                     "AE1FE5FE-9619-4D7A-9043-A6B0C6151566",
                                     "Erityisruokavaliot",
-                                    NekkuSpecialDietType.CHECKBOXLIST,
+                                    NekkuApiSpecialDietType.CheckBoxLst,
                                     listOf(
                                         NekkuSpecialDietOption(
                                             1,
@@ -345,7 +345,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     val nekkuProducts =
         listOf(
-            NekkuProduct(
+            NekkuApiProduct(
                 "Ateriapalvelu 1 kasvis",
                 "31000010",
                 "",
@@ -355,9 +355,9 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     NekkuProductMealTime.LUNCH,
                     NekkuProductMealTime.SNACK,
                 ),
-                NekkuProductMealType.VEGETABLE,
+                NekkuApiProductMealType.Kasvis,
             ),
-            NekkuProduct(
+            NekkuApiProduct(
                 "Ateriapalvelu 1 kasvis er",
                 "31000011",
                 "2",
@@ -367,17 +367,17 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     NekkuProductMealTime.LUNCH,
                     NekkuProductMealTime.SNACK,
                 ),
-                NekkuProductMealType.VEGETABLE,
+                NekkuApiProductMealType.Kasvis,
             ),
-            NekkuProduct(
+            NekkuApiProduct(
                 "Päivällinen vegaani päiväkoti",
                 "31000008",
                 "",
                 "large",
                 listOf(NekkuProductMealTime.DINNER),
-                NekkuProductMealType.VEGAN,
+                NekkuApiProductMealType.Vegaani,
             ),
-            NekkuProduct("Lounas kasvis er", "31001011", "2", "medium", null, null),
+            NekkuApiProduct("Lounas kasvis er", "31001011", "2", "medium", null, null),
         )
 
     @Test
@@ -409,7 +409,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             TestNekkuClient(
                 nekkuProducts =
                     listOf(
-                        NekkuProduct(
+                        NekkuApiProduct(
                             "Ateriapalvelu 1 kasvis",
                             "31000010",
                             "",
@@ -419,15 +419,15 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                                 NekkuProductMealTime.LUNCH,
                                 NekkuProductMealTime.SNACK,
                             ),
-                            NekkuProductMealType.VEGETABLE,
+                            NekkuApiProductMealType.Kasvis,
                         ),
-                        NekkuProduct(
+                        NekkuApiProduct(
                             "Päivällinen vegaani päiväkoti",
                             "31000008",
                             "",
                             "large",
                             listOf(NekkuProductMealTime.DINNER),
-                            NekkuProductMealType.VEGAN,
+                            NekkuApiProductMealType.Kasvis,
                         ),
                     )
             )
@@ -444,7 +444,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             TestNekkuClient(
                 nekkuProducts =
                     listOf(
-                        NekkuProduct(
+                        NekkuApiProduct(
                             "Ateriapalvelu 1 kasvis",
                             "31000010",
                             "",
@@ -454,7 +454,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                                 NekkuProductMealTime.LUNCH,
                                 NekkuProductMealTime.SNACK,
                             ),
-                            NekkuProductMealType.VEGETABLE,
+                            NekkuApiProductMealType.Kasvis,
                         )
                     )
             )
@@ -468,13 +468,13 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             TestNekkuClient(
                 nekkuProducts =
                     listOf(
-                        NekkuProduct(
+                        NekkuApiProduct(
                             "Ateriapalvelu 1 vegaani",
                             "31000010",
                             "2",
                             "medium",
                             null,
-                            NekkuProductMealType.VEGAN,
+                            NekkuApiProductMealType.Vegaani,
                         )
                     )
             )
@@ -492,19 +492,19 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
 class TestNekkuClient(
     private val customers: List<NekkuCustomer> = emptyList(),
-    private val specialDiets: List<NekkuSpecialDiet> = emptyList(),
-    private val nekkuProducts: List<NekkuProduct> = emptyList(),
+    private val specialDiets: List<NekkuApiSpecialDiet> = emptyList(),
+    private val nekkuProducts: List<NekkuApiProduct> = emptyList(),
 ) : NekkuClient {
 
     override fun getCustomers(): List<NekkuCustomer> {
         return customers
     }
 
-    override fun getSpecialDiets(): List<NekkuSpecialDiet> {
+    override fun getSpecialDiets(): List<NekkuApiSpecialDiet> {
         return specialDiets
     }
 
-    override fun getProducts(): List<NekkuProduct> {
+    override fun getProducts(): List<NekkuApiProduct> {
         return nekkuProducts
     }
 }

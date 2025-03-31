@@ -96,7 +96,7 @@ fun Database.Read.getNekkuUnitNumbers(): List<NekkuUnitNumber> {
 /** Throws an IllegalStateException if Nekku returns an empty special diet list. */
 fun fetchAndUpdateNekkuSpecialDiets(client: NekkuClient, db: Database.Connection) {
 
-    val specialDietsFromNekku = client.getSpecialDiets()
+    val specialDietsFromNekku = client.getSpecialDiets().map { it.toEvaka() }
 
     if (specialDietsFromNekku.isEmpty())
         error("Refusing to sync empty Nekku special diet list into database")
@@ -247,7 +247,7 @@ nekku_special_diet_option.key <> excluded.key;
 
 /** Throws an IllegalStateException if Nekku returns an empty product list. */
 fun fetchAndUpdateNekkuProducts(client: NekkuClient, db: Database.Connection) {
-    val productsFromNekku = client.getProducts()
+    val productsFromNekku = client.getProducts().map { it.toEvaka() }
 
     if (productsFromNekku.isEmpty())
         error("Refusing to sync empty Nekku product list into database")
