@@ -368,7 +368,7 @@ fun nekkuMealReportData(
 
     return mealInfoMap.map { NekkuClient.Item(
         product_sku = it.key.sku,
-        quantity = 0, // change this later
+        quantity = it.value,
         product_options = it.key.options
     ) }
 }
