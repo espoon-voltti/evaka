@@ -10,6 +10,8 @@ import {
   getInvoice,
   getInvoiceCodes,
   markInvoicesSent,
+  resendInvoices,
+  resendInvoicesByDate,
   searchInvoices,
   sendInvoices,
   sendInvoicesByDate
@@ -34,6 +36,16 @@ export const sendInvoicesMutation = q.mutation(sendInvoices, [
 ])
 
 export const sendInvoicesByDateMutation = q.mutation(sendInvoicesByDate, [
+  invoicesQuery.prefix,
+  invoiceDetailsQuery.prefix
+])
+
+export const resendInvoicesMutation = q.mutation(resendInvoices, [
+  invoicesQuery.prefix,
+  invoiceDetailsQuery.prefix
+])
+
+export const resendInvoicesByDateMutation = q.mutation(resendInvoicesByDate, [
   invoicesQuery.prefix,
   invoiceDetailsQuery.prefix
 ])

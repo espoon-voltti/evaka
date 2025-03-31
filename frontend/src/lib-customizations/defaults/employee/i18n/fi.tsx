@@ -2866,6 +2866,10 @@ export const fi = {
         count === 1 ? `${count} lasku valittu` : `${count} laskua valittu`,
       sendInvoice: (count: number) =>
         count === 1 ? 'Siirrä valittu lasku' : 'Siirrä valitut laskut',
+      resendInvoice: (count: number) =>
+        count === 1
+          ? 'Lähetä valittu lasku uudelleen'
+          : 'Lähetä valitut laskut uudelleen',
       createInvoices: 'Luo laskuluonnokset',
       deleteInvoice: (count: number) =>
         count === 1 ? 'Poista valittu lasku' : 'Poista valitut laskut',
@@ -2880,7 +2884,12 @@ export const fi = {
       title: 'Siirrä valitut laskut',
       invoiceDate: 'Laskun päivä',
       dueDate: 'Laskun eräpäivä'
-    }
+    },
+    resendModal: {
+      title: 'Lähetä uudelleen?'
+    },
+    sendSuccess: 'Lähettäminen onnistui',
+    sendFailure: 'Lähettäminen epäonnistui'
   },
   invoice: {
     status: {

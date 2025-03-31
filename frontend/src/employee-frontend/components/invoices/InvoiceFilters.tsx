@@ -23,7 +23,13 @@ import {
   UnitFilter
 } from '../common/Filters'
 
-export default React.memo(function InvoiceFilters() {
+interface Props {
+  clearPreviousResults: () => void
+}
+
+export default React.memo(function InvoiceFilters({
+  clearPreviousResults
+}: Props) {
   const {
     invoices: {
       searchFilters,
@@ -116,7 +122,10 @@ export default React.memo(function InvoiceFilters() {
       setFreeText={(s) =>
         setSearchFilters((prev) => ({ ...prev, searchTerms: s }))
       }
-      onSearch={confirmSearchFilters}
+      onSearch={() => {
+        clearPreviousResults()
+        confirmSearchFilters()
+      }}
       clearFilters={clearSearchFilters}
       column1={
         <>

@@ -40,7 +40,9 @@ import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.snDaycareFullDay35
@@ -514,6 +516,33 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     }
 
     @Test
+    fun `resend works with sent invoice`() {
+        db.transaction { tx -> tx.insert(testInvoices) }
+        val sent = testInvoices.find { it.status == InvoiceStatus.SENT }!!
+
+        val originalSentAt = getInvoice(sent.id).invoice.sentAt
+
+        val resendAt = MockEvakaClock(originalSentAt!!.plusHours(1))
+        resendInvoices(listOf(sent.id), resendAt)
+
+        val updatedInvoice = getInvoice(sent.id).invoice
+        val updatedSentAt = updatedInvoice.sentAt
+        assertEquals(updatedInvoice.status, InvoiceStatus.SENT)
+        assertNotNull(updatedSentAt)
+        assertNotEquals(originalSentAt, updatedSentAt)
+    }
+
+    @Test
+    fun `resend returns bad request for draft status invoice`() {
+        db.transaction { tx -> tx.insert(testInvoices) }
+        val draft = testInvoices.find { it.status == InvoiceStatus.DRAFT }!!
+
+        assertThrows<BadRequest> {
+            resendInvoices(listOf(draft.id), MockEvakaClock(2019, 2, 14, 14, 0))
+        }
+    }
+
+    @Test
     fun `send updates invoice status and number and sent fields`() {
         db.transaction { tx -> tx.insert(testInvoices) }
         val draft = testInvoices.find { it.status == InvoiceStatus.DRAFT }!!
@@ -831,6 +860,10 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             dueDate = null,
             invoiceIds = invoiceIds,
         )
+    }
+
+    private fun resendInvoices(invoiceIds: List<InvoiceId>, resendAt: EvakaClock) {
+        invoiceController.resendInvoices(dbInstance(), testUser, resendAt, invoiceIds)
     }
 
     private fun searchInvoices(request: SearchInvoicesRequest): List<InvoiceSummary> {

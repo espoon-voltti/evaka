@@ -214,9 +214,10 @@ fun Database.Read.getSentInvoicesOfMonth(
         .toList()
 }
 
-fun Database.Read.getInvoiceIdsByDates(
+fun Database.Read.getInvoiceIdsByDatesAndStatus(
     range: FiniteDateRange,
     areas: List<String>,
+    status: InvoiceStatus,
 ): List<InvoiceId> {
     return createQuery {
             sql(
@@ -224,7 +225,7 @@ fun Database.Read.getInvoiceIdsByDates(
                 SELECT id FROM invoice
                 WHERE between_start_and_end(${bind(range)}, invoice_date)
                 AND area_id IN (SELECT id FROM care_area WHERE short_name = ANY(${bind(areas)}))
-                AND status = ${bind(InvoiceStatus.DRAFT)}::invoice_status
+                AND status = ${bind(status)}
                 """
             )
         }
