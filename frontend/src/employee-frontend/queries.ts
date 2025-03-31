@@ -8,12 +8,15 @@ import { getAssistanceActionOptions } from './generated/api-clients/assistance'
 import {
   getEmployees,
   getOrCreatePersonBySsn,
+  getPersonDependants,
   getPersonIdentity,
   searchPerson
 } from './generated/api-clients/pis'
 import { getServiceNeedOptions } from './generated/api-clients/serviceneed'
 
 const q = new Queries()
+
+// These are common queries that do not need to be invalidated after mutations
 
 export const serviceNeedOptionsQuery = q.query(getServiceNeedOptions)
 
@@ -28,3 +31,5 @@ export const personIdentityQuery = q.query(getPersonIdentity)
 export const personBySsnQuery = q.query(getOrCreatePersonBySsn)
 
 export const searchPersonQuery = q.query(searchPerson)
+
+export const personDependantsQuery = q.query(getPersonDependants)
