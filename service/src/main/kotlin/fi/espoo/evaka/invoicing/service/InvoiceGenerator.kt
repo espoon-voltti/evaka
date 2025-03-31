@@ -335,6 +335,7 @@ class InvoiceGenerator(
             businessDays = businessDays,
             feeThresholds = feeThresholds,
             defaultServiceNeedOptions = defaultServiceNeedOptions,
+            minimumInvoiceAmount = featureConfig.minimumInvoiceAmount,
             areaIds = areaIds,
         )
     }

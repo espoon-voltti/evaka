@@ -5656,6 +5656,19 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     }
 
     @Test
+    fun `invoice of less than minimumInvoiceAmount is not generated`() {
+        // 1 operational day => ~13 eur invoice
+        val period = FiniteDateRange(LocalDate.of(2025, 1, 31), LocalDate.of(2025, 1, 31))
+        initDataForAbsences(listOf(period), emptyList())
+
+        val generator = invoiceGenerator(featureConfig.copy(minimumInvoiceAmount = 1400))
+        db.transaction { generator.generateAllDraftInvoices(it, YearMonth.of(2025, 1)) }
+
+        val result = db.read { it.getAllInvoices() }
+        assertEquals(0, result.size)
+    }
+
+    @Test
     fun `Free absence type is treated as other absence if feature is disabled`() {
         // 22 operational days
         val month = YearMonth.of(2019, 1)
