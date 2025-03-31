@@ -201,13 +201,14 @@ class InvoiceController(
     ) {
         db.connect { dbc ->
             dbc.transaction {
-                accessControl.requirePermissionFor(it, user, clock, Action.Invoice.RESEND, invoiceIds)
-                service.resendInvoices(
+                accessControl.requirePermissionFor(
                     it,
-                    user.evakaUserId,
-                    clock.now(),
+                    user,
+                    clock,
+                    Action.Invoice.RESEND,
                     invoiceIds,
                 )
+                service.resendInvoices(it, user.evakaUserId, clock.now(), invoiceIds)
             }
         }
         Audit.InvoicesResend.log(
@@ -258,14 +259,22 @@ class InvoiceController(
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
-                val invoiceIds = service.getInvoiceIds(tx, payload.from, payload.to, payload.areas, InvoiceStatus.SENT)
-                accessControl.requirePermissionFor(tx, user, clock, Action.Invoice.RESEND, invoiceIds)
-                service.resendInvoices(
+                val invoiceIds =
+                    service.getInvoiceIds(
+                        tx,
+                        payload.from,
+                        payload.to,
+                        payload.areas,
+                        InvoiceStatus.SENT,
+                    )
+                accessControl.requirePermissionFor(
                     tx,
-                    user.evakaUserId,
-                    clock.now(),
+                    user,
+                    clock,
+                    Action.Invoice.RESEND,
                     invoiceIds,
                 )
+                service.resendInvoices(tx, user.evakaUserId, clock.now(), invoiceIds)
             }
         }
         Audit.InvoicesResendByDate.log(

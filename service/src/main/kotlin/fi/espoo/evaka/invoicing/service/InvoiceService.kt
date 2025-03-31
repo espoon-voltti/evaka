@@ -103,7 +103,6 @@ class InvoiceService(
 
         val sendResult = integrationClient.send(invoices)
         tx.setDraftsSent(now, sendResult.succeeded, sentBy)
-
     }
 
     fun getInvoiceIds(
