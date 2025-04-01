@@ -21,9 +21,12 @@ fun Database.Read.getChildDocumentCitizenSummaries(
                     (NOT EXISTS(
                         SELECT 1 FROM child_document_read cdr 
                         WHERE cdr.person_id = ${bind(user.id)} AND cdr.document_id = cd.id
-                    )) as unread
+                    )) as unread,
+                    cd.answered_at,
+                    answered_by.id AS answered_by_id, answered_by.name AS answered_by_name, answered_by.type AS answered_by_type
                 FROM child_document cd
                 JOIN document_template dt on cd.template_id = dt.id
+                LEFT JOIN evaka_user answered_by ON cd.answered_by = answered_by.id
                 WHERE cd.child_id = ${bind(childId)} AND published_at IS NOT NULL
                 """
             )

@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.shared.security.actionrule
 
+import fi.espoo.evaka.document.childdocument.DocumentStatus
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
@@ -349,7 +350,7 @@ WHERE EXISTS(SELECT 1 FROM foster_parent fp WHERE fp.parent_id = ${bind(citizenI
             )
         }
 
-    fun guardianOfChildOfPublishedChildDocument() =
+    fun guardianOfChildOfPublishedChildDocument(editable: Boolean = false) =
         rule<ChildDocumentId> { citizenId, _ ->
             sql(
                 """
@@ -357,12 +358,13 @@ SELECT id
 FROM child_document cd
 WHERE EXISTS(SELECT 1 FROM guardian g WHERE g.guardian_id = ${bind(citizenId)} AND g.child_id = cd.child_id)
     AND cd.published_at IS NOT NULL 
+    ${if (editable) "AND status = ANY(${bind(DocumentStatus.entries.filter { it.citizenEditable })}::child_document_status[])" else ""}
             """
                     .trimIndent()
             )
         }
 
-    fun fosterParentOfChildOfPublishedChildDocument() =
+    fun fosterParentOfChildOfPublishedChildDocument(editable: Boolean = false) =
         rule<ChildDocumentId> { citizenId, now ->
             sql(
                 """
@@ -370,6 +372,7 @@ SELECT id
 FROM child_document cd
 WHERE EXISTS(SELECT 1 FROM foster_parent fp WHERE fp.parent_id = ${bind(citizenId)} AND fp.child_id = cd.child_id AND fp.valid_during @> ${bind(now.toLocalDate())})
     AND cd.published_at IS NOT NULL 
+    ${if (editable) "AND status = ANY(${bind(DocumentStatus.entries.filter { it.citizenEditable })}::child_document_status[])" else ""}
             """
                     .trimIndent()
             )

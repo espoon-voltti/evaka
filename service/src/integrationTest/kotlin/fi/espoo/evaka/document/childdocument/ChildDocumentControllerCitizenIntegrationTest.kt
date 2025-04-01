@@ -141,6 +141,8 @@ class ChildDocumentControllerCitizenIntegrationTest :
                     templateName = "Pedagoginen arvio 2023",
                     status = DocumentStatus.DRAFT,
                     unread = true,
+                    answeredAt = null,
+                    answeredBy = null,
                 )
             ),
             getDocumentsByChild(testChild_1.id),

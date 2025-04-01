@@ -2830,7 +2830,7 @@ export default {
       pageCount: (current: number, total: number) => `Sivu ${current}/${total}`
     },
     childDocuments: {
-      title: 'Pedagogiset asiakirjat',
+      title: 'Lapsen asiakirjat',
       plansTitle:
         'Varhaiskasvatussuunnitelmat ja esiopetuksen oppimissuunnitelmat',
       noVasus: 'Ei suunnitelmia',
@@ -2838,7 +2838,14 @@ export default {
         'Henkilökohtaisen opetuksen järjestämistä koskevat suunnitelmat',
       otherDocumentsTitle: 'Muut asiakirjat',
       noDocuments: 'Ei asiakirjoja',
-      confidential: 'Salassapidettävä'
+      confidential: 'Salassapidettävä',
+      notAnswered: 'Ei vastattu',
+      answered: 'Vastattu',
+      preview: 'Esikatsele',
+      send: 'Lähetä',
+      error: {
+        other: 'Asiakirjan tallentaminen epäonnistui.'
+      }
     }
   },
   accessibilityStatement: (

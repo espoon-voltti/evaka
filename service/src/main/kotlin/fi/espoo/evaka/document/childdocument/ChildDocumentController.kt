@@ -106,7 +106,7 @@ class ChildDocumentController(
                     tx.insertChildDocument(
                         document = body,
                         now = now,
-                        userId = user.id,
+                        userId = user.evakaUserId,
                         processId = processId,
                     )
                 }
@@ -216,7 +216,7 @@ class ChildDocumentController(
                         tx.getChildDocument(documentId)
                             ?: throw NotFound("Document $documentId not found")
 
-                    if (!document.status.editable)
+                    if (!document.status.employeeEditable)
                         throw BadRequest("Cannot update contents of document in this status")
 
                     validateContentAgainstTemplate(body, document.template.content)
@@ -235,7 +235,7 @@ class ChildDocumentController(
                         document.status,
                         body,
                         clock.now(),
-                        user.id,
+                        user.evakaUserId,
                     )
                 }
                 .also { Audit.ChildDocumentUpdateContent.log(targetId = AuditId(documentId)) }
@@ -263,7 +263,7 @@ class ChildDocumentController(
                         Action.ChildDocument.UPDATE,
                         documentId,
                     )
-                    val success = tx.tryTakeWriteLock(documentId, clock.now(), user.id)
+                    val success = tx.tryTakeWriteLock(documentId, clock.now(), user.evakaUserId)
                     val currentLock =
                         tx.getCurrentWriteLock(documentId, clock.now())
                             ?: throw IllegalStateException("lock should exist now")
@@ -274,24 +274,6 @@ class ChildDocumentController(
                 }
             }
             .also { Audit.ChildDocumentTryTakeLockOnContent.log(targetId = AuditId(documentId)) }
-    }
-
-    private fun validateContentAgainstTemplate(
-        documentContent: DocumentContent,
-        templateContent: DocumentTemplateContent,
-    ) {
-        val questions = templateContent.sections.flatMap { it.questions }
-        val valid =
-            documentContent.answers.all { answeredQuestion ->
-                questions.any { question ->
-                    question.id == answeredQuestion.questionId &&
-                        question.type == answeredQuestion.type &&
-                        answeredQuestion.isStructurallyValid(question)
-                }
-            }
-        if (!valid) {
-            throw BadRequest("Answered questions and template do not match")
-        }
     }
 
     @PutMapping("/{documentId}/publish")
@@ -515,5 +497,23 @@ class ChildDocumentController(
                 }
             }
             .also { Audit.ChildDocumentDownload.log(targetId = AuditId(documentId)) }
+    }
+}
+
+fun validateContentAgainstTemplate(
+    documentContent: DocumentContent,
+    templateContent: DocumentTemplateContent,
+) {
+    val questions = templateContent.sections.flatMap { it.questions }
+    val valid =
+        documentContent.answers.all { answeredQuestion ->
+            questions.any { question ->
+                question.id == answeredQuestion.questionId &&
+                    question.type == answeredQuestion.type &&
+                    answeredQuestion.isStructurallyValid(question)
+            }
+        }
+    if (!valid) {
+        throw BadRequest("Answered questions and template do not match")
     }
 }

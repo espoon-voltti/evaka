@@ -20,6 +20,7 @@ import { ChildId } from 'lib-common/generated/api-types/shared'
 import { useQuery, useQueryResult } from 'lib-common/query'
 import { tabletMin } from 'lib-components/breakpoints'
 import { ChildDocumentStateChip } from 'lib-components/document-templates/ChildDocumentStateChip'
+import { isInternal } from 'lib-components/document-templates/documents'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
@@ -52,13 +53,16 @@ const DocumentTr = styled.tr<{ unread?: boolean }>`
   }
 
   ${(p) => (p.unread ? `border-left: 4px solid ${colors.status.success};` : '')}
-
   * {
     ${(p) => (p.unread ? 'font-weight: bold;' : '')}
   }
 `
 
 const LinkTd = styled.td`
+  width: 40%;
+`
+
+const AnsweredTd = styled.td`
   width: 40%;
 `
 
@@ -95,6 +99,9 @@ const ChildDocumentsTable = React.memo(function ChildDocumentsTable({
                 {document.templateName}
               </Link>
             </LinkTd>
+            <AnsweredTd data-qa={`answered-${document.id}`}>
+              <Answered document={document} />
+            </AnsweredTd>
             <StateTd>
               <ChildDocumentStateChip status={document.status} />
             </StateTd>
@@ -212,15 +219,18 @@ const ChildDocumentsList = React.memo(function ChildDocumentsList({
                     <span data-qa={`published-at-${document.id}`}>
                       {document.publishedAt?.toLocalDate().format() ?? ''}
                     </span>
-                    <ChildDocumentStateChip status={document.status} />
+                    <Answered document={document} />
                   </FixedSpaceRow>
                   <Gap size="xs" />
-                  <Link
-                    to={`/child-documents/${document.id}`}
-                    data-qa="child-document-link"
-                  >
-                    {document.templateName}
-                  </Link>
+                  <FixedSpaceRow justifyContent="space-between">
+                    <Link
+                      to={`/child-documents/${document.id}`}
+                      data-qa="child-document-link"
+                    >
+                      {document.templateName}
+                    </Link>
+                    <ChildDocumentStateChip status={document.status} />
+                  </FixedSpaceRow>
                 </MobileRowContainer>
               ))}
             </MobileAndTablet>
@@ -233,3 +243,26 @@ const ChildDocumentsList = React.memo(function ChildDocumentsList({
     </>
   )
 })
+
+const Answered = ({ document }: { document: ChildDocumentCitizenSummary }) => {
+  const i18n = useTranslation()
+
+  if (isInternal(document.type)) {
+    return null
+  }
+  if (document.answeredAt === null) {
+    return <span>{i18n.children.childDocuments.notAnswered}</span>
+  }
+
+  return (
+    <>
+      <span>
+        {i18n.children.childDocuments.answered},{' '}
+        {document.answeredAt?.toLocalDate().format()}
+      </span>
+      {document.answeredBy !== null && (
+        <span>, {document.answeredBy.name}</span>
+      )}
+    </>
+  )
+}

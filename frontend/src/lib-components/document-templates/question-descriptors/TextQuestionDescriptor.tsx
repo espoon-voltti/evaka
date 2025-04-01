@@ -79,7 +79,7 @@ const View = React.memo(function View({
   return readOnly ? (
     <FixedSpaceColumn data-qa="document-question-preview">
       <Label>{label.state}</Label>
-      <div>
+      <div data-qa="answer-preview">
         {answer.state.split('\n').map((line, i) => (
           <Fragment key={i}>
             {line}
