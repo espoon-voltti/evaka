@@ -94,7 +94,8 @@ import {
 } from '../../generated/api-clients/invoicing'
 import {
   getFosterParents,
-  getPersonGuardians
+  getPersonGuardians,
+  updateGuardianEvakaRights
 } from '../../generated/api-clients/pis'
 import {
   getAssistanceNeedDecisionMetadata,
@@ -118,6 +119,11 @@ export const childQuery = q.query(getChild)
 export const deleteServiceNeedMutation = q.mutation(deleteServiceNeed, [])
 
 export const guardiansQuery = q.query(getPersonGuardians)
+
+export const updateGuardianEvakaRightsMutation = q.mutation(
+  updateGuardianEvakaRights,
+  [({ childId }) => guardiansQuery({ personId: childId })]
+)
 
 export const placementsQuery = q.query(getChildPlacements)
 

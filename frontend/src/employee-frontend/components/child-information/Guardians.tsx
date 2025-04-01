@@ -1,52 +1,50 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2025 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import orderBy from 'lodash/orderBy'
-import React, { useCallback, useContext, useMemo, useState } from 'react'
+import React, { useCallback, useContext, useState } from 'react'
 import { Link } from 'react-router'
 import styled from 'styled-components'
 
-import { Result, Success, wrapResult } from 'lib-common/api'
-import { PersonJSON } from 'lib-common/generated/api-types/pis'
+import { Result } from 'lib-common/api'
+import {
+  GuardiansResponse,
+  PersonJSON
+} from 'lib-common/generated/api-types/pis'
 import { ChildId, PersonId } from 'lib-common/generated/api-types/shared'
+import { constantQuery, useQueryResult } from 'lib-common/query'
 import { getAge } from 'lib-common/utils/local-date'
-import { useApiState } from 'lib-common/utils/useRestApi'
 import { StaticChip } from 'lib-components/atoms/Chip'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
-import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
+import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
+import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { H3, Label, P } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faPen } from 'lib-icons'
 
-import {
-  getPersonGuardians,
-  updateGuardianEvakaRights
-} from '../../generated/api-clients/pis'
 import { ChildContext } from '../../state'
 import { useTranslation } from '../../state/i18n'
 import { formatName } from '../../utils'
 import { renderResult } from '../async-rendering'
 import { NameTd } from '../person-profile/common'
 
-const getPersonGuardiansResult = wrapResult(getPersonGuardians)
-const updateGuardianEvakaRightsResult = wrapResult(updateGuardianEvakaRights)
+import { guardiansQuery, updateGuardianEvakaRightsMutation } from './queries'
 
 export default React.memo(function Guardians() {
   const { i18n } = useTranslation()
   const { childId, permittedActions } = useContext(ChildContext)
-  const [guardians, reloadGuardians] = useApiState(
-    () =>
-      childId && permittedActions.has('READ_GUARDIANS')
-        ? getPersonGuardiansResult({ personId: childId })
-        : Promise.resolve(
-            Success.of({ guardians: [], blockedGuardians: null })
-          ),
-    [childId, permittedActions]
+  const guardians = useQueryResult(
+    childId && permittedActions.has('READ_GUARDIANS')
+      ? guardiansQuery({ personId: childId })
+      : constantQuery<GuardiansResponse>({
+          guardians: [],
+          blockedGuardians: null
+        })
   )
   const allGuardians: Result<(PersonJSON & { evakaRightsDenied: boolean })[]> =
     guardians.map(({ guardians, blockedGuardians }) =>
@@ -84,7 +82,6 @@ export default React.memo(function Guardians() {
             )
             .getOrElse(false)}
           stopEditing={stopEditing}
-          reloadGuardians={reloadGuardians}
         />
       )}
       <H3 noMargin>{i18n.personProfile.guardians}</H3>
@@ -170,14 +167,12 @@ const EditEvakaRightsModal = React.memo(function EditEvakaRightsModal({
   childId,
   guardianId,
   denied,
-  stopEditing,
-  reloadGuardians
+  stopEditing
 }: {
   childId: ChildId
   guardianId: PersonId
   denied: boolean
   stopEditing: () => void
-  reloadGuardians: () => void
 }) {
   const { i18n } = useTranslation()
   const [contentState, setContentState] = useState<'info' | 'update'>('info')
@@ -187,79 +182,59 @@ const EditEvakaRightsModal = React.memo(function EditEvakaRightsModal({
       : { confirmed: false, denied: false }
   )
 
-  const update = useCallback(
-    () =>
-      updateGuardianEvakaRightsResult({
+  if (contentState === 'info')
+    return (
+      <InfoModal
+        title={i18n.personProfile.evakaRights.editModalTitle}
+        resolve={{
+          action: () => setContentState('update'),
+          label: i18n.common.continue
+        }}
+        reject={{
+          action: stopEditing,
+          label: i18n.common.cancel
+        }}
+        data-qa="evaka-rights-modal"
+      >
+        <P>{i18n.personProfile.evakaRights.modalInfoParagraph}</P>
+      </InfoModal>
+    )
+
+  return (
+    <MutateFormModal
+      title={i18n.personProfile.evakaRights.editModalTitle}
+      resolveMutation={updateGuardianEvakaRightsMutation}
+      resolveAction={() => ({
         childId,
         body: {
           guardianId,
           denied: editState.denied
         }
-      }),
-    [childId, guardianId, editState.denied]
-  )
-
-  const onSuccess = useCallback(() => {
-    stopEditing()
-    reloadGuardians()
-  }, [stopEditing, reloadGuardians])
-
-  const content = useMemo(
-    () =>
-      contentState === 'info'
-        ? {
-            resolve: () => setContentState('update'),
-            resolveLabel: i18n.common.continue,
-            resolveDisabled: false,
-            onSuccess: () => undefined,
-            children: <P>{i18n.personProfile.evakaRights.modalInfoParagraph}</P>
-          }
-        : {
-            resolve: update,
-            resolveLabel: i18n.common.confirm,
-            resolveDisabled: denied
-              ? editState.confirmed
-              : !editState.confirmed,
-            onSuccess,
-            children: (
-              <FixedSpaceColumn spacing="s">
-                <Label>
-                  {i18n.personProfile.evakaRights.modalUpdateSubtitle}
-                </Label>
-                <Checkbox
-                  label={i18n.personProfile.evakaRights.confirmedLabel}
-                  checked={editState.confirmed}
-                  onChange={(confirmed) =>
-                    setEditState((s) => ({ ...s, confirmed }))
-                  }
-                  disabled={editState.denied}
-                  data-qa="confirmation"
-                />
-                <Checkbox
-                  label={i18n.personProfile.evakaRights.deniedLabel}
-                  checked={editState.denied}
-                  onChange={(denied) => setEditState((s) => ({ ...s, denied }))}
-                  disabled={!editState.confirmed}
-                  data-qa="denied"
-                />
-              </FixedSpaceColumn>
-            )
-          },
-    [i18n, denied, contentState, editState, update, onSuccess]
-  )
-
-  return (
-    <AsyncFormModal
-      title={i18n.personProfile.evakaRights.editModalTitle}
-      resolveAction={content.resolve}
-      resolveLabel={content.resolveLabel}
-      resolveDisabled={content.resolveDisabled}
-      onSuccess={content.onSuccess}
+      })}
+      resolveLabel={i18n.common.confirm}
+      resolveDisabled={denied ? editState.confirmed : !editState.confirmed}
       rejectAction={stopEditing}
       rejectLabel={i18n.common.cancel}
+      onSuccess={stopEditing}
       data-qa="evaka-rights-modal"
     >
-      {content.children}
-    </AsyncFormModal>
+      <FixedSpaceColumn spacing="s">
+        <Label>{i18n.personProfile.evakaRights.modalUpdateSubtitle}</Label>
+        <Checkbox
+          label={i18n.personProfile.evakaRights.confirmedLabel}
+          checked={editState.confirmed}
+          onChange={(confirmed) => setEditState((s) => ({ ...s, confirmed }))}
+          disabled={editState.denied}
+          data-qa="confirmation"
+        />
+        <Checkbox
+          label={i18n.personProfile.evakaRights.deniedLabel}
+          checked={editState.denied}
+          onChange={(denied) => setEditState((s) => ({ ...s, denied }))}
+          disabled={!editState.confirmed}
+          data-qa="denied"
+        />
+      </FixedSpaceColumn>
+    </MutateFormModal>
   )
 })
