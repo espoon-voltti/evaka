@@ -9,11 +9,16 @@ import { evakaUserId } from 'lib-common/id-type'
 import config from '../../config'
 import {
   Fixture,
+  testAdult,
   testCareArea,
   testChild2,
   testDaycare
 } from '../../dev-api/fixtures'
-import { resetServiceState, runJobs } from '../../generated/api-clients'
+import {
+  getSentEmails,
+  resetServiceState,
+  runJobs
+} from '../../generated/api-clients'
 import { DevEmployee } from '../../generated/api-types'
 import ChildInformationPage from '../../pages/employee/child-information'
 import { ChildDocumentPage } from '../../pages/employee/documents/child-document'
@@ -38,7 +43,9 @@ beforeEach(async () => {
 
   await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()
+  await Fixture.person(testAdult).saveAdult()
   await Fixture.person(testChild2).saveChild()
+  await Fixture.guardian(testChild2, testAdult).save()
   admin = await Fixture.employee().admin().save()
   unitSupervisor = await Fixture.employee()
     .unitSupervisor(testDaycare.id)
@@ -484,6 +491,22 @@ describe('Employee - Child documents', () => {
     await row.sent.assertTextEquals(now.toLocalDate().format())
     await row.answered.assertTextEquals('Ei vastattu')
     await row.status.assertTextEquals('Täytettävänä huoltajalla')
+    await runJobs({ mockedTime: now })
+    const emails = await getSentEmails()
+    expect(
+      emails.map((email) => ({
+        from: email.fromAddress,
+        to: email.toAddress,
+        subject: email.content.subject
+      }))
+    ).toEqual([
+      {
+        from: 'Espoon Varhaiskasvatus <no-reply.evaka@espoo.fi>',
+        to: 'johannes.karhula@evaka.test',
+        subject:
+          'Uusi dokumentti eVakassa / Nytt dokument i eVaka / New document in eVaka'
+      }
+    ])
   })
 
   test('Citizen answered at is shown', async () => {
