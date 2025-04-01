@@ -64,7 +64,6 @@ val testUnit =
         providerType = VardaUnitProviderType.MUNICIPAL,
         type = listOf(VardaUnitType.CENTRE),
         language = VardaLanguage.FI,
-        languageEmphasisId = null,
         openingDate = LocalDate.of(2000, 1, 1),
         closingDate = null,
     )

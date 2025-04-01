@@ -15,8 +15,6 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
     fun `'timestamp without timezone' is forbidden and 'timestamp with timezone' should be used instead`() {
         val permittedViolations =
             setOf(
-                ColumnRef("language_emphasis", "created"),
-                ColumnRef("language_emphasis", "updated"),
                 ColumnRef("pedagogical_document", "email_job_created_at"),
                 ColumnRef("pedagogical_document_read", "read_at"),
             )
@@ -29,7 +27,6 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
     fun `creation timestamp should be called 'created_at' instead of 'created'`() {
         val permittedViolations =
             setOf(
-                "application_form",
                 "application_note",
                 "application_other_guardian",
                 "assistance_action",
@@ -73,7 +70,6 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
                 "income_notification",
                 "invoice_correction",
                 "koski_study_right",
-                "language_emphasis",
                 "message_account",
                 "message_content",
                 "message",
@@ -115,7 +111,6 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
     fun `update timestamp should be called 'updated_at' instead of 'updated'`() {
         val permittedViolations =
             setOf(
-                "application_form",
                 "application_note",
                 "application_other_guardian",
                 "assistance_action",
@@ -156,7 +151,6 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
                 "income_notification",
                 "invoice_correction",
                 "koski_study_right",
-                "language_emphasis",
                 "message",
                 "message_account",
                 "message_content",
@@ -280,11 +274,6 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
                     nullable = true,
                 ),
                 Column(
-                    ColumnRef("language_emphasis", "created"),
-                    "timestamp without time zone",
-                    nullable = false,
-                ),
-                Column(
                     ColumnRef("mobile_device_push_group", "created_at"),
                     "timestamp with time zone",
                     nullable = true,
@@ -345,11 +334,6 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
                 Column(
                     ColumnRef("fridge_partner", "updated"),
                     dataType = "timestamp with time zone",
-                    nullable = true,
-                ),
-                Column(
-                    ColumnRef("language_emphasis", "updated"),
-                    dataType = "timestamp without time zone",
                     nullable = true,
                 ),
                 Column(
@@ -511,7 +495,6 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
                 ColumnRef("assistance_factor", "modified_by"),
                 ColumnRef("child_document_read", "person_id"),
                 ColumnRef("daycare", "finance_decision_handler"),
-                ColumnRef("daycare", "language_emphasis_id"),
                 ColumnRef("daycare_assistance", "modified_by"),
                 ColumnRef("decision", "resolved_by"),
                 ColumnRef("fridge_child", "created_by_application"),
