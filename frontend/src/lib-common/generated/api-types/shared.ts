@@ -302,6 +302,17 @@ export interface Translatable {
 }
 
 /**
+* Generated from fi.espoo.evaka.shared.domain.UiLanguage
+*/
+export const uiLanguages = [
+  'FI',
+  'SV',
+  'EN'
+] as const
+
+export type UiLanguage = typeof uiLanguages[number]
+
+/**
 * Generated from fi.espoo.evaka.shared.auth.UserRole
 */
 export type UserRole =

@@ -19,7 +19,7 @@ import fi.espoo.evaka.process.DocumentOrigin
 import fi.espoo.evaka.shared.*
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import fi.espoo.evaka.shared.domain.OfficialLanguage
+import fi.espoo.evaka.shared.domain.UiLanguage
 import fi.espoo.evaka.user.EvakaUser
 import fi.espoo.evaka.user.EvakaUserType
 import java.io.File
@@ -131,7 +131,7 @@ class ArchiveChildDocumentServiceTest {
                         name = "VASU 2022-2023",
                         type = DocumentType.VASU,
                         placementTypes = setOf(PlacementType.PRESCHOOL),
-                        language = OfficialLanguage.FI,
+                        language = UiLanguage.FI,
                         confidentiality =
                             DocumentConfidentiality(durationYears = 10, basis = "Laki § 123"),
                         legalBasis = "",

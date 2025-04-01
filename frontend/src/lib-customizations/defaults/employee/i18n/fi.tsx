@@ -5017,7 +5017,8 @@ export const fi = {
     },
     languages: {
       FI: 'Suomenkielinen',
-      SV: 'Ruotsinkielinen'
+      SV: 'Ruotsinkielinen',
+      EN: 'Englanninkielinen'
     },
     templatesPage: {
       add: 'Luo uusi',

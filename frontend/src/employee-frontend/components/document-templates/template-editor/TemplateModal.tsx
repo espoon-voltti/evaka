@@ -31,8 +31,8 @@ import {
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import {
   DocumentTemplateId,
-  OfficialLanguage,
-  officialLanguages
+  UiLanguage,
+  uiLanguages
 } from 'lib-common/generated/api-types/shared'
 import { JsonOf } from 'lib-common/json'
 import { useMutationResult } from 'lib-common/query'
@@ -64,7 +64,7 @@ export const documentTemplateForm = transformed(
     placementTypes: validated(array(value<PlacementType>()), (arr) =>
       arr.length === 0 ? 'required' : undefined
     ),
-    language: required(oneOf<OfficialLanguage>()),
+    language: required(oneOf<UiLanguage>()),
     confidential: boolean(),
     confidentialityDurationYears: required(value<string>()),
     confidentialityBasis: required(value<string>()),
@@ -164,7 +164,7 @@ export default React.memo(function TemplateModal({ onClose, mode }: Props) {
 
   const languageOptions = useMemo(
     () =>
-      officialLanguages.map((option) => ({
+      uiLanguages.map((option) => ({
         domValue: option,
         value: option,
         label: i18n.documentTemplates.languages[option]

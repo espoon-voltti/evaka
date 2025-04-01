@@ -107,6 +107,7 @@ import { StaffAttendanceRealtimeId } from 'lib-common/generated/api-types/shared
 import { StaffAttendanceType } from 'lib-common/generated/api-types/attendance'
 import { StructuralMotivationOptions } from 'lib-common/generated/api-types/assistanceneed'
 import { UUID } from 'lib-common/types'
+import { UiLanguage } from 'lib-common/generated/api-types/shared'
 import { UnitManager } from 'lib-common/generated/api-types/daycare'
 import { UserRole } from 'lib-common/generated/api-types/shared'
 import { VisitingAddress } from 'lib-common/generated/api-types/daycare'
@@ -560,7 +561,7 @@ export interface DevDocumentTemplate {
   confidentiality: DocumentConfidentiality | null
   content: DocumentTemplateContent
   id: DocumentTemplateId
-  language: OfficialLanguage
+  language: UiLanguage
   legalBasis: string
   name: string
   placementTypes: PlacementType[]
