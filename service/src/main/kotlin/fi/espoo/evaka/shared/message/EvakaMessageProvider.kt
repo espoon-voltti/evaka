@@ -15,10 +15,13 @@ class EvakaMessageProvider : IMessageProvider {
             OfficialLanguage.SV -> """Beslut gällande Esbos småbarnspedagogik"""
         }
 
-    override fun getDecisionContent(lang: OfficialLanguage, skipGuardianApproval: Boolean): String =
+    override fun getDecisionContent(
+        lang: OfficialLanguage,
+        skipGuardianApproval: Boolean?,
+    ): String =
         when (lang) {
             OfficialLanguage.FI ->
-                if (skipGuardianApproval)
+                if (skipGuardianApproval == true)
                     """Olette hakenut lapsellenne Espoon kaupungin varhaiskasvatus-, esiopetus- ja/tai kerhopaikkaa. Koska olette ottanut Suomi.fi viestit -palvelun käyttöönne, on päätös luettavissa alla olevista liitteistä.
 
 
@@ -43,7 +46,7 @@ The guardian who submitted the application can accept or reject the decision thr
 
 Please note that you have to respond to the decision within two weeks."""
             OfficialLanguage.SV ->
-                if (skipGuardianApproval)
+                if (skipGuardianApproval == true)
                     """Du har ansökt om plats i Esbo stads småbarnspedagogiska verksamhet, förskoleundervisning och/eller klubbverksamhet. Eftersom du har tagit i bruk Suomi.fi-meddelandetjänsten kan du läsa beslutet från bilagorna nedan."""
                 else
                     """Du har ansökt om plats i Esbo stads småbarnspedagogiska verksamhet, förskoleundervisning och/eller klubbverksamhet. Eftersom du har tagit i bruk Suomi.fi-meddelandetjänsten kan du läsa beslutet från bilagorna nedan.

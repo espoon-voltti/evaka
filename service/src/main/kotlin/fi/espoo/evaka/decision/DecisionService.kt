@@ -170,7 +170,7 @@ class DecisionService(
         tx: Database.Transaction,
         clock: EvakaClock,
         decisionId: DecisionId,
-        skipGuardianApproval: Boolean,
+        skipGuardianApproval: Boolean?,
     ) {
         val decision =
             tx.getDecision(decisionId) ?: throw NotFound("No decision with id: $decisionId")
@@ -245,7 +245,7 @@ class DecisionService(
         decision: Decision,
         guardian: PersonDTO,
         documentLocation: DocumentLocation,
-        skipGuardianApproval: Boolean,
+        skipGuardianApproval: Boolean?,
     ) {
         if (guardian.identity !is ExternalIdentifier.SSN) {
             logger.info {

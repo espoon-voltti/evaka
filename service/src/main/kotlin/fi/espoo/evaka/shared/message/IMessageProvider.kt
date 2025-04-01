@@ -10,7 +10,7 @@ import fi.espoo.evaka.shared.domain.OfficialLanguage
 interface IMessageProvider {
     fun getDecisionHeader(lang: OfficialLanguage): String
 
-    fun getDecisionContent(lang: OfficialLanguage, skipGuardianApproval: Boolean): String
+    fun getDecisionContent(lang: OfficialLanguage, skipGuardianApproval: Boolean? = false): String
 
     fun getFeeDecisionHeader(lang: OfficialLanguage): String
 

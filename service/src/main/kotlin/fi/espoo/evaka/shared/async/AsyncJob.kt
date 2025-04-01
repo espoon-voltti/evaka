@@ -119,8 +119,10 @@ sealed interface AsyncJob : AsyncJobPayload {
         val skipGuardianApproval: Boolean,
     ) : AsyncJob
 
-    data class SendDecision(val decisionId: DecisionId, val skipGuardianApproval: Boolean) :
-        AsyncJob {
+    data class SendDecision(
+        val decisionId: DecisionId,
+        val skipGuardianApproval: Boolean? = false,
+    ) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
 
