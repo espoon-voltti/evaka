@@ -7,6 +7,7 @@ package fi.espoo.evaka.linkity
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.attendance.*
 import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.StaffAttendanceRealtimeId
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.db.Database
@@ -203,24 +204,27 @@ internal class LinkityServiceTest : FullApplicationTest(resetDbBeforeEach = true
         arrived: HelsinkiDateTime,
         departed: HelsinkiDateTime?,
         type: StaffAttendanceType,
-    ) {
-        tx.upsertStaffAttendance(
-            null,
-            employee.id,
-            groupId,
-            arrived,
-            departed,
-            "1".toBigDecimal(),
-            type,
-            false,
-            arrived,
-            employee.evakaUserId,
-        )
+    ): StaffAttendanceRealtimeId? {
+        val change =
+            tx.upsertStaffAttendance(
+                null,
+                employee.id,
+                groupId,
+                arrived,
+                departed,
+                "1".toBigDecimal(),
+                type,
+                false,
+                arrived,
+                employee.evakaUserId,
+            )
+        return change?.new?.id
     }
 
     @Test
     fun `relevant attendances are sent to Linkity`() {
         val now = HelsinkiDateTime.now()
+        lateinit var attendanceIds: List<StaffAttendanceRealtimeId?>
         db.transaction { tx ->
             val group = DevDaycareGroup(daycareId = daycare.id)
             val employee2 = DevEmployee(employeeNumber = "SARASTIA_2")
@@ -259,78 +263,81 @@ internal class LinkityServiceTest : FullApplicationTest(resetDbBeforeEach = true
                     ),
                 )
             )
-            // 1st
-            upsertStaffAttendance(
-                tx,
-                employee,
-                group.id,
-                now.minusDays(2),
-                now.minusDays(1).minusHours(3).plusMinutes(6),
-                StaffAttendanceType.PRESENT,
-            )
-            // 2nd
-            upsertStaffAttendance(
-                tx,
-                employee,
-                group.id,
-                now.minusDays(1).minusHours(3).plusMinutes(6),
-                now.minusDays(1).minusMinutes(4),
-                StaffAttendanceType.PRESENT,
-            )
-            // 3rd
-            upsertStaffAttendance(
-                tx,
-                employee,
-                group.id,
-                now.minusDays(1).minusMinutes(4),
-                now.minusDays(1).plusHours(3).plusMinutes(4),
-                StaffAttendanceType.PRESENT,
-            )
-            // 4th
-            upsertStaffAttendance(
-                tx,
-                employee,
-                group.id,
-                now.minusDays(1).plusHours(3).plusMinutes(5),
-                now.minusDays(1).plusHours(5).plusMinutes(4),
-                StaffAttendanceType.OTHER_WORK,
-            )
-            // 5th
-            upsertStaffAttendance(
-                tx,
-                employee,
-                group.id,
-                now.minusHours(2).minusMinutes(3),
-                now.minusHours(1).minusMinutes(2),
-                StaffAttendanceType.TRAINING,
-            )
-            // 6th
-            upsertStaffAttendance(
-                tx,
-                employee,
-                group.id,
-                now.minusHours(1).minusMinutes(2),
-                null,
-                StaffAttendanceType.PRESENT,
-            )
-            // 7th
-            upsertStaffAttendance(
-                tx,
-                employee3,
-                group.id,
-                now.minusHours(4),
-                now.minusHours(3),
-                StaffAttendanceType.PRESENT,
-            )
-            // 8th
-            upsertStaffAttendance(
-                tx,
-                employee2,
-                group2.id,
-                now.minusHours(5),
-                now.minusHours(4),
-                StaffAttendanceType.PRESENT,
-            )
+            attendanceIds =
+                listOf(
+                    // 1st
+                    upsertStaffAttendance(
+                        tx,
+                        employee,
+                        group.id,
+                        now.minusDays(2),
+                        now.minusDays(1).minusHours(3).plusMinutes(6),
+                        StaffAttendanceType.PRESENT,
+                    ),
+                    // 2nd
+                    upsertStaffAttendance(
+                        tx,
+                        employee,
+                        group.id,
+                        now.minusDays(1).minusHours(3).plusMinutes(6),
+                        now.minusDays(1).minusMinutes(4),
+                        StaffAttendanceType.PRESENT,
+                    ),
+                    // 3rd
+                    upsertStaffAttendance(
+                        tx,
+                        employee,
+                        group.id,
+                        now.minusDays(1).minusMinutes(4),
+                        now.minusDays(1).plusHours(3).plusMinutes(4),
+                        StaffAttendanceType.PRESENT,
+                    ),
+                    // 4th
+                    upsertStaffAttendance(
+                        tx,
+                        employee,
+                        group.id,
+                        now.minusDays(1).plusHours(3).plusMinutes(5),
+                        now.minusDays(1).plusHours(5).plusMinutes(4),
+                        StaffAttendanceType.OTHER_WORK,
+                    ),
+                    // 5th
+                    upsertStaffAttendance(
+                        tx,
+                        employee,
+                        group.id,
+                        now.minusHours(2).minusMinutes(3),
+                        now.minusHours(1).minusMinutes(2),
+                        StaffAttendanceType.TRAINING,
+                    ),
+                    // 6th
+                    upsertStaffAttendance(
+                        tx,
+                        employee,
+                        group.id,
+                        now.minusHours(1).minusMinutes(2),
+                        null,
+                        StaffAttendanceType.PRESENT,
+                    ),
+                    // 7th
+                    upsertStaffAttendance(
+                        tx,
+                        employee3,
+                        group.id,
+                        now.minusHours(4),
+                        now.minusHours(3),
+                        StaffAttendanceType.PRESENT,
+                    ),
+                    // 8th
+                    upsertStaffAttendance(
+                        tx,
+                        employee2,
+                        group2.id,
+                        now.minusHours(5),
+                        now.minusHours(4),
+                        StaffAttendanceType.PRESENT,
+                    ),
+                )
         }
         val period = FiniteDateRange(now.minusDays(1).toLocalDate(), now.toLocalDate())
 
@@ -346,6 +353,7 @@ internal class LinkityServiceTest : FullApplicationTest(resetDbBeforeEach = true
                         // 2nd attendance start is not rounded to any plan because diff > 5 min, but
                         // end is rounded
                         Stamping(
+                            attendanceIds[1]!!.toString(),
                             employeeNumber,
                             now.minusDays(1).minusHours(3).plusMinutes(6),
                             now.minusDays(1),
@@ -353,6 +361,7 @@ internal class LinkityServiceTest : FullApplicationTest(resetDbBeforeEach = true
                         ),
                         // 3rd attendance start and end are rounded to times from different plans
                         Stamping(
+                            attendanceIds[2]!!.toString(),
                             employeeNumber,
                             now.minusDays(1),
                             now.minusDays(1).plusHours(3),
@@ -360,6 +369,7 @@ internal class LinkityServiceTest : FullApplicationTest(resetDbBeforeEach = true
                         ),
                         // 4th attendance is rounded to the matching plan
                         Stamping(
+                            attendanceIds[3]!!.toString(),
                             employeeNumber,
                             now.minusDays(1).plusHours(3),
                             now.minusDays(1).plusHours(5),
@@ -368,6 +378,7 @@ internal class LinkityServiceTest : FullApplicationTest(resetDbBeforeEach = true
                         // 5th attendance start is not rounded because no matching plan, but end is
                         // rounded
                         Stamping(
+                            attendanceIds[4]!!.toString(),
                             employeeNumber,
                             now.minusHours(2).minusMinutes(3),
                             now.minusHours(1),

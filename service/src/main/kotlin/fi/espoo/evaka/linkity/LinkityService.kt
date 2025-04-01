@@ -161,6 +161,7 @@ private fun roundAttendancesToPlans(
                     ?: attendance.departed
 
             Stamping(
+                stampingId = attendance.id.toString(),
                 sarastiaId = attendance.sarastiaId,
                 startTime = roundedArrivalTime,
                 endTime = roundedDepartureTime,

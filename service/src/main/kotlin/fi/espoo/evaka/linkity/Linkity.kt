@@ -27,6 +27,7 @@ data class Shift(
 )
 
 data class Stamping(
+    val stampingId: String,
     val sarastiaId: String,
     val startTime: HelsinkiDateTime,
     val endTime: HelsinkiDateTime,
