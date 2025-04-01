@@ -411,7 +411,8 @@ export const InvoicingUIContextProvider = React.memo(
 
     const availableAreas = useQueryResult(areasQuery(), { enabled: loggedIn })
     const allDaycareUnits = useQueryResult(
-      unitsQuery({ areaIds: null, type: 'DAYCARE', from: null })
+      unitsQuery({ areaIds: null, type: 'DAYCARE', from: null }),
+      { enabled: loggedIn }
     )
 
     const value = useMemo(
