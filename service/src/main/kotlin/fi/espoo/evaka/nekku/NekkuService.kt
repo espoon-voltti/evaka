@@ -476,7 +476,7 @@ private fun getNekkuChildInfos(
             reservations = child.reservations,
             absences = child.absences,
             mealType = mealTypes[child.childId],
-            optionsId = null, // Todo: generate value here when ready
+            optionsId = "", // Todo: generate value here when ready
             specialDiet = null, // Todo: generate value here when ready
             dailyPreschoolTime = unit.dailyPreschoolTime,
             dailyPreparatoryTime = unit.dailyPreparatoryTime,
