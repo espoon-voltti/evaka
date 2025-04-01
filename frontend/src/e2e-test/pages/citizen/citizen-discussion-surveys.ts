@@ -67,7 +67,8 @@ export class DiscussionSurveyModal extends Element {
     title: string,
     reservationId: string,
     reservationText: string,
-    isCancellable: boolean
+    isCancellable: boolean,
+    isExportable = true
   ) => {
     const childElement = this.findByDataQa(`discussion-child-${childId}`)
     await childElement.waitUntilVisible()
@@ -81,12 +82,21 @@ export class DiscussionSurveyModal extends Element {
       .assertTextEquals(title)
 
     await surveyElement
-      .findByDataQa(`reservation-${reservationId}`)
+      .findByDataQa(`reservation-content-${reservationId}`)
       .assertTextEquals(reservationText)
 
     const cancelButton = surveyElement.findByDataQa(`reservation-cancel-button`)
     await cancelButton.waitUntilVisible()
     await cancelButton.assertDisabled(!isCancellable)
+
+    const exportButton = surveyElement.findByDataQa(
+      `event-export-button-${reservationId}`
+    )
+    if (isExportable) {
+      await exportButton.waitUntilVisible()
+    } else {
+      await exportButton.waitUntilHidden()
+    }
   }
 
   showReservationModal = async (surveyId: string, childId: string) => {

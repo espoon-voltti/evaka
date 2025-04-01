@@ -100,7 +100,7 @@ import AttendanceInfo from './AttendanceInfo'
 import { BottomFooterContainer } from './BottomFooterContainer'
 import { CalendarModalBackground, CalendarModalSection } from './CalendarModal'
 import { useCalendarModalState } from './CalendarPage'
-import { DiscussionTimeExportButton } from './DiscussionTimeExport'
+import { DiscussionTimeExportButton } from './DiscussionTimeExportButton'
 import {
   ChildImageData,
   getChildImages,

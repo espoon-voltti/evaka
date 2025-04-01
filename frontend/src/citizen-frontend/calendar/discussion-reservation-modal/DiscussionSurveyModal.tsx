@@ -45,7 +45,7 @@ import {
   CalendarModalCloseButton,
   CalendarModalSection
 } from '../CalendarModal'
-import { DiscussionTimeExportButton } from '../DiscussionTimeExport'
+import { DiscussionTimeExportButton } from '../DiscussionTimeExportButton'
 import { deleteCalendarEventTimeReservationMutation } from '../queries'
 
 interface ChildWithSurveys {
@@ -329,7 +329,7 @@ const ChildSurveyElement = React.memo(function ChildSurveyElement({
                       alignItems="center"
                       justifyContent="space-between"
                     >
-                      <div>
+                      <div data-qa={`reservation-content-${r.id}`}>
                         <Bold>
                           {`${r.date.format('EEEEEE d.M.', lang)}
                     ${i18n.calendar.discussionTimeReservation.timePreDescriptor}

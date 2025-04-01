@@ -62,6 +62,7 @@ export const DiscussionTimeExportButton = React.memo(
 
     return (
       <Button
+        data-qa={`event-export-button-${discussionTime.id}`}
         appearance="inline"
         text={i18n.calendar.discussionTimeReservation.calendarExportButtonLabel}
         onClick={() => {

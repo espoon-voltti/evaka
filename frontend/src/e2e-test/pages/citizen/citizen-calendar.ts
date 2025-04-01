@@ -826,7 +826,8 @@ class DayView extends Element {
       title,
       description,
       reservationText
-    }: { title: string; description: string; reservationText: string }
+    }: { title: string; description: string; reservationText: string },
+    exportable = true
   ) {
     const event = this.#childSection(childId).findByDataQa(`event-${eventId}`)
     await event.findByDataQa('title-text').assertTextEquals(title)
@@ -838,6 +839,15 @@ class DayView extends Element {
       event.findByDataQa(`reservation-cancel-button-${eventTimeId}`)
     )
     await cancelButton.assertDisabled(!cancellable)
+
+    const exportButton = event.findByDataQa(
+      `event-export-button-${eventTimeId}`
+    )
+    if (exportable) {
+      await exportButton.waitUntilVisible()
+    } else {
+      await exportButton.waitUntilHidden()
+    }
   }
 
   async cancelDiscussionReservation(
