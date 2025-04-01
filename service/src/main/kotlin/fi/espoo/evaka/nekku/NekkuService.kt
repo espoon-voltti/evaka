@@ -270,7 +270,7 @@ private fun LocalDate.weekSpan(): FiniteDateRange {
     return FiniteDateRange(start, end)
 }
 
-private fun createAndSendNekkuOrder(
+fun createAndSendNekkuOrder(
     client: NekkuClient,
     dbc: Database.Connection,
     customerNumber: String,

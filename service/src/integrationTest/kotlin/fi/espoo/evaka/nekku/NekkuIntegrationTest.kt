@@ -10,6 +10,12 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
+import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
+import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
+import fi.espoo.evaka.shared.dev.DevPlacement
+import fi.espoo.evaka.shared.dev.DevReservation
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.TimeRange
@@ -392,6 +398,42 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             NekkuApiProduct("Lounas kasvis er", "31001011", "2", "medium", null, null),
         )
 
+    val nekkuProductsForOrder =
+        listOf(
+            NekkuApiProduct(
+                "Ateriapalvelu 1 aamupala",
+                "31000010",
+                "",
+                "large",
+                listOf(NekkuProductMealTime.BREAKFAST),
+                null,
+            ),
+            NekkuApiProduct(
+                "Ateriapalvelu 1 lounas",
+                "31000011",
+                "",
+                "large",
+                listOf(NekkuProductMealTime.LUNCH),
+                null,
+            ),
+            NekkuApiProduct(
+                "Ateriapalvelu 1 välipala",
+                "31000012",
+                "",
+                "large",
+                listOf(NekkuProductMealTime.SNACK),
+                null,
+            ),
+            NekkuApiProduct(
+                "Ateriapalvelu 1 iltapala",
+                "31000013",
+                "",
+                "large",
+                listOf(NekkuProductMealTime.SUPPER),
+                null,
+            ),
+        )
+
     @Test
     fun `Nekku product sync does not sync empty data`() {
         val client = TestNekkuClient()
@@ -630,16 +672,91 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `Send Nekku orders`() {
+        val monday = LocalDate.of(2025, 4, 14)
+        val tuesday = LocalDate.of(2025, 4, 15)
+        val wednesday = LocalDate.of(2025, 4, 16)
 
         // First create all of the basic backgrounds like
-        // Products
         // Customer numbers
+        var client =
+            TestNekkuClient(
+                customers =
+                    listOf(
+                        NekkuCustomer(
+                            "2501K6089",
+                            "Ahvenojan päiväkoti",
+                            "Varhaiskasvatus",
+                            "large",
+                        )
+                    ),
+                nekkuProducts = nekkuProductsForOrder,
+            )
+        fetchAndUpdateNekkuCustomers(client, db)
+        // products
+        fetchAndUpdateNekkuProducts(client, db)
         // Daycare with groups
-        // Children with placements in the group and they are not absent
-        db.transaction { tx ->
-            val products = tx.getNekkuProducts()
+        val area = DevCareArea()
+        val daycare =
+            DevDaycare(
+                areaId = area.id,
+                mealtimeBreakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
+                mealtimeLunch = TimeRange(LocalTime.of(11, 15), LocalTime.of(11, 45)),
+                mealtimeSnack = TimeRange(LocalTime.of(13, 30), LocalTime.of(13, 50)),
+            )
+        val group = DevDaycareGroup(daycareId = daycare.id, nekkuCustomerNumber = "2501K6089")
+        val employee = DevEmployee()
 
+        // Children with placements in the group and they are not absent
+        val child = DevPerson()
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(group)
+            tx.insert(employee)
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(
+                    DevPlacement(
+                        childId = child.id,
+                        unitId = daycare.id,
+                        startDate = monday,
+                        endDate = tuesday,
+                    )
+                )
+                .also { placementId ->
+                    tx.insert(
+                        DevDaycareGroupPlacement(
+                            daycarePlacementId = placementId,
+                            daycareGroupId = group.id,
+                            startDate = monday,
+                            endDate = tuesday,
+                        )
+                    )
+                }
+            listOf(
+                    // All three meals on Monday
+                    DevReservation(
+                        childId = child.id,
+                        date = monday,
+                        startTime = LocalTime.of(8, 0),
+                        endTime = LocalTime.of(16, 0),
+                        createdBy = employee.evakaUserId,
+                    ),
+                    // Breakfast only on Tuesday
+                    DevReservation(
+                        childId = child.id,
+                        date = tuesday,
+                        startTime = LocalTime.of(8, 0),
+                        endTime = LocalTime.of(9, 0),
+                        createdBy = employee.evakaUserId,
+                    ),
+                )
+                .forEach { tx.insert(it) }
         }
+
+        createAndSendNekkuOrder(client, db, "2501K6089", group.id, "large", monday)
+
+        val nekkuOrders = client.orders
     }
 
     private fun getJobs() =
@@ -669,7 +786,7 @@ class TestNekkuClient(
         return nekkuProducts
     }
 
-    override fun createNekkuMealOrder(nekkuOrders: NekkuClient.NekkuOrders) {
+    override fun createNekkuMealOrder(nekkuOrders: NekkuClient.NekkuOrders): Unit {
         orders.add(nekkuOrders)
     }
 }
