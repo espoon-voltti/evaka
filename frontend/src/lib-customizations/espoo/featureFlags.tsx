@@ -86,7 +86,8 @@ const features: Features = {
     serviceApplications: true,
     multiSelectDeparture: true,
     archiveIntegrationEnabled: true,
-    aromiIntegration: false
+    aromiIntegration: false,
+    citizenChildDocumentTypes: true
   },
   prod: {
     environmentLabel: null,
