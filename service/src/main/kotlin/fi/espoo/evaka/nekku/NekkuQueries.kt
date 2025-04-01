@@ -343,7 +343,6 @@ JOIN daycare_group dg ON dg.id = rp.group_id
 JOIN person p ON p.id = rp.child_id
 LEFT JOIN service_need sn ON sn.placement_id = rp.placement_id AND daterange(sn.start_date, sn.end_date, '[]') @> ${bind(date)}
 WHERE dg.id = ${bind(nekkuGroupId)}
-}
                     """
             )
         }
@@ -397,7 +396,7 @@ WHERE child.id = ANY (${bind(childIds)})
 """
             )
         }
-        .toMap { column<ChildId>("child_id") to row<NekkuProductMealType?>() }
+        .toMap { column<ChildId>("child_id") to column<NekkuProductMealType?>("nekku_diet") }
 
 fun Database.Read.getNekkuProductNumber(
     customerSize: String,
