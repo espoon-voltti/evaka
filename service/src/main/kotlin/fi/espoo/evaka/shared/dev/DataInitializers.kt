@@ -620,8 +620,8 @@ fun Database.Transaction.insert(row: DevDaycareGroup): GroupId =
     createUpdate {
             sql(
                 """
-INSERT INTO daycare_group (id, daycare_id, name, start_date, end_date, jamix_customer_number, aromi_customer_id)
-VALUES (${bind(row.id)}, ${bind(row.daycareId)}, ${bind(row.name)}, ${bind(row.startDate)}, ${bind(row.endDate)}, ${bind(row.jamixCustomerNumber)}, ${bind(row.aromiCustomerId)})
+INSERT INTO daycare_group (id, daycare_id, name, start_date, end_date, jamix_customer_number, aromi_customer_id, nekku_customer_number)
+VALUES (${bind(row.id)}, ${bind(row.daycareId)}, ${bind(row.name)}, ${bind(row.startDate)}, ${bind(row.endDate)}, ${bind(row.jamixCustomerNumber)}, ${bind(row.aromiCustomerId)}, ${bind(row.nekkuCustomerNumber)})
 """
             )
         }

@@ -118,36 +118,7 @@ class NekkuService(
     }
 
     fun planNekkuOrders(dbc: Database.Connection, clock: EvakaClock) {
-        if (client == null) error("Cannot plan Nekku order: NekkuEnv is not configured")
-        planNekkuOrderJobs(dbc, asyncJobRunner, client, clock.now())
-    }
-
-    fun planNekkuOrderJobs(
-        dbc: Database.Connection,
-        asyncJobRunner: AsyncJobRunner<AsyncJob>,
-        client: NekkuClient,
-        now: HelsinkiDateTime,
-    ) {
-        val range = now.toLocalDate().startOfNextWeek().weekSpan()
-        dbc.transaction { tx ->
-            val nekkuDaycareCustomerMapping = tx.getNekkuDaycareGroupIdCustomerNumberMapping(range)
-            asyncJobRunner.plan(
-                tx,
-                range.dates().flatMap { date ->
-                    nekkuDaycareCustomerMapping.map { customerGroupsAndNumber ->
-                        AsyncJob.SendNekkuOrder(
-                            customerGroupId = customerGroupsAndNumber.groupId,
-                            customerNumber = customerGroupsAndNumber.customerNumber,
-                            unitSize = customerGroupsAndNumber.unitSize,
-                            date = date,
-                        )
-                    }
-                },
-                runAt = now,
-                retryInterval = Duration.ofHours(1),
-                retryCount = 3,
-            )
-        }
+        planNekkuOrderJobs(dbc, asyncJobRunner, clock.now())
     }
 
     fun sendNekkuOrder(dbc: Database.Connection, clock: EvakaClock, job: AsyncJob.SendNekkuOrder) {
@@ -261,13 +232,40 @@ class NekkuHttpClient(private val env: NekkuEnv, private val jsonMapper: JsonMap
     }
 }
 
-private fun LocalDate.startOfNextWeek(): LocalDate {
-    val daysUntilNextMonday = (8 - this.dayOfWeek.value) % 7
+fun planNekkuOrderJobs(
+    dbc: Database.Connection,
+    asyncJobRunner: AsyncJobRunner<AsyncJob>,
+    now: HelsinkiDateTime,
+) {
+    val range = now.toLocalDate().startOfWeekAfterNextWeek().weekSpan()
+    dbc.transaction { tx ->
+        val nekkuDaycareCustomerMapping = tx.getNekkuDaycareGroupIdCustomerNumberMapping(range)
+        asyncJobRunner.plan(
+            tx,
+            range.dates().flatMap { date ->
+                nekkuDaycareCustomerMapping.map { customerGroupsAndNumber ->
+                    AsyncJob.SendNekkuOrder(
+                        customerGroupId = customerGroupsAndNumber.groupId,
+                        customerNumber = customerGroupsAndNumber.customerNumber,
+                        unitSize = customerGroupsAndNumber.unitSize,
+                        date = date,
+                    )
+                }
+            },
+            runAt = now,
+            retryInterval = Duration.ofHours(1),
+            retryCount = 3,
+        )
+    }
+}
+
+private fun LocalDate.startOfWeekAfterNextWeek(): LocalDate {
+    val daysUntilNextMonday = (8 - this.dayOfWeek.value) % 14
     return this.plusDays(daysUntilNextMonday.toLong())
 }
 
 private fun LocalDate.weekSpan(): FiniteDateRange {
-    val start = this.startOfNextWeek()
+    val start = this.startOfWeekAfterNextWeek()
     val end = start.plusDays(6)
     return FiniteDateRange(start, end)
 }
@@ -288,7 +286,6 @@ private fun createAndSendNekkuOrder(
         }
     val groupName = dbc.read { tx -> tx.getGroupName(groupId) }
 
-    // Todo fetch products
     val nekkuProducts = dbc.read { tx -> tx.getNekkuProducts() }
 
     val order =
@@ -366,11 +363,13 @@ fun nekkuMealReportData(
             .groupBy { it }
             .mapValues { it.value.size }
 
-    return mealInfoMap.map { NekkuClient.Item(
-        product_sku = it.key.sku,
-        quantity = it.value,
-        product_options = it.key.options
-    ) }
+    return mealInfoMap.map {
+        NekkuClient.Item(
+            product_sku = it.key.sku,
+            quantity = it.value,
+            product_options = it.key.options,
+        )
+    }
 }
 
 private fun getNekkuProductNumber(
@@ -392,15 +391,17 @@ private fun getNekkuProductNumber(
         logger.info {
             "Cannot find any Nekku Product from database with unitsize=$unitSize optionsId=${nekkuChildInfo.optionsId} mealtype=${nekkuChildInfo.mealType} mealtime=${nekkuProductMealTime.description}"
         }
-        error( "Cannot find any Nekku Product from database with unitsize=$unitSize optionsId=${nekkuChildInfo.optionsId} mealtype=${nekkuChildInfo.mealType} mealtime=${nekkuProductMealTime.description}")
+        error(
+            "Cannot find any Nekku Product from database with unitsize=$unitSize optionsId=${nekkuChildInfo.optionsId} mealtype=${nekkuChildInfo.mealType} mealtime=${nekkuProductMealTime.description}"
+        )
     } else if (filteredNekkuProducts.count() > 1) {
         logger.info {
             "Found too many Nekku Products from database with unitsize=$unitSize optionsId=${nekkuChildInfo.optionsId} mealtype=${nekkuChildInfo.mealType} mealtime=${nekkuProductMealTime.description}"
         }
-        error("Found too many Nekku Products from database with unitsize=$unitSize optionsId=${nekkuChildInfo.optionsId} mealtype=${nekkuChildInfo.mealType} mealtime=${nekkuProductMealTime.description}")
-    }
-    else
-    {
+        error(
+            "Found too many Nekku Products from database with unitsize=$unitSize optionsId=${nekkuChildInfo.optionsId} mealtype=${nekkuChildInfo.mealType} mealtime=${nekkuProductMealTime.description}"
+        )
+    } else {
         return filteredNekkuProducts.first().sku
     }
 }
