@@ -7,7 +7,6 @@ import React, { Fragment, useCallback, useContext } from 'react'
 import { ProviderType } from 'lib-common/generated/api-types/daycare'
 import { DaycareId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
-import { useQueryResult } from 'lib-common/query'
 import { DatePickerClearableDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import { Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
@@ -22,7 +21,6 @@ import {
   ProviderTypeFilter,
   UnitFilter
 } from '../common/Filters'
-import { unitFilterQuery } from '../unit/queries'
 
 export default React.memo(function IncomeStatementsFilters() {
   const {
@@ -32,12 +30,8 @@ export default React.memo(function IncomeStatementsFilters() {
       clearSearchFilters,
       confirmSearchFilters
     },
-    shared: { availableAreas }
+    shared: { availableAreas, allDaycareUnits: unitsResult }
   } = useContext(InvoicingUiContext)
-
-  const unitsResult = useQueryResult(
-    unitFilterQuery({ areaIds: null, type: 'DAYCARE', from: null })
-  )
 
   const { i18n } = useTranslation()
 

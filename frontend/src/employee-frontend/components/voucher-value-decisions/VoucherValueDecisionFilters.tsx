@@ -5,7 +5,7 @@
 import React, { Fragment, useCallback, useContext, useEffect } from 'react'
 import { useMemo } from 'react'
 
-import { wrapResult } from 'lib-common/api'
+import { Result } from 'lib-common/api'
 import {
   VoucherValueDecisionDifference,
   VoucherValueDecisionDistinctiveParams,
@@ -13,12 +13,15 @@ import {
 } from 'lib-common/generated/api-types/invoicing'
 import { DaycareId, EmployeeId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
+import { useQueryResult } from 'lib-common/query'
 import { Gap } from 'lib-components/white-space'
 
-import { getUnits } from '../../generated/api-clients/daycare'
-import { getFinanceDecisionHandlers } from '../../generated/api-clients/pis'
+import { financeDecisionHandlersQuery } from '../../queries'
 import { useTranslation } from '../../state/i18n'
-import { InvoicingUiContext } from '../../state/invoicing-ui'
+import {
+  FinanceDecisionHandlerOption,
+  InvoicingUiContext
+} from '../../state/invoicing-ui'
 import {
   AreaFilter,
   Filters,
@@ -30,9 +33,6 @@ import {
   VoucherValueDecisionDifferenceFilter
 } from '../common/Filters'
 
-const getUnitsResult = wrapResult(getUnits)
-const getFinanceDecisionHandlersResult = wrapResult(getFinanceDecisionHandlers)
-
 export default React.memo(function VoucherValueDecisionFilters() {
   const {
     valueDecisions: {
@@ -41,26 +41,18 @@ export default React.memo(function VoucherValueDecisionFilters() {
       confirmSearchFilters,
       clearSearchFilters
     },
-    shared: {
-      units,
-      setUnits,
-      financeDecisionHandlers,
-      setFinanceDecisionHandlers,
-      availableAreas
-    }
+    shared: { availableAreas, allDaycareUnits: units }
   } = useContext(InvoicingUiContext)
 
   const { i18n } = useTranslation()
 
-  useEffect(() => {
-    void getFinanceDecisionHandlersResult().then(setFinanceDecisionHandlers)
-  }, [setFinanceDecisionHandlers])
-
-  useEffect(() => {
-    void getUnitsResult({ areaIds: null, type: 'DAYCARE', from: null }).then(
-      setUnits
+  const financeDecisionHandlers: Result<FinanceDecisionHandlerOption[]> =
+    useQueryResult(financeDecisionHandlersQuery()).map((employees) =>
+      employees.map((e) => ({
+        value: e.id,
+        label: [e.firstName, e.lastName].join(' ')
+      }))
     )
-  }, [setUnits])
 
   const selectedFinanceDecisionHandler = useMemo(
     () =>

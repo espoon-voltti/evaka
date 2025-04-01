@@ -29,11 +29,11 @@ import { featureFlags } from 'lib-customizations/employee'
 import { faLockAlt, faSearch } from 'lib-icons'
 
 import ReportDownload from '../../components/reports/ReportDownload'
+import { areasQuery } from '../../queries'
 import { useTranslation } from '../../state/i18n'
 import { UserContext } from '../../state/user'
 import { renderResult } from '../async-rendering'
 import { FlexRow } from '../common/styled/containers'
-import { areaQuery } from '../unit/queries'
 
 import { FilterLabel, FilterRow, TableScrollable } from './common'
 import { voucherServiceProvidersReportQuery } from './queries'
@@ -75,7 +75,7 @@ export default React.memo(function VoucherServiceProviders() {
   const location = useLocation()
   const { i18n } = useTranslation()
   const { roles } = useContext(UserContext)
-  const areas = useQueryResult(areaQuery())
+  const areas = useQueryResult(areasQuery())
   const allAreasOption = useMemo(
     () => ({
       id: 'all',

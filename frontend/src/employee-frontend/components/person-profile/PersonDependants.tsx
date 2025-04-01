@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2025 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -6,23 +6,20 @@ import orderBy from 'lodash/orderBy'
 import React, { useState } from 'react'
 import { Link } from 'react-router'
 
-import { wrapResult } from 'lib-common/api'
 import { PersonWithChildrenDTO } from 'lib-common/generated/api-types/pis'
 import { PersonId } from 'lib-common/generated/api-types/shared'
+import { useQueryResult } from 'lib-common/query'
 import { getAge } from 'lib-common/utils/local-date'
-import { useApiState } from 'lib-common/utils/useRestApi'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { H2 } from 'lib-components/typography'
 
-import { getPersonDependants } from '../../generated/api-clients/pis'
+import { personDependantsQuery } from '../../queries'
 import { useTranslation } from '../../state/i18n'
 import { formatName } from '../../utils'
 import { renderResult } from '../async-rendering'
 
 import { NameTd } from './common'
-
-const getPersonDependantsResult = wrapResult(getPersonDependants)
 
 interface Props {
   id: PersonId
@@ -35,10 +32,7 @@ export default React.memo(function PersonDependants({
 }: Props) {
   const { i18n } = useTranslation()
   const [open, setOpen] = useState(startOpen)
-  const [dependants] = useApiState(
-    () => getPersonDependantsResult({ personId: id }),
-    [id]
-  )
+  const dependants = useQueryResult(personDependantsQuery({ personId: id }))
 
   return (
     <div>

@@ -42,7 +42,7 @@ import { getAttendanceReservationReportByUnit } from '../../generated/api-client
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 import { FlexRow } from '../common/styled/containers'
-import { unitGroupsQuery, unitsQuery } from '../unit/queries'
+import { unitGroupsQuery, daycaresQuery } from '../unit/queries'
 
 import { FilterLabel, FilterRow, TableScrollable } from './common'
 
@@ -90,7 +90,7 @@ export default React.memo(function AttendanceReservation() {
     filters.range.start.addMonths(2)
   )
 
-  const units = useQueryResult(unitsQuery({ includeClosed: true }))
+  const units = useQueryResult(daycaresQuery({ includeClosed: true }))
   const groups = useQueryResult(
     unitId ? unitGroupsQuery({ daycareId: unitId }) : constantQuery([])
   )

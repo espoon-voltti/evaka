@@ -33,7 +33,7 @@ import { SearchColumn, UnitsContext, UnitsState } from '../state/units'
 import { UserContext } from '../state/user'
 import { RequireRole } from '../utils/roles'
 
-import { unitsQuery } from './unit/queries'
+import { daycaresQuery } from './unit/queries'
 
 const TopBar = styled.div`
   display: flex;
@@ -59,7 +59,7 @@ export default React.memo(function Units() {
     setIncludeClosed
   } = useContext<UnitsState>(UnitsContext)
   const navigate = useNavigate()
-  const units = useQueryResult(unitsQuery({ includeClosed }))
+  const units = useQueryResult(daycaresQuery({ includeClosed }))
 
   const sortBy = (column: SearchColumn) => {
     if (sortColumn === column) {

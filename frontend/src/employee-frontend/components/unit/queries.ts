@@ -24,7 +24,6 @@ import {
   deleteTemporaryEmployee,
   deleteTemporaryEmployeeAcl,
   deleteUnitSupervisor,
-  getAreas,
   getDaycare,
   getDaycareAcl,
   getDaycares,
@@ -34,7 +33,6 @@ import {
   getTemporaryEmployees,
   getUnitGroupDetails,
   getUnitNotifications,
-  getUnits,
   getUnitServiceWorkerNote,
   reactivateTemporaryEmployee,
   setUnitServiceWorkerNote,
@@ -66,13 +64,9 @@ import { getUndecidedServiceApplications } from '../../generated/api-clients/ser
 
 const q = new Queries()
 
-export const areaQuery = q.query(getAreas)
+export const daycaresQuery = q.query(getDaycares)
 
-export const unitFilterQuery = q.query(getUnits)
-
-export const unitsQuery = q.query(getDaycares)
-
-export const unitQuery = q.query(getDaycare)
+export const daycareQuery = q.query(getDaycare)
 
 export const unitAclQuery = q.query(getDaycareAcl)
 
@@ -194,7 +188,7 @@ export const transferGroupMutation = q.parametricMutation<{
 
 export const createGroupMutation = q.mutation(createGroup, [
   ({ daycareId }) => unitNotificationsQuery({ daycareId }),
-  unitQuery.prefix,
+  daycareQuery.prefix,
   unitGroupDetailsQuery.prefix
 ])
 
@@ -217,11 +211,11 @@ export const unitSpeculatedOccupancyRatesQuery = q.query(
 export const createUnitMutation = q.mutation(createDaycare)
 
 export const updateUnitMutation = q.mutation(updateDaycare, [
-  ({ daycareId }) => unitQuery({ daycareId })
+  ({ daycareId }) => daycareQuery({ daycareId })
 ])
 
 export const updateUnitClosingDateMutation = q.mutation(updateUnitClosingDate, [
-  ({ unitId }) => unitQuery({ daycareId: unitId })
+  ({ unitId }) => daycareQuery({ daycareId: unitId })
 ])
 
 export const unitAttendanceReservationsQuery = q.query(

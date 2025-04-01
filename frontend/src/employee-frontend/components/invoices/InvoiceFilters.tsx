@@ -4,7 +4,6 @@
 
 import React, { Fragment, useCallback, useContext, useEffect } from 'react'
 
-import { wrapResult } from 'lib-common/api'
 import {
   InvoiceDistinctiveParams,
   InvoiceStatus
@@ -13,7 +12,6 @@ import { DaycareId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { Gap } from 'lib-components/white-space'
 
-import { getUnits } from '../../generated/api-clients/daycare'
 import { useTranslation } from '../../state/i18n'
 import { InvoicingUiContext } from '../../state/invoicing-ui'
 import {
@@ -25,8 +23,6 @@ import {
   UnitFilter
 } from '../common/Filters'
 
-const getUnitsResult = wrapResult(getUnits)
-
 export default React.memo(function InvoiceFilters() {
   const {
     invoices: {
@@ -35,16 +31,10 @@ export default React.memo(function InvoiceFilters() {
       confirmSearchFilters,
       clearSearchFilters
     },
-    shared: { units, setUnits, availableAreas }
+    shared: { availableAreas, allDaycareUnits: units }
   } = useContext(InvoicingUiContext)
 
   const { i18n } = useTranslation()
-
-  useEffect(() => {
-    void getUnitsResult({ areaIds: null, type: 'DAYCARE', from: null }).then(
-      setUnits
-    )
-  }, [setUnits])
 
   // remove selected unit filter if the unit is not included in the selected areas
   useEffect(() => {

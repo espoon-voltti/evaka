@@ -34,7 +34,7 @@ import { faPlus, faTimes, faTrash } from 'lib-icons'
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 import { FlexRow } from '../common/styled/containers'
-import { unitsQuery } from '../unit/queries'
+import { daycaresQuery } from '../unit/queries'
 
 import DaycareRolesModal from './DaycareRolesModal'
 import {
@@ -334,7 +334,7 @@ export default React.memo(function EmployeePageLoader() {
   const { i18n } = useTranslation()
   const id = useIdRouteParam<EmployeeId>('id')
   const employee = useQueryResult(employeeDetailsQuery({ id }))
-  const units = useQueryResult(unitsQuery({ includeClosed: false }))
+  const units = useQueryResult(daycaresQuery({ includeClosed: false }))
 
   return (
     <Container>

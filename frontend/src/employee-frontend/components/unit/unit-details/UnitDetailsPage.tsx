@@ -18,19 +18,19 @@ import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Gap } from 'lib-components/white-space'
 
 import UnitEditor from '../../../components/unit/unit-details/UnitEditor'
-import { getEmployeesQuery } from '../../../queries'
+import { areasQuery, getEmployeesQuery } from '../../../queries'
 import { useTranslation } from '../../../state/i18n'
 import { FinanceDecisionHandlerOption } from '../../../state/invoicing-ui'
 import { TitleContext, TitleState } from '../../../state/title'
 import { renderResult } from '../../async-rendering'
-import { areaQuery, unitQuery, updateUnitMutation } from '../queries'
+import { daycareQuery, updateUnitMutation } from '../queries'
 
 export default React.memo(function UnitDetailsPage() {
   const id = useIdRouteParam<DaycareId>('id')
   const { i18n } = useTranslation()
   const { setTitle } = useContext<TitleState>(TitleContext)
-  const unit = useQueryResult(unitQuery({ daycareId: id }))
-  const areas = useQueryResult(areaQuery())
+  const unit = useQueryResult(daycareQuery({ daycareId: id }))
+  const areas = useQueryResult(areasQuery())
   const [financeDecisionHandlerOptions, setFinanceDecisionHandlerOptions] =
     useState<Result<FinanceDecisionHandlerOption[]>>(Loading.of())
   const [editable, useEditable] = useBoolean(false)

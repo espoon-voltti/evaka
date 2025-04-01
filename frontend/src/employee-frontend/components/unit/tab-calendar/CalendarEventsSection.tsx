@@ -70,7 +70,7 @@ import {
 import { useTranslation } from '../../../state/i18n'
 import { DayOfWeek } from '../../../types'
 import { renderResult } from '../../async-rendering'
-import { unitGroupDetailsQuery, unitQuery } from '../queries'
+import { unitGroupDetailsQuery, daycareQuery } from '../queries'
 
 const createCalendarEventResult = wrapResult(createCalendarEvent)
 const getUnitCalendarEventsResult = wrapResult(getUnitCalendarEvents)
@@ -236,7 +236,7 @@ export default React.memo(function CalendarEventsSection({
 
   const [createEventModalVisible, setCreateEventModalVisible] = useState(false)
 
-  const unitInformation = useQueryResult(unitQuery({ daycareId: unitId }))
+  const unitInformation = useQueryResult(daycareQuery({ daycareId: unitId }))
 
   const editingEvent = useMemo(() => {
     if (!calendarEventId) return undefined
@@ -514,7 +514,7 @@ const CreateEventModal = React.memo(function CreateEventModal({
 }) {
   const { i18n, lang } = useTranslation()
 
-  const unitInformation = useQueryResult(unitQuery({ daycareId: unitId }))
+  const unitInformation = useQueryResult(daycareQuery({ daycareId: unitId }))
 
   const [form, setForm] = useState<CreationForm>({
     attendees: [],

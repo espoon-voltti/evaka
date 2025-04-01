@@ -31,8 +31,7 @@ import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { H2, Label, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 
-import { getEmployeesQuery } from '../../../../queries'
-import { unitsQuery } from '../../queries'
+import { getEmployeesQuery, unitsQuery } from '../../../../queries'
 
 const FieldWithInfo = React.memo(function FieldWithInfo({
   info,

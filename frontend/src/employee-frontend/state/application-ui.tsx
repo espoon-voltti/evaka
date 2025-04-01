@@ -19,10 +19,7 @@ import {
   ApplicationTypeToggle,
   TransferApplicationFilter
 } from 'lib-common/generated/api-types/application'
-import {
-  DaycareCareArea,
-  UnitStub
-} from 'lib-common/generated/api-types/daycare'
+import { DaycareCareArea } from 'lib-common/generated/api-types/daycare'
 import {
   ApplicationId,
   AreaId,
@@ -37,7 +34,7 @@ import {
   PreschoolType,
   ApplicationDistinctions
 } from '../components/common/Filters'
-import { areaQuery } from '../components/unit/queries'
+import { areasQuery } from '../queries'
 
 import { UserContext } from './user'
 
@@ -51,8 +48,6 @@ interface UIState {
   clearSearchFilters: () => void
 
   availableAreas: Result<DaycareCareArea[]>
-  allUnits: Result<UnitStub[]>
-  setAllUnits: Dispatch<SetStateAction<Result<UnitStub[]>>>
 
   checkedIds: ApplicationId[]
   setCheckedIds: (applicationIds: ApplicationId[]) => void
@@ -107,8 +102,6 @@ const defaultState: UIState = {
   clearSearchFilters: () => undefined,
 
   availableAreas: Loading.of(),
-  allUnits: Loading.of(),
-  setAllUnits: () => undefined,
 
   checkedIds: [],
   setCheckedIds: () => undefined,
@@ -147,10 +140,7 @@ export const ApplicationUIContextProvider = React.memo(
       [setSearchFilters]
     )
 
-    const availableAreas = useQueryResult(areaQuery(), { enabled: loggedIn })
-    const [allUnits, setAllUnits] = useState<Result<UnitStub[]>>(
-      defaultState.allUnits
-    )
+    const availableAreas = useQueryResult(areasQuery(), { enabled: loggedIn })
 
     const [checkedIds, setCheckedIds] = useState<ApplicationId[]>(
       defaultState.checkedIds
@@ -174,8 +164,6 @@ export const ApplicationUIContextProvider = React.memo(
         confirmSearchFilters,
         clearSearchFilters,
         availableAreas,
-        allUnits,
-        setAllUnits,
         checkedIds,
         setCheckedIds,
         showCheckboxes
@@ -188,7 +176,6 @@ export const ApplicationUIContextProvider = React.memo(
         confirmSearchFilters,
         clearSearchFilters,
         availableAreas,
-        allUnits,
         checkedIds,
         showCheckboxes
       ]

@@ -4,7 +4,6 @@
 
 import React, { Fragment, useContext, useEffect } from 'react'
 
-import { wrapResult } from 'lib-common/api'
 import {
   ApplicationBasis,
   ApplicationStatusOption,
@@ -13,12 +12,13 @@ import {
 } from 'lib-common/generated/api-types/application'
 import { DaycareCareArea } from 'lib-common/generated/api-types/daycare'
 import { AreaId, DaycareId } from 'lib-common/generated/api-types/shared'
+import { useQueryResult } from 'lib-common/query'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import Radio from 'lib-components/atoms/form/Radio'
 import { Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
-import { getUnits } from '../../generated/api-clients/daycare'
+import { unitsQuery } from '../../queries'
 import {
   ApplicationUIContext,
   VoucherApplicationFilter
@@ -40,14 +40,10 @@ import {
   TransferApplicationsFilter
 } from '../common/Filters'
 
-const getUnitsResult = wrapResult(getUnits)
-
 export default React.memo(function ApplicationFilters() {
   const { i18n } = useTranslation()
 
   const {
-    allUnits,
-    setAllUnits,
     availableAreas,
     searchFilters,
     setSearchFilters,
@@ -55,17 +51,12 @@ export default React.memo(function ApplicationFilters() {
     clearSearchFilters
   } = useContext(ApplicationUIContext)
 
-  useEffect(
-    () => {
-      const areas = searchFilters.area.length > 0 ? searchFilters.area : null
-      void getUnitsResult({
-        areaIds: areas,
-        type: searchFilters.type,
-        from: null
-      }).then(setAllUnits)
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [searchFilters.type, availableAreas, searchFilters.area]
+  const allUnits = useQueryResult(
+    unitsQuery({
+      areaIds: searchFilters.area.length > 0 ? searchFilters.area : null,
+      type: searchFilters.type,
+      from: null
+    })
   )
 
   useEffect(() => {

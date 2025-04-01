@@ -30,7 +30,7 @@ import { unitProviderTypes } from 'lib-customizations/employee'
 import ReportDownload from '../../components/reports/ReportDownload'
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
-import { unitsQuery } from '../unit/queries'
+import { daycaresQuery } from '../unit/queries'
 
 import { FilterLabel, FilterRow } from './common'
 import { customerFeesReportQuery } from './queries'
@@ -187,7 +187,7 @@ const NarrowerTable = styled(Table)`
 `
 
 export default React.memo(function CustomerFees() {
-  const unitsResult = useQueryResult(unitsQuery({ includeClosed: false }))
+  const unitsResult = useQueryResult(daycaresQuery({ includeClosed: false }))
   return renderResult(unitsResult, (units) => (
     <CustomerFeesInner
       unitOptions={sortBy(

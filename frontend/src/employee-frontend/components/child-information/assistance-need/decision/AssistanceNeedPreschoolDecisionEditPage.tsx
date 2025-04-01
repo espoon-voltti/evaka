@@ -70,14 +70,13 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 import { type fi } from 'lib-customizations/defaults/employee/i18n/fi'
 import { featureFlags, translations } from 'lib-customizations/employee'
 
-import { getEmployeesQuery } from '../../../../queries'
+import { getEmployeesQuery, unitsQuery } from '../../../../queries'
 import { useTranslation } from '../../../../state/i18n'
 import { renderResult } from '../../../async-rendering'
 import {
   assistanceNeedPreschoolDecisionBasicsQuery,
   assistanceNeedPreschoolDecisionMakerOptionsQuery,
   assistanceNeedPreschoolDecisionQuery,
-  unitsQuery,
   updateAssistanceNeedPreschoolDecisionMutation
 } from '../../queries'
 

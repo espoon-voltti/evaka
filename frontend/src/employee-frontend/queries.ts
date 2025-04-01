@@ -5,10 +5,20 @@
 import { Queries } from 'lib-common/query'
 
 import { getAssistanceActionOptions } from './generated/api-clients/assistance'
-import { getEmployees, getPersonIdentity } from './generated/api-clients/pis'
+import { getAreas, getUnits } from './generated/api-clients/daycare'
+import {
+  getEmployees,
+  getFinanceDecisionHandlers,
+  getOrCreatePersonBySsn,
+  getPersonDependants,
+  getPersonIdentity,
+  searchPerson
+} from './generated/api-clients/pis'
 import { getServiceNeedOptions } from './generated/api-clients/serviceneed'
 
 const q = new Queries()
+
+// These are common queries of semi-static data that generally do not need to be invalidated after mutations
 
 export const serviceNeedOptionsQuery = q.query(getServiceNeedOptions)
 
@@ -19,3 +29,15 @@ export const getAssistanceActionOptionsQuery = q.query(
 export const getEmployeesQuery = q.query(getEmployees)
 
 export const personIdentityQuery = q.query(getPersonIdentity)
+
+export const personBySsnQuery = q.query(getOrCreatePersonBySsn)
+
+export const searchPersonQuery = q.query(searchPerson)
+
+export const personDependantsQuery = q.query(getPersonDependants)
+
+export const areasQuery = q.query(getAreas)
+
+export const unitsQuery = q.query(getUnits)
+
+export const financeDecisionHandlersQuery = q.query(getFinanceDecisionHandlers)

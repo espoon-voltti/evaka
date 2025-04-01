@@ -21,7 +21,7 @@ import { SortableTh, Tbody, Td, Thead, Tr } from 'lib-components/layout/Table'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 
 import { renderResult } from '../async-rendering'
-import { unitsQuery } from '../unit/queries'
+import { daycaresQuery } from '../unit/queries'
 
 import ReportDownload from './ReportDownload'
 import { FilterLabel, FilterRow, TableScrollable } from './common'
@@ -62,7 +62,7 @@ const PlacementGuaranteeFilters = ({
   setFilters: (filters: PlacementGuaranteeReportFilters) => void
 }) => {
   const { i18n, lang } = useTranslation()
-  const unitsResult = useQueryResult(unitsQuery({ includeClosed: true }))
+  const unitsResult = useQueryResult(daycaresQuery({ includeClosed: true }))
   const sortedUnits = useMemo(
     () => unitsResult.map((units) => sortBy(units, (unit) => unit.name)),
     [unitsResult]
