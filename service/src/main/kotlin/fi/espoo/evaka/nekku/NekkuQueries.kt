@@ -373,7 +373,7 @@ fun Database.Read.getNekkuDaycareGroupIdCustomerNumberMapping(
     createQuery {
             sql(
                 """
-                    SELECT dg.id, dg.nekku_customer_number, nc.unit_size  
+                    SELECT dg.id as groupId, dg.nekku_customer_number as customerNumber, nc.unit_size as unitSize  
                     FROM daycare_group dg 
                     JOIN daycare d ON d.id = dg.daycare_id
                     JOIN nekku_customer nc ON nc.number = dg.nekku_customer_number

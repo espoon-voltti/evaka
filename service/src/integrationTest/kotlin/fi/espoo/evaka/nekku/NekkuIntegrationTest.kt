@@ -5,11 +5,23 @@
 package fi.espoo.evaka.nekku
 
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.shared.async.AsyncJob
+import fi.espoo.evaka.shared.async.AsyncJobRunner
+import fi.espoo.evaka.shared.dev.DevCareArea
+import fi.espoo.evaka.shared.dev.DevDaycare
+import fi.espoo.evaka.shared.dev.DevDaycareGroup
+import fi.espoo.evaka.shared.dev.insert
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.TimeRange
+import java.time.LocalDate
+import java.time.LocalTime
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.springframework.beans.factory.annotation.Autowired
 
 class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
+    @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
     @Test
     fun `Nekku customer sync does not sync empty data`() {
@@ -488,6 +500,154 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             assertEquals(NekkuProductMealType.VEGAN, products[0].meal_type)
         }
     }
+
+    @Test
+    fun `meal order jobs for daycare groups without customer number are not planned`() {
+
+        var client =
+            TestNekkuClient(
+                customers =
+                    listOf(
+                        NekkuCustomer(
+                            "2501K6089",
+                            "Ahvenojan päiväkoti",
+                            "Varhaiskasvatus",
+                            "large",
+                        )
+                    )
+            )
+        fetchAndUpdateNekkuCustomers(client, db)
+
+        val area = DevCareArea()
+        val daycare =
+            DevDaycare(
+                areaId = area.id,
+                mealtimeBreakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
+                mealtimeLunch = TimeRange(LocalTime.of(11, 15), LocalTime.of(11, 45)),
+                mealtimeSnack = TimeRange(LocalTime.of(13, 30), LocalTime.of(13, 50)),
+            )
+        val group = DevDaycareGroup(daycareId = daycare.id, nekkuCustomerNumber = null)
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(group)
+        }
+
+        // Tuesday
+        val now = HelsinkiDateTime.of(LocalDate.of(2025, 4, 1), LocalTime.of(2, 25))
+
+        planNekkuOrderJobs(db, asyncJobRunner, now)
+
+        assertEquals(emptyList(), getJobs())
+    }
+
+    @Test
+    fun `meal order jobs for daycare groups with customer number are planned`() {
+
+        var client =
+            TestNekkuClient(
+                customers =
+                    listOf(
+                        NekkuCustomer(
+                            "2501K6089",
+                            "Ahvenojan päiväkoti",
+                            "Varhaiskasvatus",
+                            "large",
+                        )
+                    )
+            )
+        fetchAndUpdateNekkuCustomers(client, db)
+
+        val area = DevCareArea()
+
+        val daycare =
+            DevDaycare(
+                areaId = area.id,
+                mealtimeBreakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
+                mealtimeLunch = TimeRange(LocalTime.of(11, 15), LocalTime.of(11, 45)),
+                mealtimeSnack = TimeRange(LocalTime.of(13, 30), LocalTime.of(13, 50)),
+            )
+        val group = DevDaycareGroup(daycareId = daycare.id, nekkuCustomerNumber = "2501K6089")
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(group)
+        }
+
+        // Tuesday
+        val now = HelsinkiDateTime.of(LocalDate.of(2025, 4, 1), LocalTime.of(2, 25))
+
+        planNekkuOrderJobs(db, asyncJobRunner, now)
+
+        assertEquals(7, getJobs().count())
+    }
+
+    @Test
+    fun `meal order jobs for daycare groups are planned for two week time`() {
+
+        var client =
+            TestNekkuClient(
+                customers =
+                    listOf(
+                        NekkuCustomer(
+                            "2501K6089",
+                            "Ahvenojan päiväkoti",
+                            "Varhaiskasvatus",
+                            "large",
+                        )
+                    )
+            )
+        fetchAndUpdateNekkuCustomers(client, db)
+
+        val area = DevCareArea()
+
+        val daycare =
+            DevDaycare(
+                areaId = area.id,
+                mealtimeBreakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
+                mealtimeLunch = TimeRange(LocalTime.of(11, 15), LocalTime.of(11, 45)),
+                mealtimeSnack = TimeRange(LocalTime.of(13, 30), LocalTime.of(13, 50)),
+            )
+        val group = DevDaycareGroup(daycareId = daycare.id, nekkuCustomerNumber = "2501K6089")
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(group)
+        }
+
+        // Tuesday
+        val now = HelsinkiDateTime.of(LocalDate.of(2025, 4, 1), LocalTime.of(2, 25))
+
+        val nowPlusTwoWeeks = HelsinkiDateTime.of(LocalDate.of(2025, 4, 14), LocalTime.of(2, 25))
+
+        planNekkuOrderJobs(db, asyncJobRunner, now)
+
+        assertEquals(nowPlusTwoWeeks.toLocalDate().toString(), getJobs().first().date.toString())
+    }
+
+    @Test
+    fun `Send Nekku orders`() {
+
+        // First create all of the basic backgrounds like
+        // Products
+        // Customer numbers
+        // Daycare with groups
+        // Children with placements in the group and they are not absent
+        db.transaction { tx ->
+            val products = tx.getNekkuProducts()
+
+        }
+    }
+
+    private fun getJobs() =
+        db.read { tx ->
+            tx.createQuery { sql("SELECT payload FROM async_job WHERE type = 'SendNekkuOrder'") }
+                .map { jsonColumn<AsyncJob.SendNekkuOrder>("payload") }
+                .toList()
+        }
 }
 
 class TestNekkuClient(
@@ -495,6 +655,7 @@ class TestNekkuClient(
     private val specialDiets: List<NekkuApiSpecialDiet> = emptyList(),
     private val nekkuProducts: List<NekkuApiProduct> = emptyList(),
 ) : NekkuClient {
+    val orders = mutableListOf<NekkuClient.NekkuOrders>()
 
     override fun getCustomers(): List<NekkuCustomer> {
         return customers
@@ -506,5 +667,9 @@ class TestNekkuClient(
 
     override fun getProducts(): List<NekkuApiProduct> {
         return nekkuProducts
+    }
+
+    override fun createNekkuMealOrder(nekkuOrders: NekkuClient.NekkuOrders) {
+        orders.add(nekkuOrders)
     }
 }

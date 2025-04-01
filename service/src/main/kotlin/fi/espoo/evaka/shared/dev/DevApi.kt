@@ -1932,6 +1932,7 @@ data class DevDaycareGroup(
     val endDate: LocalDate? = null,
     val jamixCustomerNumber: Int? = null,
     val aromiCustomerId: String? = null,
+    val nekkuCustomerNumber: String? = null,
 )
 
 data class DevDaycareGroupPlacement(
