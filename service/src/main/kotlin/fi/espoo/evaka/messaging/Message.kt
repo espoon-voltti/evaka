@@ -5,6 +5,7 @@
 package fi.espoo.evaka.messaging
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo
+import com.fasterxml.jackson.annotation.JsonTypeName
 import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver
 import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.attachment.Attachment
@@ -141,39 +142,38 @@ data class MessageReceiversResponse(
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 sealed class MessageReceiver(val type: MessageRecipientType) {
-    abstract val id: Id<*>
     abstract val name: String
 
-    data class Area(
-        override val id: AreaId,
-        override val name: String,
-        val receivers: List<UnitInArea>,
-    ) : MessageReceiver(MessageRecipientType.AREA)
+    @JsonTypeName("AREA")
+    data class Area(val id: AreaId, override val name: String, val receivers: List<UnitInArea>) :
+        MessageReceiver(MessageRecipientType.AREA)
 
-    data class UnitInArea(override val id: DaycareId, override val name: String) :
-        MessageReceiver(MessageRecipientType.UNIT)
+    @JsonTypeName("UNIT_IN_AREA")
+    data class UnitInArea(val id: DaycareId, override val name: String) :
+        MessageReceiver(MessageRecipientType.UNIT_IN_AREA)
 
+    @JsonTypeName("UNIT")
     data class Unit(
-        override val id: DaycareId,
+        val id: DaycareId,
         override val name: String,
         val receivers: List<Group>,
         val hasStarters: Boolean,
     ) : MessageReceiver(MessageRecipientType.UNIT)
 
+    @JsonTypeName("GROUP")
     data class Group(
-        override val id: GroupId,
+        val id: GroupId,
         override val name: String,
         val receivers: List<Child>,
         val hasStarters: Boolean,
     ) : MessageReceiver(MessageRecipientType.GROUP)
 
-    data class Child(
-        override val id: ChildId,
-        override val name: String,
-        val startDate: LocalDate?,
-    ) : MessageReceiver(MessageRecipientType.CHILD)
+    @JsonTypeName("CHILD")
+    data class Child(val id: ChildId, override val name: String, val startDate: LocalDate?) :
+        MessageReceiver(MessageRecipientType.CHILD)
 
-    data class Citizen(override val id: PersonId, override val name: String) :
+    @JsonTypeName("CITIZEN")
+    data class Citizen(val id: PersonId, override val name: String) :
         MessageReceiver(MessageRecipientType.CITIZEN)
 }
 
@@ -220,21 +220,43 @@ data class AuthorizedMessageAccount(
 enum class MessageRecipientType {
     AREA,
     UNIT,
+    UNIT_IN_AREA,
     GROUP,
     CHILD,
     CITIZEN,
 }
 
-data class MessageRecipient(
-    val type: MessageRecipientType,
-    val id: Id<*>,
-    val starter: Boolean = false,
-) {
-    fun toAreaId(): AreaId? = if (type == MessageRecipientType.AREA) AreaId(id.raw) else null
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
+sealed class MessageRecipient(val type: MessageRecipientType) {
+    abstract fun isStarter(): Boolean
 
-    fun toUnitId(): DaycareId? = if (type == MessageRecipientType.UNIT) DaycareId(id.raw) else null
+    @JsonTypeName("AREA")
+    data class Area(val id: AreaId) : MessageRecipient(MessageRecipientType.AREA) {
+        override fun isStarter(): Boolean = false
+    }
 
-    fun toGroupId(): GroupId? = if (type == MessageRecipientType.GROUP) GroupId(id.raw) else null
+    @JsonTypeName("UNIT")
+    data class Unit(val id: DaycareId, val starter: Boolean = false) :
+        MessageRecipient(MessageRecipientType.AREA) {
+        override fun isStarter(): Boolean = starter
+    }
+
+    @JsonTypeName("GROUP")
+    data class Group(val id: GroupId, val starter: Boolean = false) :
+        MessageRecipient(MessageRecipientType.GROUP) {
+        override fun isStarter(): Boolean = starter
+    }
+
+    @JsonTypeName("CHILD")
+    data class Child(val id: ChildId, val starter: Boolean = false) :
+        MessageRecipient(MessageRecipientType.CHILD) {
+        override fun isStarter(): Boolean = starter
+    }
+
+    @JsonTypeName("CITIZEN")
+    data class Citizen(val id: PersonId) : MessageRecipient(MessageRecipientType.CITIZEN) {
+        override fun isStarter(): Boolean = false
+    }
 }
 
 data class MessageChild(

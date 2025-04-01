@@ -1454,27 +1454,28 @@ private fun getReceiverGroups(
             )
         }
 
+private fun Iterable<MessageRecipient>.areaIds() =
+    filterIsInstance<MessageRecipient.Area>().map { it.id }
+
+private fun Iterable<MessageRecipient>.unitIds() =
+    filterIsInstance<MessageRecipient.Unit>().map { it.id }
+
+private fun Iterable<MessageRecipient>.groupIds() =
+    filterIsInstance<MessageRecipient.Group>().map { it.id }
+
+private fun Iterable<MessageRecipient>.childIds() =
+    filterIsInstance<MessageRecipient.Child>().map { it.id }
+
+private fun Iterable<MessageRecipient>.citizenIds() =
+    filterIsInstance<MessageRecipient.Citizen>().map { it.id }
+
 fun Database.Read.getMessageAccountsForRecipients(
     accountId: MessageAccountId,
     recipients: Set<MessageRecipient>,
     filters: MessageController.PostMessageFilters?,
     date: LocalDate,
 ): List<Pair<MessageAccountId, ChildId?>> {
-
-    fun getRecipientIdsByType(
-        recipients: List<MessageRecipient>
-    ): Map<MessageRecipientType, List<Id<*>>> {
-        val recipientMap =
-            MessageRecipientType.entries.associateWith { emptyList<Id<*>>() }.toMutableMap()
-        recipients
-            .groupBy { it.type }
-            .forEach { (type, recipients) -> recipientMap[type] = recipients.map { it.id } }
-        return recipientMap.toMap()
-    }
-
-    val recipientsByStartingStatus = recipients.groupBy { it.starter }
-    val starterRecipients = getRecipientIdsByType(recipientsByStartingStatus[true] ?: emptyList())
-    val currentRecipients = getRecipientIdsByType(recipientsByStartingStatus[false] ?: emptyList())
+    val (starterRecipients, currentRecipients) = recipients.partition { it.isStarter() }
 
     val filterPredicates =
         PredicateSql.allNotNull(
@@ -1509,10 +1510,10 @@ WITH sender AS (
     LEFT JOIN person p ON p.id = pl.child_id
     LEFT JOIN service_need sn ON sn.placement_id = pl.placement_id AND daterange(sn.start_date, sn.end_date, '[]') @> ${bind(date)}
     JOIN sender ON TRUE
-    WHERE (d.care_area_id = ANY(${bind(currentRecipients[MessageRecipientType.AREA])}) 
-        OR pl.unit_id = ANY(${bind(currentRecipients[MessageRecipientType.UNIT])})
-        OR pl.group_id = ANY(${bind(currentRecipients[MessageRecipientType.GROUP])})
-        OR pl.child_id = ANY(${bind(currentRecipients[MessageRecipientType.CHILD])}))
+    WHERE (d.care_area_id = ANY(${bind(currentRecipients.areaIds())})
+        OR pl.unit_id = ANY(${bind(currentRecipients.unitIds())})
+        OR pl.group_id = ANY(${bind(currentRecipients.groupIds())})
+        OR pl.child_id = ANY(${bind(currentRecipients.childIds())}))
     AND ${predicate(filterPredicates)}
     AND (sender.type = 'MUNICIPAL'::message_account_type OR pl.group_id IS NOT NULL)
     AND (
@@ -1547,10 +1548,10 @@ WITH sender AS (
     LEFT JOIN service_need sn ON false
     JOIN sender ON TRUE
     WHERE (pl.start_date > ${bind(date)} OR dgp.start_date > ${bind(date)})
-        AND (d.care_area_id = ANY(${bind(starterRecipients[MessageRecipientType.AREA])})
-            OR pl.unit_id = ANY(${bind(starterRecipients[MessageRecipientType.UNIT])})
-            OR dgp.daycare_group_id = ANY(${bind(starterRecipients[MessageRecipientType.GROUP])})
-            OR pl.child_id = ANY(${bind(starterRecipients[MessageRecipientType.CHILD])}))
+        AND (d.care_area_id = ANY(${bind(starterRecipients.areaIds())})
+            OR pl.unit_id = ANY(${bind(starterRecipients.unitIds())})
+            OR dgp.daycare_group_id = ANY(${bind(starterRecipients.groupIds())})
+            OR pl.child_id = ANY(${bind(starterRecipients.childIds())}))
     AND ${predicate(filterPredicates)}
     AND (sender.type = 'MUNICIPAL'::message_account_type OR dgp.daycare_group_id IS NOT NULL)
     AND (
@@ -1591,7 +1592,7 @@ UNION
 SELECT acc.id AS account_id, NULL as child_id
 FROM person p
 JOIN message_account acc ON p.id = acc.person_id
-WHERE p.id = ANY(${bind(currentRecipients[MessageRecipientType.CITIZEN])})
+WHERE p.id = ANY(${bind(currentRecipients.citizenIds())})
 """
             )
         }
@@ -1616,12 +1617,12 @@ WHERE id = ${bind(id)}
 
 fun Database.Read.getStaffCopyRecipients(
     senderId: MessageAccountId,
-    recipients: Collection<MessageRecipient>,
+    recipients: Set<MessageRecipient>,
     date: LocalDate,
 ): Set<MessageAccountId> {
-    val areaIds = recipients.mapNotNull { it.toAreaId() }
-    val unitIds = recipients.mapNotNull { it.toUnitId() }
-    val groupIds = recipients.mapNotNull { it.toGroupId() }
+    val areaIds = recipients.areaIds()
+    val unitIds = recipients.unitIds()
+    val groupIds = recipients.groupIds()
     if (areaIds.isEmpty() && unitIds.isEmpty() && groupIds.isEmpty()) return emptySet()
 
     return createQuery {

@@ -23,6 +23,7 @@ import {
   MessageDraftId,
   MessageThreadFolderId
 } from 'lib-common/generated/api-types/shared'
+import { fromUuid } from 'lib-common/id-type'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Container from 'lib-components/layout/Container'
 import { defaultMargins } from 'lib-components/white-space'
@@ -197,7 +198,7 @@ export default React.memo(function MessagesPage({
           accountId: selectedAccount.account.id,
           receivers: selectedDraft.recipients.map((recipient, i) => {
             return {
-              id: recipient.accountId,
+              id: fromUuid(recipient.accountId),
               name: selectedDraft.recipientNames[i],
               type: 'CITIZEN'
             }

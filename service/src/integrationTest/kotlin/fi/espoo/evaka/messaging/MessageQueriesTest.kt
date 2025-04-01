@@ -946,7 +946,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             db.transaction { tx ->
                 tx.getStaffCopyRecipients(
                     accounts.employee1.id,
-                    setOf(MessageRecipient(MessageRecipientType.AREA, area.id)),
+                    setOf(MessageRecipient.Area(area.id)),
                     today,
                 )
             }

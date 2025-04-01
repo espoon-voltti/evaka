@@ -42,7 +42,6 @@ import fi.espoo.evaka.decision.markDecisionAccepted
 import fi.espoo.evaka.decision.markDecisionRejected
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.messaging.MessageRecipient
-import fi.espoo.evaka.messaging.MessageRecipientType
 import fi.espoo.evaka.messaging.MessageService
 import fi.espoo.evaka.messaging.MessageType
 import fi.espoo.evaka.messaging.NewMessageStub
@@ -406,8 +405,7 @@ class ApplicationStateService(
                         urgent = false,
                         sensitive = false,
                     ),
-                recipients =
-                    setOf(MessageRecipient(MessageRecipientType.CITIZEN, application.guardianId)),
+                recipients = setOf(MessageRecipient.Citizen(application.guardianId)),
                 recipientNames =
                     listOf(
                         tx.getPersonById(application.guardianId)?.let {

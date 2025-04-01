@@ -379,8 +379,9 @@ ${join(propCodes, ",\n").prependIndent("    ")}
                 }
                 is GenericWrapper ->
                     jsonDeserializerExpression(tsRepr.getTypeArgs(type.arguments), jsonExpression)
-                is TsObjectLiteral,
-                is TsSealedVariant -> TODO()
+                is TsObjectLiteral -> TODO()
+                is TsSealedVariant ->
+                    TsCode { "${ref(deserializerRef(tsRepr))}(${inline(jsonExpression)})" }
                 is TsPlainObject -> {
                     val deserArguments =
                         type.arguments.map { typeArgument ->

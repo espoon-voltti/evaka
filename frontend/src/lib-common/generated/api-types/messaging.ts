@@ -6,8 +6,10 @@
 
 import FiniteDateRange from '../../finite-date-range'
 import HelsinkiDateTime from '../../helsinki-date-time'
+import LocalDate from '../../local-date'
 import { ApplicationId } from './shared'
 import { ApplicationStatus } from './application'
+import { AreaId } from './shared'
 import { Attachment } from './attachment'
 import { AttachmentId } from './shared'
 import { DaycareId } from './shared'
@@ -17,11 +19,9 @@ import { MessageAccountId } from './shared'
 import { MessageContentId } from './shared'
 import { MessageDraftId } from './shared'
 import { MessageId } from './shared'
-import { MessageReceiver } from '../../api-types/messaging'
 import { MessageThreadFolderId } from './shared'
 import { MessageThreadId } from './shared'
 import { PersonId } from './shared'
-import { deserializeMessageReceiver } from '../../api-types/messaging'
 
 /**
 * Generated from fi.espoo.evaka.messaging.AccountType
@@ -205,6 +205,75 @@ export interface MessageCopy {
   urgent: boolean
 }
 
+
+export namespace MessageReceiver {
+  /**
+  * Generated from fi.espoo.evaka.messaging.MessageReceiver.Area
+  */
+  export interface Area {
+    type: 'AREA'
+    id: AreaId
+    name: string
+    receivers: MessageReceiver.UnitInArea[]
+  }
+
+  /**
+  * Generated from fi.espoo.evaka.messaging.MessageReceiver.Child
+  */
+  export interface Child {
+    type: 'CHILD'
+    id: PersonId
+    name: string
+    startDate: LocalDate | null
+  }
+
+  /**
+  * Generated from fi.espoo.evaka.messaging.MessageReceiver.Citizen
+  */
+  export interface Citizen {
+    type: 'CITIZEN'
+    id: PersonId
+    name: string
+  }
+
+  /**
+  * Generated from fi.espoo.evaka.messaging.MessageReceiver.Group
+  */
+  export interface Group {
+    type: 'GROUP'
+    hasStarters: boolean
+    id: GroupId
+    name: string
+    receivers: MessageReceiver.Child[]
+  }
+
+  /**
+  * Generated from fi.espoo.evaka.messaging.MessageReceiver.Unit
+  */
+  export interface Unit {
+    type: 'UNIT'
+    hasStarters: boolean
+    id: DaycareId
+    name: string
+    receivers: MessageReceiver.Group[]
+  }
+
+  /**
+  * Generated from fi.espoo.evaka.messaging.MessageReceiver.UnitInArea
+  */
+  export interface UnitInArea {
+    type: 'UNIT_IN_AREA'
+    id: DaycareId
+    name: string
+  }
+}
+
+/**
+* Generated from fi.espoo.evaka.messaging.MessageReceiver
+*/
+export type MessageReceiver = MessageReceiver.Area | MessageReceiver.Child | MessageReceiver.Citizen | MessageReceiver.Group | MessageReceiver.Unit | MessageReceiver.UnitInArea
+
+
 /**
 * Generated from fi.espoo.evaka.messaging.MessageReceiversResponse
 */
@@ -213,14 +282,57 @@ export interface MessageReceiversResponse {
   receivers: MessageReceiver[]
 }
 
+
+export namespace MessageRecipient {
+  /**
+  * Generated from fi.espoo.evaka.messaging.MessageRecipient.Area
+  */
+  export interface Area {
+    type: 'AREA'
+    id: AreaId
+  }
+
+  /**
+  * Generated from fi.espoo.evaka.messaging.MessageRecipient.Child
+  */
+  export interface Child {
+    type: 'CHILD'
+    id: PersonId
+    starter: boolean
+  }
+
+  /**
+  * Generated from fi.espoo.evaka.messaging.MessageRecipient.Citizen
+  */
+  export interface Citizen {
+    type: 'CITIZEN'
+    id: PersonId
+  }
+
+  /**
+  * Generated from fi.espoo.evaka.messaging.MessageRecipient.Group
+  */
+  export interface Group {
+    type: 'GROUP'
+    id: GroupId
+    starter: boolean
+  }
+
+  /**
+  * Generated from fi.espoo.evaka.messaging.MessageRecipient.Unit
+  */
+  export interface Unit {
+    type: 'UNIT'
+    id: DaycareId
+    starter: boolean
+  }
+}
+
 /**
 * Generated from fi.espoo.evaka.messaging.MessageRecipient
 */
-export interface MessageRecipient {
-  id: string
-  starter: boolean
-  type: MessageRecipientType
-}
+export type MessageRecipient = MessageRecipient.Area | MessageRecipient.Child | MessageRecipient.Citizen | MessageRecipient.Group | MessageRecipient.Unit
+
 
 /**
 * Generated from fi.espoo.evaka.messaging.MessageRecipientType
@@ -228,6 +340,7 @@ export interface MessageRecipient {
 export type MessageRecipientType =
   | 'AREA'
   | 'UNIT'
+  | 'UNIT_IN_AREA'
   | 'GROUP'
   | 'CHILD'
   | 'CITIZEN'
@@ -495,10 +608,41 @@ export function deserializeJsonMessageCopy(json: JsonOf<MessageCopy>): MessageCo
 }
 
 
+
+export function deserializeJsonMessageReceiverChild(json: JsonOf<MessageReceiver.Child>): MessageReceiver.Child {
+  return {
+    ...json,
+    startDate: (json.startDate != null) ? LocalDate.parseIso(json.startDate) : null
+  }
+}
+
+export function deserializeJsonMessageReceiverGroup(json: JsonOf<MessageReceiver.Group>): MessageReceiver.Group {
+  return {
+    ...json,
+    receivers: json.receivers.map(e => deserializeJsonMessageReceiverChild(e))
+  }
+}
+
+export function deserializeJsonMessageReceiverUnit(json: JsonOf<MessageReceiver.Unit>): MessageReceiver.Unit {
+  return {
+    ...json,
+    receivers: json.receivers.map(e => deserializeJsonMessageReceiverGroup(e))
+  }
+}
+export function deserializeJsonMessageReceiver(json: JsonOf<MessageReceiver>): MessageReceiver {
+  switch (json.type) {
+    case 'CHILD': return deserializeJsonMessageReceiverChild(json)
+    case 'GROUP': return deserializeJsonMessageReceiverGroup(json)
+    case 'UNIT': return deserializeJsonMessageReceiverUnit(json)
+    default: return json
+  }
+}
+
+
 export function deserializeJsonMessageReceiversResponse(json: JsonOf<MessageReceiversResponse>): MessageReceiversResponse {
   return {
     ...json,
-    receivers: json.receivers.map(e => deserializeMessageReceiver(e))
+    receivers: json.receivers.map(e => deserializeJsonMessageReceiver(e))
   }
 }
 

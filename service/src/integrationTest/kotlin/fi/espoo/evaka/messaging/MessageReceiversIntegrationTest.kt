@@ -275,7 +275,10 @@ class MessageReceiversIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
         assertEquals(expectations.size, response.receivers.size)
         for ((area, units) in expectations) {
-            val areaReceiver = response.receivers.find { it.id == area.id } as MessageReceiver.Area
+            val areaReceiver =
+                response.receivers.filterIsInstance<MessageReceiver.Area>().find {
+                    it.id == area.id
+                }!!
             assertEquals(area.name, areaReceiver.name)
 
             assertEquals(

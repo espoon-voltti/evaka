@@ -3,11 +3,11 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import {
-  MessageReceiver,
   messageReceiverIsStarter,
   messageReceiverStartDate
 } from 'lib-common/api-types/messaging'
 import {
+  MessageReceiver,
   MessageReceiversResponse,
   MessageRecipient,
   SelectableRecipient
@@ -84,6 +84,49 @@ function receiverToKey(accountId: UUID, isStarter: boolean): string {
   return `${accountId}+${isStarter}`
 }
 
+function receiverToRecipient(
+  receiver: MessageReceiver,
+  isStarter: boolean
+): MessageRecipient {
+  switch (receiver.type) {
+    case 'AREA':
+      return {
+        type: 'AREA',
+        id: receiver.id
+      }
+    case 'UNIT_IN_AREA':
+      return {
+        type: 'UNIT',
+        id: receiver.id,
+        starter: false
+      }
+
+    case 'UNIT':
+      return {
+        type: 'UNIT',
+        id: receiver.id,
+        starter: isStarter
+      }
+    case 'GROUP':
+      return {
+        type: 'GROUP',
+        id: receiver.id,
+        starter: isStarter
+      }
+    case 'CHILD':
+      return {
+        type: 'CHILD',
+        id: receiver.id,
+        starter: isStarter
+      }
+    case 'CITIZEN':
+      return {
+        type: 'CITIZEN',
+        id: receiver.id
+      }
+  }
+}
+
 function keyToReceiver(key: string): {
   accountId: UUID
   isStarter: boolean
@@ -114,11 +157,7 @@ function receiverAsSelectorNode(
     key: receiverToKey(receiver.id, isStarter),
     checked: false,
     text: nameWithStarterIndication,
-    messageRecipient: {
-      type: receiver.type,
-      id: receiver.id,
-      starter: isStarter
-    },
+    messageRecipient: receiverToRecipient(receiver, isStarter),
     children:
       'receivers' in receiver
         ? receiver.receivers.map((r) =>

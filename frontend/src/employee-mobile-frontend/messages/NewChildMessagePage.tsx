@@ -7,9 +7,11 @@ import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
-import { MessageReceiver } from 'lib-common/api-types/messaging'
 import { AttendanceChild } from 'lib-common/generated/api-types/attendance'
-import { AuthorizedMessageAccount } from 'lib-common/generated/api-types/messaging'
+import {
+  AuthorizedMessageAccount,
+  MessageReceiver
+} from 'lib-common/generated/api-types/messaging'
 import { DaycareId } from 'lib-common/generated/api-types/shared'
 import {
   constantQuery,

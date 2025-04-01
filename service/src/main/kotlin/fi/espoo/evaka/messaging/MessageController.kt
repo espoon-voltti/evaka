@@ -672,18 +672,18 @@ class MessageController(
                             throw BadRequest(
                                 "Service worker message accounts must have a related application"
                             )
-                        } else if (
-                            body.recipients.any { it.type != MessageRecipientType.CITIZEN }
-                        ) {
+                        }
+                        val citizenRecipients =
+                            body.recipients.filterIsInstance<MessageRecipient.Citizen>()
+                        if (body.recipients.size != citizenRecipients.size) {
                             throw BadRequest(
                                 "Service worker message accounts can only send messages to citizens"
                             )
-                        } else if (
-                            body.recipients.any {
-                                !tx.personHasSentApplicationWithId(
-                                    PersonId(it.id.raw),
-                                    body.relatedApplicationId,
-                                )
+                        }
+
+                        if (
+                            citizenRecipients.any {
+                                !tx.personHasSentApplicationWithId(it.id, body.relatedApplicationId)
                             }
                         ) {
                             throw BadRequest(

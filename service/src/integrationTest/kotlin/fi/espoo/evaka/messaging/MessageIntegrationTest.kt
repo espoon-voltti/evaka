@@ -301,7 +301,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             message = "Juhannus tulee pian",
             messageType = MessageType.MESSAGE,
             sender = employee1Account,
-            recipients = listOf(MessageRecipient(MessageRecipientType.CHILD, testChild_1.id)),
+            recipients = listOf(MessageRecipient.Child(testChild_1.id, false)),
             user = employee1,
             now = sendTime,
         )
@@ -529,9 +529,9 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val content = "This message is sent to several participants and split to threads"
         val recipients =
             listOf(
-                MessageRecipient(MessageRecipientType.CHILD, testChild_1.id),
-                MessageRecipient(MessageRecipientType.CHILD, testChild_4.id),
-                MessageRecipient(MessageRecipientType.CHILD, testChild_6.id),
+                MessageRecipient.Child(testChild_1.id),
+                MessageRecipient.Child(testChild_4.id),
+                MessageRecipient.Child(testChild_6.id),
             )
         val recipientNames = listOf("Hippiäiset", "Jani")
         postNewThread(
@@ -650,7 +650,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             message = "Juhannus tulee pian",
             messageType = MessageType.BULLETIN,
             sender = employee1Account,
-            recipients = listOf(MessageRecipient(MessageRecipientType.CHILD, testChild_1.id)),
+            recipients = listOf(MessageRecipient.Child(testChild_1.id)),
             user = employee1,
         )
 
@@ -705,7 +705,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             message = "m1",
             messageType = MessageType.MESSAGE,
             sender = employee1Account,
-            recipients = listOf(MessageRecipient(MessageRecipientType.CHILD, testChild_1.id)),
+            recipients = listOf(MessageRecipient.Child(testChild_1.id)),
             user = employee1,
         )
 
@@ -785,7 +785,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             message = "m1",
             messageType = MessageType.MESSAGE,
             sender = employee1Account,
-            recipients = listOf(MessageRecipient(MessageRecipientType.CHILD, testChild_1.id)),
+            recipients = listOf(MessageRecipient.Child(testChild_1.id)),
             user = employee1,
             attachmentIds = attachmentIds,
             draftId = draftId,
@@ -859,7 +859,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             message = "Juhannus tulee pian",
             messageType = MessageType.MESSAGE,
             sender = group1Account,
-            recipients = listOf(MessageRecipient(MessageRecipientType.GROUP, groupId2)),
+            recipients = listOf(MessageRecipient.Group(groupId2)),
             user = employee1,
         )
         assertEquals(0, getRegularMessageThreads(person4).size)
@@ -869,7 +869,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             message = "Juhannus tulee pian",
             messageType = MessageType.MESSAGE,
             sender = group2Account,
-            recipients = listOf(MessageRecipient(MessageRecipientType.GROUP, groupId2)),
+            recipients = listOf(MessageRecipient.Group(groupId2)),
             user = employee1,
         )
         assertEquals(1, getRegularMessageThreads(person4).size)
@@ -882,7 +882,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             message = "Juhannus tulee pian",
             messageType = MessageType.MESSAGE,
             sender = group1Account,
-            recipients = listOf(MessageRecipient(MessageRecipientType.CHILD, testChild_4.id)),
+            recipients = listOf(MessageRecipient.Child(testChild_4.id)),
             user = employee1,
         )
         assertEquals(0, getRegularMessageThreads(person4).size)
@@ -892,7 +892,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             message = "Juhannus tulee pian",
             messageType = MessageType.MESSAGE,
             sender = group2Account,
-            recipients = listOf(MessageRecipient(MessageRecipientType.CHILD, testChild_4.id)),
+            recipients = listOf(MessageRecipient.Child(testChild_4.id)),
             user = employee1,
         )
         assertEquals(1, getRegularMessageThreads(person4).size)
@@ -905,7 +905,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             message = "Juhannus tulee pian",
             messageType = MessageType.MESSAGE,
             sender = employee1Account,
-            recipients = listOf(MessageRecipient(MessageRecipientType.CHILD, testChild_1.id)),
+            recipients = listOf(MessageRecipient.Child(testChild_1.id)),
             user = employee1,
         )
         assertEquals(0, unreadMessagesCount(employee1Account, employee1))
@@ -938,7 +938,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 message = "Juhannus tulee pian",
                 messageType = MessageType.MESSAGE,
                 sender = employee1Account,
-                recipients = listOf(MessageRecipient(MessageRecipientType.CHILD, testChild_1.id)),
+                recipients = listOf(MessageRecipient.Child(testChild_1.id)),
                 user = employee1,
                 now = sendTime,
             )
@@ -1017,7 +1017,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 message = messageContent,
                 messageType = MessageType.MESSAGE,
                 sender = serviceWorkerAccount,
-                recipients = listOf(MessageRecipient(MessageRecipientType.CITIZEN, testAdult_1.id)),
+                recipients = listOf(MessageRecipient.Citizen(testAdult_1.id)),
                 user = serviceWorker,
                 relatedApplicationId = applicationId,
             )
@@ -1060,7 +1060,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             message = messageContent,
             messageType = MessageType.MESSAGE,
             sender = serviceWorkerAccount,
-            recipients = listOf(MessageRecipient(MessageRecipientType.CITIZEN, testAdult_1.id)),
+            recipients = listOf(MessageRecipient.Citizen(testAdult_1.id)),
             user = serviceWorker,
             relatedApplicationId = applicationId,
         )
@@ -1118,7 +1118,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             message = "Tähän viestiin pitäisi pystyä vastaamaan",
             messageType = MessageType.MESSAGE,
             sender = serviceWorkerAccount,
-            recipients = listOf(MessageRecipient(MessageRecipientType.CITIZEN, testAdult_1.id)),
+            recipients = listOf(MessageRecipient.Citizen(testAdult_1.id)),
             user = serviceWorker,
             relatedApplicationId = applicationId,
             initialFolder = folder1.id,
@@ -1200,7 +1200,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 message = "content",
                 messageType = MessageType.MESSAGE,
                 sender = serviceWorkerAccount,
-                recipients = listOf(MessageRecipient(MessageRecipientType.CITIZEN, testAdult_1.id)),
+                recipients = listOf(MessageRecipient.Citizen(testAdult_1.id)),
                 user = serviceWorker,
                 relatedApplicationId = null,
             )
@@ -1216,7 +1216,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 message = "content",
                 messageType = MessageType.MESSAGE,
                 sender = serviceWorkerAccount,
-                recipients = listOf(MessageRecipient(MessageRecipientType.CHILD, testChild_1.id)),
+                recipients = listOf(MessageRecipient.Child(testChild_1.id)),
                 user = serviceWorker,
                 relatedApplicationId = ApplicationId(UUID.randomUUID()),
             )
@@ -1242,7 +1242,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 message = "content",
                 messageType = MessageType.MESSAGE,
                 sender = serviceWorkerAccount,
-                recipients = listOf(MessageRecipient(MessageRecipientType.CITIZEN, testAdult_2.id)),
+                recipients = listOf(MessageRecipient.Citizen(testAdult_2.id)),
                 user = serviceWorker,
                 relatedApplicationId = applicationId,
             )
@@ -1256,7 +1256,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             message = "Juhannus tulee pian",
             messageType = MessageType.MESSAGE,
             sender = employee1Account,
-            recipients = listOf(MessageRecipient(MessageRecipientType.CHILD, testChild_1.id)),
+            recipients = listOf(MessageRecipient.Child(testChild_1.id)),
             user = employee1,
             sensitive = true,
         )
@@ -1278,8 +1278,8 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 sender = employee1Account,
                 recipients =
                     listOf(
-                        MessageRecipient(MessageRecipientType.CHILD, testChild_1.id),
-                        MessageRecipient(MessageRecipientType.CHILD, testChild_2.id),
+                        MessageRecipient.Child(testChild_1.id),
+                        MessageRecipient.Child(testChild_2.id),
                     ),
                 user = employee1,
                 sensitive = true,
@@ -1295,7 +1295,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 message = "content",
                 messageType = MessageType.MESSAGE,
                 sender = employee1Account,
-                recipients = listOf(MessageRecipient(MessageRecipientType.CITIZEN, testAdult_1.id)),
+                recipients = listOf(MessageRecipient.Citizen(testAdult_1.id)),
                 user = employee1,
                 sensitive = true,
             )
@@ -1310,7 +1310,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 message = "content",
                 messageType = MessageType.MESSAGE,
                 sender = group1Account,
-                recipients = listOf(MessageRecipient(MessageRecipientType.CHILD, testAdult_1.id)),
+                recipients = listOf(MessageRecipient.Child(testAdult_1.id)),
                 user = employee1,
                 sensitive = true,
             )
@@ -1325,8 +1325,8 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 sender = employee1Account,
                 recipients =
                     listOf(
-                        MessageRecipient(MessageRecipientType.CHILD, testChild_1.id),
-                        MessageRecipient(MessageRecipientType.CHILD, testChild_3.id),
+                        MessageRecipient.Child(testChild_1.id),
+                        MessageRecipient.Child(testChild_3.id),
                     ),
             )
         assertEquals(PostMessagePreflightResponse(numberOfRecipientAccounts = 3), response)
@@ -1411,7 +1411,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             message = "Juhannus tulee pian",
             messageType = MessageType.MESSAGE,
             sender = employee1Account,
-            recipients = listOf(MessageRecipient(MessageRecipientType.CHILD, testChild_2.id)),
+            recipients = listOf(MessageRecipient.Child(testChild_2.id)),
             user = employee1,
             now = HelsinkiDateTime.of(placementEnd, LocalTime.NOON),
         )
@@ -1443,11 +1443,11 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             sender = messagerAccount,
             recipients =
                 listOf(
-                    MessageRecipient(MessageRecipientType.CHILD, testChild_1.id),
-                    MessageRecipient(MessageRecipientType.CHILD, testChild_3.id),
-                    MessageRecipient(MessageRecipientType.CHILD, testChild_4.id),
-                    MessageRecipient(MessageRecipientType.CHILD, testChild_6.id),
-                    MessageRecipient(MessageRecipientType.CHILD, testChild_8.id),
+                    MessageRecipient.Child(testChild_1.id),
+                    MessageRecipient.Child(testChild_3.id),
+                    MessageRecipient.Child(testChild_4.id),
+                    MessageRecipient.Child(testChild_6.id),
+                    MessageRecipient.Child(testChild_8.id),
                 ),
             filters = MessageController.PostMessageFilters(yearsOfBirth = listOf(2017)),
             user = messager,
@@ -1471,11 +1471,11 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             sender = messagerAccount,
             recipients =
                 listOf(
-                    MessageRecipient(MessageRecipientType.CHILD, testChild_1.id),
-                    MessageRecipient(MessageRecipientType.CHILD, testChild_3.id),
-                    MessageRecipient(MessageRecipientType.CHILD, testChild_4.id),
-                    MessageRecipient(MessageRecipientType.CHILD, testChild_6.id),
-                    MessageRecipient(MessageRecipientType.CHILD, testChild_8.id),
+                    MessageRecipient.Child(testChild_1.id),
+                    MessageRecipient.Child(testChild_3.id),
+                    MessageRecipient.Child(testChild_4.id),
+                    MessageRecipient.Child(testChild_6.id),
+                    MessageRecipient.Child(testChild_8.id),
                 ),
             filters =
                 MessageController.PostMessageFilters(
@@ -1503,11 +1503,11 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             sender = messagerAccount,
             recipients =
                 listOf(
-                    MessageRecipient(MessageRecipientType.CHILD, testChild_1.id),
-                    MessageRecipient(MessageRecipientType.CHILD, testChild_3.id),
-                    MessageRecipient(MessageRecipientType.CHILD, testChild_4.id),
-                    MessageRecipient(MessageRecipientType.CHILD, testChild_6.id),
-                    MessageRecipient(MessageRecipientType.CHILD, testChild_8.id),
+                    MessageRecipient.Child(testChild_1.id),
+                    MessageRecipient.Child(testChild_3.id),
+                    MessageRecipient.Child(testChild_4.id),
+                    MessageRecipient.Child(testChild_6.id),
+                    MessageRecipient.Child(testChild_8.id),
                 ),
             filters = MessageController.PostMessageFilters(familyDaycare = true),
             user = messager,
@@ -1530,8 +1530,8 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 sender = messagerAccount,
                 recipients =
                     listOf(
-                        MessageRecipient(MessageRecipientType.CHILD, testChild_1.id),
-                        MessageRecipient(MessageRecipientType.CHILD, testChild_3.id),
+                        MessageRecipient.Child(testChild_1.id),
+                        MessageRecipient.Child(testChild_3.id),
                     ),
                 filters = MessageController.PostMessageFilters(yearsOfBirth = listOf(2018)),
             )
@@ -1592,7 +1592,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             "content",
             MessageType.MESSAGE,
             group1Account,
-            listOf(MessageRecipient(MessageRecipientType.CHILD, testChild_2.id)),
+            listOf(MessageRecipient.Child(testChild_2.id)),
             user = employee1,
             now = clock.now().minusDays(sentDaysAgo.toLong()),
         )
@@ -1638,10 +1638,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             "content",
             MessageType.BULLETIN,
             employee1Account,
-            listOf(
-                MessageRecipient(MessageRecipientType.CHILD, testChild_2.id),
-                MessageRecipient(MessageRecipientType.GROUP, groupId1),
-            ),
+            listOf(MessageRecipient.Child(testChild_2.id), MessageRecipient.Group(groupId1)),
             user = employee1,
             now = clock.now().minusDays(copyDaysAgo.toLong()),
         )
@@ -1700,7 +1697,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             "content",
             MessageType.BULLETIN,
             employee1Account,
-            listOf(MessageRecipient(MessageRecipientType.GROUP, groupId1)),
+            listOf(MessageRecipient.Group(groupId1)),
             user = employee1,
             now = sendTime,
         )
@@ -1743,7 +1740,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             "content",
             MessageType.MESSAGE,
             employee1Account,
-            listOf(MessageRecipient(MessageRecipientType.GROUP, groupId1)),
+            listOf(MessageRecipient.Group(groupId1)),
             user = employee1,
             now = sendTime,
         )
@@ -1759,7 +1756,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             message = "content",
             messageType = MessageType.MESSAGE,
             sender = financeAccount,
-            recipients = listOf(MessageRecipient(MessageRecipientType.CITIZEN, testAdult_1.id)),
+            recipients = listOf(MessageRecipient.Citizen(testAdult_1.id)),
             user = financeAdmin,
         )
 
@@ -1771,8 +1768,8 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 sender = financeAccount,
                 recipients =
                     listOf(
-                        MessageRecipient(MessageRecipientType.CITIZEN, testAdult_1.id),
-                        MessageRecipient(MessageRecipientType.CITIZEN, testAdult_2.id),
+                        MessageRecipient.Citizen(testAdult_1.id),
+                        MessageRecipient.Citizen(testAdult_2.id),
                     ),
                 user = financeAdmin,
             )
@@ -1788,7 +1785,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             message = "Viestin sisältö",
             messageType = MessageType.MESSAGE,
             sender = financeAccount,
-            recipients = listOf(MessageRecipient(MessageRecipientType.CITIZEN, testAdult_1.id)),
+            recipients = listOf(MessageRecipient.Citizen(testAdult_1.id)),
             user = financeAdmin,
         )
         val thread = getRegularMessageThreads(person1)[0]
@@ -1810,7 +1807,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 message = "content",
                 messageType = MessageType.MESSAGE,
                 sender = financeAccount,
-                recipients = listOf(MessageRecipient(MessageRecipientType.CHILD, testChild_1.id)),
+                recipients = listOf(MessageRecipient.Child(testChild_1.id)),
                 user = financeAdmin,
             )
         }
