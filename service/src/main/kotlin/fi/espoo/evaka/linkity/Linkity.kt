@@ -15,6 +15,8 @@ enum class StampingType {
     PRESENT,
     TRAINING,
     OTHER_WORK,
+    OVERTIME,
+    JUSTIFIED_CHANGE,
 }
 
 data class Shift(
