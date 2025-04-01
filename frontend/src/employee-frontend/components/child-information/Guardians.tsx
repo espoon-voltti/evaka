@@ -166,7 +166,7 @@ const formatAddress = (guardian: PersonJSON) =>
 const EditEvakaRightsModal = React.memo(function EditEvakaRightsModal({
   childId,
   guardianId,
-  denied,
+  denied: initialDenied,
   stopEditing
 }: {
   childId: ChildId
@@ -176,11 +176,10 @@ const EditEvakaRightsModal = React.memo(function EditEvakaRightsModal({
 }) {
   const { i18n } = useTranslation()
   const [contentState, setContentState] = useState<'info' | 'update'>('info')
-  const [editState, setEditState] = useState(
-    denied
-      ? { confirmed: true, denied: true }
-      : { confirmed: false, denied: false }
-  )
+  const [editState, setEditState] = useState({
+    denied: initialDenied,
+    confirmed: initialDenied
+  })
 
   if (contentState === 'info')
     return (
@@ -212,7 +211,7 @@ const EditEvakaRightsModal = React.memo(function EditEvakaRightsModal({
         }
       })}
       resolveLabel={i18n.common.confirm}
-      resolveDisabled={denied ? editState.confirmed : !editState.confirmed}
+      resolveDisabled={editState.denied && !editState.confirmed}
       rejectAction={stopEditing}
       rejectLabel={i18n.common.cancel}
       onSuccess={stopEditing}
@@ -221,18 +220,17 @@ const EditEvakaRightsModal = React.memo(function EditEvakaRightsModal({
       <FixedSpaceColumn spacing="s">
         <Label>{i18n.personProfile.evakaRights.modalUpdateSubtitle}</Label>
         <Checkbox
+          label={i18n.personProfile.evakaRights.deniedLabel}
+          checked={editState.denied}
+          onChange={(denied) => setEditState({ denied, confirmed: false })}
+          data-qa="denied"
+        />
+        <Checkbox
           label={i18n.personProfile.evakaRights.confirmedLabel}
           checked={editState.confirmed}
           onChange={(confirmed) => setEditState((s) => ({ ...s, confirmed }))}
-          disabled={editState.denied}
+          disabled={!editState.denied}
           data-qa="confirmation"
-        />
-        <Checkbox
-          label={i18n.personProfile.evakaRights.deniedLabel}
-          checked={editState.denied}
-          onChange={(denied) => setEditState((s) => ({ ...s, denied }))}
-          disabled={!editState.confirmed}
-          data-qa="denied"
         />
       </FixedSpaceColumn>
     </MutateFormModal>
