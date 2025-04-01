@@ -115,7 +115,7 @@ export interface DraftContent {
   createdAt: HelsinkiDateTime
   id: MessageDraftId
   recipientNames: string[]
-  recipients: SelectableRecipient[]
+  recipients: DraftRecipient[]
   sensitive: boolean
   title: string
   type: MessageType
@@ -123,9 +123,17 @@ export interface DraftContent {
 }
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageControllerCitizen.GetReceiversResponse
+* Generated from fi.espoo.evaka.messaging.DraftRecipient
 */
-export interface GetReceiversResponse {
+export interface DraftRecipient {
+  accountId: string
+  starter: boolean
+}
+
+/**
+* Generated from fi.espoo.evaka.messaging.MessageControllerCitizen.GetRecipientsResponse
+*/
+export interface GetRecipientsResponse {
   childrenToMessageAccounts: ChildMessageAccountAccess[]
   messageAccounts: MessageAccountWithPresence[]
 }
@@ -203,83 +211,6 @@ export interface MessageCopy {
   title: string
   type: MessageType
   urgent: boolean
-}
-
-
-export namespace MessageReceiver {
-  /**
-  * Generated from fi.espoo.evaka.messaging.MessageReceiver.Area
-  */
-  export interface Area {
-    type: 'AREA'
-    id: AreaId
-    name: string
-    receivers: MessageReceiver.UnitInArea[]
-  }
-
-  /**
-  * Generated from fi.espoo.evaka.messaging.MessageReceiver.Child
-  */
-  export interface Child {
-    type: 'CHILD'
-    id: PersonId
-    name: string
-    startDate: LocalDate | null
-  }
-
-  /**
-  * Generated from fi.espoo.evaka.messaging.MessageReceiver.Citizen
-  */
-  export interface Citizen {
-    type: 'CITIZEN'
-    id: PersonId
-    name: string
-  }
-
-  /**
-  * Generated from fi.espoo.evaka.messaging.MessageReceiver.Group
-  */
-  export interface Group {
-    type: 'GROUP'
-    hasStarters: boolean
-    id: GroupId
-    name: string
-    receivers: MessageReceiver.Child[]
-  }
-
-  /**
-  * Generated from fi.espoo.evaka.messaging.MessageReceiver.Unit
-  */
-  export interface Unit {
-    type: 'UNIT'
-    hasStarters: boolean
-    id: DaycareId
-    name: string
-    receivers: MessageReceiver.Group[]
-  }
-
-  /**
-  * Generated from fi.espoo.evaka.messaging.MessageReceiver.UnitInArea
-  */
-  export interface UnitInArea {
-    type: 'UNIT_IN_AREA'
-    id: DaycareId
-    name: string
-  }
-}
-
-/**
-* Generated from fi.espoo.evaka.messaging.MessageReceiver
-*/
-export type MessageReceiver = MessageReceiver.Area | MessageReceiver.Child | MessageReceiver.Citizen | MessageReceiver.Group | MessageReceiver.Unit | MessageReceiver.UnitInArea
-
-
-/**
-* Generated from fi.espoo.evaka.messaging.MessageReceiversResponse
-*/
-export interface MessageReceiversResponse {
-  accountId: MessageAccountId
-  receivers: MessageReceiver[]
 }
 
 
@@ -470,12 +401,81 @@ export interface ReplyToMessageBody {
   recipientAccountIds: MessageAccountId[]
 }
 
+
+export namespace SelectableRecipient {
+  /**
+  * Generated from fi.espoo.evaka.messaging.SelectableRecipient.Area
+  */
+  export interface Area {
+    type: 'AREA'
+    id: AreaId
+    name: string
+    receivers: SelectableRecipient.UnitInArea[]
+  }
+
+  /**
+  * Generated from fi.espoo.evaka.messaging.SelectableRecipient.Child
+  */
+  export interface Child {
+    type: 'CHILD'
+    id: PersonId
+    name: string
+    startDate: LocalDate | null
+  }
+
+  /**
+  * Generated from fi.espoo.evaka.messaging.SelectableRecipient.Citizen
+  */
+  export interface Citizen {
+    type: 'CITIZEN'
+    id: PersonId
+    name: string
+  }
+
+  /**
+  * Generated from fi.espoo.evaka.messaging.SelectableRecipient.Group
+  */
+  export interface Group {
+    type: 'GROUP'
+    hasStarters: boolean
+    id: GroupId
+    name: string
+    receivers: SelectableRecipient.Child[]
+  }
+
+  /**
+  * Generated from fi.espoo.evaka.messaging.SelectableRecipient.Unit
+  */
+  export interface Unit {
+    type: 'UNIT'
+    hasStarters: boolean
+    id: DaycareId
+    name: string
+    receivers: SelectableRecipient.Group[]
+  }
+
+  /**
+  * Generated from fi.espoo.evaka.messaging.SelectableRecipient.UnitInArea
+  */
+  export interface UnitInArea {
+    type: 'UNIT_IN_AREA'
+    id: DaycareId
+    name: string
+  }
+}
+
 /**
 * Generated from fi.espoo.evaka.messaging.SelectableRecipient
 */
-export interface SelectableRecipient {
-  accountId: string
-  starter: boolean
+export type SelectableRecipient = SelectableRecipient.Area | SelectableRecipient.Child | SelectableRecipient.Citizen | SelectableRecipient.Group | SelectableRecipient.Unit | SelectableRecipient.UnitInArea
+
+
+/**
+* Generated from fi.espoo.evaka.messaging.SelectableRecipientsResponse
+*/
+export interface SelectableRecipientsResponse {
+  accountId: MessageAccountId
+  receivers: SelectableRecipient[]
 }
 
 /**
@@ -535,7 +535,7 @@ export interface UnreadCountByAccountAndGroup {
 export interface UpdatableDraftContent {
   content: string
   recipientNames: string[]
-  recipients: SelectableRecipient[]
+  recipients: DraftRecipient[]
   sensitive: boolean
   title: string
   type: MessageType
@@ -574,7 +574,7 @@ export function deserializeJsonDraftContent(json: JsonOf<DraftContent>): DraftCo
 }
 
 
-export function deserializeJsonGetReceiversResponse(json: JsonOf<GetReceiversResponse>): GetReceiversResponse {
+export function deserializeJsonGetRecipientsResponse(json: JsonOf<GetRecipientsResponse>): GetRecipientsResponse {
   return {
     ...json,
     messageAccounts: json.messageAccounts.map(e => deserializeJsonMessageAccountWithPresence(e))
@@ -604,45 +604,6 @@ export function deserializeJsonMessageCopy(json: JsonOf<MessageCopy>): MessageCo
     ...json,
     readAt: (json.readAt != null) ? HelsinkiDateTime.parseIso(json.readAt) : null,
     sentAt: HelsinkiDateTime.parseIso(json.sentAt)
-  }
-}
-
-
-
-export function deserializeJsonMessageReceiverChild(json: JsonOf<MessageReceiver.Child>): MessageReceiver.Child {
-  return {
-    ...json,
-    startDate: (json.startDate != null) ? LocalDate.parseIso(json.startDate) : null
-  }
-}
-
-export function deserializeJsonMessageReceiverGroup(json: JsonOf<MessageReceiver.Group>): MessageReceiver.Group {
-  return {
-    ...json,
-    receivers: json.receivers.map(e => deserializeJsonMessageReceiverChild(e))
-  }
-}
-
-export function deserializeJsonMessageReceiverUnit(json: JsonOf<MessageReceiver.Unit>): MessageReceiver.Unit {
-  return {
-    ...json,
-    receivers: json.receivers.map(e => deserializeJsonMessageReceiverGroup(e))
-  }
-}
-export function deserializeJsonMessageReceiver(json: JsonOf<MessageReceiver>): MessageReceiver {
-  switch (json.type) {
-    case 'CHILD': return deserializeJsonMessageReceiverChild(json)
-    case 'GROUP': return deserializeJsonMessageReceiverGroup(json)
-    case 'UNIT': return deserializeJsonMessageReceiverUnit(json)
-    default: return json
-  }
-}
-
-
-export function deserializeJsonMessageReceiversResponse(json: JsonOf<MessageReceiversResponse>): MessageReceiversResponse {
-  return {
-    ...json,
-    receivers: json.receivers.map(e => deserializeJsonMessageReceiver(e))
   }
 }
 
@@ -683,6 +644,45 @@ export function deserializeJsonPagedSentMessages(json: JsonOf<PagedSentMessages>
   return {
     ...json,
     data: json.data.map(e => deserializeJsonSentMessage(e))
+  }
+}
+
+
+
+export function deserializeJsonSelectableRecipientChild(json: JsonOf<SelectableRecipient.Child>): SelectableRecipient.Child {
+  return {
+    ...json,
+    startDate: (json.startDate != null) ? LocalDate.parseIso(json.startDate) : null
+  }
+}
+
+export function deserializeJsonSelectableRecipientGroup(json: JsonOf<SelectableRecipient.Group>): SelectableRecipient.Group {
+  return {
+    ...json,
+    receivers: json.receivers.map(e => deserializeJsonSelectableRecipientChild(e))
+  }
+}
+
+export function deserializeJsonSelectableRecipientUnit(json: JsonOf<SelectableRecipient.Unit>): SelectableRecipient.Unit {
+  return {
+    ...json,
+    receivers: json.receivers.map(e => deserializeJsonSelectableRecipientGroup(e))
+  }
+}
+export function deserializeJsonSelectableRecipient(json: JsonOf<SelectableRecipient>): SelectableRecipient {
+  switch (json.type) {
+    case 'CHILD': return deserializeJsonSelectableRecipientChild(json)
+    case 'GROUP': return deserializeJsonSelectableRecipientGroup(json)
+    case 'UNIT': return deserializeJsonSelectableRecipientUnit(json)
+    default: return json
+  }
+}
+
+
+export function deserializeJsonSelectableRecipientsResponse(json: JsonOf<SelectableRecipientsResponse>): SelectableRecipientsResponse {
+  return {
+    ...json,
+    receivers: json.receivers.map(e => deserializeJsonSelectableRecipient(e))
   }
 }
 

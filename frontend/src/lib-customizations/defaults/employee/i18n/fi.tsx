@@ -4744,7 +4744,7 @@ export const fi = {
       MESSAGE: 'Viesti',
       BULLETIN: 'Tiedote'
     },
-    receiverSelection: {
+    recipientSelection: {
       title: 'Vastaanottajat',
       childName: 'Nimi',
       childDob: 'Syntymäaika',

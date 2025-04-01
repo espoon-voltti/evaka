@@ -1011,27 +1011,45 @@ class MessageController(
         Audit.MessagingChangeFolder.log(targetId = AuditId(listOf(accountId, threadId, folderId)))
     }
 
+    @Deprecated("Use getSelectableRecipients")
     @GetMapping("/employee/messages/receivers")
     fun getReceiversForNewMessage(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-    ): List<MessageReceiversResponse> =
-        getReceiversForNewMessage(db, user as AuthenticatedUser, clock)
+    ): List<SelectableRecipientsResponse> =
+        getSelectableRecipients(db, user as AuthenticatedUser, clock)
 
+    @Deprecated("Use getSelectableRecipients")
     @GetMapping("/employee-mobile/messages/receivers")
     fun getReceiversForNewMessage(
         db: Database,
         user: AuthenticatedUser.MobileDevice,
         clock: EvakaClock,
-    ): List<MessageReceiversResponse> =
-        getReceiversForNewMessage(db, user as AuthenticatedUser, clock)
+    ): List<SelectableRecipientsResponse> =
+        getSelectableRecipients(db, user as AuthenticatedUser, clock)
 
-    private fun getReceiversForNewMessage(
+    @GetMapping("/employee/messages/selectable-recipients")
+    fun getSelectableRecipients(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+    ): List<SelectableRecipientsResponse> =
+        getSelectableRecipients(db, user as AuthenticatedUser, clock)
+
+    @GetMapping("/employee-mobile/messages/selectable-recipients")
+    fun getSelectableRecipients(
+        db: Database,
+        user: AuthenticatedUser.MobileDevice,
+        clock: EvakaClock,
+    ): List<SelectableRecipientsResponse> =
+        getSelectableRecipients(db, user as AuthenticatedUser, clock)
+
+    private fun getSelectableRecipients(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-    ): List<MessageReceiversResponse> {
+    ): List<SelectableRecipientsResponse> {
         return db.connect { dbc ->
                 dbc.read {
                     val filter =
@@ -1041,7 +1059,7 @@ class MessageController(
                             clock,
                             Action.MessageAccount.ACCESS,
                         )
-                    it.getReceiversForNewMessage(filter, clock.today())
+                    it.getSelectableRecipients(filter, clock.today())
                 }
             }
             .also { response ->

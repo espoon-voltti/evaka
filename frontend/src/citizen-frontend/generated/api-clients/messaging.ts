@@ -5,7 +5,7 @@
 // GENERATED FILE: no manual modifications
 
 import { CitizenMessageBody } from 'lib-common/generated/api-types/messaging'
-import { GetReceiversResponse } from 'lib-common/generated/api-types/messaging'
+import { GetRecipientsResponse } from 'lib-common/generated/api-types/messaging'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
 import { MessageId } from 'lib-common/generated/api-types/shared'
@@ -16,7 +16,7 @@ import { ReplyToMessageBody } from 'lib-common/generated/api-types/messaging'
 import { ThreadReply } from 'lib-common/generated/api-types/messaging'
 import { client } from '../../api-client'
 import { createUrlSearchParams } from 'lib-common/api'
-import { deserializeJsonGetReceiversResponse } from 'lib-common/generated/api-types/messaging'
+import { deserializeJsonGetRecipientsResponse } from 'lib-common/generated/api-types/messaging'
 import { deserializeJsonPagedCitizenMessageThreads } from 'lib-common/generated/api-types/messaging'
 import { deserializeJsonThreadReply } from 'lib-common/generated/api-types/messaging'
 import { uri } from 'lib-common/uri'
@@ -71,14 +71,14 @@ export async function getReceivedMessages(
 
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageControllerCitizen.getReceivers
+* Generated from fi.espoo.evaka.messaging.MessageControllerCitizen.getRecipients
 */
-export async function getReceivers(): Promise<GetReceiversResponse> {
-  const { data: json } = await client.request<JsonOf<GetReceiversResponse>>({
-    url: uri`/citizen/messages/receivers`.toString(),
+export async function getRecipients(): Promise<GetRecipientsResponse> {
+  const { data: json } = await client.request<JsonOf<GetRecipientsResponse>>({
+    url: uri`/citizen/messages/recipients`.toString(),
     method: 'GET'
   })
-  return deserializeJsonGetReceiversResponse(json)
+  return deserializeJsonGetRecipientsResponse(json)
 }
 
 

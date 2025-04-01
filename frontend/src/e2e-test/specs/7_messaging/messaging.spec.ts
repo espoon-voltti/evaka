@@ -258,7 +258,7 @@ describe('Sending and receiving messages', () => {
         const messageEditor = await messagesPage.openMessageEditor()
         await messageEditor.sendNewMessage({
           ...defaultMessage,
-          receiverKeys: [`${testChild2.id}+false`]
+          recipientKeys: [`${testChild2.id}+false`]
         })
         await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 
@@ -417,7 +417,7 @@ describe('Sending and receiving messages', () => {
       })
 
       test('Citizen sends a message to the unit supervisor', async () => {
-        const receivers = ['Esimies Essi']
+        const recipients = ['Esimies Essi']
         await openCitizen(mockedDateAt10)
         await citizenPage.goto(config.enduserMessagesUrl)
         const citizenMessagesPage = new CitizenMessagesPage(
@@ -428,7 +428,7 @@ describe('Sending and receiving messages', () => {
           defaultTitle,
           defaultContent,
           [],
-          receivers,
+          recipients,
           false
         )
         await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
@@ -447,7 +447,7 @@ describe('Sending and receiving messages', () => {
           mockedDate.addDays(-10),
           LocalTime.of(10, 2)
         )
-        const receivers = ['Esimies Essi']
+        const recipients = ['Esimies Essi']
         await openCitizen(tenDaysbeforePlacementAt10)
         await citizenPage.goto(config.enduserMessagesUrl)
         const citizenMessagesPage = new CitizenMessagesPage(
@@ -458,7 +458,7 @@ describe('Sending and receiving messages', () => {
           defaultTitle,
           defaultContent,
           [],
-          receivers,
+          recipients,
           false
         )
         await runPendingAsyncJobs(tenDaysbeforePlacementAt10.addMinutes(1))
@@ -497,7 +497,7 @@ describe('Sending and receiving messages', () => {
       })
 
       test('Citizen can send a message and receive a notification on success', async () => {
-        const receivers = ['Esimies Essi']
+        const recipients = ['Esimies Essi']
         await openCitizen(mockedDateAt10)
         await citizenPage.goto(config.enduserMessagesUrl)
         const citizenMessagesPage = new CitizenMessagesPage(
@@ -508,7 +508,7 @@ describe('Sending and receiving messages', () => {
           defaultTitle,
           defaultContent,
           [],
-          receivers,
+          recipients,
           false
         )
         await citizenMessagesPage.assertAriaLiveExistsAndIncludesNotification()
@@ -533,7 +533,7 @@ describe('Sending and receiving messages', () => {
           endDate: daycarePlacementFixture.endDate
         }).save()
 
-        const receivers = ['Esimies Essi']
+        const recipients = ['Esimies Essi']
         await openCitizen(mockedDateAt10)
         await citizenPage.goto(config.enduserMessagesUrl)
         const citizenMessagesPage = new CitizenMessagesPage(
@@ -544,7 +544,7 @@ describe('Sending and receiving messages', () => {
           defaultTitle,
           defaultContent,
           [],
-          receivers,
+          recipients,
           true
         )
         await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
@@ -559,7 +559,7 @@ describe('Sending and receiving messages', () => {
       })
 
       test('Unit supervisor sees the name of the child in a message sent by citizen', async () => {
-        const receivers = ['Esimies Essi']
+        const recipients = ['Esimies Essi']
         await openCitizen(mockedDateAt10)
         await citizenPage.goto(config.enduserMessagesUrl)
         const citizenMessagesPage = new CitizenMessagesPage(
@@ -570,7 +570,7 @@ describe('Sending and receiving messages', () => {
           defaultTitle,
           defaultContent,
           [],
-          receivers,
+          recipients,
           false
         )
         await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
@@ -794,7 +794,7 @@ describe('Sending and receiving messages', () => {
       })
 
       test('Citizen sends message to the unit supervisor and the group', async () => {
-        const receivers = ['Esimies Essi', 'Kosmiset vakiot (Henkilökunta)']
+        const recipients = ['Esimies Essi', 'Kosmiset vakiot (Henkilökunta)']
         await openCitizen(mockedDateAt10)
         await citizenPage.goto(config.enduserMessagesUrl)
         const citizenMessagesPage = new CitizenMessagesPage(
@@ -805,7 +805,7 @@ describe('Sending and receiving messages', () => {
           defaultTitle,
           defaultContent,
           [],
-          receivers,
+          recipients,
           false
         )
         await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))

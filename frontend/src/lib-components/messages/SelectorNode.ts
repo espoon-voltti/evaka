@@ -3,14 +3,14 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import {
-  messageReceiverIsStarter,
-  messageReceiverStartDate
+  selectableRecipientIsStarter,
+  selectableRecipientStartDate
 } from 'lib-common/api-types/messaging'
 import {
-  MessageReceiver,
-  MessageReceiversResponse,
+  DraftRecipient,
   MessageRecipient,
-  SelectableRecipient
+  SelectableRecipient,
+  SelectableRecipientsResponse
 } from 'lib-common/generated/api-types/messaging'
 import { UUID } from 'lib-common/types'
 import { TreeNode } from 'lib-components/atoms/dropdowns/TreeDropdown'
@@ -29,21 +29,21 @@ export interface SelectorNode extends TreeNode {
   children: SelectorNode[]
 }
 
-export const receiversAsSelectorNode = (
+export const selectableRecipientsToNode = (
   accountId: UUID,
-  receivers: MessageReceiversResponse[],
+  recipients: SelectableRecipientsResponse[],
   starterTranslation: string,
-  checkedRecipients: SelectableRecipient[] = []
+  checkedRecipients: DraftRecipient[] = []
 ): SelectorNode[] => {
-  const accountReceivers = receivers.find(
-    (receiver) => receiver.accountId === accountId
+  const accountRecipients = recipients.find(
+    (recipient) => recipient.accountId === accountId
   )?.receivers
 
-  if (!accountReceivers) {
+  if (!accountRecipients) {
     return []
   }
-  const selectorNodes = accountReceivers.map((r) =>
-    receiverAsSelectorNode(r, starterTranslation)
+  const selectorNodes = accountRecipients.map((r) =>
+    selectableRecipientToNode(r, starterTranslation)
   )
   if (selectorNodes.length === 1 && selectorNodes[0].children.length === 0) {
     return selectorNodes.map((node) => ({ ...node, checked: true }))
@@ -55,12 +55,12 @@ export const receiversAsSelectorNode = (
 }
 
 function checkSelected(
-  selectedRecipients: SelectableRecipient[],
+  selectedRecipients: DraftRecipient[],
   node: SelectorNode
 ): SelectorNode {
   if (
     selectedRecipients
-      .map((r) => receiverToKey(r.accountId, r.starter))
+      .map((r) => recipientToKey(r.accountId, r.starter))
       .includes(node.key)
   ) {
     return checkAll(node)
@@ -80,54 +80,54 @@ function checkAll(node: SelectorNode): SelectorNode {
   return { ...node, checked: true, children: node.children.map(checkAll) }
 }
 
-function receiverToKey(accountId: UUID, isStarter: boolean): string {
+function recipientToKey(accountId: UUID, isStarter: boolean): string {
   return `${accountId}+${isStarter}`
 }
 
-function receiverToRecipient(
-  receiver: MessageReceiver,
+function toRecipient(
+  selectableRecipient: SelectableRecipient,
   isStarter: boolean
 ): MessageRecipient {
-  switch (receiver.type) {
+  switch (selectableRecipient.type) {
     case 'AREA':
       return {
         type: 'AREA',
-        id: receiver.id
+        id: selectableRecipient.id
       }
     case 'UNIT_IN_AREA':
       return {
         type: 'UNIT',
-        id: receiver.id,
+        id: selectableRecipient.id,
         starter: false
       }
 
     case 'UNIT':
       return {
         type: 'UNIT',
-        id: receiver.id,
+        id: selectableRecipient.id,
         starter: isStarter
       }
     case 'GROUP':
       return {
         type: 'GROUP',
-        id: receiver.id,
+        id: selectableRecipient.id,
         starter: isStarter
       }
     case 'CHILD':
       return {
         type: 'CHILD',
-        id: receiver.id,
+        id: selectableRecipient.id,
         starter: isStarter
       }
     case 'CITIZEN':
       return {
         type: 'CITIZEN',
-        id: receiver.id
+        id: selectableRecipient.id
       }
   }
 }
 
-function keyToReceiver(key: string): {
+function keyToSelectableRecipient(key: string): {
   accountId: UUID
   isStarter: boolean
 } {
@@ -135,8 +135,8 @@ function keyToReceiver(key: string): {
   return { accountId, isStarter: isStarter === 'true' }
 }
 
-export function selectedNodeToReceiver(node: SelectedNode) {
-  const r = keyToReceiver(node.key)
+export function nodeToSelectableRecipient(node: SelectedNode) {
+  const r = keyToSelectableRecipient(node.key)
   return {
     id: r.accountId,
     isStarter: r.isStarter,
@@ -144,24 +144,24 @@ export function selectedNodeToReceiver(node: SelectedNode) {
   }
 }
 
-function receiverAsSelectorNode(
-  receiver: MessageReceiver,
+function selectableRecipientToNode(
+  recipient: SelectableRecipient,
   starterTranslation: string
 ): SelectorNode {
-  const startDate = messageReceiverStartDate(receiver)
-  const isStarter = messageReceiverIsStarter(receiver)
+  const startDate = selectableRecipientStartDate(recipient)
+  const isStarter = selectableRecipientIsStarter(recipient)
   const nameWithStarterIndication = isStarter
-    ? `${receiver.name} (${startDate?.format() ?? starterTranslation})`
-    : receiver.name
+    ? `${recipient.name} (${startDate?.format() ?? starterTranslation})`
+    : recipient.name
   return {
-    key: receiverToKey(receiver.id, isStarter),
+    key: recipientToKey(recipient.id, isStarter),
     checked: false,
     text: nameWithStarterIndication,
-    messageRecipient: receiverToRecipient(receiver, isStarter),
+    messageRecipient: toRecipient(recipient, isStarter),
     children:
-      'receivers' in receiver
-        ? receiver.receivers.map((r) =>
-            receiverAsSelectorNode(r, starterTranslation)
+      'receivers' in recipient
+        ? recipient.receivers.map((r) =>
+            selectableRecipientToNode(r, starterTranslation)
           )
         : []
   }

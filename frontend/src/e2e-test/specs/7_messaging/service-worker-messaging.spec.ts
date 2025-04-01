@@ -216,7 +216,7 @@ describe('Service Worker Messaging', () => {
       await folderMessagesPage.openFirstThreadReplyEditor()
     })
 
-    it('should prefill the receiver and title fields when sending a new message', async () => {
+    it('should prefill the recipient and title fields when sending a new message', async () => {
       await openStaffPage(mockedTime, serviceWorker)
       const applReadView = new ApplicationReadView(staffPage)
       await applReadView.navigateToApplication(applicationFixtureId)
@@ -224,7 +224,7 @@ describe('Service Worker Messaging', () => {
         await applReadView.openMessagesPage()
       ).getMessageEditor()
 
-      await messageEditor.assertReceiver(
+      await messageEditor.assertRecipient(
         `${testAdult.lastName} ${testAdult.firstName}`
       )
       await messageEditor.assertTitle(

@@ -313,7 +313,7 @@ ON CONFLICT (thread_id, participant_id) DO UPDATE SET last_message_timestamp = $
     }
 }
 
-fun Database.Transaction.upsertReceiverThreadParticipants(
+fun Database.Transaction.upsertRecipientThreadParticipants(
     contentId: MessageContentId,
     now: HelsinkiDateTime,
 ) {
@@ -331,7 +331,7 @@ ON CONFLICT (thread_id, participant_id) DO UPDATE SET last_message_timestamp = $
         }
         .execute()
 
-    // If the receiver has archived the thread, move it back to inbox
+    // If the recipient has archived the thread, move it back to inbox
     createUpdate {
             sql(
                 """
@@ -892,7 +892,7 @@ data class MessageAccountAccess(
     val reply: Set<MessageAccountWithPresence>,
 )
 
-fun Database.Read.getCitizenReceivers(
+fun Database.Read.getCitizenRecipients(
     today: LocalDate,
     accountId: MessageAccountId,
 ): Map<ChildId, MessageAccountAccess> {
@@ -1256,7 +1256,7 @@ LIMIT 1
     return null
 }
 
-data class UnitMessageReceiversResult(
+data class UnitMessageRecipientsResult(
     val accountId: MessageAccountId,
     val unitId: DaycareId?,
     val unitName: String?,
@@ -1268,7 +1268,7 @@ data class UnitMessageReceiversResult(
     val startDate: LocalDate?,
 )
 
-data class MunicipalMessageReceiversResult(
+data class MunicipalMessageRecipientsResult(
     val accountId: MessageAccountId,
     val areaId: AreaId,
     val areaName: String,
@@ -1276,11 +1276,11 @@ data class MunicipalMessageReceiversResult(
     val unitName: String,
 )
 
-fun Database.Read.getReceiversForNewMessage(
+fun Database.Read.getSelectableRecipients(
     idFilter: AccessControlFilter<MessageAccountId>,
     today: LocalDate,
-): List<MessageReceiversResponse> {
-    val unitReceivers =
+): List<SelectableRecipientsResponse> {
+    val unitRecipients =
         createQuery {
                 sql(
                     """
@@ -1303,14 +1303,14 @@ fun Database.Read.getReceiversForNewMessage(
                         earlier_p.child_id = p.child_id
             )
         ), children AS (
-            WITH current_group_receivers AS (
+            WITH current_group_recipients AS (
                 SELECT a.id AS account_id, p.child_id, NULL::uuid AS unit_id, NULL::text AS unit_name, p.group_id, g.name AS group_name, NULL::date AS start_date
                 FROM accounts a
                 JOIN realized_placement_all(${bind(today)}) p ON a.daycare_group_id = p.group_id
                 JOIN daycare d ON p.unit_id = d.id
                 JOIN daycare_group g ON p.group_id = g.id
                 WHERE 'MESSAGING' = ANY(d.enabled_pilot_features)
-            ), current_unit_receivers AS (
+            ), current_unit_recipients AS (
                 SELECT a.id AS account_id, p.child_id, p.unit_id, d.name AS unit_name, p.group_id, g.name AS group_name, NULL::date AS start_date
                 FROM accounts a
                 JOIN daycare_acl_view acl ON a.employee_id = acl.employee_id
@@ -1318,14 +1318,14 @@ fun Database.Read.getReceiversForNewMessage(
                 JOIN daycare_group g ON d.id = g.daycare_id
                 JOIN realized_placement_all(${bind(today)}) p ON g.id = p.group_id
                 WHERE 'MESSAGING' = ANY(d.enabled_pilot_features)
-            ), starting_group_receivers AS (
+            ), starting_group_recipients AS (
                 SELECT a.id AS account_id, p.child_id, NULL::uuid AS unit_id, NULL::text AS unit_name, p.group_id, g.name AS group_name, p.start_date
                 FROM accounts a
                 JOIN starting_children p ON a.daycare_group_id = p.group_id
                 JOIN daycare d ON p.unit_id = d.id
                 JOIN daycare_group g ON p.group_id = g.id
                 WHERE 'MESSAGING' = ANY(d.enabled_pilot_features)
-            ), starting_unit_receivers AS (
+            ), starting_unit_recipients AS (
                 SELECT a.id AS account_id, p.child_id, p.unit_id, d.name AS unit_name, p.group_id, g.name AS group_name, p.start_date
                 FROM accounts a
                 JOIN daycare_acl_view acl ON a.employee_id = acl.employee_id
@@ -1334,13 +1334,13 @@ fun Database.Read.getReceiversForNewMessage(
                 LEFT JOIN daycare_group g ON p.group_id = g.id
                 WHERE 'MESSAGING' = ANY(d.enabled_pilot_features)
             )
-            SELECT * FROM current_group_receivers
+            SELECT * FROM current_group_recipients
             UNION ALL
-            SELECT * FROM current_unit_receivers
+            SELECT * FROM current_unit_recipients
             UNION ALL
-            SELECT * FROM starting_group_receivers
+            SELECT * FROM starting_group_recipients
             UNION ALL
-            SELECT * FROM starting_unit_receivers
+            SELECT * FROM starting_unit_recipients
         )
         SELECT DISTINCT
             c.account_id,
@@ -1367,29 +1367,29 @@ fun Database.Read.getReceiversForNewMessage(
         """
                 )
             }
-            .toList<UnitMessageReceiversResult>()
+            .toList<UnitMessageRecipientsResult>()
             .groupBy { it.accountId }
-            .map { (groupKey, receivers) ->
+            .map { (groupKey, recipients) ->
                 val units =
-                    receivers.groupBy { Triple(it.unitId, it.unitName, it.startDate != null) }
-                val accountReceivers =
+                    recipients.groupBy { Triple(it.unitId, it.unitName, it.startDate != null) }
+                val accountRecipients =
                     units.flatMap { (unit, groups) ->
                         val (unitId, unitName) = unit
-                        if (unitId == null || unitName == null) getReceiverGroups(groups)
+                        if (unitId == null || unitName == null) getRecipientGroups(groups)
                         else
                             listOf(
-                                MessageReceiver.Unit(
+                                SelectableRecipient.Unit(
                                     id = unitId,
                                     name = unitName,
                                     hasStarters = groups.any { it.startDate != null },
-                                    receivers = getReceiverGroups(groups),
+                                    receivers = getRecipientGroups(groups),
                                 )
                             )
                     }
-                MessageReceiversResponse(accountId = groupKey, receivers = accountReceivers)
+                SelectableRecipientsResponse(accountId = groupKey, receivers = accountRecipients)
             }
 
-    val municipalReceivers =
+    val municipalRecipients =
         createQuery {
                 sql(
                     """
@@ -1407,45 +1407,45 @@ fun Database.Read.getReceiversForNewMessage(
         """
                 )
             }
-            .toList<MunicipalMessageReceiversResult>()
+            .toList<MunicipalMessageRecipientsResult>()
             .groupBy { it.accountId }
-            .map { (accountId, receivers) ->
-                val areas = receivers.groupBy { it.areaId to it.areaName }
-                val accountReceivers =
+            .map { (accountId, recipients) ->
+                val areas = recipients.groupBy { it.areaId to it.areaName }
+                val accountRecipients =
                     areas.map { (area, units) ->
                         val (areaId, areaName) = area
-                        MessageReceiver.Area(
+                        SelectableRecipient.Area(
                             id = areaId,
                             name = areaName,
                             receivers =
                                 units.map { unit ->
-                                    MessageReceiver.UnitInArea(
+                                    SelectableRecipient.UnitInArea(
                                         id = unit.unitId,
                                         name = unit.unitName,
                                     )
                                 },
                         )
                     }
-                MessageReceiversResponse(accountId = accountId, receivers = accountReceivers)
+                SelectableRecipientsResponse(accountId = accountId, receivers = accountRecipients)
             }
 
-    return municipalReceivers + unitReceivers
+    return municipalRecipients + unitRecipients
 }
 
-private fun getReceiverGroups(
-    receivers: List<UnitMessageReceiversResult>
-): List<MessageReceiver.Group> =
-    receivers
+private fun getRecipientGroups(
+    recipients: List<UnitMessageRecipientsResult>
+): List<SelectableRecipient.Group> =
+    recipients
         .groupBy { it.groupId to it.groupName }
         .map { (group, children) ->
             val (groupId, groupName) = group
-            MessageReceiver.Group(
+            SelectableRecipient.Group(
                 id = groupId,
                 name = groupName,
                 hasStarters = children.any { it.startDate != null },
                 receivers =
                     children.map {
-                        MessageReceiver.Child(
+                        SelectableRecipient.Child(
                             id = it.childId,
                             name = formatName(it.firstName, it.lastName, true),
                             startDate = it.startDate,
@@ -1649,18 +1649,18 @@ WITH groups AS (
     FROM groups
 ), recipients AS (
     -- group accounts
-    SELECT receiver_acc.id
+    SELECT recipient_acc.id
     FROM groups g
-    JOIN message_account receiver_acc ON receiver_acc.daycare_group_id = g.group_id
+    JOIN message_account recipient_acc ON recipient_acc.daycare_group_id = g.group_id
 
     UNION ALL
 
     -- unit supervisor and special education teacher accounts
-    SELECT receiver_acc.id
+    SELECT recipient_acc.id
     FROM units u
     JOIN daycare_acl unit_employee ON unit_employee.daycare_id = u.unit_id
       AND unit_employee.role = ANY('{UNIT_SUPERVISOR,SPECIAL_EDUCATION_TEACHER}'::user_role[])
-    JOIN message_account receiver_acc ON receiver_acc.employee_id = unit_employee.employee_id
+    JOIN message_account recipient_acc ON recipient_acc.employee_id = unit_employee.employee_id
 )
 SELECT id
 FROM recipients

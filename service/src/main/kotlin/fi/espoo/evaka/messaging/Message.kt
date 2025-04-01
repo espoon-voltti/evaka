@@ -13,7 +13,6 @@ import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
-import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.MessageContentId
 import fi.espoo.evaka.shared.MessageId
@@ -135,22 +134,31 @@ enum class MessageType : DatabaseEnum {
     override val sqlType: String = "message_type"
 }
 
-data class MessageReceiversResponse(
+enum class MessageRecipientType {
+    AREA,
+    UNIT,
+    UNIT_IN_AREA,
+    GROUP,
+    CHILD,
+    CITIZEN,
+}
+
+data class SelectableRecipientsResponse(
     val accountId: MessageAccountId,
-    val receivers: List<MessageReceiver>,
+    val receivers: List<SelectableRecipient>,
 )
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
-sealed class MessageReceiver(val type: MessageRecipientType) {
+sealed class SelectableRecipient(val type: MessageRecipientType) {
     abstract val name: String
 
     @JsonTypeName("AREA")
     data class Area(val id: AreaId, override val name: String, val receivers: List<UnitInArea>) :
-        MessageReceiver(MessageRecipientType.AREA)
+        SelectableRecipient(MessageRecipientType.AREA)
 
     @JsonTypeName("UNIT_IN_AREA")
     data class UnitInArea(val id: DaycareId, override val name: String) :
-        MessageReceiver(MessageRecipientType.UNIT_IN_AREA)
+        SelectableRecipient(MessageRecipientType.UNIT_IN_AREA)
 
     @JsonTypeName("UNIT")
     data class Unit(
@@ -158,7 +166,7 @@ sealed class MessageReceiver(val type: MessageRecipientType) {
         override val name: String,
         val receivers: List<Group>,
         val hasStarters: Boolean,
-    ) : MessageReceiver(MessageRecipientType.UNIT)
+    ) : SelectableRecipient(MessageRecipientType.UNIT)
 
     @JsonTypeName("GROUP")
     data class Group(
@@ -166,15 +174,15 @@ sealed class MessageReceiver(val type: MessageRecipientType) {
         override val name: String,
         val receivers: List<Child>,
         val hasStarters: Boolean,
-    ) : MessageReceiver(MessageRecipientType.GROUP)
+    ) : SelectableRecipient(MessageRecipientType.GROUP)
 
     @JsonTypeName("CHILD")
     data class Child(val id: ChildId, override val name: String, val startDate: LocalDate?) :
-        MessageReceiver(MessageRecipientType.CHILD)
+        SelectableRecipient(MessageRecipientType.CHILD)
 
     @JsonTypeName("CITIZEN")
     data class Citizen(val id: PersonId, override val name: String) :
-        MessageReceiver(MessageRecipientType.CITIZEN)
+        SelectableRecipient(MessageRecipientType.CITIZEN)
 }
 
 enum class AccountType : DatabaseEnum {
@@ -216,15 +224,6 @@ data class AuthorizedMessageAccount(
     @Nested("account_") val account: MessageAccount,
     @Nested("group_") val daycareGroup: Group?,
 )
-
-enum class MessageRecipientType {
-    AREA,
-    UNIT,
-    UNIT_IN_AREA,
-    GROUP,
-    CHILD,
-    CITIZEN,
-}
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 sealed class MessageRecipient(val type: MessageRecipientType) {

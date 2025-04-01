@@ -16,7 +16,7 @@ import { routes } from '../App'
 import { renderResult } from '../async-rendering'
 
 import MessageEditor from './MessageEditor'
-import { recipientsQuery } from './queries'
+import { selectableRecipientsQuery } from './queries'
 import { MessageContext } from './state'
 
 export default function NewMessagePage({
@@ -25,7 +25,7 @@ export default function NewMessagePage({
   unitOrGroup: UnitOrGroup
 }) {
   const { groupAccount } = useContext(MessageContext)
-  const recipients = useQueryResult(recipientsQuery(), {
+  const recipients = useQueryResult(selectableRecipientsQuery(), {
     enabled: unitOrGroup.type === 'group'
   })
   const navigate = useNavigate()

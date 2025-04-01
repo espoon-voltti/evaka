@@ -10,7 +10,7 @@ import { combine } from 'lib-common/api'
 import { AttendanceChild } from 'lib-common/generated/api-types/attendance'
 import {
   AuthorizedMessageAccount,
-  MessageReceiver
+  SelectableRecipient
 } from 'lib-common/generated/api-types/messaging'
 import { DaycareId } from 'lib-common/generated/api-types/shared'
 import {
@@ -32,7 +32,7 @@ import { BackButtonInline } from '../common/components'
 import { useTranslation } from '../common/i18n'
 
 import MessageEditor from './MessageEditor'
-import { messagingAccountsQuery, recipientsQuery } from './queries'
+import { messagingAccountsQuery, selectableRecipientsQuery } from './queries'
 
 interface Props {
   unitId: DaycareId
@@ -48,38 +48,38 @@ const NewChildMessagePage = React.memo(function NewChildMessagePage({
   const { i18n } = useTranslation()
 
   const navigate = useNavigate()
-  const messageReceivers = useQueryResult(recipientsQuery())
+  const messageRecipients = useQueryResult(selectableRecipientsQuery())
 
-  const receivers = useMemo(() => {
-    const findChildReceivers = (
-      receiver: MessageReceiver
-    ): MessageReceiver[] =>
-      receiver.type === 'CHILD' && receiver.id === child.id
-        ? [receiver]
-        : 'receivers' in receiver
-          ? receiver.receivers.flatMap(findChildReceivers)
+  const recipients = useMemo(() => {
+    const findChildRecipients = (
+      recipient: SelectableRecipient
+    ): SelectableRecipient[] =>
+      recipient.type === 'CHILD' && recipient.id === child.id
+        ? [recipient]
+        : 'receivers' in recipient
+          ? recipient.receivers.flatMap(findChildRecipients)
           : []
 
-    return messageReceivers.map((accounts) =>
+    return messageRecipients.map((accounts) =>
       accounts
         .map((account) => ({
           ...account,
-          receivers: account.receivers.flatMap(findChildReceivers)
+          receivers: account.receivers.flatMap(findChildRecipients)
         }))
         .filter((account) => account.receivers.length > 0)
     )
-  }, [child.id, messageReceivers])
+  }, [child.id, messageRecipients])
 
   const onHide = useCallback(() => {
     void navigate(-1)
   }, [navigate])
 
-  return renderResult(receivers, (receivers) =>
-    childGroupAccount !== undefined && receivers.length > 0 ? (
+  return renderResult(recipients, (recipients) =>
+    childGroupAccount !== undefined && recipients.length > 0 ? (
       <MessageEditor
         unitId={unitId}
         account={childGroupAccount.account}
-        availableRecipients={receivers}
+        availableRecipients={recipients}
         draft={undefined}
         onClose={onHide}
       />
@@ -93,8 +93,10 @@ const NewChildMessagePage = React.memo(function NewChildMessagePage({
       >
         <TopBar title={i18n.messages.newMessage} unitId={unitId} />
         <PaddedContainer>
-          {receivers.length === 0 ? (
-            <span data-qa="info-no-receivers">{i18n.messages.noReceivers}</span>
+          {recipients.length === 0 ? (
+            <span data-qa="info-no-recipients">
+              {i18n.messages.noRecipients}
+            </span>
           ) : (
             <span data-qa="no-account-access">
               {i18n.messages.noAccountAccess}

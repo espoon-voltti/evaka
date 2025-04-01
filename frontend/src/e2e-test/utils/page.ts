@@ -608,7 +608,7 @@ export class Modal extends Element {
 
 export class TreeDropdown extends Element {
   values = this.findByDataQa('selected-values').findAllByDataQa('value')
-  labels = this.findByDataQa('select-receiver-tree').findAll('label')
+  labels = this.findByDataQa('select-recipient-tree').findAll('label')
 
   private async expanded(): Promise<boolean> {
     return (

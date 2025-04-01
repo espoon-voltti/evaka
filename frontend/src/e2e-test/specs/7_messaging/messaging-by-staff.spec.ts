@@ -261,13 +261,13 @@ describe('Sending and receiving messages', () => {
     await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
     const messagesPage = new MessagesPage(unitSupervisorPage)
     const messageEditor = await messagesPage.openMessageEditor()
-    const receiverSelector = messageEditor.receiverSelection
-    await receiverSelector.open()
-    await receiverSelector.expandAll() // open first level
-    await receiverSelector.expandAll() // open second level
-    const labels = await receiverSelector.labels.allTexts()
+    const recipientSelector = messageEditor.recipientSelection
+    await recipientSelector.open()
+    await recipientSelector.expandAll() // open first level
+    await recipientSelector.expandAll() // open second level
+    const labels = await recipientSelector.labels.allTexts()
     const starterChildLabel = `${testChild.lastName} ${testChild.firstName} (${mockedDate.addYears(1).addDays(1).format()})`
-    const expectedReceiverNames = [
+    const expectedRecipientNames = [
       testDaycare.name,
       testDaycareGroup.name,
       `${testChild.lastName} ${testChild.firstName}`,
@@ -276,11 +276,11 @@ describe('Sending and receiving messages', () => {
       `${preschoolGroup.name} (aloittavat lapset)`,
       starterChildLabel
     ]
-    expect(labels).toEqual(expectedReceiverNames)
+    expect(labels).toEqual(expectedRecipientNames)
 
     // Send a message to a starter child -> selects the whole unit
-    await receiverSelector.optionByLabel(starterChildLabel).click()
-    await receiverSelector.close()
+    await recipientSelector.optionByLabel(starterChildLabel).click()
+    await recipientSelector.close()
     await messageEditor.inputTitle.fill('Aloittavalle otsikko')
     await messageEditor.inputContent.fill('Sisältö')
     await messageEditor.sendButton.click()
@@ -339,22 +339,22 @@ describe('Sending and receiving messages', () => {
     await staffPage.goto(`${config.employeeUrl}/messages`)
     const messagesPage = new MessagesPage(staffPage)
     const messageEditor = await messagesPage.openMessageEditor()
-    const receiverSelector = messageEditor.receiverSelection
-    await receiverSelector.open()
-    await receiverSelector.expandAll()
-    const labels = await receiverSelector.labels.allTexts()
-    const expectedReceiverNames = [
+    const recipientSelector = messageEditor.recipientSelection
+    await recipientSelector.open()
+    await recipientSelector.expandAll()
+    const labels = await recipientSelector.labels.allTexts()
+    const expectedRecipientNames = [
       `${secondGroup.name} (aloittavat lapset)`,
       `${testChild.lastName} ${testChild.firstName} (${mockedDate.addYears(1).addDays(1).format()})`,
       `${testChild2.lastName} ${testChild2.firstName} (${mockedDate.addYears(1).addDays(1).format()})`
     ]
-    expect(labels).toEqual(expectedReceiverNames)
+    expect(labels).toEqual(expectedRecipientNames)
 
     // Send a message to a starter group (contains 2 children)
-    await receiverSelector
+    await recipientSelector
       .optionByLabel(`${secondGroup.name} (aloittavat lapset)`)
       .click()
-    await receiverSelector.close()
+    await recipientSelector.close()
     await messageEditor.inputTitle.fill('Aloittavalle otsikko')
     await messageEditor.inputContent.fill('Sisältö')
     await messageEditor.sendButton.click()
@@ -400,7 +400,7 @@ describe('Sending and receiving sensitive messages', () => {
     const sensitiveMessage = {
       ...defaultMessage,
       sensitive: true,
-      receiverKeys: [`${testChild2.id}+false`]
+      recipientKeys: [`${testChild2.id}+false`]
     }
 
     await initStaffPage(mockedDateAt10)
@@ -433,7 +433,7 @@ describe('Staff copies', () => {
     const message = {
       title: 'Ilmoitus',
       content: 'Ilmoituksen sisältö',
-      receiverKeys: [`${testDaycare.id}+false`],
+      recipientKeys: [`${testDaycare.id}+false`],
       type: 'BULLETIN' as const
     }
     const messageEditor = await new MessagesPage(
@@ -456,12 +456,12 @@ describe('Staff copies', () => {
     const message = {
       title: 'Ilmoitus',
       content: 'Ilmoituksen sisältö',
-      receiverKeys: [`${testChild2.id}+false`]
+      recipientKeys: [`${testChild2.id}+false`]
     }
     const bulletin = {
       title: 'Ilmoitus',
       content: 'Ilmoituksen sisältö',
-      receiverKeys: [`${testChild2.id}+false`],
+      recipientKeys: [`${testChild2.id}+false`],
       type: 'BULLETIN' as const
     }
     const messagesPage = new MessagesPage(unitSupervisorPage)
@@ -483,7 +483,7 @@ describe('Staff copies', () => {
       title: 'Ilmoitus',
       content: 'Ilmoituksen sisältö',
       sender: `${testDaycare.name} - ${testDaycareGroup.name}`,
-      receiverKeys: [`${testDaycareGroup.id}+false`]
+      recipientKeys: [`${testDaycareGroup.id}+false`]
     }
     const messageEditor = await new MessagesPage(
       unitSupervisorPage
@@ -535,7 +535,7 @@ describe('Additional filters', () => {
     const message = {
       title: 'Ilmoitus rajatulle joukolle',
       content: 'Ilmoituksen sisältö rajatulle joukolle',
-      receiverKeys: [`${testDaycare.id}+false`],
+      recipientKeys: [`${testDaycare.id}+false`],
       yearsOfBirth: [2014]
     }
     const messageEditor = await new MessagesPage(
@@ -568,7 +568,7 @@ describe('Additional filters', () => {
     const message = {
       title: 'Ilmoitus rajatulle joukolle',
       content: 'Ilmoituksen sisältö rajatulle joukolle',
-      receiverKeys: [`${testDaycare.id}+false`]
+      recipientKeys: [`${testDaycare.id}+false`]
     }
     let messageEditor = await new MessagesPage(
       unitSupervisorPage

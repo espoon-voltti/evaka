@@ -223,7 +223,7 @@ export default React.memo(function PersonFinanceNotesAndMessages({
         financeAccount &&
         personName !== undefined && (
           <MessageEditor
-            availableReceivers={[
+            selectableRecipients={[
               {
                 accountId: financeAccount.account.id,
                 receivers: [

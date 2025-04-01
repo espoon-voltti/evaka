@@ -8,7 +8,7 @@ import {
   archiveThread,
   getMyAccount,
   getReceivedMessages,
-  getReceivers,
+  getRecipients,
   getUnreadMessages,
   markLastReceivedMessageInThreadUnread,
   markThreadRead,
@@ -23,7 +23,7 @@ export const receivedMessagesQuery = q.pagedInfiniteQuery(
   (thread) => thread.id
 )
 
-export const receiversQuery = q.query(getReceivers)
+export const recipientsQuery = q.query(getRecipients)
 
 export const messageAccountQuery = q.query(getMyAccount)
 

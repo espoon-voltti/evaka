@@ -513,7 +513,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Test
     fun `guardian can send a message only to group and other guardian, not group staff`() {
         fun getRecipients() =
-            getCitizenReceivers(person1).messageAccounts.map { it.account.id }.toSet()
+            getCitizenRecipients(person1).messageAccounts.map { it.account.id }.toSet()
 
         assertEquals(setOf(group1Account, person2Account, employee1Account), getRecipients())
 
@@ -1615,7 +1615,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             group1Account,
             "title",
             "content",
-            setOf(SelectableRecipient(person2Account, false)),
+            setOf(DraftRecipient(person2Account, false)),
             emptyList(),
             clock.now().minusDays(updatedDaysAgo.toLong()),
         )
@@ -2060,7 +2060,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         accountId: MessageAccountId,
         title: String,
         content: String,
-        recipients: Set<SelectableRecipient>,
+        recipients: Set<DraftRecipient>,
         recipientNames: List<String>,
         now: HelsinkiDateTime,
     ) {
@@ -2143,10 +2143,10 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         return messageControllerCitizen.getMyAccount(dbInstance(), user, MockEvakaClock(readTime))
     }
 
-    private fun getCitizenReceivers(
+    private fun getCitizenRecipients(
         user: AuthenticatedUser.Citizen
-    ): MessageControllerCitizen.GetReceiversResponse {
-        return messageControllerCitizen.getReceivers(dbInstance(), user, MockEvakaClock(readTime))
+    ): MessageControllerCitizen.GetRecipientsResponse {
+        return messageControllerCitizen.getRecipients(dbInstance(), user, MockEvakaClock(readTime))
     }
 
     private fun unreadMessagesCount(

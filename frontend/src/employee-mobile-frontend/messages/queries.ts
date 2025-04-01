@@ -17,7 +17,7 @@ import {
   getAccountsByDevice,
   getDraftMessages,
   getReceivedMessages,
-  getReceiversForNewMessage,
+  getSelectableRecipients,
   getSentMessages,
   getThread,
   getUnreadMessagesByUnit,
@@ -55,7 +55,7 @@ export const draftMessagesQuery = q.query(getDraftMessages)
 export const threadQuery = q.query(getThread)
 
 // The results are dependent on the PIN-logged user
-export const recipientsQuery = q.query(getReceiversForNewMessage)
+export const selectableRecipientsQuery = q.query(getSelectableRecipients)
 
 export const unreadCountsQuery = q.query(getUnreadMessagesByUnit)
 

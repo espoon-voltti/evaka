@@ -6,7 +6,7 @@ import isEqual from 'lodash/isEqual'
 import React, { useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import { sortReceivers } from 'lib-common/api-types/messaging'
+import { sortSelectableRecipients } from 'lib-common/api-types/messaging'
 import { boolean, string } from 'lib-common/form/fields'
 import { array, mapped, object, recursive, value } from 'lib-common/form/form'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
@@ -14,9 +14,9 @@ import { Form } from 'lib-common/form/types'
 import {
   DraftContent,
   MessageAccount,
-  MessageReceiversResponse,
   MessageRecipient,
   PostMessageBody,
+  SelectableRecipientsResponse,
   UpdatableDraftContent
 } from 'lib-common/generated/api-types/messaging'
 import {
@@ -34,8 +34,8 @@ import { InputFieldF } from 'lib-components/atoms/form/InputField'
 import { ContentArea } from 'lib-components/layout/Container'
 import {
   getSelected,
-  receiversAsSelectorNode,
-  selectedNodeToReceiver,
+  selectableRecipientsToNode,
+  nodeToSelectableRecipient,
   SelectorNode
 } from 'lib-components/messages/SelectorNode'
 import { ConfirmedMutation } from 'lib-components/molecules/ConfirmedMutation'
@@ -103,10 +103,12 @@ const messageForm = mapped(
             },
       draftContent: (): UpdatableDraftContent => ({
         ...commonContent,
-        recipients: selectedRecipients.map(selectedNodeToReceiver).map((r) => ({
-          accountId: r.id,
-          starter: r.isStarter
-        })),
+        recipients: selectedRecipients
+          .map(nodeToSelectableRecipient)
+          .map((r) => ({
+            accountId: r.id,
+            starter: r.isStarter
+          })),
         recipientNames: selectedRecipients.map((r) => r.text)
       })
     }
@@ -116,7 +118,7 @@ const messageForm = mapped(
 interface Props {
   unitId: DaycareId
   account: MessageAccount
-  availableRecipients: MessageReceiversResponse[]
+  availableRecipients: SelectableRecipientsResponse[]
   draft: DraftContent | undefined
   onClose: () => void
 }
@@ -151,11 +153,11 @@ export default React.memo(function MessageEditor({
     () =>
       draft
         ? {
-            recipients: receiversAsSelectorNode(
+            recipients: selectableRecipientsToNode(
               accountId,
               availableRecipients.map((r) => ({
                 ...r,
-                receivers: sortReceivers(r.receivers)
+                receivers: sortSelectableRecipients(r.receivers)
               })),
               i18n.messages.messageEditor.starters,
               draft.recipients
@@ -165,11 +167,11 @@ export default React.memo(function MessageEditor({
             content: draft.content
           }
         : {
-            recipients: receiversAsSelectorNode(
+            recipients: selectableRecipientsToNode(
               accountId,
               availableRecipients.map((r) => ({
                 ...r,
-                receivers: sortReceivers(r.receivers)
+                receivers: sortSelectableRecipients(r.receivers)
               })),
               i18n.messages.messageEditor.starters
             ),
