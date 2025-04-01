@@ -11,8 +11,8 @@ import { Action } from '../action'
 import { ChildDocumentId } from './shared'
 import { DocumentConfidentiality } from './process'
 import { DocumentTemplateId } from './shared'
-import { EmployeeId } from './shared'
 import { EvakaUser } from './user'
+import { EvakaUserId } from './shared'
 import { JsonOf } from '../../json'
 import { OfficialLanguage } from './shared'
 import { PersonId } from './shared'
@@ -134,6 +134,8 @@ export interface ChildDocumentCitizenDetails {
 * Generated from fi.espoo.evaka.document.childdocument.ChildDocumentCitizenSummary
 */
 export interface ChildDocumentCitizenSummary {
+  answeredAt: HelsinkiDateTime | null
+  answeredBy: EvakaUser | null
   id: ChildDocumentId
   publishedAt: HelsinkiDateTime
   status: DocumentStatus
@@ -295,7 +297,7 @@ export type DocumentType = typeof documentTypes[number]
 * Generated from fi.espoo.evaka.document.childdocument.DocumentWriteLock
 */
 export interface DocumentWriteLock {
-  modifiedBy: EmployeeId
+  modifiedBy: EvakaUserId
   modifiedByName: string
   opensAt: HelsinkiDateTime
 }
@@ -479,6 +481,7 @@ export function deserializeJsonChildDocumentCitizenDetails(json: JsonOf<ChildDoc
 export function deserializeJsonChildDocumentCitizenSummary(json: JsonOf<ChildDocumentCitizenSummary>): ChildDocumentCitizenSummary {
   return {
     ...json,
+    answeredAt: (json.answeredAt != null) ? HelsinkiDateTime.parseIso(json.answeredAt) : null,
     publishedAt: HelsinkiDateTime.parseIso(json.publishedAt)
   }
 }

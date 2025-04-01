@@ -8,6 +8,7 @@ import fi.espoo.evaka.document.DocumentTemplate
 import fi.espoo.evaka.document.DocumentType
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.user.EvakaUser
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.json.Json
 
@@ -18,6 +19,8 @@ data class ChildDocumentCitizenSummary(
     val templateName: String,
     val publishedAt: HelsinkiDateTime,
     val unread: Boolean,
+    val answeredAt: HelsinkiDateTime?,
+    @Nested("answered_by") val answeredBy: EvakaUser?,
 )
 
 data class ChildDocumentCitizenDetails(

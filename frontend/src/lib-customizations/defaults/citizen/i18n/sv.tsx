@@ -2850,14 +2850,21 @@ const sv: Translations = {
         'Den valda dagen har barnet inte en sådan placering inom småbarnspedagogiken vars servicebehov kan ändras via eVaka. Kontakta enheten vid behov.'
     },
     childDocuments: {
-      title: 'Pedagogiska dokument',
+      title: 'Barnets dokument',
       plansTitle:
         'Planer för småbarnspedagogik och lärande inom förskoleundervisning',
       noVasus: 'Inga planer',
       hojksTitle: 'Individuella planer för hur undervisningen ska ordnas',
       otherDocumentsTitle: 'Andra dokument',
       noDocuments: 'Inga dokument',
-      confidential: 'Konfidentiellt'
+      confidential: 'Konfidentiellt',
+      notAnswered: 'Ei vastattu (sv)',
+      answered: 'Vastattu (sv)',
+      preview: 'Esikatsele (sv)',
+      send: 'Lähetä (sv)',
+      error: {
+        other: 'Asiakirjan tallentaminen epäonnistui. (sv)'
+      }
     }
   },
   accessibilityStatement: (

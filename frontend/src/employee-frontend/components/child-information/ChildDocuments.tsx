@@ -13,8 +13,7 @@ import { oneOf, required } from 'lib-common/form/form'
 import { useForm } from 'lib-common/form/hooks'
 import {
   ChildDocumentSummaryWithPermittedActions,
-  DocumentTemplateSummary,
-  DocumentType
+  DocumentTemplateSummary
 } from 'lib-common/generated/api-types/document'
 import {
   ChildId,
@@ -30,6 +29,7 @@ import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { SelectF } from 'lib-components/atoms/dropdowns/Select'
 import { ChildDocumentStateChip } from 'lib-components/document-templates/ChildDocumentStateChip'
+import { isInternal } from 'lib-components/document-templates/documents'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import {
   FixedSpaceColumn,
@@ -288,22 +288,6 @@ const ChildDocumentTables = ({
       )}
     </FixedSpaceColumn>
   )
-}
-
-const isInternal = (type: DocumentType): boolean => {
-  switch (type) {
-    case 'PEDAGOGICAL_REPORT':
-    case 'PEDAGOGICAL_ASSESSMENT':
-    case 'HOJKS':
-    case 'MIGRATED_VASU':
-    case 'MIGRATED_LEOPS':
-    case 'VASU':
-    case 'LEOPS':
-    case 'OTHER':
-      return true
-    case 'CITIZEN_BASIC':
-      return false
-  }
 }
 
 const CreationModal = React.memo(function CreationModal({

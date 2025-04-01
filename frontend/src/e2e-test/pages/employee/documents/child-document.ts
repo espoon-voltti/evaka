@@ -10,6 +10,7 @@ export class ChildDocumentPage {
   previewButton: Element
   editButton: Element
   returnButton: Element
+  sendButton: Element
   archiveButton: AsyncButton
   archiveTooltip: Element
   constructor(private readonly page: Page) {
@@ -18,6 +19,7 @@ export class ChildDocumentPage {
     this.previewButton = page.findByDataQa('preview-button')
     this.editButton = page.findByDataQa('edit-button')
     this.returnButton = page.findByDataQa('return-button')
+    this.sendButton = new AsyncButton(page.findByDataQa('send-button'))
     this.archiveButton = new AsyncButton(page.findByDataQa('archive-button'))
     this.archiveTooltip = page.findByDataQa('archive-tooltip')
   }
@@ -30,6 +32,16 @@ export class ChildDocumentPage {
       hasText: questionName
     })
     return new TextInput(question.findByDataQa('answer-input'))
+  }
+
+  getTextAnswer(sectionName: string, questionName: string) {
+    const section = this.page.find('[data-qa="document-section"]', {
+      hasText: sectionName
+    })
+    const question = section.find('[data-qa="document-question-preview"]', {
+      hasText: questionName
+    })
+    return question.findByDataQa('answer-preview')
   }
 
   async publish() {

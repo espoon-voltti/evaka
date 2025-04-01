@@ -8,7 +8,9 @@ import {
   getDocument,
   getDocuments,
   getUnreadDocumentsCount,
-  putDocumentRead
+  nextDocumentStatus,
+  putDocumentRead,
+  updateChildDocumentContent
 } from '../generated/api-clients/document'
 
 const q = new Queries()
@@ -19,4 +21,12 @@ export const unreadChildDocumentsCountQuery = q.query(getUnreadDocumentsCount)
 
 export const childDocumentReadMutation = q.mutation(putDocumentRead, [
   unreadChildDocumentsCountQuery
+])
+
+export const updateChildDocumentContentMutation = q.mutation(
+  updateChildDocumentContent
+  // do not invalidate automatically because of auto-save
+)
+export const nextDocumentStatusMutation = q.mutation(nextDocumentStatus, [
+  childDocumentDetailsQuery
 ])

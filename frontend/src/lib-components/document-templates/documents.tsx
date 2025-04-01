@@ -12,6 +12,7 @@ import {
   AnsweredQuestion,
   DocumentContent,
   DocumentTemplateContent,
+  DocumentType,
   Question
 } from 'lib-common/generated/api-types/document'
 
@@ -197,3 +198,19 @@ export const getDocumentFormInitialState = (
     }),
     infoText: section.infoText
   }))
+
+export const isInternal = (type: DocumentType): boolean => {
+  switch (type) {
+    case 'PEDAGOGICAL_REPORT':
+    case 'PEDAGOGICAL_ASSESSMENT':
+    case 'HOJKS':
+    case 'MIGRATED_VASU':
+    case 'MIGRATED_LEOPS':
+    case 'VASU':
+    case 'LEOPS':
+    case 'OTHER':
+      return true
+    case 'CITIZEN_BASIC':
+      return false
+  }
+}

@@ -3,20 +3,19 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useEffect } from 'react'
+import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
 import Footer from 'citizen-frontend/Footer'
 import { renderResult } from 'citizen-frontend/async-rendering'
 import { useTranslation } from 'citizen-frontend/localization'
 import { useForm } from 'lib-common/form/hooks'
-import {
-  ChildDocumentCitizenDetails,
-  ChildDocumentDetails
-} from 'lib-common/generated/api-types/document'
+import { ChildDocumentCitizenDetails } from 'lib-common/generated/api-types/document'
 import { ChildDocumentId } from 'lib-common/generated/api-types/shared'
 import { useMutation, useQueryResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import { Button } from 'lib-components/atoms/buttons/Button'
+import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { tabletMin } from 'lib-components/breakpoints'
 import { ChildDocumentStateChip } from 'lib-components/document-templates/ChildDocumentStateChip'
@@ -30,6 +29,7 @@ import Content, {
   ContentArea
 } from 'lib-components/layout/Container'
 import {
+  AlignRight,
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
@@ -39,7 +39,11 @@ import { faArrowDownToLine, faPrint } from 'lib-icons'
 
 import { downloadChildDocument } from '../generated/api-clients/document'
 
-import { childDocumentDetailsQuery, childDocumentReadMutation } from './queries'
+import {
+  childDocumentDetailsQuery,
+  childDocumentReadMutation,
+  nextDocumentStatusMutation
+} from './queries'
 
 const TopButtonRow = styled(FixedSpaceRow)`
   @media (max-width: ${tabletMin}) {
@@ -90,12 +94,13 @@ export default React.memo(function ChildDocumentPage() {
         </TopButtonRow>
         <Gap size="s" />
 
-        {renderResult(childDocument, (document) => (
-          <ChildDocumentView document={document} />
-        ))}
+        {renderResult(childDocument, (document, isReloading) => {
+          // do not initialize form with possibly stale data
+          if (isReloading) return null
 
-        <Gap size="m" />
-        <ReturnButton label={i18n.common.return} />
+          return <ChildDocumentView document={document} />
+        })}
+
         <Gap size="s" />
       </Content>
       <Footer />
@@ -106,7 +111,7 @@ export default React.memo(function ChildDocumentPage() {
 const ChildDocumentView = React.memo(function ChildDocumentView({
   document
 }: {
-  document: ChildDocumentDetails | ChildDocumentCitizenDetails
+  document: ChildDocumentCitizenDetails
 }) {
   const i18n = useTranslation()
 
@@ -122,30 +127,69 @@ const ChildDocumentView = React.memo(function ChildDocumentView({
     i18n.validationErrors
   )
 
+  const navigate = useNavigate()
+
   return (
-    <Container>
-      <ContentArea opaque>
-        <FixedSpaceRow justifyContent="space-between">
-          <FixedSpaceColumn>
-            <H1 noMargin>{document.template.name}</H1>
-            <H2 noMargin translate="no">
-              {document.child.firstName} {document.child.lastName}
-              {document.child.dateOfBirth
-                ? ` (${document.child.dateOfBirth.format()})`
-                : ''}
-            </H2>
-          </FixedSpaceColumn>
-          <FixedSpaceColumn spacing="xs">
-            <ChildDocumentStateChip status={document.status} />
-            {document.template.confidentiality !== null && (
-              <Label>{i18n.children.childDocuments.confidential}</Label>
-            )}
-            <span>{document.template.legalBasis}</span>
-          </FixedSpaceColumn>
-        </FixedSpaceRow>
-        <Gap />
-        <DocumentView bind={bind} readOnly />
-      </ContentArea>
-    </Container>
+    <>
+      <Container>
+        <ContentArea opaque>
+          <FixedSpaceRow justifyContent="space-between">
+            <FixedSpaceColumn>
+              <H1 noMargin>{document.template.name}</H1>
+              <H2 noMargin translate="no">
+                {document.child.firstName} {document.child.lastName}
+                {document.child.dateOfBirth
+                  ? ` (${document.child.dateOfBirth.format()})`
+                  : ''}
+              </H2>
+            </FixedSpaceColumn>
+            <FixedSpaceColumn spacing="xs">
+              <ChildDocumentStateChip status={document.status} />
+              {document.template.confidentiality !== null && (
+                <Label>{i18n.children.childDocuments.confidential}</Label>
+              )}
+              <span>{document.template.legalBasis}</span>
+            </FixedSpaceColumn>
+          </FixedSpaceRow>
+          <Gap />
+          <DocumentView bind={bind} readOnly />
+        </ContentArea>
+      </Container>
+      <Gap size="m" />
+      <FixedSpaceRow
+        justifyContent="space-between"
+        alignItems="center"
+        gap={defaultMargins.m}
+      >
+        <ReturnButton label={i18n.common.return} data-qa="return-button" />
+        {document.status === 'CITIZEN_DRAFT' && (
+          <>
+            <Button
+              text={i18n.common.edit}
+              onClick={() =>
+                navigate(`/child-documents/${document.id}/edit`, {
+                  replace: true
+                })
+              }
+              data-qa="edit-button"
+            />
+            <AlignRight>
+              <MutateButton
+                mutation={nextDocumentStatusMutation}
+                onClick={() => ({
+                  documentId: document.id,
+                  body: {
+                    newStatus: 'COMPLETED' as const
+                  }
+                })}
+                text={i18n.children.childDocuments.send}
+                primary
+                data-qa="send-button"
+              />
+            </AlignRight>
+          </>
+        )}
+      </FixedSpaceRow>
+    </>
   )
 })

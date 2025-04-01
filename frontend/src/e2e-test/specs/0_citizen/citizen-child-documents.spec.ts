@@ -2,6 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import {
+  DocumentContent,
+  DocumentTemplateContent
+} from 'lib-common/generated/api-types/document'
 import { DocumentTemplateId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { randomId } from 'lib-common/id-type'
@@ -25,6 +29,7 @@ import {
 import { DevPerson } from '../../generated/api-types'
 import { CitizenChildPage } from '../../pages/citizen/citizen-children'
 import CitizenHeader from '../../pages/citizen/citizen-header'
+import { ChildDocumentPage } from '../../pages/employee/documents/child-document'
 import { Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
 
@@ -175,5 +180,81 @@ describe('Citizen child documents listing page', () => {
     await childPage.childDocumentLink(documentIdPed).click()
     expect(page.url.endsWith(`/child-documents/${documentIdPed}`)).toBeTruthy()
     await page.find('h1').assertTextEquals('Pedagoginen selvitys')
+  })
+})
+
+describe('Citizen child documents editor page', () => {
+  test('guardian can fill document and send', async () => {
+    const templateContent: DocumentTemplateContent = {
+      sections: [
+        {
+          id: randomId(),
+          infoText: '',
+          label: 'Testi',
+          questions: [
+            {
+              id: randomId(),
+              type: 'TEXT',
+              infoText: '',
+              label: 'Kysymys 1',
+              multiline: false
+            },
+            {
+              id: randomId(),
+              type: 'TEXT',
+              infoText: '',
+              label: 'Kysymys 2',
+              multiline: false
+            }
+          ]
+        }
+      ]
+    }
+    const template = await Fixture.documentTemplate({
+      type: 'CITIZEN_BASIC',
+      name: 'Lomake kuntalaiselle',
+      content: templateContent,
+      published: true
+    }).save()
+    const documentContent: DocumentContent = {
+      answers: []
+    }
+    const document = await Fixture.childDocument({
+      templateId: template.id,
+      childId: child.id,
+      status: 'CITIZEN_DRAFT',
+      content: documentContent,
+      publishedAt: mockedNow,
+      publishedContent: documentContent
+    }).save()
+
+    await header.openChildPage(child.id)
+    const childPage = new CitizenChildPage(page)
+    await childPage.openCollapsible('child-documents')
+    const row = childPage.childDocumentRow(document.id)
+    await row.assertTextEquals(
+      `${mockedNow.toLocalDate().format()}\tLomake kuntalaiselle\tEi vastattu\tTäytettävänä huoltajalla`
+    )
+    await childPage.childDocumentLink(document.id).click()
+    const childDocumentPage = new ChildDocumentPage(page)
+    await childDocumentPage.editButton.click()
+    await childDocumentPage.status.assertTextEquals('Täytettävänä huoltajalla')
+    const question1 = childDocumentPage.getTextQuestion('Testi', 'Kysymys 1')
+    await question1.fill('Jonkin sortin vastaus 1')
+    const question2 = childDocumentPage.getTextQuestion('Testi', 'Kysymys 2')
+    await question2.fill('Jonkin sortin vastaus 2')
+    await childDocumentPage.savingIndicator.waitUntilHidden()
+    await childDocumentPage.previewButton.click()
+    const answer1 = childDocumentPage.getTextAnswer('Testi', 'Kysymys 1')
+    await answer1.assertTextEquals('Jonkin sortin vastaus 1\n')
+    const answer2 = childDocumentPage.getTextAnswer('Testi', 'Kysymys 2')
+    await answer2.assertTextEquals('Jonkin sortin vastaus 2\n')
+    await childDocumentPage.sendButton.click()
+    await childDocumentPage.status.assertTextEquals('Valmis')
+    await childDocumentPage.returnButton.click()
+    await childPage.openCollapsible('child-documents')
+    await row.assertTextEquals(
+      `${mockedNow.toLocalDate().format()}\tLomake kuntalaiselle\tVastattu, ${mockedNow.toLocalDate().format()}, ${testAdult.lastName} ${testAdult.firstName}\tValmis`
+    )
   })
 })

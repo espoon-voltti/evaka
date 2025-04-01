@@ -725,7 +725,7 @@ WHERE employee_id = ${bind(user.id)}
 SELECT child_document.id AS id, child_id
 FROM child_document
 WHERE TRUE
-${if (editable) "AND status = ANY(${bind(DocumentStatus.values().filter { it.editable })}::child_document_status[])" else ""}
+${if (editable) "AND status = ANY(${bind(DocumentStatus.entries.filter { it.employeeEditable })}::child_document_status[])" else ""}
 ${if (deletable) "AND status = 'DRAFT' AND published_at IS NULL" else ""}
 ${if (publishable) "AND status <> 'COMPLETED'" else ""}
             """

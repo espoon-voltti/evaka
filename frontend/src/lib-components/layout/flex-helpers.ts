@@ -119,3 +119,7 @@ export const FixedSpaceFlexWrap = styled.div<FixedSpaceFlexWrapProps>`
         : defaultMargins.s};
   }
 `
+
+export const AlignRight = styled.div`
+  margin-left: auto;
+`

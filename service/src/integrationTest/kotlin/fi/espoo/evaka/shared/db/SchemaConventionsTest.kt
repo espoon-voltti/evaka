@@ -468,7 +468,6 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
                     ColumnsRef("employee", "id"),
                 ColumnsRef("assistance_need_preschool_decision", "created_by") to
                     ColumnsRef("employee", "id"),
-                ColumnsRef("child_document", "created_by") to ColumnsRef("employee", "id"),
             )
         val violations =
             columns
@@ -510,7 +509,6 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
                 ColumnRef("archived_process_history", "entered_by"),
                 ColumnRef("assistance_action_option_ref", "option_id"),
                 ColumnRef("assistance_factor", "modified_by"),
-                ColumnRef("child_document", "content_modified_by"),
                 ColumnRef("child_document_read", "person_id"),
                 ColumnRef("daycare", "finance_decision_handler"),
                 ColumnRef("daycare", "language_emphasis_id"),

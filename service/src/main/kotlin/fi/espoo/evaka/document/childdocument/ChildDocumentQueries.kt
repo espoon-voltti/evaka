@@ -6,7 +6,7 @@ package fi.espoo.evaka.document.childdocument
 
 import fi.espoo.evaka.shared.ArchivedProcessId
 import fi.espoo.evaka.shared.ChildDocumentId
-import fi.espoo.evaka.shared.EmployeeId
+import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -19,7 +19,7 @@ const val lockMinutes = 5
 fun Database.Transaction.insertChildDocument(
     document: ChildDocumentCreateRequest,
     now: HelsinkiDateTime,
-    userId: EmployeeId,
+    userId: EvakaUserId,
     processId: ArchivedProcessId?,
 ): ChildDocumentId {
     return createQuery {
@@ -101,7 +101,7 @@ fun Database.Read.getChildDocumentKey(id: ChildDocumentId): String? {
 }
 
 data class DocumentWriteLock(
-    val modifiedBy: EmployeeId,
+    val modifiedBy: EvakaUserId,
     val modifiedByName: String,
     val opensAt: HelsinkiDateTime,
 )
@@ -116,8 +116,8 @@ fun Database.Read.getCurrentWriteLock(
     SELECT 
         content_modified_by AS modified_by,
         (
-            SELECT coalesce(e.preferred_first_name, e.first_name) || ' ' || e.last_name 
-            FROM employee e WHERE e.id = cd.content_modified_by
+            SELECT e.name
+            FROM evaka_user e WHERE e.id = cd.content_modified_by
         ) AS modified_by_name,
         content_modified_at + interval '$lockMinutes minutes' AS opens_at
     FROM child_document cd
@@ -132,7 +132,7 @@ fun Database.Read.getCurrentWriteLock(
 fun Database.Transaction.tryTakeWriteLock(
     id: ChildDocumentId,
     now: HelsinkiDateTime,
-    userId: EmployeeId,
+    userId: EvakaUserId,
 ): Boolean =
     createUpdate {
             sql(
@@ -154,7 +154,7 @@ fun Database.Transaction.updateChildDocumentContent(
     status: DocumentStatus,
     content: DocumentContent,
     now: HelsinkiDateTime,
-    userId: EmployeeId,
+    userId: EvakaUserId,
 ) {
     createUpdate {
             sql(
@@ -170,6 +170,31 @@ fun Database.Transaction.updateChildDocumentContent(
                     content_modified_by = ${bind(userId)} OR 
                     content_modified_at < ${bind(now.minusMinutes(lockMinutes.toLong()))}
                 )
+                """
+            )
+        }
+        .updateExactlyOne()
+}
+
+fun Database.Transaction.updateChildDocumentPublishedContent(
+    id: ChildDocumentId,
+    status: DocumentStatus,
+    content: DocumentContent,
+    now: HelsinkiDateTime,
+    userId: EvakaUserId,
+) {
+    createUpdate {
+            sql(
+                """
+                UPDATE child_document
+                SET
+                    content = ${bind(content)},
+                    modified_at = ${bind(now)},
+                    content_modified_at = ${bind(now)},
+                    content_modified_by = ${bind(userId)},
+                    published_content = ${bind(content)},
+                    published_at = ${bind(now)}
+                WHERE id = ${bind(id)} AND status = ${bind(status)}
                 """
             )
         }
@@ -264,6 +289,25 @@ fun Database.Transaction.changeStatusAndPublish(
                 UPDATE child_document
                 SET status = ${bind(statusTransition.newStatus)}, modified_at = ${bind(now)}, 
                     published_at = ${bind(now)}, published_content = content
+                WHERE id = ${bind(id)} AND status = ${bind(statusTransition.currentStatus)}
+                """
+            )
+        }
+        .updateExactlyOne()
+}
+
+fun Database.Transaction.changeStatusAndSetAnswered(
+    id: ChildDocumentId,
+    statusTransition: StatusTransition,
+    now: HelsinkiDateTime,
+    userId: EvakaUserId,
+) {
+    createUpdate {
+            sql(
+                """
+                UPDATE child_document
+                SET status = ${bind(statusTransition.newStatus)}, modified_at = ${bind(now)},
+                    answered_at = ${bind(now)}, answered_by = ${bind(userId)}
                 WHERE id = ${bind(id)} AND status = ${bind(statusTransition.currentStatus)}
                 """
             )

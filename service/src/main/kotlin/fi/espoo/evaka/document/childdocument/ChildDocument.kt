@@ -117,11 +117,12 @@ data class DocumentContent(val answers: List<AnsweredQuestion<*>>) {
     override fun toString(): String = "**REDACTED**"
 }
 
-enum class DocumentStatus(val editable: Boolean) : DatabaseEnum {
-    DRAFT(editable = true),
-    PREPARED(editable = true),
-    CITIZEN_DRAFT(editable = false),
-    COMPLETED(editable = false);
+enum class DocumentStatus(val employeeEditable: Boolean, val citizenEditable: Boolean) :
+    DatabaseEnum {
+    DRAFT(employeeEditable = true, citizenEditable = false),
+    PREPARED(employeeEditable = true, citizenEditable = false),
+    CITIZEN_DRAFT(employeeEditable = false, citizenEditable = true),
+    COMPLETED(employeeEditable = false, citizenEditable = false);
 
     override val sqlType: String = "child_document_status"
 }

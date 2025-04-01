@@ -7,10 +7,12 @@ package fi.espoo.evaka.document.childdocument
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.children.getCitizenChildIds
+import fi.espoo.evaka.process.updateDocumentProcessHistory
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
@@ -19,6 +21,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PutMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
@@ -143,5 +146,94 @@ class ChildDocumentControllerCitizen(
                 }
             }
             .also { Audit.ChildDocumentUnreadCount.log(targetId = AuditId(user.id)) }
+    }
+
+    @PutMapping("/{documentId}/content")
+    fun updateChildDocumentContent(
+        db: Database,
+        user: AuthenticatedUser.Citizen,
+        clock: EvakaClock,
+        @PathVariable documentId: ChildDocumentId,
+        @RequestBody body: DocumentContent,
+    ) {
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Citizen.ChildDocument.UPDATE,
+                        documentId,
+                    )
+                    val document =
+                        tx.getChildDocument(documentId)
+                            ?: throw NotFound("Document $documentId not found")
+
+                    if (!document.status.citizenEditable)
+                        throw BadRequest("Cannot update contents of document in this status")
+
+                    validateContentAgainstTemplate(body, document.template.content)
+
+                    tx.updateChildDocumentPublishedContent(
+                        documentId,
+                        document.status,
+                        body,
+                        clock.now(),
+                        user.evakaUserId,
+                    )
+                }
+                .also {
+                    Audit.ChildDocumentUpdatePublishedContent.log(targetId = AuditId(documentId))
+                }
+        }
+    }
+
+    @PutMapping("/{documentId}/next-status")
+    fun nextDocumentStatus(
+        db: Database,
+        user: AuthenticatedUser.Citizen,
+        clock: EvakaClock,
+        @PathVariable documentId: ChildDocumentId,
+        @RequestBody body: ChildDocumentController.StatusChangeRequest,
+    ) {
+        db.connect { dbc ->
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Citizen.ChildDocument.NEXT_STATUS,
+                        documentId,
+                    )
+                    val statusTransition =
+                        validateStatusTransition(
+                            tx = tx,
+                            documentId = documentId,
+                            requestedStatus = body.newStatus,
+                            goingForward = true,
+                        )
+
+                    tx.changeStatusAndSetAnswered(
+                        documentId,
+                        statusTransition,
+                        clock.now(),
+                        user.evakaUserId,
+                    )
+                    updateDocumentProcessHistory(
+                        tx = tx,
+                        documentId = documentId,
+                        newStatus = statusTransition.newStatus,
+                        now = clock.now(),
+                        userId = user.evakaUserId,
+                    )
+                }
+            }
+            .also {
+                Audit.ChildDocumentNextStatus.log(
+                    targetId = AuditId(documentId),
+                    meta = mapOf("newStatus" to body.newStatus),
+                )
+                Audit.ChildDocumentPublish.log(targetId = AuditId(documentId))
+            }
     }
 }

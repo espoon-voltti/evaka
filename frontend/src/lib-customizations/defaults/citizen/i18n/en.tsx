@@ -2607,14 +2607,21 @@ const en: Translations = {
         'On the selected date, the child does not have an early childhood education placement where the service need could be changed through eVaka. If necessary, contact the unit.'
     },
     childDocuments: {
-      title: 'Pedagogical documents',
+      title: "Child's documents",
       plansTitle:
         'Early childhood education and care plans and learning plans for pre-primary education',
       noVasus: 'No plans',
       hojksTitle: 'Individual education plans',
       otherDocumentsTitle: 'Other documents',
       noDocuments: 'No documents',
-      confidential: 'Confidential'
+      confidential: 'Confidential',
+      notAnswered: 'Ei vastattu (en)',
+      answered: 'Vastattu (en)',
+      preview: 'Esikatsele (en)',
+      send: 'Lähetä (en)',
+      error: {
+        other: 'Asiakirjan tallentaminen epäonnistui. (en)'
+      }
     }
   },
   accessibilityStatement: (
