@@ -93,8 +93,11 @@ import {
   updateFeeAlteration
 } from '../../generated/api-clients/invoicing'
 import {
+  getFamilyContactSummary,
   getFosterParents,
   getPersonGuardians,
+  updateFamilyContactDetails,
+  updateFamilyContactPriority,
   updateGuardianEvakaRights
 } from '../../generated/api-clients/pis'
 import {
@@ -494,3 +497,15 @@ export const getAdditionalInfoQuery = q.query(getAdditionalInfo)
 export const updateAdditionalInfoMutation = q.mutation(updateAdditionalInfo, [
   ({ childId }) => getAdditionalInfoQuery({ childId })
 ])
+
+export const familyContactSummaryQuery = q.query(getFamilyContactSummary)
+
+export const updateFamilyContactDetailsMutation = q.mutation(
+  updateFamilyContactDetails,
+  [({ body: { childId } }) => familyContactSummaryQuery({ childId })]
+)
+
+export const updateFamilyContactPriorityMutation = q.mutation(
+  updateFamilyContactPriority,
+  [({ body: { childId } }) => familyContactSummaryQuery({ childId })]
+)
