@@ -114,6 +114,9 @@ class ArchiveChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBe
 
     @BeforeTest
     fun setUp() {
+        // Reset and clear Särmä client for clean test state
+        särmäClient.resetResponse()
+        särmäClient.clearCalls()
 
         // Set up test data in database using DevApi
         db.transaction { tx ->
@@ -226,9 +229,5 @@ class ArchiveChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBe
             // Verify that our test client was still called
             assertEquals(1, särmäClient.calls.size)
         }
-
-        // Reset client for other tests
-        särmäClient.resetResponse()
-        särmäClient.clearCalls()
     }
 }
