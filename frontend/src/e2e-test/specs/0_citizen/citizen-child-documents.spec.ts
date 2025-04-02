@@ -243,7 +243,6 @@ describe('Citizen child documents editor page', () => {
     await question1.fill('Jonkin sortin vastaus 1')
     const question2 = childDocumentPage.getTextQuestion('Testi', 'Kysymys 2')
     await question2.fill('Jonkin sortin vastaus 2')
-    await childDocumentPage.savingIndicator.waitUntilHidden()
     await childDocumentPage.previewButton.click()
     const answer1 = childDocumentPage.getTextAnswer('Testi', 'Kysymys 1')
     await answer1.assertTextEquals('Jonkin sortin vastaus 1\n')

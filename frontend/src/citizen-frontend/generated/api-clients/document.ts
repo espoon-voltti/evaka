@@ -7,11 +7,10 @@
 import { ChildDocumentCitizenDetails } from 'lib-common/generated/api-types/document'
 import { ChildDocumentCitizenSummary } from 'lib-common/generated/api-types/document'
 import { ChildDocumentId } from 'lib-common/generated/api-types/shared'
-import { DocumentContent } from 'lib-common/generated/api-types/document'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
 import { PersonId } from 'lib-common/generated/api-types/shared'
-import { StatusChangeRequest } from 'lib-common/generated/api-types/document'
+import { UpdateChildDocumentRequest } from 'lib-common/generated/api-types/document'
 import { Uri } from 'lib-common/uri'
 import { client } from '../../api-client'
 import { createUrlSearchParams } from 'lib-common/api'
@@ -83,24 +82,6 @@ export async function getUnreadDocumentsCount(): Promise<Partial<Record<PersonId
 
 
 /**
-* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentControllerCitizen.nextDocumentStatus
-*/
-export async function nextDocumentStatus(
-  request: {
-    documentId: ChildDocumentId,
-    body: StatusChangeRequest
-  }
-): Promise<void> {
-  const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/citizen/child-documents/${request.documentId}/next-status`.toString(),
-    method: 'PUT',
-    data: request.body satisfies JsonCompatible<StatusChangeRequest>
-  })
-  return json
-}
-
-
-/**
 * Generated from fi.espoo.evaka.document.childdocument.ChildDocumentControllerCitizen.putDocumentRead
 */
 export async function putDocumentRead(
@@ -117,18 +98,18 @@ export async function putDocumentRead(
 
 
 /**
-* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentControllerCitizen.updateChildDocumentContent
+* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentControllerCitizen.updateChildDocument
 */
-export async function updateChildDocumentContent(
+export async function updateChildDocument(
   request: {
     documentId: ChildDocumentId,
-    body: DocumentContent
+    body: UpdateChildDocumentRequest
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/citizen/child-documents/${request.documentId}/content`.toString(),
+    url: uri`/citizen/child-documents/${request.documentId}`.toString(),
     method: 'PUT',
-    data: request.body satisfies JsonCompatible<DocumentContent>
+    data: request.body satisfies JsonCompatible<UpdateChildDocumentRequest>
   })
   return json
 }

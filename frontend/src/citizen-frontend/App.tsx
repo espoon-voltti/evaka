@@ -33,7 +33,6 @@ import { UnwrapResult } from './async-rendering'
 import { AuthContext, AuthContextProvider, useUser } from './auth/state'
 import { sessionKeepalive } from './auth/utils'
 import CalendarPage from './calendar/CalendarPage'
-import ChildDocumentEditPage from './child-documents/ChildDocumentEditPage'
 import ChildDocumentPage from './child-documents/ChildDocumentPage'
 import ChildPage from './children/ChildPage'
 import NewServiceApplicationPage from './children/sections/service-need-and-daily-service-time/NewServiceApplicationPage'
@@ -307,16 +306,6 @@ export default createBrowserRouter([
           <RequireAuth>
             <ScrollToTop>
               <ChildDocumentPage />
-            </ScrollToTop>
-          </RequireAuth>
-        )
-      },
-      {
-        path: '/child-documents/:id/edit',
-        element: (
-          <RequireAuth>
-            <ScrollToTop>
-              <ChildDocumentEditPage />
             </ScrollToTop>
           </RequireAuth>
         )

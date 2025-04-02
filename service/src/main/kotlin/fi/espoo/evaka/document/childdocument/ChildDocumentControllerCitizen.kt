@@ -12,7 +12,6 @@ import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
@@ -148,13 +147,15 @@ class ChildDocumentControllerCitizen(
             .also { Audit.ChildDocumentUnreadCount.log(targetId = AuditId(user.id)) }
     }
 
-    @PutMapping("/{documentId}/content")
-    fun updateChildDocumentContent(
+    data class UpdateChildDocumentRequest(val status: DocumentStatus, val content: DocumentContent)
+
+    @PutMapping("/{documentId}")
+    fun updateChildDocument(
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
         @PathVariable documentId: ChildDocumentId,
-        @RequestBody body: DocumentContent,
+        @RequestBody body: UpdateChildDocumentRequest,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -169,53 +170,18 @@ class ChildDocumentControllerCitizen(
                         tx.getChildDocument(documentId)
                             ?: throw NotFound("Document $documentId not found")
 
-                    if (!document.status.citizenEditable)
-                        throw BadRequest("Cannot update contents of document in this status")
-
-                    validateContentAgainstTemplate(body, document.template.content)
-
-                    tx.updateChildDocumentPublishedContent(
-                        documentId,
-                        document.status,
-                        body,
-                        clock.now(),
-                        user.evakaUserId,
-                    )
-                }
-                .also {
-                    Audit.ChildDocumentUpdatePublishedContent.log(targetId = AuditId(documentId))
-                }
-        }
-    }
-
-    @PutMapping("/{documentId}/next-status")
-    fun nextDocumentStatus(
-        db: Database,
-        user: AuthenticatedUser.Citizen,
-        clock: EvakaClock,
-        @PathVariable documentId: ChildDocumentId,
-        @RequestBody body: ChildDocumentController.StatusChangeRequest,
-    ) {
-        db.connect { dbc ->
-                dbc.transaction { tx ->
-                    accessControl.requirePermissionFor(
-                        tx,
-                        user,
-                        clock,
-                        Action.Citizen.ChildDocument.NEXT_STATUS,
-                        documentId,
-                    )
                     val statusTransition =
                         validateStatusTransition(
-                            tx = tx,
-                            documentId = documentId,
-                            requestedStatus = body.newStatus,
+                            document = document,
+                            requestedStatus = body.status,
                             goingForward = true,
                         )
+                    validateContentAgainstTemplate(body.content, document.template.content)
 
-                    tx.changeStatusAndSetAnswered(
+                    tx.updateChildDocument(
                         documentId,
                         statusTransition,
+                        body.content,
                         clock.now(),
                         user.evakaUserId,
                     )
@@ -227,13 +193,7 @@ class ChildDocumentControllerCitizen(
                         userId = user.evakaUserId,
                     )
                 }
-            }
-            .also {
-                Audit.ChildDocumentNextStatus.log(
-                    targetId = AuditId(documentId),
-                    meta = mapOf("newStatus" to body.newStatus),
-                )
-                Audit.ChildDocumentPublish.log(targetId = AuditId(documentId))
-            }
+                .also { Audit.ChildDocumentUpdate.log(targetId = AuditId(documentId)) }
+        }
     }
 }
