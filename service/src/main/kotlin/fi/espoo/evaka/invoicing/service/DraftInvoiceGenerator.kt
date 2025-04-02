@@ -219,13 +219,14 @@ class DraftInvoiceGenerator(
                 }
 
         return DraftInvoice(
-            periodStart = invoiceInput.invoicePeriod.start,
-            periodEnd = invoiceInput.invoicePeriod.end,
-            areaId = areaId,
-            headOfFamily = headInput.headOfFamily,
-            codebtor = headInput.codebtor,
-            rows = rows,
-        )
+                periodStart = invoiceInput.invoicePeriod.start,
+                periodEnd = invoiceInput.invoicePeriod.end,
+                areaId = areaId,
+                headOfFamily = headInput.headOfFamily,
+                codebtor = headInput.codebtor,
+                rows = rows,
+            )
+            .takeIf { it.totalPrice >= invoiceInput.minimumInvoiceAmount }
     }
 
     private fun calculateDailyPriceForInvoiceRow(price: Int, dailyFeeDivisor: Int): Int =
@@ -583,6 +584,7 @@ class DraftInvoiceGenerator(
         val freeChildren: Set<ChildId>,
         val codebtors: Map<PersonId, PersonId?>,
         val defaultServiceNeedOptions: Map<PlacementType, ServiceNeedOption>,
+        val minimumInvoiceAmount: Int, // cents
     ) {
         val businessDayCount = businessDays.ranges().map { it.durationInDays() }.sum().toInt()
 

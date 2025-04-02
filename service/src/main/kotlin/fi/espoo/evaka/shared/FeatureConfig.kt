@@ -155,6 +155,12 @@ data class FeatureConfig(
 
     /** Type of holiday questionnaire */
     val holidayQuestionnaireType: QuestionnaireType = QuestionnaireType.FIXED_PERIOD,
+
+    /**
+     * Invoices whose total sum is less than `minimumInvoiceAmount` are not generated at all. The
+     * value is in cents, i.e. 1000 means 10 euros.
+     */
+    val minimumInvoiceAmount: Int = 0,
 )
 
 enum class ArchiveProcessType {

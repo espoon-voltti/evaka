@@ -40,6 +40,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
+import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 
 class ReplacementInvoicesIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
@@ -155,6 +156,36 @@ class ReplacementInvoicesIntegrationTest : FullApplicationTest(resetDbBeforeEach
                             date = date,
                             absenceCategory = AbsenceCategory.BILLABLE,
                             absenceType = AbsenceType.SICKLEAVE,
+                        )
+                    )
+                }
+        }
+
+        val replacement = generateReplacementDrafts().single()
+
+        assertEquals(original.id, replacement.replacedInvoiceId)
+        assertEquals(1, replacement.revisionNumber)
+        assertEquals(0, replacement.totalPrice)
+    }
+
+    @Test
+    fun `zero-priced replacement is created if replacement's total would be under minimumInvoiceAmount`() {
+        whenever(featureConfig.minimumInvoiceAmount).thenReturn(1500)
+        insertPlacementAndFeeDecision()
+
+        val original = generateAndSendInvoices().single()
+
+        // Force majeure absence for all except one day => total fee is under minimumInvoiceAmount
+        db.transaction { tx ->
+            generateSequence(previousMonth.atDay(1)) { it.plusDays(1) }
+                .takeWhile { it < previousMonth.atEndOfMonth() }
+                .forEach { date ->
+                    tx.insert(
+                        DevAbsence(
+                            childId = child.id,
+                            date = date,
+                            absenceCategory = AbsenceCategory.BILLABLE,
+                            absenceType = AbsenceType.FORCE_MAJEURE,
                         )
                     )
                 }
