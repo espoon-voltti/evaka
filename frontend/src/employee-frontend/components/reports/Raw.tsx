@@ -227,7 +227,7 @@ export default React.memo(function Raw() {
                   value: (row) => row.municipalityOfResidence
                 },
                 {
-                  label: 'Ryhmäkohtainen Aromin asiakastunniste',
+                  label: 'Ryhmäkohtainen Aromin vastuuyksikkökoodi',
                   value: (row) => row.aromiCustomerId,
                   exclude: !featureFlags.aromiIntegration
                 }

@@ -2578,11 +2578,11 @@ export const fi = {
         name: 'Ryhmän nimi',
         type: 'Tyyppi',
         initialCaretakers: 'Henkilökunnan määrä ryhmän alkaessa',
-        aromiCustomerId: 'Aromin asiakastunniste',
+        aromiCustomerId: 'Aromin vastuuyksikkökoodi',
         errors: {
           nameRequired: 'Ryhmällä täytyy olla nimi',
           aromiWarning:
-            'Mikäli Aromin asiakastunnus puuttuu, ryhmäläiset eivät kuulu ruokatilaukseen',
+            'Mikäli Aromin vastuuyksikkökoodi puuttuu, ryhmäläiset eivät kuulu ruokatilaukseen',
           initialCaretakersPositive:
             'Henkilökunnan määrä ei voi olla negatiivinen'
         }
@@ -2595,8 +2595,8 @@ export const fi = {
         info: 'Ryhmän aikaisempia tietoja ei säilytetä',
         jamixPlaceholder: 'Jamix customerNumber',
         jamixTitle: 'Ruokatilausten asiakasnumero',
-        aromiPlaceholder: 'Aromin asiakastunnus',
-        aromiTitle: 'Aromi-ruokatilausten asiakastunnus',
+        aromiPlaceholder: 'Aromin vastuuyksikkökoodi',
+        aromiTitle: 'Aromi-ruokatilausten vastuuyksikkökoodi',
         nekkuUnitTitle: 'Nekku-ruokatilausten yksikkö',
         nekkuCustomerNumberTitle: 'Nekku-ruokatilausten asiakasnumero'
       },
