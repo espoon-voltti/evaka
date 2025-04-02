@@ -93,6 +93,12 @@ import {
   updateFeeAlteration
 } from '../../generated/api-clients/invoicing'
 import {
+  createPedagogicalDocument,
+  deletePedagogicalDocument,
+  getChildPedagogicalDocuments,
+  updatePedagogicalDocument
+} from '../../generated/api-clients/pedagogicaldocument'
+import {
   getFamilyContactSummary,
   getFosterParents,
   getPersonGuardians,
@@ -509,3 +515,23 @@ export const updateFamilyContactPriorityMutation = q.mutation(
   updateFamilyContactPriority,
   [({ body: { childId } }) => familyContactSummaryQuery({ childId })]
 )
+
+export const childPedagogicalDocumentsQuery = q.query(
+  getChildPedagogicalDocuments
+)
+
+export const createPedagogicalDocumentMutation = q.mutation(
+  createPedagogicalDocument,
+  [({ body: { childId } }) => childPedagogicalDocumentsQuery({ childId })]
+)
+
+export const updatePedagogicalDocumentMutation = q.mutation(
+  updatePedagogicalDocument,
+  [({ body: { childId } }) => childPedagogicalDocumentsQuery({ childId })]
+)
+
+export const deletePedagogicalDocumentMutation = q.parametricMutation<{
+  childId: ChildId
+}>()(deletePedagogicalDocument, [
+  ({ childId }) => childPedagogicalDocumentsQuery({ childId })
+])

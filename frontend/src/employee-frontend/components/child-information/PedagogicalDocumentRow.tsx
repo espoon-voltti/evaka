@@ -1,11 +1,11 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2025 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useContext, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
+import React, { useState } from 'react'
 import styled from 'styled-components'
 
-import { wrapResult } from 'lib-common/api'
 import { Attachment } from 'lib-common/generated/api-types/attachment'
 import { PedagogicalDocument } from 'lib-common/generated/api-types/pedagogicaldocument'
 import {
@@ -17,8 +17,10 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
+import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import TextArea from 'lib-components/atoms/form/TextArea'
 import { Td, Tr } from 'lib-components/layout/Table'
+import { ConfirmedMutation } from 'lib-components/molecules/ConfirmedMutation'
 import FileUpload from 'lib-components/molecules/FileUpload'
 import { defaultMargins } from 'lib-components/white-space'
 import { faPen, faTrash } from 'lib-icons'
@@ -27,11 +29,13 @@ import {
   getAttachmentUrl,
   pedagogicalDocumentAttachment
 } from '../../api/attachments'
-import { updatePedagogicalDocument } from '../../generated/api-clients/pedagogicaldocument'
 import { useTranslation } from '../../state/i18n'
-import { UIContext } from '../../state/ui'
 
-const updatePedagogicalDocumentResult = wrapResult(updatePedagogicalDocument)
+import {
+  childPedagogicalDocumentsQuery,
+  deletePedagogicalDocumentMutation,
+  updatePedagogicalDocumentMutation
+} from './queries'
 
 interface Props {
   id: PedagogicalDocumentId
@@ -42,9 +46,9 @@ interface Props {
   createdBy: EvakaUser
   modifiedAt: HelsinkiDateTime
   modifiedBy: EvakaUser
-  initInEditMode: boolean
-  onReload: () => void
-  onDelete: (d: PedagogicalDocument) => void
+  editing: boolean
+  onStartEditing: () => void
+  onStopEditing: () => void
 }
 
 const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
@@ -56,9 +60,9 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
   createdBy,
   modifiedAt,
   modifiedBy,
-  initInEditMode,
-  onReload,
-  onDelete
+  editing,
+  onStartEditing,
+  onStopEditing
 }: Props) {
   const { i18n } = useTranslation()
   const t = i18n.childInformation.pedagogicalDocument
@@ -75,38 +79,7 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
       modifiedBy
     })
 
-  const [editMode, setEditMode] = useState(initInEditMode)
-  const { clearUiMode, setErrorMessage } = useContext(UIContext)
-  const [submitting, setSubmitting] = useState(false)
-
-  const endEdit = useCallback(() => {
-    setEditMode(false)
-    clearUiMode()
-  }, [clearUiMode])
-
-  const updateDocument = useCallback(() => {
-    const { childId, description } = pedagogicalDocument
-    if (!description) return
-    setSubmitting(true)
-    void updatePedagogicalDocumentResult({
-      documentId: id,
-      body: { childId, description }
-    }).then((res) => {
-      setSubmitting(false)
-      if (res.isSuccess) {
-        endEdit()
-        setPedagogicalDocument(res.value)
-        onReload()
-      } else {
-        setErrorMessage({
-          type: 'error',
-          title: i18n.common.error.unknown,
-          text: i18n.common.error.saveFailed,
-          resolveLabel: i18n.common.ok
-        })
-      }
-    })
-  }, [endEdit, i18n, id, onReload, pedagogicalDocument, setErrorMessage])
+  const queryClient = useQueryClient()
 
   return (
     <Tr key={pedagogicalDocument.id} data-qa="table-pedagogical-document-row">
@@ -127,7 +100,7 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
         </Tooltip>
       </DateTd>
       <DescriptionTd data-qa="pedagogical-document-description">
-        {editMode ? (
+        {editing ? (
           <TextArea
             value={pedagogicalDocument.description}
             onChange={(description) =>
@@ -142,14 +115,15 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
         <AttachmentsContainer>
           <FileUpload
             slim
-            disabled={submitting}
             data-qa="upload-pedagogical-document-attachment-new"
             files={attachments}
             getDownloadUrl={getAttachmentUrl}
             uploadHandler={pedagogicalDocumentAttachment(id)}
             onUploaded={() => {
-              setSubmitting(false)
-              onReload()
+              void queryClient.invalidateQueries({
+                queryKey: childPedagogicalDocumentsQuery({ childId }),
+                type: 'all'
+              })
             }}
             onDeleted={() =>
               setPedagogicalDocument(({ ...rest }) => ({
@@ -162,40 +136,53 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
         </AttachmentsContainer>
       </NameTd>
       <ActionsTd data-qa="pedagogical-document-actions">
-        {editMode ? (
+        {editing ? (
           <InlineButtons>
-            <Button
+            <MutateButton
               appearance="inline"
-              data-qa="pedagogical-document-button-save"
-              onClick={updateDocument}
               text={i18n.common.save}
-              disabled={!pedagogicalDocument.description.length || submitting}
+              mutation={updatePedagogicalDocumentMutation}
+              onClick={() => ({
+                documentId: id,
+                body: {
+                  childId,
+                  description: pedagogicalDocument.description
+                }
+              })}
+              onSuccess={onStopEditing}
+              disabled={!pedagogicalDocument.description.length}
+              data-qa="pedagogical-document-button-save"
             />
             <Button
               appearance="inline"
               data-qa="pedagogical-document-button-cancel"
-              onClick={() => {
-                endEdit()
-              }}
+              onClick={onStopEditing}
               text={i18n.common.cancel}
-              disabled={submitting}
             />
           </InlineButtons>
         ) : (
           <InlineButtons>
             <IconOnlyButton
               data-qa="pedagogical-document-button-edit"
-              onClick={() => setEditMode(true)}
+              onClick={onStartEditing}
               icon={faPen}
-              disabled={submitting}
               aria-label={i18n.common.edit}
             />
-            <IconOnlyButton
-              data-qa="pedagogical-document-button-delete"
-              onClick={() => onDelete(pedagogicalDocument)}
+            <ConfirmedMutation
+              buttonStyle="ICON"
               icon={faTrash}
-              disabled={submitting}
-              aria-label={i18n.common.remove}
+              buttonAltText={i18n.common.remove}
+              confirmationTitle={
+                i18n.childInformation.pedagogicalDocument.removeConfirmation
+              }
+              confirmationText={
+                i18n.childInformation.pedagogicalDocument.removeConfirmationText
+              }
+              mutation={deletePedagogicalDocumentMutation}
+              onClick={() => ({
+                documentId: id,
+                childId
+              })}
             />
           </InlineButtons>
         )}
