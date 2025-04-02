@@ -362,6 +362,7 @@ export class InvoicesPage {
   #invoiceInList: Element
   #allInvoicesToggle: Checkbox
   #openSendInvoicesDialogButton: Element
+  #deleteInvoicesButton: Element
   #sendInvoicesDialog: Element
   #navigateBack: Element
   #markInvoiceSentButton: AsyncButton
@@ -380,6 +381,7 @@ export class InvoicesPage {
     this.#openSendInvoicesDialogButton = page.findByDataQa(
       'open-send-invoices-dialog'
     )
+    this.#deleteInvoicesButton = page.findByDataQa('delete-invoices')
     this.#sendInvoicesDialog = page.findByDataQa('send-invoices-dialog')
     this.#navigateBack = page.findByDataQa('navigate-back')
     this.#markInvoiceSentButton = new AsyncButton(
@@ -419,6 +421,19 @@ export class InvoicesPage {
     await this.#allInvoicesToggle.waitUntilChecked(toggled)
   }
 
+  async selectFirstInvoice() {
+    const firstRow = this.page
+      .findByDataQa('table-of-invoices')
+      .findAllByDataQa('table-invoice-row')
+      .first()
+
+    const selectInvoiceCheckbox = new Checkbox(firstRow)
+
+    await selectInvoiceCheckbox.waitUntilChecked(false)
+    await selectInvoiceCheckbox.check()
+    await selectInvoiceCheckbox.waitUntilChecked(true)
+  }
+
   async sendInvoices() {
     await this.#openSendInvoicesDialogButton.click()
     await this.#sendInvoicesDialog.waitUntilVisible()
@@ -451,6 +466,11 @@ export class InvoicesPage {
   async markInvoiceSent() {
     await this.#markInvoiceSentButton.click()
     await this.#markInvoiceSentButton.waitUntilHidden()
+  }
+
+  async assertButtonsDisabled() {
+    await this.#openSendInvoicesDialogButton.assertDisabled(true)
+    await this.#deleteInvoicesButton.assertDisabled(true)
   }
 }
 

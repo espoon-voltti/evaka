@@ -62,6 +62,7 @@ import fi.espoo.evaka.user.EvakaUserType
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -514,6 +515,30 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     }
 
     @Test
+    fun `resend works with sent invoice`() {
+        db.transaction { tx -> tx.insert(testInvoices) }
+        val sent = testInvoices.find { it.status == InvoiceStatus.SENT }!!
+
+        val originalSentAt = getInvoice(sent.id).invoice.sentAt
+        Thread.sleep(10)
+        resendInvoices(listOf(sent.id))
+
+        val updatedInvoice = getInvoice(sent.id).invoice
+        val updatedSentAt = updatedInvoice.sentAt
+        assertEquals(updatedInvoice.status, InvoiceStatus.SENT)
+        assertNotNull(updatedSentAt)
+        assertNotEquals(originalSentAt, updatedSentAt)
+    }
+
+    @Test
+    fun `resend returns bad request for draft status invoice`() {
+        db.transaction { tx -> tx.insert(testInvoices) }
+        val sent = testInvoices.find { it.status == InvoiceStatus.DRAFT }!!
+
+        assertThrows<BadRequest> { resendInvoices(listOf(sent.id)) }
+    }
+
+    @Test
     fun `send updates invoice status and number and sent fields`() {
         db.transaction { tx -> tx.insert(testInvoices) }
         val draft = testInvoices.find { it.status == InvoiceStatus.DRAFT }!!
@@ -831,6 +856,10 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             dueDate = null,
             invoiceIds = invoiceIds,
         )
+    }
+
+    private fun resendInvoices(invoiceIds: List<InvoiceId>) {
+        invoiceController.resendInvoices(dbInstance(), testUser, RealEvakaClock(), invoiceIds)
     }
 
     private fun searchInvoices(request: SearchInvoicesRequest): List<InvoiceSummary> {
