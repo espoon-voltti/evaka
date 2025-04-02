@@ -33,7 +33,7 @@ data class Stamping(
     val sarastiaId: String,
     val startTime: HelsinkiDateTime,
     val endTime: HelsinkiDateTime,
-    val type: StampingType,
+    val stampingType: StampingType,
 )
 
 data class StampingBatch(

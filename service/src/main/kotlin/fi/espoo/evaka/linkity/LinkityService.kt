@@ -165,7 +165,7 @@ private fun roundAttendancesToPlans(
                 sarastiaId = attendance.sarastiaId,
                 startTime = roundedArrivalTime,
                 endTime = roundedDepartureTime,
-                type =
+                stampingType =
                     when (attendance.type) {
                         StaffAttendanceType.PRESENT -> StampingType.PRESENT
                         StaffAttendanceType.OVERTIME -> StampingType.OVERTIME
