@@ -96,6 +96,7 @@ import fi.espoo.evaka.invoicing.service.InvoiceGenerator
 import fi.espoo.evaka.invoicing.service.createIncomeNotification
 import fi.espoo.evaka.messaging.AccountType
 import fi.espoo.evaka.messaging.MessageType
+import fi.espoo.evaka.nekku.NekkuProductMealType
 import fi.espoo.evaka.note.child.daily.ChildDailyNoteBody
 import fi.espoo.evaka.note.child.daily.createChildDailyNote
 import fi.espoo.evaka.note.child.sticky.ChildStickyNoteBody
@@ -1846,6 +1847,7 @@ data class DevChild(
     val languageAtHomeDetails: String = "",
     val dietId: Int? = null,
     val mealTextureId: Int? = null,
+    val nekku_diet: NekkuProductMealType? = null,
 )
 
 data class DevHolidayPeriod(
