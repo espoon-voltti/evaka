@@ -460,10 +460,10 @@ fun Database.Transaction.insert(row: DevChild): ChildId =
     createUpdate {
             sql(
                 """
-INSERT INTO child (id, allergies, diet, medication, additionalinfo, language_at_home, language_at_home_details, diet_id, meal_texture_id)
-VALUES (${bind(row.id)}, ${bind(row.allergies)}, ${bind(row.diet)}, ${bind(row.medication)}, ${bind(row.additionalInfo)}, ${bind(row.languageAtHome)}, ${bind(row.languageAtHomeDetails)}, ${bind(row.dietId)}, ${bind(row.mealTextureId)})
+INSERT INTO child (id, allergies, diet, medication, additionalinfo, language_at_home, language_at_home_details, diet_id, meal_texture_id, nekku_diet)
+VALUES (${bind(row.id)}, ${bind(row.allergies)}, ${bind(row.diet)}, ${bind(row.medication)}, ${bind(row.additionalInfo)}, ${bind(row.languageAtHome)}, ${bind(row.languageAtHomeDetails)}, ${bind(row.dietId)}, ${bind(row.mealTextureId)}, ${bind(row.nekku_diet)})
 ON CONFLICT(id) DO UPDATE
-SET id = ${bind(row.id)}, allergies = ${bind(row.allergies)}, diet = ${bind(row.diet)}, medication = ${bind(row.medication)}, additionalInfo = ${bind(row.additionalInfo)}, language_at_home = ${bind(row.languageAtHome)}, language_at_home_details = ${bind(row.languageAtHomeDetails)}, diet_id = ${bind(row.dietId)}, meal_texture_id = ${bind(row.mealTextureId)}
+SET id = ${bind(row.id)}, allergies = ${bind(row.allergies)}, diet = ${bind(row.diet)}, medication = ${bind(row.medication)}, additionalInfo = ${bind(row.additionalInfo)}, language_at_home = ${bind(row.languageAtHome)}, language_at_home_details = ${bind(row.languageAtHomeDetails)}, diet_id = ${bind(row.dietId)}, meal_texture_id = ${bind(row.mealTextureId)}, nekku_diet= ${bind(row.nekku_diet)}
 RETURNING id
     """
             )
