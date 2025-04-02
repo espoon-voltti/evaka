@@ -4,6 +4,8 @@
 
 package fi.espoo.evaka.document.archival
 
+import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.document.DocumentType
 import fi.espoo.evaka.document.childdocument.*
 import fi.espoo.evaka.pis.getPersonById
@@ -43,6 +45,7 @@ fun uploadToArchive(
     documentId: ChildDocumentId,
     uploadClient: SärmäClientInterface,
     documentClient: DocumentService,
+    logger: io.github.oshai.kotlinlogging.KLogger = KotlinLogging.logger {},
 ) {
     logger.info { "Starting archival process for document $documentId" }
 
@@ -111,19 +114,29 @@ fun uploadToArchive(
     logger.info { "HTTP response code: $responseCode" }
     logger.info { "Response body: $responseBody" }
 
-    val statusCode =
-        URLEncodedUtils.parse(responseBody, StandardCharsets.UTF_8)
-            .find { it.name == "status_code" }
-            ?.value
-            ?.toIntOrNull()
+    val responseData = URLEncodedUtils.parse(responseBody, StandardCharsets.UTF_8)
+    val statusCode = responseData.find { it.name == "status_code" }?.value?.toIntOrNull()
+
+    val instanceId = responseData.find { it.name == "instance_ids" }?.value
 
     logger.info { "Parsed status code from response body: $statusCode" }
+    logger.info { "Parsed instance ID from response body: $instanceId" }
 
     if (responseCode != 200 || statusCode != 200) {
         logger.error {
             "Failed to archive document $documentId. Response code: $responseCode, Response body: ${responseBody ?: "No response body"}, Parsed status code: $statusCode"
         }
         throw RuntimeException("Failed to archive document $documentId")
+    }
+
+    // Audit log the instance ID
+    if (instanceId == null) {
+        logger.error { "No instance ID found in response body" }
+    } else {
+        Audit.ChildDocumentArchivedSuccessfully.log(
+            targetId = AuditId(documentId),
+            meta = mapOf("instanceId" to instanceId),
+        )
     }
 
     db.transaction { tx -> tx.markDocumentAsArchived(documentId, HelsinkiDateTime.now()) }
