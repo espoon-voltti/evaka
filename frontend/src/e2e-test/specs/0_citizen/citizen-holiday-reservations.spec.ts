@@ -22,7 +22,7 @@ import {
   resetServiceState,
   upsertVtjDataset
 } from '../../generated/api-clients'
-import { DevDaycare, DevPerson } from '../../generated/api-types'
+import { DevDaycare, DevPerson, DevPlacement } from '../../generated/api-types'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import { Page } from '../../utils/page'
@@ -104,13 +104,16 @@ beforeEach(async () => {
     updateMockVtjWithDependants: [child1]
   })
   await Fixture.guardian(child1, guardian).save()
+})
+async function setupFirstChildPlacement(initial?: Partial<DevPlacement>) {
   await Fixture.placement({
-    childId: child1.id,
+    childId: child.id,
     unitId: daycare.id,
     startDate: LocalDate.of(2022, 1, 1),
-    endDate: LocalDate.of(2036, 6, 30)
+    endDate: LocalDate.of(2036, 6, 30),
+    ...initial
   }).save()
-})
+}
 
 async function setupAnotherChild(
   startDate = LocalDate.of(2022, 1, 1),
@@ -133,6 +136,9 @@ async function setupAnotherChild(
 
 describe('Holiday periods and questionnaires', () => {
   describe('Holiday period CTA toast visibility', () => {
+    beforeEach(async () => {
+      await setupFirstChildPlacement()
+    })
     test('No holiday period exists -> no CTA toast', async () => {
       await enduserLogin(page, guardian)
       await new CitizenHeader(page).selectTab('calendar')
@@ -184,6 +190,7 @@ describe('Holiday periods and questionnaires', () => {
 
   describe('Holiday questionnaire is active', () => {
     beforeEach(async () => {
+      await setupFirstChildPlacement()
       await holidayQuestionnaireFixture().save()
     })
 
@@ -311,6 +318,7 @@ describe('Holiday periods and questionnaires', () => {
 
   describe('Holiday questionnaire is inactive', () => {
     beforeEach(async () => {
+      await setupFirstChildPlacement()
       await holidayQuestionnaireFixture({
         active: new FiniteDateRange(
           LocalDate.of(1990, 1, 1),
@@ -329,6 +337,7 @@ describe('Holiday periods and questionnaires', () => {
 
   describe('Child eligibility', () => {
     test('The holiday reservations toast is not shown if no child is eligible', async () => {
+      await setupFirstChildPlacement()
       await holidayQuestionnaireFixture({
         conditions: {
           continuousPlacement: new FiniteDateRange(
@@ -343,8 +352,41 @@ describe('Holiday periods and questionnaires', () => {
       const calendar = new CitizenCalendarPage(page, 'desktop')
       await calendar.assertHolidayCtaNotVisible()
     })
+    test('The holiday reservations toast is not shown if no child is eligible: placement ends after active period', async () => {
+      // today is LocalDate.of(2035, 12, 1)
+      await setupFirstChildPlacement({
+        startDate: LocalDate.of(2022, 1, 1),
+        endDate: LocalDate.of(2035, 12, 17)
+      })
+      await setupAnotherChild(
+        LocalDate.of(1990, 1, 1),
+        LocalDate.of(1991, 12, 17)
+      )
+
+      await holidayQuestionnaireFixture({
+        conditions: {
+          continuousPlacement: null
+        },
+        active: new FiniteDateRange(
+          LocalDate.todayInSystemTz(),
+          LocalDate.of(2035, 12, 6)
+        ),
+        periodOptions: [
+          new FiniteDateRange(
+            LocalDate.of(2035, 12, 18),
+            LocalDate.of(2035, 12, 25)
+          )
+        ]
+      }).save()
+
+      await enduserLogin(page, guardian)
+      await new CitizenHeader(page).selectTab('calendar')
+      const calendar = new CitizenCalendarPage(page, 'desktop')
+      await calendar.assertHolidayCtaNotVisible()
+    })
 
     test('Holidays can be marked if one of two children is eligible', async () => {
+      await setupFirstChildPlacement()
       const placementConditionStart = LocalDate.of(2022, 1, 1)
       const placementConditionEnd = LocalDate.of(2022, 1, 31)
 
@@ -390,6 +432,7 @@ describe('Holiday periods and questionnaires', () => {
   })
 
   test('Holiday period options are selectable based on placement duration', async () => {
+    await setupFirstChildPlacement()
     await holidayQuestionnaireFixture().save()
     const child2 = await setupAnotherChild(
       LocalDate.of(2035, 12, 19),

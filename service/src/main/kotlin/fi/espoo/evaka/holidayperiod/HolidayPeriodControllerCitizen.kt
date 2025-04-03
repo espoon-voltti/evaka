@@ -282,14 +282,21 @@ class HolidayPeriodControllerCitizen(
                         PlacementType.invoiced,
                         FiniteDateRange(min, max),
                     )
-                eligibleChildren.associateWith { childId ->
-                    placementRangesByChild[childId]?.let { placementRanges ->
-                        periodOptions.filter { option -> placementRanges.contains(option) }
-                    } ?: emptyList()
-                }
+                eligibleChildren
+                    .mapNotNull { childId ->
+                        placementRangesByChild[childId]?.let { placementRanges ->
+                            val dates =
+                                periodOptions.filter { option -> placementRanges.contains(option) }
+                            if (dates.isNotEmpty()) childId to dates else null
+                        }
+                    }
+                    .toMap()
             }
-            is HolidayQuestionnaire.OpenRangesQuestionnaire ->
-                eligibleChildren.associateWith { listOf(questionnaire.period) }
+            is HolidayQuestionnaire.OpenRangesQuestionnaire -> {
+                eligibleChildren
+                    .associateWith { listOf(questionnaire.period) }
+                    .filterValues { it.isNotEmpty() }
+            }
         }
     }
 
