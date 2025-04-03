@@ -76,6 +76,15 @@ describe('System notifications', () => {
     await systemNotificationsPage.saveButton.waitUntilHidden()
     await adminPage.close()
 
+    // notification should be visible in employee login page
+    const employeePage = await Page.open({ mockedTime: now })
+    await employeePage.goto(config.employeeUrl)
+    await employeePage
+      .findByDataQa('system-notification')
+      .assertText((s) => s.includes(notificationText))
+    await employeePage.close()
+
+    // notification should be visible in employee mobile
     const area = await Fixture.careArea().save()
     const unit = await Fixture.daycare({ areaId: area.id }).save()
     const mobilePage = await Page.open({ mockedTime: now })
