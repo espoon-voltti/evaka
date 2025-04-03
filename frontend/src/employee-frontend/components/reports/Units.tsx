@@ -161,6 +161,10 @@ export default React.memo(function MissingHeadOfFamily() {
                 {
                   label: i18n.reports.units.unitManagerPhone,
                   value: (row) => row.unitManagerPhone
+                },
+                {
+                  label: i18n.reports.units.capacity,
+                  value: (row) => row.capacity
                 }
               ]}
               filename="Yksiköt.csv"
@@ -200,6 +204,7 @@ export default React.memo(function MissingHeadOfFamily() {
                   <Th>{i18n.reports.units.address}</Th>
                   <Th>{i18n.reports.units.unitManagerName}</Th>
                   <Th>{i18n.reports.units.unitManagerPhone}</Th>
+                  <Th>{i18n.reports.units.capacity}</Th>
                 </Tr>
               </Thead>
               <Tbody>
@@ -257,6 +262,7 @@ export default React.memo(function MissingHeadOfFamily() {
                     <Td>{row.address}</Td>
                     <Td>{row.unitManagerName}</Td>
                     <Td>{row.unitManagerPhone}</Td>
+                    <Td>{row.capacity}</Td>
                   </Tr>
                 ))}
               </Tbody>
