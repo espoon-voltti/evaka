@@ -3151,7 +3151,7 @@ export const testDaycareGroup: DevDaycareGroup = {
   endDate: null,
   jamixCustomerNumber: null,
   aromiCustomerId: null,
-  nekkuCustomerNumber: null,
+  nekkuCustomerNumber: null
 }
 
 /**
