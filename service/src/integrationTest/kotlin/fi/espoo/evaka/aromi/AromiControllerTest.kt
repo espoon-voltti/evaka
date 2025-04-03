@@ -36,6 +36,7 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.snDefaultDaycare
+import java.lang.IllegalStateException
 import java.nio.charset.StandardCharsets
 import java.time.LocalDate
 import java.time.LocalTime
@@ -755,6 +756,11 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
             }
 
         assertThrows<Forbidden> { getMealOrders(staff, FiniteDateRange.ofYear(2024)) }
+    }
+
+    @Test
+    fun `won't create an empty csv`() {
+        assertThrows<IllegalStateException> { getMealOrders(FiniteDateRange.ofYear(2024)) }
     }
 
     private fun getMealOrders(range: FiniteDateRange): String = getMealOrders(admin, range)
