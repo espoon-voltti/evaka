@@ -357,12 +357,12 @@ data class EspooPatuIntegrationEnv(
     }
 }
 
-data class LinkityEnv(val url: URI, val apiKey: Sensitive<String>) {
+data class LinkityEnv(val url: URI, val apikey: Sensitive<String>) {
     companion object {
         fun fromEnvironment(env: Environment) =
             LinkityEnv(
                 url = URI.create(env.lookup("espoo.integration.linkity.url")),
-                apiKey = Sensitive(env.lookup("espoo.integration.linkity.apiKey")),
+                apikey = Sensitive(env.lookup("espoo.integration.linkity.apikey")),
             )
     }
 }

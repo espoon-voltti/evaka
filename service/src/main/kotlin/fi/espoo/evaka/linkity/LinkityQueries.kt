@@ -6,11 +6,13 @@ package fi.espoo.evaka.linkity
 
 import fi.espoo.evaka.attendance.StaffAttendanceType
 import fi.espoo.evaka.shared.EmployeeId
+import fi.espoo.evaka.shared.StaffAttendanceRealtimeId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 
 data class ExportableAttendance(
+    val id: StaffAttendanceRealtimeId,
     val arrived: HelsinkiDateTime,
     val departed: HelsinkiDateTime?,
     val type: StaffAttendanceType,
@@ -25,6 +27,7 @@ fun Database.Read.getStaffAttendancesForEnabledDaycares(
             sql(
                 """ 
 SELECT
+    sa.id,
     sa.employee_id,
     sa.arrived,
     sa.departed,

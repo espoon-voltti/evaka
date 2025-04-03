@@ -12,6 +12,7 @@ import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.utils.partitionIndexed
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Duration
@@ -130,15 +131,21 @@ fun sendStaffAttendancesToLinkity(
                 it.employeeId
             }
     }
-    val workLogs = roundAttendancesToPlans(attendances, plans)
-    client.postWorkLogs(workLogs)
-    logger.debug { "Posted ${workLogs.size} work logs to Linkity" }
+    val stampings = roundAttendancesToPlans(attendances, plans)
+    client.postStampings(
+        StampingBatch(
+            HelsinkiDateTime.atStartOfDay(period.start),
+            HelsinkiDateTime.atStartOfDay(period.end.plusDays(1)),
+            stampings,
+        )
+    )
+    logger.debug { "Posted ${stampings.size} stampings to Linkity" }
 }
 
 private fun roundAttendancesToPlans(
     attendances: Map<EmployeeId, List<ExportableAttendance>>,
     plans: Map<EmployeeId, List<StaffAttendancePlan>>,
-): List<WorkLog> {
+): List<Stamping> {
     return attendances.flatMap { (employeeId, attendances) ->
         val plannedTimes =
             plans[employeeId]?.flatMap { listOf(it.startTime, it.endTime) }?.toSet() ?: emptySet()
@@ -153,17 +160,18 @@ private fun roundAttendancesToPlans(
                 plannedTimes.find { it.durationSince(attendance.departed).abs() <= MAX_DRIFT }
                     ?: attendance.departed
 
-            WorkLog(
+            Stamping(
+                stampingId = attendance.id.toString(),
                 sarastiaId = attendance.sarastiaId,
                 startTime = roundedArrivalTime,
                 endTime = roundedDepartureTime,
-                type =
+                stampingType =
                     when (attendance.type) {
-                        StaffAttendanceType.PRESENT,
-                        StaffAttendanceType.OVERTIME,
-                        StaffAttendanceType.JUSTIFIED_CHANGE -> WorkLogType.PRESENT
-                        StaffAttendanceType.TRAINING -> WorkLogType.TRAINING
-                        StaffAttendanceType.OTHER_WORK -> WorkLogType.OTHER_WORK
+                        StaffAttendanceType.PRESENT -> StampingType.PRESENT
+                        StaffAttendanceType.OVERTIME -> StampingType.OVERTIME
+                        StaffAttendanceType.JUSTIFIED_CHANGE -> StampingType.JUSTIFIED_CHANGE
+                        StaffAttendanceType.TRAINING -> StampingType.TRAINING
+                        StaffAttendanceType.OTHER_WORK -> StampingType.OTHER_WORK
                     },
             )
         }

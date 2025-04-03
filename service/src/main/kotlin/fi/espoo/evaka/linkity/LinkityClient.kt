@@ -20,7 +20,7 @@ import okhttp3.RequestBody.Companion.toRequestBody
 interface LinkityClient {
     fun getShifts(period: FiniteDateRange): List<Shift>
 
-    fun postWorkLogs(workLogs: Collection<WorkLog>)
+    fun postStampings(batch: StampingBatch)
 }
 
 class LinkityHttpClient(private val env: LinkityEnv, private val jsonMapper: JsonMapper) :
@@ -47,7 +47,7 @@ class LinkityHttpClient(private val env: LinkityEnv, private val jsonMapper: Jso
 
         logger.debug { "Getting shifts from Linkity URL: $url" }
 
-        val req = Request.Builder().url(url).get().header("x-api-key", env.apiKey.value).build()
+        val req = Request.Builder().url(url).get().header("x-api-key", env.apikey.value).build()
 
         return httpClient.newCall(req).execute().use { response ->
             if (!response.isSuccessful) {
@@ -62,32 +62,32 @@ class LinkityHttpClient(private val env: LinkityEnv, private val jsonMapper: Jso
         }
     }
 
-    override fun postWorkLogs(workLogs: Collection<WorkLog>) {
+    override fun postStampings(batch: StampingBatch) {
         val url =
             env.url
                 .ensureTrailingSlash()
-                .resolve("v1/worklogs")
+                .resolve("v1/stampings")
                 .toHttpUrlOrNull()
                 ?.newBuilder()
                 ?.build() ?: throw IllegalArgumentException("Invalid Linkity URL")
 
-        logger.debug { "Posting work logs to Linkity URL: $url" }
+        logger.debug { "Posting stampings to Linkity URL: $url" }
 
         val req =
             Request.Builder()
                 .url(url)
                 .post(
                     jsonMapper
-                        .writeValueAsString(workLogs)
+                        .writeValueAsString(batch)
                         .toRequestBody("application/json".toMediaType())
                 )
-                .header("x-api-key", env.apiKey.value)
+                .header("x-api-key", env.apikey.value)
                 .build()
 
         return httpClient.newCall(req).execute().use { response ->
             if (!response.isSuccessful) {
                 throw IllegalStateException(
-                    "Failed to send work logs to Linkity. Status: ${response.code}"
+                    "Failed to send stampings to Linkity. Status: ${response.code}"
                 )
             }
         }
