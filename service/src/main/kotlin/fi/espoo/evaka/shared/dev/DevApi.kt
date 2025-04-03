@@ -128,61 +128,7 @@ import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.serviceneed.application.ServiceApplicationDecisionStatus
 import fi.espoo.evaka.sficlient.MockSfiMessagesClient
 import fi.espoo.evaka.sficlient.SfiMessage
-import fi.espoo.evaka.shared.AbsenceId
-import fi.espoo.evaka.shared.ApplicationId
-import fi.espoo.evaka.shared.AreaId
-import fi.espoo.evaka.shared.AssistanceActionId
-import fi.espoo.evaka.shared.AssistanceActionOptionId
-import fi.espoo.evaka.shared.AssistanceFactorId
-import fi.espoo.evaka.shared.AssistanceNeedDecisionId
-import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
-import fi.espoo.evaka.shared.AssistanceNeedVoucherCoefficientId
-import fi.espoo.evaka.shared.BackupCareId
-import fi.espoo.evaka.shared.CalendarEventAttendeeId
-import fi.espoo.evaka.shared.CalendarEventId
-import fi.espoo.evaka.shared.CalendarEventTimeId
-import fi.espoo.evaka.shared.ChildDailyNoteId
-import fi.espoo.evaka.shared.ChildDocumentId
-import fi.espoo.evaka.shared.ChildId
-import fi.espoo.evaka.shared.ChildStickyNoteId
-import fi.espoo.evaka.shared.ClubTermId
-import fi.espoo.evaka.shared.DailyServiceTimeNotificationId
-import fi.espoo.evaka.shared.DailyServiceTimesId
-import fi.espoo.evaka.shared.DaycareAssistanceId
-import fi.espoo.evaka.shared.DaycareCaretakerId
-import fi.espoo.evaka.shared.DaycareId
-import fi.espoo.evaka.shared.DecisionId
-import fi.espoo.evaka.shared.DocumentTemplateId
-import fi.espoo.evaka.shared.EmployeeId
-import fi.espoo.evaka.shared.EvakaUserId
-import fi.espoo.evaka.shared.FeatureConfig
-import fi.espoo.evaka.shared.FeeDecisionId
-import fi.espoo.evaka.shared.FeeThresholdsId
-import fi.espoo.evaka.shared.GroupId
-import fi.espoo.evaka.shared.GroupNoteId
-import fi.espoo.evaka.shared.GroupPlacementId
-import fi.espoo.evaka.shared.HolidayPeriodId
-import fi.espoo.evaka.shared.HolidayQuestionnaireId
-import fi.espoo.evaka.shared.HtmlSafe
-import fi.espoo.evaka.shared.IncomeStatementId
-import fi.espoo.evaka.shared.MessageAccountId
-import fi.espoo.evaka.shared.MessageThreadFolderId
-import fi.espoo.evaka.shared.MessageThreadId
-import fi.espoo.evaka.shared.MobileDeviceId
-import fi.espoo.evaka.shared.OtherAssistanceMeasureId
-import fi.espoo.evaka.shared.PairingId
-import fi.espoo.evaka.shared.ParentshipId
-import fi.espoo.evaka.shared.PaymentId
-import fi.espoo.evaka.shared.PedagogicalDocumentId
-import fi.espoo.evaka.shared.PersonId
-import fi.espoo.evaka.shared.PlacementId
-import fi.espoo.evaka.shared.PreschoolAssistanceId
-import fi.espoo.evaka.shared.PreschoolTermId
-import fi.espoo.evaka.shared.ServiceApplicationId
-import fi.espoo.evaka.shared.ServiceNeedId
-import fi.espoo.evaka.shared.ServiceNeedOptionId
-import fi.espoo.evaka.shared.StaffAttendanceRealtimeId
-import fi.espoo.evaka.shared.VoucherValueDecisionId
+import fi.espoo.evaka.shared.*
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.*
 import fi.espoo.evaka.shared.data.DateSet
@@ -2379,6 +2325,7 @@ data class DevChildDocument(
     val publishedAt: HelsinkiDateTime?,
     val answeredAt: HelsinkiDateTime?,
     val answeredBy: EvakaUserId?,
+    val processId: ArchivedProcessId? = null,
 )
 
 data class Citizen(

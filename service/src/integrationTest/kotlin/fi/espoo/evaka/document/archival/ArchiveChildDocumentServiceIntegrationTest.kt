@@ -150,7 +150,15 @@ class ArchiveChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBe
                 )
             tx.insert(template)
 
-            // Create a child document using DevChildDocument
+            // Create archived process
+            val process =
+                tx.insertProcess(
+                    processDefinitionNumber = "1234",
+                    year = 2023,
+                    organization = "Espoon kaupungin esiopetus ja varhaiskasvatus",
+                    archiveDurationMonths = 120,
+                )
+
             val emptyContent = DocumentContent(emptyList())
             val childDocument =
                 DevChildDocument(
@@ -166,25 +174,12 @@ class ArchiveChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBe
                     publishedAt = now,
                     answeredAt = null,
                     answeredBy = null,
+                    processId = process.id,
                 )
             tx.insert(childDocument)
 
-            // Set document key and link to archived process
-
             // Set document key
             tx.updateChildDocumentKey(documentId, "test-document-key")
-
-            // Create archived process
-            val process =
-                tx.insertProcess(
-                    processDefinitionNumber = "1234",
-                    year = 2023,
-                    organization = "Espoon kaupungin esiopetus ja varhaiskasvatus",
-                    archiveDurationMonths = 120,
-                )
-
-            // Connect document to process
-            tx.setChildDocumentProcessId(documentId, process.id)
         }
     }
 
