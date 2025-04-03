@@ -167,7 +167,7 @@ enum class ScheduledJob(
         ScheduledJobs::sendNekkuOrders,
         ScheduledJobSettings(
             enabled = false,
-            schedule = JobSchedule.cron("0 25 2 * * 2"), // tue @ 2:25
+            schedule = JobSchedule.cron("0 0 3 * * 1"), // mon @ 3:00
         ),
     ),
     SendAromiOrders(
