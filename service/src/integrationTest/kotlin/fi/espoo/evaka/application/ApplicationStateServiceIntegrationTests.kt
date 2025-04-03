@@ -38,6 +38,7 @@ import fi.espoo.evaka.serviceneed.getServiceNeedsByChild
 import fi.espoo.evaka.sficlient.MockSfiMessagesClient
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DecisionId
+import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.ParentshipId
 import fi.espoo.evaka.shared.PartnershipId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
@@ -1753,6 +1754,26 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
     }
 
     @Test
+    fun `confirmPlacementProposalChanges - preschool decision is not sent to guardian if skip is enabled`() {
+        workflowForPreschoolDaycareDecisions(
+            config = testFeatureConfig.copy(skipGuardianPreschoolDecisionApproval = true)
+        )
+
+        db.read { tx ->
+            // then
+            val application = tx.fetchApplicationDetails(applicationId)!!
+            assertEquals(ApplicationStatus.ACTIVE, application.status)
+
+            with(getDecision(tx, DecisionType.PRESCHOOL)) {
+                assertEquals(DecisionStatus.ACCEPTED, status)
+            }
+            with(getDecision(tx, DecisionType.PRESCHOOL_DAYCARE)) {
+                assertEquals(DecisionStatus.PENDING, status)
+            }
+        }
+    }
+
+    @Test
     fun `acceptPlacementProposal - if partner already has a fridge family, child is added to that`() {
         val partnershipId = PartnershipId(UUID.randomUUID())
         val parentshipId = ParentshipId(UUID.randomUUID())
@@ -2388,6 +2409,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
     private fun workflowForPreschoolDaycareDecisions(
         preferredStartDate: LocalDate? = LocalDate.of(2020, 8, 1),
         serviceNeedOption: ServiceNeedOption? = null,
+        config: FeatureConfig = testFeatureConfig,
     ) {
         db.transaction { tx ->
             tx.insertApplication(
@@ -2411,7 +2433,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                     preschoolDaycarePeriod = connectedPeriod,
                 ),
             )
-            service.sendDecisionsWithoutProposal(tx, serviceWorker, clock, applicationId)
+            service.sendDecisionsWithoutProposal(tx, serviceWorker, clock, applicationId, config)
         }
     }
 }

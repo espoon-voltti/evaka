@@ -36,6 +36,7 @@ import fi.espoo.evaka.decision.DecisionType
 import fi.espoo.evaka.decision.clearDecisionDrafts
 import fi.espoo.evaka.decision.createDecisionDrafts
 import fi.espoo.evaka.decision.fetchDecisionDrafts
+import fi.espoo.evaka.decision.getDecision
 import fi.espoo.evaka.decision.getDecisionsByApplication
 import fi.espoo.evaka.decision.markApplicationDecisionsSent
 import fi.espoo.evaka.decision.markDecisionAccepted
@@ -647,6 +648,7 @@ class ApplicationStateService(
         user: AuthenticatedUser,
         clock: EvakaClock,
         applicationId: ApplicationId,
+        config: FeatureConfig = featureConfig,
     ) {
         accessControl.requirePermissionFor(
             tx,
@@ -658,7 +660,7 @@ class ApplicationStateService(
 
         val application = getApplication(tx, applicationId)
         verifyStatus(application, WAITING_DECISION)
-        val decisionIds = finalizeDecisions(tx, user, clock, application)
+        val decisionIds = finalizeDecisions(tx, user, clock, application, config)
         Audit.ApplicationSendDecisionsWithoutProposal.log(
             targetId = AuditId(applicationId),
             objectId = AuditId(decisionIds),
@@ -766,6 +768,7 @@ class ApplicationStateService(
         clock: EvakaClock,
         unitId: DaycareId,
         rejectReasonTranslations: Map<PlacementPlanRejectReason, String>,
+        config: FeatureConfig = featureConfig,
     ) {
         accessControl.requirePermissionFor(
             tx,
@@ -845,7 +848,9 @@ class ApplicationStateService(
                 }
                 .toList<ApplicationId>()
 
-        validIds.map { getApplication(tx, it) }.forEach { finalizeDecisions(tx, user, clock, it) }
+        validIds
+            .map { getApplication(tx, it) }
+            .forEach { finalizeDecisions(tx, user, clock, it, config) }
         Audit.PlacementProposalAccept.log(targetId = AuditId(unitId), objectId = AuditId(validIds))
     }
 
@@ -889,13 +894,17 @@ class ApplicationStateService(
         decisionId: DecisionId,
         requestedStartDate: LocalDate,
     ) {
-        accessControl.requirePermissionFor(
-            tx,
-            user,
-            clock,
-            Action.Application.ACCEPT_DECISION,
-            applicationId,
-        )
+        if (user is AuthenticatedUser.SystemInternalUser) {
+            // automated decision
+        } else {
+            accessControl.requirePermissionFor(
+                tx,
+                user,
+                clock,
+                Action.Application.ACCEPT_DECISION,
+                applicationId,
+            )
+        }
 
         val application = getApplication(tx, applicationId)
         verifyStatus(application, setOf(WAITING_CONFIRMATION, ACTIVE))
@@ -1476,15 +1485,42 @@ class ApplicationStateService(
         user: AuthenticatedUser,
         clock: EvakaClock,
         application: ApplicationDetails,
+        config: FeatureConfig = featureConfig,
     ): List<DecisionId> {
+        val skipGuardian =
+            config.skipGuardianPreschoolDecisionApproval &&
+                application.type == ApplicationType.PRESCHOOL
         val sendBySfi = canSendDecisionsBySfi(tx, user, application)
         val decisionDrafts = tx.fetchDecisionDrafts(application.id)
         return if (decisionDrafts.any { it.planned }) {
             val decisionIds =
-                decisionService.finalizeDecisions(tx, user, clock, application.id, sendBySfi)
+                decisionService.finalizeDecisions(
+                    tx,
+                    user,
+                    clock,
+                    application.id,
+                    sendBySfi,
+                    skipGuardian,
+                )
             tx.syncApplicationOtherGuardians(application.id, clock.today())
             val newStatus = if (sendBySfi) WAITING_CONFIRMATION else WAITING_MAILING
             tx.updateApplicationStatus(application.id, newStatus, user.evakaUserId, clock.now())
+
+            if (skipGuardian) {
+                decisionIds.forEach { decisionId ->
+                    val decision = tx.getDecision(decisionId)!!
+                    if (decision.type == DecisionType.PRESCHOOL) {
+                        acceptDecision(
+                            tx,
+                            AuthenticatedUser.SystemInternalUser,
+                            clock,
+                            application.id,
+                            decisionId,
+                            decision.startDate,
+                        )
+                    }
+                }
+            }
 
             if (newStatus == WAITING_CONFIRMATION) {
                 asyncJobRunner.plan(

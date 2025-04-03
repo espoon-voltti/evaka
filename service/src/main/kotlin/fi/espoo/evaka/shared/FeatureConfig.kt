@@ -161,6 +161,9 @@ data class FeatureConfig(
      * value is in cents, i.e. 1000 means 10 euros.
      */
     val minimumInvoiceAmount: Int = 0,
+
+    /** Accept preschool decision without asking guardian confirmation */
+    val skipGuardianPreschoolDecisionApproval: Boolean = false,
 )
 
 enum class ArchiveProcessType {
