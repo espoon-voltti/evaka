@@ -1328,7 +1328,7 @@ class TestNekkuClient(
         return nekkuProducts
     }
 
-    override fun createNekkuMealOrder(nekkuOrders: NekkuClient.NekkuOrders): Unit {
+    override fun createNekkuMealOrder(nekkuOrders: NekkuClient.NekkuOrders) {
         orders.add(nekkuOrders)
     }
 }
