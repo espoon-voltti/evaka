@@ -107,6 +107,7 @@ export default React.memo(function ApplicationPage() {
 
   const application = useQueryResult(applicationDetailsQuery({ applicationId }))
 
+  const editedApplicationInitialized = editedApplication !== undefined
   useEffect(() => {
     if (application.isSuccess) {
       const { firstName, lastName } =
@@ -114,9 +115,17 @@ export default React.memo(function ApplicationPage() {
       setTitle(
         `${i18n.application.tabTitle} - ${formatTitleName(firstName, lastName)}`
       )
-      setEditedApplication(application.value.application)
+      if (!editedApplicationInitialized) {
+        setEditedApplication(application.value.application)
+      }
     }
-  }, [application, formatTitleName, i18n.application.tabTitle, setTitle])
+  }, [
+    application,
+    formatTitleName,
+    i18n.application.tabTitle,
+    setTitle,
+    editedApplicationInitialized
+  ])
 
   const messageThread = useQueryResult(
     threadByApplicationIdQuery({ applicationId })
