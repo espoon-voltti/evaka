@@ -140,7 +140,7 @@ beforeEach(async () => {
         endDate: null,
         jamixCustomerNumber: null,
         aromiCustomerId: null,
-        nekkuCustomerNumber: null,
+        nekkuCustomerNumber: null
       }
     ]
   })
