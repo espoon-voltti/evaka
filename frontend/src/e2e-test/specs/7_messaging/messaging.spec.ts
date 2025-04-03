@@ -139,7 +139,8 @@ beforeEach(async () => {
         startDate: LocalDate.of(2000, 1, 1),
         endDate: null,
         jamixCustomerNumber: null,
-        aromiCustomerId: null
+        aromiCustomerId: null,
+        nekkuCustomerNumber: null,
       }
     ]
   })
