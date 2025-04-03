@@ -296,6 +296,7 @@ export const fi = {
   login: {
     title: 'Varhaiskasvatus',
     subtitle: 'Asiakastiedot ja yksiköt',
+    systemNotification: 'Tärkeä tiedote',
     login: 'Kirjaudu sisään',
     loginAD: 'Espoo AD',
     loginEvaka: 'Palveluntuottaja',

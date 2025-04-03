@@ -125,6 +125,28 @@ class SystemNotificationsController(private val accessControl: AccessControl) {
             .also { Audit.SystemNotificationsReadCitizen.log() }
     }
 
+    @GetMapping("/employee/public/system-notifications/current")
+    fun getCurrentSystemNotificationEmployee(
+        db: Database,
+        clock: EvakaClock,
+    ): CurrentNotificationResponse {
+        return db.connect { dbc ->
+                dbc.read { tx ->
+                    tx.createQuery {
+                            sql(
+                                """
+                    SELECT * FROM system_notification
+                    WHERE target_group = 'EMPLOYEES' AND valid_to > ${bind(clock.now())}
+                """
+                            )
+                        }
+                        .exactlyOneOrNull<SystemNotification>()
+                        .let { CurrentNotificationResponse(it) }
+                }
+            }
+            .also { Audit.SystemNotificationsReadEmployee.log() }
+    }
+
     @GetMapping("/employee-mobile/system-notifications/current")
     fun getCurrentSystemNotificationEmployeeMobile(
         db: Database,
