@@ -37,19 +37,28 @@ class AromiService(private val aromiEnv: AromiEnv?) {
     private val startDateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmm")
     private val endTimeFormatter = DateTimeFormatter.ofPattern("HHmm")
 
-    fun sendOrders(db: Database.Connection, clock: EvakaClock) {
+    fun sendOrders(
+        db: Database.Connection,
+        clock: EvakaClock,
+        earliestStartDate: LocalDate = LocalDate.of(2025, 4, 22),
+    ) {
         val sftpClient =
             aromiEnv?.let { SftpClient(it.sftp) }
                 ?: error("Cannot send Aromi orders: AromiEnv is not configured")
         val formatter = DateTimeFormatter.ofPattern(aromiEnv.filePattern)
         val today = clock.today()
-        val range = FiniteDateRange(today.plusDays(3), today.plusDays(21))
-        val data = getMealOrdersCsv(db, range)
+        val endDate = today.plusDays(21)
+        if (endDate.isBefore(earliestStartDate))
+            error("End date of meal order is before earliest start date, aborting")
+        val startDate = maxOf(earliestStartDate, today.plusDays(3))
+
+        val data = getMealOrdersCsv(db, FiniteDateRange(startDate, endDate))
         data.inputStream().use { sftpClient.put(it, today.format(formatter)) }
     }
 
     fun getMealOrdersCsv(dbc: Database.Connection, range: FiniteDateRange): ByteArray {
         val data = dbc.read { tx -> getData(tx, range) }
+        if (data.report.isEmpty()) error("No attendance information available, aborting")
         return ByteArrayOutputStream().use { stream ->
             PrintWriter(stream, false, StandardCharsets.ISO_8859_1).use { writer ->
                 printCsv(writer, data)
