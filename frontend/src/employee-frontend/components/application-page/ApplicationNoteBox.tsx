@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext, useState } from 'react'
 import { Link } from 'react-router'
 import styled from 'styled-components'
 
@@ -111,10 +111,9 @@ export default React.memo(function ApplicationNoteBox(props: Props) {
 
   const [submitting, setSubmitting] = useState(false)
   const [confirmingDelete, setConfirmingDelete] = useState(false)
-  const [text, setText] = useState<string>('')
-  useEffect(() => {
-    setText(isEdit(props) ? props.note.content : '')
-  }, [props])
+  const [text, setText] = useState<string>(
+    isCreate(props) ? '' : props.note.content
+  )
 
   const { mutateAsync: updateNote } = useMutation(updateApplicationNoteMutation)
   const { mutateAsync: createNote } = useMutation(createApplicationNoteMutation)
@@ -229,7 +228,10 @@ export default React.memo(function ApplicationNoteBox(props: Props) {
               {props.editable && (
                 <IconOnlyButton
                   icon={faPen}
-                  onClick={props.onStartEdit}
+                  onClick={() => {
+                    props.onStartEdit()
+                    setText(props.note.content)
+                  }}
                   size="s"
                   data-qa="edit-note"
                   aria-label={i18n.common.edit}
