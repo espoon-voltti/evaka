@@ -105,7 +105,7 @@ class HolidayPeriodControllerCitizenIntegrationTest :
     }
 
     @Test
-    fun `active questionnaire is eligible for all children when there are no conditions`() {
+    fun `active questionnaire is eligible for all children with active placement when there are no conditions`() {
         db.transaction { tx -> tx.insertGuardian(parent.id, child2.id) }
         createFixedPeriodQuestionnaire(freePeriodQuestionnaire)
 
@@ -114,7 +114,7 @@ class HolidayPeriodControllerCitizenIntegrationTest :
         assertEquals(1, response.size)
         assertThat(response[0].eligibleChildren)
             .containsExactlyInAnyOrderEntriesOf(
-                mapOf(child1.id to freePeriodQuestionnaire.periodOptions, child2.id to emptyList())
+                mapOf(child1.id to freePeriodQuestionnaire.periodOptions)
             )
     }
 
@@ -170,7 +170,7 @@ class HolidayPeriodControllerCitizenIntegrationTest :
         assertEquals(1, response.size)
         assertThat(response[0].eligibleChildren)
             .containsExactlyInAnyOrderEntriesOf(
-                mapOf(child1.id to freePeriodQuestionnaire.periodOptions, child4.id to emptyList())
+                mapOf(child1.id to freePeriodQuestionnaire.periodOptions)
             )
     }
 
