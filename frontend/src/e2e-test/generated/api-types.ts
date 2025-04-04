@@ -82,6 +82,7 @@ import { MailingAddress } from 'lib-common/generated/api-types/daycare'
 import { MobileDeviceId } from 'lib-common/generated/api-types/shared'
 import { Nationality } from 'lib-common/generated/api-types/vtjclient'
 import { NativeLanguage } from 'lib-common/generated/api-types/vtjclient'
+import { NekkuProductMealType } from 'lib-common/generated/api-types/nekku'
 import { OfficialLanguage } from 'lib-common/generated/api-types/shared'
 import { OtherAssistanceMeasureId } from 'lib-common/generated/api-types/shared'
 import { OtherAssistanceMeasureType } from 'lib-common/generated/api-types/assistance'
@@ -385,6 +386,7 @@ export interface DevChild {
   languageAtHomeDetails: string
   mealTextureId: number | null
   medication: string
+  nekku_diet: NekkuProductMealType | null
 }
 
 /**
@@ -528,6 +530,7 @@ export interface DevDaycareGroup {
   id: GroupId
   jamixCustomerNumber: number | null
   name: string
+  nekkuCustomerNumber: string | null
   startDate: LocalDate
 }
 
