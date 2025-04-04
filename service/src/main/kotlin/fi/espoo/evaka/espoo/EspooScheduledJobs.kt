@@ -37,13 +37,13 @@ enum class EspooScheduledJob(
         EspooScheduledJobs::planBiJobs,
         ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(1, 0))),
     ),
-    GetStaffAttendancePlansFromLinkity(
-        EspooScheduledJobs::getStaffAttendancePlansFromLinkity,
+    PlanStaffAttendancePlanJobs(
+        EspooScheduledJobs::planStaffAttendancePlanJobs,
         ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(1, 30))),
     ),
     SendStaffAttendancesToLinkity(
         EspooScheduledJobs::sendStaffAttendancesToLinkity,
-        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(9, 22))),
+        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(2, 30))),
     ),
 }
 
@@ -80,7 +80,7 @@ class EspooScheduledJobs(
         }
     }
 
-    fun getStaffAttendancePlansFromLinkity(db: Database.Connection, clock: EvakaClock) {
+    fun planStaffAttendancePlanJobs(db: Database.Connection, clock: EvakaClock) {
         val weeksAhead = 6L
         val daysInSingleRun = 7L
         val startDate = clock.today()
@@ -98,7 +98,8 @@ class EspooScheduledJobs(
                     )
                     .map { EspooAsyncJob.GetStaffAttendancePlansFromLinkity(it) }
 
-            espooAsyncJobRunner.plan(tx, dateRanges, runAt = clock.now())
+            // TODO: After testing, retryCount can be increased
+            espooAsyncJobRunner.plan(tx, dateRanges, runAt = clock.now(), retryCount = 1)
         }
     }
 
