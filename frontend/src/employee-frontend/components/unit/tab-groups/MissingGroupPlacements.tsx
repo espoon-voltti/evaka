@@ -68,9 +68,7 @@ function renderMissingGroupPlacementRow(
       </Td>
       <Td>
         <FixedSpaceRow spacing="xs" alignItems="center">
-          <AgeIndicatorChip
-            age={placementPeriod.start.differenceInYears(dateOfBirth)}
-          />
+          <AgeIndicatorChip age={gap.start.differenceInYears(dateOfBirth)} />
           <span data-qa="child-dob">{dateOfBirth.format()}</span>
         </FixedSpaceRow>
       </Td>
