@@ -147,17 +147,13 @@ interface NekkuClient {
 
     data class NekkuOrder(
         val delivery_date: String,
-        val customer_id: String,
+        val customer_number: String,
         val group_id: String,
         val items: List<Item>,
         val description: String,
     )
 
-    data class Item(
-        val product_sku: String,
-        val quantity: Int,
-        val product_options: List<ProductOption>?,
-    )
+    data class Item(val sku: String, val quantity: Int, val product_options: List<ProductOption>?)
 
     data class ProductOption(val field_id: String, val value: String)
 
@@ -302,7 +298,7 @@ fun createAndSendNekkuOrder(
             listOf(
                 NekkuClient.NekkuOrder(
                     delivery_date = date.toString(),
-                    customer_id = customerNumber,
+                    customer_number = customerNumber,
                     group_id = groupId.toString(),
                     items =
                         nekkuMealReportData(
@@ -373,11 +369,7 @@ fun nekkuMealReportData(
             .mapValues { it.value.size }
 
     return mealInfoMap.map {
-        NekkuClient.Item(
-            product_sku = it.key.sku,
-            quantity = it.value,
-            product_options = it.key.options,
-        )
+        NekkuClient.Item(sku = it.key.sku, quantity = it.value, product_options = it.key.options)
     }
 }
 
