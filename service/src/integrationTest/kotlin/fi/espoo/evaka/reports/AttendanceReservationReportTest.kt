@@ -50,6 +50,7 @@ import fi.espoo.evaka.testDecisionMaker_2
 import fi.espoo.evaka.unitSupervisorOfTestDaycare
 import fi.espoo.evaka.user.EvakaUser
 import fi.espoo.evaka.user.EvakaUserType
+import java.math.BigDecimal
 import java.time.DayOfWeek
 import java.time.DayOfWeek.FRIDAY
 import java.time.DayOfWeek.MONDAY
@@ -62,7 +63,6 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import java.math.BigDecimal
 
 internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired
@@ -1472,7 +1472,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                     departed = HelsinkiDateTime.of(date, LocalTime.of(8, 30)),
                     modifiedAt = HelsinkiDateTime.of(date, LocalTime.of(8, 0)),
                     modifiedBy = admin.evakaUserId,
-                    occupancyCoefficient = BigDecimal.ZERO
+                    occupancyCoefficient = BigDecimal.ZERO,
                 )
             )
         }

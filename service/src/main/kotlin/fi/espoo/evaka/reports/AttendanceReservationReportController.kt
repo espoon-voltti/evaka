@@ -513,15 +513,18 @@ fun getAttendanceReservationReport(
                             ReservationType.REALIZATION -> emptyList()
                         }
 
-                    val staffAttendances = if (group.id != null) {
-                        staffAttendancesMap[group.id] ?: emptyList()
-                    } else {
-                        staffAttendancesMap.values.flatten()
-                    }.filter {
-                        if (it.departed != null)
-                            HelsinkiDateTimeRange(it.arrived, it.departed).overlaps(interval)
-                        else it.arrived < interval.end
-                    }
+                    val staffAttendances =
+                        if (group.id != null) {
+                                staffAttendancesMap[group.id] ?: emptyList()
+                            } else {
+                                staffAttendancesMap.values.flatten()
+                            }
+                            .filter {
+                                if (it.departed != null)
+                                    HelsinkiDateTimeRange(it.arrived, it.departed)
+                                        .overlaps(interval)
+                                else it.arrived < interval.end
+                            }
 
                     AttendanceReservationReportRow(
                         groupId = group.id,
