@@ -928,7 +928,14 @@ class ApplicationStateService(
             throw BadRequest("Primary decision must be accepted first")
         }
 
-        if (!decision.validRequestedStartDatePeriod(featureConfig).includes(requestedStartDate)) {
+        if (
+            !decision
+                .validRequestedStartDatePeriod(
+                    featureConfig,
+                    isCitizen = user is AuthenticatedUser.Citizen,
+                )
+                .includes(requestedStartDate)
+        ) {
             throw BadRequest(
                 "Invalid start date $requestedStartDate for ${decision.type} [${decision.startDate}, ${decision.endDate}]",
                 "decision.validation.invalid-requested-start-date",

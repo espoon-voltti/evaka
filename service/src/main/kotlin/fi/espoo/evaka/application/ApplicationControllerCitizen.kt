@@ -543,7 +543,7 @@ class ApplicationControllerCitizen(
                     decisions.map {
                         DecisionWithValidStartDatePeriod(
                             it,
-                            it.validRequestedStartDatePeriod(featureConfig),
+                            it.validRequestedStartDatePeriod(featureConfig, isCitizen = true),
                             permittedActions[it.id] ?: emptySet(),
                             canDecide.contains(it.applicationId),
                         )
