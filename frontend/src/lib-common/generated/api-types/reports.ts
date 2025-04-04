@@ -1111,6 +1111,7 @@ export type UnitType =
 */
 export interface UnitsReportRow {
   address: string
+  capacity: number
   careAreaName: string
   careTypeCentre: boolean
   careTypeClub: boolean

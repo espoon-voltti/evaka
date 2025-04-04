@@ -67,7 +67,8 @@ private fun Database.Read.getUnitRows(today: LocalDate): List<UnitsReportRow> {
                 coalesce(u.cost_center, '') AS cost_center,
                 (u.street_address || ', ' || u.postal_code || ', ' || u.post_office) as address,
                 u.unit_manager_name,
-                u.unit_manager_phone
+                u.unit_manager_phone,
+                u.capacity
             FROM daycare u
             JOIN care_area ca ON ca.id = u.care_area_id
             WHERE u.closing_date IS NULL OR u.closing_date >= ${bind(today)}
@@ -101,4 +102,5 @@ data class UnitsReportRow(
     val address: String,
     val unitManagerName: String,
     val unitManagerPhone: String,
+    val capacity: Int,
 )

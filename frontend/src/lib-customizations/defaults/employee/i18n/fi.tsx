@@ -4035,7 +4035,8 @@ export const fi = {
       costCenter: 'Kustannuspaikka',
       address: 'Käyntiosoite',
       unitManagerName: 'Yksikön johtaja',
-      unitManagerPhone: 'Johtajan puh.'
+      unitManagerPhone: 'Johtajan puh.',
+      capacity: 'Laskennallinen kapasiteetti'
     },
     childrenInDifferentAddress: {
       title: 'Lapsi eri osoitteessa',
