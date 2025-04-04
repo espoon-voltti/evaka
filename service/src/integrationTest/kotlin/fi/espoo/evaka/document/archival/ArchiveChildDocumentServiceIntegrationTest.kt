@@ -21,7 +21,7 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.dev.*
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import fi.espoo.evaka.shared.domain.OfficialLanguage
+import fi.espoo.evaka.shared.domain.UiLanguage
 import java.io.InputStream
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -139,7 +139,7 @@ class ArchiveChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBe
                     name = "VASU 2023-2024",
                     type = DocumentType.VASU,
                     placementTypes = setOf(PlacementType.PRESCHOOL),
-                    language = OfficialLanguage.FI,
+                    language = UiLanguage.FI,
                     confidentiality = DocumentConfidentiality(10, "JulkL 24 § 1 mom. 32 k"),
                     legalBasis = "EARLY_CHILDHOOD_EDUCATION",
                     validity = DateRange(LocalDate.of(2023, 1, 1), LocalDate.of(2023, 12, 31)),
