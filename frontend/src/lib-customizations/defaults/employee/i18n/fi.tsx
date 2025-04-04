@@ -3698,6 +3698,12 @@ export const fi = {
       over3y: '3+',
       age: 'Ikä',
       dateOfBirth: 'Syntymäaika'
+      age: 'Ikä',
+      attendanceType: 'Läsnäolo',
+      attendanceTypes: {
+        RESERVATION: 'Varaus',
+        REALIZATION: 'Toteuma'
+      }
     },
     applications: {
       title: 'Saapuneet hakemukset',

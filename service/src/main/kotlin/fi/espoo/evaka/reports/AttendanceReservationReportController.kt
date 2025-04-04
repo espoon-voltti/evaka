@@ -7,6 +7,7 @@ package fi.espoo.evaka.reports
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.absence.getAbsencesOfChildrenByRange
+import fi.espoo.evaka.attendance.getStaffAttendancesForDateRange
 import fi.espoo.evaka.dailyservicetimes.ServiceTimesPresenceStatus
 import fi.espoo.evaka.dailyservicetimes.getDailyServiceTimesForChildren
 import fi.espoo.evaka.daycare.CareType
@@ -52,6 +53,7 @@ class AttendanceReservationReportController(private val accessControl: AccessCon
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) start: LocalDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) end: LocalDate,
         @RequestParam groupIds: List<GroupId>?,
+        @RequestParam reservationType: ReservationType,
     ): List<AttendanceReservationReportRow> {
         if (start.isAfter(end)) throw BadRequest("Inverted time range")
         if (end.isAfter(start.plusMonths(2))) throw BadRequest("Too long time range")
@@ -72,6 +74,7 @@ class AttendanceReservationReportController(private val accessControl: AccessCon
                         end,
                         unitId,
                         groupIds?.ifEmpty { null },
+                        reservationType,
                     )
                 }
             }
@@ -93,6 +96,7 @@ class AttendanceReservationReportController(private val accessControl: AccessCon
         val range: FiniteDateRange,
         val unitId: DaycareId,
         val groupIds: List<GroupId>,
+        val reservationType: ReservationType,
     )
 
     @PostMapping("/employee/reports/attendance-reservation/by-child")
@@ -117,6 +121,7 @@ class AttendanceReservationReportController(private val accessControl: AccessCon
                         body.range,
                         body.unitId,
                         body.groupIds.ifEmpty { null },
+                        body.reservationType,
                     )
                 }
             }
@@ -309,6 +314,32 @@ AND ar.start_time IS NOT NULL AND ar.end_time IS NOT NULL
         )
 }
 
+private fun Database.Read.getRealizations(
+    range: FiniteDateRange,
+    children: Set<ChildId>,
+): Map<ChildId, List<HelsinkiDateTimeRange>> {
+    return createQuery {
+            sql(
+                """
+SELECT pl.child_id, ca.date, ca.start_time, ca.end_time
+FROM child_attendance ca
+JOIN placement pl on ca.child_id = pl.child_id AND daterange(pl.start_date, pl.end_date, '[]') @> ca.date
+WHERE pl.child_id = ANY(${bind(children)}) AND between_start_and_end(${bind(range)}, ca.date)
+    """
+            )
+        }
+        .toList<ReservationRow>()
+        .groupBy(
+            keySelector = { it.childId },
+            valueTransform = {
+                HelsinkiDateTimeRange(
+                    start = HelsinkiDateTime.of(it.date, it.startTime),
+                    end = HelsinkiDateTime.of(it.date, it.endTime),
+                )
+            },
+        )
+}
+
 enum class PresenceStatus {
     PRESENT,
     ABSENT,
@@ -349,6 +380,10 @@ data class DailyChildData(
         }
         return PresenceStatus.UNKNOWN
     }
+
+    fun wasPresent(during: HelsinkiDateTimeRange, bufferMinutes: Long = 15) =
+        reservations.isNotEmpty() &&
+            reservations.any { it.copy(end = it.end.plusMinutes(bufferMinutes)).overlaps(during) }
 }
 
 private data class Group(val id: GroupId?, val name: String?)
@@ -372,6 +407,7 @@ fun getAttendanceReservationReport(
     end: LocalDate,
     unitId: DaycareId,
     groupIds: List<GroupId>?,
+    reservationType: ReservationType,
 ): List<AttendanceReservationReportRow> {
     val range = FiniteDateRange(start, end)
     val daycare = tx.getDaycare(unitId)!!
@@ -380,7 +416,11 @@ fun getAttendanceReservationReport(
     val childInfoMap = tx.getChildInfo(allChildren).associateBy { it.childId }
     val serviceNeedsMap = tx.getServiceNeeds(start, end, allChildren).groupBy { it.childId }
     val assistanceNeedsMap = tx.getCapacityFactors(range, allChildren).groupBy { it.childId }
-    val reservationsMap = tx.getReservations(range, allChildren)
+    val reservationsMap =
+        when (reservationType) {
+            ReservationType.RESERVATION -> tx.getReservations(range, allChildren)
+            ReservationType.REALIZATION -> tx.getRealizations(range, allChildren)
+        }
     val absences =
         tx.getAbsencesOfChildrenByRange(allChildren, range.asDateRange())
             .groupBy { it.childId }
@@ -388,6 +428,8 @@ fun getAttendanceReservationReport(
                 absences.groupBy({ it.date }, { it.category }).mapValues { it.value.toSet() }
             }
     val serviceTimesMap = tx.getDailyServiceTimesForChildren(allChildren.toSet())
+    val staffAttendancesMap =
+        tx.getStaffAttendancesForDateRange(unitId, range).groupBy { it.groupId }
 
     val dailyChildData =
         placementStuff.map { placementInfo ->
@@ -452,13 +494,34 @@ fun getAttendanceReservationReport(
                     val interval =
                         HelsinkiDateTimeRange(intervalStart, intervalStart.plusMinutes(15))
                     val presentChildren =
-                        childrenInGroup.filter { it.isPresent(interval) == PresenceStatus.PRESENT }
+                        when (reservationType) {
+                            ReservationType.RESERVATION ->
+                                childrenInGroup.filter {
+                                    it.isPresent(interval) == PresenceStatus.PRESENT
+                                }
+                            ReservationType.REALIZATION ->
+                                childrenInGroup.filter { it.wasPresent(interval) }
+                        }
 
                     val unknownChildren =
-                        childrenInGroup.filter {
-                            it.date == intervalStart.toLocalDate() &&
-                                it.isPresent(interval) == PresenceStatus.UNKNOWN
+                        when (reservationType) {
+                            ReservationType.RESERVATION ->
+                                childrenInGroup.filter {
+                                    it.date == intervalStart.toLocalDate() &&
+                                        it.isPresent(interval) == PresenceStatus.UNKNOWN
+                                }
+                            ReservationType.REALIZATION -> emptyList()
                         }
+
+                    val staffAttendances = if (group.id != null) {
+                        staffAttendancesMap[group.id] ?: emptyList()
+                    } else {
+                        staffAttendancesMap.values.flatten()
+                    }.filter {
+                        if (it.departed != null)
+                            HelsinkiDateTimeRange(it.arrived, it.departed).overlaps(interval)
+                        else it.arrived < interval.end
+                    }
 
                     AttendanceReservationReportRow(
                         groupId = group.id,
@@ -472,9 +535,17 @@ fun getAttendanceReservationReport(
                                 .setScale(2, RoundingMode.HALF_UP)
                                 .toDouble(),
                         staffCountRequired =
-                            BigDecimal(presentChildren.sumOf { it.capacityFactor } / 7)
-                                .setScale(1, RoundingMode.HALF_UP)
-                                .toDouble(),
+                            when (reservationType) {
+                                ReservationType.RESERVATION ->
+                                    BigDecimal(presentChildren.sumOf { it.capacityFactor } / 7)
+                                        .setScale(1, RoundingMode.HALF_UP)
+                                        .toDouble()
+                                ReservationType.REALIZATION ->
+                                    staffAttendances
+                                        .sumOf { it.occupancyCoefficient }
+                                        .divide(BigDecimal.valueOf(7), 1, RoundingMode.HALF_UP)
+                                        .toDouble()
+                            },
                         unknownChildCount = unknownChildren.count(),
                         unknownChildCapacityFactor =
                             BigDecimal(unknownChildren.sumOf { it.capacityFactor })
@@ -491,6 +562,7 @@ fun getAttendanceReservationReportByChild(
     range: FiniteDateRange,
     unitId: DaycareId,
     groupIds: List<GroupId>?,
+    reservationType: ReservationType,
 ): List<AttendanceReservationReportByChildGroup> {
     val daycare = tx.getDaycare(unitId)!!
 
@@ -499,7 +571,11 @@ fun getAttendanceReservationReportByChild(
     val childInfoMap = tx.getChildInfo(allChildren).associateBy { it.childId }
     val serviceNeedsMap =
         tx.getServiceNeeds(range.start, range.end, allChildren).groupBy { it.childId }
-    val reservationsMap = tx.getReservations(range, allChildren)
+    val reservationsMap =
+        when (reservationType) {
+            ReservationType.RESERVATION -> tx.getReservations(range, allChildren)
+            ReservationType.REALIZATION -> tx.getRealizations(range, allChildren)
+        }
     val absences =
         tx.getAbsencesOfChildrenByRange(allChildren, range.asDateRange())
             .groupBy { it.childId }
@@ -632,3 +708,8 @@ data class AttendanceReservationReportByChildItem(
     val fullDayAbsence: Boolean,
     val backupCare: Boolean,
 )
+
+enum class ReservationType {
+    RESERVATION,
+    REALIZATION,
+}

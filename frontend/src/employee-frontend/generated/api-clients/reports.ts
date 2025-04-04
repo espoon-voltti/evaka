@@ -68,6 +68,7 @@ import { RegionalSurveyReportAgeStatisticsResult } from 'lib-common/generated/ap
 import { RegionalSurveyReportResult } from 'lib-common/generated/api-types/reports'
 import { RegionalSurveyReportYearlyStatisticsResult } from 'lib-common/generated/api-types/reports'
 import { Report } from 'lib-common/generated/api-types/reports'
+import { ReservationType } from 'lib-common/generated/api-types/reports'
 import { ServiceNeedReportRow } from 'lib-common/generated/api-types/reports'
 import { ServiceVoucherReport } from 'lib-common/generated/api-types/reports'
 import { ServiceVoucherUnitReport } from 'lib-common/generated/api-types/reports'
@@ -232,13 +233,15 @@ export async function getAttendanceReservationReportByUnit(
     unitId: DaycareId,
     start: LocalDate,
     end: LocalDate,
-    groupIds?: GroupId[] | null
+    groupIds?: GroupId[] | null,
+    reservationType: ReservationType
   }
 ): Promise<AttendanceReservationReportRow[]> {
   const params = createUrlSearchParams(
     ['start', request.start.formatIso()],
     ['end', request.end.formatIso()],
-    ...(request.groupIds?.map((e): [string, string | null | undefined] => ['groupIds', e]) ?? [])
+    ...(request.groupIds?.map((e): [string, string | null | undefined] => ['groupIds', e]) ?? []),
+    ['reservationType', request.reservationType.toString()]
   )
   const { data: json } = await client.request<JsonOf<AttendanceReservationReportRow[]>>({
     url: uri`/employee/reports/attendance-reservation/${request.unitId}`.toString(),
