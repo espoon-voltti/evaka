@@ -220,6 +220,43 @@ describe('Invoices', () => {
       await invoicesPage.assertInvoiceCount(2)
     })
 
+    test('Filtering invoices result selection resets after change', async () => {
+      await Fixture.invoice({
+        headOfFamilyId: testAdult.id,
+        areaId: testCareArea.id
+      })
+        .addRow({
+          childId: testChild.id,
+          unitId: testDaycare.id
+        })
+        .save()
+      await Fixture.invoice({
+        headOfFamilyId: familyWithRestrictedDetailsGuardian.guardian.id,
+        areaId: testCareArea.id
+      })
+        .addRow({
+          childId: familyWithRestrictedDetailsGuardian.children[0].id,
+          unitId: testDaycare.id
+        })
+        .save()
+
+      const invoicesPage = await openInvoicesPage()
+      await invoicesPage.searchInvoices()
+      await invoicesPage.assertInvoiceCount(2)
+      await invoicesPage.createInvoiceDrafts()
+      await invoicesPage.selectFirstInvoice()
+      await invoicesPage.sendInvoices()
+      await invoicesPage.assertInvoiceCount(1)
+      await invoicesPage.filterByStatus('SENT')
+      await invoicesPage.searchInvoices()
+      await invoicesPage.assertInvoiceCount(1)
+      await invoicesPage.toggleAllInvoices(true)
+      await invoicesPage.filterByStatus('DRAFT')
+      await invoicesPage.searchInvoices()
+      await invoicesPage.assertInvoiceCount(1)
+      await invoicesPage.assertButtonsDisabled()
+    })
+
     test('Sending an invoice with a recipient without a SSN', async () => {
       const adultWithoutSSN = await Fixture.person({
         id: fromUuid<PersonId>('a6cf0ec0-4573-4816-be30-6b87fd943817'),

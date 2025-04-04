@@ -685,6 +685,40 @@ export async function markReplacementDraftSent(
 
 
 /**
+* Generated from fi.espoo.evaka.invoicing.controller.InvoiceController.resendInvoices
+*/
+export async function resendInvoices(
+  request: {
+    body: InvoiceId[]
+  }
+): Promise<void> {
+  const { data: json } = await client.request<JsonOf<void>>({
+    url: uri`/employee/invoices/resend`.toString(),
+    method: 'POST',
+    data: request.body satisfies JsonCompatible<InvoiceId[]>
+  })
+  return json
+}
+
+
+/**
+* Generated from fi.espoo.evaka.invoicing.controller.InvoiceController.resendInvoicesByDate
+*/
+export async function resendInvoicesByDate(
+  request: {
+    body: InvoicePayload
+  }
+): Promise<void> {
+  const { data: json } = await client.request<JsonOf<void>>({
+    url: uri`/employee/invoices/resend/by-date`.toString(),
+    method: 'POST',
+    data: request.body satisfies JsonCompatible<InvoicePayload>
+  })
+  return json
+}
+
+
+/**
 * Generated from fi.espoo.evaka.invoicing.controller.InvoiceController.searchInvoices
 */
 export async function searchInvoices(
