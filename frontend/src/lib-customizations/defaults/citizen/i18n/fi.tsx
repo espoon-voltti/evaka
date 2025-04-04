@@ -2353,7 +2353,7 @@ export default {
         'Minulla ei ole mitään tuloja tai tukia. Tietoni saa tarkastaa tulorekisteristä sekä Kelasta.',
       noIncomeDescription: 'Kuvaile tilannettasi tarkemmin',
       attachmentsVerificationInfo:
-        'Tulotiedot tarkistetaan vähintään vuoden välein.',
+        'Tee uusi tuloselvitys viimeistään vuoden päästä.',
       estimate: 'Arvio bruttotuloistani',
       estimatedMonthlyIncome: 'Keskimääräiset tulot sisältäen lomarahat, €/kk',
       otherIncome: 'Muut tulot',
