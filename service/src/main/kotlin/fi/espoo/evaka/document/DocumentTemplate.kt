@@ -16,7 +16,7 @@ import fi.espoo.evaka.shared.HtmlBuilder
 import fi.espoo.evaka.shared.HtmlElement
 import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.DateRange
-import fi.espoo.evaka.shared.domain.OfficialLanguage
+import fi.espoo.evaka.shared.domain.UiLanguage
 import java.time.format.DateTimeFormatter
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.json.Json
@@ -27,10 +27,13 @@ private val translationsFi = Translations(yes = "Kyllä", no = "Ei")
 
 private val translationsSv = Translations(yes = "Ja", no = "Nej")
 
-private fun getTranslations(language: OfficialLanguage) =
+private val translationsEn = Translations(yes = "Yes", no = "No")
+
+private fun getTranslations(language: UiLanguage) =
     when (language) {
-        OfficialLanguage.FI -> translationsFi
-        OfficialLanguage.SV -> translationsSv
+        UiLanguage.FI -> translationsFi
+        UiLanguage.SV -> translationsSv
+        UiLanguage.EN -> translationsEn
     }
 
 @ConstList("questionTypes")
@@ -54,7 +57,7 @@ sealed class Question(val type: QuestionType) {
 
     abstract fun generateHtml(
         answeredQuestion: AnsweredQuestion<*>?,
-        language: OfficialLanguage,
+        language: UiLanguage,
     ): HtmlElement
 
     fun htmlClassName() = "question question-${type.name.lowercase().replace('_', '-')}"
@@ -68,7 +71,7 @@ sealed class Question(val type: QuestionType) {
     ) : Question(QuestionType.TEXT) {
         override fun generateHtml(
             answeredQuestion: AnsweredQuestion<*>?,
-            language: OfficialLanguage,
+            language: UiLanguage,
         ): HtmlElement {
             if (answeredQuestion == null)
                 return HtmlBuilder.div(className = htmlClassName()) {
@@ -103,7 +106,7 @@ sealed class Question(val type: QuestionType) {
     ) : Question(QuestionType.CHECKBOX) {
         override fun generateHtml(
             answeredQuestion: AnsweredQuestion<*>?,
-            language: OfficialLanguage,
+            language: UiLanguage,
         ): HtmlElement {
             if (answeredQuestion == null)
                 return HtmlBuilder.div(className = htmlClassName()) {
@@ -135,7 +138,7 @@ sealed class Question(val type: QuestionType) {
     ) : Question(QuestionType.CHECKBOX_GROUP) {
         override fun generateHtml(
             answeredQuestion: AnsweredQuestion<*>?,
-            language: OfficialLanguage,
+            language: UiLanguage,
         ): HtmlElement {
             if (answeredQuestion == null)
                 return HtmlBuilder.div(className = htmlClassName()) {
@@ -178,7 +181,7 @@ sealed class Question(val type: QuestionType) {
     ) : Question(QuestionType.RADIO_BUTTON_GROUP) {
         override fun generateHtml(
             answeredQuestion: AnsweredQuestion<*>?,
-            language: OfficialLanguage,
+            language: UiLanguage,
         ): HtmlElement {
             if (answeredQuestion == null)
                 return HtmlBuilder.div(className = htmlClassName()) {
@@ -214,7 +217,7 @@ sealed class Question(val type: QuestionType) {
     ) : Question(QuestionType.STATIC_TEXT_DISPLAY) {
         override fun generateHtml(
             answeredQuestion: AnsweredQuestion<*>?,
-            language: OfficialLanguage,
+            language: UiLanguage,
         ): HtmlElement {
             return HtmlBuilder.div(className = htmlClassName()) {
                 listOfNotNull(
@@ -230,7 +233,7 @@ sealed class Question(val type: QuestionType) {
         Question(QuestionType.DATE) {
         override fun generateHtml(
             answeredQuestion: AnsweredQuestion<*>?,
-            language: OfficialLanguage,
+            language: UiLanguage,
         ): HtmlElement {
             if (answeredQuestion == null)
                 return HtmlBuilder.div(className = htmlClassName()) {
@@ -266,7 +269,7 @@ sealed class Question(val type: QuestionType) {
     ) : Question(QuestionType.GROUPED_TEXT_FIELDS) {
         override fun generateHtml(
             answeredQuestion: AnsweredQuestion<*>?,
-            language: OfficialLanguage,
+            language: UiLanguage,
         ): HtmlElement {
             val headerRow = HtmlBuilder.tr { fieldLabels.map { th(it) } }
             val emptyRow = HtmlBuilder.tr { fieldLabels.map { td("-") } }
@@ -347,7 +350,7 @@ data class DocumentTemplate(
     val name: String,
     val type: DocumentType,
     val placementTypes: Set<PlacementType>,
-    val language: OfficialLanguage,
+    val language: UiLanguage,
     @Nested("confidentiality") val confidentiality: DocumentConfidentiality?,
     val legalBasis: String,
     val validity: DateRange,
@@ -361,7 +364,7 @@ data class ExportedDocumentTemplate(
     val name: String,
     val type: DocumentType,
     val placementTypes: Set<PlacementType>,
-    val language: OfficialLanguage,
+    val language: UiLanguage,
     val confidentiality: DocumentConfidentiality?,
     val legalBasis: String,
     val validity: DateRange,
@@ -374,7 +377,7 @@ data class DocumentTemplateBasicsRequest(
     val name: String,
     val type: DocumentType,
     val placementTypes: Set<PlacementType>,
-    val language: OfficialLanguage,
+    val language: UiLanguage,
     val confidentiality: DocumentConfidentiality?,
     val legalBasis: String,
     val validity: DateRange,
@@ -387,7 +390,7 @@ data class DocumentTemplateSummary(
     val name: String,
     val type: DocumentType,
     val placementTypes: Set<PlacementType>,
-    val language: OfficialLanguage,
+    val language: UiLanguage,
     val validity: DateRange,
     val published: Boolean,
     val documentCount: Int,

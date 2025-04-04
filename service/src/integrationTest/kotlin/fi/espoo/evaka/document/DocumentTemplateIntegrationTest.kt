@@ -23,7 +23,7 @@ import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
-import fi.espoo.evaka.shared.domain.OfficialLanguage
+import fi.espoo.evaka.shared.domain.UiLanguage
 import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
@@ -65,7 +65,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             name = "test",
             type = DocumentType.PEDAGOGICAL_ASSESSMENT,
             placementTypes = PlacementType.entries.toSet(),
-            language = OfficialLanguage.FI,
+            language = UiLanguage.FI,
             confidentiality = DocumentConfidentiality(100, "Laki § 100"),
             legalBasis = "§42",
             validity = DateRange(LocalDate.of(2022, 7, 1), null),
@@ -133,7 +133,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             created.id,
             testCreationRequest.copy(
                 name = "name2",
-                language = OfficialLanguage.SV,
+                language = UiLanguage.SV,
                 type = DocumentType.PEDAGOGICAL_REPORT,
                 confidentiality = null,
                 legalBasis = "$42b",
@@ -156,7 +156,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         assertEquals(
             created.copy(
                 name = "name2",
-                language = OfficialLanguage.SV,
+                language = UiLanguage.SV,
                 type = DocumentType.PEDAGOGICAL_REPORT,
                 confidentiality = null,
                 legalBasis = "$42b",
@@ -282,7 +282,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     name = "another",
                     type = DocumentType.PEDAGOGICAL_REPORT,
                     placementTypes = PlacementType.entries.toSet(),
-                    language = OfficialLanguage.SV,
+                    language = UiLanguage.SV,
                     DocumentConfidentiality(100, "Laki § 100"),
                     legalBasis = "",
                     validity = newValidity,
@@ -294,7 +294,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         assertNotEquals(created.id, copy.id)
         assertEquals("another", copy.name)
         assertEquals(DocumentType.PEDAGOGICAL_REPORT, copy.type)
-        assertEquals(OfficialLanguage.SV, copy.language)
+        assertEquals(UiLanguage.SV, copy.language)
         assertEquals(DocumentConfidentiality(100, "Laki § 100"), copy.confidentiality)
         assertEquals("", copy.legalBasis)
         assertEquals(newValidity, copy.validity)
@@ -313,7 +313,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 employeeUser,
                 now,
                 testCreationRequest.copy(
-                    language = OfficialLanguage.SV,
+                    language = UiLanguage.SV,
                     validity = DateRange(now.today(), null),
                 ),
             )
@@ -331,7 +331,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             employeeUser,
             now,
             testCreationRequest.copy(
-                language = OfficialLanguage.SV,
+                language = UiLanguage.SV,
                 validity = DateRange(now.today(), null),
             ),
         )
@@ -348,7 +348,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 employeeUser,
                 now,
                 testCreationRequest.copy(
-                    language = OfficialLanguage.SV,
+                    language = UiLanguage.SV,
                     validity = DateRange(now.today().plusDays(1), null),
                 ),
             )
@@ -366,7 +366,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 employeeUser,
                 now,
                 testCreationRequest.copy(
-                    language = OfficialLanguage.SV,
+                    language = UiLanguage.SV,
                     validity = DateRange(now.today().minusDays(10), now.today().minusDays(1)),
                 ),
             )
@@ -384,7 +384,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 employeeUser,
                 now,
                 testCreationRequest.copy(
-                    language = OfficialLanguage.FI,
+                    language = UiLanguage.FI,
                     validity = DateRange(now.today(), null),
                 ),
             )
@@ -417,7 +417,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 employeeUser,
                 now,
                 testCreationRequest.copy(
-                    language = OfficialLanguage.SV,
+                    language = UiLanguage.SV,
                     validity = DateRange(now.today(), null),
                 ),
             )
@@ -436,7 +436,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 now,
                 testCreationRequest.copy(
                     placementTypes = setOf(PlacementType.PRESCHOOL),
-                    language = OfficialLanguage.SV,
+                    language = UiLanguage.SV,
                     validity = DateRange(now.today(), null),
                 ),
             )

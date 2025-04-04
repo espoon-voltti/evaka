@@ -18,7 +18,7 @@ import {
   DocumentTemplate,
   documentTypes
 } from 'lib-common/generated/api-types/document'
-import { officialLanguages } from 'lib-common/generated/api-types/shared'
+import { uiLanguages } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useMutationResult } from 'lib-common/query'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
@@ -308,7 +308,7 @@ const BasicsEditor = React.memo(function BasicsEditor({
 
   const languageOptions = useMemo(
     () =>
-      officialLanguages.map((option) => ({
+      uiLanguages.map((option) => ({
         domValue: option,
         value: option,
         label: i18n.documentTemplates.languages[option]

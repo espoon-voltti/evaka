@@ -29,6 +29,7 @@ data class IsoLanguage(
     companion object {
         val FIN = IsoLanguage("fin", "fin", "fin", "fi", "suomi")
         val SWE = IsoLanguage("swe", "swe", "swe", "sv", "ruotsi")
+        val ENG = IsoLanguage("eng", "eng", "eng", "en", "englanti")
     }
 }
 
@@ -74,7 +75,7 @@ val ISO_LANGUAGES_SUBSET =
         IsoLanguage("div", "div", "div", "dv", "divehi"),
         IsoLanguage("dzo", "dzo", "dzo", "dz", "dzongkha"),
         IsoLanguage("ell", "gre", "ell", "el", "kreikka"),
-        IsoLanguage("eng", "eng", "eng", "en", "englanti"),
+        IsoLanguage.ENG,
         IsoLanguage("epo", "epo", "epo", "eo", "esperanto"),
         IsoLanguage("est", "est", "est", "et", "viro"),
         IsoLanguage("eus", "baq", "eus", "eu", "baski"),

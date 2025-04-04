@@ -44,6 +44,7 @@ import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.OfficialLanguage
 import fi.espoo.evaka.shared.domain.Rectangle
+import fi.espoo.evaka.shared.domain.UiLanguage
 import fi.espoo.evaka.shared.message.EvakaMessageProvider
 import fi.espoo.evaka.shared.message.IMessageProvider
 import fi.espoo.evaka.shared.template.EvakaTemplateProvider
@@ -281,7 +282,7 @@ class PdfGeneratorTest {
                         type = DocumentType.HOJKS,
                         placementTypes = PlacementType.entries.toSet(),
                         name = "Varhaiskasvatussuunnitelma 2023-2024",
-                        language = OfficialLanguage.FI,
+                        language = UiLanguage.FI,
                         confidentiality = DocumentConfidentiality(100, "§ 999"),
                         legalBasis =
                             "§3.2b varhaiskasvatuslaki, varhaiskasvatuslautakunnan päätös ja määräys 11.3.2017",

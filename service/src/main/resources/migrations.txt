@@ -510,3 +510,4 @@ V511__finance_message_account.sql
 V512__nekku_diet.sql
 V513__citizen_child_document_types.sql
 V514__child_document_references_evaka_user.sql
+V515__document_template_language_en.sql

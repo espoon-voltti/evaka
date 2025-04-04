@@ -196,6 +196,7 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.domain.OfficialLanguage
 import fi.espoo.evaka.shared.domain.TimeRange
+import fi.espoo.evaka.shared.domain.UiLanguage
 import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import fi.espoo.evaka.shared.security.upsertEmployeeUser
@@ -2355,7 +2356,7 @@ data class DevDocumentTemplate(
     val name: String = "Pedagoginen arvio 2023",
     val type: DocumentType = DocumentType.PEDAGOGICAL_ASSESSMENT,
     val placementTypes: Set<PlacementType> = PlacementType.entries.toSet(),
-    val language: OfficialLanguage = OfficialLanguage.FI,
+    val language: UiLanguage = UiLanguage.FI,
     val confidentiality: DocumentConfidentiality? = null,
     val legalBasis: String = "§15",
     val validity: DateRange,

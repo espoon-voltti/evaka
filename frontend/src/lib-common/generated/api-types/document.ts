@@ -14,9 +14,9 @@ import { DocumentTemplateId } from './shared'
 import { EvakaUser } from './user'
 import { EvakaUserId } from './shared'
 import { JsonOf } from '../../json'
-import { OfficialLanguage } from './shared'
 import { PersonId } from './shared'
 import { PlacementType } from './placement'
+import { UiLanguage } from './shared'
 
 
 export namespace AnsweredQuestion {
@@ -230,7 +230,7 @@ export interface DocumentTemplate {
   confidentiality: DocumentConfidentiality | null
   content: DocumentTemplateContent
   id: DocumentTemplateId
-  language: OfficialLanguage
+  language: UiLanguage
   legalBasis: string
   name: string
   placementTypes: PlacementType[]
@@ -246,7 +246,7 @@ export interface DocumentTemplate {
 export interface DocumentTemplateBasicsRequest {
   archiveDurationMonths: number | null
   confidentiality: DocumentConfidentiality | null
-  language: OfficialLanguage
+  language: UiLanguage
   legalBasis: string
   name: string
   placementTypes: PlacementType[]
@@ -268,7 +268,7 @@ export interface DocumentTemplateContent {
 export interface DocumentTemplateSummary {
   documentCount: number
   id: DocumentTemplateId
-  language: OfficialLanguage
+  language: UiLanguage
   name: string
   placementTypes: PlacementType[]
   published: boolean
@@ -309,7 +309,7 @@ export interface ExportedDocumentTemplate {
   archiveDurationMonths: number | null
   confidentiality: DocumentConfidentiality | null
   content: DocumentTemplateContent
-  language: OfficialLanguage
+  language: UiLanguage
   legalBasis: string
   name: string
   placementTypes: PlacementType[]
