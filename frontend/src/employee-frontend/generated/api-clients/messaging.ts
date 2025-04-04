@@ -13,7 +13,6 @@ import { JsonOf } from 'lib-common/json'
 import { MessageAccountId } from 'lib-common/generated/api-types/shared'
 import { MessageDraftId } from 'lib-common/generated/api-types/shared'
 import { MessageId } from 'lib-common/generated/api-types/shared'
-import { MessageReceiversResponse } from 'lib-common/generated/api-types/messaging'
 import { MessageThread } from 'lib-common/generated/api-types/messaging'
 import { MessageThreadFolder } from 'lib-common/generated/api-types/messaging'
 import { MessageThreadFolderId } from 'lib-common/generated/api-types/shared'
@@ -26,6 +25,7 @@ import { PostMessageBody } from 'lib-common/generated/api-types/messaging'
 import { PostMessagePreflightBody } from 'lib-common/generated/api-types/messaging'
 import { PostMessagePreflightResponse } from 'lib-common/generated/api-types/messaging'
 import { ReplyToMessageBody } from 'lib-common/generated/api-types/messaging'
+import { SelectableRecipientsResponse } from 'lib-common/generated/api-types/messaging'
 import { ThreadByApplicationResponse } from 'lib-common/generated/api-types/messaging'
 import { ThreadReply } from 'lib-common/generated/api-types/messaging'
 import { UnreadCountByAccount } from 'lib-common/generated/api-types/messaging'
@@ -33,11 +33,11 @@ import { UpdatableDraftContent } from 'lib-common/generated/api-types/messaging'
 import { client } from '../../api/client'
 import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonDraftContent } from 'lib-common/generated/api-types/messaging'
-import { deserializeJsonMessageReceiversResponse } from 'lib-common/generated/api-types/messaging'
 import { deserializeJsonMessageThread } from 'lib-common/generated/api-types/messaging'
 import { deserializeJsonPagedMessageCopies } from 'lib-common/generated/api-types/messaging'
 import { deserializeJsonPagedMessageThreads } from 'lib-common/generated/api-types/messaging'
 import { deserializeJsonPagedSentMessages } from 'lib-common/generated/api-types/messaging'
+import { deserializeJsonSelectableRecipientsResponse } from 'lib-common/generated/api-types/messaging'
 import { deserializeJsonThreadByApplicationResponse } from 'lib-common/generated/api-types/messaging'
 import { deserializeJsonThreadReply } from 'lib-common/generated/api-types/messaging'
 import { uri } from 'lib-common/uri'
@@ -260,14 +260,14 @@ export async function getReceivedMessages(
 
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageController.getReceiversForNewMessage
+* Generated from fi.espoo.evaka.messaging.MessageController.getSelectableRecipients
 */
-export async function getReceiversForNewMessage(): Promise<MessageReceiversResponse[]> {
-  const { data: json } = await client.request<JsonOf<MessageReceiversResponse[]>>({
-    url: uri`/employee/messages/receivers`.toString(),
+export async function getSelectableRecipients(): Promise<SelectableRecipientsResponse[]> {
+  const { data: json } = await client.request<JsonOf<SelectableRecipientsResponse[]>>({
+    url: uri`/employee/messages/selectable-recipients`.toString(),
     method: 'GET'
   })
-  return json.map(e => deserializeJsonMessageReceiversResponse(e))
+  return json.map(e => deserializeJsonSelectableRecipientsResponse(e))
 }
 
 

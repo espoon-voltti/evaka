@@ -28,14 +28,14 @@ import kotlin.test.assertTrue
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 
-class MessageReceiversIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
+class MessageRecipientsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var messageController: MessageController
 
     private val placementStart = LocalDate.now().minusDays(30)
     private val placementEnd = LocalDate.now().plusDays(30)
 
     @Test
-    fun `message receiver endpoint works for units`() {
+    fun `message recipient endpoint works for units`() {
         val area = DevCareArea()
         val daycare1 =
             DevDaycare(areaId = area.id, enabledPilotFeatures = setOf(PilotFeature.MESSAGING))
@@ -81,7 +81,7 @@ class MessageReceiversIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 insertChildToGroup(tx, child2.id, adult2.id, group2.id, daycare2.id)
 
                 // Child 3 has a placement but is not in any group => should not show up in
-                // receivers list
+                // recipients list
                 tx.insert(
                     DevPlacement(
                         childId = child3.id,
@@ -92,7 +92,7 @@ class MessageReceiversIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 )
                 tx.insertGuardian(adult3.id, child3.id)
 
-                // Child 4 has no guardians => should not show up in receivers list
+                // Child 4 has no guardians => should not show up in recipients list
                 insertChildToGroup(tx, child4.id, null, group2.id, daycare2.id)
                 tx.createParentship(child4.id, adult3.id, placementStart, placementEnd, Creator.DVV)
 
@@ -106,31 +106,31 @@ class MessageReceiversIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 listOf(groupMessageAccount, supervisor1MessageAccount, supervisor2MessageAccount)
             }
 
-        val receivers1 =
-            messageController.getReceiversForNewMessage(
+        val recipients1 =
+            messageController.getSelectableRecipients(
                 dbInstance(),
                 AuthenticatedUser.Employee(supervisor1.id, setOf()),
                 RealEvakaClock(),
             )
         assertEquals(
             setOf(
-                MessageReceiversResponse(
+                SelectableRecipientsResponse(
                     accountId = supervisor1MessageAccount,
                     receivers =
                         listOf(
-                            MessageReceiver.Unit(
+                            SelectableRecipient.Unit(
                                 id = daycare1.id,
                                 name = daycare1.name,
                                 hasStarters = false,
                                 receivers =
                                     listOf(
-                                        MessageReceiver.Group(
+                                        SelectableRecipient.Group(
                                             id = group1.id,
                                             name = group1.name,
                                             hasStarters = false,
                                             receivers =
                                                 listOf(
-                                                    MessageReceiver.Child(
+                                                    SelectableRecipient.Child(
                                                         id = child1.id,
                                                         name =
                                                             "${child1.lastName} ${child2.firstName}",
@@ -142,17 +142,17 @@ class MessageReceiversIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             )
                         ),
                 ),
-                MessageReceiversResponse(
+                SelectableRecipientsResponse(
                     accountId = groupMessageAccount,
                     receivers =
                         listOf(
-                            MessageReceiver.Group(
+                            SelectableRecipient.Group(
                                 id = group1.id,
                                 name = group1.name,
                                 hasStarters = false,
                                 receivers =
                                     listOf(
-                                        MessageReceiver.Child(
+                                        SelectableRecipient.Child(
                                             id = child1.id,
                                             name = "${child1.lastName} ${child1.firstName}",
                                             startDate = null,
@@ -162,34 +162,34 @@ class MessageReceiversIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         ),
                 ),
             ),
-            receivers1.toSet(),
+            recipients1.toSet(),
         )
 
-        val receivers2 =
-            messageController.getReceiversForNewMessage(
+        val recipients2 =
+            messageController.getSelectableRecipients(
                 dbInstance(),
                 AuthenticatedUser.Employee(supervisor2.id, setOf()),
                 RealEvakaClock(),
             )
         assertEquals(
             setOf(
-                MessageReceiversResponse(
+                SelectableRecipientsResponse(
                     accountId = supervisor2MessageAccount,
                     receivers =
                         listOf(
-                            MessageReceiver.Unit(
+                            SelectableRecipient.Unit(
                                 id = daycare2.id,
                                 name = daycare2.name,
                                 hasStarters = false,
                                 receivers =
                                     listOf(
-                                        MessageReceiver.Group(
+                                        SelectableRecipient.Group(
                                             id = group2.id,
                                             name = group2.name,
                                             hasStarters = false,
                                             receivers =
                                                 listOf(
-                                                    MessageReceiver.Child(
+                                                    SelectableRecipient.Child(
                                                         id = child2.id,
                                                         name =
                                                             "${child2.lastName} ${child2.firstName}",
@@ -202,12 +202,12 @@ class MessageReceiversIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         ),
                 )
             ),
-            receivers2.toSet(),
+            recipients2.toSet(),
         )
     }
 
     @Test
-    fun `municipal receivers`() {
+    fun `municipal recipients`() {
         val today = LocalDate.of(2023, 12, 1)
         val employee = DevEmployee(roles = setOf(UserRole.MESSAGING))
 
@@ -265,7 +265,7 @@ class MessageReceiversIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
         val response =
             messageController
-                .getReceiversForNewMessage(
+                .getSelectableRecipients(
                     dbInstance(),
                     AuthenticatedUser.Employee(employee.id, setOf(UserRole.MESSAGING)),
                     MockEvakaClock(HelsinkiDateTime.of(today, LocalTime.of(12, 0, 0))),
@@ -275,14 +275,17 @@ class MessageReceiversIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
         assertEquals(expectations.size, response.receivers.size)
         for ((area, units) in expectations) {
-            val areaReceiver = response.receivers.find { it.id == area.id } as MessageReceiver.Area
-            assertEquals(area.name, areaReceiver.name)
+            val areaRecipient =
+                response.receivers.filterIsInstance<SelectableRecipient.Area>().find {
+                    it.id == area.id
+                }!!
+            assertEquals(area.name, areaRecipient.name)
 
             assertEquals(
                 units
                     .sortedBy { it.id }
-                    .map { MessageReceiver.UnitInArea(id = it.id, name = it.name) },
-                areaReceiver.receivers.sortedBy { it.id },
+                    .map { SelectableRecipient.UnitInArea(id = it.id, name = it.name) },
+                areaRecipient.receivers.sortedBy { it.id },
             )
         }
     }
@@ -345,18 +348,18 @@ class MessageReceiversIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             tx.insertGuardian(adultId, childId)
         }
 
-        val receivers =
-            messageController.getReceiversForNewMessage(
+        val recipients =
+            messageController.getSelectableRecipients(
                 dbInstance(),
                 AuthenticatedUser.Employee(supervisor.id, setOf()),
                 RealEvakaClock(),
             )
         assertTrue {
-            receivers.all { a ->
+            recipients.all { a ->
                 a.receivers.none { r ->
-                    (r is MessageReceiver.Child && r.startDate != null) ||
-                        (r is MessageReceiver.Group && r.hasStarters) ||
-                        (r is MessageReceiver.Unit && r.hasStarters)
+                    (r is SelectableRecipient.Child && r.startDate != null) ||
+                        (r is SelectableRecipient.Group && r.hasStarters) ||
+                        (r is SelectableRecipient.Unit && r.hasStarters)
                 }
             }
         }

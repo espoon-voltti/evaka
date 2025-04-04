@@ -196,24 +196,34 @@ class MessageControllerCitizen(
         val childId: ChildId?,
     )
 
-    class GetReceiversResponse(
+    class GetRecipientsResponse(
         val messageAccounts: Set<MessageAccountWithPresence>,
         val childrenToMessageAccounts: List<ChildMessageAccountAccess>,
     )
 
+    @Deprecated("Use getRecipients")
     @GetMapping("/receivers")
     fun getReceivers(
         db: Database,
         user: AuthenticatedUser.Citizen,
         evakaClock: EvakaClock,
-    ): GetReceiversResponse {
+    ): GetRecipientsResponse {
+        return getRecipients(db, user, evakaClock)
+    }
+
+    @GetMapping("/recipients")
+    fun getRecipients(
+        db: Database,
+        user: AuthenticatedUser.Citizen,
+        evakaClock: EvakaClock,
+    ): GetRecipientsResponse {
         return db.connect { dbc ->
                 val accountId = dbc.read { it.getCitizenMessageAccount(user.id) }
                 val accountsPerChild =
-                    (dbc.read { it.getCitizenReceivers(evakaClock.today(), accountId) })
+                    (dbc.read { it.getCitizenRecipients(evakaClock.today(), accountId) })
                 val financeAccountId = dbc.read { it.getFinanceAccountId() }
                 val response =
-                    GetReceiversResponse(
+                    GetRecipientsResponse(
                         messageAccounts =
                             accountsPerChild.values
                                 .map { it.newMessage + it.reply }
@@ -292,7 +302,7 @@ class MessageControllerCitizen(
         return db.connect { dbc ->
                 val senderId = dbc.read { it.getCitizenMessageAccount(user.id) }
                 val receivers =
-                    dbc.read { it.getCitizenReceivers(today, senderId) }
+                    dbc.read { it.getCitizenRecipients(today, senderId) }
                         .mapValues { entry -> entry.value.newMessage }
                 val validRecipients =
                     receivers.mapValues { entry -> entry.value.map { it.account.id }.toSet() }

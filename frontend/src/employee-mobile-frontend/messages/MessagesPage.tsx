@@ -40,7 +40,7 @@ import MessageEditor from './MessageEditor'
 import ReceivedThreadsList from './ReceivedThreadsList'
 import SentMessagesList from './SentMessagesList'
 import { SentMessageView } from './ThreadView'
-import { recipientsQuery } from './queries'
+import { selectableRecipientsQuery } from './queries'
 import { MessageContext } from './state'
 
 type Tab = 'received' | 'sent' | 'drafts'
@@ -63,7 +63,7 @@ export default function MessagesPage({
 
   const { groupAccounts, groupAccount } = useContext(MessageContext)
 
-  const recipients = useQueryResult(recipientsQuery(), {
+  const recipients = useQueryResult(selectableRecipientsQuery(), {
     enabled: unitOrGroup.type === 'group'
   })
 

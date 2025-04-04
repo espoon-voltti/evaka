@@ -474,7 +474,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     @Test
-    fun `query citizen receivers for group change over 2 weeks into the future`() {
+    fun `query citizen recipients for group change over 2 weeks into the future`() {
         lateinit var group1Account: MessageAccount
         lateinit var group2Account: MessageAccount
 
@@ -486,7 +486,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { tx ->
             val (childId, daycareId, group1Id, tempGroup1Account, group2Id, tempGroup2Account) =
-                prepareDataForReceiversTest(tx)
+                prepareDataForRecipientsTest(tx)
             group1Account = tempGroup1Account
             group2Account = tempGroup2Account
 
@@ -518,7 +518,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         }
 
-        val receivers = db.read { it.getCitizenReceivers(today, accounts.person1.id).values }
+        val recipients = db.read { it.getCitizenRecipients(today, accounts.person1.id).values }
 
         val expectedForNewMessage = setOf(group1Account, accounts.employee1)
         val expectedForReply =
@@ -526,16 +526,16 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         assertEquals(
             expectedForNewMessage,
-            receivers.flatMap { r -> r.newMessage.map { a -> a.account } }.toSet(),
+            recipients.flatMap { r -> r.newMessage.map { a -> a.account } }.toSet(),
         )
         assertEquals(
             expectedForReply,
-            receivers.flatMap { r -> r.reply.map { a -> a.account } }.toSet(),
+            recipients.flatMap { r -> r.reply.map { a -> a.account } }.toSet(),
         )
     }
 
     @Test
-    fun `query citizen receivers for group change less than 2 weeks into the future`() {
+    fun `query citizen recipients for group change less than 2 weeks into the future`() {
         lateinit var group1Account: MessageAccount
         lateinit var group2Account: MessageAccount
 
@@ -547,7 +547,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { tx ->
             val (childId, daycareId, group1Id, tempGroup1Account, group2Id, tempGroup2Account) =
-                prepareDataForReceiversTest(tx)
+                prepareDataForRecipientsTest(tx)
             group1Account = tempGroup1Account
             group2Account = tempGroup2Account
 
@@ -579,27 +579,27 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         }
 
-        val receivers = db.read { it.getCitizenReceivers(today, accounts.person1.id).values }
+        val recipients = db.read { it.getCitizenRecipients(today, accounts.person1.id).values }
 
         val expectedForNewMessage = setOf(group1Account, group2Account, accounts.employee1)
         assertEquals(
             expectedForNewMessage,
-            receivers.flatMap { r -> r.newMessage.map { a -> a.account } }.toSet(),
+            recipients.flatMap { r -> r.newMessage.map { a -> a.account } }.toSet(),
         )
         assertEquals(
             expectedForNewMessage + accounts.employee2,
-            receivers.flatMap { r -> r.reply.map { a -> a.account } }.toSet(),
+            recipients.flatMap { r -> r.reply.map { a -> a.account } }.toSet(),
         )
     }
 
     @Test
-    fun `citizen doesn't get any receivers for ended placements`() {
+    fun `citizen doesn't get any recipients for ended placements`() {
         val today = LocalDate.now()
         val startDate = today.minusMonths(2)
         val endDate = today.minusDays(1)
 
         db.transaction { tx ->
-            val (childId, daycareId, group1Id, _, _) = prepareDataForReceiversTest(tx)
+            val (childId, daycareId, group1Id, _, _) = prepareDataForRecipientsTest(tx)
             val placementId =
                 tx.insert(
                     DevPlacement(
@@ -619,14 +619,14 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 )
             )
         }
-        val receivers = db.read { it.getCitizenReceivers(today, accounts.person1.id).values }
+        val recipients = db.read { it.getCitizenRecipients(today, accounts.person1.id).values }
 
-        assertEquals(0, receivers.flatMap { it.newMessage }.size)
-        assertEquals(0, receivers.flatMap { it.reply }.size)
+        assertEquals(0, recipients.flatMap { it.newMessage }.size)
+        assertEquals(0, recipients.flatMap { it.reply }.size)
     }
 
     @Test
-    fun `citizen receivers include backup and standard placements`() {
+    fun `citizen recipients include backup and standard placements`() {
         val today = LocalDate.now()
         val startDate = today.minusMonths(2)
         val endDate = today.plusMonths(2)
@@ -636,7 +636,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { tx ->
             val (childId, daycareId, groupId, tempGroupAccount, _, _, areaId) =
-                prepareDataForReceiversTest(tx)
+                prepareDataForRecipientsTest(tx)
             groupAccount = tempGroupAccount
 
             val placementId =
@@ -680,23 +680,23 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 )
             )
         }
-        val receivers = db.read { it.getCitizenReceivers(today, accounts.person1.id).values }
+        val recipients = db.read { it.getCitizenRecipients(today, accounts.person1.id).values }
 
         val expectedForNewMessage =
             setOf(accounts.employee1, groupAccount, anotherUnitSupervisorAccount)
 
         assertEquals(
             expectedForNewMessage,
-            receivers.flatMap { r -> r.newMessage.map { a -> a.account } }.toSet(),
+            recipients.flatMap { r -> r.newMessage.map { a -> a.account } }.toSet(),
         )
         assertEquals(
             expectedForNewMessage + accounts.employee2,
-            receivers.flatMap { r -> r.reply.map { a -> a.account } }.toSet(),
+            recipients.flatMap { r -> r.reply.map { a -> a.account } }.toSet(),
         )
     }
 
     @Test
-    fun `children with only secondary recipients are not included in receivers`() {
+    fun `children with only secondary recipients are not included in recipients`() {
         lateinit var child1Id: PersonId
         lateinit var child2Id: PersonId
         lateinit var groupAccount: MessageAccount
@@ -756,8 +756,8 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     )
                 )
         }
-        fun receiversOf(account: MessageAccount) =
-            db.read { it.getCitizenReceivers(now.toLocalDate(), account.id) }
+        fun recipientsOf(account: MessageAccount) =
+            db.read { it.getCitizenRecipients(now.toLocalDate(), account.id) }
 
         fun accountsToAccountSetWithPresence(vararg accounts: MessageAccount) =
             accounts
@@ -787,7 +787,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         accountsToAccountSetWithPresence(accounts.employee1, accounts.person2),
                     ),
             ),
-            receiversOf(accounts.person1),
+            recipientsOf(accounts.person1),
         )
         deletePlacement(child2Placement)
         assertEquals(
@@ -806,7 +806,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         ),
                     )
             ),
-            receiversOf(accounts.person1),
+            recipientsOf(accounts.person1),
         )
     }
 
@@ -946,7 +946,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             db.transaction { tx ->
                 tx.getStaffCopyRecipients(
                     accounts.employee1.id,
-                    setOf(MessageRecipient(MessageRecipientType.AREA, area.id)),
+                    setOf(MessageRecipient.Area(area.id)),
                     today,
                 )
             }
@@ -1002,7 +1002,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 )
             tx.insertRecipients(listOf(messageId to recipientAccounts.map { it.id }.toSet()))
             tx.upsertSenderThreadParticipants(sender.id, listOf(threadId), now)
-            tx.upsertReceiverThreadParticipants(contentId, now)
+            tx.upsertRecipientThreadParticipants(contentId, now)
             threadId
         }
 
@@ -1036,7 +1036,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 )
             tx.insertRecipients(listOf(messageId to recipientIds))
             tx.upsertSenderThreadParticipants(sender.id, listOf(threadId), now)
-            tx.upsertReceiverThreadParticipants(contentId, now)
+            tx.upsertRecipientThreadParticipants(contentId, now)
         }
 
     private fun unreadMessagesCount(personId: PersonId) =
@@ -1079,7 +1079,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             it.createUpdate { sql("DELETE FROM placement WHERE id = ${bind(placement)}") }.execute()
         }
 
-    private data class ReceiverTestData(
+    private data class RecipientTestData(
         val personId: PersonId,
         val daycareId: DaycareId,
         val group1Id: GroupId,
@@ -1089,7 +1089,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         val areaId: AreaId,
     )
 
-    private fun prepareDataForReceiversTest(tx: Database.Transaction): ReceiverTestData {
+    private fun prepareDataForRecipientsTest(tx: Database.Transaction): RecipientTestData {
         val areaId = tx.insert(DevCareArea())
         val daycareId =
             tx.insert(
@@ -1122,7 +1122,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
 
         tx.insertGuardian(guardianId = person1.id, childId = childId)
-        return ReceiverTestData(
+        return RecipientTestData(
             childId,
             daycareId,
             group1.id,

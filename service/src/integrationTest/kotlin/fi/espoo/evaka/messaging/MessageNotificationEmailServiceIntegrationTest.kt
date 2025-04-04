@@ -129,7 +129,7 @@ class MessageNotificationEmailServiceIntegrationTest :
 
         postNewThread(
             sender = employeeAccount,
-            recipients = listOf(MessageRecipient(MessageRecipientType.CHILD, testChild_1.id)),
+            recipients = listOf(MessageRecipient.Child(testChild_1.id)),
             user = employee,
             clock,
         )
@@ -164,7 +164,7 @@ class MessageNotificationEmailServiceIntegrationTest :
 
         postNewThread(
             sender = municipalAccountId,
-            recipients = listOf(MessageRecipient(MessageRecipientType.CHILD, testChild_1.id)),
+            recipients = listOf(MessageRecipient.Child(testChild_1.id)),
             user = adminUser,
             clock,
             type = MessageType.BULLETIN,
@@ -213,7 +213,7 @@ class MessageNotificationEmailServiceIntegrationTest :
         val contentId =
             postNewThread(
                 sender = employeeAccount,
-                recipients = listOf(MessageRecipient(MessageRecipientType.CHILD, testChild_1.id)),
+                recipients = listOf(MessageRecipient.Child(testChild_1.id)),
                 user = employee,
                 clock = clock,
             )

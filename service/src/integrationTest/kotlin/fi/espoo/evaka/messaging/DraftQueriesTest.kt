@@ -39,8 +39,8 @@ class DraftQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         val type = MessageType.MESSAGE
         val recipients =
             setOf(
-                SelectableRecipient(MessageAccountId(UUID.randomUUID()), false),
-                SelectableRecipient(MessageAccountId(UUID.randomUUID()), false),
+                DraftRecipient(MessageAccountId(UUID.randomUUID()), false),
+                DraftRecipient(MessageAccountId(UUID.randomUUID()), false),
             )
         val recipientNames = listOf("Auringonkukat", "Hippiäiset")
 

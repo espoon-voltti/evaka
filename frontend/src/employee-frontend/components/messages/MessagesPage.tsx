@@ -14,8 +14,8 @@ import styled from 'styled-components'
 import MessageEditor from 'employee-frontend/components/messages/MessageEditor'
 import { Failure, Result, wrapResult } from 'lib-common/api'
 import {
-  MessageReceiversResponse,
-  PostMessageBody
+  PostMessageBody,
+  SelectableRecipientsResponse
 } from 'lib-common/generated/api-types/messaging'
 import { PersonJSON } from 'lib-common/generated/api-types/pis'
 import {
@@ -23,6 +23,7 @@ import {
   MessageDraftId,
   MessageThreadFolderId
 } from 'lib-common/generated/api-types/shared'
+import { fromUuid } from 'lib-common/id-type'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Container from 'lib-components/layout/Container'
 import { defaultMargins } from 'lib-components/white-space'
@@ -108,7 +109,7 @@ export default React.memo(function MessagesPage({
     }
   }, [selectedDraft])
 
-  const [receivers, setReceivers] = useState<MessageReceiversResponse[]>()
+  const [recipients, setRecipients] = useState<SelectableRecipientsResponse[]>()
 
   const hideEditor = useCallback(() => {
     setShowEditor(false)
@@ -185,8 +186,8 @@ export default React.memo(function MessagesPage({
     }
   }
 
-  const prefilledOrReceivers = useMemo(():
-    | MessageReceiversResponse[]
+  const prefilledOrRecipients = useMemo(():
+    | SelectableRecipientsResponse[]
     | undefined => {
     if (selectedAccount === undefined) {
       return undefined
@@ -197,7 +198,7 @@ export default React.memo(function MessagesPage({
           accountId: selectedAccount.account.id,
           receivers: selectedDraft.recipients.map((recipient, i) => {
             return {
-              id: recipient.accountId,
+              id: fromUuid(recipient.accountId),
               name: selectedDraft.recipientNames[i],
               type: 'CITIZEN'
             }
@@ -226,12 +227,12 @@ export default React.memo(function MessagesPage({
         ]
       }
     }
-    return receivers
+    return recipients
   }, [
     i18n,
     prefilledRecipient,
     prefilledRecipientPerson,
-    receivers,
+    recipients,
     selectedAccount,
     selectedDraft
   ])
@@ -241,17 +242,17 @@ export default React.memo(function MessagesPage({
       <PanelContainer>
         <Sidebar
           showEditor={() => setShowEditor(true)}
-          setReceivers={setReceivers}
+          setRecipients={setRecipients}
           enableNewMessage={accountAllowsNewMessage()}
         />
         {selectedAccount?.view && <MessageList {...selectedAccount} />}
         {showEditor &&
           accounts.isSuccess &&
           folders.isSuccess &&
-          prefilledOrReceivers &&
+          prefilledOrRecipients &&
           selectedAccount && (
             <MessageEditor
-              availableReceivers={prefilledOrReceivers}
+              selectableRecipients={prefilledOrRecipients}
               defaultSender={{
                 value: selectedAccount.account.id,
                 label: selectedAccount.account.name

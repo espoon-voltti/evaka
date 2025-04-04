@@ -45,7 +45,7 @@ class MessageService(
     ) {
         db.transaction { tx ->
             tx.lockMessageContentForUpdate(msg.messageContentId)
-            tx.upsertReceiverThreadParticipants(msg.messageContentId, msg.sentAt)
+            tx.upsertRecipientThreadParticipants(msg.messageContentId, msg.sentAt)
             val messages = tx.markMessagesAsSent(msg.messageContentId, msg.sentAt)
             notificationEmailService.scheduleSendingMessageNotifications(tx, messages, clock.now())
             asyncJobRunner.plan(
@@ -287,7 +287,7 @@ class MessageService(
                 throw Forbidden("Cannot reply to application message in status $applicationStatus")
             val financeAccountId = db.read { it.getFinanceAccountId() }
             val validRecipients =
-                db.read { it.getCitizenReceivers(today, senderAccount) }
+                db.read { it.getCitizenRecipients(today, senderAccount) }
                     .mapValues { entry -> entry.value.reply.map { it.account.id }.toSet() }
             val allRecipientsValid =
                 recipientAccountIds.all { recipient ->

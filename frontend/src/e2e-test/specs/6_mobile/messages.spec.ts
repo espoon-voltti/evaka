@@ -565,12 +565,12 @@ async function citizenSendsMessageToGroup() {
   const title = 'Otsikko'
   const content = 'Testiviestin sisältö'
   const childIds = [child.id]
-  const receivers = [daycareGroup.name + ' (Henkilökunta)']
+  const recipients = [daycareGroup.name + ' (Henkilökunta)']
   await citizenMessagesPage.sendNewMessage(
     title,
     content,
     childIds,
-    receivers,
+    recipients,
     false
   )
 }
@@ -581,12 +581,12 @@ async function citizenSendsMessageToGroup2() {
   const title = 'Hei ryhmä 2'
   const content = 'Testiviestin sisältö'
   const childIds = [child2.id]
-  const receivers = [daycareGroup2.name + ' (Henkilökunta)']
+  const recipients = [daycareGroup2.name + ' (Henkilökunta)']
   await citizenMessagesPage.sendNewMessage(
     title,
     content,
     childIds,
-    receivers,
+    recipients,
     false
   )
 }

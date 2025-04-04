@@ -227,7 +227,7 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
     @Test
     fun `merging a person moves sent messages`() {
         val employeeId = EmployeeId(UUID.randomUUID())
-        val receiverAccount =
+        val recipientAccount =
             db.transaction {
                 it.insert(DevEmployee(id = employeeId))
                 it.upsertEmployeeMessageAccount(employeeId)
@@ -248,7 +248,7 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                 HelsinkiDateTime.now(),
                 sender = senderDuplicateAccount,
                 dummyMessage,
-                recipients = setOf(receiverAccount),
+                recipients = setOf(recipientAccount),
                 children = setOf(child.id),
             )
         }
@@ -275,16 +275,16 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                 it.upsertEmployeeMessageAccount(employeeId)
             }
 
-        val receiverId = PersonId(UUID.randomUUID())
-        val receiverIdDuplicate = PersonId(UUID.randomUUID())
-        val (receiverAccount, receiverDuplicateAccount) =
+        val recipientId = PersonId(UUID.randomUUID())
+        val recipientIdDuplicate = PersonId(UUID.randomUUID())
+        val (recipientAccount, recipientDuplicateAccount) =
             db.transaction { tx ->
-                listOf(receiverId, receiverIdDuplicate)
+                listOf(recipientId, recipientIdDuplicate)
                     .map {
                         tx.insert(DevPerson(id = it), DevPersonType.ADULT)
                         tx.getCitizenMessageAccount(it)
                     }
-                    .also { tx.insertGuardian(receiverIdDuplicate, child.id) }
+                    .also { tx.insertGuardian(recipientIdDuplicate, child.id) }
             }
 
         db.transaction { tx ->
@@ -293,7 +293,7 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                 now.minusMinutes(1),
                 sender = senderAccount,
                 dummyMessage,
-                recipients = setOf(receiverDuplicateAccount),
+                recipients = setOf(recipientDuplicateAccount),
                 children = setOf(child.id),
             )
         }
@@ -301,17 +301,17 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
 
         assertEquals(
             listOf(0, 1),
-            receivedThreadCounts(listOf(receiverAccount, receiverDuplicateAccount)),
+            receivedThreadCounts(listOf(recipientAccount, recipientDuplicateAccount)),
         )
 
         db.transaction {
-            mergeService.mergePeople(it, clock, receiverId, receiverIdDuplicate)
-            mergeService.deleteEmptyPerson(it, receiverIdDuplicate)
+            mergeService.mergePeople(it, clock, recipientId, recipientIdDuplicate)
+            mergeService.deleteEmptyPerson(it, recipientIdDuplicate)
         }
 
         assertEquals(
             listOf(1, 0),
-            receivedThreadCounts(listOf(receiverAccount, receiverDuplicateAccount)),
+            receivedThreadCounts(listOf(recipientAccount, recipientDuplicateAccount)),
         )
     }
 
@@ -357,11 +357,11 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                 it.upsertEmployeeMessageAccount(employeeId)
             }
 
-        val receiverId = PersonId(UUID.randomUUID())
-        val receiverIdDuplicate = PersonId(UUID.randomUUID())
-        val (receiverAccount, receiverDuplicateAccount) =
+        val recipientId = PersonId(UUID.randomUUID())
+        val recipientIdDuplicate = PersonId(UUID.randomUUID())
+        val (recipientAccount, recipientDuplicateAccount) =
             db.transaction { tx ->
-                listOf(receiverId, receiverIdDuplicate).map {
+                listOf(recipientId, recipientIdDuplicate).map {
                     tx.insert(DevPerson(id = it), DevPersonType.ADULT)
                     tx.getCitizenMessageAccount(it)
                 }
@@ -372,7 +372,7 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                 now.minusMinutes(1),
                 sender = senderAccount,
                 dummyMessage,
-                recipients = setOf(receiverDuplicateAccount),
+                recipients = setOf(recipientDuplicateAccount),
                 children = setOf(child.id),
             )
         }
@@ -390,26 +390,26 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                     .data
                     .first()
                     .id
-            tx.archiveThread(receiverDuplicateAccount, threadId)
+            tx.archiveThread(recipientDuplicateAccount, threadId)
         }
 
         assertEquals(
             listOf(0, 0),
-            receivedThreadCounts(listOf(receiverAccount, receiverDuplicateAccount)),
+            receivedThreadCounts(listOf(recipientAccount, recipientDuplicateAccount)),
         )
         assertEquals(
             listOf(0, 1),
-            archivedThreadCounts(listOf(receiverAccount, receiverDuplicateAccount)),
+            archivedThreadCounts(listOf(recipientAccount, recipientDuplicateAccount)),
         )
 
         db.transaction {
-            mergeService.mergePeople(it, clock, receiverId, receiverIdDuplicate)
-            mergeService.deleteEmptyPerson(it, receiverIdDuplicate)
+            mergeService.mergePeople(it, clock, recipientId, recipientIdDuplicate)
+            mergeService.deleteEmptyPerson(it, recipientIdDuplicate)
         }
 
         assertEquals(
             listOf(1, 0),
-            archivedThreadCounts(listOf(receiverAccount, receiverDuplicateAccount)),
+            archivedThreadCounts(listOf(recipientAccount, recipientDuplicateAccount)),
         )
     }
 

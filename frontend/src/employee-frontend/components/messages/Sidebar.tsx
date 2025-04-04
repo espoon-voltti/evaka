@@ -7,15 +7,15 @@ import React, { useContext, useEffect, useMemo } from 'react'
 import styled from 'styled-components'
 
 import { Result, wrapResult } from 'lib-common/api'
-import { sortReceivers } from 'lib-common/api-types/messaging'
-import { MessageReceiversResponse } from 'lib-common/generated/api-types/messaging'
+import { sortSelectableRecipients } from 'lib-common/api-types/messaging'
+import { SelectableRecipientsResponse } from 'lib-common/generated/api-types/messaging'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import { fontWeights, H1 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
-import { getReceiversForNewMessage } from '../../generated/api-clients/messaging'
+import { getSelectableRecipients } from '../../generated/api-clients/messaging'
 import { useTranslation } from '../../state/i18n'
 
 import GroupMessageAccountList from './GroupMessageAccountList'
@@ -28,7 +28,7 @@ import {
   serviceWorkerMessageBoxes
 } from './types-view'
 
-const getReceiversForNewMessageResult = wrapResult(getReceiversForNewMessage)
+const getSeletableRecipientsResult = wrapResult(getSelectableRecipients)
 
 const Container = styled.div`
   flex: 0 1 260px;
@@ -88,12 +88,12 @@ const UnitSelection = styled.div`
 `
 
 interface AccountsProps {
-  setReceivers: React.Dispatch<
-    React.SetStateAction<MessageReceiversResponse[] | undefined>
+  setRecipients: React.Dispatch<
+    React.SetStateAction<SelectableRecipientsResponse[] | undefined>
   >
 }
 
-function Accounts({ setReceivers }: AccountsProps) {
+function Accounts({ setRecipients }: AccountsProps) {
   const { i18n } = useTranslation()
   const {
     selectedAccount,
@@ -117,18 +117,18 @@ function Accounts({ setReceivers }: AccountsProps) {
   )
 
   useEffect(() => {
-    void getReceiversForNewMessageResult().then(
-      (result: Result<MessageReceiversResponse[]>) => {
+    void getSeletableRecipientsResult().then(
+      (result: Result<SelectableRecipientsResponse[]>) => {
         if (result.isSuccess) {
-          const sortedReceivers = result.value.map((account) => ({
+          const sortedRecipients = result.value.map((account) => ({
             ...account,
-            receivers: sortReceivers(account.receivers)
+            receivers: sortSelectableRecipients(account.receivers)
           }))
-          setReceivers(sortedReceivers)
+          setRecipients(sortedRecipients)
         }
       }
     )
-  }, [setReceivers])
+  }, [setRecipients])
 
   const visibleGroupAccounts = selectedUnit
     ? sortBy(
@@ -269,15 +269,15 @@ function Accounts({ setReceivers }: AccountsProps) {
 
 interface Props {
   showEditor: () => void
-  setReceivers: React.Dispatch<
-    React.SetStateAction<MessageReceiversResponse[] | undefined>
+  setRecipients: React.Dispatch<
+    React.SetStateAction<SelectableRecipientsResponse[] | undefined>
   >
   enableNewMessage?: boolean
 }
 
 export default React.memo(function Sidebar({
   showEditor,
-  setReceivers,
+  setRecipients,
   enableNewMessage = true
 }: Props) {
   const { i18n } = useTranslation()
@@ -303,7 +303,7 @@ export default React.memo(function Sidebar({
             data-qa="new-message-btn"
           />
         </HeaderContainer>
-        <Accounts setReceivers={setReceivers} />
+        <Accounts setRecipients={setRecipients} />
       </AccountContainer>
     </Container>
   )

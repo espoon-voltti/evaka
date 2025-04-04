@@ -216,7 +216,7 @@ export class MessageEditor extends Element {
   inputContent = new TextInput(this.findByDataQa('input-content'))
   folderSelection = new Select(this.findByDataQa('select-folder'))
   senderSelection = new Combobox(this.findByDataQa('select-sender'))
-  receiverSelection = new TreeDropdown(this.findByDataQa('select-receiver'))
+  recipientSelection = new TreeDropdown(this.findByDataQa('select-recipient'))
   urgent = new Checkbox(this.findByDataQa('checkbox-urgent'))
   sensitive = new Checkbox(this.findByDataQa('checkbox-sensitive'))
   messageTypeMessage = new Checkbox(
@@ -248,7 +248,7 @@ export class MessageEditor extends Element {
     sensitive?: boolean
     attachmentCount?: number
     sender?: string
-    receiverKeys?: string[]
+    recipientKeys?: string[]
     confirmManyRecipients?: boolean
     yearsOfBirth?: number[]
     shiftcare?: boolean
@@ -263,17 +263,17 @@ export class MessageEditor extends Element {
       await this.senderSelection.fillAndSelectFirst(message.sender)
     }
 
-    if (message.receiverKeys) {
-      await this.receiverSelection.open()
-      await this.receiverSelection.expandAll()
-      for (const receiver of message.receiverKeys) {
-        await this.receiverSelection.option(receiver).check()
+    if (message.recipientKeys) {
+      await this.recipientSelection.open()
+      await this.recipientSelection.expandAll()
+      for (const recipient of message.recipientKeys) {
+        await this.recipientSelection.option(recipient).check()
       }
-      await this.receiverSelection.close()
+      await this.recipientSelection.close()
     } else {
-      await this.receiverSelection.open()
-      await this.receiverSelection.firstOption().check()
-      await this.receiverSelection.close()
+      await this.recipientSelection.open()
+      await this.recipientSelection.firstOption().check()
+      await this.recipientSelection.close()
     }
     if (message.type === 'BULLETIN') {
       await this.messageTypeBulletin.check()
@@ -340,9 +340,9 @@ export class MessageEditor extends Element {
 
   async draftNewMessage(title: string, content: string) {
     await this.inputTitle.fill(title)
-    await this.receiverSelection.open()
-    await this.receiverSelection.firstOption().click()
-    await this.receiverSelection.close()
+    await this.recipientSelection.open()
+    await this.recipientSelection.firstOption().click()
+    await this.recipientSelection.close()
     await this.inputContent.fill(content)
     await waitUntilEqual(() => this.getEditorState(), 'clean')
   }
@@ -351,8 +351,8 @@ export class MessageEditor extends Element {
     return this.getAttribute('data-status')
   }
 
-  async assertReceiver(receiverName: string) {
-    return waitUntilEqual(() => this.receiverSelection.text, receiverName)
+  async assertRecipient(recipientName: string) {
+    return waitUntilEqual(() => this.recipientSelection.text, recipientName)
   }
 
   async assertTitle(title: string) {

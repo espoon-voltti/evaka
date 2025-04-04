@@ -23,7 +23,18 @@ fun Database.Read.getDrafts(
             sql(
                 """
 SELECT
-    draft.*,
+	id,
+	created_at,
+	updated_at,
+	account_id,
+	title,
+	content,
+	recipient_names,
+	type,
+	urgent,
+	sensitive,
+	modified_at,
+	recipients,
     (SELECT coalesce(jsonb_agg(jsonb_build_object(
             'id', id,
             'name', name,

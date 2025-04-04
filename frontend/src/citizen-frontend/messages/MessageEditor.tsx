@@ -16,7 +16,7 @@ import { ChildAndPermittedActions } from 'lib-common/generated/api-types/childre
 import {
   AccountType,
   CitizenMessageBody,
-  GetReceiversResponse,
+  GetRecipientsResponse,
   MessageAccount
 } from 'lib-common/generated/api-types/messaging'
 import {
@@ -65,7 +65,7 @@ export const isPrimaryRecipient = ({ type }: { type: AccountType }) =>
 
 interface Props {
   children_: ChildAndPermittedActions[]
-  receiverOptions: GetReceiversResponse
+  recipientOptions: GetRecipientsResponse
   messageAttachmentsAllowed: boolean
   onSend: (messageBody: CitizenMessageBody) => Promise<Result<unknown>>
   onSuccess: () => void
@@ -76,7 +76,7 @@ interface Props {
 
 export default React.memo(function MessageEditor({
   children_,
-  receiverOptions,
+  recipientOptions,
   messageAttachmentsAllowed,
   onSend,
   onSuccess,
@@ -89,10 +89,10 @@ export default React.memo(function MessageEditor({
 
   const childIds = useMemo(
     () =>
-      receiverOptions.childrenToMessageAccounts
+      recipientOptions.childrenToMessageAccounts
         .filter((c) => c.childId !== null)
         .map((c) => c.childId!),
-    [receiverOptions]
+    [recipientOptions]
   )
 
   const [message, setMessage] = useState<CitizenMessageBody>(
@@ -143,14 +143,14 @@ export default React.memo(function MessageEditor({
     const newMessageAuthorized =
       (accountId: MessageAccountId) =>
       (childId: PersonId): boolean =>
-        receiverOptions.childrenToMessageAccounts
+        recipientOptions.childrenToMessageAccounts
           .find((value) => value.childId === childId)
           ?.newMessage.includes(accountId) ?? false
 
     // Can send to groups which are recipients for at least one of the selected children,
     // as long as all the children and thus groups are in the same unit.
-    // For other receiver types, they must be valid receivers for ALL selected children.
-    const accounts = receiverOptions.messageAccounts
+    // For other recipient types, they must be valid recipient for ALL selected children.
+    const accounts = recipientOptions.messageAccounts
       .filter(
         (account) =>
           selectedChildrenInSameUnit &&
@@ -162,7 +162,7 @@ export default React.memo(function MessageEditor({
       .map((withPresence) => withPresence.account)
     const [primary, secondary] = partition(accounts, isPrimaryRecipient)
     return { primary, secondary }
-  }, [selectedChildrenInSameUnit, message.children, receiverOptions])
+  }, [selectedChildrenInSameUnit, message.children, recipientOptions])
 
   const recipients = useMemo(() => {
     const isMessageRecipient = (account: MessageAccount) =>
@@ -249,7 +249,7 @@ export default React.memo(function MessageEditor({
                                   (accountId) =>
                                     children.every(
                                       (childId) =>
-                                        receiverOptions.childrenToMessageAccounts
+                                        recipientOptions.childrenToMessageAccounts
                                           .find(
                                             (value) => value.childId === childId
                                           )
@@ -320,7 +320,7 @@ export default React.memo(function MessageEditor({
 
             <OutOfOfficeInfo
               selectedAccountIds={recipients.primary.map((a) => a.id)}
-              accounts={receiverOptions.messageAccounts}
+              accounts={recipientOptions.messageAccounts}
             />
 
             {showSecondaryRecipientSelection && (

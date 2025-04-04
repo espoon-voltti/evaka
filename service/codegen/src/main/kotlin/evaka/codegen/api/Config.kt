@@ -9,7 +9,6 @@ import evaka.codegen.api.TsProject.LibCommon
 import fi.espoo.evaka.Sensitive
 import fi.espoo.evaka.identity.ExternalId
 import fi.espoo.evaka.invoicing.service.ProductKey
-import fi.espoo.evaka.messaging.MessageReceiver
 import fi.espoo.evaka.pairing.MobileDeviceDetails
 import fi.espoo.evaka.pis.SystemController
 import fi.espoo.evaka.shared.Id
@@ -59,9 +58,6 @@ object Imports {
     val timeInterval = TsImport.Default(LibCommon / "time-interval.ts", "TimeInterval")
     val timeRange = TsImport.Default(LibCommon / "time-range.ts", "TimeRange")
     val yearMonth = TsImport.Default(LibCommon / "year-month.ts", "YearMonth")
-    val messageReceiver = TsImport.Named(LibCommon / "api-types/messaging.ts", "MessageReceiver")
-    val deserializeMessageReceiver =
-        TsImport.Named(LibCommon / "api-types/messaging.ts", "deserializeMessageReceiver")
     val uuid = TsImport.Named(LibCommon / "types.d.ts", "UUID")
     val action = TsImport.Named(LibCommon / "generated/action.ts", "Action")
     val jsonOf = TsImport.Named(LibCommon / "json.d.ts", "JsonOf")
@@ -190,17 +186,6 @@ val defaultMetadata =
                 serializePathVariable = null,
                 serializeRequestParam = null,
                 Imports.timeRange,
-            ),
-        MessageReceiver::class to
-            TsExternalTypeRef(
-                "MessageReceiver",
-                keyRepresentation = null,
-                deserializeJson = { json ->
-                    TsCode { "${ref(Imports.deserializeMessageReceiver)}(${inline(json)})" }
-                },
-                serializePathVariable = null,
-                serializeRequestParam = null,
-                Imports.messageReceiver,
             ),
         UUID::class to
             TsExternalTypeRef(

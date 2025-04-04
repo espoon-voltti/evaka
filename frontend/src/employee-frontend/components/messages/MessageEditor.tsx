@@ -13,10 +13,10 @@ import { Attachment } from 'lib-common/generated/api-types/attachment'
 import {
   AuthorizedMessageAccount,
   DraftContent,
-  MessageReceiversResponse,
   MessageThreadFolder,
   PostMessageBody,
   PostMessageFilters,
+  SelectableRecipientsResponse,
   UpdatableDraftContent
 } from 'lib-common/generated/api-types/messaging'
 import {
@@ -48,10 +48,10 @@ import {
 import { modalZIndex } from 'lib-components/layout/z-helpers'
 import {
   getSelected,
-  receiversAsSelectorNode,
+  selectableRecipientsToNode,
   SelectedNode,
   SelectorNode,
-  selectedNodeToReceiver
+  nodeToSelectableRecipient
 } from 'lib-components/messages/SelectorNode'
 import {
   ExpandingInfoBox,
@@ -130,13 +130,13 @@ const areRequiredFieldsFilled = (
 ): boolean => !!(recipients.length > 0 && msg.type && msg.content && msg.title)
 
 const shouldSensitiveCheckboxBeEnabled = (
-  selectedReceivers: SelectedNode[],
+  selectedRecipients: SelectedNode[],
   messageType: string,
   senderAccountType: string | undefined
 ) => {
   const recipientValid =
-    selectedReceivers.length === 1 &&
-    selectedReceivers[0].messageRecipient.type === 'CHILD'
+    selectedRecipients.length === 1 &&
+    selectedRecipients[0].messageRecipient.type === 'CHILD'
   if (!recipientValid) {
     return false
   }
@@ -183,7 +183,7 @@ const FlagsInfoContent = React.memo(function FlagsInfoContent({
 })
 
 interface Props {
-  availableReceivers: MessageReceiversResponse[]
+  selectableRecipients: SelectableRecipientsResponse[]
   defaultSender: SelectOption<MessageAccountId>
   draftContent?: DraftContent
   getAttachmentUrl: (attachmentId: AttachmentId, fileName: string) => string
@@ -202,7 +202,7 @@ interface Props {
 }
 
 export default React.memo(function MessageEditor({
-  availableReceivers,
+  selectableRecipients,
   defaultSender,
   draftContent,
   getAttachmentUrl,
@@ -217,11 +217,11 @@ export default React.memo(function MessageEditor({
 }: Props) {
   const { i18n } = useTranslation()
 
-  const [receiverTree, setReceiverTree] = useState<SelectorNode[]>(
-    receiversAsSelectorNode(
+  const [recipientTree, setRecipientTree] = useState<SelectorNode[]>(
+    selectableRecipientsToNode(
       defaultSender.value,
-      availableReceivers,
-      i18n.messages.receiverSelection.starters,
+      selectableRecipients,
+      i18n.messages.recipientSelection.starters,
       draftContent?.recipients
     )
   )
@@ -253,14 +253,14 @@ export default React.memo(function MessageEditor({
     (changes) => {
       const updatedMessage = { ...message, ...changes }
       setMessage(updatedMessage)
-      const selectedReceivers = getSelected(receiverTree).map(
-        selectedNodeToReceiver
+      const selectedRecipients = getSelected(recipientTree).map(
+        nodeToSelectableRecipient
       )
       setDraft(
-        messageToUpdatableDraftWithAccount(updatedMessage, selectedReceivers)
+        messageToUpdatableDraftWithAccount(updatedMessage, selectedRecipients)
       )
     },
-    [message, receiverTree, setDraft]
+    [message, recipientTree, setDraft]
   )
   const getSenderAccount = useCallback(
     (senderId: string) =>
@@ -277,23 +277,23 @@ export default React.memo(function MessageEditor({
     [senderAccountType]
   )
 
-  const selectedReceivers = useMemo(
-    () => (receiverTree ? getSelected(receiverTree) : []),
-    [receiverTree]
+  const selectedRecipients = useMemo(
+    () => (recipientTree ? getSelected(recipientTree) : []),
+    [recipientTree]
   )
-  const debouncedReceivers = useDebounce(selectedReceivers, 500)
+  const debouncedRecipients = useDebounce(selectedRecipients, 500)
   const preflightResult = useQueryResult(
     createMessagePreflightCheckQuery({
       accountId: message.sender.value,
       body: {
-        recipients: debouncedReceivers.map((r) => r.messageRecipient),
+        recipients: debouncedRecipients.map((r) => r.messageRecipient),
         filters: filters
       }
     })
   )
 
   const sensitiveCheckboxEnabled = shouldSensitiveCheckboxBeEnabled(
-    selectedReceivers,
+    selectedRecipients,
     message.type,
     senderAccountType
   )
@@ -301,7 +301,7 @@ export default React.memo(function MessageEditor({
   const handleSenderChange = useCallback(
     (sender: SelectOption<MessageAccountId> | null) => {
       const shouldResetSensitivity = !shouldSensitiveCheckboxBeEnabled(
-        selectedReceivers,
+        selectedRecipients,
         message.type,
         sender ? sender.value : undefined
       )
@@ -317,28 +317,28 @@ export default React.memo(function MessageEditor({
         updateMessage({ sender })
       }
 
-      const accountReceivers = receiversAsSelectorNode(
+      const accountRecipients = selectableRecipientsToNode(
         sender.value,
-        availableReceivers,
-        i18n.messages.receiverSelection.starters
+        selectableRecipients,
+        i18n.messages.recipientSelection.starters
       )
-      if (accountReceivers) {
-        setReceiverTree(accountReceivers)
+      if (accountRecipients) {
+        setRecipientTree(accountRecipients)
       }
     },
     [
-      availableReceivers,
-      i18n.messages.receiverSelection.starters,
+      selectableRecipients,
+      i18n.messages.recipientSelection.starters,
       message.type,
-      selectedReceivers,
+      selectedRecipients,
       updateMessage
     ]
   )
   const handleRecipientChange = useCallback(
     (recipients: SelectorNode[]) => {
-      setReceiverTree(recipients)
+      setRecipientTree(recipients)
       const selected = getSelected(recipients)
-      const selectedAsReceivers = selected.map(selectedNodeToReceiver)
+      const selectedAsRecipients = selected.map(nodeToSelectableRecipient)
       const shouldResetSensitivity = !shouldSensitiveCheckboxBeEnabled(
         selected,
         message.type,
@@ -351,7 +351,7 @@ export default React.memo(function MessageEditor({
       }
       setMessage(updatedMessage)
       setDraft(
-        messageToUpdatableDraftWithAccount(updatedMessage, selectedAsReceivers)
+        messageToUpdatableDraftWithAccount(updatedMessage, selectedAsRecipients)
       )
     },
     [message, senderAccountType, setDraft]
@@ -414,16 +414,16 @@ export default React.memo(function MessageEditor({
         ...rest,
         attachmentIds,
         draftId,
-        recipients: selectedReceivers.map(
+        recipients: selectedRecipients.map(
           ({ messageRecipient }) => messageRecipient
         ),
-        recipientNames: selectedReceivers.map(({ text: name }) => name),
+        recipientNames: selectedRecipients.map(({ text: name }) => name),
         relatedApplicationId: null,
         filters: filters
       },
       initialFolder?.id ?? null
     )
-  }, [onSend, message, selectedReceivers, draftId, filters, initialFolder])
+  }, [onSend, message, selectedRecipients, draftId, filters, initialFolder])
 
   const onCloseHandler = useCallback(() => {
     if (draftWasModified && draftState === 'dirty') {
@@ -450,8 +450,8 @@ export default React.memo(function MessageEditor({
   const sendEnabled =
     !sending &&
     draftState === 'clean' &&
-    areRequiredFieldsFilled(message, selectedReceivers) &&
-    isEqual(debouncedReceivers, selectedReceivers) &&
+    areRequiredFieldsFilled(message, selectedRecipients) &&
+    isEqual(debouncedRecipients, selectedRecipients) &&
     preflightResult.isSuccess &&
     uploadStatus.inProgress === 0
 
@@ -622,10 +622,10 @@ export default React.memo(function MessageEditor({
                 <HorizontalField>
                   <Bold>{i18n.messages.messageEditor.recipients}</Bold>
                   <TreeDropdown
-                    tree={receiverTree}
+                    tree={recipientTree}
                     onChange={handleRecipientChange}
                     placeholder={i18n.messages.messageEditor.selectPlaceholder}
-                    data-qa="select-receiver"
+                    data-qa="select-recipient"
                   />
                 </HorizontalField>
               </Dropdowns>

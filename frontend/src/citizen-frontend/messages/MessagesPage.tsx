@@ -35,7 +35,7 @@ import MessageEditor from './MessageEditor'
 import RedactedThreadView from './RedactedThreadView'
 import ThreadList from './ThreadList'
 import ThreadView, { ThreadViewApi } from './ThreadView'
-import { receiversQuery, sendMessageMutation } from './queries'
+import { recipientsQuery, sendMessageMutation } from './queries'
 import { isRegularThread, MessageContext } from './state'
 
 const StyledFlex = styled(AdaptiveFlex)`
@@ -62,7 +62,7 @@ export default React.memo(function MessagesPage() {
   const [displaySendError, setDisplaySendError] = useState<boolean>(false)
 
   const children = useQueryResult(childrenQuery())
-  const receivers = useQueryResult(receiversQuery())
+  const recipients = useQueryResult(recipientsQuery())
 
   const user = useUser()
 
@@ -134,10 +134,11 @@ export default React.memo(function MessagesPage() {
                     closeThread={() => selectThread(undefined)}
                     thread={selectedThread}
                     allowedAccounts={
-                      receivers.getOrElse(null)?.childrenToMessageAccounts ?? []
+                      recipients.getOrElse(null)?.childrenToMessageAccounts ??
+                      []
                     }
                     accountDetails={
-                      receivers.getOrElse(null)?.messageAccounts ?? []
+                      recipients.getOrElse(null)?.messageAccounts ?? []
                     }
                     onThreadDeleted={() => {
                       onSelectedThreadDeleted()
@@ -160,11 +161,11 @@ export default React.memo(function MessagesPage() {
             </StyledFlex>
             {editorVisible &&
               renderResult(
-                combine(children, receivers),
-                ([children, receiverOptions]) => (
+                combine(children, recipients),
+                ([children, recipientOptions]) => (
                   <MessageEditor
                     children_={children}
-                    receiverOptions={receiverOptions}
+                    recipientOptions={recipientOptions}
                     messageAttachmentsAllowed={
                       messageAccount.messageAttachmentsAllowed
                     }
