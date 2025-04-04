@@ -225,7 +225,7 @@ fun Database.Read.getInvoiceIdsByDatesAndStatus(
                 SELECT id FROM invoice
                 WHERE between_start_and_end(${bind(range)}, invoice_date)
                 AND area_id IN (SELECT id FROM care_area WHERE short_name = ANY(${bind(areas)}))
-                AND status = ${bind(status)}::invoice_status
+                AND status = ${bind(status)}
                 """
             )
         }

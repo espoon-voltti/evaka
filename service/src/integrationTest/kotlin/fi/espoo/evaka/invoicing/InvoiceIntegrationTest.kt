@@ -40,7 +40,9 @@ import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.snDaycareFullDay35
@@ -520,8 +522,9 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val sent = testInvoices.find { it.status == InvoiceStatus.SENT }!!
 
         val originalSentAt = getInvoice(sent.id).invoice.sentAt
-        Thread.sleep(10)
-        resendInvoices(listOf(sent.id))
+
+        val resendAt = MockEvakaClock(originalSentAt!!.plusHours(1))
+        resendInvoices(listOf(sent.id), resendAt)
 
         val updatedInvoice = getInvoice(sent.id).invoice
         val updatedSentAt = updatedInvoice.sentAt
@@ -533,9 +536,11 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Test
     fun `resend returns bad request for draft status invoice`() {
         db.transaction { tx -> tx.insert(testInvoices) }
-        val sent = testInvoices.find { it.status == InvoiceStatus.DRAFT }!!
+        val draft = testInvoices.find { it.status == InvoiceStatus.DRAFT }!!
 
-        assertThrows<BadRequest> { resendInvoices(listOf(sent.id)) }
+        assertThrows<BadRequest> {
+            resendInvoices(listOf(draft.id), MockEvakaClock(2019, 2, 14, 14, 0))
+        }
     }
 
     @Test
@@ -858,8 +863,8 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         )
     }
 
-    private fun resendInvoices(invoiceIds: List<InvoiceId>) {
-        invoiceController.resendInvoices(dbInstance(), testUser, RealEvakaClock(), invoiceIds)
+    private fun resendInvoices(invoiceIds: List<InvoiceId>, resendAt: EvakaClock) {
+        invoiceController.resendInvoices(dbInstance(), testUser, resendAt, invoiceIds)
     }
 
     private fun searchInvoices(request: SearchInvoicesRequest): List<InvoiceSummary> {
