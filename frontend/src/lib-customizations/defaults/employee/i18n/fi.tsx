@@ -3678,7 +3678,12 @@ export const fi = {
       child: 'Lapsi',
       under3y: '<3v',
       over3y: '3+',
-      age: 'Ikä'
+      age: 'Ikä',
+      attendanceType: 'Läsnäolo',
+      attendanceTypes: {
+        RESERVATION: 'Varaus',
+        REALIZATION: 'Toteuma'
+      }
     },
     applications: {
       title: 'Saapuneet hakemukset',

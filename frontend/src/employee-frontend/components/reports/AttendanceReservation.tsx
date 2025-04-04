@@ -21,7 +21,10 @@ import {
   wrapResult
 } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { AttendanceReservationReportRow } from 'lib-common/generated/api-types/reports'
+import {
+  AttendanceReservationReportRow,
+  ReservationType
+} from 'lib-common/generated/api-types/reports'
 import { DaycareId, GroupId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
@@ -85,6 +88,8 @@ export default React.memo(function AttendanceReservation() {
       }
     }
   )
+  const [reservationType, setReservationType] =
+    useState<ReservationType>('RESERVATION')
 
   const tooLongRange = filters.range.end.isAfter(
     filters.range.start.addMonths(2)
@@ -116,10 +121,18 @@ export default React.memo(function AttendanceReservation() {
         unitId,
         start: filters.range.start,
         end: filters.range.end,
-        groupIds: filters.groupIds
+        groupIds: filters.groupIds,
+        reservationType: reservationType
       })
     }
-  }, [unitId, filters, tooLongRange])
+  }, [
+    tooLongRange,
+    unitId,
+    filters.range.start,
+    filters.range.end,
+    filters.groupIds,
+    reservationType
+  ])
 
   useEffect(() => {
     scrollRefIntoView(autoScrollRef)
@@ -274,6 +287,15 @@ export default React.memo(function AttendanceReservation() {
               isClearable={true}
             />
           </div>
+        </FilterRow>
+        <FilterRow>
+          <FilterLabel>{i18n.reports.common.attendanceType}</FilterLabel>
+          <Combobox<ReservationType>
+            items={['RESERVATION', 'REALIZATION']}
+            onChange={(type) => (type ? setReservationType(type) : undefined)}
+            selectedItem={reservationType}
+            getItemLabel={(item) => i18n.reports.common.attendanceTypes[item]}
+          />
         </FilterRow>
         <FilterRow>
           <AsyncButton
