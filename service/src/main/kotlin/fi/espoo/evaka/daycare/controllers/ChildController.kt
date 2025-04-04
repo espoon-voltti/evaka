@@ -10,6 +10,7 @@ import fi.espoo.evaka.daycare.createChild
 import fi.espoo.evaka.daycare.getChild
 import fi.espoo.evaka.daycare.updateChild
 import fi.espoo.evaka.nekku.NekkuProductMealType
+import fi.espoo.evaka.nekku.NekkuSpecialDietChoices
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.service.PersonJSON
 import fi.espoo.evaka.pis.service.hideNonPermittedPersonData
@@ -164,4 +165,5 @@ data class AdditionalInformation(
     @Nested("special_diet") val specialDiet: SpecialDiet? = null,
     @Nested("meal_texture") val mealTexture: MealTexture? = null,
     val nekkuDiet: NekkuProductMealType? = null,
+    var nekkuSpecialDietChoices: List<NekkuSpecialDietChoices> = emptyList(),
 )

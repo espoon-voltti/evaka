@@ -13,7 +13,7 @@ import {
   SpecialDiet
 } from 'lib-common/generated/api-types/specialdiet'
 import { IsoLanguage, isoLanguages } from 'lib-common/generated/language'
-import { useQueryResult } from 'lib-common/query'
+import { constantQuery, useQueryResult } from 'lib-common/query'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
@@ -37,9 +37,10 @@ import {
   updateAdditionalInfoMutation
 } from '../queries'
 
+import NekkuSpecialDiet from './NekkuSpecialDiet'
 import {
   mealTexturesQuery,
-  nekkuDietTypesquery,
+  nekkuDietTypesQuery,
   specialDietsQuery
 } from './queries'
 
@@ -110,7 +111,8 @@ export default React.memo(function AdditionalInformation({ childId }: Props) {
     languageAtHomeDetails: '',
     specialDiet: null,
     mealTexture: null,
-    nekkuDiet: null
+    nekkuDiet: null,
+    nekkuSpecialDietChoices: []
   })
 
   const editing = uiMode === 'child-additional-details-editing'
@@ -128,11 +130,55 @@ export default React.memo(function AdditionalInformation({ childId }: Props) {
           additionalInformation.value.languageAtHomeDetails,
         specialDiet: additionalInformation.value.specialDiet,
         mealTexture: additionalInformation.value.mealTexture,
-        nekkuDiet: additionalInformation.value.nekkuDiet
+        nekkuDiet: additionalInformation.value.nekkuDiet,
+        nekkuSpecialDietChoices:
+          additionalInformation.value.nekkuSpecialDietChoices
       })
       toggleUiMode('child-additional-details-editing')
     }
   }, [additionalInformation, toggleUiMode])
+
+  function setChoiceField(dietId: string, fieldId: string, value: string) {
+    setForm({
+      ...form,
+      nekkuSpecialDietChoices: [
+        ...form.nekkuSpecialDietChoices.filter(
+          (element) =>
+            !(element.dietId === dietId && element.fieldId === fieldId)
+        ),
+        { dietId, fieldId, value }
+      ]
+    })
+  }
+
+  function toggleChoiceField(
+    dietId: string,
+    fieldId: string,
+    value: string,
+    checked: boolean
+  ) {
+    if (!checked) {
+      setForm({
+        ...form,
+        nekkuSpecialDietChoices: form.nekkuSpecialDietChoices.filter(
+          (element) =>
+            !(
+              element.dietId === dietId &&
+              element.fieldId === fieldId &&
+              element.value === value
+            )
+        )
+      })
+    } else {
+      setForm({
+        ...form,
+        nekkuSpecialDietChoices: [
+          ...form.nekkuSpecialDietChoices,
+          { dietId, fieldId, value }
+        ]
+      })
+    }
+  }
 
   const valueWidth = '600px'
 
@@ -155,7 +201,9 @@ export default React.memo(function AdditionalInformation({ childId }: Props) {
     [mealTextures]
   )
 
-  const nekkuDiets = useQueryResult(nekkuDietTypesquery()).getOrElse([])
+  const nekkuDiets = useQueryResult(
+    featureFlags.nekkuIntegration ? nekkuDietTypesQuery() : constantQuery([])
+  ).getOrElse([])
 
   return (
     <div data-qa="additional-information-section">
@@ -408,6 +456,19 @@ export default React.memo(function AdditionalInformation({ childId }: Props) {
                             )?.name ?? '-'}
                           </div>
                         </>
+                      )
+                    },
+                    {
+                      label:
+                        i18n.childInformation.personDetails.nekkuSpecialDiet,
+                      value: (
+                        <NekkuSpecialDiet
+                          dietChoices={data.nekkuSpecialDietChoices}
+                          formData={form}
+                          setField={setChoiceField}
+                          toggleField={toggleChoiceField}
+                          editing={editing}
+                        />
                       )
                     }
                   ]
