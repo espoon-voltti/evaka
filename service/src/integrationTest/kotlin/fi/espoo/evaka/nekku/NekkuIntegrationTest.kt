@@ -965,7 +965,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     }
 
     @Test
-    fun `Send Nekku orders without reservations uses default meal amounts`() {
+    fun `Send Nekku orders with 2 children without reservations uses default meal amounts`() {
         val monday = LocalDate.of(2025, 4, 14)
         val tuesday = LocalDate.of(2025, 4, 15)
 
@@ -1001,6 +1001,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         // Children with placements in the group and they are not absent
         val child = DevPerson()
+        val child2 = DevPerson()
 
         db.transaction { tx ->
             tx.insert(area)
@@ -1011,6 +1012,25 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             tx.insert(
                     DevPlacement(
                         childId = child.id,
+                        unitId = daycare.id,
+                        startDate = monday,
+                        endDate = tuesday,
+                    )
+                )
+                .also { placementId ->
+                    tx.insert(
+                        DevDaycareGroupPlacement(
+                            daycarePlacementId = placementId,
+                            daycareGroupId = group.id,
+                            startDate = monday,
+                            endDate = tuesday,
+                        )
+                    )
+                }
+            tx.insert(child2, DevPersonType.CHILD)
+            tx.insert(
+                    DevPlacement(
+                        childId = child2.id,
                         unitId = daycare.id,
                         startDate = monday,
                         endDate = tuesday,
@@ -1040,9 +1060,9 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                             "2501K6089",
                             group.id.toString(),
                             listOf(
-                                NekkuClient.Item("31000010", 1, null),
-                                NekkuClient.Item("31000011", 1, null),
-                                NekkuClient.Item("31000012", 1, null),
+                                NekkuClient.Item("31000010", 2, null),
+                                NekkuClient.Item("31000011", 2, null),
+                                NekkuClient.Item("31000012", 2, null),
                             ),
                             group.name,
                         )
@@ -1056,9 +1076,9 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                             "2501K6089",
                             group.id.toString(),
                             listOf(
-                                NekkuClient.Item("31000010", 1, null),
-                                NekkuClient.Item("31000011", 1, null),
-                                NekkuClient.Item("31000012", 1, null),
+                                NekkuClient.Item("31000010", 2, null),
+                                NekkuClient.Item("31000011", 2, null),
+                                NekkuClient.Item("31000012", 2, null),
                             ),
                             group.name,
                         )
