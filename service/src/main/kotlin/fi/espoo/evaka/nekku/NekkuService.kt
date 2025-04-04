@@ -30,11 +30,13 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.domain.getHolidays
 import io.github.oshai.kotlinlogging.KotlinLogging
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import java.io.IOException
 import java.time.Duration
 import java.time.LocalDate
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
 import org.springframework.stereotype.Service
 
 private val logger = KotlinLogging.logger {}
@@ -193,7 +195,10 @@ class NekkuHttpClient(private val env: NekkuEnv, private val jsonMapper: JsonMap
     }
 
     override fun createNekkuMealOrder(nekkuOrders: NekkuClient.NekkuOrders) {
-        // Todo: create post with orders
+        val requestBody = jsonMapper.writeValueAsString(nekkuOrders).toRequestBody("application/json".toMediaTypeOrNull())
+        val request = getBaseRequest().post(requestBody).url(env.url.resolve("orders").toString()).build()
+
+        executeRequest<Void>(request)
     }
 
     private fun getBaseRequest() =
