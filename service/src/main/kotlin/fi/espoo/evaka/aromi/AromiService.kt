@@ -20,6 +20,7 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
 import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.domain.getHolidays
 import fi.espoo.evaka.shared.sftp.SftpClient
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.ByteArrayOutputStream
 import java.io.PrintWriter
 import java.nio.charset.StandardCharsets
@@ -32,6 +33,8 @@ import org.apache.commons.csv.CSVPrinter
 import org.jdbi.v3.json.Json
 import org.springframework.stereotype.Service
 
+private val logger = KotlinLogging.logger {}
+
 @Service
 class AromiService(private val aromiEnv: AromiEnv?) {
     private val startDateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmm")
@@ -42,23 +45,31 @@ class AromiService(private val aromiEnv: AromiEnv?) {
         clock: EvakaClock,
         earliestStartDate: LocalDate = LocalDate.of(2025, 4, 22),
     ) {
+        val today = clock.today()
+        logger.info { "Scheduled sending of Aromi attendance CSV started ($today)" }
         val sftpClient =
             aromiEnv?.let { SftpClient(it.sftp) }
                 ?: error("Cannot send Aromi orders: AromiEnv is not configured")
         val formatter = DateTimeFormatter.ofPattern(aromiEnv.filePattern)
-        val today = clock.today()
         val endDate = today.plusDays(21)
         if (endDate.isBefore(earliestStartDate))
             error("End date of meal order is before earliest start date, aborting")
         val startDate = maxOf(earliestStartDate, today.plusDays(3))
-
         val data = getMealOrdersCsv(db, FiniteDateRange(startDate, endDate))
-        data.inputStream().use { sftpClient.put(it, today.format(formatter)) }
+        val fileName = today.format(formatter)
+        logger.info { "Sending Aromi attendance CSV $fileName (${data.size})" }
+        data.inputStream().use { sftpClient.put(it, fileName) }
+        logger.info { "Scheduled sending of Aromi attendance CSV completed" }
     }
 
     fun getMealOrdersCsv(dbc: Database.Connection, range: FiniteDateRange): ByteArray {
+        logger.info { "Collecting Aromi attendance rows (${range.start} - ${range.end})" }
         val data = dbc.read { tx -> getData(tx, range) }
         if (data.report.isEmpty()) error("No attendance information available, aborting")
+        val earliestStartDate = data.report.minOfOrNull { it.date }
+        logger.info {
+            "Aromi attendance rows collected (${data.report.size}), earliest attendance date $earliestStartDate"
+        }
         return ByteArrayOutputStream().use { stream ->
             PrintWriter(stream, false, StandardCharsets.ISO_8859_1).use { writer ->
                 printCsv(writer, data)
