@@ -443,6 +443,14 @@ export interface StatusChangeRequest {
   newStatus: DocumentStatus
 }
 
+/**
+* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentControllerCitizen.UpdateChildDocumentRequest
+*/
+export interface UpdateChildDocumentRequest {
+  content: DocumentContent
+  status: DocumentStatus
+}
+
 
 
 export function deserializeJsonAnsweredQuestionDateAnswer(json: JsonOf<AnsweredQuestion.DateAnswer>): AnsweredQuestion.DateAnswer {
@@ -578,5 +586,13 @@ export function deserializeJsonExportedDocumentTemplate(json: JsonOf<ExportedDoc
   return {
     ...json,
     validity: DateRange.parseJson(json.validity)
+  }
+}
+
+
+export function deserializeJsonUpdateChildDocumentRequest(json: JsonOf<UpdateChildDocumentRequest>): UpdateChildDocumentRequest {
+  return {
+    ...json,
+    content: deserializeJsonDocumentContent(json.content)
   }
 }

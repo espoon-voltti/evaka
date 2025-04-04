@@ -2842,10 +2842,7 @@ export default {
       notAnswered: 'Ei vastattu',
       answered: 'Vastattu',
       preview: 'Esikatsele',
-      send: 'Lähetä',
-      error: {
-        other: 'Asiakirjan tallentaminen epäonnistui.'
-      }
+      send: 'Lähetä'
     }
   },
   accessibilityStatement: (

@@ -3,13 +3,12 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useEffect } from 'react'
-import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
 import Footer from 'citizen-frontend/Footer'
 import { renderResult } from 'citizen-frontend/async-rendering'
 import { useTranslation } from 'citizen-frontend/localization'
-import { useForm } from 'lib-common/form/hooks'
+import { useBoolean, useForm } from 'lib-common/form/hooks'
 import { ChildDocumentCitizenDetails } from 'lib-common/generated/api-types/document'
 import { ChildDocumentId } from 'lib-common/generated/api-types/shared'
 import { useMutation, useQueryResult } from 'lib-common/query'
@@ -42,7 +41,7 @@ import { downloadChildDocument } from '../generated/api-clients/document'
 import {
   childDocumentDetailsQuery,
   childDocumentReadMutation,
-  nextDocumentStatusMutation
+  updateChildDocumentMutation
 } from './queries'
 
 const TopButtonRow = styled(FixedSpaceRow)`
@@ -94,12 +93,9 @@ export default React.memo(function ChildDocumentPage() {
         </TopButtonRow>
         <Gap size="s" />
 
-        {renderResult(childDocument, (document, isReloading) => {
-          // do not initialize form with possibly stale data
-          if (isReloading) return null
-
-          return <ChildDocumentView document={document} />
-        })}
+        {renderResult(childDocument, (document) => (
+          <ChildDocumentView document={document} />
+        ))}
 
         <Gap size="s" />
       </Content>
@@ -127,7 +123,7 @@ const ChildDocumentView = React.memo(function ChildDocumentView({
     i18n.validationErrors
   )
 
-  const navigate = useNavigate()
+  const [readOnly, { on: readOnlyOn, off: readOnlyOff }] = useBoolean(true)
 
   return (
     <>
@@ -152,7 +148,7 @@ const ChildDocumentView = React.memo(function ChildDocumentView({
             </FixedSpaceColumn>
           </FixedSpaceRow>
           <Gap />
-          <DocumentView bind={bind} readOnly />
+          <DocumentView bind={bind} readOnly={readOnly} />
         </ContentArea>
       </Container>
       <Gap size="m" />
@@ -164,28 +160,37 @@ const ChildDocumentView = React.memo(function ChildDocumentView({
         <ReturnButton label={i18n.common.return} data-qa="return-button" />
         {document.status === 'CITIZEN_DRAFT' && (
           <>
-            <Button
-              text={i18n.common.edit}
-              onClick={() =>
-                navigate(`/child-documents/${document.id}/edit`, {
-                  replace: true
-                })
-              }
-              data-qa="edit-button"
-            />
-            <AlignRight>
-              <MutateButton
-                mutation={nextDocumentStatusMutation}
-                onClick={() => ({
-                  documentId: document.id,
-                  body: {
-                    newStatus: 'COMPLETED' as const
-                  }
-                })}
-                text={i18n.children.childDocuments.send}
-                primary
-                data-qa="send-button"
+            {readOnly && (
+              <Button
+                text={i18n.common.edit}
+                onClick={readOnlyOff}
+                data-qa="edit-button"
               />
+            )}
+            <AlignRight>
+              {readOnly ? (
+                <MutateButton
+                  mutation={updateChildDocumentMutation}
+                  onClick={() => ({
+                    documentId: document.id,
+                    body: {
+                      status: 'COMPLETED' as const,
+                      content: bind.value()
+                    }
+                  })}
+                  text={i18n.children.childDocuments.send}
+                  primary
+                  disabled={!bind.isValid()}
+                  data-qa="send-button"
+                />
+              ) : (
+                <Button
+                  text={i18n.children.childDocuments.preview}
+                  onClick={readOnlyOn}
+                  primary
+                  data-qa="preview-button"
+                />
+              )}
             </AlignRight>
           </>
         )}

@@ -2861,10 +2861,7 @@ const sv: Translations = {
       notAnswered: 'Ei vastattu (sv)',
       answered: 'Vastattu (sv)',
       preview: 'Esikatsele (sv)',
-      send: 'Lähetä (sv)',
-      error: {
-        other: 'Asiakirjan tallentaminen epäonnistui. (sv)'
-      }
+      send: 'Lähetä (sv)'
     }
   },
   accessibilityStatement: (

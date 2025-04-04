@@ -33,6 +33,8 @@ import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
+import fi.espoo.evaka.toEvakaUser
+import fi.espoo.evaka.user.EvakaUserType
 import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -80,7 +82,7 @@ class ChildDocumentControllerCitizenIntegrationTest :
             tx.insert(testArea)
             tx.insert(testDaycare.copy(language = Language.sv))
             tx.insert(testChild_1, DevPersonType.CHILD)
-            tx.insert(testAdult_1, DevPersonType.RAW_ROW)
+            tx.insert(testAdult_1, DevPersonType.ADULT)
             tx.insert(DevGuardian(testAdult_1.id, testChild_1.id))
             tx.insert(
                 DevPlacement(
@@ -197,6 +199,88 @@ class ChildDocumentControllerCitizenIntegrationTest :
         assertEquals(updatedContent, getDocument(documentId).content)
     }
 
+    @Test
+    fun `updateChildDocument updates status and content`() {
+        val template =
+            DevDocumentTemplate(
+                type = DocumentType.CITIZEN_BASIC,
+                name = "Medialupa",
+                validity = DateRange(clock.today(), clock.today()),
+                content = templateContent,
+            )
+        val documentId =
+            db.transaction { tx ->
+                val templateId = tx.insert(template)
+                tx.insert(
+                    DevChildDocument(
+                        status = DocumentStatus.CITIZEN_DRAFT,
+                        childId = testChild_1.id,
+                        templateId = templateId,
+                        content = documentContent,
+                        publishedContent = documentContent,
+                        modifiedAt = clock.now(),
+                        contentModifiedAt = clock.now(),
+                        contentModifiedBy = employeeUser.id,
+                        publishedAt = clock.now(),
+                        answeredAt = null,
+                        answeredBy = null,
+                    )
+                )
+            }
+        clock.tick()
+
+        val content =
+            DocumentContent(
+                answers =
+                    listOf(
+                        AnsweredQuestion.TextAnswer(questionId = "q1", answer = "huoltajan vastaus")
+                    )
+            )
+        updateDocument(
+            documentId,
+            ChildDocumentControllerCitizen.UpdateChildDocumentRequest(
+                status = DocumentStatus.COMPLETED,
+                content = content,
+            ),
+        )
+
+        val documents = getDocumentsByChild(testChild_1.id)
+        assertEquals(
+            listOf(
+                ChildDocumentCitizenSummary(
+                    id = documentId,
+                    status = DocumentStatus.COMPLETED,
+                    type = template.type,
+                    templateName = template.name,
+                    publishedAt = clock.now(),
+                    unread = true,
+                    answeredAt = clock.now(),
+                    answeredBy = testAdult_1.toEvakaUser(EvakaUserType.CITIZEN),
+                )
+            ),
+            documents.filter { it.type == DocumentType.CITIZEN_BASIC },
+        )
+        val document = getDocument(documentId)
+        assertEquals(
+            ChildDocumentCitizenDetails(
+                id = documentId,
+                status = DocumentStatus.COMPLETED,
+                publishedAt = clock.now(),
+                downloadable = false,
+                content = content,
+                child =
+                    ChildBasics(
+                        id = testChild_1.id,
+                        firstName = testChild_1.firstName,
+                        lastName = testChild_1.lastName,
+                        dateOfBirth = testChild_1.dateOfBirth,
+                    ),
+                template = template.toDocumentTemplate(),
+            ),
+            document,
+        )
+    }
+
     private fun getUnreadCount() = controller.getUnreadDocumentsCount(dbInstance(), citizen, clock)
 
     private fun getDocumentsByChild(childId: ChildId) =
@@ -210,6 +294,11 @@ class ChildDocumentControllerCitizenIntegrationTest :
 
     private fun putDocumentRead(id: ChildDocumentId) =
         controller.putDocumentRead(dbInstance(), citizen, clock, id)
+
+    private fun updateDocument(
+        id: ChildDocumentId,
+        body: ChildDocumentControllerCitizen.UpdateChildDocumentRequest,
+    ) = controller.updateChildDocument(dbInstance(), citizen, clock, id, body)
 
     private fun publishDocument(id: ChildDocumentId) =
         employeeController.publishDocument(dbInstance(), employeeUser, clock, id)
