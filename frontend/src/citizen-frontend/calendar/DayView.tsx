@@ -79,7 +79,15 @@ import {
   PlainModal
 } from 'lib-components/molecules/modals/BaseModal'
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
-import { H1, H2, H3, Label, LabelLike, P } from 'lib-components/typography'
+import {
+  fontWeights,
+  H1,
+  H2,
+  H3,
+  Label,
+  LabelLike,
+  P
+} from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/citizen'
 import { faQuestion, faTimes } from 'lib-icons'
@@ -92,6 +100,7 @@ import AttendanceInfo from './AttendanceInfo'
 import { BottomFooterContainer } from './BottomFooterContainer'
 import { CalendarModalBackground, CalendarModalSection } from './CalendarModal'
 import { useCalendarModalState } from './CalendarPage'
+import { DiscussionTimeExportButton } from './DiscussionTimeExportButton'
 import {
   ChildImageData,
   getChildImages,
@@ -596,7 +605,7 @@ const DayModal = React.memo(function DayModal({
                                     key={event.id}
                                     data-qa={`event-${event.id}`}
                                   >
-                                    <LabelLike>
+                                    <EventBox>
                                       <WordBreakContainer>
                                         <P noMargin data-qa="title-text">
                                           {event.title}
@@ -606,54 +615,71 @@ const DayModal = React.memo(function DayModal({
                                         <DiscussionReservationContainer
                                           key={`reservation-${i}`}
                                         >
-                                          <div>
-                                            <P
-                                              noMargin
-                                              data-qa={`reservation-time-${rt.id}`}
-                                            >
-                                              {`${i18n.calendar.discussionTimeReservation.timePreDescriptor} ${rt.startTime.format()} - ${rt.endTime.format()}`}
-                                            </P>
-                                          </div>
+                                          <FixedSpaceRow
+                                            fullWidth
+                                            justifyContent="space-between"
+                                            alignItems="center"
+                                          >
+                                            <div>
+                                              <P
+                                                noMargin
+                                                data-qa={`reservation-time-${rt.id}`}
+                                              >
+                                                {`${i18n.calendar.discussionTimeReservation.timePreDescriptor} ${rt.startTime.format()} - ${rt.endTime.format()}`}
+                                              </P>
+                                            </div>
+                                            {rt.date.isEqualOrAfter(today) && (
+                                              <DiscussionTimeExportButton
+                                                eventTitle={event.title}
+                                                discussionTime={rt}
+                                                eventAttendeeInfo={
+                                                  event.currentAttending
+                                                }
+                                              />
+                                            )}
+                                          </FixedSpaceRow>
                                           {rt.date.isEqualOrAfter(today) && (
                                             <>
-                                              <Button
-                                                appearance="inline"
-                                                data-qa={`reservation-cancel-button-${rt.id}`}
-                                                icon={faTimes}
-                                                text={
-                                                  i18n.calendar
-                                                    .discussionTimeReservation
-                                                    .cancelTimeButtonText
-                                                }
-                                                disabled={!rt.isEditable}
-                                                onClick={() => {
-                                                  if (rt.childId !== null) {
-                                                    onCancelClick(
-                                                      rt.childId,
-                                                      rt.id
-                                                    )
-                                                  }
-                                                }}
-                                              />
-                                              {!rt.isEditable && (
-                                                <InfoBox
-                                                  aria-label={
+                                              <FixedSpaceRow gap="m">
+                                                <Button
+                                                  appearance="inline"
+                                                  data-qa={`reservation-cancel-button-${rt.id}`}
+                                                  icon={faTimes}
+                                                  text={
                                                     i18n.calendar
                                                       .discussionTimeReservation
-                                                      .cancellationDeadlineInfoMessage
+                                                      .cancelTimeButtonText
                                                   }
-                                                  message={
-                                                    i18n.calendar
-                                                      .discussionTimeReservation
-                                                      .cancellationDeadlineInfoMessage
-                                                  }
+                                                  disabled={!rt.isEditable}
+                                                  onClick={() => {
+                                                    if (rt.childId !== null) {
+                                                      onCancelClick(
+                                                        rt.childId,
+                                                        rt.id
+                                                      )
+                                                    }
+                                                  }}
                                                 />
-                                              )}
+                                                {!rt.isEditable && (
+                                                  <InfoBox
+                                                    aria-label={
+                                                      i18n.calendar
+                                                        .discussionTimeReservation
+                                                        .cancellationDeadlineInfoMessage
+                                                    }
+                                                    message={
+                                                      i18n.calendar
+                                                        .discussionTimeReservation
+                                                        .cancellationDeadlineInfoMessage
+                                                    }
+                                                  />
+                                                )}
+                                              </FixedSpaceRow>
                                             </>
                                           )}
                                         </DiscussionReservationContainer>
                                       ))}
-                                    </LabelLike>
+                                    </EventBox>
                                     <P noMargin data-qa="event-description">
                                       {event.description}
                                     </P>
@@ -1096,6 +1122,7 @@ const SurveyContainer = styled.div`
   flex-direction: column;
   align-items: start;
   margin: 10px 0;
+  width: 100%;
 `
 
 const DiscussionReservationContainer = styled.div`
@@ -1103,6 +1130,7 @@ const DiscussionReservationContainer = styled.div`
   flex-direction: column;
   align-items: start;
   margin: 10px 0;
+  width: 100%;
 `
 
 export const WordBreakContainer = styled.div`
@@ -1115,4 +1143,8 @@ const TwoSpanGridItem = styled.div`
 
 const EditMultipleLink = styled(TwoSpanGridItem)`
   padding: ${defaultMargins.s} 0;
+`
+const EventBox = styled.div`
+  font-weight: ${fontWeights.semibold};
+  width: 100%;
 `

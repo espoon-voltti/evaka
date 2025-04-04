@@ -503,7 +503,7 @@ describe.each(envs)('Citizen calendar event time visibility (%s)', (env) => {
     ])
   })
 
-  test('Citizen is receives only one correct set of event times despite 2 group placements', async () => {
+  test('Citizen receives only one correct set of event times despite 2 group placements', async () => {
     const placement1 = createDaycarePlacementFixture(
       randomId(),
       testChild2.id,

@@ -370,7 +370,9 @@ export default {
       confirmCancel: {
         title: 'Haluatko perua varauksen?',
         cancel: 'Älä peru'
-      }
+      },
+      discussionTimeFileName: 'Keskusteluaika',
+      calendarExportButtonLabel: 'Vie kalenteriin'
     },
 
     absenceMarkedByEmployee: 'Henkilökunnan merkitsemä poissaolo',
