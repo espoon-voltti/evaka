@@ -2109,7 +2109,7 @@ const en: Translations = {
       provideAttachments:
         'I will submit the information as attachments, and my information can be checked from Kela if necessary',
       attachmentsVerificationInfo:
-        'Income information is verified at least annually.',
+        'Make a new income statement no later than in a year.',
       estimate: 'Estimate of my gross income',
       noIncome:
         'I have no income or allowance, and my information can be checked from the Incomes Register and Kela',

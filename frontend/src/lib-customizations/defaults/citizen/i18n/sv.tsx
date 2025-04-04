@@ -2353,7 +2353,7 @@ const sv: Translations = {
       provideAttachments:
         'Jag lämnar in uppgifterna som bilaga, och mina uppgifter får kontrolleras hos FPA vid behov',
       attachmentsVerificationInfo:
-        'Inkomstuppgifter kontrolleras minst årligen.',
+        'Gör en ny inkomstutredning senast om ett år.',
       estimate: 'Uppskattning av mina bruttoinkomster',
       noIncome:
         'Jag har inga inkomster eller bidrag, och mina uppgifter får kontrolleras i inkomstregistret samt hos FPA',
