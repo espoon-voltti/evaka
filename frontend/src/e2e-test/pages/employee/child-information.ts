@@ -614,8 +614,8 @@ export class GuardiansSection extends Section {
 
     const modal = new Modal(this.page.findByDataQa('evaka-rights-modal'))
     await modal.submit()
-    await modal.findByDataQa('confirmation').click()
     await modal.findByDataQa('denied').click()
+    await modal.findByDataQa('confirmation').click()
     await modal.submit()
   }
 
@@ -627,7 +627,6 @@ export class GuardiansSection extends Section {
     const modal = new Modal(this.page.findByDataQa('evaka-rights-modal'))
     await modal.submit()
     await modal.findByDataQa('denied').click()
-    await modal.findByDataQa('confirmation').click()
     await modal.submit()
   }
 

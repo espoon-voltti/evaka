@@ -25,12 +25,11 @@ import {
   deleteMobileDevice,
   getPersonalMobileDevices,
   putMobileDeviceName
-} from '../generated/api-clients/pairing'
-import { useTranslation } from '../state/i18n'
-import { UIContext } from '../state/ui'
-import { UserContext } from '../state/user'
-
-import { renderResult } from './async-rendering'
+} from '../../generated/api-clients/pairing'
+import { useTranslation } from '../../state/i18n'
+import { UIContext } from '../../state/ui'
+import { UserContext } from '../../state/user'
+import { renderResult } from '../async-rendering'
 
 const getPersonalMobileDevicesResult = wrapResult(getPersonalMobileDevices)
 const deleteMobileDeviceResult = wrapResult(deleteMobileDevice)

@@ -93,8 +93,18 @@ import {
   updateFeeAlteration
 } from '../../generated/api-clients/invoicing'
 import {
+  createPedagogicalDocument,
+  deletePedagogicalDocument,
+  getChildPedagogicalDocuments,
+  updatePedagogicalDocument
+} from '../../generated/api-clients/pedagogicaldocument'
+import {
+  getFamilyContactSummary,
   getFosterParents,
-  getPersonGuardians
+  getPersonGuardians,
+  updateFamilyContactDetails,
+  updateFamilyContactPriority,
+  updateGuardianEvakaRights
 } from '../../generated/api-clients/pis'
 import {
   getAssistanceNeedDecisionMetadata,
@@ -118,6 +128,11 @@ export const childQuery = q.query(getChild)
 export const deleteServiceNeedMutation = q.mutation(deleteServiceNeed, [])
 
 export const guardiansQuery = q.query(getPersonGuardians)
+
+export const updateGuardianEvakaRightsMutation = q.mutation(
+  updateGuardianEvakaRights,
+  [({ childId }) => guardiansQuery({ personId: childId })]
+)
 
 export const placementsQuery = q.query(getChildPlacements)
 
@@ -487,4 +502,36 @@ export const getAdditionalInfoQuery = q.query(getAdditionalInfo)
 
 export const updateAdditionalInfoMutation = q.mutation(updateAdditionalInfo, [
   ({ childId }) => getAdditionalInfoQuery({ childId })
+])
+
+export const familyContactSummaryQuery = q.query(getFamilyContactSummary)
+
+export const updateFamilyContactDetailsMutation = q.mutation(
+  updateFamilyContactDetails,
+  [({ body: { childId } }) => familyContactSummaryQuery({ childId })]
+)
+
+export const updateFamilyContactPriorityMutation = q.mutation(
+  updateFamilyContactPriority,
+  [({ body: { childId } }) => familyContactSummaryQuery({ childId })]
+)
+
+export const childPedagogicalDocumentsQuery = q.query(
+  getChildPedagogicalDocuments
+)
+
+export const createPedagogicalDocumentMutation = q.mutation(
+  createPedagogicalDocument,
+  [({ body: { childId } }) => childPedagogicalDocumentsQuery({ childId })]
+)
+
+export const updatePedagogicalDocumentMutation = q.mutation(
+  updatePedagogicalDocument,
+  [({ body: { childId } }) => childPedagogicalDocumentsQuery({ childId })]
+)
+
+export const deletePedagogicalDocumentMutation = q.parametricMutation<{
+  childId: ChildId
+}>()(deletePedagogicalDocument, [
+  ({ childId }) => childPedagogicalDocumentsQuery({ childId })
 ])
