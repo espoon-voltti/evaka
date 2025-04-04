@@ -36,6 +36,7 @@ class SärmäHttpClient(private val archiveEnv: ArchiveEnv?) : SärmäClientInte
                 .setType(MultipartBody.FORM)
                 .addFormDataPart("protocol_version", "1.0")
                 .addFormDataPart("operation_id", "PUT")
+                .addFormDataPart("response_format", "URL-ENCODED")
                 .addFormDataPart("user_id", archiveEnv.userId)
                 .addFormDataPart("user_role", archiveEnv.userRole)
                 .addFormDataPart("nr_of_instances", "1")

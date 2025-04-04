@@ -33,6 +33,7 @@ dependencies {
         api("org.apache.commons:commons-csv:1.14.0")
         api("org.apache.commons:commons-text:1.13.0")
         api("org.apache.commons:commons-imaging:1.0-alpha3")
+        api("org.apache.httpcomponents:httpclient:4.5.13")
         api("org.apache.tika:tika-core:3.1.0")
         api(libs.bouncycastle.bcpkix)
         api(libs.bouncycastle.bcprov)

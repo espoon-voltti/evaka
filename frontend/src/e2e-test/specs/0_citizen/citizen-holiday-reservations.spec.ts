@@ -308,6 +308,7 @@ describe('Holiday periods and questionnaires', () => {
       await holidayModal.markNoHolidays([child, child2])
 
       holidayModal = await calendar.openHolidayModal()
+
       await holidayModal.assertSelectedFixedPeriods(
         selections.map((s) => ({ ...s, option: 'Ei maksutonta poissaoloa' }))
       )

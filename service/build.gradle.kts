@@ -97,6 +97,9 @@ dependencies {
     // OkHttp
     implementation("com.squareup.okhttp3:okhttp")
 
+    // Apache HttpClient
+    implementation("org.apache.httpcomponents:httpclient")
+
     // SFTP
     implementation("com.github.mwiede:jsch")
 
