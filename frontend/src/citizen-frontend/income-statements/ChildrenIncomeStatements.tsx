@@ -358,11 +358,7 @@ export default React.memo(function ChildrenIncomeStatements({
           <>
             <H1 noMargin>{t.income.children.title}</H1>
             <Gap size="s" />
-            {childInfo.length > 0 ? (
-              <span>{t.income.children.description}</span>
-            ) : (
-              <span>{t.income.children.noChildIncomeStatementsNeeded}</span>
-            )}
+            <span>{t.income.children.description}</span>
           </>
           <Gap size="L" />
           {childInfo.map((child) => (
