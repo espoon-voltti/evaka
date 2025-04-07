@@ -15,6 +15,7 @@ import {
   MissingGroupPlacement
 } from 'lib-common/generated/api-types/placement'
 import { DaycareId } from 'lib-common/generated/api-types/shared'
+import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import PlacementCircle from 'lib-components/atoms/PlacementCircle'
 import Title from 'lib-components/atoms/Title'
@@ -68,7 +69,9 @@ function renderMissingGroupPlacementRow(
       </Td>
       <Td>
         <FixedSpaceRow spacing="xs" alignItems="center">
-          <AgeIndicatorChip age={gap.start.differenceInYears(dateOfBirth)} />
+          <AgeIndicatorChip
+            age={LocalDate.todayInHelsinkiTz().differenceInYears(dateOfBirth)}
+          />
           <span data-qa="child-dob">{dateOfBirth.format()}</span>
         </FixedSpaceRow>
       </Td>
