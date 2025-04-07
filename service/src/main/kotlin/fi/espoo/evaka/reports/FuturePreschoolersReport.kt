@@ -100,7 +100,6 @@ SELECT p.id,
     d.name AS unit_name,
     array_remove(ARRAY[
         CASE WHEN sn.shift_care = 'FULL'::shift_care_type OR sn.shift_care = 'INTERMITTENT'::shift_care_type THEN 'SHIFT_CARE' END,
-        NULL, -- language emphasis cannot be obtained from current evaka dataset
         CASE WHEN sno.name_fi like 'Kaksivuotinen%' THEN 'TWO_YEAR_PRESCHOOL' END
     ], NULL) AS options
 FROM person p
@@ -141,8 +140,7 @@ SELECT d.id,
     array_remove(ARRAY[
         CASE WHEN d.provider_type != 'MUNICIPAL' THEN 'PRIVATE' END,
         CASE WHEN d.with_school THEN 'WITH_SCHOOL' END,
-        CASE WHEN d.provides_shift_care THEN 'SHIFT_CARE' END,
-        CASE WHEN d.language_emphasis_id IS NOT NULL THEN 'LANGUAGE_EMPHASIS' END
+        CASE WHEN d.provides_shift_care THEN 'SHIFT_CARE' END
     ], NULL) AS options
 FROM daycare d
 WHERE d.type && '{PRESCHOOL}'::care_types[] AND

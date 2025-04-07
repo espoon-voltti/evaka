@@ -15,7 +15,6 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.net.URI
 import java.time.LocalDate
-import java.util.UUID
 import org.jdbi.v3.core.result.UnableToProduceResultException
 
 private val logger = KotlinLogging.logger {}
@@ -137,8 +136,7 @@ fun Database.Read.getVardaUnits(): List<VardaUnit> =
                     daycare.closing_date,
                     daycare.provider_type,
                     daycare.type,
-                    daycare.language,
-                    daycare.language_emphasis_id
+                    daycare.language
                 FROM daycare
                 WHERE daycare.upload_to_varda IS TRUE AND daycare.provider_type = ANY(${bind(unitTypesToUpload)})
                 """
@@ -262,7 +260,6 @@ data class VardaUnit(
     val providerType: VardaUnitProviderType,
     val type: List<VardaUnitType>,
     val language: VardaLanguage,
-    val languageEmphasisId: UUID?,
 ) {
     fun toVardaUnitRequest(lahdejarjestelma: String, vakajarjestaja: String, kuntakoodi: String) =
         VardaUnitRequest(
@@ -294,7 +291,7 @@ data class VardaUnit(
                     else -> null
                 },
             toimintakieli_koodi = listOfNotNull(language.vardaCode),
-            kielipainotus_kytkin = languageEmphasisId?.let { true } ?: false,
+            kielipainotus_kytkin = false,
         )
 }
 
