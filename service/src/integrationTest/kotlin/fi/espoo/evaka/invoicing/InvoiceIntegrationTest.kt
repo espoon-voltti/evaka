@@ -64,6 +64,7 @@ import fi.espoo.evaka.user.EvakaUserType
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
