@@ -4,6 +4,7 @@
 
 import { Queries } from 'lib-common/query'
 
+import { unansweredChildDocumentsQuery } from '../calendar/queries'
 import {
   getDocument,
   getDocuments,
@@ -23,5 +24,6 @@ export const childDocumentReadMutation = q.mutation(putDocumentRead, [
 ])
 
 export const updateChildDocumentMutation = q.mutation(updateChildDocument, [
-  childDocumentDetailsQuery
+  childDocumentDetailsQuery,
+  unansweredChildDocumentsQuery
 ])

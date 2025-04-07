@@ -7,6 +7,7 @@ import React, { ReactNode } from 'react'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { EmailVerification } from 'lib-common/generated/api-types/pis'
 import LocalDate from 'lib-common/local-date'
+import { formatFirstName } from 'lib-common/names'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
 import UnorderedList from 'lib-components/atoms/UnorderedList'
 import { Button } from 'lib-components/atoms/buttons/Button'
@@ -258,7 +259,24 @@ const en: Translations = {
     fixedPeriodCta: (deadline: LocalDate) =>
       `Answer the absence questionnaire before ${deadline.format()}.`,
     incomeExpirationCta: (expirationDate: string) =>
-      `Please remember to update your income statement by ${expirationDate}`
+      `Please remember to update your income statement by ${expirationDate}`,
+    unansweredChildDocumentCta: (child: {
+      firstName: string
+      lastName: string
+    }) => (
+      <div>
+        Henkilökunta on pyytänyt sinua vastaamaan lomakkeeseen, joka koskee
+        lastasi:{' '}
+        <span translate="no">
+          {formatFirstName(child)} {child.lastName}
+        </span>
+        <br />
+        <br />
+        <span style={{ color: colors.status.info }}>
+          Vastaa lomakkeeseen (en)
+        </span>
+      </div>
+    )
   },
   errorPage: {
     reload: 'Reload page',
@@ -2615,10 +2633,11 @@ const en: Translations = {
       otherDocumentsTitle: 'Other documents',
       noDocuments: 'No documents',
       confidential: 'Confidential',
-      notAnswered: 'Ei vastattu (en)',
+      unanswered: 'Ei vastattu (en)',
       answered: 'Vastattu (en)',
       preview: 'Esikatsele (en)',
-      send: 'Lähetä (en)'
+      send: 'Lähetä (en)',
+      success: 'Lomake lähetetty (en)'
     }
   },
   accessibilityStatement: (

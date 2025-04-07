@@ -853,7 +853,7 @@ export const fi = {
         sent: 'Lähetetty',
         notSent: 'Ei lähetetty',
         answered: 'Vastattu',
-        notAnswered: 'Ei vastattu'
+        unanswered: 'Ei vastattu'
       },
       addNew: {
         internal: 'Luo uusi pedagoginen asiakirja',

@@ -7,6 +7,7 @@ import React, { ReactNode } from 'react'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { EmailVerification } from 'lib-common/generated/api-types/pis'
 import LocalDate from 'lib-common/local-date'
+import { formatFirstName } from 'lib-common/names'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
 import UnorderedList from 'lib-components/atoms/UnorderedList'
 import { Button } from 'lib-components/atoms/buttons/Button'
@@ -256,7 +257,24 @@ const sv: Translations = {
     fixedPeriodCta: (deadline: LocalDate) =>
       `Svara på frånvaroenkäten före ${deadline.format()}.`,
     incomeExpirationCta: (expirationDate: string) =>
-      `Kom ihåg att uppdatera dina inkomstuppgifter senast den ${expirationDate}`
+      `Kom ihåg att uppdatera dina inkomstuppgifter senast den ${expirationDate}`,
+    unansweredChildDocumentCta: (child: {
+      firstName: string
+      lastName: string
+    }) => (
+      <div>
+        Henkilökunta on pyytänyt sinua vastaamaan lomakkeeseen, joka koskee
+        lastasi:{' '}
+        <span translate="no">
+          {formatFirstName(child)} {child.lastName}
+        </span>
+        <br />
+        <br />
+        <span style={{ color: colors.status.info }}>
+          Vastaa lomakkeeseen (sv)
+        </span>
+      </div>
+    )
   },
   errorPage: {
     reload: 'Ladda om sidan',
@@ -2858,10 +2876,11 @@ const sv: Translations = {
       otherDocumentsTitle: 'Andra dokument',
       noDocuments: 'Inga dokument',
       confidential: 'Konfidentiellt',
-      notAnswered: 'Ei vastattu (sv)',
+      unanswered: 'Ei vastattu (sv)',
       answered: 'Vastattu (sv)',
       preview: 'Esikatsele (sv)',
-      send: 'Lähetä (sv)'
+      send: 'Lähetä (sv)',
+      success: 'Lomake lähetetty (sv)'
     }
   },
   accessibilityStatement: (
