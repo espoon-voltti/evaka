@@ -50,6 +50,7 @@ import fi.espoo.evaka.decision.DecisionStatus
 import fi.espoo.evaka.decision.DecisionType
 import fi.espoo.evaka.decision.getDecision
 import fi.espoo.evaka.decision.getDecisionsByApplication
+import fi.espoo.evaka.document.DocumentTemplate
 import fi.espoo.evaka.document.DocumentTemplateContent
 import fi.espoo.evaka.document.DocumentType
 import fi.espoo.evaka.document.childdocument.DocumentContent
@@ -2364,7 +2365,23 @@ data class DevDocumentTemplate(
     val archiveDurationMonths: Int? = null,
     val published: Boolean = true,
     @Json val content: DocumentTemplateContent,
-)
+) {
+    fun toDocumentTemplate() =
+        DocumentTemplate(
+            id = id,
+            name = name,
+            type = type,
+            placementTypes = placementTypes,
+            language = language,
+            confidentiality = confidentiality,
+            legalBasis = legalBasis,
+            validity = validity,
+            published = published,
+            processDefinitionNumber = processDefinitionNumber,
+            archiveDurationMonths = archiveDurationMonths,
+            content = content,
+        )
+}
 
 data class DevChildDocument(
     val id: ChildDocumentId = ChildDocumentId(UUID.randomUUID()),

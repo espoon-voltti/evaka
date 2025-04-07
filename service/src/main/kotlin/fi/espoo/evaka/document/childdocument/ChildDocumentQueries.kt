@@ -176,9 +176,9 @@ fun Database.Transaction.updateChildDocumentContent(
         .updateExactlyOne()
 }
 
-fun Database.Transaction.updateChildDocumentPublishedContent(
+fun Database.Transaction.updateChildDocument(
     id: ChildDocumentId,
-    status: DocumentStatus,
+    statusTransition: StatusTransition,
     content: DocumentContent,
     now: HelsinkiDateTime,
     userId: EvakaUserId,
@@ -188,13 +188,16 @@ fun Database.Transaction.updateChildDocumentPublishedContent(
                 """
                 UPDATE child_document
                 SET
+                    status = ${bind(statusTransition.newStatus)},
                     content = ${bind(content)},
                     modified_at = ${bind(now)},
                     content_modified_at = ${bind(now)},
                     content_modified_by = ${bind(userId)},
                     published_content = ${bind(content)},
-                    published_at = ${bind(now)}
-                WHERE id = ${bind(id)} AND status = ${bind(status)}
+                    published_at = ${bind(now)},
+                    answered_at = ${bind(now)},
+                    answered_by = ${bind(userId)}
+                WHERE id = ${bind(id)} AND status = ${bind(statusTransition.currentStatus)}
                 """
             )
         }
@@ -246,11 +249,18 @@ fun validateStatusTransition(
     goingForward: Boolean, // false = backwards
 ): StatusTransition {
     val document = tx.getChildDocument(documentId) ?: throw NotFound()
+    return validateStatusTransition(document, requestedStatus, goingForward)
+}
 
+fun validateStatusTransition(
+    document: ChildDocumentDetails,
+    requestedStatus: DocumentStatus,
+    goingForward: Boolean, // false = backwards
+): StatusTransition {
     val statusList = document.template.type.statuses
     val currentIndex = statusList.indexOf(document.status)
     if (currentIndex < 0) {
-        throw IllegalStateException("document $documentId is in invalid status")
+        throw IllegalStateException("document ${document.id} is in invalid status")
     }
     val newStatus =
         statusList.getOrNull(if (goingForward) currentIndex + 1 else currentIndex - 1)
@@ -289,25 +299,6 @@ fun Database.Transaction.changeStatusAndPublish(
                 UPDATE child_document
                 SET status = ${bind(statusTransition.newStatus)}, modified_at = ${bind(now)}, 
                     published_at = ${bind(now)}, published_content = content
-                WHERE id = ${bind(id)} AND status = ${bind(statusTransition.currentStatus)}
-                """
-            )
-        }
-        .updateExactlyOne()
-}
-
-fun Database.Transaction.changeStatusAndSetAnswered(
-    id: ChildDocumentId,
-    statusTransition: StatusTransition,
-    now: HelsinkiDateTime,
-    userId: EvakaUserId,
-) {
-    createUpdate {
-            sql(
-                """
-                UPDATE child_document
-                SET status = ${bind(statusTransition.newStatus)}, modified_at = ${bind(now)},
-                    answered_at = ${bind(now)}, answered_by = ${bind(userId)}
                 WHERE id = ${bind(id)} AND status = ${bind(statusTransition.currentStatus)}
                 """
             )

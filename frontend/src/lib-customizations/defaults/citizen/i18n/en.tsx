@@ -2618,10 +2618,7 @@ const en: Translations = {
       notAnswered: 'Ei vastattu (en)',
       answered: 'Vastattu (en)',
       preview: 'Esikatsele (en)',
-      send: 'Lähetä (en)',
-      error: {
-        other: 'Asiakirjan tallentaminen epäonnistui. (en)'
-      }
+      send: 'Lähetä (en)'
     }
   },
   accessibilityStatement: (
