@@ -671,7 +671,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         }
 
         // Tuesday
-        val now = HelsinkiDateTime.of(LocalDate.of(2025, 4, 1), LocalTime.of(2, 25))
+        val now = HelsinkiDateTime.of(LocalDate.of(2025, 3, 31), LocalTime.of(2, 25))
 
         planNekkuOrderJobs(db, asyncJobRunner, now)
 
@@ -712,8 +712,8 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             tx.insert(group)
         }
 
-        // Tuesday
-        val now = HelsinkiDateTime.of(LocalDate.of(2025, 4, 1), LocalTime.of(2, 25))
+        // monday
+        val now = HelsinkiDateTime.of(LocalDate.of(2025, 3, 31), LocalTime.of(2, 25))
 
         val nowPlusTwoWeeks = HelsinkiDateTime.of(LocalDate.of(2025, 4, 14), LocalTime.of(2, 25))
 

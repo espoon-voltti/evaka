@@ -265,7 +265,7 @@ fun planNekkuOrderJobs(
 }
 
 private fun LocalDate.startOfWeekAfterNextWeek(): LocalDate {
-    val daysUntilNextWeekAfterMonday = (8 - this.dayOfWeek.value) % 14
+    val daysUntilNextWeekAfterMonday = (8 - this.dayOfWeek.value)
     return this.plusDays(daysUntilNextWeekAfterMonday.toLong())
 }
 
