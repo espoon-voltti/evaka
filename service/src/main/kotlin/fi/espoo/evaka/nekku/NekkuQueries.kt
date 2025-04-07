@@ -397,22 +397,3 @@ WHERE child.id = ANY (${bind(childIds)})
             )
         }
         .toMap { column<ChildId>("child_id") to column<NekkuProductMealType?>("nekku_diet") }
-
-fun Database.Read.getNekkuProductNumber(
-    customerSize: String,
-    optionsID: String?,
-    mealTime: NekkuProductMealTime,
-    mealType: NekkuMealType?,
-): String =
-    createQuery {
-            sql(
-                """
-            SELECT sku FROM nekku_product 
-            WHERE unit_size = ${bind(customerSize)} 
-            AND ((options_id = ${bind(optionsID)}) OR (options_id IS NULL AND ${bind(optionsID)} IS NULL))
-            AND ANY (meal_time) = ${bind(mealTime)}
-            AND ((meal_type = ${bind(mealType)}) OR (meal_type IS NULL AND ${bind(mealType)} IS NULL))
-"""
-            )
-        }
-        .toString()
