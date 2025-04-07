@@ -110,16 +110,11 @@ class SystemNotificationsController(private val accessControl: AccessControl) {
     ): CurrentNotificationResponse {
         return db.connect { dbc ->
                 dbc.read { tx ->
-                    tx.createQuery {
-                            sql(
-                                """
-                    SELECT * FROM system_notification
-                    WHERE target_group = 'CITIZENS' AND valid_to > ${bind(clock.now())}
-                """
-                            )
-                        }
-                        .exactlyOneOrNull<SystemNotification>()
-                        .let { CurrentNotificationResponse(it) }
+                    getCurrentSystemNotification(
+                        tx = tx,
+                        targetGroup = SystemNotificationTargetGroup.CITIZENS,
+                        now = clock.now(),
+                    )
                 }
             }
             .also { Audit.SystemNotificationsReadCitizen.log() }
@@ -132,16 +127,11 @@ class SystemNotificationsController(private val accessControl: AccessControl) {
     ): CurrentNotificationResponse {
         return db.connect { dbc ->
                 dbc.read { tx ->
-                    tx.createQuery {
-                            sql(
-                                """
-                    SELECT * FROM system_notification
-                    WHERE target_group = 'EMPLOYEES' AND valid_to > ${bind(clock.now())}
-                """
-                            )
-                        }
-                        .exactlyOneOrNull<SystemNotification>()
-                        .let { CurrentNotificationResponse(it) }
+                    getCurrentSystemNotification(
+                        tx = tx,
+                        targetGroup = SystemNotificationTargetGroup.EMPLOYEES,
+                        now = clock.now(),
+                    )
                 }
             }
             .also { Audit.SystemNotificationsReadEmployee.log() }
@@ -155,19 +145,31 @@ class SystemNotificationsController(private val accessControl: AccessControl) {
     ): CurrentNotificationResponse {
         return db.connect { dbc ->
                 dbc.read { tx ->
-                    tx.createQuery {
-                            sql(
-                                """
-                    SELECT * FROM system_notification
-                    WHERE target_group = 'EMPLOYEES' AND valid_to > ${bind(clock.now())}
-                """
-                            )
-                        }
-                        .exactlyOneOrNull<SystemNotification>()
-                        .let { CurrentNotificationResponse(it) }
+                    getCurrentSystemNotification(
+                        tx = tx,
+                        targetGroup = SystemNotificationTargetGroup.EMPLOYEES,
+                        now = clock.now(),
+                    )
                 }
             }
             .also { Audit.SystemNotificationsReadEmployeeMobile.log() }
+    }
+
+    private fun getCurrentSystemNotification(
+        tx: Database.Read,
+        targetGroup: SystemNotificationTargetGroup,
+        now: HelsinkiDateTime,
+    ): CurrentNotificationResponse {
+        return tx.createQuery {
+                sql(
+                    """
+            SELECT * FROM system_notification
+            WHERE target_group = ${bind(targetGroup)} AND valid_to > ${bind(now)}
+        """
+                )
+            }
+            .exactlyOneOrNull<SystemNotification?>()
+            .let { CurrentNotificationResponse(it) }
     }
 }
 
