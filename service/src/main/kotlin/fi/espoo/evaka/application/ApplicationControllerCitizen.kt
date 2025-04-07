@@ -822,7 +822,18 @@ class ApplicationControllerCitizen(
                 )
                 .filter { it.value.isPermitted() }
                 .keys
-        return canAccept.intersect(canReject)
+
+        return tx.createQuery {
+                sql(
+                    """
+            SELECT a.id
+            FROM application a
+            JOIN decision d ON d.application_id = a.id
+            WHERE a.id = ANY(${bind(canAccept.intersect(canReject))}) AND d.status = 'PENDING'
+        """
+                )
+            }
+            .toSet()
     }
 }
 
