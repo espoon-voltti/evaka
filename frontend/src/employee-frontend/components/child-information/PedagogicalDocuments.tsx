@@ -1,15 +1,17 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2025 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import orderBy from 'lodash/orderBy'
-import React, { useCallback, useContext, useEffect, useState } from 'react'
+import React, { useCallback, useContext, useState } from 'react'
 import styled from 'styled-components'
 
-import { wrapResult } from 'lib-common/api'
 import { PedagogicalDocument } from 'lib-common/generated/api-types/pedagogicaldocument'
-import { ChildId } from 'lib-common/generated/api-types/shared'
-import { useApiState } from 'lib-common/utils/useRestApi'
+import {
+  ChildId,
+  PedagogicalDocumentId
+} from 'lib-common/generated/api-types/shared'
+import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Th, Thead, Tr } from 'lib-components/layout/Table'
@@ -17,28 +19,18 @@ import {
   InfoButton,
   ExpandingInfoBox
 } from 'lib-components/molecules/ExpandingInfo'
-import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { H2, P } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
-import { faQuestion } from 'lib-icons'
 
-import {
-  createPedagogicalDocument,
-  deletePedagogicalDocument,
-  getChildPedagogicalDocuments
-} from '../../generated/api-clients/pedagogicaldocument'
 import { ChildContext } from '../../state'
 import { useTranslation } from '../../state/i18n'
-import { UIContext } from '../../state/ui'
 import { renderResult } from '../async-rendering'
 
 import PedagogicalDocumentRow from './PedagogicalDocumentRow'
-
-const createPedagogicalDocumentResult = wrapResult(createPedagogicalDocument)
-const getChildPedagogicalDocumentsResult = wrapResult(
-  getChildPedagogicalDocuments
-)
-const deletePedagogicalDocumentResult = wrapResult(deletePedagogicalDocument)
+import {
+  childPedagogicalDocumentsQuery,
+  createPedagogicalDocumentMutation
+} from './queries'
 
 interface Props {
   childId: ChildId
@@ -51,23 +43,13 @@ export default React.memo(function PedagogicalDocuments({
 }: Props) {
   const { i18n } = useTranslation()
   const { permittedActions, placements } = useContext(ChildContext)
-  const { uiMode, toggleUiMode, clearUiMode } = useContext(UIContext)
 
-  const [pedagogicalDocuments, loadData] = useApiState(
-    () => getChildPedagogicalDocumentsResult({ childId }),
-    [childId]
+  const pedagogicalDocuments = useQueryResult(
+    childPedagogicalDocumentsQuery({ childId })
   )
 
   const [open, setOpen] = useState(startOpen)
-  const [tobeDeleted, setTobeDeleted] = useState<
-    PedagogicalDocument | undefined
-  >(undefined)
-
-  useEffect(() => {
-    if (open) {
-      void loadData()
-    }
-  }, [open, loadData])
+  const [editingId, setEditingId] = useState<PedagogicalDocumentId | null>(null)
 
   const [expandingInfo, setExpandingInfo] = useState<string>()
   const toggleExpandingInfo = useCallback(
@@ -77,45 +59,18 @@ export default React.memo(function PedagogicalDocuments({
   )
   const closeExpandingInfo = useCallback(() => setExpandingInfo(undefined), [])
 
-  const handleDelete = (document: PedagogicalDocument) => {
-    setTobeDeleted(document)
-    toggleUiMode('delete-pedagogical-document')
-  }
-
-  const confirmDelete = async () => {
-    await deleteDocument()
-    clearUiMode()
-    setTobeDeleted(undefined)
-  }
-
-  const deleteDocument = async () => {
-    if (!tobeDeleted) return
-    return deletePedagogicalDocumentResult({ documentId: tobeDeleted.id }).then(
-      loadData
-    )
-  }
+  const { mutateAsync: createPedagogicalDocument } = useMutationResult(
+    createPedagogicalDocumentMutation
+  )
 
   const createNewDocument = () => {
     const emptyDocument = { childId, description: '', attachmentId: null }
-    void createPedagogicalDocumentResult({ body: emptyDocument })
-      .then(
-        (result) =>
-          result.isSuccess &&
-          toggleUiMode(`edit-pedagogical-document-${result.value.id}`)
-      )
-      .then(loadData)
+    void createPedagogicalDocument({ body: emptyDocument }).then((res) => {
+      if (res.isSuccess) {
+        setEditingId(res.value.id)
+      }
+    })
   }
-
-  const DeletePedagogicalDocumentModal = () => (
-    <InfoModal
-      type="warning"
-      title={i18n.childInformation.pedagogicalDocument.removeConfirmation}
-      text={i18n.childInformation.pedagogicalDocument.removeConfirmationText}
-      icon={faQuestion}
-      reject={{ action: () => clearUiMode(), label: i18n.common.cancel }}
-      resolve={{ action: confirmDelete, label: i18n.common.remove }}
-    />
-  )
 
   if (
     !permittedActions.has('READ_PEDAGOGICAL_DOCUMENTS') ||
@@ -218,21 +173,15 @@ export default React.memo(function PedagogicalDocuments({
                   createdBy={pedagogicalDocument.createdBy}
                   modifiedAt={pedagogicalDocument.modifiedAt}
                   modifiedBy={pedagogicalDocument.modifiedBy}
-                  initInEditMode={
-                    uiMode ===
-                    `edit-pedagogical-document-${pedagogicalDocument.id}`
-                  }
-                  onReload={loadData}
-                  onDelete={handleDelete}
+                  editing={editingId === pedagogicalDocument.id}
+                  onStartEditing={() => setEditingId(pedagogicalDocument.id)}
+                  onStopEditing={() => setEditingId(null)}
                 />
               )
             )}
           </Tbody>
         </Table>
       ))}
-      {uiMode === 'delete-pedagogical-document' && (
-        <DeletePedagogicalDocumentModal />
-      )}
     </CollapsibleContentArea>
   )
 })

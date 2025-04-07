@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2025 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -6,12 +6,12 @@ import isEqual from 'lodash/isEqual'
 import range from 'lodash/range'
 import React, { useCallback, useContext, useMemo, useState } from 'react'
 
-import { isLoading, wrapResult } from 'lib-common/api'
+import { isLoading } from 'lib-common/api'
 import { FamilyContact } from 'lib-common/generated/api-types/pis'
 import { ChildId } from 'lib-common/generated/api-types/shared'
-import { UUID } from 'lib-common/types'
-import { useApiState } from 'lib-common/utils/useRestApi'
+import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { Button } from 'lib-components/atoms/buttons/Button'
+import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import InputField from 'lib-components/atoms/form/InputField'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
@@ -23,23 +23,17 @@ import {
 import { H2, H3 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
-import {
-  getFamilyContactSummary,
-  updateFamilyContactDetails,
-  updateFamilyContactPriority
-} from '../../generated/api-clients/pis'
 import { ChildContext } from '../../state'
 import { useTranslation } from '../../state/i18n'
 import { formatName } from '../../utils'
 import { renderResult } from '../async-rendering'
 
 import BackupPickup from './BackupPickup'
-
-const getFamilyContactSummaryResult = wrapResult(getFamilyContactSummary)
-const updateFamilyContactDetailsResult = wrapResult(updateFamilyContactDetails)
-const updateFamilyContactPriorityResult = wrapResult(
-  updateFamilyContactPriority
-)
+import {
+  familyContactSummaryQuery,
+  updateFamilyContactDetailsMutation,
+  updateFamilyContactPriorityMutation
+} from './queries'
 
 export interface Props {
   childId: ChildId
@@ -53,10 +47,7 @@ export default React.memo(function FamilyContacts({
   const { i18n } = useTranslation()
   const { permittedActions } = useContext(ChildContext)
 
-  const [contacts, reloadContacts] = useApiState(
-    () => getFamilyContactSummaryResult({ childId }),
-    [childId]
-  )
+  const contacts = useQueryResult(familyContactSummaryQuery({ childId }))
   const [open, setOpen] = useState(startOpen)
 
   return (
@@ -70,11 +61,7 @@ export default React.memo(function FamilyContacts({
       data-qa="family-contacts-collapsible"
     >
       {renderResult(contacts, (contacts) => (
-        <FamilyContactTable
-          childId={childId}
-          contacts={contacts}
-          reloadContacts={reloadContacts}
-        />
+        <FamilyContactTable childId={childId} contacts={contacts} />
       ))}
       <Gap size="XL" />
       {permittedActions.has('READ_BACKUP_PICKUP') && (
@@ -86,12 +73,10 @@ export default React.memo(function FamilyContacts({
 
 const FamilyContactTable = React.memo(function FamilyContactForm({
   childId,
-  contacts,
-  reloadContacts
+  contacts
 }: {
   childId: ChildId
   contacts: FamilyContact[]
-  reloadContacts: () => void
 }) {
   const { i18n } = useTranslation()
 
@@ -127,7 +112,6 @@ const FamilyContactTable = React.memo(function FamilyContactForm({
               key={contact.id}
               childId={childId}
               contact={contact}
-              reloadContacts={reloadContacts}
               contactPriorityOptions={contactPriorityOptions}
             />
           ))}
@@ -137,62 +121,37 @@ const FamilyContactTable = React.memo(function FamilyContactForm({
   )
 })
 
-interface FamilyContactFields {
-  email: string
-  phone: string
-  backupPhone: string
-}
-
 const FamilyContactRow = React.memo(function FamilyContactRow({
   childId,
   contact,
-  reloadContacts,
   contactPriorityOptions
 }: {
   childId: ChildId
   contact: FamilyContact
-  reloadContacts: () => void
   contactPriorityOptions: number[]
 }) {
   const { i18n } = useTranslation()
   const { permittedActions } = useContext(ChildContext)
 
-  const [editState, setEditState] = useState<'viewing' | 'editing' | 'saving'>(
-    'viewing'
-  )
-  const edit = useCallback(() => setEditState('editing'), [])
-  const cancel = useCallback(() => setEditState('viewing'), [])
+  const [editing, setEditing] = useState(false)
 
-  const saveContact = useCallback(
-    async (formData: FamilyContactFields) => {
-      setEditState('saving')
-      await updateFamilyContactDetailsResult({
-        body: {
-          childId,
-          contactPersonId: contact.id,
-          ...formData
-        }
-      })
-      reloadContacts()
-      setEditState('viewing')
-    },
-    [childId, contact.id, reloadContacts]
+  const { mutateAsync: updatePriority } = useMutationResult(
+    updateFamilyContactPriorityMutation
   )
 
   const setContactPriority = useCallback(
     async (priority: number | null) => {
       if (priority == null) return
 
-      await updateFamilyContactPriorityResult({
+      await updatePriority({
         body: {
           childId,
           contactPersonId: contact.id,
           priority
         }
       })
-      reloadContacts()
     },
-    [childId, contact.id, reloadContacts]
+    [childId, contact.id, updatePriority]
   )
 
   return (
@@ -205,13 +164,11 @@ const FamilyContactRow = React.memo(function FamilyContactRow({
       <Td>{formatName(contact.firstName, contact.lastName, i18n, true)}</Td>
       <Td>{i18n.childInformation.familyContacts.roles[contact.role]}</Td>
       <Td>
-        {editState === 'editing' || editState === 'saving' ? (
+        {editing ? (
           <EditContactFields
             childId={childId}
             contact={contact}
-            isSaving={editState === 'saving'}
-            onSave={saveContact}
-            onCancel={cancel}
+            onCloseEditor={() => setEditing(false)}
           />
         ) : (
           <FixedSpaceColumn spacing="xs">
@@ -231,7 +188,7 @@ const FamilyContactRow = React.memo(function FamilyContactRow({
             permittedActions.has('UPDATE_FAMILY_CONTACT_DETAILS') ? (
               <Button
                 appearance="inline"
-                onClick={edit}
+                onClick={() => setEditing(true)}
                 text={i18n.common.edit}
                 data-qa="family-contact-edit"
               />
@@ -259,16 +216,13 @@ const FamilyContactRow = React.memo(function FamilyContactRow({
 })
 
 const EditContactFields = React.memo(function EditFoo({
+  childId,
   contact,
-  isSaving,
-  onSave,
-  onCancel
+  onCloseEditor
 }: {
-  childId: UUID
+  childId: ChildId
   contact: FamilyContact
-  isSaving: boolean
-  onSave: (formData: FamilyContactFields) => void
-  onCancel: () => void
+  onCloseEditor: () => void
 }) {
   const { i18n } = useTranslation()
 
@@ -324,15 +278,22 @@ const EditContactFields = React.memo(function EditFoo({
       <FixedSpaceRow justifyContent="flex-end" spacing="m">
         <Button
           appearance="inline"
-          onClick={onCancel}
+          onClick={onCloseEditor}
           text={i18n.common.cancel}
-          disabled={isSaving}
         />
-        <Button
+        <MutateButton
           appearance="inline"
-          onClick={() => onSave(formData)}
           text={i18n.common.save}
-          disabled={isSaving || !dirty}
+          mutation={updateFamilyContactDetailsMutation}
+          onClick={() => ({
+            body: {
+              childId,
+              contactPersonId: contact.id,
+              ...formData
+            }
+          })}
+          onSuccess={onCloseEditor}
+          disabled={!dirty}
           data-qa="family-contact-save"
         />
       </FixedSpaceRow>
