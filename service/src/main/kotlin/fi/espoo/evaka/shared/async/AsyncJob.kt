@@ -473,6 +473,7 @@ sealed interface AsyncJob : AsyncJobPayload {
                     SyncNekkuSpecialDiets::class,
                     SyncNekkuProducts::class,
                     SendNekkuOrder::class,
+                    SendNekkuDailyOrder::class,
                     SendPatuReport::class,
                     UpdateFromVtj::class,
                     UploadToKoski::class,
