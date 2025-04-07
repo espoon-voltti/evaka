@@ -1256,138 +1256,224 @@ LIMIT 1
     return null
 }
 
-data class UnitMessageRecipientsResult(
-    val accountId: MessageAccountId,
-    val unitId: DaycareId?,
-    val unitName: String?,
-    val groupId: GroupId,
-    val groupName: String,
-    val childId: ChildId,
-    val firstName: String,
-    val lastName: String,
-    val startDate: LocalDate?,
-)
-
-data class MunicipalMessageRecipientsResult(
-    val accountId: MessageAccountId,
-    val areaId: AreaId,
-    val areaName: String,
-    val unitId: DaycareId,
-    val unitName: String,
-)
-
 fun Database.Read.getSelectableRecipients(
     idFilter: AccessControlFilter<MessageAccountId>,
     today: LocalDate,
 ): List<SelectableRecipientsResponse> {
-    val unitRecipients =
+    data class GroupAccountRecipientRow(
+        val accountId: MessageAccountId,
+        override val groupId: GroupId,
+        override val groupName: String,
+        override val childId: ChildId,
+        override val firstName: String,
+        override val lastName: String,
+        override val startDate: LocalDate?,
+    ) : SelectableRecipientRow
+
+    val groupRecipients =
         createQuery {
                 sql(
                     """
-        WITH accounts AS (
-            SELECT id, employee_id, daycare_group_id FROM message_account
+WITH group_accounts AS (
+    SELECT a.id, a.daycare_group_id AS group_id, dg.name AS group_name
+    FROM message_account a
+    JOIN daycare_group dg ON a.daycare_group_id = dg.id
+    JOIN daycare d ON dg.daycare_id = d.id
+    WHERE
+        ${predicate(idFilter.forTable("a"))} AND
+        'MESSAGING' = ANY(d.enabled_pilot_features)
+), children AS (
+    -- normal placements
+    SELECT a.id AS account_id, p.child_id, a.group_id, a.group_name, NULL::date AS start_date
+    FROM group_accounts a
+    JOIN daycare_group_placement dgp ON dgp.daycare_group_id = a.group_id
+    JOIN placement p ON p.id = dgp.daycare_placement_id
+    WHERE
+        daterange(p.start_date, p.end_date, '[]') @> ${bind(today)} AND
+        daterange(dgp.start_date, dgp.end_date, '[]') @> ${bind(today)}
+
+    UNION ALL
+
+    -- backup placements
+    SELECT a.id AS account_id, bc.child_id, a.group_id, a.group_name, NULL::date AS start_date
+    FROM group_accounts a
+    JOIN backup_care bc ON bc.group_id = a.group_id
+    WHERE daterange(bc.start_date, bc.end_date, '[]') @> ${bind(today)}
+
+    UNION ALL
+
+    -- starting children
+    SELECT a.id AS account_id, p.child_id, a.group_id, a.group_name, dgp.start_date
+    FROM group_accounts a
+    JOIN daycare_group_placement dgp ON dgp.daycare_group_id = a.group_id
+    JOIN placement p ON p.id = dgp.daycare_placement_id
+    WHERE
+        dgp.start_date > ${bind(today)} AND
+        NOT EXISTS (
+            SELECT
+            FROM daycare_group_placement earlier_dgp
+            JOIN placement earlier_p ON earlier_dgp.daycare_placement_id = earlier_p.id
             WHERE
-                ${predicate(idFilter.forTable("message_account"))} AND
-                type = ANY('{PERSONAL,GROUP}'::message_account_type[])
-        ), starting_children AS (
-            SELECT p.child_id, p.unit_id, dgp.daycare_group_id AS group_id, dgp.start_date
-            FROM placement p
-            JOIN daycare_group_placement dgp ON p.id = dgp.daycare_placement_id
-            WHERE (p.start_date > ${bind(today)} OR dgp.start_date > ${bind(today)}) AND 
-                NOT EXISTS (
-                    SELECT 1 FROM daycare_group_placement earlier_dgp
-                    JOIN placement earlier_p ON earlier_dgp.daycare_placement_id = earlier_p.id
-                    WHERE earlier_dgp.end_date < dgp.start_date AND
-                        earlier_dgp.end_date >= ${bind(today)} AND
-                        earlier_dgp.daycare_group_id = dgp.daycare_group_id AND
-                        earlier_p.child_id = p.child_id
-            )
-        ), children AS (
-            WITH current_group_recipients AS (
-                SELECT a.id AS account_id, p.child_id, NULL::uuid AS unit_id, NULL::text AS unit_name, p.group_id, g.name AS group_name, NULL::date AS start_date
-                FROM accounts a
-                JOIN realized_placement_all(${bind(today)}) p ON a.daycare_group_id = p.group_id
-                JOIN daycare d ON p.unit_id = d.id
-                JOIN daycare_group g ON p.group_id = g.id
-                WHERE 'MESSAGING' = ANY(d.enabled_pilot_features)
-            ), current_unit_recipients AS (
-                SELECT a.id AS account_id, p.child_id, p.unit_id, d.name AS unit_name, p.group_id, g.name AS group_name, NULL::date AS start_date
-                FROM accounts a
-                JOIN daycare_acl_view acl ON a.employee_id = acl.employee_id
-                JOIN daycare d ON acl.daycare_id = d.id
-                JOIN daycare_group g ON d.id = g.daycare_id
-                JOIN realized_placement_all(${bind(today)}) p ON g.id = p.group_id
-                WHERE 'MESSAGING' = ANY(d.enabled_pilot_features)
-            ), starting_group_recipients AS (
-                SELECT a.id AS account_id, p.child_id, NULL::uuid AS unit_id, NULL::text AS unit_name, p.group_id, g.name AS group_name, p.start_date
-                FROM accounts a
-                JOIN starting_children p ON a.daycare_group_id = p.group_id
-                JOIN daycare d ON p.unit_id = d.id
-                JOIN daycare_group g ON p.group_id = g.id
-                WHERE 'MESSAGING' = ANY(d.enabled_pilot_features)
-            ), starting_unit_recipients AS (
-                SELECT a.id AS account_id, p.child_id, p.unit_id, d.name AS unit_name, p.group_id, g.name AS group_name, p.start_date
-                FROM accounts a
-                JOIN daycare_acl_view acl ON a.employee_id = acl.employee_id
-                JOIN daycare d ON acl.daycare_id = d.id
-                JOIN starting_children p ON d.id = p.unit_id
-                LEFT JOIN daycare_group g ON p.group_id = g.id
-                WHERE 'MESSAGING' = ANY(d.enabled_pilot_features)
-            )
-            SELECT * FROM current_group_recipients
-            UNION ALL
-            SELECT * FROM current_unit_recipients
-            UNION ALL
-            SELECT * FROM starting_group_recipients
-            UNION ALL
-            SELECT * FROM starting_unit_recipients
+                earlier_p.child_id = p.child_id AND
+                earlier_dgp.daycare_group_id = dgp.daycare_group_id AND
+                earlier_dgp.end_date < dgp.start_date AND
+                earlier_dgp.end_date >= ${bind(today)}
         )
-        SELECT DISTINCT
-            c.account_id,
-            c.unit_id,
-            c.unit_name,
-            c.group_id,
-            c.group_name,
-            c.child_id,
-            c.start_date,
-            p.first_name,
-            p.last_name
-        FROM children c
-        JOIN person p ON c.child_id = p.id
-        WHERE EXISTS (
-            SELECT 1
-            FROM guardian g
-            WHERE g.child_id = c.child_id)
-        OR EXISTS (
-            SELECT 1
-            FROM foster_parent fp
-            WHERE fp.child_id = c.child_id AND fp.valid_during @> ${bind(today)} 
-        )
-        ORDER BY c.unit_name, c.group_name
-        """
+)
+SELECT DISTINCT
+    c.account_id,
+    c.group_id,
+    c.group_name,
+    c.child_id,
+    c.start_date,
+    p.first_name,
+    p.last_name
+FROM children c
+JOIN person p ON c.child_id = p.id
+WHERE EXISTS (
+    SELECT 1
+    FROM guardian g
+    WHERE g.child_id = c.child_id)
+OR EXISTS (
+    SELECT 1
+    FROM foster_parent fp
+    WHERE fp.child_id = c.child_id AND fp.valid_during @> ${bind(today)}
+)
+ORDER BY c.group_name
+"""
                 )
             }
-            .toList<UnitMessageRecipientsResult>()
+            .toList<GroupAccountRecipientRow>()
             .groupBy { it.accountId }
             .map { (groupKey, recipients) ->
-                val units =
-                    recipients.groupBy { Triple(it.unitId, it.unitName, it.startDate != null) }
-                val accountRecipients =
-                    units.flatMap { (unit, groups) ->
-                        val (unitId, unitName) = unit
-                        if (unitId == null || unitName == null) getRecipientGroups(groups)
-                        else
-                            listOf(
+                SelectableRecipientsResponse(
+                    accountId = groupKey,
+                    receivers =
+                        recipients
+                            .groupBy { it.startDate != null }
+                            .flatMap { (hasStarters, groups) ->
+                                getRecipientGroups(hasStarters, groups)
+                            },
+                )
+            }
+
+    data class UnitAccountRecipientRow(
+        val accountId: MessageAccountId,
+        val unitId: DaycareId,
+        val unitName: String,
+        override val groupId: GroupId,
+        override val groupName: String,
+        override val childId: ChildId,
+        override val firstName: String,
+        override val lastName: String,
+        override val startDate: LocalDate?,
+    ) : SelectableRecipientRow
+
+    val personalRecipients =
+        createQuery {
+                sql(
+                    """
+WITH personal_accounts AS (
+    SELECT a.id, acl.daycare_id AS unit_id, d.name AS unit_name
+    FROM message_account a
+    JOIN daycare_acl_view acl ON acl.employee_id = a.employee_id
+    JOIN daycare d ON d.id = acl.daycare_id
+    WHERE
+        ${predicate(idFilter.forTable("a"))} AND
+        'MESSAGING' = ANY(d.enabled_pilot_features)
+), children AS (
+    -- normal placements
+    SELECT a.id AS account_id, p.child_id, a.unit_id, a.unit_name, dgp.daycare_group_id AS group_id, g.name AS group_name, NULL::date AS start_date
+    FROM personal_accounts a
+    JOIN placement p ON p.unit_id = a.unit_id
+    JOIN daycare_group_placement dgp ON dgp.daycare_placement_id = p.id
+    JOIN daycare_group g ON g.id = dgp.daycare_group_id
+    WHERE
+        daterange(p.start_date, p.end_date, '[]') @> ${bind(today)} AND
+        daterange(dgp.start_date, dgp.end_date, '[]') @> ${bind(today)}
+
+    UNION ALL
+
+    -- backup placements
+    SELECT a.id AS account_id, bc.child_id, a.unit_id, a.unit_name, bc.group_id, g.name AS group_name, NULL::date AS start_date
+    FROM personal_accounts a
+    JOIN backup_care bc ON bc.unit_id = a.unit_id
+    JOIN daycare_group g ON g.id = bc.group_id
+    WHERE daterange(bc.start_date, bc.end_date, '[]') @> ${bind(today)}
+
+    UNION ALL
+
+    -- starting children
+    SELECT a.id AS account_id, p.child_id, a.unit_id, a.unit_name, dgp.daycare_group_id AS group_id, g.name AS group_name, p.start_date
+    FROM personal_accounts a
+    JOIN placement p ON p.unit_id = a.unit_id
+    JOIN daycare_group_placement dgp ON dgp.daycare_placement_id = p.id
+    JOIN daycare_group g ON g.id = dgp.daycare_group_id
+    WHERE
+        dgp.start_date > ${bind(today)} AND
+        NOT EXISTS (
+            SELECT
+            FROM placement earlier_p
+            JOIN daycare_group_placement earlier_dgp ON earlier_dgp.daycare_placement_id = earlier_p.id
+            WHERE
+                earlier_p.child_id = p.child_id AND
+                earlier_dgp.daycare_group_id = dgp.daycare_group_id AND
+                earlier_dgp.end_date < dgp.start_date AND
+                earlier_dgp.end_date >= ${bind(today)}
+        )
+)
+SELECT DISTINCT
+    c.account_id,
+    c.unit_id,
+    c.unit_name,
+    c.group_id,
+    c.group_name,
+    c.child_id,
+    c.start_date,
+    p.first_name,
+    p.last_name
+FROM children c
+JOIN person p ON c.child_id = p.id
+WHERE EXISTS (
+    SELECT 1
+    FROM guardian g
+    WHERE g.child_id = c.child_id)
+OR EXISTS (
+    SELECT 1
+    FROM foster_parent fp
+    WHERE fp.child_id = c.child_id AND fp.valid_during @> ${bind(today)}
+)
+ORDER BY c.unit_name, c.group_name
+"""
+                )
+            }
+            .toList<UnitAccountRecipientRow>()
+            .groupBy { it.accountId }
+            .map { (groupKey, recipients) ->
+                SelectableRecipientsResponse(
+                    accountId = groupKey,
+                    receivers =
+                        recipients
+                            .groupBy { Triple(it.unitId, it.unitName, it.startDate != null) }
+                            .map { (unit, groups) ->
+                                val (unitId, unitName, hasStarters) = unit
                                 SelectableRecipient.Unit(
                                     id = unitId,
                                     name = unitName,
-                                    hasStarters = groups.any { it.startDate != null },
-                                    receivers = getRecipientGroups(groups),
+                                    hasStarters = hasStarters,
+                                    receivers = getRecipientGroups(hasStarters, groups),
                                 )
-                            )
-                    }
-                SelectableRecipientsResponse(accountId = groupKey, receivers = accountRecipients)
+                            },
+                )
             }
+
+    data class MunicipalAccountRecipientRow(
+        val accountId: MessageAccountId,
+        val areaId: AreaId,
+        val areaName: String,
+        val unitId: DaycareId,
+        val unitName: String,
+    )
 
     val municipalRecipients =
         createQuery {
@@ -1407,33 +1493,44 @@ fun Database.Read.getSelectableRecipients(
         """
                 )
             }
-            .toList<MunicipalMessageRecipientsResult>()
+            .toList<MunicipalAccountRecipientRow>()
             .groupBy { it.accountId }
             .map { (accountId, recipients) ->
-                val areas = recipients.groupBy { it.areaId to it.areaName }
                 val accountRecipients =
-                    areas.map { (area, units) ->
-                        val (areaId, areaName) = area
-                        SelectableRecipient.Area(
-                            id = areaId,
-                            name = areaName,
-                            receivers =
-                                units.map { unit ->
-                                    SelectableRecipient.UnitInArea(
-                                        id = unit.unitId,
-                                        name = unit.unitName,
-                                    )
-                                },
-                        )
-                    }
+                    recipients
+                        .groupBy { it.areaId to it.areaName }
+                        .map { (area, units) ->
+                            val (areaId, areaName) = area
+                            SelectableRecipient.Area(
+                                id = areaId,
+                                name = areaName,
+                                receivers =
+                                    units.map { unit ->
+                                        SelectableRecipient.UnitInArea(
+                                            id = unit.unitId,
+                                            name = unit.unitName,
+                                        )
+                                    },
+                            )
+                        }
                 SelectableRecipientsResponse(accountId = accountId, receivers = accountRecipients)
             }
 
-    return municipalRecipients + unitRecipients
+    return groupRecipients + personalRecipients + municipalRecipients
+}
+
+private interface SelectableRecipientRow {
+    val groupId: GroupId
+    val groupName: String
+    val childId: ChildId
+    val firstName: String
+    val lastName: String
+    val startDate: LocalDate?
 }
 
 private fun getRecipientGroups(
-    recipients: List<UnitMessageRecipientsResult>
+    hasStarters: Boolean,
+    recipients: List<SelectableRecipientRow>,
 ): List<SelectableRecipient.Group> =
     recipients
         .groupBy { it.groupId to it.groupName }
@@ -1442,7 +1539,7 @@ private fun getRecipientGroups(
             SelectableRecipient.Group(
                 id = groupId,
                 name = groupName,
-                hasStarters = children.any { it.startDate != null },
+                hasStarters = hasStarters,
                 receivers =
                     children.map {
                         SelectableRecipient.Child(
