@@ -1346,12 +1346,15 @@ ORDER BY c.group_name
             .toList<GroupAccountRecipientRow>()
             .groupBy { it.accountId }
             .map { (groupKey, recipients) ->
-                val units = recipients.groupBy { it.startDate != null }
-                val accountRecipients =
-                    units.flatMap { (hasStarters, groups) ->
-                        getRecipientGroups(hasStarters, groups)
-                    }
-                SelectableRecipientsResponse(accountId = groupKey, receivers = accountRecipients)
+                SelectableRecipientsResponse(
+                    accountId = groupKey,
+                    receivers =
+                        recipients
+                            .groupBy { it.startDate != null }
+                            .flatMap { (hasStarters, groups) ->
+                                getRecipientGroups(hasStarters, groups)
+                            },
+                )
             }
 
     data class UnitAccountRecipientRow(
@@ -1447,19 +1450,21 @@ ORDER BY c.unit_name, c.group_name
             .toList<UnitAccountRecipientRow>()
             .groupBy { it.accountId }
             .map { (groupKey, recipients) ->
-                val units =
-                    recipients.groupBy { Triple(it.unitId, it.unitName, it.startDate != null) }
-                val accountRecipients =
-                    units.map { (unit, groups) ->
-                        val (unitId, unitName, hasStarters) = unit
-                        SelectableRecipient.Unit(
-                            id = unitId,
-                            name = unitName,
-                            hasStarters = hasStarters,
-                            receivers = getRecipientGroups(hasStarters, groups),
-                        )
-                    }
-                SelectableRecipientsResponse(accountId = groupKey, receivers = accountRecipients)
+                SelectableRecipientsResponse(
+                    accountId = groupKey,
+                    receivers =
+                        recipients
+                            .groupBy { Triple(it.unitId, it.unitName, it.startDate != null) }
+                            .map { (unit, groups) ->
+                                val (unitId, unitName, hasStarters) = unit
+                                SelectableRecipient.Unit(
+                                    id = unitId,
+                                    name = unitName,
+                                    hasStarters = hasStarters,
+                                    receivers = getRecipientGroups(hasStarters, groups),
+                                )
+                            },
+                )
             }
 
     data class MunicipalAccountRecipientRow(
@@ -1491,22 +1496,23 @@ ORDER BY c.unit_name, c.group_name
             .toList<MunicipalAccountRecipientRow>()
             .groupBy { it.accountId }
             .map { (accountId, recipients) ->
-                val areas = recipients.groupBy { it.areaId to it.areaName }
                 val accountRecipients =
-                    areas.map { (area, units) ->
-                        val (areaId, areaName) = area
-                        SelectableRecipient.Area(
-                            id = areaId,
-                            name = areaName,
-                            receivers =
-                                units.map { unit ->
-                                    SelectableRecipient.UnitInArea(
-                                        id = unit.unitId,
-                                        name = unit.unitName,
-                                    )
-                                },
-                        )
-                    }
+                    recipients
+                        .groupBy { it.areaId to it.areaName }
+                        .map { (area, units) ->
+                            val (areaId, areaName) = area
+                            SelectableRecipient.Area(
+                                id = areaId,
+                                name = areaName,
+                                receivers =
+                                    units.map { unit ->
+                                        SelectableRecipient.UnitInArea(
+                                            id = unit.unitId,
+                                            name = unit.unitName,
+                                        )
+                                    },
+                            )
+                        }
                 SelectableRecipientsResponse(accountId = accountId, receivers = accountRecipients)
             }
 
