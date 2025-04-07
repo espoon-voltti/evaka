@@ -723,6 +723,50 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     }
 
     @Test
+    fun `meal order jobs for daycare groups are re-planned for tomorrow`() {
+
+        var client =
+            TestNekkuClient(
+                customers =
+                    listOf(
+                        NekkuCustomer(
+                            "2501K6089",
+                            "Ahvenojan päiväkoti",
+                            "Varhaiskasvatus",
+                            "large",
+                        )
+                    )
+            )
+        fetchAndUpdateNekkuCustomers(client, db)
+
+        val area = DevCareArea()
+
+        val daycare =
+            DevDaycare(
+                areaId = area.id,
+                mealtimeBreakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
+                mealtimeLunch = TimeRange(LocalTime.of(11, 15), LocalTime.of(11, 45)),
+                mealtimeSnack = TimeRange(LocalTime.of(13, 30), LocalTime.of(13, 50)),
+            )
+        val group = DevDaycareGroup(daycareId = daycare.id, nekkuCustomerNumber = "2501K6089")
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(group)
+        }
+
+        // Tuesday
+        val now = HelsinkiDateTime.of(LocalDate.of(2025, 4, 1), LocalTime.of(2, 25))
+
+        val tomorrow = HelsinkiDateTime.of(LocalDate.of(2025, 4, 2), LocalTime.of(2, 25))
+
+        planNekkuDailyOrderJobs(db, asyncJobRunner, now)
+
+        assertEquals(tomorrow.toLocalDate().toString(), getJobs().first().date.toString())
+    }
+
+    @Test
     fun `Send Nekku orders with known reservations`() {
         val monday = LocalDate.of(2025, 4, 14)
         val tuesday = LocalDate.of(2025, 4, 15)
