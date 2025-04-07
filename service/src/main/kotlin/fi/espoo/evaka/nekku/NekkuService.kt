@@ -54,6 +54,7 @@ class NekkuService(
         asyncJobRunner.registerHandler(::syncNekkuSpecialDiets)
         asyncJobRunner.registerHandler(::syncNekkuProducts)
         asyncJobRunner.registerHandler(::sendNekkuOrder)
+        asyncJobRunner.registerHandler(::sendNekkuDailyOrder)
     }
 
     fun syncNekkuCustomers(
@@ -123,6 +124,10 @@ class NekkuService(
         planNekkuOrderJobs(dbc, asyncJobRunner, clock.now())
     }
 
+    fun planNekkuDailyOrders(dbc: Database.Connection, clock: EvakaClock) {
+        planNekkuDailyOrderJobs(dbc, asyncJobRunner, clock.now())
+    }
+
     fun sendNekkuOrder(dbc: Database.Connection, clock: EvakaClock, job: AsyncJob.SendNekkuOrder) {
         if (client == null) error("Cannot send Nekku order: NekkuEnv is not configured")
 
@@ -131,6 +136,25 @@ class NekkuService(
         } catch (e: Exception) {
             logger.warn(e) {
                 "Failed to send meal order to Nekku: date=${job.date}, groupId=${job.customerGroupId},error=${e.localizedMessage}"
+            }
+            throw e
+        }
+    }
+
+    fun sendNekkuDailyOrder(dbc: Database.Connection, clock: EvakaClock, job: AsyncJob.SendNekkuDailyOrder) {
+        if (client == null) error("Cannot send Nekku order: NekkuEnv is not configured")
+        try {
+            createAndSendNekkuOrder(
+                client,
+                dbc,
+                customerNumber = job.customerNumber,
+                groupId = job.customerGroupId,
+                unitSize = job.unitSize,
+                date = job.date,
+            )
+        } catch (e: Exception) {
+            logger.warn(e) {
+                "Failed to send meal order to Nekku: date=${job.date}, customerNumber=${job.customerNumber}, groupId=${job.customerGroupId},error=${e.localizedMessage}"
             }
             throw e
         }
@@ -260,6 +284,33 @@ fun planNekkuOrderJobs(
     }
 }
 
+fun planNekkuDailyOrderJobs(
+    dbc: Database.Connection,
+    asyncJobRunner: AsyncJobRunner<AsyncJob>,
+    now: HelsinkiDateTime,
+) {
+    val range = now.toLocalDate().daySpan()
+    dbc.transaction { tx ->
+        val nekkuDaycareCustomerMapping = tx.getNekkuDaycareGroupIdCustomerNumberMapping(range)
+        asyncJobRunner.plan(
+            tx,
+            range.dates().flatMap { date ->
+                nekkuDaycareCustomerMapping.map { customerGroupsAndNumber ->
+                    AsyncJob.SendNekkuDailyOrder(
+                        customerGroupId = customerGroupsAndNumber.groupId,
+                        customerNumber = customerGroupsAndNumber.customerNumber,
+                        unitSize = customerGroupsAndNumber.unitSize,
+                        date = date,
+                    )
+                }
+            },
+            runAt = now,
+            retryInterval = Duration.ofHours(1),
+            retryCount = 3,
+        )
+    }
+}
+
 private fun LocalDate.startOfWeekAfterNextWeek(): LocalDate {
     val daysUntilNextWeekAfterMonday = (8 - this.dayOfWeek.value)
     return this.plusDays(daysUntilNextWeekAfterMonday.toLong())
@@ -268,6 +319,12 @@ private fun LocalDate.startOfWeekAfterNextWeek(): LocalDate {
 private fun LocalDate.weekSpan(): FiniteDateRange {
     val start = this.startOfWeekAfterNextWeek()
     val end = start.plusDays(6)
+    return FiniteDateRange(start, end)
+}
+
+private fun LocalDate.daySpan(): FiniteDateRange {
+    val start = this
+    val end = start.plusDays(1)
     return FiniteDateRange(start, end)
 }
 
