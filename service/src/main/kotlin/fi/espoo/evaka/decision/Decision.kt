@@ -33,20 +33,21 @@ data class Decision(
     // True if the document is a legacy document that may contain guardian name and address.
     val documentContainsContactInfo: Boolean,
 ) {
-    fun validRequestedStartDatePeriod(featureConfig: FeatureConfig) =
+    fun validRequestedStartDatePeriod(featureConfig: FeatureConfig, isCitizen: Boolean) =
         FiniteDateRange(
             startDate,
             minOf(
                 endDate,
                 startDate.plusDays(
                     when (this.type) {
-                        DecisionType.CLUB -> featureConfig.requestedStartUpperLimit
+                        DecisionType.CLUB,
                         DecisionType.DAYCARE,
-                        DecisionType.DAYCARE_PART_TIME -> featureConfig.requestedStartUpperLimit
-                        DecisionType.PRESCHOOL -> 0
+                        DecisionType.DAYCARE_PART_TIME,
                         DecisionType.PRESCHOOL_DAYCARE,
                         DecisionType.PRESCHOOL_CLUB -> featureConfig.requestedStartUpperLimit
-                        DecisionType.PREPARATORY_EDUCATION -> 0
+                        DecisionType.PRESCHOOL,
+                        DecisionType.PREPARATORY_EDUCATION ->
+                            if (isCitizen) 0 else featureConfig.requestedStartUpperLimit
                     }.toLong()
                 ),
             ),
