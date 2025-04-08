@@ -253,20 +253,6 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
     citizenProxy
   )
 
-  const internalSessions = sessionSupport(
-    'employee-mobile',
-    redisClient,
-    config.employee
-  )
-  router.get(
-    '/internal/auth/status',
-    internalSessions.middleware,
-    cookieParser(config.employee.cookieSecret),
-    checkMobileEmployeeIdToken(internalSessions, redisClient),
-    refreshMobileSession(internalSessions),
-    internalAuthStatus(internalSessions)
-  )
-
   router.use('/employee/', employeeSessions.middleware)
   router.get('/employee/auth/status', internalAuthStatus(employeeSessions))
   router.all('/employee/auth/{*rest}', (_, res) => res.redirect('/employee'))
