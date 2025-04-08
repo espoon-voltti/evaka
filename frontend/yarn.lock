@@ -3221,9 +3221,9 @@ __metadata:
   linkType: hard
 
 "@react-spring/rafz@npm:^9.7.3":
-  version: 9.7.3
-  resolution: "@react-spring/rafz@npm:9.7.3"
-  checksum: 10/9df077e9f43a7137c7a265edae7c7a3ce075647e45cf908ceeabcc14a988ea862892367a7cddd775a07e300bcb32eb9a8a3a818431ccb34b466cbe5c34495ae9
+  version: 9.7.5
+  resolution: "@react-spring/rafz@npm:9.7.5"
+  checksum: 10/25b2dfc674603251bb4645758b4b35e7807a887fe7b58e7257edd32993abb9d7e36cd381f831d532f45278460227357112dd008ca3d07f9d8694aedd59d786b8
   languageName: node
   linkType: hard
 
@@ -3703,16 +3703,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/hoist-non-react-statics@npm:*":
-  version: 3.3.1
-  resolution: "@types/hoist-non-react-statics@npm:3.3.1"
-  dependencies:
-    "@types/react": "npm:*"
-    hoist-non-react-statics: "npm:^3.3.0"
-  checksum: 10/071e6d75a0ed9aa0e9ca2cc529a8c15bf7ac3e4a37aac279772ea6036fd0bf969b67fb627b65cfce65adeab31fec1e9e95b4dcdefeab075b580c0c7174206f63
-  languageName: node
-  linkType: hard
-
 "@types/html-minifier-terser@npm:^6.0.0":
   version: 6.0.0
   resolution: "@types/html-minifier-terser@npm:6.0.0"
@@ -3746,12 +3736,12 @@ __metadata:
   linkType: hard
 
 "@types/jest@npm:^29.5.12":
-  version: 29.5.12
-  resolution: "@types/jest@npm:29.5.12"
+  version: 29.5.14
+  resolution: "@types/jest@npm:29.5.14"
   dependencies:
     expect: "npm:^29.0.0"
     pretty-format: "npm:^29.0.0"
-  checksum: 10/312e8dcf92cdd5a5847d6426f0940829bca6fe6b5a917248f3d7f7ef5d85c9ce78ef05e47d2bbabc40d41a930e0e36db2d443d2610a9e3db9062da2d5c904211
+  checksum: 10/59ec7a9c4688aae8ee529316c43853468b6034f453d08a2e1064b281af9c81234cec986be796288f1bbb29efe943bc950e70c8fa8faae1e460d50e3cf9760f9b
   languageName: node
   linkType: hard
 
@@ -3786,15 +3776,6 @@ __metadata:
   dependencies:
     "@types/geojson": "npm:*"
   checksum: 10/643da436f89d3ce377fcdadecf6a939e0fc06a50d7aa21366eee9d6f8da35984b84db0eca559652cf0076f28cda1eb58b7c49dcf5a3075e74efec07eef9d9232
-  languageName: node
-  linkType: hard
-
-"@types/libqp@npm:^1.1.3":
-  version: 1.1.3
-  resolution: "@types/libqp@npm:1.1.3"
-  dependencies:
-    "@types/node": "npm:*"
-  checksum: 10/b800fce16dea88799be1c806938f04d45a54dc854781dc3dac9d033753bdee50119e566f0ffb0063a855ef2d5aa861cff4fb8eb78eb166fe9f52f3368e119cca
   languageName: node
   linkType: hard
 
@@ -3851,24 +3832,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react-linkify@npm:^1.0.1":
-  version: 1.0.1
-  resolution: "@types/react-linkify@npm:1.0.1"
-  dependencies:
-    "@types/react": "npm:*"
-  checksum: 10/e39435c6f261a3b95b71f18cb3728fbbbb3180e5e911e642f344a1ec15005d1d564b5c67d3f475ca3695dc0a2a3b9971cfbf1074a2050549c6c5d250816b4fee
-  languageName: node
-  linkType: hard
-
-"@types/react-onclickoutside@npm:^6.7.10":
-  version: 6.7.10
-  resolution: "@types/react-onclickoutside@npm:6.7.10"
-  dependencies:
-    "@types/react": "npm:*"
-  checksum: 10/9381959ac55a4cf9732451561f72301f7c8b074224aa8935570546d4f76e24d873ed65ef911c8a3d7a7e4ae41e9469ae56ab65ff62ab3d3131f1dbf04a408020
-  languageName: node
-  linkType: hard
-
 "@types/react-transition-group@npm:^4.4.0":
   version: 4.4.6
   resolution: "@types/react-transition-group@npm:4.4.6"
@@ -3902,17 +3865,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/styled-components@npm:^5.1.26":
-  version: 5.1.26
-  resolution: "@types/styled-components@npm:5.1.26"
-  dependencies:
-    "@types/hoist-non-react-statics": "npm:*"
-    "@types/react": "npm:*"
-    csstype: "npm:^3.0.2"
-  checksum: 10/e40c942c97f4467310c658608e7d02d6b9571d390d0fa519bdbd37e48ed2c605a6c9e464812c36d0a1339402bff65cb473b9e785288a29419d7af994595bba33
-  languageName: node
-  linkType: hard
-
 "@types/stylis@npm:^4.0.2":
   version: 4.2.2
   resolution: "@types/stylis@npm:4.2.2"
@@ -3924,13 +3876,6 @@ __metadata:
   version: 4.0.2
   resolution: "@types/tough-cookie@npm:4.0.2"
   checksum: 10/8682b4062959c15c0521361825839e10d374344fa84166ee0b731b815ac7b79a942f6e9192fad6383d69df2251021678c86c46748ff69c61609934a3e27472f2
-  languageName: node
-  linkType: hard
-
-"@types/uuid@npm:^10.0.0":
-  version: 10.0.0
-  resolution: "@types/uuid@npm:10.0.0"
-  checksum: 10/e3958f8b0fe551c86c14431f5940c3470127293280830684154b91dc7eb3514aeb79fe3216968833cf79d4d1c67f580f054b5be2cd562bebf4f728913e73e944
   languageName: node
   linkType: hard
 
@@ -5130,9 +5075,9 @@ __metadata:
   linkType: hard
 
 "caniuse-lite@npm:^1.0.30001599, caniuse-lite@npm:^1.0.30001669":
-  version: 1.0.30001673
-  resolution: "caniuse-lite@npm:1.0.30001673"
-  checksum: 10/e2e053faa5d424a57204a8631b015ef51415c12bcb85622643ea41aff4d5127114017d27df7391d46737e1bbcd9bd8ed004cf370920c9f264f63fca60303a81d
+  version: 1.0.30001712
+  resolution: "caniuse-lite@npm:1.0.30001712"
+  checksum: 10/1831ac3260b9657c5a0236d21c02bea6a6b88fd67a451a0ff166d27da17c95ab398c5721e08aeb24f766bced1d38f562f07c8de84e91a10a065808e83835e89e
   languageName: node
   linkType: hard
 
@@ -6791,17 +6736,12 @@ __metadata:
     "@types/autosize": "npm:^4.0.3"
     "@types/jest": "npm:^29.5.12"
     "@types/leaflet": "npm:^1.9.3"
-    "@types/libqp": "npm:^1.1.3"
     "@types/linkify-it": "npm:^5.0.0"
     "@types/lodash": "npm:^4.17.0"
     "@types/node": "npm:^22.10.2"
     "@types/punycode": "npm:^2.1.0"
     "@types/react": "npm:^18.3.1"
     "@types/react-dom": "npm:^18.3.0"
-    "@types/react-linkify": "npm:^1.0.1"
-    "@types/react-onclickoutside": "npm:^6.7.10"
-    "@types/styled-components": "npm:^5.1.26"
-    "@types/uuid": "npm:^10.0.0"
     autosize: "npm:^6.0.1"
     axios: "npm:^1.8.2"
     babel-loader: "npm:^9.2.1"
@@ -6843,7 +6783,6 @@ __metadata:
     lib-components: "link:src/lib-components"
     lib-customizations: "link:src/lib-customizations"
     lib-icons: "link:src/lib-icons"
-    libqp: "npm:^2.1.0"
     linkify-it: "npm:^5.0.0"
     lodash: "npm:^4.17.21"
     make-error-cause: "npm:^2.3.0"
@@ -7597,7 +7536,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"hoist-non-react-statics@npm:^3.3.0, hoist-non-react-statics@npm:^3.3.1, hoist-non-react-statics@npm:^3.3.2":
+"hoist-non-react-statics@npm:^3.3.1, hoist-non-react-statics@npm:^3.3.2":
   version: 3.3.2
   resolution: "hoist-non-react-statics@npm:3.3.2"
   dependencies:
@@ -9011,13 +8950,6 @@ __metadata:
   languageName: node
   linkType: soft
 
-"libqp@npm:^2.1.0":
-  version: 2.1.0
-  resolution: "libqp@npm:2.1.0"
-  checksum: 10/a44681f80523a2f88fe737dd395bb5bdcc9a1f731e24b2e66ec1de2f92a6292516c9b628f0a81f53ad991233764b5ca0a322268492e1a4534be5d532172b182a
-  languageName: node
-  linkType: hard
-
 "lines-and-columns@npm:^1.1.6":
   version: 1.1.6
   resolution: "lines-and-columns@npm:1.1.6"
@@ -9138,15 +9070,6 @@ __metadata:
   dependencies:
     yallist: "npm:^3.0.2"
   checksum: 10/951d2673dcc64a7fb888bf3d13bc2fdf923faca97d89cdb405ba3dfff77e2b26e5798d405e78fcd7094c9e7b8b4dab2ddc5a4f8a11928af24a207b7c738ca3f8
-  languageName: node
-  linkType: hard
-
-"lru-cache@npm:^6.0.0":
-  version: 6.0.0
-  resolution: "lru-cache@npm:6.0.0"
-  dependencies:
-    yallist: "npm:^4.0.0"
-  checksum: 10/fc1fe2ee205f7c8855fa0f34c1ab0bcf14b6229e35579ec1fd1079f31d6fc8ef8eb6fd17f2f4d99788d7e339f50e047555551ebd5e434dda503696e7c6591825
   languageName: node
   linkType: hard
 
@@ -11489,18 +11412,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"semver@npm:^7.3.4, semver@npm:^7.3.5, semver@npm:^7.5.3, semver@npm:^7.5.4, semver@npm:^7.6.0":
-  version: 7.6.0
-  resolution: "semver@npm:7.6.0"
-  dependencies:
-    lru-cache: "npm:^6.0.0"
-  bin:
-    semver: bin/semver.js
-  checksum: 10/1b41018df2d8aca5a1db4729985e8e20428c650daea60fcd16e926e9383217d00f574fab92d79612771884a98d2ee2a1973f49d630829a8d54d6570defe62535
-  languageName: node
-  linkType: hard
-
-"semver@npm:^7.7.1":
+"semver@npm:^7.3.4, semver@npm:^7.3.5, semver@npm:^7.5.3, semver@npm:^7.5.4, semver@npm:^7.6.0, semver@npm:^7.7.1":
   version: 7.7.1
   resolution: "semver@npm:7.7.1"
   bin:

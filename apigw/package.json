@@ -81,9 +81,6 @@
     "xml-crypto": "^6.0.1",
     "xml2js": "^0.6.0"
   },
-  "resolutions": {
-    "express/cookie@npm:0.7.1": "0.7.2"
-  },
   "jest-junit": {
     "outputDirectory": "./build/test-reports/",
     "outputName": "jest-junit.xml"
