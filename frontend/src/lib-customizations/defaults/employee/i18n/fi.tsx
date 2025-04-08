@@ -632,6 +632,9 @@ export const fi = {
       languageAtHome: 'Kotikieli, jos muu kuin VTJ:ssä mainittu',
       specialDiet: 'Ruokatilausintegraatiossa käytettävä erityisruokavalio',
       mealTexture: 'Ruokatilausintegraatiossa käytettävä ruoan rakenne',
+      nekkuEatsBreakfast: 'Syö aamiaista',
+      nekkuEatsBreakfastYes: 'Kyllä',
+      nekkuEatsBreakfastNo: 'Ei',
       nekkuDiet: 'Nekku-ruokatilauksen ruokavalio',
       placeholder: {
         languageAtHome: 'Valitse kieli',

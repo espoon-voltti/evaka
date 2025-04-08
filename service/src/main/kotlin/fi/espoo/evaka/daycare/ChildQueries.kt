@@ -24,7 +24,7 @@ fun Database.Transaction.createChild(child: Child) {
     execute {
         sql(
             """
-INSERT INTO child (id, allergies, diet, additionalinfo, medication, language_at_home, language_at_home_details, diet_id, meal_texture_id) VALUES (
+INSERT INTO child (id, allergies, diet, additionalinfo, medication, language_at_home, language_at_home_details, diet_id, meal_texture_id, nekku_diet, nekku_eats_breakfast) VALUES (
     ${bind(child.id)},
     ${bind(child.additionalInformation.allergies)},
     ${bind(child.additionalInformation.diet)},
@@ -33,7 +33,9 @@ INSERT INTO child (id, allergies, diet, additionalinfo, medication, language_at_
     ${bind(child.additionalInformation.languageAtHome)},
     ${bind(child.additionalInformation.languageAtHomeDetails)},
     ${bind(child.additionalInformation.specialDiet?.id)},
-    ${bind(child.additionalInformation.mealTexture?.id)}
+    ${bind(child.additionalInformation.mealTexture?.id)},
+    ${bind(child.additionalInformation.nekkuDiet)},
+    ${bind(child.additionalInformation.nekkuEatsBreakfast)}
 )
 """
         )
@@ -64,7 +66,8 @@ UPDATE child SET
     language_at_home_details = ${bind(child.additionalInformation.languageAtHomeDetails)}, 
     diet_id = ${bind(child.additionalInformation.specialDiet?.id)}, 
     meal_texture_id = ${bind(child.additionalInformation.mealTexture?.id)},
-    nekku_diet = ${bind(child.additionalInformation.nekkuDiet)}
+    nekku_diet = ${bind(child.additionalInformation.nekkuDiet)},
+    nekku_eats_breakfast = ${bind(child.additionalInformation.nekkuEatsBreakfast)}
 WHERE id = ${bind(child.id)}
 """
         )

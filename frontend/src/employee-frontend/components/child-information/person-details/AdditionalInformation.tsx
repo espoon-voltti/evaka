@@ -18,6 +18,7 @@ import { Button } from 'lib-components/atoms/buttons/Button'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
 import TextArea from 'lib-components/atoms/form/TextArea'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { H4 } from 'lib-components/typography'
@@ -110,7 +111,8 @@ export default React.memo(function AdditionalInformation({ childId }: Props) {
     languageAtHomeDetails: '',
     specialDiet: null,
     mealTexture: null,
-    nekkuDiet: null
+    nekkuDiet: null,
+    nekkuEatsBreakfast: true
   })
 
   const editing = uiMode === 'child-additional-details-editing'
@@ -128,7 +130,8 @@ export default React.memo(function AdditionalInformation({ childId }: Props) {
           additionalInformation.value.languageAtHomeDetails,
         specialDiet: additionalInformation.value.specialDiet,
         mealTexture: additionalInformation.value.mealTexture,
-        nekkuDiet: additionalInformation.value.nekkuDiet
+        nekkuDiet: additionalInformation.value.nekkuDiet,
+        nekkuEatsBreakfast: additionalInformation.value.nekkuEatsBreakfast
       })
       toggleUiMode('child-additional-details-editing')
     }
@@ -381,6 +384,27 @@ export default React.memo(function AdditionalInformation({ childId }: Props) {
                 : []),
               ...(featureFlags.nekkuIntegration
                 ? [
+                    {
+                      label:
+                        i18n.childInformation.personDetails.nekkuEatsBreakfast,
+                      value: editing ? (
+                        <Checkbox
+                          label=""
+                          checked={form.nekkuEatsBreakfast}
+                          onChange={(checked) =>
+                            setForm({ ...form, nekkuEatsBreakfast: checked })
+                          }
+                        />
+                      ) : (
+                        <>
+                          {data.nekkuEatsBreakfast
+                            ? i18n.childInformation.personDetails
+                                .nekkuEatsBreakfastYes
+                            : i18n.childInformation.personDetails
+                                .nekkuEatsBreakfastNo}
+                        </>
+                      )
+                    },
                     {
                       label: i18n.childInformation.personDetails.nekkuDiet,
                       value: editing ? (
