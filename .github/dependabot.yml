@@ -101,6 +101,13 @@ updates:
       testing-library:
         patterns:
           - "@testing-library/*"
+  - package-ecosystem: npm
+    directory: "/dummy-idp"
+    schedule:
+      interval: weekly
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-patch"]
   - package-ecosystem: gradle
     directory: "/service"
     schedule:
