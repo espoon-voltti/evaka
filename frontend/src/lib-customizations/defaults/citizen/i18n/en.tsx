@@ -369,7 +369,9 @@ const en: Translations = {
       confirmCancel: {
         title: 'Do you wish to cancel the reservation?',
         cancel: 'Do not cancel'
-      }
+      },
+      discussionTimeFileName: 'Discussion_time',
+      calendarExportButtonLabel: 'Add to calendar'
     },
     absenceMarkedByEmployee: 'Absence marked by staff',
     contactStaffToEditAbsence:
