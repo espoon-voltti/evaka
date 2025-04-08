@@ -108,18 +108,18 @@ const View = React.memo(function View({
   const optionElems = useFormElems(options)
 
   return readOnly ? (
-    <FixedSpaceColumn>
+    <FixedSpaceColumn data-qa="document-question-preview">
       <Label>{label.state}</Label>
-      <ul>
-        {answer.state.map((answer) => {
-          const option = optionElems.find(
-            (opt) => opt.state.id === answer.optionId
-          )?.state
+      <ul data-qa="answer-preview">
+        {optionElems.map(({ state: option }) => {
+          const answerOption = answer.state.find(
+            (opt) => opt.optionId === option.id
+          )
           return (
-            option && (
+            answerOption && (
               <li key={option.id}>
                 {option.label}
-                {option.withText ? ` : ${answer.extra}` : ''}
+                {option.withText ? ` : ${answerOption.extra}` : ''}
               </li>
             )
           )
