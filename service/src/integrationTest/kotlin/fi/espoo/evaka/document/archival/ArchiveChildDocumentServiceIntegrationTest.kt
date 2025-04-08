@@ -26,11 +26,11 @@ import java.io.InputStream
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
-import kotlin.test.BeforeTest
-import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.http.ContentDisposition
 import org.springframework.http.ResponseEntity
@@ -112,7 +112,7 @@ class ArchiveChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBe
         }
     }
 
-    @BeforeTest
+    @BeforeEach
     fun setUp() {
         // Reset and clear Särmä client for clean test state
         särmäClient.resetResponse()
