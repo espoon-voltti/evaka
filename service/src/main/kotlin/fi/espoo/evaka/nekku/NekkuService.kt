@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 package fi.espoo.evaka.nekku
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonValue
 import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.module.kotlin.readValue
@@ -146,9 +147,9 @@ class NekkuService(
 interface NekkuClient {
 
     data class NekkuOrder(
-        val delivery_date: String,
-        val customer_number: String,
-        val group_id: String,
+        @JsonProperty("delivery_date") val deliveryDate: String,
+        @JsonProperty("customer_number") val customerNumber: String,
+        @JsonProperty("group_id") val group_id: String,
         val items: List<Item>,
         val description: String,
     )
@@ -297,8 +298,8 @@ fun createAndSendNekkuOrder(
         NekkuClient.NekkuOrders(
             listOf(
                 NekkuClient.NekkuOrder(
-                    delivery_date = date.toString(),
-                    customer_number = customerNumber,
+                    deliveryDate = date.toString(),
+                    customerNumber = customerNumber,
                     group_id = groupId.toString(),
                     items =
                         nekkuMealReportData(
@@ -490,7 +491,7 @@ data class NekkuCustomer(
     val number: String,
     val name: String,
     val group: String,
-    val unit_size: String,
+    @JsonProperty("unit_size") val unitSize: String,
 )
 
 data class NekkuUnitNumber(val number: String, val name: String)

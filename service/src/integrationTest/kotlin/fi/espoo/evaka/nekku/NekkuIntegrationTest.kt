@@ -103,7 +103,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
             assertEquals(1, customers.size)
             assertEquals("Ahvenojan päiväkoti", customers.first().name)
-            assertEquals("large", customers.first().unit_size)
+            assertEquals("large", customers.first().unitSize)
         }
 
         client =
@@ -124,7 +124,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
             assertEquals(1, customers.size)
             assertEquals("Ahvenojan päiväkoti MUUTETTU", customers.first().name)
-            assertEquals("small", customers.first().unit_size)
+            assertEquals("small", customers.first().unitSize)
         }
     }
 

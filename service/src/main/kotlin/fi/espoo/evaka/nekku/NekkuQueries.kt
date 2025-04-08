@@ -29,7 +29,7 @@ fun fetchAndUpdateNekkuCustomers(client: NekkuClient, db: Database.Connection) {
     val customersFromNekku =
         client
             .getCustomers()
-            .map { it -> CustomerNumbers(it.number, it.name, it.group, it.unit_size) }
+            .map { it -> CustomerNumbers(it.number, it.name, it.group, it.unitSize) }
             .filter { it.group.contains("Varhaiskasvatus") }
 
     if (customersFromNekku.isEmpty())
