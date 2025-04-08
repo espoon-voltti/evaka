@@ -823,7 +823,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                             group.name,
                         )
                     ),
-                    dry_run = false,
+                    dryRun = false,
                 ),
                 NekkuClient.NekkuOrders(
                     listOf(
@@ -835,7 +835,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                             group.name,
                         )
                     ),
-                    dry_run = false,
+                    dryRun = false,
                 ),
             ),
             client.orders,
@@ -945,7 +945,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                             group.name,
                         )
                     ),
-                    dry_run = false,
+                    dryRun = false,
                 ),
                 NekkuClient.NekkuOrders(
                     listOf(
@@ -957,7 +957,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                             group.name,
                         )
                     ),
-                    dry_run = false,
+                    dryRun = false,
                 ),
             ),
             client.orders,
@@ -1067,7 +1067,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                             group.name,
                         )
                     ),
-                    dry_run = false,
+                    dryRun = false,
                 ),
                 NekkuClient.NekkuOrders(
                     listOf(
@@ -1083,7 +1083,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                             group.name,
                         )
                     ),
-                    dry_run = false,
+                    dryRun = false,
                 ),
             ),
             client.orders,
@@ -1190,7 +1190,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                             group.name,
                         )
                     ),
-                    dry_run = false,
+                    dryRun = false,
                 ),
                 NekkuClient.NekkuOrders(
                     listOf(
@@ -1202,7 +1202,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                             group.name,
                         )
                     ),
-                    dry_run = false,
+                    dryRun = false,
                 ),
             ),
             client.orders,
@@ -1302,7 +1302,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                             group.name,
                         )
                     ),
-                    dry_run = false,
+                    dryRun = false,
                 ),
                 NekkuClient.NekkuOrders(
                     listOf(
@@ -1314,7 +1314,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                             group.name,
                         )
                     ),
-                    dry_run = false,
+                    dryRun = false,
                 ),
             ),
             client.orders,

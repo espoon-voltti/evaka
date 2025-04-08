@@ -158,7 +158,10 @@ interface NekkuClient {
 
     data class ProductOption(val field_id: String, val value: String)
 
-    data class NekkuOrders(val orders: List<NekkuOrder>, val dry_run: Boolean)
+    data class NekkuOrders(
+        val orders: List<NekkuOrder>,
+        @JsonProperty("dry_run") val dryRun: Boolean,
+    )
 
     fun getCustomers(): List<NekkuCustomer>
 
@@ -312,7 +315,7 @@ fun createAndSendNekkuOrder(
                     description = groupName ?: "",
                 )
             ),
-            dry_run = false,
+            dryRun = false,
         )
 
     if (order.orders.isNotEmpty()) {
