@@ -6833,7 +6833,6 @@ __metadata:
     history: "npm:^5.3.0"
     html-webpack-plugin: "npm:^5.6.0"
     ical-generator: "npm:^8.1.1"
-    icalzone: "npm:^0.0.1"
     intersection-observer: "npm:^0.12.2"
     jest: "npm:^29.7.0"
     jest-circus: "npm:^29.7.0"
@@ -7765,13 +7764,6 @@ __metadata:
     rrule:
       optional: true
   checksum: 10/c9ddc6f3345d6199345f8854c65302e0dc4f03ee027c2f38d70743c1b8df1fea0f5362c8bf98dfeea82f99e53af3274847448afd77ff830a4674a3bbf0be184a
-  languageName: node
-  linkType: hard
-
-"icalzone@npm:^0.0.1":
-  version: 0.0.1
-  resolution: "icalzone@npm:0.0.1"
-  checksum: 10/897c8ffb570494555c6e73c04907f9f4890b76c78482bea4a8b25bbd6a76bde8608f256112f9803796135a27fdd2df2d68cedf8dce77f96805fd933a57efc7c5
   languageName: node
   linkType: hard
 
