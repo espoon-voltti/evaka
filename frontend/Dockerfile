@@ -42,7 +42,7 @@ ENV SENTRY_NO_PROGRESS_BAR="1"
 ENV APP_BUILD="$build"
 ENV APP_COMMIT="$commit"
 
-RUN export NODE_OPTIONS="--max-old-space-size=4096" \
+RUN export NODE_OPTIONS="--max-old-space-size=8192" \
  && yarn build
 
 FROM nginx:${NGINX_VERSION}
