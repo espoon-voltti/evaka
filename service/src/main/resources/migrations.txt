@@ -512,3 +512,4 @@ V513__citizen_child_document_types.sql
 V514__child_document_references_evaka_user.sql
 V515__document_template_language_en.sql
 V516__drop_unused_tables.sql
+V517__nekku_eats_breakfast.sql

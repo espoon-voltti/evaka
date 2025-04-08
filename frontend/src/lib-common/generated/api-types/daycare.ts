@@ -64,6 +64,7 @@ export interface AdditionalInformation {
   mealTexture: MealTexture | null
   medication: string
   nekkuDiet: NekkuProductMealType | null
+  nekkuEatsBreakfast: boolean
   preferredName: string
   specialDiet: SpecialDiet | null
 }
