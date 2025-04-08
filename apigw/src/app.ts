@@ -106,7 +106,7 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
     })
   }
   router.all(
-    '/integration/*',
+    '/integration/{*rest}',
     expressBasicAuth({ users: integrationUsers }),
     createProxy({ getUserHeader: (_) => integrationUserHeader })
   )
@@ -199,7 +199,7 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
       devApiE2ESignup(employeeMobileSessions)
     )
     router.all(
-      '/dev-api/*',
+      '/dev-api/{*rest}',
       createProxy({
         getUserHeader: () => undefined
       })
@@ -270,10 +270,14 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
       redisClient
     )
   )
-  router.all('/citizen/auth/*', (_, res) => res.redirect('/'))
+  router.all('/citizen/auth/{*rest}', (_, res) => res.redirect('/'))
   router.use('/citizen/public/map-api', mapRoutes)
-  router.all('/citizen/public/*', citizenProxy)
-  router.all('/citizen/*', citizenSessions.requireAuthentication, citizenProxy)
+  router.all('/citizen/public/{*rest}', citizenProxy)
+  router.all(
+    '/citizen/{*rest}',
+    citizenSessions.requireAuthentication,
+    citizenProxy
+  )
 
   const internalSessions = sessionSupport(
     'employee-mobile',
@@ -291,10 +295,10 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
 
   router.use('/employee/', employeeSessions.middleware)
   router.get('/employee/auth/status', internalAuthStatus(employeeSessions))
-  router.all('/employee/auth/*', (_, res) => res.redirect('/employee'))
-  router.all('/employee/public/*', employeeProxy)
+  router.all('/employee/auth/{*rest}', (_, res) => res.redirect('/employee'))
+  router.all('/employee/public/{*rest}', employeeProxy)
   router.all(
-    '/employee/*',
+    '/employee/{*rest}',
     employeeSessions.requireAuthentication,
     employeeProxy
   )
@@ -327,12 +331,12 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
     express.json(),
     pinLogoutRequestHandler(employeeMobileSessions, redisClient)
   )
-  router.all('/employee-mobile/auth/*', (_, res) =>
+  router.all('/employee-mobile/auth/{*rest}', (_, res) =>
     res.redirect('/employee/mobile')
   )
-  router.all('/employee-mobile/public/*', employeeMobileProxy)
+  router.all('/employee-mobile/public/{*rest}', employeeMobileProxy)
   router.all(
-    '/employee-mobile/*',
+    '/employee-mobile/{*rest}',
     employeeMobileSessions.requireAuthentication,
     employeeMobileProxy
   )
