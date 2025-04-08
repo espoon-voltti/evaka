@@ -4,7 +4,7 @@
 
 package fi.espoo.evaka.invoicing.service
 
-import fi.espoo.evaka.invoicing.data.getInvoiceIdsByDates
+import fi.espoo.evaka.invoicing.data.getInvoiceIdsByDatesAndStatus
 import fi.espoo.evaka.invoicing.data.getInvoicesByIds
 import fi.espoo.evaka.invoicing.data.getMaxInvoiceNumber
 import fi.espoo.evaka.invoicing.data.lockInvoices
@@ -85,13 +85,34 @@ class InvoiceService(
         updateCorrectionsOfInvoices(tx, invoices)
     }
 
+    fun resendInvoices(
+        tx: Database.Transaction,
+        sentBy: EvakaUserId,
+        now: HelsinkiDateTime,
+        invoiceIds: List<InvoiceId>,
+    ) {
+        tx.lockInvoices(invoiceIds)
+
+        val invoices = tx.getInvoicesByIds(invoiceIds)
+        if (invoices.isEmpty()) return
+
+        val notSent = invoices.filterNot { it.status == InvoiceStatus.SENT }
+        if (notSent.isNotEmpty()) {
+            throw BadRequest("Some invoices were not sent before")
+        }
+
+        val sendResult = integrationClient.send(invoices)
+        tx.setDraftsSent(now, sendResult.succeeded, sentBy)
+    }
+
     fun getInvoiceIds(
         tx: Database.Read,
         from: LocalDate,
         to: LocalDate,
         areas: List<String>,
+        status: InvoiceStatus = InvoiceStatus.DRAFT,
     ): List<InvoiceId> {
-        return tx.getInvoiceIdsByDates(FiniteDateRange(from, to), areas)
+        return tx.getInvoiceIdsByDatesAndStatus(FiniteDateRange(from, to), areas, status)
     }
 
     fun getInvoiceCodes(tx: Database.Read): InvoiceCodes {

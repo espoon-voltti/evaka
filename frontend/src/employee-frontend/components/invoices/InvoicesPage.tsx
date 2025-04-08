@@ -2,14 +2,15 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faEnvelope } from '@fortawesome/free-solid-svg-icons'
-import React, { useContext, useState } from 'react'
+import { faEnvelope, faExclamation } from '@fortawesome/free-solid-svg-icons'
+import React, { useCallback, useContext, useState } from 'react'
 import styled from 'styled-components'
 
 import { UserContext } from 'employee-frontend/state/user'
 import { useBoolean } from 'lib-common/form/hooks'
 import {
   InvoiceSortParam,
+  InvoiceStatus,
   SortDirection
 } from 'lib-common/generated/api-types/invoicing'
 import { InvoiceId } from 'lib-common/generated/api-types/shared'
@@ -24,7 +25,9 @@ import {
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
+import { ModalType } from 'lib-components/molecules/modals/BaseModal'
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
+import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
@@ -37,15 +40,22 @@ import InvoiceFilters from './InvoiceFilters'
 import Invoices from './Invoices'
 import {
   invoicesQuery,
+  resendInvoicesByDateMutation,
+  resendInvoicesMutation,
   sendInvoicesByDateMutation,
   sendInvoicesMutation
 } from './queries'
+
+type SendModalType = Extract<InvoiceStatus, 'DRAFT' | 'SENT'> | null
+type ResultModalType = Extract<ModalType, 'danger' | 'info'> | null
 
 export default React.memo(function InvoicesPage() {
   const { user } = useContext(UserContext)
   const {
     invoices: { confirmedSearchFilters: searchFilters, page }
   } = useContext(InvoicingUiContext)
+
+  const { i18n } = useTranslation()
 
   const [sortBy, setSortBy] = useState<InvoiceSortParam>('HEAD_OF_FAMILY')
   const [sortDirection, setSortDirection] = useState<SortDirection>('ASC')
@@ -74,7 +84,20 @@ export default React.memo(function InvoicesPage() {
       : constantQuery({ data: [], pages: 0, total: 0 })
   )
 
-  const [showModal, { off: closeModal, on: openModal }] = useBoolean(false)
+  const [sendModalType, setSendModalType] = useState<SendModalType>(null)
+  const [resultModalType, setResultModalType] = useState<ResultModalType>(null)
+  const openSuccessModal = useCallback(() => {
+    setResultModalType('info')
+  }, [])
+  const openErrorModal = useCallback(() => {
+    setResultModalType('danger')
+  }, [])
+  const closeResultModal = useCallback(() => {
+    setResultModalType(null)
+  }, [])
+  const closeSendModal = useCallback(() => {
+    setSendModalType(null)
+  }, [])
 
   const [fullAreaSelection, { set: setFullAreaSelection }] = useBoolean(false)
 
@@ -110,10 +133,14 @@ export default React.memo(function InvoicesPage() {
     .map((a) => a.data.some((b) => b.permittedActions.includes('DELETE')))
     .getOrElse(false)
 
+  const canResend = invoices
+    .map((a) => a.data.some((b) => b.permittedActions.includes('RESEND')))
+    .getOrElse(false)
+
   return (
     <Container data-qa="invoices-page">
       <ContentArea opaque>
-        <InvoiceFilters />
+        <InvoiceFilters clearPreviousResults={clearChecked} />
       </ContentArea>
       <Gap size="XL" />
       {searchFilters &&
@@ -130,8 +157,9 @@ export default React.memo(function InvoicesPage() {
                 setSortDirection={setSortDirection}
                 showCheckboxes={
                   (searchFilters.status === 'DRAFT' ||
+                    searchFilters.status === 'SENT' ||
                     searchFilters.status === 'WAITING_FOR_SENDING') &&
-                  (canSend || canDelete)
+                  (canSend || canDelete || canResend)
                 }
                 checked={checkedInvoices}
                 checkAll={checkAllOnPage}
@@ -143,10 +171,12 @@ export default React.memo(function InvoicesPage() {
               />
             </ContentArea>
             <Actions
-              openModal={openModal}
+              openModal={() => setSendModalType('DRAFT')}
+              openResendModal={() => setSendModalType('SENT')}
               status={searchFilters.status}
               canSend={canSend}
               canDelete={canDelete}
+              canResend={canResend}
               checkedInvoices={checkedInvoices}
               clearCheckedInvoices={clearChecked}
               checkedAreas={searchFilters.area}
@@ -154,31 +184,59 @@ export default React.memo(function InvoicesPage() {
             />
           </>
         ))}
-      {showModal ? (
-        <Modal
-          onClose={closeModal}
+      {sendModalType && (
+        <SendModal
+          onClose={closeSendModal}
           onSendDone={() => {
-            closeModal()
+            closeSendModal()
             clearChecked()
+            openSuccessModal()
+          }}
+          onSendFailure={() => {
+            closeSendModal()
+            clearChecked()
+            openErrorModal()
           }}
           checkedInvoices={checkedInvoices}
           fullAreaSelection={fullAreaSelection}
+          sendType={sendModalType}
         />
-      ) : null}
+      )}
+      {resultModalType && (
+        <InfoModal
+          type={resultModalType}
+          title={
+            resultModalType === 'info'
+              ? i18n.invoices.sendSuccess
+              : i18n.invoices.sendFailure
+          }
+          icon={resultModalType === 'info' ? faEnvelope : faExclamation}
+          resolve={{
+            action: closeResultModal,
+            label: i18n.common.ok
+          }}
+          close={closeResultModal}
+          closeLabel={i18n.common.closeModal}
+        />
+      )}
     </Container>
   )
 })
 
-const Modal = React.memo(function Modal({
+const SendModal = React.memo(function SendModal({
   onClose,
   onSendDone,
+  onSendFailure,
   checkedInvoices,
-  fullAreaSelection
+  fullAreaSelection,
+  sendType
 }: {
   onClose: () => void
   onSendDone: () => void
+  onSendFailure: () => void
   checkedInvoices: Set<InvoiceId>
   fullAreaSelection: boolean
+  sendType: SendModalType
 }) {
   const { i18n } = useTranslation()
   const {
@@ -193,7 +251,9 @@ const Modal = React.memo(function Modal({
   const [mutation, onClick] = useSelectMutation(
     () => (fullAreaSelection ? first() : second()),
     [
-      sendInvoicesByDateMutation,
+      sendType === 'DRAFT'
+        ? sendInvoicesByDateMutation
+        : resendInvoicesByDateMutation,
       () => ({
         body: {
           dueDate,
@@ -213,16 +273,20 @@ const Modal = React.memo(function Modal({
       })
     ],
     [
-      sendInvoicesMutation,
-      () => ({
-        invoiceDate,
-        dueDate,
-        body: [...checkedInvoices]
-      })
+      sendType === 'DRAFT' ? sendInvoicesMutation : resendInvoicesMutation,
+      sendType === 'DRAFT'
+        ? () => ({
+            invoiceDate,
+            dueDate,
+            body: [...checkedInvoices]
+          })
+        : () => ({
+            body: [...checkedInvoices]
+          })
     ]
   )
 
-  return (
+  return sendType === 'DRAFT' ? (
     <MutateFormModal
       type="info"
       title={i18n.invoices.sendModal.title}
@@ -231,6 +295,7 @@ const Modal = React.memo(function Modal({
       resolveAction={onClick}
       resolveLabel={i18n.common.confirm}
       onSuccess={onSendDone}
+      onFailure={onSendFailure}
       rejectAction={onClose}
       rejectLabel={i18n.common.cancel}
       data-qa="send-invoices-dialog"
@@ -266,6 +331,20 @@ const Modal = React.memo(function Modal({
         ) : null}
       </ModalContent>
     </MutateFormModal>
+  ) : (
+    <MutateFormModal
+      type="info"
+      title={i18n.invoices.resendModal.title}
+      icon={faEnvelope}
+      resolveMutation={mutation}
+      resolveAction={onClick}
+      resolveLabel={i18n.common.confirm}
+      onSuccess={onSendDone}
+      onFailure={onSendFailure}
+      rejectAction={onClose}
+      rejectLabel={i18n.common.cancel}
+      data-qa="resend-invoices-dialog"
+    />
   )
 })
 

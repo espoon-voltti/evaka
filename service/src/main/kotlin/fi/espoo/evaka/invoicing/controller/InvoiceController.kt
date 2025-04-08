@@ -192,6 +192,31 @@ class InvoiceController(
         )
     }
 
+    @PostMapping("/resend")
+    fun resendInvoices(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @RequestBody invoiceIds: List<InvoiceId>,
+    ) {
+        db.connect { dbc ->
+            dbc.transaction {
+                accessControl.requirePermissionFor(
+                    it,
+                    user,
+                    clock,
+                    Action.Invoice.RESEND,
+                    invoiceIds,
+                )
+                service.resendInvoices(it, user.evakaUserId, clock.now(), invoiceIds)
+            }
+        }
+        Audit.InvoicesResend.log(
+            targetId = AuditId(invoiceIds),
+            meta = mapOf("resendDate" to clock.now()),
+        )
+    }
+
     @PostMapping("/send/by-date")
     fun sendInvoicesByDate(
         db: Database,
@@ -214,6 +239,45 @@ class InvoiceController(
             }
         }
         Audit.InvoicesSendByDate.log(
+            meta =
+                mapOf(
+                    "from" to payload.from,
+                    "to" to payload.to,
+                    "areas" to payload.areas,
+                    "invoiceDate" to payload.invoiceDate,
+                    "dueDate" to payload.dueDate,
+                )
+        )
+    }
+
+    @PostMapping("/resend/by-date")
+    fun resendInvoicesByDate(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @RequestBody payload: InvoicePayload,
+    ) {
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                val invoiceIds =
+                    service.getInvoiceIds(
+                        tx,
+                        payload.from,
+                        payload.to,
+                        payload.areas,
+                        InvoiceStatus.SENT,
+                    )
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Invoice.RESEND,
+                    invoiceIds,
+                )
+                service.resendInvoices(tx, user.evakaUserId, clock.now(), invoiceIds)
+            }
+        }
+        Audit.InvoicesResendByDate.log(
             meta =
                 mapOf(
                     "from" to payload.from,

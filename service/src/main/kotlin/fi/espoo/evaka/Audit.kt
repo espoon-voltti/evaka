@@ -357,6 +357,8 @@ enum class Audit(
     InvoicesMarkReplacementDraftSent,
     InvoicesRead,
     InvoicesReportRead,
+    InvoicesResend,
+    InvoicesResendByDate,
     InvoicesSearch,
     InvoicesSend,
     InvoicesSendByDate,
