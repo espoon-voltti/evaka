@@ -206,7 +206,29 @@ class NekkuHttpClient(private val env: NekkuEnv, private val jsonMapper: JsonMap
         val request =
             getBaseRequest().post(requestBody).url(env.url.resolve("orders").toString()).build()
 
-        executeRequest<Void>(request)
+        try {
+            val response = client.newCall(request).execute()
+            when (response.code) {
+                200 ->
+                    logger.info {
+                        "Nekku order created successfully for groupId:${nekkuOrders.orders.first().group_id}, customer number ${nekkuOrders.orders.first().customerNumber} and date: ${nekkuOrders.orders.first().deliveryDate}"
+                    }
+                403 ->
+                    logger.error {
+                        "Forbidden: You don't have permission to access this Nekku resource. Check ApiKey!"
+                    }
+                500 ->
+                    logger.error {
+                        "Something went wrong on the Nekku server with groupId:${nekkuOrders.orders.first().group_id}, customer number ${nekkuOrders.orders.first().customerNumber} and date: ${nekkuOrders.orders.first().deliveryDate}"
+                    }
+                else ->
+                    logger.error {
+                        "Unexpected Nekku response code: ${response.code}. Problem occurred with groupId:${nekkuOrders.orders.first().group_id}, customer number ${nekkuOrders.orders.first().customerNumber} and date: ${nekkuOrders.orders.first().deliveryDate}"
+                    }
+            }
+        } catch (e: IOException) {
+            println("An error occurred: ${e.message}")
+        }
     }
 
     private fun getBaseRequest() =
