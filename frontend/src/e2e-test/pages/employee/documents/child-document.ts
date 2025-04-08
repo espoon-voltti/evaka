@@ -44,6 +44,16 @@ export class ChildDocumentPage {
     return question.findByDataQa('answer-preview')
   }
 
+  getCheckboxGroupAnswer(sectionName: string, questionName: string) {
+    const section = this.page.find('[data-qa="document-section"]', {
+      hasText: sectionName
+    })
+    const question = section.find('[data-qa="document-question-preview"]', {
+      hasText: questionName
+    })
+    return question.findByDataQa('answer-preview')
+  }
+
   async publish() {
     await this.page.findByDataQa('publish-button').click()
     await this.page.findByDataQa('modal-okBtn').click()

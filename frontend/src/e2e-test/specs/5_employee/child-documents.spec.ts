@@ -557,4 +557,68 @@ describe('Employee - Child documents', () => {
     )
     await row.status.assertTextEquals('Valmis')
   })
+
+  test('checkbox group answers are ordered correctly', async () => {
+    const child = await Fixture.person().saveChild()
+    const template = await Fixture.documentTemplate({
+      content: {
+        sections: [
+          {
+            id: 's1',
+            label: 'osio 1',
+            infoText: '',
+            questions: [
+              {
+                id: 'q1',
+                type: 'CHECKBOX_GROUP',
+                label: 'kysymys 1',
+                infoText: '',
+                options: [
+                  { id: 'o1', label: 'vaihtoehto 1', withText: true },
+                  { id: 'o2', label: 'vaihtoehto 2', withText: true },
+                  { id: 'o3', label: 'vaihtoehto 3', withText: false },
+                  { id: 'o4', label: 'vaihtoehto 4', withText: false }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }).save()
+    const document = await Fixture.childDocument({
+      templateId: template.id,
+      childId: child.id,
+      content: {
+        answers: [
+          {
+            questionId: 'q1',
+            type: 'CHECKBOX_GROUP',
+            answer: [
+              { optionId: 'o3', extra: '' },
+              { optionId: 'o1', extra: 'lisäinfoa' },
+              { optionId: 'o2', extra: '' },
+              { optionId: 'o5', extra: 'tuntematon vaihtoehto' }
+            ]
+          }
+        ]
+      }
+    }).save()
+
+    const page = await Page.open({ mockedTime: now })
+    await employeeLogin(page, admin)
+    await page.goto(`${config.employeeUrl}/child-information/${child.id}`)
+    const childInformationPage = new ChildInformationPage(page)
+    const childDocumentsSection =
+      await childInformationPage.openCollapsible('childDocuments')
+    const childDocumentPage = await childDocumentsSection.openChildDocument(
+      document.id
+    )
+    const answer1 = childDocumentPage.getCheckboxGroupAnswer(
+      'osio 1',
+      'kysymys 1'
+    )
+    await answer1.assertTextEquals(
+      'vaihtoehto 1 : lisäinfoa\nvaihtoehto 2 :\nvaihtoehto 3'
+    )
+  })
 })
