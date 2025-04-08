@@ -4,7 +4,7 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import sortBy from 'lodash/sortBy'
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { Fragment, useCallback, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
 import styled, { useTheme } from 'styled-components'
 
@@ -336,10 +336,9 @@ const StaffAttendancesPlanned = React.memo(function StaffAttendancesPlanned({
         <InfoBox message={i18n.attendances.staff.plansInfo} noMargin thin />
       </DayRow>
       {days.map(({ date, staff }) => (
-        <>
+        <Fragment key={date.formatIso()}>
           <DayRow
             data-qa={`date-row-${date.formatIso()}`}
-            key={date.formatIso()}
             onClick={() =>
               setExpandedDate(expandedDate?.isEqual(date) ? null : date)
             }
@@ -440,7 +439,7 @@ const StaffAttendancesPlanned = React.memo(function StaffAttendancesPlanned({
               ))}
             </ExpandedStaff>
           )}
-        </>
+        </Fragment>
       ))}
     </FixedSpaceColumn>
   ))
