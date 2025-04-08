@@ -154,9 +154,13 @@ interface NekkuClient {
         val description: String,
     )
 
-    data class Item(val sku: String, val quantity: Int, val product_options: List<ProductOption>?)
+    data class Item(
+        val sku: String,
+        val quantity: Int,
+        @JsonProperty("product_options") val productOptions: List<ProductOption>?,
+    )
 
-    data class ProductOption(val field_id: String, val value: String)
+    data class ProductOption(@JsonProperty("field_id") val fieldId: String, val value: String)
 
     data class NekkuOrders(
         val orders: List<NekkuOrder>,
@@ -373,7 +377,7 @@ fun nekkuMealReportData(
             .mapValues { it.value.size }
 
     return mealInfoMap.map {
-        NekkuClient.Item(sku = it.key.sku, quantity = it.value, product_options = it.key.options)
+        NekkuClient.Item(sku = it.key.sku, quantity = it.value, productOptions = it.key.options)
     }
 }
 
@@ -386,10 +390,10 @@ private fun getNekkuProductNumber(
 
     val filteredNekkuProducts =
         nekkuProducts.filter {
-            it.meal_time?.contains(nekkuProductMealTime) ?: false &&
-                it.meal_type == nekkuChildInfo.mealType &&
-                it.options_id == nekkuChildInfo.optionsId &&
-                it.unit_size == unitSize
+            it.mealTime?.contains(nekkuProductMealTime) ?: false &&
+                it.mealType == nekkuChildInfo.mealType &&
+                it.optionsId == nekkuChildInfo.optionsId &&
+                it.unitSize == unitSize
         }
 
     if (filteredNekkuProducts.isEmpty()) {
@@ -554,22 +558,22 @@ data class NekkuSpecialDietOption(val weight: Int, val key: String, val value: S
 data class NekkuApiProduct(
     val name: String,
     val sku: String,
-    val options_id: String,
-    val unit_size: String,
-    val meal_time: List<NekkuProductMealTime>? = null,
-    val meal_type: NekkuApiProductMealType? = null,
+    @JsonProperty("options_id") val optionsId: String,
+    @JsonProperty("unit_size") val unitSize: String,
+    @JsonProperty("meal_time") val mealTime: List<NekkuProductMealTime>? = null,
+    @JsonProperty("meal_type") val mealType: NekkuApiProductMealType? = null,
 ) {
     fun toEvaka(): NekkuProduct =
-        NekkuProduct(name, sku, options_id, unit_size, meal_time, meal_type?.toEvaka())
+        NekkuProduct(name, sku, optionsId, unitSize, mealTime, mealType?.toEvaka())
 }
 
 data class NekkuProduct(
     val name: String,
     val sku: String,
-    val options_id: String,
-    val unit_size: String,
-    val meal_time: List<NekkuProductMealTime>? = null,
-    val meal_type: NekkuProductMealType? = null,
+    @JsonProperty("options_id") val optionsId: String,
+    @JsonProperty("unit_size") val unitSize: String,
+    @JsonProperty("meal_time") val mealTime: List<NekkuProductMealTime>? = null,
+    @JsonProperty("meal_type") val mealType: NekkuProductMealType? = null,
 )
 
 data class NekkuMealType(val type: NekkuProductMealType?, val name: String)

@@ -280,10 +280,10 @@ INSERT INTO nekku_product (sku, name, options_id, unit_size, meal_time, meal_typ
 VALUES (
     ${bind{it.sku}},
     ${bind{it.name}},
-    ${bind{it.options_id}},
-    ${bind{it.unit_size}},
-    ${bind{it.meal_time}},
-    ${bind{it.meal_type}}
+    ${bind{it.optionsId}},
+    ${bind{it.unitSize}},
+    ${bind{it.mealTime}},
+    ${bind{it.mealType}}
 )
 ON CONFLICT (sku) DO 
 UPDATE SET

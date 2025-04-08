@@ -588,10 +588,10 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         db.transaction { tx ->
             val products = tx.getNekkuProducts()
             assertEquals("Ateriapalvelu 1 vegaani", products[0].name)
-            assertEquals("2", products[0].options_id)
-            assertEquals("medium", products[0].unit_size)
-            assertEquals(null, products[0].meal_time)
-            assertEquals(NekkuProductMealType.VEGAN, products[0].meal_type)
+            assertEquals("2", products[0].optionsId)
+            assertEquals("medium", products[0].unitSize)
+            assertEquals(null, products[0].mealTime)
+            assertEquals(NekkuProductMealType.VEGAN, products[0].mealType)
         }
     }
 
