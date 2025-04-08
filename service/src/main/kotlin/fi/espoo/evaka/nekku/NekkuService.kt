@@ -31,6 +31,7 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.domain.getHolidays
 import io.github.oshai.kotlinlogging.KotlinLogging
+import jakarta.xml.ws.http.HTTPException
 import java.io.IOException
 import java.time.Duration
 import java.time.LocalDate
@@ -226,8 +227,8 @@ class NekkuHttpClient(private val env: NekkuEnv, private val jsonMapper: JsonMap
                         "Unexpected Nekku response code: ${response.code}. Problem occurred with groupId:${nekkuOrders.orders.first().group_id}, customer number ${nekkuOrders.orders.first().customerNumber} and date: ${nekkuOrders.orders.first().deliveryDate}"
                     }
             }
-        } catch (e: IOException) {
-            println("An error occurred: ${e.message}")
+        } catch (e: HTTPException) {
+            logger.error { "An Nekku order error occurred: ${e.message}" }
         }
     }
 
