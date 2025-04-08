@@ -335,12 +335,8 @@ export default React.memo(function IncomeStatements() {
           <Gap size="s" />
           {renderResult(children, (children) =>
             children.length > 0 ? (
-              <>
-                <ChildrenIncomeStatements childInfo={children} />
-              </>
-            ) : (
-              <></>
-            )
+              <ChildrenIncomeStatements childInfo={children} />
+            ) : null
           )}
         </Container>
       </Main>

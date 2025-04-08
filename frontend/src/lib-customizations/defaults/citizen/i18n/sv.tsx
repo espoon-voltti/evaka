@@ -2705,9 +2705,6 @@ const sv: Translations = {
           De vanligaste inkomsterna barn har är underhållsbidrag eller -stöd,
           ränte- och aktieinkomster samt pension.
         </>
-      ),
-      noChildIncomeStatementsNeeded: (
-        <>Du har för närvarande inga barn att redovisa inkomst.</>
       )
     }
   },

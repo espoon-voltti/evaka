@@ -2687,12 +2687,6 @@ export default {
           Yleisimpiä lapsen tuloja ovat elatusapu tai -tuki, korko- ja
           osinkotulot sekä eläke.
         </>
-      ),
-      noChildIncomeStatementsNeeded: (
-        <>
-          Sinulla ei tällä hetkellä ole lapsia joiden tulotiedot pitää
-          ilmoittaa.
-        </>
       )
     }
   },

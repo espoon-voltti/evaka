@@ -2459,9 +2459,6 @@ const en: Translations = {
           clarified. The most common income of a child is maintenance or
           support, interest and dividend income and pension.
         </>
-      ),
-      noChildIncomeStatementsNeeded: (
-        <>You currently have no children to report income.</>
       )
     }
   },
