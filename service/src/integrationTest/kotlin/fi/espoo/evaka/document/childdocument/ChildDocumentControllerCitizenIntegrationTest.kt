@@ -322,6 +322,8 @@ class ChildDocumentControllerCitizenIntegrationTest :
 
     @Test
     fun `guardian sees child documents only for own child`() {
+        publishDocument(documentId)
+        asyncJobRunner.runPendingJobsSync(clock)
         val template =
             DevDocumentTemplate(
                     type = DocumentType.CITIZEN_BASIC,
@@ -370,7 +372,25 @@ class ChildDocumentControllerCitizenIntegrationTest :
                 )
             }
 
-        val summary1 =
+        val summary11 =
+            ChildDocumentCitizenSummary(
+                id = documentId,
+                type = DocumentType.PEDAGOGICAL_ASSESSMENT,
+                publishedAt = clock.now(),
+                templateName = "Pedagoginen arvio 2023",
+                status = DocumentStatus.DRAFT,
+                unread = true,
+                child =
+                    ChildBasics(
+                        id = testChild_1.id,
+                        firstName = testChild_1.firstName,
+                        lastName = testChild_1.lastName,
+                        dateOfBirth = testChild_1.dateOfBirth,
+                    ),
+                answeredAt = null,
+                answeredBy = null,
+            )
+        val summary12 =
             ChildDocumentCitizenSummary(
                 id = child1DocumentId,
                 status = DocumentStatus.CITIZEN_DRAFT,
@@ -388,8 +408,12 @@ class ChildDocumentControllerCitizenIntegrationTest :
                 answeredAt = null,
                 answeredBy = null,
             )
-        assertEquals(listOf(summary1), getDocumentsByChild(testChild_1.id))
-        assertEquals(listOf(summary1), getUnansweredChildDocuments())
+        assertEquals(mapOf(testChild_1.id to 2), getUnreadCount())
+        assertEquals(
+            listOf(summary11, summary12),
+            getDocumentsByChild(testChild_1.id).sortedBy { it.type },
+        )
+        assertEquals(listOf(summary12), getUnansweredChildDocuments())
         assertThrows<Forbidden> { getDocumentsByChild(testChild_2.id) }
         val citizen2 = AuthenticatedUser.Citizen(testAdult_2.id, CitizenAuthLevel.STRONG)
         val summary2 =
@@ -410,12 +434,14 @@ class ChildDocumentControllerCitizenIntegrationTest :
                 answeredAt = null,
                 answeredBy = null,
             )
+        assertEquals(mapOf(testChild_2.id to 1), getUnreadCount(user = citizen2))
         assertEquals(listOf(summary2), getDocumentsByChild(testChild_2.id, user = citizen2))
         assertEquals(listOf(summary2), getUnansweredChildDocuments(user = citizen2))
         assertThrows<Forbidden> { getDocumentsByChild(testChild_1.id, user = citizen2) }
     }
 
-    private fun getUnreadCount() = controller.getUnreadDocumentsCount(dbInstance(), citizen, clock)
+    private fun getUnreadCount(user: AuthenticatedUser.Citizen = citizen) =
+        controller.getUnreadDocumentsCount(dbInstance(), user, clock)
 
     private fun getDocumentsByChild(childId: ChildId, user: AuthenticatedUser.Citizen = citizen) =
         controller.getDocuments(dbInstance(), user, clock, childId)
