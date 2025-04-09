@@ -53,6 +53,9 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
         '/internal/integration/titania/',
         '/integration/titania/'
       )
+    } else if (req.url.startsWith('/internal/auth/saml/')) {
+      // Employee AD is still configured to use the old prefix
+      req.url = req.url.replace('/internal/auth/saml/', '/employee/auth/ad/')
     }
     next()
   })
