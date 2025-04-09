@@ -505,6 +505,7 @@ export interface DevDaycare {
   uploadToVarda: boolean
   url: string | null
   visitingAddress: VisitingAddress
+  withSchool: boolean
 }
 
 /**
