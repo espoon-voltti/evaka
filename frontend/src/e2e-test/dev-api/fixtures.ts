@@ -508,7 +508,7 @@ export class Fixture {
       languageAtHome: '',
       languageAtHomeDetails: '',
       medication: '',
-      nekku_diet: null,
+      nekkuDiet: null,
       ...initial
     })
   }
