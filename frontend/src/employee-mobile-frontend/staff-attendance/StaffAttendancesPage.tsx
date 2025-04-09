@@ -256,6 +256,7 @@ interface StaffMemberDay {
     start: LocalTime | null // null if started on previous day
     end: LocalTime | null // null if ends on the next day
     type: StaffAttendanceType
+    description: string | null
   }[]
   confidence: 'full' | 'maybeInOtherGroup' | 'maybeInOtherUnit'
 }
@@ -315,7 +316,8 @@ const StaffAttendancesPlanned = React.memo(function StaffAttendancesPlanned({
                     end: p.end.toLocalDate().isEqual(date)
                       ? p.end.toLocalTime()
                       : null,
-                    type: p.type
+                    type: p.type,
+                    description: p.description
                   })),
                 confidence:
                   s.unitIds.length > 1
@@ -399,9 +401,12 @@ const StaffAttendancesPlanned = React.memo(function StaffAttendancesPlanned({
                   )}
 
                   {s.plans.map((p, i) => (
-                    <DetailsRow key={i} alignItems="center">
+                    <DetailsRow key={i} alignItems="start">
                       <PlanType>{i18n.attendances.staffTypes[p.type]}</PlanType>
-                      <div>{`${p.start?.format() ?? '→'} - ${p.end?.format() ?? '→'}`}</div>
+                      <div>
+                        <div>{`${p.start?.format() ?? '→'} - ${p.end?.format() ?? '→'}`}</div>
+                        {p.description ? <i>({p.description})</i> : null}
+                      </div>
                     </DetailsRow>
                   ))}
                 </FixedSpaceColumn>

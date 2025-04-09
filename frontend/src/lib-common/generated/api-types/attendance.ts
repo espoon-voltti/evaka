@@ -294,6 +294,7 @@ export interface OpenGroupAttendanceResponse {
 * Generated from fi.espoo.evaka.attendance.PlannedStaffAttendance
 */
 export interface PlannedStaffAttendance {
+  description: string | null
   end: HelsinkiDateTime
   start: HelsinkiDateTime
   type: StaffAttendanceType

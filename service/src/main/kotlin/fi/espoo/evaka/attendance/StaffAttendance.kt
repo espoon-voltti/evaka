@@ -139,4 +139,5 @@ data class PlannedStaffAttendance(
     val start: HelsinkiDateTime,
     val end: HelsinkiDateTime,
     val type: StaffAttendanceType,
+    val description: String?,
 )
