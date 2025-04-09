@@ -387,7 +387,7 @@ export interface DevChild {
   languageAtHomeDetails: string
   mealTextureId: number | null
   medication: string
-  nekku_diet: NekkuProductMealType | null
+  nekkuDiet: NekkuProductMealType | null
 }
 
 /**
