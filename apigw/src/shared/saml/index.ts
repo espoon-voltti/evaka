@@ -32,7 +32,7 @@ export function createSamlConfig(
     : lookupPublicCert(config.publicCert)
 
   return {
-    acceptedClockSkewMs: 0,
+    acceptedClockSkewMs: config.acceptedClockSkewMs,
     audience: config.issuer,
     cacheProvider,
     callbackUrl: config.callbackUrl,
