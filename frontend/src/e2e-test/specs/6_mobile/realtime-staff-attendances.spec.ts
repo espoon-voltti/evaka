@@ -584,7 +584,8 @@ describe('Realtime staff attendance page', () => {
       id: randomId<StaffAttendancePlanId>(),
       employeeId: staffFixture.id,
       startTime: planStart,
-      endTime: planEnd
+      endTime: planEnd,
+      description: 'SAK-aika'
     }).save()
 
     await Fixture.realtimeStaffAttendance({
@@ -617,6 +618,7 @@ describe('Realtime staff attendance page', () => {
     await staffAttendancePage.assertAttendanceTimeTextShown(
       'Paikalla 08:02–14:02,Työasia 14:02–'
     )
+    await staffAttendancePage.assertShiftDescriptionShownInInfo('SAK-aika')
   })
 
   test('Staff departs to non work in the middle of the planned day and comes back later', async () => {

@@ -857,8 +857,8 @@ fun Database.Transaction.insert(row: DevStaffAttendancePlan): StaffAttendancePla
     createUpdate {
             sql(
                 """
-INSERT INTO staff_attendance_plan (id, employee_id, type, start_time, end_time)
-VALUES (${bind(row.id)}, ${bind(row.employeeId)}, ${bind(row.type)}, ${bind(row.startTime)}, ${bind(row.endTime)})
+INSERT INTO staff_attendance_plan (id, employee_id, type, start_time, end_time, description)
+VALUES (${bind(row.id)}, ${bind(row.employeeId)}, ${bind(row.type)}, ${bind(row.startTime)}, ${bind(row.endTime)}, ${bind(row.description)})
 """
             )
         }

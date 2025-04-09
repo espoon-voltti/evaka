@@ -157,6 +157,7 @@ export default React.memo(function StaffMemberPage({
                               info={info}
                               key={`plan-${i}`}
                               inlineChildren
+                              data-qa="shift-info"
                             >
                               <span>{`${start} – ${end}`}</span>
                             </ExpandingInfo>
