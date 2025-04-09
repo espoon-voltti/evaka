@@ -78,7 +78,8 @@ describe('SAML Single Logout', () => {
           publicCert: 'config/test-cert/slo-test-idp-cert.pem',
           privateCert: 'config/test-cert/saml-private.pem',
           validateInResponseTo: ValidateInResponseTo.never,
-          decryptAssertions: false
+          decryptAssertions: false,
+          acceptedClockSkewMs: 0
         }
       }
     }

@@ -437,6 +437,7 @@ export interface EvakaSamlConfig {
   privateCert: string
   validateInResponseTo: ValidateInResponseTo
   decryptAssertions: boolean
+  acceptedClockSkewMs: number
   nameIdFormat?: string | undefined
 }
 
@@ -570,6 +571,7 @@ export function configFromEnv(): Config {
             privateCert: required('AD_SAML_PRIVATE_CERT', unchanged),
             validateInResponseTo: ValidateInResponseTo.always,
             decryptAssertions: required('AD_DECRYPT_ASSERTIONS', parseBoolean),
+            acceptedClockSkewMs: 0,
             nameIdFormat: required('AD_NAME_ID_FORMAT', unchanged)
           }
         })
@@ -608,7 +610,9 @@ export function configFromEnv(): Config {
             ),
             privateCert: required('SFI_SAML_PRIVATE_CERT', unchanged),
             validateInResponseTo: ValidateInResponseTo.always,
-            decryptAssertions: true
+            decryptAssertions: true,
+            // Allow some clock skew for dummy-idp
+            acceptedClockSkewMs: sfiMode === 'test' ? 1000 : 0
           }
         }
 
