@@ -1849,7 +1849,7 @@ data class DevChild(
     val languageAtHomeDetails: String = "",
     val dietId: Int? = null,
     val mealTextureId: Int? = null,
-    val nekku_diet: NekkuProductMealType? = null,
+    val nekkuDiet: NekkuProductMealType? = null,
 )
 
 data class DevHolidayPeriod(

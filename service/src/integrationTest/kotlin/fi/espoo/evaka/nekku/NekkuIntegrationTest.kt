@@ -886,7 +886,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             tx.insert(group)
             tx.insert(employee)
             tx.insert(child, DevPersonType.CHILD)
-            tx.insert(DevChild(id = child.id, nekku_diet = NekkuProductMealType.VEGETABLE))
+            tx.insert(DevChild(id = child.id, nekkuDiet = NekkuProductMealType.VEGETABLE))
             tx.insert(
                     DevPlacement(
                         childId = child.id,
@@ -1348,7 +1348,13 @@ class TestNekkuClient(
         return nekkuProducts
     }
 
-    override fun createNekkuMealOrder(nekkuOrders: NekkuClient.NekkuOrders) {
+    override fun createNekkuMealOrder(nekkuOrders: NekkuClient.NekkuOrders): NekkuOrderResult {
         orders.add(nekkuOrders)
+
+        return NekkuOrderResult(
+            message = "Input ok, 5 orders would be created.",
+            created = listOf("12345", "65432"),
+            cancelled = emptyList(),
+        )
     }
 }

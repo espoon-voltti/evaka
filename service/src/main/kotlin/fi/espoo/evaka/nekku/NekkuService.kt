@@ -31,7 +31,6 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.domain.getHolidays
 import io.github.oshai.kotlinlogging.KotlinLogging
-import jakarta.xml.ws.http.HTTPException
 import java.io.IOException
 import java.time.Duration
 import java.time.LocalDate
@@ -174,7 +173,7 @@ interface NekkuClient {
 
     fun getProducts(): List<NekkuApiProduct>
 
-    fun createNekkuMealOrder(nekkuOrders: NekkuOrders)
+    fun createNekkuMealOrder(nekkuOrders: NekkuOrders): NekkuOrderResult
 }
 
 class NekkuHttpClient(private val env: NekkuEnv, private val jsonMapper: JsonMapper) : NekkuClient {
@@ -199,7 +198,7 @@ class NekkuHttpClient(private val env: NekkuEnv, private val jsonMapper: JsonMap
         return executeRequest(request)
     }
 
-    override fun createNekkuMealOrder(nekkuOrders: NekkuClient.NekkuOrders) {
+    override fun createNekkuMealOrder(nekkuOrders: NekkuClient.NekkuOrders): NekkuOrderResult {
         val requestBody =
             jsonMapper
                 .writeValueAsString(nekkuOrders)
@@ -207,29 +206,7 @@ class NekkuHttpClient(private val env: NekkuEnv, private val jsonMapper: JsonMap
         val request =
             getBaseRequest().post(requestBody).url(env.url.resolve("orders").toString()).build()
 
-        try {
-            val response = client.newCall(request).execute()
-            when (response.code) {
-                200 ->
-                    logger.info {
-                        "Nekku order created successfully for groupId:${nekkuOrders.orders.first().group_id}, customer number ${nekkuOrders.orders.first().customerNumber} and date: ${nekkuOrders.orders.first().deliveryDate}"
-                    }
-                403 ->
-                    logger.error {
-                        "Forbidden: You don't have permission to access this Nekku resource. Check ApiKey!"
-                    }
-                500 ->
-                    logger.error {
-                        "Something went wrong on the Nekku server with groupId:${nekkuOrders.orders.first().group_id}, customer number ${nekkuOrders.orders.first().customerNumber} and date: ${nekkuOrders.orders.first().deliveryDate}"
-                    }
-                else ->
-                    logger.error {
-                        "Unexpected Nekku response code: ${response.code}. Problem occurred with groupId:${nekkuOrders.orders.first().group_id}, customer number ${nekkuOrders.orders.first().customerNumber} and date: ${nekkuOrders.orders.first().deliveryDate}"
-                    }
-            }
-        } catch (e: HTTPException) {
-            logger.error { "An Nekku order error occurred: ${e.message}" }
-        }
+        return executeRequest(request)
     }
 
     private fun getBaseRequest() =
@@ -346,9 +323,9 @@ fun createAndSendNekkuOrder(
         )
 
     if (order.orders.isNotEmpty()) {
-        client.createNekkuMealOrder(order)
+        val nekkuOrderResult = client.createNekkuMealOrder(order)
         logger.info {
-            "Sent Nekku order for date $date for customerNumber=$customerNumber groupId=$groupId"
+            "Sent Nekku order for date $date for customerNumber=$customerNumber groupId=$groupId and Nekku orders created: ${nekkuOrderResult.message}"
         }
     } else {
         logger.info {
@@ -647,3 +624,9 @@ data class NekkuChildInfo(
 )
 
 data class NekkuMealInfo(val sku: String, val options: List<NekkuClient.ProductOption>? = null)
+
+data class NekkuOrderResult(
+    val message: String?,
+    val created: List<String>?,
+    val cancelled: List<String>?,
+)
