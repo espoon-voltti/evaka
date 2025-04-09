@@ -47,38 +47,12 @@ import { sessionSupport } from './shared/session.js'
 export function apiRouter(config: Config, redisClient: RedisClient) {
   const router = express.Router()
   router.use((req, _, next) => {
-    if (req.url === '/application/version' || req.url === '/internal/version') {
-      req.url = '/version'
-    } else if (req.url.startsWith('/internal/integration/')) {
-      req.url = req.url.replace('/internal/integration/', '/integration/')
-    } else if (req.url.startsWith('/application/citizen/')) {
-      req.url = req.url.replace('/application/citizen/', '/citizen/')
-    } else if (req.url.startsWith('/application/map-api/')) {
+    if (req.url.startsWith('/internal/integration/titania/')) {
+      // The old /internal/integration/titania/ prefix is still used by external systems
       req.url = req.url.replace(
-        '/application/map-api/',
-        '/citizen/public/map-api/'
+        '/internal/integration/titania/',
+        '/integration/titania/'
       )
-    } else if (req.url === '/application/auth/status') {
-      req.url = '/citizen/auth/status'
-    } else if (req.url === '/application/auth/weak-login') {
-      req.url = '/citizen/auth/weak-login'
-    } else if (req.url.startsWith('/internal/employee/')) {
-      req.url = req.url.replace('/internal/employee/', '/employee/')
-    } else if (req.url.startsWith('/internal/employee-mobile/')) {
-      req.url = req.url.replace(
-        '/internal/employee-mobile/',
-        '/employee-mobile/'
-      )
-    } else if (req.url.startsWith('/internal/auth/saml/')) {
-      req.url = req.url.replace('/internal/auth/saml/', '/employee/auth/ad/')
-    } else if (req.url === '/internal/auth/mobile') {
-      req.url = '/employee-mobile/auth/finish-pairing'
-    } else if (req.url === '/internal/auth/pin-login') {
-      req.url = '/employee-mobile/auth/pin-login'
-    } else if (req.url === '/internal/auth/pin-logout') {
-      req.url = '/employee-mobile/auth/pin-logout'
-    } else if (req.url === '/internal/dev-api') {
-      req.url = '/dev-api/'
     }
     next()
   })
@@ -277,20 +251,6 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
     '/citizen/{*rest}',
     citizenSessions.requireAuthentication,
     citizenProxy
-  )
-
-  const internalSessions = sessionSupport(
-    'employee-mobile',
-    redisClient,
-    config.employee
-  )
-  router.get(
-    '/internal/auth/status',
-    internalSessions.middleware,
-    cookieParser(config.employee.cookieSecret),
-    checkMobileEmployeeIdToken(internalSessions, redisClient),
-    refreshMobileSession(internalSessions),
-    internalAuthStatus(internalSessions)
   )
 
   router.use('/employee/', employeeSessions.middleware)

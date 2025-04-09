@@ -1011,24 +1011,6 @@ class MessageController(
         Audit.MessagingChangeFolder.log(targetId = AuditId(listOf(accountId, threadId, folderId)))
     }
 
-    @Deprecated("Use getSelectableRecipients")
-    @GetMapping("/employee/messages/receivers")
-    fun getReceiversForNewMessage(
-        db: Database,
-        user: AuthenticatedUser.Employee,
-        clock: EvakaClock,
-    ): List<SelectableRecipientsResponse> =
-        getSelectableRecipients(db, user as AuthenticatedUser, clock)
-
-    @Deprecated("Use getSelectableRecipients")
-    @GetMapping("/employee-mobile/messages/receivers")
-    fun getReceiversForNewMessage(
-        db: Database,
-        user: AuthenticatedUser.MobileDevice,
-        clock: EvakaClock,
-    ): List<SelectableRecipientsResponse> =
-        getSelectableRecipients(db, user as AuthenticatedUser, clock)
-
     @GetMapping("/employee/messages/selectable-recipients")
     fun getSelectableRecipients(
         db: Database,

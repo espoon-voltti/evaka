@@ -201,16 +201,6 @@ class MessageControllerCitizen(
         val childrenToMessageAccounts: List<ChildMessageAccountAccess>,
     )
 
-    @Deprecated("Use getRecipients")
-    @GetMapping("/receivers")
-    fun getReceivers(
-        db: Database,
-        user: AuthenticatedUser.Citizen,
-        evakaClock: EvakaClock,
-    ): GetRecipientsResponse {
-        return getRecipients(db, user, evakaClock)
-    }
-
     @GetMapping("/recipients")
     fun getRecipients(
         db: Database,
