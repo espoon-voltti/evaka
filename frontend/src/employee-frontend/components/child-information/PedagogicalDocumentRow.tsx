@@ -121,7 +121,7 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
             uploadHandler={pedagogicalDocumentAttachment(id)}
             onUploaded={() => {
               void queryClient.invalidateQueries({
-                queryKey: childPedagogicalDocumentsQuery({ childId }),
+                queryKey: childPedagogicalDocumentsQuery({ childId }).queryKey,
                 type: 'all'
               })
             }}
