@@ -803,6 +803,7 @@ internal class AttendanceReservationReportByChildTest :
                 FiniteDateRange(startDate, endDate),
                 daycare.id,
                 groupIds,
+                ReservationType.RESERVATION,
             ),
         )
 
