@@ -16,6 +16,7 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.PilotFeature
 import java.time.LocalDate
+import java.time.LocalTime
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -223,7 +224,7 @@ internal class LinkityServiceTest : FullApplicationTest(resetDbBeforeEach = true
 
     @Test
     fun `relevant attendances are sent to Linkity`() {
-        val now = HelsinkiDateTime.now()
+        val now = HelsinkiDateTime.of(LocalDate.of(2024, 5, 10), LocalTime.of(12, 0))
         lateinit var attendanceIds: List<StaffAttendanceRealtimeId?>
         db.transaction { tx ->
             val group = DevDaycareGroup(daycareId = daycare.id)
