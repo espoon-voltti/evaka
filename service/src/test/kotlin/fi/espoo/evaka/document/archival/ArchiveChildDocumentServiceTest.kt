@@ -5,8 +5,6 @@
 package fi.espoo.evaka.document.archival
 
 import fi.espoo.evaka.document.*
-import fi.espoo.evaka.document.archival.ArchiveChildDocumentService.Companion.createDocumentMetadata
-import fi.espoo.evaka.document.archival.ArchiveChildDocumentService.Companion.marshalMetadata
 import fi.espoo.evaka.document.childdocument.*
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.placement.PlacementType

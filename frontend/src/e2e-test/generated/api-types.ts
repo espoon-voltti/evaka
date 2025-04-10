@@ -17,6 +17,7 @@ import { ApplicationId } from 'lib-common/generated/api-types/shared'
 import { ApplicationOrigin } from 'lib-common/generated/api-types/application'
 import { ApplicationStatus } from 'lib-common/generated/api-types/application'
 import { ApplicationType } from 'lib-common/generated/api-types/application'
+import { ArchivedProcessId } from 'lib-common/generated/api-types/shared'
 import { AreaId } from 'lib-common/generated/api-types/shared'
 import { AssistanceActionId } from 'lib-common/generated/api-types/shared'
 import { AssistanceFactorId } from 'lib-common/generated/api-types/shared'
@@ -415,6 +416,7 @@ export interface DevChildDocument {
   contentModifiedBy: EmployeeId | null
   id: ChildDocumentId
   modifiedAt: HelsinkiDateTime
+  processId: ArchivedProcessId | null
   publishedAt: HelsinkiDateTime | null
   publishedContent: DocumentContent | null
   status: DocumentStatus
