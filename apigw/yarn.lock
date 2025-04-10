@@ -1363,11 +1363,11 @@ __metadata:
   linkType: hard
 
 "@types/express-http-proxy@npm:^1.6.3":
-  version: 1.6.3
-  resolution: "@types/express-http-proxy@npm:1.6.3"
+  version: 1.6.6
+  resolution: "@types/express-http-proxy@npm:1.6.6"
   dependencies:
     "@types/express": "npm:*"
-  checksum: 10/8e983b1a7d16bc15233b4ad72ffb4bc19c58cc7dbe2d151193c92b7a71bf991f8edecf6135b3ce071d9e430d46460aeade0fa124ef670585da7b29070727b9fb
+  checksum: 10/bf8d642e2d00c6d5dc5a3bc6617a4f249d00646b1469a1c523836753c12c6574d97a44d4b1b299798ee6fb93bf0dda969a7d3cd763c5ad0dd92b4f3c6e828982
   languageName: node
   linkType: hard
 
