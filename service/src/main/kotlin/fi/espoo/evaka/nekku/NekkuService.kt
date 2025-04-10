@@ -10,7 +10,6 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import fi.espoo.evaka.ConstList
 import fi.espoo.evaka.NekkuEnv
 import fi.espoo.evaka.absence.AbsenceCategory
-import fi.espoo.evaka.absence.getGroupName
 import fi.espoo.evaka.daycare.DaycareMealtimes
 import fi.espoo.evaka.daycare.PreschoolTerm
 import fi.espoo.evaka.daycare.getDaycaresById
@@ -126,18 +125,12 @@ class NekkuService(
 
     fun sendNekkuOrder(dbc: Database.Connection, clock: EvakaClock, job: AsyncJob.SendNekkuOrder) {
         if (client == null) error("Cannot send Nekku order: NekkuEnv is not configured")
+
         try {
-            createAndSendNekkuOrder(
-                client,
-                dbc,
-                customerNumber = job.customerNumber,
-                groupId = job.customerGroupId,
-                unitSize = job.unitSize,
-                date = job.date,
-            )
+            createAndSendNekkuOrder(client, dbc, groupId = job.customerGroupId, date = job.date)
         } catch (e: Exception) {
             logger.warn(e) {
-                "Failed to send meal order to Nekku: date=${job.date}, customerNumber=${job.customerNumber}, groupId=${job.customerGroupId},error=${e.localizedMessage}"
+                "Failed to send meal order to Nekku: date=${job.date}, groupId=${job.customerGroupId},error=${e.localizedMessage}"
             }
             throw e
         }
@@ -252,17 +245,12 @@ fun planNekkuOrderJobs(
 ) {
     val range = now.toLocalDate().startOfWeekAfterNextWeek().weekSpan()
     dbc.transaction { tx ->
-        val nekkuDaycareCustomerMapping = tx.getNekkuDaycareGroupIdCustomerNumberMapping(range)
+        val nekkuGroupIds = tx.getNekkuDaycareGroupId(range)
         asyncJobRunner.plan(
             tx,
             range.dates().flatMap { date ->
-                nekkuDaycareCustomerMapping.map { customerGroupsAndNumber ->
-                    AsyncJob.SendNekkuOrder(
-                        customerGroupId = customerGroupsAndNumber.groupId,
-                        customerNumber = customerGroupsAndNumber.customerNumber,
-                        unitSize = customerGroupsAndNumber.unitSize,
-                        date = date,
-                    )
+                nekkuGroupIds.map { nekkuGroupId ->
+                    AsyncJob.SendNekkuOrder(customerGroupId = nekkuGroupId, date = date)
                 }
             },
             runAt = now,
@@ -286,9 +274,7 @@ private fun LocalDate.weekSpan(): FiniteDateRange {
 fun createAndSendNekkuOrder(
     client: NekkuClient,
     dbc: Database.Connection,
-    customerNumber: String,
     groupId: GroupId,
-    unitSize: String,
     date: LocalDate,
 ) {
     val (preschoolTerms, children) =
@@ -297,7 +283,7 @@ fun createAndSendNekkuOrder(
             val children = getNekkuChildInfos(tx, groupId, date)
             preschoolTerms to children
         }
-    val groupName = dbc.read { tx -> tx.getGroupName(groupId) }
+    val nekkuDaycareCustomerMapping = dbc.read { tx -> tx.getNekkuDaycareCustomerMapping(groupId) }
 
     val nekkuProducts = dbc.read { tx -> tx.getNekkuProducts() }
 
@@ -306,7 +292,7 @@ fun createAndSendNekkuOrder(
             listOf(
                 NekkuClient.NekkuOrder(
                     deliveryDate = date.toString(),
-                    customerNumber = customerNumber,
+                    customerNumber = nekkuDaycareCustomerMapping.customerNumber,
                     groupId = groupId.toString(),
                     items =
                         nekkuMealReportData(
@@ -314,9 +300,9 @@ fun createAndSendNekkuOrder(
                             date,
                             preschoolTerms,
                             nekkuProducts,
-                            unitSize,
+                            nekkuDaycareCustomerMapping.unitSize,
                         ),
-                    description = groupName,
+                    description = nekkuDaycareCustomerMapping.groupName,
                 )
             ),
             dryRun = false,
@@ -325,11 +311,11 @@ fun createAndSendNekkuOrder(
     if (order.orders.isNotEmpty()) {
         val nekkuOrderResult = client.createNekkuMealOrder(order)
         logger.info {
-            "Sent Nekku order for date $date for customerNumber=$customerNumber groupId=$groupId and Nekku orders created: ${nekkuOrderResult.message}"
+            "Sent Nekku order for date $date for customerNumber=${nekkuDaycareCustomerMapping.customerNumber} groupId=$groupId and Nekku orders created: ${nekkuOrderResult.message}"
         }
     } else {
         logger.info {
-            "Skipped Nekku order with no rows for date $date for customerNumber=$customerNumber groupId=$groupId"
+            "Skipped Nekku order with no rows for date $date for customerNumber=${nekkuDaycareCustomerMapping.customerNumber} groupId=$groupId"
         }
     }
 }

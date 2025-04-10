@@ -361,18 +361,16 @@ data class NekkuChildData(
 )
 
 data class NekkuDaycareCustomerMapping(
-    val groupId: GroupId,
     val customerNumber: String,
     val unitSize: String,
+    val groupName: String,
 )
 
-fun Database.Read.getNekkuDaycareGroupIdCustomerNumberMapping(
-    range: FiniteDateRange
-): List<NekkuDaycareCustomerMapping> =
+fun Database.Read.getNekkuDaycareGroupId(range: FiniteDateRange): List<GroupId> =
     createQuery {
             sql(
                 """
-                    SELECT dg.id as groupId, dg.nekku_customer_number as customerNumber, nc.unit_size as unitSize  
+                    SELECT dg.id as groupId
                     FROM daycare_group dg 
                     JOIN daycare d ON d.id = dg.daycare_id
                     JOIN nekku_customer nc ON nc.number = dg.nekku_customer_number
@@ -382,7 +380,21 @@ fun Database.Read.getNekkuDaycareGroupIdCustomerNumberMapping(
                 """
             )
         }
-        .toList<NekkuDaycareCustomerMapping>()
+        .toList<GroupId>()
+
+fun Database.Read.getNekkuDaycareCustomerMapping(groupId: GroupId): NekkuDaycareCustomerMapping =
+    createQuery {
+            sql(
+                """
+                    SELECT dg.nekku_customer_number as customerNumber, nc.unit_size as unitSize, dg.name as groupName
+                    FROM daycare_group dg 
+                    JOIN daycare d ON d.id = dg.daycare_id
+                    JOIN nekku_customer nc ON nc.number = dg.nekku_customer_number
+                    WHERE dg.id = ${bind(groupId)}
+                """
+            )
+        }
+        .exactlyOne<NekkuDaycareCustomerMapping>()
 
 fun Database.Read.mealTypesForChildren(
     childIds: Set<ChildId>

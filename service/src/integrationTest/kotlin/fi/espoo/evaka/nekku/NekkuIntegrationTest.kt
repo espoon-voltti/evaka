@@ -805,8 +805,8 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 .forEach { tx.insert(it) }
         }
 
-        createAndSendNekkuOrder(client, db, "2501K6089", group.id, "large", monday)
-        createAndSendNekkuOrder(client, db, "2501K6089", group.id, "large", tuesday)
+        createAndSendNekkuOrder(client, db, group.id, monday)
+        createAndSendNekkuOrder(client, db, group.id, tuesday)
 
         assertEquals(
             listOf(
@@ -926,8 +926,8 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 .forEach { tx.insert(it) }
         }
 
-        createAndSendNekkuOrder(client, db, "2501K6089", group.id, "large", monday)
-        createAndSendNekkuOrder(client, db, "2501K6089", group.id, "large", tuesday)
+        createAndSendNekkuOrder(client, db, group.id, monday)
+        createAndSendNekkuOrder(client, db, group.id, tuesday)
 
         assertEquals(
             listOf(
@@ -1048,8 +1048,8 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 }
         }
 
-        createAndSendNekkuOrder(client, db, "2501K6089", group.id, "large", monday)
-        createAndSendNekkuOrder(client, db, "2501K6089", group.id, "large", tuesday)
+        createAndSendNekkuOrder(client, db, group.id, monday)
+        createAndSendNekkuOrder(client, db, group.id, tuesday)
 
         assertEquals(
             listOf(
@@ -1175,8 +1175,8 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 .forEach { tx.insert(it) }
         }
 
-        createAndSendNekkuOrder(client, db, "2501K6089", group.id, "large", monday)
-        createAndSendNekkuOrder(client, db, "2501K6089", group.id, "large", tuesday)
+        createAndSendNekkuOrder(client, db, group.id, monday)
+        createAndSendNekkuOrder(client, db, group.id, tuesday)
 
         assertEquals(
             listOf(
@@ -1287,8 +1287,8 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 .forEach { tx.insert(it) }
         }
 
-        createAndSendNekkuOrder(client, db, "2501K6090", group.id, "medium", monday)
-        createAndSendNekkuOrder(client, db, "2501K6090", group.id, "medium", tuesday)
+        createAndSendNekkuOrder(client, db, group.id, monday)
+        createAndSendNekkuOrder(client, db, group.id, tuesday)
 
         assertEquals(
             listOf(
