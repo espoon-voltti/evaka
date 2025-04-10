@@ -13,15 +13,15 @@
   labels: ['dependencies'],
   packageRules: [
     {
-      matchFileNames: ['apigw/*/**'],
+      matchFileNames: ['apigw/**'],
       addLabels: ['apigw'],
     },
     {
-      matchFileNames: ['frontend/*/**'],
+      matchFileNames: ['frontend/**'],
       addLabels: ['frontend'],
     },
     {
-      matchFileNames: ['service/*/**'],
+      matchFileNames: ['service/**'],
       addLabels: ['service'],
     },
     {
