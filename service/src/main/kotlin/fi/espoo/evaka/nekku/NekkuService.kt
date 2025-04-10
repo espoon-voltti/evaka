@@ -149,9 +149,9 @@ interface NekkuClient {
     data class NekkuOrder(
         @JsonProperty("delivery_date") val deliveryDate: String,
         @JsonProperty("customer_number") val customerNumber: String,
-        @JsonProperty("group_id") val group_id: String,
+        @JsonProperty("group_id") val groupId: String,
         val items: List<Item>,
-        val description: String,
+        val description: String?,
     )
 
     data class Item(
@@ -307,7 +307,7 @@ fun createAndSendNekkuOrder(
                 NekkuClient.NekkuOrder(
                     deliveryDate = date.toString(),
                     customerNumber = customerNumber,
-                    group_id = groupId.toString(),
+                    groupId = groupId.toString(),
                     items =
                         nekkuMealReportData(
                             children,
@@ -316,7 +316,7 @@ fun createAndSendNekkuOrder(
                             nekkuProducts,
                             unitSize,
                         ),
-                    description = groupName ?: "",
+                    description = groupName,
                 )
             ),
             dryRun = false,
