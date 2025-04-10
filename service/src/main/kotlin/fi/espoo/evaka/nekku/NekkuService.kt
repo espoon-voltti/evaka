@@ -141,20 +141,17 @@ class NekkuService(
         }
     }
 
-    fun sendNekkuDailyOrder(dbc: Database.Connection, clock: EvakaClock, job: AsyncJob.SendNekkuDailyOrder) {
+    fun sendNekkuDailyOrder(
+        dbc: Database.Connection,
+        clock: EvakaClock,
+        job: AsyncJob.SendNekkuDailyOrder,
+    ) {
         if (client == null) error("Cannot send Nekku order: NekkuEnv is not configured")
         try {
-            createAndSendNekkuOrder(
-                client,
-                dbc,
-                customerNumber = job.customerNumber,
-                groupId = job.customerGroupId,
-                unitSize = job.unitSize,
-                date = job.date,
-            )
+            createAndSendNekkuOrder(client, dbc, groupId = job.customerGroupId, date = job.date)
         } catch (e: Exception) {
             logger.warn(e) {
-                "Failed to send meal order to Nekku: date=${job.date}, customerNumber=${job.customerNumber}, groupId=${job.customerGroupId},error=${e.localizedMessage}"
+                "Failed to send meal order to Nekku: date=${job.date}, groupId=${job.customerGroupId},error=${e.localizedMessage}"
             }
             throw e
         }
@@ -290,19 +287,16 @@ fun planNekkuDailyOrderJobs(
     now: HelsinkiDateTime,
 ) {
     val range = now.toLocalDate().daySpan()
+
     dbc.transaction { tx ->
-        val nekkuDaycareCustomerMapping = tx.getNekkuDaycareGroupIdCustomerNumberMapping(range)
+        val nekkuDaycareGroupIds = tx.getNekkuDaycareGroupId(range)
         asyncJobRunner.plan(
             tx,
-            range.dates().flatMap { date ->
-                nekkuDaycareCustomerMapping.map { customerGroupsAndNumber ->
-                    AsyncJob.SendNekkuDailyOrder(
-                        customerGroupId = customerGroupsAndNumber.groupId,
-                        customerNumber = customerGroupsAndNumber.customerNumber,
-                        unitSize = customerGroupsAndNumber.unitSize,
-                        date = date,
-                    )
-                }
+            nekkuDaycareGroupIds.map { nekkuDaycareGroupId ->
+                AsyncJob.SendNekkuDailyOrder(
+                    customerGroupId = nekkuDaycareGroupId,
+                    date = now.plusDays(1).toLocalDate(),
+                )
             },
             runAt = now,
             retryInterval = Duration.ofHours(1),
