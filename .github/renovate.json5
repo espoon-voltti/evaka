@@ -1,0 +1,48 @@
+// SPDX-FileCopyrightText: 2017-2025 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "timezone": "Europe/Helsinki",
+  "extends": [
+    "config:recommended"
+  ],
+  "automergeStrategy": "merge-commit",
+  "minimumReleaseAge": "3 days",
+  "labels": ["dependencies"],
+  "packageRules": [
+    {
+      "matchPaths": ["apigw/*/**"],
+      "labels": ["apigw"]
+    },
+    {
+      "matchPaths": ["frontend/*/**"],
+      "labels": ["frontend"]
+    },
+    {
+      "matchPaths": ["service/*/**"],
+      "labels": ["service"]
+    },
+    {
+      // Automerge patch versions of all dependencies
+      "matchDepTypes": ["devDependencies"],
+      "matchUpdateTypes": ["patch"],
+      "automerge": true
+    },
+    {
+      // Automerge minor and patch versions for devDependencies
+      "matchDepTypes": ["devDependencies"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "automerge": true
+    },
+    {
+      // Paid font awesome packages are not avilable in public npm
+      "matchPackageNames": [
+        "@fortawesome/pro-light-svg-icons",
+        "@fortawesome/pro-regular-svg-icons",
+        "@fortawesome/pro-solid-svg-icons"
+      ],
+      "enabled": false
+    }
+  ]
+}
