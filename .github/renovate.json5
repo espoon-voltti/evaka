@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2017-2025 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
 {
   $schema: 'https://docs.renovatebot.com/renovate-schema.json',
   timezone: 'Europe/Helsinki',
@@ -7,54 +10,34 @@
   semanticCommits: 'disabled',
   automergeStrategy: 'merge-commit',
   minimumReleaseAge: '3 days',
-  labels: [
-    'dependencies',
-  ],
+  labels: ['dependencies'],
   packageRules: [
     {
-      matchFileNames: [
-        'apigw/*/**',
-      ],
-      addLabels: [
-        'apigw',
-      ],
+      matchFileNames: ['apigw/*/**'],
+      addLabels: ['apigw'],
     },
     {
-      matchFileNames: [
-        'frontend/*/**',
-      ],
-      addLabels: [
-        'frontend',
-      ],
+      matchFileNames: ['frontend/*/**'],
+      addLabels: ['frontend'],
     },
     {
-      matchFileNames: [
-        'service/*/**',
-      ],
-      addLabels: [
-        'service',
-      ],
+      matchFileNames: ['service/*/**'],
+      addLabels: ['service'],
     },
     {
-      matchDepTypes: [
-        'devDependencies',
-      ],
-      matchUpdateTypes: [
-        'patch',
-      ],
+      // Automerge patch versions of all dependencies
+      matchDepTypes: ['devDependencies'],
+      matchUpdateTypes: ['patch'],
       automerge: true,
     },
     {
-      matchDepTypes: [
-        'devDependencies',
-      ],
-      matchUpdateTypes: [
-        'minor',
-        'patch',
-      ],
+      // Automerge minor and patch versions for devDependencies
+      matchDepTypes: ['devDependencies'],
+      matchUpdateTypes: ['minor', 'patch'],
       automerge: true,
     },
     {
+      // Paid font awesome packages are not avilable in public npm
       matchPackageNames: [
         '@fortawesome/pro-light-svg-icons',
         '@fortawesome/pro-regular-svg-icons',
