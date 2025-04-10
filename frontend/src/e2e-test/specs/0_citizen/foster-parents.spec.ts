@@ -7,7 +7,6 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import { CalendarEventId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { evakaUserId, randomId } from 'lib-common/id-type'
-import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
 import config from '../../config'
@@ -339,7 +338,9 @@ test('Foster parent can read a pedagogical document', async () => {
   }).save()
   const document = await Fixture.pedagogicalDocument({
     childId: fosterChild.id,
-    description: 'e2e test description'
+    description: 'e2e test description',
+    createdAt: mockedNow,
+    modifiedAt: mockedNow
   }).save()
   await activeRelationshipPage.reload()
 
@@ -351,7 +352,7 @@ test('Foster parent can read a pedagogical document', async () => {
   )
   await pedagogicalDocumentsPage.assertPedagogicalDocumentExists(
     document.id,
-    LocalDate.todayInSystemTz().format(),
+    mockedNow.toLocalDate().format(),
     document.description
   )
 

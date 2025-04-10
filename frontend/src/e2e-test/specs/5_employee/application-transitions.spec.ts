@@ -639,7 +639,9 @@ describe('Application transitions', () => {
       mockedTime.toHelsinkiDateTime(LocalTime.of(12, 0))
     )
 
-    const page2 = await Page.open()
+    const page2 = await Page.open({
+      mockedTime: mockedTime.toHelsinkiDateTime(LocalTime.of(12, 0))
+    })
     const unitPage = new UnitPage(page2)
 
     const unitSupervisor = await Fixture.employee()
@@ -699,7 +701,9 @@ describe('Application transitions', () => {
       now
     )
 
-    const page2 = await Page.open()
+    const page2 = await Page.open({
+      mockedTime: mockedTime.toHelsinkiDateTime(LocalTime.of(12, 0))
+    })
     const unitPage = new UnitPage(page2)
 
     await employeeLogin(
@@ -766,10 +770,8 @@ describe('Application transitions', () => {
     const decision = decisionFixture(
       serviceWorker.id,
       applicationId,
-      application.form.preferences.preferredStartDate ??
-        LocalDate.todayInSystemTz(),
-      application.form.preferences.preferredStartDate ??
-        LocalDate.todayInSystemTz()
+      application.form.preferences.preferredStartDate ?? mockedTime,
+      application.form.preferences.preferredStartDate ?? mockedTime
     )
     const decisionId = decision.id
 
@@ -831,7 +833,10 @@ describe('Application transitions', () => {
       }).save()
     ).id
 
-    await rejectDecisionByCitizen({ id: decisionId })
+    await rejectDecisionByCitizen(
+      { id: decisionId },
+      { mockedTime: mockedTime.toHelsinkiDateTime(LocalTime.of(8, 0)) }
+    )
 
     const unitSupervisor = await Fixture.employee()
       .unitSupervisor(testDaycare.id)
@@ -842,12 +847,9 @@ describe('Application transitions', () => {
       expectRejectedApplicationToBeVisible: boolean
     ) {
       const page = await Page.open({
-        mockedTime:
-          addDays !== 0
-            ? LocalDate.todayInSystemTz()
-                .addDays(addDays)
-                .toHelsinkiDateTime(LocalTime.of(12, 0))
-            : undefined
+        mockedTime: mockedTime
+          .addDays(addDays)
+          .toHelsinkiDateTime(LocalTime.of(12, 0))
       })
 
       await employeeLogin(page, unitSupervisor)

@@ -164,8 +164,8 @@ private fun Database.Transaction.createDocument(
             sql(
                 """
 WITH pd AS (
-    INSERT INTO pedagogical_document(child_id, created_by, description, modified_at, modified_by)
-    VALUES (${bind(body.childId)}, ${bind(user.evakaUserId)}, ${bind(body.description)}, ${bind(now)}, ${bind(user.evakaUserId)})
+    INSERT INTO pedagogical_document(child_id, created_at, created_by, description, modified_at, modified_by)
+    VALUES (${bind(body.childId)}, ${bind(now)}, ${bind(user.evakaUserId)}, ${bind(body.description)}, ${bind(now)}, ${bind(user.evakaUserId)})
     RETURNING *
 ) SELECT
     pd.id,

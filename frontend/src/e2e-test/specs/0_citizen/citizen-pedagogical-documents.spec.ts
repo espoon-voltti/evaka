@@ -4,7 +4,6 @@
 
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { randomId } from 'lib-common/id-type'
-import LocalDate from 'lib-common/local-date'
 
 import { insertPedagogicalDocumentAttachment } from '../../dev-api'
 import {
@@ -87,7 +86,9 @@ describe('Citizen pedagogical documents', () => {
     test('Existing pedagogical document without attachment is shown', async () => {
       const pd = await Fixture.pedagogicalDocument({
         childId: testChild.id,
-        description: 'e2e test description'
+        description: 'e2e test description',
+        createdAt: mockedNow,
+        modifiedAt: mockedNow
       }).save()
 
       await header.openChildPage(testChild.id)
@@ -96,7 +97,7 @@ describe('Citizen pedagogical documents', () => {
 
       await pedagogicalDocumentsPage.assertPedagogicalDocumentExists(
         pd.id,
-        LocalDate.todayInSystemTz().format(),
+        mockedNow.toLocalDate().format(),
         pd.description
       )
     })
