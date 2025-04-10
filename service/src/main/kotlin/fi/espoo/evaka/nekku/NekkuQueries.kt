@@ -4,9 +4,18 @@
 
 package fi.espoo.evaka.nekku
 
+import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.decision.logger
+import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.TimeRange
+import java.time.LocalDate
 import org.jdbi.v3.core.mapper.PropagateNull
+import org.jdbi.v3.json.Json
 
 data class CustomerNumbers(
     @PropagateNull val number: String,
@@ -20,7 +29,7 @@ fun fetchAndUpdateNekkuCustomers(client: NekkuClient, db: Database.Connection) {
     val customersFromNekku =
         client
             .getCustomers()
-            .map { it -> CustomerNumbers(it.number, it.name, it.group, it.unit_size) }
+            .map { it -> CustomerNumbers(it.number, it.name, it.group, it.unitSize) }
             .filter { it.group.contains("Varhaiskasvatus") }
 
     if (customersFromNekku.isEmpty())
@@ -271,10 +280,10 @@ INSERT INTO nekku_product (sku, name, options_id, unit_size, meal_time, meal_typ
 VALUES (
     ${bind{it.sku}},
     ${bind{it.name}},
-    ${bind{it.options_id}},
-    ${bind{it.unit_size}},
-    ${bind{it.meal_time}},
-    ${bind{it.meal_type}}
+    ${bind{it.optionsId}},
+    ${bind{it.unitSize}},
+    ${bind{it.mealTime}},
+    ${bind{it.mealType}}
 )
 ON CONFLICT (sku) DO 
 UPDATE SET
@@ -295,9 +304,108 @@ WHERE
     return deletedProductCount
 }
 
-fun Database.Transaction.getNekkuProducts(): List<NekkuProduct> {
+fun Database.Read.getNekkuProducts(): List<NekkuProduct> {
     return createQuery {
             sql("SELECT sku, name, options_id, unit_size, meal_time, meal_type FROM nekku_product")
         }
         .toList<NekkuProduct>()
 }
+
+fun Database.Read.getNekkuChildData(nekkuGroupId: GroupId, date: LocalDate): List<NekkuChildData> =
+    createQuery {
+            sql(
+                """
+SELECT
+    rp.child_id,
+    rp.unit_id,
+    rp.group_id,
+    rp.placement_type,
+    (sn.shift_care IS NOT NULL AND sn.shift_care != 'NONE') AS has_shift_care,
+    p.first_name,
+    p.last_name,
+    coalesce((
+        SELECT jsonb_agg(jsonb_build_object('start', ar.start_time, 'end', ar.end_time))
+        FROM attendance_reservation ar
+        JOIN evaka_user eu ON ar.created_by = eu.id
+        WHERE
+            ar.child_id = rp.child_id AND
+            ar.date = ${bind(date)} AND
+            -- Ignore NO_TIMES reservations
+            ar.start_time IS NOT NULL AND ar.end_time IS NOT NULL
+    ), '[]'::jsonb) AS reservations,
+    coalesce((
+        SELECT array_agg(a.category)
+        FROM absence a
+        WHERE a.child_id = rp.child_id AND a.date = ${bind(date)}
+    ), '{}'::absence_category[]) AS absences
+FROM realized_placement_one(${bind(date)}) rp
+JOIN daycare_group dg ON dg.id = rp.group_id
+JOIN person p ON p.id = rp.child_id
+LEFT JOIN service_need sn ON sn.placement_id = rp.placement_id AND daterange(sn.start_date, sn.end_date, '[]') @> ${bind(date)}
+WHERE dg.id = ${bind(nekkuGroupId)}
+                    """
+            )
+        }
+        .toList()
+
+data class NekkuChildData(
+    val childId: ChildId,
+    val unitId: DaycareId,
+    val groupId: GroupId,
+    val placementType: PlacementType,
+    val hasShiftCare: Boolean,
+    val firstName: String,
+    val lastName: String,
+    @Json val reservations: List<TimeRange>,
+    val absences: Set<AbsenceCategory>,
+)
+
+data class NekkuDaycareCustomerMapping(
+    val customerNumber: String,
+    val unitSize: String,
+    val groupName: String,
+)
+
+fun Database.Read.getNekkuDaycareGroupId(range: FiniteDateRange): List<GroupId> =
+    createQuery {
+            sql(
+                """
+                    SELECT dg.id as groupId
+                    FROM daycare_group dg 
+                    JOIN daycare d ON d.id = dg.daycare_id
+                    JOIN nekku_customer nc ON nc.number = dg.nekku_customer_number
+                    WHERE dg.nekku_customer_number IS NOT NULL
+                      AND daterange(d.opening_date, d.closing_date, '[]') && ${bind(range)}
+                      AND daterange(dg.start_date, dg.end_date, '[]') && ${bind(range)}
+                """
+            )
+        }
+        .toList<GroupId>()
+
+fun Database.Read.getNekkuDaycareCustomerMapping(groupId: GroupId): NekkuDaycareCustomerMapping =
+    createQuery {
+            sql(
+                """
+                    SELECT dg.nekku_customer_number as customerNumber, nc.unit_size as unitSize, dg.name as groupName
+                    FROM daycare_group dg 
+                    JOIN daycare d ON d.id = dg.daycare_id
+                    JOIN nekku_customer nc ON nc.number = dg.nekku_customer_number
+                    WHERE dg.id = ${bind(groupId)}
+                """
+            )
+        }
+        .exactlyOne<NekkuDaycareCustomerMapping>()
+
+fun Database.Read.mealTypesForChildren(
+    childIds: Set<ChildId>
+): Map<ChildId, NekkuProductMealType?> =
+    createQuery {
+            sql(
+                """
+SELECT child.id as child_id, child.nekku_diet
+FROM child
+WHERE child.id = ANY (${bind(childIds)})
+"""
+            )
+        }
+        .toMap { column<ChildId>("child_id") to column<NekkuProductMealType?>("nekku_diet") }

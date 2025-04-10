@@ -269,6 +269,7 @@ export class Fixture {
       endDate: null,
       jamixCustomerNumber: null,
       aromiCustomerId: null,
+      nekkuCustomerNumber: null,
       ...initial
     })
   }
@@ -507,6 +508,7 @@ export class Fixture {
       languageAtHome: '',
       languageAtHomeDetails: '',
       medication: '',
+      nekkuDiet: null,
       ...initial
     })
   }
@@ -3148,7 +3150,8 @@ export const testDaycareGroup: DevDaycareGroup = {
   startDate: LocalDate.of(2000, 1, 1),
   endDate: null,
   jamixCustomerNumber: null,
-  aromiCustomerId: null
+  aromiCustomerId: null,
+  nekkuCustomerNumber: null
 }
 
 /**
