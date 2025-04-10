@@ -13,15 +13,15 @@
   "packageRules": [
     {
       "matchPaths": ["apigw/*/**"],
-      "labels": ["apigw"]
+      "addLabels": ["apigw"]
     },
     {
       "matchPaths": ["frontend/*/**"],
-      "labels": ["frontend"]
+      "addLabels": ["frontend"]
     },
     {
       "matchPaths": ["service/*/**"],
-      "labels": ["service"]
+      "addLabels": ["service"]
     },
     {
       // Automerge patch versions of all dependencies
