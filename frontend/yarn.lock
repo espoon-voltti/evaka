@@ -3863,11 +3863,11 @@ __metadata:
   linkType: hard
 
 "@types/leaflet@npm:^1.9.3":
-  version: 1.9.3
-  resolution: "@types/leaflet@npm:1.9.3"
+  version: 1.9.17
+  resolution: "@types/leaflet@npm:1.9.17"
   dependencies:
     "@types/geojson": "npm:*"
-  checksum: 10/643da436f89d3ce377fcdadecf6a939e0fc06a50d7aa21366eee9d6f8da35984b84db0eca559652cf0076f28cda1eb58b7c49dcf5a3075e74efec07eef9d9232
+  checksum: 10/6520b42c98a31340f49e456cc8e4c1a2a73f4ff262ca7293fbd9aa931fc34dd61699a70e9c67110773092bd6c397911918690e339b0c3fa1bc471ef21fd55932
   languageName: node
   linkType: hard
 
