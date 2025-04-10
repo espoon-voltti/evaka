@@ -633,7 +633,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         planNekkuOrderJobs(db, asyncJobRunner, now)
 
-        assertEquals(emptyList(), getJobs())
+        assertEquals(emptyList(), getNekkuWeeklyJobs())
     }
 
     @Test
@@ -675,7 +675,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         planNekkuOrderJobs(db, asyncJobRunner, now)
 
-        assertEquals(7, getJobs().count())
+        assertEquals(7, getNekkuWeeklyJobs().count())
     }
 
     @Test
@@ -719,7 +719,10 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         planNekkuOrderJobs(db, asyncJobRunner, now)
 
-        assertEquals(nowPlusTwoWeeks.toLocalDate().toString(), getJobs().first().date.toString())
+        assertEquals(
+            nowPlusTwoWeeks.toLocalDate().toString(),
+            getNekkuWeeklyJobs().first().date.toString(),
+        )
     }
 
     @Test
@@ -763,7 +766,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         planNekkuDailyOrderJobs(db, asyncJobRunner, now)
 
-        assertEquals(tomorrow.toLocalDate().toString(), getJobs().first().date.toString())
+        assertEquals(tomorrow.toLocalDate().toString(), getNekkuDailyJobs().first().date.toString())
     }
 
     @Test
@@ -1365,9 +1368,18 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         )
     }
 
-    private fun getJobs() =
+    private fun getNekkuWeeklyJobs() =
         db.read { tx ->
             tx.createQuery { sql("SELECT payload FROM async_job WHERE type = 'SendNekkuOrder'") }
+                .map { jsonColumn<AsyncJob.SendNekkuOrder>("payload") }
+                .toList()
+        }
+
+    private fun getNekkuDailyJobs() =
+        db.read { tx ->
+            tx.createQuery {
+                    sql("SELECT payload FROM async_job WHERE type = 'SendNekkuDailyOrder'")
+                }
                 .map { jsonColumn<AsyncJob.SendNekkuOrder>("payload") }
                 .toList()
         }
