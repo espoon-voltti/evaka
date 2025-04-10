@@ -48,9 +48,15 @@ const Wrapper = styled.div<{ $readOnly: boolean }>`
   }
 `
 
+const SectionTitleWrapper = styled.div`
+  max-width: calc(100% - 280px);
+`
+
 const SectionActionsRow = styled(FixedSpaceRow)`
-  margin-top: ${defaultMargins.s};
-  margin-bottom: -${defaultMargins.XL};
+  position: absolute;
+  right: ${defaultMargins.m};
+  padding: ${defaultMargins.m};
+  z-index: 1;
 `
 
 interface Props {
@@ -81,9 +87,11 @@ export default React.memo(function TemplateSectionView({
   return (
     <Wrapper $readOnly={readOnly} data-qa="template-section">
       <FixedSpaceRow alignItems="baseline" justifyContent="space-between">
-        <ExpandingInfo info={infoText.state}>
-          <H2>{label.value()}</H2>
-        </ExpandingInfo>
+        <SectionTitleWrapper>
+          <ExpandingInfo info={infoText.state}>
+            <H2>{label.value()}</H2>
+          </ExpandingInfo>
+        </SectionTitleWrapper>
 
         {!readOnly && (
           <SectionActionsRow
