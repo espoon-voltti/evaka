@@ -151,11 +151,8 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
      * thread.
      */
     open class Read internal constructor(val handle: Handle) {
-        @Deprecated("Use new query API instead")
-        fun createQuery(@Language("sql") sql: String): Query = Query(handle.createQuery(sql))
-
         fun createQuery(f: QuerySql.Builder.() -> QuerySql): Query =
-            @Suppress("DEPRECATION") createQuery(QuerySql.Builder().run { f(this) })
+            createQuery(QuerySql.Builder().run { f(this) })
 
         fun createQuery(fragment: QuerySql): Query {
             val raw = handle.createQuery(fragment.sql.toString())
@@ -184,11 +181,8 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
 
         fun nextSavepoint(): String = "savepoint-${savepointId++}"
 
-        @Deprecated("Use new query API instead")
-        fun createUpdate(@Language("sql") sql: String): Update = Update(handle.createUpdate(sql))
-
         fun createUpdate(f: QuerySql.Builder.() -> QuerySql): Update =
-            @Suppress("DEPRECATION") createUpdate(QuerySql.Builder().run { f(this) })
+            createUpdate(QuerySql.Builder().run { f(this) })
 
         fun createUpdate(fragment: QuerySql): Update {
             val raw = handle.createUpdate(fragment.sql.toString())
