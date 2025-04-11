@@ -410,7 +410,6 @@ export class InvoicesPage {
   async createInvoiceDrafts() {
     await this.#createInvoicesButton.click()
     await this.assertLoaded()
-    await this.#invoices.assertAttributeEquals('data-isloading', 'false')
   }
 
   async assertInvoiceCount(count: number) {
@@ -478,6 +477,7 @@ export class InvoicesPage {
   }
 
   async assertButtonsDisabled() {
+    await this.#invoices.assertAttributeEquals('data-isloading', 'false')
     await this.#openSendInvoicesDialogButton.assertDisabled(true)
     await this.#deleteInvoicesButton.assertDisabled(true)
   }

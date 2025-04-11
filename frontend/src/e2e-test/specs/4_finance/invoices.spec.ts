@@ -243,7 +243,6 @@ describe('Invoices', () => {
       const invoicesPage = await openInvoicesPage()
       await invoicesPage.searchInvoices()
       await invoicesPage.assertInvoiceCount(2)
-      await invoicesPage.createInvoiceDrafts()
       await invoicesPage.selectFirstInvoice()
       await invoicesPage.sendInvoices()
       await invoicesPage.assertInvoiceCount(1)
