@@ -19,6 +19,7 @@ data class ChildDocumentCitizenSummary(
     val templateName: String,
     val publishedAt: HelsinkiDateTime,
     val unread: Boolean,
+    @Nested("child") val child: ChildBasics,
     val answeredAt: HelsinkiDateTime?,
     @Nested("answered_by") val answeredBy: EvakaUser?,
 )

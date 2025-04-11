@@ -2,7 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect } from 'react'
+import React, { useCallback, useContext, useEffect } from 'react'
+import { useNavigate, useSearchParams } from 'react-router'
 import styled from 'styled-components'
 
 import Footer from 'citizen-frontend/Footer'
@@ -13,6 +14,7 @@ import { ChildDocumentCitizenDetails } from 'lib-common/generated/api-types/docu
 import { ChildDocumentId } from 'lib-common/generated/api-types/shared'
 import { useMutation, useQueryResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
+import { NotificationsContext } from 'lib-components/Notifications'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
@@ -34,7 +36,8 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import { H1, H2, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
-import { faArrowDownToLine, faPrint } from 'lib-icons'
+import colors from 'lib-customizations/common'
+import { faArrowDownToLine, faCheck, faPrint } from 'lib-icons'
 
 import { downloadChildDocument } from '../generated/api-clients/document'
 
@@ -125,6 +128,28 @@ const ChildDocumentView = React.memo(function ChildDocumentView({
 
   const [readOnly, { on: readOnlyOn, off: readOnlyOff }] = useBoolean(true)
 
+  const [searchParams] = useSearchParams()
+  const { addNotification } = useContext(NotificationsContext)
+  const navigate = useNavigate()
+  const onSuccess = useCallback(() => {
+    const returnTo = searchParams.get('returnTo')
+    if (returnTo === 'calendar') {
+      void navigate('/calendar')
+      addNotification({
+        icon: faCheck,
+        iconColor: colors.status.success,
+        children: i18n.children.childDocuments.success,
+        dataQa: `toast-child-document-${document.id}-success`
+      })
+    }
+  }, [
+    addNotification,
+    document.id,
+    i18n.children.childDocuments.success,
+    navigate,
+    searchParams
+  ])
+
   return (
     <>
       <Container>
@@ -178,6 +203,7 @@ const ChildDocumentView = React.memo(function ChildDocumentView({
                       content: bind.value()
                     }
                   })}
+                  onSuccess={onSuccess}
                   text={i18n.children.childDocuments.send}
                   primary
                   disabled={!bind.isValid()}

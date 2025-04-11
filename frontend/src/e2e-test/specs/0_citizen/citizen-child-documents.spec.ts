@@ -228,6 +228,8 @@ describe('Citizen child documents editor page', () => {
       publishedContent: documentContent
     }).save()
 
+    await page.reload()
+    await header.assertUnreadChildrenCount(4)
     await header.openChildPage(child.id)
     const childPage = new CitizenChildPage(page)
     await childPage.openCollapsible('child-documents')
@@ -236,6 +238,7 @@ describe('Citizen child documents editor page', () => {
       `${mockedNow.toLocalDate().format()}\tLomake kuntalaiselle\tEi vastattu\tTäytettävänä huoltajalla`
     )
     await childPage.childDocumentLink(document.id).click()
+    await header.assertUnreadChildrenCount(3)
     const childDocumentPage = new ChildDocumentPage(page)
     await childDocumentPage.editButton.click()
     await childDocumentPage.status.assertTextEquals('Täytettävänä huoltajalla')
@@ -255,5 +258,75 @@ describe('Citizen child documents editor page', () => {
     await row.assertTextEquals(
       `${mockedNow.toLocalDate().format()}\tLomake kuntalaiselle\tVastattu, ${mockedNow.toLocalDate().format()}, ${testAdult.lastName} ${testAdult.firstName}\tValmis`
     )
+  })
+
+  test('guardian can navigate via toast', async () => {
+    const templateContent: DocumentTemplateContent = {
+      sections: [
+        {
+          id: randomId(),
+          infoText: '',
+          label: 'Testi',
+          questions: [
+            {
+              id: randomId(),
+              type: 'TEXT',
+              infoText: '',
+              label: 'Kysymys 1',
+              multiline: false
+            },
+            {
+              id: randomId(),
+              type: 'TEXT',
+              infoText: '',
+              label: 'Kysymys 2',
+              multiline: false
+            }
+          ]
+        }
+      ]
+    }
+    const template = await Fixture.documentTemplate({
+      type: 'CITIZEN_BASIC',
+      name: 'Lomake kuntalaiselle',
+      content: templateContent,
+      published: true
+    }).save()
+    const documentContent: DocumentContent = {
+      answers: []
+    }
+    const document = await Fixture.childDocument({
+      templateId: template.id,
+      childId: child.id,
+      status: 'CITIZEN_DRAFT',
+      content: documentContent,
+      publishedAt: mockedNow,
+      publishedContent: documentContent
+    }).save()
+
+    await header.selectTab('calendar')
+    const toast1 = page.findByDataQa(`toast-child-document-${document.id}`)
+    await toast1.assertTextEquals(
+      'Henkilökunta on pyytänyt sinua vastaamaan lomakkeeseen, joka koskee lastasi: Jari-Petteri Karhula\n\nVastaa lomakkeeseen'
+    )
+    await toast1.click()
+    const childDocumentPage = new ChildDocumentPage(page)
+    await childDocumentPage.editButton.click()
+    await childDocumentPage.status.assertTextEquals('Täytettävänä huoltajalla')
+    const question1 = childDocumentPage.getTextQuestion('Testi', 'Kysymys 1')
+    await question1.fill('Jonkin sortin vastaus 1')
+    const question2 = childDocumentPage.getTextQuestion('Testi', 'Kysymys 2')
+    await question2.fill('Jonkin sortin vastaus 2')
+    await childDocumentPage.previewButton.click()
+    const answer1 = childDocumentPage.getTextAnswer('Testi', 'Kysymys 1')
+    await answer1.assertTextEquals('Jonkin sortin vastaus 1\n')
+    const answer2 = childDocumentPage.getTextAnswer('Testi', 'Kysymys 2')
+    await answer2.assertTextEquals('Jonkin sortin vastaus 2\n')
+    await childDocumentPage.sendButton.click()
+    await toast1.waitUntilHidden()
+    const toast2 = page.findByDataQa(
+      `toast-child-document-${document.id}-success`
+    )
+    await toast2.assertTextEquals('Lomake lähetetty')
   })
 })

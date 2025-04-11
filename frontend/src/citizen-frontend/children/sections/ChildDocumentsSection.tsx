@@ -251,7 +251,7 @@ const Answered = ({ document }: { document: ChildDocumentCitizenSummary }) => {
     return null
   }
   if (document.answeredAt === null) {
-    return <span>{i18n.children.childDocuments.notAnswered}</span>
+    return <span>{i18n.children.childDocuments.unanswered}</span>
   }
 
   return (

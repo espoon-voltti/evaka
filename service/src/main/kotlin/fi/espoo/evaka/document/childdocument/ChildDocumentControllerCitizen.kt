@@ -147,6 +147,26 @@ class ChildDocumentControllerCitizen(
             .also { Audit.ChildDocumentUnreadCount.log(targetId = AuditId(user.id)) }
     }
 
+    @GetMapping("/unanswered")
+    fun getUnansweredChildDocuments(
+        db: Database,
+        user: AuthenticatedUser.Citizen,
+        clock: EvakaClock,
+    ): List<ChildDocumentCitizenSummary> {
+        return db.connect { dbc ->
+            dbc.read { tx ->
+                val filter =
+                    accessControl.getAuthorizationFilter(
+                        tx,
+                        user,
+                        clock,
+                        Action.Citizen.ChildDocument.UPDATE,
+                    )
+                filter?.let { tx.getUnansweredChildDocuments(user, it) } ?: emptyList()
+            }
+        }
+    }
+
     data class UpdateChildDocumentRequest(val status: DocumentStatus, val content: DocumentContent)
 
     @PutMapping("/{documentId}")

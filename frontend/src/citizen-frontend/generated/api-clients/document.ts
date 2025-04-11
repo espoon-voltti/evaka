@@ -70,6 +70,18 @@ export async function getDocuments(
 
 
 /**
+* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentControllerCitizen.getUnansweredChildDocuments
+*/
+export async function getUnansweredChildDocuments(): Promise<ChildDocumentCitizenSummary[]> {
+  const { data: json } = await client.request<JsonOf<ChildDocumentCitizenSummary[]>>({
+    url: uri`/citizen/child-documents/unanswered`.toString(),
+    method: 'GET'
+  })
+  return json.map(e => deserializeJsonChildDocumentCitizenSummary(e))
+}
+
+
+/**
 * Generated from fi.espoo.evaka.document.childdocument.ChildDocumentControllerCitizen.getUnreadDocumentsCount
 */
 export async function getUnreadDocumentsCount(): Promise<Partial<Record<PersonId, number>>> {

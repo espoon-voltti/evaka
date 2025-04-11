@@ -12,6 +12,7 @@ import {
   getCitizenCalendarEvents
 } from '../generated/api-clients/calendarevent'
 import { getDailyServiceTimeNotifications } from '../generated/api-clients/dailyservicetimes'
+import { getUnansweredChildDocuments } from '../generated/api-clients/document'
 import {
   answerFixedPeriodQuestionnaire,
   answerOpenRangeQuestionnaire,
@@ -77,4 +78,8 @@ export const incomeExpirationDatesQuery = q.query(() =>
       ? sortBy(incomeExpirationDates, (d) => d)[0]
       : null
   )
+)
+
+export const unansweredChildDocumentsQuery = q.query(
+  getUnansweredChildDocuments
 )

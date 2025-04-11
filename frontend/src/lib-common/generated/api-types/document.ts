@@ -136,6 +136,7 @@ export interface ChildDocumentCitizenDetails {
 export interface ChildDocumentCitizenSummary {
   answeredAt: HelsinkiDateTime | null
   answeredBy: EvakaUser | null
+  child: ChildBasics
   id: ChildDocumentId
   publishedAt: HelsinkiDateTime
   status: DocumentStatus
@@ -490,6 +491,7 @@ export function deserializeJsonChildDocumentCitizenSummary(json: JsonOf<ChildDoc
   return {
     ...json,
     answeredAt: (json.answeredAt != null) ? HelsinkiDateTime.parseIso(json.answeredAt) : null,
+    child: deserializeJsonChildBasics(json.child),
     publishedAt: HelsinkiDateTime.parseIso(json.publishedAt)
   }
 }
