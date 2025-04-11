@@ -1542,11 +1542,11 @@ __metadata:
   linkType: hard
 
 "@types/split2@npm:^4.2.0":
-  version: 4.2.0
-  resolution: "@types/split2@npm:4.2.0"
+  version: 4.2.3
+  resolution: "@types/split2@npm:4.2.3"
   dependencies:
     "@types/node": "npm:*"
-  checksum: 10/30f2c59d26dd9692e2f0e2eb8e5282da8d602aacad83a75b41c77ab7377a932739254c188dd1397cfb5894b5458bebf8d305fd7de94b17cd233a4ba0889b7251
+  checksum: 10/972f7d463d6e08bcb64ae1e33c6f0e03a5343a60671e736db55e238282afcfb2e3e5877a6e233f8b2b2e2a6e0f99d9af1f87b373de8e3f7405cacfaa58b99e85
   languageName: node
   linkType: hard
 
