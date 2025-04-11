@@ -4,7 +4,7 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import sortBy from 'lodash/sortBy'
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { Fragment, useCallback, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
 import styled, { useTheme } from 'styled-components'
 
@@ -256,6 +256,7 @@ interface StaffMemberDay {
     start: LocalTime | null // null if started on previous day
     end: LocalTime | null // null if ends on the next day
     type: StaffAttendanceType
+    description: string | null
   }[]
   confidence: 'full' | 'maybeInOtherGroup' | 'maybeInOtherUnit'
 }
@@ -315,7 +316,8 @@ const StaffAttendancesPlanned = React.memo(function StaffAttendancesPlanned({
                     end: p.end.toLocalDate().isEqual(date)
                       ? p.end.toLocalTime()
                       : null,
-                    type: p.type
+                    type: p.type,
+                    description: p.description
                   })),
                 confidence:
                   s.unitIds.length > 1
@@ -336,10 +338,9 @@ const StaffAttendancesPlanned = React.memo(function StaffAttendancesPlanned({
         <InfoBox message={i18n.attendances.staff.plansInfo} noMargin thin />
       </DayRow>
       {days.map(({ date, staff }) => (
-        <>
+        <Fragment key={date.formatIso()}>
           <DayRow
             data-qa={`date-row-${date.formatIso()}`}
-            key={date.formatIso()}
             onClick={() =>
               setExpandedDate(expandedDate?.isEqual(date) ? null : date)
             }
@@ -400,9 +401,12 @@ const StaffAttendancesPlanned = React.memo(function StaffAttendancesPlanned({
                   )}
 
                   {s.plans.map((p, i) => (
-                    <DetailsRow key={i} alignItems="center">
+                    <DetailsRow key={i} alignItems="start">
                       <PlanType>{i18n.attendances.staffTypes[p.type]}</PlanType>
-                      <div>{`${p.start?.format() ?? '→'} - ${p.end?.format() ?? '→'}`}</div>
+                      <div>
+                        <div>{`${p.start?.format() ?? '→'} - ${p.end?.format() ?? '→'}`}</div>
+                        {p.description ? <i>({p.description})</i> : null}
+                      </div>
                     </DetailsRow>
                   ))}
                 </FixedSpaceColumn>
@@ -440,7 +444,7 @@ const StaffAttendancesPlanned = React.memo(function StaffAttendancesPlanned({
               ))}
             </ExpandedStaff>
           )}
-        </>
+        </Fragment>
       ))}
     </FixedSpaceColumn>
   ))

@@ -61,7 +61,7 @@ SELECT DISTINCT
         WHERE e.id = a.employee_id AND (dg.daycare_id = ${bind(unitId)} OR a.group_id IS NULL) AND tstzrange(a.arrived, a.departed) && ${bind(range)}
     ), '[]'::jsonb) AS attendances,
     coalesce((
-        SELECT jsonb_agg(jsonb_build_object('start', p.start_time, 'end', p.end_time, 'type', p.type) ORDER BY p.start_time)
+        SELECT jsonb_agg(jsonb_build_object('start', p.start_time, 'end', p.end_time, 'type', p.type, 'description', p.description) ORDER BY p.start_time)
         FROM staff_attendance_plan p
         WHERE e.id = p.employee_id AND tstzrange(p.start_time, p.end_time) && ${bind(range)}
     ), '[]'::jsonb) AS planned_attendances,
@@ -677,7 +677,7 @@ fun Database.Read.getPlannedStaffAttendances(
     return createQuery {
             sql(
                 """
-SELECT start_time AS start, end_time AS end, type FROM staff_attendance_plan
+SELECT start_time AS start, end_time AS end, type, description FROM staff_attendance_plan
 WHERE employee_id = ${bind(employeeId)} AND tstzrange(start_time, end_time) && tstzrange(${bind(start)}, ${bind(end)})
 """
             )
@@ -694,7 +694,7 @@ fun Database.Read.getPlannedStaffAttendanceForDays(
     return createQuery {
             sql(
                 """
-SELECT start_time AS start, end_time AS end, type, employee_id FROM staff_attendance_plan
+SELECT start_time AS start, end_time AS end, type, employee_id, description FROM staff_attendance_plan
 WHERE employee_id = ANY(${bind(employeeIds)}) AND (tstzrange(start_time, end_time) && tstzrange(${bind(startTime)}, ${bind(endTime)}))
 """
             )

@@ -9,7 +9,11 @@ import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
-import { EmployeeId } from 'lib-common/generated/api-types/shared'
+import {
+  EmployeeId,
+  HelsinkiDateTimeRange
+} from 'lib-common/generated/api-types/shared'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import { constantQuery, useQueryResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
@@ -19,6 +23,7 @@ import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { H4, Label } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
@@ -76,6 +81,54 @@ export default React.memo(function StaffMemberPage({
   const openAttendanceInAnotherUnit =
     !!openAttendance && openAttendance.unitId !== unitId
 
+  function formatTime(time: HelsinkiDateTime) {
+    const today = LocalDate.todayInHelsinkiTz()
+    return time.toLocalDate().isEqual(today)
+      ? time.toLocalTime().format()
+      : time.format('d.M. HH:mm')
+  }
+
+  const spanningPlans = useMemo(() => {
+    function getInfo(range: HelsinkiDateTimeRange) {
+      const plans = employeeResponse.isSuccess
+        ? (
+            employeeResponse.value.staffMember?.plannedAttendances.filter(
+              (plan) =>
+                plan.start.isEqualOrAfter(range.start) &&
+                plan.end.isEqualOrBefore(range.end)
+            ) ?? []
+          ).sort((a, b) => a.start.timestamp - b.start.timestamp)
+        : []
+      if (
+        plans.length > 1 ||
+        plans.some((plan) => plan.type !== 'PRESENT') ||
+        plans.some((plan) => plan.description)
+      )
+        return (
+          <InfoListContainer>
+            {plans.map((plan) => (
+              <li key={plan.start.formatIso()}>
+                <div>
+                  <div>
+                    {`${i18n.attendances.staffTypes[plan.type]} ${formatTime(plan.start)} – ${formatTime(plan.end)}`}
+                  </div>
+                  {plan.description ? <i>({plan.description})</i> : null}
+                </div>
+              </li>
+            ))}
+          </InfoListContainer>
+        )
+      return null
+    }
+
+    return employeeResponse.isSuccess
+      ? (employeeResponse.value.staffMember?.spanningPlans.map((span) => ({
+          span,
+          info: getInfo(span)
+        })) ?? [])
+      : []
+  }, [employeeResponse, i18n])
+
   return renderResult(
     employeeResponse,
     ({ isOperationalDate, staffMember }) => (
@@ -92,23 +145,25 @@ export default React.memo(function StaffMemberPage({
             <FixedSpaceColumn>
               {featureFlags.staffAttendanceTypes ? (
                 <>
-                  {staffMember.spanningPlans.length > 0 && (
+                  {spanningPlans.length > 0 && (
                     <TimeInfo data-qa="shift-time">
                       <span>{i18n.attendances.staff.plannedAttendance}</span>
-                      <div>
-                        {staffMember.spanningPlans.map((range, i) => {
-                          const today = LocalDate.todayInHelsinkiTz()
-                          const start = range.start.toLocalDate().isEqual(today)
-                            ? range.start.toLocalTime().format()
-                            : range.start.format('d.M. HH:mm')
-                          const end = range.end.toLocalDate().isEqual(today)
-                            ? range.end.toLocalTime().format()
-                            : range.end.format('d.M. HH:mm')
+                      <PlanContainer>
+                        {spanningPlans.map(({ span, info }, i) => {
+                          const start = formatTime(span.start)
+                          const end = formatTime(span.end)
                           return (
-                            <div key={`plan-${i}`}>{`${start} – ${end}`}</div>
+                            <ExpandingInfo
+                              info={info}
+                              key={`plan-${i}`}
+                              inlineChildren
+                              data-qa="shift-info"
+                            >
+                              <span>{`${start} – ${end}`}</span>
+                            </ExpandingInfo>
                           )
                         })}
-                      </div>
+                      </PlanContainer>
                     </TimeInfo>
                   )}
                   {staffMember.attendances.length > 0 &&
@@ -274,4 +329,12 @@ export default React.memo(function StaffMemberPage({
 const InlineIconButton = styled(IconOnlyButton)`
   display: inline-flex;
   margin-left: ${defaultMargins.xxs};
+`
+const PlanContainer = styled.div`
+  padding-inline: ${defaultMargins.s};
+`
+const InfoListContainer = styled.ul`
+  width: fit-content;
+  text-align: left;
+  margin: 0 auto;
 `

@@ -96,7 +96,8 @@ export default React.memo(function StaffMemberPlannedAttendancesPage({
                   end: a.end.toLocalDate().isEqual(date)
                     ? a.end.toLocalTime().format()
                     : '→',
-                  type: i18n.attendances.staffTypes[a.type]
+                  type: i18n.attendances.staffTypes[a.type],
+                  description: a.description
                 }))
               return (
                 <DayPlan
@@ -110,7 +111,10 @@ export default React.memo(function StaffMemberPlannedAttendancesPage({
                         <FixedSpaceRow key={i}>
                           <DayPlanTypeCol>{a.type}</DayPlanTypeCol>
                           <div>
-                            {a.start} - {a.end}
+                            <div>
+                              {a.start} - {a.end}
+                            </div>
+                            {a.description ? <i>({a.description})</i> : null}
                           </div>
                         </FixedSpaceRow>
                       ))}

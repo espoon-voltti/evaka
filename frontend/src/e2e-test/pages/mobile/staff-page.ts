@@ -73,6 +73,8 @@ export class StaffAttendancePage {
   staffMemberPage: {
     markArrivedBtn: Element
     shiftTimeText: Element
+    shiftInfoButton: Element
+    shiftInfoText: Element
     attendanceTimeTexts: ElementCollection
     attendanceTimes: ElementCollection
     openAttendanceWarning: Element
@@ -164,6 +166,8 @@ export class StaffAttendancePage {
       attendanceTimes: page.findAllByDataQa('attendance-time'),
       markArrivedBtn: page.findByDataQa('mark-arrived-btn'),
       shiftTimeText: page.findByDataQa('shift-time'),
+      shiftInfoButton: page.findByDataQa('shift-info'),
+      shiftInfoText: page.findByDataQa('shift-info-text'),
       attendanceTimeTexts: page.findAllByDataQa('attendance-time'),
       openAttendanceWarning: page.findByDataQa(
         'open-attendance-in-another-unit-warning'
@@ -185,6 +189,14 @@ export class StaffAttendancePage {
 
   async assertShiftTimeTextShown(expectedText: string) {
     await this.staffMemberPage.shiftTimeText.assertTextEquals(expectedText)
+  }
+
+  async assertShiftDescriptionShownInInfo(expectedText: string) {
+    await this.staffMemberPage.shiftInfoButton.click()
+    await this.staffMemberPage.shiftInfoText.assertText((txt) =>
+      txt.includes(expectedText)
+    )
+    await this.staffMemberPage.shiftInfoButton.click()
   }
 
   async assertAttendanceTimeTextShown(expectedText: string) {
