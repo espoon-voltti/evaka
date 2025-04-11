@@ -800,6 +800,7 @@ export interface DevPayment {
 */
 export interface DevPedagogicalDocument {
   childId: PersonId
+  createdAt: HelsinkiDateTime
   createdBy: EvakaUserId
   description: string
   id: PedagogicalDocumentId
@@ -1501,6 +1502,7 @@ export function deserializeJsonDevPayment(json: JsonOf<DevPayment>): DevPayment 
 export function deserializeJsonDevPedagogicalDocument(json: JsonOf<DevPedagogicalDocument>): DevPedagogicalDocument {
   return {
     ...json,
+    createdAt: HelsinkiDateTime.parseIso(json.createdAt),
     modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt)
   }
 }

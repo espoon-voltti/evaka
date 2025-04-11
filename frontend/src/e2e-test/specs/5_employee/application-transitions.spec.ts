@@ -42,7 +42,7 @@ import { UnitPage } from '../../pages/employee/units/unit'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
-const mockedTime = LocalDate.of(2021, 8, 16)
+const mockedDate = LocalDate.of(2021, 8, 16)
 let page: Page
 let applicationListView: ApplicationListView
 let applicationReadView: ApplicationReadView
@@ -69,7 +69,7 @@ beforeEach(async () => {
   await Fixture.feeThresholds().save()
 
   page = await Page.open({
-    mockedTime: mockedTime.toHelsinkiDateTime(LocalTime.of(12, 0))
+    mockedTime: mockedDate.toHelsinkiDateTime(LocalTime.of(12, 0))
   })
   applicationListView = new ApplicationListView(page)
   applicationReadView = new ApplicationReadView(page)
@@ -91,7 +91,7 @@ describe('Application transitions', () => {
         'CREATE_DEFAULT_PLACEMENT_PLAN',
         'SEND_DECISIONS_WITHOUT_PROPOSAL'
       ],
-      mockedTime.toHelsinkiDateTime(LocalTime.of(12, 0))
+      mockedDate.toHelsinkiDateTime(LocalTime.of(12, 0))
     )
 
     await employeeLogin(page, serviceWorker)
@@ -117,7 +117,7 @@ describe('Application transitions', () => {
         'CREATE_DEFAULT_PLACEMENT_PLAN',
         'SEND_DECISIONS_WITHOUT_PROPOSAL'
       ],
-      mockedTime.toHelsinkiDateTime(LocalTime.of(12, 0))
+      mockedDate.toHelsinkiDateTime(LocalTime.of(12, 0))
     )
 
     await employeeLogin(page, serviceWorker)
@@ -143,7 +143,7 @@ describe('Application transitions', () => {
     await execSimpleApplicationActions(
       applicationId,
       ['MOVE_TO_WAITING_PLACEMENT', 'CREATE_DEFAULT_PLACEMENT_PLAN'],
-      mockedTime.toHelsinkiDateTime(LocalTime.of(12, 0))
+      mockedDate.toHelsinkiDateTime(LocalTime.of(12, 0))
     )
 
     await employeeLogin(page, serviceWorker)
@@ -172,7 +172,7 @@ describe('Application transitions', () => {
     await execSimpleApplicationActions(
       applicationId,
       ['MOVE_TO_WAITING_PLACEMENT', 'CREATE_DEFAULT_PLACEMENT_PLAN'],
-      mockedTime.toHelsinkiDateTime(LocalTime.of(12, 0))
+      mockedDate.toHelsinkiDateTime(LocalTime.of(12, 0))
     )
 
     await employeeLogin(page, serviceWorker)
@@ -193,7 +193,7 @@ describe('Application transitions', () => {
   })
 
   test('Application with e.g. diet must be checked before placing', async () => {
-    const preferredStartDate = mockedTime
+    const preferredStartDate = mockedDate
     const fixture: DevApplicationWithForm = {
       ...applicationFixture(
         testChild2,
@@ -216,7 +216,7 @@ describe('Application transitions', () => {
     await execSimpleApplicationActions(
       applicationId,
       ['MOVE_TO_WAITING_PLACEMENT'],
-      mockedTime.toHelsinkiDateTime(LocalTime.of(12, 0))
+      mockedDate.toHelsinkiDateTime(LocalTime.of(12, 0))
     )
 
     await employeeLogin(page, serviceWorker)
@@ -244,7 +244,7 @@ describe('Application transitions', () => {
   })
 
   test('Confidentiality must be set on an application before placing if other info is the only potential source of confidentiality', async () => {
-    const preferredStartDate = mockedTime
+    const preferredStartDate = mockedDate
     const fixture: DevApplicationWithForm = {
       ...applicationFixture(
         testChild2,
@@ -267,7 +267,7 @@ describe('Application transitions', () => {
     await execSimpleApplicationActions(
       applicationId,
       ['MOVE_TO_WAITING_PLACEMENT'],
-      mockedTime.toHelsinkiDateTime(LocalTime.of(12, 0))
+      mockedDate.toHelsinkiDateTime(LocalTime.of(12, 0))
     )
 
     await employeeLogin(page, serviceWorker)
@@ -297,7 +297,7 @@ describe('Application transitions', () => {
   })
 
   test('Confidentiality must be set on an application before cancelling if other info is the only potential source of confidentiality', async () => {
-    const preferredStartDate = mockedTime
+    const preferredStartDate = mockedDate
     const fixture: DevApplicationWithForm = {
       ...applicationFixture(
         testChild2,
@@ -342,7 +342,7 @@ describe('Application transitions', () => {
   })
 
   test('Placement dialog works', async () => {
-    const preferredStartDate = mockedTime
+    const preferredStartDate = mockedDate
 
     const group = await Fixture.daycareGroup({
       daycareId: testDaycare.id
@@ -395,7 +395,7 @@ describe('Application transitions', () => {
     await execSimpleApplicationActions(
       applicationId,
       ['MOVE_TO_WAITING_PLACEMENT'],
-      mockedTime.toHelsinkiDateTime(LocalTime.of(12, 0))
+      mockedDate.toHelsinkiDateTime(LocalTime.of(12, 0))
     )
 
     await employeeLogin(page, serviceWorker)
@@ -455,7 +455,7 @@ describe('Application transitions', () => {
     await execSimpleApplicationActions(
       applicationId,
       ['MOVE_TO_WAITING_PLACEMENT'],
-      mockedTime.toHelsinkiDateTime(LocalTime.of(12, 0))
+      mockedDate.toHelsinkiDateTime(LocalTime.of(12, 0))
     )
 
     await employeeLogin(page, serviceWorker)
@@ -482,7 +482,7 @@ describe('Application transitions', () => {
         [testPreschool.id],
         true,
         'SENT',
-        mockedTime
+        mockedDate
       ),
       id: fromUuid<ApplicationId>('6a9b1b1e-3fdf-11eb-b378-0242ac130002')
     }
@@ -492,7 +492,7 @@ describe('Application transitions', () => {
     await execSimpleApplicationActions(
       applicationId,
       ['MOVE_TO_WAITING_PLACEMENT'],
-      HelsinkiDateTime.fromLocal(mockedTime, LocalTime.of(13, 40))
+      HelsinkiDateTime.fromLocal(mockedDate, LocalTime.of(13, 40))
     )
 
     await employeeLogin(page, serviceWorker)
@@ -522,7 +522,7 @@ describe('Application transitions', () => {
     await execSimpleApplicationActions(
       applicationId,
       ['SEND_DECISIONS_WITHOUT_PROPOSAL'],
-      HelsinkiDateTime.fromLocal(mockedTime, LocalTime.of(13, 41))
+      HelsinkiDateTime.fromLocal(mockedDate, LocalTime.of(13, 41))
     )
 
     const decisions = await getApplicationDecisions({ applicationId })
@@ -547,7 +547,7 @@ describe('Application transitions', () => {
         [testPreschool.id],
         true,
         'SENT',
-        mockedTime
+        mockedDate
       ),
       id: fromUuid<ApplicationId>('6a9b1b1e-3fdf-11eb-b378-0242ac130002')
     }
@@ -557,7 +557,7 @@ describe('Application transitions', () => {
     await execSimpleApplicationActions(
       applicationId,
       ['MOVE_TO_WAITING_PLACEMENT'],
-      HelsinkiDateTime.fromLocal(mockedTime, LocalTime.of(13, 40))
+      HelsinkiDateTime.fromLocal(mockedDate, LocalTime.of(13, 40))
     )
 
     await employeeLogin(page, serviceWorker)
@@ -589,7 +589,7 @@ describe('Application transitions', () => {
     await execSimpleApplicationActions(
       applicationId,
       ['SEND_DECISIONS_WITHOUT_PROPOSAL'],
-      HelsinkiDateTime.fromLocal(mockedTime, LocalTime.of(13, 41))
+      HelsinkiDateTime.fromLocal(mockedDate, LocalTime.of(13, 41))
     )
 
     const decisions = await getApplicationDecisions({ applicationId })
@@ -627,7 +627,7 @@ describe('Application transitions', () => {
         'CREATE_DEFAULT_PLACEMENT_PLAN',
         'SEND_PLACEMENT_PROPOSAL'
       ],
-      mockedTime.toHelsinkiDateTime(LocalTime.of(12, 0))
+      mockedDate.toHelsinkiDateTime(LocalTime.of(12, 0))
     )
     await execSimpleApplicationActions(
       applicationId2,
@@ -636,10 +636,12 @@ describe('Application transitions', () => {
         'CREATE_DEFAULT_PLACEMENT_PLAN',
         'SEND_PLACEMENT_PROPOSAL'
       ],
-      mockedTime.toHelsinkiDateTime(LocalTime.of(12, 0))
+      mockedDate.toHelsinkiDateTime(LocalTime.of(12, 0))
     )
 
-    const page2 = await Page.open()
+    const page2 = await Page.open({
+      mockedTime: mockedDate.toHelsinkiDateTime(LocalTime.of(12, 0))
+    })
     const unitPage = new UnitPage(page2)
 
     const unitSupervisor = await Fixture.employee()
@@ -667,7 +669,7 @@ describe('Application transitions', () => {
     await execSimpleApplicationActions(
       applicationId,
       ['CONFIRM_DECISION_MAILED'],
-      mockedTime.toHelsinkiDateTime(LocalTime.of(12, 0))
+      mockedDate.toHelsinkiDateTime(LocalTime.of(12, 0))
     )
 
     // unit supervisor sees application1 as waiting confirmation from guardian, no longer sees proposal for application2
@@ -688,7 +690,7 @@ describe('Application transitions', () => {
 
     await createApplications({ body: [fixture1] })
 
-    const now = mockedTime.toHelsinkiDateTime(LocalTime.of(12, 0))
+    const now = mockedDate.toHelsinkiDateTime(LocalTime.of(12, 0))
     await execSimpleApplicationActions(
       applicationId,
       [
@@ -699,7 +701,9 @@ describe('Application transitions', () => {
       now
     )
 
-    const page2 = await Page.open()
+    const page2 = await Page.open({
+      mockedTime: mockedDate.toHelsinkiDateTime(LocalTime.of(12, 0))
+    })
     const unitPage = new UnitPage(page2)
 
     await employeeLogin(
@@ -742,7 +746,7 @@ describe('Application transitions', () => {
         'CREATE_DEFAULT_PLACEMENT_PLAN',
         'SEND_PLACEMENT_PROPOSAL'
       ],
-      mockedTime.toHelsinkiDateTime(LocalTime.of(12, 0))
+      mockedDate.toHelsinkiDateTime(LocalTime.of(12, 0))
     )
 
     const unitSupervisor = await Fixture.employee()
@@ -766,10 +770,8 @@ describe('Application transitions', () => {
     const decision = decisionFixture(
       serviceWorker.id,
       applicationId,
-      application.form.preferences.preferredStartDate ??
-        LocalDate.todayInSystemTz(),
-      application.form.preferences.preferredStartDate ??
-        LocalDate.todayInSystemTz()
+      application.form.preferences.preferredStartDate ?? mockedDate,
+      application.form.preferences.preferredStartDate ?? mockedDate
     )
     const decisionId = decision.id
 
@@ -831,7 +833,10 @@ describe('Application transitions', () => {
       }).save()
     ).id
 
-    await rejectDecisionByCitizen({ id: decisionId })
+    await rejectDecisionByCitizen(
+      { id: decisionId },
+      { mockedTime: mockedDate.toHelsinkiDateTime(LocalTime.of(8, 0)) }
+    )
 
     const unitSupervisor = await Fixture.employee()
       .unitSupervisor(testDaycare.id)
@@ -842,12 +847,9 @@ describe('Application transitions', () => {
       expectRejectedApplicationToBeVisible: boolean
     ) {
       const page = await Page.open({
-        mockedTime:
-          addDays !== 0
-            ? LocalDate.todayInSystemTz()
-                .addDays(addDays)
-                .toHelsinkiDateTime(LocalTime.of(12, 0))
-            : undefined
+        mockedTime: mockedDate
+          .addDays(addDays)
+          .toHelsinkiDateTime(LocalTime.of(12, 0))
       })
 
       await employeeLogin(page, unitSupervisor)

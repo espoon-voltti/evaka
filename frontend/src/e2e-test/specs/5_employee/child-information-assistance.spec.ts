@@ -7,6 +7,7 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import { AssistanceNeedDecisionStatus } from 'lib-common/generated/api-types/assistanceneed'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { DaycareId, PersonId } from 'lib-common/generated/api-types/shared'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 
 import config from '../../config'
@@ -39,6 +40,7 @@ let childId: PersonId
 let unitId: DaycareId
 let voucherUnitId: DaycareId
 let admin: DevEmployee
+const mockNow = HelsinkiDateTime.of(2023, 4, 10, 12, 0, 0)
 
 beforeEach(async () => {
   await resetServiceState()
@@ -53,7 +55,7 @@ beforeEach(async () => {
   unitId = testDaycare.id
   voucherUnitId = testDaycarePrivateVoucher.id
   childId = familyWithTwoGuardians.children[0].id
-  page = await Page.open()
+  page = await Page.open({ mockedTime: mockNow })
   admin = await Fixture.employee().admin().save()
 })
 
@@ -61,8 +63,8 @@ const setupPlacement = async (type: PlacementType, voucher = false) => {
   const fixture = Fixture.placement({
     childId,
     unitId: voucher ? voucherUnitId : unitId,
-    startDate: LocalDate.todayInSystemTz(),
-    endDate: LocalDate.todayInSystemTz(),
+    startDate: mockNow.toLocalDate(),
+    endDate: mockNow.toLocalDate(),
     type
   })
   await fixture.save()
@@ -345,8 +347,8 @@ describe('Child Information assistance functionality for employees', () => {
       capacityFactor: 0.5,
       childId: childId,
       validDuring: new FiniteDateRange(
-        LocalDate.todayInSystemTz().subDays(2),
-        LocalDate.todayInSystemTz().subDays(2)
+        mockNow.toLocalDate().subDays(2),
+        mockNow.toLocalDate().subDays(2)
       ),
       modifiedBy: employeeToEvakaUser(unitSupervisor)
     }).save()
@@ -356,8 +358,8 @@ describe('Child Information assistance functionality for employees', () => {
       capacityFactor: 1.0,
       childId: childId,
       validDuring: new FiniteDateRange(
-        LocalDate.todayInSystemTz().subDays(1),
-        LocalDate.todayInSystemTz()
+        mockNow.toLocalDate().subDays(1),
+        mockNow.toLocalDate()
       ),
       modifiedBy: employeeToEvakaUser(unitSupervisor)
     }).save()
@@ -366,8 +368,8 @@ describe('Child Information assistance functionality for employees', () => {
       capacityFactor: 2.0,
       childId: childId,
       validDuring: new FiniteDateRange(
-        LocalDate.todayInSystemTz().addDays(1),
-        LocalDate.todayInSystemTz().addDays(1)
+        mockNow.toLocalDate().addDays(1),
+        mockNow.toLocalDate().addDays(1)
       ),
       modifiedBy: employeeToEvakaUser(unitSupervisor)
     }).save()
@@ -388,8 +390,8 @@ describe('Child Information assistance functionality for employees', () => {
     await Fixture.assistanceFactor({
       childId: childId,
       validDuring: new FiniteDateRange(
-        LocalDate.todayInSystemTz(),
-        LocalDate.todayInSystemTz().addDays(1)
+        mockNow.toLocalDate(),
+        mockNow.toLocalDate().addDays(1)
       ),
       modifiedBy: employeeToEvakaUser(unitSupervisor)
     }).save()
@@ -403,8 +405,8 @@ describe('Child Information assistance functionality for employees', () => {
     await Fixture.assistanceFactor({
       childId: childId,
       validDuring: new FiniteDateRange(
-        LocalDate.todayInSystemTz().subDays(1),
-        LocalDate.todayInSystemTz()
+        mockNow.toLocalDate().subDays(1),
+        mockNow.toLocalDate()
       ),
       modifiedBy: employeeToEvakaUser(admin)
     }).save()
@@ -422,8 +424,8 @@ describe('Child Information assistance functionality for employees', () => {
     await Fixture.assistanceFactor({
       childId: childId,
       validDuring: new FiniteDateRange(
-        LocalDate.todayInSystemTz().subDays(1),
-        LocalDate.todayInSystemTz()
+        mockNow.toLocalDate().subDays(1),
+        mockNow.toLocalDate()
       ),
       modifiedBy: employeeToEvakaUser(specialEducationTeacher)
     }).save()
@@ -431,8 +433,8 @@ describe('Child Information assistance functionality for employees', () => {
     await Fixture.assistanceFactor({
       childId: childId,
       validDuring: new FiniteDateRange(
-        LocalDate.todayInSystemTz().addDays(1),
-        LocalDate.todayInSystemTz().addDays(2)
+        mockNow.toLocalDate().addDays(1),
+        mockNow.toLocalDate().addDays(2)
       ),
       modifiedBy: employeeToEvakaUser(specialEducationTeacher)
     }).save()

@@ -1190,6 +1190,7 @@ data class DevPedagogicalDocument(
     val id: PedagogicalDocumentId,
     val childId: ChildId,
     val description: String,
+    val createdAt: HelsinkiDateTime = HelsinkiDateTime.now(),
     val createdBy: EvakaUserId = AuthenticatedUser.SystemInternalUser.evakaUserId,
     val modifiedAt: HelsinkiDateTime = HelsinkiDateTime.now(),
     val modifiedBy: EvakaUserId = AuthenticatedUser.SystemInternalUser.evakaUserId,
@@ -1199,8 +1200,8 @@ fun Database.Transaction.insert(row: DevPedagogicalDocument): PedagogicalDocumen
     createUpdate {
             sql(
                 """
-INSERT INTO pedagogical_document (id, child_id, description, created_by, modified_at, modified_by)
-VALUES (${bind(row.id)}, ${bind(row.childId)}, ${bind(row.description)}, ${bind(row.createdBy)}, ${bind(row.modifiedAt)}, ${bind(row.modifiedBy)})
+INSERT INTO pedagogical_document (id, child_id, description, created_at, created_by, modified_at, modified_by)
+VALUES (${bind(row.id)}, ${bind(row.childId)}, ${bind(row.description)}, ${bind(row.createdAt)}, ${bind(row.createdBy)}, ${bind(row.modifiedAt)}, ${bind(row.modifiedBy)})
 RETURNING id
 """
             )

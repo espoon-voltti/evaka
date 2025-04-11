@@ -397,6 +397,7 @@ export class Fixture {
     return new PedagogicalDocumentBuilder({
       id: randomId(),
       description: 'Test description',
+      createdAt: HelsinkiDateTime.now(),
       createdBy: systemInternalUser.id,
       modifiedAt: HelsinkiDateTime.now(),
       modifiedBy: systemInternalUser.id,
