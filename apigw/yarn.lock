@@ -1558,11 +1558,11 @@ __metadata:
   linkType: hard
 
 "@types/through2@npm:^2.0.38":
-  version: 2.0.38
-  resolution: "@types/through2@npm:2.0.38"
+  version: 2.0.41
+  resolution: "@types/through2@npm:2.0.41"
   dependencies:
     "@types/node": "npm:*"
-  checksum: 10/5f8b6dbdeef84cdc4e2259234ae752fe09123021c39fc9319fa6f50a445c15451c9f643e5d3620c50e818c6f71207f978038e785b61bd87a64253ac0b06e2d73
+  checksum: 10/d5a475db410065169bdd40fcf118d888b3d7976cebbcd44d44d1c744fa7d475f37c59cdf9f28b1a0d9388892691029d1fccef955ba0e521bb58508aad0f86518
   languageName: node
   linkType: hard
 
