@@ -14,6 +14,7 @@ import fi.espoo.evaka.attendance.StaffAttendanceType
 import fi.espoo.evaka.daycare.ClubTerm
 import fi.espoo.evaka.decision.DecisionStatus
 import fi.espoo.evaka.decision.DecisionType
+import fi.espoo.evaka.document.DocumentType
 import fi.espoo.evaka.identity.ExternalId
 import fi.espoo.evaka.incomestatement.IncomeStatementBody
 import fi.espoo.evaka.incomestatement.IncomeStatementStatus
@@ -1451,17 +1452,22 @@ VALUES (${bind(row.id)}, ${bind(row.name)}, ${bind(row.type)}, ${bind(row.placem
         .executeAndReturnGeneratedKeys()
         .exactlyOne()
 
-fun Database.Transaction.insert(row: DevChildDocument): ChildDocumentId =
-    createUpdate {
+fun Database.Transaction.insert(row: DevChildDocument): ChildDocumentId {
+    val type =
+        createQuery { sql("SELECT type FROM document_template WHERE id = ${bind(row.templateId)}") }
+            .exactlyOne<DocumentType>()
+
+    return createUpdate {
             sql(
                 """
-INSERT INTO child_document (id, status, child_id, template_id, content, published_content, modified_at, content_modified_at, content_modified_by, published_at, answered_at, answered_by, process_id)
-VALUES (${bind(row.id)}, ${bind(row.status)}, ${bind(row.childId)}, ${bind(row.templateId)}, ${bind(row.content)}, ${bind(row.publishedContent)}, ${bind(row.modifiedAt)}, ${bind(row.contentModifiedAt)}, ${bind(row.contentModifiedBy)}, ${bind(row.publishedAt)}, ${bind(row.answeredAt)}, ${bind(row.answeredBy)}, ${bind(row.processId)})
+INSERT INTO child_document (id, type, status, child_id, template_id, content, published_content, modified_at, content_modified_at, content_modified_by, published_at, answered_at, answered_by, process_id)
+VALUES (${bind(row.id)}, ${bind(type)}, ${bind(row.status)}, ${bind(row.childId)}, ${bind(row.templateId)}, ${bind(row.content)}, ${bind(row.publishedContent)}, ${bind(row.modifiedAt)}, ${bind(row.contentModifiedAt)}, ${bind(row.contentModifiedBy)}, ${bind(row.publishedAt)}, ${bind(row.answeredAt)}, ${bind(row.answeredBy)}, ${bind(row.processId)})
 """
             )
         }
         .executeAndReturnGeneratedKeys()
         .exactlyOne()
+}
 
 fun Database.Transaction.updateDaycareOperationTimes(
     daycareId: DaycareId,
