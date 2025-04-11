@@ -77,10 +77,10 @@ import {
 import { FlexRow } from '../common/styled/containers'
 
 import {
-  getAllChildDocumentStatuses,
   getNextDocumentStatus,
   getPrevDocumentStatus,
-  isChildDocumentEditable
+  isChildDocumentEditable,
+  isChildDocumentPublishable
 } from './statuses'
 
 const ActionBar = styled.div`
@@ -431,13 +431,13 @@ const ChildDocumentReadViewInner = React.memo(
       () => getPrevDocumentStatus(document.template.type, document.status),
       [document.template.type, document.status]
     )
-    const allStatuses = useMemo(
-      () => getAllChildDocumentStatuses(document.template.type),
-      [document.template.type]
-    )
     const isEditable = useMemo(
       () => isChildDocumentEditable(document.status),
       [document.status]
+    )
+    const isPublishable = useMemo(
+      () => isChildDocumentPublishable(document.template.type, document.status),
+      [document.template.type, document.status]
     )
 
     const publishedUpToDate = useMemo(
@@ -579,29 +579,27 @@ const ChildDocumentReadViewInner = React.memo(
                     data-qa="edit-button"
                   />
                 )}
-                {permittedActions.includes('PUBLISH') &&
-                  document.status !== 'COMPLETED' &&
-                  !allStatuses.includes('CITIZEN_DRAFT') && (
-                    <ConfirmedMutation
-                      buttonText={
-                        i18n.childInformation.childDocuments.editor.publish
-                      }
-                      mutation={publishChildDocumentMutation}
-                      onClick={() => ({
-                        documentId: document.id,
-                        childId: document.child.id
-                      })}
-                      confirmationTitle={
-                        i18n.childInformation.childDocuments.editor
-                          .publishConfirmTitle
-                      }
-                      confirmationText={
-                        i18n.childInformation.childDocuments.editor
-                          .publishConfirmText
-                      }
-                      data-qa="publish-button"
-                    />
-                  )}
+                {permittedActions.includes('PUBLISH') && isPublishable && (
+                  <ConfirmedMutation
+                    buttonText={
+                      i18n.childInformation.childDocuments.editor.publish
+                    }
+                    mutation={publishChildDocumentMutation}
+                    onClick={() => ({
+                      documentId: document.id,
+                      childId: document.child.id
+                    })}
+                    confirmationTitle={
+                      i18n.childInformation.childDocuments.editor
+                        .publishConfirmTitle
+                    }
+                    confirmationText={
+                      i18n.childInformation.childDocuments.editor
+                        .publishConfirmText
+                    }
+                    data-qa="publish-button"
+                  />
+                )}
                 {permittedActions.includes('NEXT_STATUS') &&
                   nextStatus != null && (
                     <ConfirmedMutation
