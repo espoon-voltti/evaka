@@ -14,9 +14,9 @@ import org.junit.jupiter.api.Test
 class DbTest : PureJdbiTest(resetDbBeforeEach = false) {
     private data class Foo(val value: String)
 
-    private fun Database.Read.fooJsonQuery() =
-        @Suppress("DEPRECATION")
-        createQuery("SELECT jsonb_agg(jsonb_build_object('value', 'foo')) AS json")
+    private fun Database.Read.fooJsonQuery() = createQuery {
+        sql("SELECT jsonb_agg(jsonb_build_object('value', 'foo')) AS json")
+    }
 
     @Test
     fun `mapJsonColumn can map a jsonb array to a kotlin array`() {
