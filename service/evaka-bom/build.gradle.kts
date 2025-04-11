@@ -56,7 +56,7 @@ dependencies {
         api(libs.ktlint.test)
     }
 
-    api(platform("com.fasterxml.jackson:jackson-bom:2.18.2"))
+    api(platform("com.fasterxml.jackson:jackson-bom:2.18.3"))
     api(platform("com.squareup.okhttp3:okhttp-bom:4.12.0"))
     api(platform("io.opentelemetry:opentelemetry-bom:1.49.0"))
     api(platform("io.netty:netty-bom:4.2.0.Final"))
