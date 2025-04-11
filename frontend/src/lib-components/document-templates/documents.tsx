@@ -208,6 +208,7 @@ export const isInternal = (type: DocumentType): boolean => {
     case 'MIGRATED_LEOPS':
     case 'VASU':
     case 'LEOPS':
+    case 'OTHER_DECISION':
     case 'OTHER':
       return true
     case 'CITIZEN_BASIC':

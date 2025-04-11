@@ -57,6 +57,7 @@ const components: Translations = {
       DRAFT: 'Utkast',
       PREPARED: 'Behandlad',
       CITIZEN_DRAFT: 'Täytettävänä huoltajalla (sv)',
+      DECISION_PROPOSAL: 'Beslutsförslag',
       COMPLETED: 'Färdig'
     }
   },

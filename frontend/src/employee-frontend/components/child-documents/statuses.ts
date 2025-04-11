@@ -16,6 +16,7 @@ const statusesByType: Record<DocumentType, DocumentStatus[]> = {
   VASU: ['DRAFT', 'PREPARED', 'COMPLETED'],
   LEOPS: ['DRAFT', 'PREPARED', 'COMPLETED'],
   CITIZEN_BASIC: ['DRAFT', 'CITIZEN_DRAFT', 'COMPLETED'],
+  OTHER_DECISION: ['DRAFT', 'DECISION_PROPOSAL', 'COMPLETED'],
   OTHER: ['DRAFT', 'COMPLETED']
 }
 
@@ -38,18 +39,28 @@ export const getPrevDocumentStatus = (
   const index = statuses.indexOf(current)
   if (index < 0) return null
 
+  if (type === 'OTHER_DECISION' && current === 'COMPLETED') {
+    return null // Decisions cannot be cancelled
+  }
+
   return index > 0 ? statuses[index - 1] : null
 }
-
-export const getAllChildDocumentStatuses = (type: DocumentType) =>
-  statusesByType[type]
 
 const editable: Record<DocumentStatus, boolean> = {
   DRAFT: true,
   PREPARED: true,
   CITIZEN_DRAFT: false,
+  DECISION_PROPOSAL: true,
   COMPLETED: false
 }
 
 export const isChildDocumentEditable = (status: DocumentStatus) =>
   editable[status]
+
+export const isChildDocumentPublishable = (
+  type: DocumentType,
+  status: DocumentStatus
+) =>
+  status !== 'COMPLETED' &&
+  type !== 'CITIZEN_BASIC' &&
+  type !== 'OTHER_DECISION'
