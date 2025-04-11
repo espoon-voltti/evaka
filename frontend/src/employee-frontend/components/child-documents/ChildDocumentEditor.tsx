@@ -16,6 +16,7 @@ import { useNavigate, useSearchParams } from 'react-router'
 import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
+import DateRange from 'lib-common/date-range'
 import { useForm } from 'lib-common/form/hooks'
 import {
   ChildDocumentDetails,
@@ -23,22 +24,30 @@ import {
   DocumentContent,
   DocumentWriteLock
 } from 'lib-common/generated/api-types/document'
+import { Employee } from 'lib-common/generated/api-types/pis'
 import { ChildDocumentId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
-import { useMutationResult, useQueryResult } from 'lib-common/query'
+import LocalDate from 'lib-common/local-date'
+import {
+  cancelMutation,
+  useMutationResult,
+  useQueryResult
+} from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import { useDebounce } from 'lib-common/utils/useDebounce'
 import Tooltip from 'lib-components/atoms/Tooltip'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
+import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import Spinner from 'lib-components/atoms/state/Spinner'
 import { ChildDocumentStateChip } from 'lib-components/document-templates/ChildDocumentStateChip'
 import DocumentView from 'lib-components/document-templates/DocumentView'
 import {
   documentForm,
-  getDocumentFormInitialState,
-  isInternal
+  getDocumentCategory,
+  getDocumentFormInitialState
 } from 'lib-components/document-templates/documents'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import {
@@ -47,7 +56,7 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import { ConfirmedMutation } from 'lib-components/molecules/ConfirmedMutation'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
-import { H1, H2 } from 'lib-components/typography'
+import { H1, H2, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { featureFlags } from 'lib-customizations/employee'
@@ -65,6 +74,9 @@ import { TitleContext, TitleState } from '../../state/title'
 import MetadataSection from '../archive-metadata/MetadataSection'
 import { renderResult } from '../async-rendering'
 import {
+  acceptChildDocumentDecisionMutation,
+  annulChildDocumentDecisionMutation,
+  childDocumentDecisionMakersQuery,
   childDocumentMetadataQuery,
   childDocumentNextStatusMutation,
   childDocumentPrevStatusMutation,
@@ -72,16 +84,20 @@ import {
   childDocumentWriteLockQuery,
   deleteChildDocumentMutation,
   planArchiveChildDocumentMutation,
+  proposeChildDocumentDecisionMutation,
   publishChildDocumentMutation,
+  rejectChildDocumentDecisionMutation,
   updateChildDocumentContentMutation
 } from '../child-information/queries'
 import { FlexRow } from '../common/styled/containers'
 
 import {
-  getAllChildDocumentStatuses,
   getNextDocumentStatus,
   getPrevDocumentStatus,
-  isChildDocumentEditable
+  isChildDocumentAnnullable,
+  isChildDocumentDecidable,
+  isChildDocumentEditable,
+  isChildDocumentPublishable
 } from './statuses'
 
 const ActionBar = styled.div`
@@ -120,7 +136,10 @@ const DocumentBasics = React.memo(function DocumentBasics({
         justifyContent="start"
         alignItems="flex-end"
       >
-        <ChildDocumentStateChip status={document.status} />
+        <ChildDocumentStateChip
+          status={document.status}
+          decisionStatus={document.decision?.status ?? null}
+        />
         {document.template.confidentiality !== null && (
           <strong>{i18n.documentTemplates.templateEditor.confidential}</strong>
         )}
@@ -174,6 +193,20 @@ const ConcurrentEditWarning = React.memo(function ConcurrentEditWarning({
     />
   )
 })
+
+const formatEmployeeName = (employee: Employee) =>
+  `${employee.lastName ?? ''} ${
+    employee.preferredFirstName ?? employee.firstName ?? ''
+  } (${employee.email ?? ''})`
+
+const filterEmployees = (inputValue: string, items: readonly Employee[]) =>
+  items.filter(
+    (emp) =>
+      (emp.preferredFirstName ?? emp.firstName)
+        .toLowerCase()
+        .startsWith(inputValue.toLowerCase()) ||
+      emp.lastName.toLowerCase().startsWith(inputValue.toLowerCase())
+  )
 
 const ChildDocumentEditViewInner = React.memo(
   function ChildDocumentEditViewInner({
@@ -397,10 +430,12 @@ const ChildDocumentMetadataSection = React.memo(
 const ChildDocumentReadViewInner = React.memo(
   function ChildDocumentReadViewInner({
     documentAndPermissions,
-    childIdFromUrl
+    childIdFromUrl,
+    decisionMakerOptions
   }: {
     documentAndPermissions: ChildDocumentWithPermittedActions
     childIdFromUrl: UUID | null
+    decisionMakerOptions: Employee[]
   }) {
     const { data: document, permittedActions } = documentAndPermissions
     const { i18n } = useTranslation()
@@ -432,13 +467,30 @@ const ChildDocumentReadViewInner = React.memo(
       () => getPrevDocumentStatus(document.template.type, document.status),
       [document.template.type, document.status]
     )
-    const allStatuses = useMemo(
-      () => getAllChildDocumentStatuses(document.template.type),
-      [document.template.type]
-    )
     const isEditable = useMemo(
       () => isChildDocumentEditable(document.status),
       [document.status]
+    )
+    const isPublishable = useMemo(
+      () => isChildDocumentPublishable(document.template.type, document.status),
+      [document.template.type, document.status]
+    )
+    const isDecision = useMemo(
+      () => getDocumentCategory(document.template.type) === 'decision',
+      [document.template.type]
+    )
+    const isDecidable = useMemo(
+      () => isChildDocumentDecidable(document.template.type, document.status),
+      [document.template.type, document.status]
+    )
+    const isAnnullable = useMemo(
+      () =>
+        isChildDocumentAnnullable(
+          document.template.type,
+          document.status,
+          document.decision?.status ?? null
+        ),
+      [document.template.type, document.status, document.decision?.status]
     )
 
     const publishedUpToDate = useMemo(
@@ -446,6 +498,13 @@ const ChildDocumentReadViewInner = React.memo(
         document.publishedContent !== null &&
         isEqual(document.publishedContent, document.content),
       [document]
+    )
+
+    const [decisionMaker, setDecisionMaker] = useState<Employee | null>(
+      document.decisionMaker
+        ? (decisionMakerOptions.find((e) => e.id === document.decisionMaker) ??
+            null)
+        : null
     )
 
     return (
@@ -520,8 +579,8 @@ const ChildDocumentReadViewInner = React.memo(
 
         <ActionBar>
           <Container>
-            <FixedSpaceRow justifyContent="space-between" alignItems="center">
-              <FixedSpaceRow alignItems="center">
+            <FixedSpaceRow justifyContent="space-between" alignItems="flex-end">
+              <FixedSpaceRow alignItems="flex-end">
                 <LegacyButton
                   text={i18n.common.goBack}
                   onClick={goBack}
@@ -568,9 +627,9 @@ const ChildDocumentReadViewInner = React.memo(
                   )}
               </FixedSpaceRow>
 
-              <FixedSpaceRow>
+              <FixedSpaceRow alignItems="flex-end">
                 {permittedActions.includes('UPDATE') && isEditable && (
-                  <LegacyButton
+                  <Button
                     text={i18n.common.edit}
                     onClick={() =>
                       navigate(
@@ -580,29 +639,29 @@ const ChildDocumentReadViewInner = React.memo(
                     data-qa="edit-button"
                   />
                 )}
-                {permittedActions.includes('PUBLISH') &&
-                  document.status !== 'COMPLETED' &&
-                  !allStatuses.includes('CITIZEN_DRAFT') && (
-                    <ConfirmedMutation
-                      buttonText={
-                        i18n.childInformation.childDocuments.editor.publish
-                      }
-                      mutation={publishChildDocumentMutation}
-                      onClick={() => ({
-                        documentId: document.id,
-                        childId: document.child.id
-                      })}
-                      confirmationTitle={
-                        i18n.childInformation.childDocuments.editor
-                          .publishConfirmTitle
-                      }
-                      confirmationText={
-                        i18n.childInformation.childDocuments.editor
-                          .publishConfirmText
-                      }
-                      data-qa="publish-button"
-                    />
-                  )}
+
+                {permittedActions.includes('PUBLISH') && isPublishable && (
+                  <ConfirmedMutation
+                    buttonText={
+                      i18n.childInformation.childDocuments.editor.publish
+                    }
+                    mutation={publishChildDocumentMutation}
+                    onClick={() => ({
+                      documentId: document.id,
+                      childId: document.child.id
+                    })}
+                    confirmationTitle={
+                      i18n.childInformation.childDocuments.editor
+                        .publishConfirmTitle
+                    }
+                    confirmationText={
+                      i18n.childInformation.childDocuments.editor
+                        .publishConfirmText
+                    }
+                    data-qa="publish-button"
+                  />
+                )}
+
                 {permittedActions.includes('NEXT_STATUS') &&
                   nextStatus != null && (
                     <ConfirmedMutation
@@ -619,56 +678,178 @@ const ChildDocumentReadViewInner = React.memo(
                           newStatus: nextStatus
                         }
                       })}
+                      disabled={isDecision && document.decisionMaker === null}
                       confirmationTitle={
                         i18n.childInformation.childDocuments.editor
                           .goToNextStatusConfirmTitle[nextStatus]
                       }
                       confirmationText={
-                        nextStatus === 'COMPLETED'
-                          ? i18n.childInformation.childDocuments.editor
-                              .goToCompletedConfirmText
-                          : i18n.childInformation.childDocuments.editor
-                              .publishConfirmText
+                        isDecision
+                          ? undefined
+                          : nextStatus === 'COMPLETED'
+                            ? i18n.childInformation.childDocuments.editor
+                                .goToCompletedConfirmText
+                            : i18n.childInformation.childDocuments.editor
+                                .publishConfirmText
                       }
                       data-qa="next-status-button"
                     />
                   )}
+
+                {permittedActions.includes('REJECT_DECISION') &&
+                  isDecidable && (
+                    <ConfirmedMutation
+                      buttonText={
+                        i18n.childInformation.childDocuments.decisions.reject
+                      }
+                      mutation={rejectChildDocumentDecisionMutation}
+                      onClick={() => ({
+                        documentId: document.id,
+                        childId: document.child.id
+                      })}
+                      confirmationTitle={
+                        i18n.childInformation.childDocuments.decisions
+                          .rejectConfirmTitle
+                      }
+                      data-qa="reject-decision-button"
+                    />
+                  )}
+
+                {permittedActions.includes('ACCEPT_DECISION') &&
+                  isDecidable && (
+                    <ConfirmedMutation
+                      buttonText={
+                        i18n.childInformation.childDocuments.decisions.accept
+                      }
+                      primary
+                      mutation={acceptChildDocumentDecisionMutation}
+                      onClick={() => ({
+                        documentId: document.id,
+                        childId: document.child.id,
+                        body: {
+                          // todo: add daterange picker
+                          validity: new DateRange(
+                            LocalDate.todayInHelsinkiTz(),
+                            null
+                          )
+                        }
+                      })}
+                      confirmationTitle={
+                        i18n.childInformation.childDocuments.decisions
+                          .acceptConfirmTitle
+                      }
+                      data-qa="accept-decision-button"
+                    />
+                  )}
+
+                {permittedActions.includes('ANNUL_DECISION') &&
+                  isAnnullable && (
+                    <ConfirmedMutation
+                      buttonText={
+                        i18n.childInformation.childDocuments.decisions.annul
+                      }
+                      mutation={annulChildDocumentDecisionMutation}
+                      onClick={() => ({
+                        documentId: document.id,
+                        childId: document.child.id
+                      })}
+                      confirmationTitle={
+                        i18n.childInformation.childDocuments.decisions
+                          .annulConfirmTitle
+                      }
+                      data-qa="annul-decision-button"
+                    />
+                  )}
               </FixedSpaceRow>
-            </FixedSpaceRow>
-            <Gap size="s" />
-            {isInternal(document.template.type) && (
-              <FixedSpaceRow alignItems="center" justifyContent="flex-end">
-                <FixedSpaceRow alignItems="center" spacing="xs">
-                  {publishedUpToDate ? (
-                    <>
-                      <FontAwesomeIcon
-                        icon={fasCheckCircle}
-                        color={colors.status.success}
-                        size="lg"
-                      />
-                      <span>
+
+              {isDecision &&
+                document.status === 'DRAFT' &&
+                permittedActions.includes('PROPOSE_DECISION') && (
+                  <FixedSpaceRow alignItems="flex-end">
+                    <FixedSpaceColumn spacing="xxs">
+                      <Label>
                         {
                           i18n.childInformation.childDocuments.editor
-                            .fullyPublished
-                        }
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      <FontAwesomeIcon
-                        icon={fasExclamationTriangle}
-                        color={colors.status.warning}
-                        size="lg"
+                            .decisionMaker
+                        }{' '}
+                        *
+                      </Label>
+                      <Combobox
+                        items={decisionMakerOptions}
+                        selectedItem={decisionMaker}
+                        onChange={setDecisionMaker}
+                        getItemLabel={formatEmployeeName}
+                        filterItems={filterEmployees}
+                        getItemDataQa={(e) => e.id}
+                        placeholder={i18n.common.select}
+                        data-qa="decision-maker-combobox"
                       />
-                      <span>
-                        {i18n.childInformation.childDocuments.editor.notFullyPublished(
-                          document.publishedAt
-                        )}
-                      </span>
-                    </>
-                  )}
+                    </FixedSpaceColumn>
+                    <ConfirmedMutation
+                      buttonText={
+                        i18n.childInformation.childDocuments.editor
+                          .goToNextStatus.DECISION_PROPOSAL
+                      }
+                      primary
+                      mutation={proposeChildDocumentDecisionMutation}
+                      onClick={() =>
+                        decisionMaker
+                          ? {
+                            documentId: document.id,
+                            childId: document.child.id,
+                            body: {
+                              decisionMaker: decisionMaker.id
+                            }
+                          }
+                          : cancelMutation
+                      }
+                      disabled={!decisionMaker}
+                      confirmationTitle={
+                        i18n.childInformation.childDocuments.editor
+                          .goToNextStatusConfirmTitle.DECISION_PROPOSAL
+                      }
+                      data-qa="propose-decision-button"
+                    />
+                  </FixedSpaceRow>
+                )}
+            </FixedSpaceRow>
+
+            {isPublishable && (
+              <>
+                <Gap size="s" />
+                <FixedSpaceRow alignItems="center" justifyContent="flex-end">
+                  <FixedSpaceRow alignItems="center" spacing="xs">
+                    {publishedUpToDate ? (
+                      <>
+                        <FontAwesomeIcon
+                          icon={fasCheckCircle}
+                          color={colors.status.success}
+                          size="lg"
+                        />
+                        <span>
+                          {
+                            i18n.childInformation.childDocuments.editor
+                              .fullyPublished
+                          }
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <FontAwesomeIcon
+                          icon={fasExclamationTriangle}
+                          color={colors.status.warning}
+                          size="lg"
+                        />
+                        <span>
+                          {i18n.childInformation.childDocuments.editor.notFullyPublished(
+                            document.publishedAt
+                          )}
+                        </span>
+                      </>
+                    )}
+                  </FixedSpaceRow>
                 </FixedSpaceRow>
-              </FixedSpaceRow>
+              </>
             )}
           </Container>
         </ActionBar>
@@ -684,10 +865,14 @@ export const ChildDocumentReadView = React.memo(
     const childIdFromUrl = searchParams.get('childId') // duplicate child workaround
 
     const documentResult = useQueryResult(childDocumentQuery({ documentId }))
+    // todo: use chained query to only fetch when needed?
+    const decisionMakersResult = useQueryResult(
+      childDocumentDecisionMakersQuery({ documentId })
+    )
 
     return renderResult(
-      documentResult,
-      (documentAndPermissions, isReloading) => {
+      combine(documentResult, decisionMakersResult),
+      ([documentAndPermissions, decisionMakers], isReloading) => {
         // do not initialize form with possibly stale data
         if (isReloading) return null
 
@@ -695,6 +880,7 @@ export const ChildDocumentReadView = React.memo(
           <ChildDocumentReadViewInner
             documentAndPermissions={documentAndPermissions}
             childIdFromUrl={childIdFromUrl}
+            decisionMakerOptions={decisionMakers}
           />
         )
       }

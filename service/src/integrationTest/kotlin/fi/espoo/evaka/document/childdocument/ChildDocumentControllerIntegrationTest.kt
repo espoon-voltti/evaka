@@ -21,6 +21,7 @@ import fi.espoo.evaka.process.getProcess
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.DocumentTemplateId
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -251,6 +252,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                         Action.ChildDocument.READ_METADATA,
                         Action.ChildDocument.DOWNLOAD,
                         Action.ChildDocument.ARCHIVE,
+                        Action.ChildDocument.ANNUL_DECISION,
                     ),
             ),
             document,
@@ -484,10 +486,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         assertNotNull(db.read { it.getChildDocumentKey(documentId) })
 
         // republishing after edits regenerates pdf
-        controller.updateDocumentContent(
-            dbInstance(),
-            employeeUser.user,
-            clock,
+        updateDocumentContent(
             documentId,
             DocumentContent(answers = listOf(AnsweredQuestion.TextAnswer("q1", "hello"))),
         )
@@ -544,13 +543,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                         ),
                     )
             )
-        controller.updateDocumentContent(
-            dbInstance(),
-            employeeUser.user,
-            clock,
-            documentId,
-            content,
-        )
+        updateDocumentContent(documentId, content)
         assertEquals(
             content,
             controller.getDocument(dbInstance(), employeeUser.user, clock, documentId).data.content,
@@ -567,13 +560,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                 ChildDocumentCreateRequest(testChild_1.id, templateIdPed),
             )
         val content = DocumentContent(answers = listOf(AnsweredQuestion.TextAnswer("q1", "hello")))
-        controller.updateDocumentContent(
-            dbInstance(),
-            employeeUser.user,
-            clock,
-            documentId,
-            content,
-        )
+        updateDocumentContent(documentId, content)
         assertEquals(
             content,
             controller.getDocument(dbInstance(), employeeUser.user, clock, documentId).data.content,
@@ -597,15 +584,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
             ChildDocumentController.StatusChangeRequest(DocumentStatus.COMPLETED),
         )
         val content = DocumentContent(answers = listOf(AnsweredQuestion.TextAnswer("q1", "hello")))
-        assertThrows<BadRequest> {
-            controller.updateDocumentContent(
-                dbInstance(),
-                employeeUser.user,
-                clock,
-                documentId,
-                content,
-            )
-        }
+        assertThrows<BadRequest> { updateDocumentContent(documentId, content) }
     }
 
     @Test
@@ -619,15 +598,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
             )
         val content =
             DocumentContent(answers = listOf(AnsweredQuestion.TextAnswer("q999", "hello")))
-        assertThrows<BadRequest> {
-            controller.updateDocumentContent(
-                dbInstance(),
-                employeeUser.user,
-                clock,
-                documentId,
-                content,
-            )
-        }
+        assertThrows<BadRequest> { updateDocumentContent(documentId, content) }
     }
 
     @Test
@@ -640,15 +611,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                 ChildDocumentCreateRequest(testChild_1.id, templateIdPed),
             )
         val content = DocumentContent(answers = listOf(AnsweredQuestion.CheckboxAnswer("q1", true)))
-        assertThrows<BadRequest> {
-            controller.updateDocumentContent(
-                dbInstance(),
-                employeeUser.user,
-                clock,
-                documentId,
-                content,
-            )
-        }
+        assertThrows<BadRequest> { updateDocumentContent(documentId, content) }
     }
 
     @Test
@@ -670,15 +633,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                         )
                     )
             )
-        assertThrows<BadRequest> {
-            controller.updateDocumentContent(
-                dbInstance(),
-                employeeUser.user,
-                clock,
-                documentId,
-                content,
-            )
-        }
+        assertThrows<BadRequest> { updateDocumentContent(documentId, content) }
     }
 
     @Test
@@ -692,15 +647,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
             )
         val content =
             DocumentContent(answers = listOf(AnsweredQuestion.RadioButtonGroupAnswer("q3", "d")))
-        assertThrows<BadRequest> {
-            controller.updateDocumentContent(
-                dbInstance(),
-                employeeUser.user,
-                clock,
-                documentId,
-                content,
-            )
-        }
+        assertThrows<BadRequest> { updateDocumentContent(documentId, content) }
     }
 
     @Test
@@ -782,22 +729,18 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         )
 
         // user 1 updates document and re-takes a lock at 11:02
-        controller.updateDocumentContent(
-            dbInstance(),
-            employeeUser.user,
-            MockEvakaClock(2022, 1, 1, 11, 2),
+        updateDocumentContent(
             documentId,
             DocumentContent(answers = listOf(AnsweredQuestion.TextAnswer("q1", "hello"))),
+            now = MockEvakaClock(2022, 1, 1, 11, 2),
         )
 
         // user 1 updates document at 11:20, which extends the expired lock as no one else has taken
         // it in between
-        controller.updateDocumentContent(
-            dbInstance(),
-            employeeUser.user,
-            MockEvakaClock(2022, 1, 1, 11, 20),
+        updateDocumentContent(
             documentId,
             DocumentContent(answers = listOf(AnsweredQuestion.TextAnswer("q1", "hello2"))),
+            now = MockEvakaClock(2022, 1, 1, 11, 20),
         )
 
         // user 2 tries to take a lock at 11:22, which is not yet possible
@@ -817,12 +760,11 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
 
         // user 2 tries to update the document at 11:22 without owning the lock, which fails
         assertThrows<Conflict> {
-            controller.updateDocumentContent(
-                dbInstance(),
-                unitSupervisorUser,
-                MockEvakaClock(2022, 1, 1, 11, 22),
+            updateDocumentContent(
                 documentId,
                 DocumentContent(answers = listOf(AnsweredQuestion.TextAnswer("q1", "hello3"))),
+                now = MockEvakaClock(2022, 1, 1, 11, 22),
+                user = unitSupervisorUser,
             )
         }
 
@@ -842,22 +784,19 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         )
 
         // user 2 updates the document at 11:28
-        controller.updateDocumentContent(
-            dbInstance(),
-            unitSupervisorUser,
-            MockEvakaClock(2022, 1, 1, 11, 28),
+        updateDocumentContent(
             documentId,
             DocumentContent(answers = listOf(AnsweredQuestion.TextAnswer("q1", "hello4"))),
+            user = unitSupervisorUser,
+            now = MockEvakaClock(2022, 1, 1, 11, 28),
         )
 
         // user 1 cannot update the document at 11:30
         assertThrows<Conflict> {
-            controller.updateDocumentContent(
-                dbInstance(),
-                employeeUser.user,
-                MockEvakaClock(2022, 1, 1, 11, 30),
+            updateDocumentContent(
                 documentId,
                 DocumentContent(answers = listOf(AnsweredQuestion.TextAnswer("q1", "hello5"))),
+                now = MockEvakaClock(2022, 1, 1, 11, 30),
             )
         }
     }
@@ -955,6 +894,21 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
 
     private fun getDocument(id: ChildDocumentId) =
         controller.getDocument(dbInstance(), employeeUser.user, clock, id).data
+
+    private fun updateDocumentContent(
+        id: ChildDocumentId,
+        content: DocumentContent,
+        decisionMaker: EmployeeId? = null,
+        now: MockEvakaClock = clock,
+        user: AuthenticatedUser.Employee = employeeUser.user,
+    ) =
+        controller.updateDocumentContent(
+            dbInstance(),
+            user,
+            now,
+            id,
+            ChildDocumentController.DocumentContentUpdateRequest(content, decisionMaker),
+        )
 
     private fun nextState(
         id: ChildDocumentId,

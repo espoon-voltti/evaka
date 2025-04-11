@@ -5,7 +5,10 @@
 import React, { useContext, useMemo } from 'react'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { DocumentStatus } from 'lib-common/generated/api-types/document'
+import {
+  ChildDocumentDecisionStatus,
+  DocumentStatus
+} from 'lib-common/generated/api-types/document'
 
 import { FileType } from './molecules/FileUpload'
 
@@ -55,7 +58,7 @@ export interface Translations {
       addRow: string
     }
     noSelection: string
-    documentStates: Record<DocumentStatus, string>
+    documentStates: Record<DocumentStatus | ChildDocumentDecisionStatus, string>
   }
   fileUpload: {
     uploadFile: string

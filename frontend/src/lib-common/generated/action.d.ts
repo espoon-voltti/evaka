@@ -247,14 +247,18 @@ export type ChildDailyNote =
   | 'UPDATE'
 
 export type ChildDocument =
+  | 'ACCEPT_DECISION'
+  | 'ANNUL_DECISION'
   | 'ARCHIVE'
   | 'DELETE'
   | 'DOWNLOAD'
   | 'NEXT_STATUS'
   | 'PREV_STATUS'
+  | 'PROPOSE_DECISION'
   | 'PUBLISH'
   | 'READ'
   | 'READ_METADATA'
+  | 'REJECT_DECISION'
   | 'UPDATE'
 
 export type DailyServiceTime =

@@ -327,20 +327,73 @@ data class Section(
 
 @Json data class DocumentTemplateContent(val sections: List<Section>)
 
-/** statuses is an ordered list which defines a linear state machine */
+/**
+ * statuses: an ordered list which defines a linear state machine. publishable: if the document can
+ * be published to guardian even as a draft decision: if the document is a decision with
+ * accept/reject/annul functionality as the final step
+ */
 @ConstList("documentTypes")
-enum class DocumentType(val statuses: List<DocumentStatus>) : DatabaseEnum {
-    PEDAGOGICAL_REPORT(listOf(DocumentStatus.DRAFT, DocumentStatus.COMPLETED)),
-    PEDAGOGICAL_ASSESSMENT(listOf(DocumentStatus.DRAFT, DocumentStatus.COMPLETED)),
-    HOJKS(listOf(DocumentStatus.DRAFT, DocumentStatus.PREPARED, DocumentStatus.COMPLETED)),
-    MIGRATED_VASU(listOf(DocumentStatus.COMPLETED)),
-    MIGRATED_LEOPS(listOf(DocumentStatus.COMPLETED)),
-    VASU(listOf(DocumentStatus.DRAFT, DocumentStatus.PREPARED, DocumentStatus.COMPLETED)),
-    LEOPS(listOf(DocumentStatus.DRAFT, DocumentStatus.PREPARED, DocumentStatus.COMPLETED)),
-    CITIZEN_BASIC(
-        listOf(DocumentStatus.DRAFT, DocumentStatus.CITIZEN_DRAFT, DocumentStatus.COMPLETED)
+enum class DocumentType(
+    val statuses: List<DocumentStatus>,
+    val publishable: Boolean,
+    val decision: Boolean,
+) : DatabaseEnum {
+    PEDAGOGICAL_REPORT(
+        statuses = listOf(DocumentStatus.DRAFT, DocumentStatus.COMPLETED),
+        publishable = true,
+        decision = false,
     ),
-    OTHER(listOf(DocumentStatus.DRAFT, DocumentStatus.COMPLETED));
+    PEDAGOGICAL_ASSESSMENT(
+        statuses = listOf(DocumentStatus.DRAFT, DocumentStatus.COMPLETED),
+        publishable = true,
+        decision = false,
+    ),
+    HOJKS(
+        statuses = listOf(DocumentStatus.DRAFT, DocumentStatus.PREPARED, DocumentStatus.COMPLETED),
+        publishable = true,
+        decision = false,
+    ),
+    MIGRATED_VASU(
+        statuses = listOf(DocumentStatus.COMPLETED),
+        publishable = true,
+        decision = false,
+    ),
+    MIGRATED_LEOPS(
+        statuses = listOf(DocumentStatus.COMPLETED),
+        publishable = true,
+        decision = false,
+    ),
+    VASU(
+        statuses = listOf(DocumentStatus.DRAFT, DocumentStatus.PREPARED, DocumentStatus.COMPLETED),
+        publishable = true,
+        decision = false,
+    ),
+    LEOPS(
+        statuses = listOf(DocumentStatus.DRAFT, DocumentStatus.PREPARED, DocumentStatus.COMPLETED),
+        publishable = true,
+        decision = false,
+    ),
+    CITIZEN_BASIC(
+        statuses =
+            listOf(DocumentStatus.DRAFT, DocumentStatus.CITIZEN_DRAFT, DocumentStatus.COMPLETED),
+        publishable = false,
+        decision = false,
+    ),
+    OTHER_DECISION(
+        statuses =
+            listOf(
+                DocumentStatus.DRAFT,
+                DocumentStatus.DECISION_PROPOSAL,
+                DocumentStatus.COMPLETED,
+            ),
+        publishable = false,
+        decision = true,
+    ),
+    OTHER(
+        statuses = listOf(DocumentStatus.DRAFT, DocumentStatus.COMPLETED),
+        publishable = true,
+        decision = false,
+    );
 
     override val sqlType: String = "document_template_type"
 }

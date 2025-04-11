@@ -8,6 +8,7 @@ import fi.espoo.evaka.shared.ApplicationNoteId
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
 import fi.espoo.evaka.shared.AttachmentId
+import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.FinanceNoteId
@@ -260,6 +261,18 @@ FROM employee e
 JOIN message_account acc ON acc.type = 'FINANCE'
 WHERE e.id = ${bind(user.id)} AND e.roles && '{FINANCE_ADMIN}'::user_role[]
                 """
+                    .trimIndent()
+            )
+        }
+
+    fun andIsDecisionMakerForChildDocumentDecision() =
+        rule<ChildDocumentId> { employee, _ ->
+            sql(
+                """
+SELECT id
+FROM child_document
+WHERE decision_maker = ${bind(employee.id)}
+            """
                     .trimIndent()
             )
         }

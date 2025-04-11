@@ -20,7 +20,7 @@ import { ChildId } from 'lib-common/generated/api-types/shared'
 import { useQuery, useQueryResult } from 'lib-common/query'
 import { tabletMin } from 'lib-components/breakpoints'
 import { ChildDocumentStateChip } from 'lib-components/document-templates/ChildDocumentStateChip'
-import { isInternal } from 'lib-components/document-templates/documents'
+import { getDocumentCategory } from 'lib-components/document-templates/documents'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
@@ -103,7 +103,11 @@ const ChildDocumentsTable = React.memo(function ChildDocumentsTable({
               <Answered document={document} />
             </AnsweredTd>
             <StateTd>
-              <ChildDocumentStateChip status={document.status} />
+              {/*todo: decision status*/}
+              <ChildDocumentStateChip
+                status={document.status}
+                decisionStatus={null}
+              />
             </StateTd>
           </DocumentTr>
         ))}
@@ -229,7 +233,11 @@ const ChildDocumentsList = React.memo(function ChildDocumentsList({
                     >
                       {document.templateName}
                     </Link>
-                    <ChildDocumentStateChip status={document.status} />
+                    {/*todo: decision status*/}
+                    <ChildDocumentStateChip
+                      status={document.status}
+                      decisionStatus={null}
+                    />
                   </FixedSpaceRow>
                 </MobileRowContainer>
               ))}
@@ -247,7 +255,7 @@ const ChildDocumentsList = React.memo(function ChildDocumentsList({
 const Answered = ({ document }: { document: ChildDocumentCitizenSummary }) => {
   const i18n = useTranslation()
 
-  if (isInternal(document.type)) {
+  if (getDocumentCategory(document.type) !== 'external') {
     return null
   }
   if (document.answeredAt === null) {

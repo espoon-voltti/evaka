@@ -299,6 +299,11 @@ interface BaseFeatureFlags {
    * Enable support for citizen child document types
    */
   citizenChildDocumentTypes?: boolean
+
+  /**
+   * Enable support for decision child document types
+   */
+  decisionChildDocumentTypes?: boolean
 }
 
 export type FeatureFlags = DeepReadonly<BaseFeatureFlags>

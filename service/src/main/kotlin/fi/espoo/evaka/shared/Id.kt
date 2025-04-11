@@ -58,6 +58,8 @@ sealed interface DatabaseTable {
 
     sealed class ChildDocument : DatabaseTable
 
+    sealed class ChildDocumentDecision : DatabaseTable
+
     sealed class ChildImage : DatabaseTable
 
     sealed class ChildStickyNote : DatabaseTable
@@ -233,6 +235,8 @@ typealias ChildAttendanceId = Id<DatabaseTable.ChildAttendance>
 typealias ChildDailyNoteId = Id<DatabaseTable.ChildDailyNote>
 
 typealias ChildDocumentId = Id<DatabaseTable.ChildDocument>
+
+typealias ChildDocumentDecisionId = Id<DatabaseTable.ChildDocumentDecision>
 
 typealias ChildId = Id<DatabaseTable.Person>
 

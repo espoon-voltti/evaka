@@ -14,6 +14,7 @@ import fi.espoo.evaka.document.getTemplate
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DocumentTemplateId
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -466,6 +467,16 @@ class ChildDocumentControllerCitizenIntegrationTest :
     private fun publishDocument(id: ChildDocumentId) =
         employeeController.publishDocument(dbInstance(), employeeUser, clock, id)
 
-    private fun updateDocumentContent(id: ChildDocumentId, content: DocumentContent) =
-        employeeController.updateDocumentContent(dbInstance(), employeeUser, clock, id, content)
+    private fun updateDocumentContent(
+        id: ChildDocumentId,
+        content: DocumentContent,
+        decisionMaker: EmployeeId? = null,
+    ) =
+        employeeController.updateDocumentContent(
+            dbInstance(),
+            employeeUser,
+            clock,
+            id,
+            ChildDocumentController.DocumentContentUpdateRequest(content, decisionMaker),
+        )
 }

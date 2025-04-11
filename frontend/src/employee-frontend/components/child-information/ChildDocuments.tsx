@@ -1,9 +1,8 @@
-// SPDX-FileCopyrightText: 2017-2024 City of Espoo
+// SPDX-FileCopyrightText: 2017-2025 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import orderBy from 'lodash/orderBy'
-import partition from 'lodash/partition'
 import React, { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
 import styled from 'styled-components'
@@ -29,7 +28,10 @@ import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { SelectF } from 'lib-components/atoms/dropdowns/Select'
 import { ChildDocumentStateChip } from 'lib-components/document-templates/ChildDocumentStateChip'
-import { isInternal } from 'lib-components/document-templates/documents'
+import {
+  ChildDocumentCategory,
+  getDocumentCategory
+} from 'lib-components/document-templates/documents'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import {
   FixedSpaceColumn,
@@ -48,6 +50,11 @@ import { childDocumentsQuery, createChildDocumentMutation } from './queries'
 
 const WiderTd = styled(Td)`
   width: 50%;
+`
+
+const StatusTd = styled(Td)`
+  text-align: right;
+  width: 150px;
 `
 
 const InternalChildDocuments = React.memo(function InternalChildDocuments({
@@ -98,9 +105,74 @@ const InternalChildDocuments = React.memo(function InternalChildDocuments({
               <Td data-qa="document-published-at">
                 {document.publishedAt?.format() ?? '-'}
               </Td>
-              <Td data-qa="document-status">
-                <ChildDocumentStateChip status={document.status} />
+              <StatusTd data-qa="document-status">
+                <ChildDocumentStateChip
+                  status={document.status}
+                  decisionStatus={document.decision?.status ?? null}
+                />
+              </StatusTd>
+            </Tr>
+          ))}
+        </Tbody>
+      </Table>
+    </div>
+  )
+})
+
+const DecisionChildDocuments = React.memo(function DecisionChildDocuments({
+  childId,
+  documents
+}: {
+  childId: UUID
+  documents: ChildDocumentSummaryWithPermittedActions[]
+}) {
+  const { i18n } = useTranslation()
+  const navigate = useNavigate()
+
+  return (
+    <div>
+      <Table data-qa="table-of-decision-child-documents">
+        <Thead>
+          <Tr>
+            <Th>{i18n.childInformation.childDocuments.table.document}</Th>
+            <Th>{i18n.childInformation.childDocuments.table.modified}</Th>
+            <Th>{i18n.childInformation.childDocuments.table.valid}</Th>
+            <Th>{i18n.childInformation.childDocuments.table.status}</Th>
+          </Tr>
+        </Thead>
+        <Tbody>
+          {orderBy(
+            documents,
+            (document) => document.data.modifiedAt,
+            'desc'
+          ).map(({ data: document, permittedActions }) => (
+            <Tr key={document.id} data-qa="child-document-row">
+              <WiderTd data-qa={`child-document-${document.id}`}>
+                <Button
+                  appearance="inline"
+                  aria-label={i18n.childInformation.childDocuments.table.open}
+                  text={document.templateName}
+                  icon={faFile}
+                  disabled={!permittedActions.includes('READ')}
+                  onClick={() =>
+                    navigate({
+                      pathname: `/child-documents/${document.id}`,
+                      search: `?childId=${childId}`
+                    })
+                  }
+                  data-qa="open-document"
+                />
+              </WiderTd>
+              <Td>{document.modifiedAt.format()}</Td>
+              <Td>
+                {document.decision ? document.decision.validity.format() : ''}
               </Td>
+              <StatusTd data-qa="document-status">
+                <ChildDocumentStateChip
+                  status={document.status}
+                  decisionStatus={document.decision?.status ?? null}
+                />
+              </StatusTd>
             </Tr>
           ))}
         </Tbody>
@@ -176,9 +248,12 @@ const ExternalChildDocuments = React.memo(function ExternalChildDocuments({
                   </span>
                 )}
               </Td>
-              <Td data-qa="document-status">
-                <ChildDocumentStateChip status={document.status} />
-              </Td>
+              <StatusTd data-qa="document-status">
+                <ChildDocumentStateChip
+                  status={document.status}
+                  decisionStatus={document.decision?.status ?? null}
+                />
+              </StatusTd>
             </Tr>
           ))}
         </Tbody>
@@ -200,92 +275,109 @@ const ChildDocumentTables = ({
 }) => {
   const { i18n } = useTranslation()
   const [creationModalState, setCreationModalState] = useState<
-    'internal' | 'external' | undefined
+    ChildDocumentCategory | undefined
   >(undefined)
-  const [validInternalTemplates, validExternalTemplates] = useMemo(
+
+  const creatableTemplates = useMemo(
     () =>
-      partition(
-        templates.filter(
-          (template) =>
-            !documents.some(
-              ({ data: doc }) =>
-                doc.templateId === template.id && doc.status !== 'COMPLETED'
-            ) && !template.type.startsWith('MIGRATED_')
-        ),
-        (template) => isInternal(template.type)
+      templates.filter(
+        (template) =>
+          !documents.some(
+            ({ data: doc }) =>
+              doc.templateId === template.id && doc.status !== 'COMPLETED'
+          ) && !template.type.startsWith('MIGRATED_')
       ),
     [documents, templates]
   )
-  const [title, validTemplates] = useMemo(() => {
-    switch (creationModalState) {
-      case 'internal':
-        return [
-          i18n.childInformation.childDocuments.addNew.internal,
-          validInternalTemplates
-        ]
-      case 'external':
-        return [
-          i18n.childInformation.childDocuments.addNew.external,
-          validExternalTemplates
-        ]
-      case undefined:
-        return ['', []]
-    }
-  }, [
-    creationModalState,
-    i18n.childInformation.childDocuments.addNew.external,
-    i18n.childInformation.childDocuments.addNew.internal,
-    validExternalTemplates,
-    validInternalTemplates
-  ])
-  const [internalDocuments, externalDocuments] = useMemo(
-    () => partition(documents, (document) => isInternal(document.data.type)),
+
+  const validTemplatesByCategory: Record<
+    ChildDocumentCategory,
+    DocumentTemplateSummary[]
+  > = useMemo(
+    () => ({
+      internal: creatableTemplates.filter(
+        (t) => getDocumentCategory(t.type) === 'internal'
+      ),
+      decision: creatableTemplates.filter(
+        (t) => getDocumentCategory(t.type) === 'decision'
+      ),
+      external: creatableTemplates.filter(
+        (t) => getDocumentCategory(t.type) === 'external'
+      )
+    }),
+    [creatableTemplates]
+  )
+
+  const documentsByCategory: Record<
+    ChildDocumentCategory,
+    ChildDocumentSummaryWithPermittedActions[]
+  > = useMemo(
+    () => ({
+      internal: documents.filter(
+        (d) => getDocumentCategory(d.data.type) === 'internal'
+      ),
+      decision: documents.filter(
+        (d) => getDocumentCategory(d.data.type) === 'decision'
+      ),
+      external: documents.filter(
+        (d) => getDocumentCategory(d.data.type) === 'external'
+      )
+    }),
     [documents]
   )
 
+  const enabledCategories: ChildDocumentCategory[] = [
+    'internal',
+    ...(featureFlags.decisionChildDocumentTypes ? ['decision' as const] : []),
+    ...(featureFlags.citizenChildDocumentTypes ? ['external' as const] : [])
+  ]
+
   return (
-    <FixedSpaceColumn>
+    <FixedSpaceColumn spacing="L">
       {creationModalState && (
         <CreationModal
           childId={childId}
-          title={title}
-          templates={validTemplates}
+          title={
+            i18n.childInformation.childDocuments.addNew[creationModalState]
+          }
+          templates={validTemplatesByCategory[creationModalState]}
           onClose={() => setCreationModalState(undefined)}
         />
       )}
 
-      <FixedSpaceRow justifyContent="space-between">
-        <H3>{i18n.childInformation.childDocuments.title.internal}</H3>
-        {hasCreatePermission && (
-          <AddButtonRow
-            text={i18n.childInformation.childDocuments.addNew.internal}
-            onClick={() => setCreationModalState('internal')}
-            disabled={validInternalTemplates.length < 1}
-            data-qa="create-internal-document"
-          />
-        )}
-      </FixedSpaceRow>
-      <InternalChildDocuments childId={childId} documents={internalDocuments} />
-
-      {featureFlags.citizenChildDocumentTypes && (
-        <>
+      {enabledCategories.map((category) => (
+        <FixedSpaceColumn spacing="zero" key={category}>
           <FixedSpaceRow justifyContent="space-between">
-            <H3>{i18n.childInformation.childDocuments.title.external}</H3>
+            <H3>{i18n.childInformation.childDocuments.title[category]}</H3>
             {hasCreatePermission && (
               <AddButtonRow
-                text={i18n.childInformation.childDocuments.addNew.external}
-                onClick={() => setCreationModalState('external')}
-                disabled={validExternalTemplates.length < 1}
-                data-qa="create-external-document"
+                text={i18n.childInformation.childDocuments.addNew[category]}
+                onClick={() => setCreationModalState(category)}
+                disabled={validTemplatesByCategory[category].length === 0}
+                data-qa={`create-${category}-document`}
               />
             )}
           </FixedSpaceRow>
-          <ExternalChildDocuments
-            childId={childId}
-            documents={externalDocuments}
-          />
-        </>
-      )}
+          {category === 'internal' && (
+            <InternalChildDocuments
+              childId={childId}
+              documents={documentsByCategory[category]}
+            />
+          )}
+          {category === 'decision' && (
+            <DecisionChildDocuments
+              childId={childId}
+              documents={documentsByCategory[category]}
+            />
+          )}
+          {category === 'external' && (
+            <ExternalChildDocuments
+              childId={childId}
+              documents={documentsByCategory[category]}
+            />
+          )}
+        </FixedSpaceColumn>
+      ))}
     </FixedSpaceColumn>
   )
 }
