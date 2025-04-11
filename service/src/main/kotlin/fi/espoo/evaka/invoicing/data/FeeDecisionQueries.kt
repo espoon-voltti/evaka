@@ -20,12 +20,12 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.PersonId
-import fi.espoo.evaka.shared.db.Binding
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.Predicate
+import fi.espoo.evaka.shared.db.PredicateSql
 import fi.espoo.evaka.shared.db.QuerySql
-import fi.espoo.evaka.shared.db.disjointNumberQuery
-import fi.espoo.evaka.shared.db.freeTextSearchQuery
+import fi.espoo.evaka.shared.db.disjointNumberPredicate
+import fi.espoo.evaka.shared.db.freeTextSearchPredicate
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -391,6 +391,9 @@ fun Database.Read.searchFeeDecisions(
     financeDecisionHandlerId: EmployeeId?,
     difference: Set<FeeDecisionDifference>,
 ): PagedFeeDecisionSummaries {
+    val now = clock.now()
+    val today = now.toLocalDate()
+
     val sortColumn =
         when (sortBy) {
             FeeDecisionSortParam.HEAD_OF_FAMILY -> "head.last_name"
@@ -402,27 +405,11 @@ fun Database.Read.searchFeeDecisions(
             FeeDecisionSortParam.FINAL_PRICE -> "total_fee"
         }
 
-    val params =
-        listOf(
-            Binding.of("page", page),
-            Binding.of("pageSize", pageSize),
-            Binding.of("status", statuses),
-            Binding.of("area", areas),
-            Binding.of("unit", unit),
-            Binding.of("postOffice", postOffice),
-            Binding.of("start_date", startDate),
-            Binding.of("end_date", endDate),
-            Binding.of("finance_decision_handler", financeDecisionHandlerId),
-            Binding.of("difference", difference),
-            Binding.of("firstPlacementStartDate", clock.today().withDayOfMonth(1)),
-            Binding.of("now", clock.now()),
-        )
-
     val numberParamsRaw = splitSearchText(searchTerms).filter(decisionNumberRegex::matches)
     val searchTextWithoutNumbers = searchTerms.replace(decisionNumberRegex, "")
 
-    val (freeTextQuery, freeTextParams) =
-        freeTextSearchQuery(listOf("head", "partner", "child"), searchTextWithoutNumbers)
+    val freeTextPredicate =
+        freeTextSearchPredicate(listOf("head", "partner", "child"), searchTextWithoutNumbers)
 
     val withNullHours = distinctiveParams.contains(DistinctiveParams.UNCONFIRMED_HOURS)
     val havingExternalChildren = distinctiveParams.contains(DistinctiveParams.EXTERNAL_CHILD)
@@ -433,59 +420,97 @@ fun Database.Read.searchFeeDecisions(
     val noOpenIncomeStatements =
         distinctiveParams.contains(DistinctiveParams.NO_OPEN_INCOME_STATEMENTS)
 
-    val (numberQuery, numberParams) =
-        disjointNumberQuery("decision", "decision_number", numberParamsRaw)
+    val numberPredicate = disjointNumberPredicate("decision", "decision_number", numberParamsRaw)
 
     val conditions =
-        listOfNotNull(
-            if (statuses.isNotEmpty()) "status = ANY(:status::fee_decision_status[])" else null,
-            if (areas.isNotEmpty()) "youngest_child.area = ANY(:area)" else null,
-            if (unit != null) "part.placement_unit_id = :unit" else null,
-            if (withNullHours) "part.service_need_missing" else null,
+        PredicateSql.allNotNull(
+            if (statuses.isNotEmpty()) PredicateSql { where("status = ANY(${bind(statuses)})") }
+            else null,
+            if (areas.isNotEmpty())
+                PredicateSql { where("youngest_child.area = ANY(${bind(areas)})") }
+            else null,
+            if (unit != null) PredicateSql { where("part.placement_unit_id = ${bind(unit)}") }
+            else null,
+            if (withNullHours) PredicateSql { where("part.service_need_missing") } else null,
             if (havingExternalChildren)
-                "child.post_office <> '' AND child.post_office NOT ILIKE :postOffice"
+                PredicateSql {
+                    where(
+                        "child.post_office <> '' AND child.post_office NOT ILIKE ${bind(postOffice)}"
+                    )
+                }
             else null,
             if (retroactiveOnly)
-                "lower(decision.valid_during) < date_trunc('month', COALESCE(decision.approved_at, :now))"
+                PredicateSql {
+                    where(
+                        "lower(decision.valid_during) < date_trunc('month', COALESCE(decision.approved_at, ${bind(now)}))"
+                    )
+                }
             else null,
-            if (numberParamsRaw.isNotEmpty()) numberQuery else null,
-            if (searchTextWithoutNumbers.isNotBlank()) freeTextQuery else null,
+            if (numberParamsRaw.isNotEmpty()) numberPredicate else null,
+            if (searchTextWithoutNumbers.isNotBlank()) freeTextPredicate else null,
             if ((startDate != null || endDate != null) && !searchByStartDate)
-                "daterange(:start_date, :end_date, '[]') && valid_during"
+                PredicateSql {
+                    where("daterange(${bind(startDate)}, ${bind(endDate)}, '[]') && valid_during")
+                }
             else null,
             if ((startDate != null || endDate != null) && searchByStartDate) {
                 // valid_during overlaps but does not extend to the left of search range
                 // = start date of valid_during is included in the search range
-                "(valid_during && daterange(:start_date, :end_date, '[]') AND valid_during &> daterange(:start_date, :end_date, '[]'))"
+                PredicateSql {
+                    where(
+                        "(valid_during && daterange(${bind(startDate)}, ${bind(endDate)}, '[]') AND valid_during &> daterange(${bind(startDate)}, ${bind(endDate)}, '[]'))"
+                    )
+                }
             } else {
                 null
             },
             if (financeDecisionHandlerId != null)
-                "youngest_child.finance_decision_handler = :finance_decision_handler"
+                PredicateSql {
+                    where(
+                        "youngest_child.finance_decision_handler = ${bind(financeDecisionHandlerId)}"
+                    )
+                }
             else null,
-            if (difference.isNotEmpty()) "decision.difference && :difference" else null,
+            if (difference.isNotEmpty())
+                PredicateSql { where("decision.difference && ${bind(difference)}") }
+            else null,
             if (noStartingPlacements)
-                "decisions_with_first_placement_starting_this_month.fee_decision_id IS NULL"
+                PredicateSql {
+                    where(
+                        "decisions_with_first_placement_starting_this_month.fee_decision_id IS NULL"
+                    )
+                }
             else null,
             if (maxFeeAccepted)
-                "(decision.head_of_family_income->>'effect' = 'MAX_FEE_ACCEPTED' OR decision.partner_income->>'effect' = 'MAX_FEE_ACCEPTED')"
+                PredicateSql {
+                    where(
+                        "(decision.head_of_family_income->>'effect' = 'MAX_FEE_ACCEPTED' OR decision.partner_income->>'effect' = 'MAX_FEE_ACCEPTED')"
+                    )
+                }
             else null,
-            if (preschoolClub) "decisions_with_preschool_club_placement IS NOT NULL" else null,
+            if (preschoolClub)
+                PredicateSql { where("decisions_with_preschool_club_placement IS NOT NULL") }
+            else null,
             if (noOpenIncomeStatements)
-                """
+                PredicateSql {
+                    where(
+                        """
                 NOT EXISTS (
                     SELECT FROM income_statement
                     WHERE person_id IN (decision.head_of_family_id, decision.partner_id, part.child_id) AND
-                        daterange(start_date, end_date, '[]') && daterange((:now - interval '14 months')::date, :now::date, '[]') AND
+                        daterange(start_date, end_date, '[]') && daterange((${bind(today)} - interval '14 months')::date, ${bind(today)}, '[]') AND
                         status = 'SENT'
                     )
-                """
+                            """
+                    )
+                }
             else null,
         )
 
     val youngestChildQuery =
-        """
-        youngest_child AS (
+        QuerySql {
+                sql(
+                    """
             SELECT
                 fee_decision_child.fee_decision_id AS decision_id,
                 care_area.short_name AS area,
@@ -494,52 +519,75 @@ fun Database.Read.searchFeeDecisions(
             FROM fee_decision_child
             LEFT JOIN daycare ON fee_decision_child.placement_unit_id = daycare.id
             LEFT JOIN care_area ON daycare.care_area_id = care_area.id
-        )
         """
+                )
+            }
+            .takeIf { areas.isNotEmpty() || financeDecisionHandlerId != null }
     val youngestChildJoin =
-        "LEFT JOIN youngest_child ON decision.id = youngest_child.decision_id AND rownum = 1"
+        QuerySql {
+                sql(
+                    "LEFT JOIN youngest_child ON decision.id = youngest_child.decision_id AND rownum = 1"
+                )
+            }
+            .takeIf { areas.isNotEmpty() || financeDecisionHandlerId != null }
 
     val firstPlacementStartingThisMonthChildQuery =
-        """
-        decisions_with_first_placement_starting_this_month AS (    
+        QuerySql {
+                sql(
+                    """
             SELECT DISTINCT(fdc.fee_decision_id)
             FROM placement p
             JOIN person c ON p.child_id = c.id
             JOIN fee_decision_child fdc ON c.id = fdc.child_id
             LEFT JOIN placement preceding ON p.child_id = preceding.child_id AND (p.start_date - interval '1 days') = preceding.end_date AND preceding.type != 'CLUB'::placement_type
-            WHERE p.start_date >= :firstPlacementStartDate AND preceding.id IS NULL AND p.type != 'CLUB'::placement_type
-        )
+            WHERE p.start_date >= ${bind(today.withDayOfMonth(1))} AND preceding.id IS NULL AND p.type != 'CLUB'::placement_type
         """
+                )
+            }
+            .takeIf { noStartingPlacements }
 
     val firstPlacementStartingThisMonthChildIdsQueryJoin =
-        "LEFT JOIN decisions_with_first_placement_starting_this_month ON decision.id = decisions_with_first_placement_starting_this_month.fee_decision_id"
+        QuerySql {
+                sql(
+                    "LEFT JOIN decisions_with_first_placement_starting_this_month ON decision.id = decisions_with_first_placement_starting_this_month.fee_decision_id"
+                )
+            }
+            .takeIf { noStartingPlacements }
 
     val preschoolClubPlacementQuery =
-        """
-        decisions_with_preschool_club_placement AS (
+        QuerySql {
+                sql(
+                    """
             SELECT DISTINCT(fdc.fee_decision_id)
             FROM fee_decision_child fdc
             WHERE fdc.placement_type = 'PRESCHOOL_CLUB'::placement_type
-        )
         """
+                )
+            }
+            .takeIf { preschoolClub }
 
     val preschoolClubQueryJoin =
-        "LEFT JOIN decisions_with_preschool_club_placement ON decision.id = decisions_with_preschool_club_placement.fee_decision_id"
+        QuerySql {
+                sql(
+                    "LEFT JOIN decisions_with_preschool_club_placement ON decision.id = decisions_with_preschool_club_placement.fee_decision_id"
+                )
+            }
+            .takeIf { preschoolClub }
 
-    val CTEs =
-        listOf(
-                if (areas.isNotEmpty() || financeDecisionHandlerId != null) youngestChildQuery
-                else "",
-                if (noStartingPlacements) firstPlacementStartingThisMonthChildQuery else "",
-                if (preschoolClub) preschoolClubPlacementQuery else "",
-            )
-            .filter { it.isNotEmpty() }
-            .joinToString(",")
+    val ctes = QuerySql {
+        ctesNotNull(
+            "youngest_child" to youngestChildQuery,
+            "decisions_with_first_placement_starting_this_month" to
+                firstPlacementStartingThisMonthChildQuery,
+            "decisions_with_preschool_club_placement" to preschoolClubPlacementQuery,
+        )
+    }
 
-    val sql =
-        """
+    return createQuery {
+            sql(
+                """
         WITH decision_ids AS (
-            ${if (CTEs.length > 0) "WITH $CTEs" else ""}
+            ${subquery(ctes)}
             SELECT decision.id, count(*) OVER ()
             FROM fee_decision AS decision
             LEFT JOIN fee_decision_child AS part ON decision.id = part.fee_decision_id
@@ -547,20 +595,14 @@ fun Database.Read.searchFeeDecisions(
             LEFT JOIN person AS partner ON decision.partner_id = partner.id
             LEFT JOIN person AS child ON part.child_id = child.id
             LEFT JOIN daycare AS placement_unit ON placement_unit.id = part.placement_unit_id
-            ${if (areas.isNotEmpty() || financeDecisionHandlerId != null) youngestChildJoin else ""}
-            ${if (noStartingPlacements) firstPlacementStartingThisMonthChildIdsQueryJoin else ""}
-            ${if (preschoolClub) preschoolClubQueryJoin else ""}
-            ${if (conditions.isNotEmpty()) {
-            """
-            WHERE ${conditions.joinToString("\nAND ")}
-            """
-        } else {
-            ""
-        }}
+            ${subqueryNotNull(youngestChildJoin)}
+            ${subqueryNotNull(firstPlacementStartingThisMonthChildIdsQueryJoin)}
+            ${subqueryNotNull(preschoolClubQueryJoin)}
+            WHERE ${predicate(conditions)}
             GROUP BY decision.id
             -- we take a max here because the sort column is not in group by clause but it should be identical for all grouped rows
             ORDER BY max($sortColumn) ${sortDirection.name}, decision.id
-            LIMIT :pageSize OFFSET :pageSize * :page
+            LIMIT ${bind(pageSize)} OFFSET ${bind(pageSize)} * ${bind(page)}
         )
         SELECT
             decision_ids.count,
@@ -596,12 +638,8 @@ fun Database.Read.searchFeeDecisions(
         LEFT JOIN person AS head ON decision.head_of_family_id = head.id
         ORDER BY $sortColumn ${sortDirection.name}, decision.id
         """
-
-    @Suppress("DEPRECATION")
-    return createQuery(sql)
-        .addBindings(params)
-        .addBindings(freeTextParams)
-        .addBindings(numberParams)
+            )
+        }
         .mapToPaged(::PagedFeeDecisionSummaries, pageSize)
 }
 

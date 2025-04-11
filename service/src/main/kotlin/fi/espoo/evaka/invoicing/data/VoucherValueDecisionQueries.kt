@@ -20,9 +20,9 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
-import fi.espoo.evaka.shared.db.Binding
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.freeTextSearchQuery
+import fi.espoo.evaka.shared.db.PredicateSql
+import fi.espoo.evaka.shared.db.freeTextSearchPredicate
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -304,24 +304,7 @@ fun Database.Read.searchValueDecisions(
             VoucherValueDecisionSortParam.STATUS -> "decision.status"
         }
 
-    val params =
-        listOf(
-            Binding.of("page", page),
-            Binding.of("pageSize", pageSize),
-            Binding.of("status", statuses),
-            Binding.of("areas", areas),
-            Binding.of("unit", unit),
-            Binding.of("postOffice", postOffice),
-            Binding.of("start_date", startDate),
-            Binding.of("end_date", endDate),
-            Binding.of("financeDecisionHandlerId", financeDecisionHandlerId),
-            Binding.of("difference", difference),
-            Binding.of("firstPlacementStartDate", evakaClock.now().toLocalDate().withDayOfMonth(1)),
-            Binding.of("now", evakaClock.now()),
-        )
-
-    val (freeTextQuery, freeTextParams) =
-        freeTextSearchQuery(listOf("head", "partner", "child"), searchTerms)
+    val freeTextPredicate = freeTextSearchPredicate(listOf("head", "partner", "child"), searchTerms)
 
     val withNullHours =
         distinctiveParams.contains(VoucherValueDecisionDistinctiveParams.UNCONFIRMED_HOURS)
@@ -341,59 +324,97 @@ fun Database.Read.searchValueDecisions(
     val noOpenIncomeStatements =
         distinctiveParams.contains(VoucherValueDecisionDistinctiveParams.NO_OPEN_INCOME_STATEMENTS)
 
-    val noStartingPlacementsQuery =
-        """
+    val now = evakaClock.now()
+    val today = now.toLocalDate()
+
+    val noStartingPlacementsPredicate = PredicateSql {
+        where(
+            """
 NOT EXISTS (            
     SELECT true
     FROM placement p
     JOIN person c ON p.child_id = c.id
     JOIN voucher_value_decision vvd ON c.id = vvd.child_id
     LEFT JOIN placement preceding ON p.child_id = preceding.child_id AND (p.start_date - interval '1 days') = preceding.end_date AND preceding.type != 'CLUB'::placement_type
-    WHERE p.start_date >= :firstPlacementStartDate AND preceding.id IS NULL AND p.type != 'CLUB'::placement_type
+    WHERE p.start_date >= ${bind(today.withDayOfMonth(1))} AND preceding.id IS NULL AND p.type != 'CLUB'::placement_type
         AND vvd.id = decision.id
 )
         """
+        )
+    }
 
     val conditions =
-        listOfNotNull(
-            if (statuses.isNotEmpty()) "status = ANY(:status::voucher_value_decision_status[])"
+        PredicateSql.allNotNull(
+            if (statuses.isNotEmpty()) PredicateSql { where("status = ANY(${bind(statuses)})") }
             else null,
-            if (areas.isNotEmpty()) "area.short_name = ANY(:areas)" else null,
-            if (unit != null) "decision.placement_unit_id = :unit" else null,
+            if (areas.isNotEmpty()) PredicateSql { where("area.short_name = ANY(${bind(areas)})") }
+            else null,
+            if (unit != null) PredicateSql { where("decision.placement_unit_id = ${bind(unit)}") }
+            else null,
             if ((startDate != null || endDate != null) && !searchByStartDate)
-                "daterange(:start_date, :end_date, '[]') && daterange(valid_from, valid_to, '[]')"
+                PredicateSql {
+                    where(
+                        "daterange(${bind(startDate)}, ${bind(endDate)}, '[]') && daterange(valid_from, valid_to, '[]')"
+                    )
+                }
             else null,
             if ((startDate != null || endDate != null) && searchByStartDate)
-                "daterange(:start_date, :end_date, '[]') @> valid_from"
+                PredicateSql {
+                    where("daterange(${bind(startDate)}, ${bind(endDate)}, '[]') @> valid_from")
+                }
             else null,
             if (financeDecisionHandlerId != null)
-                "placement_unit.finance_decision_handler = :financeDecisionHandlerId"
+                PredicateSql {
+                    where(
+                        "placement_unit.finance_decision_handler = ${bind(financeDecisionHandlerId)}"
+                    )
+                }
             else null,
-            if (difference.isNotEmpty()) "decision.difference && :difference" else null,
-            if (withNullHours) "decision.service_need_missing" else null,
+            if (difference.isNotEmpty())
+                PredicateSql { where("decision.difference && ${bind(difference)}") }
+            else null,
+            if (withNullHours) PredicateSql { where("decision.service_need_missing") } else null,
             if (havingExternalChildren)
-                "child.post_office <> '' AND child.post_office NOT ILIKE :postOffice"
+                PredicateSql {
+                    where(
+                        "child.post_office <> '' AND child.post_office NOT ILIKE ${bind(postOffice)}"
+                    )
+                }
             else null,
             if (retroactiveOnly)
-                "decision.valid_from < date_trunc('month', COALESCE(decision.approved_at, :now))"
+                PredicateSql {
+                    where(
+                        "decision.valid_from < date_trunc('month', COALESCE(decision.approved_at, ${bind(now)}))"
+                    )
+                }
             else null,
-            if (noStartingPlacements) noStartingPlacementsQuery else null,
+            if (noStartingPlacements) noStartingPlacementsPredicate else null,
             if (maxFeeAccepted)
-                "(decision.head_of_family_income->>'effect' = 'MAX_FEE_ACCEPTED' OR decision.partner_income->>'effect' = 'MAX_FEE_ACCEPTED')"
+                PredicateSql {
+                    where(
+                        "(decision.head_of_family_income->>'effect' = 'MAX_FEE_ACCEPTED' OR decision.partner_income->>'effect' = 'MAX_FEE_ACCEPTED')"
+                    )
+                }
             else null,
             if (noOpenIncomeStatements)
-                """
+                PredicateSql {
+                    where(
+                        """
                 NOT EXISTS (
                     SELECT FROM income_statement
                     WHERE person_id IN (decision.head_of_family_id, decision.partner_id, decision.child_id) AND
-                        daterange(start_date, end_date, '[]') && daterange((:now - interval '14 months')::date, :now::date, '[]') AND
+                        daterange(start_date, end_date, '[]') && daterange((${bind(today)} - interval '14 months')::date, ${bind(today)}, '[]') AND
                         status = 'SENT'
                     )
                 """
+                    )
+                }
             else null,
         )
-    val sql =
-        """
+
+    return createQuery {
+            sql(
+                """
 SELECT
     count(*) OVER () AS count,
     decision.id,
@@ -425,20 +446,13 @@ LEFT JOIN person AS partner ON decision.partner_id = partner.id
 LEFT JOIN daycare AS placement_unit ON placement_unit.id = decision.placement_unit_id
 LEFT JOIN care_area AS area ON placement_unit.care_area_id = area.id
 WHERE
-    $freeTextQuery
-    ${if (conditions.isNotEmpty()) {
-            """AND ${conditions.joinToString("\nAND ")}
-            """
-        } else {
-            ""
-        }}
+    ${predicate(freeTextPredicate)} AND
+    ${predicate(conditions)}
 ORDER BY $sortColumn $sortDirection, decision.id $sortDirection
-LIMIT :pageSize OFFSET :pageSize * :page
+LIMIT ${bind(pageSize)} OFFSET ${bind(pageSize)} * ${bind(page)}
 """
-    @Suppress("DEPRECATION")
-    return this.createQuery(sql)
-        .addBindings(params)
-        .addBindings(freeTextParams)
+            )
+        }
         .mapToPaged(::PagedVoucherValueDecisionSummaries, pageSize)
 }
 

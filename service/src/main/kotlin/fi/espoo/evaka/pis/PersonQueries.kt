@@ -12,10 +12,10 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.PredicateSql
 import fi.espoo.evaka.shared.db.Row
-import fi.espoo.evaka.shared.db.freeTextSearchQuery
+import fi.espoo.evaka.shared.db.freeTextSearchPredicate
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import fi.espoo.evaka.shared.utils.applyIf
 import java.time.LocalDate
 import java.util.UUID
 
@@ -200,10 +200,21 @@ fun Database.Read.searchPeople(
                 }
             }
 
-    val (freeTextQuery, freeTextParams) = freeTextSearchQuery(listOf("person"), searchTerms)
+    val freeTextPredicate = freeTextSearchPredicate(listOf("person"), searchTerms)
+    val restrictedPredicate =
+        if (restricted)
+            PredicateSql {
+                where(
+                    "id IN (SELECT person_id FROM person_acl_view acl WHERE acl.employee_id = ${bind(user.id)})"
+                )
+            }
+        else {
+            PredicateSql.alwaysTrue()
+        }
 
-    val sql =
-        """
+    return createQuery {
+            sql(
+                """
         SELECT
             id,
             social_security_number,
@@ -214,17 +225,15 @@ fun Database.Read.searchPeople(
             street_address,
             restricted_details_enabled
         FROM person
-        WHERE $freeTextQuery
-        ${if (restricted) "AND id IN (SELECT person_id FROM person_acl_view acl WHERE acl.employee_id = :userId)" else ""}
+        WHERE
+            ${predicate(freeTextPredicate)} AND
+            ${predicate(restrictedPredicate)}
         ORDER BY $orderBy
         LIMIT 100
     """
-
-    @Suppress("DEPRECATION")
-    return createQuery(sql)
-        .addBindings(freeTextParams)
-        .applyIf(restricted) { this.bind("userId", user.id) }
-        .toList<PersonSummary>()
+            )
+        }
+        .toList()
 }
 
 fun Database.Transaction.createPerson(person: CreatePersonBody): PersonId {

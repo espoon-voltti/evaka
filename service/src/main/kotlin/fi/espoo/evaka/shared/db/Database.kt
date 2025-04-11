@@ -673,6 +673,9 @@ abstract class SqlBuilder {
         return fragment.sql
     }
 
+    fun subqueryNotNull(fragment: QuerySql?): QuerySqlString =
+        if (fragment != null) subquery(fragment) else QuerySqlString("")
+
     fun predicate(predicate: PredicateSql): PredicateSqlString {
         predicate.bindings.forEach(this::addBinding)
         return predicate.sql
@@ -688,6 +691,8 @@ abstract class SqlBuilder {
 data class QuerySql(val sql: QuerySqlString, val bindings: List<ValueBinding<out Any?>>) {
     companion object {
         operator fun invoke(f: Builder.() -> QuerySql): QuerySql = Builder().run { f(this) }
+
+        val empty = QuerySql(QuerySqlString(""), emptyList())
     }
 
     class Builder : SqlBuilder() {
@@ -712,6 +717,24 @@ data class QuerySql(val sql: QuerySqlString, val bindings: List<ValueBinding<out
 
         fun union(all: Boolean, queries: Iterable<QuerySql>): QuerySql =
             combine(if (all) "\nUNION ALL\n" else "\nUNION\n", queries)
+
+        fun ctes(queries: List<Pair<String, QuerySql>>): QuerySql =
+            if (queries.isEmpty()) empty
+            else {
+                val combined =
+                    combine(
+                        ",\n",
+                        queries.map { (name, query) ->
+                            QuerySql { sql("$name AS (${subquery(query)})") }
+                        },
+                    )
+                QuerySql { sql("WITH ${subquery(combined)}") }
+            }
+
+        fun ctes(vararg queries: Pair<String, QuerySql>): QuerySql = ctes(queries.toList())
+
+        fun ctesNotNull(vararg queries: Pair<String, QuerySql?>): QuerySql =
+            ctes(queries.mapNotNull { (name, query) -> if (query != null) name to query else null })
 
         fun sql(@Language("sql") sql: String): QuerySql {
             check(!used) { "builder has already been used" }
