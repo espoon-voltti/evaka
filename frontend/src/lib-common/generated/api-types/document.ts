@@ -220,6 +220,7 @@ export type DocumentStatus =
   | 'DRAFT'
   | 'PREPARED'
   | 'CITIZEN_DRAFT'
+  | 'DECISION_PROPOSAL'
   | 'COMPLETED'
 
 /**
@@ -288,6 +289,7 @@ export const documentTypes = [
   'VASU',
   'LEOPS',
   'CITIZEN_BASIC',
+  'OTHER_DECISION',
   'OTHER'
 ] as const
 

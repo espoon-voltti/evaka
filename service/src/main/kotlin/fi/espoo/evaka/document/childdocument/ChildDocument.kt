@@ -122,6 +122,7 @@ enum class DocumentStatus(val employeeEditable: Boolean, val citizenEditable: Bo
     DRAFT(employeeEditable = true, citizenEditable = false),
     PREPARED(employeeEditable = true, citizenEditable = false),
     CITIZEN_DRAFT(employeeEditable = false, citizenEditable = true),
+    DECISION_PROPOSAL(employeeEditable = true, citizenEditable = false),
     COMPLETED(employeeEditable = false, citizenEditable = false);
 
     override val sqlType: String = "child_document_status"

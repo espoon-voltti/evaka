@@ -16,6 +16,7 @@ const statusesByType: Record<DocumentType, DocumentStatus[]> = {
   VASU: ['DRAFT', 'PREPARED', 'COMPLETED'],
   LEOPS: ['DRAFT', 'PREPARED', 'COMPLETED'],
   CITIZEN_BASIC: ['DRAFT', 'CITIZEN_DRAFT', 'COMPLETED'],
+  OTHER_DECISION: ['DRAFT', 'DECISION_PROPOSAL', 'COMPLETED'],
   OTHER: ['DRAFT', 'COMPLETED']
 }
 
@@ -48,6 +49,7 @@ const editable: Record<DocumentStatus, boolean> = {
   DRAFT: true,
   PREPARED: true,
   CITIZEN_DRAFT: false,
+  DECISION_PROPOSAL: true,
   COMPLETED: false
 }
 

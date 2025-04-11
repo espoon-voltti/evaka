@@ -340,6 +340,9 @@ enum class DocumentType(val statuses: List<DocumentStatus>) : DatabaseEnum {
     CITIZEN_BASIC(
         listOf(DocumentStatus.DRAFT, DocumentStatus.CITIZEN_DRAFT, DocumentStatus.COMPLETED)
     ),
+    OTHER_DECISION(
+        listOf(DocumentStatus.DRAFT, DocumentStatus.DECISION_PROPOSAL, DocumentStatus.COMPLETED)
+    ),
     OTHER(listOf(DocumentStatus.DRAFT, DocumentStatus.COMPLETED));
 
     override val sqlType: String = "document_template_type"

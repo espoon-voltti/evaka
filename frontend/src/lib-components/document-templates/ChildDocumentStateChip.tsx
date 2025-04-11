@@ -22,6 +22,7 @@ export function ChildDocumentStateChip({ status }: StateChipProps) {
     DRAFT: colors.accents.a7mint,
     PREPARED: colors.accents.a4violet,
     CITIZEN_DRAFT: colors.accents.a5orangeLight,
+    DECISION_PROPOSAL: colors.accents.a4violet,
     COMPLETED: colors.grayscale.g15
   }
 
