@@ -151,11 +151,8 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
      * thread.
      */
     open class Read internal constructor(val handle: Handle) {
-        @Deprecated("Use new query API instead")
-        fun createQuery(@Language("sql") sql: String): Query = Query(handle.createQuery(sql))
-
         fun createQuery(f: QuerySql.Builder.() -> QuerySql): Query =
-            @Suppress("DEPRECATION") createQuery(QuerySql.Builder().run { f(this) })
+            createQuery(QuerySql.Builder().run { f(this) })
 
         fun createQuery(fragment: QuerySql): Query {
             val raw = handle.createQuery(fragment.sql.toString())
@@ -184,11 +181,8 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
 
         fun nextSavepoint(): String = "savepoint-${savepointId++}"
 
-        @Deprecated("Use new query API instead")
-        fun createUpdate(@Language("sql") sql: String): Update = Update(handle.createUpdate(sql))
-
         fun createUpdate(f: QuerySql.Builder.() -> QuerySql): Update =
-            @Suppress("DEPRECATION") createUpdate(QuerySql.Builder().run { f(this) })
+            createUpdate(QuerySql.Builder().run { f(this) })
 
         fun createUpdate(fragment: QuerySql): Update {
             val raw = handle.createUpdate(fragment.sql.toString())
@@ -673,6 +667,9 @@ abstract class SqlBuilder {
         return fragment.sql
     }
 
+    fun subqueryNotNull(fragment: QuerySql?): QuerySqlString =
+        if (fragment != null) subquery(fragment) else QuerySqlString("")
+
     fun predicate(predicate: PredicateSql): PredicateSqlString {
         predicate.bindings.forEach(this::addBinding)
         return predicate.sql
@@ -688,6 +685,8 @@ abstract class SqlBuilder {
 data class QuerySql(val sql: QuerySqlString, val bindings: List<ValueBinding<out Any?>>) {
     companion object {
         operator fun invoke(f: Builder.() -> QuerySql): QuerySql = Builder().run { f(this) }
+
+        val empty = QuerySql(QuerySqlString(""), emptyList())
     }
 
     class Builder : SqlBuilder() {
@@ -712,6 +711,24 @@ data class QuerySql(val sql: QuerySqlString, val bindings: List<ValueBinding<out
 
         fun union(all: Boolean, queries: Iterable<QuerySql>): QuerySql =
             combine(if (all) "\nUNION ALL\n" else "\nUNION\n", queries)
+
+        fun ctes(queries: List<Pair<String, QuerySql>>): QuerySql =
+            if (queries.isEmpty()) empty
+            else {
+                val combined =
+                    combine(
+                        ",\n",
+                        queries.map { (name, query) ->
+                            QuerySql { sql("$name AS (${subquery(query)})") }
+                        },
+                    )
+                QuerySql { sql("WITH ${subquery(combined)}") }
+            }
+
+        fun ctes(vararg queries: Pair<String, QuerySql>): QuerySql = ctes(queries.toList())
+
+        fun ctesNotNull(vararg queries: Pair<String, QuerySql?>): QuerySql =
+            ctes(queries.mapNotNull { (name, query) -> if (query != null) name to query else null })
 
         fun sql(@Language("sql") sql: String): QuerySql {
             check(!used) { "builder has already been used" }
