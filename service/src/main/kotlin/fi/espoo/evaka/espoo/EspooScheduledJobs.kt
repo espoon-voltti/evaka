@@ -39,7 +39,11 @@ enum class EspooScheduledJob(
     ),
     PlanStaffAttendancePlanJobs(
         EspooScheduledJobs::planStaffAttendancePlanJobs,
-        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(1, 30))),
+        ScheduledJobSettings(
+            enabled = true,
+            schedule = JobSchedule.daily(LocalTime.of(1, 30)),
+            retryCount = 1,
+        ),
     ),
     SendStaffAttendancesToLinkity(
         EspooScheduledJobs::sendStaffAttendancesToLinkity,
@@ -98,8 +102,7 @@ class EspooScheduledJobs(
                     )
                     .map { EspooAsyncJob.GetStaffAttendancePlansFromLinkity(it) }
 
-            // TODO: After testing, retryCount can be increased
-            espooAsyncJobRunner.plan(tx, dateRanges, runAt = clock.now(), retryCount = 1)
+            espooAsyncJobRunner.plan(tx, dateRanges, runAt = clock.now())
         }
     }
 
