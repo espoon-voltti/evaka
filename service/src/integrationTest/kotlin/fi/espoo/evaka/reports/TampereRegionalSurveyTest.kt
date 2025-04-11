@@ -368,10 +368,11 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
         val voucherSchool =
             DevDaycare(
                 name = "Palsekoulu",
-                type = setOf(CareType.PRESCHOOL),
+                type = setOf(CareType.PRESCHOOL, CareType.CENTRE),
                 providerType = ProviderType.PRIVATE_SERVICE_VOUCHER,
                 openingDate = startDate.minusYears(3),
                 areaId = newArea.id,
+                withSchool = true,
             )
 
         val testChildTyyrikki =
@@ -469,10 +470,11 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
         val purchasedSchool =
             DevDaycare(
                 name = "Ostokoulu",
-                type = setOf(CareType.PRESCHOOL),
+                type = setOf(CareType.PRESCHOOL, CareType.CENTRE),
                 providerType = ProviderType.PURCHASED,
                 openingDate = startDate.minusYears(3),
                 areaId = newArea.id,
+                withSchool = true,
             )
 
         val testChildTyyrikki =
@@ -1936,7 +1938,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                         name = "School",
                         areaId = areaAId,
                         openingDate = monday.minusMonths(1),
-                        type = setOf(CareType.PRESCHOOL),
+                        type = setOf(CareType.PRESCHOOL, CareType.CENTRE),
                         providerType = ProviderType.MUNICIPAL,
                         operationTimes =
                             List(5) { TimeRange(LocalTime.of(8, 0), LocalTime.of(18, 0)) } +
@@ -1945,6 +1947,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                             List(7) { TimeRange(LocalTime.of(0, 0), LocalTime.of(23, 59)) },
                         shiftCareOpenOnHolidays = true,
                         enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS),
+                        withSchool = true,
                     )
                 )
 
