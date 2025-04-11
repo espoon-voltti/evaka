@@ -408,51 +408,12 @@ class AttendanceReservationController(
                         Action.Child.READ_NON_RESERVABLE_RESERVATIONS,
                         childId,
                     )
-                    val clubTerms = tx.getClubTerms()
-                    val preschoolTerms = tx.getPreschoolTerms()
-                    val range =
-                        getConfirmedRange(
-                            clock.now(),
-                            featureConfig.citizenReservationThresholdHours,
-                        )
-                    val operationalDays = tx.getOperationalDatesForChild(range, childId)
-                    val placements = tx.getPlacementsForChildDuring(childId, range.start, range.end)
-                    val reservations = tx.getReservationsForChildInRange(childId, range)
-                    val absences = tx.getAbsencesOfChildByRange(childId, range.asDateRange())
-                    val dailyServiceTimes = tx.getChildDailyServiceTimes(childId)
-                    operationalDays
-                        .sorted()
-                        .mapNotNull { date ->
-                            val placement =
-                                placements.firstOrNull {
-                                    FiniteDateRange(it.startDate, it.endDate).includes(date)
-                                } ?: return@mapNotNull null
-                            val reservationTimes = reservations[date] ?: emptyList()
-                            val daysAbsences = absences.filter { it.date == date }
-                            val dailyServiceTime =
-                                dailyServiceTimes.firstOrNull {
-                                    it.times.validityPeriod.includes(date)
-                                }
-                            val absenceCategories = placement.type.absenceCategories()
-                            val isFullDayAbsent =
-                                daysAbsences.map { it.category }.toSet() == absenceCategories
-
-                            ConfirmedRangeDate(
-                                date = date,
-                                scheduleType =
-                                    placement.type.scheduleType(date, clubTerms, preschoolTerms),
-                                reservations = reservationTimes,
-                                absenceType =
-                                    if (isFullDayAbsent)
-                                        (daysAbsences.firstOrNull {
-                                                it.category == AbsenceCategory.BILLABLE
-                                            } ?: absences.firstOrNull())
-                                            ?.absenceType
-                                    else null,
-                                dailyServiceTimes = dailyServiceTime?.times,
-                            )
-                        }
-                        .toList()
+                    getConfirmedRangeDates(
+                        tx,
+                        clock,
+                        childId,
+                        featureConfig.citizenReservationThresholdHours,
+                    )
                 }
             }
             .also { Audit.ChildConfirmedRangeReservationsRead.log(targetId = AuditId(childId)) }
@@ -485,18 +446,37 @@ class AttendanceReservationController(
                         throw BadRequest("Request contains reservable day")
                     }
 
+                    // Remove rows from absence on dates that will have a reservation
                     body
                         .filter { it.absenceType == null }
                         .forEach { tx.deleteAbsencesByDate(childId, it.date) }
-                    // no insert or update
 
-                    body
+                    val previousReservations =
+                        getConfirmedRangeDates(
+                                tx,
+                                clock,
+                                childId,
+                                featureConfig.citizenReservationThresholdHours,
+                            )
+                            .associateBy { it.date }
+
+                    val changedReservations =
+                        body.filter { new ->
+                            new.reservations.toSet() !=
+                                (previousReservations[new.date]?.reservations ?: emptyList())
+                                    .map { it.toReservation() }
+                                    .toSet()
+                        }
+
+                    // Remove rows from attendance_reservation on dates that get updated
+                    changedReservations
                         .map { DateRange(it.date, it.date) }
                         .forEach { tx.deleteReservationsInRange(childId, it) }
+
                     tx.insertValidReservations(
                         user.evakaUserId,
                         clock.now(),
-                        body.flatMap {
+                        changedReservations.flatMap {
                             it.reservations.map { reservation ->
                                 ReservationInsert(
                                     childId = childId,
@@ -810,6 +790,49 @@ data class ConfirmedRangeDateUpdate(
     val reservations: List<Reservation>,
     val absenceType: AbsenceType?,
 )
+
+private fun getConfirmedRangeDates(
+    tx: Database.Read,
+    clock: EvakaClock,
+    childId: ChildId,
+    citizenReservationThresholdHours: Long,
+): List<ConfirmedRangeDate> {
+    val clubTerms = tx.getClubTerms()
+    val preschoolTerms = tx.getPreschoolTerms()
+    val range = getConfirmedRange(clock.now(), citizenReservationThresholdHours)
+    val operationalDays = tx.getOperationalDatesForChild(range, childId)
+    val placements = tx.getPlacementsForChildDuring(childId, range.start, range.end)
+    val reservations = tx.getReservationsForChildInRange(childId, range)
+    val absences = tx.getAbsencesOfChildByRange(childId, range.asDateRange())
+    val dailyServiceTimes = tx.getChildDailyServiceTimes(childId)
+    return operationalDays
+        .sorted()
+        .mapNotNull { date ->
+            val placement =
+                placements.firstOrNull { FiniteDateRange(it.startDate, it.endDate).includes(date) }
+                    ?: return@mapNotNull null
+            val reservationTimes = reservations[date] ?: emptyList()
+            val daysAbsences = absences.filter { it.date == date }
+            val dailyServiceTime =
+                dailyServiceTimes.firstOrNull { it.times.validityPeriod.includes(date) }
+            val absenceCategories = placement.type.absenceCategories()
+            val isFullDayAbsent = daysAbsences.map { it.category }.toSet() == absenceCategories
+
+            ConfirmedRangeDate(
+                date = date,
+                scheduleType = placement.type.scheduleType(date, clubTerms, preschoolTerms),
+                reservations = reservationTimes,
+                absenceType =
+                    if (isFullDayAbsent)
+                        (daysAbsences.firstOrNull { it.category == AbsenceCategory.BILLABLE }
+                                ?: absences.firstOrNull())
+                            ?.absenceType
+                    else null,
+                dailyServiceTimes = dailyServiceTime?.times,
+            )
+        }
+        .toList()
+}
 
 private fun getUnitOperationalDayData(
     period: FiniteDateRange,

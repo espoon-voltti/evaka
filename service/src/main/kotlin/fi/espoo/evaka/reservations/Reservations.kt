@@ -80,7 +80,7 @@ fun reservationRequestRange(body: List<DailyReservationRequest>): FiniteDateRang
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 sealed class Reservation : Comparable<Reservation> {
-    @JsonTypeName("NO_TIMES") object NoTimes : Reservation()
+    @JsonTypeName("NO_TIMES") data object NoTimes : Reservation()
 
     @JsonTypeName("TIMES") data class Times(val range: TimeRange) : Reservation()
 
@@ -147,6 +147,12 @@ sealed class ReservationResponse : Comparable<ReservationResponse> {
             is Times -> range
         }
     }
+
+    fun toReservation(): Reservation =
+        when (this) {
+            is NoTimes -> Reservation.NoTimes
+            is Times -> Reservation.Times(range)
+        }
 
     companion object {
         fun from(reservationRow: ReservationRow) =

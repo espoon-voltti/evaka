@@ -2114,6 +2114,10 @@ data class DevMobileDevice(
 ) {
     val user: AuthenticatedUser.MobileDevice
         @JsonIgnore get() = AuthenticatedUser.MobileDevice(id)
+
+    val evakaUser: EvakaUser
+        @JsonIgnore
+        get() = EvakaUser(id = EvakaUserId(id.raw), name = name, type = EvakaUserType.MOBILE_DEVICE)
 }
 
 data class DevPersonalMobileDevice(
