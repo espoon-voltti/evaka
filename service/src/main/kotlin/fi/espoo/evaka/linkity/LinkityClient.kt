@@ -45,7 +45,7 @@ class LinkityHttpClient(private val env: LinkityEnv, private val jsonMapper: Jso
                 ?.addQueryParameter("toDate", period.end.toString())
                 ?.build() ?: throw IllegalArgumentException("Invalid Linkity URL")
 
-        logger.debug { "Getting shifts from Linkity URL: $url" }
+        logger.info { "Getting shifts from Linkity URL: $url" }
 
         val req = Request.Builder().url(url).get().header("x-api-key", env.apikey.value).build()
 
@@ -71,7 +71,7 @@ class LinkityHttpClient(private val env: LinkityEnv, private val jsonMapper: Jso
                 ?.newBuilder()
                 ?.build() ?: throw IllegalArgumentException("Invalid Linkity URL")
 
-        logger.debug { "Posting stampings to Linkity URL: $url" }
+        logger.info { "Posting stampings to Linkity URL: $url" }
 
         val req =
             Request.Builder()

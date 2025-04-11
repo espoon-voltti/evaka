@@ -81,7 +81,7 @@ fun updateStaffAttendancePlansFromLinkity(
         logger.debug { "Deleted all staff attendance plans for period $period" }
 
         tx.insertStaffAttendancePlans(staffAttendancePlans)
-        logger.debug { "Inserted ${staffAttendancePlans.size} staff attendance plans" }
+        logger.info { "Inserted ${staffAttendancePlans.size} staff attendance plans from Linkity" }
     }
 }
 
@@ -93,13 +93,15 @@ private fun filterValidShifts(
         shifts.partition { sarastiaIdToEmployeeId.containsKey(it.sarastiaId) }
     if (withUnknownSarastiaId.isNotEmpty()) {
         logger.info {
-            "No employee found from any enabled daycare for Sarastia IDs: ${withUnknownSarastiaId.map { it.sarastiaId }}"
+            "Got shifts from Linkity for unknown Sarastia IDs: ${withUnknownSarastiaId.map { it.sarastiaId }.toSet()}"
         }
     }
     val (validTimesShifts, invalidTimesShifts) =
         withKnownSarastiaId.partition { it.startDateTime < it.endDateTime }
     if (invalidTimesShifts.isNotEmpty()) {
-        logger.info { "Shifts with invalid times: ${invalidTimesShifts.map { it.workShiftId }}" }
+        logger.info {
+            "Got shifts from Linkity with invalid times: ${invalidTimesShifts.map { it.workShiftId }}"
+        }
     }
     val sortedShifts =
         validTimesShifts.sortedWith(compareBy<Shift> { it.sarastiaId }.thenBy { it.startDateTime })
@@ -110,7 +112,9 @@ private fun filterValidShifts(
                 shift.startDateTime >= sortedShifts[i - 1].endDateTime
         }
     if (overlappingShifts.isNotEmpty()) {
-        logger.info { "Overlapping shifts: ${overlappingShifts.map { it.workShiftId }}" }
+        logger.info {
+            "Got overlapping shifts from Linkity: ${overlappingShifts.map { it.workShiftId }}"
+        }
     }
     return validShifts
 }
@@ -139,7 +143,7 @@ fun sendStaffAttendancesToLinkity(
             stampings,
         )
     )
-    logger.debug { "Posted ${stampings.size} stampings to Linkity" }
+    logger.info { "Posted ${stampings.size} stampings to Linkity" }
 }
 
 private fun roundAttendancesToPlans(
