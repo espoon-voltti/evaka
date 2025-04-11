@@ -6,21 +6,37 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import orderBy from 'lodash/orderBy'
 import React, { useMemo, useState } from 'react'
 import { Link } from 'react-router'
+import styled from 'styled-components'
 
 import DateRange from 'lib-common/date-range'
 import { openEndedLocalDateRange } from 'lib-common/form/fields'
-import { required } from 'lib-common/form/form'
-import { useBoolean, useForm } from 'lib-common/form/hooks'
-import { DocumentTemplateSummary } from 'lib-common/generated/api-types/document'
-import { DocumentTemplateId } from 'lib-common/generated/api-types/shared'
+import { array, object, oneOf, required, value } from 'lib-common/form/form'
+import { useBoolean, useForm, useFormFields } from 'lib-common/form/hooks'
+import {
+  DocumentTemplateSummary,
+  DocumentType,
+  documentTypes
+} from 'lib-common/generated/api-types/document'
+import {
+  DocumentTemplateId,
+  UiLanguage,
+  uiLanguages
+} from 'lib-common/generated/api-types/shared'
+import LocalDate from 'lib-common/local-date'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
+import { SelectF } from 'lib-components/atoms/dropdowns/Select'
+import { CheckboxF } from 'lib-components/atoms/form/Checkbox'
+import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
-import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import {
+  FixedSpaceColumn,
+  FixedSpaceRow
+} from 'lib-components/layout/flex-helpers'
 import { DateRangePickerF } from 'lib-components/molecules/date-picker/DateRangePicker'
-import { H1 } from 'lib-components/typography'
+import { H1, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import {
   faCheck,
@@ -167,9 +183,28 @@ const TemplateRow = React.memo(function TemplateRow({
   )
 })
 
+const FilterLabel = styled(Label)`
+  min-width: 180px;
+`
+
+const MultiselectStaticWidth = styled.div`
+  min-width: 520px;
+`
+
+const filtersForm = object({
+  active: required(value<boolean>()),
+  draft: required(value<boolean>()),
+  future: required(value<boolean>()),
+  past: required(value<boolean>()),
+  type: oneOf<DocumentType>(),
+  language: array(value<UiLanguage>())
+})
+
 export default React.memo(function DocumentTemplatesPage() {
   const { i18n } = useTranslation()
   const t = i18n.documentTemplates
+
+  const templates = useQueryResult(documentTemplateSummariesQuery())
 
   const [importModalOpen, { on: openImportModal, off: closeImportModal }] =
     useBoolean(false)
@@ -179,11 +214,123 @@ export default React.memo(function DocumentTemplatesPage() {
     null
   )
 
-  const templates = useQueryResult(documentTemplateSummariesQuery())
+  const form = useForm(
+    filtersForm,
+    () => ({
+      active: true,
+      draft: true,
+      future: true,
+      past: false,
+      type: {
+        domValue: '',
+        options: documentTypes.map((t) => ({
+          value: t,
+          domValue: t,
+          label: i18n.documentTemplates.documentTypes[t]
+        }))
+      },
+      language: [...uiLanguages]
+    }),
+    i18n.validationErrors
+  )
+
+  const { active, draft, future, past, type, language } = useFormFields(form)
+
+  const filteredTemplates = useMemo(
+    () =>
+      templates.map((templates) =>
+        templates.filter((template) => {
+          const today = LocalDate.todayInHelsinkiTz()
+          if (
+            !active.value() &&
+            template.validity.includes(today) &&
+            template.published
+          )
+            return false
+          if (!draft.value() && !template.published) return false
+          if (
+            !future.value() &&
+            template.validity.start.isAfter(today) &&
+            template.published
+          )
+            return false
+          if (
+            !past.value() &&
+            template.validity.end &&
+            template.validity.end.isBefore(today) &&
+            template.published
+          )
+            return false
+          if (type.value() !== undefined && type.value() !== template.type)
+            return false
+          if (
+            language.value().length > 0 &&
+            !language.value().includes(template.language)
+          )
+            return false
+
+          return true
+        })
+      ),
+    [templates, active, draft, future, past, type, language]
+  )
+
   return (
     <Container>
       <ContentArea opaque>
         <H1>{t.title}</H1>
+        <FixedSpaceColumn>
+          <FixedSpaceRow alignItems="center">
+            <FilterLabel>
+              {i18n.documentTemplates.templatesPage.filters.validity}
+            </FilterLabel>
+            <FixedSpaceRow>
+              <CheckboxF
+                bind={active}
+                label={i18n.documentTemplates.templatesPage.filters.active}
+              />
+              <CheckboxF
+                bind={draft}
+                label={i18n.documentTemplates.templatesPage.filters.draft}
+              />
+              <CheckboxF
+                bind={future}
+                label={i18n.documentTemplates.templatesPage.filters.future}
+              />
+              <CheckboxF
+                bind={past}
+                label={i18n.documentTemplates.templatesPage.filters.past}
+              />
+            </FixedSpaceRow>
+          </FixedSpaceRow>
+          <FixedSpaceRow alignItems="center">
+            <FilterLabel>
+              {i18n.documentTemplates.templatesPage.filters.type}
+            </FilterLabel>
+            <SelectF
+              bind={type}
+              placeholder={i18n.documentTemplates.templatesPage.filters.all}
+            />
+          </FixedSpaceRow>
+          <FixedSpaceRow alignItems="center">
+            <FilterLabel>
+              {i18n.documentTemplates.templatesPage.filters.language}
+            </FilterLabel>
+            <MultiselectStaticWidth>
+              <MultiSelect
+                value={language.state}
+                options={uiLanguages}
+                onChange={language.set}
+                getOptionId={(lang) => lang}
+                getOptionLabel={(lang) =>
+                  i18n.documentTemplates.languages[lang]
+                }
+                placeholder={i18n.documentTemplates.templatesPage.filters.all}
+              />
+            </MultiselectStaticWidth>
+          </FixedSpaceRow>
+        </FixedSpaceColumn>
+        <Gap />
         <FlexRow justifyContent="flex-end">
           <AddButton
             flipped
@@ -215,7 +362,7 @@ export default React.memo(function DocumentTemplatesPage() {
             }}
           />
         )}
-        {renderResult(templates, (data) => (
+        {renderResult(filteredTemplates, (data) => (
           <>
             <Table>
               <Thead>

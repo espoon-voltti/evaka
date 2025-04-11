@@ -5045,7 +5045,17 @@ export const fi = {
       published: 'Julkaistu',
       draft: 'Luonnos',
       export: 'Vie tiedostoon',
-      import: 'Tuo tiedostosta'
+      import: 'Tuo tiedostosta',
+      filters: {
+        validity: 'Voimassaolo',
+        active: 'Käytössä',
+        draft: 'Luonnos',
+        future: 'Tulossa käyttöön',
+        past: 'Poistunut käytöstä',
+        type: 'Lomakeen tyyppi',
+        all: 'Kaikki',
+        language: 'Kieli'
+      }
     },
     templateModal: {
       title: 'Uusi lomakepohja',
