@@ -4,8 +4,6 @@
 
 package fi.espoo.evaka.document.archival
 
-import fi.espoo.evaka.Audit
-import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.document.DocumentType
 import fi.espoo.evaka.document.childdocument.*
 import fi.espoo.evaka.pis.getPersonById
@@ -18,6 +16,7 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.voltti.logging.loggers.info
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.nio.charset.StandardCharsets
 import java.nio.file.Paths
@@ -119,24 +118,24 @@ fun uploadToArchive(
 
     val instanceId = responseData.find { it.name == "instance_ids" }?.value
 
-    logger.info { "Parsed status code from response body: $statusCode" }
-    logger.info { "Parsed instance ID from response body: $instanceId" }
-
-    if (responseCode != 200 || statusCode != 200) {
-        logger.error {
-            "Failed to archive document $documentId. Response code: $responseCode, Response body: ${responseBody ?: "No response body"}, Parsed status code: $statusCode"
-        }
-        throw RuntimeException("Failed to archive document $documentId")
+    logger.info(mapOf("documentId" to documentId)) {
+        "Parsed status code from response body: $statusCode"
     }
 
     // Audit log the instance ID
     if (instanceId == null) {
         logger.error { "No instance ID found in response body" }
     } else {
-        Audit.ChildDocumentArchivedSuccessfully.log(
-            targetId = AuditId(documentId),
-            meta = mapOf("instanceId" to instanceId),
-        )
+        logger.info(mapOf("documentId" to documentId, "instanceId" to instanceId)) {
+            "Parsed instance ID from response body: $instanceId"
+        }
+    }
+
+    if (responseCode != 200 || statusCode != 200) {
+        logger.error {
+            "Failed to archive document $documentId. Response code: $responseCode, Response body: ${responseBody ?: "No response body"}, Parsed status code: $statusCode"
+        }
+        throw RuntimeException("Failed to archive document $documentId")
     }
 
     db.transaction { tx -> tx.markDocumentAsArchived(documentId, HelsinkiDateTime.now()) }

@@ -34,6 +34,7 @@ import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -63,14 +64,6 @@ class ArchiveChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBe
 
         fun getErrorMessages(): List<String> =
             events.filter { it.level == Level.ERROR }.map { it.message }
-
-        fun getAuditMessages(): List<ILoggingEvent> =
-            events
-                .map { it }
-                .filter { event ->
-                    // Check if the event is an audit log
-                    event.loggerName == "fi.espoo.evaka.Audit"
-                }
 
         fun clear() {
             events.clear()
@@ -220,6 +213,12 @@ class ArchiveChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBe
         }
     }
 
+    @AfterEach
+    fun tearDown() {
+        val root = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME) as Logger
+        root.detachAppender(logAppender)
+    }
+
     @Test
     fun `uploadToArchive marks document as archived in database when successful`() {
         // Execute the archive method
@@ -264,7 +263,7 @@ class ArchiveChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBe
     }
 
     @Test
-    fun `uploadToArchive extracts and audit logs instance ID from successful response`() {
+    fun `uploadToArchive extracts and logs instance ID from successful response`() {
         // Configure Särmä client with response including instance_ids
         val instanceId = "354319"
         särmäClient.setResponse(
@@ -282,16 +281,14 @@ class ArchiveChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBe
             assertNotNull(document.archivedAt)
         }
 
-        val auditLogContainsInstanceId =
-            logAppender.getAuditMessages().any { event ->
+        val logContainsInstanceId =
+            logAppender.events.any { event ->
                 event.argumentArray?.any { arg ->
                     arg.toString().contains("instanceId=$instanceId")
                 } ?: false
             }
 
-        assert(auditLogContainsInstanceId) {
-            "Audit log should contain the instance ID in its metadata"
-        }
+        assert(logContainsInstanceId) { "Logs should contain the instance ID in its metadata" }
     }
 
     @Test
