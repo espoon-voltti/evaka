@@ -972,11 +972,11 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         val newSentAt = HelsinkiDateTime.of(LocalDate.of(2022, 10, 17), LocalTime.of(11, 4))
 
         db.transaction {
-            @Suppress("DEPRECATION")
-            it.createUpdate("UPDATE income_statement SET sent_at = :newSentAt WHERE id = :id")
-                .bind("newSentAt", newSentAt)
-                .bind("id", incomeStatement1.id)
-                .execute()
+            it.execute {
+                sql(
+                    "UPDATE income_statement SET sent_at = ${bind(newSentAt)} WHERE id = ${bind(incomeStatement1.id)}"
+                )
+            }
         }
 
         assertEquals(
@@ -1144,10 +1144,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         val newSentAt = HelsinkiDateTime.of(today.minusDays(2), LocalTime.of(12, 0))
 
         db.transaction {
-            @Suppress("DEPRECATION")
-            it.createUpdate("UPDATE income_statement SET sent_at = :newSentAt")
-                .bind("newSentAt", newSentAt)
-                .execute()
+            it.execute { sql("UPDATE income_statement SET sent_at = ${bind(newSentAt)}") }
         }
 
         val expected1 =
