@@ -342,13 +342,13 @@ class IncomeStatementBindings(
         fun of(body: IncomeStatementBody): IncomeStatementBindings {
             val bindings =
                 IncomeStatementBindings(startDate = body.startDate, endDate = body.endDate)
-            bindings.foo(body)
+            bindings.bindIncomeStatementBody(body)
             return bindings
         }
     }
 }
 
-private fun IncomeStatementBindings.foo(body: IncomeStatementBody) {
+private fun IncomeStatementBindings.bindIncomeStatementBody(body: IncomeStatementBody) {
     when (body) {
         is IncomeStatementBody.HighestFee -> type = IncomeStatementType.HIGHEST_FEE
         is IncomeStatementBody.ChildIncome -> {
