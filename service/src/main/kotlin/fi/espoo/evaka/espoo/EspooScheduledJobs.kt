@@ -71,7 +71,7 @@ class EspooScheduledJobs(
     }
 
     fun planBiJobs(db: Database.Connection, clock: EvakaClock) {
-        val tables = EspooBiTable.values()
+        val tables = EspooBiTable.entries
         logger.info { "Planning BI jobs for ${tables.size} tables" }
         db.transaction { tx ->
             tx.removeUnclaimedJobs(setOf(AsyncJobType(EspooAsyncJob.SendBiTable::class)))
