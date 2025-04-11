@@ -4,6 +4,10 @@
 
 package fi.espoo.evaka.document.archival
 
+import ch.qos.logback.classic.Level
+import ch.qos.logback.classic.Logger
+import ch.qos.logback.classic.spi.ILoggingEvent
+import ch.qos.logback.core.AppenderBase
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.document.DocumentTemplateContent
 import fi.espoo.evaka.document.DocumentType
@@ -22,6 +26,7 @@ import fi.espoo.evaka.shared.dev.*
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.UiLanguage
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.InputStream
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -29,22 +34,41 @@ import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.slf4j.LoggerFactory
 import org.springframework.http.ContentDisposition
 import org.springframework.http.ResponseEntity
 
 class ArchiveChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     private var documentService = TestDocumentService()
-
     private var särmäClient = TestSärmäClient()
+    private val logger = KotlinLogging.logger {}
+    private val logAppender = TestAppender()
 
     private val templateId = DocumentTemplateId(UUID.randomUUID())
     private val documentId = ChildDocumentId(UUID.randomUUID())
     private val childId = PersonId(UUID.randomUUID())
     private val now = HelsinkiDateTime.of(LocalDateTime.of(2023, 2, 1, 12, 0))
+
+    // Simple log appender to capture log events
+    class TestAppender : AppenderBase<ILoggingEvent>() {
+        val events = mutableListOf<ILoggingEvent>()
+
+        override fun append(eventObject: ILoggingEvent) {
+            events.add(eventObject)
+        }
+
+        fun getErrorMessages(): List<String> =
+            events.filter { it.level == Level.ERROR }.map { it.message }
+
+        fun clear() {
+            events.clear()
+        }
+    }
 
     // Mock document service implementation
     inner class TestDocumentService : DocumentService {
@@ -114,11 +138,17 @@ class ArchiveChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBe
 
     @BeforeEach
     fun setUp() {
+        // Setup the test appender
+        val root = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME) as Logger
+        logAppender.start()
+        root.addAppender(logAppender)
+        logAppender.clear()
+
         // Reset and clear Särmä client for clean test state
         särmäClient.resetResponse()
         särmäClient.clearCalls()
 
-        // Set up test data in database using DevApi
+        // Set up test data
         db.transaction { tx ->
             // Create a child using DevPerson
             val personData =
@@ -131,7 +161,7 @@ class ArchiveChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBe
                 )
             tx.insert(personData, DevPersonType.CHILD)
 
-            // Create a document template using DevDocumentTemplate
+            // Create a document template
             val templateContent = DocumentTemplateContent(sections = emptyList())
             val template =
                 DevDocumentTemplate(
@@ -183,10 +213,16 @@ class ArchiveChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBe
         }
     }
 
+    @AfterEach
+    fun tearDown() {
+        val root = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME) as Logger
+        root.detachAppender(logAppender)
+    }
+
     @Test
     fun `uploadToArchive marks document as archived in database when successful`() {
-        // Execute the archive method on the real service with our test dependencies
-        uploadToArchive(db, documentId, särmäClient, documentService)
+        // Execute the archive method
+        uploadToArchive(db, documentId, särmäClient, documentService, logger)
 
         // Verify the document was marked as archived in the database
         db.read { tx ->
@@ -212,17 +248,74 @@ class ArchiveChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBe
 
         // Execute the archive method and expect exception
         assertThrows<RuntimeException> {
-            uploadToArchive(db, documentId, särmäClient, documentService)
+            uploadToArchive(db, documentId, särmäClient, documentService, logger)
         }
 
         // Verify the document was NOT marked as archived in the database
         db.read { tx ->
+            // Verify that our test client was called
+            assertEquals(1, särmäClient.calls.size)
+
             val document = tx.getChildDocument(documentId)
             assertNotNull(document)
             assertNull(document.archivedAt)
-
-            // Verify that our test client was still called
-            assertEquals(1, särmäClient.calls.size)
         }
+    }
+
+    @Test
+    fun `uploadToArchive extracts and logs instance ID from successful response`() {
+        // Configure Särmä client with response including instance_ids
+        val instanceId = "354319"
+        särmäClient.setResponse(
+            200,
+            "status_message=Success.&transaction_id=2872934&protocol_version=1.0&status_code=200&instance_ids=$instanceId&",
+        )
+
+        // Execute the archive method
+        uploadToArchive(db, documentId, särmäClient, documentService, logger)
+
+        // Verify the document was marked as archived in the database
+        db.read { tx ->
+            val document = tx.getChildDocument(documentId)
+            assertNotNull(document)
+            assertNotNull(document.archivedAt)
+        }
+
+        val logContainsInstanceId =
+            logAppender.events.any { event ->
+                event.argumentArray?.any { arg ->
+                    arg.toString().contains("instanceId=$instanceId")
+                } ?: false
+            }
+
+        assert(logContainsInstanceId) { "Logs should contain the instance ID in its metadata" }
+    }
+
+    @Test
+    fun `uploadToArchive handles missing instance ID in response`() {
+        // Configure Särmä client with response without instance_ids
+        särmäClient.setResponse(
+            200,
+            "status_message=Success.&transaction_id=2872934&protocol_version=1.0&status_code=200&",
+        )
+
+        // Execute the archive method
+        uploadToArchive(db, documentId, särmäClient, documentService, logger)
+
+        // Verify the document was marked as archived in the database
+        db.read { tx ->
+            val document = tx.getChildDocument(documentId)
+            assertNotNull(document)
+            assertNotNull(document.archivedAt)
+        }
+
+        // Verify that an error was logged about the missing instance ID
+        val errorMessages =
+            logAppender.getErrorMessages().filter { it.contains("No instance ID found") }
+        assertEquals(
+            1,
+            errorMessages.size,
+            "Error log message with ERROR level should be created when instance ID is missing",
+        )
     }
 }
