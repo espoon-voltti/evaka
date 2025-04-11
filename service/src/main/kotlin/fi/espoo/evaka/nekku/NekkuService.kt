@@ -33,6 +33,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.IOException
 import java.time.Duration
 import java.time.LocalDate
+import kotlin.math.roundToInt
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -350,11 +351,17 @@ fun nekkuMealReportData(
                         )
                     else childInfo.reservations ?: emptyList()
 
-                nekkuChildMeals(presentTimeRanges, effectivelyAbsent, childInfo.mealTimes)
+                nekkuChildMeals(
+                        presentTimeRanges,
+                        effectivelyAbsent,
+                        childInfo.mealTimes,
+                        childInfo.eatsBreakfast,
+                    )
                     .map {
                         NekkuMealInfo(
                             sku = getNekkuProductNumber(nekkuProducts, it, childInfo, unitSize),
                             options = null, // getNekkuChildDiets() //Todo: get child diets
+                            nekkuMealType = childInfo.mealType,
                         )
                     }
                     .distinct()
@@ -363,7 +370,14 @@ fun nekkuMealReportData(
             .mapValues { it.value.size }
 
     return mealInfoMap.map {
-        NekkuClient.Item(sku = it.key.sku, quantity = it.value, productOptions = it.key.options)
+        NekkuClient.Item(
+            sku = it.key.sku,
+            quantity =
+                if (it.key.nekkuMealType == null && it.key.options == null)
+                    (it.value * 0.9).roundToInt()
+                else it.value,
+            productOptions = it.key.options,
+        )
     }
 }
 
@@ -405,6 +419,7 @@ private fun nekkuChildMeals(
     presentTimeRanges: List<TimeRange>,
     absent: Boolean,
     mealtimes: DaycareMealtimes,
+    eatsBreakfast: Boolean,
 ): Set<NekkuProductMealTime> {
     // if absent -> no meals
     if (absent) {
@@ -412,11 +427,14 @@ private fun nekkuChildMeals(
     }
     // if we don't have data about when child will be present, default to breakfast + lunch + snack
     if (presentTimeRanges.isEmpty()) {
-        return setOf(
-            NekkuProductMealTime.BREAKFAST,
-            NekkuProductMealTime.LUNCH,
-            NekkuProductMealTime.SNACK,
-        )
+
+        return if (eatsBreakfast)
+            setOf(
+                NekkuProductMealTime.BREAKFAST,
+                NekkuProductMealTime.LUNCH,
+                NekkuProductMealTime.SNACK,
+            )
+        else setOf(NekkuProductMealTime.LUNCH, NekkuProductMealTime.SNACK)
     }
     // otherwise check unit meal times against the present time ranges
     val meals = mutableSetOf<NekkuProductMealTime>()
@@ -427,7 +445,7 @@ private fun nekkuChildMeals(
         }
     }
 
-    addMealIfPresent(mealtimes.breakfast, NekkuProductMealTime.BREAKFAST)
+    if (eatsBreakfast) addMealIfPresent(mealtimes.breakfast, NekkuProductMealTime.BREAKFAST)
     addMealIfPresent(mealtimes.lunch, NekkuProductMealTime.LUNCH)
     addMealIfPresent(mealtimes.snack, NekkuProductMealTime.SNACK)
     addMealIfPresent(mealtimes.supper, NekkuProductMealTime.DINNER)
@@ -466,8 +484,6 @@ private fun getNekkuChildInfos(
 
         NekkuChildInfo(
             placementType = child.placementType,
-            firstName = child.firstName,
-            lastName = child.lastName,
             reservations = child.reservations,
             absences = child.absences,
             mealType = mealTypes[child.childId],
@@ -476,6 +492,7 @@ private fun getNekkuChildInfos(
             dailyPreschoolTime = unit.dailyPreschoolTime,
             dailyPreparatoryTime = unit.dailyPreparatoryTime,
             mealTimes = unit.mealTimes,
+            eatsBreakfast = child.eatsBreakfast,
         )
     }
 }
@@ -597,8 +614,6 @@ enum class NekkuProductMealType(val description: String) : DatabaseEnum {
 
 data class NekkuChildInfo(
     val placementType: PlacementType,
-    val firstName: String,
-    val lastName: String,
     val reservations: List<TimeRange>?,
     val absences: Set<AbsenceCategory>?,
     val mealType: NekkuProductMealType?,
@@ -607,9 +622,14 @@ data class NekkuChildInfo(
     val dailyPreschoolTime: TimeRange?,
     val dailyPreparatoryTime: TimeRange?,
     val mealTimes: DaycareMealtimes,
+    val eatsBreakfast: Boolean,
 )
 
-data class NekkuMealInfo(val sku: String, val options: List<NekkuClient.ProductOption>? = null)
+data class NekkuMealInfo(
+    val sku: String,
+    val options: List<NekkuClient.ProductOption>? = null,
+    val nekkuMealType: NekkuProductMealType? = null,
+)
 
 data class NekkuOrderResult(
     val message: String?,

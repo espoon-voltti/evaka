@@ -320,9 +320,8 @@ SELECT
     rp.unit_id,
     rp.group_id,
     rp.placement_type,
+    ch.nekku_eats_breakfast as eats_breakfast,
     (sn.shift_care IS NOT NULL AND sn.shift_care != 'NONE') AS has_shift_care,
-    p.first_name,
-    p.last_name,
     coalesce((
         SELECT jsonb_agg(jsonb_build_object('start', ar.start_time, 'end', ar.end_time))
         FROM attendance_reservation ar
@@ -340,7 +339,7 @@ SELECT
     ), '{}'::absence_category[]) AS absences
 FROM realized_placement_one(${bind(date)}) rp
 JOIN daycare_group dg ON dg.id = rp.group_id
-JOIN person p ON p.id = rp.child_id
+JOIN child ch ON ch.id = rp.child_id
 LEFT JOIN service_need sn ON sn.placement_id = rp.placement_id AND daterange(sn.start_date, sn.end_date, '[]') @> ${bind(date)}
 WHERE dg.id = ${bind(nekkuGroupId)}
                     """
@@ -354,8 +353,7 @@ data class NekkuChildData(
     val groupId: GroupId,
     val placementType: PlacementType,
     val hasShiftCare: Boolean,
-    val firstName: String,
-    val lastName: String,
+    val eatsBreakfast: Boolean,
     @Json val reservations: List<TimeRange>,
     val absences: Set<AbsenceCategory>,
 )
