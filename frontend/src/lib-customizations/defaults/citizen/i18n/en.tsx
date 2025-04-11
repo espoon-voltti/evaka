@@ -2634,6 +2634,7 @@ const en: Translations = {
       otherDocumentsTitle: 'Other documents',
       noDocuments: 'No documents',
       confidential: 'Confidential',
+      validityPeriod: 'Valid during',
       unanswered: 'Ei vastattu (en)',
       answered: 'Vastattu (en)',
       answeredByEmployee: 'Henkilökunta (en)',

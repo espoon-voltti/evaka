@@ -39,11 +39,15 @@ SELECT
         WHEN 'CITIZEN' THEN answered_by.name
         ELSE ''
     END AS answered_by_name,
-    answered_by.type AS answered_by_type
+    answered_by.type AS answered_by_type,
+    cdd.id AS decision_id,
+    cdd.status AS decision_status,
+    CASE WHEN cdd.valid_from IS NOT NULL THEN daterange(cdd.valid_from, cdd.valid_to, '[]') END AS decision_validity
 FROM child_document cd
 JOIN document_template dt ON cd.template_id = dt.id
 JOIN person child ON cd.child_id = child.id
 LEFT JOIN evaka_user answered_by ON cd.answered_by = answered_by.id
+LEFT JOIN child_document_decision cdd ON cdd.id = cd.decision_id
 WHERE ${predicate(childDocumentPredicate.forTable("cd"))}
 """
     )
@@ -99,10 +103,17 @@ fun Database.Read.getCitizenChildDocument(id: ChildDocumentId): ChildDocumentCit
                     dt.validity as template_validity,
                     dt.published as template_published,
                     dt.content as template_content,
+<<<<<<< HEAD
                     dt.archive_externally as template_archive_externally
+=======
+                    cdd.id AS decision_id,
+                    cdd.status AS decision_status,
+                    CASE WHEN cdd.valid_from IS NOT NULL THEN daterange(cdd.valid_from, cdd.valid_to, '[]') END AS decision_validity
+>>>>>>> 42f63a35cc (child document decisions MVP)
                 FROM child_document cd
                 JOIN document_template dt on cd.template_id = dt.id
                 JOIN person p on cd.child_id = p.id
+                LEFT JOIN child_document_decision cdd ON cdd.id = cd.decision_id
                 WHERE cd.id = ${bind(id)} AND published_at IS NOT NULL
                 """
             )

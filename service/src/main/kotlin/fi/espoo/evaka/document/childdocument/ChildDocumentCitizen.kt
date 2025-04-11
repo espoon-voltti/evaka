@@ -22,6 +22,7 @@ data class ChildDocumentCitizenSummary(
     @Nested("child") val child: ChildBasics,
     val answeredAt: HelsinkiDateTime?,
     @Nested("answered_by") val answeredBy: EvakaUser?,
+    @Nested("decision") val decision: ChildDocumentDecision? = null,
 )
 
 data class ChildDocumentCitizenDetails(
@@ -32,4 +33,5 @@ data class ChildDocumentCitizenDetails(
     @Json val content: DocumentContent,
     @Nested("child") val child: ChildBasics,
     @Nested("template") val template: DocumentTemplate,
+    @Nested("decision") val decision: ChildDocumentDecision? = null,
 )

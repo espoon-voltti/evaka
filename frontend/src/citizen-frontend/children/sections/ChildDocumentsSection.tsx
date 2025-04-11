@@ -20,7 +20,7 @@ import { ChildId } from 'lib-common/generated/api-types/shared'
 import { useQuery, useQueryResult } from 'lib-common/query'
 import { tabletMin } from 'lib-components/breakpoints'
 import { ChildDocumentStateChip } from 'lib-components/document-templates/ChildDocumentStateChip'
-import { isInternal } from 'lib-components/document-templates/documents'
+import { getDocumentCategory } from 'lib-components/document-templates/documents'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
@@ -62,7 +62,7 @@ const LinkTd = styled.td`
   width: 40%;
 `
 
-const AnsweredTd = styled.td`
+const DetailsTd = styled.td`
   width: 40%;
 `
 
@@ -99,11 +99,15 @@ const ChildDocumentsTable = React.memo(function ChildDocumentsTable({
                 {document.templateName}
               </Link>
             </LinkTd>
-            <AnsweredTd data-qa={`answered-${document.id}`}>
+            <DetailsTd>
               <Answered document={document} />
-            </AnsweredTd>
+              <DecisionValidity document={document} />
+            </DetailsTd>
             <StateTd>
-              <ChildDocumentStateChip status={document.status} />
+              <ChildDocumentStateChip
+                status={document.status}
+                decisionStatus={document.decision?.status ?? null}
+              />
             </StateTd>
           </DocumentTr>
         ))}
@@ -220,6 +224,7 @@ const ChildDocumentsList = React.memo(function ChildDocumentsList({
                       {document.publishedAt?.toLocalDate().format() ?? ''}
                     </span>
                     <Answered document={document} />
+                    <DecisionValidity document={document} />
                   </FixedSpaceRow>
                   <Gap size="xs" />
                   <FixedSpaceRow justifyContent="space-between">
@@ -229,7 +234,10 @@ const ChildDocumentsList = React.memo(function ChildDocumentsList({
                     >
                       {document.templateName}
                     </Link>
-                    <ChildDocumentStateChip status={document.status} />
+                    <ChildDocumentStateChip
+                      status={document.status}
+                      decisionStatus={document.decision?.status ?? null}
+                    />
                   </FixedSpaceRow>
                 </MobileRowContainer>
               ))}
@@ -247,15 +255,20 @@ const ChildDocumentsList = React.memo(function ChildDocumentsList({
 const Answered = ({ document }: { document: ChildDocumentCitizenSummary }) => {
   const i18n = useTranslation()
 
-  if (isInternal(document.type)) {
+  if (getDocumentCategory(document.type) !== 'external') {
     return null
   }
+
   if (document.answeredAt === null) {
-    return <span>{i18n.children.childDocuments.unanswered}</span>
+    return (
+      <span data-qa={`answered-${document.id}`}>
+        {i18n.children.childDocuments.unanswered}
+      </span>
+    )
   }
 
   return (
-    <>
+    <span data-qa={`answered-${document.id}`}>
       <span>
         {i18n.children.childDocuments.answered},{' '}
         {document.answeredAt?.toLocalDate().format()}
@@ -268,6 +281,28 @@ const Answered = ({ document }: { document: ChildDocumentCitizenSummary }) => {
             : i18n.children.childDocuments.answeredByEmployee}
         </span>
       )}
-    </>
+    </span>
+  )
+}
+
+const DecisionValidity = ({
+  document
+}: {
+  document: ChildDocumentCitizenSummary
+}) => {
+  const i18n = useTranslation()
+
+  if (
+    getDocumentCategory(document.type) !== 'decision' ||
+    document.decision === null
+  ) {
+    return null
+  }
+
+  return (
+    <div data-qa={`decision-validity-${document.id}`}>
+      {i18n.children.childDocuments.validityPeriod}{' '}
+      {document.decision.validity.format()}
+    </div>
   )
 }

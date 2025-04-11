@@ -2357,6 +2357,18 @@ sealed interface Action {
                 .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
                 .inPlacementGroupOfChildOfChildDocument(deletable = true),
         ),
+        PROPOSE_DECISION(
+            HasGlobalRole(ADMIN),
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
+                .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
+                .inPlacementUnitOfChildOfChildDocument(),
+        ),
+        ACCEPT_DECISION(IsEmployee.andIsDecisionMakerForChildDocumentDecision()),
+        REJECT_DECISION(IsEmployee.andIsDecisionMakerForChildDocumentDecision()),
+        ANNUL_DECISION(
+            HasGlobalRole(ADMIN),
+            IsEmployee.andIsDecisionMakerForChildDocumentDecision(),
+        ),
         ARCHIVE(HasGlobalRole(ADMIN));
 
         override fun toString(): String = "${javaClass.name}.$name"

@@ -6,14 +6,17 @@ package fi.espoo.evaka.document.childdocument
 
 import fi.espoo.evaka.document.DocumentType
 import fi.espoo.evaka.shared.ArchivedProcessId
+import fi.espoo.evaka.shared.ChildDocumentDecisionId
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DocumentTemplateId
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
+import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 
@@ -33,8 +36,8 @@ fun Database.Transaction.insertChildDocument(
     return createQuery {
             sql(
                 """
-INSERT INTO child_document(child_id, template_id, type, status, content, modified_at, content_modified_at, content_modified_by, created_by, process_id)
-VALUES (${bind(childId)}, ${bind(templateId)}, ${bind(type)}, 'DRAFT', ${bind(DocumentContent(answers = emptyList()))}, ${bind(now)}, ${bind(now)}, ${bind(userId)}, ${bind(userId)}, ${bind(processId)})
+INSERT INTO child_document(child_id, template_id, type, status, content, modified_at, content_modified_at, content_modified_by, created_by, process_id, decision_maker)
+VALUES (${bind(childId)}, ${bind(templateId)}, ${bind(type)}, 'DRAFT', ${bind(DocumentContent(answers = emptyList()))}, ${bind(now)}, ${bind(now)}, ${bind(userId)}, ${bind(userId)}, ${bind(processId)}, NULL)
 RETURNING id
 """
             )
@@ -46,12 +49,25 @@ fun Database.Read.getChildDocuments(childId: PersonId): List<ChildDocumentSummar
     return createQuery {
             sql(
                 """
-SELECT cd.id, cd.status, dt.type, cd.modified_at, cd.published_at, dt.id as template_id, dt.name as template_name,
+SELECT 
+    cd.id, 
+    cd.status,
+    dt.type,
+    cd.modified_at, 
+    cd.published_at, 
+    dt.id as template_id, 
+    dt.name as template_name,
     cd.answered_at,
-    answered_by.id AS answered_by_id, answered_by.name AS answered_by_name, answered_by.type AS answered_by_type
+    answered_by.id AS answered_by_id,
+    answered_by.name AS answered_by_name, 
+    answered_by.type AS answered_by_type,
+    cdd.id AS decision_id, 
+    cdd.status AS decision_status,
+    CASE WHEN cdd.valid_from IS NOT NULL THEN daterange(cdd.valid_from, cdd.valid_to, '[]') END AS decision_validity
 FROM child_document cd
 JOIN document_template dt on cd.template_id = dt.id
 LEFT JOIN evaka_user answered_by ON cd.answered_by = answered_by.id
+LEFT JOIN child_document_decision cdd ON cdd.id = cd.decision_id
 WHERE cd.child_id = ${bind(childId)}
 """
             )
@@ -85,10 +101,18 @@ SELECT
     dt.validity as template_validity,
     dt.published as template_published,
     dt.content as template_content,
+<<<<<<< HEAD
     dt.archive_externally as template_archive_externally
+=======
+    cd.decision_maker,
+    cdd.id AS decision_id,
+    cdd.status AS decision_status,
+    CASE WHEN cdd.valid_from IS NOT NULL THEN daterange(cdd.valid_from, cdd.valid_to, '[]') END AS decision_validity
+>>>>>>> 42f63a35cc (child document decisions MVP)
 FROM child_document cd
 JOIN document_template dt on cd.template_id = dt.id
 JOIN person p on cd.child_id = p.id
+LEFT JOIN child_document_decision cdd ON cdd.id = cd.decision_id
 WHERE cd.id = ${bind(id)}
 """
             )
@@ -170,7 +194,7 @@ fun Database.Transaction.updateChildDocumentContent(
                 """
                 UPDATE child_document
                 SET 
-                    content = ${bind(content)}, 
+                    content = ${bind(content)},
                     modified_at = ${bind(now)}, 
                     content_modified_at = ${bind(now)}, 
                     content_modified_by = ${bind(userId)}
@@ -252,16 +276,6 @@ fun Database.Transaction.publishChildDocument(id: ChildDocumentId, now: Helsinki
 data class StatusTransition(val currentStatus: DocumentStatus, val newStatus: DocumentStatus)
 
 fun validateStatusTransition(
-    tx: Database.Read,
-    documentId: ChildDocumentId,
-    requestedStatus: DocumentStatus,
-    goingForward: Boolean, // false = backwards
-): StatusTransition {
-    val document = tx.getChildDocument(documentId) ?: throw NotFound()
-    return validateStatusTransition(document, requestedStatus, goingForward)
-}
-
-fun validateStatusTransition(
     document: ChildDocumentDetails,
     requestedStatus: DocumentStatus,
     goingForward: Boolean, // false = backwards
@@ -277,6 +291,23 @@ fun validateStatusTransition(
     if (newStatus != requestedStatus) {
         throw Conflict("Idempotency issue: statuses do not match")
     }
+
+    if (document.template.type.decision) {
+        if (newStatus == DocumentStatus.DECISION_PROPOSAL)
+            throw BadRequest(
+                "Decision document cannot be moved to DECISION_PROPOSAL using normal status transitions. Please use the separate propose-decision endpoint."
+            )
+        if (newStatus == DocumentStatus.COMPLETED)
+            throw BadRequest(
+                "Decision document cannot be marked as completed using normal status transitions. Please use the separate accept/reject endpoints."
+            )
+
+        if (!goingForward && document.status == DocumentStatus.COMPLETED)
+            throw BadRequest(
+                "Decision can not be reverted using normal status transitions. Please use the separate annul endpoint."
+            )
+    }
+
     return StatusTransition(currentStatus = document.status, newStatus = newStatus)
 }
 
@@ -388,6 +419,78 @@ fun Database.Transaction.markDocumentAsArchived(id: ChildDocumentId, now: Helsin
             SET archived_at = ${bind(now)}
             WHERE id = ${bind(id)}
             """
+            )
+        }
+        .updateExactlyOne()
+}
+
+fun Database.Transaction.setChildDocumentDecisionMaker(
+    id: ChildDocumentId,
+    decisionMaker: EmployeeId?,
+) =
+    createUpdate {
+            sql(
+                """
+            UPDATE child_document 
+            SET decision_maker = ${bind(decisionMaker)}
+            WHERE id = ${bind(id)}
+        """
+            )
+        }
+        .updateExactlyOne()
+
+fun Database.Transaction.insertChildDocumentDecision(
+    status: ChildDocumentDecisionStatus,
+    userId: EvakaUserId,
+    validity: DateRange?,
+): ChildDocumentDecisionId {
+    return createUpdate {
+            sql(
+                """
+                INSERT INTO child_document_decision (created_by, modified_by, status, valid_from, valid_to) 
+                VALUES (${bind(userId)}, ${bind(userId)}, ${bind(status)}, ${bind(validity?.start)}, ${bind(validity?.end)})
+                RETURNING id
+            """
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .exactlyOne()
+}
+
+fun Database.Transaction.annulChildDocumentDecision(
+    decisionId: ChildDocumentDecisionId,
+    userId: EvakaUserId,
+    now: HelsinkiDateTime,
+): ChildDocumentDecisionId {
+    return createUpdate {
+            sql(
+                """
+            UPDATE child_document_decision
+            SET status = 'ANNULLED', modified_by = ${bind(userId)}, modified_at = ${bind(now)}
+            WHERE id = ${bind(decisionId)} AND status = 'ACCEPTED'
+        """
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .exactlyOne()
+}
+
+fun Database.Transaction.setChildDocumentDecisionAndPublish(
+    documentId: ChildDocumentId,
+    decisionId: ChildDocumentDecisionId,
+    now: HelsinkiDateTime,
+) {
+    createUpdate {
+            sql(
+                """
+                UPDATE child_document
+                SET decision_id = ${bind(decisionId)}, 
+                    status = 'COMPLETED', 
+                    modified_at = ${bind(now)},
+                    published_content = content,
+                    published_at = ${bind(now)}
+                WHERE id = ${bind(documentId)} AND status = 'DECISION_PROPOSAL'
+                """
             )
         }
         .updateExactlyOne()
