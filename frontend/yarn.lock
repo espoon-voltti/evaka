@@ -3918,9 +3918,9 @@ __metadata:
   linkType: hard
 
 "@types/punycode@npm:^2.1.0":
-  version: 2.1.0
-  resolution: "@types/punycode@npm:2.1.0"
-  checksum: 10/bec8e467ad817127239e7170135ec44df0c8d9632314ccd967cbed1a16a196e821dac080284047400ae1ba7ffbdfd6ee43ef66ca0ad4b5693723fa8aa3ea447a
+  version: 2.1.4
+  resolution: "@types/punycode@npm:2.1.4"
+  checksum: 10/16637bdd8e4f830243072668125f83b93b728085a05140ccc3e7801528d78c62cce5426b07d5cdc75e4f797e1644807c762777f651d1cd071ad0128835cdce5e
   languageName: node
   linkType: hard
 
@@ -11347,9 +11347,9 @@ __metadata:
   linkType: hard
 
 "punycode@npm:^2.1.0, punycode@npm:^2.1.1, punycode@npm:^2.3.0":
-  version: 2.3.0
-  resolution: "punycode@npm:2.3.0"
-  checksum: 10/d4e7fbb96f570c57d64b09a35a1182c879ac32833de7c6926a2c10619632c1377865af3dab5479f59d51da18bcd5035a20a5ef6ceb74020082a3e78025d9a9ca
+  version: 2.3.1
+  resolution: "punycode@npm:2.3.1"
+  checksum: 10/febdc4362bead22f9e2608ff0171713230b57aff9dddc1c273aa2a651fbd366f94b7d6a71d78342a7c0819906750351ca7f2edd26ea41b626d87d6a13d1bd059
   languageName: node
   linkType: hard
 
