@@ -766,7 +766,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         planNekkuDailyOrderJobs(db, asyncJobRunner, now)
 
-        assertEquals(tomorrow.toLocalDate().toString(), getNekkuDailyJobs().first().date.toString())
+        assertEquals(tomorrow.toLocalDate().toString(), getNekkuDailyJobs().single().date.toString())
     }
 
     @Test
