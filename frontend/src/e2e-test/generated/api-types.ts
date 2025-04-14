@@ -383,6 +383,7 @@ export interface DevChild {
   allergies: string
   diet: string
   dietId: number | null
+  eatsBreakfast: boolean
   id: PersonId
   languageAtHome: string
   languageAtHomeDetails: string

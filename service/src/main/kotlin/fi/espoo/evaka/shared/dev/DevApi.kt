@@ -1796,6 +1796,7 @@ data class DevChild(
     val dietId: Int? = null,
     val mealTextureId: Int? = null,
     val nekkuDiet: NekkuProductMealType? = null,
+    val eatsBreakfast: Boolean = true,
 )
 
 data class DevHolidayPeriod(
