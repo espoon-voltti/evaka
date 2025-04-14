@@ -21,6 +21,7 @@ import {
   Element,
   Modal,
   Page,
+  Radio,
   TextInput,
   TreeDropdown
 } from '../../../utils/page'
@@ -707,6 +708,8 @@ class MobileDevicesSection extends Element {
     const phase1 = new Modal(
       this.page.findByDataQa('mobile-pairing-modal-phase-1')
     )
+
+    await new Radio(phase1.findByDataQa('add-with-challenge-key')).check()
 
     const challengeKey = await phase1.findByDataQa('challenge-key').text
     const { responseKey } = await postPairingChallenge({

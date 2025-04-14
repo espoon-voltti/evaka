@@ -2843,6 +2843,9 @@ export const fi = {
   mobilePairingModal: {
     sharedDeviceModalTitle: 'Lisää yksikköön uusi mobiililaite',
     personalDeviceModalTitle: 'Lisää uusi henkilökohtainen mobiililaite',
+    addWithQrCode: 'Laitteen lisääminen QR-koodilla',
+    addWithChallengeKey: 'Laitteen lisääminen ilman QR-koodia',
+    readQrCode: 'Lue QR-koodi mobiililaitteella',
     modalText1: 'Mene mobiililaitteella osoitteeseen',
     modalText2: 'ja syötä laitteeseen alla oleva koodi.',
     modalText3:

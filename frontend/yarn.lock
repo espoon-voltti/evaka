@@ -6855,6 +6855,7 @@ __metadata:
     tslib: "npm:^2.8.0"
     typescript: "npm:~5.8.2"
     typescript-eslint: "npm:^8.29.0"
+    uqr: "npm:^0.1.2"
     uuid: "npm:^11.0.2"
     webpack: "npm:5.99.5"
     webpack-cli: "npm:^6.0.1"
@@ -12722,6 +12723,13 @@ __metadata:
   bin:
     update-browserslist-db: cli.js
   checksum: 10/7678dd8609750588d01aa7460e8eddf2ff9d16c2a52fb1811190e0d056390f1fdffd94db3cf8fb209cf634ab4fa9407886338711c71cc6ccade5eeb22b093734
+  languageName: node
+  linkType: hard
+
+"uqr@npm:^0.1.2":
+  version: 0.1.2
+  resolution: "uqr@npm:0.1.2"
+  checksum: 10/31f1fe7d7a8121a2670712234524763160985b053e7eb8af7925a131bcde0df11641e15129d988358032da603185456d08dd72b26b507897272eb9640273bfa6
   languageName: node
   linkType: hard
 

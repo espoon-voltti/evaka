@@ -2,7 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { Fragment, useContext, useEffect, useState } from 'react'
+import React, {
+  Fragment,
+  useCallback,
+  useContext,
+  useEffect,
+  useState
+} from 'react'
+import { useSearchParams } from 'react-router'
 import styled from 'styled-components'
 
 import { Loading, Result, wrapResult } from 'lib-common/api'
@@ -102,12 +109,22 @@ export default React.memo(function ParingWizard() {
     return () => clearInterval(polling)
   }, [pairingResponse]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  async function sendRequest() {
-    await postPairingChallengeResult({ body: { challengeKey } }).then(
-      setPairingResponse
-    )
+  const sendRequest = useCallback(async (challengeKey: string) => {
+    const response = await postPairingChallengeResult({
+      body: { challengeKey }
+    })
+    setPairingResponse(response)
     setPhase(2)
-  }
+  }, [])
+
+  // If challenge key is in the URL, send it right away
+  const [searchParams] = useSearchParams()
+  const initialChallengeKey = searchParams.get('challengeKey') ?? ''
+  useEffect(() => {
+    if (initialChallengeKey) {
+      void sendRequest(initialChallengeKey)
+    }
+  }, [initialChallengeKey, sendRequest])
 
   return (
     <Fragment>
@@ -117,7 +134,7 @@ export default React.memo(function ParingWizard() {
             <CenteredColumn>
               <Img src={EvakaLogo} />
               <PhaseTitle data-qa="mobile-pairing-wizard-title-1">
-                {i18n.mobile.wizard.title1}
+                {i18n.mobile.wizard.title}
               </PhaseTitle>
               <section>
                 <P centered>{i18n.mobile.wizard.text1}</P>
@@ -131,7 +148,7 @@ export default React.memo(function ParingWizard() {
                 />
                 <IconOnlyButton
                   icon={faArrowRight}
-                  onClick={sendRequest}
+                  onClick={() => sendRequest(challengeKey)}
                   data-qa="submit-challenge-key-btn"
                   aria-label={i18n.common.confirm}
                 />
@@ -144,7 +161,7 @@ export default React.memo(function ParingWizard() {
           <Fragment>
             <CenteredColumn>
               <Img src={EvakaLogo} />
-              <PhaseTitle>{i18n.mobile.wizard.title2}</PhaseTitle>
+              <PhaseTitle>{i18n.mobile.wizard.title}</PhaseTitle>
               <section>
                 <P centered>{i18n.mobile.wizard.text2}</P>
               </section>
@@ -163,7 +180,7 @@ export default React.memo(function ParingWizard() {
             <CenteredColumn>
               <Img src={EvakaLogo} />
               <PhaseTitle data-qa="mobile-pairing-wizard-title-3">
-                {i18n.mobile.wizard.title3}
+                {i18n.mobile.wizard.welcome}
               </PhaseTitle>
               <section>
                 <P centered>{i18n.mobile.wizard.text3}</P>

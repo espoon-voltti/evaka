@@ -6,11 +6,14 @@ import React, { useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import { Loading, Result, wrapResult } from 'lib-common/api'
+import { useBoolean } from 'lib-common/form/hooks'
 import { Pairing } from 'lib-common/generated/api-types/pairing'
 import { DaycareId, EmployeeId } from 'lib-common/generated/api-types/shared'
 import InputField from 'lib-components/atoms/form/InputField'
+import Radio from 'lib-components/atoms/form/Radio'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { Bold, fontWeights, P } from 'lib-components/typography'
+import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faPlus } from 'lib-icons'
 
@@ -22,6 +25,7 @@ import {
 } from '../generated/api-clients/pairing'
 import { useTranslation } from '../state/i18n'
 
+import QrCode from './QrCode'
 import { renderResult } from './async-rendering'
 
 const getPairingStatusResult = wrapResult(getPairingStatus)
@@ -146,17 +150,8 @@ export default React.memo(function MobilePairingModal({
     >
       {phase === 1 && (
         <>
-          <P centered>
-            {i18n.mobilePairingModal.modalText1}
-            <br />
-            <Bold>{`${window.location.hostname}/employee/mobile`}</Bold>
-            <br />
-            {i18n.mobilePairingModal.modalText2}
-          </P>
           {renderResult(pairingResponse, (pairingResponse) => (
-            <ResponseKey data-qa="challenge-key">
-              {pairingResponse.challengeKey}
-            </ResponseKey>
+            <Phase1 challengeKey={pairingResponse.challengeKey} />
           ))}
         </>
       )}
@@ -202,3 +197,51 @@ export default React.memo(function MobilePairingModal({
     </InfoModal>
   )
 })
+
+function Phase1({ challengeKey }: { challengeKey: string }) {
+  const { i18n } = useTranslation()
+  const [addWithQrCode, useAddWithQrCode] = useBoolean(true)
+  return (
+    <>
+      <Radio
+        label={i18n.mobilePairingModal.addWithQrCode}
+        checked={addWithQrCode}
+        onChange={useAddWithQrCode.on}
+        data-qa="add-with-qr-code"
+      />
+      {addWithQrCode && (
+        <>
+          <Gap size="s" />
+          <Centered>{i18n.mobilePairingModal.readQrCode}</Centered>
+          <Gap size="s" />
+          <QrCode
+            url={`${window.location.origin}/employee/mobile/pairing?challengeKey=${challengeKey}`}
+          />
+        </>
+      )}
+      <Gap size="m" />
+      <Radio
+        label={i18n.mobilePairingModal.addWithChallengeKey}
+        checked={!addWithQrCode}
+        onChange={useAddWithQrCode.off}
+        data-qa="add-with-challenge-key"
+      />
+      {!addWithQrCode && (
+        <>
+          <P centered>
+            {i18n.mobilePairingModal.modalText1}
+            <br />
+            <Bold>{`${window.location.hostname}/employee/mobile`}</Bold>
+            <br />
+            {i18n.mobilePairingModal.modalText2}
+          </P>
+          <ResponseKey data-qa="challenge-key">{challengeKey}</ResponseKey>
+        </>
+      )}
+    </>
+  )
+}
+
+const Centered = styled.div`
+  text-align: center;
+`
