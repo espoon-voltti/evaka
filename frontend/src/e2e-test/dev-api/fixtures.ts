@@ -510,6 +510,7 @@ export class Fixture {
       languageAtHomeDetails: '',
       medication: '',
       nekkuDiet: null,
+      eatsBreakfast: true,
       ...initial
     })
   }
