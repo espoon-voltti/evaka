@@ -16,6 +16,7 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.voltti.logging.loggers.info
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.nio.charset.StandardCharsets
 import java.nio.file.Paths
@@ -43,6 +44,7 @@ fun uploadToArchive(
     documentId: ChildDocumentId,
     uploadClient: SärmäClientInterface,
     documentClient: DocumentService,
+    logger: io.github.oshai.kotlinlogging.KLogger = KotlinLogging.logger {},
 ) {
     logger.info { "Starting archival process for document $documentId" }
 
@@ -111,13 +113,23 @@ fun uploadToArchive(
     logger.info { "HTTP response code: $responseCode" }
     logger.info { "Response body: $responseBody" }
 
-    val statusCode =
-        URLEncodedUtils.parse(responseBody, StandardCharsets.UTF_8)
-            .find { it.name == "status_code" }
-            ?.value
-            ?.toIntOrNull()
+    val responseData = URLEncodedUtils.parse(responseBody, StandardCharsets.UTF_8)
+    val statusCode = responseData.find { it.name == "status_code" }?.value?.toIntOrNull()
 
-    logger.info { "Parsed status code from response body: $statusCode" }
+    val instanceId = responseData.find { it.name == "instance_ids" }?.value
+
+    logger.info(mapOf("documentId" to documentId)) {
+        "Parsed status code from response body: $statusCode"
+    }
+
+    // Audit log the instance ID
+    if (instanceId == null) {
+        logger.error { "No instance ID found in response body" }
+    } else {
+        logger.info(mapOf("documentId" to documentId, "instanceId" to instanceId)) {
+            "Parsed instance ID from response body: $instanceId"
+        }
+    }
 
     if (responseCode != 200 || statusCode != 200) {
         logger.error {
