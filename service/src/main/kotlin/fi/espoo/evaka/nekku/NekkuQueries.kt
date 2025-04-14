@@ -21,7 +21,7 @@ data class CustomerNumbers(
     @PropagateNull val number: String,
     val name: String,
     val group: String,
-    val unit_size: String,
+    val customerType: CustomerType,
 )
 
 /** Throws an IllegalStateException if Nekku returns an empty customer list. */
@@ -29,7 +29,7 @@ fun fetchAndUpdateNekkuCustomers(client: NekkuClient, db: Database.Connection) {
     val customersFromNekku =
         client
             .getCustomers()
-            .map { it -> CustomerNumbers(it.number, it.name, it.group, it.unitSize) }
+            .map { it -> CustomerNumbers(it.number, it.name, it.group, it.customerType) }
             .filter { it.group.contains("Varhaiskasvatus") }
 
     if (customersFromNekku.isEmpty())
@@ -276,12 +276,12 @@ fun Database.Transaction.setProductNumbers(productNumbers: List<NekkuProduct>): 
     executeBatch(productNumbers) {
         sql(
             """
-INSERT INTO nekku_product (sku, name, options_id, unit_size, meal_time, meal_type)
+INSERT INTO nekku_product (sku, name, options_id, customer_types, meal_time, meal_type)
 VALUES (
     ${bind{it.sku}},
     ${bind{it.name}},
     ${bind{it.optionsId}},
-    ${bind{it.unitSize}},
+    ${bind{it.customerTypes}},
     ${bind{it.mealTime}},
     ${bind{it.mealType}}
 )
@@ -289,13 +289,13 @@ ON CONFLICT (sku) DO
 UPDATE SET
   name = excluded.name,
   options_id = excluded.options_id,
-  unit_size = excluded.unit_size,
+  customer_types = excluded.customer_types,
   meal_time = excluded.meal_time,
   meal_type = excluded.meal_type
 WHERE
     nekku_product.name <> excluded.name OR
     nekku_product.options_id <> excluded.options_id OR
-    nekku_product.unit_size <> excluded.unit_size OR 
+    nekku_product.customer_types <> excluded.customer_types OR 
     nekku_product.meal_time <> excluded.meal_time OR 
     nekku_product.meal_type <> excluded.meal_type;
 """
@@ -306,7 +306,9 @@ WHERE
 
 fun Database.Read.getNekkuProducts(): List<NekkuProduct> {
     return createQuery {
-            sql("SELECT sku, name, options_id, unit_size, meal_time, meal_type FROM nekku_product")
+            sql(
+                "SELECT sku, name, options_id, customer_types, meal_time, meal_type FROM nekku_product"
+            )
         }
         .toList<NekkuProduct>()
 }
@@ -384,7 +386,7 @@ fun Database.Read.getNekkuDaycareCustomerMapping(groupId: GroupId): NekkuDaycare
     createQuery {
             sql(
                 """
-                    SELECT dg.nekku_customer_number as customerNumber, nc.unit_size as unitSize, dg.name as groupName
+                    SELECT dg.nekku_customer_number as customerNumber, nc.customer_types as customerTypes, dg.name as groupName
                     FROM daycare_group dg 
                     JOIN daycare d ON d.id = dg.daycare_id
                     JOIN nekku_customer nc ON nc.number = dg.nekku_customer_number
