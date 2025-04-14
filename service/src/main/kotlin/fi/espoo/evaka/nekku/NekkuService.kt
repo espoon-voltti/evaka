@@ -569,8 +569,12 @@ data class NekkuCustomer(
     val number: String,
     val name: String,
     val group: String,
-    @JsonProperty("unit_size") val unitSize: String,
+    @JsonProperty("customer_type") val customerType: CustomerType,
 )
+
+data class CustomerType(val weekdays: List<Weekday>, val type: String)
+
+data class Weekday(val description: String)
 
 data class NekkuUnitNumber(val number: String, val name: String)
 
@@ -639,12 +643,12 @@ data class NekkuApiProduct(
     val name: String,
     val sku: String,
     @JsonProperty("options_id") val optionsId: String,
-    @JsonProperty("unit_size") val unitSize: String,
+    @JsonProperty("customer_types") val customerTypes: List<String>,
     @JsonProperty("meal_time") val mealTime: List<NekkuProductMealTime>? = null,
     @JsonProperty("meal_type") val mealType: NekkuApiProductMealType? = null,
 ) {
     fun toEvaka(): NekkuProduct =
-        NekkuProduct(name, sku, optionsId, unitSize, mealTime, mealType?.toEvaka())
+        NekkuProduct(name, sku, optionsId, customerTypes, mealTime, mealType?.toEvaka())
 }
 
 data class NekkuSpecialDietOptionWithFieldId(
@@ -658,7 +662,7 @@ data class NekkuProduct(
     val name: String,
     val sku: String,
     @JsonProperty("options_id") val optionsId: String,
-    @JsonProperty("unit_size") val unitSize: String,
+    @JsonProperty("customer_types") val customerTypes: List<String>,
     @JsonProperty("meal_time") val mealTime: List<NekkuProductMealTime>? = null,
     @JsonProperty("meal_type") val mealType: NekkuProductMealType? = null,
 )
