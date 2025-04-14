@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.document.childdocument
 
+import fi.espoo.evaka.document.DocumentType
 import fi.espoo.evaka.shared.ArchivedProcessId
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.EvakaUserId
@@ -22,11 +23,17 @@ fun Database.Transaction.insertChildDocument(
     userId: EvakaUserId,
     processId: ArchivedProcessId?,
 ): ChildDocumentId {
+    val type =
+        createQuery {
+                sql("SELECT type FROM document_template WHERE id = ${bind(document.templateId)}")
+            }
+            .exactlyOne<DocumentType>()
+
     return createQuery {
             sql(
                 """
-INSERT INTO child_document(child_id, template_id, status, content, modified_at, content_modified_at, content_modified_by, created_by, process_id)
-VALUES (${bind(document.childId)}, ${bind(document.templateId)}, 'DRAFT', ${bind(DocumentContent(answers = emptyList()))}, ${bind(now)}, ${bind(now)}, ${bind(userId)}, ${bind(userId)}, ${bind(processId)})
+INSERT INTO child_document(child_id, template_id, type, status, content, modified_at, content_modified_at, content_modified_by, created_by, process_id)
+VALUES (${bind(document.childId)}, ${bind(document.templateId)}, ${bind(type)}, 'DRAFT', ${bind(DocumentContent(answers = emptyList()))}, ${bind(now)}, ${bind(now)}, ${bind(userId)}, ${bind(userId)}, ${bind(processId)})
 RETURNING id
 """
             )
