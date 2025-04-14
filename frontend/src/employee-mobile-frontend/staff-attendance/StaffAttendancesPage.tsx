@@ -334,7 +334,7 @@ const StaffAttendancesPlanned = React.memo(function StaffAttendancesPlanned({
 
   return renderResult(staffMemberDays, (days) => (
     <FixedSpaceColumn spacing="xxs">
-      <DayRow>
+      <DayRow $open={false}>
         <InfoBox message={i18n.attendances.staff.plansInfo} noMargin thin />
       </DayRow>
       {days.map(({ date, staff }) => (
