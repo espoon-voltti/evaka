@@ -43,9 +43,9 @@ export const serviceWorkerMessageBoxes: StandardView[] = [
   'archive'
 ]
 export const financeMessageBoxes: StandardView[] = [
+  'received',
   'sent',
   'drafts',
-  'received',
   'archive'
 ]
 export const personalMessageBoxes: StandardView[] = [
