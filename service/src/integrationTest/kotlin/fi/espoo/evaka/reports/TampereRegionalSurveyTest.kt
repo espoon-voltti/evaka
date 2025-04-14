@@ -324,8 +324,30 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
 
     @Test
     fun `Monthly assistance report results are correct`() {
-        val testUnitData = initTestUnitData(startDate)
-        initTestPlacementData(startDate, testUnitData[0])
+        val defaultPlacementDuration = FiniteDateRange(startDate, startDate.plusMonths(2))
+        val testUnitData = initTestUnitData(defaultPlacementDuration.start)
+        val testChildData = initTestPlacementData(defaultPlacementDuration.start, testUnitData[0])
+
+        db.transaction { tx ->
+            val testChildVille = testChildData[3].first
+            val placementV =
+                DevPlacement(
+                    type = PlacementType.DAYCARE,
+                    childId = testChildVille.id,
+                    unitId = testUnitData[0],
+                    startDate = defaultPlacementDuration.start,
+                    endDate = defaultPlacementDuration.end,
+                )
+            tx.insert(placementV)
+            tx.insert(
+                DevAssistanceAction(
+                    childId = testChildVille.id,
+                    startDate = defaultPlacementDuration.start,
+                    endDate = defaultPlacementDuration.end,
+                    actions = setOf(actionOption40.value),
+                )
+            )
+        }
 
         val results =
             tampereRegionalSurvey.getTampereRegionalSurveyMonthlyStatistics(
@@ -336,6 +358,9 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
             )
 
         val empties = ((1..8) + (11..12)).map { TampereRegionalSurvey.MonthlyAssistanceResult(it) }
+
+        // included: Cecil (action10, factor), Ville (action40)
+        // excluded: Bertil (preschool daycare)
         val expectedResults =
             empties +
                 listOf(
@@ -368,10 +393,11 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
         val voucherSchool =
             DevDaycare(
                 name = "Palsekoulu",
-                type = setOf(CareType.PRESCHOOL),
+                type = setOf(CareType.PRESCHOOL, CareType.CENTRE),
                 providerType = ProviderType.PRIVATE_SERVICE_VOUCHER,
                 openingDate = startDate.minusYears(3),
                 areaId = newArea.id,
+                withSchool = true,
             )
 
         val testChildTyyrikki =
@@ -469,10 +495,11 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
         val purchasedSchool =
             DevDaycare(
                 name = "Ostokoulu",
-                type = setOf(CareType.PRESCHOOL),
+                type = setOf(CareType.PRESCHOOL, CareType.CENTRE),
                 providerType = ProviderType.PURCHASED,
                 openingDate = startDate.minusYears(3),
                 areaId = newArea.id,
+                withSchool = true,
             )
 
         val testChildTyyrikki =
@@ -1936,7 +1963,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                         name = "School",
                         areaId = areaAId,
                         openingDate = monday.minusMonths(1),
-                        type = setOf(CareType.PRESCHOOL),
+                        type = setOf(CareType.PRESCHOOL, CareType.CENTRE),
                         providerType = ProviderType.MUNICIPAL,
                         operationTimes =
                             List(5) { TimeRange(LocalTime.of(8, 0), LocalTime.of(18, 0)) } +
@@ -1945,6 +1972,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                             List(7) { TimeRange(LocalTime.of(0, 0), LocalTime.of(23, 59)) },
                         shiftCareOpenOnHolidays = true,
                         enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS),
+                        withSchool = true,
                     )
                 )
 

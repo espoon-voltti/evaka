@@ -1870,6 +1870,7 @@ data class DevDaycare(
     val mealtimeSnack: TimeRange? = null,
     val mealtimeSupper: TimeRange? = null,
     val mealtimeEveningSnack: TimeRange? = null,
+    val withSchool: Boolean = false,
 )
 
 data class DevDaycareGroup(
