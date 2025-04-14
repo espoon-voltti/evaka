@@ -402,7 +402,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 testAdult_2.id,
                 testAdult_3.id,
                 startDate = placementStart,
-                endDate = placementEnd,
+                endDate = null,
                 createdAt = createdAt,
             )
             tx.insert(

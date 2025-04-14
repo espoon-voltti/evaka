@@ -681,11 +681,11 @@ LEFT JOIN fridge_child fc_head ON (
 )
 
 -- spouse of the head of child
-LEFT JOIN fridge_partner fp ON fp.person_id = i.person_id AND ${bind(today)} BETWEEN fp.start_date AND fp.end_date
+LEFT JOIN fridge_partner fp ON fp.person_id = i.person_id AND ${bind(today)} BETWEEN fp.start_date AND coalesce(fp.end_date, 'infinity')
 LEFT JOIN fridge_partner fp_spouse ON (
     fp_spouse.partnership_id = fp.partnership_id AND
     fp_spouse.person_id <> i.person_id AND
-    ${bind(today)} BETWEEN fp_spouse.start_date AND fp_spouse.end_date
+    ${bind(today)} BETWEEN fp_spouse.start_date AND coalesce(fp_spouse.end_date, 'infinity')
 )
 LEFT JOIN fridge_child fc_spouse ON (
     fc_spouse.head_of_child = fp_spouse.person_id AND
