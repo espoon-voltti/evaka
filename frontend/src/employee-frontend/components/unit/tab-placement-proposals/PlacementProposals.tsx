@@ -4,6 +4,7 @@
 
 import sortBy from 'lodash/sortBy'
 import React, { useCallback, useContext, useMemo, useState } from 'react'
+import styled from 'styled-components'
 
 import {
   PlacementPlanConfirmationStatus,
@@ -26,12 +27,12 @@ import {
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { Bold, Italic, Label, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+import colors from 'lib-customizations/common'
 import { placementPlanRejectReasons } from 'lib-customizations/employee'
 
 import PlacementProposalRow from '../../../components/unit/tab-placement-proposals/PlacementProposalRow'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
-import StickyActionBar from '../../common/StickyActionBar'
 import {
   acceptPlacementProposalMutation,
   respondToPlacementProposalMutation
@@ -226,7 +227,7 @@ export default React.memo(function PlacementProposals({
       </div>
 
       {placementPlans.length > 0 && (
-        <StickyActionBar align="right">
+        <PlacementProposalsActionBar sticky={!acceptDisabled}>
           <FixedSpaceRow alignItems="center" justifyContent="space-between">
             {(summary.accepted > 0 || summary.rejected > 0) && (
               <>
@@ -257,8 +258,19 @@ export default React.memo(function PlacementProposals({
               primary
             />
           </FixedSpaceRow>
-        </StickyActionBar>
+        </PlacementProposalsActionBar>
       )}
     </>
   )
 })
+
+const PlacementProposalsActionBar = styled.div<{ sticky: boolean }>`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: right;
+  position: ${(p) => (p.sticky ? 'sticky' : 'relative')};
+  bottom: 0;
+  background: ${colors.grayscale.g0};
+  padding: 16px 0;
+`
