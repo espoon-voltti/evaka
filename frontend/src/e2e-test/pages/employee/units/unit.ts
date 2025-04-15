@@ -177,7 +177,7 @@ export class UnitDetailsPage {
 
   constructor(private readonly page: Page) {
     this.#editUnitButton = page.findByDataQa('enable-edit-button')
-    this.#unitName = page.find('[data-qa="unit-editor-container"]').find('h1')
+    this.#unitName = page.findByDataQa('unit-editor-container').find('h1')
     this.openingAndClosingDates = page.findByDataQa('opening-and-closing-dates')
     this.#unitManagerName = page.findByDataQa('unit-manager-name')
     this.#unitManagerPhone = page.findByDataQa('unit-manager-phone')
@@ -194,7 +194,7 @@ export class UnitDetailsPage {
 
   async assertTimeRangeByDay(dayNumber: number, expectedTime: string) {
     await this.page
-      .find(`[data-qa="unit-timerange-detail-${dayNumber}"]`)
+      .findByDataQa(`unit-timerange-detail-${dayNumber}`)
       .assertTextEquals(expectedTime)
   }
 
@@ -219,7 +219,7 @@ export class UnitDetailsPage {
   async assertMealTimes(mealTimes: MealTimes) {
     for (const [key, value] of Object.entries(mealTimes)) {
       await this.page
-        .find(`[data-qa="${key}-value-display"]`)
+        .findByDataQa(`${key}-value-display`)
         .assertTextEquals(`${value.start} - ${value.end}`)
     }
   }
@@ -503,7 +503,7 @@ class AclSection extends Element {
 
   #table = this.findByDataQa('acl-table')
   #tableRows = this.#table.findAll(`[data-qa^="acl-row-"]`)
-  #tableRow = (id: UUID) => this.#table.find(`[data-qa="acl-row-${id}"]`)
+  #tableRow = (id: UUID) => this.#table.findByDataQa(`acl-row-${id}`)
 
   addButton = this.findByDataQa('open-add-daycare-acl-modal')
   addModal = new AclModal(this.findByDataQa('add-acl-modal'))
@@ -578,7 +578,7 @@ class AclSection extends Element {
   }
 
   getRow(id: UUID) {
-    return new AclRow(this.#table.find(`[data-qa="acl-row-${id}"]`))
+    return new AclRow(this.#table.findByDataQa(`acl-row-${id}`))
   }
 }
 
@@ -694,11 +694,11 @@ class MobileDevicesSection extends Element {
     super(root)
   }
 
-  #rows = this.findAll('[data-qa="device-row"]')
-  #startPairingButton = this.find('[data-qa="start-mobile-pairing"]')
+  #rows = this.findAllByDataQa('device-row')
+  #startPairingButton = this.findByDataQa('start-mobile-pairing')
 
   async assertDeviceExists(deviceName: string) {
-    await this.#rows.find('[data-qa="name"]').assertTextEquals(deviceName)
+    await this.#rows.findByDataQa('name').assertTextEquals(deviceName)
   }
 
   async addMobileDevice(deviceName: string) {
@@ -708,7 +708,7 @@ class MobileDevicesSection extends Element {
       this.page.findByDataQa('mobile-pairing-modal-phase-1')
     )
 
-    const challengeKey = await phase1.find('[data-qa="challenge-key"]').text
+    const challengeKey = await phase1.findByDataQa('challenge-key').text
     const { responseKey } = await postPairingChallenge({
       body: { challengeKey }
     })
@@ -721,22 +721,22 @@ class MobileDevicesSection extends Element {
     const phase2 = new Modal(
       this.page.findByDataQa('mobile-pairing-modal-phase-2')
     )
-    await new TextInput(phase2.find('[data-qa="response-key-input"]')).fill(
+    await new TextInput(phase2.findByDataQa('response-key-input')).fill(
       responseKey
     )
 
     const phase3 = new Modal(
       this.page.findByDataQa('mobile-pairing-modal-phase-3')
     )
-    await new TextInput(
-      phase3.find('[data-qa="mobile-device-name-input"]')
-    ).fill(deviceName)
+    await new TextInput(phase3.findByDataQa('mobile-device-name-input')).fill(
+      deviceName
+    )
     await phase3.submit()
   }
 }
 
 class AclRow extends Element {
-  readonly #editButton = this.find('[data-qa="edit"]')
+  readonly #editButton = this.findByDataQa('edit')
 
   async edit() {
     await this.#editButton.click()
@@ -744,7 +744,7 @@ class AclRow extends Element {
 }
 
 class TemporaryEmployeeRow extends Element {
-  readonly #editButton = this.find('[data-qa="edit"]')
+  readonly #editButton = this.findByDataQa('edit')
 
   async edit() {
     await this.#editButton.click()
@@ -774,8 +774,8 @@ export class ApplicationProcessPage {
 }
 
 class WaitingConfirmationSection extends Element {
-  #notificationCounter = this.find('[data-qa="notification-counter"]')
-  #rows = this.findAll('[data-qa="placement-plan-row"]')
+  #notificationCounter = this.findByDataQa('notification-counter')
+  #rows = this.findAllByDataQa('placement-plan-row')
   #rejectedRows = this.findAll(
     '[data-qa="placement-plan-row"][data-rejected="true"]'
   )
@@ -838,18 +838,18 @@ class PlacementProposalsSection {
 
   async clickProposalAccept(applicationId: string) {
     await this.#applicationRow(applicationId)
-      .find('[data-qa="accept-button"]')
+      .findByDataQa('accept-button')
       .click()
   }
 
   async clickProposalReject(applicationId: string) {
     await this.#applicationRow(applicationId)
-      .find('[data-qa="reject-button"]')
+      .findByDataQa('reject-button')
       .click()
   }
 
   async selectProposalRejectionReason(n: number) {
-    const radios = this.page.findAll('[data-qa="proposal-reject-reason"]')
+    const radios = this.page.findAllByDataQa('proposal-reject-reason')
     await radios.nth(n).click()
   }
 
@@ -865,8 +865,7 @@ class PlacementProposalsSection {
   async assertPlacementProposalRowCount(expected: number) {
     await this.waitUntilVisible()
     await waitUntilEqual(
-      () =>
-        this.#placementProposalTable.findAll('[data-qa="child-name"]').count(),
+      () => this.#placementProposalTable.findAllByDataQa('child-name').count(),
       expected
     )
   }
