@@ -58,16 +58,26 @@ private fun Database.Read.getEndedPlacementsRows(
                 """
 WITH ended_placements AS (
     SELECT 
-        p.id AS child_id, p.first_name, p.last_name,
+        p.id AS child_id,
+        p.first_name,
+        p.last_name,
+        p.date_of_birth,
         max(pl.end_date) AS placement_end
     FROM placement pl
     JOIN person p ON p.id = pl.child_id
     WHERE daterange(${bind(from)}, ${bind(to)}, '[]') @> pl.end_date AND pl.type != 'CLUB'::placement_type
-    GROUP BY p.id, p.first_name, p.last_name
+    GROUP BY p.id, p.first_name, p.last_name, p.date_of_birth
 )
 SELECT 
-    ep.child_id, ep.first_name, ep.last_name,
-    ep.placement_end, dc.name as unit_name, ca.name as area_name, min(next.start_date) AS next_placement_start
+    ep.child_id,
+    ep.first_name,
+    ep.last_name,
+    ep.date_of_birth,
+    ep.placement_end,
+    dc.name as unit_name,
+    ca.name as area_name,
+    min(next_pl.start_date) AS next_placement_start,
+    next_dc.name AS next_placement_unit_name
 FROM ended_placements ep
 JOIN placement pl
     ON ep.child_id = pl.child_id AND pl.end_date = ep.placement_end
@@ -75,10 +85,12 @@ JOIN daycare dc
     ON pl.unit_id = dc.id
 JOIN care_area ca
     ON dc.care_area_id = ca.id
-LEFT JOIN placement next
-    ON next.child_id = ep.child_id AND next.start_date > ep.placement_end AND next.type != 'CLUB'::placement_type
-GROUP BY ep.child_id, ep.first_name, ep.last_name, ep.placement_end, dc.name, ca.name
-HAVING min(next.start_date) IS NULL OR min(next.start_date) > ${bind(to)}
+LEFT JOIN placement next_pl
+    ON next_pl.child_id = ep.child_id AND next_pl.start_date > ep.placement_end AND next_pl.type != 'CLUB'::placement_type
+LEFT JOIN daycare next_dc
+    ON next_dc.id = next_pl.unit_id
+GROUP BY ep.child_id, ep.first_name, ep.last_name, ep.date_of_birth, ep.placement_end, dc.name, ca.name, next_dc.name
+HAVING min(next_pl.start_date) IS NULL OR min(next_pl.start_date) > ${bind(to)}
 ORDER BY last_name, first_name, ep.child_id
 """
             )
@@ -90,8 +102,10 @@ data class EndedPlacementsReportRow(
     val childId: ChildId,
     val firstName: String?,
     val lastName: String?,
+    val dateOfBirth: LocalDate?,
     val placementEnd: LocalDate,
     val unitName: String,
     val areaName: String,
     val nextPlacementStart: LocalDate?,
+    val nextPlacementUnitName: String?,
 )

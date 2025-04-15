@@ -55,10 +55,12 @@ describe('Ended placements report', () => {
     await report.assertRows([
       {
         childName: `${child.lastName} ${child.firstName}`,
+        childDateOfBirth: child.dateOfBirth,
         areaName: area.name,
         unitName: daycare.name,
         placementEnd: endedPlacement.endDate,
-        nextPlacementStart: nextPlacement.startDate
+        nextPlacementStart: nextPlacement.startDate,
+        nextPlacementUnitName: daycare.name
       }
     ])
   })
