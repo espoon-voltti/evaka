@@ -654,7 +654,7 @@ class InvoiceCorrectionNoteModal extends Modal {
 class FinanceNotesAndMessagesSection extends Section {
   #noteCreatedAt = this.findAll(`[data-qa="finance-note-created-at"]`)
   #threadSentAt = this.findAll(`[data-qa="finance-thread-sent-at"]`)
-  #newMessage = this.findByDataQa('send-finance-message-button')
+  newMessageButton = this.findByDataQa('send-finance-message-button')
   #replyThread = this.findAll(`[data-qa="reply-finance-thread-button"]`)
   #messageReplyContent = new TextInput(
     this.findByDataQa('message-reply-content')
@@ -676,7 +676,7 @@ class FinanceNotesAndMessagesSection extends Section {
   }
 
   async openNewMessageEditor() {
-    await this.#newMessage.click()
+    await this.newMessageButton.click()
     return this.getMessageEditor()
   }
 

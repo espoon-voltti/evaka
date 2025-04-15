@@ -1721,6 +1721,8 @@ export const fi = {
       title: 'Talouden muistiinpanot ja viestit',
       addNote: 'Lisää muistiinpano',
       sendMessage: 'Lähetä eVaka-viesti',
+      noMessaging:
+        'eVaka-viestin voi lähettää vain henkilölle, jolla on henkilötunnus.',
       link: 'Linkki alkuperäiseen viestiin',
       showMessages: 'Näytä kaikki viestit',
       hideMessages: 'Piilota kaikki viestit',
