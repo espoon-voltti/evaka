@@ -96,6 +96,7 @@ import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.domain.europeHelsinki
 import fi.espoo.evaka.shared.security.upsertCitizenUser
 import fi.espoo.evaka.shared.security.upsertEmployeeUser
+import fi.espoo.evaka.shared.security.upsertMobileDeviceUser
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Instant
 import java.time.LocalDate
@@ -310,6 +311,7 @@ RETURNING id
         }
         .executeAndReturnGeneratedKeys()
         .exactlyOne<MobileDeviceId>()
+        .also { upsertMobileDeviceUser(it) }
 
 fun Database.Transaction.insert(row: DevPersonalMobileDevice) =
     createUpdate {

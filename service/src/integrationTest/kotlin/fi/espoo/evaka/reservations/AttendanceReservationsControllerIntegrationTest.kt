@@ -16,6 +16,7 @@ import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue
 import fi.espoo.evaka.daycare.insertPreschoolTerm
 import fi.espoo.evaka.holidayperiod.insertHolidayPeriod
 import fi.espoo.evaka.insertServiceNeedOptions
+import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.ScheduleType
 import fi.espoo.evaka.preschoolTerm2020
@@ -60,6 +61,7 @@ import fi.espoo.evaka.snDaycareContractDays10
 import fi.espoo.evaka.snDaycareContractDays15
 import fi.espoo.evaka.snDaycareFullDay35
 import fi.espoo.evaka.snDefaultPreschool
+import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
@@ -69,8 +71,10 @@ import fi.espoo.evaka.testChild_6
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.toEvakaUser
+import fi.espoo.evaka.user.EvakaUserType
 import fi.espoo.evaka.withHolidays
 import java.math.BigDecimal
+import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -97,7 +101,7 @@ class AttendanceReservationsControllerIntegrationTest :
     private val monFri = FiniteDateRange(mon, fri)
 
     private val now = HelsinkiDateTime.of(mon, LocalTime.of(10, 0))
-    private val clock = MockEvakaClock(now)
+    private lateinit var clock: MockEvakaClock
 
     private val testGroup1 = DevDaycareGroup(daycareId = testDaycare.id, name = "Test group 1")
     private val testGroup2 = DevDaycareGroup(daycareId = testDaycare.id, name = "Test group 2")
@@ -111,6 +115,7 @@ class AttendanceReservationsControllerIntegrationTest :
 
     @BeforeEach
     fun beforeEach() {
+        clock = MockEvakaClock(now)
         db.transaction { tx ->
             tx.insert(testArea)
             tx.insert(testDaycare)
@@ -990,6 +995,389 @@ class AttendanceReservationsControllerIntegrationTest :
                     date = thu,
                     scheduleType = ScheduleType.RESERVATION_REQUIRED,
                     reservations = emptyList(),
+                    absenceType = null,
+                    dailyServiceTimes = null,
+                ),
+                ConfirmedRangeDate(
+                    date = fri,
+                    scheduleType = ScheduleType.RESERVATION_REQUIRED,
+                    reservations = emptyList(),
+                    absenceType = null,
+                    dailyServiceTimes = null,
+                ),
+            ),
+            reservations,
+        )
+    }
+
+    @Test
+    fun `set confirmed range reservation does not update any fields when form values remain the same`() {
+        val initialCreatedAt = clock.now()
+        val mobileDevice = DevMobileDevice(unitId = testDaycare.id)
+        val mobileDeviceEvakaUser = mobileDevice.evakaUser
+        val parent = testAdult_1
+        val mobileDeviceId =
+            db.transaction { tx ->
+                tx.insert(testAdult_1, DevPersonType.ADULT)
+                tx.insertGuardian(parent.id, testChild_1.id)
+                tx.insert(
+                    DevPlacement(
+                        childId = testChild_1.id,
+                        unitId = testDaycare.id,
+                        startDate = mon,
+                        endDate = fri,
+                        type = PlacementType.PRESCHOOL_DAYCARE,
+                    )
+                )
+                tx.insert(
+                    DevReservation(
+                        childId = testChild_1.id,
+                        date = wed,
+                        startTime = LocalTime.of(9, 0),
+                        endTime = LocalTime.of(11, 0),
+                        createdBy = parent.evakaUserId(),
+                        createdAt = initialCreatedAt,
+                    )
+                )
+                tx.insert(
+                    DevReservation(
+                        childId = testChild_1.id,
+                        date = thu,
+                        startTime = LocalTime.of(8, 0),
+                        endTime = LocalTime.of(16, 0),
+                        createdBy = EvakaUserId(employeeId.raw),
+                        createdAt = initialCreatedAt,
+                    )
+                )
+                tx.insert(mobileDevice)
+            }
+
+        clock.tick(Duration.ofDays(1))
+
+        attendanceReservationController.setConfirmedRangeReservations(
+            dbInstance(),
+            AuthenticatedUser.MobileDevice(id = mobileDeviceId),
+            clock,
+            testChild_1.id,
+            listOf(
+                ConfirmedRangeDateUpdate(
+                    date = wed,
+                    reservations =
+                        listOf(
+                            Reservation.Times(TimeRange(LocalTime.of(9, 0), LocalTime.of(11, 0)))
+                        ),
+                    absenceType = null,
+                ),
+                ConfirmedRangeDateUpdate(
+                    date = thu,
+                    reservations =
+                        listOf(
+                            Reservation.Times(TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)))
+                        ),
+                    absenceType = null,
+                ),
+            ),
+        )
+
+        val reservations =
+            attendanceReservationController.getConfirmedRangeData(
+                dbInstance(),
+                AuthenticatedUser.MobileDevice(id = mobileDeviceId),
+                clock,
+                testChild_1.id,
+            )
+        assertEquals(
+            listOf(
+                ConfirmedRangeDate(
+                    date = wed,
+                    scheduleType = ScheduleType.RESERVATION_REQUIRED,
+                    reservations =
+                        listOf(
+                            ReservationResponse.Times(
+                                TimeRange(LocalTime.of(9, 0), LocalTime.of(11, 0)),
+                                false,
+                                modifiedBy = parent.toEvakaUser(EvakaUserType.CITIZEN),
+                                modifiedAt = initialCreatedAt,
+                            )
+                        ),
+                    absenceType = null,
+                    dailyServiceTimes = null,
+                ),
+                ConfirmedRangeDate(
+                    date = thu,
+                    scheduleType = ScheduleType.RESERVATION_REQUIRED,
+                    reservations =
+                        listOf(
+                            ReservationResponse.Times(
+                                TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
+                                true,
+                                modifiedBy = employee.toEvakaUser(),
+                                modifiedAt = initialCreatedAt,
+                            )
+                        ),
+                    absenceType = null,
+                    dailyServiceTimes = null,
+                ),
+                ConfirmedRangeDate(
+                    date = fri,
+                    scheduleType = ScheduleType.RESERVATION_REQUIRED,
+                    reservations = emptyList(),
+                    absenceType = null,
+                    dailyServiceTimes = null,
+                ),
+            ),
+            reservations,
+        )
+    }
+
+    @Test
+    fun `set confirmed range reservation updates new reservations and leaves previous as they were`() {
+        val initialCreatedAt = clock.now()
+        val mobileDevice = DevMobileDevice(unitId = testDaycare.id)
+        val mobileDeviceEvakaUser = mobileDevice.evakaUser
+        val parent = testAdult_1
+        val mobileDeviceId =
+            db.transaction { tx ->
+                tx.insert(testAdult_1, DevPersonType.ADULT)
+                tx.insertGuardian(parent.id, testChild_1.id)
+                tx.insert(
+                    DevPlacement(
+                        childId = testChild_1.id,
+                        unitId = testDaycare.id,
+                        startDate = mon,
+                        endDate = fri,
+                        type = PlacementType.PRESCHOOL_DAYCARE,
+                    )
+                )
+                tx.insert(
+                    DevReservation(
+                        childId = testChild_1.id,
+                        date = wed,
+                        startTime = LocalTime.of(9, 0),
+                        endTime = LocalTime.of(11, 0),
+                        createdBy = parent.evakaUserId(),
+                        createdAt = initialCreatedAt,
+                    )
+                )
+                tx.insert(
+                    DevReservation(
+                        childId = testChild_1.id,
+                        date = thu,
+                        startTime = LocalTime.of(8, 0),
+                        endTime = LocalTime.of(16, 0),
+                        createdBy = EvakaUserId(employeeId.raw),
+                        createdAt = initialCreatedAt,
+                    )
+                )
+                tx.insert(mobileDevice)
+            }
+
+        clock.tick(Duration.ofDays(1))
+
+        attendanceReservationController.setConfirmedRangeReservations(
+            dbInstance(),
+            AuthenticatedUser.MobileDevice(id = mobileDeviceId),
+            clock,
+            testChild_1.id,
+            listOf(
+                ConfirmedRangeDateUpdate(
+                    date = wed,
+                    reservations =
+                        listOf(
+                            Reservation.Times(TimeRange(LocalTime.of(9, 0), LocalTime.of(11, 0)))
+                        ),
+                    absenceType = null,
+                ),
+                ConfirmedRangeDateUpdate(
+                    date = thu,
+                    reservations =
+                        listOf(
+                            Reservation.Times(TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)))
+                        ),
+                    absenceType = null,
+                ),
+                ConfirmedRangeDateUpdate(
+                    date = fri,
+                    reservations =
+                        listOf(
+                            Reservation.Times(TimeRange(LocalTime.of(10, 0), LocalTime.of(14, 0)))
+                        ),
+                    absenceType = null,
+                ),
+            ),
+        )
+
+        val reservations =
+            attendanceReservationController.getConfirmedRangeData(
+                dbInstance(),
+                AuthenticatedUser.MobileDevice(id = mobileDeviceId),
+                clock,
+                testChild_1.id,
+            )
+        assertEquals(
+            listOf(
+                ConfirmedRangeDate(
+                    date = wed,
+                    scheduleType = ScheduleType.RESERVATION_REQUIRED,
+                    reservations =
+                        listOf(
+                            ReservationResponse.Times(
+                                TimeRange(LocalTime.of(9, 0), LocalTime.of(11, 0)),
+                                false,
+                                modifiedBy = parent.toEvakaUser(EvakaUserType.CITIZEN),
+                                modifiedAt = initialCreatedAt,
+                            )
+                        ),
+                    absenceType = null,
+                    dailyServiceTimes = null,
+                ),
+                ConfirmedRangeDate(
+                    date = thu,
+                    scheduleType = ScheduleType.RESERVATION_REQUIRED,
+                    reservations =
+                        listOf(
+                            ReservationResponse.Times(
+                                TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
+                                true,
+                                modifiedBy = employee.toEvakaUser(),
+                                modifiedAt = initialCreatedAt,
+                            )
+                        ),
+                    absenceType = null,
+                    dailyServiceTimes = null,
+                ),
+                ConfirmedRangeDate(
+                    date = fri,
+                    scheduleType = ScheduleType.RESERVATION_REQUIRED,
+                    reservations =
+                        listOf(
+                            ReservationResponse.Times(
+                                TimeRange(LocalTime.of(10, 0), LocalTime.of(14, 0)),
+                                true,
+                                modifiedBy = mobileDeviceEvakaUser,
+                                modifiedAt = clock.now(),
+                            )
+                        ),
+                    absenceType = null,
+                    dailyServiceTimes = null,
+                ),
+            ),
+            reservations,
+        )
+    }
+
+    @Test
+    fun `set confirmed range reservation updates all reservations on a day that is modified`() {
+        val initialCreatedAt = clock.now()
+        val mobileDevice = DevMobileDevice(unitId = testDaycare.id)
+        val mobileDeviceEvakaUser = mobileDevice.evakaUser
+        val parent = testAdult_1
+        val mobileDeviceId =
+            db.transaction { tx ->
+                tx.insert(testAdult_1, DevPersonType.ADULT)
+                tx.insertGuardian(parent.id, testChild_1.id)
+                tx.insert(
+                    DevPlacement(
+                        childId = testChild_1.id,
+                        unitId = testDaycare.id,
+                        startDate = mon,
+                        endDate = fri,
+                        type = PlacementType.PRESCHOOL_DAYCARE,
+                    )
+                )
+                tx.insert(
+                    DevReservation(
+                        childId = testChild_1.id,
+                        date = wed,
+                        startTime = LocalTime.of(9, 0),
+                        endTime = LocalTime.of(11, 0),
+                        createdBy = parent.evakaUserId(),
+                        createdAt = initialCreatedAt,
+                    )
+                )
+                tx.insert(
+                    DevReservation(
+                        childId = testChild_1.id,
+                        date = thu,
+                        startTime = LocalTime.of(8, 0),
+                        endTime = LocalTime.of(12, 0),
+                        createdBy = EvakaUserId(employeeId.raw),
+                        createdAt = initialCreatedAt,
+                    )
+                )
+                tx.insert(mobileDevice)
+            }
+
+        clock.tick(Duration.ofDays(1))
+
+        attendanceReservationController.setConfirmedRangeReservations(
+            dbInstance(),
+            AuthenticatedUser.MobileDevice(id = mobileDeviceId),
+            clock,
+            testChild_1.id,
+            listOf(
+                ConfirmedRangeDateUpdate(
+                    date = wed,
+                    reservations =
+                        listOf(
+                            Reservation.Times(TimeRange(LocalTime.of(9, 0), LocalTime.of(11, 0)))
+                        ),
+                    absenceType = null,
+                ),
+                ConfirmedRangeDateUpdate(
+                    date = thu,
+                    reservations =
+                        listOf(
+                            Reservation.Times(TimeRange(LocalTime.of(8, 0), LocalTime.of(12, 0))),
+                            Reservation.Times(TimeRange(LocalTime.of(13, 0), LocalTime.of(16, 0))),
+                        ),
+                    absenceType = null,
+                ),
+            ),
+        )
+
+        val reservations =
+            attendanceReservationController.getConfirmedRangeData(
+                dbInstance(),
+                AuthenticatedUser.MobileDevice(id = mobileDeviceId),
+                clock,
+                testChild_1.id,
+            )
+        assertEquals(
+            listOf(
+                ConfirmedRangeDate(
+                    date = wed,
+                    scheduleType = ScheduleType.RESERVATION_REQUIRED,
+                    reservations =
+                        listOf(
+                            ReservationResponse.Times(
+                                TimeRange(LocalTime.of(9, 0), LocalTime.of(11, 0)),
+                                false,
+                                modifiedBy = parent.toEvakaUser(EvakaUserType.CITIZEN),
+                                modifiedAt = initialCreatedAt,
+                            )
+                        ),
+                    absenceType = null,
+                    dailyServiceTimes = null,
+                ),
+                ConfirmedRangeDate(
+                    date = thu,
+                    scheduleType = ScheduleType.RESERVATION_REQUIRED,
+                    reservations =
+                        listOf(
+                            ReservationResponse.Times(
+                                TimeRange(LocalTime.of(8, 0), LocalTime.of(12, 0)),
+                                true,
+                                modifiedBy = mobileDeviceEvakaUser,
+                                modifiedAt = clock.now(),
+                            ),
+                            ReservationResponse.Times(
+                                TimeRange(LocalTime.of(13, 0), LocalTime.of(16, 0)),
+                                true,
+                                modifiedBy = mobileDeviceEvakaUser,
+                                modifiedAt = clock.now(),
+                            ),
+                        ),
                     absenceType = null,
                     dailyServiceTimes = null,
                 ),
