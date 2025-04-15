@@ -855,8 +855,8 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 .forEach { tx.insert(it) }
         }
 
-        createAndSendNekkuOrder(client, db, group.id, monday)
-        createAndSendNekkuOrder(client, db, group.id, tuesday)
+        createAndSendNekkuOrder(client, db, group.id, monday, 0.9)
+        createAndSendNekkuOrder(client, db, group.id, tuesday, 0.9)
 
         assertEquals(
             listOf(
@@ -887,6 +887,480 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     ),
                     dryRun = false,
                 ),
+            ),
+            client.orders,
+        )
+    }
+
+    @Test
+    fun `Send Nekku orders with known reservations and remove 10prcent of normal orders`() {
+        val monday = LocalDate.of(2025, 4, 14)
+        val tuesday = LocalDate.of(2025, 4, 15)
+
+        // First create all of the basic backgrounds like
+        // Customer numbers
+        var client =
+            TestNekkuClient(
+                customers =
+                    listOf(
+                        NekkuCustomer(
+                            "2501K6089",
+                            "Ahvenojan päiväkoti",
+                            "Varhaiskasvatus",
+                            "large",
+                        )
+                    ),
+                nekkuProducts = nekkuProductsForOrder,
+            )
+        fetchAndUpdateNekkuCustomers(client, db)
+        // products
+        fetchAndUpdateNekkuProducts(client, db)
+        // Daycare with groups
+        val area = DevCareArea()
+        val daycare =
+            DevDaycare(
+                areaId = area.id,
+                mealtimeBreakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
+                mealtimeLunch = TimeRange(LocalTime.of(11, 15), LocalTime.of(11, 45)),
+                mealtimeSnack = TimeRange(LocalTime.of(13, 30), LocalTime.of(13, 50)),
+            )
+        val group = DevDaycareGroup(daycareId = daycare.id, nekkuCustomerNumber = "2501K6089")
+        val employee = DevEmployee()
+
+        // Children with placements in the group and they are not absent
+
+        val children =
+            listOf(
+                DevPerson(),
+                DevPerson(),
+                DevPerson(),
+                DevPerson(),
+                DevPerson(),
+                DevPerson(),
+                DevPerson(),
+                DevPerson(),
+                DevPerson(),
+                DevPerson(),
+            )
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(group)
+            tx.insert(employee)
+            children.map { child ->
+                tx.insert(child, DevPersonType.CHILD)
+                tx.insert(
+                        DevPlacement(
+                            childId = child.id,
+                            unitId = daycare.id,
+                            startDate = monday,
+                            endDate = tuesday,
+                        )
+                    )
+                    .also { placementId ->
+                        tx.insert(
+                            DevDaycareGroupPlacement(
+                                daycarePlacementId = placementId,
+                                daycareGroupId = group.id,
+                                startDate = monday,
+                                endDate = tuesday,
+                            )
+                        )
+                    }
+                listOf(
+                        // Two meals on Monday
+                        DevReservation(
+                            childId = child.id,
+                            date = monday,
+                            startTime = LocalTime.of(8, 0),
+                            endTime = LocalTime.of(12, 0),
+                            createdBy = employee.evakaUserId,
+                        ),
+                        // Breakfast only on Tuesday
+                        DevReservation(
+                            childId = child.id,
+                            date = tuesday,
+                            startTime = LocalTime.of(8, 0),
+                            endTime = LocalTime.of(9, 0),
+                            createdBy = employee.evakaUserId,
+                        ),
+                    )
+                    .forEach { tx.insert(it) }
+            }
+        }
+
+        createAndSendNekkuOrder(client, db, group.id, monday, 0.9)
+        createAndSendNekkuOrder(client, db, group.id, tuesday, 0.9)
+
+        assertEquals(
+            listOf(
+                NekkuClient.NekkuOrders(
+                    listOf(
+                        NekkuClient.NekkuOrder(
+                            monday.toString(),
+                            "2501K6089",
+                            group.id.toString(),
+                            listOf(
+                                NekkuClient.Item("31000010", 9, null),
+                                NekkuClient.Item("31000011", 9, null),
+                            ),
+                            group.name,
+                        )
+                    ),
+                    dryRun = false,
+                ),
+                NekkuClient.NekkuOrders(
+                    listOf(
+                        NekkuClient.NekkuOrder(
+                            tuesday.toString(),
+                            "2501K6089",
+                            group.id.toString(),
+                            listOf(NekkuClient.Item("31000010", 9, null)),
+                            group.name,
+                        )
+                    ),
+                    dryRun = false,
+                ),
+            ),
+            client.orders,
+        )
+    }
+
+    @Test
+    fun `10percnt deduction does not remove any vegan or vegetable diets`() {
+        val monday = LocalDate.of(2025, 4, 14)
+        val tuesday = LocalDate.of(2025, 4, 15)
+
+        // First create all of the basic backgrounds like
+        // Customer numbers
+        var client =
+            TestNekkuClient(
+                customers =
+                    listOf(
+                        NekkuCustomer(
+                            "2501K6089",
+                            "Ahvenojan päiväkoti",
+                            "Varhaiskasvatus",
+                            "large",
+                        )
+                    ),
+                nekkuProducts = nekkuProductsForOrder,
+            )
+        fetchAndUpdateNekkuCustomers(client, db)
+        // products
+        fetchAndUpdateNekkuProducts(client, db)
+        // Daycare with groups
+        val area = DevCareArea()
+        val daycare =
+            DevDaycare(
+                areaId = area.id,
+                mealtimeBreakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
+                mealtimeLunch = TimeRange(LocalTime.of(11, 15), LocalTime.of(11, 45)),
+                mealtimeSnack = TimeRange(LocalTime.of(13, 30), LocalTime.of(13, 50)),
+            )
+        val group = DevDaycareGroup(daycareId = daycare.id, nekkuCustomerNumber = "2501K6089")
+        val employee = DevEmployee()
+
+        // Children with placements in the group and they are not absent
+
+        val children =
+            listOf(
+                DevPerson(),
+                DevPerson(),
+                DevPerson(),
+                DevPerson(),
+                DevPerson(),
+                DevPerson(),
+                DevPerson(),
+                DevPerson(),
+                DevPerson(),
+                DevPerson(),
+            )
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(group)
+            tx.insert(employee)
+            children.map { child ->
+                tx.insert(child, DevPersonType.CHILD)
+                tx.insert(DevChild(id = child.id, nekkuDiet = NekkuProductMealType.VEGETABLE))
+                tx.insert(
+                        DevPlacement(
+                            childId = child.id,
+                            unitId = daycare.id,
+                            startDate = monday,
+                            endDate = tuesday,
+                        )
+                    )
+                    .also { placementId ->
+                        tx.insert(
+                            DevDaycareGroupPlacement(
+                                daycarePlacementId = placementId,
+                                daycareGroupId = group.id,
+                                startDate = monday,
+                                endDate = tuesday,
+                            )
+                        )
+                    }
+                listOf(
+                        // Two meals on Monday
+                        DevReservation(
+                            childId = child.id,
+                            date = monday,
+                            startTime = LocalTime.of(8, 0),
+                            endTime = LocalTime.of(12, 0),
+                            createdBy = employee.evakaUserId,
+                        ),
+                        // Breakfast only on Tuesday
+                        DevReservation(
+                            childId = child.id,
+                            date = tuesday,
+                            startTime = LocalTime.of(8, 0),
+                            endTime = LocalTime.of(9, 0),
+                            createdBy = employee.evakaUserId,
+                        ),
+                    )
+                    .forEach { tx.insert(it) }
+            }
+        }
+
+        createAndSendNekkuOrder(client, db, group.id, monday, 0.9)
+        createAndSendNekkuOrder(client, db, group.id, tuesday, 0.9)
+
+        assertEquals(
+            listOf(
+                NekkuClient.NekkuOrders(
+                    listOf(
+                        NekkuClient.NekkuOrder(
+                            monday.toString(),
+                            "2501K6089",
+                            group.id.toString(),
+                            listOf(
+                                NekkuClient.Item("31000014", 10, null),
+                                NekkuClient.Item("31000015", 10, null),
+                            ),
+                            group.name,
+                        )
+                    ),
+                    dryRun = false,
+                ),
+                NekkuClient.NekkuOrders(
+                    listOf(
+                        NekkuClient.NekkuOrder(
+                            tuesday.toString(),
+                            "2501K6089",
+                            group.id.toString(),
+                            listOf(NekkuClient.Item("31000014", 10, null)),
+                            group.name,
+                        )
+                    ),
+                    dryRun = false,
+                ),
+            ),
+            client.orders,
+        )
+    }
+
+    @Test
+    fun `Combined breakfast and lunch is ordered even if child is not eating breakfast`() {
+
+        val monday = LocalDate.of(2025, 4, 14)
+        val tuesday = LocalDate.of(2025, 4, 15)
+
+        // First create all of the basic backgrounds like
+        // Customer numbers
+        var client =
+            TestNekkuClient(
+                customers =
+                    listOf(
+                        NekkuCustomer("2501K6090", "Apporan päiväkoti", "Varhaiskasvatus", "medium")
+                    ),
+                nekkuProducts = nekkuProductsForOrder,
+            )
+        fetchAndUpdateNekkuCustomers(client, db)
+        // products
+        fetchAndUpdateNekkuProducts(client, db)
+        // Daycare with groups
+        val area = DevCareArea()
+        val daycare =
+            DevDaycare(
+                areaId = area.id,
+                mealtimeBreakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
+                mealtimeLunch = TimeRange(LocalTime.of(11, 15), LocalTime.of(11, 45)),
+                mealtimeSnack = TimeRange(LocalTime.of(13, 30), LocalTime.of(13, 50)),
+            )
+        val group = DevDaycareGroup(daycareId = daycare.id, nekkuCustomerNumber = "2501K6090")
+        val employee = DevEmployee()
+
+        // Children with placements in the group and they are not absent
+        val child = DevPerson()
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(group)
+            tx.insert(employee)
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(
+                DevChild(id = child.id, eatsBreakfast = false)
+            ) // child does not eat breakfast
+            tx.insert(
+                    DevPlacement(
+                        childId = child.id,
+                        unitId = daycare.id,
+                        startDate = monday,
+                        endDate = tuesday,
+                    )
+                )
+                .also { placementId ->
+                    tx.insert(
+                        DevDaycareGroupPlacement(
+                            daycarePlacementId = placementId,
+                            daycareGroupId = group.id,
+                            startDate = monday,
+                            endDate = tuesday,
+                        )
+                    )
+                }
+            listOf(
+                    // Two meals on Monday
+                    DevReservation(
+                        childId = child.id,
+                        date = monday,
+                        startTime = LocalTime.of(8, 0),
+                        endTime = LocalTime.of(12, 0),
+                        createdBy = employee.evakaUserId,
+                    ),
+                    // Breakfast only on Tuesday
+                    DevReservation(
+                        childId = child.id,
+                        date = tuesday,
+                        startTime = LocalTime.of(8, 0),
+                        endTime = LocalTime.of(9, 0),
+                        createdBy = employee.evakaUserId,
+                    ),
+                )
+                .forEach { tx.insert(it) }
+        }
+
+        createAndSendNekkuOrder(client, db, group.id, monday, 0.9)
+
+        assertEquals(
+            listOf(
+                NekkuClient.NekkuOrders(
+                    listOf(
+                        NekkuClient.NekkuOrder(
+                            monday.toString(),
+                            "2501K6090",
+                            group.id.toString(),
+                            listOf(NekkuClient.Item("31000018", 1, null)),
+                            group.name,
+                        )
+                    ),
+                    dryRun = false,
+                )
+            ),
+            client.orders,
+        )
+    }
+
+    @Test
+    fun `Breakfast is deducted from meals if child is not eating breakfast according to child details`() {
+
+        val monday = LocalDate.of(2025, 4, 14)
+        val tuesday = LocalDate.of(2025, 4, 15)
+
+        // First create all of the basic backgrounds like
+        // Customer numbers
+        var client =
+            TestNekkuClient(
+                customers =
+                    listOf(
+                        NekkuCustomer(
+                            "2501K6089",
+                            "Ahvenojan päiväkoti",
+                            "Varhaiskasvatus",
+                            "large",
+                        )
+                    ),
+                nekkuProducts = nekkuProductsForOrder,
+            )
+        fetchAndUpdateNekkuCustomers(client, db)
+        // products
+        fetchAndUpdateNekkuProducts(client, db)
+        // Daycare with groups
+        val area = DevCareArea()
+        val daycare =
+            DevDaycare(
+                areaId = area.id,
+                mealtimeBreakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
+                mealtimeLunch = TimeRange(LocalTime.of(11, 15), LocalTime.of(11, 45)),
+                mealtimeSnack = TimeRange(LocalTime.of(13, 30), LocalTime.of(13, 50)),
+            )
+        val group = DevDaycareGroup(daycareId = daycare.id, nekkuCustomerNumber = "2501K6089")
+        val employee = DevEmployee()
+
+        // Children with placements in the group and they are not absent
+        val child = DevPerson()
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(group)
+            tx.insert(employee)
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(
+                DevChild(id = child.id, eatsBreakfast = false)
+            ) // child does not eat breakfast
+            tx.insert(
+                    DevPlacement(
+                        childId = child.id,
+                        unitId = daycare.id,
+                        startDate = monday,
+                        endDate = tuesday,
+                    )
+                )
+                .also { placementId ->
+                    tx.insert(
+                        DevDaycareGroupPlacement(
+                            daycarePlacementId = placementId,
+                            daycareGroupId = group.id,
+                            startDate = monday,
+                            endDate = tuesday,
+                        )
+                    )
+                }
+            listOf(
+                    // Two meals on Monday
+                    DevReservation(
+                        childId = child.id,
+                        date = monday,
+                        startTime = LocalTime.of(8, 0),
+                        endTime = LocalTime.of(12, 0),
+                        createdBy = employee.evakaUserId,
+                    )
+                )
+                .forEach { tx.insert(it) }
+        }
+
+        createAndSendNekkuOrder(client, db, group.id, monday, 0.9)
+
+        assertEquals(
+            listOf(
+                NekkuClient.NekkuOrders(
+                    listOf(
+                        NekkuClient.NekkuOrder(
+                            monday.toString(),
+                            "2501K6089",
+                            group.id.toString(),
+                            listOf(NekkuClient.Item("31000011", 1, null)),
+                            group.name,
+                        )
+                    ),
+                    dryRun = false,
+                )
             ),
             client.orders,
         )
@@ -976,8 +1450,8 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 .forEach { tx.insert(it) }
         }
 
-        createAndSendNekkuOrder(client, db, group.id, monday)
-        createAndSendNekkuOrder(client, db, group.id, tuesday)
+        createAndSendNekkuOrder(client, db, group.id, monday, 0.9)
+        createAndSendNekkuOrder(client, db, group.id, tuesday, 0.9)
 
         assertEquals(
             listOf(
@@ -1098,8 +1572,8 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 }
         }
 
-        createAndSendNekkuOrder(client, db, group.id, monday)
-        createAndSendNekkuOrder(client, db, group.id, tuesday)
+        createAndSendNekkuOrder(client, db, group.id, monday, 0.9)
+        createAndSendNekkuOrder(client, db, group.id, tuesday, 0.9)
 
         assertEquals(
             listOf(
@@ -1225,8 +1699,8 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 .forEach { tx.insert(it) }
         }
 
-        createAndSendNekkuOrder(client, db, group.id, monday)
-        createAndSendNekkuOrder(client, db, group.id, tuesday)
+        createAndSendNekkuOrder(client, db, group.id, monday, 0.9)
+        createAndSendNekkuOrder(client, db, group.id, tuesday, 0.9)
 
         assertEquals(
             listOf(
@@ -1337,8 +1811,8 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 .forEach { tx.insert(it) }
         }
 
-        createAndSendNekkuOrder(client, db, group.id, monday)
-        createAndSendNekkuOrder(client, db, group.id, tuesday)
+        createAndSendNekkuOrder(client, db, group.id, monday, 0.9)
+        createAndSendNekkuOrder(client, db, group.id, tuesday, 0.9)
 
         assertEquals(
             listOf(
