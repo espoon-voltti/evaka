@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.sficlient
 
+import fi.espoo.evaka.sficlient.rest.GetEventsResponse
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.concurrent.locks.ReentrantReadWriteLock
 import kotlin.concurrent.read
@@ -20,6 +21,10 @@ class MockSfiMessagesClient : SfiMessagesClient {
     }
 
     override fun rotatePassword() {}
+
+    override fun getEvents(continuationToken: String?): GetEventsResponse {
+        TODO("Not yet implemented")
+    }
 
     companion object {
         private val data = mutableMapOf<MessageId, SfiMessage>()

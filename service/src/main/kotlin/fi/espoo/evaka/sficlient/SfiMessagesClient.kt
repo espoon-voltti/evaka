@@ -5,11 +5,14 @@
 package fi.espoo.evaka.sficlient
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import fi.espoo.evaka.sficlient.rest.GetEventsResponse
 
 interface SfiMessagesClient {
     fun send(msg: SfiMessage)
 
     fun rotatePassword()
+
+    fun getEvents(continuationToken: String?): GetEventsResponse
 }
 
 @JsonIgnoreProperties(value = ["language"]) // ignore legacy properties
