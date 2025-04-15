@@ -855,8 +855,8 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 .forEach { tx.insert(it) }
         }
 
-        createAndSendNekkuOrder(client, db, group.id, monday)
-        createAndSendNekkuOrder(client, db, group.id, tuesday)
+        createAndSendNekkuOrder(client, db, group.id, monday, 0.9)
+        createAndSendNekkuOrder(client, db, group.id, tuesday, 0.9)
 
         assertEquals(
             listOf(
@@ -990,8 +990,8 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             }
         }
 
-        createAndSendNekkuOrder(client, db, group.id, monday)
-        createAndSendNekkuOrder(client, db, group.id, tuesday)
+        createAndSendNekkuOrder(client, db, group.id, monday, 0.9)
+        createAndSendNekkuOrder(client, db, group.id, tuesday, 0.9)
 
         assertEquals(
             listOf(
@@ -1126,8 +1126,8 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             }
         }
 
-        createAndSendNekkuOrder(client, db, group.id, monday)
-        createAndSendNekkuOrder(client, db, group.id, tuesday)
+        createAndSendNekkuOrder(client, db, group.id, monday, 0.9)
+        createAndSendNekkuOrder(client, db, group.id, tuesday, 0.9)
 
         assertEquals(
             listOf(
@@ -1245,7 +1245,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 .forEach { tx.insert(it) }
         }
 
-        createAndSendNekkuOrder(client, db, group.id, monday)
+        createAndSendNekkuOrder(client, db, group.id, monday, 0.9)
 
         assertEquals(
             listOf(
@@ -1345,7 +1345,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 .forEach { tx.insert(it) }
         }
 
-        createAndSendNekkuOrder(client, db, group.id, monday)
+        createAndSendNekkuOrder(client, db, group.id, monday, 0.9)
 
         assertEquals(
             listOf(
@@ -1450,8 +1450,8 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 .forEach { tx.insert(it) }
         }
 
-        createAndSendNekkuOrder(client, db, group.id, monday)
-        createAndSendNekkuOrder(client, db, group.id, tuesday)
+        createAndSendNekkuOrder(client, db, group.id, monday, 0.9)
+        createAndSendNekkuOrder(client, db, group.id, tuesday, 0.9)
 
         assertEquals(
             listOf(
@@ -1572,8 +1572,8 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 }
         }
 
-        createAndSendNekkuOrder(client, db, group.id, monday)
-        createAndSendNekkuOrder(client, db, group.id, tuesday)
+        createAndSendNekkuOrder(client, db, group.id, monday, 0.9)
+        createAndSendNekkuOrder(client, db, group.id, tuesday, 0.9)
 
         assertEquals(
             listOf(
@@ -1699,8 +1699,8 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 .forEach { tx.insert(it) }
         }
 
-        createAndSendNekkuOrder(client, db, group.id, monday)
-        createAndSendNekkuOrder(client, db, group.id, tuesday)
+        createAndSendNekkuOrder(client, db, group.id, monday, 0.9)
+        createAndSendNekkuOrder(client, db, group.id, tuesday, 0.9)
 
         assertEquals(
             listOf(
@@ -1811,8 +1811,8 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 .forEach { tx.insert(it) }
         }
 
-        createAndSendNekkuOrder(client, db, group.id, monday)
-        createAndSendNekkuOrder(client, db, group.id, tuesday)
+        createAndSendNekkuOrder(client, db, group.id, monday, 0.9)
+        createAndSendNekkuOrder(client, db, group.id, tuesday, 0.9)
 
         assertEquals(
             listOf(
