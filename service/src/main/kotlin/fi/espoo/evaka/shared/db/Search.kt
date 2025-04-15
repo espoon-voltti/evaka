@@ -9,12 +9,6 @@ import fi.espoo.evaka.shared.utils.splitSearchText
 import fi.espoo.evaka.shared.utils.stripAccent
 import fi.espoo.evaka.shared.utils.stripNonAlphanumeric
 
-data class DBQuery(val query: String, val params: List<Binding<String>>)
-
-private const val freeTextParamName = "free_text"
-private val ssnParamName = { index: Int -> "ssn_$index" }
-private val dateParamName = { index: Int -> "date_$index" }
-
 /**
  * Returns a predicate that does a free text search using the given text on the given table names.
  *
@@ -61,43 +55,33 @@ fun personFreeTextSearchPredicate(tables: Collection<String>, searchText: String
     return PredicateSql.all(freeTextPredicateSql, ssnPredicateSql, datePredicateSql)
 }
 
-fun freeTextSearchQuery(tables: List<String>, searchText: String): DBQuery {
+fun freeTextSearchPredicate(tables: List<String>, searchText: String): PredicateSql {
     val ssnParams = findSsnParams(searchText)
     val dateParams = findDateParams(searchText)
     val freeTextString = searchText.let(removeSsnParams).let(removeDateParams)
 
-    val freeTextQuery =
+    val freeText =
         if (freeTextString.isNotBlank()) {
-            freeTextComputedColumnQuery(tables, freeTextParamName)
+            freeTextComputedColumnPredicate(tables, freeTextParamsToTsQuery(freeTextString))
         } else {
             null
         }
 
-    val ssnQuery =
+    val ssn =
         if (ssnParams.isNotEmpty()) {
-            ssnQuery(tables, ssnParams)
+            ssnPredicate(tables, ssnParams)
         } else {
             null
         }
 
-    val dateQuery =
+    val date =
         if (dateParams.isNotEmpty()) {
-            dateQuery(tables, dateParams)
+            datePredicate(tables, dateParams)
         } else {
             null
         }
 
-    val wholeQuery = listOfNotNull("true", freeTextQuery, ssnQuery, dateQuery).joinToString(" AND ")
-
-    val allParams =
-        (ssnParams.mapIndexed { index, param -> Binding.of(ssnParamName(index), param) } +
-                dateParams.mapIndexed { index, param -> Binding.of(dateParamName(index), param) } +
-                (Binding.of(freeTextParamName, freeTextParamsToTsQuery(freeTextString))).takeIf {
-                    freeTextString.isNotBlank()
-                })
-            .filterNotNull()
-
-    return DBQuery(wholeQuery, allParams)
+    return PredicateSql.allNotNull(freeText, ssn, date)
 }
 
 fun employeeFreeTextSearchPredicate(searchText: String): Predicate {
@@ -125,29 +109,17 @@ fun employeeFreeTextSearchPredicate(searchText: String): Predicate {
     return Predicate.allNotNull(ssnPredicate, freeTextPredicate)
 }
 
-fun disjointNumberQuery(
-    table: String,
-    column: String,
-    params: Collection<String>,
-): Pair<String, List<Binding<String>>> {
-    val numberParamName = { index: Int -> "${table}_${column}_$index" }
-    val numberParams =
-        params.mapIndexed { index, param -> Binding.of(numberParamName(index), param) }
-    val numberParamQuery =
-        params
-            .mapIndexed { index, _ -> "$table.$column::text = :${numberParamName(index)}" }
-            .joinToString(" OR ", "(", ")")
+fun disjointNumberPredicate(table: String, column: String, params: Collection<String>) =
+    PredicateSql.any(
+        params.map { param -> PredicateSql { where("$table.$column::text = ${bind(param)}") } }
+    )
 
-    return numberParamQuery to numberParams
-}
-
-private fun freeTextComputedColumnQuery(tables: List<String>, param: String): String {
-    return "(" +
-        tables.joinToString(" OR ") { table ->
-            "$table.freetext_vec @@ to_tsquery('simple', :$param)"
-        } +
-        ")"
-}
+private fun freeTextComputedColumnPredicate(tables: List<String>, query: String) =
+    PredicateSql.any(
+        tables.map { table ->
+            PredicateSql { where("$table.freetext_vec @@ to_tsquery('simple', ${bind(query)})") }
+        }
+    )
 
 private fun findSsnParams(str: String) =
     splitSearchText(str).filter(SSN_PATTERN.toRegex(RegexOption.IGNORE_CASE)::matches)
@@ -156,17 +128,18 @@ private val removeSsnParams: (String) -> String = {
     it.replace(SSN_PATTERN.toRegex(RegexOption.IGNORE_CASE), "")
 }
 
-private fun ssnQuery(tablePrefixes: List<String>, params: Collection<String>): String {
-    return params
-        .mapIndexed { index, _ ->
-            tablePrefixes
-                .map { table ->
-                    "lower($table.social_security_number) = lower(:${ssnParamName(index)})"
+private fun ssnPredicate(tablePrefixes: List<String>, params: Collection<String>) =
+    PredicateSql.all(
+        params.map { ssnParam ->
+            PredicateSql.any(
+                tablePrefixes.map { table ->
+                    PredicateSql {
+                        where("lower($table.social_security_number) = lower(${bind(ssnParam)})")
+                    }
                 }
-                .joinToString(" OR ", "(", ")")
+            )
         }
-        .joinToString(" AND ", "(", ")")
-}
+    )
 
 private val dateRegex = "^\\d{6}$".toRegex()
 
@@ -174,17 +147,18 @@ private fun findDateParams(str: String) = splitSearchText(str).filter(dateRegex:
 
 private val removeDateParams: (String) -> String = { it.replace(dateRegex, "") }
 
-private fun dateQuery(tables: List<String>, params: Collection<String>): String {
-    return params
-        .mapIndexed { index, _ ->
-            tables
-                .map { table ->
-                    "to_char($table.date_of_birth, 'DDMMYY') = :${dateParamName(index)}"
+private fun datePredicate(tables: List<String>, params: Collection<String>) =
+    PredicateSql.all(
+        params.map { param ->
+            PredicateSql.any(
+                tables.map { table ->
+                    PredicateSql {
+                        where("to_char($table.date_of_birth, 'DDMMYY') = ${bind(param)}")
+                    }
                 }
-                .joinToString(" OR ", "(", ")")
+            )
         }
-        .joinToString(" AND ", "(", ")")
-}
+    )
 
 fun freeTextParamsToTsQuery(searchText: String): String =
     searchText

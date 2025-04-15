@@ -73,7 +73,6 @@ SELECT
     gross_estimated_monthly_income,
     gross_other_income,
     gross_other_income_info,
-    entrepreneur_full_time,
     start_of_entrepreneurship,
     company_name,
     business_id,
@@ -309,101 +308,113 @@ fun Database.Read.readIncomeStatement(
         .exactlyOneOrNull { mapIncomeStatement(isCitizen = isCitizen) }
 }
 
-private fun Database.SqlStatement<*>.bindIncomeStatementBody(body: IncomeStatementBody) {
-    this.bind("startDate", body.startDate)
-    bind("endDate", body.endDate)
-    bind("grossIncomeSource", null as IncomeSource?)
-    bind("grossNoIncomeDescription", null as String?)
-    bind("grossEstimatedMonthlyIncome", null as Int?)
-    bind("grossOtherIncome", null as Array<OtherIncome>?)
-    this.bind("grossOtherIncomeInfo", "")
-    bind("fullTime", null as Boolean?)
-    bind("startOfEntrepreneurship", null as LocalDate?)
-    bind("companyName", "")
-    bind("businessId", "")
-    bind("spouseWorksInCompany", null as Boolean?)
-    bind("startupGrant", null as Boolean?)
-    bind("checkupConsent", null as Boolean?)
-    bind("selfEmployedAttachments", null as Boolean?)
-    bind("selfEmployedEstimatedMonthlyIncome", null as Int?)
-    bind("selfEmployedIncomeStartDate", null as LocalDate?)
-    bind("selfEmployedIncomeEndDate", null as LocalDate?)
-    bind("limitedCompanyIncomeSource", null as IncomeSource?)
-    bind("partnership", null as Boolean?)
-    bind("lightEntrepreneur", null as Boolean?)
-    this.bind("accountantName", "")
-    this.bind("accountantAddress", "")
-    this.bind("accountantPhone", "")
-    this.bind("accountantEmail", "")
-    bind("student", null as Boolean?)
-    bind("alimonyPayer", null as Boolean?)
-    bind("otherInfo", null as String?)
-    when (body) {
-        is IncomeStatementBody.HighestFee -> this.bind("type", IncomeStatementType.HIGHEST_FEE)
-        is IncomeStatementBody.ChildIncome -> {
-            this.bind("type", IncomeStatementType.CHILD_INCOME)
-            this.bind("otherInfo", body.otherInfo)
-        }
-        is IncomeStatementBody.Income -> {
-            this.bind("type", IncomeStatementType.INCOME)
-            if (body.gross != null) bindGross(body.gross)
-            if (body.entrepreneur != null) bindEntrepreneur(body.entrepreneur)
-            this.bind("student", body.student)
-            this.bind("alimonyPayer", body.alimonyPayer)
-            this.bind("otherInfo", body.otherInfo)
+class IncomeStatementBindings(
+    val startDate: LocalDate,
+    val endDate: LocalDate?,
+    var type: IncomeStatementType? = null,
+    var grossIncomeSource: IncomeSource? = null,
+    var grossNoIncomeDescription: String? = null,
+    var grossEstimatedMonthlyIncome: Int? = null,
+    var grossOtherIncome: Set<OtherIncome>? = null,
+    var grossOtherIncomeInfo: String = "",
+    var startOfEntrepreneurship: LocalDate? = null,
+    var companyName: String = "",
+    var businessId: String = "",
+    var spouseWorksInCompany: Boolean? = null,
+    var startupGrant: Boolean? = null,
+    var checkupConsent: Boolean? = null,
+    var selfEmployedAttachments: Boolean? = null,
+    var selfEmployedEstimatedMonthlyIncome: Int? = null,
+    var selfEmployedIncomeStartDate: LocalDate? = null,
+    var selfEmployedIncomeEndDate: LocalDate? = null,
+    var limitedCompanyIncomeSource: IncomeSource? = null,
+    var partnership: Boolean? = null,
+    var lightEntrepreneur: Boolean? = null,
+    var accountantName: String = "",
+    var accountantAddress: String = "",
+    var accountantPhone: String = "",
+    var accountantEmail: String = "",
+    var student: Boolean? = null,
+    var alimonyPayer: Boolean? = null,
+    var otherInfo: String? = null,
+) {
+    companion object {
+        fun of(body: IncomeStatementBody): IncomeStatementBindings {
+            val bindings =
+                IncomeStatementBindings(startDate = body.startDate, endDate = body.endDate)
+            bindings.bindIncomeStatementBody(body)
+            return bindings
         }
     }
 }
 
-private fun Database.SqlStatement<*>.bindGross(gross: Gross) {
+private fun IncomeStatementBindings.bindIncomeStatementBody(body: IncomeStatementBody) {
+    when (body) {
+        is IncomeStatementBody.HighestFee -> type = IncomeStatementType.HIGHEST_FEE
+        is IncomeStatementBody.ChildIncome -> {
+            type = IncomeStatementType.CHILD_INCOME
+            otherInfo = body.otherInfo
+        }
+        is IncomeStatementBody.Income -> {
+            type = IncomeStatementType.INCOME
+            if (body.gross != null) bindGross(body.gross)
+            if (body.entrepreneur != null) bindEntrepreneur(body.entrepreneur)
+            student = body.student
+            alimonyPayer = body.alimonyPayer
+            otherInfo = body.otherInfo
+        }
+    }
+}
+
+private fun IncomeStatementBindings.bindGross(gross: Gross) {
     when (gross) {
         is Gross.Income -> {
-            this.bind("grossIncomeSource", gross.incomeSource)
-            this.bind("grossEstimatedMonthlyIncome", gross.estimatedMonthlyIncome)
-            this.bind("grossOtherIncome", gross.otherIncome)
-            this.bind("grossOtherIncomeInfo", gross.otherIncomeInfo)
+            grossIncomeSource = gross.incomeSource
+            grossEstimatedMonthlyIncome = gross.estimatedMonthlyIncome
+            grossOtherIncome = gross.otherIncome
+            grossOtherIncomeInfo = gross.otherIncomeInfo
         }
         is Gross.NoIncome -> {
-            this.bind("grossNoIncomeDescription", gross.noIncomeDescription)
+            grossNoIncomeDescription = gross.noIncomeDescription
         }
     }.exhaust()
 }
 
-private fun Database.SqlStatement<*>.bindEntrepreneur(entrepreneur: Entrepreneur) {
+private fun IncomeStatementBindings.bindEntrepreneur(entrepreneur: Entrepreneur) {
     if (entrepreneur.selfEmployed != null) bindSelfEmployed(entrepreneur.selfEmployed)
     if (entrepreneur.limitedCompany != null) bindLimitedCompany(entrepreneur.limitedCompany)
-    this.bind("startOfEntrepreneurship", entrepreneur.startOfEntrepreneurship)
-    this.bind("companyName", entrepreneur.companyName)
-    this.bind("businessId", entrepreneur.businessId)
-    this.bind("spouseWorksInCompany", entrepreneur.spouseWorksInCompany)
-    this.bind("startupGrant", entrepreneur.startupGrant)
-    this.bind("checkupConsent", entrepreneur.checkupConsent)
-    this.bind("partnership", entrepreneur.partnership)
-    this.bind("lightEntrepreneur", entrepreneur.lightEntrepreneur)
+    startOfEntrepreneurship = entrepreneur.startOfEntrepreneurship
+    companyName = entrepreneur.companyName
+    businessId = entrepreneur.businessId
+    spouseWorksInCompany = entrepreneur.spouseWorksInCompany
+    startupGrant = entrepreneur.startupGrant
+    checkupConsent = entrepreneur.checkupConsent
+    partnership = entrepreneur.partnership
+    lightEntrepreneur = entrepreneur.lightEntrepreneur
     if (entrepreneur.accountant != null) bindAccountant(entrepreneur.accountant)
 }
 
-private fun Database.SqlStatement<*>.bindSelfEmployed(selfEmployed: SelfEmployed) {
-    this.bind("selfEmployedAttachments", selfEmployed.attachments)
+private fun IncomeStatementBindings.bindSelfEmployed(selfEmployed: SelfEmployed) {
+    selfEmployedAttachments = selfEmployed.attachments
     if (selfEmployed.estimatedIncome != null)
         bindSelfEmployedEstimation(selfEmployed.estimatedIncome)
 }
 
-private fun Database.SqlStatement<*>.bindSelfEmployedEstimation(estimation: EstimatedIncome) {
-    this.bind("selfEmployedEstimatedMonthlyIncome", estimation.estimatedMonthlyIncome)
-    this.bind("selfEmployedIncomeStartDate", estimation.incomeStartDate)
-    bind("selfEmployedIncomeEndDate", estimation.incomeEndDate)
+private fun IncomeStatementBindings.bindSelfEmployedEstimation(estimation: EstimatedIncome) {
+    selfEmployedEstimatedMonthlyIncome = estimation.estimatedMonthlyIncome
+    selfEmployedIncomeStartDate = estimation.incomeStartDate
+    selfEmployedIncomeEndDate = estimation.incomeEndDate
 }
 
-private fun Database.SqlStatement<*>.bindLimitedCompany(limitedCompany: LimitedCompany) {
-    this.bind("limitedCompanyIncomeSource", limitedCompany.incomeSource)
+private fun IncomeStatementBindings.bindLimitedCompany(limitedCompany: LimitedCompany) {
+    limitedCompanyIncomeSource = limitedCompany.incomeSource
 }
 
-private fun Database.SqlStatement<*>.bindAccountant(accountant: Accountant) {
-    this.bind("accountantName", accountant.name)
-    this.bind("accountantAddress", accountant.address)
-    this.bind("accountantPhone", accountant.phone)
-    this.bind("accountantEmail", accountant.email)
+private fun IncomeStatementBindings.bindAccountant(accountant: Accountant) {
+    accountantName = accountant.name
+    accountantAddress = accountant.address
+    accountantPhone = accountant.phone
+    accountantEmail = accountant.email
 }
 
 fun Database.Transaction.insertIncomeStatement(
@@ -413,9 +424,10 @@ fun Database.Transaction.insertIncomeStatement(
     body: IncomeStatementBody,
     draft: Boolean,
 ): IncomeStatementId {
-    @Suppress("DEPRECATION")
-    return createQuery(
-            """
+    val bindings = IncomeStatementBindings.of(body)
+    return createQuery {
+            sql(
+                """
 INSERT INTO income_statement (
     created_at,
     created_by,
@@ -424,24 +436,23 @@ INSERT INTO income_statement (
     status,
     sent_at,
     person_id,
-    start_date, 
+    start_date,
     end_date,
-    type, 
-    gross_income_source, 
-    gross_no_income_description, 
+    type,
+    gross_income_source,
+    gross_no_income_description,
     gross_estimated_monthly_income,
-    gross_other_income, 
+    gross_other_income,
     gross_other_income_info,
-    entrepreneur_full_time,
     start_of_entrepreneurship,
     company_name,
-    business_id, 
+    business_id,
     spouse_works_in_company,
     startup_grant,
     checkup_consent,
     self_employed_attachments,
     self_employed_estimated_monthly_income,
-    self_employed_income_start_date, 
+    self_employed_income_start_date,
     self_employed_income_end_date,
     limited_company_income_source,
     partnership,
@@ -454,53 +465,47 @@ INSERT INTO income_statement (
     alimony_payer,
     other_info
 ) VALUES (
-    :now,
-    :userId,
-    :now,
-    :userId,
-    :status,
-    :sentAt,
-    :personId,
-    :startDate,
-    :endDate,
-    :type,
-    :grossIncomeSource,
-    :grossNoIncomeDescription,
-    :grossEstimatedMonthlyIncome,
-    :grossOtherIncome :: other_income_type[],
-    :grossOtherIncomeInfo,
-    :fullTime,
-    :startOfEntrepreneurship,
-    :companyName,
-    :businessId,
-    :spouseWorksInCompany,
-    :startupGrant,
-    :checkupConsent,
-    :selfEmployedAttachments,
-    :selfEmployedEstimatedMonthlyIncome,
-    :selfEmployedIncomeStartDate,
-    :selfEmployedIncomeEndDate,
-    :limitedCompanyIncomeSource,
-    :partnership,
-    :lightEntrepreneur,
-    :accountantName,
-    :accountantAddress,
-    :accountantPhone,
-    :accountantEmail,
-    :student,
-    :alimonyPayer,
-    :otherInfo
+    ${bind(now)},
+    ${bind(userId)},
+    ${bind(now)},
+    ${bind(userId)},
+    ${bind(if (draft) IncomeStatementStatus.DRAFT else IncomeStatementStatus.SENT)},
+    ${bind(if (draft) null else now)},
+    ${bind(personId)},
+    ${bind(bindings.startDate)},
+    ${bind(bindings.endDate)},
+    ${bind(bindings.type)},
+    ${bind(bindings.grossIncomeSource)},
+    ${bind(bindings.grossNoIncomeDescription)},
+    ${bind(bindings.grossEstimatedMonthlyIncome)},
+    ${bind(bindings.grossOtherIncome)},
+    ${bind(bindings.grossOtherIncomeInfo)},
+    ${bind(bindings.startOfEntrepreneurship)},
+    ${bind(bindings.companyName)},
+    ${bind(bindings.businessId)},
+    ${bind(bindings.spouseWorksInCompany)},
+    ${bind(bindings.startupGrant)},
+    ${bind(bindings.checkupConsent)},
+    ${bind(bindings.selfEmployedAttachments)},
+    ${bind(bindings.selfEmployedEstimatedMonthlyIncome)},
+    ${bind(bindings.selfEmployedIncomeStartDate)},
+    ${bind(bindings.selfEmployedIncomeEndDate)},
+    ${bind(bindings.limitedCompanyIncomeSource)},
+    ${bind(bindings.partnership)},
+    ${bind(bindings.lightEntrepreneur)},
+    ${bind(bindings.accountantName)},
+    ${bind(bindings.accountantAddress)},
+    ${bind(bindings.accountantPhone)},
+    ${bind(bindings.accountantEmail)},
+    ${bind(bindings.student)},
+    ${bind(bindings.alimonyPayer)},
+    ${bind(bindings.otherInfo)}
 )
 RETURNING id
         """
-        )
-        .bind("now", now)
-        .bind("userId", userId)
-        .bind("personId", personId)
-        .bind("status", if (draft) IncomeStatementStatus.DRAFT else IncomeStatementStatus.SENT)
-        .bind("sentAt", if (draft) null else now)
-        .also { it.bindIncomeStatementBody(body) }
-        .exactlyOne<IncomeStatementId>()
+            )
+        }
+        .exactlyOne()
 }
 
 fun Database.Transaction.updateIncomeStatement(
@@ -510,52 +515,47 @@ fun Database.Transaction.updateIncomeStatement(
     body: IncomeStatementBody,
     draft: Boolean,
 ) {
-    @Suppress("DEPRECATION")
-    createUpdate(
-            """
+    val bindings = IncomeStatementBindings.of(body)
+    createUpdate {
+            sql(
+                """
 UPDATE income_statement SET
-    modified_at = :now,
-    modified_by = :userId,
-    start_date = :startDate,
-    end_date = :endDate,
-    status = CASE WHEN status = 'DRAFT'::income_statement_status THEN :status ELSE status END,
-    sent_at = coalesce(sent_at, :sentAt),
-    type = :type,
-    gross_income_source = :grossIncomeSource,
-    gross_no_income_description = :grossNoIncomeDescription,
-    gross_estimated_monthly_income = :grossEstimatedMonthlyIncome,
-    gross_other_income = :grossOtherIncome :: other_income_type[],
-    gross_other_income_info = :grossOtherIncomeInfo,
-    entrepreneur_full_time = :fullTime,
-    start_of_entrepreneurship = :startOfEntrepreneurship,
-    company_name = :companyName,
-    business_id = :businessId,
-    spouse_works_in_company = :spouseWorksInCompany,
-    startup_grant = :startupGrant,
-    checkup_consent = :checkupConsent,
-    self_employed_attachments = :selfEmployedAttachments,
-    self_employed_estimated_monthly_income = :selfEmployedEstimatedMonthlyIncome,
-    self_employed_income_start_date = :selfEmployedIncomeStartDate,
-    self_employed_income_end_date = :selfEmployedIncomeEndDate,
-    limited_company_income_source = :limitedCompanyIncomeSource,
-    partnership = :partnership,
-    light_entrepreneur = :lightEntrepreneur,
-    accountant_name = :accountantName,
-    accountant_address = :accountantAddress,
-    accountant_phone = :accountantPhone,
-    accountant_email = :accountantEmail,
-    student = :student,
-    alimony_payer = :alimonyPayer,
-    other_info = :otherInfo
-WHERE id = :id
+    modified_at = ${bind(now)},
+    modified_by = ${bind(userId)},
+    status = CASE WHEN status = 'DRAFT'::income_statement_status THEN ${bind(if (draft) IncomeStatementStatus.DRAFT else IncomeStatementStatus.SENT)} ELSE status END,
+    sent_at = coalesce(sent_at, ${bind(if (draft) null else now)}),
+    start_date = ${bind(bindings.startDate)},
+    end_date = ${bind(bindings.endDate)},
+    type = ${bind(bindings.type)},
+    gross_income_source = ${bind(bindings.grossIncomeSource)},
+    gross_no_income_description = ${bind(bindings.grossNoIncomeDescription)},
+    gross_estimated_monthly_income = ${bind(bindings.grossEstimatedMonthlyIncome)},
+    gross_other_income = ${bind(bindings.grossOtherIncome)},
+    gross_other_income_info = ${bind(bindings.grossOtherIncomeInfo)},
+    start_of_entrepreneurship = ${bind(bindings.startOfEntrepreneurship)},
+    company_name = ${bind(bindings.companyName)},
+    business_id = ${bind(bindings.businessId)},
+    spouse_works_in_company = ${bind(bindings.spouseWorksInCompany)},
+    startup_grant = ${bind(bindings.startupGrant)},
+    checkup_consent = ${bind(bindings.checkupConsent)},
+    self_employed_attachments = ${bind(bindings.selfEmployedAttachments)},
+    self_employed_estimated_monthly_income = ${bind(bindings.selfEmployedEstimatedMonthlyIncome)},
+    self_employed_income_start_date = ${bind(bindings.selfEmployedIncomeStartDate)},
+    self_employed_income_end_date = ${bind(bindings.selfEmployedIncomeEndDate)},
+    limited_company_income_source = ${bind(bindings.limitedCompanyIncomeSource)},
+    partnership = ${bind(bindings.partnership)},
+    light_entrepreneur = ${bind(bindings.lightEntrepreneur)},
+    accountant_name = ${bind(bindings.accountantName)},
+    accountant_address = ${bind(bindings.accountantAddress)},
+    accountant_phone = ${bind(bindings.accountantPhone)},
+    accountant_email = ${bind(bindings.accountantEmail)},
+    student = ${bind(bindings.student)},
+    alimony_payer = ${bind(bindings.alimonyPayer)},
+    other_info = ${bind(bindings.otherInfo)}
+WHERE id = ${bind(incomeStatementId)}
         """
-        )
-        .bind("id", incomeStatementId)
-        .bind("now", now)
-        .bind("userId", userId)
-        .bind("status", if (draft) IncomeStatementStatus.DRAFT else IncomeStatementStatus.SENT)
-        .bind("sentAt", if (draft) null else now)
-        .also { it.bindIncomeStatementBody(body) }
+            )
+        }
         .updateExactlyOne()
 }
 
@@ -602,12 +602,12 @@ WHERE id = ${bind(incomeStatementId)}
 }
 
 fun Database.Transaction.removeIncomeStatement(id: IncomeStatementId) {
-    @Suppress("DEPRECATION")
-    createUpdate("UPDATE attachment SET income_statement_id = NULL WHERE income_statement_id = :id")
-        .bind("id", id)
-        .execute()
-    @Suppress("DEPRECATION")
-    createUpdate("DELETE FROM income_statement WHERE id = :id").bind("id", id).execute()
+    execute {
+        sql(
+            "UPDATE attachment SET income_statement_id = NULL WHERE income_statement_id = ${bind(id)}"
+        )
+    }
+    execute { sql("DELETE FROM income_statement WHERE id = ${bind(id)}") }
 }
 
 data class IncomeStatementAwaitingHandler(
@@ -781,27 +781,26 @@ LIMIT ${bind(pageSize)} OFFSET ${bind((page - 1) * pageSize)}
 }
 
 fun Database.Read.readIncomeStatementStartDates(personId: PersonId): List<LocalDate> =
-    @Suppress("DEPRECATION")
-    createQuery("SELECT start_date FROM income_statement WHERE person_id = :personId")
-        .bind("personId", personId)
-        .toList<LocalDate>()
+    createQuery {
+            sql("SELECT start_date FROM income_statement WHERE person_id = ${bind(personId)}")
+        }
+        .toList()
 
 fun Database.Read.unhandledIncomeStatementExistsForStartDate(
     personId: PersonId,
     startDate: LocalDate,
 ): Boolean =
-    @Suppress("DEPRECATION")
-    createQuery(
-            """
+    createQuery {
+            sql(
+                """
                 SELECT EXISTS (
                     SELECT FROM income_statement 
-                    WHERE person_id = :personId AND start_date = :startDate AND status != 'HANDLED'
+                    WHERE person_id = ${bind(personId)} AND start_date = ${bind(startDate)} AND status != 'HANDLED'
                 )
             """
-        )
-        .bind("personId", personId)
-        .bind("startDate", startDate)
-        .exactlyOne<Boolean>()
+            )
+        }
+        .exactlyOne()
 
 data class ChildBasicInfo(val id: ChildId, val firstName: String, val lastName: String)
 
@@ -809,24 +808,21 @@ fun Database.Read.getIncomeStatementChildrenByGuardian(
     guardianId: PersonId,
     today: LocalDate,
 ): List<ChildBasicInfo> =
-    @Suppress("DEPRECATION")
-    this.createQuery(
-            """
+    this.createQuery {
+            sql(
+                """
 SELECT
     DISTINCT p.id, p.first_name, p.last_name, p.date_of_birth
 FROM guardian g
     INNER JOIN person p ON g.child_id = p.id
-    LEFT JOIN placement pl ON pl.child_id = p.id AND pl.end_date >= :today::date
-WHERE g.guardian_id = :guardianId
-    AND pl.type = ANY(:invoicedPlacementTypes::placement_type[])
+    LEFT JOIN placement pl ON pl.child_id = p.id AND pl.end_date >= ${bind(today)}
+WHERE g.guardian_id = ${bind(guardianId)}
+    AND pl.type = ANY(${bind(PlacementType.invoiced)})
 ORDER BY p.date_of_birth, p.last_name, p.first_name, p.id
         """
-                .trimIndent()
-        )
-        .bind("today", today)
-        .bind("guardianId", guardianId)
-        .bind("invoicedPlacementTypes", PlacementType.invoiced)
-        .toList<ChildBasicInfo>()
+            )
+        }
+        .toList()
 
 data class PartnerIncomeStatementStatus(val name: String, val hasIncomeStatement: Boolean)
 
