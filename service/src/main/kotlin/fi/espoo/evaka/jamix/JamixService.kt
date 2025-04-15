@@ -396,8 +396,13 @@ interface JamixClient {
     fun getTextures(): List<JamixTexture>
 }
 
+class JacksonJamixSerializer(private val jsonMapper: JsonMapper) {
+    fun serialize(value: Any?): String = jsonMapper.writeValueAsString(value)
+}
+
 class JamixHttpClient(private val env: JamixEnv, private val jsonMapper: JsonMapper) : JamixClient {
     private val fuel = FuelManager()
+    private val serializer = JacksonJamixSerializer(jsonMapper)
 
     override fun getCustomers(): List<JamixClient.Customer> =
         request(Method.GET, env.url.resolve("customers"))
@@ -418,7 +423,7 @@ class JamixHttpClient(private val env: JamixEnv, private val jsonMapper: JsonMap
                 .timeoutRead(120000)
                 .authentication()
                 .basic(env.user, env.password.value)
-                .let { if (body != null) it.jsonBody(jsonMapper.writeValueAsString(body)) else it }
+                .let { if (body != null) it.jsonBody(serializer.serialize(body)) else it }
                 .responseString()
         return when (result) {
             is Result.Success -> {
