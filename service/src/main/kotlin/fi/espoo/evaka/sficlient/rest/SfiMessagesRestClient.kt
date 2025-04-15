@@ -334,6 +334,36 @@ class SfiMessagesRestClient(
         cachedPassword.expire(current.password)
     }
 
+    override fun getEvents(continuationToken: String?): GetEventsResponse {
+        logger.info { "Requesting suomi.fi events" + if (!continuationToken.isNullOrEmpty()) " with continuationToken $continuationToken" else "" }
+
+        val url = config.urls.events.newBuilder().apply {
+            if (!continuationToken.isNullOrBlank()) {
+                addQueryParameter("continuationToken", continuationToken)
+            }
+        }.build()
+
+        httpClient
+            .newCall(
+                Request.Builder()
+                    .url(url)
+                    .header("Accept", "application/json")
+                    .get()
+                    .build()
+            )
+            .execute()
+            .use { response ->
+                if (response.isSuccessful) {
+                    return jsonResponseBody<GetEventsResponse>(response)
+                } else {
+                    val body = jsonResponseBody<ApiError>(response)
+                    error(
+                        "Message request failed with HTTP ${response.code} ${response.message}: $body"
+                    )
+                }
+            }
+    }
+
     private fun generatePassword(): Sensitive<String> =
         Sensitive(
             (
