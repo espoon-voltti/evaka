@@ -22,13 +22,13 @@ export function qrCodeSvg(data: string): { size: number; path: string } {
 }
 
 function QrCode({
-  url,
+  text,
   className
 }: {
-  url: string
+  text: string
   className?: string | undefined
 }) {
-  const { size, path } = useMemo(() => qrCodeSvg(url), [url])
+  const { size, path } = useMemo(() => qrCodeSvg(text), [text])
   return (
     <div className={className}>
       <svg

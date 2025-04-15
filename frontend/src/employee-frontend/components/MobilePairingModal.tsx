@@ -201,6 +201,7 @@ export default React.memo(function MobilePairingModal({
 function Phase1({ challengeKey }: { challengeKey: string }) {
   const { i18n } = useTranslation()
   const [addWithQrCode, useAddWithQrCode] = useBoolean(true)
+
   return (
     <>
       <Radio
@@ -214,9 +215,7 @@ function Phase1({ challengeKey }: { challengeKey: string }) {
           <Gap size="s" />
           <Centered>{i18n.mobilePairingModal.readQrCode}</Centered>
           <Gap size="s" />
-          <QrCode
-            url={`${window.location.origin}/employee/mobile/pairing?challengeKey=${challengeKey}`}
-          />
+          <QrCode text={challengeKey} />
         </>
       )}
       <Gap size="m" />

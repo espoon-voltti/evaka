@@ -499,6 +499,9 @@ export const fi = {
     wizard: {
       title: 'eVaka-mobiilin käyttöönotto',
       welcome: 'Tervetuloa käyttämään eVaka-mobiilia!',
+      useQrCode: 'Lue QR-koodi',
+      camera: 'Kohdista QR-koodi kameraan',
+      or: 'tai',
       text1: 'Syötä eVakasta saatava 12-merkkinen koodi kenttään alla.',
       text2: 'Syötä alla oleva vahvistuskoodi eVakaan.',
       text3: 'eVaka-mobiili on nyt käytössä tässä laitteessa.',

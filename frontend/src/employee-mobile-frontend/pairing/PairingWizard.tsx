@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { BrowserQRCodeReader, IScannerControls } from '@zxing/browser'
 import React, {
   Fragment,
   useCallback,
@@ -9,11 +10,12 @@ import React, {
   useEffect,
   useState
 } from 'react'
-import { useSearchParams } from 'react-router'
 import styled from 'styled-components'
 
 import { Loading, Result, wrapResult } from 'lib-common/api'
 import { Pairing } from 'lib-common/generated/api-types/pairing'
+import { useUniqueId } from 'lib-common/utils/useUniqueId'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import InputField from 'lib-components/atoms/form/InputField'
 import { fontWeights, P } from 'lib-components/typography'
@@ -117,14 +119,26 @@ export default React.memo(function ParingWizard() {
     setPhase(2)
   }, [])
 
-  // If challenge key is in the URL, send it right away
-  const [searchParams] = useSearchParams()
-  const initialChallengeKey = searchParams.get('challengeKey') ?? ''
-  useEffect(() => {
-    if (initialChallengeKey) {
-      void sendRequest(initialChallengeKey)
-    }
-  }, [initialChallengeKey, sendRequest])
+  const [qr, setQr] = useState(false)
+  const videoId = useUniqueId()
+
+  const startQr = useCallback(() => {
+    setQr(true)
+    const qrCodeReader = new BrowserQRCodeReader()
+
+    let controls: IScannerControls | undefined = undefined
+    void qrCodeReader
+      .decodeFromConstraints({ video: true }, videoId, (result) => {
+        if (result) {
+          const challengeKey = result.getText()
+          void sendRequest(challengeKey)
+          controls?.stop()
+        }
+      })
+      .then((c) => {
+        controls = c
+      })
+  }, [sendRequest, videoId])
 
   return (
     <Fragment>
@@ -136,7 +150,18 @@ export default React.memo(function ParingWizard() {
               <PhaseTitle data-qa="mobile-pairing-wizard-title-1">
                 {i18n.mobile.wizard.title}
               </PhaseTitle>
+              {qr ? (
+                <>
+                  <section>
+                    <P centered>{i18n.mobile.wizard.camera}</P>
+                  </section>
+                  <CameraVideo muted id={videoId} />
+                </>
+              ) : (
+                <Button text={i18n.mobile.wizard.useQrCode} onClick={startQr} />
+              )}
               <section>
+                <P centered>{i18n.mobile.wizard.or}</P>
                 <P centered>{i18n.mobile.wizard.text1}</P>
               </section>
               <Flex>
@@ -198,3 +223,7 @@ export default React.memo(function ParingWizard() {
     </Fragment>
   )
 })
+
+const CameraVideo = styled.video`
+  width: 100%;
+`
