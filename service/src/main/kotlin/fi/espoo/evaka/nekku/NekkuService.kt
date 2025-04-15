@@ -453,7 +453,7 @@ private fun getNekkuProductNumber(
     nekkuProducts: List<NekkuProduct>,
     nekkuProductMealTime: NekkuProductMealTime,
     nekkuChildInfo: NekkuChildInfo,
-    unitSize: String,
+    customerTypes: String,
 ): String {
 
     val filteredNekkuProducts =
@@ -461,22 +461,22 @@ private fun getNekkuProductNumber(
             it.mealTime?.contains(nekkuProductMealTime) ?: false &&
                 it.mealType == nekkuChildInfo.mealType &&
                 it.optionsId == nekkuChildInfo.optionsId &&
-                it.unitSize == unitSize
+                it.customerTypes.contains(customerTypes)
         }
 
     if (filteredNekkuProducts.isEmpty()) {
         logger.info {
-            "Cannot find any Nekku Product from database with unitsize=$unitSize optionsId=${nekkuChildInfo.optionsId} mealtype=${nekkuChildInfo.mealType} mealtime=${nekkuProductMealTime.description}"
+            "Cannot find any Nekku Product from database with unitsize=$customerTypes optionsId=${nekkuChildInfo.optionsId} mealtype=${nekkuChildInfo.mealType} mealtime=${nekkuProductMealTime.description}"
         }
         error(
-            "Cannot find any Nekku Product from database with unitsize=$unitSize optionsId=${nekkuChildInfo.optionsId} mealtype=${nekkuChildInfo.mealType} mealtime=${nekkuProductMealTime.description}"
+            "Cannot find any Nekku Product from database with unitsize=$customerTypes optionsId=${nekkuChildInfo.optionsId} mealtype=${nekkuChildInfo.mealType} mealtime=${nekkuProductMealTime.description}"
         )
     } else if (filteredNekkuProducts.count() > 1) {
         logger.info {
-            "Found too many Nekku Products from database with unitsize=$unitSize optionsId=${nekkuChildInfo.optionsId} mealtype=${nekkuChildInfo.mealType} mealtime=${nekkuProductMealTime.description}"
+            "Found too many Nekku Products from database with unitsize=$customerTypes optionsId=${nekkuChildInfo.optionsId} mealtype=${nekkuChildInfo.mealType} mealtime=${nekkuProductMealTime.description}"
         }
         error(
-            "Found too many Nekku Products from database with unitsize=$unitSize optionsId=${nekkuChildInfo.optionsId} mealtype=${nekkuChildInfo.mealType} mealtime=${nekkuProductMealTime.description}"
+            "Found too many Nekku Products from database with unitsize=$customerTypes optionsId=${nekkuChildInfo.optionsId} mealtype=${nekkuChildInfo.mealType} mealtime=${nekkuProductMealTime.description}"
         )
     } else {
         return filteredNekkuProducts.first().sku
