@@ -68,22 +68,22 @@ fun Database.Transaction.setCustomerNumbers(customerNumbers: List<CustomerNumber
     executeBatch(customerNumbers) {
         sql(
             """
-INSERT INTO nekku_customer (number, name, customer_group, unit_size)
+INSERT INTO nekku_customer (number, name, customer_group, customer_type)
 VALUES (
     ${bind{it.number}},
     ${bind{it.name}},
     ${bind{it.group}},
-    ${bind{it.unit_size}}
+    ${bind{it.customerType}}
 )
 ON CONFLICT (number) DO 
 UPDATE SET
   name = excluded.name,
   customer_group = excluded.customer_group,
-  unit_size = excluded.unit_size
+  customer_type = excluded.customer_type
 WHERE
     nekku_customer.name <> excluded.name OR
     nekku_customer.customer_group <> excluded.customer_group OR
-    nekku_customer.unit_size <> excluded.unit_size;
+    nekku_customer.customer_type <> excluded.customer_type;
 """
         )
     }
