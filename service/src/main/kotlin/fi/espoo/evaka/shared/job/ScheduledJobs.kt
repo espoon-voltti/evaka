@@ -34,6 +34,7 @@ import fi.espoo.evaka.pis.deactivateInactiveEmployees
 import fi.espoo.evaka.reports.freezeVoucherValueReportRows
 import fi.espoo.evaka.reservations.MissingHolidayReservationsReminders
 import fi.espoo.evaka.reservations.MissingReservationsReminders
+import fi.espoo.evaka.sficlient.SfiAsyncJobs
 import fi.espoo.evaka.sficlient.SfiMessagesClient
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -268,6 +269,10 @@ enum class ScheduledJob(
             schedule = JobSchedule.cron("0 0 0 1 * *"), // first day of month
         ),
     ),
+    GetSfiEvents(
+        ScheduledJobs::getSfiEvents,
+        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(3, 30))),
+    ),
     CleanTitaniaErrors(
         ScheduledJobs::cleanTitaniaErrors,
         ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(3, 40))),
@@ -308,6 +313,7 @@ class ScheduledJobs(
     private val nekkuService: NekkuService,
     private val aromiService: AromiService,
     private val sfiMessagesClient: SfiMessagesClient?,
+    private val sfiAsyncJobs: SfiAsyncJobs,
     private val passwordBlacklist: PasswordBlacklist,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     env: ScheduledJobsEnv<ScheduledJob>,
@@ -599,4 +605,8 @@ WHERE id IN (SELECT id FROM attendances_to_end)
             val employeeIds = tx.upsertAclRowsFromScheduled(today)
             employeeIds.forEach { tx.upsertEmployeeMessageAccount(it) }
         }
+
+    fun getSfiEvents(db: Database.Connection, clock: EvakaClock) {
+        sfiAsyncJobs.getEvents(db, clock)
+    }
 }
