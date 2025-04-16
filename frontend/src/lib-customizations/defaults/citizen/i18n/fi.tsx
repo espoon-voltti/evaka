@@ -5,6 +5,7 @@
 import React, { ReactNode } from 'react'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
+import { ApplicationType } from 'lib-common/generated/api-types/application'
 import { EmailVerification } from 'lib-common/generated/api-types/pis'
 import LocalDate from 'lib-common/local-date'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
@@ -1345,6 +1346,9 @@ export default {
                 ? 'Valitsemasi hakutoive'
                 : 'Valitsemasi hakutoiveet',
             noSelections: 'Ei valintoja',
+            infoByApplicationType: {} as Partial<
+              Record<ApplicationType, (maxUnits: number) => string>
+            >,
             info: (maxUnits: number) =>
               maxUnits === 1
                 ? 'Valitse yksi varhaiskasvatusyksikkö'

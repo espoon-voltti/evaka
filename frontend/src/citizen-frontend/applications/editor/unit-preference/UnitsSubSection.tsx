@@ -157,9 +157,12 @@ export default React.memo(function UnitsSubSection({
 
               <Gap size="s" />
               <Info>
-                {t.applications.editor.unitPreference.units.preferences.info(
-                  maxUnits
-                )}
+                {t.applications.editor.unitPreference.units.preferences.infoByApplicationType[
+                  applicationType
+                ]?.(maxUnits) ??
+                  t.applications.editor.unitPreference.units.preferences.info(
+                    maxUnits
+                  )}
               </Info>
               <Gap size="xs" />
             </FixedWidthDiv>

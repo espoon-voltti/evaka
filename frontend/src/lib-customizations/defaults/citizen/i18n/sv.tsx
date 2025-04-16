@@ -1347,6 +1347,7 @@ const sv: Translations = {
                 ? 'Enhet som du har valt'
                 : 'Enheter som du har valt',
             noSelections: 'Inga val',
+            infoByApplicationType: {},
             info: (maxUnits: number) =>
               maxUnits === 1
                 ? 'Välj en enhet'
