@@ -2880,7 +2880,9 @@ const sv: Translations = {
       answered: 'Vastattu (sv)',
       preview: 'Esikatsele (sv)',
       send: 'Lähetä (sv)',
-      success: 'Lomake lähetetty (sv)'
+      success: 'Lomake lähetetty (sv)',
+      sentInfo:
+        'Jos haluat muuttaa annettuja vastauksia, pyydä henkilökunnalta uusi lomake. (sv)'
     }
   },
   accessibilityStatement: (

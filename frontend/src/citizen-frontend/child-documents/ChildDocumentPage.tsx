@@ -23,7 +23,8 @@ import { ChildDocumentStateChip } from 'lib-components/document-templates/ChildD
 import DocumentView from 'lib-components/document-templates/DocumentView'
 import {
   documentForm,
-  getDocumentFormInitialState
+  getDocumentFormInitialState,
+  isInternal
 } from 'lib-components/document-templates/documents'
 import Content, {
   Container,
@@ -34,6 +35,7 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
+import { InfoBox } from 'lib-components/molecules/MessageBoxes'
 import { H1, H2, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
@@ -174,6 +176,10 @@ const ChildDocumentView = React.memo(function ChildDocumentView({
           </FixedSpaceRow>
           <Gap />
           <DocumentView bind={bind} readOnly={readOnly} />
+          {!isInternal(document.template.type) &&
+            document.status === 'COMPLETED' && (
+              <InfoBox message={i18n.children.childDocuments.sentInfo} />
+            )}
         </ContentArea>
       </Container>
       <Gap size="m" />

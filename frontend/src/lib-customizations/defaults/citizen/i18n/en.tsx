@@ -2637,7 +2637,9 @@ const en: Translations = {
       answered: 'Vastattu (en)',
       preview: 'Esikatsele (en)',
       send: 'Lähetä (en)',
-      success: 'Lomake lähetetty (en)'
+      success: 'Lomake lähetetty (en)',
+      sentInfo:
+        'Jos haluat muuttaa annettuja vastauksia, pyydä henkilökunnalta uusi lomake. (en)'
     }
   },
   accessibilityStatement: (
