@@ -289,6 +289,8 @@ describe('Income', () => {
     await incomesSection.edit()
 
     await incomesSection.deleteIncomeAttachment(0)
+    await waitUntilEqual(() => incomesSection.getAttachmentCount(), 0)
+
     await incomesSection.cancelEdit()
     await waitUntilEqual(() => incomesSection.getAttachmentCount(), 0)
   })
