@@ -6,7 +6,12 @@ package fi.espoo.evaka.sficlient
 
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
+import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
+
+private val logger = KotlinLogging.logger {}
 
 @Service
 class SfiAsyncJobs(
@@ -21,5 +26,16 @@ class SfiAsyncJobs(
 
     fun sendMessagePDF(msg: SfiMessage) {
         sfiClient.send(msg)
+    }
+
+    fun getEvents(db: Database.Connection, clock: EvakaClock) {
+        db.transaction {
+            val continuationToken = it.getLatestSfiGetEventsContinuationToken()
+            val eventsResponse = sfiClient.getEvents(continuationToken)
+            logger.info { " SfiAsyncJobs: got ${eventsResponse.events.size} events" }
+
+            // TODO handle events
+            it.storeSfiGetEventsContinuationToken(eventsResponse.continuationToken)
+        }
     }
 }

@@ -335,22 +335,24 @@ class SfiMessagesRestClient(
     }
 
     override fun getEvents(continuationToken: String?): GetEventsResponse {
-        logger.info { "Requesting suomi.fi events" + if (!continuationToken.isNullOrEmpty()) " with continuationToken $continuationToken" else "" }
+        logger.info {
+            "Requesting suomi.fi events" +
+                if (!continuationToken.isNullOrEmpty()) " with continuationToken $continuationToken"
+                else ""
+        }
 
-        val url = config.urls.events.newBuilder().apply {
-            if (!continuationToken.isNullOrBlank()) {
-                addQueryParameter("continuationToken", continuationToken)
-            }
-        }.build()
+        val url =
+            config.urls.events
+                .newBuilder()
+                .apply {
+                    if (!continuationToken.isNullOrBlank()) {
+                        addQueryParameter("continuationToken", continuationToken)
+                    }
+                }
+                .build()
 
         httpClient
-            .newCall(
-                Request.Builder()
-                    .url(url)
-                    .header("Accept", "application/json")
-                    .get()
-                    .build()
-            )
+            .newCall(Request.Builder().url(url).header("Accept", "application/json").get().build())
             .execute()
             .use { response ->
                 if (response.isSuccessful) {

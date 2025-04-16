@@ -20,7 +20,7 @@ data class ApiUrls(
     val attachments: HttpUrl,
     val messages: HttpUrl,
     val changePassword: HttpUrl,
-    val events: HttpUrl
+    val events: HttpUrl,
 ) {
     constructor(
         base: HttpUrl
@@ -29,7 +29,7 @@ data class ApiUrls(
         changePassword = base.newBuilder().addPathSegments("v1/change-password").build(),
         attachments = base.newBuilder().addPathSegments("v2/attachments").build(),
         messages = base.newBuilder().addPathSegments("v2/messages").build(),
-        events = base.newBuilder().addPathSegments("v2/events").build()
+        events = base.newBuilder().addPathSegments("v2/events").build(),
     )
 }
 
@@ -231,21 +231,14 @@ data class ChangePasswordRequestBody(
 )
 
 // https://api.messages-qa.suomi.fi/api-docs#model-messages.api.rest.v2.GetV2Event
-data class GetEventsResponse(
-    val continuationToken: String,
-    val events: List<GetEvent>,
-)
+data class GetEventsResponse(val continuationToken: String, val events: List<GetEvent>)
 
-data class GetEvent(
-    val eventTime: DateTime,
-    val metadata: String,
-    val type: EventType
-)
+data class GetEvent(val eventTime: DateTime, val metadata: String, val type: EventType)
 
 data class MessageEventMetadata(
     @JsonInclude(JsonInclude.Include.NON_NULL) val externalId: String? = null,
     val messageId: Long,
-    val serviceId: String
+    val serviceId: String,
 ) {
     init {
         require(serviceId.isNotBlank()) { "serviceId must not be blank" }
@@ -261,5 +254,5 @@ enum class EventType(@JsonValue val jsonValue: String) {
     SENT_FOR_PRINTING_AND_ENVELOPING("Sent for printing and enveloping"),
     POSTI_RECEIPT_CONFIRMED("Posti: receipt confirmed"),
     POSTI_RETURNED_TO_SENDER("Posti: returned to sender"),
-    POSTI_UNRESOLVED("Posti: unresolved")
+    POSTI_UNRESOLVED("Posti: unresolved"),
 }
