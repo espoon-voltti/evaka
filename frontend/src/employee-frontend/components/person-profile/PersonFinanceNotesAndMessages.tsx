@@ -45,6 +45,7 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import MessageReplyEditor from 'lib-components/messages/MessageReplyEditor'
 import { ConfirmedMutation } from 'lib-components/molecules/ConfirmedMutation'
+import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { H2, Label, Light } from 'lib-components/typography'
 import { useRecipients } from 'lib-components/utils/useReplyRecipients'
 import { Gap } from 'lib-components/white-space'
@@ -138,11 +139,13 @@ export default React.memo(function PersonFinanceNotesAndMessages({
 
   const onSuccessTimeout = isAutomatedTest ? 10 : 800 // same as used in async-button-behaviour
 
-  const personName = useMemo(
+  const [personName, hasSsn] = useMemo(
     () =>
       person
-        .map((p) => (p ? formatPersonName(p, i18n, true) : undefined))
-        .getOrElse(undefined),
+        .map<
+          [string | undefined, boolean]
+        >((p) => [formatPersonName(p, i18n, true), !!p.socialSecurityNumber])
+        .getOrElse([undefined, false]),
     [person, i18n]
   )
 
@@ -271,33 +274,41 @@ export default React.memo(function PersonFinanceNotesAndMessages({
           paddingVertical="s"
           data-qa="add-finance-note"
         >
-          <FlexRow>
-            <AddButton
-              text={i18n.personProfile.financeNotesAndMessages.addNote}
-              onClick={() => {
-                setText('')
-                toggleUiMode('add-finance-note')
-              }}
-              data-qa="add-finance-note-button"
-              disabled={
-                !permittedActions.has('CREATE_FINANCE_NOTE') ||
-                uiMode === 'add-finance-note' ||
-                uiMode.startsWith('edit-finance-note')
-              }
-            />
-            <Gap horizontal size="m" />
-            <AddButton
-              icon={faEnvelope}
-              text={i18n.personProfile.financeNotesAndMessages.sendMessage}
-              onClick={() => {
-                setText('')
-                setThread(undefined)
-                toggleUiMode('new-finance-message-editor')
-              }}
-              data-qa="send-finance-message-button"
-              disabled={financeAccount === undefined}
-            />
-          </FlexRow>
+          <ExpandingInfo
+            info={
+              hasSsn
+                ? null
+                : i18n.personProfile.financeNotesAndMessages.noMessaging
+            }
+          >
+            <FlexRow>
+              <AddButton
+                text={i18n.personProfile.financeNotesAndMessages.addNote}
+                onClick={() => {
+                  setText('')
+                  toggleUiMode('add-finance-note')
+                }}
+                data-qa="add-finance-note-button"
+                disabled={
+                  !permittedActions.has('CREATE_FINANCE_NOTE') ||
+                  uiMode === 'add-finance-note' ||
+                  uiMode.startsWith('edit-finance-note')
+                }
+              />
+              <Gap horizontal size="m" />
+              <AddButton
+                icon={faEnvelope}
+                text={i18n.personProfile.financeNotesAndMessages.sendMessage}
+                onClick={() => {
+                  setText('')
+                  setThread(undefined)
+                  toggleUiMode('new-finance-message-editor')
+                }}
+                data-qa="send-finance-message-button"
+                disabled={financeAccount === undefined || !hasSsn}
+              />
+            </FlexRow>
+          </ExpandingInfo>
         </BorderedContentArea>
 
         {uiMode === 'add-finance-note' && (

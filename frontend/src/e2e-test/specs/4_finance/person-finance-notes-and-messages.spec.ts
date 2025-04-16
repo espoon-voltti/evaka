@@ -151,4 +151,21 @@ describe('person finance messages', () => {
     )
     await notesAndMessages.deleteThread()
   })
+
+  test('message can not be sent to a person without social security number', async () => {
+    const mockedTime = HelsinkiDateTime.of(2025, 3, 1, 10, 0, 0, 0)
+    const person = await Fixture.person({ ssn: null }).saveAdult()
+    await createMessageAccounts()
+
+    page = await Page.open({ mockedTime })
+    await employeeLogin(page, financeAdmin)
+    await page.goto(config.employeeUrl)
+    guardianPage = new GuardianInformationPage(page)
+    await guardianPage.navigateToGuardian(person.id)
+    const financeSection = await guardianPage.openCollapsible(
+      'financeNotesAndMessages'
+    )
+
+    await financeSection.newMessageButton.assertDisabled(true)
+  })
 })
