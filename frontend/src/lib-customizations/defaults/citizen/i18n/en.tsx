@@ -1414,6 +1414,7 @@ const en: Translations = {
                 ? 'Application preference you selected'
                 : 'Application preferences you selected',
             noSelections: 'No selections',
+            infoByApplicationType: {},
             info: (maxUnits: number) =>
               maxUnits === 1
                 ? 'Select one preferred unit'
