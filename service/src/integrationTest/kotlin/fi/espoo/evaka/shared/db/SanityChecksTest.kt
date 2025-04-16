@@ -7,6 +7,8 @@ package fi.espoo.evaka.shared.db
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.insertServiceNeedOptions
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
+import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.dev.DevBackupCare
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevChildAttendance
@@ -19,6 +21,7 @@ import fi.espoo.evaka.shared.dev.DevFeeDecisionChild
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
+import fi.espoo.evaka.shared.dev.DevReservation
 import fi.espoo.evaka.shared.dev.DevServiceNeed
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -398,6 +401,76 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
                     listOf(FeeDecisionStatus.SENT, FeeDecisionStatus.WAITING_FOR_SENDING)
                 )
             }
+        assertEquals(0, violations)
+    }
+
+    @Test
+    fun `sanityCheckReservationsDuringFixedPeriodPlacements positive`() {
+        val area = DevCareArea()
+        val unit = DevDaycare(areaId = area.id)
+        val child = DevPerson()
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(unit)
+            tx.insert(child, DevPersonType.CHILD)
+
+            tx.insert(
+                DevPlacement(
+                    childId = child.id,
+                    unitId = unit.id,
+                    type = PlacementType.PRESCHOOL,
+                    startDate = today,
+                    endDate = today,
+                )
+            )
+            tx.insert(
+                DevReservation(
+                    childId = child.id,
+                    date = today,
+                    startTime = LocalTime.of(8, 0),
+                    endTime = LocalTime.of(16, 0),
+                    createdBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
+                )
+            )
+        }
+
+        val violations = db.read { it.sanityCheckReservationsDuringFixedSchedulePlacements() }
+        assertEquals(1, violations)
+    }
+
+    @Test
+    fun `sanityCheckReservationsDuringFixedPeriodPlacements negative`() {
+        val area = DevCareArea()
+        val unit = DevDaycare(areaId = area.id)
+        val child = DevPerson()
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(unit)
+            tx.insert(child, DevPersonType.CHILD)
+
+            tx.insert(
+                DevPlacement(
+                    childId = child.id,
+                    unitId = unit.id,
+                    type = PlacementType.DAYCARE,
+                    startDate = today,
+                    endDate = today,
+                )
+            )
+            tx.insert(
+                DevReservation(
+                    childId = child.id,
+                    date = today,
+                    startTime = LocalTime.of(8, 0),
+                    endTime = LocalTime.of(16, 0),
+                    createdBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
+                )
+            )
+        }
+
+        val violations = db.read { it.sanityCheckReservationsDuringFixedSchedulePlacements() }
         assertEquals(0, violations)
     }
 
