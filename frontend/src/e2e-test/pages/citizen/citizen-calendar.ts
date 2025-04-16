@@ -803,12 +803,20 @@ class DayView extends Element {
   async assertEvent(
     childId: UUID,
     eventId: UUID,
-    { title, description }: { title: string; description: string }
+    { title, description }: { title: string; description: string },
+    exportable = true
   ) {
     const event = this.#childSection(childId).findByDataQa(`event-${eventId}`)
     await event.waitUntilVisible()
     await event.findByDataQa('event-title').assertTextEquals(title)
     await event.findByDataQa('event-description').assertTextEquals(description)
+
+    const exportButton = event.findByDataQa(`event-export-button-${eventId}`)
+    if (exportable) {
+      await exportButton.waitUntilVisible()
+    } else {
+      await exportButton.waitUntilHidden()
+    }
   }
 
   async assertEventNotShown(childId: UUID, eventId: UUID) {

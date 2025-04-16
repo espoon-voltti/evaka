@@ -98,9 +98,9 @@ import { Translations, useLang, useTranslation } from '../localization'
 
 import AttendanceInfo from './AttendanceInfo'
 import { BottomFooterContainer } from './BottomFooterContainer'
+import { CalendarEventExportButton } from './CalendarEventExportButton'
 import { CalendarModalBackground, CalendarModalSection } from './CalendarModal'
 import { useCalendarModalState } from './CalendarPage'
-import { DiscussionTimeExportButton } from './DiscussionTimeExportButton'
 import {
   ChildImageData,
   getChildImages,
@@ -582,15 +582,32 @@ const DayModal = React.memo(function DayModal({
                                     key={event.id}
                                     data-qa={`event-${event.id}`}
                                   >
-                                    <LabelLike data-qa="event-title">
-                                      {event.title} /{' '}
-                                      {event.currentAttending.type === 'UNIT'
-                                        ? event.currentAttending.unitName
-                                        : event.currentAttending.type ===
-                                            'GROUP'
-                                          ? event.currentAttending.groupName
-                                          : row.firstName}
-                                    </LabelLike>
+                                    <FixedSpaceRow
+                                      fullWidth
+                                      justifyContent="space-between"
+                                      alignItems="center"
+                                    >
+                                      <div>
+                                        <LabelLike data-qa="event-title">
+                                          {event.title} /{' '}
+                                          {event.currentAttending.type ===
+                                          'UNIT'
+                                            ? event.currentAttending.unitName
+                                            : event.currentAttending.type ===
+                                                'GROUP'
+                                              ? event.currentAttending.groupName
+                                              : row.firstName}
+                                        </LabelLike>
+                                      </div>
+                                      {date.isEqualOrAfter(today) && (
+                                        <CalendarEventExportButton
+                                          calendarEvent={event}
+                                          eventAttendeeInfo={
+                                            event.currentAttending
+                                          }
+                                        />
+                                      )}
+                                    </FixedSpaceRow>
                                     <P noMargin data-qa="event-description">
                                       {event.description}
                                     </P>
@@ -629,8 +646,8 @@ const DayModal = React.memo(function DayModal({
                                               </P>
                                             </div>
                                             {rt.date.isEqualOrAfter(today) && (
-                                              <DiscussionTimeExportButton
-                                                eventTitle={event.title}
+                                              <CalendarEventExportButton
+                                                calendarEvent={event}
                                                 discussionTime={rt}
                                                 eventAttendeeInfo={
                                                   event.currentAttending
