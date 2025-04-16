@@ -6,17 +6,21 @@ package fi.espoo.evaka.shared.db
 
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.insertServiceNeedOptions
+import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevChildAttendance
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevFeeDecision
+import fi.espoo.evaka.shared.dev.DevFeeDecisionChild
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.DevServiceNeed
 import fi.espoo.evaka.shared.dev.insert
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.snDaycareFullDay35
@@ -185,6 +189,132 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         }
         val violations = db.read { it.sanityCheckGroupPlacementOutsidePlacement() }
+        assertEquals(0, violations)
+    }
+
+    @Test
+    fun `sanityCheckChildInOverlappingFeeDecisions positive`() {
+        // Overlapping ranges
+        val range1 = FiniteDateRange(start = today.minusDays(1), end = today.plusDays(1))
+        val range2 = FiniteDateRange(start = today, end = today.plusDays(2))
+
+        val area = DevCareArea()
+        val unit = DevDaycare(areaId = area.id)
+        val guardian1 = DevPerson()
+        val guardian2 = DevPerson()
+        val child = DevPerson()
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(unit)
+            tx.insert(guardian1, DevPersonType.ADULT)
+            tx.insert(guardian2, DevPersonType.ADULT)
+            tx.insert(child, DevPersonType.CHILD)
+
+            tx.insert(
+                    DevFeeDecision(
+                        headOfFamilyId = guardian1.id,
+                        validDuring = range1,
+                        status = FeeDecisionStatus.SENT,
+                    )
+                )
+                .also { id ->
+                    tx.insert(
+                        DevFeeDecisionChild(
+                            feeDecisionId = id,
+                            childId = child.id,
+                            placementUnitId = unit.id,
+                        )
+                    )
+                }
+
+            tx.insert(
+                    DevFeeDecision(
+                        headOfFamilyId = guardian2.id,
+                        validDuring = range2,
+                        status = FeeDecisionStatus.WAITING_FOR_SENDING,
+                    )
+                )
+                .also { id ->
+                    tx.insert(
+                        DevFeeDecisionChild(
+                            feeDecisionId = id,
+                            childId = child.id,
+                            placementUnitId = unit.id,
+                        )
+                    )
+                }
+        }
+
+        val violations =
+            db.read {
+                it.sanityCheckChildInOverlappingFeeDecisions(
+                    listOf(FeeDecisionStatus.SENT, FeeDecisionStatus.WAITING_FOR_SENDING)
+                )
+            }
+        assertEquals(1, violations)
+    }
+
+    @Test
+    fun `sanityCheckChildInOverlappingFeeDecisions negative`() {
+        // Non-overlapping ranges
+        val range1 = FiniteDateRange(start = today.minusDays(1), end = today.plusDays(1))
+        val range2 = FiniteDateRange(start = today.plusDays(2), end = today.plusDays(3))
+
+        val area = DevCareArea()
+        val unit = DevDaycare(areaId = area.id)
+        val guardian1 = DevPerson()
+        val guardian2 = DevPerson()
+        val child = DevPerson()
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(unit)
+            tx.insert(guardian1, DevPersonType.ADULT)
+            tx.insert(guardian2, DevPersonType.ADULT)
+            tx.insert(child, DevPersonType.CHILD)
+
+            tx.insert(
+                    DevFeeDecision(
+                        headOfFamilyId = guardian1.id,
+                        validDuring = range1,
+                        status = FeeDecisionStatus.SENT,
+                    )
+                )
+                .also { id ->
+                    tx.insert(
+                        DevFeeDecisionChild(
+                            feeDecisionId = id,
+                            childId = child.id,
+                            placementUnitId = unit.id,
+                        )
+                    )
+                }
+
+            tx.insert(
+                    DevFeeDecision(
+                        headOfFamilyId = guardian2.id,
+                        validDuring = range2,
+                        status = FeeDecisionStatus.WAITING_FOR_SENDING,
+                    )
+                )
+                .also { id ->
+                    tx.insert(
+                        DevFeeDecisionChild(
+                            feeDecisionId = id,
+                            childId = child.id,
+                            placementUnitId = unit.id,
+                        )
+                    )
+                }
+        }
+
+        val violations =
+            db.read {
+                it.sanityCheckChildInOverlappingFeeDecisions(
+                    listOf(FeeDecisionStatus.SENT, FeeDecisionStatus.WAITING_FOR_SENDING)
+                )
+            }
         assertEquals(0, violations)
     }
 
