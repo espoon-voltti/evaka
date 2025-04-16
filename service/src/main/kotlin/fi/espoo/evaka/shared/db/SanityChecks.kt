@@ -15,6 +15,7 @@ fun runSanityChecks(tx: Database.Read, clock: EvakaClock) {
     logResult("child attendances on future days", tx.sanityCheckAttendancesInFuture(clock.today()))
     logResult("service need outside placement", tx.sanityCheckServiceNeedOutsidePlacement())
     logResult("group placement outside placement", tx.sanityCheckGroupPlacementOutsidePlacement())
+    logResult("backup care outside placement", tx.sanityCheckBackupCareOutsidePlacement())
     logResult(
         "same child in overlapping draft fee decisions",
         tx.sanityCheckChildInOverlappingFeeDecisions(listOf(FeeDecisionStatus.DRAFT)),
@@ -74,6 +75,25 @@ fun Database.Read.sanityCheckGroupPlacementOutsidePlacement(): Int {
         FROM daycare_group_placement gpl
         JOIN placement pl on pl.id = gpl.daycare_placement_id
         WHERE gpl.start_date < pl.start_date OR gpl.end_date > pl.end_date
+    """
+            )
+        }
+        .exactlyOne()
+}
+
+fun Database.Read.sanityCheckBackupCareOutsidePlacement(): Int {
+    return createQuery {
+            sql(
+                """
+        SELECT count(*)
+        FROM backup_care bc
+        WHERE NOT isempty(
+            datemultirange(daterange(bc.start_date, bc.end_date, '[]')) - (
+                SELECT coalesce(range_agg(daterange(p.start_date, p.end_date, '[]')), '{}'::datemultirange)
+                FROM placement p
+                WHERE p.child_id = bc.child_id
+            )
+        )
     """
             )
         }

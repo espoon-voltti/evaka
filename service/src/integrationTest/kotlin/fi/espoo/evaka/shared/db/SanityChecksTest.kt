@@ -7,6 +7,7 @@ package fi.espoo.evaka.shared.db
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.insertServiceNeedOptions
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
+import fi.espoo.evaka.shared.dev.DevBackupCare
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevChildAttendance
 import fi.espoo.evaka.shared.dev.DevDaycare
@@ -189,6 +190,88 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         }
         val violations = db.read { it.sanityCheckGroupPlacementOutsidePlacement() }
+        assertEquals(0, violations)
+    }
+
+    @Test
+    fun `sanityCheckBackupCareOutsidePlacement positive`() {
+        val area = DevCareArea()
+        val unit = DevDaycare(areaId = area.id)
+        val child1 = DevPerson()
+        val child2 = DevPerson()
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(unit)
+            tx.insert(child1, DevPersonType.CHILD)
+            tx.insert(child2, DevPersonType.CHILD)
+
+            tx.insert(
+                DevBackupCare(
+                    childId = child1.id,
+                    unitId = unit.id,
+                    period = FiniteDateRange(today, today),
+                )
+            )
+
+            tx.insert(
+                DevPlacement(
+                    childId = child2.id,
+                    unitId = unit.id,
+                    startDate = today.minusDays(1),
+                    endDate = today.minusDays(1),
+                )
+            )
+            tx.insert(
+                DevBackupCare(
+                    childId = child2.id,
+                    unitId = unit.id,
+                    period = FiniteDateRange(today, today),
+                )
+            )
+            tx.insert(
+                DevPlacement(
+                    childId = child2.id,
+                    unitId = unit.id,
+                    startDate = today.plusDays(1),
+                    endDate = today.plusDays(1),
+                )
+            )
+        }
+
+        val violations = db.read { it.sanityCheckBackupCareOutsidePlacement() }
+        assertEquals(2, violations)
+    }
+
+    @Test
+    fun `sanityCheckBackupCareOutsidePlacement negative`() {
+        val area = DevCareArea()
+        val unit = DevDaycare(areaId = area.id)
+        val child = DevPerson()
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(unit)
+            tx.insert(child, DevPersonType.CHILD)
+
+            tx.insert(
+                DevPlacement(
+                    childId = child.id,
+                    unitId = unit.id,
+                    startDate = today.minusDays(1),
+                    endDate = today.plusDays(1),
+                )
+            )
+            tx.insert(
+                DevBackupCare(
+                    childId = child.id,
+                    unitId = unit.id,
+                    period = FiniteDateRange(today, today),
+                )
+            )
+        }
+
+        val violations = db.read { it.sanityCheckBackupCareOutsidePlacement() }
         assertEquals(0, violations)
     }
 
