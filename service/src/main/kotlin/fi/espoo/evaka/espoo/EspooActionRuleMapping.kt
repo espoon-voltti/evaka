@@ -148,6 +148,12 @@ class EspooActionRuleMapping : ActionRuleMapping {
                             as ScopedActionRule<in T>
                     )
             }
+            Action.Invoice.RESEND -> {
+                @Suppress("UNCHECKED_CAST")
+                sequenceOf(
+                    HasGlobalRole(UserRole.ADMIN, UserRole.FINANCE_ADMIN) as ScopedActionRule<in T>
+                )
+            }
             else -> action.defaultRules.asSequence()
         }
 }

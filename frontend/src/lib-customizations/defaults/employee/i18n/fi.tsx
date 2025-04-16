@@ -2891,7 +2891,9 @@ export const fi = {
       dueDate: 'Laskun eräpäivä'
     },
     resendModal: {
-      title: 'Lähetä uudelleen?'
+      title: 'Haluatko aivan varmasti lähettää laskut uudelleen?',
+      text: 'Varmista ensin huolellisesti, että laskut eivät ole menneet laskutusjärjestelmään.',
+      confirm: 'Kyllä, ymmärrän mitä teen'
     },
     sendSuccess: 'Lähettäminen onnistui',
     sendFailure: 'Lähettäminen epäonnistui'

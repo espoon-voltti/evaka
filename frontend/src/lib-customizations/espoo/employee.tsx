@@ -40,6 +40,11 @@ const customizations: EmployeeCustomizations = {
           descriptionInfo:
             'Kuvaillaan huoltajalle, mikä tilanteessa oli lapselle merkityksellistä oppimisen ja kehityksen näkökulmasta. Voit myös linkittää toiminnan vasun sisältöihin'
         }
+      },
+      invoices: {
+        resendModal: {
+          text: 'Varmista ensin huolellisesti, että laskut eivät ole menneet Jotoon.'
+        }
       }
     },
     sv: {
