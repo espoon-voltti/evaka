@@ -24,6 +24,7 @@ import fi.espoo.evaka.invoicing.domain.InvoiceRowDetailed
 import fi.espoo.evaka.invoicing.domain.InvoiceStatus
 import fi.espoo.evaka.invoicing.domain.InvoiceSummary
 import fi.espoo.evaka.invoicing.domain.RelatedFeeDecision
+import fi.espoo.evaka.invoicing.service.InvoiceService
 import fi.espoo.evaka.invoicing.service.ProductKey
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.InvoiceId
@@ -74,6 +75,7 @@ import org.springframework.beans.factory.annotation.Autowired
 
 class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var invoiceController: InvoiceController
+    @Autowired private lateinit var invoiceService: InvoiceService
 
     private fun assertEqualEnough(expected: List<InvoiceSummary>, actual: List<InvoiceSummary>) {
         assertEquals(
@@ -864,7 +866,11 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     }
 
     private fun resendInvoices(invoiceIds: List<InvoiceId>, resendAt: EvakaClock) {
-        invoiceController.resendInvoices(dbInstance(), testUser, resendAt, invoiceIds)
+        // calling service directly instead of controller because default action rules
+        // do not permit calling this endpoint for any role
+        db.transaction { tx ->
+            invoiceService.resendInvoices(tx, testUser.evakaUserId, resendAt.now(), invoiceIds)
+        }
     }
 
     private fun searchInvoices(request: SearchInvoicesRequest): List<InvoiceSummary> {

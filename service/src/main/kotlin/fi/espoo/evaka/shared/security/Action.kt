@@ -1641,7 +1641,7 @@ sealed interface Action {
         UPLOAD_ATTACHMENT(HasGlobalRole(ADMIN, FINANCE_ADMIN, FINANCE_STAFF)),
         MARK_SENT(HasGlobalRole(ADMIN, FINANCE_ADMIN, FINANCE_STAFF)),
         SEND(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
-        RESEND(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
+        RESEND,
         DELETE(HasGlobalRole(ADMIN, FINANCE_ADMIN));
 
         override fun toString(): String = "${javaClass.name}.$name"

@@ -22,6 +22,7 @@ import {
   useQueryResult,
   useSelectMutation
 } from 'lib-common/query'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
@@ -30,6 +31,7 @@ import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+import { fasExclamationTriangle } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
 import { InvoicingUiContext } from '../../state/invoicing-ui'
@@ -286,6 +288,8 @@ const SendModal = React.memo(function SendModal({
     ]
   )
 
+  const [confirmResend, setConfirmResend] = useState(false)
+
   return sendType === 'DRAFT' ? (
     <MutateFormModal
       type="info"
@@ -333,18 +337,27 @@ const SendModal = React.memo(function SendModal({
     </MutateFormModal>
   ) : (
     <MutateFormModal
-      type="info"
+      type="danger"
       title={i18n.invoices.resendModal.title}
-      icon={faEnvelope}
+      text={i18n.invoices.resendModal.text}
+      icon={fasExclamationTriangle}
       resolveMutation={mutation}
       resolveAction={onClick}
       resolveLabel={i18n.common.confirm}
+      resolveDisabled={!confirmResend}
       onSuccess={onSendDone}
       onFailure={onSendFailure}
       rejectAction={onClose}
       rejectLabel={i18n.common.cancel}
       data-qa="resend-invoices-dialog"
-    />
+    >
+      <Checkbox
+        label={i18n.invoices.resendModal.confirm}
+        checked={confirmResend}
+        onChange={setConfirmResend}
+        data-qa="resend-invoices-confirm-checkbox"
+      />
+    </MutateFormModal>
   )
 })
 
