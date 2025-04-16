@@ -142,7 +142,7 @@ fun Database.Transaction.incrementAttempts(id: PairingId, challengeKey: String) 
 }
 
 const val distinguishableChars = "abcdefghkmnpqrstuvwxyz23456789"
-const val keyLength = 12
+const val keyLength = 6
 val random: SecureRandom = SecureRandom()
 
 fun generatePairingKey(): String =
