@@ -17,6 +17,10 @@ fun runSanityChecks(tx: Database.Read, clock: EvakaClock) {
     logResult("group placement outside placement", tx.sanityCheckGroupPlacementOutsidePlacement())
     logResult("backup care outside placement", tx.sanityCheckBackupCareOutsidePlacement())
     logResult(
+        "reservations for fixed period placements",
+        tx.sanityCheckReservationsDuringFixedSchedulePlacements(),
+    )
+    logResult(
         "same child in overlapping draft fee decisions",
         tx.sanityCheckChildInOverlappingFeeDecisions(listOf(FeeDecisionStatus.DRAFT)),
     )
@@ -94,6 +98,20 @@ fun Database.Read.sanityCheckBackupCareOutsidePlacement(): Int {
                 WHERE p.child_id = bc.child_id
             )
         )
+    """
+            )
+        }
+        .exactlyOne()
+}
+
+fun Database.Read.sanityCheckReservationsDuringFixedSchedulePlacements(): Int {
+    return createQuery {
+            sql(
+                """
+        SELECT count(*)
+        FROM attendance_reservation ar
+        JOIN placement pl ON pl.child_id = ar.child_id AND daterange(pl.start_date, pl.end_date, '[]') @> ar.date
+        WHERE pl.type IN ('PRESCHOOL', 'PREPARATORY')
     """
             )
         }
