@@ -11,7 +11,7 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import { CitizenCalendarEvent } from 'lib-common/generated/api-types/calendarevent'
 import { ReservationResponseDay } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
-import { useQuery, useQueryResult } from 'lib-common/query'
+import { constantQuery, useQuery, useQueryResult } from 'lib-common/query'
 import { NotificationsContext } from 'lib-components/Notifications'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { Gap } from 'lib-components/white-space'
@@ -25,7 +25,8 @@ import { showSurveyReservationToast } from './discussion-reservation-modal/discu
 import {
   activeQuestionnaireQuery,
   holidayPeriodsQuery,
-  incomeExpirationDatesQuery
+  incomeExpirationDatesQuery,
+  unansweredChildDocumentsQuery
 } from './queries'
 
 type NoCta = { type: 'none' }
@@ -63,6 +64,15 @@ export default React.memo(function CalendarNotifications({
           e.eventType === 'DISCUSSION_SURVEY' && showSurveyReservationToast(e)
       ),
     [events]
+  )
+
+  const {
+    data: unansweredChildDocuments,
+    isRefetching: unansweredChildDocumentsIsRefetching
+  } = useQuery(
+    featureFlags.citizenChildDocumentTypes
+      ? unansweredChildDocumentsQuery()
+      : constantQuery([])
   )
 
   useEffect(() => {
@@ -207,6 +217,41 @@ export default React.memo(function CalendarNotifications({
     openDiscussionSurveyModal,
     i18n,
     activeDiscussionSurveys.length
+  ])
+
+  useEffect(() => {
+    if (
+      unansweredChildDocuments === undefined ||
+      unansweredChildDocumentsIsRefetching
+    )
+      return
+
+    unansweredChildDocuments.forEach((childDocument) => {
+      addNotification(
+        {
+          icon: faInfo,
+          iconColor: colors.status.info,
+          onClick(close) {
+            void navigate({
+              pathname: `/child-documents/${childDocument.id}`,
+              search: '?returnTo=calendar'
+            })
+            close()
+          },
+          children: i18n.ctaToast.unansweredChildDocumentCta(
+            childDocument.child
+          ),
+          dataQa: `toast-child-document-${childDocument.id}`
+        },
+        `child-document-${childDocument.id}`
+      )
+    })
+  }, [
+    addNotification,
+    i18n.ctaToast,
+    navigate,
+    unansweredChildDocuments,
+    unansweredChildDocumentsIsRefetching
   ])
 
   return (

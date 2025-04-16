@@ -29,8 +29,10 @@ import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.testAdult_1
+import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
+import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.toEvakaUser
@@ -143,6 +145,13 @@ class ChildDocumentControllerCitizenIntegrationTest :
                     templateName = "Pedagoginen arvio 2023",
                     status = DocumentStatus.DRAFT,
                     unread = true,
+                    child =
+                        ChildBasics(
+                            id = testChild_1.id,
+                            firstName = testChild_1.firstName,
+                            lastName = testChild_1.lastName,
+                            dateOfBirth = testChild_1.dateOfBirth,
+                        ),
                     answeredAt = null,
                     answeredBy = null,
                 )
@@ -227,6 +236,28 @@ class ChildDocumentControllerCitizenIntegrationTest :
                     )
                 )
             }
+        assertEquals(
+            listOf(
+                ChildDocumentCitizenSummary(
+                    id = documentId,
+                    status = DocumentStatus.CITIZEN_DRAFT,
+                    type = template.type,
+                    templateName = template.name,
+                    publishedAt = clock.now(),
+                    unread = true,
+                    child =
+                        ChildBasics(
+                            id = testChild_1.id,
+                            firstName = testChild_1.firstName,
+                            lastName = testChild_1.lastName,
+                            dateOfBirth = testChild_1.dateOfBirth,
+                        ),
+                    answeredAt = null,
+                    answeredBy = null,
+                )
+            ),
+            getUnansweredChildDocuments(),
+        )
         clock.tick()
 
         val content =
@@ -254,6 +285,13 @@ class ChildDocumentControllerCitizenIntegrationTest :
                     templateName = template.name,
                     publishedAt = clock.now(),
                     unread = true,
+                    child =
+                        ChildBasics(
+                            id = testChild_1.id,
+                            firstName = testChild_1.firstName,
+                            lastName = testChild_1.lastName,
+                            dateOfBirth = testChild_1.dateOfBirth,
+                        ),
                     answeredAt = clock.now(),
                     answeredBy = testAdult_1.toEvakaUser(EvakaUserType.CITIZEN),
                 )
@@ -279,12 +317,134 @@ class ChildDocumentControllerCitizenIntegrationTest :
             ),
             document,
         )
+        assertEquals(emptyList(), getUnansweredChildDocuments())
     }
 
-    private fun getUnreadCount() = controller.getUnreadDocumentsCount(dbInstance(), citizen, clock)
+    @Test
+    fun `guardian sees child documents only for own child`() {
+        publishDocument(documentId)
+        asyncJobRunner.runPendingJobsSync(clock)
+        val template =
+            DevDocumentTemplate(
+                    type = DocumentType.CITIZEN_BASIC,
+                    name = "Medialupa",
+                    validity = DateRange(clock.today(), clock.today()),
+                    content = templateContent,
+                )
+                .also { db.transaction { tx -> tx.insert(it) } }
+        val child1DocumentId =
+            db.transaction { tx ->
+                tx.insert(
+                    DevChildDocument(
+                        status = DocumentStatus.CITIZEN_DRAFT,
+                        childId = testChild_1.id,
+                        templateId = template.id,
+                        content = documentContent,
+                        publishedContent = documentContent,
+                        modifiedAt = clock.now(),
+                        contentModifiedAt = clock.now(),
+                        contentModifiedBy = employeeUser.id,
+                        publishedAt = clock.now(),
+                        answeredAt = null,
+                        answeredBy = null,
+                    )
+                )
+            }
+        val child2DocumentId =
+            db.transaction { tx ->
+                tx.insert(testChild_2, DevPersonType.CHILD)
+                tx.insert(testAdult_2, DevPersonType.ADULT)
+                tx.insert(DevGuardian(testAdult_2.id, testChild_2.id))
+                tx.insert(
+                    DevChildDocument(
+                        status = DocumentStatus.CITIZEN_DRAFT,
+                        childId = testChild_2.id,
+                        templateId = template.id,
+                        content = documentContent,
+                        publishedContent = documentContent,
+                        modifiedAt = clock.now(),
+                        contentModifiedAt = clock.now(),
+                        contentModifiedBy = employeeUser.id,
+                        publishedAt = clock.now(),
+                        answeredAt = null,
+                        answeredBy = null,
+                    )
+                )
+            }
 
-    private fun getDocumentsByChild(childId: ChildId) =
-        controller.getDocuments(dbInstance(), citizen, clock, childId)
+        val summary11 =
+            ChildDocumentCitizenSummary(
+                id = documentId,
+                type = DocumentType.PEDAGOGICAL_ASSESSMENT,
+                publishedAt = clock.now(),
+                templateName = "Pedagoginen arvio 2023",
+                status = DocumentStatus.DRAFT,
+                unread = true,
+                child =
+                    ChildBasics(
+                        id = testChild_1.id,
+                        firstName = testChild_1.firstName,
+                        lastName = testChild_1.lastName,
+                        dateOfBirth = testChild_1.dateOfBirth,
+                    ),
+                answeredAt = null,
+                answeredBy = null,
+            )
+        val summary12 =
+            ChildDocumentCitizenSummary(
+                id = child1DocumentId,
+                status = DocumentStatus.CITIZEN_DRAFT,
+                type = template.type,
+                templateName = template.name,
+                publishedAt = clock.now(),
+                unread = true,
+                child =
+                    ChildBasics(
+                        id = testChild_1.id,
+                        firstName = testChild_1.firstName,
+                        lastName = testChild_1.lastName,
+                        dateOfBirth = testChild_1.dateOfBirth,
+                    ),
+                answeredAt = null,
+                answeredBy = null,
+            )
+        assertEquals(mapOf(testChild_1.id to 2), getUnreadCount())
+        assertEquals(
+            listOf(summary11, summary12),
+            getDocumentsByChild(testChild_1.id).sortedBy { it.type },
+        )
+        assertEquals(listOf(summary12), getUnansweredChildDocuments())
+        assertThrows<Forbidden> { getDocumentsByChild(testChild_2.id) }
+        val citizen2 = AuthenticatedUser.Citizen(testAdult_2.id, CitizenAuthLevel.STRONG)
+        val summary2 =
+            ChildDocumentCitizenSummary(
+                id = child2DocumentId,
+                status = DocumentStatus.CITIZEN_DRAFT,
+                type = template.type,
+                templateName = template.name,
+                publishedAt = clock.now(),
+                unread = true,
+                child =
+                    ChildBasics(
+                        id = testChild_2.id,
+                        firstName = testChild_2.firstName,
+                        lastName = testChild_2.lastName,
+                        dateOfBirth = testChild_2.dateOfBirth,
+                    ),
+                answeredAt = null,
+                answeredBy = null,
+            )
+        assertEquals(mapOf(testChild_2.id to 1), getUnreadCount(user = citizen2))
+        assertEquals(listOf(summary2), getDocumentsByChild(testChild_2.id, user = citizen2))
+        assertEquals(listOf(summary2), getUnansweredChildDocuments(user = citizen2))
+        assertThrows<Forbidden> { getDocumentsByChild(testChild_1.id, user = citizen2) }
+    }
+
+    private fun getUnreadCount(user: AuthenticatedUser.Citizen = citizen) =
+        controller.getUnreadDocumentsCount(dbInstance(), user, clock)
+
+    private fun getDocumentsByChild(childId: ChildId, user: AuthenticatedUser.Citizen = citizen) =
+        controller.getDocuments(dbInstance(), user, clock, childId)
 
     private fun getDocument(id: ChildDocumentId) =
         controller.getDocument(dbInstance(), citizen, clock, id)
@@ -294,6 +454,9 @@ class ChildDocumentControllerCitizenIntegrationTest :
 
     private fun putDocumentRead(id: ChildDocumentId) =
         controller.putDocumentRead(dbInstance(), citizen, clock, id)
+
+    private fun getUnansweredChildDocuments(user: AuthenticatedUser.Citizen = citizen) =
+        controller.getUnansweredChildDocuments(dbInstance(), user, clock)
 
     private fun updateDocument(
         id: ChildDocumentId,

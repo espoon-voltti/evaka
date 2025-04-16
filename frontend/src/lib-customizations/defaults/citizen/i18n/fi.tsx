@@ -7,6 +7,7 @@ import React, { ReactNode } from 'react'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { EmailVerification } from 'lib-common/generated/api-types/pis'
 import LocalDate from 'lib-common/local-date'
+import { formatFirstName } from 'lib-common/names'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
 import UnorderedList from 'lib-components/atoms/UnorderedList'
 import { Button } from 'lib-components/atoms/buttons/Button'
@@ -259,7 +260,22 @@ export default {
     fixedPeriodCta: (deadline: LocalDate) =>
       `Vastaa poissaolokyselyyn ${deadline.format()} mennessä.`,
     incomeExpirationCta: (expirationDate: string) =>
-      `Muista päivittää tulotietosi ${expirationDate} mennessä`
+      `Muista päivittää tulotietosi ${expirationDate} mennessä`,
+    unansweredChildDocumentCta: (child: {
+      firstName: string
+      lastName: string
+    }) => (
+      <div>
+        Henkilökunta on pyytänyt sinua vastaamaan lomakkeeseen, joka koskee
+        lastasi:{' '}
+        <span translate="no">
+          {formatFirstName(child)} {child.lastName}
+        </span>
+        <br />
+        <br />
+        <span style={{ color: colors.status.info }}>Vastaa lomakkeeseen</span>
+      </div>
+    )
   },
   errorPage: {
     reload: 'Lataa sivu uudelleen',
@@ -2835,10 +2851,11 @@ export default {
       otherDocumentsTitle: 'Muut asiakirjat',
       noDocuments: 'Ei asiakirjoja',
       confidential: 'Salassapidettävä',
-      notAnswered: 'Ei vastattu',
+      unanswered: 'Ei vastattu',
       answered: 'Vastattu',
       preview: 'Esikatsele',
-      send: 'Lähetä'
+      send: 'Lähetä',
+      success: 'Lomake lähetetty'
     }
   },
   accessibilityStatement: (

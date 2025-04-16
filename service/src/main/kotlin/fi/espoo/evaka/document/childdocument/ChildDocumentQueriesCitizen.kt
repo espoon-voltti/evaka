@@ -8,31 +8,69 @@ import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.Predicate
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
+import fi.espoo.evaka.shared.security.actionrule.toPredicate
+
+private fun Database.Read.childDocumentCitizenSummaryQuery(
+    user: AuthenticatedUser.Citizen,
+    childDocumentPredicate: Predicate,
+) = createQuery {
+    sql(
+        """
+SELECT
+    cd.id,
+    cd.status,
+    dt.type,
+    dt.name AS template_name,
+    cd.published_at,
+    (NOT EXISTS(
+        SELECT FROM child_document_read cdr
+        WHERE cdr.person_id = ${bind(user.id)} AND cdr.document_id = cd.id
+    )) AS unread,
+    child.id AS child_id,
+    child.first_name AS child_first_name,
+    child.last_name AS child_last_name,
+    child.date_of_birth AS child_date_of_birth,
+    cd.answered_at,
+    answered_by.id AS answered_by_id,
+    answered_by.name AS answered_by_name,
+    answered_by.type AS answered_by_type
+FROM child_document cd
+JOIN document_template dt ON cd.template_id = dt.id
+JOIN person child ON cd.child_id = child.id
+LEFT JOIN evaka_user answered_by ON cd.answered_by = answered_by.id
+WHERE ${predicate(childDocumentPredicate.forTable("cd"))}
+"""
+    )
+}
 
 fun Database.Read.getChildDocumentCitizenSummaries(
     user: AuthenticatedUser.Citizen,
     childId: PersonId,
-): List<ChildDocumentCitizenSummary> {
-    return createQuery {
-            sql(
-                """
-                SELECT cd.id, cd.status, dt.type, cd.published_at, dt.name as template_name,
-                    (NOT EXISTS(
-                        SELECT 1 FROM child_document_read cdr 
-                        WHERE cdr.person_id = ${bind(user.id)} AND cdr.document_id = cd.id
-                    )) as unread,
-                    cd.answered_at,
-                    answered_by.id AS answered_by_id, answered_by.name AS answered_by_name, answered_by.type AS answered_by_type
-                FROM child_document cd
-                JOIN document_template dt on cd.template_id = dt.id
-                LEFT JOIN evaka_user answered_by ON cd.answered_by = answered_by.id
-                WHERE cd.child_id = ${bind(childId)} AND published_at IS NOT NULL
-                """
-            )
-        }
+): List<ChildDocumentCitizenSummary> =
+    childDocumentCitizenSummaryQuery(
+            user,
+            Predicate.all(
+                Predicate { where("$it.child_id = ${bind(childId)}") },
+                Predicate { where("$it.published_at IS NOT NULL") },
+            ),
+        )
         .toList<ChildDocumentCitizenSummary>()
-}
+
+fun Database.Read.getUnansweredChildDocuments(
+    user: AuthenticatedUser.Citizen,
+    filter: AccessControlFilter<ChildDocumentId>,
+) =
+    childDocumentCitizenSummaryQuery(
+            user,
+            Predicate.all(
+                filter.toPredicate(),
+                Predicate { where("$it.answered_at IS NULL AND $it.answered_by IS NULL") },
+            ),
+        )
+        .toList<ChildDocumentCitizenSummary>()
 
 fun Database.Read.getCitizenChildDocument(id: ChildDocumentId): ChildDocumentCitizenDetails? {
     return createQuery {

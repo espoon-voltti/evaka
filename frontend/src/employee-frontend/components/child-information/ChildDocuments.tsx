@@ -172,7 +172,7 @@ const ExternalChildDocuments = React.memo(function ExternalChildDocuments({
                   </>
                 ) : (
                   <span>
-                    {i18n.childInformation.childDocuments.table.notAnswered}
+                    {i18n.childInformation.childDocuments.table.unanswered}
                   </span>
                 )}
               </Td>
