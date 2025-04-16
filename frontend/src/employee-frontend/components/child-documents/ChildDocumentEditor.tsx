@@ -37,7 +37,8 @@ import { ChildDocumentStateChip } from 'lib-components/document-templates/ChildD
 import DocumentView from 'lib-components/document-templates/DocumentView'
 import {
   documentForm,
-  getDocumentFormInitialState
+  getDocumentFormInitialState,
+  isInternal
 } from 'lib-components/document-templates/documents'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import {
@@ -635,38 +636,40 @@ const ChildDocumentReadViewInner = React.memo(
               </FixedSpaceRow>
             </FixedSpaceRow>
             <Gap size="s" />
-            <FixedSpaceRow alignItems="center" justifyContent="flex-end">
-              <FixedSpaceRow alignItems="center" spacing="xs">
-                {publishedUpToDate ? (
-                  <>
-                    <FontAwesomeIcon
-                      icon={fasCheckCircle}
-                      color={colors.status.success}
-                      size="lg"
-                    />
-                    <span>
-                      {
-                        i18n.childInformation.childDocuments.editor
-                          .fullyPublished
-                      }
-                    </span>
-                  </>
-                ) : (
-                  <>
-                    <FontAwesomeIcon
-                      icon={fasExclamationTriangle}
-                      color={colors.status.warning}
-                      size="lg"
-                    />
-                    <span>
-                      {i18n.childInformation.childDocuments.editor.notFullyPublished(
-                        document.publishedAt
-                      )}
-                    </span>
-                  </>
-                )}
+            {isInternal(document.template.type) && (
+              <FixedSpaceRow alignItems="center" justifyContent="flex-end">
+                <FixedSpaceRow alignItems="center" spacing="xs">
+                  {publishedUpToDate ? (
+                    <>
+                      <FontAwesomeIcon
+                        icon={fasCheckCircle}
+                        color={colors.status.success}
+                        size="lg"
+                      />
+                      <span>
+                        {
+                          i18n.childInformation.childDocuments.editor
+                            .fullyPublished
+                        }
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <FontAwesomeIcon
+                        icon={fasExclamationTriangle}
+                        color={colors.status.warning}
+                        size="lg"
+                      />
+                      <span>
+                        {i18n.childInformation.childDocuments.editor.notFullyPublished(
+                          document.publishedAt
+                        )}
+                      </span>
+                    </>
+                  )}
+                </FixedSpaceRow>
               </FixedSpaceRow>
-            </FixedSpaceRow>
+            )}
           </Container>
         </ActionBar>
       </div>

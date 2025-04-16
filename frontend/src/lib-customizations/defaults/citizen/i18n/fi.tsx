@@ -2859,7 +2859,9 @@ export default {
       answered: 'Vastattu',
       preview: 'Esikatsele',
       send: 'Lähetä',
-      success: 'Lomake lähetetty'
+      success: 'Lomake lähetetty',
+      sentInfo:
+        'Jos haluat muuttaa annettuja vastauksia, pyydä henkilökunnalta uusi lomake.'
     }
   },
   accessibilityStatement: (
