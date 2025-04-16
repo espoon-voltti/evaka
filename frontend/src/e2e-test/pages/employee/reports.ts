@@ -827,10 +827,12 @@ export class EndedPlacementsReport {
   async assertRows(
     expected: {
       childName: string
+      childDateOfBirth: LocalDate
       areaName: string
       unitName: string
       placementEnd: LocalDate
       nextPlacementStart: LocalDate
+      nextPlacementUnitName: string
     }[]
   ) {
     const rows = this.page.findAllByDataQa('report-row')
@@ -839,6 +841,9 @@ export class EndedPlacementsReport {
       expected.map(async (data, index) => {
         const row = rows.nth(index)
         await row.findByDataQa('child-name').assertTextEquals(data.childName)
+        await row
+          .findByDataQa('child-date-of-birth')
+          .assertTextEquals(data.childDateOfBirth.format())
         await row.findByDataQa('area-name').assertTextEquals(data.areaName)
         await row.findByDataQa('unit-name').assertTextEquals(data.unitName)
         await row
@@ -847,6 +852,9 @@ export class EndedPlacementsReport {
         await row
           .findByDataQa('next-placement-start-date')
           .assertTextEquals(data.nextPlacementStart.format())
+        await row
+          .findByDataQa('next-placement-unit-name')
+          .assertTextEquals(data.nextPlacementUnitName)
       })
     )
   }

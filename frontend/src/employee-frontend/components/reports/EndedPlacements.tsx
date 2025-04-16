@@ -169,6 +169,7 @@ export default React.memo(function EndedPlacements() {
             <ReportDownload
               data={filteredRows.map((row) => ({
                 ...row,
+                dateOfBirth: row.dateOfBirth?.format(),
                 placementEnd: row.placementEnd.format(),
                 nextPlacementStart: row.nextPlacementStart?.format()
               }))}
@@ -176,12 +177,20 @@ export default React.memo(function EndedPlacements() {
                 { label: 'Lapsen sukunimi', value: (row) => row.lastName },
                 { label: 'Lapsen etunimi', value: (row) => row.firstName },
                 {
+                  label: 'Lapsen syntymäaika',
+                  value: (row) => row.dateOfBirth
+                },
+                {
                   label: 'Lopettaa varhaiskasvatuksessa',
                   value: (row) => row.placementEnd
                 },
                 {
                   label: 'Jatkaa varhaiskasvatuksessa',
                   value: (row) => row.nextPlacementStart
+                },
+                {
+                  label: 'Jatkaa yksikössä',
+                  value: (row) => row.nextPlacementUnitName
                 }
               ]}
               filename={getFilename(filters.year, filters.month)}
@@ -190,10 +199,12 @@ export default React.memo(function EndedPlacements() {
               <Thead>
                 <Tr>
                   <Th>{i18n.reports.common.childName}</Th>
+                  <Th>{i18n.reports.common.dateOfBirth}</Th>
                   <Th>{i18n.reports.endedPlacements.placementEnd}</Th>
                   <Th>{i18n.reports.endedPlacements.unit}</Th>
                   <Th>{i18n.reports.endedPlacements.area}</Th>
                   <Th>{i18n.reports.endedPlacements.nextPlacementStart}</Th>
+                  <Th>{i18n.reports.endedPlacements.nextPlacementUnitName}</Th>
                 </Tr>
               </Thead>
               <Tbody>
@@ -205,6 +216,9 @@ export default React.memo(function EndedPlacements() {
                         data-qa="child-name"
                       >{`${row.lastName ?? ''} ${row.firstName ?? ''}`}</Link>
                     </Td>
+                    <Td data-qa="child-date-of-birth">
+                      {row.dateOfBirth?.format()}
+                    </Td>
                     <Td data-qa="placement-end-date">
                       {row.placementEnd.format()}
                     </Td>
@@ -212,6 +226,9 @@ export default React.memo(function EndedPlacements() {
                     <Td data-qa="area-name">{row.areaName}</Td>
                     <Td data-qa="next-placement-start-date">
                       {row.nextPlacementStart?.format()}
+                    </Td>
+                    <Td data-qa="next-placement-unit-name">
+                      {row.nextPlacementUnitName}
                     </Td>
                   </Tr>
                 ))}

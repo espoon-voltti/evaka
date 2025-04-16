@@ -345,9 +345,11 @@ export interface DuplicatePeopleReportRow {
 export interface EndedPlacementsReportRow {
   areaName: string
   childId: PersonId
+  dateOfBirth: LocalDate | null
   firstName: string | null
   lastName: string | null
   nextPlacementStart: LocalDate | null
+  nextPlacementUnitName: string | null
   placementEnd: LocalDate
   unitName: string
 }
@@ -1254,6 +1256,7 @@ export function deserializeJsonDuplicatePeopleReportRow(json: JsonOf<DuplicatePe
 export function deserializeJsonEndedPlacementsReportRow(json: JsonOf<EndedPlacementsReportRow>): EndedPlacementsReportRow {
   return {
     ...json,
+    dateOfBirth: (json.dateOfBirth != null) ? LocalDate.parseIso(json.dateOfBirth) : null,
     nextPlacementStart: (json.nextPlacementStart != null) ? LocalDate.parseIso(json.nextPlacementStart) : null,
     placementEnd: LocalDate.parseIso(json.placementEnd)
   }

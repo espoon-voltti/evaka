@@ -3693,7 +3693,8 @@ export const fi = {
       child: 'Lapsi',
       under3y: '<3v',
       over3y: '3+',
-      age: 'Ikä'
+      age: 'Ikä',
+      dateOfBirth: 'Syntymäaika'
     },
     applications: {
       title: 'Saapuneet hakemukset',
@@ -3956,7 +3957,8 @@ export const fi = {
       placementEnd: 'Lopettaa varhaiskasvatuksessa',
       unit: 'Yksikkö',
       area: 'Alue',
-      nextPlacementStart: 'Jatkaa varhaiskasvatuksessa'
+      nextPlacementStart: 'Jatkaa varhaiskasvatuksessa',
+      nextPlacementUnitName: 'Jatkaa yksikössä'
     },
     missingHeadOfFamily: {
       title: 'Puuttuvat päämiehet',
