@@ -5,7 +5,8 @@
 name: 'Create a release'
 on:
   schedule:
-    - cron: '0 23 * * 0'  # Sunday at 23:00
+    # Friday at 22:00 or 23:00 (depending on daylight saving time)
+    - cron: '0 20 * * 5'
   workflow_dispatch:
     inputs:
       git-tag:

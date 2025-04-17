@@ -9,7 +9,22 @@
   ],
   semanticCommits: 'disabled',
   automergeStrategy: 'merge-commit',
+
+  // Wait for a version to be 3 days old before making a PR
   minimumReleaseAge: '3 days',
+
+  // Update during weekends
+  schedule: ['* * * * 0,6'],
+
+  // Allow most 20 PRs open concurrently
+  prConcurrentLimit: 20,
+
+  // No rate limit for PR creation
+  prHourlyLimit: 0,
+
+  // Pin all dependencies to exact versions
+  rangeStrategy: 'pin',
+
   labels: ['dependencies'],
   packageRules: [
     {
