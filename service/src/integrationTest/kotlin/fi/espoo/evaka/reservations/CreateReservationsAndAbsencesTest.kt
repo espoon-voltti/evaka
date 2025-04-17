@@ -14,6 +14,9 @@ import fi.espoo.evaka.absence.upsertFullDayAbsences
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesController
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue
 import fi.espoo.evaka.espoo.EspooActionRuleMapping
+import fi.espoo.evaka.holidayperiod.QuestionnaireBody
+import fi.espoo.evaka.holidayperiod.QuestionnaireConditions
+import fi.espoo.evaka.holidayperiod.createOpenRangesQuestionnaire
 import fi.espoo.evaka.holidayperiod.insertHolidayPeriod
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.placement.PlacementType
@@ -42,6 +45,7 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.TimeRange
+import fi.espoo.evaka.shared.domain.Translatable
 import fi.espoo.evaka.shared.noopTracer
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.PilotFeature
@@ -78,6 +82,19 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
     private val employee = DevEmployee()
     private val adult = DevPerson()
     private val child = DevPerson()
+
+    private val freeRangesQuestionnaire =
+        QuestionnaireBody.OpenRangesQuestionnaireBody(
+            active = FiniteDateRange(LocalDate.of(2021, 4, 1), LocalDate.of(2021, 5, 31)),
+            period = FiniteDateRange(LocalDate.of(2021, 6, 1), LocalDate.of(2021, 8, 31)),
+            absenceTypeThreshold = 30,
+            description = Translatable("", "", ""),
+            descriptionLink = Translatable("", "", ""),
+            conditions = QuestionnaireConditions(),
+            title = Translatable("", "", ""),
+            absenceType = AbsenceType.FREE_ABSENCE,
+            requiresStrongAuth = false,
+        )
 
     @BeforeEach
     fun before() {
@@ -1943,5 +1960,141 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
             ),
             absences.map { Triple(it.date, it.absenceType, it.category) },
         )
+    }
+
+    @Test
+    fun `citizen cannot override absences created by questionnaire with reservations`() {
+        // given
+        db.transaction {
+            it.insert(
+                DevPlacement(
+                    childId = child.id,
+                    unitId = daycare.id,
+                    startDate = monday,
+                    endDate = tuesday,
+                )
+            )
+            it.insertGuardian(guardianId = adult.id, childId = child.id)
+            val questionnaireId = it.createOpenRangesQuestionnaire(freeRangesQuestionnaire)
+            it.insert(
+                DevAbsence(
+                    childId = child.id,
+                    date = monday,
+                    absenceType = AbsenceType.SICKLEAVE,
+                    modifiedBy = EvakaUserId(employee.user.id.raw),
+                    absenceCategory = AbsenceCategory.BILLABLE,
+                    questionnaireId = questionnaireId,
+                )
+            )
+            it.insert(
+                DevAbsence(
+                    childId = child.id,
+                    date = tuesday,
+                    absenceType = AbsenceType.SICKLEAVE,
+                    modifiedBy = EvakaUserId(employee.user.id.raw),
+                    absenceCategory = AbsenceCategory.BILLABLE,
+                    questionnaireId = questionnaireId,
+                )
+            )
+        }
+
+        // when
+        db.transaction {
+            createReservationsAndAbsences(
+                it,
+                beforeThreshold,
+                adult.user(CitizenAuthLevel.STRONG),
+                listOf(
+                    DailyReservationRequest.Reservations(
+                        childId = child.id,
+                        date = monday,
+                        TimeRange(startTime, endTime),
+                    ),
+                    DailyReservationRequest.Reservations(
+                        childId = child.id,
+                        date = tuesday,
+                        TimeRange(startTime, endTime),
+                    ),
+                ),
+                citizenReservationThresholdHours,
+            )
+        }
+
+        // then reservation is not added
+        val reservations = db.read { it.getReservationsCitizen(monday, adult.id, queryRange) }
+        assertEquals(0, reservations.size)
+
+        // and absence has not been removed
+        val absences =
+            db.read { it.getAbsencesOfChildByRange(child.id, DateRange(monday, tuesday)) }
+        assertEquals(2, absences.size)
+    }
+
+    @Test
+    fun `employee can override absences created by questionnaire with reservations`() {
+        // given
+        db.transaction {
+            it.insert(
+                DevPlacement(
+                    childId = child.id,
+                    unitId = daycare.id,
+                    startDate = monday,
+                    endDate = tuesday,
+                )
+            )
+            it.insertGuardian(guardianId = adult.id, childId = child.id)
+            val questionnaireId = it.createOpenRangesQuestionnaire(freeRangesQuestionnaire)
+            it.insert(
+                DevAbsence(
+                    childId = child.id,
+                    date = monday,
+                    absenceType = AbsenceType.OTHER_ABSENCE,
+                    modifiedBy = adult.evakaUserId(),
+                    absenceCategory = AbsenceCategory.BILLABLE,
+                    questionnaireId = questionnaireId,
+                )
+            )
+            it.insert(
+                DevAbsence(
+                    childId = child.id,
+                    date = tuesday,
+                    absenceType = AbsenceType.OTHER_ABSENCE,
+                    modifiedBy = adult.evakaUserId(),
+                    absenceCategory = AbsenceCategory.BILLABLE,
+                    questionnaireId = questionnaireId,
+                )
+            )
+        }
+
+        // when
+        db.transaction {
+            createReservationsAndAbsences(
+                it,
+                beforeThreshold,
+                employee.user,
+                listOf(
+                    DailyReservationRequest.Reservations(
+                        childId = child.id,
+                        date = monday,
+                        TimeRange(startTime, endTime),
+                    ),
+                    DailyReservationRequest.Reservations(
+                        childId = child.id,
+                        date = tuesday,
+                        TimeRange(startTime, endTime),
+                    ),
+                ),
+                citizenReservationThresholdHours,
+            )
+        }
+
+        // then reservations are added
+        val reservations = db.read { it.getReservationsCitizen(monday, adult.id, queryRange) }
+        assertEquals(2, reservations.size)
+
+        // and absences have been removed
+        val absences =
+            db.read { it.getAbsencesOfChildByRange(child.id, DateRange(monday, tuesday)) }
+        assertEquals(0, absences.size)
     }
 }
