@@ -22,6 +22,9 @@
   // No rate limit for PR creation
   prHourlyLimit: 0,
 
+  // Pin all dependencies to exact versions
+  rangeStrategy: 'pin',
+
   labels: ['dependencies'],
   packageRules: [
     {
