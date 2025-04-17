@@ -19,6 +19,7 @@ import { AssistanceNeedDecisionStatus } from './assistanceneed'
 import { DaycareAssistanceLevel } from './assistance'
 import { DaycareId } from './shared'
 import { DecisionType } from './decision'
+import { DocumentContent } from './document'
 import { DocumentTemplateId } from './shared'
 import { DocumentType } from './document'
 import { GroupId } from './shared'
@@ -35,6 +36,7 @@ import { ServiceNeedOption } from './application'
 import { TitaniaErrorsId } from './shared'
 import { UUID } from '../../types'
 import { VoucherValueDecisionId } from './shared'
+import { deserializeJsonDocumentContent } from './document'
 
 /**
 * Generated from fi.espoo.evaka.reports.TampereRegionalSurvey.AgeStatisticsResult
@@ -280,6 +282,25 @@ export interface ChildrenInDifferentAddressReportRow {
   parentId: PersonId
   unitId: DaycareId
   unitName: string
+}
+
+/**
+* Generated from fi.espoo.evaka.reports.CitizenDocumentResponseReportRow
+*/
+export interface CitizenDocumentResponseReportRow {
+  childId: PersonId
+  documentContent: DocumentContent
+  firstName: string
+  lastName: string
+  responseDate: LocalDate
+}
+
+/**
+* Generated from fi.espoo.evaka.reports.CitizenDocumentResponseReportTemplate
+*/
+export interface CitizenDocumentResponseReportTemplate {
+  id: DocumentTemplateId
+  name: string
 }
 
 /**
@@ -1241,6 +1262,15 @@ export function deserializeJsonChildAttendanceReportRow(json: JsonOf<ChildAttend
     attendances: json.attendances.map(e => TimeInterval.parseJson(e)),
     date: LocalDate.parseIso(json.date),
     reservations: json.reservations.map(e => TimeRange.parseJson(e))
+  }
+}
+
+
+export function deserializeJsonCitizenDocumentResponseReportRow(json: JsonOf<CitizenDocumentResponseReportRow>): CitizenDocumentResponseReportRow {
+  return {
+    ...json,
+    documentContent: deserializeJsonDocumentContent(json.documentContent),
+    responseDate: LocalDate.parseIso(json.responseDate)
   }
 }
 

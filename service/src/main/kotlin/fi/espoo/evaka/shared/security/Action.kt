@@ -2270,8 +2270,11 @@ sealed interface Action {
         READ_STARTING_PLACEMENTS_REPORT(
             HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN),
             HasUnitRole(UNIT_SUPERVISOR).inUnit(),
+        ),
+        READ_CITIZEN_DOCUMENT_RESPONSE_REPORT(
+            HasGlobalRole(ADMIN),
+            HasUnitRole(UNIT_SUPERVISOR).inUnit()
         );
-
         override fun toString(): String = "${javaClass.name}.$name"
     }
 

@@ -4535,7 +4535,16 @@ export const fi = {
           'Tehostetun tuen lapsimäärä (kunnallinen)',
         statDay: '(tilanne 15.12.)'
       }
+    },
+    citizenDocumentResponseReport: {
+      title: 'Kuntalaisen lomakkeet',
+      filters: {
+        unit: 'Yksikkö',
+        group: 'Ryhmä',
+        template: 'Lomake'
+      }
     }
+
   },
   unitEditor: {
     submitNew: 'Luo yksikkö',
