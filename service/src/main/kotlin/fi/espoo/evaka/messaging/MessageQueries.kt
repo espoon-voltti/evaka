@@ -1645,6 +1645,16 @@ WITH sender AS (
     LEFT JOIN service_need sn ON false
     JOIN sender ON TRUE
     WHERE (pl.start_date > ${bind(date)} OR dgp.start_date > ${bind(date)})
+        AND NOT EXISTS (
+            SELECT
+            FROM daycare_group_placement earlier_dgp
+            JOIN placement earlier_p ON earlier_dgp.daycare_placement_id = earlier_p.id
+            WHERE
+                earlier_p.child_id = pl.child_id AND
+                earlier_dgp.daycare_group_id = dgp.daycare_group_id AND
+                earlier_dgp.end_date < dgp.start_date AND
+                earlier_dgp.end_date >= ${bind(date)}
+        )
         AND (d.care_area_id = ANY(${bind(starterRecipients.areaIds())})
             OR pl.unit_id = ANY(${bind(starterRecipients.unitIds())})
             OR dgp.daycare_group_id = ANY(${bind(starterRecipients.groupIds())})

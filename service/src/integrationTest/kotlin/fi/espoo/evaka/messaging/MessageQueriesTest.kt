@@ -29,6 +29,7 @@ import java.time.LocalTime
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -959,6 +960,246 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             ),
             recipients,
         )
+    }
+
+    @Test
+    fun `getMessageAccountsForRecipients returns correct accounts`() {
+        val today = LocalDate.of(2021, 5, 1)
+
+        // Set up test data
+        val area = DevCareArea()
+        val daycare =
+            DevDaycare(areaId = area.id, enabledPilotFeatures = setOf(PilotFeature.MESSAGING))
+        val group = DevDaycareGroup(daycareId = daycare.id)
+
+        val currentChild = DevPerson()
+        val starterChild = DevPerson()
+        val changerChild = DevPerson()
+        val currentParent = DevPerson()
+        val starterParent = DevPerson()
+        val changerParent = DevPerson()
+
+        val (
+            employeeAccountId,
+            currentParentAccountId,
+            starterParentAccountId,
+            changerParentAccountId) =
+            db.transaction { tx ->
+                tx.insert(area)
+                tx.insert(daycare)
+                tx.insert(group)
+
+                val currentChildId = tx.insert(currentChild, DevPersonType.CHILD)
+                val starterChildId = tx.insert(starterChild, DevPersonType.CHILD)
+                val changerChildId = tx.insert(changerChild, DevPersonType.CHILD)
+                val currentParentId = tx.insert(currentParent, DevPersonType.ADULT)
+                val starterParentId = tx.insert(starterParent, DevPersonType.ADULT)
+                val changerParentId = tx.insert(changerParent, DevPersonType.ADULT)
+
+                // Create guardian relationships
+                tx.insertGuardian(guardianId = currentParentId, childId = currentChildId)
+                tx.insertGuardian(guardianId = starterParentId, childId = starterChildId)
+                tx.insertGuardian(guardianId = changerParentId, childId = changerChildId)
+
+                // Insert placement
+                val currentPlacementId =
+                    tx.insert(
+                        DevPlacement(
+                            childId = currentChildId,
+                            unitId = daycare.id,
+                            startDate = today.minusDays(10),
+                            endDate = today.plusDays(30),
+                        )
+                    )
+                val starterPlacementId =
+                    tx.insert(
+                        DevPlacement(
+                            childId = starterChildId,
+                            unitId = daycare.id,
+                            startDate = today.plusDays(5),
+                            endDate = today.plusDays(30),
+                        )
+                    )
+                val changerPlacementId1 =
+                    tx.insert(
+                        DevPlacement(
+                            childId = changerChild.id,
+                            unitId = daycare.id,
+                            startDate = today.minusDays(10),
+                            endDate = today.plusDays(30),
+                        )
+                    )
+                val changerPlacementId2 =
+                    tx.insert(
+                        DevPlacement(
+                            childId = changerChild.id,
+                            unitId = daycare.id,
+                            startDate = today.plusDays(31),
+                            endDate = today.plusDays(60),
+                        )
+                    )
+
+                // Insert group placements
+                tx.insert(
+                    DevDaycareGroupPlacement(
+                        daycareGroupId = group.id,
+                        daycarePlacementId = currentPlacementId,
+                        startDate = today.minusDays(10),
+                        endDate = today.plusDays(30),
+                    )
+                )
+                tx.insert(
+                    DevDaycareGroupPlacement(
+                        daycareGroupId = group.id,
+                        daycarePlacementId = starterPlacementId,
+                        startDate = today.plusDays(5),
+                        endDate = today.plusDays(30),
+                    )
+                )
+                tx.insert(
+                    DevDaycareGroupPlacement(
+                        daycareGroupId = group.id,
+                        daycarePlacementId = changerPlacementId1,
+                        startDate = today.minusDays(10),
+                        endDate = today.plusDays(30),
+                    )
+                )
+                tx.insert(
+                    DevDaycareGroupPlacement(
+                        daycareGroupId = group.id,
+                        daycarePlacementId = changerPlacementId2,
+                        startDate = today.plusDays(31),
+                        endDate = today.plusDays(60),
+                    )
+                )
+
+                // Insert message accounts for guardians
+                val currentParentAccountId = tx.getCitizenMessageAccount(currentParentId)
+                val starterParentAccountId = tx.getCitizenMessageAccount(starterParentId)
+                val changerParentAccountId = tx.getCitizenMessageAccount(changerParentId)
+
+                // Create employee message account (sender)
+                tx.insertDaycareAclRow(daycare.id, employee1.id, UserRole.UNIT_SUPERVISOR)
+                val employeeAccountId = tx.upsertEmployeeMessageAccount(employee1.id)
+
+                data class AccountIds(
+                    val accountId1: MessageAccountId,
+                    val accountId2: MessageAccountId,
+                    val accountId3: MessageAccountId,
+                    val accountId4: MessageAccountId,
+                )
+
+                AccountIds(
+                    employeeAccountId,
+                    currentParentAccountId,
+                    starterParentAccountId,
+                    changerParentAccountId,
+                )
+            }
+
+        // Test getting accounts for area recipients
+        val areaRecipients = setOf(MessageRecipient.Area(area.id))
+        val areaAccounts =
+            db.read { tx ->
+                tx.getMessageAccountsForRecipients(
+                    accountId = employeeAccountId,
+                    recipients = areaRecipients,
+                    filters = null,
+                    date = today,
+                )
+            }
+
+        assertEquals(2, areaAccounts.size)
+        assertTrue(areaAccounts.any { it.first == currentParentAccountId })
+        assertTrue(areaAccounts.any { it.first == changerParentAccountId })
+
+        // Test getting accounts for current unit recipients
+        val currentUnitAccounts =
+            db.read { tx ->
+                tx.getMessageAccountsForRecipients(
+                    accountId = employeeAccountId,
+                    recipients = setOf(MessageRecipient.Unit(daycare.id, false)),
+                    filters = null,
+                    date = today,
+                )
+            }
+
+        assertEquals(2, currentUnitAccounts.size)
+        assertTrue(currentUnitAccounts.any { it.first == currentParentAccountId })
+        assertTrue(currentUnitAccounts.any { it.first == changerParentAccountId })
+
+        // Test getting accounts for starter unit recipients
+        val starterUnitAccounts =
+            db.read { tx ->
+                tx.getMessageAccountsForRecipients(
+                    accountId = employeeAccountId,
+                    recipients = setOf(MessageRecipient.Unit(daycare.id, true)),
+                    filters = null,
+                    date = today,
+                )
+            }
+
+        assertEquals(1, starterUnitAccounts.size)
+        assertTrue(starterUnitAccounts.any { it.first == starterParentAccountId })
+
+        // Test getting accounts for current group recipients
+        val currentGroupAccounts =
+            db.read { tx ->
+                tx.getMessageAccountsForRecipients(
+                    accountId = employeeAccountId,
+                    recipients = setOf(MessageRecipient.Group(group.id, false)),
+                    filters = null,
+                    date = today,
+                )
+            }
+
+        assertEquals(2, currentGroupAccounts.size)
+        assertTrue(currentGroupAccounts.any { it.first == currentParentAccountId })
+        assertTrue(currentGroupAccounts.any { it.first == changerParentAccountId })
+
+        // Test getting accounts for starter group recipients
+        val starterGroupAccounts =
+            db.read { tx ->
+                tx.getMessageAccountsForRecipients(
+                    accountId = employeeAccountId,
+                    recipients = setOf(MessageRecipient.Group(group.id, true)),
+                    filters = null,
+                    date = today,
+                )
+            }
+
+        assertEquals(1, starterGroupAccounts.size)
+        assertTrue(starterGroupAccounts.any { it.first == starterParentAccountId })
+
+        // Test getting accounts for specific child
+        val childRecipients = setOf(MessageRecipient.Child(currentChild.id))
+        val childAccounts =
+            db.read { tx ->
+                tx.getMessageAccountsForRecipients(
+                    accountId = employeeAccountId,
+                    recipients = childRecipients,
+                    filters = null,
+                    date = today,
+                )
+            }
+
+        assertEquals(1, childAccounts.size)
+        assertTrue(childAccounts.any { it.first == currentParentAccountId })
+
+        // Test with citizen recipient
+        val citizenRecipients = setOf(MessageRecipient.Citizen(currentParent.id))
+        val citizenAccounts =
+            db.read { tx ->
+                tx.getMessageAccountsForRecipients(
+                    accountId = employeeAccountId,
+                    recipients = citizenRecipients,
+                    filters = null,
+                    date = today,
+                )
+            }
+
+        assertEquals(1, citizenAccounts.size)
+        assertTrue(citizenAccounts.any { it.first == currentParentAccountId })
     }
 
     /*
