@@ -34,6 +34,8 @@ class SfiAsyncJobs(
             val eventsResponse = sfiClient.getEvents(continuationToken)
             logger.info { " SfiAsyncJobs: got ${eventsResponse.events.size} events" }
 
+            logger.info { "Sfi GetEvents response: $eventsResponse" }
+
             // TODO handle events
             it.storeSfiGetEventsContinuationToken(eventsResponse.continuationToken)
         }
