@@ -352,6 +352,7 @@ const sv: Translations = {
       SICKLEAVE: 'Sjukfrånvaro',
       PLANNED_ABSENCE: 'Skiftarbete frånvaro'
     },
+    calendarEventFilename: 'Kalenderhändelse',
     discussionTimeReservation: {
       surveyModalButtonText: 'Gå till tidsbokning',
       reservationModalButtonText: 'Gå till bokning',

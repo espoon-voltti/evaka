@@ -40,12 +40,12 @@ import { faTimes } from 'lib-icons'
 
 import ModalAccessibilityWrapper from '../../ModalAccessibilityWrapper'
 import { useLang, useTranslation } from '../../localization'
+import { CalendarEventExportButton } from '../CalendarEventExportButton'
 import {
   CalendarModalBackground,
   CalendarModalCloseButton,
   CalendarModalSection
 } from '../CalendarModal'
-import { DiscussionTimeExportButton } from '../DiscussionTimeExportButton'
 import { deleteCalendarEventTimeReservationMutation } from '../queries'
 
 interface ChildWithSurveys {
@@ -336,8 +336,8 @@ const ChildSurveyElement = React.memo(function ChildSurveyElement({
                     ${r.startTime.format()} - ${r.endTime.format()}`}
                         </Bold>
                       </div>
-                      <DiscussionTimeExportButton
-                        eventTitle={survey.title}
+                      <CalendarEventExportButton
+                        calendarEvent={survey}
                         discussionTime={r}
                         eventAttendeeInfo={survey.attendingChildren?.[
                           childId
