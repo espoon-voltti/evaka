@@ -14,23 +14,12 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.TimeRange
 import java.time.LocalDate
-import org.jdbi.v3.core.mapper.PropagateNull
 import org.jdbi.v3.json.Json
-
-data class CustomerNumbers(
-    @PropagateNull val number: String,
-    val name: String,
-    val group: String,
-    val customerType: CustomerType,
-)
 
 /** Throws an IllegalStateException if Nekku returns an empty customer list. */
 fun fetchAndUpdateNekkuCustomers(client: NekkuClient, db: Database.Connection) {
     val customersFromNekku =
-        client
-            .getCustomers()
-            .map { it -> CustomerNumbers(it.number, it.name, it.group, it.customerType) }
-            .filter { it.group.contains("Varhaiskasvatus") }
+        client.getCustomers().map { it.toEvaka() }.filter { it.group.contains("Varhaiskasvatus") }
 
     if (customersFromNekku.isEmpty())
         error("Refusing to sync empty Nekku customer list into database")
@@ -42,6 +31,9 @@ fun fetchAndUpdateNekkuCustomers(client: NekkuClient, db: Database.Connection) {
                 "Nekku customer list update caused $nulledCustomersCount customer numbers to be set to null"
             }
         val deletedCustomerCount = tx.setCustomerNumbers(customersFromNekku)
+
+        tx.setNekkuCustomerTypes(customersFromNekku.map { it.number to it.customerType })
+
         logger.info {
             "Deleted: $deletedCustomerCount Nekku customer numbers, inserted ${customersFromNekku.size}"
         }
@@ -49,7 +41,7 @@ fun fetchAndUpdateNekkuCustomers(client: NekkuClient, db: Database.Connection) {
 }
 
 fun Database.Transaction.resetNekkuCustomerNumbersNotContainedWithin(
-    nekkuCustomerNumbers: List<CustomerNumbers>
+    nekkuCustomerNumbers: List<NekkuCustomer>
 ): Int {
     val newNekkuCustomerNumbers = nekkuCustomerNumbers.map { it.number }
     val affectedRows = execute {
@@ -60,7 +52,7 @@ fun Database.Transaction.resetNekkuCustomerNumbersNotContainedWithin(
     return affectedRows
 }
 
-fun Database.Transaction.setCustomerNumbers(customerNumbers: List<CustomerNumbers>): Int {
+fun Database.Transaction.setCustomerNumbers(customerNumbers: List<NekkuCustomer>): Int {
     val newCustomerNumbers = customerNumbers.map { it.number }
     val deletedCustomerCount = execute {
         sql("DELETE FROM nekku_customer WHERE number != ALL (${bind(newCustomerNumbers)})")
@@ -68,31 +60,83 @@ fun Database.Transaction.setCustomerNumbers(customerNumbers: List<CustomerNumber
     executeBatch(customerNumbers) {
         sql(
             """
-INSERT INTO nekku_customer (number, name, customer_group, customer_type)
+INSERT INTO nekku_customer (number, name, customer_group)
 VALUES (
     ${bind{it.number}},
     ${bind{it.name}},
-    ${bind{it.group}},
-    ${bind{it.customerType}}
+    ${bind{it.group}}
 )
 ON CONFLICT (number) DO 
 UPDATE SET
   name = excluded.name,
-  customer_group = excluded.customer_group,
-  customer_type = excluded.customer_type
+  customer_group = excluded.customer_group
 WHERE
     nekku_customer.name <> excluded.name OR
-    nekku_customer.customer_group <> excluded.customer_group OR
-    nekku_customer.customer_type <> excluded.customer_type;
+    nekku_customer.customer_group <> excluded.customer_group;
 """
         )
     }
     return deletedCustomerCount
 }
 
+fun Database.Transaction.setNekkuCustomerTypes(
+    nekkuCustomerTypes: List<Pair<String, List<CustomerType>>>
+) {
+    val newNekkuCustomerNumbers = nekkuCustomerTypes.flatMap { it.second }.map { it.type }
+    val deletedNekkuCustomerTypesCount = execute {
+        sql(
+            "DELETE FROM nekku_customer_type WHERE customer_number != ALL (${bind(newNekkuCustomerNumbers)})"
+        )
+    }
+    // TODO: Finish this
+    val batchRows: Sequence<Pair<String, CustomerType>> =
+        nekkuCustomerTypes.asSequence().flatMap { (customerNumber, customerTypes) ->
+            customerTypes.map { customerType -> Pair(customerNumber, customerType) }
+        }
+    // TODO: Finish this
+    executeBatch(batchRows) {
+        sql(
+            """
+INSERT INTO nekku_customer_type (
+    customer_number,
+    type,
+    weekdays
+) VALUES (
+    ${bind { (customerNumber, _) -> customerNumber}},
+    ${bind { (_, field) -> field.type }},
+    ${bind { (_, field) -> field.weekdays }}
+)
+ON CONFLICT (customer_number) DO 
+UPDATE SET
+  type = excluded.type,
+  weekdays = excluded.weekdays
+WHERE
+    nekku_customer_type.type <> excluded.type OR 
+    nekku_customer_type.weekdays <> excluded.weekdays;
+
+"""
+        )
+    }
+
+    logger.info {
+        "Deleted: $deletedNekkuCustomerTypesCount Nekku customer types, inserted ${nekkuCustomerTypes.size}"
+    }
+}
+
 fun Database.Transaction.getNekkuCustomers(): List<NekkuCustomer> {
     return createQuery {
-            sql("SELECT number, name, customer_group AS \"group\", unit_size FROM nekku_customer")
+            sql(
+                """
+    SELECT 
+        nc.number, 
+        nc.name, 
+        nc.customer_group AS "group",
+        JSON_AGG(JSON_BUILD_OBJECT('weekdays', nct.weekdays, 'type', nct.type)) AS customerType
+    FROM nekku_customer nc
+    LEFT JOIN nekku_customer_type nct ON nc.number = nct.customer_number
+    GROUP BY nc.number, nc.name, nc.customer_group
+    """
+            )
         }
         .toList<NekkuCustomer>()
 }

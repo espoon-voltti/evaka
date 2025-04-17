@@ -39,6 +39,7 @@ import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
+import org.jdbi.v3.json.Json
 import org.springframework.stereotype.Service
 
 private val logger = KotlinLogging.logger {}
@@ -196,7 +197,7 @@ interface NekkuClient {
         @JsonProperty("dry_run") val dryRun: Boolean,
     )
 
-    fun getCustomers(): List<NekkuCustomer>
+    fun getCustomers(): List<NekkuApiCustomer>
 
     fun getSpecialDiets(): List<NekkuApiSpecialDiet>
 
@@ -208,7 +209,7 @@ interface NekkuClient {
 class NekkuHttpClient(private val env: NekkuEnv, private val jsonMapper: JsonMapper) : NekkuClient {
     val client = OkHttpClient()
 
-    override fun getCustomers(): List<NekkuCustomer> {
+    override fun getCustomers(): List<NekkuApiCustomer> {
         val request = getBaseRequest().get().url(env.url.resolve("customers").toString()).build()
 
         return executeRequest(request)
@@ -569,12 +570,67 @@ data class NekkuCustomer(
     val number: String,
     val name: String,
     val group: String,
-    @JsonProperty("customer_type") val customerType: CustomerType,
+    @Json val customerType: List<CustomerType>,
 )
 
-data class CustomerType(val weekdays: List<Weekday>, val type: String)
+data class NekkuApiCustomer(
+    val number: String,
+    val name: String,
+    val group: String,
+    @Json @JsonProperty("customer_type") val customerType: List<CustomerApiType>,
+) {
+    fun toEvaka(): NekkuCustomer =
+        NekkuCustomer(number, name, group, customerType.map { it.toEvaka() })
+}
 
-data class Weekday(val description: String)
+data class CustomerType(val weekdays: List<NekkuCustomerWeekday>, val type: String)
+
+data class CustomerApiType(val weekdays: List<NekkuCustomerApiWeekday>, val type: String) {
+    fun toEvaka(): CustomerType = CustomerType(weekdays.map { it.toEvaka() }, type)
+}
+
+@ConstList("nekku_customer_weekday")
+enum class NekkuCustomerWeekday() : DatabaseEnum {
+    MONDAY,
+    TUESDAY,
+    WEDNESDAY,
+    THURSDAY,
+    FRIDAY,
+    SATURDAY,
+    SUNDAY,
+    WEEKDAYHOLIDAY;
+
+    override val sqlType: String = "nekku_customer_weekday"
+}
+
+enum class NekkuCustomerApiWeekday(@JsonValue val description: String) {
+    MONDAY("monday") {
+        override fun toEvaka(): NekkuCustomerWeekday = NekkuCustomerWeekday.MONDAY
+    },
+    TUESDAY("tuesday") {
+        override fun toEvaka(): NekkuCustomerWeekday = NekkuCustomerWeekday.TUESDAY
+    },
+    WEDNESDAY("wednesday") {
+        override fun toEvaka(): NekkuCustomerWeekday = NekkuCustomerWeekday.WEDNESDAY
+    },
+    THURSDAY("thursday") {
+        override fun toEvaka(): NekkuCustomerWeekday = NekkuCustomerWeekday.THURSDAY
+    },
+    FRIDAY("friday") {
+        override fun toEvaka(): NekkuCustomerWeekday = NekkuCustomerWeekday.FRIDAY
+    },
+    SATURDAY("saturday") {
+        override fun toEvaka(): NekkuCustomerWeekday = NekkuCustomerWeekday.SATURDAY
+    },
+    SUNDAY("sunday") {
+        override fun toEvaka(): NekkuCustomerWeekday = NekkuCustomerWeekday.SUNDAY
+    },
+    WEEKDAYHOLIDAY("weekday_holiday") {
+        override fun toEvaka(): NekkuCustomerWeekday = NekkuCustomerWeekday.WEEKDAYHOLIDAY
+    };
+
+    abstract fun toEvaka(): NekkuCustomerWeekday
+}
 
 data class NekkuUnitNumber(val number: String, val name: String)
 
