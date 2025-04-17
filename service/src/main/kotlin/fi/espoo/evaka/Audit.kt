@@ -222,6 +222,7 @@ enum class Audit(
     CitizenChildServiceNeedRead(securityEvent = true, securityLevel = "high"),
     CitizenChildAttendanceSummaryRead(securityEvent = true, securityLevel = "high"),
     CitizenChildDailyServiceTimeRead(securityEvent = true, securityLevel = "high"),
+    CitizenDocumentResponseReportRead,
     CitizenEmailVerificationStatusRead,
     CitizenFeeDecisionDownloadPdf,
     CitizenNotificationSettingsRead,

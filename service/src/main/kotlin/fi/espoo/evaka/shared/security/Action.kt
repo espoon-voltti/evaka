@@ -1588,8 +1588,14 @@ sealed interface Action {
                 .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
                 .inUnitOfGroup(),
             HasGroupRole(STAFF).withUnitFeatures(PilotFeature.VASU_AND_PEDADOC).inGroup(),
-        ) // used in UI
-        ;
+        ), // used in UI
+        READ_CITIZEN_DOCUMENT_RESPONSE_REPORT(
+            HasGlobalRole(ADMIN),
+            HasUnitRole(UNIT_SUPERVISOR)
+                .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
+                .inUnitOfGroup(),
+            HasGroupRole(STAFF).withUnitFeatures(PilotFeature.VASU_AND_PEDADOC).inGroup(),
+        );
 
         override fun toString(): String = "${javaClass.name}.$name"
     }

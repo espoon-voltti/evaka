@@ -417,6 +417,7 @@ export interface DevChildDocument {
   content: DocumentContent
   contentModifiedAt: HelsinkiDateTime
   contentModifiedBy: EmployeeId | null
+  created: HelsinkiDateTime | null
   decision: DevChildDocumentDecision | null
   decisionMaker: EmployeeId | null
   id: ChildDocumentId
@@ -1310,6 +1311,7 @@ export function deserializeJsonDevChildDocument(json: JsonOf<DevChildDocument>):
     answeredAt: (json.answeredAt != null) ? HelsinkiDateTime.parseIso(json.answeredAt) : null,
     content: deserializeJsonDocumentContent(json.content),
     contentModifiedAt: HelsinkiDateTime.parseIso(json.contentModifiedAt),
+    created: (json.created != null) ? HelsinkiDateTime.parseIso(json.created) : null,
     decision: (json.decision != null) ? deserializeJsonDevChildDocumentDecision(json.decision) : null,
     modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt),
     publishedAt: (json.publishedAt != null) ? HelsinkiDateTime.parseIso(json.publishedAt) : null,

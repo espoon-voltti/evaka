@@ -18,6 +18,8 @@ import {
   getChildDocumentsReport,
   getChildDocumentsReportTemplateOptions,
   getChildrenInDifferentAddressReport,
+  getCitizenDocumentResponseReport,
+  getCitizenDocumentResponseTemplateOptions,
   getCustomerFeesReport,
   getDecisionsReport,
   getDuplicatePeopleReport,
@@ -87,6 +89,14 @@ export const childDocumentsReportQuery = q.query(getChildDocumentsReport)
 
 export const childDocumentsReportTemplateOptionsQuery = q.query(
   getChildDocumentsReportTemplateOptions
+)
+
+export const getCitizenDocumentResponseTemplateOptionsQuery = q.query(
+  getCitizenDocumentResponseTemplateOptions
+)
+
+export const getCitizenDocumentResponseReportQuery = q.query(
+  getCitizenDocumentResponseReport
 )
 
 export const exceededServiceNeedReportUnitsQuery = q.query(
