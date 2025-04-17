@@ -24,7 +24,8 @@ describe('absences date range', () => {
         ...base,
         date: LocalDate.todayInSystemTz().addDays(1),
         absenceType: 'SICKLEAVE',
-        category: 'NONBILLABLE'
+        category: 'NONBILLABLE',
+        belongsToQuestionnaire: false
       }
       const absences = [absence]
       expect(groupAbsencesByDateRange(absences)[0].durationInDays()).toBe(1)
@@ -35,13 +36,15 @@ describe('absences date range', () => {
         ...base,
         date: LocalDate.todayInSystemTz().addDays(1),
         absenceType: 'SICKLEAVE',
-        category: 'NONBILLABLE'
+        category: 'NONBILLABLE',
+        belongsToQuestionnaire: false
       }
       const absence2: Absence = {
         ...base,
         date: LocalDate.todayInSystemTz().addDays(2),
         absenceType: 'SICKLEAVE',
-        category: 'NONBILLABLE'
+        category: 'NONBILLABLE',
+        belongsToQuestionnaire: false
       }
       const absences = [absence, absence2]
       expect(groupAbsencesByDateRange(absences)[0].durationInDays()).toBe(2)
@@ -52,25 +55,29 @@ describe('absences date range', () => {
         ...base,
         date: LocalDate.todayInSystemTz().addDays(1),
         absenceType: 'SICKLEAVE',
-        category: 'NONBILLABLE'
+        category: 'NONBILLABLE',
+        belongsToQuestionnaire: false
       }
       const absence2: Absence = {
         ...base,
         date: LocalDate.todayInSystemTz().addDays(2),
         absenceType: 'SICKLEAVE',
-        category: 'NONBILLABLE'
+        category: 'NONBILLABLE',
+        belongsToQuestionnaire: false
       }
       const absence3: Absence = {
         ...base,
         date: LocalDate.todayInSystemTz().addDays(7),
         absenceType: 'SICKLEAVE',
-        category: 'NONBILLABLE'
+        category: 'NONBILLABLE',
+        belongsToQuestionnaire: false
       }
       const absence4: Absence = {
         ...base,
         date: LocalDate.todayInSystemTz().addDays(8),
         absenceType: 'SICKLEAVE',
-        category: 'NONBILLABLE'
+        category: 'NONBILLABLE',
+        belongsToQuestionnaire: false
       }
       const absences = [absence3, absence2, absence, absence4]
       expect(groupAbsencesByDateRange(absences)[0].durationInDays()).toBe(2)
@@ -82,20 +89,23 @@ describe('absences date range', () => {
         ...base,
         date: LocalDate.todayInSystemTz().addDays(1),
         absenceType: 'SICKLEAVE',
-        category: 'NONBILLABLE'
+        category: 'NONBILLABLE',
+        belongsToQuestionnaire: false
       }
       const absence2: Absence = {
         ...base,
         date: LocalDate.todayInSystemTz().addDays(2),
         absenceType: 'SICKLEAVE',
-        category: 'NONBILLABLE'
+        category: 'NONBILLABLE',
+        belongsToQuestionnaire: false
       }
 
       const absence3: Absence = {
         ...base,
         date: LocalDate.todayInSystemTz().addDays(7),
         absenceType: 'SICKLEAVE',
-        category: 'NONBILLABLE'
+        category: 'NONBILLABLE',
+        belongsToQuestionnaire: false
       }
       const absences = [absence, absence2, absence3]
       expect(groupAbsencesByDateRange(absences)[0].durationInDays()).toBe(2)
