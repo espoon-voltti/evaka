@@ -8,15 +8,24 @@ import DateRange from '../../date-range'
 import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
 import { Action } from '../action'
+import { ChildDocumentDecisionId } from './shared'
 import { ChildDocumentId } from './shared'
 import { DocumentConfidentiality } from './process'
 import { DocumentTemplateId } from './shared'
+import { EmployeeId } from './shared'
 import { EvakaUser } from './user'
 import { EvakaUserId } from './shared'
 import { JsonOf } from '../../json'
 import { PersonId } from './shared'
 import { PlacementType } from './placement'
 import { UiLanguage } from './shared'
+
+/**
+* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentController.AcceptChildDocumentDecisionRequest
+*/
+export interface AcceptChildDocumentDecisionRequest {
+  validity: DateRange
+}
 
 
 export namespace AnsweredQuestion {
@@ -154,12 +163,31 @@ export interface ChildDocumentCreateRequest {
 }
 
 /**
+* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentDecision
+*/
+export interface ChildDocumentDecision {
+  id: ChildDocumentDecisionId
+  status: ChildDocumentDecisionStatus
+  validity: DateRange
+}
+
+/**
+* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentDecisionStatus
+*/
+export type ChildDocumentDecisionStatus =
+  | 'ACCEPTED'
+  | 'REJECTED'
+  | 'ANNULLED'
+
+/**
 * Generated from fi.espoo.evaka.document.childdocument.ChildDocumentDetails
 */
 export interface ChildDocumentDetails {
   archivedAt: HelsinkiDateTime | null
   child: ChildBasics
   content: DocumentContent
+  decision: ChildDocumentDecision | null
+  decisionMaker: EmployeeId | null
   id: ChildDocumentId
   pdfAvailable: boolean
   publishedAt: HelsinkiDateTime | null
@@ -174,6 +202,7 @@ export interface ChildDocumentDetails {
 export interface ChildDocumentSummary {
   answeredAt: HelsinkiDateTime | null
   answeredBy: EvakaUser | null
+  decision: ChildDocumentDecision | null
   id: ChildDocumentId
   modifiedAt: HelsinkiDateTime
   publishedAt: HelsinkiDateTime | null
@@ -221,6 +250,7 @@ export type DocumentStatus =
   | 'DRAFT'
   | 'PREPARED'
   | 'CITIZEN_DRAFT'
+  | 'DECISION_PROPOSAL'
   | 'COMPLETED'
 
 /**
@@ -289,6 +319,7 @@ export const documentTypes = [
   'VASU',
   'LEOPS',
   'CITIZEN_BASIC',
+  'OTHER_DECISION',
   'OTHER'
 ] as const
 
@@ -317,6 +348,13 @@ export interface ExportedDocumentTemplate {
   processDefinitionNumber: string | null
   type: DocumentType
   validity: DateRange
+}
+
+/**
+* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentController.ProposeChildDocumentDecisionRequest
+*/
+export interface ProposeChildDocumentDecisionRequest {
+  decisionMaker: EmployeeId
 }
 
 
@@ -453,6 +491,14 @@ export interface UpdateChildDocumentRequest {
 }
 
 
+export function deserializeJsonAcceptChildDocumentDecisionRequest(json: JsonOf<AcceptChildDocumentDecisionRequest>): AcceptChildDocumentDecisionRequest {
+  return {
+    ...json,
+    validity: DateRange.parseJson(json.validity)
+  }
+}
+
+
 
 export function deserializeJsonAnsweredQuestionDateAnswer(json: JsonOf<AnsweredQuestion.DateAnswer>): AnsweredQuestion.DateAnswer {
   return {
@@ -497,12 +543,21 @@ export function deserializeJsonChildDocumentCitizenSummary(json: JsonOf<ChildDoc
 }
 
 
+export function deserializeJsonChildDocumentDecision(json: JsonOf<ChildDocumentDecision>): ChildDocumentDecision {
+  return {
+    ...json,
+    validity: DateRange.parseJson(json.validity)
+  }
+}
+
+
 export function deserializeJsonChildDocumentDetails(json: JsonOf<ChildDocumentDetails>): ChildDocumentDetails {
   return {
     ...json,
     archivedAt: (json.archivedAt != null) ? HelsinkiDateTime.parseIso(json.archivedAt) : null,
     child: deserializeJsonChildBasics(json.child),
     content: deserializeJsonDocumentContent(json.content),
+    decision: (json.decision != null) ? deserializeJsonChildDocumentDecision(json.decision) : null,
     publishedAt: (json.publishedAt != null) ? HelsinkiDateTime.parseIso(json.publishedAt) : null,
     publishedContent: (json.publishedContent != null) ? deserializeJsonDocumentContent(json.publishedContent) : null,
     template: deserializeJsonDocumentTemplate(json.template)
@@ -514,6 +569,7 @@ export function deserializeJsonChildDocumentSummary(json: JsonOf<ChildDocumentSu
   return {
     ...json,
     answeredAt: (json.answeredAt != null) ? HelsinkiDateTime.parseIso(json.answeredAt) : null,
+    decision: (json.decision != null) ? deserializeJsonChildDocumentDecision(json.decision) : null,
     modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt),
     publishedAt: (json.publishedAt != null) ? HelsinkiDateTime.parseIso(json.publishedAt) : null
   }

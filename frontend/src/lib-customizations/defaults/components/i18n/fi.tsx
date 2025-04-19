@@ -56,7 +56,11 @@ const components: Translations = {
       DRAFT: 'Luonnos',
       PREPARED: 'Laadittu',
       CITIZEN_DRAFT: 'Täytettävänä huoltajalla',
-      COMPLETED: 'Valmis'
+      DECISION_PROPOSAL: 'Päätösesitys',
+      COMPLETED: 'Valmis',
+      ACCEPTED: 'Hyväksytty',
+      REJECTED: 'Hylätty',
+      ANNULLED: 'Mitätöity'
     }
   },
   fileUpload: {

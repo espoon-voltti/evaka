@@ -43,6 +43,8 @@ export type CalendarEventTimeId = Id<'CalendarEventTime'>
 
 export type ChildDailyNoteId = Id<'ChildDailyNote'>
 
+export type ChildDocumentDecisionId = Id<'ChildDocumentDecision'>
+
 export type ChildDocumentId = Id<'ChildDocument'>
 
 export type ChildImageId = Id<'ChildImage'>

@@ -84,7 +84,12 @@ import {
   publishDocument,
   takeDocumentWriteLock,
   updateDocumentContent,
-  planArchiveChildDocument
+  planArchiveChildDocument,
+  getChildDocumentDecisionMakers,
+  acceptChildDocumentDecision,
+  annulChildDocumentDecision,
+  rejectChildDocumentDecision,
+  proposeChildDocumentDecision
 } from '../../generated/api-clients/document'
 import {
   createFeeAlteration,
@@ -189,6 +194,10 @@ export const childDocumentQuery = q.query(getDocument, {
   refetchOnWindowFocus: false
 })
 
+export const childDocumentDecisionMakersQuery = q.query(
+  getChildDocumentDecisionMakers
+)
+
 export const childDocumentMetadataQuery = q.query(getChildDocumentMetadata)
 
 export const childDocumentWriteLockQuery = q.query(takeDocumentWriteLock, {
@@ -229,6 +238,34 @@ export const childDocumentPrevStatusMutation = q.parametricMutation<{
 export const deleteChildDocumentMutation = q.parametricMutation<{
   childId: ChildId
 }>()(deleteDraftDocument, [
+  ({ childId }) => childDocumentsQuery({ childId }),
+  ({ documentId }) => childDocumentQuery({ documentId })
+])
+
+export const proposeChildDocumentDecisionMutation = q.parametricMutation<{
+  childId: ChildId
+}>()(proposeChildDocumentDecision, [
+  ({ childId }) => childDocumentsQuery({ childId }),
+  ({ documentId }) => childDocumentQuery({ documentId })
+])
+
+export const acceptChildDocumentDecisionMutation = q.parametricMutation<{
+  childId: ChildId
+}>()(acceptChildDocumentDecision, [
+  ({ childId }) => childDocumentsQuery({ childId }),
+  ({ documentId }) => childDocumentQuery({ documentId })
+])
+
+export const rejectChildDocumentDecisionMutation = q.parametricMutation<{
+  childId: ChildId
+}>()(rejectChildDocumentDecision, [
+  ({ childId }) => childDocumentsQuery({ childId }),
+  ({ documentId }) => childDocumentQuery({ documentId })
+])
+
+export const annulChildDocumentDecisionMutation = q.parametricMutation<{
+  childId: ChildId
+}>()(annulChildDocumentDecision, [
   ({ childId }) => childDocumentsQuery({ childId }),
   ({ documentId }) => childDocumentQuery({ documentId })
 ])

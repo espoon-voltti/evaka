@@ -9,6 +9,7 @@ import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.document.DocumentTemplateContent
 import fi.espoo.evaka.document.getTemplate
+import fi.espoo.evaka.pis.Employee
 import fi.espoo.evaka.pis.listPersonByDuplicateOf
 import fi.espoo.evaka.process.ArchivedProcessState
 import fi.espoo.evaka.process.deleteProcessByDocumentId
@@ -16,14 +17,17 @@ import fi.espoo.evaka.process.insertProcess
 import fi.espoo.evaka.process.insertProcessHistoryRow
 import fi.espoo.evaka.process.updateDocumentProcessHistory
 import fi.espoo.evaka.shared.ChildDocumentId
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
+import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
@@ -195,6 +199,44 @@ class ChildDocumentController(
             .also { Audit.ChildDocumentRead.log(targetId = AuditId(documentId)) }
     }
 
+    @GetMapping("/{documentId}/decision-makers")
+    fun getChildDocumentDecisionMakers(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable documentId: ChildDocumentId,
+    ): List<Employee> {
+        return db.connect { dbc ->
+                dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.ChildDocument.READ,
+                        documentId,
+                    )
+
+                    tx.createQuery {
+                            sql(
+                                """
+                    SELECT id, first_name, last_name, email, external_id, created, updated, active, (social_security_number IS NOT NULL) AS has_ssn, last_login
+                    FROM employee e
+                    WHERE e.roles && ${bind(listOf(UserRole.ADMIN, UserRole.DIRECTOR))} OR EXISTS(
+                        SELECT FROM daycare_acl acl 
+                        WHERE acl.employee_id = e.id AND acl.role = ANY(${bind(listOf(UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER))})
+                    ) OR EXISTS( -- always include currently selected even if roles change
+                        SELECT FROM child_document cd
+                        WHERE cd.id = ${bind(documentId)} AND cd.decision_maker = e.id
+                    ) 
+                """
+                            )
+                        }
+                        .toList<Employee>()
+                }
+            }
+            .also { Audit.ChildDocumentReadDecisionMakers.log(targetId = AuditId(documentId)) }
+    }
+
     @PutMapping("/{documentId}/content")
     fun updateDocumentContent(
         db: Database,
@@ -292,6 +334,13 @@ class ChildDocumentController(
                         Action.ChildDocument.PUBLISH,
                         documentId,
                     )
+
+                    val document =
+                        tx.getChildDocument(documentId)
+                            ?: throw NotFound("Document $documentId not found")
+                    if (!document.template.type.publishable)
+                        throw BadRequest("Document type is not publishable")
+
                     val wasUpToDate = tx.isDocumentPublishedContentUpToDate(documentId)
                     tx.publishChildDocument(documentId, clock.now())
                     if (!wasUpToDate) {
@@ -333,6 +382,11 @@ class ChildDocumentController(
                         Action.ChildDocument.NEXT_STATUS,
                         documentId,
                     )
+
+                    val document =
+                        tx.getChildDocument(documentId)
+                            ?: throw NotFound("Document $documentId not found")
+
                     val statusTransition =
                         validateStatusTransition(
                             tx = tx,
@@ -341,20 +395,25 @@ class ChildDocumentController(
                             goingForward = true,
                         )
 
-                    val wasUpToDate = tx.isDocumentPublishedContentUpToDate(documentId)
-                    tx.changeStatusAndPublish(documentId, statusTransition, clock.now())
-                    if (!wasUpToDate) {
-                        childDocumentService.schedulePdfGeneration(
-                            tx,
-                            listOf(documentId),
-                            clock.now(),
-                        )
-                        childDocumentService.scheduleEmailNotification(
-                            tx,
-                            listOf(documentId),
-                            clock.now(),
-                        )
+                    if (document.template.type.decision) {
+                        tx.changeStatus(documentId, statusTransition, clock.now())
+                    } else {
+                        val wasUpToDate = tx.isDocumentPublishedContentUpToDate(documentId)
+                        tx.changeStatusAndPublish(documentId, statusTransition, clock.now())
+                        if (!wasUpToDate) {
+                            childDocumentService.schedulePdfGeneration(
+                                tx,
+                                listOf(documentId),
+                                clock.now(),
+                            )
+                            childDocumentService.scheduleEmailNotification(
+                                tx,
+                                listOf(documentId),
+                                clock.now(),
+                            )
+                        }
                     }
+
                     updateDocumentProcessHistory(
                         tx = tx,
                         documentId = documentId,
@@ -497,6 +556,180 @@ class ChildDocumentController(
                 }
             }
             .also { Audit.ChildDocumentDownload.log(targetId = AuditId(documentId)) }
+    }
+
+    data class ProposeChildDocumentDecisionRequest(val decisionMaker: EmployeeId)
+
+    @PostMapping("/{documentId}/propose-decision")
+    fun proposeChildDocumentDecision(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable documentId: ChildDocumentId,
+        @RequestBody body: ProposeChildDocumentDecisionRequest,
+    ) {
+        db.connect { dbc ->
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.ChildDocument.PROPOSE_DECISION,
+                        documentId,
+                    )
+
+                    val document =
+                        tx.getChildDocument(documentId)
+                            ?: throw NotFound("Document $documentId not found")
+                    if (!document.template.type.decision)
+                        throw BadRequest("Document is not a decision")
+                    if (document.status != DocumentStatus.DRAFT)
+                        throw BadRequest("Document is not in correct status")
+
+                    tx.setChildDocumentDecisionMaker(documentId, body.decisionMaker)
+                    tx.changeStatus(
+                        documentId,
+                        StatusTransition(
+                            currentStatus = DocumentStatus.DRAFT,
+                            newStatus = DocumentStatus.DECISION_PROPOSAL,
+                        ),
+                        clock.now(),
+                    )
+
+                    // todo: update metadata process history
+                }
+            }
+            .also { Audit.ChildDocumentProposeDecision.log(targetId = AuditId(documentId)) }
+    }
+
+    data class AcceptChildDocumentDecisionRequest(val validity: DateRange)
+
+    @PostMapping("/{documentId}/accept")
+    fun acceptChildDocumentDecision(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable documentId: ChildDocumentId,
+        @RequestBody body: AcceptChildDocumentDecisionRequest,
+    ) {
+        db.connect { dbc ->
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.ChildDocument.ACCEPT_DECISION,
+                        documentId,
+                    )
+
+                    val document =
+                        tx.getChildDocument(documentId)
+                            ?: throw NotFound("Document $documentId not found")
+                    if (!document.template.type.decision)
+                        throw BadRequest("Document is not a decision")
+                    if (document.status != DocumentStatus.DECISION_PROPOSAL)
+                        throw BadRequest("Document is not in decision proposal status")
+
+                    tx.insertChildDocumentDecision(
+                            status = ChildDocumentDecisionStatus.ACCEPTED,
+                            userId = user.evakaUserId,
+                            validity = body.validity,
+                        )
+                        .also { decisionId ->
+                            tx.setChildDocumentDecisionAndPublish(
+                                documentId,
+                                decisionId,
+                                clock.now(),
+                            )
+                        }
+
+                    // todo: update metadata process history
+                }
+            }
+            .also { Audit.ChildDocumentAcceptDecision.log(targetId = AuditId(documentId)) }
+    }
+
+    @PostMapping("/{documentId}/reject")
+    fun rejectChildDocumentDecision(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable documentId: ChildDocumentId,
+    ) {
+        db.connect { dbc ->
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.ChildDocument.REJECT_DECISION,
+                        documentId,
+                    )
+
+                    val document =
+                        tx.getChildDocument(documentId)
+                            ?: throw NotFound("Document $documentId not found")
+                    if (!document.template.type.decision)
+                        throw BadRequest("Document is not a decision")
+                    if (document.status != DocumentStatus.DECISION_PROPOSAL)
+                        throw BadRequest("Document is not in decision proposal status")
+
+                    tx.insertChildDocumentDecision(
+                            status = ChildDocumentDecisionStatus.REJECTED,
+                            userId = user.evakaUserId,
+                            validity = null,
+                        )
+                        .also { decisionId ->
+                            tx.setChildDocumentDecisionAndPublish(
+                                documentId,
+                                decisionId,
+                                clock.now(),
+                            )
+                        }
+
+                    // todo: update metadata process history
+                }
+            }
+            .also { Audit.ChildDocumentRejectDecision.log(targetId = AuditId(documentId)) }
+    }
+
+    @PostMapping("/{documentId}/annul")
+    fun annulChildDocumentDecision(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable documentId: ChildDocumentId,
+    ) {
+        db.connect { dbc ->
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.ChildDocument.ANNUL_DECISION,
+                        documentId,
+                    )
+
+                    val document =
+                        tx.getChildDocument(documentId)
+                            ?: throw NotFound("Document $documentId not found")
+                    if (!document.template.type.decision)
+                        throw BadRequest("Document is not a decision")
+                    if (
+                        document.status != DocumentStatus.COMPLETED ||
+                            document.decision == null ||
+                            document.decision.status != ChildDocumentDecisionStatus.ACCEPTED
+                    )
+                        throw BadRequest("Only accepted decision can be annulled")
+
+                    tx.annulChildDocumentDecision(
+                        decisionId = document.decision.id,
+                        userId = user.evakaUserId,
+                        now = clock.now(),
+                    )
+                }
+            }
+            .also { Audit.ChildDocumentAnnulDecision.log(targetId = AuditId(documentId)) }
     }
 }
 
