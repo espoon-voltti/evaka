@@ -10,8 +10,8 @@ evaka:
   max_attachments_per_user: 100
   local_s3:
     url: "https://localhost:9876"
-    access_key_id: "minioadmin"
-    secret_access_key: "minioadmin"
+    access_key_id: "foo"
+    secret_access_key: "bar"
 
 spring:
   profiles:
