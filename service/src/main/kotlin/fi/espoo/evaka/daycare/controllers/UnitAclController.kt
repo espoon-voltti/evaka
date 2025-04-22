@@ -134,6 +134,7 @@ class UnitAclController(
         @PathVariable unitId: DaycareId,
         @PathVariable employeeId: EmployeeId,
     ) {
+        if (user.id == employeeId) throw Forbidden("Cannot modify own roles")
         db.connect { dbc ->
             dbc.transaction {
                 accessControl.requirePermissionFor(
@@ -165,6 +166,7 @@ class UnitAclController(
         @PathVariable unitId: DaycareId,
         @PathVariable employeeId: EmployeeId,
     ) {
+        if (user.id == employeeId) throw Forbidden("Cannot modify own roles")
         db.connect { dbc ->
             dbc.transaction {
                 accessControl.requirePermissionFor(
@@ -196,6 +198,7 @@ class UnitAclController(
         @PathVariable unitId: DaycareId,
         @PathVariable employeeId: EmployeeId,
     ) {
+        if (user.id == employeeId) throw Forbidden("Cannot modify own roles")
         db.connect { dbc ->
             dbc.transaction {
                 accessControl.requirePermissionFor(
@@ -227,6 +230,7 @@ class UnitAclController(
         @PathVariable unitId: DaycareId,
         @PathVariable employeeId: EmployeeId,
     ) {
+        if (user.id == employeeId) throw Forbidden("Cannot modify own roles")
         db.connect { dbc ->
             dbc.transaction {
                 accessControl.requirePermissionFor(
@@ -258,6 +262,7 @@ class UnitAclController(
         @PathVariable unitId: DaycareId,
         @PathVariable employeeId: EmployeeId,
     ) {
+        if (user.id == employeeId) throw Forbidden("Cannot modify own roles")
         db.connect { dbc ->
             dbc.transaction {
                 accessControl.requirePermissionFor(
@@ -348,6 +353,7 @@ class UnitAclController(
         @PathVariable employeeId: EmployeeId,
         @RequestBody aclInfo: FullAclInfo,
     ) {
+        if (user.id == employeeId) throw Forbidden("Cannot modify own roles")
         val occupancyCoefficientId =
             db.connect { dbc ->
                 dbc.transaction { tx ->
