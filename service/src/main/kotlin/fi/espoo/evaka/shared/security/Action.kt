@@ -1581,7 +1581,15 @@ sealed interface Action {
         CREATE_CALENDAR_EVENT(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inUnitOfGroup(),
-        );
+        ),
+        CREATE_CHILD_DOCUMENTS(
+            HasGlobalRole(ADMIN),
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
+                .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
+                .inUnitOfGroup(),
+            HasGroupRole(STAFF).withUnitFeatures(PilotFeature.VASU_AND_PEDADOC).inGroup(),
+        ) // used in UI
+        ;
 
         override fun toString(): String = "${javaClass.name}.$name"
     }

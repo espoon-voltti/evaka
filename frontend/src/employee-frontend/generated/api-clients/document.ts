@@ -9,6 +9,7 @@ import { ChildDocumentCreateRequest } from 'lib-common/generated/api-types/docum
 import { ChildDocumentId } from 'lib-common/generated/api-types/shared'
 import { ChildDocumentSummaryWithPermittedActions } from 'lib-common/generated/api-types/document'
 import { ChildDocumentWithPermittedActions } from 'lib-common/generated/api-types/document'
+import { ChildDocumentsCreateRequest } from 'lib-common/generated/api-types/document'
 import { DocumentContent } from 'lib-common/generated/api-types/document'
 import { DocumentLockResponse } from 'lib-common/generated/api-types/document'
 import { DocumentTemplate } from 'lib-common/generated/api-types/document'
@@ -16,7 +17,9 @@ import { DocumentTemplateBasicsRequest } from 'lib-common/generated/api-types/do
 import { DocumentTemplateContent } from 'lib-common/generated/api-types/document'
 import { DocumentTemplateId } from 'lib-common/generated/api-types/shared'
 import { DocumentTemplateSummary } from 'lib-common/generated/api-types/document'
+import { DocumentType } from 'lib-common/generated/api-types/document'
 import { ExportedDocumentTemplate } from 'lib-common/generated/api-types/document'
+import { GroupId } from 'lib-common/generated/api-types/shared'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
 import { PersonId } from 'lib-common/generated/api-types/shared'
@@ -126,6 +129,28 @@ export async function getActiveTemplates(
   )
   const { data: json } = await client.request<JsonOf<DocumentTemplateSummary[]>>({
     url: uri`/employee/document-templates/active`.toString(),
+    method: 'GET',
+    params
+  })
+  return json.map(e => deserializeJsonDocumentTemplateSummary(e))
+}
+
+
+/**
+* Generated from fi.espoo.evaka.document.DocumentTemplateController.getActiveTemplatesByGroupId
+*/
+export async function getActiveTemplatesByGroupId(
+  request: {
+    groupId: GroupId,
+    types?: DocumentType[] | null
+  }
+): Promise<DocumentTemplateSummary[]> {
+  const params = createUrlSearchParams(
+    ['groupId', request.groupId],
+    ...(request.types?.map((e): [string, string | null | undefined] => ['types', e.toString()]) ?? [])
+  )
+  const { data: json } = await client.request<JsonOf<DocumentTemplateSummary[]>>({
+    url: uri`/employee/document-templates/activeByGroupId`.toString(),
     method: 'GET',
     params
   })
@@ -260,6 +285,23 @@ export async function createDocument(
     url: uri`/employee/child-documents`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<ChildDocumentCreateRequest>
+  })
+  return json
+}
+
+
+/**
+* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentController.createDocuments
+*/
+export async function createDocuments(
+  request: {
+    body: ChildDocumentsCreateRequest
+  }
+): Promise<void> {
+  const { data: json } = await client.request<JsonOf<void>>({
+    url: uri`/employee/child-documents`.toString(),
+    method: 'PUT',
+    data: request.body satisfies JsonCompatible<ChildDocumentsCreateRequest>
   })
   return json
 }

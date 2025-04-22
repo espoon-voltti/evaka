@@ -532,6 +532,11 @@ export class Combobox extends Element {
       .find(`[data-qa="${itemDataQa}"]`)
       .click()
   }
+
+  async assertOptions(expected: string[]) {
+    const options = this.findAllByDataQa('item')
+    await options.assertTextsEqual(expected)
+  }
 }
 
 export class MultiSelect extends Element {
@@ -565,13 +570,8 @@ export class MultiSelect extends Element {
   }
 
   async assertOptions(options: string[]) {
-    await waitUntilTrue(async () => {
-      const actualOptions = await this.findAllByDataQa('option').allTexts()
-      return (
-        actualOptions.length === options.length &&
-        options.every((option) => actualOptions.includes(option))
-      )
-    })
+    const actualOptions = this.findAllByDataQa('option')
+    await actualOptions.assertTextsEqual(options)
   }
 }
 

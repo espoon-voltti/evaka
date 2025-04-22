@@ -11,6 +11,7 @@ import fi.espoo.evaka.document.DocumentType
 import fi.espoo.evaka.document.Question
 import fi.espoo.evaka.document.QuestionType
 import fi.espoo.evaka.shared.ChildDocumentId
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DocumentTemplateId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.DatabaseEnum
@@ -164,3 +165,8 @@ data class ChildDocumentWithPermittedActions(
 )
 
 data class ChildDocumentCreateRequest(val childId: PersonId, val templateId: DocumentTemplateId)
+
+data class ChildDocumentsCreateRequest(
+    val childIds: Set<ChildId>,
+    val templateId: DocumentTemplateId,
+)

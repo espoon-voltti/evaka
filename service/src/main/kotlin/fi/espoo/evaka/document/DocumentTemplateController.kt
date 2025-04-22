@@ -8,10 +8,13 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.ForcePlainGet
+import fi.espoo.evaka.absence.getDaycareIdByGroup
 import fi.espoo.evaka.daycare.domain.Language
+import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DocumentTemplateId
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -129,6 +132,36 @@ class DocumentTemplateController(
                             it.placementTypes.contains(placement.type) &&
                             (it.language.name.uppercase() ==
                                 placement.unitLanguage.name.uppercase())
+                    }
+                }
+            }
+            .also { Audit.DocumentTemplateRead.log() }
+    }
+
+    @GetMapping("/activeByGroupId")
+    fun getActiveTemplatesByGroupId(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @RequestParam groupId: GroupId,
+        @RequestParam(required = false) types: Set<DocumentType> = emptySet(),
+    ): List<DocumentTemplateSummary> {
+        return db.connect { dbc ->
+                dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Global.READ_DOCUMENT_TEMPLATE,
+                    )
+
+                    val unit = tx.getDaycare(tx.getDaycareIdByGroup(groupId))!!
+
+                    tx.getTemplateSummaries().filter {
+                        it.published &&
+                            it.validity.includes(clock.today()) &&
+                            (types.isEmpty() || types.contains(it.type)) &&
+                            (it.language.name.uppercase() == unit.language.name.uppercase())
                     }
                 }
             }

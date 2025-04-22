@@ -7,6 +7,7 @@ package fi.espoo.evaka.document.childdocument
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.EvakaEnv
+import fi.espoo.evaka.document.DocumentTemplate
 import fi.espoo.evaka.document.DocumentTemplateContent
 import fi.espoo.evaka.document.DocumentType
 import fi.espoo.evaka.document.getTemplate
@@ -17,6 +18,7 @@ import fi.espoo.evaka.process.insertProcess
 import fi.espoo.evaka.process.insertProcessHistoryRow
 import fi.espoo.evaka.process.updateDocumentProcessHistory
 import fi.espoo.evaka.shared.ChildDocumentId
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
@@ -81,38 +83,90 @@ class ChildDocumentController(
                         throw Conflict("Child already has incomplete document of the same template")
                     }
 
-                    val now = clock.now()
-                    val processId =
-                        template.processDefinitionNumber?.let { processDefinitionNumber ->
-                            // guaranteed to be not null when processDefinitionNumber is not null by
-                            // db constraint
-                            val archiveDurationMonths = template.archiveDurationMonths!!
-                            tx.insertProcess(
-                                    processDefinitionNumber = processDefinitionNumber,
-                                    year = now.year,
-                                    organization = featureConfig.archiveMetadataOrganization,
-                                    archiveDurationMonths = archiveDurationMonths,
-                                )
-                                .id
-                                .also { processId ->
-                                    tx.insertProcessHistoryRow(
-                                        processId = processId,
-                                        state = ArchivedProcessState.INITIAL,
-                                        now = now,
-                                        userId = user.evakaUserId,
-                                    )
-                                }
-                        }
-
-                    tx.insertChildDocument(
-                        document = body,
-                        now = now,
-                        userId = user.evakaUserId,
-                        processId = processId,
-                    )
+                    createChildDocument(tx, user, clock, body.childId, template)
                 }
             }
             .also { Audit.ChildDocumentCreate.log(targetId = AuditId(it)) }
+    }
+
+    private fun createChildDocument(
+        tx: Database.Transaction,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        childId: ChildId,
+        template: DocumentTemplate,
+    ): ChildDocumentId {
+        val now = clock.now()
+        val processId =
+            template.processDefinitionNumber?.let { processDefinitionNumber ->
+                // guaranteed to be not null when processDefinitionNumber is not null by db
+                // constraint
+                val archiveDurationMonths = template.archiveDurationMonths!!
+                tx.insertProcess(
+                        processDefinitionNumber = processDefinitionNumber,
+                        year = now.year,
+                        organization = featureConfig.archiveMetadataOrganization,
+                        archiveDurationMonths = archiveDurationMonths,
+                    )
+                    .id
+                    .also { processId ->
+                        tx.insertProcessHistoryRow(
+                            processId = processId,
+                            state = ArchivedProcessState.INITIAL,
+                            now = now,
+                            userId = user.evakaUserId,
+                        )
+                    }
+            }
+
+        return tx.insertChildDocument(
+            childId = childId,
+            templateId = template.id,
+            now = now,
+            userId = user.evakaUserId,
+            processId = processId,
+        )
+    }
+
+    @PutMapping
+    fun createDocuments(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @RequestBody body: ChildDocumentsCreateRequest,
+    ) {
+        db.connect { dbc ->
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Child.CREATE_CHILD_DOCUMENT,
+                        body.childIds,
+                    )
+                    val template =
+                        tx.getTemplate(body.templateId)
+                            ?: throw NotFound("Template ${body.templateId} not found")
+                    if (template.type != DocumentType.CITIZEN_BASIC)
+                        throw BadRequest("Template ${body.templateId} not supported")
+                    if (!template.validity.includes(clock.today()))
+                        throw BadRequest("Template ${body.templateId} not active")
+                    if (!template.published)
+                        throw BadRequest("Template ${body.templateId} not published")
+                    body.childIds.map { childId ->
+                        createChildDocument(tx, user, clock, childId, template).also {
+                            updateChildDocumentStatusForward(
+                                tx,
+                                user,
+                                clock,
+                                it,
+                                DocumentStatus.CITIZEN_DRAFT,
+                            )
+                        }
+                    }
+                }
+            }
+            .also { Audit.ChildDocumentsCreate.log(targetId = AuditId(it)) }
     }
 
     @GetMapping
@@ -334,44 +388,7 @@ class ChildDocumentController(
                         Action.ChildDocument.NEXT_STATUS,
                         documentId,
                     )
-                    val document = tx.getChildDocument(documentId) ?: throw NotFound()
-                    val statusTransition =
-                        validateStatusTransition(
-                            document = document,
-                            requestedStatus = body.newStatus,
-                            goingForward = true,
-                        )
-
-                    val wasUpToDate = tx.isDocumentPublishedContentUpToDate(documentId)
-                    tx.changeStatusAndPublish(
-                        documentId,
-                        statusTransition,
-                        clock.now(),
-                        answeredBy =
-                            user.evakaUserId.takeIf {
-                                document.template.type == DocumentType.CITIZEN_BASIC &&
-                                    statusTransition.newStatus == DocumentStatus.COMPLETED
-                            },
-                    )
-                    if (!wasUpToDate) {
-                        childDocumentService.schedulePdfGeneration(
-                            tx,
-                            listOf(documentId),
-                            clock.now(),
-                        )
-                        childDocumentService.scheduleEmailNotification(
-                            tx,
-                            listOf(documentId),
-                            clock.now(),
-                        )
-                    }
-                    updateDocumentProcessHistory(
-                        tx = tx,
-                        documentId = documentId,
-                        newStatus = statusTransition.newStatus,
-                        now = clock.now(),
-                        userId = user.evakaUserId,
-                    )
+                    updateChildDocumentStatusForward(tx, user, clock, documentId, body.newStatus)
                 }
             }
             .also {
@@ -381,6 +398,45 @@ class ChildDocumentController(
                 )
                 Audit.ChildDocumentPublish.log(targetId = AuditId(documentId))
             }
+    }
+
+    private fun updateChildDocumentStatusForward(
+        tx: Database.Transaction,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        documentId: ChildDocumentId,
+        newStatus: DocumentStatus,
+    ) {
+        val document = tx.getChildDocument(documentId) ?: throw NotFound()
+        val statusTransition =
+            validateStatusTransition(
+                document = document,
+                requestedStatus = newStatus,
+                goingForward = true,
+            )
+
+        val wasUpToDate = tx.isDocumentPublishedContentUpToDate(documentId)
+        tx.changeStatusAndPublish(
+            documentId,
+            statusTransition,
+            clock.now(),
+            answeredBy =
+                user.evakaUserId.takeIf {
+                    document.template.type == DocumentType.CITIZEN_BASIC &&
+                        statusTransition.newStatus == DocumentStatus.COMPLETED
+                },
+        )
+        if (!wasUpToDate) {
+            childDocumentService.schedulePdfGeneration(tx, listOf(documentId), clock.now())
+            childDocumentService.scheduleEmailNotification(tx, listOf(documentId), clock.now())
+        }
+        updateDocumentProcessHistory(
+            tx = tx,
+            documentId = documentId,
+            newStatus = statusTransition.newStatus,
+            now = clock.now(),
+            userId = user.evakaUserId,
+        )
     }
 
     @PutMapping("/{documentId}/prev-status")

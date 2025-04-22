@@ -36,6 +36,7 @@ import fi.espoo.evaka.daycare.updateDaycare
 import fi.espoo.evaka.daycare.updateGroup
 import fi.espoo.evaka.daycare.updateUnitClosingDate
 import fi.espoo.evaka.daycare.validateUnitClosingDate
+import fi.espoo.evaka.document.childdocument.ChildDocumentService
 import fi.espoo.evaka.occupancy.OccupancyPeriod
 import fi.espoo.evaka.occupancy.OccupancyPeriodGroupLevel
 import fi.espoo.evaka.occupancy.OccupancyResponse
@@ -83,6 +84,7 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/employee/daycares")
 class DaycareController(
     private val daycareService: DaycareService,
+    private val childDocumentService: ChildDocumentService,
     private val accessControl: AccessControl,
 ) {
     @GetMapping

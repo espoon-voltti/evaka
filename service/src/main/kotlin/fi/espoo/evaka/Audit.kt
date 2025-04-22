@@ -187,6 +187,7 @@ enum class Audit(
     ChildDocumentUnreadCount,
     ChildDocumentUpdate,
     ChildDocumentUpdateContent,
+    ChildDocumentsCreate,
     ChildFeeAlterationsCreate,
     ChildFeeAlterationsDelete,
     ChildFeeAlterationsRead,
