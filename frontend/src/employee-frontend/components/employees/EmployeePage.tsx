@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import sortBy from 'lodash/sortBy'
-import React, { useMemo, useState } from 'react'
+import React, { useContext, useMemo, useState } from 'react'
 import { Link } from 'react-router'
 
 import { combine } from 'lib-common/api'
@@ -32,6 +32,7 @@ import { Gap } from 'lib-components/white-space'
 import { faPlus, faTimes, faTrash } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
+import { UserContext } from '../../state/user'
 import { renderResult } from '../async-rendering'
 import { FlexRow } from '../common/styled/containers'
 import { daycaresQuery } from '../unit/queries'
@@ -108,6 +109,7 @@ const EmployeePage = React.memo(function EmployeePage({
   const { i18n } = useTranslation()
   const [editingGlobalRoles, setEditingGlobalRoles] = useState(false)
   const [rolesModalOpen, setRolesModalOpen] = useState(false)
+  const { user } = useContext(UserContext)
 
   const sortedRoles = useMemo(
     () => sortBy(employee.daycareRoles, ({ daycareName }) => daycareName),
@@ -164,24 +166,26 @@ const EmployeePage = React.memo(function EmployeePage({
       <Gap />
 
       <Title size={3}>{i18n.employees.editor.unitRoles.title}</Title>
-      <FlexRow justifyContent="space-between">
-        <Button
-          appearance="inline"
-          onClick={() => setRolesModalOpen(true)}
-          text={i18n.employees.editor.unitRoles.addRoles}
-          icon={faPlus}
-          disabled={editingGlobalRoles}
-        />
-        <ConfirmedMutation
-          buttonStyle="INLINE"
-          buttonText={i18n.employees.editor.unitRoles.deleteAll}
-          icon={faTimes}
-          confirmationTitle={i18n.employees.editor.unitRoles.deleteAllConfirm}
-          mutation={deleteEmployeeDaycareRolesMutation}
-          onClick={() => ({ id: employee.id, daycareId: null })}
-          disabled={editingGlobalRoles}
-        />
-      </FlexRow>
+      {user?.id !== employee.id && (
+        <FlexRow justifyContent="space-between">
+          <Button
+            appearance="inline"
+            onClick={() => setRolesModalOpen(true)}
+            text={i18n.employees.editor.unitRoles.addRoles}
+            icon={faPlus}
+            disabled={editingGlobalRoles}
+          />
+          <ConfirmedMutation
+            buttonStyle="INLINE"
+            buttonText={i18n.employees.editor.unitRoles.deleteAll}
+            icon={faTimes}
+            confirmationTitle={i18n.employees.editor.unitRoles.deleteAllConfirm}
+            mutation={deleteEmployeeDaycareRolesMutation}
+            onClick={() => ({ id: employee.id, daycareId: null })}
+            disabled={editingGlobalRoles}
+          />
+        </FlexRow>
+      )}
       <Table>
         <Thead>
           <Tr>
