@@ -29,8 +29,13 @@ import software.amazon.awssdk.utils.AttributeMap
 class AwsConfig {
     @Bean
     @Profile("local")
-    fun credentialsProviderLocal(): AwsCredentialsProvider =
-        StaticCredentialsProvider.create(AwsBasicCredentials.create("minioadmin", "minioadmin"))
+    fun credentialsProviderLocal(bucketEnv: BucketEnv): AwsCredentialsProvider =
+        StaticCredentialsProvider.create(
+            AwsBasicCredentials.create(
+                bucketEnv.localS3AccessKeyId,
+                bucketEnv.localS3SecretAccessKey,
+            )
+        )
 
     @Bean
     @Profile("local")
@@ -46,7 +51,7 @@ class AwsConfig {
                 .serviceConfiguration(
                     S3Configuration.builder().pathStyleAccessEnabled(true).build()
                 )
-                .endpointOverride(env.s3MockUrl)
+                .endpointOverride(env.localS3Url)
                 .credentialsProvider(credentialsProvider)
                 .build()
 
@@ -67,7 +72,7 @@ class AwsConfig {
         S3Presigner.builder()
             .region(Region.US_EAST_1)
             .serviceConfiguration(S3Configuration.builder().pathStyleAccessEnabled(true).build())
-            .endpointOverride(env.s3MockUrl)
+            .endpointOverride(env.localS3Url)
             .credentialsProvider(credentialsProvider)
             .build()
 

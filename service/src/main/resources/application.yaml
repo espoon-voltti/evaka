@@ -8,8 +8,10 @@ evaka:
   fee_decision:
     min_date: "2020-03-01"
   max_attachments_per_user: 100
-  s3mock:
+  local_s3:
     url: "https://localhost:9876"
+    access_key_id: "minioadmin"
+    secret_access_key: "minioadmin"
 
 spring:
   profiles:

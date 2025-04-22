@@ -198,7 +198,9 @@ data class EmailEnv(
 }
 
 data class BucketEnv(
-    val s3MockUrl: URI,
+    val localS3Url: URI,
+    val localS3AccessKeyId: String,
+    val localS3SecretAccessKey: String,
     val proxyThroughNginx: Boolean,
     val data: String,
     val attachments: String,
@@ -211,7 +213,9 @@ data class BucketEnv(
     companion object {
         fun fromEnvironment(env: Environment) =
             BucketEnv(
-                s3MockUrl = env.lookup("evaka.s3mock.url"),
+                localS3Url = env.lookup("evaka.local_s3.url"),
+                localS3AccessKeyId = env.lookup("evaka.local_s3.access_key_id"),
+                localS3SecretAccessKey = env.lookup("evaka.local_s3.secret_access_key"),
                 proxyThroughNginx = env.lookup("evaka.bucket.proxy_through_nginx") ?: true,
                 data = env.lookup("evaka.bucket.data"),
                 attachments = env.lookup("evaka.bucket.attachments"),
