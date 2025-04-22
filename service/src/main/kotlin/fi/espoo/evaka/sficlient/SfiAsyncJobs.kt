@@ -30,12 +30,17 @@ class SfiAsyncJobs(
 
     fun getEvents(db: Database.Connection, clock: EvakaClock) {
         db.transaction {
+            logger.info { "SfiAsyncJobs: starting to fetch events" }
+
             val continuationToken = it.getLatestSfiGetEventsContinuationToken()
             val eventsResponse = sfiClient.getEvents(continuationToken)
-            logger.info { " SfiAsyncJobs: got ${eventsResponse.events.size} events" }
+            logger.info { "SfiAsyncJobs: got ${eventsResponse.events.size} events" }
+
+            logger.info { "SfiAsyncJobs: GetEvents response: $eventsResponse" }
 
             // TODO handle events
             it.storeSfiGetEventsContinuationToken(eventsResponse.continuationToken)
+            logger.info { "SfiAsyncJobs: done fetching ${eventsResponse.events.size} events" }
         }
     }
 }

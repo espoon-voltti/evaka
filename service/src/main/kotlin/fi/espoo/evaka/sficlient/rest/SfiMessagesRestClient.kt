@@ -352,7 +352,14 @@ class SfiMessagesRestClient(
                 .build()
 
         httpClient
-            .newCall(Request.Builder().url(url).header("Accept", "application/json").get().build())
+            .newCall(
+                Request.Builder()
+                    .url(url)
+                    .header("Authorization", authorizationHeader.get().value)
+                    .header("Accept", "application/json")
+                    .get()
+                    .build()
+            )
             .execute()
             .use { response ->
                 if (response.isSuccessful) {

@@ -7,12 +7,12 @@ package fi.espoo.evaka.sficlient.rest
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonValue
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.util.UUID
 import okhttp3.HttpUrl
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.toRequestBody
-import org.joda.time.DateTime
 
 // https://api.messages-qa.suomi.fi/api-docs
 data class ApiUrls(
@@ -233,7 +233,11 @@ data class ChangePasswordRequestBody(
 // https://api.messages-qa.suomi.fi/api-docs#model-messages.api.rest.v2.GetV2Event
 data class GetEventsResponse(val continuationToken: String, val events: List<GetEvent>)
 
-data class GetEvent(val eventTime: DateTime, val metadata: String, val type: EventType)
+data class GetEvent(
+    val eventTime: HelsinkiDateTime,
+    val metadata: MessageEventMetadata,
+    val type: EventType,
+)
 
 data class MessageEventMetadata(
     @JsonInclude(JsonInclude.Include.NON_NULL) val externalId: String? = null,

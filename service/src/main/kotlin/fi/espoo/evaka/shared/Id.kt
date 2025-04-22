@@ -187,6 +187,8 @@ sealed interface DatabaseTable {
     sealed class TitaniaErrors : DatabaseTable
 
     sealed class VoucherValueDecision : DatabaseTable
+
+    sealed class SfiMessage : DatabaseTable
 }
 
 typealias AbsenceId = Id<DatabaseTable.Absence>
@@ -365,6 +367,8 @@ typealias StaffOccupancyCoefficientId = Id<DatabaseTable.StaffOccupancyCoefficie
 typealias TitaniaConflictId = Id<DatabaseTable.TitaniaErrors>
 
 typealias VoucherValueDecisionId = Id<DatabaseTable.VoucherValueDecision>
+
+typealias SfiMessageId = Id<DatabaseTable.SfiMessage>
 
 @JsonSerialize(converter = Id.ToJson::class)
 @JsonDeserialize(converter = Id.FromJson::class, keyUsing = Id.KeyFromJson::class)
