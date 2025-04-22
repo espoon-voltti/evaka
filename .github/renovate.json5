@@ -51,6 +51,11 @@
       automerge: true,
     },
     {
+      // Don't pin engines in package.json
+      matchDepTypes: ['engines'],
+      rangeStrategy: 'auto'
+    },
+    {
       // Paid font awesome packages are not avilable in public npm
       matchPackageNames: [
         '@fortawesome/pro-light-svg-icons',
