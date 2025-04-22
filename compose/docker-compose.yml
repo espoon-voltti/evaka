@@ -45,19 +45,18 @@ services:
       timeout: 5s
       retries: 5
 
-  minio:
-    image: minio/minio:latest
+  s3-mock:
+    image: adobe/s3mock:4.1.1
     ports:
-      - "9876:9000"
+      - "9876:9191"
     volumes:
-      - ./minio-certs:/root/.minio/certs
       - s3-data:/data
     environment:
-      MINIO_ROOT_USER: minioadmin
-      MINIO_ROOT_PASSWORD: minioadmin
-    command: server /data
+      ROOT: /data
+      initialBuckets: "static"
+      JAVA_TOOL_OPTIONS: "-XX:UseSVE=0 -XX:+IgnoreUnrecognizedVMOptions"
     healthcheck:
-      test: ["CMD", "curl", "-f", "-I", "-k", "https://localhost:9000/minio/health/live"]
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:9090"]
       interval: 1s
       timeout: 5s
       retries: 5

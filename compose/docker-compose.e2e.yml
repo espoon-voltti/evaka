@@ -32,7 +32,7 @@ services:
     depends_on:
       - api-gw
       - evaka-srv
-      - minio
+      - s3-mock
 
   api-gw:
     image: ghcr.io/espoon-voltti/evaka/api-gateway:${TAG:-master}
@@ -75,7 +75,7 @@ services:
     hostname: evaka-srv
     depends_on:
       - db
-      - minio
+      - s3-mock
     environment:
       VOLTTI_ENV: local
       SPRING_PROFILES_ACTIVE: local
@@ -92,7 +92,7 @@ services:
       EVAKA_ASYNC_JOB_RUNNER_DISABLE_RUNNER: "true"
       EVAKA_BUCKET_DECISIONS: evaka-daycaredecisions-dev
       EVAKA_BUCKET_FEE_DECISIONS: evaka-paymentdecisions-dev
-      EVAKA_LOCAL_S3_URL: https://minio:9000
+      EVAKA_LOCAL_S3_URL: https://s3-mock:9191
       EVAKA_BUCKET_PROXY_THROUGH_NGINX: "true"
       ESPOO_INTEGRATION_INVOICE_ENABLED: "false"
       EVAKA_INTEGRATION_KOSKI_ENABLED: "false"
