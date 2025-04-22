@@ -2112,8 +2112,6 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         )
     }
 
-    // TODO: JSON-tests
-
     @Test
     fun `Order is not done if customer has not set a weekday in Nekku`() {
         val monday = LocalDate.of(2025, 4, 14)
@@ -2131,9 +2129,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                             "Varhaiskasvatus",
                             listOf(
                                 CustomerApiType(
-                                    listOf(
-                                        NekkuCustomerApiWeekday.TUESDAY,
-                                    ),
+                                    listOf(NekkuCustomerApiWeekday.TUESDAY),
                                     "100-lasta",
                                 )
                             ),
@@ -2166,13 +2162,13 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             tx.insert(employee)
             tx.insert(child, DevPersonType.CHILD)
             tx.insert(
-                DevPlacement(
-                    childId = child.id,
-                    unitId = daycare.id,
-                    startDate = monday,
-                    endDate = tuesday,
+                    DevPlacement(
+                        childId = child.id,
+                        unitId = daycare.id,
+                        startDate = monday,
+                        endDate = tuesday,
+                    )
                 )
-            )
                 .also { placementId ->
                     tx.insert(
                         DevDaycareGroupPlacement(
@@ -2184,23 +2180,23 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     )
                 }
             listOf(
-                // Two meals on Monday
-                DevReservation(
-                    childId = child.id,
-                    date = monday,
-                    startTime = LocalTime.of(8, 0),
-                    endTime = LocalTime.of(12, 0),
-                    createdBy = employee.evakaUserId,
-                ),
-                // Breakfast only on Tuesday
-                DevReservation(
-                    childId = child.id,
-                    date = tuesday,
-                    startTime = LocalTime.of(8, 0),
-                    endTime = LocalTime.of(9, 0),
-                    createdBy = employee.evakaUserId,
-                ),
-            )
+                    // Two meals on Monday
+                    DevReservation(
+                        childId = child.id,
+                        date = monday,
+                        startTime = LocalTime.of(8, 0),
+                        endTime = LocalTime.of(12, 0),
+                        createdBy = employee.evakaUserId,
+                    ),
+                    // Breakfast only on Tuesday
+                    DevReservation(
+                        childId = child.id,
+                        date = tuesday,
+                        startTime = LocalTime.of(8, 0),
+                        endTime = LocalTime.of(9, 0),
+                        createdBy = employee.evakaUserId,
+                    ),
+                )
                 .forEach { tx.insert(it) }
         }
 
@@ -2220,7 +2216,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         )
                     ),
                     dryRun = false,
-                ),
+                )
             ),
             client.orders,
         )

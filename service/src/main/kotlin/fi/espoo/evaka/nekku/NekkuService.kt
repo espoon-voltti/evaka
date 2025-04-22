@@ -376,7 +376,7 @@ fun createAndSendNekkuOrder(
 
     val nekkuProducts = dbc.read { tx -> tx.getNekkuProducts() }
 
-    if(nekkuDaycareCustomerMapping != null) {
+    if (nekkuDaycareCustomerMapping != null) {
         val order =
             NekkuClient.NekkuOrders(
                 listOf(
@@ -409,15 +409,11 @@ fun createAndSendNekkuOrder(
                 "Skipped Nekku order with no rows for date $date for customerNumber=${nekkuDaycareCustomerMapping.customerNumber} groupId=$groupId"
             }
         }
-
-    }
-    else {
+    } else {
         logger.info {
             "Could not find any customer with given date: ${date.dayOfWeek} groupId=$groupId"
         }
     }
-
-
 }
 
 fun nekkuMealReportData(
