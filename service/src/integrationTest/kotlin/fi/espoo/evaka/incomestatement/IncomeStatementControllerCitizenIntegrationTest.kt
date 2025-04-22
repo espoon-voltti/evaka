@@ -17,6 +17,7 @@ import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevFridgePartnership
+import fi.espoo.evaka.shared.dev.DevIncome
 import fi.espoo.evaka.shared.dev.DevIncomeStatement
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
@@ -993,6 +994,32 @@ WHERE id = ${bind(id)}
                         ),
                 )
             )
+        }
+
+        assertEquals(
+            IncomeStatementControllerCitizen.PartnerIncomeStatementStatusResponse(
+                partner =
+                    PartnerIncomeStatementStatus(
+                        name = "${testAdult_2.firstName} ${testAdult_2.lastName}",
+                        hasIncomeStatement = true,
+                    )
+            ),
+            getPartnerIncomeStatementStatus(),
+        )
+    }
+
+    @Test
+    fun `partner income statement status from income`() {
+        db.transaction { tx ->
+            tx.insert(
+                DevFridgePartnership(
+                    first = testAdult_1.id,
+                    second = testAdult_2.id,
+                    startDate = clock.today().minusDays(1),
+                    endDate = null,
+                )
+            )
+            tx.insert(DevIncome(personId = testAdult_2.id, modifiedBy = testAdult_2.evakaUserId()))
         }
 
         assertEquals(

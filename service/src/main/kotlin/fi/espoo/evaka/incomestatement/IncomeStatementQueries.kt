@@ -835,9 +835,15 @@ fun Database.Read.getPartnerIncomeStatementStatus(
                 """
     SELECT 
         partner_first_name || ' ' || partner_last_name AS name,
-        EXISTS (
-            SELECT FROM income_statement i
-            WHERE i.person_id = fp.partner_person_id AND i.status <> 'DRAFT'::income_statement_status
+        (
+            EXISTS (
+                SELECT FROM income_statement i
+                WHERE i.person_id = fp.partner_person_id AND i.status <> 'DRAFT'::income_statement_status
+            ) OR 
+            EXISTS (
+                SELECT FROM income
+                WHERE person_id = fp.partner_person_id
+            )
         ) AS has_income_statement
     FROM fridge_partner_view fp
     WHERE fp.person_id = ${bind(personId)} 
