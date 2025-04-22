@@ -572,8 +572,10 @@ data class Absence(
     val absenceType: AbsenceType,
     val modifiedByStaff: Boolean,
     val modifiedAt: HelsinkiDateTime,
+    val belongsToQuestionnaire: Boolean = false,
 ) {
-    fun editableByCitizen(): Boolean = absenceType != AbsenceType.FREE_ABSENCE && !modifiedByStaff
+    fun editableByCitizen(): Boolean =
+        absenceType != AbsenceType.FREE_ABSENCE && !modifiedByStaff && !belongsToQuestionnaire
 }
 
 data class AbsenceWithModifierInfo(

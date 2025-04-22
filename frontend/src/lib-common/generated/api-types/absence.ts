@@ -24,6 +24,7 @@ import { deserializeJsonServiceTimesPresenceStatus } from './dailyservicetimes'
 */
 export interface Absence {
   absenceType: AbsenceType
+  belongsToQuestionnaire: boolean
   category: AbsenceCategory
   childId: PersonId
   date: LocalDate
