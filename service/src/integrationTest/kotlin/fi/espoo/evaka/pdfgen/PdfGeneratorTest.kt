@@ -291,6 +291,7 @@ class PdfGeneratorTest {
                         processDefinitionNumber = null,
                         archiveDurationMonths = null,
                         published = true,
+                        archiveExternally = false,
                         content =
                             DocumentTemplateContent(
                                 sections =

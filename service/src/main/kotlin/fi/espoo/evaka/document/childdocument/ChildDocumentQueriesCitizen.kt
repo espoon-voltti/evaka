@@ -95,7 +95,8 @@ fun Database.Read.getCitizenChildDocument(id: ChildDocumentId): ChildDocumentCit
                     dt.confidential as template_confidential,
                     dt.validity as template_validity,
                     dt.published as template_published,
-                    dt.content as template_content
+                    dt.content as template_content,
+                    dt.archive_externally as template_archive_externally
                 FROM child_document cd
                 JOIN document_template dt on cd.template_id = dt.id
                 JOIN person p on cd.child_id = p.id

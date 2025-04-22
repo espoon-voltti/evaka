@@ -71,6 +71,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             validity = DateRange(LocalDate.of(2022, 7, 1), null),
             processDefinitionNumber = "123.456.789",
             archiveDurationMonths = 120,
+            archiveExternally = false,
         )
 
     @BeforeEach
@@ -288,6 +289,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     validity = newValidity,
                     processDefinitionNumber = "123.456.789b",
                     archiveDurationMonths = 1200,
+                    archiveExternally = false,
                 ),
             )
 

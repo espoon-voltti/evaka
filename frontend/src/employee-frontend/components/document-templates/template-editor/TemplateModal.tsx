@@ -71,7 +71,8 @@ export const documentTemplateForm = transformed(
     legalBasis: string(),
     validity: required(openEndedLocalDateRange()),
     processDefinitionNumber: required(value<string>()),
-    archiveDurationMonths: required(value<string>())
+    archiveDurationMonths: required(value<string>()),
+    archiveExternally: boolean()
   }),
   (value) => {
     const archived = value.processDefinitionNumber.trim().length > 0
@@ -197,7 +198,8 @@ export default React.memo(function TemplateModal({ onClose, mode }: Props) {
             ),
             processDefinitionNumber: mode.data.processDefinitionNumber ?? '',
             archiveDurationMonths:
-              mode.data.archiveDurationMonths?.toString() ?? '120'
+              mode.data.archiveDurationMonths?.toString() ?? '120',
+            archiveExternally: mode.data.archiveExternally
           }
         : {
             name: '',
@@ -216,7 +218,8 @@ export default React.memo(function TemplateModal({ onClose, mode }: Props) {
             legalBasis: '',
             validity: openEndedLocalDateRange.empty(),
             processDefinitionNumber: '',
-            archiveDurationMonths: '120'
+            archiveDurationMonths: '120',
+            archiveExternally: false
           },
     {
       ...i18n.validationErrors
@@ -234,7 +237,8 @@ export default React.memo(function TemplateModal({ onClose, mode }: Props) {
     legalBasis,
     validity,
     processDefinitionNumber,
-    archiveDurationMonths
+    archiveDurationMonths,
+    archiveExternally
   } = useFormFields(form)
 
   return (
@@ -351,6 +355,12 @@ export default React.memo(function TemplateModal({ onClose, mode }: Props) {
           />
         </>
       )}
+      <Gap />
+      <CheckboxF
+        bind={archiveExternally}
+        label={i18n.documentTemplates.templateModal.archiveExternally}
+        data-qa="archive-externally-checkbox"
+      />
     </AsyncFormModal>
   )
 })

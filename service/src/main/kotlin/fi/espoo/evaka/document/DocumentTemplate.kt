@@ -357,6 +357,7 @@ data class DocumentTemplate(
     val published: Boolean,
     val processDefinitionNumber: String?,
     val archiveDurationMonths: Int?,
+    val archiveExternally: Boolean,
     @Json val content: DocumentTemplateContent,
 )
 
@@ -370,6 +371,7 @@ data class ExportedDocumentTemplate(
     val validity: DateRange,
     val processDefinitionNumber: String?,
     val archiveDurationMonths: Int?,
+    val archiveExternally: Boolean,
     @Json val content: DocumentTemplateContent,
 )
 
@@ -383,6 +385,7 @@ data class DocumentTemplateBasicsRequest(
     val validity: DateRange,
     val processDefinitionNumber: String?,
     val archiveDurationMonths: Int?,
+    val archiveExternally: Boolean,
 )
 
 data class DocumentTemplateSummary(

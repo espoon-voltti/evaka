@@ -1131,6 +1131,7 @@ export class Fixture {
       validity: new DateRange(LocalDate.of(2000, 1, 1), null),
       processDefinitionNumber: null,
       archiveDurationMonths: null,
+      archiveExternally: false,
       content: {
         sections: [
           {

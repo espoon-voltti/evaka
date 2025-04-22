@@ -451,8 +451,9 @@ class ChildDocumentController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable documentId: ChildDocumentId,
+        särmäEnabled: Boolean = evakaEnv.särmäEnabled,
     ) {
-        if (!evakaEnv.särmäEnabled) {
+        if (!särmäEnabled) {
             throw BadRequest("Document archival is not enabled")
         }
 
@@ -465,6 +466,14 @@ class ChildDocumentController(
                         Action.ChildDocument.ARCHIVE,
                         documentId,
                     )
+
+                    val document =
+                        tx.getChildDocument(documentId)
+                            ?: throw NotFound("Document $documentId not found")
+
+                    if (!document.template.archiveExternally) {
+                        throw BadRequest("Document template is not marked for external archiving")
+                    }
 
                     asyncJobRunner.plan(
                         tx = tx,

@@ -228,6 +228,7 @@ export type DocumentStatus =
 */
 export interface DocumentTemplate {
   archiveDurationMonths: number | null
+  archiveExternally: boolean
   confidentiality: DocumentConfidentiality | null
   content: DocumentTemplateContent
   id: DocumentTemplateId
@@ -246,6 +247,7 @@ export interface DocumentTemplate {
 */
 export interface DocumentTemplateBasicsRequest {
   archiveDurationMonths: number | null
+  archiveExternally: boolean
   confidentiality: DocumentConfidentiality | null
   language: UiLanguage
   legalBasis: string
@@ -308,6 +310,7 @@ export interface DocumentWriteLock {
 */
 export interface ExportedDocumentTemplate {
   archiveDurationMonths: number | null
+  archiveExternally: boolean
   confidentiality: DocumentConfidentiality | null
   content: DocumentTemplateContent
   language: UiLanguage

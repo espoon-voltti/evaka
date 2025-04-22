@@ -516,3 +516,4 @@ V517__nekku_eats_breakfast.sql
 V518__more_child_document_constraints.sql
 V519__nekku_special_diet_choices.sql
 V520__nekku_customer_type_changes.sql
+V521__document_template_archiveable.sql

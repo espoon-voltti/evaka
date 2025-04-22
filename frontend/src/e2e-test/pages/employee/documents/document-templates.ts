@@ -81,6 +81,7 @@ export class TemplateModal extends Element {
   readonly archiveDurationMonthsInput
   readonly confidentialityDurationYearsInput
   readonly confidentialityBasisInput
+  readonly archiveExternallyCheckbox
   readonly confirmCreateButton
 
   constructor(locator: Locator) {
@@ -102,6 +103,9 @@ export class TemplateModal extends Element {
     )
     this.confidentialityBasisInput = new TextInput(
       this.findByDataQa('confidentiality-basis')
+    )
+    this.archiveExternallyCheckbox = new Checkbox(
+      this.findByDataQa('archive-externally-checkbox')
     )
     this.confirmCreateButton = this.findByDataQa('modal-okBtn')
   }
