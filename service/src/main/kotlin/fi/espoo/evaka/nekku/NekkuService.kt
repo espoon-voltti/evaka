@@ -30,8 +30,10 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.domain.getHolidays
+import fi.espoo.evaka.shared.domain.isHoliday
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.IOException
+import java.time.DayOfWeek
 import java.time.Duration
 import java.time.LocalDate
 import kotlin.math.roundToInt
@@ -338,6 +340,22 @@ private fun LocalDate.daySpan(): FiniteDateRange {
     return FiniteDateRange(start, end)
 }
 
+private fun getNekkuWeekday(date: LocalDate): NekkuCustomerWeekday {
+    return if (isHoliday(date)) {
+        NekkuCustomerWeekday.WEEKDAYHOLIDAY
+    } else {
+        when (date.dayOfWeek) {
+            DayOfWeek.MONDAY -> NekkuCustomerWeekday.MONDAY
+            DayOfWeek.TUESDAY -> NekkuCustomerWeekday.TUESDAY
+            DayOfWeek.WEDNESDAY -> NekkuCustomerWeekday.WEDNESDAY
+            DayOfWeek.THURSDAY -> NekkuCustomerWeekday.THURSDAY
+            DayOfWeek.FRIDAY -> NekkuCustomerWeekday.FRIDAY
+            DayOfWeek.SATURDAY -> NekkuCustomerWeekday.SATURDAY
+            DayOfWeek.SUNDAY -> NekkuCustomerWeekday.SUNDAY
+        }
+    }
+}
+
 fun createAndSendNekkuOrder(
     client: NekkuClient,
     dbc: Database.Connection,
@@ -351,42 +369,55 @@ fun createAndSendNekkuOrder(
             val children = getNekkuChildInfos(tx, groupId, date)
             preschoolTerms to children
         }
-    val nekkuDaycareCustomerMapping = dbc.read { tx -> tx.getNekkuDaycareCustomerMapping(groupId) }
+    val nekkuWeekday = getNekkuWeekday(date)
+
+    val nekkuDaycareCustomerMapping =
+        dbc.read { tx -> tx.getNekkuDaycareCustomerMapping(groupId, nekkuWeekday) }
 
     val nekkuProducts = dbc.read { tx -> tx.getNekkuProducts() }
 
-    val order =
-        NekkuClient.NekkuOrders(
-            listOf(
-                NekkuClient.NekkuOrder(
-                    deliveryDate = date.toString(),
-                    customerNumber = nekkuDaycareCustomerMapping.customerNumber,
-                    groupId = groupId.toString(),
-                    items =
-                        nekkuMealReportData(
-                            children,
-                            date,
-                            preschoolTerms,
-                            nekkuProducts,
-                            nekkuDaycareCustomerMapping.unitSize,
-                            nekkuMealDeductionFactor,
-                        ),
-                    description = nekkuDaycareCustomerMapping.groupName,
-                )
-            ),
-            dryRun = false,
-        )
+    if(nekkuDaycareCustomerMapping != null) {
+        val order =
+            NekkuClient.NekkuOrders(
+                listOf(
+                    NekkuClient.NekkuOrder(
+                        deliveryDate = date.toString(),
+                        customerNumber = nekkuDaycareCustomerMapping.customerNumber,
+                        groupId = groupId.toString(),
+                        items =
+                            nekkuMealReportData(
+                                children,
+                                date,
+                                preschoolTerms,
+                                nekkuProducts,
+                                nekkuDaycareCustomerMapping.customerType,
+                                nekkuMealDeductionFactor,
+                            ),
+                        description = nekkuDaycareCustomerMapping.groupName,
+                    )
+                ),
+                dryRun = false,
+            )
 
-    if (order.orders.isNotEmpty()) {
-        val nekkuOrderResult = client.createNekkuMealOrder(order)
-        logger.info {
-            "Sent Nekku order for date $date for customerNumber=${nekkuDaycareCustomerMapping.customerNumber} groupId=$groupId and Nekku orders created: ${nekkuOrderResult.created}"
+        if (order.orders.isNotEmpty()) {
+            val nekkuOrderResult = client.createNekkuMealOrder(order)
+            logger.info {
+                "Sent Nekku order for date $date for customerNumber=${nekkuDaycareCustomerMapping.customerNumber} groupId=$groupId and Nekku orders created: ${nekkuOrderResult.created}"
+            }
+        } else {
+            logger.info {
+                "Skipped Nekku order with no rows for date $date for customerNumber=${nekkuDaycareCustomerMapping.customerNumber} groupId=$groupId"
+            }
         }
-    } else {
+
+    }
+    else {
         logger.info {
-            "Skipped Nekku order with no rows for date $date for customerNumber=${nekkuDaycareCustomerMapping.customerNumber} groupId=$groupId"
+            "Could not find any customer with given date: ${date.dayOfWeek} groupId=$groupId"
         }
     }
+
+
 }
 
 fun nekkuMealReportData(
@@ -394,7 +425,7 @@ fun nekkuMealReportData(
     date: LocalDate,
     preschoolTerms: List<PreschoolTerm>,
     nekkuProducts: List<NekkuProduct>,
-    unitSize: String,
+    customerType: String,
     nekkuMealDeductionFactor: Double,
 ): List<NekkuClient.Item> {
     val mealInfoMap =
@@ -428,7 +459,7 @@ fun nekkuMealReportData(
                     )
                     .map {
                         NekkuMealInfo(
-                            sku = getNekkuProductNumber(nekkuProducts, it, childInfo, unitSize),
+                            sku = getNekkuProductNumber(nekkuProducts, it, childInfo, customerType),
                             options = null, // getNekkuChildDiets() //Todo: get child diets
                             nekkuMealType = childInfo.mealType,
                         )
@@ -454,7 +485,7 @@ private fun getNekkuProductNumber(
     nekkuProducts: List<NekkuProduct>,
     nekkuProductMealTime: NekkuProductMealTime,
     nekkuChildInfo: NekkuChildInfo,
-    customerTypes: String,
+    customerType: String,
 ): String {
 
     val filteredNekkuProducts =
@@ -462,22 +493,22 @@ private fun getNekkuProductNumber(
             it.mealTime?.contains(nekkuProductMealTime) ?: false &&
                 it.mealType == nekkuChildInfo.mealType &&
                 it.optionsId == nekkuChildInfo.optionsId &&
-                it.customerTypes.contains(customerTypes)
+                it.customerTypes.contains(customerType)
         }
 
     if (filteredNekkuProducts.isEmpty()) {
         logger.info {
-            "Cannot find any Nekku Product from database with unitsize=$customerTypes optionsId=${nekkuChildInfo.optionsId} mealtype=${nekkuChildInfo.mealType} mealtime=${nekkuProductMealTime.description}"
+            "Cannot find any Nekku Product from database with customertype=$customerType optionsId=${nekkuChildInfo.optionsId} mealtype=${nekkuChildInfo.mealType} mealtime=${nekkuProductMealTime.description}"
         }
         error(
-            "Cannot find any Nekku Product from database with unitsize=$customerTypes optionsId=${nekkuChildInfo.optionsId} mealtype=${nekkuChildInfo.mealType} mealtime=${nekkuProductMealTime.description}"
+            "Cannot find any Nekku Product from database with customertype=$customerType optionsId=${nekkuChildInfo.optionsId} mealtype=${nekkuChildInfo.mealType} mealtime=${nekkuProductMealTime.description}"
         )
     } else if (filteredNekkuProducts.count() > 1) {
         logger.info {
-            "Found too many Nekku Products from database with unitsize=$customerTypes optionsId=${nekkuChildInfo.optionsId} mealtype=${nekkuChildInfo.mealType} mealtime=${nekkuProductMealTime.description}"
+            "Found too many Nekku Products from database with customertype=$customerType optionsId=${nekkuChildInfo.optionsId} mealtype=${nekkuChildInfo.mealType} mealtime=${nekkuProductMealTime.description}"
         }
         error(
-            "Found too many Nekku Products from database with unitsize=$customerTypes optionsId=${nekkuChildInfo.optionsId} mealtype=${nekkuChildInfo.mealType} mealtime=${nekkuProductMealTime.description}"
+            "Found too many Nekku Products from database with customertype=$customerType optionsId=${nekkuChildInfo.optionsId} mealtype=${nekkuChildInfo.mealType} mealtime=${nekkuProductMealTime.description}"
         )
     } else {
         return filteredNekkuProducts.first().sku
