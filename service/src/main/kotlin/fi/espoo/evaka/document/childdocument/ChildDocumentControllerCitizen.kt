@@ -205,6 +205,7 @@ class ChildDocumentControllerCitizen(
                         clock.now(),
                         user.evakaUserId,
                     )
+                    childDocumentService.schedulePdfGeneration(tx, listOf(documentId), clock.now())
                     updateDocumentProcessHistory(
                         tx = tx,
                         documentId = documentId,
