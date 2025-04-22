@@ -41,7 +41,6 @@
     },
     {
       // Automerge patch versions of all dependencies
-      matchDepTypes: ['dependencies'],
       matchUpdateTypes: ['patch'],
       automerge: true,
     },
@@ -50,6 +49,11 @@
       matchDepTypes: ['devDependencies'],
       matchUpdateTypes: ['minor', 'patch'],
       automerge: true,
+    },
+    {
+      // Don't pin engines in package.json
+      matchDepTypes: ['engines'],
+      rangeStrategy: 'auto'
     },
     {
       // Paid font awesome packages are not avilable in public npm
