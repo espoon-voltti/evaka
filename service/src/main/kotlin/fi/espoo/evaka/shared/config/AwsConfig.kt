@@ -30,7 +30,7 @@ class AwsConfig {
     @Bean
     @Profile("local")
     fun credentialsProviderLocal(): AwsCredentialsProvider =
-        StaticCredentialsProvider.create(AwsBasicCredentials.create("foo", "bar"))
+        StaticCredentialsProvider.create(AwsBasicCredentials.create("minioadmin", "minioadmin"))
 
     @Bean
     @Profile("local")

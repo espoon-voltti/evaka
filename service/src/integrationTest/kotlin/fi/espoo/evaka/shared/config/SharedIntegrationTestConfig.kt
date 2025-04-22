@@ -141,7 +141,9 @@ class SharedIntegrationTestConfig {
                 )
                 .endpointOverride(env.s3MockUrl)
                 .credentialsProvider(
-                    StaticCredentialsProvider.create(AwsBasicCredentials.create("foo", "bar"))
+                    StaticCredentialsProvider.create(
+                        AwsBasicCredentials.create("minioadmin", "minioadmin")
+                    )
                 )
                 .build()
 
@@ -160,7 +162,9 @@ class SharedIntegrationTestConfig {
             .serviceConfiguration(S3Configuration.builder().pathStyleAccessEnabled(true).build())
             .endpointOverride(env.s3MockUrl)
             .credentialsProvider(
-                StaticCredentialsProvider.create(AwsBasicCredentials.create("foo", "bar"))
+                StaticCredentialsProvider.create(
+                    AwsBasicCredentials.create("minioadmin", "minioadmin")
+                )
             )
             .build()
 

@@ -22,7 +22,6 @@ services:
       RESOLVER: "127.0.0.11 ipv6=off"
       ENDUSER_GW_URL: "http://api-gw:3000"
       INTERNAL_GW_URL: "http://api-gw:3000"
-      STATIC_FILES_ENDPOINT_URL: "http://s3-mock:9090/static/frontend"
       RATE_LIMIT_CIDR_WHITELIST: "0.0.0.0/0;::/0"
       HTTP_SCHEME: "http"
     # Enable for debug logging
@@ -33,7 +32,7 @@ services:
     depends_on:
       - api-gw
       - evaka-srv
-      - s3-mock
+      - minio
 
   api-gw:
     image: ghcr.io/espoon-voltti/evaka/api-gateway:${TAG:-master}
@@ -76,7 +75,7 @@ services:
     hostname: evaka-srv
     depends_on:
       - db
-      - s3-mock
+      - minio
     environment:
       VOLTTI_ENV: local
       SPRING_PROFILES_ACTIVE: local
@@ -93,7 +92,7 @@ services:
       EVAKA_ASYNC_JOB_RUNNER_DISABLE_RUNNER: "true"
       EVAKA_BUCKET_DECISIONS: evaka-daycaredecisions-dev
       EVAKA_BUCKET_FEE_DECISIONS: evaka-paymentdecisions-dev
-      EVAKA_S3MOCK_URL: ${S3MOCK_URL:-http://s3-mock:9090}
+      EVAKA_S3MOCK_URL: https://minio:9000
       EVAKA_BUCKET_PROXY_THROUGH_NGINX: "true"
       ESPOO_INTEGRATION_INVOICE_ENABLED: "false"
       EVAKA_INTEGRATION_KOSKI_ENABLED: "false"
