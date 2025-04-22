@@ -23,9 +23,9 @@ services:
         - ghcr.io/espoon-voltti/evaka/test-db:cache-${CACHE_TAG:-master}
         - ghcr.io/espoon-voltti/evaka/test-db:cache-master
     ports:
-    - "5432:5432"
+      - "5432:5432"
     volumes:
-    - db-data:/var/lib/postgresql/data
+      - db-data:/var/lib/postgresql/data
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -38,25 +38,26 @@ services:
   redis:
     image: redis:7-alpine
     ports:
-    - "6379:6379"
+      - "6379:6379"
     healthcheck:
       test: '[ "$$(redis-cli -h 127.0.0.1 ping)" == "PONG" ]'
       interval: 1s
       timeout: 5s
       retries: 5
 
-  s3-mock:
-    image: adobe/s3mock:4.0.0
+  minio:
+    image: minio/minio:latest
     ports:
-    - "9876:9191"
+      - "9876:9000"
     volumes:
-    - s3-data:/data
+      - ./minio-certs:/root/.minio/certs
+      - s3-data:/data
     environment:
-      ROOT: /data
-      initialBuckets: "static"
-      JAVA_TOOL_OPTIONS: "-XX:UseSVE=0 -XX:+IgnoreUnrecognizedVMOptions"
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    command: server /data
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:9090"]
+      test: ["CMD", "curl", "-f", "-I", "-k", "https://localhost:9000/minio/health/live"]
       interval: 1s
       timeout: 5s
       retries: 5

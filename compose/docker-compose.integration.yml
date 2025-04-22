@@ -28,7 +28,7 @@ services:
       - ./test-results/:/evaka/service/build/test-results/
     depends_on:
       - db
-      - s3-mock
+      - minio
       - sftp
     ipc: host
     network_mode: host

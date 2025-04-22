@@ -139,9 +139,14 @@ class SharedIntegrationTestConfig {
                 .serviceConfiguration(
                     S3Configuration.builder().pathStyleAccessEnabled(true).build()
                 )
-                .endpointOverride(env.s3MockUrl)
+                .endpointOverride(env.localS3Url)
                 .credentialsProvider(
-                    StaticCredentialsProvider.create(AwsBasicCredentials.create("foo", "bar"))
+                    StaticCredentialsProvider.create(
+                        AwsBasicCredentials.create(
+                            env.localS3AccessKeyId,
+                            env.localS3SecretAccessKey,
+                        )
+                    )
                 )
                 .build()
 
@@ -158,9 +163,11 @@ class SharedIntegrationTestConfig {
         S3Presigner.builder()
             .region(Region.US_EAST_1)
             .serviceConfiguration(S3Configuration.builder().pathStyleAccessEnabled(true).build())
-            .endpointOverride(env.s3MockUrl)
+            .endpointOverride(env.localS3Url)
             .credentialsProvider(
-                StaticCredentialsProvider.create(AwsBasicCredentials.create("foo", "bar"))
+                StaticCredentialsProvider.create(
+                    AwsBasicCredentials.create(env.localS3AccessKeyId, env.localS3SecretAccessKey)
+                )
             )
             .build()
 
