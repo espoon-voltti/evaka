@@ -8,9 +8,9 @@ import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
 import fi.espoo.evaka.shared.config.defaultJsonMapperBuilder
 import java.time.LocalDate
-import org.junit.jupiter.api.Assertions.assertEquals
+import kotlin.test.Test
+import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 
 class JamixSerializerTest {
 
