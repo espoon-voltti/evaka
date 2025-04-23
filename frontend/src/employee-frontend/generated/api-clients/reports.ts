@@ -960,11 +960,17 @@ export async function getPermittedReports(): Promise<Report[]> {
 */
 export async function getServiceNeedReport(
   request: {
-    date: LocalDate
+    date: LocalDate,
+    areaId?: AreaId | null,
+    providerType?: ProviderType | null,
+    placementType?: PlacementType | null
   }
 ): Promise<ServiceNeedReportRow[]> {
   const params = createUrlSearchParams(
-    ['date', request.date.formatIso()]
+    ['date', request.date.formatIso()],
+    ['areaId', request.areaId],
+    ['providerType', request.providerType?.toString()],
+    ['placementType', request.placementType?.toString()]
   )
   const { data: json } = await client.request<JsonOf<ServiceNeedReportRow[]>>({
     url: uri`/employee/reports/service-need`.toString(),

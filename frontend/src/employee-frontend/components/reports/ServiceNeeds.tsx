@@ -2,31 +2,89 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useState } from 'react'
+import React from 'react'
 
+import { localDate } from 'lib-common/form/fields'
+import { object, oneOf, required } from 'lib-common/form/form'
+import { useForm, useFormFields } from 'lib-common/form/hooks'
+import { AreaJSON, ProviderType } from 'lib-common/generated/api-types/daycare'
+import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { ServiceNeedReportRow } from 'lib-common/generated/api-types/reports'
+import { AreaId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
-import { useQueryResult } from 'lib-common/query'
+import { constantQuery, useQueryResult } from 'lib-common/query'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
+import { SelectF } from 'lib-components/atoms/dropdowns/Select'
 import { Container, ContentArea } from 'lib-components/layout/Container'
-import { Th, Tr, Td, Thead, Tbody } from 'lib-components/layout/Table'
-import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
+import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
+import { DatePickerF } from 'lib-components/molecules/date-picker/DatePicker'
+import { placementTypes, unitProviderTypes } from 'lib-customizations/employee'
 
 import ReportDownload from '../../components/reports/ReportDownload'
+import { areasQuery } from '../../queries'
 import { useTranslation } from '../../state/i18n'
-import { DateFilters } from '../../types/reports'
 import { renderResult } from '../async-rendering'
 
 import { FilterLabel, FilterRow, TableScrollable } from './common'
 import { serviceNeedReportQuery } from './queries'
 
+const filtersForm = object({
+  date: required(localDate()),
+  areaId: oneOf<AreaId>(),
+  providerType: oneOf<ProviderType>(),
+  placementType: oneOf<PlacementType>()
+})
+
+const supportedPlacementTypes = placementTypes.filter(
+  (placementType) => placementType !== 'CLUB'
+)
+
 export default React.memo(function ServiceNeeds() {
-  const { i18n } = useTranslation()
-  const [filters, setFilters] = useState<DateFilters>({
-    date: LocalDate.todayInSystemTz()
-  })
-  const rows = useQueryResult(serviceNeedReportQuery(filters))
+  const areasResult = useQueryResult(areasQuery())
+
+  return renderResult(areasResult, (areas) => (
+    <ServiceNeedsInner areas={areas} />
+  ))
+})
+
+const ServiceNeedsInner = (props: { areas: AreaJSON[] }) => {
+  const { i18n, lang } = useTranslation()
+  const form = useForm(
+    filtersForm,
+    () => ({
+      date: localDate.fromDate(LocalDate.todayInSystemTz()),
+      areaId: {
+        domValue: '',
+        options: props.areas.map((area) => ({
+          value: area.id,
+          domValue: area.id,
+          label: area.name
+        }))
+      },
+      providerType: {
+        domValue: '',
+        options: unitProviderTypes.map((providerType) => ({
+          value: providerType,
+          domValue: providerType,
+          label: i18n.common.providerType[providerType]
+        }))
+      },
+      placementType: {
+        domValue: '',
+        options: supportedPlacementTypes.map((placementType) => ({
+          value: placementType,
+          domValue: placementType,
+          label: i18n.placement.type[placementType]
+        }))
+      }
+    }),
+    i18n.validationErrors
+  )
+  const { date, areaId, providerType, placementType } = useFormFields(form)
+  const rows = useQueryResult(
+    form.isValid() ? serviceNeedReportQuery(form.value()) : constantQuery([])
+  )
 
   return (
     <Container>
@@ -35,10 +93,19 @@ export default React.memo(function ServiceNeeds() {
         <Title size={1}>{i18n.reports.serviceNeeds.title}</Title>
         <FilterRow>
           <FilterLabel>{i18n.reports.common.date}</FilterLabel>
-          <DatePickerDeprecated
-            date={filters.date}
-            onChange={(date) => setFilters({ date })}
-          />
+          <DatePickerF bind={date} locale={lang} />
+        </FilterRow>
+        <FilterRow>
+          <FilterLabel>{i18n.reports.common.careAreaName}</FilterLabel>
+          <SelectF bind={areaId} placeholder={i18n.common.all} />
+        </FilterRow>
+        <FilterRow>
+          <FilterLabel>{i18n.reports.common.unitProviderType}</FilterLabel>
+          <SelectF bind={providerType} placeholder={i18n.common.all} />
+        </FilterRow>
+        <FilterRow>
+          <FilterLabel>{i18n.reports.common.unitType}</FilterLabel>
+          <SelectF bind={placementType} placeholder={i18n.common.all} />
         </FilterRow>
 
         {renderResult(rows, (rows) => (
@@ -60,7 +127,7 @@ export default React.memo(function ServiceNeeds() {
                 },
                 { label: 'Lapsia yhteensä', value: (row) => row.total }
               ]}
-              filename={`Lapsien palvelutarpeet ja iät yksiköissä ${filters.date.formatIso()}.csv`}
+              filename={`Lapsien palvelutarpeet ja iät yksiköissä ${date.isValid() ? date.value().formatIso() : ''}.csv`}
             />
             <TableScrollable>
               <Thead>
@@ -113,4 +180,4 @@ export default React.memo(function ServiceNeeds() {
       </ContentArea>
     </Container>
   )
-})
+}

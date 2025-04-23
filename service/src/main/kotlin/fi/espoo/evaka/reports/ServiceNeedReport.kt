@@ -6,9 +6,13 @@ package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.daycare.domain.ProviderType
+import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.Predicate
+import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
@@ -28,7 +32,12 @@ class ServiceNeedReport(private val accessControl: AccessControl) {
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate,
+        @RequestParam areaId: AreaId?,
+        @RequestParam providerType: ProviderType?,
+        @RequestParam placementType: PlacementType?,
     ): List<ServiceNeedReportRow> {
+        if (placementType == PlacementType.CLUB)
+            throw BadRequest("Placement type CLUB is not supported")
         return db.connect { dbc ->
                 dbc.read {
                     val filter =
@@ -39,7 +48,7 @@ class ServiceNeedReport(private val accessControl: AccessControl) {
                             Action.Unit.READ_SERVICE_NEED_REPORT,
                         )
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
-                    it.getServiceNeedRows(date, filter)
+                    it.getServiceNeedRows(date, areaId, providerType, placementType, filter)
                 }
             }
             .also {
@@ -50,9 +59,25 @@ class ServiceNeedReport(private val accessControl: AccessControl) {
 
 private fun Database.Read.getServiceNeedRows(
     date: LocalDate,
+    areaId: AreaId?,
+    providerType: ProviderType?,
+    placementType: PlacementType?,
     idFilter: AccessControlFilter<DaycareId>,
-): List<ServiceNeedReportRow> =
-    createQuery {
+): List<ServiceNeedReportRow> {
+    val areaPredicates =
+        Predicate.allNotNull(
+            areaId?.let { Predicate { table -> where("$table.id = ${bind(it)}") } }
+        )
+    val unitPredicates =
+        Predicate.allNotNull(
+            providerType?.let { Predicate { table -> where("$table.provider_type = ${bind(it)}") } }
+        )
+    val placementPredicates =
+        Predicate.allNotNull(
+            placementType?.let { Predicate { table -> where("$table.type = ${bind(it)}") } }
+                ?: Predicate { table -> where("$table.type != 'CLUB'::placement_type") }
+        )
+    return createQuery {
             sql(
                 """
         WITH ages AS (SELECT age FROM generate_series(0, 8) as age)
@@ -73,11 +98,13 @@ private fun Database.Read.getServiceNeedRows(
         FROM daycare d
         JOIN ages ON true
         JOIN care_area ON d.care_area_id = care_area.id
-        LEFT JOIN placement pl ON d.id = pl.unit_id AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(date)} AND pl.type != 'CLUB'::placement_type
+        LEFT JOIN placement pl ON d.id = pl.unit_id AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(date)} AND ${predicate(placementPredicates.forTable("pl"))}
         LEFT JOIN person p ON pl.child_id = p.id AND date_part('year', age(${bind(date)}, p.date_of_birth)) = ages.age
         LEFT JOIN service_need sn ON sn.placement_id = pl.id AND daterange(sn.start_date, sn.end_date, '[]') @> ${bind(date)}
         LEFT JOIN service_need_option sno ON sno.id = sn.option_id
         WHERE ${predicate(idFilter.forTable("d"))}
+          AND ${predicate(areaPredicates.forTable("care_area"))}
+          AND ${predicate(unitPredicates.forTable("d"))}
         GROUP BY care_area_name, ages.age, unit_name, unit_provider_type, unit_type
         ORDER BY care_area_name, unit_name, ages.age
             """
@@ -86,6 +113,7 @@ private fun Database.Read.getServiceNeedRows(
         }
         .registerColumnMapper(UnitType.JDBI_COLUMN_MAPPER)
         .toList<ServiceNeedReportRow>()
+}
 
 data class ServiceNeedReportRow(
     val careAreaName: String,
