@@ -30,8 +30,10 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.domain.getHolidays
+import fi.espoo.evaka.shared.domain.isHoliday
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.IOException
+import java.time.DayOfWeek
 import java.time.Duration
 import java.time.LocalDate
 import kotlin.math.roundToInt
@@ -39,6 +41,7 @@ import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
+import org.jdbi.v3.json.Json
 import org.springframework.stereotype.Service
 
 private val logger = KotlinLogging.logger {}
@@ -196,7 +199,7 @@ interface NekkuClient {
         @JsonProperty("dry_run") val dryRun: Boolean,
     )
 
-    fun getCustomers(): List<NekkuCustomer>
+    fun getCustomers(): List<NekkuApiCustomer>
 
     fun getSpecialDiets(): List<NekkuApiSpecialDiet>
 
@@ -208,7 +211,7 @@ interface NekkuClient {
 class NekkuHttpClient(private val env: NekkuEnv, private val jsonMapper: JsonMapper) : NekkuClient {
     val client = OkHttpClient()
 
-    override fun getCustomers(): List<NekkuCustomer> {
+    override fun getCustomers(): List<NekkuApiCustomer> {
         val request = getBaseRequest().get().url(env.url.resolve("customers").toString()).build()
 
         return executeRequest(request)
@@ -337,6 +340,22 @@ private fun LocalDate.daySpan(): FiniteDateRange {
     return FiniteDateRange(start, end)
 }
 
+private fun getNekkuWeekday(date: LocalDate): NekkuCustomerWeekday {
+    return if (isHoliday(date)) {
+        NekkuCustomerWeekday.WEEKDAYHOLIDAY
+    } else {
+        when (date.dayOfWeek) {
+            DayOfWeek.MONDAY -> NekkuCustomerWeekday.MONDAY
+            DayOfWeek.TUESDAY -> NekkuCustomerWeekday.TUESDAY
+            DayOfWeek.WEDNESDAY -> NekkuCustomerWeekday.WEDNESDAY
+            DayOfWeek.THURSDAY -> NekkuCustomerWeekday.THURSDAY
+            DayOfWeek.FRIDAY -> NekkuCustomerWeekday.FRIDAY
+            DayOfWeek.SATURDAY -> NekkuCustomerWeekday.SATURDAY
+            DayOfWeek.SUNDAY -> NekkuCustomerWeekday.SUNDAY
+        }
+    }
+}
+
 fun createAndSendNekkuOrder(
     client: NekkuClient,
     dbc: Database.Connection,
@@ -350,40 +369,49 @@ fun createAndSendNekkuOrder(
             val children = getNekkuChildInfos(tx, groupId, date)
             preschoolTerms to children
         }
-    val nekkuDaycareCustomerMapping = dbc.read { tx -> tx.getNekkuDaycareCustomerMapping(groupId) }
+    val nekkuWeekday = getNekkuWeekday(date)
+
+    val nekkuDaycareCustomerMapping =
+        dbc.read { tx -> tx.getNekkuDaycareCustomerMapping(groupId, nekkuWeekday) }
 
     val nekkuProducts = dbc.read { tx -> tx.getNekkuProducts() }
 
-    val order =
-        NekkuClient.NekkuOrders(
-            listOf(
-                NekkuClient.NekkuOrder(
-                    deliveryDate = date.toString(),
-                    customerNumber = nekkuDaycareCustomerMapping.customerNumber,
-                    groupId = groupId.toString(),
-                    items =
-                        nekkuMealReportData(
-                            children,
-                            date,
-                            preschoolTerms,
-                            nekkuProducts,
-                            nekkuDaycareCustomerMapping.unitSize,
-                            nekkuMealDeductionFactor,
-                        ),
-                    description = nekkuDaycareCustomerMapping.groupName,
-                )
-            ),
-            dryRun = false,
-        )
+    if (nekkuDaycareCustomerMapping != null) {
+        val order =
+            NekkuClient.NekkuOrders(
+                listOf(
+                    NekkuClient.NekkuOrder(
+                        deliveryDate = date.toString(),
+                        customerNumber = nekkuDaycareCustomerMapping.customerNumber,
+                        groupId = groupId.toString(),
+                        items =
+                            nekkuMealReportData(
+                                children,
+                                date,
+                                preschoolTerms,
+                                nekkuProducts,
+                                nekkuDaycareCustomerMapping.customerType,
+                                nekkuMealDeductionFactor,
+                            ),
+                        description = nekkuDaycareCustomerMapping.groupName,
+                    )
+                ),
+                dryRun = false,
+            )
 
-    if (order.orders.isNotEmpty()) {
-        val nekkuOrderResult = client.createNekkuMealOrder(order)
-        logger.info {
-            "Sent Nekku order for date $date for customerNumber=${nekkuDaycareCustomerMapping.customerNumber} groupId=$groupId and Nekku orders created: ${nekkuOrderResult.created}"
+        if (order.orders.isNotEmpty()) {
+            val nekkuOrderResult = client.createNekkuMealOrder(order)
+            logger.info {
+                "Sent Nekku order for date $date for customerNumber=${nekkuDaycareCustomerMapping.customerNumber} groupId=$groupId and Nekku orders created: ${nekkuOrderResult.created}"
+            }
+        } else {
+            logger.info {
+                "Skipped Nekku order with no rows for date $date for customerNumber=${nekkuDaycareCustomerMapping.customerNumber} groupId=$groupId"
+            }
         }
     } else {
         logger.info {
-            "Skipped Nekku order with no rows for date $date for customerNumber=${nekkuDaycareCustomerMapping.customerNumber} groupId=$groupId"
+            "Could not find any customer with given date: ${date.dayOfWeek} groupId=$groupId"
         }
     }
 }
@@ -393,7 +421,7 @@ fun nekkuMealReportData(
     date: LocalDate,
     preschoolTerms: List<PreschoolTerm>,
     nekkuProducts: List<NekkuProduct>,
-    unitSize: String,
+    customerType: String,
     nekkuMealDeductionFactor: Double,
 ): List<NekkuClient.Item> {
     val mealInfoMap =
@@ -427,7 +455,7 @@ fun nekkuMealReportData(
                     )
                     .map {
                         NekkuMealInfo(
-                            sku = getNekkuProductNumber(nekkuProducts, it, childInfo, unitSize),
+                            sku = getNekkuProductNumber(nekkuProducts, it, childInfo, customerType),
                             options = null, // getNekkuChildDiets() //Todo: get child diets
                             nekkuMealType = childInfo.mealType,
                         )
@@ -453,7 +481,7 @@ private fun getNekkuProductNumber(
     nekkuProducts: List<NekkuProduct>,
     nekkuProductMealTime: NekkuProductMealTime,
     nekkuChildInfo: NekkuChildInfo,
-    unitSize: String,
+    customerType: String,
 ): String {
 
     val filteredNekkuProducts =
@@ -461,22 +489,22 @@ private fun getNekkuProductNumber(
             it.mealTime?.contains(nekkuProductMealTime) ?: false &&
                 it.mealType == nekkuChildInfo.mealType &&
                 it.optionsId == nekkuChildInfo.optionsId &&
-                it.unitSize == unitSize
+                it.customerTypes.contains(customerType)
         }
 
     if (filteredNekkuProducts.isEmpty()) {
         logger.info {
-            "Cannot find any Nekku Product from database with unitsize=$unitSize optionsId=${nekkuChildInfo.optionsId} mealtype=${nekkuChildInfo.mealType} mealtime=${nekkuProductMealTime.description}"
+            "Cannot find any Nekku Product from database with customertype=$customerType optionsId=${nekkuChildInfo.optionsId} mealtype=${nekkuChildInfo.mealType} mealtime=${nekkuProductMealTime.description}"
         }
         error(
-            "Cannot find any Nekku Product from database with unitsize=$unitSize optionsId=${nekkuChildInfo.optionsId} mealtype=${nekkuChildInfo.mealType} mealtime=${nekkuProductMealTime.description}"
+            "Cannot find any Nekku Product from database with customertype=$customerType optionsId=${nekkuChildInfo.optionsId} mealtype=${nekkuChildInfo.mealType} mealtime=${nekkuProductMealTime.description}"
         )
     } else if (filteredNekkuProducts.count() > 1) {
         logger.info {
-            "Found too many Nekku Products from database with unitsize=$unitSize optionsId=${nekkuChildInfo.optionsId} mealtype=${nekkuChildInfo.mealType} mealtime=${nekkuProductMealTime.description}"
+            "Found too many Nekku Products from database with customertype=$customerType optionsId=${nekkuChildInfo.optionsId} mealtype=${nekkuChildInfo.mealType} mealtime=${nekkuProductMealTime.description}"
         }
         error(
-            "Found too many Nekku Products from database with unitsize=$unitSize optionsId=${nekkuChildInfo.optionsId} mealtype=${nekkuChildInfo.mealType} mealtime=${nekkuProductMealTime.description}"
+            "Found too many Nekku Products from database with customertype=$customerType optionsId=${nekkuChildInfo.optionsId} mealtype=${nekkuChildInfo.mealType} mealtime=${nekkuProductMealTime.description}"
         )
     } else {
         return filteredNekkuProducts.first().sku
@@ -569,8 +597,67 @@ data class NekkuCustomer(
     val number: String,
     val name: String,
     val group: String,
-    @JsonProperty("unit_size") val unitSize: String,
+    @Json val customerType: List<CustomerType>,
 )
+
+data class NekkuApiCustomer(
+    val number: String,
+    val name: String,
+    val group: String,
+    @Json @JsonProperty("customer_type") val customerType: List<CustomerApiType>,
+) {
+    fun toEvaka(): NekkuCustomer =
+        NekkuCustomer(number, name, group, customerType.map { it.toEvaka() })
+}
+
+data class CustomerType(val weekdays: List<NekkuCustomerWeekday>, val type: String)
+
+data class CustomerApiType(val weekdays: List<NekkuCustomerApiWeekday>, val type: String) {
+    fun toEvaka(): CustomerType = CustomerType(weekdays.map { it.toEvaka() }, type)
+}
+
+@ConstList("nekku_customer_weekday")
+enum class NekkuCustomerWeekday() : DatabaseEnum {
+    MONDAY,
+    TUESDAY,
+    WEDNESDAY,
+    THURSDAY,
+    FRIDAY,
+    SATURDAY,
+    SUNDAY,
+    WEEKDAYHOLIDAY;
+
+    override val sqlType: String = "nekku_customer_weekday"
+}
+
+enum class NekkuCustomerApiWeekday(@JsonValue val description: String) {
+    MONDAY("monday") {
+        override fun toEvaka(): NekkuCustomerWeekday = NekkuCustomerWeekday.MONDAY
+    },
+    TUESDAY("tuesday") {
+        override fun toEvaka(): NekkuCustomerWeekday = NekkuCustomerWeekday.TUESDAY
+    },
+    WEDNESDAY("wednesday") {
+        override fun toEvaka(): NekkuCustomerWeekday = NekkuCustomerWeekday.WEDNESDAY
+    },
+    THURSDAY("thursday") {
+        override fun toEvaka(): NekkuCustomerWeekday = NekkuCustomerWeekday.THURSDAY
+    },
+    FRIDAY("friday") {
+        override fun toEvaka(): NekkuCustomerWeekday = NekkuCustomerWeekday.FRIDAY
+    },
+    SATURDAY("saturday") {
+        override fun toEvaka(): NekkuCustomerWeekday = NekkuCustomerWeekday.SATURDAY
+    },
+    SUNDAY("sunday") {
+        override fun toEvaka(): NekkuCustomerWeekday = NekkuCustomerWeekday.SUNDAY
+    },
+    WEEKDAYHOLIDAY("weekday_holiday") {
+        override fun toEvaka(): NekkuCustomerWeekday = NekkuCustomerWeekday.WEEKDAYHOLIDAY
+    };
+
+    abstract fun toEvaka(): NekkuCustomerWeekday
+}
 
 data class NekkuUnitNumber(val number: String, val name: String)
 
@@ -639,12 +726,12 @@ data class NekkuApiProduct(
     val name: String,
     val sku: String,
     @JsonProperty("options_id") val optionsId: String,
-    @JsonProperty("unit_size") val unitSize: String,
+    @JsonProperty("customer_types") val customerTypes: List<String>,
     @JsonProperty("meal_time") val mealTime: List<NekkuProductMealTime>? = null,
     @JsonProperty("meal_type") val mealType: NekkuApiProductMealType? = null,
 ) {
     fun toEvaka(): NekkuProduct =
-        NekkuProduct(name, sku, optionsId, unitSize, mealTime, mealType?.toEvaka())
+        NekkuProduct(name, sku, optionsId, customerTypes, mealTime, mealType?.toEvaka())
 }
 
 data class NekkuSpecialDietOptionWithFieldId(
@@ -658,7 +745,7 @@ data class NekkuProduct(
     val name: String,
     val sku: String,
     @JsonProperty("options_id") val optionsId: String,
-    @JsonProperty("unit_size") val unitSize: String,
+    @JsonProperty("customer_types") val customerTypes: List<String>,
     @JsonProperty("meal_time") val mealTime: List<NekkuProductMealTime>? = null,
     @JsonProperty("meal_type") val mealType: NekkuProductMealType? = null,
 )

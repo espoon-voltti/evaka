@@ -14,23 +14,12 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.TimeRange
 import java.time.LocalDate
-import org.jdbi.v3.core.mapper.PropagateNull
 import org.jdbi.v3.json.Json
-
-data class CustomerNumbers(
-    @PropagateNull val number: String,
-    val name: String,
-    val group: String,
-    val unit_size: String,
-)
 
 /** Throws an IllegalStateException if Nekku returns an empty customer list. */
 fun fetchAndUpdateNekkuCustomers(client: NekkuClient, db: Database.Connection) {
     val customersFromNekku =
-        client
-            .getCustomers()
-            .map { it -> CustomerNumbers(it.number, it.name, it.group, it.unitSize) }
-            .filter { it.group.contains("Varhaiskasvatus") }
+        client.getCustomers().map { it.toEvaka() }.filter { it.group.contains("Varhaiskasvatus") }
 
     if (customersFromNekku.isEmpty())
         error("Refusing to sync empty Nekku customer list into database")
@@ -42,6 +31,9 @@ fun fetchAndUpdateNekkuCustomers(client: NekkuClient, db: Database.Connection) {
                 "Nekku customer list update caused $nulledCustomersCount customer numbers to be set to null"
             }
         val deletedCustomerCount = tx.setCustomerNumbers(customersFromNekku)
+
+        tx.setNekkuCustomerTypes(customersFromNekku.map { it.number to it.customerType })
+
         logger.info {
             "Deleted: $deletedCustomerCount Nekku customer numbers, inserted ${customersFromNekku.size}"
         }
@@ -49,7 +41,7 @@ fun fetchAndUpdateNekkuCustomers(client: NekkuClient, db: Database.Connection) {
 }
 
 fun Database.Transaction.resetNekkuCustomerNumbersNotContainedWithin(
-    nekkuCustomerNumbers: List<CustomerNumbers>
+    nekkuCustomerNumbers: List<NekkuCustomer>
 ): Int {
     val newNekkuCustomerNumbers = nekkuCustomerNumbers.map { it.number }
     val affectedRows = execute {
@@ -60,7 +52,7 @@ fun Database.Transaction.resetNekkuCustomerNumbersNotContainedWithin(
     return affectedRows
 }
 
-fun Database.Transaction.setCustomerNumbers(customerNumbers: List<CustomerNumbers>): Int {
+fun Database.Transaction.setCustomerNumbers(customerNumbers: List<NekkuCustomer>): Int {
     val newCustomerNumbers = customerNumbers.map { it.number }
     val deletedCustomerCount = execute {
         sql("DELETE FROM nekku_customer WHERE number != ALL (${bind(newCustomerNumbers)})")
@@ -68,31 +60,105 @@ fun Database.Transaction.setCustomerNumbers(customerNumbers: List<CustomerNumber
     executeBatch(customerNumbers) {
         sql(
             """
-INSERT INTO nekku_customer (number, name, customer_group, unit_size)
+INSERT INTO nekku_customer (number, name, customer_group)
 VALUES (
     ${bind{it.number}},
     ${bind{it.name}},
-    ${bind{it.group}},
-    ${bind{it.unit_size}}
+    ${bind{it.group}}
 )
 ON CONFLICT (number) DO 
 UPDATE SET
   name = excluded.name,
-  customer_group = excluded.customer_group,
-  unit_size = excluded.unit_size
+  customer_group = excluded.customer_group
 WHERE
     nekku_customer.name <> excluded.name OR
-    nekku_customer.customer_group <> excluded.customer_group OR
-    nekku_customer.unit_size <> excluded.unit_size;
+    nekku_customer.customer_group <> excluded.customer_group;
 """
         )
     }
     return deletedCustomerCount
 }
 
+fun Database.Transaction.setNekkuCustomerTypes(
+    nekkuCustomerTypes: List<Pair<String, List<CustomerType>>>
+) {
+    val newNekkuCustomerNumbers = nekkuCustomerTypes.flatMap { it.second }.map { it.type }
+    val deletedNekkuCustomerTypesCount = execute {
+        sql(
+            "DELETE FROM nekku_customer_type WHERE customer_number != ALL (${bind(newNekkuCustomerNumbers)})"
+        )
+    }
+
+    val batchRows: Sequence<Pair<String, CustomerType>> =
+        nekkuCustomerTypes.asSequence().flatMap { (customerNumber, customerTypes) ->
+            customerTypes.map { customerType -> Pair(customerNumber, customerType) }
+        }
+
+    executeBatch(batchRows) {
+        sql(
+            """
+INSERT INTO nekku_customer_type (
+    customer_number,
+    type,
+    weekdays
+) VALUES (
+    ${bind { (customerNumber, _) -> customerNumber}},
+    ${bind { (_, field) -> field.type }},
+    ${bind { (_, field) -> field.weekdays }}
+)
+ON CONFLICT (customer_number) DO 
+UPDATE SET
+  type = excluded.type,
+  weekdays = excluded.weekdays
+WHERE
+    nekku_customer_type.type <> excluded.type OR 
+    nekku_customer_type.weekdays <> excluded.weekdays;
+
+"""
+        )
+    }
+
+    logger.info {
+        "Deleted: $deletedNekkuCustomerTypesCount Nekku customer types, inserted ${nekkuCustomerTypes.size}"
+    }
+}
+
+fun Database.Read.getNekkuDaycareCustomerMapping(
+    groupId: GroupId,
+    weekday: NekkuCustomerWeekday,
+): NekkuDaycareCustomerMapping? =
+    createQuery {
+            sql(
+                """
+                SELECT 
+                    dg.nekku_customer_number as customerNumber, 
+                    dg.name as groupName, 
+                    nct.type as customerType
+                FROM daycare_group dg 
+                    JOIN daycare d ON d.id = dg.daycare_id
+                    JOIN nekku_customer nc ON nc.number = dg.nekku_customer_number
+                    LEFT JOIN nekku_customer_type nct ON nc.number = nct.customer_number
+                WHERE dg.id = ${bind(groupId)}
+                AND ${bind(weekday)} = ANY(nct.weekdays)
+            """
+            )
+        }
+        .exactlyOneOrNull<NekkuDaycareCustomerMapping>()
+
 fun Database.Transaction.getNekkuCustomers(): List<NekkuCustomer> {
     return createQuery {
-            sql("SELECT number, name, customer_group AS \"group\", unit_size FROM nekku_customer")
+            sql(
+                """
+    SELECT 
+        nc.number, 
+        nc.name, 
+        nc.customer_group AS "group",
+        JSON_AGG(JSON_BUILD_OBJECT('weekdays', nct.weekdays, 'type', nct.type)) AS customerType
+    FROM nekku_customer nc
+    LEFT JOIN nekku_customer_type nct ON nc.number = nct.customer_number
+    GROUP BY nc.number, nc.name, nc.customer_group
+    """
+            )
         }
         .toList<NekkuCustomer>()
 }
@@ -276,12 +342,12 @@ fun Database.Transaction.setProductNumbers(productNumbers: List<NekkuProduct>): 
     executeBatch(productNumbers) {
         sql(
             """
-INSERT INTO nekku_product (sku, name, options_id, unit_size, meal_time, meal_type)
+INSERT INTO nekku_product (sku, name, options_id, customer_types, meal_time, meal_type)
 VALUES (
     ${bind{it.sku}},
     ${bind{it.name}},
     ${bind{it.optionsId}},
-    ${bind{it.unitSize}},
+    ${bind{it.customerTypes}},
     ${bind{it.mealTime}},
     ${bind{it.mealType}}
 )
@@ -289,13 +355,13 @@ ON CONFLICT (sku) DO
 UPDATE SET
   name = excluded.name,
   options_id = excluded.options_id,
-  unit_size = excluded.unit_size,
+  customer_types = excluded.customer_types,
   meal_time = excluded.meal_time,
   meal_type = excluded.meal_type
 WHERE
     nekku_product.name <> excluded.name OR
     nekku_product.options_id <> excluded.options_id OR
-    nekku_product.unit_size <> excluded.unit_size OR 
+    nekku_product.customer_types <> excluded.customer_types OR 
     nekku_product.meal_time <> excluded.meal_time OR 
     nekku_product.meal_type <> excluded.meal_type;
 """
@@ -306,7 +372,9 @@ WHERE
 
 fun Database.Read.getNekkuProducts(): List<NekkuProduct> {
     return createQuery {
-            sql("SELECT sku, name, options_id, unit_size, meal_time, meal_type FROM nekku_product")
+            sql(
+                "SELECT sku, name, options_id, customer_types, meal_time, meal_type FROM nekku_product"
+            )
         }
         .toList<NekkuProduct>()
 }
@@ -360,8 +428,8 @@ data class NekkuChildData(
 
 data class NekkuDaycareCustomerMapping(
     val customerNumber: String,
-    val unitSize: String,
     val groupName: String,
+    val customerType: String,
 )
 
 fun Database.Read.getNekkuDaycareGroupId(range: FiniteDateRange): List<GroupId> =
@@ -379,20 +447,6 @@ fun Database.Read.getNekkuDaycareGroupId(range: FiniteDateRange): List<GroupId> 
             )
         }
         .toList<GroupId>()
-
-fun Database.Read.getNekkuDaycareCustomerMapping(groupId: GroupId): NekkuDaycareCustomerMapping =
-    createQuery {
-            sql(
-                """
-                    SELECT dg.nekku_customer_number as customerNumber, nc.unit_size as unitSize, dg.name as groupName
-                    FROM daycare_group dg 
-                    JOIN daycare d ON d.id = dg.daycare_id
-                    JOIN nekku_customer nc ON nc.number = dg.nekku_customer_number
-                    WHERE dg.id = ${bind(groupId)}
-                """
-            )
-        }
-        .exactlyOne<NekkuDaycareCustomerMapping>()
 
 fun Database.Read.mealTypesForChildren(
     childIds: Set<ChildId>

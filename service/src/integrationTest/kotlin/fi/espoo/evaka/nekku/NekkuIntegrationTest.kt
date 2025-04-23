@@ -45,17 +45,31 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             TestNekkuClient(
                 customers =
                     listOf(
-                        NekkuCustomer(
+                        NekkuApiCustomer(
                             "2501K6089",
                             "Ahvenojan päiväkoti",
                             "Varhaiskasvatus",
-                            "large",
+                            listOf(
+                                CustomerApiType(
+                                    listOf(
+                                        NekkuCustomerApiWeekday.MONDAY,
+                                        NekkuCustomerApiWeekday.TUESDAY,
+                                        NekkuCustomerApiWeekday.WEDNESDAY,
+                                        NekkuCustomerApiWeekday.THURSDAY,
+                                        NekkuCustomerApiWeekday.FRIDAY,
+                                        NekkuCustomerApiWeekday.SATURDAY,
+                                        NekkuCustomerApiWeekday.SUNDAY,
+                                        NekkuCustomerApiWeekday.WEEKDAYHOLIDAY,
+                                    ),
+                                    "100-lasta",
+                                )
+                            ),
                         )
                     )
             )
         fetchAndUpdateNekkuCustomers(client, db)
         db.transaction { tx ->
-            val customers = tx.getNekkuCustomers().toSet()
+            val customers = tx.getNekkuCustomers()
             assertEquals(1, customers.size)
         }
     }
@@ -66,13 +80,46 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             TestNekkuClient(
                 customers =
                     listOf(
-                        NekkuCustomer(
+                        NekkuApiCustomer(
                             "2501K6089",
                             "Ahvenojan päiväkoti",
                             "Varhaiskasvatus",
-                            "large",
+                            listOf(
+                                CustomerApiType(
+                                    listOf(
+                                        NekkuCustomerApiWeekday.MONDAY,
+                                        NekkuCustomerApiWeekday.TUESDAY,
+                                        NekkuCustomerApiWeekday.WEDNESDAY,
+                                        NekkuCustomerApiWeekday.THURSDAY,
+                                        NekkuCustomerApiWeekday.FRIDAY,
+                                        NekkuCustomerApiWeekday.SATURDAY,
+                                        NekkuCustomerApiWeekday.SUNDAY,
+                                        NekkuCustomerApiWeekday.WEEKDAYHOLIDAY,
+                                    ),
+                                    "100-lasta",
+                                )
+                            ),
                         ),
-                        NekkuCustomer("4282K9253", "Haukiputaan lukio lipa", "Liikunta", ""),
+                        NekkuApiCustomer(
+                            "4282K9253",
+                            "Haukiputaan lukio lipa",
+                            "Liikunta",
+                            listOf(
+                                CustomerApiType(
+                                    listOf(
+                                        NekkuCustomerApiWeekday.MONDAY,
+                                        NekkuCustomerApiWeekday.TUESDAY,
+                                        NekkuCustomerApiWeekday.WEDNESDAY,
+                                        NekkuCustomerApiWeekday.THURSDAY,
+                                        NekkuCustomerApiWeekday.FRIDAY,
+                                        NekkuCustomerApiWeekday.SATURDAY,
+                                        NekkuCustomerApiWeekday.SUNDAY,
+                                        NekkuCustomerApiWeekday.WEEKDAYHOLIDAY,
+                                    ),
+                                    "palvelu-ovelle-viikonloppu-ja-arkipyhat",
+                                )
+                            ),
+                        ),
                     )
             )
         fetchAndUpdateNekkuCustomers(client, db)
@@ -88,11 +135,25 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             TestNekkuClient(
                 customers =
                     listOf(
-                        NekkuCustomer(
+                        NekkuApiCustomer(
                             "2501K6089",
                             "Ahvenojan päiväkoti",
                             "Varhaiskasvatus",
-                            "large",
+                            listOf(
+                                CustomerApiType(
+                                    listOf(
+                                        NekkuCustomerApiWeekday.MONDAY,
+                                        NekkuCustomerApiWeekday.TUESDAY,
+                                        NekkuCustomerApiWeekday.WEDNESDAY,
+                                        NekkuCustomerApiWeekday.THURSDAY,
+                                        NekkuCustomerApiWeekday.FRIDAY,
+                                        NekkuCustomerApiWeekday.SATURDAY,
+                                        NekkuCustomerApiWeekday.SUNDAY,
+                                        NekkuCustomerApiWeekday.WEEKDAYHOLIDAY,
+                                    ),
+                                    "100-lasta",
+                                )
+                            ),
                         )
                     )
             )
@@ -103,18 +164,33 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
             assertEquals(1, customers.size)
             assertEquals("Ahvenojan päiväkoti", customers.first().name)
-            assertEquals("large", customers.first().unitSize)
+            assertEquals("100-lasta", customers.first().customerType.first().type)
+            assertEquals("Varhaiskasvatus", customers.first().group)
         }
 
         client =
             TestNekkuClient(
                 customers =
                     listOf(
-                        NekkuCustomer(
+                        NekkuApiCustomer(
                             "2501K6089",
                             "Ahvenojan päiväkoti MUUTETTU",
                             "Varhaiskasvatus",
-                            "small",
+                            listOf(
+                                CustomerApiType(
+                                    listOf(
+                                        NekkuCustomerApiWeekday.MONDAY,
+                                        NekkuCustomerApiWeekday.TUESDAY,
+                                        NekkuCustomerApiWeekday.WEDNESDAY,
+                                        NekkuCustomerApiWeekday.THURSDAY,
+                                        NekkuCustomerApiWeekday.FRIDAY,
+                                        NekkuCustomerApiWeekday.SATURDAY,
+                                        NekkuCustomerApiWeekday.SUNDAY,
+                                        NekkuCustomerApiWeekday.WEEKDAYHOLIDAY,
+                                    ),
+                                    "alle 50-lasta",
+                                )
+                            ),
                         )
                     )
             )
@@ -124,7 +200,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
             assertEquals(1, customers.size)
             assertEquals("Ahvenojan päiväkoti MUUTETTU", customers.first().name)
-            assertEquals("small", customers.first().unitSize)
+            assertEquals("alle 50-lasta", customers.first().customerType.first().type)
         }
     }
 
@@ -371,7 +447,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 "Ateriapalvelu 1 kasvis",
                 "31000010",
                 "",
-                "small",
+                listOf("alle-50-lasta"),
                 listOf(
                     NekkuProductMealTime.BREAKFAST,
                     NekkuProductMealTime.LUNCH,
@@ -383,7 +459,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 "Ateriapalvelu 1 kasvis er",
                 "31000011",
                 "2",
-                "small",
+                listOf("alle-50-lasta"),
                 listOf(
                     NekkuProductMealTime.BREAKFAST,
                     NekkuProductMealTime.LUNCH,
@@ -395,11 +471,11 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 "Päivällinen vegaani päiväkoti",
                 "31000008",
                 "",
-                "large",
+                listOf("100-lasta"),
                 listOf(NekkuProductMealTime.DINNER),
                 NekkuApiProductMealType.Vegaani,
             ),
-            NekkuApiProduct("Lounas kasvis er", "31001011", "2", "medium", null, null),
+            NekkuApiProduct("Lounas kasvis er", "31001011", "2", listOf("50-99-lasta"), null, null),
         )
 
     val nekkuProductsForOrder =
@@ -408,7 +484,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 "Ateriapalvelu 1 aamupala",
                 "31000010",
                 "",
-                "large",
+                listOf("100-lasta"),
                 listOf(NekkuProductMealTime.BREAKFAST),
                 null,
             ),
@@ -416,7 +492,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 "Ateriapalvelu 1 lounas",
                 "31000011",
                 "",
-                "large",
+                listOf("100-lasta"),
                 listOf(NekkuProductMealTime.LUNCH),
                 null,
             ),
@@ -424,7 +500,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 "Ateriapalvelu 1 välipala",
                 "31000012",
                 "",
-                "large",
+                listOf("100-lasta"),
                 listOf(NekkuProductMealTime.SNACK),
                 null,
             ),
@@ -432,7 +508,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 "Ateriapalvelu 1 iltapala",
                 "31000013",
                 "",
-                "large",
+                listOf("100-lasta"),
                 listOf(NekkuProductMealTime.SUPPER),
                 null,
             ),
@@ -440,7 +516,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 "Ateriapalvelu kasvis 1 aamupala",
                 "31000014",
                 "",
-                "large",
+                listOf("100-lasta"),
                 listOf(NekkuProductMealTime.BREAKFAST),
                 NekkuApiProductMealType.Kasvis,
             ),
@@ -448,7 +524,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 "Ateriapalvelu kasvis 1 lounas",
                 "31000015",
                 "",
-                "large",
+                listOf("100-lasta"),
                 listOf(NekkuProductMealTime.LUNCH),
                 NekkuApiProductMealType.Kasvis,
             ),
@@ -456,7 +532,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 "Ateriapalvelu kasvis 1 välipala",
                 "31000016",
                 "",
-                "large",
+                listOf("100-lasta"),
                 listOf(NekkuProductMealTime.SNACK),
                 NekkuApiProductMealType.Kasvis,
             ),
@@ -464,7 +540,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 "Ateriapalvelu kasvis 1 iltapala",
                 "31000017",
                 "",
-                "large",
+                listOf("100-lasta"),
                 listOf(NekkuProductMealTime.SUPPER),
                 NekkuApiProductMealType.Kasvis,
             ),
@@ -472,7 +548,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 "Ateriapalvelu 2 aamupala ja lounas",
                 "31000018",
                 "",
-                "medium",
+                listOf("50-99-lasta"),
                 listOf(NekkuProductMealTime.BREAKFAST, NekkuProductMealTime.LUNCH),
                 null,
             ),
@@ -480,7 +556,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 "Ateriapalvelu 2 välipala",
                 "31000019",
                 "",
-                "medium",
+                listOf("50-99-lasta"),
                 listOf(NekkuProductMealTime.SNACK),
                 null,
             ),
@@ -519,7 +595,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                             "Ateriapalvelu 1 kasvis",
                             "31000010",
                             "",
-                            "small",
+                            listOf("alle-50-lasta"),
                             listOf(
                                 NekkuProductMealTime.BREAKFAST,
                                 NekkuProductMealTime.LUNCH,
@@ -531,7 +607,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                             "Päivällinen vegaani päiväkoti",
                             "31000008",
                             "",
-                            "large",
+                            listOf("100-lasta"),
                             listOf(NekkuProductMealTime.DINNER),
                             NekkuApiProductMealType.Kasvis,
                         ),
@@ -554,7 +630,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                             "Ateriapalvelu 1 kasvis",
                             "31000010",
                             "",
-                            "small",
+                            listOf("alle-50-lasta"),
                             listOf(
                                 NekkuProductMealTime.BREAKFAST,
                                 NekkuProductMealTime.LUNCH,
@@ -578,7 +654,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                             "Ateriapalvelu 1 vegaani",
                             "31000010",
                             "2",
-                            "medium",
+                            listOf("100-lasta"),
                             null,
                             NekkuApiProductMealType.Vegaani,
                         )
@@ -589,7 +665,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             val products = tx.getNekkuProducts()
             assertEquals("Ateriapalvelu 1 vegaani", products[0].name)
             assertEquals("2", products[0].optionsId)
-            assertEquals("medium", products[0].unitSize)
+            assertEquals("100-lasta", products[0].customerTypes.first())
             assertEquals(null, products[0].mealTime)
             assertEquals(NekkuProductMealType.VEGAN, products[0].mealType)
         }
@@ -602,11 +678,25 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             TestNekkuClient(
                 customers =
                     listOf(
-                        NekkuCustomer(
+                        NekkuApiCustomer(
                             "2501K6089",
                             "Ahvenojan päiväkoti",
                             "Varhaiskasvatus",
-                            "large",
+                            listOf(
+                                CustomerApiType(
+                                    listOf(
+                                        NekkuCustomerApiWeekday.MONDAY,
+                                        NekkuCustomerApiWeekday.TUESDAY,
+                                        NekkuCustomerApiWeekday.WEDNESDAY,
+                                        NekkuCustomerApiWeekday.THURSDAY,
+                                        NekkuCustomerApiWeekday.FRIDAY,
+                                        NekkuCustomerApiWeekday.SATURDAY,
+                                        NekkuCustomerApiWeekday.SUNDAY,
+                                        NekkuCustomerApiWeekday.WEEKDAYHOLIDAY,
+                                    ),
+                                    "100-lasta",
+                                )
+                            ),
                         )
                     )
             )
@@ -643,11 +733,25 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             TestNekkuClient(
                 customers =
                     listOf(
-                        NekkuCustomer(
+                        NekkuApiCustomer(
                             "2501K6089",
                             "Ahvenojan päiväkoti",
                             "Varhaiskasvatus",
-                            "large",
+                            listOf(
+                                CustomerApiType(
+                                    listOf(
+                                        NekkuCustomerApiWeekday.MONDAY,
+                                        NekkuCustomerApiWeekday.TUESDAY,
+                                        NekkuCustomerApiWeekday.WEDNESDAY,
+                                        NekkuCustomerApiWeekday.THURSDAY,
+                                        NekkuCustomerApiWeekday.FRIDAY,
+                                        NekkuCustomerApiWeekday.SATURDAY,
+                                        NekkuCustomerApiWeekday.SUNDAY,
+                                        NekkuCustomerApiWeekday.WEEKDAYHOLIDAY,
+                                    ),
+                                    "100-lasta",
+                                )
+                            ),
                         )
                     )
             )
@@ -685,11 +789,25 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             TestNekkuClient(
                 customers =
                     listOf(
-                        NekkuCustomer(
+                        NekkuApiCustomer(
                             "2501K6089",
                             "Ahvenojan päiväkoti",
                             "Varhaiskasvatus",
-                            "large",
+                            listOf(
+                                CustomerApiType(
+                                    listOf(
+                                        NekkuCustomerApiWeekday.MONDAY,
+                                        NekkuCustomerApiWeekday.TUESDAY,
+                                        NekkuCustomerApiWeekday.WEDNESDAY,
+                                        NekkuCustomerApiWeekday.THURSDAY,
+                                        NekkuCustomerApiWeekday.FRIDAY,
+                                        NekkuCustomerApiWeekday.SATURDAY,
+                                        NekkuCustomerApiWeekday.SUNDAY,
+                                        NekkuCustomerApiWeekday.WEEKDAYHOLIDAY,
+                                    ),
+                                    "100-lasta",
+                                )
+                            ),
                         )
                     )
             )
@@ -732,11 +850,25 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             TestNekkuClient(
                 customers =
                     listOf(
-                        NekkuCustomer(
+                        NekkuApiCustomer(
                             "2501K6089",
                             "Ahvenojan päiväkoti",
                             "Varhaiskasvatus",
-                            "large",
+                            listOf(
+                                CustomerApiType(
+                                    listOf(
+                                        NekkuCustomerApiWeekday.MONDAY,
+                                        NekkuCustomerApiWeekday.TUESDAY,
+                                        NekkuCustomerApiWeekday.WEDNESDAY,
+                                        NekkuCustomerApiWeekday.THURSDAY,
+                                        NekkuCustomerApiWeekday.FRIDAY,
+                                        NekkuCustomerApiWeekday.SATURDAY,
+                                        NekkuCustomerApiWeekday.SUNDAY,
+                                        NekkuCustomerApiWeekday.WEEKDAYHOLIDAY,
+                                    ),
+                                    "100-lasta",
+                                )
+                            ),
                         )
                     )
             )
@@ -783,11 +915,25 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             TestNekkuClient(
                 customers =
                     listOf(
-                        NekkuCustomer(
+                        NekkuApiCustomer(
                             "2501K6089",
                             "Ahvenojan päiväkoti",
                             "Varhaiskasvatus",
-                            "large",
+                            listOf(
+                                CustomerApiType(
+                                    listOf(
+                                        NekkuCustomerApiWeekday.MONDAY,
+                                        NekkuCustomerApiWeekday.TUESDAY,
+                                        NekkuCustomerApiWeekday.WEDNESDAY,
+                                        NekkuCustomerApiWeekday.THURSDAY,
+                                        NekkuCustomerApiWeekday.FRIDAY,
+                                        NekkuCustomerApiWeekday.SATURDAY,
+                                        NekkuCustomerApiWeekday.SUNDAY,
+                                        NekkuCustomerApiWeekday.WEEKDAYHOLIDAY,
+                                    ),
+                                    "100-lasta",
+                                )
+                            ),
                         )
                     ),
                 nekkuProducts = nekkuProductsForOrder,
@@ -903,11 +1049,25 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             TestNekkuClient(
                 customers =
                     listOf(
-                        NekkuCustomer(
+                        NekkuApiCustomer(
                             "2501K6089",
                             "Ahvenojan päiväkoti",
                             "Varhaiskasvatus",
-                            "large",
+                            listOf(
+                                CustomerApiType(
+                                    listOf(
+                                        NekkuCustomerApiWeekday.MONDAY,
+                                        NekkuCustomerApiWeekday.TUESDAY,
+                                        NekkuCustomerApiWeekday.WEDNESDAY,
+                                        NekkuCustomerApiWeekday.THURSDAY,
+                                        NekkuCustomerApiWeekday.FRIDAY,
+                                        NekkuCustomerApiWeekday.SATURDAY,
+                                        NekkuCustomerApiWeekday.SUNDAY,
+                                        NekkuCustomerApiWeekday.WEEKDAYHOLIDAY,
+                                    ),
+                                    "100-lasta",
+                                )
+                            ),
                         )
                     ),
                 nekkuProducts = nekkuProductsForOrder,
@@ -1038,11 +1198,25 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             TestNekkuClient(
                 customers =
                     listOf(
-                        NekkuCustomer(
+                        NekkuApiCustomer(
                             "2501K6089",
                             "Ahvenojan päiväkoti",
                             "Varhaiskasvatus",
-                            "large",
+                            listOf(
+                                CustomerApiType(
+                                    listOf(
+                                        NekkuCustomerApiWeekday.MONDAY,
+                                        NekkuCustomerApiWeekday.TUESDAY,
+                                        NekkuCustomerApiWeekday.WEDNESDAY,
+                                        NekkuCustomerApiWeekday.THURSDAY,
+                                        NekkuCustomerApiWeekday.FRIDAY,
+                                        NekkuCustomerApiWeekday.SATURDAY,
+                                        NekkuCustomerApiWeekday.SUNDAY,
+                                        NekkuCustomerApiWeekday.WEEKDAYHOLIDAY,
+                                    ),
+                                    "100-lasta",
+                                )
+                            ),
                         )
                     ),
                 nekkuProducts = nekkuProductsForOrder,
@@ -1175,7 +1349,26 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             TestNekkuClient(
                 customers =
                     listOf(
-                        NekkuCustomer("2501K6090", "Apporan päiväkoti", "Varhaiskasvatus", "medium")
+                        NekkuApiCustomer(
+                            "2501K6090",
+                            "Apporan päiväkoti",
+                            "Varhaiskasvatus",
+                            listOf(
+                                CustomerApiType(
+                                    listOf(
+                                        NekkuCustomerApiWeekday.MONDAY,
+                                        NekkuCustomerApiWeekday.TUESDAY,
+                                        NekkuCustomerApiWeekday.WEDNESDAY,
+                                        NekkuCustomerApiWeekday.THURSDAY,
+                                        NekkuCustomerApiWeekday.FRIDAY,
+                                        NekkuCustomerApiWeekday.SATURDAY,
+                                        NekkuCustomerApiWeekday.SUNDAY,
+                                        NekkuCustomerApiWeekday.WEEKDAYHOLIDAY,
+                                    ),
+                                    "50-99-lasta",
+                                )
+                            ),
+                        )
                     ),
                 nekkuProducts = nekkuProductsForOrder,
             )
@@ -1278,11 +1471,25 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             TestNekkuClient(
                 customers =
                     listOf(
-                        NekkuCustomer(
+                        NekkuApiCustomer(
                             "2501K6089",
                             "Ahvenojan päiväkoti",
                             "Varhaiskasvatus",
-                            "large",
+                            listOf(
+                                CustomerApiType(
+                                    listOf(
+                                        NekkuCustomerApiWeekday.MONDAY,
+                                        NekkuCustomerApiWeekday.TUESDAY,
+                                        NekkuCustomerApiWeekday.WEDNESDAY,
+                                        NekkuCustomerApiWeekday.THURSDAY,
+                                        NekkuCustomerApiWeekday.FRIDAY,
+                                        NekkuCustomerApiWeekday.SATURDAY,
+                                        NekkuCustomerApiWeekday.SUNDAY,
+                                        NekkuCustomerApiWeekday.WEEKDAYHOLIDAY,
+                                    ),
+                                    "100-lasta",
+                                )
+                            ),
                         )
                     ),
                 nekkuProducts = nekkuProductsForOrder,
@@ -1377,11 +1584,25 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             TestNekkuClient(
                 customers =
                     listOf(
-                        NekkuCustomer(
+                        NekkuApiCustomer(
                             "2501K6089",
                             "Ahvenojan päiväkoti",
                             "Varhaiskasvatus",
-                            "large",
+                            listOf(
+                                CustomerApiType(
+                                    listOf(
+                                        NekkuCustomerApiWeekday.MONDAY,
+                                        NekkuCustomerApiWeekday.TUESDAY,
+                                        NekkuCustomerApiWeekday.WEDNESDAY,
+                                        NekkuCustomerApiWeekday.THURSDAY,
+                                        NekkuCustomerApiWeekday.FRIDAY,
+                                        NekkuCustomerApiWeekday.SATURDAY,
+                                        NekkuCustomerApiWeekday.SUNDAY,
+                                        NekkuCustomerApiWeekday.WEEKDAYHOLIDAY,
+                                    ),
+                                    "100-lasta",
+                                )
+                            ),
                         )
                     ),
                 nekkuProducts = nekkuProductsForOrder,
@@ -1499,11 +1720,25 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             TestNekkuClient(
                 customers =
                     listOf(
-                        NekkuCustomer(
+                        NekkuApiCustomer(
                             "2501K6089",
                             "Ahvenojan päiväkoti",
                             "Varhaiskasvatus",
-                            "large",
+                            listOf(
+                                CustomerApiType(
+                                    listOf(
+                                        NekkuCustomerApiWeekday.MONDAY,
+                                        NekkuCustomerApiWeekday.TUESDAY,
+                                        NekkuCustomerApiWeekday.WEDNESDAY,
+                                        NekkuCustomerApiWeekday.THURSDAY,
+                                        NekkuCustomerApiWeekday.FRIDAY,
+                                        NekkuCustomerApiWeekday.SATURDAY,
+                                        NekkuCustomerApiWeekday.SUNDAY,
+                                        NekkuCustomerApiWeekday.WEEKDAYHOLIDAY,
+                                    ),
+                                    "100-lasta",
+                                )
+                            ),
                         )
                     ),
                 nekkuProducts = nekkuProductsForOrder,
@@ -1625,11 +1860,25 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             TestNekkuClient(
                 customers =
                     listOf(
-                        NekkuCustomer(
+                        NekkuApiCustomer(
                             "2501K6089",
                             "Ahvenojan päiväkoti",
                             "Varhaiskasvatus",
-                            "large",
+                            listOf(
+                                CustomerApiType(
+                                    listOf(
+                                        NekkuCustomerApiWeekday.MONDAY,
+                                        NekkuCustomerApiWeekday.TUESDAY,
+                                        NekkuCustomerApiWeekday.WEDNESDAY,
+                                        NekkuCustomerApiWeekday.THURSDAY,
+                                        NekkuCustomerApiWeekday.FRIDAY,
+                                        NekkuCustomerApiWeekday.SATURDAY,
+                                        NekkuCustomerApiWeekday.SUNDAY,
+                                        NekkuCustomerApiWeekday.WEEKDAYHOLIDAY,
+                                    ),
+                                    "100-lasta",
+                                )
+                            ),
                         )
                     ),
                 nekkuProducts = nekkuProductsForOrder,
@@ -1744,7 +1993,26 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             TestNekkuClient(
                 customers =
                     listOf(
-                        NekkuCustomer("2501K6090", "Apporan päiväkoti", "Varhaiskasvatus", "medium")
+                        NekkuApiCustomer(
+                            "2501K6090",
+                            "Apporan päiväkoti",
+                            "Varhaiskasvatus",
+                            listOf(
+                                CustomerApiType(
+                                    listOf(
+                                        NekkuCustomerApiWeekday.MONDAY,
+                                        NekkuCustomerApiWeekday.TUESDAY,
+                                        NekkuCustomerApiWeekday.WEDNESDAY,
+                                        NekkuCustomerApiWeekday.THURSDAY,
+                                        NekkuCustomerApiWeekday.FRIDAY,
+                                        NekkuCustomerApiWeekday.SATURDAY,
+                                        NekkuCustomerApiWeekday.SUNDAY,
+                                        NekkuCustomerApiWeekday.WEEKDAYHOLIDAY,
+                                    ),
+                                    "50-99-lasta",
+                                )
+                            ),
+                        )
                     ),
                 nekkuProducts = nekkuProductsForOrder,
             )
@@ -1845,6 +2113,116 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         )
     }
 
+    @Test
+    fun `Order is not done if customer has not set a weekday in Nekku`() {
+        val monday = LocalDate.of(2025, 4, 14)
+        val tuesday = LocalDate.of(2025, 4, 15)
+
+        // First create all of the basic backgrounds like
+        // Customer numbers
+        var client =
+            TestNekkuClient(
+                customers =
+                    listOf(
+                        NekkuApiCustomer(
+                            "2501K6089",
+                            "Ahvenojan päiväkoti",
+                            "Varhaiskasvatus",
+                            listOf(
+                                CustomerApiType(
+                                    listOf(NekkuCustomerApiWeekday.TUESDAY),
+                                    "100-lasta",
+                                )
+                            ),
+                        )
+                    ),
+                nekkuProducts = nekkuProductsForOrder,
+            )
+        fetchAndUpdateNekkuCustomers(client, db)
+        // products
+        fetchAndUpdateNekkuProducts(client, db)
+        // Daycare with groups
+        val area = DevCareArea()
+        val daycare =
+            DevDaycare(
+                areaId = area.id,
+                mealtimeBreakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
+                mealtimeLunch = TimeRange(LocalTime.of(11, 15), LocalTime.of(11, 45)),
+                mealtimeSnack = TimeRange(LocalTime.of(13, 30), LocalTime.of(13, 50)),
+            )
+        val group = DevDaycareGroup(daycareId = daycare.id, nekkuCustomerNumber = "2501K6089")
+        val employee = DevEmployee()
+
+        // Children with placements in the group and they are not absent
+        val child = DevPerson()
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(group)
+            tx.insert(employee)
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(
+                    DevPlacement(
+                        childId = child.id,
+                        unitId = daycare.id,
+                        startDate = monday,
+                        endDate = tuesday,
+                    )
+                )
+                .also { placementId ->
+                    tx.insert(
+                        DevDaycareGroupPlacement(
+                            daycarePlacementId = placementId,
+                            daycareGroupId = group.id,
+                            startDate = monday,
+                            endDate = tuesday,
+                        )
+                    )
+                }
+            listOf(
+                    // Two meals on Monday
+                    DevReservation(
+                        childId = child.id,
+                        date = monday,
+                        startTime = LocalTime.of(8, 0),
+                        endTime = LocalTime.of(12, 0),
+                        createdBy = employee.evakaUserId,
+                    ),
+                    // Breakfast only on Tuesday
+                    DevReservation(
+                        childId = child.id,
+                        date = tuesday,
+                        startTime = LocalTime.of(8, 0),
+                        endTime = LocalTime.of(9, 0),
+                        createdBy = employee.evakaUserId,
+                    ),
+                )
+                .forEach { tx.insert(it) }
+        }
+
+        createAndSendNekkuOrder(client, db, group.id, monday, 0.9)
+        createAndSendNekkuOrder(client, db, group.id, tuesday, 0.9)
+
+        assertEquals(
+            listOf(
+                NekkuClient.NekkuOrders(
+                    listOf(
+                        NekkuClient.NekkuOrder(
+                            tuesday.toString(),
+                            "2501K6089",
+                            group.id.toString(),
+                            listOf(NekkuClient.Item("31000010", 1, null)),
+                            group.name,
+                        )
+                    ),
+                    dryRun = false,
+                )
+            ),
+            client.orders,
+        )
+    }
+
     private fun getNekkuWeeklyJobs() =
         db.read { tx ->
             tx.createQuery { sql("SELECT payload FROM async_job WHERE type = 'SendNekkuOrder'") }
@@ -1863,13 +2241,13 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 }
 
 class TestNekkuClient(
-    private val customers: List<NekkuCustomer> = emptyList(),
+    private val customers: List<NekkuApiCustomer> = emptyList(),
     private val specialDiets: List<NekkuApiSpecialDiet> = emptyList(),
     private val nekkuProducts: List<NekkuApiProduct> = emptyList(),
 ) : NekkuClient {
     val orders = mutableListOf<NekkuClient.NekkuOrders>()
 
-    override fun getCustomers(): List<NekkuCustomer> {
+    override fun getCustomers(): List<NekkuApiCustomer> {
         return customers
     }
 
