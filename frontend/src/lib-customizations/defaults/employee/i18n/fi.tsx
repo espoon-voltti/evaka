@@ -3828,6 +3828,7 @@ export const fi = {
       area: 'Palvelualue',
       unit: 'Yksikkö',
       providerType: 'Järjestämismuoto',
+      placementType: 'Toimintamuoto',
       type: 'Päätöstyyppi',
       types: {
         FEE_DECISION: 'Maksupäätökset',
