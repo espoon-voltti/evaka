@@ -37,6 +37,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapPSQLException
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
@@ -162,6 +163,7 @@ class EmployeeController(private val accessControl: AccessControl) {
         if (body.endDate != null && body.endDate.isBefore(body.startDate)) {
             throw BadRequest("End date cannot be before start date")
         }
+        if (user.id == id) throw Forbidden("Cannot modify own roles")
 
         db.connect { dbc ->
             dbc.transaction {
@@ -201,6 +203,7 @@ class EmployeeController(private val accessControl: AccessControl) {
         @PathVariable id: EmployeeId,
         @RequestParam daycareId: DaycareId?,
     ) {
+        if (user.id == id) throw Forbidden("Cannot modify own roles")
         db.connect { dbc ->
             dbc.transaction { tx ->
                 accessControl.requirePermissionFor(
@@ -233,6 +236,7 @@ class EmployeeController(private val accessControl: AccessControl) {
         @PathVariable id: EmployeeId,
         @RequestParam daycareId: DaycareId,
     ) {
+        if (user.id == id) throw Forbidden("Cannot modify own roles")
         db.connect { dbc ->
             dbc.transaction { tx ->
                 accessControl.requirePermissionFor(
