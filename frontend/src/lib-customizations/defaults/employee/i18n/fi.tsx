@@ -3798,7 +3798,7 @@ export const fi = {
         'Raportti lasten varauksista ja henkilökunnan määrän tarpeesta',
       ungrouped: 'Ryhmää odottavat lapset',
       capacityFactor: 'Lask',
-      staffCountRequired: 'Hlökunta',
+      staffCount: 'Hlökunta',
       tooLongRange: 'Voit hakea raportin korkeintaan kahden kuukauden ajalta.'
     },
     attendanceReservationByChild: {

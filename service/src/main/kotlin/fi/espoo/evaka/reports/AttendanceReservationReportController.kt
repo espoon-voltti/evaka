@@ -394,7 +394,7 @@ data class AttendanceReservationReportRow(
     val childCountOver3: Int,
     val childCount: Int,
     val capacityFactor: Double,
-    val staffCountRequired: Double,
+    val staffCount: Double,
     val unknownChildCount: Int,
     val unknownChildCapacityFactor: Double,
 )
@@ -428,8 +428,9 @@ fun getAttendanceReservationReport(
     val serviceTimesMap = tx.getDailyServiceTimesForChildren(allChildren.toSet())
     val staffAttendancesMap =
         when (reservationType) {
-            ReservationType.RESERVATION -> tx.getStaffAttendancesForDateRange(unitId, range).groupBy { it.groupId }
-            ReservationType.REALIZATION -> emptyMap()
+            ReservationType.RESERVATION -> emptyMap()
+            ReservationType.REALIZATION ->
+                tx.getStaffAttendancesForDateRange(unitId, range).groupBy { it.groupId }
         }
 
     val dailyChildData =
@@ -538,7 +539,7 @@ fun getAttendanceReservationReport(
                             BigDecimal(presentChildren.sumOf { it.capacityFactor })
                                 .setScale(2, RoundingMode.HALF_UP)
                                 .toDouble(),
-                        staffCountRequired =
+                        staffCount =
                             when (reservationType) {
                                 ReservationType.RESERVATION ->
                                     BigDecimal(presentChildren.sumOf { it.capacityFactor } / 7)

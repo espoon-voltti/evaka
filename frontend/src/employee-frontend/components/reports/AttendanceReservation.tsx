@@ -69,7 +69,7 @@ interface AttendanceReservationReportUiRow {
   dateTime: HelsinkiDateTime
   groupId: GroupId | null
   groupName: string | null
-  staffCountRequired: string
+  staffCount: string
 }
 
 export default React.memo(function AttendanceReservation() {
@@ -144,7 +144,7 @@ export default React.memo(function AttendanceReservation() {
         data.map((row) => ({
           ...row,
           capacityFactor: formatDecimal(row.capacityFactor),
-          staffCountRequired: formatDecimal(row.staffCountRequired)
+          staffCount: formatDecimal(row.staffCount)
         }))
       ),
     [report]
@@ -209,9 +209,7 @@ export default React.memo(function AttendanceReservation() {
                       <Th>
                         {i18n.reports.attendanceReservation.capacityFactor}
                       </Th>
-                      <Th>
-                        {i18n.reports.attendanceReservation.staffCountRequired}
-                      </Th>
+                      <Th>{i18n.reports.attendanceReservation.staffCount}</Th>
                     </React.Fragment>
                   ))}
                 </Tr>
@@ -349,9 +347,8 @@ export default React.memo(function AttendanceReservation() {
                         value: (row) => row.capacityFactor
                       },
                       {
-                        label:
-                          i18n.reports.attendanceReservation.staffCountRequired,
-                        value: (row) => row.staffCountRequired
+                        label: i18n.reports.attendanceReservation.staffCount,
+                        value: (row) => row.staffCount
                       }
                     ]}
                     filename={`${i18n.reports.attendanceReservation.title} ${
@@ -423,7 +420,7 @@ const getTableBody = (
                 isToday={isToday}
                 isFuture={isFuture}
               >
-                {row.staffCountRequired}
+                {row.staffCount}
               </AttendanceReservationReportTd>
             </React.Fragment>
           )

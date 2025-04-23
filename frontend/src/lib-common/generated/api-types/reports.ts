@@ -187,7 +187,7 @@ export interface AttendanceReservationReportRow {
   dateTime: HelsinkiDateTime
   groupId: GroupId | null
   groupName: string | null
-  staffCountRequired: number
+  staffCount: number
   unknownChildCapacityFactor: number
   unknownChildCount: number
 }
