@@ -7,6 +7,7 @@ package fi.espoo.evaka.reports
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.invoicing.domain.FinanceDecisionType
+import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -35,6 +36,7 @@ class CustomerFeesReport(private val accessControl: AccessControl) {
         @RequestParam unitId: DaycareId?,
         @RequestParam decisionType: FinanceDecisionType,
         @RequestParam providerType: ProviderType?,
+        @RequestParam placementType: PlacementType?,
     ): List<CustomerFeesReportRow> {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -46,9 +48,15 @@ class CustomerFeesReport(private val accessControl: AccessControl) {
                     )
                     when (decisionType) {
                         FinanceDecisionType.FEE_DECISION ->
-                            tx.getFeeDecisionRows(date, areaId, unitId, providerType)
+                            tx.getFeeDecisionRows(date, areaId, unitId, providerType, placementType)
                         FinanceDecisionType.VOUCHER_VALUE_DECISION ->
-                            tx.getVoucherValueDecisionRows(date, areaId, unitId, providerType)
+                            tx.getVoucherValueDecisionRows(
+                                date,
+                                areaId,
+                                unitId,
+                                providerType,
+                                placementType,
+                            )
                     }
                 }
             }
@@ -60,21 +68,15 @@ class CustomerFeesReport(private val accessControl: AccessControl) {
         areaId: AreaId?,
         unitId: DaycareId?,
         providerType: ProviderType?,
+        placementType: PlacementType?,
     ): List<CustomerFeesReportRow> {
         val predicates =
-            PredicateSql { where("fd.valid_during @> ${bind(date)}") }
-                .and(
-                    areaId?.let { PredicateSql { where("d.care_area_id = ${bind(it)}") } }
-                        ?: PredicateSql.alwaysTrue()
-                )
-                .and(
-                    unitId?.let { PredicateSql { where("d.id = ${bind(it)}") } }
-                        ?: PredicateSql.alwaysTrue()
-                )
-                .and(
-                    providerType?.let { PredicateSql { where("d.provider_type = ${bind(it)}") } }
-                        ?: PredicateSql.alwaysTrue()
-                )
+            PredicateSql.allNotNull(
+                areaId?.let { PredicateSql { where("d.care_area_id = ${bind(it)}") } },
+                unitId?.let { PredicateSql { where("d.id = ${bind(it)}") } },
+                providerType?.let { PredicateSql { where("d.provider_type = ${bind(it)}") } },
+                placementType?.let { PredicateSql { where("fdc.placement_type = ${bind(it)}") } },
+            )
         return createQuery {
                 sql(
                     """
@@ -83,8 +85,8 @@ class CustomerFeesReport(private val accessControl: AccessControl) {
                     JOIN fee_decision fd ON fd.id = fdc.fee_decision_id
                     JOIN daycare d ON d.id = fdc.placement_unit_id
                     WHERE fd.status = 'SENT' AND ${predicate(predicates)}
+                      AND fd.valid_during @> ${bind(date)}
                     GROUP BY fdc.final_fee
-                    ORDER BY fdc.final_fee
                 """
                 )
             }
@@ -96,21 +98,15 @@ class CustomerFeesReport(private val accessControl: AccessControl) {
         areaId: AreaId?,
         unitId: DaycareId?,
         providerType: ProviderType?,
+        placementType: PlacementType?,
     ): List<CustomerFeesReportRow> {
         val predicates =
-            PredicateSql { where("daterange(vvd.valid_from, vvd.valid_to, '[]') @> ${bind(date)}") }
-                .and(
-                    areaId?.let { PredicateSql { where("d.care_area_id = ${bind(it)}") } }
-                        ?: PredicateSql.alwaysTrue()
-                )
-                .and(
-                    unitId?.let { PredicateSql { where("d.id = ${bind(it)}") } }
-                        ?: PredicateSql.alwaysTrue()
-                )
-                .and(
-                    providerType?.let { PredicateSql { where("d.provider_type = ${bind(it)}") } }
-                        ?: PredicateSql.alwaysTrue()
-                )
+            PredicateSql.allNotNull(
+                areaId?.let { PredicateSql { where("d.care_area_id = ${bind(it)}") } },
+                unitId?.let { PredicateSql { where("d.id = ${bind(it)}") } },
+                providerType?.let { PredicateSql { where("d.provider_type = ${bind(it)}") } },
+                placementType?.let { PredicateSql { where("vvd.placement_type = ${bind(it)}") } },
+            )
         return createQuery {
                 sql(
                     """
@@ -118,6 +114,7 @@ class CustomerFeesReport(private val accessControl: AccessControl) {
                     FROM voucher_value_decision vvd
                     JOIN daycare d ON d.id = vvd.placement_unit_id
                     WHERE vvd.status = 'SENT' AND ${predicate(predicates)}
+                      AND ${bind(date)} BETWEEN vvd.valid_from AND vvd.valid_to
                     GROUP BY vvd.final_co_payment
                 """
                 )

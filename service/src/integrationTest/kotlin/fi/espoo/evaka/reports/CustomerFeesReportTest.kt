@@ -9,6 +9,7 @@ import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.FinanceDecisionType
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
+import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.UserRole
@@ -101,6 +102,10 @@ class CustomerFeesReportTest : FullApplicationTest(resetDbBeforeEach = true) {
             expected,
             getReport(FinanceDecisionType.FEE_DECISION, providerType = ProviderType.MUNICIPAL),
         )
+        assertEquals(
+            expected,
+            getReport(FinanceDecisionType.FEE_DECISION, placementType = PlacementType.DAYCARE),
+        )
         assertEquals(emptyList(), getReport(FinanceDecisionType.VOUCHER_VALUE_DECISION))
         assertEquals(
             emptyList(),
@@ -117,6 +122,13 @@ class CustomerFeesReportTest : FullApplicationTest(resetDbBeforeEach = true) {
         assertEquals(
             emptyList(),
             getReport(FinanceDecisionType.FEE_DECISION, providerType = ProviderType.PRIVATE),
+        )
+        assertEquals(
+            emptyList(),
+            getReport(
+                FinanceDecisionType.FEE_DECISION,
+                placementType = PlacementType.PRESCHOOL_DAYCARE,
+            ),
         )
     }
 
@@ -190,6 +202,13 @@ class CustomerFeesReportTest : FullApplicationTest(resetDbBeforeEach = true) {
                 providerType = ProviderType.PRIVATE,
             ),
         )
+        assertEquals(
+            expected,
+            getReport(
+                FinanceDecisionType.VOUCHER_VALUE_DECISION,
+                placementType = PlacementType.DAYCARE,
+            ),
+        )
         assertEquals(emptyList(), getReport(FinanceDecisionType.FEE_DECISION))
         assertEquals(
             emptyList(),
@@ -216,6 +235,13 @@ class CustomerFeesReportTest : FullApplicationTest(resetDbBeforeEach = true) {
                 providerType = ProviderType.MUNICIPAL,
             ),
         )
+        assertEquals(
+            emptyList(),
+            getReport(
+                FinanceDecisionType.VOUCHER_VALUE_DECISION,
+                placementType = PlacementType.PRESCHOOL_DAYCARE,
+            ),
+        )
     }
 
     private fun getReport(
@@ -224,15 +250,19 @@ class CustomerFeesReportTest : FullApplicationTest(resetDbBeforeEach = true) {
         areaId: AreaId? = null,
         unitId: DaycareId? = null,
         providerType: ProviderType? = null,
+        placementType: PlacementType? = null,
     ) =
-        controller.getCustomerFeesReport(
-            db = dbInstance(),
-            user = admin.user,
-            clock = clock,
-            date = date,
-            areaId = areaId,
-            unitId = unitId,
-            decisionType = decisionType,
-            providerType = providerType,
-        )
+        controller
+            .getCustomerFeesReport(
+                db = dbInstance(),
+                user = admin.user,
+                clock = clock,
+                date = date,
+                areaId = areaId,
+                unitId = unitId,
+                decisionType = decisionType,
+                providerType = providerType,
+                placementType = placementType,
+            )
+            .sortedBy { it.feeAmount }
 }

@@ -15,6 +15,7 @@ import {
   FinanceDecisionType,
   financeDecisionTypes
 } from 'lib-common/generated/api-types/invoicing'
+import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { AreaId, DaycareId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { formatCents } from 'lib-common/money'
@@ -25,7 +26,7 @@ import { SelectF } from 'lib-components/atoms/dropdowns/Select'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { DatePickerF } from 'lib-components/molecules/date-picker/DatePicker'
-import { unitProviderTypes } from 'lib-customizations/employee'
+import { placementTypes, unitProviderTypes } from 'lib-customizations/employee'
 
 import ReportDownload from '../../components/reports/ReportDownload'
 import { useTranslation } from '../../state/i18n'
@@ -40,6 +41,7 @@ const filterForm = object({
   areaId: oneOf<AreaId>(),
   unitId: oneOf<DaycareId>(),
   providerType: oneOf<ProviderType>(),
+  placementType: oneOf<PlacementType>(),
   decisionType: required(oneOf<FinanceDecisionType>())
 })
 
@@ -80,6 +82,14 @@ const CustomerFeesInner = React.memo(function CustomerFeesInner({
           label: i18n.common.providerType[t]
         }))
       },
+      placementType: {
+        domValue: '',
+        options: placementTypes.map((placementType) => ({
+          value: placementType,
+          domValue: placementType,
+          label: i18n.placement.type[placementType]
+        }))
+      },
       decisionType: {
         domValue: 'FEE_DECISION' as const,
         options: financeDecisionTypes.map((t) => ({
@@ -91,7 +101,7 @@ const CustomerFeesInner = React.memo(function CustomerFeesInner({
     }),
     i18n.validationErrors
   )
-  const { date, unitId, areaId, providerType, decisionType } =
+  const { date, unitId, areaId, providerType, placementType, decisionType } =
     useFormFields(filters)
 
   const rowsResult = useQueryResult(
@@ -117,15 +127,19 @@ const CustomerFeesInner = React.memo(function CustomerFeesInner({
         </FilterRow>
         <FilterRow>
           <FilterLabel>{i18n.reports.customerFees.area}</FilterLabel>
-          <SelectF bind={areaId} placeholder={i18n.common.select} />
+          <SelectF bind={areaId} placeholder={i18n.common.all} />
         </FilterRow>
         <FilterRow>
           <FilterLabel>{i18n.reports.customerFees.unit}</FilterLabel>
-          <SelectF bind={unitId} placeholder={i18n.common.select} />
+          <SelectF bind={unitId} placeholder={i18n.common.all} />
         </FilterRow>
         <FilterRow>
           <FilterLabel>{i18n.reports.customerFees.providerType}</FilterLabel>
-          <SelectF bind={providerType} placeholder={i18n.common.select} />
+          <SelectF bind={providerType} placeholder={i18n.common.all} />
+        </FilterRow>
+        <FilterRow>
+          <FilterLabel>{i18n.reports.customerFees.placementType}</FilterLabel>
+          <SelectF bind={placementType} placeholder={i18n.common.all} />
         </FilterRow>
         <FilterRow>
           <FilterLabel>{i18n.reports.customerFees.type}</FilterLabel>

@@ -347,7 +347,8 @@ export async function getCustomerFeesReport(
     areaId?: AreaId | null,
     unitId?: DaycareId | null,
     decisionType: FinanceDecisionType,
-    providerType?: ProviderType | null
+    providerType?: ProviderType | null,
+    placementType?: PlacementType | null
   }
 ): Promise<CustomerFeesReportRow[]> {
   const params = createUrlSearchParams(
@@ -355,7 +356,8 @@ export async function getCustomerFeesReport(
     ['areaId', request.areaId],
     ['unitId', request.unitId],
     ['decisionType', request.decisionType.toString()],
-    ['providerType', request.providerType?.toString()]
+    ['providerType', request.providerType?.toString()],
+    ['placementType', request.placementType?.toString()]
   )
   const { data: json } = await client.request<JsonOf<CustomerFeesReportRow[]>>({
     url: uri`/employee/reports/customer-fees`.toString(),
