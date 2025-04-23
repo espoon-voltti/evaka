@@ -6,8 +6,6 @@ import ical, { ICalCalendarMethod } from 'ical-generator'
 import React, { useCallback } from 'react'
 
 import { useTranslation } from 'citizen-frontend/localization'
-import { CitizenCalendarEventTime } from 'lib-common/generated/api-types/calendarevent'
-import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { faCalendar } from 'lib-icons'
 
@@ -31,56 +29,62 @@ const helsinkiVTZLines = [
   'END:VTIMEZONE'
 ]
 
-interface DiscussionTimeAttendeeInfo {
+interface EventLocationInfo {
   groupName: string | null
   unitName: string | null
 }
 
-interface DiscussionTimeExportProps {
-  discussionTime: CitizenCalendarEventTime
-  eventTitle: string
-  eventAttendeeInfo?: DiscussionTimeAttendeeInfo
+interface ExportEventDetails {
+  fileName: string
+  title: string
+  helsinkiStartTime: string
+  helsinkiEndTime: string
+  allDay?: boolean
+  locationInfo?: EventLocationInfo
 }
 
-export const DiscussionTimeExportButton = React.memo(
-  function DiscussionTimeExportButton({
-    discussionTime,
-    eventTitle,
-    eventAttendeeInfo
-  }: DiscussionTimeExportProps) {
-    const i18n = useTranslation()
+interface CalendarEventExportProps {
+  eventDetails: ExportEventDetails
+  'data-qa': string
+}
 
+export const CalendarEventExportButton = React.memo(
+  function CalendarEventExportButton({
+    eventDetails,
+    'data-qa': dataQa
+  }: CalendarEventExportProps) {
+    const i18n = useTranslation()
     const downloadIcs = useCallback(() => {
-      const fileName = `${i18n.calendar.discussionTimeReservation.discussionTimeFileName}_${discussionTime.date.formatIso()}.ics`
       const calendar = ical()
       calendar.method(ICalCalendarMethod.REQUEST)
-      calendar.timezone({
-        name: 'EET',
-        generator: () => helsinkiVTZLines.join('\r\n')
-      })
+
+      //all day events should not use timezones
+      if (!eventDetails.allDay) {
+        calendar.timezone({
+          name: 'Europe/Helsinki',
+          generator: () => helsinkiVTZLines.join('\r\n')
+        })
+      }
       calendar.createEvent({
-        summary: eventTitle,
-        location: `${eventAttendeeInfo?.unitName ?? ''} ${eventAttendeeInfo?.groupName ? `(${eventAttendeeInfo.groupName})` : ''}`,
-        start: HelsinkiDateTime.fromLocal(
-          discussionTime.date,
-          discussionTime.startTime
-        ).formatIso(),
-        end: HelsinkiDateTime.fromLocal(
-          discussionTime.date,
-          discussionTime.endTime
-        ).formatIso()
+        summary: eventDetails.title,
+        location: `${eventDetails.locationInfo?.unitName ?? ''} ${eventDetails.locationInfo?.groupName ? `(${eventDetails.locationInfo.groupName})` : ''}`,
+        start: eventDetails.helsinkiStartTime,
+        end: eventDetails.helsinkiEndTime,
+        timezone: eventDetails.allDay ? undefined : 'Europe/Helsinki',
+        allDay: eventDetails.allDay
       })
+
       const link = document.createElement('a')
-      link.download = fileName
+      link.download = eventDetails.fileName
       link.href = `data:text/calendar;charset=utf-8,${encodeURIComponent(calendar.toString())}`
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
-    }, [i18n, eventTitle, eventAttendeeInfo, discussionTime])
+    }, [eventDetails])
 
     return (
       <Button
-        data-qa={`event-export-button-${discussionTime.id}`}
+        data-qa={dataQa}
         appearance="inline"
         text={i18n.calendar.discussionTimeReservation.calendarExportButtonLabel}
         onClick={() => {

@@ -354,6 +354,7 @@ const en: Translations = {
       SICKLEAVE: 'Absence due to illness',
       PLANNED_ABSENCE: 'Shift work absence'
     },
+    calendarEventFilename: 'Calendar_event',
     discussionTimeReservation: {
       surveyModalButtonText: 'Reserve a discussion time',
       reservationModalButtonText: 'Reserve a discussion time',

@@ -354,6 +354,7 @@ export default {
       SICKLEAVE: 'Sairauspoissaolo',
       PLANNED_ABSENCE: 'Vuorotyöpoissaolo'
     },
+    calendarEventFilename: 'Kalenteritapahtuma',
     discussionTimeReservation: {
       surveyModalButtonText: 'Varaa keskusteluaika',
       reservationModalButtonText: 'Siirry varaamaan',

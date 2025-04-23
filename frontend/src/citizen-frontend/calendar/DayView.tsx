@@ -43,6 +43,7 @@ import {
   CalendarEventTimeId,
   ChildId
 } from 'lib-common/generated/api-types/shared'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import { formatFirstName } from 'lib-common/names'
 import { reservationHasTimes } from 'lib-common/reservations'
@@ -98,9 +99,9 @@ import { Translations, useLang, useTranslation } from '../localization'
 
 import AttendanceInfo from './AttendanceInfo'
 import { BottomFooterContainer } from './BottomFooterContainer'
+import { CalendarEventExportButton } from './CalendarEventExportButton'
 import { CalendarModalBackground, CalendarModalSection } from './CalendarModal'
 import { useCalendarModalState } from './CalendarPage'
-import { DiscussionTimeExportButton } from './DiscussionTimeExportButton'
 import {
   ChildImageData,
   getChildImages,
@@ -582,15 +583,42 @@ const DayModal = React.memo(function DayModal({
                                     key={event.id}
                                     data-qa={`event-${event.id}`}
                                   >
-                                    <LabelLike data-qa="event-title">
-                                      {event.title} /{' '}
-                                      {event.currentAttending.type === 'UNIT'
-                                        ? event.currentAttending.unitName
-                                        : event.currentAttending.type ===
-                                            'GROUP'
-                                          ? event.currentAttending.groupName
-                                          : row.firstName}
-                                    </LabelLike>
+                                    <FixedSpaceRow
+                                      fullWidth
+                                      justifyContent="space-between"
+                                      alignItems="center"
+                                    >
+                                      <div>
+                                        <LabelLike data-qa="event-title">
+                                          {event.title} /{' '}
+                                          {event.currentAttending.type ===
+                                          'UNIT'
+                                            ? event.currentAttending.unitName
+                                            : event.currentAttending.type ===
+                                                'GROUP'
+                                              ? event.currentAttending.groupName
+                                              : row.firstName}
+                                        </LabelLike>
+                                      </div>
+                                      {date.isEqualOrAfter(today) && (
+                                        <CalendarEventExportButton
+                                          eventDetails={{
+                                            title: event.title,
+                                            helsinkiStartTime:
+                                              event.period.start.formatIso(),
+                                            //non-inclusive end date
+                                            helsinkiEndTime: event.period.end
+                                              .addDays(1)
+                                              .formatIso(),
+                                            fileName: `${i18n.calendar.calendarEventFilename}_${event.period.start.formatIso()}-${event.period.end.formatIso()}.ics`,
+                                            locationInfo:
+                                              event.currentAttending,
+                                            allDay: true
+                                          }}
+                                          data-qa={`event-export-button-${event.id}`}
+                                        />
+                                      )}
+                                    </FixedSpaceRow>
                                     <P noMargin data-qa="event-description">
                                       {event.description}
                                     </P>
@@ -629,12 +657,24 @@ const DayModal = React.memo(function DayModal({
                                               </P>
                                             </div>
                                             {rt.date.isEqualOrAfter(today) && (
-                                              <DiscussionTimeExportButton
-                                                eventTitle={event.title}
-                                                discussionTime={rt}
-                                                eventAttendeeInfo={
-                                                  event.currentAttending
-                                                }
+                                              <CalendarEventExportButton
+                                                eventDetails={{
+                                                  title: event.title,
+                                                  helsinkiStartTime:
+                                                    HelsinkiDateTime.fromLocal(
+                                                      rt.date,
+                                                      rt.startTime
+                                                    ).formatIso(),
+                                                  helsinkiEndTime:
+                                                    HelsinkiDateTime.fromLocal(
+                                                      rt.date,
+                                                      rt.endTime
+                                                    ).formatIso(),
+                                                  fileName: `${i18n.calendar.discussionTimeReservation.discussionTimeFileName}_${rt.date.formatIso()}.ics`,
+                                                  locationInfo:
+                                                    event.currentAttending
+                                                }}
+                                                data-qa={`event-export-button-${rt.id}`}
                                               />
                                             )}
                                           </FixedSpaceRow>

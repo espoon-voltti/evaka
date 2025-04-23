@@ -16,6 +16,7 @@ import {
   CalendarEventTimeId,
   ChildId
 } from 'lib-common/generated/api-types/shared'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import { formatFirstName } from 'lib-common/names'
 import { StaticChip } from 'lib-components/atoms/Chip'
@@ -40,12 +41,12 @@ import { faTimes } from 'lib-icons'
 
 import ModalAccessibilityWrapper from '../../ModalAccessibilityWrapper'
 import { useLang, useTranslation } from '../../localization'
+import { CalendarEventExportButton } from '../CalendarEventExportButton'
 import {
   CalendarModalBackground,
   CalendarModalCloseButton,
   CalendarModalSection
 } from '../CalendarModal'
-import { DiscussionTimeExportButton } from '../DiscussionTimeExportButton'
 import { deleteCalendarEventTimeReservationMutation } from '../queries'
 
 interface ChildWithSurveys {
@@ -336,14 +337,25 @@ const ChildSurveyElement = React.memo(function ChildSurveyElement({
                     ${r.startTime.format()} - ${r.endTime.format()}`}
                         </Bold>
                       </div>
-                      <DiscussionTimeExportButton
-                        eventTitle={survey.title}
-                        discussionTime={r}
-                        eventAttendeeInfo={survey.attendingChildren?.[
-                          childId
-                        ]?.find(({ periods }) =>
-                          periods.some((period) => period.includes(r.date))
-                        )}
+                      <CalendarEventExportButton
+                        eventDetails={{
+                          title: survey.title,
+                          helsinkiStartTime: HelsinkiDateTime.fromLocal(
+                            r.date,
+                            r.startTime
+                          ).formatIso(),
+                          helsinkiEndTime: HelsinkiDateTime.fromLocal(
+                            r.date,
+                            r.endTime
+                          ).formatIso(),
+                          fileName: `${i18n.calendar.discussionTimeReservation.discussionTimeFileName}_${r.date.formatIso()}.ics`,
+                          locationInfo: survey.attendingChildren?.[
+                            childId
+                          ]?.find(({ periods }) =>
+                            periods.some((period) => period.includes(r.date))
+                          )
+                        }}
+                        data-qa={`event-export-button-${r.id}`}
                       />
                     </FixedSpaceRow>
                   )}
