@@ -321,10 +321,9 @@ private fun Database.Read.getRealizations(
     return createQuery {
             sql(
                 """
-SELECT pl.child_id, ca.date, ca.start_time, ca.end_time
-FROM child_attendance ca
-JOIN placement pl on ca.child_id = pl.child_id AND daterange(pl.start_date, pl.end_date, '[]') @> ca.date
-WHERE pl.child_id = ANY(${bind(children)}) AND between_start_and_end(${bind(range)}, ca.date)
+SELECT child_id, date, start_time, end_time
+FROM child_attendance
+WHERE child_id = ANY(${bind(children)}) AND between_start_and_end(${bind(range)}, date)
     """
             )
         }
@@ -382,8 +381,7 @@ data class DailyChildData(
     }
 
     fun wasPresent(during: HelsinkiDateTimeRange, bufferMinutes: Long = 15) =
-        reservations.isNotEmpty() &&
-            reservations.any { it.copy(end = it.end.plusMinutes(bufferMinutes)).overlaps(during) }
+        reservations.any { it.copy(end = it.end.plusMinutes(bufferMinutes)).overlaps(during) }
 }
 
 private data class Group(val id: GroupId?, val name: String?)
@@ -429,7 +427,10 @@ fun getAttendanceReservationReport(
             }
     val serviceTimesMap = tx.getDailyServiceTimesForChildren(allChildren.toSet())
     val staffAttendancesMap =
-        tx.getStaffAttendancesForDateRange(unitId, range).groupBy { it.groupId }
+        when (reservationType) {
+            ReservationType.RESERVATION -> tx.getStaffAttendancesForDateRange(unitId, range).groupBy { it.groupId }
+            ReservationType.REALIZATION -> emptyMap()
+        }
 
     val dailyChildData =
         placementStuff.map { placementInfo ->
