@@ -43,6 +43,7 @@ import {
   CalendarEventTimeId,
   ChildId
 } from 'lib-common/generated/api-types/shared'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import { formatFirstName } from 'lib-common/names'
 import { reservationHasTimes } from 'lib-common/reservations'
@@ -601,10 +602,20 @@ const DayModal = React.memo(function DayModal({
                                       </div>
                                       {date.isEqualOrAfter(today) && (
                                         <CalendarEventExportButton
-                                          calendarEvent={event}
-                                          eventAttendeeInfo={
-                                            event.currentAttending
-                                          }
+                                          eventDetails={{
+                                            title: event.title,
+                                            helsinkiStartTime:
+                                              event.period.start.formatIso(),
+                                            //non-inclusive end date
+                                            helsinkiEndTime: event.period.end
+                                              .addDays(1)
+                                              .formatIso(),
+                                            fileName: `${i18n.calendar.calendarEventFilename}_${event.period.start.formatIso()}-${event.period.end.formatIso()}.ics`,
+                                            locationInfo:
+                                              event.currentAttending,
+                                            allDay: true
+                                          }}
+                                          data-qa={`event-export-button-${event.id}`}
                                         />
                                       )}
                                     </FixedSpaceRow>
@@ -647,11 +658,23 @@ const DayModal = React.memo(function DayModal({
                                             </div>
                                             {rt.date.isEqualOrAfter(today) && (
                                               <CalendarEventExportButton
-                                                calendarEvent={event}
-                                                discussionTime={rt}
-                                                eventAttendeeInfo={
-                                                  event.currentAttending
-                                                }
+                                                eventDetails={{
+                                                  title: event.title,
+                                                  helsinkiStartTime:
+                                                    HelsinkiDateTime.fromLocal(
+                                                      rt.date,
+                                                      rt.startTime
+                                                    ).formatIso(),
+                                                  helsinkiEndTime:
+                                                    HelsinkiDateTime.fromLocal(
+                                                      rt.date,
+                                                      rt.endTime
+                                                    ).formatIso(),
+                                                  fileName: `${i18n.calendar.discussionTimeReservation.discussionTimeFileName}_${rt.date.formatIso()}.ics`,
+                                                  locationInfo:
+                                                    event.currentAttending
+                                                }}
+                                                data-qa={`event-export-button-${rt.id}`}
                                               />
                                             )}
                                           </FixedSpaceRow>
