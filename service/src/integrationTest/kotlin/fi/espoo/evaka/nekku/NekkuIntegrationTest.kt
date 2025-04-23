@@ -7,8 +7,12 @@ package fi.espoo.evaka.nekku
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.absence.AbsenceType
+import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevAbsence
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevChild
@@ -22,9 +26,11 @@ import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.DevReservation
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.TimeRange
 import java.time.LocalDate
 import java.time.LocalTime
+import java.util.*
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -32,6 +38,8 @@ import org.springframework.beans.factory.annotation.Autowired
 
 class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
+
+    @Autowired private lateinit var nekkuController: NekkuController
 
     @Test
     fun `Nekku customer sync does not sync empty data`() {
@@ -560,6 +568,54 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 listOf(NekkuProductMealTime.SNACK),
                 null,
             ),
+            NekkuApiProduct(
+                "Ateriapalvelu 1 aamupala er",
+                "31000020",
+                "2",
+                listOf("100-lasta"),
+                listOf(NekkuProductMealTime.BREAKFAST),
+                null,
+            ),
+            NekkuApiProduct(
+                "Ateriapalvelu 1 lounas er",
+                "31000021",
+                "2",
+                listOf("100-lasta"),
+                listOf(NekkuProductMealTime.LUNCH),
+                null,
+            ),
+            NekkuApiProduct(
+                "Ateriapalvelu 1 välipala er",
+                "31000022",
+                "2",
+                listOf("100-lasta"),
+                listOf(NekkuProductMealTime.SNACK),
+                null,
+            ),
+            NekkuApiProduct(
+                "Ateriapalvelu 1 aamupala kasvis er",
+                "31000023",
+                "2",
+                listOf("100-lasta"),
+                listOf(NekkuProductMealTime.BREAKFAST),
+                NekkuApiProductMealType.Kasvis,
+            ),
+            NekkuApiProduct(
+                "Ateriapalvelu 1 lounas kasvis er",
+                "31000024",
+                "2",
+                listOf("100-lasta"),
+                listOf(NekkuProductMealTime.LUNCH),
+                NekkuApiProductMealType.Kasvis,
+            ),
+            NekkuApiProduct(
+                "Ateriapalvelu 1 välipala kasvis er",
+                "31000025",
+                "2",
+                listOf("100-lasta"),
+                listOf(NekkuProductMealTime.SNACK),
+                NekkuApiProductMealType.Kasvis,
+            ),
         )
 
     @Test
@@ -674,7 +730,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Test
     fun `meal order jobs for daycare groups without customer number are not planned`() {
 
-        var client =
+        val client =
             TestNekkuClient(
                 customers =
                     listOf(
@@ -729,7 +785,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Test
     fun `meal order jobs for daycare groups with customer number are planned`() {
 
-        var client =
+        val client =
             TestNekkuClient(
                 customers =
                     listOf(
@@ -785,7 +841,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Test
     fun `meal order jobs for daycare groups are planned for two week time`() {
 
-        var client =
+        val client =
             TestNekkuClient(
                 customers =
                     listOf(
@@ -846,7 +902,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Test
     fun `meal order jobs for daycare groups are re-planned for tomorrow`() {
 
-        var client =
+        val client =
             TestNekkuClient(
                 customers =
                     listOf(
@@ -911,7 +967,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         // First create all of the basic backgrounds like
         // Customer numbers
-        var client =
+        val client =
             TestNekkuClient(
                 customers =
                     listOf(
@@ -937,10 +993,12 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         )
                     ),
                 nekkuProducts = nekkuProductsForOrder,
+                specialDiets = listOf(getNekkuSpecialDiet()),
             )
         fetchAndUpdateNekkuCustomers(client, db)
         // products
         fetchAndUpdateNekkuProducts(client, db)
+        fetchAndUpdateNekkuSpecialDiets(client, db)
         // Daycare with groups
         val area = DevCareArea()
         val daycare =
@@ -1045,7 +1103,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         // First create all of the basic backgrounds like
         // Customer numbers
-        var client =
+        val client =
             TestNekkuClient(
                 customers =
                     listOf(
@@ -1071,10 +1129,12 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         )
                     ),
                 nekkuProducts = nekkuProductsForOrder,
+                specialDiets = listOf(getNekkuSpecialDiet()),
             )
         fetchAndUpdateNekkuCustomers(client, db)
         // products
         fetchAndUpdateNekkuProducts(client, db)
+        fetchAndUpdateNekkuSpecialDiets(client, db)
         // Daycare with groups
         val area = DevCareArea()
         val daycare =
@@ -1194,7 +1254,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         // First create all of the basic backgrounds like
         // Customer numbers
-        var client =
+        val client =
             TestNekkuClient(
                 customers =
                     listOf(
@@ -1220,10 +1280,12 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         )
                     ),
                 nekkuProducts = nekkuProductsForOrder,
+                specialDiets = listOf(getNekkuSpecialDiet()),
             )
         fetchAndUpdateNekkuCustomers(client, db)
         // products
         fetchAndUpdateNekkuProducts(client, db)
+        fetchAndUpdateNekkuSpecialDiets(client, db)
         // Daycare with groups
         val area = DevCareArea()
         val daycare =
@@ -1345,7 +1407,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         // First create all of the basic backgrounds like
         // Customer numbers
-        var client =
+        val client =
             TestNekkuClient(
                 customers =
                     listOf(
@@ -1371,10 +1433,12 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         )
                     ),
                 nekkuProducts = nekkuProductsForOrder,
+                specialDiets = listOf(getNekkuSpecialDiet()),
             )
         fetchAndUpdateNekkuCustomers(client, db)
         // products
         fetchAndUpdateNekkuProducts(client, db)
+        fetchAndUpdateNekkuSpecialDiets(client, db)
         // Daycare with groups
         val area = DevCareArea()
         val daycare =
@@ -1467,7 +1531,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         // First create all of the basic backgrounds like
         // Customer numbers
-        var client =
+        val client =
             TestNekkuClient(
                 customers =
                     listOf(
@@ -1493,10 +1557,12 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         )
                     ),
                 nekkuProducts = nekkuProductsForOrder,
+                specialDiets = listOf(getNekkuSpecialDiet()),
             )
         fetchAndUpdateNekkuCustomers(client, db)
         // products
         fetchAndUpdateNekkuProducts(client, db)
+        fetchAndUpdateNekkuSpecialDiets(client, db)
         // Daycare with groups
         val area = DevCareArea()
         val daycare =
@@ -1580,7 +1646,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         // First create all of the basic backgrounds like
         // Customer numbers
-        var client =
+        val client =
             TestNekkuClient(
                 customers =
                     listOf(
@@ -1606,10 +1672,12 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         )
                     ),
                 nekkuProducts = nekkuProductsForOrder,
+                specialDiets = listOf(getNekkuSpecialDiet()),
             )
         fetchAndUpdateNekkuCustomers(client, db)
         // products
         fetchAndUpdateNekkuProducts(client, db)
+        fetchAndUpdateNekkuSpecialDiets(client, db)
         // Daycare with groups
         val area = DevCareArea()
         val daycare =
@@ -1716,7 +1784,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         // First create all of the basic backgrounds like
         // Customer numbers
-        var client =
+        val client =
             TestNekkuClient(
                 customers =
                     listOf(
@@ -1742,10 +1810,12 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         )
                     ),
                 nekkuProducts = nekkuProductsForOrder,
+                specialDiets = listOf(getNekkuSpecialDiet()),
             )
         fetchAndUpdateNekkuCustomers(client, db)
         // products
         fetchAndUpdateNekkuProducts(client, db)
+        fetchAndUpdateNekkuSpecialDiets(client, db)
         // Daycare with groups
         val area = DevCareArea()
         val daycare =
@@ -1856,7 +1926,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         // First create all of the basic backgrounds like
         // Customer numbers
-        var client =
+        val client =
             TestNekkuClient(
                 customers =
                     listOf(
@@ -1882,10 +1952,12 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         )
                     ),
                 nekkuProducts = nekkuProductsForOrder,
+                specialDiets = listOf(getNekkuSpecialDiet()),
             )
         fetchAndUpdateNekkuCustomers(client, db)
         // products
         fetchAndUpdateNekkuProducts(client, db)
+        fetchAndUpdateNekkuSpecialDiets(client, db)
         // Daycare with groups
         val area = DevCareArea()
         val daycare =
@@ -1989,7 +2061,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         // First create all of the basic backgrounds like
         // Customer numbers
-        var client =
+        val client =
             TestNekkuClient(
                 customers =
                     listOf(
@@ -2015,10 +2087,12 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         )
                     ),
                 nekkuProducts = nekkuProductsForOrder,
+                specialDiets = listOf(getNekkuSpecialDiet()),
             )
         fetchAndUpdateNekkuCustomers(client, db)
         // products
         fetchAndUpdateNekkuProducts(client, db)
+        fetchAndUpdateNekkuSpecialDiets(client, db)
         // Daycare with groups
         val area = DevCareArea()
         val daycare =
@@ -2120,7 +2194,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         // First create all of the basic backgrounds like
         // Customer numbers
-        var client =
+        val client =
             TestNekkuClient(
                 customers =
                     listOf(
@@ -2137,10 +2211,12 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         )
                     ),
                 nekkuProducts = nekkuProductsForOrder,
+                specialDiets = listOf(getNekkuSpecialDiet()),
             )
         fetchAndUpdateNekkuCustomers(client, db)
         // products
         fetchAndUpdateNekkuProducts(client, db)
+        fetchAndUpdateNekkuSpecialDiets(client, db)
         // Daycare with groups
         val area = DevCareArea()
         val daycare =
@@ -2221,6 +2297,773 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             ),
             client.orders,
         )
+    }
+
+    @Test
+    fun `Should order meals with special diets`() {
+        val client =
+            TestNekkuClient(
+                customers =
+                    listOf(
+                        NekkuApiCustomer(
+                            "2501K6090",
+                            "Ahvenojan päiväkoti",
+                            "Varhaiskasvatus",
+                            listOf(
+                                CustomerApiType(
+                                    listOf(
+                                        NekkuCustomerApiWeekday.MONDAY,
+                                        NekkuCustomerApiWeekday.TUESDAY,
+                                        NekkuCustomerApiWeekday.WEDNESDAY,
+                                        NekkuCustomerApiWeekday.THURSDAY,
+                                        NekkuCustomerApiWeekday.FRIDAY,
+                                        NekkuCustomerApiWeekday.SATURDAY,
+                                        NekkuCustomerApiWeekday.SUNDAY,
+                                        NekkuCustomerApiWeekday.WEEKDAYHOLIDAY,
+                                    ),
+                                    "100-lasta",
+                                )
+                            ),
+                        )
+                    ),
+                nekkuProducts = nekkuProductsForOrder,
+                specialDiets = listOf(getNekkuSpecialDiet()),
+            )
+
+        fetchAndUpdateNekkuCustomers(client, db)
+        // products
+        fetchAndUpdateNekkuProducts(client, db)
+        fetchAndUpdateNekkuSpecialDiets(client, db)
+
+        val monday = LocalDate.of(2025, 4, 14)
+        val tuesday = LocalDate.of(2025, 4, 15)
+
+        // Daycare with groups
+        val area = DevCareArea()
+        val daycare =
+            DevDaycare(
+                areaId = area.id,
+                mealtimeBreakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
+                mealtimeLunch = TimeRange(LocalTime.of(11, 15), LocalTime.of(11, 45)),
+                mealtimeSnack = TimeRange(LocalTime.of(13, 30), LocalTime.of(13, 50)),
+            )
+        val group = DevDaycareGroup(daycareId = daycare.id, nekkuCustomerNumber = "2501K6090")
+        val employee = DevEmployee()
+
+        // Children with placements in the group and they are not absent
+        // two children with no special diets
+        // two children with mixed diet and special diets
+        // one child with mixed diet and another special diet
+        // two children with vegetable diet and special diets
+
+        val mixedChild1 = DevPerson()
+        val mixedChild2 = DevPerson()
+        val mixedSpecial1Child1 = DevPerson()
+        val mixedSpecial1Child2 = DevPerson()
+        val mixedSpecial2Child1 = DevPerson()
+        val vegetableSpecialChild1 = DevPerson()
+        val vegetableSpecialChild2 = DevPerson()
+        val allChildren =
+            listOf(
+                mixedChild1,
+                mixedChild2,
+                mixedSpecial1Child1,
+                mixedSpecial1Child2,
+                mixedSpecial2Child1,
+                vegetableSpecialChild1,
+                vegetableSpecialChild2,
+            )
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(group)
+            tx.insert(employee)
+            allChildren.forEach {
+                tx.insert(it, DevPersonType.CHILD)
+                tx.insert(
+                        DevPlacement(
+                            childId = it.id,
+                            unitId = daycare.id,
+                            startDate = monday,
+                            endDate = tuesday,
+                        )
+                    )
+                    .also { placementId ->
+                        tx.insert(
+                            DevDaycareGroupPlacement(
+                                daycarePlacementId = placementId,
+                                daycareGroupId = group.id,
+                                startDate = monday,
+                                endDate = tuesday,
+                            )
+                        )
+                    }
+                tx.insert(
+                    // Three meals on Monday
+                    DevReservation(
+                        childId = it.id,
+                        date = monday,
+                        startTime = LocalTime.of(8, 0),
+                        endTime = LocalTime.of(16, 0),
+                        createdBy = employee.evakaUserId,
+                    )
+                )
+            }
+
+            tx.insert(
+                DevChild(id = vegetableSpecialChild1.id, nekkuDiet = NekkuProductMealType.VEGETABLE)
+            )
+            tx.insert(
+                DevChild(id = vegetableSpecialChild2.id, nekkuDiet = NekkuProductMealType.VEGETABLE)
+            )
+        }
+
+        insertNekkuSpecialDietChoice(
+            mixedSpecial1Child1.id,
+            "2",
+            "AE1FE5FE-9619-4D7A-9043-A6B0C615156B",
+            "Laktoositon ruokavalio",
+        )
+        insertNekkuSpecialDietChoice(
+            mixedSpecial1Child1.id,
+            "2",
+            "AE1FE5FE-9619-4D7A-9043-A6B0C615156B",
+            "Luontaisesti gluteeniton ruokavalio",
+        )
+        insertNekkuSpecialDietChoice(
+            mixedSpecial1Child2.id,
+            "2",
+            "AE1FE5FE-9619-4D7A-9043-A6B0C615156B",
+            "Luontaisesti gluteeniton ruokavalio",
+        )
+        insertNekkuSpecialDietChoice(
+            mixedSpecial1Child2.id,
+            "2",
+            "AE1FE5FE-9619-4D7A-9043-A6B0C615156B",
+            "Laktoositon ruokavalio",
+        )
+        insertNekkuSpecialDietChoice(
+            mixedSpecial2Child1.id,
+            "2",
+            "AE1FE5FE-9619-4D7A-9043-A6B0C615156B",
+            "Kananmunaton ruokavalio",
+        )
+        insertNekkuSpecialDietChoice(
+            vegetableSpecialChild1.id,
+            "2",
+            "17A9ACF0-DE9E-4C07-882E-C8C47351D009",
+            "Pähkinätön",
+        )
+        insertNekkuSpecialDietChoice(
+            vegetableSpecialChild2.id,
+            "2",
+            "17A9ACF0-DE9E-4C07-882E-C8C47351D009",
+            "Pähkinätön",
+        )
+
+        createAndSendNekkuOrder(client, db, group.id, monday, 0.9)
+
+        assertEquals(
+            listOf(
+                NekkuClient.NekkuOrders(
+                    listOf(
+                        NekkuClient.NekkuOrder(
+                            monday.toString(),
+                            "2501K6090",
+                            group.id.toString(),
+                            listOf(
+                                NekkuClient.Item("31000010", 2, null),
+                                NekkuClient.Item("31000011", 2, null),
+                                NekkuClient.Item("31000012", 2, null),
+                                NekkuClient.Item(
+                                    "31000020",
+                                    2,
+                                    setOf(
+                                        NekkuClient.ProductOption(
+                                            "AE1FE5FE-9619-4D7A-9043-A6B0C615156B",
+                                            "Luontaisesti gluteeniton ruokavalio",
+                                        ),
+                                        NekkuClient.ProductOption(
+                                            "AE1FE5FE-9619-4D7A-9043-A6B0C615156B",
+                                            "Laktoositon ruokavalio",
+                                        ),
+                                    ),
+                                ),
+                                NekkuClient.Item(
+                                    "31000021",
+                                    2,
+                                    setOf(
+                                        NekkuClient.ProductOption(
+                                            "AE1FE5FE-9619-4D7A-9043-A6B0C615156B",
+                                            "Luontaisesti gluteeniton ruokavalio",
+                                        ),
+                                        NekkuClient.ProductOption(
+                                            "AE1FE5FE-9619-4D7A-9043-A6B0C615156B",
+                                            "Laktoositon ruokavalio",
+                                        ),
+                                    ),
+                                ),
+                                NekkuClient.Item(
+                                    "31000022",
+                                    2,
+                                    setOf(
+                                        NekkuClient.ProductOption(
+                                            "AE1FE5FE-9619-4D7A-9043-A6B0C615156B",
+                                            "Luontaisesti gluteeniton ruokavalio",
+                                        ),
+                                        NekkuClient.ProductOption(
+                                            "AE1FE5FE-9619-4D7A-9043-A6B0C615156B",
+                                            "Laktoositon ruokavalio",
+                                        ),
+                                    ),
+                                ),
+                                NekkuClient.Item(
+                                    "31000020",
+                                    1,
+                                    setOf(
+                                        NekkuClient.ProductOption(
+                                            "AE1FE5FE-9619-4D7A-9043-A6B0C615156B",
+                                            "Kananmunaton ruokavalio",
+                                        )
+                                    ),
+                                ),
+                                NekkuClient.Item(
+                                    "31000021",
+                                    1,
+                                    setOf(
+                                        NekkuClient.ProductOption(
+                                            "AE1FE5FE-9619-4D7A-9043-A6B0C615156B",
+                                            "Kananmunaton ruokavalio",
+                                        )
+                                    ),
+                                ),
+                                NekkuClient.Item(
+                                    "31000022",
+                                    1,
+                                    setOf(
+                                        NekkuClient.ProductOption(
+                                            "AE1FE5FE-9619-4D7A-9043-A6B0C615156B",
+                                            "Kananmunaton ruokavalio",
+                                        )
+                                    ),
+                                ),
+                                NekkuClient.Item(
+                                    "31000023",
+                                    2,
+                                    setOf(
+                                        NekkuClient.ProductOption(
+                                            "17A9ACF0-DE9E-4C07-882E-C8C47351D009",
+                                            "Pähkinätön",
+                                        )
+                                    ),
+                                ),
+                                NekkuClient.Item(
+                                    "31000024",
+                                    2,
+                                    setOf(
+                                        NekkuClient.ProductOption(
+                                            "17A9ACF0-DE9E-4C07-882E-C8C47351D009",
+                                            "Pähkinätön",
+                                        )
+                                    ),
+                                ),
+                                NekkuClient.Item(
+                                    "31000025",
+                                    2,
+                                    setOf(
+                                        NekkuClient.ProductOption(
+                                            "17A9ACF0-DE9E-4C07-882E-C8C47351D009",
+                                            "Pähkinätön",
+                                        )
+                                    ),
+                                ),
+                            ),
+                            group.name,
+                        )
+                    ),
+                    dryRun = false,
+                )
+            ),
+            client.orders,
+        )
+    }
+
+    @Test
+    fun `should have additional under one year old diet ordered for under one year olds`() {
+        val client =
+            TestNekkuClient(
+                customers =
+                    listOf(
+                        NekkuApiCustomer(
+                            "2501K6090",
+                            "Ahvenojan päiväkoti",
+                            "Varhaiskasvatus",
+                            listOf(
+                                CustomerApiType(
+                                    listOf(
+                                        NekkuCustomerApiWeekday.MONDAY,
+                                        NekkuCustomerApiWeekday.TUESDAY,
+                                        NekkuCustomerApiWeekday.WEDNESDAY,
+                                        NekkuCustomerApiWeekday.THURSDAY,
+                                        NekkuCustomerApiWeekday.FRIDAY,
+                                        NekkuCustomerApiWeekday.SATURDAY,
+                                        NekkuCustomerApiWeekday.SUNDAY,
+                                        NekkuCustomerApiWeekday.WEEKDAYHOLIDAY,
+                                    ),
+                                    "100-lasta",
+                                )
+                            ),
+                        )
+                    ),
+                nekkuProducts = nekkuProductsForOrder,
+                specialDiets = listOf(getNekkuSpecialDiet()),
+            )
+
+        fetchAndUpdateNekkuCustomers(client, db)
+        // products
+        fetchAndUpdateNekkuProducts(client, db)
+        fetchAndUpdateNekkuSpecialDiets(client, db)
+
+        val monday = LocalDate.of(2025, 4, 14)
+        val tuesday = LocalDate.of(2025, 4, 15)
+
+        // Daycare with groups
+        val area = DevCareArea()
+        val daycare =
+            DevDaycare(
+                areaId = area.id,
+                mealtimeBreakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
+                mealtimeLunch = TimeRange(LocalTime.of(11, 15), LocalTime.of(11, 45)),
+                mealtimeSnack = TimeRange(LocalTime.of(13, 30), LocalTime.of(13, 50)),
+            )
+        val group = DevDaycareGroup(daycareId = daycare.id, nekkuCustomerNumber = "2501K6090")
+        val employee = DevEmployee()
+
+        val mixedBaby = DevPerson(dateOfBirth = monday.minusMonths(6))
+        val mixedBabyWithoutLactose = DevPerson(dateOfBirth = monday.minusMonths(6))
+        val mixedBabyWithOtherSpecialDiet = DevPerson(dateOfBirth = monday.minusMonths(6))
+        val mixedBabyWithoutLactoseAndAnotherSpecialDiet =
+            DevPerson(dateOfBirth = monday.minusMonths(6))
+        val allChildren =
+            listOf(
+                mixedBaby,
+                mixedBabyWithoutLactose,
+                mixedBabyWithOtherSpecialDiet,
+                mixedBabyWithoutLactoseAndAnotherSpecialDiet,
+            )
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(group)
+            tx.insert(employee)
+            allChildren.forEach {
+                tx.insert(it, DevPersonType.CHILD)
+                tx.insert(
+                        DevPlacement(
+                            childId = it.id,
+                            unitId = daycare.id,
+                            startDate = monday,
+                            endDate = tuesday,
+                        )
+                    )
+                    .also { placementId ->
+                        tx.insert(
+                            DevDaycareGroupPlacement(
+                                daycarePlacementId = placementId,
+                                daycareGroupId = group.id,
+                                startDate = monday,
+                                endDate = tuesday,
+                            )
+                        )
+                    }
+                tx.insert(
+                    // Three meals on Monday
+                    DevReservation(
+                        childId = it.id,
+                        date = monday,
+                        startTime = LocalTime.of(8, 0),
+                        endTime = LocalTime.of(16, 0),
+                        createdBy = employee.evakaUserId,
+                    )
+                )
+            }
+        }
+
+        insertNekkuSpecialDietChoice(
+            mixedBabyWithoutLactose.id,
+            "2",
+            "AE1FE5FE-9619-4D7A-9043-A6B0C615156B",
+            "Laktoositon ruokavalio",
+        )
+        insertNekkuSpecialDietChoice(
+            mixedBabyWithOtherSpecialDiet.id,
+            "2",
+            "17A9ACF0-DE9E-4C07-882E-C8C47351D009",
+            "Pähkinätön",
+        )
+        insertNekkuSpecialDietChoice(
+            mixedBabyWithoutLactoseAndAnotherSpecialDiet.id,
+            "2",
+            "AE1FE5FE-9619-4D7A-9043-A6B0C615156B",
+            "Laktoositon ruokavalio",
+        )
+        insertNekkuSpecialDietChoice(
+            mixedBabyWithoutLactoseAndAnotherSpecialDiet.id,
+            "2",
+            "17A9ACF0-DE9E-4C07-882E-C8C47351D009",
+            "Pähkinätön",
+        )
+
+        createAndSendNekkuOrder(client, db, group.id, monday, 0.9)
+
+        assertEquals(
+            listOf(
+                NekkuClient.NekkuOrders(
+                    listOf(
+                        NekkuClient.NekkuOrder(
+                            monday.toString(),
+                            "2501K6090",
+                            group.id.toString(),
+                            listOf(
+                                NekkuClient.Item(
+                                    "31000020",
+                                    1,
+                                    setOf(
+                                        NekkuClient.ProductOption(
+                                            "17A9ACF0-DE9E-4C07-882E-C8C47351D009",
+                                            "Alle 1-vuotiaan ruokavalio",
+                                        )
+                                    ),
+                                ),
+                                NekkuClient.Item(
+                                    "31000021",
+                                    1,
+                                    setOf(
+                                        NekkuClient.ProductOption(
+                                            "17A9ACF0-DE9E-4C07-882E-C8C47351D009",
+                                            "Alle 1-vuotiaan ruokavalio",
+                                        )
+                                    ),
+                                ),
+                                NekkuClient.Item(
+                                    "31000022",
+                                    1,
+                                    setOf(
+                                        NekkuClient.ProductOption(
+                                            "17A9ACF0-DE9E-4C07-882E-C8C47351D009",
+                                            "Alle 1-vuotiaan ruokavalio",
+                                        )
+                                    ),
+                                ),
+                                NekkuClient.Item(
+                                    "31000020",
+                                    1,
+                                    setOf(
+                                        NekkuClient.ProductOption(
+                                            "17A9ACF0-DE9E-4C07-882E-C8C47351D009",
+                                            "Alle 1-vuotiaan ruokavalio",
+                                        ),
+                                        NekkuClient.ProductOption(
+                                            "AE1FE5FE-9619-4D7A-9043-A6B0C615156B",
+                                            "Laktoositon ruokavalio",
+                                        ),
+                                    ),
+                                ),
+                                NekkuClient.Item(
+                                    "31000021",
+                                    1,
+                                    setOf(
+                                        NekkuClient.ProductOption(
+                                            "17A9ACF0-DE9E-4C07-882E-C8C47351D009",
+                                            "Alle 1-vuotiaan ruokavalio",
+                                        ),
+                                        NekkuClient.ProductOption(
+                                            "AE1FE5FE-9619-4D7A-9043-A6B0C615156B",
+                                            "Laktoositon ruokavalio",
+                                        ),
+                                    ),
+                                ),
+                                NekkuClient.Item(
+                                    "31000022",
+                                    1,
+                                    setOf(
+                                        NekkuClient.ProductOption(
+                                            "17A9ACF0-DE9E-4C07-882E-C8C47351D009",
+                                            "Alle 1-vuotiaan ruokavalio",
+                                        ),
+                                        NekkuClient.ProductOption(
+                                            "AE1FE5FE-9619-4D7A-9043-A6B0C615156B",
+                                            "Laktoositon ruokavalio",
+                                        ),
+                                    ),
+                                ),
+                                NekkuClient.Item(
+                                    "31000020",
+                                    1,
+                                    setOf(
+                                        NekkuClient.ProductOption(
+                                            "17A9ACF0-DE9E-4C07-882E-C8C47351D009",
+                                            "Pähkinätön, Alle 1-vuotiaan ruokavalio",
+                                        )
+                                    ),
+                                ),
+                                NekkuClient.Item(
+                                    "31000021",
+                                    1,
+                                    setOf(
+                                        NekkuClient.ProductOption(
+                                            "17A9ACF0-DE9E-4C07-882E-C8C47351D009",
+                                            "Pähkinätön, Alle 1-vuotiaan ruokavalio",
+                                        )
+                                    ),
+                                ),
+                                NekkuClient.Item(
+                                    "31000022",
+                                    1,
+                                    setOf(
+                                        NekkuClient.ProductOption(
+                                            "17A9ACF0-DE9E-4C07-882E-C8C47351D009",
+                                            "Pähkinätön, Alle 1-vuotiaan ruokavalio",
+                                        )
+                                    ),
+                                ),
+                                NekkuClient.Item(
+                                    "31000020",
+                                    1,
+                                    setOf(
+                                        NekkuClient.ProductOption(
+                                            "17A9ACF0-DE9E-4C07-882E-C8C47351D009",
+                                            "Pähkinätön, Alle 1-vuotiaan ruokavalio",
+                                        ),
+                                        NekkuClient.ProductOption(
+                                            "AE1FE5FE-9619-4D7A-9043-A6B0C615156B",
+                                            "Laktoositon ruokavalio",
+                                        ),
+                                    ),
+                                ),
+                                NekkuClient.Item(
+                                    "31000021",
+                                    1,
+                                    setOf(
+                                        NekkuClient.ProductOption(
+                                            "17A9ACF0-DE9E-4C07-882E-C8C47351D009",
+                                            "Pähkinätön, Alle 1-vuotiaan ruokavalio",
+                                        ),
+                                        NekkuClient.ProductOption(
+                                            "AE1FE5FE-9619-4D7A-9043-A6B0C615156B",
+                                            "Laktoositon ruokavalio",
+                                        ),
+                                    ),
+                                ),
+                                NekkuClient.Item(
+                                    "31000022",
+                                    1,
+                                    setOf(
+                                        NekkuClient.ProductOption(
+                                            "17A9ACF0-DE9E-4C07-882E-C8C47351D009",
+                                            "Pähkinätön, Alle 1-vuotiaan ruokavalio",
+                                        ),
+                                        NekkuClient.ProductOption(
+                                            "AE1FE5FE-9619-4D7A-9043-A6B0C615156B",
+                                            "Laktoositon ruokavalio",
+                                        ),
+                                    ),
+                                ),
+                            ),
+                            group.name,
+                        )
+                    ),
+                    dryRun = false,
+                )
+            ),
+            client.orders,
+        )
+    }
+
+    @Test
+    fun `Meal types should contain the null value`() {
+        val mealTypes =
+            nekkuController.getNekkuMealTypes(dbInstance(), getAuthenticatedEmployee(), getClock())
+
+        assert(mealTypes.map { it.type }.contains(null))
+    }
+
+    @Test
+    fun `Meal types should contain all NekkuProductMealTime values`() {
+        val mealTypes =
+            nekkuController.getNekkuMealTypes(dbInstance(), getAuthenticatedEmployee(), getClock())
+
+        NekkuProductMealType.entries.forEach { entry ->
+            assert(mealTypes.map { it.type }.contains(entry))
+        }
+    }
+
+    @Test
+    fun `Fetching customer numbers should work`() {
+        insertCustomerNumbers()
+
+        val customerNumbers =
+            nekkuController.getNekkuUnitNumbers(
+                dbInstance(),
+                getAuthenticatedEmployee(),
+                getClock(),
+            )
+        assertEquals(2, customerNumbers.size)
+        assertEquals(
+            listOf(
+                NekkuUnitNumber("1234", "Lönnrotinkadun päiväkoti"),
+                NekkuUnitNumber("5678", "Rubeberginkadun päiväkoti"),
+            ),
+            customerNumbers,
+        )
+    }
+
+    @Test
+    fun `Fetching special diets should work`() {
+        insertSpecialDiets()
+
+        val specialDiets =
+            nekkuController.getNekkuSpecialDiets(
+                dbInstance(),
+                getAuthenticatedEmployee(),
+                getClock(),
+            )
+        assertEquals(1, specialDiets.size)
+        assertEquals(listOf(NekkuSpecialDietWithoutFields("2", "Päiväkodit ER")), specialDiets)
+    }
+
+    @Test
+    fun `Fetching special diet fields should work`() {
+        insertSpecialDiets()
+
+        val specialDietFields =
+            nekkuController.getNekkuSpecialDietFields(
+                dbInstance(),
+                getAuthenticatedEmployee(),
+                getClock(),
+            )
+        assertEquals(2, specialDietFields.size)
+        assertEquals(
+            listOf(
+                NekkuSpecialDietsFieldWithoutOptions(
+                    "12345678-9ABC-DEF0-1234-56789ABCDEF0",
+                    "Erityisruokavaliot",
+                    NekkuSpecialDietType.CHECKBOXLIST,
+                    "2",
+                ),
+                NekkuSpecialDietsFieldWithoutOptions(
+                    "56789ABC-DEF0-1234-5678-9ABCDEF01234",
+                    "Muu erityisruokavalio",
+                    NekkuSpecialDietType.TEXT,
+                    "2",
+                ),
+            ),
+            specialDietFields,
+        )
+    }
+
+    @Test
+    fun `Fetching special diet options should work`() {
+        insertSpecialDiets()
+
+        val specialDietOptions =
+            nekkuController.getNekkuSpecialDietOptions(
+                dbInstance(),
+                getAuthenticatedEmployee(),
+                getClock(),
+            )
+        assertEquals(2, specialDietOptions.size)
+        assertEquals(
+            listOf(
+                NekkuSpecialDietOptionWithFieldId(
+                    1,
+                    "Kananmunaton",
+                    "Kananmunaton",
+                    "12345678-9ABC-DEF0-1234-56789ABCDEF0",
+                ),
+                NekkuSpecialDietOptionWithFieldId(
+                    2,
+                    "Sianlihaton",
+                    "Sianlihaton",
+                    "12345678-9ABC-DEF0-1234-56789ABCDEF0",
+                ),
+            ),
+            specialDietOptions,
+        )
+    }
+
+    private fun getAuthenticatedEmployee(): AuthenticatedUser.Employee {
+        val employee =
+            DevEmployee(
+                id = EmployeeId(UUID.randomUUID()),
+                firstName = "Test",
+                lastName = "Employee",
+            )
+        db.transaction { tx -> tx.insert(employee) }
+        return AuthenticatedUser.Employee(employee.id, setOf(UserRole.ADMIN))
+    }
+
+    private fun getClock(): MockEvakaClock =
+        MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2025, 4, 15), LocalTime.of(12, 0)))
+
+    private fun insertCustomerNumbers() =
+        db.transaction { tx ->
+            tx.createUpdate {
+                    sql(
+                        "INSERT INTO nekku_customer VALUES" +
+                            "('1234', 'Lönnrotinkadun päiväkoti', 'Varhaiskasvatus')," +
+                            "('5678', 'Rubeberginkadun päiväkoti', 'Varhaiskasvatus')"
+                    )
+                }
+                .execute()
+        }
+
+    private fun insertSpecialDiets() {
+        db.transaction { tx ->
+            tx.createUpdate { sql("INSERT INTO nekku_special_diet VALUES ('2', 'Päiväkodit ER')") }
+                .execute()
+
+            tx.createUpdate {
+                    sql(
+                        "INSERT INTO nekku_special_diet_field VALUES" +
+                            "('12345678-9ABC-DEF0-1234-56789ABCDEF0', 'Erityisruokavaliot', 'CHECKBOXLIST', '2')," +
+                            "('56789ABC-DEF0-1234-5678-9ABCDEF01234', 'Muu erityisruokavalio', 'TEXT', '2')"
+                    )
+                }
+                .execute()
+
+            tx.createUpdate {
+                    sql(
+                        "INSERT INTO nekku_special_diet_option VALUES" +
+                            "(1, 'Kananmunaton', 'Kananmunaton', '12345678-9ABC-DEF0-1234-56789ABCDEF0')," +
+                            "(2, 'Sianlihaton', 'Sianlihaton', '12345678-9ABC-DEF0-1234-56789ABCDEF0')"
+                    )
+                }
+                .execute()
+        }
+    }
+
+    private fun insertNekkuSpecialDietChoice(
+        childId: ChildId,
+        dietId: String,
+        dietField: String,
+        dietValue: String,
+    ) {
+        db.transaction { tx ->
+            tx.createUpdate {
+                    sql(
+                        "INSERT INTO nekku_special_diet_choices VALUES (" +
+                            "${bind(childId)}," +
+                            "${bind(dietId)}," +
+                            "${bind(dietField)}," +
+                            "${bind(dietValue)}" +
+                            ")"
+                    )
+                }
+                .execute()
+        }
     }
 
     private fun getNekkuWeeklyJobs() =

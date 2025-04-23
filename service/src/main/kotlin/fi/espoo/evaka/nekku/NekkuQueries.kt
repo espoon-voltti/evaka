@@ -389,6 +389,7 @@ SELECT
     rp.group_id,
     rp.placement_type,
     ch.nekku_eats_breakfast as eats_breakfast,
+    p.date_of_birth,
     (sn.shift_care IS NOT NULL AND sn.shift_care != 'NONE') AS has_shift_care,
     coalesce((
         SELECT jsonb_agg(jsonb_build_object('start', ar.start_time, 'end', ar.end_time))
@@ -408,6 +409,7 @@ SELECT
 FROM realized_placement_one(${bind(date)}) rp
 JOIN daycare_group dg ON dg.id = rp.group_id
 JOIN child ch ON ch.id = rp.child_id
+JOIN person p on ch.id = p.id
 LEFT JOIN service_need sn ON sn.placement_id = rp.placement_id AND daterange(sn.start_date, sn.end_date, '[]') @> ${bind(date)}
 WHERE dg.id = ${bind(nekkuGroupId)}
                     """
@@ -422,6 +424,7 @@ data class NekkuChildData(
     val placementType: PlacementType,
     val hasShiftCare: Boolean,
     val eatsBreakfast: Boolean,
+    val dateOfBirth: LocalDate,
     @Json val reservations: List<TimeRange>,
     val absences: Set<AbsenceCategory>,
 )
@@ -461,6 +464,39 @@ WHERE child.id = ANY (${bind(childIds)})
             )
         }
         .toMap { column<ChildId>("child_id") to column<NekkuProductMealType?>("nekku_diet") }
+
+fun Database.Read.specialDietChoicesForChildren(
+    childIds: Set<ChildId>
+): Map<ChildId, List<NekkuSpecialDietChoices>> =
+    createQuery {
+            sql(
+                """
+SELECT
+  c.id as child_id,
+  jsonb_agg(jsonb_build_object('dietId', nsdc.diet_id, 'fieldId', nsdc.field_id, 'value', nsdc.value)) AS choices
+FROM child c
+JOIN nekku_special_diet_choices nsdc ON nsdc.child_id = c.id
+WHERE c.id = ANY (${bind(childIds)})
+GROUP BY c.id
+        """
+                    .trimIndent()
+            )
+        }
+        .toMap {
+            column<ChildId>("child_id") to jsonColumn<List<NekkuSpecialDietChoices>>("choices")
+        }
+
+fun Database.Read.getNekkuTextFields(): Map<String, String> =
+    createQuery {
+            sql(
+                """
+            SELECT diet_id, id
+            FROM nekku_special_diet_field
+            WHERE type='TEXT'
+        """
+            )
+        }
+        .toMap { column<String>("diet_id") to column<String>("id") }
 
 fun Database.Read.getNekkuSpecialDiets(): List<NekkuSpecialDietWithoutFields> =
     createQuery { sql("SELECT id, name FROM nekku_special_diet") }

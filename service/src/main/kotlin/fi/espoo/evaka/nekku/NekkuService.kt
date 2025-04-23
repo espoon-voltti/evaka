@@ -189,7 +189,7 @@ interface NekkuClient {
     data class Item(
         val sku: String,
         val quantity: Int,
-        @JsonProperty("product_options") val productOptions: List<ProductOption>?,
+        @JsonProperty("product_options") val productOptions: Set<ProductOption>?,
     )
 
     data class ProductOption(@JsonProperty("field_id") val fieldId: String, val value: String)
@@ -456,7 +456,10 @@ fun nekkuMealReportData(
                     .map {
                         NekkuMealInfo(
                             sku = getNekkuProductNumber(nekkuProducts, it, childInfo, customerType),
-                            options = null, // getNekkuChildDiets() //Todo: get child diets
+                            options =
+                                childInfo.specialDiet
+                                    ?.map { NekkuClient.ProductOption(it.fieldId, it.value) }
+                                    ?.toSet(),
                             nekkuMealType = childInfo.mealType,
                         )
                     }
@@ -562,7 +565,11 @@ private fun getNekkuChildInfos(
     val childIds = childData.map { it.childId }.toSet()
 
     val mealTypes = tx.mealTypesForChildren(childIds)
+    val specialDietChoices = tx.specialDietChoicesForChildren(childIds)
     val units = tx.getDaycaresById(unitIds)
+    val textFieldsPerSpecialDiet = tx.getNekkuTextFields()
+    val defaultSpecialDiet =
+        textFieldsPerSpecialDiet.keys.maxOrNull() ?: error("No special diets found")
 
     return childData.mapNotNull { child ->
         val unit = units[child.unitId] ?: error("Daycare not found for unitId ${child.unitId}")
@@ -578,19 +585,62 @@ private fun getNekkuChildInfos(
         )
             return@mapNotNull null
 
+        val isUnderOneYearOld = child.dateOfBirth > date.minusYears(1)
+        val optionsId =
+            specialDietChoices[child.childId]?.first()?.dietId
+                ?: if (isUnderOneYearOld) defaultSpecialDiet else ""
+
         NekkuChildInfo(
             placementType = child.placementType,
             reservations = child.reservations,
             absences = child.absences,
             mealType = mealTypes[child.childId],
-            optionsId = "", // Todo: generate value here when ready
-            specialDiet = null, // Todo: generate value here when ready
+            optionsId = optionsId,
+            specialDiet =
+                if (!isUnderOneYearOld) specialDietChoices[child.childId]
+                else
+                    addUnderOneYearOldDiet(
+                        specialDietChoices[child.childId],
+                        textFieldsPerSpecialDiet,
+                        optionsId,
+                    ),
             dailyPreschoolTime = unit.dailyPreschoolTime,
             dailyPreparatoryTime = unit.dailyPreparatoryTime,
             mealTimes = unit.mealTimes,
             eatsBreakfast = child.eatsBreakfast,
         )
     }
+}
+
+private const val UNDER_ONE_YEAR_OLD_DIET = "Alle 1-vuotiaan ruokavalio"
+
+fun addUnderOneYearOldDiet(
+    nekkuSpecialDietChoices: List<NekkuSpecialDietChoices>?,
+    textFieldsPerSpecialDiet: Map<String, String>,
+    defaultOptionsId: String,
+): List<NekkuSpecialDietChoices> {
+    if (nekkuSpecialDietChoices == null)
+        return listOf(
+            NekkuSpecialDietChoices(
+                defaultOptionsId,
+                textFieldsPerSpecialDiet[defaultOptionsId]
+                    ?: error("Special diet $defaultOptionsId not fond"),
+                UNDER_ONE_YEAR_OLD_DIET,
+            )
+        )
+    val textField =
+        nekkuSpecialDietChoices.find { it.fieldId == textFieldsPerSpecialDiet[it.dietId] }
+    return if (textField == null) {
+        nekkuSpecialDietChoices +
+            NekkuSpecialDietChoices(
+                nekkuSpecialDietChoices.first().dietId,
+                textFieldsPerSpecialDiet[nekkuSpecialDietChoices.first().dietId]
+                    ?: error("Special diet ${nekkuSpecialDietChoices.first().dietId} not found"),
+                UNDER_ONE_YEAR_OLD_DIET,
+            )
+    } else
+        nekkuSpecialDietChoices.filter { it != textField } +
+            textField.copy(value = textField.value + ", " + UNDER_ONE_YEAR_OLD_DIET)
 }
 
 data class NekkuCustomer(
@@ -788,8 +838,8 @@ data class NekkuChildInfo(
     val reservations: List<TimeRange>?,
     val absences: Set<AbsenceCategory>?,
     val mealType: NekkuProductMealType?,
-    val optionsId: String?, // Todo:check proper type
-    val specialDiet: String?, // Todo:check proper type
+    val optionsId: String,
+    val specialDiet: List<NekkuSpecialDietChoices>?,
     val dailyPreschoolTime: TimeRange?,
     val dailyPreparatoryTime: TimeRange?,
     val mealTimes: DaycareMealtimes,
@@ -798,7 +848,7 @@ data class NekkuChildInfo(
 
 data class NekkuMealInfo(
     val sku: String,
-    val options: List<NekkuClient.ProductOption>? = null,
+    val options: Set<NekkuClient.ProductOption>? = null,
     val nekkuMealType: NekkuProductMealType? = null,
 )
 
