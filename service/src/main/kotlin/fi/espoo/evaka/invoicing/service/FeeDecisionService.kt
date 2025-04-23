@@ -48,7 +48,9 @@ import fi.espoo.evaka.process.insertProcessHistoryRow
 import fi.espoo.evaka.s3.DocumentKey
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.setting.getSettings
+import fi.espoo.evaka.sficlient.SentSfiMessage
 import fi.espoo.evaka.sficlient.SfiMessage
+import fi.espoo.evaka.sficlient.storeSentSfiMessage
 import fi.espoo.evaka.shared.ArchiveProcessType
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.FeatureConfig
@@ -340,6 +342,15 @@ class FeeDecisionService(
             listOf(AsyncJob.SendNewFeeDecisionEmail(decisionId = decision.id)),
             runAt = clock.now(),
         )
+
+        tx.storeSentSfiMessage(
+            SentSfiMessage(
+                externalId = decision.id.toString(),
+                guardianId = decision.headOfFamily.id,
+                feeDecisionId = decision.id.raw,
+            )
+        )
+
         setSentAndUpdateProcess(
             tx,
             clock,

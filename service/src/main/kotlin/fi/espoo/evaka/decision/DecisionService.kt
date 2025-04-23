@@ -30,7 +30,9 @@ import fi.espoo.evaka.s3.DocumentLocation
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.setting.SettingType
 import fi.espoo.evaka.setting.getSettings
+import fi.espoo.evaka.sficlient.SentSfiMessage
 import fi.espoo.evaka.sficlient.SfiMessage
+import fi.espoo.evaka.sficlient.storeSentSfiMessage
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.PersonId
@@ -277,6 +279,14 @@ class DecisionService(
             )
 
         asyncJobRunner.plan(tx, listOf(AsyncJob.SendMessage(message)), runAt = clock.now())
+
+        tx.storeSentSfiMessage(
+            SentSfiMessage(
+                externalId = uniqueId,
+                guardianId = guardian.id,
+                decisionId = decision.id.raw,
+            )
+        )
     }
 
     fun sendNewDecisionEmail(

@@ -5,6 +5,7 @@ CREATE TABLE sfi_get_events_continuation_token(
 
 CREATE TABLE sfi_message (
     id uuid PRIMARY KEY DEFAULT ext.uuid_generate_v1mc(), -- external id sent to SFI
+    external_id text NOT NULL, -- id set by eVaka
     sfi_id integer, -- id returned by SFI
     created_at timestamp with time zone NOT NULL DEFAULT now(),
     updated_at timestamp with time zone NOT NULL DEFAULT now(),
@@ -21,7 +22,8 @@ ALTER TABLE sfi_message ADD CONSTRAINT single_type CHECK (
     num_nonnulls(decision_id, document_id, fee_decision_id, voucher_value_decision_id) = 1
 );
 
-CREATE UNIQUE INDEX fk$sfi_message_guardian_id ON sfi_message (guardian_id);
+CREATE UNIQUE INDEX fk$sfi_message_external_id ON sfi_message (external_id);
+CREATE INDEX fk$sfi_message_guardian_id ON sfi_message (guardian_id);
 CREATE UNIQUE INDEX fk$sfi_message_decision_id_guardian_id ON sfi_message (decision_id, guardian_id);
 CREATE UNIQUE INDEX fk$sfi_message_document_id_guardian_id ON sfi_message (document_id, guardian_id);
 CREATE UNIQUE INDEX fk$sfi_message_fee_decision_id_guardian_id ON sfi_message (fee_decision_id, guardian_id);

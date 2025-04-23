@@ -32,7 +32,9 @@ import fi.espoo.evaka.s3.DocumentKey
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.setting.SettingType
 import fi.espoo.evaka.setting.getSettings
+import fi.espoo.evaka.sficlient.SentSfiMessage
 import fi.espoo.evaka.sficlient.SfiMessage
+import fi.espoo.evaka.sficlient.storeSentSfiMessage
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.async.AsyncJob
@@ -154,6 +156,14 @@ class VoucherValueDecisionService(
                 )
             ),
             runAt = now,
+        )
+
+        tx.storeSentSfiMessage(
+            SentSfiMessage(
+                externalId = decision.id.toString(),
+                guardianId = decision.headOfFamily.id,
+                voucherValueDecisionId = decision.id.raw,
+            )
         )
 
         tx.markVoucherValueDecisionsSent(listOf(decision.id), now)

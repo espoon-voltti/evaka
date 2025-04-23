@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.sficlient
 
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.SfiMessageId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -43,7 +44,8 @@ fun Database.Transaction.storeSentSfiMessage(message: SentSfiMessage) {
     createUpdate {
             sql(
                 """
-INSERT INTO sent_sfi_message (
+INSERT INTO sfi_message (
+    external_id,
     sfi_id,
     guardian_id,
     decision_id,
@@ -51,6 +53,7 @@ INSERT INTO sent_sfi_message (
     fee_decision_id,
     voucher_value_decision_id
 ) VALUES (
+    ${bind(message.externalId)},
     ${bind(message.sfiId)},
     ${bind(message.guardianId)},
     ${bind(message.decisionId)},
@@ -67,13 +70,14 @@ RETURNING id
 }
 
 data class SentSfiMessage(
-    val id: UUID,
-    val sfiId: Int,
-    val createdAt: HelsinkiDateTime,
-    val updatedAt: HelsinkiDateTime,
-    val guardianId: UUID,
-    val decisionId: UUID?,
-    val documentId: UUID?,
-    val feeDecisionId: UUID?,
-    val voucherValueDecisionId: UUID?,
+    val id: UUID? = null,
+    val guardianId: PersonId,
+    val externalId: String,
+    val sfiId: Int? = null,
+    val createdAt: HelsinkiDateTime? = null,
+    val updatedAt: HelsinkiDateTime? = null,
+    val decisionId: UUID? = null,
+    val documentId: UUID? = null,
+    val feeDecisionId: UUID? = null,
+    val voucherValueDecisionId: UUID? = null,
 )
