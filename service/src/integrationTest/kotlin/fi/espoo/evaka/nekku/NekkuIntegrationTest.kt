@@ -165,6 +165,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             assertEquals(1, customers.size)
             assertEquals("Ahvenojan päiväkoti", customers.first().name)
             assertEquals("100-lasta", customers.first().customerType.first().type)
+            assertEquals("Varhaiskasvatus", customers.first().group)
         }
 
         client =

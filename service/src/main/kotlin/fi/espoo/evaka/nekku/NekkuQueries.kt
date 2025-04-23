@@ -88,12 +88,12 @@ fun Database.Transaction.setNekkuCustomerTypes(
             "DELETE FROM nekku_customer_type WHERE customer_number != ALL (${bind(newNekkuCustomerNumbers)})"
         )
     }
-    // TODO: Finish this
+
     val batchRows: Sequence<Pair<String, CustomerType>> =
         nekkuCustomerTypes.asSequence().flatMap { (customerNumber, customerTypes) ->
             customerTypes.map { customerType -> Pair(customerNumber, customerType) }
         }
-    // TODO: Finish this
+
     executeBatch(batchRows) {
         sql(
             """
@@ -146,24 +146,6 @@ fun Database.Read.getNekkuDaycareCustomerMapping(
         .exactlyOneOrNull<NekkuDaycareCustomerMapping>()
 
 fun Database.Transaction.getNekkuCustomers(): List<NekkuCustomer> {
-    return createQuery {
-            sql(
-                """
-    SELECT 
-        nc.number, 
-        nc.name, 
-        nc.customer_group AS "group",
-        JSON_AGG(JSON_BUILD_OBJECT('weekdays', nct.weekdays, 'type', nct.type)) AS customerType
-    FROM nekku_customer nc
-    LEFT JOIN nekku_customer_type nct ON nc.number = nct.customer_number
-    GROUP BY nc.number, nc.name, nc.customer_group
-    """
-            )
-        }
-        .toList<NekkuCustomer>()
-}
-
-fun Database.Transaction.getNekkuCustomers(groupId: GroupId): List<NekkuCustomer> {
     return createQuery {
             sql(
                 """
