@@ -21,6 +21,7 @@ import { MessageDraftId } from './shared'
 import { MessageId } from './shared'
 import { MessageThreadFolderId } from './shared'
 import { MessageThreadId } from './shared'
+import { MessagingCategory } from './placement'
 import { PersonId } from './shared'
 
 /**
@@ -374,6 +375,7 @@ export interface PostMessageBody {
 export interface PostMessageFilters {
   familyDaycare: boolean
   intermittentShiftCare: boolean
+  placementTypes: MessagingCategory[]
   shiftCare: boolean
   yearsOfBirth: number[]
 }

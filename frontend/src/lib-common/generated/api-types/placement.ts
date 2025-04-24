@@ -124,6 +124,14 @@ export interface GroupTransferRequestBody {
 }
 
 /**
+* Generated from fi.espoo.evaka.placement.MessagingCategory
+*/
+export type MessagingCategory =
+  | 'MESSAGING_CLUB'
+  | 'MESSAGING_DAYCARE'
+  | 'MESSAGING_PRESCHOOL'
+
+/**
 * Generated from fi.espoo.evaka.placement.MissingBackupGroupPlacement
 */
 export interface MissingBackupGroupPlacement {

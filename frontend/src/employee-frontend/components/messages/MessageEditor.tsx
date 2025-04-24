@@ -19,6 +19,7 @@ import {
   SelectableRecipientsResponse,
   UpdatableDraftContent
 } from 'lib-common/generated/api-types/messaging'
+import { MessagingCategory } from 'lib-common/generated/api-types/placement'
 import {
   AttachmentId,
   MessageAccountId,
@@ -152,8 +153,15 @@ const getEmptyFilters = (): Filters => ({
   yearsOfBirth: [],
   shiftCare: false,
   intermittentShiftCare: false,
-  familyDaycare: false
+  familyDaycare: false,
+  placementTypes: []
 })
+
+export const messagingPlacementTypeCategories: readonly MessagingCategory[] = [
+  'MESSAGING_CLUB',
+  'MESSAGING_DAYCARE',
+  'MESSAGING_PRESCHOOL'
+] as const
 
 interface FlagProps {
   urgent: boolean
@@ -234,6 +242,16 @@ export default React.memo(function MessageEditor({
       children: []
     }))
   )
+
+  const [placementTypeTree, setPlacementTypeTree] = useState<TreeNode[]>(
+    messagingPlacementTypeCategories.map<TreeNode>((type) => ({
+      text: i18n.placement.messagingCategory[type],
+      key: type,
+      checked: false,
+      children: []
+    }))
+  )
+
   const [message, setMessage] = useState<Message>(() =>
     getInitialMessage(draftContent, defaultSender, defaultTitle)
   )
@@ -364,6 +382,20 @@ export default React.memo(function MessageEditor({
       const updatedFilters = {
         ...filters,
         yearsOfBirth: selected.map((y) => +y.key)
+      }
+      setFilters(updatedFilters)
+    },
+    [filters, setFilters]
+  )
+
+  const handlePlacementTypeChange = useCallback(
+    (placementTypes: TreeNode[]) => {
+      setPlacementTypeTree(placementTypes)
+      const selected = placementTypes.filter((type) => type.checked)
+
+      const updatedFilters = {
+        ...filters,
+        placementTypes: selected.map((t) => t.key as MessagingCategory)
       }
       setFilters(updatedFilters)
     },
@@ -691,6 +723,20 @@ export default React.memo(function MessageEditor({
                               i18n.messages.messageEditor.selectPlaceholder
                             }
                             data-qa="select-years-of-birth"
+                          />
+                        </HorizontalField>
+                        <Gap size="s" />
+                        <HorizontalField>
+                          <Bold>
+                            {i18n.messages.messageEditor.filters.placementType}
+                          </Bold>
+                          <TreeDropdown
+                            tree={placementTypeTree}
+                            onChange={handlePlacementTypeChange}
+                            placeholder={
+                              i18n.messages.messageEditor.selectPlaceholder
+                            }
+                            data-qa="select-placement-type"
                           />
                         </HorizontalField>
                       </Dropdowns>

@@ -86,6 +86,25 @@ enum class PlacementType : DatabaseEnum {
                 setOf(AbsenceCategory.BILLABLE, AbsenceCategory.NONBILLABLE)
         }
 
+    fun messagingCategories(): Set<MessagingCategory>? =
+        when (this) {
+            CLUB -> setOf(MessagingCategory.MESSAGING_CLUB)
+            DAYCARE,
+            DAYCARE_PART_TIME,
+            DAYCARE_FIVE_YEAR_OLDS,
+            DAYCARE_PART_TIME_FIVE_YEAR_OLDS,
+            SCHOOL_SHIFT_CARE -> setOf(MessagingCategory.MESSAGING_DAYCARE)
+            PRESCHOOL,
+            PRESCHOOL_DAYCARE,
+            PRESCHOOL_DAYCARE_ONLY,
+            PRESCHOOL_CLUB,
+            PREPARATORY,
+            PREPARATORY_DAYCARE,
+            PREPARATORY_DAYCARE_ONLY -> setOf(MessagingCategory.MESSAGING_PRESCHOOL)
+            TEMPORARY_DAYCARE,
+            TEMPORARY_DAYCARE_PART_DAY -> null
+        }
+
     fun scheduleType(
         date: LocalDate,
         clubTerms: List<ClubTerm>,
@@ -150,6 +169,10 @@ enum class PlacementType : DatabaseEnum {
             entries.filter { it.absenceCategories().contains(AbsenceCategory.BILLABLE) }
         val withNonbillableAbsences =
             entries.filter { it.absenceCategories().contains(AbsenceCategory.NONBILLABLE) }
+
+        fun fromMessagingCategories(categories: List<MessagingCategory>): List<PlacementType> {
+            return PlacementType.entries.filter { it.messagingCategories()?.any { category -> category in categories } == true }
+        }
     }
 }
 
@@ -157,4 +180,10 @@ enum class ScheduleType {
     RESERVATION_REQUIRED, // Daycare -> reservations required
     FIXED_SCHEDULE, // Preschool/club -> reservations not required
     TERM_BREAK, // Preschool/club term break -> no activity
+}
+
+enum class MessagingCategory {
+    MESSAGING_CLUB,
+    MESSAGING_DAYCARE,
+    MESSAGING_PRESCHOOL,
 }
