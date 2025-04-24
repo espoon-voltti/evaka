@@ -386,6 +386,35 @@ describe('Holiday periods and questionnaires', () => {
       await calendar.assertHolidayCtaNotVisible()
     })
 
+    test('The holiday reservations toast is not shown if no child is eligible: placement is non billable', async () => {
+      await setupFirstChildPlacement({
+        startDate: LocalDate.of(2035, 12, 1),
+        endDate: LocalDate.of(2035, 12, 31),
+        type: 'CLUB'
+      })
+
+      await holidayQuestionnaireFixture({
+        conditions: {
+          continuousPlacement: null
+        },
+        active: new FiniteDateRange(
+          LocalDate.todayInSystemTz(),
+          LocalDate.of(2035, 12, 6)
+        ),
+        periodOptions: [
+          new FiniteDateRange(
+            LocalDate.of(2035, 12, 18),
+            LocalDate.of(2035, 12, 25)
+          )
+        ]
+      }).save()
+
+      await enduserLogin(page, guardian)
+      await new CitizenHeader(page).selectTab('calendar')
+      const calendar = new CitizenCalendarPage(page, 'desktop')
+      await calendar.assertHolidayCtaNotVisible()
+    })
+
     test('Holidays can be marked if one of two children is eligible', async () => {
       await setupFirstChildPlacement()
       const placementConditionStart = LocalDate.of(2022, 1, 1)
