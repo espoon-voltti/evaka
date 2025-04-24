@@ -2636,6 +2636,7 @@ const en: Translations = {
       confidential: 'Confidential',
       unanswered: 'Ei vastattu (en)',
       answered: 'Vastattu (en)',
+      answeredByEmployee: 'Henkilökunta (en)',
       preview: 'Esikatsele (en)',
       send: 'Lähetä (en)',
       success: 'Lomake lähetetty (en)',

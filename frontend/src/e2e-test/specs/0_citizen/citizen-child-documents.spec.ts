@@ -8,7 +8,7 @@ import {
 } from 'lib-common/generated/api-types/document'
 import { DocumentTemplateId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
-import { randomId } from 'lib-common/id-type'
+import { evakaUserId, randomId } from 'lib-common/id-type'
 import { UUID } from 'lib-common/types'
 
 import {
@@ -180,6 +180,64 @@ describe('Citizen child documents listing page', () => {
     await childPage.childDocumentLink(documentIdPed).click()
     expect(page.url.endsWith(`/child-documents/${documentIdPed}`)).toBeTruthy()
     await page.find('h1').assertTextEquals('Pedagoginen selvitys')
+  })
+
+  test('Answered by employee does not show name', async () => {
+    const templateContent: DocumentTemplateContent = {
+      sections: [
+        {
+          id: randomId(),
+          infoText: '',
+          label: 'Testi',
+          questions: [
+            {
+              id: randomId(),
+              type: 'TEXT',
+              infoText: '',
+              label: 'Kysymys 1',
+              multiline: false
+            },
+            {
+              id: randomId(),
+              type: 'TEXT',
+              infoText: '',
+              label: 'Kysymys 2',
+              multiline: false
+            }
+          ]
+        }
+      ]
+    }
+    const template = await Fixture.documentTemplate({
+      type: 'CITIZEN_BASIC',
+      name: 'Lomake kuntalaiselle',
+      content: templateContent,
+      published: true
+    }).save()
+    const documentContent: DocumentContent = {
+      answers: []
+    }
+    const unitSupervisor = await Fixture.employee()
+      .unitSupervisor(testDaycare.id)
+      .save()
+    const document = await Fixture.childDocument({
+      templateId: template.id,
+      childId: child.id,
+      status: 'COMPLETED',
+      content: documentContent,
+      publishedAt: mockedNow,
+      publishedContent: documentContent,
+      answeredAt: mockedNow,
+      answeredBy: evakaUserId(unitSupervisor.id)
+    }).save()
+
+    await header.openChildPage(child.id)
+    const childPage = new CitizenChildPage(page)
+    await childPage.openCollapsible('child-documents')
+    const row = childPage.childDocumentRow(document.id)
+    await row.assertTextEquals(
+      `${mockedNow.toLocalDate().format()}\tLomake kuntalaiselle\tVastattu, ${mockedNow.toLocalDate().format()}, Henkilökunta\tValmis`
+    )
   })
 })
 

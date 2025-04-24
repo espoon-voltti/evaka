@@ -558,6 +558,106 @@ describe('Employee - Child documents', () => {
     await row.status.assertTextEquals('Valmis')
   })
 
+  test('Citizen basic can be filled by employee', async () => {
+    // create document template
+    page = await Page.open({
+      mockedTime: now,
+      employeeCustomizations: {
+        featureFlags: { citizenChildDocumentTypes: true }
+      }
+    })
+    await employeeLogin(page, admin)
+    await page.goto(config.employeeUrl)
+    const nav = new EmployeeNav(page)
+    await nav.openAndClickDropdownMenuItem('document-templates')
+
+    const documentTemplatesPage = new DocumentTemplatesListPage(page)
+    const modal = await documentTemplatesPage.openCreateModal()
+    const documentName = 'Lomake kuntalaiselle'
+    await modal.nameInput.fill(documentName)
+    await modal.typeSelect.selectOption('Kuntalaisen lomake - perus')
+    await modal.placementTypesSelect.fillAndSelectFirst('Esiopetus')
+    await modal.validityStartInput.fill('01.08.2022')
+    await modal.confidentialityDurationYearsInput.fill('100')
+    await modal.confidentialityBasisInput.fill('Joku laki §300')
+    await modal.confirmCreateButton.click()
+    await documentTemplatesPage.openTemplate(documentName)
+
+    const templateEditor = new DocumentTemplateEditorPage(page)
+    await templateEditor.createNewSectionButton.click()
+    const sectionName = 'Eka osio'
+    await templateEditor.sectionNameInput.fill(sectionName)
+    await templateEditor.confirmCreateSectionButton.click()
+
+    const section = templateEditor.getSection(sectionName)
+    await section.element.hover()
+    await section.createNewQuestionButton.click()
+    const questionName = 'Eka kysymys'
+    await templateEditor.questionLabelInput.fill(questionName)
+    await templateEditor.confirmCreateQuestionButton.click()
+
+    await templateEditor.publishCheckbox.check()
+    await templateEditor.saveButton.click()
+    await templateEditor.saveButton.waitUntilHidden()
+    await page.close()
+
+    // create child document and send to citizen
+    page = await Page.open({
+      mockedTime: now,
+      employeeCustomizations: {
+        featureFlags: { citizenChildDocumentTypes: true }
+      }
+    })
+    await employeeLogin(page, unitSupervisor)
+    await page.goto(`${config.employeeUrl}/child-information/${testChild2.id}`)
+    const childInformationPage = new ChildInformationPage(page)
+    const childDocumentsSection =
+      await childInformationPage.openCollapsible('childDocuments')
+    await childDocumentsSection.createExternalDocumentButton.click()
+    await childDocumentsSection.createModalTemplateSelect.assertTextEquals(
+      documentName
+    )
+    await childDocumentsSection.modalOk.click()
+    const childDocument = new ChildDocumentPage(page)
+    await childDocument.status.assertTextEquals('Luonnos')
+    await childDocument.editButton.click()
+    const answer = 'Jonkin sortin vastaus'
+    const question = childDocument.getTextQuestion(sectionName, questionName)
+    await question.fill(answer)
+    await childDocument.savingIndicator.waitUntilHidden()
+    await childDocument.previewButton.click()
+    await childDocument.goToNextStatus()
+    await childDocument.status.assertTextEquals('Täytettävänä huoltajalla')
+    await childDocument.goToNextStatus()
+    await childDocument.status.assertTextEquals('Valmis')
+    await childDocument.returnButton.click()
+    await childInformationPage.openCollapsible('childDocuments')
+    await waitUntilEqual(childDocumentsSection.internalChildDocumentsCount, 0)
+    await waitUntilEqual(childDocumentsSection.externalChildDocumentsCount, 1)
+    const row = childDocumentsSection.externalChildDocuments(0)
+    await row.sent.assertTextEquals(now.toLocalDate().format())
+    await row.answered.assertTextEquals(
+      `${now.toLocalDate().format()}, ${unitSupervisor.lastName} ${unitSupervisor.firstName}`
+    )
+    await row.status.assertTextEquals('Valmis')
+    await runJobs({ mockedTime: now })
+    const emails = await getSentEmails()
+    expect(
+      emails.map((email) => ({
+        from: email.fromAddress,
+        to: email.toAddress,
+        subject: email.content.subject
+      }))
+    ).toEqual([
+      {
+        from: 'Espoon Varhaiskasvatus <no-reply.evaka@espoo.fi>',
+        to: 'johannes.karhula@evaka.test',
+        subject:
+          'Uusi dokumentti eVakassa / Nytt dokument i eVaka / New document in eVaka'
+      }
+    ])
+  })
+
   test('checkbox group answers are ordered correctly', async () => {
     const child = await Fixture.person().saveChild()
     const template = await Fixture.documentTemplate({

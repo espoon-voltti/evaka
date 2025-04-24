@@ -8,6 +8,7 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.document.DocumentTemplateContent
+import fi.espoo.evaka.document.DocumentType
 import fi.espoo.evaka.document.getTemplate
 import fi.espoo.evaka.pis.listPersonByDuplicateOf
 import fi.espoo.evaka.process.ArchivedProcessState
@@ -333,16 +334,25 @@ class ChildDocumentController(
                         Action.ChildDocument.NEXT_STATUS,
                         documentId,
                     )
+                    val document = tx.getChildDocument(documentId) ?: throw NotFound()
                     val statusTransition =
                         validateStatusTransition(
-                            tx = tx,
-                            documentId = documentId,
+                            document = document,
                             requestedStatus = body.newStatus,
                             goingForward = true,
                         )
 
                     val wasUpToDate = tx.isDocumentPublishedContentUpToDate(documentId)
-                    tx.changeStatusAndPublish(documentId, statusTransition, clock.now())
+                    tx.changeStatusAndPublish(
+                        documentId,
+                        statusTransition,
+                        clock.now(),
+                        answeredBy =
+                            user.evakaUserId.takeIf {
+                                document.template.type == DocumentType.CITIZEN_BASIC &&
+                                    statusTransition.newStatus == DocumentStatus.COMPLETED
+                            },
+                    )
                     if (!wasUpToDate) {
                         childDocumentService.schedulePdfGeneration(
                             tx,

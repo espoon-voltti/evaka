@@ -2879,6 +2879,7 @@ const sv: Translations = {
       confidential: 'Konfidentiellt',
       unanswered: 'Ei vastattu (sv)',
       answered: 'Vastattu (sv)',
+      answeredByEmployee: 'Henkilökunta (sv)',
       preview: 'Esikatsele (sv)',
       send: 'Lähetä (sv)',
       success: 'Lomake lähetetty (sv)',

@@ -261,7 +261,12 @@ const Answered = ({ document }: { document: ChildDocumentCitizenSummary }) => {
         {document.answeredAt?.toLocalDate().format()}
       </span>
       {document.answeredBy !== null && (
-        <span>, {document.answeredBy.name}</span>
+        <span>
+          ,{' '}
+          {document.answeredBy.type === 'CITIZEN'
+            ? document.answeredBy.name
+            : i18n.children.childDocuments.answeredByEmployee}
+        </span>
       )}
     </>
   )
