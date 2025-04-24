@@ -22,6 +22,7 @@ import fi.espoo.evaka.process.getProcess
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.DocumentTemplateId
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -75,6 +76,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
     final val templateIdPed = DocumentTemplateId(UUID.randomUUID())
     final val templateIdPedagogicalReport = DocumentTemplateId(UUID.randomUUID())
     final val templateIdHojks = DocumentTemplateId(UUID.randomUUID())
+    final val templateIdAssistanceDecision = DocumentTemplateId(UUID.randomUUID())
 
     final val templateContent =
         DocumentTemplateContent(
@@ -161,6 +163,18 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
             archiveExternally = true,
         )
 
+    val devTemplateAssistanceDecision =
+        DevDocumentTemplate(
+            id = templateIdAssistanceDecision,
+            type = DocumentType.OTHER_DECISION,
+            name = "Tuenpäätös",
+            validity = DateRange(clock.today(), clock.today()),
+            content = templateContent,
+            processDefinitionNumber = "123.456.000",
+            archiveDurationMonths = 120,
+            confidentiality = DocumentConfidentiality(100, "JulkL 24.1 § 25 ja 30 kohdat"),
+        )
+
     @BeforeEach
     internal fun setUp() {
         db.transaction { tx ->
@@ -195,6 +209,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
             tx.insert(devTemplatePed)
             tx.insert(devTemplatePedagogicalReport)
             tx.insert(devTemplateHojks)
+            tx.insert(devTemplateAssistanceDecision)
         }
     }
 
@@ -712,6 +727,83 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
     }
 
     @Test
+    fun `decision status flow - accept and annul`() {
+        val documentId =
+            controller.createDocument(
+                dbInstance(),
+                employeeUser.user,
+                clock,
+                ChildDocumentCreateRequest(testChild_1.id, templateIdAssistanceDecision),
+            )
+        assertEquals(DocumentStatus.DRAFT, getDocument(documentId).status)
+        assertNull(getDocument(documentId).publishedAt)
+
+        assertThrows<Conflict> { nextState(documentId, DocumentStatus.PREPARED) }
+        assertThrows<Conflict> { nextState(documentId, DocumentStatus.COMPLETED) }
+        assertThrows<BadRequest> { nextState(documentId, DocumentStatus.DECISION_PROPOSAL) }
+
+        proposeChildDocumentDecision(documentId, unitSupervisorUser.id)
+        assertEquals(DocumentStatus.DECISION_PROPOSAL, getDocument(documentId).status)
+        assertEquals(unitSupervisorUser.id, getDocument(documentId).decisionMaker)
+        assertNull(getDocument(documentId).publishedAt)
+
+        assertThrows<BadRequest> { nextState(documentId, DocumentStatus.COMPLETED) }
+        val validity = DateRange(clock.today().plusDays(2), clock.today().plusDays(5))
+        // not the assigned decision maker
+        assertThrows<Forbidden> {
+            acceptChildDocumentDecision(documentId, validity, employeeUser.user)
+        }
+        acceptChildDocumentDecision(documentId, validity, user = unitSupervisorUser)
+        getDocument(documentId).also { doc ->
+            assertEquals(DocumentStatus.COMPLETED, doc.status)
+            assertEquals(ChildDocumentDecisionStatus.ACCEPTED, doc.decision?.status)
+            assertNotNull(doc.publishedAt)
+        }
+
+        // cannot cancel decision
+        assertThrows<BadRequest> { prevState(documentId, DocumentStatus.DECISION_PROPOSAL) }
+
+        annulChildDocumentDecision(documentId, user = unitSupervisorUser)
+        getDocument(documentId).also { doc ->
+            assertEquals(DocumentStatus.COMPLETED, doc.status)
+            assertEquals(ChildDocumentDecisionStatus.ANNULLED, doc.decision?.status)
+        }
+    }
+
+    @Test
+    fun `decision status flow - reject`() {
+        val documentId =
+            controller.createDocument(
+                dbInstance(),
+                employeeUser.user,
+                clock,
+                ChildDocumentCreateRequest(testChild_1.id, templateIdAssistanceDecision),
+            )
+
+        proposeChildDocumentDecision(documentId, unitSupervisorUser.id)
+
+        // not the assigned decision maker
+        assertThrows<Forbidden> {
+            rejectChildDocumentDecision(documentId, user = employeeUser.user)
+        }
+
+        rejectChildDocumentDecision(documentId, user = unitSupervisorUser)
+        getDocument(documentId).also { doc ->
+            assertEquals(DocumentStatus.COMPLETED, doc.status)
+            assertEquals(ChildDocumentDecisionStatus.REJECTED, doc.decision?.status)
+            assertNotNull(doc.publishedAt)
+        }
+
+        // cannot cancel decision
+        assertThrows<BadRequest> { prevState(documentId, DocumentStatus.DECISION_PROPOSAL) }
+
+        // cannot annul rejected decision
+        assertThrows<BadRequest> {
+            annulChildDocumentDecision(documentId, user = unitSupervisorUser)
+        }
+    }
+
+    @Test
     fun `User 1 takes a lock and updates, user 2 cannot do that for 15 minutes`() {
         // user 1 creates at 10:00
         val documentId =
@@ -969,14 +1061,54 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         id: ChildDocumentId,
         status: DocumentStatus,
         clockOverride: MockEvakaClock = clock,
+        user: AuthenticatedUser.Employee = employeeUser.user,
     ) =
         controller.prevDocumentStatus(
             dbInstance(),
-            employeeUser.user,
+            user,
             clockOverride,
             id,
             ChildDocumentController.StatusChangeRequest(status),
         )
+
+    private fun proposeChildDocumentDecision(
+        id: ChildDocumentId,
+        decisionMaker: EmployeeId,
+        clockOverride: MockEvakaClock = clock,
+    ) =
+        controller.proposeChildDocumentDecision(
+            dbInstance(),
+            employeeUser.user,
+            clockOverride,
+            id,
+            ChildDocumentController.ProposeChildDocumentDecisionRequest(decisionMaker),
+        )
+
+    private fun acceptChildDocumentDecision(
+        id: ChildDocumentId,
+        validity: DateRange,
+        user: AuthenticatedUser.Employee = employeeUser.user,
+        clockOverride: MockEvakaClock = clock,
+    ) =
+        controller.acceptChildDocumentDecision(
+            dbInstance(),
+            user,
+            clockOverride,
+            id,
+            ChildDocumentController.AcceptChildDocumentDecisionRequest(validity),
+        )
+
+    private fun rejectChildDocumentDecision(
+        id: ChildDocumentId,
+        user: AuthenticatedUser.Employee = employeeUser.user,
+        clockOverride: MockEvakaClock = clock,
+    ) = controller.rejectChildDocumentDecision(dbInstance(), user, clockOverride, id)
+
+    private fun annulChildDocumentDecision(
+        id: ChildDocumentId,
+        user: AuthenticatedUser.Employee = employeeUser.user,
+        clockOverride: MockEvakaClock = clock,
+    ) = controller.annulChildDocumentDecision(dbInstance(), user, clockOverride, id)
 
     private fun getChildDocumentMetadata(id: ChildDocumentId) =
         metadataController.getChildDocumentMetadata(dbInstance(), employeeUser.user, clock, id)

@@ -294,7 +294,8 @@ const DecisionValidity = ({
 
   if (
     getDocumentCategory(document.type) !== 'decision' ||
-    document.decision === null
+    document.decision === null ||
+    document.decision.validity === null
   ) {
     return null
   }

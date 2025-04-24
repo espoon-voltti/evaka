@@ -165,7 +165,9 @@ const DecisionChildDocuments = React.memo(function DecisionChildDocuments({
               </WiderTd>
               <Td>{document.modifiedAt.format()}</Td>
               <Td>
-                {document.decision ? document.decision.validity.format() : ''}
+                {document.decision?.validity
+                  ? document.decision.validity.format()
+                  : ''}
               </Td>
               <StatusTd data-qa="document-status">
                 <ChildDocumentStateChip

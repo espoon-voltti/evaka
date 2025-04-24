@@ -144,7 +144,7 @@ enum class ChildDocumentDecisionStatus : DatabaseEnum {
 data class ChildDocumentDecision(
     @PropagateNull val id: ChildDocumentDecisionId,
     val status: ChildDocumentDecisionStatus,
-    val validity: DateRange,
+    val validity: DateRange?,
     // todo: more fields
 )
 

@@ -170,7 +170,7 @@ export interface ChildDocumentCreateRequest {
 export interface ChildDocumentDecision {
   id: ChildDocumentDecisionId
   status: ChildDocumentDecisionStatus
-  validity: DateRange
+  validity: DateRange | null
 }
 
 /**
@@ -561,7 +561,7 @@ export function deserializeJsonChildDocumentCitizenSummary(json: JsonOf<ChildDoc
 export function deserializeJsonChildDocumentDecision(json: JsonOf<ChildDocumentDecision>): ChildDocumentDecision {
   return {
     ...json,
-    validity: DateRange.parseJson(json.validity)
+    validity: (json.validity != null) ? DateRange.parseJson(json.validity) : null
   }
 }
 

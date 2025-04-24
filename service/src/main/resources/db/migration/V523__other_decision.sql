@@ -52,8 +52,8 @@ CREATE TABLE child_document_decision (
     modified_at timestamp with time zone NOT NULL DEFAULT now(),
     modified_by uuid NOT NULL REFERENCES evaka_user,
     status child_document_decision_status NOT NULL,
-    valid_from date NOT NULL,
-    valid_to date CHECK ( valid_to IS NULL OR valid_to >= valid_from )
+    valid_from date CHECK ( (status IN ('ACCEPTED', 'ANNULLED')) = (valid_from IS NOT NULL) ),
+    valid_to date CHECK ( valid_to IS NULL OR (valid_from IS NOT NULL AND valid_to >= valid_from) )
 );
 CREATE TRIGGER set_timestamp BEFORE UPDATE ON child_document_decision FOR EACH ROW EXECUTE PROCEDURE trigger_refresh_updated_at();
 CREATE INDEX fk$child_document_decision_created_by ON child_document_decision (created_by);

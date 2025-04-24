@@ -293,11 +293,11 @@ fun validateStatusTransition(
     }
 
     if (document.template.type.decision) {
-        if (newStatus == DocumentStatus.DECISION_PROPOSAL)
+        if (goingForward && newStatus == DocumentStatus.DECISION_PROPOSAL)
             throw BadRequest(
                 "Decision document cannot be moved to DECISION_PROPOSAL using normal status transitions. Please use the separate propose-decision endpoint."
             )
-        if (newStatus == DocumentStatus.COMPLETED)
+        if (goingForward && newStatus == DocumentStatus.COMPLETED)
             throw BadRequest(
                 "Decision document cannot be marked as completed using normal status transitions. Please use the separate accept/reject endpoints."
             )
