@@ -2858,6 +2858,7 @@ export default {
       confidential: 'Salassapidettävä',
       unanswered: 'Ei vastattu',
       answered: 'Vastattu',
+      answeredByEmployee: 'Henkilökunta',
       preview: 'Esikatsele',
       send: 'Lähetä',
       success: 'Lomake lähetetty',

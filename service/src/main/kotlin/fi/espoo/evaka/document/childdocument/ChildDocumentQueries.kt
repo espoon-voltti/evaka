@@ -299,6 +299,7 @@ fun Database.Transaction.changeStatusAndPublish(
     id: ChildDocumentId,
     statusTransition: StatusTransition,
     now: HelsinkiDateTime,
+    answeredBy: EvakaUserId?,
 ) {
     createUpdate {
             sql(
@@ -306,6 +307,7 @@ fun Database.Transaction.changeStatusAndPublish(
                 UPDATE child_document
                 SET status = ${bind(statusTransition.newStatus)}, modified_at = ${bind(now)}, 
                     published_at = ${bind(now)}, published_content = content
+                    ${if (answeredBy != null) ", answered_at = ${bind(now)}, answered_by = ${bind(answeredBy)}" else ""}
                 WHERE id = ${bind(id)} AND status = ${bind(statusTransition.currentStatus)}
                 """
             )

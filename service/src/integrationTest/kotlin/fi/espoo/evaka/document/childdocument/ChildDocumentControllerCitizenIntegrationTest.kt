@@ -36,10 +36,13 @@ import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.toEvakaUser
+import fi.espoo.evaka.user.EvakaUser
 import fi.espoo.evaka.user.EvakaUserType
 import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.groups.Tuple
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -438,6 +441,63 @@ class ChildDocumentControllerCitizenIntegrationTest :
         assertEquals(listOf(summary2), getDocumentsByChild(testChild_2.id, user = citizen2))
         assertEquals(listOf(summary2), getUnansweredChildDocuments(user = citizen2))
         assertThrows<Forbidden> { getDocumentsByChild(testChild_1.id, user = citizen2) }
+    }
+
+    @Test
+    fun `answered by employee user name is not exposed`() {
+        val template =
+            DevDocumentTemplate(
+                    type = DocumentType.CITIZEN_BASIC,
+                    name = "Medialupa",
+                    validity = DateRange(clock.today(), clock.today()),
+                    content = templateContent,
+                )
+                .also { db.transaction { tx -> tx.insert(it) } }
+        val now = clock.now()
+        val childDocumentBase =
+            DevChildDocument(
+                status = DocumentStatus.COMPLETED,
+                childId = testChild_1.id,
+                templateId = template.id,
+                content = documentContent,
+                publishedContent = documentContent,
+                modifiedAt = now,
+                contentModifiedAt = now,
+                contentModifiedBy = employeeUser.id,
+                publishedAt = now,
+                answeredAt = now,
+                answeredBy = null,
+            )
+        val answeredByCitizenId =
+            db.transaction { tx ->
+                tx.insert(
+                    childDocumentBase.copy(
+                        id = ChildDocumentId(UUID.randomUUID()),
+                        answeredBy = citizen.evakaUserId,
+                    )
+                )
+            }
+        val answeredByEmployeeId =
+            db.transaction { tx ->
+                tx.insert(
+                    childDocumentBase.copy(
+                        id = ChildDocumentId(UUID.randomUUID()),
+                        answeredBy = employeeUser.evakaUserId,
+                    )
+                )
+            }
+
+        assertThat(getUnansweredChildDocuments()).isEmpty()
+        assertThat(getDocumentsByChild(testChild_1.id))
+            .extracting({ it.id }, { it.answeredAt }, { it.answeredBy })
+            .containsExactlyInAnyOrder(
+                Tuple(answeredByCitizenId, now, testAdult_1.toEvakaUser(EvakaUserType.CITIZEN)),
+                Tuple(
+                    answeredByEmployeeId,
+                    now,
+                    EvakaUser(employeeUser.evakaUserId, "", EvakaUserType.EMPLOYEE),
+                ),
+            )
     }
 
     private fun getUnreadCount(user: AuthenticatedUser.Citizen = citizen) =

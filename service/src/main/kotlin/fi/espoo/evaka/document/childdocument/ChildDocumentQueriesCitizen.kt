@@ -35,7 +35,10 @@ SELECT
     child.date_of_birth AS child_date_of_birth,
     cd.answered_at,
     answered_by.id AS answered_by_id,
-    answered_by.name AS answered_by_name,
+    CASE answered_by.type
+        WHEN 'CITIZEN' THEN answered_by.name
+        ELSE ''
+    END AS answered_by_name,
     answered_by.type AS answered_by_type
 FROM child_document cd
 JOIN document_template dt ON cd.template_id = dt.id
