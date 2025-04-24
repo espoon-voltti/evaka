@@ -134,12 +134,21 @@ class VoucherValueDecisionService(
         val documentDisplayName = suomiFiDocumentFileName(lang)
         val messageHeader = messageProvider.getVoucherValueDecisionHeader(lang)
         val messageContent = messageProvider.getVoucherValueDecisionContent(lang)
+
+        val messageId =
+            tx.storeSentSfiMessage(
+                SentSfiMessage(
+                    guardianId = decision.headOfFamily.id,
+                    voucherValueDecisionId = decision.id.raw,
+                )
+            )
+
         asyncJobRunner.plan(
             tx,
             listOf(
                 AsyncJob.SendMessage(
                     SfiMessage(
-                        messageId = decision.id.toString(),
+                        messageId = messageId,
                         documentId = decision.id.toString(),
                         documentDisplayName = documentDisplayName,
                         documentBucket = documentLocation.bucket,
@@ -156,14 +165,6 @@ class VoucherValueDecisionService(
                 )
             ),
             runAt = now,
-        )
-
-        tx.storeSentSfiMessage(
-            SentSfiMessage(
-                externalId = decision.id.toString(),
-                guardianId = decision.headOfFamily.id,
-                voucherValueDecisionId = decision.id.raw,
-            )
         )
 
         tx.markVoucherValueDecisionsSent(listOf(decision.id), now)

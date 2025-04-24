@@ -300,7 +300,7 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
 
     @Test
     fun `Decision maker can make a decision and annul it`() {
-        MockSfiMessagesClient.clearMessages()
+        MockSfiMessagesClient.reset()
 
         val assistanceNeedDecision = createAndFillDecision(testForm)
 

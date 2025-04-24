@@ -12,7 +12,9 @@ import fi.espoo.evaka.SfiEnv
 import fi.espoo.evaka.SfiPrintingEnv
 import fi.espoo.evaka.s3.Document
 import fi.espoo.evaka.sficlient.SfiMessage
+import fi.espoo.evaka.shared.SfiMessageId
 import java.net.URI
+import java.util.UUID
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
@@ -53,7 +55,7 @@ class SfiMessagesRestClientIntegrationTest : FullApplicationTest(resetDbBeforeEa
 
     private val message =
         SfiMessage(
-            messageId = "message-id",
+            messageId = SfiMessageId(UUID.randomUUID()),
             documentId = "document-id",
             documentBucket = "document-bucket",
             documentKey = "document-key",
@@ -107,11 +109,11 @@ class SfiMessagesRestClientIntegrationTest : FullApplicationTest(resetDbBeforeEa
             }
         MockSfiMessagesRestEndpoint.getCapturedMessages().entries.let {
             assertEquals(1, it.size)
-            assertEquals(message.messageId, it.first().key)
+            assertEquals(message.messageId.toString(), it.first().key)
             val (_, captured) = it.first().value
             assertEquals(
                 MultichannelMessageRequestBody(
-                    externalId = message.messageId,
+                    externalId = message.messageId.toString(),
                     electronic =
                         ElectronicPart(
                             title = message.messageHeader,
@@ -188,7 +190,7 @@ class SfiMessagesRestClientIntegrationTest : FullApplicationTest(resetDbBeforeEa
         client.send(message)
         assertEquals(1, MockSfiMessagesRestEndpoint.getCapturedMessages().size)
         MockSfiMessagesRestEndpoint.clearTokens()
-        client.send(message.copy(messageId = "message-id-2"))
+        client.send(message.copy(messageId = SfiMessageId(UUID.randomUUID())))
         assertEquals(2, MockSfiMessagesRestEndpoint.getCapturedMessages().size)
     }
 

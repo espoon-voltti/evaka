@@ -4,7 +4,9 @@
 
 package fi.espoo.evaka.sficlient
 
+import fi.espoo.evaka.sficlient.rest.EventType
 import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.SfiMessageEventId
 import fi.espoo.evaka.shared.SfiMessageId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -40,12 +42,11 @@ fun Database.Read.getSentSfiMessageBySfiId(sfiId: Int): SentSfiMessage? =
         .mapTo<SentSfiMessage>()
         .exactlyOneOrNull()
 
-fun Database.Transaction.storeSentSfiMessage(message: SentSfiMessage) {
+fun Database.Transaction.storeSentSfiMessage(message: SentSfiMessage): SfiMessageId =
     createUpdate {
             sql(
                 """
 INSERT INTO sfi_message (
-    external_id,
     sfi_id,
     guardian_id,
     decision_id,
@@ -53,7 +54,6 @@ INSERT INTO sfi_message (
     fee_decision_id,
     voucher_value_decision_id
 ) VALUES (
-    ${bind(message.externalId)},
     ${bind(message.sfiId)},
     ${bind(message.guardianId)},
     ${bind(message.decisionId)},
@@ -67,12 +67,10 @@ RETURNING id
         }
         .executeAndReturnGeneratedKeys()
         .exactlyOne<SfiMessageId>()
-}
 
 data class SentSfiMessage(
     val id: UUID? = null,
     val guardianId: PersonId,
-    val externalId: String,
     val sfiId: Int? = null,
     val createdAt: HelsinkiDateTime? = null,
     val updatedAt: HelsinkiDateTime? = null,
@@ -80,4 +78,42 @@ data class SentSfiMessage(
     val documentId: UUID? = null,
     val feeDecisionId: UUID? = null,
     val voucherValueDecisionId: UUID? = null,
+)
+
+fun Database.Transaction.upsertSfiMessageEvent(event: SfiMessageEvent): SfiMessageEventId =
+    createUpdate {
+            sql(
+                """
+            INSERT INTO sfi_message_event (message_id, event_type)
+            VALUES (${bind(event.messageId)}, ${bind(event.eventType)})
+            ON CONFLICT (message_id, event_type)
+            DO UPDATE SET 
+                message_id = EXCLUDED.message_id,
+                updated_at = now()
+            RETURNING id
+            """
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .exactlyOne<SfiMessageEventId>()
+
+fun Database.Read.getSfiMessageEventsByMessageId(messageId: SfiMessageId): List<SfiMessageEvent> =
+    createQuery {
+            sql(
+                """
+SELECT id, created_at, updated_at, message_id, event_type
+FROM sfi_message_event
+WHERE message_id = ${bind(messageId)}
+                """
+            )
+        }
+        .mapTo<SfiMessageEvent>()
+        .toList()
+
+data class SfiMessageEvent(
+    val id: UUID? = null,
+    val createdAt: HelsinkiDateTime? = null,
+    val updatedAt: HelsinkiDateTime? = null,
+    val messageId: SfiMessageId,
+    val eventType: EventType,
 )

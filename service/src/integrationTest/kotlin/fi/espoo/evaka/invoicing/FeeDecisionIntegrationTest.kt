@@ -35,6 +35,9 @@ import fi.espoo.evaka.process.ArchivedProcessState
 import fi.espoo.evaka.process.ProcessMetadataController
 import fi.espoo.evaka.process.getArchiveProcessByFeeDecisionId
 import fi.espoo.evaka.sficlient.MockSfiMessagesClient
+import fi.espoo.evaka.sficlient.SfiAsyncJobs
+import fi.espoo.evaka.sficlient.getSfiMessageEventsByMessageId
+import fi.espoo.evaka.sficlient.rest.EventType
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.ParentshipId
@@ -94,6 +97,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     @Autowired private lateinit var emailMessageProvider: IEmailMessageProvider
     @Autowired private lateinit var emailEnv: EmailEnv
     @Autowired private lateinit var processMetadataController: ProcessMetadataController
+    @Autowired private lateinit var sfiAsyncJobs: SfiAsyncJobs
 
     private val area1 = DevCareArea(name = "Area 1", shortName = "area1")
     private val area2 = DevCareArea(name = "Area 2", shortName = "area2")
@@ -341,9 +345,8 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
     @BeforeEach
     fun beforeEach() {
-        MockSfiMessagesClient.clearMessages()
+        MockSfiMessagesClient.reset()
         MockEmailClient.clear()
-
         db.transaction { tx ->
             allWorkers.forEach { tx.insert(it) }
             allAreas.forEach { tx.insert(it) }
@@ -2430,6 +2433,39 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
         // assert that no mail for anyone
         assertEquals(emptySet(), MockEmailClient.emails.map { it.toAddress }.toSet())
+    }
+
+    @Test
+    fun `Sfi message event is stored correctly`() {
+
+        // testAdult_7 has restricted details on
+        db.transaction {
+            it.insertGuardian(testAdult_7.id, testChild_1.id)
+            it.insertGuardian(testAdult_7.id, testChild_2.id)
+            it.insertGuardian(testAdult_2.id, testChild_1.id)
+            it.insertGuardian(testAdult_2.id, testChild_2.id)
+        }
+        val decision =
+            createAndConfirmFeeDecisionsForFamily(
+                testAdult_7,
+                testAdult_2,
+                listOf(testChild_1, testChild_2),
+                legacyPdfWithContactInfo = true,
+            )
+
+        assertThrows<Forbidden> { getPdf(decision.id, user) }
+
+        // Check that message is still sent via sfi
+        asyncJobRunner.runPendingJobsSync(MockEvakaClock(HelsinkiDateTime.now()))
+
+        val messageId = MockSfiMessagesClient.getMessages().first().messageId
+        sfiAsyncJobs.getEvents(db, MockEvakaClock(HelsinkiDateTime.now()))
+
+        db.read {
+            val processedEvents = it.getSfiMessageEventsByMessageId(messageId)
+            assertEquals(1, processedEvents.size)
+            assertEquals(EventType.ELECTRONIC_MESSAGE_CREATED, processedEvents.get(0).eventType)
+        }
     }
 
     private fun getPdf(id: FeeDecisionId, user: AuthenticatedUser.Employee) {

@@ -6,6 +6,7 @@ package fi.espoo.evaka.sficlient
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import fi.espoo.evaka.sficlient.rest.GetEventsResponse
+import fi.espoo.evaka.shared.SfiMessageId
 
 interface SfiMessagesClient {
     fun send(msg: SfiMessage)
@@ -17,7 +18,7 @@ interface SfiMessagesClient {
 
 @JsonIgnoreProperties(value = ["language"]) // ignore legacy properties
 data class SfiMessage(
-    val messageId: String,
+    val messageId: SfiMessageId,
     val documentId: String, // This is sent to suomi.fi as reference id (UUID)
     val documentBucket: String,
     val documentKey: String,

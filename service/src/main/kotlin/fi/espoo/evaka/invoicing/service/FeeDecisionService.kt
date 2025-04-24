@@ -317,9 +317,17 @@ class FeeDecisionService(
 
         val documentLocation = documentClient.locate(DocumentKey.FeeDecision(decision.documentKey))
 
+        val messageId =
+            tx.storeSentSfiMessage(
+                SentSfiMessage(
+                    guardianId = decision.headOfFamily.id,
+                    feeDecisionId = decision.id.raw,
+                )
+            )
+
         val message =
             SfiMessage(
-                messageId = decision.id.toString(),
+                messageId = messageId,
                 documentId = decision.id.toString(),
                 documentDisplayName = feeDecisionDisplayName,
                 documentBucket = documentLocation.bucket,
@@ -341,14 +349,6 @@ class FeeDecisionService(
             tx,
             listOf(AsyncJob.SendNewFeeDecisionEmail(decisionId = decision.id)),
             runAt = clock.now(),
-        )
-
-        tx.storeSentSfiMessage(
-            SentSfiMessage(
-                externalId = decision.id.toString(),
-                guardianId = decision.headOfFamily.id,
-                feeDecisionId = decision.id.raw,
-            )
         )
 
         setSentAndUpdateProcess(

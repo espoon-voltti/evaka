@@ -63,7 +63,7 @@ class ApplicationOtherGuardianIntegrationTest : FullApplicationTest(resetDbBefor
 
     @BeforeEach
     fun beforeEach() {
-        MockSfiMessagesClient.clearMessages()
+        MockSfiMessagesClient.reset()
 
         db.transaction { tx ->
             tx.insert(guardian, DevPersonType.ADULT)

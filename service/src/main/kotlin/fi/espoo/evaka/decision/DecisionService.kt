@@ -261,9 +261,15 @@ class DecisionService(
         // SFI expects unique string for each message so document.id is not suitable as it is NOT
         // string and NOT unique
         val uniqueId = "${decision.id}|${guardian.id}"
+
+        val messageId =
+            tx.storeSentSfiMessage(
+                SentSfiMessage(guardianId = guardian.id, decisionId = decision.id.raw)
+            )
+
         val message =
             SfiMessage(
-                messageId = uniqueId,
+                messageId = messageId,
                 documentId = uniqueId,
                 documentDisplayName = calculateDecisionFileName(decision, lang),
                 documentBucket = documentLocation.bucket,
@@ -279,14 +285,6 @@ class DecisionService(
             )
 
         asyncJobRunner.plan(tx, listOf(AsyncJob.SendMessage(message)), runAt = clock.now())
-
-        tx.storeSentSfiMessage(
-            SentSfiMessage(
-                externalId = uniqueId,
-                guardianId = guardian.id,
-                decisionId = decision.id.raw,
-            )
-        )
     }
 
     fun sendNewDecisionEmail(

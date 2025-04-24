@@ -750,7 +750,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
 
     @PostMapping("/messages/clean-up")
     fun cleanUpMessages(db: Database) {
-        MockSfiMessagesClient.clearMessages()
+        MockSfiMessagesClient.reset()
     }
 
     @PostMapping("/vtj-persons")

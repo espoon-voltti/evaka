@@ -32,6 +32,9 @@ import fi.espoo.evaka.process.ArchivedProcessState
 import fi.espoo.evaka.process.ProcessMetadataController
 import fi.espoo.evaka.process.getArchiveProcessByVoucherValueDecisionId
 import fi.espoo.evaka.sficlient.MockSfiMessagesClient
+import fi.espoo.evaka.sficlient.SfiAsyncJobs
+import fi.espoo.evaka.sficlient.getSfiMessageEventsByMessageId
+import fi.espoo.evaka.sficlient.rest.EventType
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.ParentshipId
@@ -82,12 +85,13 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
     @Autowired lateinit var emailMessageProvider: IEmailMessageProvider
     @Autowired lateinit var emailEnv: EmailEnv
     @Autowired lateinit var processMetadataController: ProcessMetadataController
+    @Autowired private lateinit var sfiAsyncJobs: SfiAsyncJobs
 
     private val admin = DevEmployee(roles = setOf(UserRole.ADMIN))
 
     @BeforeEach
     fun beforeEach() {
-        MockSfiMessagesClient.clearMessages()
+        MockSfiMessagesClient.reset()
         MockEmailClient.clear()
 
         db.transaction { tx ->
@@ -474,7 +478,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
     }
 
     @Test
-    fun `Legacy PDF can not be downloaded if head of family has restricted details`() {
+    fun `Legacy PDF can not be downloaded if head of family has restricted details but sfi message is sent`() {
         db.transaction {
             // testAdult_7 has restricted details on
             it.insert(
@@ -496,6 +500,15 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
         // Check that message is still sent via sfi
         asyncJobRunner.runPendingJobsSync(MockEvakaClock(now))
         assertEquals(1, MockSfiMessagesClient.getMessages().size)
+
+        val messageId = MockSfiMessagesClient.getMessages().first().messageId
+        sfiAsyncJobs.getEvents(db, MockEvakaClock(HelsinkiDateTime.now()))
+
+        db.read {
+            val processedEvents = it.getSfiMessageEventsByMessageId(messageId)
+            assertEquals(1, processedEvents.size)
+            assertEquals(EventType.ELECTRONIC_MESSAGE_CREATED, processedEvents.get(0).eventType)
+        }
     }
 
     @Test

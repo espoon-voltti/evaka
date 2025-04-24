@@ -73,7 +73,7 @@ class Config(env: SfiEnv) {
 
     fun messageRequestBody(msg: SfiMessage, attachment: AttachmentReference) =
         MultichannelMessageRequestBody(
-            msg.messageId,
+            msg.messageId.toString(),
             ElectronicPart(
                 attachments = listOf(attachment),
                 body = msg.messageContent,
