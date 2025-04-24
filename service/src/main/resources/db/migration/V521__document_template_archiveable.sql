@@ -5,3 +5,5 @@ ALTER TABLE document_template
 UPDATE document_template
 SET archive_externally = TRUE
 WHERE type IN ('VASU', 'LEOPS', 'HOJKS', 'MIGRATED_VASU', 'MIGRATED_LEOPS');
+
+ALTER TABLE document_template ALTER COLUMN archive_externally DROP DEFAULT;
