@@ -761,6 +761,7 @@ describe('Employee - Child documents - unit groups page', () => {
         endDate: placement.endDate
       }).save()
     }
+    return placement
   }
 
   beforeEach(async () => {
@@ -822,7 +823,22 @@ describe('Employee - Child documents - unit groups page', () => {
     await savePlacementAndGrouping(unit1, child0WithoutGroup)
     await savePlacementAndGrouping(unit1, child1InGroup1, group1)
     await savePlacementAndGrouping(unit1, child2InGroup1, group1)
-    await savePlacementAndGrouping(unit1, child3InGroup1, group1)
+    const child3Placement = await savePlacementAndGrouping(
+      unit1,
+      child3InGroup1
+    )
+    await Fixture.groupPlacement({
+      daycarePlacementId: child3Placement.id,
+      daycareGroupId: group1.id,
+      startDate: child3Placement.startDate,
+      endDate: now.toLocalDate()
+    }).save()
+    await Fixture.groupPlacement({
+      daycarePlacementId: child3Placement.id,
+      daycareGroupId: group1.id,
+      startDate: now.toLocalDate().addDays(2),
+      endDate: child3Placement.endDate
+    }).save()
     await savePlacementAndGrouping(unit1, child4InGroup2, group2)
     await savePlacementAndGrouping(unit1, child5InGroup2, group2)
     template = await Fixture.documentTemplate({
@@ -850,6 +866,7 @@ describe('Employee - Child documents - unit groups page', () => {
     const unitPage = new UnitPage(page)
     await unitPage.navigateToUnit(unit1.id)
     const groupsPage = await unitPage.openGroupsPage()
+    await groupsPage.selectPeriod('3 months')
     const groupCollapsible1 = await groupsPage.openGroupCollapsible(group1.id)
     const createChildDocumentsModal1 =
       await groupCollapsible1.openCreateChildDocumentsModal()

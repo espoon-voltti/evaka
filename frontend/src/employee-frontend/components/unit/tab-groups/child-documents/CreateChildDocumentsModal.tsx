@@ -19,6 +19,7 @@ import {
   DocumentTemplateSummary
 } from 'lib-common/generated/api-types/document'
 import { GroupId } from 'lib-common/generated/api-types/shared'
+import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
@@ -60,7 +61,11 @@ const selectablePlacement =
   (template: DocumentTemplateSummary, groupId: GroupId) =>
   (placement: DaycareGroupPlacementDetailed) =>
     template.placementTypes.includes(placement.type) &&
-    groupId === placement.groupId
+    groupId === placement.groupId &&
+    LocalDate.todayInHelsinkiTz().isBetween(
+      placement.startDate,
+      placement.endDate
+    )
 
 export const CreateChildDocumentsModal = (props: Props) => {
   const { i18n } = useTranslation()
