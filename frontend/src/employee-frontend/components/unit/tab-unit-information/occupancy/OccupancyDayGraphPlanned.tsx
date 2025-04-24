@@ -251,7 +251,7 @@ function graphData(
         i18n.unit.occupancy.realtime.staffRequired,
         rows.map((row) => ({
           x: row.dateTime.toSystemTzDate(),
-          y: ceil(row.staffCountRequired)
+          y: ceil(row.staffCount)
         })),
         colors.main.m3,
         'y1'

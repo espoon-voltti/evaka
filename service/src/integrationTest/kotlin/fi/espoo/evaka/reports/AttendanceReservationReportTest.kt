@@ -17,6 +17,7 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevAbsence
 import fi.espoo.evaka.shared.dev.DevAssistanceFactor
 import fi.espoo.evaka.shared.dev.DevBackupCare
+import fi.espoo.evaka.shared.dev.DevChildAttendance
 import fi.espoo.evaka.shared.dev.DevDailyServiceTimes
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
@@ -24,6 +25,7 @@ import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.DevReservation
 import fi.espoo.evaka.shared.dev.DevServiceNeed
+import fi.espoo.evaka.shared.dev.DevStaffAttendance
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -42,9 +44,13 @@ import fi.espoo.evaka.testChild_7
 import fi.espoo.evaka.testChild_8
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
+import fi.espoo.evaka.testDaycareGroup
+import fi.espoo.evaka.testDecisionMaker_1
+import fi.espoo.evaka.testDecisionMaker_2
 import fi.espoo.evaka.unitSupervisorOfTestDaycare
 import fi.espoo.evaka.user.EvakaUser
 import fi.espoo.evaka.user.EvakaUserType
+import java.math.BigDecimal
 import java.time.DayOfWeek
 import java.time.DayOfWeek.FRIDAY
 import java.time.DayOfWeek.MONDAY
@@ -65,6 +71,8 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
 
     private val admin =
         AuthenticatedUser.Employee(unitSupervisorOfTestDaycare.id, setOf(UserRole.ADMIN))
+
+    private val staff = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.STAFF))
 
     @BeforeEach
     fun setup() {
@@ -88,6 +96,8 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                 )
                 .forEach { tx.insert(it, DevPersonType.CHILD) }
             tx.insertServiceNeedOptions()
+            tx.insert(testDecisionMaker_1)
+            tx.insert(testDaycareGroup)
         }
     }
 
@@ -194,7 +204,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCountOver3 = 0,
                         childCount = 1,
                         capacityFactor = 1.75,
-                        staffCountRequired = 0.3,
+                        staffCount = 0.3,
                         unknownChildCount = 0,
                         unknownChildCapacityFactor = 0.0,
                     ),
@@ -206,7 +216,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCountOver3 = 0,
                         childCount = 1,
                         capacityFactor = 1.75,
-                        staffCountRequired = 0.3,
+                        staffCount = 0.3,
                         unknownChildCount = 0,
                         unknownChildCapacityFactor = 0.0,
                     ),
@@ -263,7 +273,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCountOver3 = 0,
                         childCount = 1,
                         capacityFactor = 0.88,
-                        staffCountRequired = 0.1,
+                        staffCount = 0.1,
                         unknownChildCount = 0,
                         unknownChildCapacityFactor = 0.0,
                     ),
@@ -275,7 +285,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCountOver3 = 0,
                         childCount = 1,
                         capacityFactor = 0.88,
-                        staffCountRequired = 0.1,
+                        staffCount = 0.1,
                         unknownChildCount = 0,
                         unknownChildCapacityFactor = 0.0,
                     ),
@@ -330,7 +340,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCountOver3 = 0,
                         childCount = 1,
                         capacityFactor = 1.75,
-                        staffCountRequired = 0.3,
+                        staffCount = 0.3,
                         unknownChildCount = 0,
                         unknownChildCapacityFactor = 0.0,
                     ),
@@ -342,7 +352,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCountOver3 = 0,
                         childCount = 1,
                         capacityFactor = 1.75,
-                        staffCountRequired = 0.3,
+                        staffCount = 0.3,
                         unknownChildCount = 0,
                         unknownChildCapacityFactor = 0.0,
                     ),
@@ -354,7 +364,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCountOver3 = 1,
                         childCount = 1,
                         capacityFactor = 1.0,
-                        staffCountRequired = 0.1,
+                        staffCount = 0.1,
                         unknownChildCount = 0,
                         unknownChildCapacityFactor = 0.0,
                     ),
@@ -366,7 +376,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCountOver3 = 1,
                         childCount = 1,
                         capacityFactor = 1.0,
-                        staffCountRequired = 0.1,
+                        staffCount = 0.1,
                         unknownChildCount = 0,
                         unknownChildCapacityFactor = 0.0,
                     ),
@@ -419,7 +429,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCountOver3 = 0,
                         childCount = 1,
                         capacityFactor = 8.75,
-                        staffCountRequired = 1.3,
+                        staffCount = 1.3,
                         unknownChildCount = 0,
                         unknownChildCapacityFactor = 0.0,
                     ),
@@ -431,7 +441,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCountOver3 = 0,
                         childCount = 1,
                         capacityFactor = 8.75,
-                        staffCountRequired = 1.3,
+                        staffCount = 1.3,
                         unknownChildCount = 0,
                         unknownChildCapacityFactor = 0.0,
                     ),
@@ -497,7 +507,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCountOver3 = 0,
                         childCount = 1,
                         capacityFactor = 1.75,
-                        staffCountRequired = 0.3,
+                        staffCount = 0.3,
                         unknownChildCount = 0,
                         unknownChildCapacityFactor = 0.0,
                     ),
@@ -509,7 +519,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCountOver3 = 0,
                         childCount = 1,
                         capacityFactor = 1.75,
-                        staffCountRequired = 0.3,
+                        staffCount = 0.3,
                         unknownChildCount = 0,
                         unknownChildCapacityFactor = 0.0,
                     ),
@@ -555,7 +565,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCountOver3 = 0,
                         childCount = 1,
                         capacityFactor = 1.75,
-                        staffCountRequired = 0.3,
+                        staffCount = 0.3,
                         unknownChildCount = 0,
                         unknownChildCapacityFactor = 0.0,
                     )
@@ -602,7 +612,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCountOver3 = 0,
                         childCount = 1,
                         capacityFactor = 1.75,
-                        staffCountRequired = 0.3,
+                        staffCount = 0.3,
                         unknownChildCount = 0,
                         unknownChildCapacityFactor = 0.0,
                     )
@@ -760,7 +770,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCountOver3 = 0,
                         childCount = 1,
                         capacityFactor = 1.75,
-                        staffCountRequired = 0.3,
+                        staffCount = 0.3,
                         unknownChildCount = 0,
                         unknownChildCapacityFactor = 0.0,
                     ),
@@ -772,7 +782,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCountOver3 = 0,
                         childCount = 1,
                         capacityFactor = 1.75,
-                        staffCountRequired = 0.3,
+                        staffCount = 0.3,
                         unknownChildCount = 0,
                         unknownChildCapacityFactor = 0.0,
                     ),
@@ -829,7 +839,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCountOver3 = 2,
                         childCount = 8,
                         capacityFactor = 12.5,
-                        staffCountRequired = 1.8,
+                        staffCount = 1.8,
                         unknownChildCount = 0,
                         unknownChildCapacityFactor = 0.0,
                     ),
@@ -841,7 +851,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCountOver3 = 2,
                         childCount = 8,
                         capacityFactor = 12.5,
-                        staffCountRequired = 1.8,
+                        staffCount = 1.8,
                         unknownChildCount = 0,
                         unknownChildCapacityFactor = 0.0,
                     ),
@@ -974,7 +984,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCountOver3 = 1,
                         childCount = 2,
                         capacityFactor = 2.75,
-                        staffCountRequired = 0.4,
+                        staffCount = 0.4,
                         unknownChildCount = 0,
                         unknownChildCapacityFactor = 0.0,
                     ),
@@ -986,7 +996,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCountOver3 = 1,
                         childCount = 2,
                         capacityFactor = 2.75,
-                        staffCountRequired = 0.4,
+                        staffCount = 0.4,
                         unknownChildCount = 0,
                         unknownChildCapacityFactor = 0.0,
                     ),
@@ -998,7 +1008,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCountOver3 = 0,
                         childCount = 1,
                         capacityFactor = 1.75,
-                        staffCountRequired = 0.3,
+                        staffCount = 0.3,
                         unknownChildCount = 0,
                         unknownChildCapacityFactor = 0.0,
                     ),
@@ -1010,7 +1020,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCountOver3 = 0,
                         childCount = 1,
                         capacityFactor = 1.75,
-                        staffCountRequired = 0.3,
+                        staffCount = 0.3,
                         unknownChildCount = 0,
                         unknownChildCapacityFactor = 0.0,
                     ),
@@ -1069,7 +1079,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCountOver3 = 0,
                         childCount = 1,
                         capacityFactor = 1.75,
-                        staffCountRequired = 0.3,
+                        staffCount = 0.3,
                         unknownChildCount = 0,
                         unknownChildCapacityFactor = 0.0,
                     ),
@@ -1081,7 +1091,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCountOver3 = 0,
                         childCount = 1,
                         capacityFactor = 1.75,
-                        staffCountRequired = 0.3,
+                        staffCount = 0.3,
                         unknownChildCount = 0,
                         unknownChildCapacityFactor = 0.0,
                     ),
@@ -1126,7 +1136,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCountOver3 = 0,
                         childCount = 1,
                         capacityFactor = 1.75,
-                        staffCountRequired = 0.3,
+                        staffCount = 0.3,
                         unknownChildCount = 0,
                         unknownChildCapacityFactor = 0.0,
                     ),
@@ -1138,7 +1148,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCountOver3 = 0,
                         childCount = 1,
                         capacityFactor = 1.75,
-                        staffCountRequired = 0.3,
+                        staffCount = 0.3,
                         unknownChildCount = 0,
                         unknownChildCapacityFactor = 0.0,
                     ),
@@ -1220,7 +1230,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCountOver3 = 0,
                         childCount = 1,
                         capacityFactor = 1.75,
-                        staffCountRequired = 0.3,
+                        staffCount = 0.3,
                         unknownChildCount = 0,
                         unknownChildCapacityFactor = 0.0,
                     ),
@@ -1232,7 +1242,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCountOver3 = 0,
                         childCount = 1,
                         capacityFactor = 1.75,
-                        staffCountRequired = 0.3,
+                        staffCount = 0.3,
                         unknownChildCount = 0,
                         unknownChildCapacityFactor = 0.0,
                     ),
@@ -1299,7 +1309,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCountOver3 = 0,
                         childCount = 1,
                         capacityFactor = 1.75,
-                        staffCountRequired = 0.3,
+                        staffCount = 0.3,
                         unknownChildCount = 0,
                         unknownChildCapacityFactor = 0.0,
                     ),
@@ -1311,7 +1321,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCountOver3 = 0,
                         childCount = 1,
                         capacityFactor = 1.75,
-                        staffCountRequired = 0.3,
+                        staffCount = 0.3,
                         unknownChildCount = 0,
                         unknownChildCapacityFactor = 0.0,
                     ),
@@ -1324,7 +1334,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                                 childCountOver3 = 0,
                                 childCount = 1,
                                 capacityFactor = 1.75,
-                                staffCountRequired = 0.3,
+                                staffCount = 0.3,
                                 unknownChildCount = 0,
                                 unknownChildCapacityFactor = 0.0,
                             ),
@@ -1337,10 +1347,174 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
         assertThat(result).containsExactlyElementsOf(expected.values)
     }
 
+    @Test
+    fun `Child and staff attendances are used with realization report`() {
+        val date = LocalDate.of(2020, 5, 28)
+        db.transaction { tx ->
+            val placementId =
+                tx.insert(
+                    DevPlacement(
+                        childId = testChild_1.id,
+                        unitId = testDaycare.id,
+                        startDate = date,
+                        endDate = date,
+                    )
+                )
+            tx.insert(
+                DevDaycareGroupPlacement(
+                    daycarePlacementId = placementId,
+                    daycareGroupId = testDaycareGroup.id,
+                    startDate = date,
+                    endDate = date,
+                )
+            )
+            tx.insert(
+                DevChildAttendance(
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    date = date,
+                    arrived = LocalTime.of(8, 0),
+                    departed = LocalTime.of(8, 15),
+                )
+            )
+            tx.insert(
+                DevStaffAttendance(
+                    employeeId = staff.id,
+                    groupId = testDaycareGroup.id,
+                    arrived = HelsinkiDateTime.of(date, LocalTime.of(8, 0)),
+                    departed = HelsinkiDateTime.of(date, LocalTime.of(8, 30)),
+                    modifiedAt = HelsinkiDateTime.of(date, LocalTime.of(8, 0)),
+                    modifiedBy = admin.evakaUserId,
+                )
+            )
+        }
+        val result = getReport(date, date, reservationType = ReservationType.REALIZATION)
+        val expected =
+            createEmptyReport(date, date).also {
+                addExpectedRow(
+                    it,
+                    AttendanceReservationReportRow(
+                        groupId = null,
+                        groupName = null,
+                        HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 0)),
+                        childCountUnder3 = 1,
+                        childCountOver3 = 0,
+                        childCount = 1,
+                        capacityFactor = 1.75,
+                        staffCount = 1.0,
+                        unknownChildCount = 0,
+                        unknownChildCapacityFactor = 0.0,
+                    ),
+                    AttendanceReservationReportRow(
+                        groupId = null,
+                        groupName = null,
+                        HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 15)),
+                        childCountUnder3 = 1,
+                        childCountOver3 = 0,
+                        childCount = 1,
+                        capacityFactor = 1.75,
+                        staffCount = 1.0,
+                        unknownChildCount = 0,
+                        unknownChildCapacityFactor = 0.0,
+                    ),
+                )
+            }
+        assertThat(result).containsExactlyElementsOf(expected.values)
+    }
+
+    @Test
+    fun `Only include responsible staff attendances with realization report`() {
+        val date = LocalDate.of(2020, 5, 28)
+        db.transaction { tx ->
+            val placementId =
+                tx.insert(
+                    DevPlacement(
+                        childId = testChild_1.id,
+                        unitId = testDaycare.id,
+                        startDate = date,
+                        endDate = date,
+                    )
+                )
+            tx.insert(
+                DevDaycareGroupPlacement(
+                    daycarePlacementId = placementId,
+                    daycareGroupId = testDaycareGroup.id,
+                    startDate = date,
+                    endDate = date,
+                )
+            )
+            tx.insert(
+                DevChildAttendance(
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    date = date,
+                    arrived = LocalTime.of(8, 0),
+                    departed = LocalTime.of(8, 15),
+                )
+            )
+            tx.insert(
+                DevStaffAttendance(
+                    employeeId = staff.id,
+                    groupId = testDaycareGroup.id,
+                    arrived = HelsinkiDateTime.of(date, LocalTime.of(8, 0)),
+                    departed = HelsinkiDateTime.of(date, LocalTime.of(8, 30)),
+                    modifiedAt = HelsinkiDateTime.of(date, LocalTime.of(8, 0)),
+                    modifiedBy = admin.evakaUserId,
+                )
+            )
+
+            tx.insert(testDecisionMaker_2)
+            tx.insert(
+                DevStaffAttendance(
+                    employeeId = testDecisionMaker_2.id,
+                    groupId = testDaycareGroup.id,
+                    arrived = HelsinkiDateTime.of(date, LocalTime.of(8, 0)),
+                    departed = HelsinkiDateTime.of(date, LocalTime.of(8, 30)),
+                    modifiedAt = HelsinkiDateTime.of(date, LocalTime.of(8, 0)),
+                    modifiedBy = admin.evakaUserId,
+                    occupancyCoefficient = BigDecimal.ZERO,
+                )
+            )
+        }
+        val result = getReport(date, date, reservationType = ReservationType.REALIZATION)
+        val expected =
+            createEmptyReport(date, date).also {
+                addExpectedRow(
+                    it,
+                    AttendanceReservationReportRow(
+                        groupId = null,
+                        groupName = null,
+                        HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 0)),
+                        childCountUnder3 = 1,
+                        childCountOver3 = 0,
+                        childCount = 1,
+                        capacityFactor = 1.75,
+                        staffCount = 1.0,
+                        unknownChildCount = 0,
+                        unknownChildCapacityFactor = 0.0,
+                    ),
+                    AttendanceReservationReportRow(
+                        groupId = null,
+                        groupName = null,
+                        HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 15)),
+                        childCountUnder3 = 1,
+                        childCountOver3 = 0,
+                        childCount = 1,
+                        capacityFactor = 1.75,
+                        staffCount = 1.0,
+                        unknownChildCount = 0,
+                        unknownChildCapacityFactor = 0.0,
+                    ),
+                )
+            }
+        assertThat(result).containsExactlyElementsOf(expected.values)
+    }
+
     private fun getReport(
         startDate: LocalDate,
         endDate: LocalDate,
         groupIds: List<GroupId>? = null,
+        reservationType: ReservationType = ReservationType.RESERVATION,
     ): List<AttendanceReservationReportRow> {
         return attendanceReservationReportController.getAttendanceReservationReportByUnit(
             dbInstance(),
@@ -1350,6 +1524,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             startDate,
             endDate,
             groupIds,
+            reservationType,
         )
     }
 }

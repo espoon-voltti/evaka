@@ -99,7 +99,7 @@ export default React.memo(function AttendanceReservationByChild() {
 
     if (unitId && timeFilterValid) {
       setActiveParams({
-        body: { unitId, range, groupIds },
+        body: { unitId, range, groupIds, reservationType: 'RESERVATION' },
         orderBy,
         timeFilter
       })

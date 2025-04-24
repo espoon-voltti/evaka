@@ -149,6 +149,7 @@ export interface AssistanceNeedsAndActionsReportRowByChild {
 export interface AttendanceReservationReportByChildBody {
   groupIds: GroupId[]
   range: FiniteDateRange
+  reservationType: ReservationType
   unitId: DaycareId
 }
 
@@ -186,7 +187,7 @@ export interface AttendanceReservationReportRow {
   dateTime: HelsinkiDateTime
   groupId: GroupId | null
   groupName: string | null
-  staffCountRequired: number
+  staffCount: number
   unknownChildCapacityFactor: number
   unknownChildCount: number
 }
@@ -930,6 +931,13 @@ export type Report =
   | 'FUTURE_PRESCHOOLERS'
   | 'MEALS'
   | 'TAMPERE_REGIONAL_SURVEY'
+
+/**
+* Generated from fi.espoo.evaka.reports.ReservationType
+*/
+export type ReservationType =
+  | 'RESERVATION'
+  | 'REALIZATION'
 
 /**
 * Generated from fi.espoo.evaka.reports.ServiceNeedReportRow

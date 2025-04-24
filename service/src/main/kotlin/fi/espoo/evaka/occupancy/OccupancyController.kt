@@ -13,6 +13,7 @@ import fi.espoo.evaka.daycare.getUnitStats
 import fi.espoo.evaka.daycare.service.Caretakers
 import fi.espoo.evaka.placement.PlacementPlanService
 import fi.espoo.evaka.reports.AttendanceReservationReportRow
+import fi.espoo.evaka.reports.ReservationType
 import fi.espoo.evaka.reports.getAttendanceReservationReport
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DaycareId
@@ -232,6 +233,7 @@ class OccupancyController(
                         end = body.date,
                         unitId = unitId,
                         groupIds = body.groupIds,
+                        reservationType = ReservationType.RESERVATION,
                     )
                 }
             }
