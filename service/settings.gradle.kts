@@ -8,8 +8,6 @@ include("service-lib")
 
 include("vtjclient")
 
-include("sficlient")
-
 include("evaka-bom")
 
 include("codegen")
