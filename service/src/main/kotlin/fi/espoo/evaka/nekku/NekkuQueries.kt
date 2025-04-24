@@ -329,7 +329,7 @@ fun fetchAndUpdateNekkuProducts(client: NekkuClient, db: Database.Connection) {
     db.transaction { tx ->
         val deletedProductCount = tx.setProductNumbers(productsFromNekku)
         logger.info {
-            "Deleted: $deletedProductCount Nekku customer numbers, inserted ${productsFromNekku.size}"
+            "Deleted: $deletedProductCount Nekku product numbers, inserted ${productsFromNekku.size}"
         }
     }
 }
