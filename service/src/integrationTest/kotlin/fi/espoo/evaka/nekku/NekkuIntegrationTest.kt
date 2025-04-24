@@ -447,7 +447,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 "Ateriapalvelu 1 kasvis",
                 "31000010",
                 "",
-                listOf("alle-50-lasta"),
+                listOf("alle-50-lasta", "alle-100-lasta"),
                 listOf(
                     NekkuProductMealTime.BREAKFAST,
                     NekkuProductMealTime.LUNCH,

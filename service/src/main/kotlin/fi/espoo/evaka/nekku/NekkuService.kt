@@ -604,7 +604,7 @@ data class NekkuApiCustomer(
     val number: String,
     val name: String,
     val group: String,
-    @Json @JsonProperty("customer_type") val customerType: List<CustomerApiType>,
+    @Json @JsonProperty("type_map") val customerType: List<CustomerApiType>,
 ) {
     fun toEvaka(): NekkuCustomer =
         NekkuCustomer(number, name, group, customerType.map { it.toEvaka() })
