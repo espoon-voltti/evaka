@@ -845,3 +845,39 @@ fun validateContentAgainstTemplate(
         throw BadRequest("Answered questions and template do not match")
     }
 }
+
+fun validateStatusTransition(
+    document: ChildDocumentDetails,
+    requestedStatus: DocumentStatus,
+    goingForward: Boolean, // false = backwards
+): StatusTransition {
+    val statusList = document.template.type.statuses
+    val currentIndex = statusList.indexOf(document.status)
+    if (currentIndex < 0) {
+        throw IllegalStateException("document ${document.id} is in invalid status")
+    }
+    val newStatus =
+        statusList.getOrNull(if (goingForward) currentIndex + 1 else currentIndex - 1)
+            ?: throw BadRequest("Already in the ${if (goingForward) "final" else "first"} status")
+    if (newStatus != requestedStatus) {
+        throw Conflict("Idempotency issue: statuses do not match")
+    }
+
+    if (document.template.type.decision) {
+        if (goingForward && newStatus == DocumentStatus.DECISION_PROPOSAL)
+            throw BadRequest(
+                "Decision document cannot be moved to DECISION_PROPOSAL using normal status transitions. Please use the separate propose-decision endpoint."
+            )
+        if (goingForward && newStatus == DocumentStatus.COMPLETED)
+            throw BadRequest(
+                "Decision document cannot be marked as completed using normal status transitions. Please use the separate accept/reject endpoints."
+            )
+
+        if (!goingForward && document.status == DocumentStatus.COMPLETED)
+            throw BadRequest(
+                "Decision can not be reverted using normal status transitions. Please use the separate annul endpoint."
+            )
+    }
+
+    return StatusTransition(currentStatus = document.status, newStatus = newStatus)
+}
