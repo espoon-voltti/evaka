@@ -165,20 +165,22 @@ class ServiceNeedReportTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         assertThat(getReport(today, user = unitSupervisor))
             .containsExactlyElementsOf(
-                replaceMapValues(rowsByAge, listOf(0, 1)) {
-                        it.mapValues { entry ->
-                            entry.value.copy(missingServiceNeed = 1, total = 1)
-                        }
-                    }
+                replaceMapValue(
+                        rowsByAge,
+                        0 to { it.copy(missingServiceNeed = 1, total = 1) },
+                        1 to { it.copy(missingServiceNeed = 1, total = 1) },
+                    )
                     .values
             )
         assertThat(getReport(today, user = unitSupervisor, placementType = PlacementType.DAYCARE))
             .containsExactlyElementsOf(
-                replaceMapValue(rowsByAge, 0) { it.copy(missingServiceNeed = 1, total = 1) }.values
+                replaceMapValue(rowsByAge, 0 to { it.copy(missingServiceNeed = 1, total = 1) })
+                    .values
             )
         assertThat(getReport(today, user = unitSupervisor, placementType = PlacementType.PRESCHOOL))
             .containsExactlyElementsOf(
-                replaceMapValue(rowsByAge, 1) { it.copy(missingServiceNeed = 1, total = 1) }.values
+                replaceMapValue(rowsByAge, 1 to { it.copy(missingServiceNeed = 1, total = 1) })
+                    .values
             )
     }
 
@@ -200,11 +202,7 @@ class ServiceNeedReportTest : FullApplicationTest(resetDbBeforeEach = true) {
         )
 }
 
-private fun <K, V> replaceMapValue(map: Map<K, V>, key: K, transform: (oldValue: V) -> V) =
-    map + (key to transform(map.getValue(key)))
-
-private fun <K, V> replaceMapValues(
+private fun <K, V> replaceMapValue(
     map: Map<K, V>,
-    keys: List<K>,
-    transform: (oldValues: Map<K, V>) -> Map<K, V>,
-) = map + (transform(keys.associateWith { map.getValue(it) }))
+    vararg replacements: Pair<K, (oldValue: V) -> V>,
+) = map + (replacements.map { (key, transform) -> key to transform(map.getValue(key)) })
