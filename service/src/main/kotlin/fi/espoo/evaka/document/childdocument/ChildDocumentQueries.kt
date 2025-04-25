@@ -99,14 +99,11 @@ SELECT
     dt.validity as template_validity,
     dt.published as template_published,
     dt.content as template_content,
-<<<<<<< HEAD
-    dt.archive_externally as template_archive_externally
-=======
+    dt.archive_externally as template_archive_externally,
     cd.decision_maker,
     cdd.id AS decision_id,
     cdd.status AS decision_status,
     CASE WHEN cdd.valid_from IS NOT NULL THEN daterange(cdd.valid_from, cdd.valid_to, '[]') END AS decision_validity
->>>>>>> 42f63a35cc (child document decisions MVP)
 FROM child_document cd
 JOIN document_template dt on cd.template_id = dt.id
 JOIN person p on cd.child_id = p.id

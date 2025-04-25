@@ -53,6 +53,7 @@ import fi.espoo.evaka.decision.getDecisionsByApplication
 import fi.espoo.evaka.document.DocumentTemplate
 import fi.espoo.evaka.document.DocumentTemplateContent
 import fi.espoo.evaka.document.DocumentType
+import fi.espoo.evaka.document.childdocument.ChildDocumentDecisionStatus
 import fi.espoo.evaka.document.childdocument.DocumentContent
 import fi.espoo.evaka.document.childdocument.DocumentStatus
 import fi.espoo.evaka.emailclient.CalendarEventNotificationData
@@ -2354,6 +2355,18 @@ data class DevChildDocument(
     val answeredAt: HelsinkiDateTime?,
     val answeredBy: EvakaUserId?,
     val processId: ArchivedProcessId? = null,
+    val decisionMaker: EmployeeId? = null,
+    val decision: DevChildDocumentDecision? = null,
+)
+
+data class DevChildDocumentDecision(
+    val id: ChildDocumentDecisionId = ChildDocumentDecisionId(UUID.randomUUID()),
+    val createdAt: HelsinkiDateTime = HelsinkiDateTime.now(),
+    val createdBy: EmployeeId,
+    val modifiedAt: HelsinkiDateTime = HelsinkiDateTime.now(),
+    val modifiedBy: EmployeeId,
+    val status: ChildDocumentDecisionStatus,
+    val validity: DateRange?,
 )
 
 data class Citizen(

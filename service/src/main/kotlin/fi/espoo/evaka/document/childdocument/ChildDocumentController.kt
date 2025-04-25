@@ -393,7 +393,7 @@ class ChildDocumentController(
                     val document =
                         tx.getChildDocument(documentId)
                             ?: throw NotFound("Document $documentId not found")
-                    if (!document.template.type.publishable)
+                    if (!document.template.type.manuallyPublishable)
                         throw BadRequest("Document type is not publishable")
 
                     val wasUpToDate = tx.isDocumentPublishedContentUpToDate(documentId)

@@ -60,7 +60,7 @@ CREATE INDEX fk$child_document_decision_created_by ON child_document_decision (c
 CREATE INDEX fk$child_document_decision_modified_by ON child_document_decision (modified_by);
 
 ALTER TABLE child_document ADD COLUMN decision_id uuid REFERENCES child_document_decision;
-CREATE UNIQUE INDEX uniq$child_document_decision_id ON child_document (decision_id);
+CREATE UNIQUE INDEX uniq$child_document_decision_id ON child_document (decision_id) WHERE decision_id IS NOT NULL;
 ALTER TABLE child_document ADD CONSTRAINT decision_consistency CHECK (
     (decision_id IS NOT NULL) = (status = 'COMPLETED' AND type = 'OTHER_DECISION')
 );

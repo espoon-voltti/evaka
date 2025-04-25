@@ -328,56 +328,70 @@ data class Section(
 @Json data class DocumentTemplateContent(val sections: List<Section>)
 
 /**
- * statuses: an ordered list which defines a linear state machine. publishable: if the document can
- * be published to guardian even as a draft decision: if the document is a decision with
- * accept/reject/annul functionality as the final step
+ * statuses: an ordered list of statuses, which defines a linear state machine.
+ *
+ * manuallyPublishable: if the document can be manually published to guardian (even as a draft)
+ *
+ * decision: if the document is a decision with accept/reject/annul functionality as the final step
+ *
+ * autoCompleteAtEndOfValidity: if the document is automatically completed and published when the
+ * template validity ends
  */
 @ConstList("documentTypes")
 enum class DocumentType(
     val statuses: List<DocumentStatus>,
-    val publishable: Boolean,
+    val manuallyPublishable: Boolean,
     val decision: Boolean,
+    val autoCompleteAtEndOfValidity: Boolean,
 ) : DatabaseEnum {
     PEDAGOGICAL_REPORT(
         statuses = listOf(DocumentStatus.DRAFT, DocumentStatus.COMPLETED),
-        publishable = true,
+        manuallyPublishable = true,
         decision = false,
+        autoCompleteAtEndOfValidity = false,
     ),
     PEDAGOGICAL_ASSESSMENT(
         statuses = listOf(DocumentStatus.DRAFT, DocumentStatus.COMPLETED),
-        publishable = true,
+        manuallyPublishable = true,
         decision = false,
+        autoCompleteAtEndOfValidity = false,
     ),
     HOJKS(
         statuses = listOf(DocumentStatus.DRAFT, DocumentStatus.PREPARED, DocumentStatus.COMPLETED),
-        publishable = true,
+        manuallyPublishable = true,
         decision = false,
+        autoCompleteAtEndOfValidity = true,
     ),
     MIGRATED_VASU(
         statuses = listOf(DocumentStatus.COMPLETED),
-        publishable = true,
+        manuallyPublishable = false,
         decision = false,
+        autoCompleteAtEndOfValidity = false,
     ),
     MIGRATED_LEOPS(
         statuses = listOf(DocumentStatus.COMPLETED),
-        publishable = true,
+        manuallyPublishable = false,
         decision = false,
+        autoCompleteAtEndOfValidity = false,
     ),
     VASU(
         statuses = listOf(DocumentStatus.DRAFT, DocumentStatus.PREPARED, DocumentStatus.COMPLETED),
-        publishable = true,
+        manuallyPublishable = true,
         decision = false,
+        autoCompleteAtEndOfValidity = true,
     ),
     LEOPS(
         statuses = listOf(DocumentStatus.DRAFT, DocumentStatus.PREPARED, DocumentStatus.COMPLETED),
-        publishable = true,
+        manuallyPublishable = true,
         decision = false,
+        autoCompleteAtEndOfValidity = true,
     ),
     CITIZEN_BASIC(
         statuses =
             listOf(DocumentStatus.DRAFT, DocumentStatus.CITIZEN_DRAFT, DocumentStatus.COMPLETED),
-        publishable = false,
+        manuallyPublishable = false,
         decision = false,
+        autoCompleteAtEndOfValidity = false,
     ),
     OTHER_DECISION(
         statuses =
@@ -386,13 +400,15 @@ enum class DocumentType(
                 DocumentStatus.DECISION_PROPOSAL,
                 DocumentStatus.COMPLETED,
             ),
-        publishable = false,
+        manuallyPublishable = false,
         decision = true,
+        autoCompleteAtEndOfValidity = false,
     ),
     OTHER(
         statuses = listOf(DocumentStatus.DRAFT, DocumentStatus.COMPLETED),
-        publishable = true,
+        manuallyPublishable = true,
         decision = false,
+        autoCompleteAtEndOfValidity = false,
     );
 
     override val sqlType: String = "document_template_type"

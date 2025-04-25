@@ -42,12 +42,14 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     final val clock = MockEvakaClock(2022, 1, 1, 15, 0)
 
-    final val activeTemplateId = DocumentTemplateId(UUID.randomUUID())
-    final val expiredTemplateId = DocumentTemplateId(UUID.randomUUID())
+    final val activeHojksTemplateId = DocumentTemplateId(UUID.randomUUID())
+    final val expiredHojksTemplateId = DocumentTemplateId(UUID.randomUUID())
+    final val expiredDecisionTemplateId = DocumentTemplateId(UUID.randomUUID())
 
-    final val activeDocumentId = ChildDocumentId(UUID.randomUUID())
-    final val expiredDocumentId = ChildDocumentId(UUID.randomUUID())
-    final val alreadyCompletedDocumentId = ChildDocumentId(UUID.randomUUID())
+    final val activeHojksDocumentId = ChildDocumentId(UUID.randomUUID())
+    final val expiredHojksDocumentId = ChildDocumentId(UUID.randomUUID())
+    final val alreadyCompletedHojksDocumentId = ChildDocumentId(UUID.randomUUID())
+    final val expiredDecisionDocumentId = ChildDocumentId(UUID.randomUUID())
 
     val templateContent =
         DocumentTemplateContent(
@@ -88,18 +90,27 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             )
             tx.insert(
                 DevDocumentTemplate(
-                    id = activeTemplateId,
-                    type = DocumentType.PEDAGOGICAL_ASSESSMENT,
-                    name = "Arvio",
+                    id = activeHojksTemplateId,
+                    type = DocumentType.HOJKS,
+                    name = "HOJKS uusi",
                     validity = DateRange(clock.today().minusYears(1), clock.today()),
                     content = templateContent,
                 )
             )
             tx.insert(
                 DevDocumentTemplate(
-                    id = expiredTemplateId,
+                    id = expiredHojksTemplateId,
                     type = DocumentType.HOJKS,
                     name = "HOJKS",
+                    validity = DateRange(clock.today().minusYears(1), clock.today().minusDays(1)),
+                    content = templateContent,
+                )
+            )
+            tx.insert(
+                DevDocumentTemplate(
+                    id = expiredDecisionTemplateId,
+                    type = DocumentType.OTHER_DECISION,
+                    name = "Tuen päätös",
                     validity = DateRange(clock.today().minusYears(1), clock.today().minusDays(1)),
                     content = templateContent,
                 )
@@ -108,15 +119,15 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
     }
 
     @Test
-    fun `expired documents are completed and published`() {
+    fun `expired vasu, leops and hojks documents are completed and published`() {
         // given
         db.transaction { tx ->
             tx.insert(
                 DevChildDocument(
-                    id = activeDocumentId,
+                    id = activeHojksDocumentId,
                     status = DocumentStatus.DRAFT,
                     childId = testChild_1.id,
-                    templateId = activeTemplateId,
+                    templateId = activeHojksTemplateId,
                     content = content,
                     publishedContent = null,
                     modifiedAt = clock.now(),
@@ -129,10 +140,10 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             )
             tx.insert(
                 DevChildDocument(
-                    id = expiredDocumentId,
+                    id = expiredHojksDocumentId,
                     status = DocumentStatus.DRAFT,
                     childId = testChild_1.id,
-                    templateId = expiredTemplateId,
+                    templateId = expiredHojksTemplateId,
                     content = content,
                     publishedContent = updatedContent,
                     modifiedAt = clock.now(),
@@ -149,16 +160,32 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             )
             tx.insert(
                 DevChildDocument(
-                    id = alreadyCompletedDocumentId,
+                    id = alreadyCompletedHojksDocumentId,
                     status = DocumentStatus.COMPLETED,
                     childId = testChild_1.id,
-                    templateId = expiredTemplateId,
+                    templateId = expiredHojksTemplateId,
                     content = content,
                     publishedContent = updatedContent,
                     modifiedAt = clock.now().minusMonths(1),
                     contentModifiedAt = clock.now().minusMonths(1),
                     contentModifiedBy = null,
                     publishedAt = clock.now().minusMonths(1),
+                    answeredAt = null,
+                    answeredBy = null,
+                )
+            )
+            tx.insert(
+                DevChildDocument(
+                    id = expiredDecisionDocumentId,
+                    status = DocumentStatus.DRAFT,
+                    childId = testChild_1.id,
+                    templateId = expiredDecisionTemplateId,
+                    content = content,
+                    publishedContent = null,
+                    modifiedAt = clock.now(),
+                    contentModifiedAt = clock.now(),
+                    contentModifiedBy = null,
+                    publishedAt = null,
                     answeredAt = null,
                     answeredBy = null,
                 )
@@ -171,19 +198,24 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         // then
         db.read { tx ->
-            with(tx.getChildDocument(activeDocumentId)!!) {
+            with(tx.getChildDocument(activeHojksDocumentId)!!) {
                 assertEquals(DocumentStatus.DRAFT, status)
                 assertNull(publishedAt)
             }
 
-            with(tx.getChildDocument(expiredDocumentId)!!) {
+            with(tx.getChildDocument(expiredHojksDocumentId)!!) {
                 assertEquals(DocumentStatus.COMPLETED, status)
                 assertEquals(clock.now(), publishedAt)
             }
 
-            with(tx.getChildDocument(alreadyCompletedDocumentId)!!) {
+            with(tx.getChildDocument(alreadyCompletedHojksDocumentId)!!) {
                 assertEquals(DocumentStatus.COMPLETED, status)
                 assertEquals(clock.now().minusMonths(1), publishedAt)
+            }
+
+            with(tx.getChildDocument(expiredDecisionDocumentId)!!) {
+                assertEquals(DocumentStatus.DRAFT, status)
+                assertNull(publishedAt)
             }
         }
         assertEquals(1, MockEmailClient.emails.size)
@@ -196,10 +228,10 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         db.transaction { tx ->
             tx.insert(
                 DevChildDocument(
-                    id = expiredDocumentId,
+                    id = expiredHojksDocumentId,
                     status = DocumentStatus.DRAFT,
                     childId = testChild_1.id,
-                    templateId = expiredTemplateId,
+                    templateId = expiredHojksTemplateId,
                     content = content,
                     publishedContent = content,
                     modifiedAt = clock.now(),
@@ -222,7 +254,7 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         // then
         db.read { tx ->
-            with(tx.getChildDocument(expiredDocumentId)!!) {
+            with(tx.getChildDocument(expiredHojksDocumentId)!!) {
                 assertEquals(DocumentStatus.COMPLETED, status)
             }
         }
