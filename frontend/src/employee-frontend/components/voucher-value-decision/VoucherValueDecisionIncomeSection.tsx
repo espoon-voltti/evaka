@@ -7,18 +7,18 @@ import styled from 'styled-components'
 
 import {
   DecisionIncome,
+  IncomeOption,
   VoucherValueDecisionDetailed
 } from 'lib-common/generated/api-types/invoicing'
 import { formatCents } from 'lib-common/money'
 import { useQueryResult } from 'lib-common/query'
-import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
-import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
 import { H3, H4 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
 import LabelValueList from '../../components/common/LabelValueList'
 import { useTranslation } from '../../state/i18n'
 import { formatName, formatPercent } from '../../utils'
+import { renderResult } from '../async-rendering'
 import { incomeTypeOptionsQuery } from '../person-profile/queries'
 
 type Props = {
@@ -31,16 +31,10 @@ export default React.memo(function VoucherValueDecisionIncomeSection({
   const { i18n } = useTranslation()
   const incomeTypeOptions = useQueryResult(incomeTypeOptionsQuery())
 
-  if (incomeTypeOptions.isLoading) {
-    return <SpinnerSegment />
-  }
-  if (incomeTypeOptions.isFailure) {
-    return <ErrorSegment />
-  }
-
-  const { incomeTypes } = incomeTypeOptions.value
-
-  const personIncome = (income: DecisionIncome | null) => {
+  const personIncome = (
+    incomeTypes: IncomeOption[],
+    income: DecisionIncome | null
+  ) => {
     if (!income) {
       return (
         <span>{i18n.valueDecision.summary.income.details.NOT_AVAILABLE}</span>
@@ -77,7 +71,7 @@ export default React.memo(function VoucherValueDecisionIncomeSection({
     )
   }
 
-  return (
+  return renderResult(incomeTypeOptions, ({ incomeTypes }) => (
     <section>
       <H3 noMargin>{i18n.valueDecision.summary.income.familyComposition}</H3>
       <Gap size="s" />
@@ -119,7 +113,7 @@ export default React.memo(function VoucherValueDecisionIncomeSection({
               decision.headOfFamily.lastName,
               i18n
             ),
-            value: personIncome(decision.headOfFamilyIncome),
+            value: personIncome(incomeTypes, decision.headOfFamilyIncome),
             valueWidth: '100%'
           },
           ...(decision.partner
@@ -130,7 +124,7 @@ export default React.memo(function VoucherValueDecisionIncomeSection({
                     decision.partner.lastName,
                     i18n
                   ),
-                  value: personIncome(decision.partnerIncome),
+                  value: personIncome(incomeTypes, decision.partnerIncome),
                   valueWidth: '100%'
                 }
               ]
@@ -143,7 +137,7 @@ export default React.memo(function VoucherValueDecisionIncomeSection({
                     decision.child.lastName,
                     i18n
                   ),
-                  value: personIncome(decision.childIncome),
+                  value: personIncome(incomeTypes, decision.childIncome),
                   valueWidth: '100%',
                   dataQa: 'child-income'
                 }
@@ -161,7 +155,7 @@ export default React.memo(function VoucherValueDecisionIncomeSection({
         </>
       ) : null}
     </section>
-  )
+  ))
 })
 
 const IncomeItem = styled.div`

@@ -4,11 +4,9 @@
 
 import React, { useCallback } from 'react'
 
-import { useTranslation } from 'citizen-frontend/localization'
+import { renderResult } from 'citizen-frontend/async-rendering'
 import { UnitPreferenceFormData } from 'lib-common/api-types/application/ApplicationFormData'
 import { constantQuery, useQueryResult } from 'lib-common/query'
-import Loader from 'lib-components/atoms/Loader'
-import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { featureFlags } from 'lib-customizations/citizen'
 
@@ -33,7 +31,6 @@ export default React.memo(function ApplicationFormPreschool({
   terms
 }: ApplicationFormProps) {
   const applicationType = 'PRESCHOOL'
-  const t = useTranslation()
 
   const serviceNeedOptions = useQueryResult(
     featureFlags.preschoolApplication.serviceNeedOption
@@ -61,14 +58,7 @@ export default React.memo(function ApplicationFormPreschool({
     [setFormData]
   )
 
-  if (serviceNeedOptions.isLoading) {
-    return <Loader />
-  }
-  if (serviceNeedOptions.isFailure) {
-    return <ErrorSegment title={t.common.errors.genericGetError} />
-  }
-
-  return (
+  return renderResult(serviceNeedOptions, (serviceNeedOptions) => (
     <FixedSpaceColumn spacing="s">
       <Heading
         type={applicationType}
@@ -101,7 +91,7 @@ export default React.memo(function ApplicationFormPreschool({
         errors={errors.serviceNeed}
         verificationRequested={verificationRequested}
         terms={terms}
-        serviceNeedOptions={serviceNeedOptions.value}
+        serviceNeedOptions={serviceNeedOptions}
       />
 
       <UnitPreferenceSection
@@ -163,5 +153,5 @@ export default React.memo(function ApplicationFormPreschool({
         applicationType={applicationType}
       />
     </FixedSpaceColumn>
-  )
+  ))
 })

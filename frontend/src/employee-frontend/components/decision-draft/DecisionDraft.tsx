@@ -24,7 +24,6 @@ import {
 } from 'lib-common/generated/api-types/decision'
 import { ApplicationId } from 'lib-common/generated/api-types/shared'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
-import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
@@ -48,6 +47,7 @@ import { getDecisionUnits } from '../../generated/api-clients/decision'
 import { Translations, useTranslation } from '../../state/i18n'
 import { TitleContext, TitleState } from '../../state/title'
 import { formatName } from '../../utils'
+import { renderResult } from '../async-rendering'
 
 const getDecisionUnitsResult = wrapResult(getDecisionUnits)
 const updateDecisionDraftsResult = wrapResult(updateDecisionDrafts)
@@ -274,14 +274,12 @@ export default React.memo(function Decision() {
           <InfoParagraph>{i18n.decisionDraft.info1}</InfoParagraph>
           <InfoParagraph>{i18n.decisionDraft.info2}</InfoParagraph>
         </InfoContainer>
-        {decisionDraftGroup.isFailure && <p>{i18n.common.loadingFailed}</p>}
-        {decisionDraftGroup.isLoading && <Loader />}
-        {decisionDraftGroup.isSuccess && (
+        {renderResult(decisionDraftGroup, (decisionDraftGroup) => (
           <Fragment>
             <Title size={3}>
               {formatName(
-                decisionDraftGroup.value.child.firstName,
-                decisionDraftGroup.value.child.lastName,
+                decisionDraftGroup.child.firstName,
+                decisionDraftGroup.child.lastName,
                 i18n,
                 true
               )}
@@ -291,7 +289,7 @@ export default React.memo(function Decision() {
               contents={[
                 {
                   label: i18n.decisionDraft.placementUnit,
-                  value: decisionDraftGroup.value.placementUnitName
+                  value: decisionDraftGroup.placementUnitName
                 },
                 {
                   label: i18n.decisionDraft.receiver,
@@ -299,8 +297,8 @@ export default React.memo(function Decision() {
                     <MissingValuePlaceholder
                       i18n={i18n}
                       values={[
-                        decisionDraftGroup.value.guardian.firstName,
-                        decisionDraftGroup.value.guardian.lastName
+                        decisionDraftGroup.guardian.firstName,
+                        decisionDraftGroup.guardian.lastName
                       ]}
                     />
                   ),
@@ -314,13 +312,11 @@ export default React.memo(function Decision() {
                           <DefaultValuePlaceholder
                             i18n={i18n}
                             values={[
-                              decisionDraftGroup.value.otherGuardian
-                                ? decisionDraftGroup.value.otherGuardian
-                                    .firstName
+                              decisionDraftGroup.otherGuardian
+                                ? decisionDraftGroup.otherGuardian.firstName
                                 : '',
-                              decisionDraftGroup.value.otherGuardian
-                                ? decisionDraftGroup.value.otherGuardian
-                                    .lastName
+                              decisionDraftGroup.otherGuardian
+                                ? decisionDraftGroup.otherGuardian.lastName
                                 : ''
                             ]}
                           />
@@ -418,7 +414,7 @@ export default React.memo(function Decision() {
                                 )}
                                 <WarningContainer
                                   visible={
-                                    decisionDraftGroup.value.unit.id !==
+                                    decisionDraftGroup.unit.id !==
                                     decision.unitId
                                   }
                                 >
@@ -559,8 +555,7 @@ export default React.memo(function Decision() {
               ]}
             />
             {!(
-              decisionDraftGroup.value.guardian.ssn &&
-              decisionDraftGroup.value.child.ssn
+              decisionDraftGroup.guardian.ssn && decisionDraftGroup.child.ssn
             ) && (
               <InfoBox
                 title={i18n.decisionDraft.ssnInfo1}
@@ -569,7 +564,7 @@ export default React.memo(function Decision() {
               />
             )}
 
-            {!decisionDraftGroup.value.guardian.isVtjGuardian && (
+            {!decisionDraftGroup.guardian.isVtjGuardian && (
               <AlertBox
                 title={i18n.decisionDraft.notGuardianInfo1}
                 message={i18n.decisionDraft.notGuardianInfo2}
@@ -610,7 +605,7 @@ export default React.memo(function Decision() {
               </FixedSpaceRow>
             </SendButtonContainer>
           </Fragment>
-        )}
+        ))}
       </ContentArea>
     </Container>
   )
