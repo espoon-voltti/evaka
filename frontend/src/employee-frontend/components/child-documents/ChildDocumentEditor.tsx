@@ -891,7 +891,11 @@ const AcceptDecisionForm = React.memo(function AcceptDecisionForm({
         <Label>
           {i18n.childInformation.childDocuments.decisions.validityPeriod}
         </Label>
-        <DateRangePickerF bind={validity} locale={lang} />
+        <DateRangePickerF
+          bind={validity}
+          locale={lang}
+          data-qa="decision-validity-picker"
+        />
       </FixedSpaceColumn>
       <ConfirmedMutation
         primary

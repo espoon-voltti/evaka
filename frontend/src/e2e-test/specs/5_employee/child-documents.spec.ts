@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import DateRange from 'lib-common/date-range'
 import { DocumentContent } from 'lib-common/generated/api-types/document'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { evakaUserId } from 'lib-common/id-type'
@@ -46,6 +47,7 @@ beforeEach(async () => await resetServiceState())
 describe('Employee - Child documents', () => {
   let admin: DevEmployee
   let unitSupervisor: DevEmployee
+  let director: DevEmployee
   let page: Page
 
   beforeEach(async () => {
@@ -58,7 +60,12 @@ describe('Employee - Child documents', () => {
     unitSupervisor = await Fixture.employee()
       .unitSupervisor(testDaycare.id)
       .save()
-
+    director = await Fixture.employee({
+      firstName: 'Päivi',
+      lastName: 'Päättäjä'
+    })
+      .director()
+      .save()
     await Fixture.placement({
       childId: testChild2.id,
       unitId: testDaycare.id,
@@ -203,6 +210,80 @@ describe('Employee - Child documents', () => {
     await childDocument.status.assertTextEquals('Luonnos')
     await childDocument.goToNextStatus()
     await childDocument.status.assertTextEquals('Valmis')
+  })
+
+  test('Accepting and annulling decision', async () => {
+    await Fixture.documentTemplate({
+      type: 'OTHER_DECISION',
+      published: true
+    }).save()
+
+    // Unit supervisor creates a decision document
+    page = await Page.open({ mockedTime: now })
+    await employeeLogin(page, unitSupervisor)
+    await page.goto(`${config.employeeUrl}/child-information/${testChild2.id}`)
+    const childInformationPage = new ChildInformationPage(page)
+    const childDocumentsSection =
+      await childInformationPage.openCollapsible('childDocuments')
+    await childDocumentsSection.createDecisionDocumentButton.click()
+    await childDocumentsSection.modalOk.click()
+
+    let childDocument = new ChildDocumentPage(page)
+    await childDocument.status.assertTextEquals('Luonnos')
+
+    // send to decision maker (director)
+    await childDocument.proposeDecision(director)
+    await childDocument.status.assertTextEquals('Päätösesitys')
+
+    // only the assigned decision maker can accept the decision
+    await childDocument.acceptDecisionButton.waitUntilHidden()
+    const documentUrl = page.url
+    await page.close()
+
+    // Director makes a decision
+    page = await Page.open({ mockedTime: now })
+    await employeeLogin(page, director)
+    await page.goto(documentUrl)
+    childDocument = new ChildDocumentPage(page)
+    const validity = new DateRange(
+      now.toLocalDate().addDays(2),
+      now.toLocalDate().addDays(7)
+    )
+    await childDocument.acceptDecision(validity)
+    await childDocument.status.assertTextEquals('Hyväksytty')
+
+    await childDocument.annulDecision()
+    await childDocument.status.assertTextEquals('Mitätöity')
+  })
+
+  test('Rejecting decision', async () => {
+    await Fixture.documentTemplate({
+      type: 'OTHER_DECISION',
+      published: true
+    }).save()
+
+    // Unit supervisor creates a decision document
+    page = await Page.open({ mockedTime: now })
+    await employeeLogin(page, unitSupervisor)
+    await page.goto(`${config.employeeUrl}/child-information/${testChild2.id}`)
+    const childInformationPage = new ChildInformationPage(page)
+    const childDocumentsSection =
+      await childInformationPage.openCollapsible('childDocuments')
+    await childDocumentsSection.createDecisionDocumentButton.click()
+    await childDocumentsSection.modalOk.click()
+
+    let childDocument = new ChildDocumentPage(page)
+    await childDocument.proposeDecision(director)
+    const documentUrl = page.url
+    await page.close()
+
+    // Director makes a rejected decision
+    page = await Page.open({ mockedTime: now })
+    await employeeLogin(page, director)
+    await page.goto(documentUrl)
+    childDocument = new ChildDocumentPage(page)
+    await childDocument.rejectDecision()
+    await childDocument.status.assertTextEquals('Hylätty')
   })
 
   test('Edit mode cannot be entered for 15 minutes after another use has edited the document content', async () => {

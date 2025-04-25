@@ -2303,6 +2303,7 @@ sealed interface Action {
             HasGroupRole(STAFF)
                 .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
                 .inPlacementGroupOfDuplicateChildOfHojksChildDocument(),
+            IsEmployee.andIsDecisionMakerForChildDocumentDecision(),
         ),
         READ_METADATA(HasGlobalRole(ADMIN)),
         DOWNLOAD(
@@ -2319,6 +2320,7 @@ sealed interface Action {
             HasGroupRole(STAFF)
                 .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
                 .inPlacementGroupOfDuplicateChildOfHojksChildDocument(),
+            IsEmployee.andIsDecisionMakerForChildDocumentDecision(),
         ),
         UPDATE(
             HasGlobalRole(ADMIN),

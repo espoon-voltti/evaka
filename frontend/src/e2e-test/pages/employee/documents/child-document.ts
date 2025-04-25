@@ -2,7 +2,17 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Page, TextInput, Element, AsyncButton } from '../../../utils/page'
+import DateRange from 'lib-common/date-range'
+
+import { DevEmployee } from '../../../generated/api-types'
+import {
+  Page,
+  TextInput,
+  Element,
+  AsyncButton,
+  Combobox,
+  DatePicker
+} from '../../../utils/page'
 
 export class ChildDocumentPage {
   status: Element
@@ -13,6 +23,7 @@ export class ChildDocumentPage {
   sendButton: Element
   archiveButton: AsyncButton
   archiveTooltip: Element
+  acceptDecisionButton: Element
   constructor(private readonly page: Page) {
     this.status = page.findByDataQa('document-state-chip')
     this.savingIndicator = page.findByDataQa('saving-spinner')
@@ -22,6 +33,7 @@ export class ChildDocumentPage {
     this.sendButton = new AsyncButton(page.findByDataQa('send-button'))
     this.archiveButton = new AsyncButton(page.findByDataQa('archive-button'))
     this.archiveTooltip = page.findByDataQa('archive-tooltip')
+    this.acceptDecisionButton = page.findByDataQa('accept-decision-button')
   }
 
   getTextQuestion(sectionName: string, questionName: string) {
@@ -61,6 +73,48 @@ export class ChildDocumentPage {
 
   async goToNextStatus() {
     await this.page.findByDataQa('next-status-button').click()
+    await this.page.findByDataQa('modal-okBtn').click()
+  }
+
+  async proposeDecision(decisionMaker: DevEmployee) {
+    const decisionMakerSelect = new Combobox(
+      this.page.findByDataQa('decision-maker-combobox')
+    )
+    await decisionMakerSelect.fillAndSelectItem(
+      decisionMaker.firstName,
+      decisionMaker.id
+    )
+    await this.page.findByDataQa('propose-decision-button').click()
+    await this.page.findByDataQa('modal-okBtn').click()
+  }
+
+  async acceptDecision(validity: DateRange) {
+    await this.acceptDecisionButton.click()
+    const validityStartPicker = new DatePicker(
+      this.page
+        .findByDataQa('decision-validity-picker')
+        .findByDataQa('start-date')
+    )
+    await validityStartPicker.fill(validity.start)
+    if (validity.end) {
+      const validityEndPicker = new DatePicker(
+        this.page
+          .findByDataQa('decision-validity-picker')
+          .findByDataQa('end-date')
+      )
+      await validityEndPicker.fill(validity.end)
+    }
+    await this.page.findByDataQa('accept-decision-confirm-button').click()
+    await this.page.findByDataQa('modal-okBtn').click()
+  }
+
+  async rejectDecision() {
+    await this.page.findByDataQa('reject-decision-button').click()
+    await this.page.findByDataQa('modal-okBtn').click()
+  }
+
+  async annulDecision() {
+    await this.page.findByDataQa('annul-decision-button').click()
     await this.page.findByDataQa('modal-okBtn').click()
   }
 

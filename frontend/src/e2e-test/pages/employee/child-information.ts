@@ -321,6 +321,7 @@ export class PedagogicalDocumentsSection extends Section {
 
 export class ChildDocumentsSection extends Section {
   createInternalDocumentButton: Element
+  createDecisionDocumentButton: Element
   createExternalDocumentButton: Element
   createModalTemplateSelect: Select
   modalOk: Element
@@ -329,6 +330,9 @@ export class ChildDocumentsSection extends Section {
     super(page, root)
     this.createInternalDocumentButton = page.findByDataQa(
       'create-internal-document'
+    )
+    this.createDecisionDocumentButton = page.findByDataQa(
+      'create-decision-document'
     )
     this.createExternalDocumentButton = page.findByDataQa(
       'create-external-document'
