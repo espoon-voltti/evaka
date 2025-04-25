@@ -7,6 +7,7 @@ package fi.espoo.evaka.messaging
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.pis.service.insertGuardian
+import fi.espoo.evaka.placement.MessagingCategory
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.*
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -32,6 +33,9 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.MethodSource
+import java.util.stream.Stream
 
 /*
  * TODO: These tests should be moved to MessageIntegrationTest because inserting directly to the database doesn't
@@ -1192,6 +1196,242 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         assertEquals(1, citizenAccounts.size)
         assertTrue(citizenAccounts.any { it.first == currentParentAccountId })
+    }
+
+    companion object {
+        @JvmStatic
+        fun placementFilters(): Stream<Array<Any>> =
+            Stream.of(
+                arrayOf(listOf(MessagingCategory.MESSAGING_DAYCARE), 4),
+                arrayOf(listOf(MessagingCategory.MESSAGING_PRESCHOOL), 2),
+                arrayOf(listOf(MessagingCategory.MESSAGING_CLUB), 1),
+                arrayOf(listOf(MessagingCategory.MESSAGING_CLUB, MessagingCategory.MESSAGING_DAYCARE), 5),
+                arrayOf(listOf(MessagingCategory.MESSAGING_PRESCHOOL, MessagingCategory.MESSAGING_DAYCARE), 6),
+                arrayOf(listOf<MessagingCategory>(), 7),
+            )
+    }
+
+    @ParameterizedTest(name = "messagingCategoryList={0}, expectedRecipientCount={1}")
+    @MethodSource("placementFilters")
+    fun `getMessageAccountsForRecipients returns correct accounts for different placement type categories`(
+        messagingCategoryList: List<MessagingCategory>,
+        expectedRecipientCount: Int,
+    ) {
+        val today = LocalDate.now()
+        val area = DevCareArea()
+        val daycare =
+            DevDaycare(areaId = area.id, enabledPilotFeatures = setOf(PilotFeature.MESSAGING))
+        val daycareGroup = DevDaycareGroup(daycareId = daycare.id)
+        val preschoolGroup = DevDaycareGroup(daycareId = daycare.id)
+        val clubGroup = DevDaycareGroup(daycareId = daycare.id)
+
+        val dayCareChild1a = DevPerson()
+        val dayCareChild1b = DevPerson()
+        val dayCareChild2 = DevPerson()
+        val dayCareChild3 = DevPerson()
+        val preSchoolChild1 = DevPerson()
+        val preSchoolChild2 = DevPerson()
+        val clubChild = DevPerson()
+
+        val daycareParent1 = DevPerson()
+        val daycareParent2 = DevPerson()
+        val daycareParent3 = DevPerson()
+        val preschoolParent1 = DevPerson()
+        val preschoolParent2 = DevPerson()
+        val clubParent = DevPerson()
+
+        val (
+            employeeAccountId,) =
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(daycareGroup)
+            tx.insert(preschoolGroup)
+            tx.insert(clubGroup)
+
+            tx.insert(dayCareChild1a, DevPersonType.CHILD)
+            tx.insert(dayCareChild1b, DevPersonType.CHILD)
+            tx.insert(dayCareChild2, DevPersonType.CHILD)
+            tx.insert(dayCareChild3, DevPersonType.CHILD)
+            tx.insert(preSchoolChild1, DevPersonType.CHILD)
+            tx.insert(preSchoolChild2, DevPersonType.CHILD)
+            tx.insert(clubChild, DevPersonType.CHILD)
+
+            tx.insert(daycareParent1, DevPersonType.ADULT)
+            tx.insert(daycareParent2, DevPersonType.ADULT)
+            tx.insert(daycareParent3, DevPersonType.ADULT)
+            tx.insert(preschoolParent1, DevPersonType.ADULT)
+            tx.insert(preschoolParent2, DevPersonType.ADULT)
+            tx.insert(clubParent, DevPersonType.ADULT)
+
+            tx.insertGuardian(guardianId = daycareParent1.id, childId = dayCareChild1a.id)
+            tx.insertGuardian(guardianId = daycareParent1.id, childId = dayCareChild1b.id)
+            tx.insertGuardian(guardianId = daycareParent2.id, childId = dayCareChild2.id)
+            tx.insertGuardian(guardianId = daycareParent3.id, childId = dayCareChild3.id)
+            tx.insertGuardian(guardianId = preschoolParent1.id, childId = preSchoolChild1.id)
+            tx.insertGuardian(guardianId = preschoolParent2.id, childId = preSchoolChild2.id)
+            tx.insertGuardian(guardianId = clubParent.id, childId = clubChild.id)
+
+            // Assign different placement types to form the expected categories
+            val daycarePlacement1 =
+                tx.insert(
+                    DevPlacement(
+                        childId = dayCareChild1a.id,
+                        unitId = daycare.id,
+                        startDate = today.minusDays(10),
+                        endDate = today.plusDays(30),
+                        type = PlacementType.DAYCARE,
+                    )
+                )
+            val daycarePlacement2 =
+                tx.insert(
+                    DevPlacement(
+                        childId = dayCareChild1b.id,
+                        unitId = daycare.id,
+                        startDate = today.minusDays(10),
+                        endDate = today.plusDays(30),
+                        type = PlacementType.DAYCARE_PART_TIME,
+                    )
+                )
+            val daycarePlacement3 =
+                tx.insert(
+                    DevPlacement(
+                        childId = dayCareChild2.id,
+                        unitId = daycare.id,
+                        startDate = today.minusDays(10),
+                        endDate = today.plusDays(30),
+                        type = PlacementType.DAYCARE,
+                    )
+                )
+            val daycarePlacement4 =
+                tx.insert(
+                    DevPlacement(
+                        childId = dayCareChild3.id,
+                        unitId = daycare.id,
+                        startDate = today.minusDays(10),
+                        endDate = today.plusDays(30),
+                        type = PlacementType.DAYCARE_FIVE_YEAR_OLDS,
+                    )
+                )
+
+            val preschoolPlacement1 =
+                tx.insert(
+                    DevPlacement(
+                        childId = preSchoolChild1.id,
+                        unitId = daycare.id,
+                        startDate = today.minusDays(10),
+                        endDate = today.plusDays(30),
+                        type = PlacementType.PRESCHOOL,
+                    )
+                )
+            val preschoolPlacement2 =
+                tx.insert(
+                    DevPlacement(
+                        childId = preSchoolChild2.id,
+                        unitId = daycare.id,
+                        startDate = today.minusDays(10),
+                        endDate = today.plusDays(30),
+                        type = PlacementType.PRESCHOOL_DAYCARE,
+                    )
+                )
+            val clubPlacement1 =
+                tx.insert(
+                    DevPlacement(
+                        childId = clubChild.id,
+                        unitId = daycare.id,
+                        startDate = today.minusDays(10),
+                        endDate = today.plusDays(30),
+                        type = PlacementType.CLUB,
+                    )
+                )
+
+            tx.insert(
+                DevDaycareGroupPlacement(
+                    daycareGroupId = daycareGroup.id,
+                    daycarePlacementId = daycarePlacement1,
+                    startDate = today.minusDays(10),
+                    endDate = today.plusDays(30),
+                )
+            )
+            tx.insert(
+                DevDaycareGroupPlacement(
+                    daycareGroupId = daycareGroup.id,
+                    daycarePlacementId = daycarePlacement2,
+                    startDate = today.minusDays(10),
+                    endDate = today.plusDays(30),
+                )
+            )
+            tx.insert(
+                DevDaycareGroupPlacement(
+                    daycareGroupId = daycareGroup.id,
+                    daycarePlacementId = daycarePlacement3,
+                    startDate = today.minusDays(10),
+                    endDate = today.plusDays(30),
+                )
+            )
+            tx.insert(
+                DevDaycareGroupPlacement(
+                    daycareGroupId = daycareGroup.id,
+                    daycarePlacementId = daycarePlacement4,
+                    startDate = today.minusDays(10),
+                    endDate = today.plusDays(30),
+                )
+            )
+            tx.insert(
+                DevDaycareGroupPlacement(
+                    daycareGroupId = preschoolGroup.id,
+                    daycarePlacementId = preschoolPlacement1,
+                    startDate = today.minusDays(10),
+                    endDate = today.plusDays(30),
+                )
+            )
+            tx.insert(
+                DevDaycareGroupPlacement(
+                    daycareGroupId = preschoolGroup.id,
+                    daycarePlacementId = preschoolPlacement2,
+                    startDate = today.minusDays(10),
+                    endDate = today.plusDays(30),
+                )
+            )
+            tx.insert(
+                DevDaycareGroupPlacement(
+                    daycareGroupId = clubGroup.id,
+                    daycarePlacementId = clubPlacement1,
+                    startDate = today.minusDays(10),
+                    endDate = today.plusDays(30),
+                )
+            )
+
+            // Create employee message account (sender)
+            tx.insertDaycareAclRow(daycare.id, employee1.id, UserRole.UNIT_SUPERVISOR)
+            val employeeAccountId = tx.upsertEmployeeMessageAccount(employee1.id)
+
+            data class AccountIds(
+                val accountId1: MessageAccountId,
+            )
+
+            AccountIds(
+                employeeAccountId,
+            )
+        }
+
+        // Set filter to null when no categories are selected
+        val postMessageFilter = messagingCategoryList.takeIf { it.isNotEmpty() }
+            ?.let { MessageController.PostMessageFilters(placementTypes = it) }
+
+        val areaRecipients = setOf(MessageRecipient.Area(area.id))
+
+        val recipientMessageAccounts =
+            db.read { tx ->
+                tx.getMessageAccountsForRecipients(
+                    accountId = employeeAccountId,
+                    recipients = areaRecipients,
+                    filters = postMessageFilter,
+                    date = today,
+                )
+            }
+
+        assertEquals(expectedRecipientCount, recipientMessageAccounts.size)
     }
 
     /*
