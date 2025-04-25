@@ -5,7 +5,12 @@
 import isPropValid from '@emotion/is-prop-valid'
 import { ErrorBoundary } from '@sentry/react'
 import React, { useContext } from 'react'
-import { createBrowserRouter, Navigate, Outlet } from 'react-router'
+import {
+  createBrowserRouter,
+  Navigate,
+  Outlet,
+  useLocation
+} from 'react-router'
 import { StyleSheetManager, ThemeProvider } from 'styled-components'
 
 import { Notifications } from 'lib-components/Notifications'
@@ -170,6 +175,8 @@ const Content = React.memo(function Content() {
   const { sessionExpirationDetected, dismissSessionExpiredDetection } =
     useKeepSessionAlive(sessionKeepalive, loggedIn)
 
+  const location = useLocation()
+
   const handleLoginClick = () => {
     window.open('/employee/close-after-login', '_blank')
     const authChecker = () => {
@@ -189,7 +196,7 @@ const Content = React.memo(function Content() {
       {/* the matched route element will be inserted at <Outlet /> */}
       <Outlet />
 
-      <Footer />
+      {!location.pathname.startsWith('/messages') && <Footer />}
       {!!featureFlags.environmentLabel && (
         <EnvironmentLabel>{featureFlags.environmentLabel}</EnvironmentLabel>
       )}
