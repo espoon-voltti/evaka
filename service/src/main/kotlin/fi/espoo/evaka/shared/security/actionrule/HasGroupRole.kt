@@ -8,6 +8,7 @@ import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.document.childdocument.DocumentStatus
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -123,6 +124,20 @@ data class HasGroupRole(
                 AccessControlDecision.None
             }
     }
+
+    fun inGroup() =
+        rule<GroupId> { user, _ ->
+            sql(
+                """
+SELECT daycare_group.id, role, enabled_pilot_features AS unit_features, provider_type AS unit_provider_type
+FROM daycare_acl acl
+JOIN daycare ON acl.daycare_id = daycare.id
+JOIN daycare_group ON daycare.id = daycare_group.daycare_id
+JOIN daycare_group_acl group_acl ON daycare_group.id = group_acl.daycare_group_id AND acl.employee_id = group_acl.employee_id
+WHERE acl.employee_id = ${bind(user.id)}
+            """
+            )
+        }
 
     fun inPlacementGroupOfChild() =
         rule<ChildId> { user, now ->

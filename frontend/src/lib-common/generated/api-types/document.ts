@@ -200,6 +200,14 @@ export interface ChildDocumentWithPermittedActions {
 }
 
 /**
+* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentsCreateRequest
+*/
+export interface ChildDocumentsCreateRequest {
+  childIds: PersonId[]
+  templateId: DocumentTemplateId
+}
+
+/**
 * Generated from fi.espoo.evaka.document.childdocument.DocumentContent
 */
 export interface DocumentContent {

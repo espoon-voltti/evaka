@@ -19,7 +19,13 @@ import {
   resetServiceState,
   runJobs
 } from '../../generated/api-clients'
-import { DevEmployee } from '../../generated/api-types'
+import {
+  DevDaycare,
+  DevDaycareGroup,
+  DevDocumentTemplate,
+  DevEmployee,
+  DevPerson
+} from '../../generated/api-types'
 import ChildInformationPage from '../../pages/employee/child-information'
 import { ChildDocumentPage } from '../../pages/employee/documents/child-document'
 import {
@@ -28,39 +34,39 @@ import {
 } from '../../pages/employee/documents/document-templates'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import { ChildDocumentsReport } from '../../pages/employee/reports'
+import { UnitPage } from '../../pages/employee/units/unit'
 import { waitUntilEqual } from '../../utils'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
-let admin: DevEmployee
-let unitSupervisor: DevEmployee
-let page: Page
-
 const now = HelsinkiDateTime.of(2023, 2, 1, 12, 10, 0)
 
-beforeEach(async () => {
-  await resetServiceState()
-
-  await Fixture.careArea(testCareArea).save()
-  await Fixture.daycare(testDaycare).save()
-  await Fixture.person(testAdult).saveAdult()
-  await Fixture.person(testChild2).saveChild()
-  await Fixture.guardian(testChild2, testAdult).save()
-  admin = await Fixture.employee().admin().save()
-  unitSupervisor = await Fixture.employee()
-    .unitSupervisor(testDaycare.id)
-    .save()
-
-  await Fixture.placement({
-    childId: testChild2.id,
-    unitId: testDaycare.id,
-    startDate: now.toLocalDate().subYears(1),
-    endDate: now.toLocalDate().addYears(1),
-    type: 'PRESCHOOL'
-  }).save()
-})
+beforeEach(async () => await resetServiceState())
 
 describe('Employee - Child documents', () => {
+  let admin: DevEmployee
+  let unitSupervisor: DevEmployee
+  let page: Page
+
+  beforeEach(async () => {
+    await Fixture.careArea(testCareArea).save()
+    await Fixture.daycare(testDaycare).save()
+    await Fixture.person(testAdult).saveAdult()
+    await Fixture.person(testChild2).saveChild()
+    await Fixture.guardian(testChild2, testAdult).save()
+    admin = await Fixture.employee().admin().save()
+    unitSupervisor = await Fixture.employee()
+      .unitSupervisor(testDaycare.id)
+      .save()
+
+    await Fixture.placement({
+      childId: testChild2.id,
+      unitId: testDaycare.id,
+      startDate: now.toLocalDate().subYears(1),
+      endDate: now.toLocalDate().addYears(1),
+      type: 'PRESCHOOL'
+    }).save()
+  })
   test('Full basic workflow for hojks', async () => {
     // Admin creates a template
 
@@ -720,5 +726,244 @@ describe('Employee - Child documents', () => {
     await answer1.assertTextEquals(
       'vaihtoehto 1 : lisäinfoa\nvaihtoehto 2 :\nvaihtoehto 3'
     )
+  })
+})
+
+describe('Employee - Child documents - unit groups page', () => {
+  let template: DevDocumentTemplate
+  let unit1: DevDaycare
+  let group1: DevDaycareGroup
+  let group2: DevDaycareGroup
+  let child0WithoutGroup: DevPerson
+  let child1InGroup1: DevPerson
+  let child2InGroup1: DevPerson
+  let child3InGroup1: DevPerson
+  let child4InGroup2: DevPerson
+  let child5InGroup2: DevPerson
+
+  const savePlacementAndGrouping = async (
+    unit: DevDaycare,
+    child: DevPerson,
+    group?: DevDaycareGroup
+  ) => {
+    const placement = await Fixture.placement({
+      unitId: unit.id,
+      childId: child.id,
+      startDate: now.toLocalDate().subYears(1),
+      endDate: now.toLocalDate().addYears(1),
+      type: 'PRESCHOOL'
+    }).save()
+    if (group !== undefined) {
+      await Fixture.groupPlacement({
+        daycarePlacementId: placement.id,
+        daycareGroupId: group.id,
+        startDate: placement.startDate,
+        endDate: placement.endDate
+      }).save()
+    }
+    return placement
+  }
+
+  beforeEach(async () => {
+    await Fixture.serviceNeedOption({
+      validPlacementType: 'PRESCHOOL',
+      defaultOption: true
+    }).save()
+    const area = await Fixture.careArea().save()
+    unit1 = await Fixture.daycare({
+      areaId: area.id,
+      enabledPilotFeatures: ['VASU_AND_PEDADOC']
+    }).save()
+    group1 = await Fixture.daycareGroup({
+      daycareId: unit1.id
+    }).save()
+    group2 = await Fixture.daycareGroup({
+      daycareId: unit1.id
+    }).save()
+    child0WithoutGroup = await Fixture.person({
+      ssn: null,
+      lastName: '4',
+      firstName: 'child'
+    }).saveChild()
+    child1InGroup1 = await Fixture.person({
+      ssn: null,
+      lastName: '1',
+      firstName: 'child'
+    }).saveChild()
+    child2InGroup1 = await Fixture.person({
+      ssn: null,
+      lastName: '2',
+      firstName: 'child'
+    }).saveChild()
+    child3InGroup1 = await Fixture.person({
+      ssn: null,
+      lastName: '3',
+      firstName: 'child'
+    }).saveChild()
+    child4InGroup2 = await Fixture.person({
+      ssn: null,
+      lastName: '4',
+      firstName: 'child'
+    }).saveChild()
+    child5InGroup2 = await Fixture.person({
+      ssn: null,
+      lastName: '5',
+      firstName: 'child'
+    }).saveChild()
+    const adult1 = await Fixture.person({
+      ssn: null,
+      email: 'adult1@evaka.test'
+    }).saveAdult()
+    await Fixture.guardian(child0WithoutGroup, adult1).save()
+    await Fixture.guardian(child1InGroup1, adult1).save()
+    await Fixture.guardian(child2InGroup1, adult1).save()
+    await Fixture.guardian(child3InGroup1, adult1).save()
+    await Fixture.guardian(child4InGroup2, adult1).save()
+    await Fixture.guardian(child5InGroup2, adult1).save()
+    await savePlacementAndGrouping(unit1, child0WithoutGroup)
+    await savePlacementAndGrouping(unit1, child1InGroup1, group1)
+    await savePlacementAndGrouping(unit1, child2InGroup1, group1)
+    const child3Placement = await savePlacementAndGrouping(
+      unit1,
+      child3InGroup1
+    )
+    await Fixture.groupPlacement({
+      daycarePlacementId: child3Placement.id,
+      daycareGroupId: group1.id,
+      startDate: child3Placement.startDate,
+      endDate: now.toLocalDate()
+    }).save()
+    await Fixture.groupPlacement({
+      daycarePlacementId: child3Placement.id,
+      daycareGroupId: group1.id,
+      startDate: now.toLocalDate().addDays(2),
+      endDate: child3Placement.endDate
+    }).save()
+    await savePlacementAndGrouping(unit1, child4InGroup2, group2)
+    await savePlacementAndGrouping(unit1, child5InGroup2, group2)
+    template = await Fixture.documentTemplate({
+      type: 'CITIZEN_BASIC',
+      name: 'Lomake kuntalaiselle',
+      published: true
+    }).save()
+    await Fixture.documentTemplate({
+      type: 'LEOPS',
+      name: 'Esiopetuksen oppimissuunnitelma 2023 (tämän ei pitäisi näkyä)',
+      published: true
+    }).save()
+  })
+
+  test('unit supervisor can create child documents for any group', async () => {
+    const user = await Fixture.employee().unitSupervisor(unit1.id).save()
+
+    const page = await Page.open({
+      mockedTime: now,
+      employeeCustomizations: {
+        featureFlags: { citizenChildDocumentTypes: true }
+      }
+    })
+    await employeeLogin(page, user)
+    const unitPage = new UnitPage(page)
+    await unitPage.navigateToUnit(unit1.id)
+    const groupsPage = await unitPage.openGroupsPage()
+    await groupsPage.selectPeriod('3 months')
+    const groupCollapsible1 = await groupsPage.openGroupCollapsible(group1.id)
+    const createChildDocumentsModal1 =
+      await groupCollapsible1.openCreateChildDocumentsModal()
+    await createChildDocumentsModal1.templateSelect.click()
+    await createChildDocumentsModal1.templateSelect.assertOptions([
+      template.name
+    ])
+    await createChildDocumentsModal1.templateSelect.fillAndSelectItem(
+      '',
+      `create-child-documents-modal-select-template-${template.id}`
+    )
+    await createChildDocumentsModal1.childrenSelect.click()
+    await createChildDocumentsModal1.childrenSelect.assertOptions([
+      `${child1InGroup1.lastName} ${child1InGroup1.firstName}`,
+      `${child2InGroup1.lastName} ${child2InGroup1.firstName}`,
+      `${child3InGroup1.lastName} ${child3InGroup1.firstName}`
+    ])
+    await createChildDocumentsModal1.childrenSelect.selectItem(
+      child1InGroup1.id
+    )
+    await createChildDocumentsModal1.childrenSelect.selectItem(
+      child3InGroup1.id
+    )
+    await createChildDocumentsModal1.click()
+    await createChildDocumentsModal1.submitButton.click()
+    await createChildDocumentsModal1.waitUntilHidden()
+
+    const expectedEmail = {
+      from: 'Espoon Varhaiskasvatus <no-reply.evaka@espoo.fi>',
+      to: 'adult1@evaka.test',
+      subject:
+        'Uusi dokumentti eVakassa / Nytt dokument i eVaka / New document in eVaka'
+    }
+    await runJobs({ mockedTime: now })
+    const emails1 = await getSentEmails()
+    expect(
+      emails1.map((email) => ({
+        from: email.fromAddress,
+        to: email.toAddress,
+        subject: email.content.subject
+      }))
+    ).toEqual([expectedEmail, expectedEmail])
+  })
+
+  test('staff can create child documents for only own group', async () => {
+    const user = await Fixture.employee()
+      .staff(unit1.id)
+      .withGroupAcl(group2.id)
+      .save()
+
+    const page = await Page.open({
+      mockedTime: now,
+      employeeCustomizations: {
+        featureFlags: { citizenChildDocumentTypes: true }
+      }
+    })
+    await employeeLogin(page, user)
+    const unitPage = new UnitPage(page)
+    await unitPage.navigateToUnit(unit1.id)
+    const groupsPage = await unitPage.openGroupsPage()
+    const groupCollapsible1 = await groupsPage.openGroupCollapsible(group1.id)
+    await groupCollapsible1.createChildDocumentsButton.waitUntilHidden()
+    const groupCollapsible2 = await groupsPage.openGroupCollapsible(group2.id)
+    const createChildDocumentsModal =
+      await groupCollapsible2.openCreateChildDocumentsModal()
+    await createChildDocumentsModal.templateSelect.click()
+    await createChildDocumentsModal.templateSelect.assertOptions([
+      template.name
+    ])
+    await createChildDocumentsModal.templateSelect.fillAndSelectItem(
+      '',
+      `create-child-documents-modal-select-template-${template.id}`
+    )
+    await createChildDocumentsModal.childrenSelect.click()
+    await createChildDocumentsModal.childrenSelect.assertOptions([
+      `${child4InGroup2.lastName} ${child4InGroup2.firstName}`,
+      `${child5InGroup2.lastName} ${child5InGroup2.firstName}`
+    ])
+    await createChildDocumentsModal.childrenSelect.selectItem(child4InGroup2.id)
+    await createChildDocumentsModal.click()
+    await createChildDocumentsModal.submitButton.click()
+    await createChildDocumentsModal.waitUntilHidden()
+
+    const expectedEmail = {
+      from: 'Espoon Varhaiskasvatus <no-reply.evaka@espoo.fi>',
+      to: 'adult1@evaka.test',
+      subject:
+        'Uusi dokumentti eVakassa / Nytt dokument i eVaka / New document in eVaka'
+    }
+    await runJobs({ mockedTime: now })
+    const emails1 = await getSentEmails()
+    expect(
+      emails1.map((email) => ({
+        from: email.fromAddress,
+        to: email.toAddress,
+        subject: email.content.subject
+      }))
+    ).toEqual([expectedEmail])
   })
 })

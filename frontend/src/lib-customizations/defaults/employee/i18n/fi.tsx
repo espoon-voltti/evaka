@@ -2666,6 +2666,14 @@ export const fi = {
           CLOTHES: 'Lisää vaatteita',
           LAUNDRY: 'Pyykit'
         }
+      },
+      childDocuments: {
+        createModalLink: 'Lähetä lomake',
+        createModal: {
+          title: 'Lähetä lomake usealle vastaanottajalle',
+          template: 'Lomake',
+          placements: 'Vastaanottajat'
+        }
       }
     },
     backupCares: {

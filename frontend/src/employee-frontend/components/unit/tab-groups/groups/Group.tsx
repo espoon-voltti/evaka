@@ -11,6 +11,7 @@ import styled from 'styled-components'
 
 import { Loading, Result, wrapResult } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
+import { useBoolean } from 'lib-common/form/hooks'
 import { Action } from 'lib-common/generated/action'
 import { UnitBackupCare } from 'lib-common/generated/api-types/backupcare'
 import { Caretakers, Daycare } from 'lib-common/generated/api-types/daycare'
@@ -47,12 +48,14 @@ import {
 import { H3, Label, Light } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
+import { featureFlags } from 'lib-customizations/employee'
 import {
   faAngleDown,
   faAngleUp,
   faCalendarAlt,
   faCheck,
   faExchange,
+  faFile,
   faPen,
   farStickyNote,
   faStickyNote,
@@ -86,6 +89,7 @@ import {
   deleteGroupMutation,
   deleteGroupPlacementMutation
 } from '../../queries'
+import { CreateChildDocumentsModal } from '../child-documents/CreateChildDocumentsModal'
 import NotesModal from '../notes/NotesModal'
 
 const getNotesByGroupResult = wrapResult(getNotesByGroup)
@@ -126,7 +130,7 @@ const IconContainer = styled.div`
   font-size: 18px;
 `
 
-const GroupNoteLinkContainer = styled.div`
+const ActionsContainer = styled(FixedSpaceRow)`
   margin-top: 16px;
   margin-left: 8px;
 `
@@ -188,6 +192,10 @@ export default React.memo(function Group({
     child?: IdAndName<PersonId>
     group: IdAndName<GroupId>
   }>()
+  const [
+    createChildDocumentsModalVisible,
+    { on: createChildDocumentsModalOn, off: createChildDocumentsModalOff }
+  ] = useBoolean(false)
 
   const maxOccupancy = getMaxOccupancy(confirmedOccupancy)
   const maxRealizedOccupancy = getMaxOccupancy(realizedOccupancy)
@@ -255,6 +263,13 @@ export default React.memo(function Group({
           notesByGroup={notesResponse}
           reload={loadNotes}
           onClose={() => setNotesModal(undefined)}
+        />
+      )}
+      {createChildDocumentsModalVisible && (
+        <CreateChildDocumentsModal
+          groupId={group.id}
+          placements={placements}
+          onClose={createChildDocumentsModalOff}
         />
       )}
       <TitleBar>
@@ -462,10 +477,10 @@ export default React.memo(function Group({
                   ))}
                 </Tbody>
               </Table>
-              {mobileEnabled &&
-                permittedActions.includes('READ_NOTES') &&
-                notesResponse.isSuccess && (
-                  <GroupNoteLinkContainer>
+              <ActionsContainer>
+                {mobileEnabled &&
+                  permittedActions.includes('READ_NOTES') &&
+                  notesResponse.isSuccess && (
                     <Button
                       appearance="inline"
                       icon={
@@ -483,8 +498,18 @@ export default React.memo(function Group({
                       }
                       data-qa="btn-create-group-note"
                     />
-                  </GroupNoteLinkContainer>
-                )}
+                  )}
+                {featureFlags.citizenChildDocumentTypes &&
+                  permittedActions.includes('CREATE_CHILD_DOCUMENTS') && (
+                    <Button
+                      appearance="inline"
+                      icon={faFile}
+                      text={i18n.unit.groups.childDocuments.createModalLink}
+                      onClick={createChildDocumentsModalOn}
+                      data-qa="btn-create-child-documents"
+                    />
+                  )}
+              </ActionsContainer>
             </div>
           ) : (
             <p data-qa="no-children-placeholder">

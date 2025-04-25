@@ -4,11 +4,13 @@
 
 import { waitUntilDefined, waitUntilEqual, waitUntilTrue } from '../../../utils'
 import {
+  Combobox,
   DatePicker,
   DatePickerDeprecated,
   Element,
   ElementCollection,
   Modal,
+  MultiSelect,
   Page,
   TextInput
 } from '../../../utils/page'
@@ -21,6 +23,7 @@ export class UnitGroupsPage {
   terminatedPlacementsSection: TerminatedPlacementsSection
   missingPlacementsSection: MissingPlacementsSection
   childCapacityFactorColumnData: ElementCollection
+
   constructor(private readonly page: Page) {
     this.childCapacityFactorColumnHeading = page.findByDataQa(
       `child-capacity-factor-heading`
@@ -100,6 +103,7 @@ export class UnitGroupsPage {
 
 export class TerminatedPlacementsSection extends Element {
   #terminatedPlacementRows: ElementCollection
+
   constructor(page: Page, self: Element) {
     super(self)
     this.#terminatedPlacementRows = page.findAll(
@@ -219,6 +223,7 @@ export class GroupCollapsible extends Element {
 
   #monthCalendarButton = this.find('[data-qa="open-month-calendar-button"]')
   #groupDailyNoteButton = this.find('[data-qa="btn-create-group-note"]')
+  createChildDocumentsButton = this.findByDataQa('btn-create-child-documents')
 
   #childRows = this.find('[data-qa="table-of-group-placements"]').findAll(
     '[data-qa^="group-placement-row-"]'
@@ -259,6 +264,11 @@ export class GroupCollapsible extends Element {
     return new GroupDailyNoteModal(this.find('[data-qa="modal"]'))
   }
 
+  async openCreateChildDocumentsModal() {
+    await this.createChildDocumentsButton.click()
+    return new CreateChildDocumentsModal(this.findByDataQa('modal'))
+  }
+
   #updateButton = this.find('[data-qa="btn-update-group"]')
 
   async edit(fields: { name: string; startDate: string; endDate: string }) {
@@ -296,9 +306,25 @@ export class GroupDailyNoteModal extends Modal {
   }
 }
 
+export class CreateChildDocumentsModal extends Modal {
+  templateSelect: Combobox
+  childrenSelect: MultiSelect
+
+  constructor(self: Element) {
+    super(self)
+    this.templateSelect = new Combobox(
+      self.findByDataQa('create-child-documents-modal-select-template')
+    )
+    this.childrenSelect = new MultiSelect(
+      self.findByDataQa('create-child-documents-modal-select-children')
+    )
+  }
+}
+
 export class GroupCollapsibleChildRow extends Element {
   #dailyNoteIcon: Element
   #dailyNoteTooltip: Element
+
   constructor(self: Element, childId: string) {
     super(self)
     this.#dailyNoteIcon = this.find(
