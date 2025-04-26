@@ -3482,7 +3482,7 @@ __metadata:
     express-basic-auth: "npm:1.2.1"
     express-http-proxy: "npm:2.1.1"
     express-session: "npm:1.18.1"
-    fast-xml-parser: "npm:5.2.0"
+    fast-xml-parser: "npm:5.2.1"
     helmet: "npm:8.1.0"
     jest: "npm:29.7.0"
     jest-junit: "npm:16.0.0"
@@ -3691,14 +3691,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fast-xml-parser@npm:5.2.0":
-  version: 5.2.0
-  resolution: "fast-xml-parser@npm:5.2.0"
+"fast-xml-parser@npm:5.2.1":
+  version: 5.2.1
+  resolution: "fast-xml-parser@npm:5.2.1"
   dependencies:
     strnum: "npm:^2.0.5"
   bin:
     fxparser: src/cli/cli.js
-  checksum: 10/cd0380f65e49291ae89e6b95b6ee3ac9f6e97192eef78211b94a1cc85d6c6b35e001e0b7397513381cf3600ee31aca9ac8252de47edfe116b85bfdc90db15b1d
+  checksum: 10/61eec0b0e075dcc0c16e5beacefa559dc4846bd9b8391c639a28177f1e2ad5534c90bdff9af86a7828ee903bed875db0bb8c1512ff9e5a194e530691ee8a5aa8
   languageName: node
   linkType: hard
 
