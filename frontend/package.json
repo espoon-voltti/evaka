@@ -118,7 +118,7 @@
     "playwright": "1.52.0",
     "postcss": "8.5.3",
     "postcss-loader": "8.1.1",
-    "postcss-preset-env": "10.1.5",
+    "postcss-preset-env": "10.1.6",
     "prettier": "3.5.3",
     "style-loader": "4.0.0",
     "ts-jest": "29.3.2",
