@@ -613,9 +613,7 @@ function FileUpload<T>(
                         data-qa="file-download-button"
                       />
                     ) : (
-                      <span data-qa="file-download-unavailable-text">
-                        {file.name}
-                      </span>
+                      <span>{file.name}</span>
                     )}
                     {(!inProgress(file) || file.error) && (
                       <>
@@ -629,7 +627,6 @@ function FileUpload<T>(
                               disabled={file.deleteInProgress}
                               onClick={() => uploadFile(file, file.file!)}
                               aria-label={`${i18n.uploadFile} ${file.name}`}
-                              data-qa={`file-upload-button-${file.name}`}
                             />
                           </>
                         )}

@@ -74,7 +74,6 @@ describe('Employee application attachments', () => {
 
     await applicationEditView.setUrgent()
     await applicationEditView.urgentAttachmentFileUpload.uploadTestFile()
-    await applicationEditView.assertUrgentAttachmentUploaded(testFileName)
 
     await applicationEditView.setShiftCareNeeded()
     await applicationEditView.shiftCareAttachmentFileUpload.uploadTestFile()

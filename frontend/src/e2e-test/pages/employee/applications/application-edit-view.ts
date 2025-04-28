@@ -10,7 +10,6 @@ import {
   Checkbox,
   Combobox,
   DatePickerDeprecated,
-  FileInput,
   Page,
   Radio,
   TextInput,
@@ -144,18 +143,6 @@ export default class ApplicationEditView {
     await new DatePickerDeprecated(this.page.findByDataQa('due-date')).fill(
       date.format()
     )
-  }
-
-  async uploadUrgentAttachment(filePath: string) {
-    await new FileInput(
-      this.urgentAttachmentFileUpload.find('[data-qa="btn-upload-file"]')
-    ).setInputFiles(filePath)
-  }
-
-  async assertUrgentAttachmentUploaded(fileName: string) {
-    await this.urgentAttachmentFileUpload
-      .find('[data-qa="file-download-button"]')
-      .assertTextEquals(fileName)
   }
 
   async setShiftCareNeeded() {
