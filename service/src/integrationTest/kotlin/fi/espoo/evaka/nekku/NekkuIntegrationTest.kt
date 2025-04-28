@@ -1925,18 +1925,16 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         )
                     )
                 }
-            listOf(
-                    // Child is absent, so no meals on Tuesday
-                    DevAbsence(
-                        childId = child.id,
-                        date = tuesday,
-                        absenceType = AbsenceType.PLANNED_ABSENCE,
-                        absenceCategory = AbsenceCategory.BILLABLE,
-                        modifiedBy = employee.evakaUserId,
-                        modifiedAt = HelsinkiDateTime.now(),
-                    )
+            tx.insert(
+                DevAbsence(
+                    childId = child.id,
+                    date = tuesday,
+                    absenceType = AbsenceType.PLANNED_ABSENCE,
+                    absenceCategory = AbsenceCategory.BILLABLE,
+                    modifiedBy = employee.evakaUserId,
+                    modifiedAt = HelsinkiDateTime.now(),
                 )
-                .forEach { tx.insert(it) }
+            )
         }
 
         createAndSendNekkuOrder(client, db, group.id, monday, 0.9)
