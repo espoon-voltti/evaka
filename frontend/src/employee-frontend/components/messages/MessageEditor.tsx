@@ -19,7 +19,10 @@ import {
   SelectableRecipientsResponse,
   UpdatableDraftContent
 } from 'lib-common/generated/api-types/messaging'
-import { MessagingCategory } from 'lib-common/generated/api-types/placement'
+import {
+  messagingCategory,
+  MessagingCategory
+} from 'lib-common/generated/api-types/placement'
 import {
   AttachmentId,
   MessageAccountId,
@@ -157,12 +160,6 @@ const getEmptyFilters = (): Filters => ({
   placementTypes: []
 })
 
-export const messagingPlacementTypeCategories: readonly MessagingCategory[] = [
-  'MESSAGING_CLUB',
-  'MESSAGING_DAYCARE',
-  'MESSAGING_PRESCHOOL'
-] as const
-
 interface FlagProps {
   urgent: boolean
   sensitive: boolean
@@ -244,7 +241,7 @@ export default React.memo(function MessageEditor({
   )
 
   const [placementTypeTree, setPlacementTypeTree] = useState<TreeNode[]>(
-    messagingPlacementTypeCategories.map<TreeNode>((type) => ({
+    messagingCategory.map<TreeNode>((type) => ({
       text: i18n.placement.messagingCategory[type],
       key: type,
       checked: false,

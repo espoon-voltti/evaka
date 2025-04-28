@@ -1598,10 +1598,9 @@ fun Database.Read.getMessageAccountsForRecipients(
 
     val placementPredicate = { col: String ->
         if (filters?.placementTypes?.isNotEmpty() == true) {
-            val placementTypesInCategory = PlacementType.fromMessagingCategories(filters.placementTypes)
-            PredicateSql {
-                where("pl.$col = ANY(${bind(placementTypesInCategory)})")
-            }
+            val placementTypesInCategory =
+                PlacementType.fromMessagingCategories(filters.placementTypes)
+            PredicateSql { where("pl.$col = ANY(${bind(placementTypesInCategory)})") }
         } else PredicateSql.alwaysTrue()
     }
 

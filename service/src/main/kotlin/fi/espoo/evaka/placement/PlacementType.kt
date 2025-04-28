@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.placement
 
+import fi.espoo.evaka.ConstList
 import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.daycare.ClubTerm
 import fi.espoo.evaka.daycare.PreschoolTerm
@@ -86,21 +87,21 @@ enum class PlacementType : DatabaseEnum {
                 setOf(AbsenceCategory.BILLABLE, AbsenceCategory.NONBILLABLE)
         }
 
-    fun messagingCategories(): Set<MessagingCategory>? =
+    private fun messagingCategory(): MessagingCategory? =
         when (this) {
-            CLUB -> setOf(MessagingCategory.MESSAGING_CLUB)
+            CLUB -> MessagingCategory.MESSAGING_CLUB
             DAYCARE,
             DAYCARE_PART_TIME,
             DAYCARE_FIVE_YEAR_OLDS,
             DAYCARE_PART_TIME_FIVE_YEAR_OLDS,
-            SCHOOL_SHIFT_CARE -> setOf(MessagingCategory.MESSAGING_DAYCARE)
+            SCHOOL_SHIFT_CARE -> MessagingCategory.MESSAGING_DAYCARE
             PRESCHOOL,
             PRESCHOOL_DAYCARE,
             PRESCHOOL_DAYCARE_ONLY,
             PRESCHOOL_CLUB,
             PREPARATORY,
             PREPARATORY_DAYCARE,
-            PREPARATORY_DAYCARE_ONLY -> setOf(MessagingCategory.MESSAGING_PRESCHOOL)
+            PREPARATORY_DAYCARE_ONLY -> MessagingCategory.MESSAGING_PRESCHOOL
             TEMPORARY_DAYCARE,
             TEMPORARY_DAYCARE_PART_DAY -> null
         }
@@ -171,7 +172,7 @@ enum class PlacementType : DatabaseEnum {
             entries.filter { it.absenceCategories().contains(AbsenceCategory.NONBILLABLE) }
 
         fun fromMessagingCategories(categories: List<MessagingCategory>): List<PlacementType> {
-            return PlacementType.entries.filter { it.messagingCategories()?.any { category -> category in categories } == true }
+            return PlacementType.entries.filter { categories.contains(it.messagingCategory()) }
         }
     }
 }
@@ -182,6 +183,7 @@ enum class ScheduleType {
     TERM_BREAK, // Preschool/club term break -> no activity
 }
 
+@ConstList("messagingCategory")
 enum class MessagingCategory {
     MESSAGING_CLUB,
     MESSAGING_DAYCARE,

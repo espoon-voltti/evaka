@@ -34,8 +34,7 @@ import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.MethodSource
-import java.util.stream.Stream
+import org.junit.jupiter.params.provider.FieldSource
 
 /*
  * TODO: These tests should be moved to MessageIntegrationTest because inserting directly to the database doesn't
@@ -1198,25 +1197,23 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertTrue(citizenAccounts.any { it.first == currentParentAccountId })
     }
 
-    companion object {
-        @JvmStatic
-        fun placementFilters(): Stream<Array<Any>> =
-            Stream.of(
-                arrayOf(listOf(MessagingCategory.MESSAGING_DAYCARE), 4),
-                arrayOf(listOf(MessagingCategory.MESSAGING_PRESCHOOL), 2),
-                arrayOf(listOf(MessagingCategory.MESSAGING_CLUB), 1),
-                arrayOf(listOf(MessagingCategory.MESSAGING_CLUB, MessagingCategory.MESSAGING_DAYCARE), 5),
-                arrayOf(listOf(MessagingCategory.MESSAGING_PRESCHOOL, MessagingCategory.MESSAGING_DAYCARE), 6),
-                arrayOf(listOf<MessagingCategory>(), 7),
-            )
-    }
+    @Suppress("unused")
+    private val placementFilters: List<Pair<List<MessagingCategory>, Int>> =
+        listOf(
+            listOf(MessagingCategory.MESSAGING_DAYCARE) to 4,
+            listOf(MessagingCategory.MESSAGING_PRESCHOOL) to 2,
+            listOf(MessagingCategory.MESSAGING_CLUB) to 1,
+            listOf(MessagingCategory.MESSAGING_CLUB, MessagingCategory.MESSAGING_DAYCARE) to 5,
+            listOf(MessagingCategory.MESSAGING_PRESCHOOL, MessagingCategory.MESSAGING_DAYCARE) to 6,
+            listOf<MessagingCategory>() to 7,
+        )
 
-    @ParameterizedTest(name = "messagingCategoryList={0}, expectedRecipientCount={1}")
-    @MethodSource("placementFilters")
+    @ParameterizedTest(name = "messagingCategoryList, expectedRecipientCount={0}")
+    @FieldSource("placementFilters")
     fun `getMessageAccountsForRecipients returns correct accounts for different placement type categories`(
-        messagingCategoryList: List<MessagingCategory>,
-        expectedRecipientCount: Int,
+        arg: Pair<List<MessagingCategory>, Int>
     ) {
+        val (messagingCategoryList, expectedRecipientCount) = arg
         val today = LocalDate.now()
         val area = DevCareArea()
         val daycare =
@@ -1241,8 +1238,8 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         val clubParent = DevPerson()
 
         val (
-            employeeAccountId,) =
-        db.transaction { tx ->
+            employeeAccountId,
+        ) = db.transaction { tx ->
             tx.insert(area)
             tx.insert(daycare)
             tx.insert(daycareGroup)
@@ -1406,18 +1403,16 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             tx.insertDaycareAclRow(daycare.id, employee1.id, UserRole.UNIT_SUPERVISOR)
             val employeeAccountId = tx.upsertEmployeeMessageAccount(employee1.id)
 
-            data class AccountIds(
-                val accountId1: MessageAccountId,
-            )
+            data class AccountIds(val accountId1: MessageAccountId)
 
-            AccountIds(
-                employeeAccountId,
-            )
+            AccountIds(employeeAccountId)
         }
 
         // Set filter to null when no categories are selected
-        val postMessageFilter = messagingCategoryList.takeIf { it.isNotEmpty() }
-            ?.let { MessageController.PostMessageFilters(placementTypes = it) }
+        val postMessageFilter =
+            messagingCategoryList
+                .takeIf { it.isNotEmpty() }
+                ?.let { MessageController.PostMessageFilters(placementTypes = it) }
 
         val areaRecipients = setOf(MessageRecipient.Area(area.id))
 

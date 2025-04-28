@@ -126,10 +126,13 @@ export interface GroupTransferRequestBody {
 /**
 * Generated from fi.espoo.evaka.placement.MessagingCategory
 */
-export type MessagingCategory =
-  | 'MESSAGING_CLUB'
-  | 'MESSAGING_DAYCARE'
-  | 'MESSAGING_PRESCHOOL'
+export const messagingCategory = [
+  'MESSAGING_CLUB',
+  'MESSAGING_DAYCARE',
+  'MESSAGING_PRESCHOOL'
+] as const
+
+export type MessagingCategory = typeof messagingCategory[number]
 
 /**
 * Generated from fi.espoo.evaka.placement.MissingBackupGroupPlacement

@@ -9,7 +9,6 @@ import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.application.personHasSentApplicationWithId
 import fi.espoo.evaka.invoicing.controller.SortDirection
 import fi.espoo.evaka.placement.MessagingCategory
-import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.ChildId
