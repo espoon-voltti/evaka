@@ -37,7 +37,6 @@ import { getPersonIdentity } from '../../generated/api-clients/pis'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
 import { formatPersonName } from '../../utils'
-import { footerHeight } from '../Footer'
 import { headerHeight } from '../Header'
 
 import { MessageContext } from './MessageContext'
@@ -49,9 +48,7 @@ const deleteDraftMessageResult = wrapResult(deleteDraftMessage)
 const createMessageResult = wrapResult(createMessage)
 
 const PanelContainer = styled.div`
-  height: calc(
-    100vh - ${headerHeight} - ${footerHeight} - ${defaultMargins.XL}
-  );
+  height: calc(100vh - ${headerHeight} - ${defaultMargins.m});
   display: flex;
 `
 

@@ -288,53 +288,53 @@ export function SingleThreadView({
             />
           </React.Fragment>
         ))}
-        {canReply &&
-          (isFolderView(view) ||
-            (isStandardView(view) && ['received', 'thread'].includes(view))) &&
-          (replyEditorVisible ? (
-            <MessageContainer>
-              <MessageReplyEditor
-                mutation={replyToThreadMutation}
-                onSubmit={onSubmitReply}
-                onSuccess={handleReplySent}
-                onDiscard={onDiscard}
-                onUpdateContent={onUpdateContent}
-                recipients={recipients}
-                onToggleRecipient={onToggleRecipient}
-                replyContent={replyContent}
-                sendEnabled={sendEnabled}
-              />
-            </MessageContainer>
-          ) : (
-            <>
-              <Gap size="s" />
-              <ActionRow justifyContent="space-between">
-                <Button
-                  appearance="inline"
-                  icon={faReply}
-                  onClick={() => setReplyEditorVisible(true)}
-                  data-qa="message-reply-editor-btn"
-                  text={i18n.messages.replyToThread}
-                />
-                {onArchived && (
-                  <AsyncButton
-                    appearance="inline"
-                    icon={faBoxArchive}
-                    aria-label={i18n.common.archive}
-                    data-qa="delete-thread-btn"
-                    className="delete-btn"
-                    onClick={() => archiveThreadResult({ accountId, threadId })}
-                    onSuccess={onArchived}
-                    text={i18n.messages.archiveThread}
-                    stopPropagation
-                  />
-                )}
-              </ActionRow>
-              <Gap size="m" />
-            </>
-          ))}
         {replyEditorVisible && <span ref={autoScrollRef} />}
       </ScrollContainer>
+      {canReply &&
+        (isFolderView(view) ||
+          (isStandardView(view) && ['received', 'thread'].includes(view))) &&
+        (replyEditorVisible ? (
+          <MessageContainer>
+            <MessageReplyEditor
+              mutation={replyToThreadMutation}
+              onSubmit={onSubmitReply}
+              onSuccess={handleReplySent}
+              onDiscard={onDiscard}
+              onUpdateContent={onUpdateContent}
+              recipients={recipients}
+              onToggleRecipient={onToggleRecipient}
+              replyContent={replyContent}
+              sendEnabled={sendEnabled}
+            />
+          </MessageContainer>
+        ) : (
+          <>
+            <Gap size="s" />
+            <ActionRow justifyContent="space-between">
+              <Button
+                appearance="inline"
+                icon={faReply}
+                onClick={() => setReplyEditorVisible(true)}
+                data-qa="message-reply-editor-btn"
+                text={i18n.messages.replyToThread}
+              />
+              {onArchived && (
+                <AsyncButton
+                  appearance="inline"
+                  icon={faBoxArchive}
+                  aria-label={i18n.common.archive}
+                  data-qa="delete-thread-btn"
+                  className="delete-btn"
+                  onClick={() => archiveThreadResult({ accountId, threadId })}
+                  onSuccess={onArchived}
+                  text={i18n.messages.archiveThread}
+                  stopPropagation
+                />
+              )}
+            </ActionRow>
+            <Gap size="m" />
+          </>
+        ))}
     </ThreadContainer>
   )
 }
