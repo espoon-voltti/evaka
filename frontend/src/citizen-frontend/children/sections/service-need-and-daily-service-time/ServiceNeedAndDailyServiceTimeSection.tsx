@@ -10,8 +10,6 @@ import { combine, Failure, Result, Success } from 'lib-common/api'
 import { ChildId } from 'lib-common/generated/api-types/shared'
 import { constantQuery, useQueryResult } from 'lib-common/query'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
-import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
-import Spinner from 'lib-components/atoms/state/Spinner'
 import {
   MobileOnly,
   TabletAndDesktop
@@ -87,13 +85,9 @@ export default React.memo(function ServiceNeedAndDailyServiceTimeSection({
       data-qa="collapsible-service-need-and-daily-service-time"
     >
       <H3>{t.children.serviceNeed.title}</H3>
-      {serviceNeedsResponse.mapAll({
-        failure: () => <ErrorSegment title={t.common.errors.genericGetError} />,
-        loading: () => <Spinner />,
-        success: (serviceNeeds) => (
-          <ServiceNeedTable serviceNeeds={serviceNeeds} />
-        )
-      })}
+      {renderResult(serviceNeedsResponse, (serviceNeeds) => (
+        <ServiceNeedTable serviceNeeds={serviceNeeds} />
+      ))}
       {showAttendanceSummary && (
         <>
           <Gap size="s" />
@@ -112,15 +106,9 @@ export default React.memo(function ServiceNeedAndDailyServiceTimeSection({
             <HorizontalLine slim />
           </MobileOnly>
           <H3>{t.children.dailyServiceTime.title}</H3>
-          {dailyServiceTimesResponse.mapAll({
-            failure: () => (
-              <ErrorSegment title={t.common.errors.genericGetError} />
-            ),
-            loading: () => <Spinner />,
-            success: (dailyServiceTimes) => (
-              <DailyServiceTimeTable dailyServiceTimes={dailyServiceTimes} />
-            )
-          })}
+          {renderResult(dailyServiceTimesResponse, (dailyServiceTimes) => (
+            <DailyServiceTimeTable dailyServiceTimes={dailyServiceTimes} />
+          ))}
         </>
       )}
       {featureFlags.serviceApplications &&

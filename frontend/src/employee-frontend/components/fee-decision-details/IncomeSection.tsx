@@ -7,18 +7,18 @@ import styled from 'styled-components'
 
 import {
   DecisionIncome,
-  FeeDecisionDetailed
+  FeeDecisionDetailed,
+  IncomeOption
 } from 'lib-common/generated/api-types/invoicing'
 import { formatCents } from 'lib-common/money'
 import { useQueryResult } from 'lib-common/query'
-import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
-import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
 import { H3, H4 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
 import LabelValueList from '../../components/common/LabelValueList'
 import { useTranslation } from '../../state/i18n'
 import { formatName, formatPercent } from '../../utils'
+import { renderResult } from '../async-rendering'
 import { incomeTypeOptionsQuery } from '../person-profile/queries'
 
 interface Props {
@@ -30,16 +30,10 @@ export default React.memo(function IncomeSection({ decision }: Props) {
 
   const incomeTypeOptions = useQueryResult(incomeTypeOptionsQuery())
 
-  if (incomeTypeOptions.isLoading) {
-    return <SpinnerSegment />
-  }
-  if (incomeTypeOptions.isFailure) {
-    return <ErrorSegment />
-  }
-
-  const { incomeTypes } = incomeTypeOptions.value
-
-  const personIncome = (income: DecisionIncome | null) => {
+  const personIncome = (
+    incomeTypes: IncomeOption[],
+    income: DecisionIncome | null
+  ) => {
     if (!income) {
       return (
         <span>
@@ -80,7 +74,7 @@ export default React.memo(function IncomeSection({ decision }: Props) {
     )
   }
 
-  return (
+  return renderResult(incomeTypeOptions, ({ incomeTypes }) => (
     <section>
       <H3>{i18n.feeDecision.form.summary.income.familyComposition}</H3>
       <LabelValueList
@@ -120,7 +114,7 @@ export default React.memo(function IncomeSection({ decision }: Props) {
               decision.headOfFamily.lastName,
               i18n
             ),
-            value: personIncome(decision.headOfFamilyIncome),
+            value: personIncome(incomeTypes, decision.headOfFamilyIncome),
             valueWidth: '100%'
           },
           ...(decision.partner
@@ -131,7 +125,7 @@ export default React.memo(function IncomeSection({ decision }: Props) {
                     decision.partner.lastName,
                     i18n
                   ),
-                  value: personIncome(decision.partnerIncome),
+                  value: personIncome(incomeTypes, decision.partnerIncome),
                   valueWidth: '100%',
                   dataQa: 'partner-income'
                 }
@@ -148,7 +142,7 @@ export default React.memo(function IncomeSection({ decision }: Props) {
                 childWithIncome.child.lastName,
                 i18n
               ),
-              value: personIncome(childWithIncome.childIncome),
+              value: personIncome(incomeTypes, childWithIncome.childIncome),
               valueWidth: '100%',
               dataQa: 'child-income'
             }))
@@ -164,7 +158,7 @@ export default React.memo(function IncomeSection({ decision }: Props) {
         </>
       ) : null}
     </section>
-  )
+  ))
 })
 
 const IncomeItem = styled.div`

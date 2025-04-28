@@ -10,7 +10,6 @@ import styled from 'styled-components'
 import { careTypes, Daycare } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
-import Loader from 'lib-components/atoms/Loader'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
@@ -33,6 +32,7 @@ import { SearchColumn, UnitsContext, UnitsState } from '../state/units'
 import { UserContext } from '../state/user'
 import { RequireRole } from '../utils/roles'
 
+import { renderResult } from './async-rendering'
 import { daycaresQuery } from './unit/queries'
 
 const TopBar = styled.div`
@@ -82,50 +82,6 @@ export default React.memo(function Units() {
             [sortDirection === 'ASC' ? 'asc' : 'desc', 'asc']
           ),
     [sortColumn, sortDirection]
-  )
-
-  const renderUnits = useCallback(
-    () =>
-      units
-        .map((us) =>
-          orderedUnits(us)
-            .filter(
-              (unit) =>
-                (filter.text.length === 0 ||
-                  unit.name
-                    .toLowerCase()
-                    .includes(filter.text.toLowerCase())) &&
-                (filter.providerTypes.length === 0 ||
-                  filter.providerTypes.includes(unit.providerType)) &&
-                (filter.careTypes.length === 0 ||
-                  filter.careTypes.some((ct) => unit.type.includes(ct))) &&
-                (includeClosed ||
-                  !unit.closingDate?.isBefore(LocalDate.todayInSystemTz()))
-            )
-            .map((unit: Daycare) => (
-              <Tr key={unit.id} data-qa="unit-row" data-id={unit.id}>
-                <Td>
-                  <Link to={`/units/${unit.id}`}>{unit.name}</Link>
-                </Td>
-                <Td>{unit.area.name}</Td>
-                <Td>
-                  {unit.visitingAddress.streetAddress &&
-                  unit.visitingAddress.postalCode
-                    ? [
-                        unit.visitingAddress.streetAddress,
-                        unit.visitingAddress.postalCode
-                      ].join(', ')
-                    : unit.visitingAddress.streetAddress}
-                </Td>
-                <Td>{unit.visitingAddress.postOffice}</Td>
-                <Td>
-                  {unit.type.map((type) => i18n.common.types[type]).join(', ')}
-                </Td>
-              </Tr>
-            ))
-        )
-        .getOrElse(null),
-    [filter, i18n.common.types, includeClosed, units, orderedUnits]
   )
 
   if (
@@ -197,48 +153,92 @@ export default React.memo(function Units() {
         </TopBar>
         <Gap size="L" />
         <div className="table-of-units">
-          <Table data-qa="table-of-units">
-            <Thead>
-              <Tr>
-                <SortableTh
-                  sorted={sortColumn === 'name' ? sortDirection : undefined}
-                  onClick={() => sortBy('name')}
-                >
-                  {i18n.units.name}
-                </SortableTh>
-                <SortableTh
-                  sorted={
-                    sortColumn === 'area.name' ? sortDirection : undefined
-                  }
-                  onClick={() => sortBy('area.name')}
-                >
-                  {i18n.units.area}
-                </SortableTh>
-                <SortableTh
-                  sorted={sortColumn === 'address' ? sortDirection : undefined}
-                  onClick={() => sortBy('visitingAddress.streetAddress')}
-                >
-                  {i18n.units.address}
-                </SortableTh>
-                <SortableTh
-                  sorted={sortColumn === 'city' ? sortDirection : undefined}
-                  onClick={() => sortBy('visitingAddress.postOffice')}
-                >
-                  {i18n.units.city}
-                </SortableTh>
-                <SortableTh
-                  sorted={sortColumn === 'type' ? sortDirection : undefined}
-                  onClick={() => sortBy('type')}
-                >
-                  {i18n.units.type}
-                </SortableTh>
-              </Tr>
-            </Thead>
-            <Tbody>{renderUnits()}</Tbody>
-          </Table>
+          {renderResult(units, (units) => (
+            <Table data-qa="table-of-units">
+              <Thead>
+                <Tr>
+                  <SortableTh
+                    sorted={sortColumn === 'name' ? sortDirection : undefined}
+                    onClick={() => sortBy('name')}
+                  >
+                    {i18n.units.name}
+                  </SortableTh>
+                  <SortableTh
+                    sorted={
+                      sortColumn === 'area.name' ? sortDirection : undefined
+                    }
+                    onClick={() => sortBy('area.name')}
+                  >
+                    {i18n.units.area}
+                  </SortableTh>
+                  <SortableTh
+                    sorted={
+                      sortColumn === 'address' ? sortDirection : undefined
+                    }
+                    onClick={() => sortBy('visitingAddress.streetAddress')}
+                  >
+                    {i18n.units.address}
+                  </SortableTh>
+                  <SortableTh
+                    sorted={sortColumn === 'city' ? sortDirection : undefined}
+                    onClick={() => sortBy('visitingAddress.postOffice')}
+                  >
+                    {i18n.units.city}
+                  </SortableTh>
+                  <SortableTh
+                    sorted={sortColumn === 'type' ? sortDirection : undefined}
+                    onClick={() => sortBy('type')}
+                  >
+                    {i18n.units.type}
+                  </SortableTh>
+                </Tr>
+              </Thead>
+              <Tbody>
+                {orderedUnits(units)
+                  .filter(
+                    (unit) =>
+                      (filter.text.length === 0 ||
+                        unit.name
+                          .toLowerCase()
+                          .includes(filter.text.toLowerCase())) &&
+                      (filter.providerTypes.length === 0 ||
+                        filter.providerTypes.includes(unit.providerType)) &&
+                      (filter.careTypes.length === 0 ||
+                        filter.careTypes.some((ct) =>
+                          unit.type.includes(ct)
+                        )) &&
+                      (includeClosed ||
+                        !unit.closingDate?.isBefore(
+                          LocalDate.todayInSystemTz()
+                        ))
+                  )
+                  .map((unit: Daycare) => (
+                    <Tr key={unit.id} data-qa="unit-row" data-id={unit.id}>
+                      <Td>
+                        <Link to={`/units/${unit.id}`}>{unit.name}</Link>
+                      </Td>
+                      <Td>{unit.area.name}</Td>
+                      <Td>
+                        {unit.visitingAddress.streetAddress &&
+                        unit.visitingAddress.postalCode
+                          ? [
+                              unit.visitingAddress.streetAddress,
+                              unit.visitingAddress.postalCode
+                            ].join(', ')
+                          : unit.visitingAddress.streetAddress}
+                      </Td>
+                      <Td>{unit.visitingAddress.postOffice}</Td>
+                      <Td>
+                        {unit.type
+                          .map((type) => i18n.common.types[type])
+                          .join(', ')}
+                      </Td>
+                    </Tr>
+                  ))}
+              </Tbody>
+            </Table>
+          ))}
         </div>
-        {units.isLoading && <Loader />}
-        {units.isFailure && <div>{i18n.common.loadingFailed}</div>}
         <Gap size="XXL" />
       </ContentArea>
     </Container>

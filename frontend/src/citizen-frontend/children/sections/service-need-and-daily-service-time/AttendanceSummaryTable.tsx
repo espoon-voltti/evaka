@@ -5,6 +5,7 @@
 import React, { useMemo, useState } from 'react'
 import styled from 'styled-components'
 
+import { renderResult } from 'citizen-frontend/async-rendering'
 import { useTranslation } from 'citizen-frontend/localization'
 import { combine, Result } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
@@ -14,8 +15,6 @@ import { ChildId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
 import YearMonth from 'lib-common/year-month'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
-import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
-import Spinner from 'lib-components/atoms/state/Spinner'
 import ListGrid from 'lib-components/layout/ListGrid'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
@@ -71,26 +70,22 @@ export default React.memo(function AttendanceSummaryTable({
           />
         </FixedSpaceRow>
       </ListGrid>
-      {attendanceSummaryResponse !== undefined &&
-        combine(serviceNeedsResponse, attendanceSummaryResponse).mapAll({
-          failure: () => (
-            <ErrorSegment title={t.common.errors.genericGetError} />
-          ),
-          loading: () => <Spinner />,
-          success: ([serviceNeeds, attendanceSummary]) => (
-            <AttendanceSummary
-              serviceNeeds={serviceNeeds.filter(
-                (sn) =>
-                  attendanceSummaryRange.overlaps(
-                    new FiniteDateRange(sn.startDate, sn.endDate)
-                  ) &&
-                  sn.contractDaysPerMonth !== null &&
-                  sn.reservationsEnabled
-              )}
-              attendanceSummary={attendanceSummary}
-            />
-          )
-        })}
+      {renderResult(
+        combine(serviceNeedsResponse, attendanceSummaryResponse),
+        ([serviceNeeds, attendanceSummary]) => (
+          <AttendanceSummary
+            serviceNeeds={serviceNeeds.filter(
+              (sn) =>
+                attendanceSummaryRange.overlaps(
+                  new FiniteDateRange(sn.startDate, sn.endDate)
+                ) &&
+                sn.contractDaysPerMonth !== null &&
+                sn.reservationsEnabled
+            )}
+            attendanceSummary={attendanceSummary}
+          />
+        )
+      )}
     </>
   )
 })
