@@ -37,6 +37,7 @@ export default class ChildInformationPage {
   #ophPersonOidInput: TextInput
   #editButton: Element
   confirmButton: Element
+
   constructor(private readonly page: Page) {
     this.#deceased = page.findByDataQa('deceased-label')
     this.#ophPersonOidInput = new TextInput(
@@ -773,6 +774,7 @@ export class PlacementsSection extends Section {
       .findByDataQa(`shift-care-${shiftCareType}`)
       .waitUntilVisible()
   }
+
   async assertServiceNeedOptions(placementId: string, optionIds: string[]) {
     await this.openPlacement(placementId)
     await this.addMissingServiceNeedButton.click()
@@ -963,26 +965,33 @@ export class AssistanceSection extends Section {
   assistanceFactorRow(nth: number): AssistanceFactorRow {
     return new AssistanceFactorRow(this.#assistanceFactorRows.nth(nth))
   }
+
   async assertAssistanceFactorCount(count: number) {
     await this.#assistanceFactorRows.assertCount(count)
   }
+
   daycareAssistanceRow(nth: number): DaycareAssistanceRow {
     return new DaycareAssistanceRow(this.#daycareAssistanceRows.nth(nth))
   }
+
   async assertDaycareAssistanceCount(count: number) {
     await this.#daycareAssistanceRows.assertCount(count)
   }
+
   preschoolAssistanceRow(nth: number): PreschoolAssistanceRow {
     return new PreschoolAssistanceRow(this.#preschoolAssistanceRows.nth(nth))
   }
+
   async assertPreschoolAssistanceCount(count: number) {
     await this.#preschoolAssistanceRows.assertCount(count)
   }
+
   otherAssistanceMeasureRow(nth: number): OtherAssistanceMeasureRow {
     return new OtherAssistanceMeasureRow(
       this.#otherAssistanceMeasureRows.nth(nth)
     )
   }
+
   async assertOtherAssistanceMeasureCount(count: number) {
     await this.#otherAssistanceMeasureRows.assertCount(count)
   }
@@ -1160,6 +1169,7 @@ class FeeAlterationEditorPage {
   endDateInput: DatePickerDeprecated
   alterationValueInput: TextInput
   saveButton: Element
+
   constructor(private readonly page: Page) {
     this.startDateInput = new DatePickerDeprecated(
       page.findByDataQa('date-range-input-start-date')
