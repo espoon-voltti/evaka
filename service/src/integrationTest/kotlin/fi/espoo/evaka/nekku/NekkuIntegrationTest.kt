@@ -1934,7 +1934,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         absenceCategory = AbsenceCategory.BILLABLE,
                         modifiedBy = employee.evakaUserId,
                         modifiedAt = HelsinkiDateTime.now(),
-                    ),
+                    )
                 )
                 .forEach { tx.insert(it) }
         }
@@ -1959,7 +1959,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         )
                     ),
                     dryRun = false,
-                ),
+                )
             ),
             client.orders,
         )
@@ -2263,11 +2263,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         createAndSendNekkuOrder(client, db, group.id, monday, 0.9)
         createAndSendNekkuOrder(client, db, group.id, tuesday, 0.9)
 
-        assertEquals(
-            emptyList()
-            ,
-            client.orders,
-        )
+        assertEquals(emptyList(), client.orders)
     }
 
     private fun getNekkuWeeklyJobs() =
