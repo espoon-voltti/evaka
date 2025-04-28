@@ -399,7 +399,7 @@ fun createAndSendNekkuOrder(
                 dryRun = false,
             )
 
-        if (order.orders.isNotEmpty()) {
+        if (order.orders.first().items.isNotEmpty()) {
             val nekkuOrderResult = client.createNekkuMealOrder(order)
             logger.info {
                 "Sent Nekku order for date $date for customerNumber=${nekkuDaycareCustomerMapping.customerNumber} groupId=$groupId and Nekku orders created: ${nekkuOrderResult.created}"
