@@ -600,7 +600,7 @@ function FileUpload<T>(
           <Gap horizontal size={slimSingleFile ? 'zero' : 's'} />
           <UploadedFiles data-qa="uploaded-files">
             {uploadedFiles.map((file) => (
-              <File key={file.key}>
+              <File data-qa="uploaded-file" key={file.key}>
                 <FileIcon icon={fileIcon(file)} />
                 <FileDetails>
                   <FileHeader>
@@ -638,7 +638,7 @@ function FileUpload<T>(
                           disabled={file.deleteInProgress}
                           onClick={() => deleteFile(file)}
                           aria-label={`${i18n.deleteFile} ${file.name}`}
-                          data-qa={`file-delete-button-${file.name}`}
+                          data-qa="file-delete-button"
                         />
                       </>
                     )}

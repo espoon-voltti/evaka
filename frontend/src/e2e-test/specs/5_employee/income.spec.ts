@@ -250,13 +250,13 @@ describe('Income', () => {
     await incomesSection.fillIncomeStartDate('1.1.2020')
     await incomesSection.fillIncomeEndDate('31.1.2020')
     await incomesSection.confirmRetroactive.check()
-    await incomesSection.addAttachment()
+    await incomesSection.attachmenUpload.uploadTestFile()
     await incomesSection.save()
     await waitUntilEqual(() => incomesSection.getAttachmentCount(), 1)
 
     await incomesSection.edit()
 
-    await incomesSection.addAttachment()
+    await incomesSection.attachmenUpload.uploadTestFile()
     await incomesSection.save()
     await waitUntilEqual(() => incomesSection.getAttachmentCount(), 2)
   })
@@ -267,7 +267,7 @@ describe('Income', () => {
     await incomesSection.fillIncomeStartDate('1.1.2020')
     await incomesSection.fillIncomeEndDate('31.1.2020')
     await incomesSection.confirmRetroactive.check()
-    await incomesSection.addAttachment()
+    await incomesSection.attachmenUpload.uploadTestFile()
     await incomesSection.save()
     await waitUntilEqual(() => incomesSection.getAttachmentCount(), 1)
 
@@ -282,16 +282,14 @@ describe('Income', () => {
     await incomesSection.fillIncomeStartDate('1.1.2020')
     await incomesSection.fillIncomeEndDate('31.1.2020')
     await incomesSection.confirmRetroactive.check()
-    await incomesSection.addAttachment()
+    await incomesSection.attachmenUpload.uploadTestFile()
     await incomesSection.save()
     await waitUntilEqual(() => incomesSection.getAttachmentCount(), 1)
 
     await incomesSection.edit()
-
-    await incomesSection.deleteIncomeAttachment(0)
-    await waitUntilEqual(() => incomesSection.getAttachmentCount(), 0)
-
+    await incomesSection.attachmenUpload.deleteUploadedFile(0)
     await incomesSection.cancelEdit()
+
     await waitUntilEqual(() => incomesSection.getAttachmentCount(), 0)
   })
 

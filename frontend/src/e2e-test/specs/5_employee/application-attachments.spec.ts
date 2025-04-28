@@ -26,14 +26,11 @@ import ApplicationListView from '../../pages/employee/applications/application-l
 import ApplicationReadView from '../../pages/employee/applications/application-read-view'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import { UnitPage } from '../../pages/employee/units/unit'
-import { Page } from '../../utils/page'
+import { Page, testFileName } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
 let page: Page
 let applicationListView: ApplicationListView
-
-const testFileName = 'test_file.png'
-const testFilePath = `src/e2e-test/assets/${testFileName}`
 
 beforeEach(async () => {
   await resetServiceState()
@@ -63,8 +60,7 @@ async function addAttachmentToApplication(applicationId: string) {
     .openApplication()
   const applicationEditView = await applicationView.startEditing()
   await applicationEditView.setShiftCareNeeded()
-  await applicationEditView.uploadShiftCareAttachment(testFilePath)
-  await applicationEditView.assertShiftCareAttachmentUploaded(testFileName)
+  await applicationEditView.shiftCareAttachmentFileUpload.uploadTestFile()
   await applicationEditView.saveApplication()
 }
 
@@ -77,15 +73,13 @@ describe('Employee application attachments', () => {
     const applicationEditView = await applicationView.startEditing()
 
     await applicationEditView.setUrgent()
-    await applicationEditView.uploadUrgentAttachment(testFilePath)
+    await applicationEditView.urgentAttachmentFileUpload.uploadTestFile()
     await applicationEditView.assertUrgentAttachmentUploaded(testFileName)
 
     await applicationEditView.setShiftCareNeeded()
-    await applicationEditView.uploadShiftCareAttachment(testFilePath)
-    await applicationEditView.assertShiftCareAttachmentUploaded(testFileName)
+    await applicationEditView.shiftCareAttachmentFileUpload.uploadTestFile()
 
-    await applicationEditView.deleteShiftCareAttachment(testFileName)
-    await applicationEditView.assertShiftCareAttachmentsDeleted()
+    await applicationEditView.shiftCareAttachmentFileUpload.deleteUploadedFile()
     await applicationEditView.saveApplication()
 
     await applicationListView.searchButton.click()

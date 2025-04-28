@@ -15,7 +15,7 @@ import {
   DatePicker,
   DatePickerDeprecated,
   Element,
-  FileInput,
+  FileUpload,
   Modal,
   Page,
   Select,
@@ -449,29 +449,9 @@ export class IncomeSection extends Section {
     await this.#editIncomeItemButton.click()
   }
 
-  #incomeFileUpload = this.find('[data-qa="income-attachment-upload"]')
-
-  async uploadedCount() {
-    return this.#incomeFileUpload
-      .findAll('[data-qa="file-download-button"]')
-      .count()
-  }
-
-  async addAttachment() {
-    const testFileName = 'test_file.png'
-    const initiallyUploadedCount = await this.uploadedCount()
-
-    const testFilePath = `src/e2e-test/assets/${testFileName}`
-    await new FileInput(
-      this.#incomeFileUpload.find('[data-qa="btn-upload-file"]')
-    ).setInputFiles(testFilePath)
-
-    await waitUntilEqual(() => this.uploadedCount(), initiallyUploadedCount + 1)
-  }
-
-  async deleteIncomeAttachment(n: number) {
-    return this.findAll('[data-qa^="file-delete-button"]').nth(n).click()
-  }
+  attachmenUpload = new FileUpload(
+    this.findByDataQa('income-attachment-upload')
+  )
 
   async getAttachmentCount() {
     return this.findAll('[data-qa="attachment"]').count()
