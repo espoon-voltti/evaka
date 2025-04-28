@@ -14,10 +14,4 @@ SPDX-License-Identifier: LGPL-2.1-or-later
        <packageUrl regex="true">^pkg:maven/com\.pinterest\.ktlint/ktlint\-cli\-reporter\-checkstyle@.*$</packageUrl>
        <cpe>cpe:/a:checkstyle:checkstyle</cpe>
     </suppress>
-    <suppress>
-        <notes><![CDATA[
-        Unrelated and waiting for a fix in spring-boot-dependencies
-       ]]></notes>
-        <cve>CVE-2025-22234</cve>
-    </suppress>
 </suppressions>
