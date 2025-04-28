@@ -493,7 +493,10 @@ const ChildDocumentReadViewInner = React.memo(
                           mutation={planArchiveChildDocumentMutation}
                           onClick={() => ({ documentId: document.id })}
                           data-qa="archive-button"
-                          disabled={document.archivedAt !== null}
+                          disabled={
+                            !document.template.archiveExternally ||
+                            document.archivedAt !== null
+                          }
                         />
                       </Tooltip>
                     )}

@@ -2320,6 +2320,7 @@ data class DevDocumentTemplate(
     val archiveDurationMonths: Int? = null,
     val published: Boolean = true,
     @Json val content: DocumentTemplateContent,
+    val archiveExternally: Boolean = false,
 ) {
     fun toDocumentTemplate() =
         DocumentTemplate(
@@ -2335,6 +2336,7 @@ data class DevDocumentTemplate(
             processDefinitionNumber = processDefinitionNumber,
             archiveDurationMonths = archiveDurationMonths,
             content = content,
+            archiveExternally = archiveExternally,
         )
 }
 

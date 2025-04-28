@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.document.archival
 
-import fi.espoo.evaka.document.DocumentType
 import fi.espoo.evaka.document.childdocument.*
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.process.*
@@ -52,21 +51,6 @@ fun uploadToArchive(
         db.read { tx ->
             tx.getChildDocument(documentId) ?: throw NotFound("document $documentId not found")
         }
-    if (
-        document.template.type !in
-            setOf(
-                DocumentType.VASU,
-                DocumentType.LEOPS,
-                DocumentType.HOJKS,
-                DocumentType.MIGRATED_VASU,
-                DocumentType.MIGRATED_LEOPS,
-            )
-    ) {
-        logger.warn {
-            "Refusing to archive non-supported document type ${document.template.type} with id $documentId"
-        }
-        return
-    }
     val childInfo =
         db.read { tx ->
             val childId = document.child.id

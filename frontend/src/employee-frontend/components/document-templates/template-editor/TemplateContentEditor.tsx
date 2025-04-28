@@ -265,6 +265,10 @@ const BasicsSection = React.memo(function BasicsSection({
                 label:
                   i18n.documentTemplates.templateModal.archiveDurationMonths,
                 value: template.archiveDurationMonths ?? '-'
+              },
+              {
+                label: 'Asiakirja arkistoitavissa',
+                value: template.archiveExternally ? 'Kyllä' : 'Ei'
               }
             ]}
           />
@@ -336,7 +340,8 @@ const BasicsEditor = React.memo(function BasicsEditor({
       legalBasis: template.legalBasis,
       validity: openEndedLocalDateRange.fromRange(template.validity),
       processDefinitionNumber: template.processDefinitionNumber ?? '',
-      archiveDurationMonths: template.archiveDurationMonths?.toString() ?? '0'
+      archiveDurationMonths: template.archiveDurationMonths?.toString() ?? '0',
+      archiveExternally: template.archiveExternally ?? false
     }),
     {
       ...i18n.validationErrors
@@ -352,7 +357,8 @@ const BasicsEditor = React.memo(function BasicsEditor({
     legalBasis,
     validity,
     processDefinitionNumber,
-    archiveDurationMonths
+    archiveDurationMonths,
+    archiveExternally
   } = useFormFields(form)
 
   return (
@@ -416,6 +422,12 @@ const BasicsEditor = React.memo(function BasicsEditor({
             />
           </>
         )}
+        <Gap />
+        <CheckboxF
+          bind={archiveExternally}
+          label={i18n.documentTemplates.templateModal.archiveExternally}
+          data-qa="archive-externally-checkbox"
+        />
       </div>
       <FixedSpaceRow justifyContent="flex-end">
         <LegacyButton onClick={onClose} text={i18n.common.cancel} />

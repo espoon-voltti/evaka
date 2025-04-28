@@ -565,6 +565,7 @@ export interface DevDaycareGroupPlacement {
 */
 export interface DevDocumentTemplate {
   archiveDurationMonths: number | null
+  archiveExternally: boolean
   confidentiality: DocumentConfidentiality | null
   content: DocumentTemplateContent
   id: DocumentTemplateId

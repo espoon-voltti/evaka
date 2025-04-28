@@ -1446,8 +1446,8 @@ fun Database.Transaction.insert(row: DevDocumentTemplate): DocumentTemplateId =
     createUpdate {
             sql(
                 """
-INSERT INTO document_template (id, name, type, placement_types, language, confidential, confidentiality_duration_years, confidentiality_basis, legal_basis, validity, process_definition_number, archive_duration_months, published, content) 
-VALUES (${bind(row.id)}, ${bind(row.name)}, ${bind(row.type)}, ${bind(row.placementTypes)}, ${bind(row.language)}, ${bind(row.confidentiality != null)}, ${bind(row.confidentiality?.durationYears)}, ${bind(row.confidentiality?.basis)}, ${bind(row.legalBasis)}, ${bind(row.validity)}, ${bind(row.processDefinitionNumber)}, ${bind(row.archiveDurationMonths)}, ${bind(row.published)}, ${bind(row.content)})
+INSERT INTO document_template (id, name, type, placement_types, language, confidential, confidentiality_duration_years, confidentiality_basis, legal_basis, validity, process_definition_number, archive_duration_months, published, archive_externally, content) 
+VALUES (${bind(row.id)}, ${bind(row.name)}, ${bind(row.type)}, ${bind(row.placementTypes)}, ${bind(row.language)}, ${bind(row.confidentiality != null)}, ${bind(row.confidentiality?.durationYears)}, ${bind(row.confidentiality?.basis)}, ${bind(row.legalBasis)}, ${bind(row.validity)}, ${bind(row.processDefinitionNumber)}, ${bind(row.archiveDurationMonths)}, ${bind(row.published)}, ${bind(row.archiveExternally)}, ${bind(row.content)})
 """
             )
         }

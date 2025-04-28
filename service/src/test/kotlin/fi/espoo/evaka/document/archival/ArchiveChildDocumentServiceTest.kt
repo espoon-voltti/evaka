@@ -157,6 +157,7 @@ class ArchiveChildDocumentServiceTest {
                                         )
                                     )
                             ),
+                        archiveExternally = true,
                     ),
             )
 

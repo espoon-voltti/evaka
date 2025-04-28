@@ -5093,7 +5093,8 @@ export const fi = {
       processDefinitionNumber: 'Tehtäväluokka',
       processDefinitionNumberInfo:
         'Tiedonohjaussuunnitelmassa määritelty tehtäväluokan numero. Jätä tyhjäksi jos lomaketta ei arkistoida.',
-      archiveDurationMonths: 'Arkistointiaika (kuukautta)'
+      archiveDurationMonths: 'Arkistointiaika (kuukautta)',
+      archiveExternally: 'Siirrettävä ulkoiseen arkistoon ennen poistoa'
     },
     templateEditor: {
       confidential: 'Salassapidettävä',

@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.document.childdocument
 
+import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.document.CheckboxGroupQuestionOption
@@ -63,6 +64,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
     @Autowired lateinit var controller: ChildDocumentController
     @Autowired lateinit var templateController: DocumentTemplateController
     @Autowired lateinit var metadataController: ProcessMetadataController
+    @Autowired lateinit var evakaProps: EvakaEnv
 
     lateinit var areaId: AreaId
     val employeeUser = DevEmployee(roles = setOf(UserRole.ADMIN))
@@ -156,6 +158,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
             processDefinitionNumber = "123.456.789",
             archiveDurationMonths = 120,
             confidentiality = DocumentConfidentiality(100, "JulkL 24.1 § 25 ja 30 kohdat"),
+            archiveExternally = true,
         )
 
     @BeforeEach
@@ -237,6 +240,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                                 processDefinitionNumber = null,
                                 archiveDurationMonths = null,
                                 content = templateContent,
+                                archiveExternally = false,
                             ),
                         archivedAt = null,
                     ),
@@ -951,6 +955,47 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                 ChildDocumentCreateRequest(duplicateId, templateIdHojks),
             )
         assertNotNull(controller.getDocument(dbInstance(), unitSupervisorUser, clock, documentId))
+    }
+
+    @Test
+    fun `archiving document with template not marked for external archiving fails`() {
+        // Create document with a template not marked for external archiving (Ped template)
+        val documentId =
+            controller.createDocument(
+                dbInstance(),
+                employeeUser.user,
+                clock,
+                ChildDocumentCreateRequest(childId = testChild_1.id, templateId = templateIdPed),
+            )
+
+        // Trying to archive should fail with BadRequest
+        assertThrows<BadRequest> {
+            controller.planArchiveChildDocument(
+                dbInstance(),
+                employeeUser.user,
+                clock,
+                documentId,
+                särmäEnabled = true,
+            )
+        }
+
+        // Create document with a template marked for external archiving (HOJKS template)
+        val documentId2 =
+            controller.createDocument(
+                dbInstance(),
+                employeeUser.user,
+                clock,
+                ChildDocumentCreateRequest(childId = testChild_1.id, templateId = templateIdHojks),
+            )
+
+        // This should not throw an exception
+        controller.planArchiveChildDocument(
+            dbInstance(),
+            employeeUser.user,
+            clock,
+            documentId2,
+            särmäEnabled = true,
+        )
     }
 
     private fun getDocument(id: ChildDocumentId) =
