@@ -100,11 +100,12 @@ describe.each(envs)('Income statements', (env) => {
 
       // End date can be max 1y from start date so a warning is shown
       await incomeStatementsPage.setValidToDate('25.12.2045')
-      await incomeStatementsPage.incomeValidMaxRangeInfo.waitUntilVisible()
+      await incomeStatementsPage.incomeEndDateInfo.assertTextEquals(
+        'Valitse aikaisempi päivä'
+      )
 
       await incomeStatementsPage.setValidToDate(endDate)
       await incomeStatementsPage.incomeEndDateInfo.waitUntilHidden()
-      await incomeStatementsPage.incomeValidMaxRangeInfo.waitUntilHidden()
       await incomeStatementsPage.submit()
       await assertIncomeStatementCreated(startDate, now, env)
     })

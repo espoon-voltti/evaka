@@ -2599,7 +2599,6 @@ export default {
       choose: 'Valitse vaihtoehto',
       chooseAtLeastOne: 'Valitse vähintään yksi vaihtoehto',
       deleteFailed: 'Tuloselvitystä ei voitu poistaa',
-      dateRangeInvalid: `Tulotiedot voivat olla voimassa korkeintaan vuoden`,
       attachmentMissing: 'Liite puuttuu'
     },
     table: {

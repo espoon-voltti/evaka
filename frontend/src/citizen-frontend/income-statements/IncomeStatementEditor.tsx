@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router'
 
 import { combine, Loading, Result } from 'lib-common/api'
@@ -60,6 +60,8 @@ function useInitialEditorState(
   )
 }
 
+export type ErrorDisplayType = 'NONE' | 'DRAFT' | 'SAVE'
+
 export default React.memo(function IncomeStatementEditor() {
   const params = useRouteParams(['incomeStatementId'])
   const navigate = useNavigate()
@@ -78,7 +80,7 @@ export default React.memo(function IncomeStatementEditor() {
     setState(initialEditorState)
   }
 
-  const [showFormErrors, setShowFormErrors] = useState(false)
+  const [showFormErrors, setShowFormErrors] = useState<ErrorDisplayType>('NONE')
 
   const navigateToList = useCallback(() => {
     void navigate('/income')
@@ -111,6 +113,17 @@ export default React.memo(function IncomeStatementEditor() {
     [state]
   )
 
+  useEffect(() => {
+    if (
+      (showFormErrors === 'SAVE' &&
+        validatedBody.isSuccess &&
+        validatedBody.value) ||
+      (showFormErrors === 'DRAFT' && draftBody.isSuccess && draftBody.value)
+    ) {
+      setShowFormErrors('NONE')
+    }
+  }, [showFormErrors, validatedBody, draftBody])
+
   return renderResult(
     combine(state, draftBody, validatedBody),
     ([{ status, formData, startDates }, draftBody, validatedBody]) => {
@@ -128,7 +141,7 @@ export default React.memo(function IncomeStatementEditor() {
             return createIncomeStatement({ body, draft })
           }
         } else {
-          setShowFormErrors(true)
+          setShowFormErrors(draft ? 'DRAFT' : 'SAVE')
           if (form.current) form.current.scrollToErrors()
           return
         }
@@ -142,7 +155,6 @@ export default React.memo(function IncomeStatementEditor() {
             formData={formData}
             showFormErrors={showFormErrors}
             otherStartDates={startDates}
-            draftSaveEnabled={draftBody !== null}
             onChange={updateFormData}
             onSave={save}
             onSuccess={navigateToList}

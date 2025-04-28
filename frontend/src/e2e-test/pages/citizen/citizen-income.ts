@@ -25,7 +25,6 @@ export default class CitizenIncomePage {
   validToDate: TextInput
   incomeStartDateInfo: Element
   incomeEndDateInfo: Element
-  incomeValidMaxRangeInfo: Element
   constructor(
     private readonly page: Page,
     env: EnvType
@@ -45,7 +44,6 @@ export default class CitizenIncomePage {
     this.validToDate = new TextInput(page.findByDataQa('income-end-date'))
     this.incomeStartDateInfo = page.findByDataQa('income-start-date-info')
     this.incomeEndDateInfo = page.findByDataQa('income-end-date-info')
-    this.incomeValidMaxRangeInfo = page.findByDataQa('date-range-info')
   }
 
   async createNewIncomeStatement() {

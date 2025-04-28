@@ -46,7 +46,6 @@ import {
   H3,
   H4,
   Label,
-  LabelLike,
   P
 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
@@ -73,14 +72,14 @@ import {
   useFieldDispatch,
   useFieldSetState
 } from './IncomeStatementComponents'
+import { ErrorDisplayType } from './IncomeStatementEditor'
 
 interface Props {
   incomeStatementId: IncomeStatementId | undefined
   status: IncomeStatementStatus
   formData: Form.IncomeStatementForm
-  showFormErrors: boolean
+  showFormErrors: ErrorDisplayType
   otherStartDates: LocalDate[]
-  draftSaveEnabled: boolean
   onChange: SetStateCallback<Form.IncomeStatementForm>
   onSave: (draft: boolean) => Promise<Result<unknown>> | undefined
   onSuccess: () => void
@@ -95,7 +94,6 @@ export default React.memo(
       formData,
       showFormErrors,
       otherStartDates,
-      draftSaveEnabled,
       onChange,
       onSave,
       onSuccess,
@@ -190,17 +188,6 @@ export default React.memo(
       onAttachmentChange
     )
 
-    const sendButtonEnabled = useMemo(
-      () =>
-        formData.startDate &&
-        (formData.highestFee ||
-          ((formData.gross.selected || formData.entrepreneur.selected) &&
-            formData.endDate &&
-            formData.endDate <= formData.startDate.addYears(1))) &&
-        formData.assure,
-      [formData]
-    )
-
     return (
       <>
         <Container>
@@ -218,7 +205,7 @@ export default React.memo(
           <IncomeTypeSelection
             formData={incomeTypeSelectionFormData}
             isValidStartDate={isValidStartDate}
-            showFormErrors={showFormErrors}
+            showFormErrors={showFormErrors !== 'NONE'}
             onChange={onChange}
             onSelect={onSelectIncomeType}
             ref={scrollTarget}
@@ -228,7 +215,7 @@ export default React.memo(
               <Gap size="L" />
               <GrossIncomeSelection
                 formData={formData.gross}
-                showFormErrors={showFormErrors}
+                showFormErrors={showFormErrors !== 'NONE'}
                 onChange={onGrossChange}
                 entrepreneurSelected={formData.entrepreneur.selected}
                 onSelectEntrepreneur={onSelectEntrepreneur}
@@ -241,7 +228,7 @@ export default React.memo(
               <Gap size="L" />
               <EntrepreneurIncomeSelection
                 formData={formData.entrepreneur}
-                showFormErrors={showFormErrors}
+                showFormErrors={showFormErrors !== 'NONE'}
                 onChange={onEntrepreneurChange}
                 attachmentHandler={attachmentHandler}
               />
@@ -253,7 +240,7 @@ export default React.memo(
               <OtherInfo
                 formData={otherIncomeFormData}
                 onChange={onChange}
-                showFormErrors={showFormErrors}
+                showFormErrors={showFormErrors !== 'NONE'}
                 attachmentHandler={attachmentHandler}
               />
               <Gap size="L" />
@@ -299,17 +286,22 @@ export default React.memo(
           )}
           <Gap />
           <ActionContainer>
-            <AssureCheckbox>
-              <Checkbox
-                label={t.income.assure}
-                checked={formData.assure}
-                data-qa="assure-checkbox"
-                onChange={useFieldDispatch(onChange, 'assure')}
-              />
-            </AssureCheckbox>
+            <div>
+              <AssureCheckbox>
+                <Checkbox
+                  label={t.income.assure}
+                  checked={formData.assure}
+                  data-qa="assure-checkbox"
+                  onChange={useFieldDispatch(onChange, 'assure')}
+                />
+              </AssureCheckbox>
+              {showFormErrors === 'SAVE' && !formData.assure ? (
+                <LabelError text={t.income.errors.choose} />
+              ) : null}
+            </div>
             <FixedSpaceRow>
               <Button text={t.common.cancel} onClick={onCancel} />
-              {status === 'DRAFT' && draftSaveEnabled && (
+              {status === 'DRAFT' && (
                 <AsyncButton
                   text={t.income.saveAsDraft}
                   onClick={() => onSave(true)}
@@ -321,7 +313,6 @@ export default React.memo(
                 text={status === 'DRAFT' ? t.income.send : t.income.updateSent}
                 primary
                 onClick={() => onSave(false)}
-                disabled={!sendButtonEnabled}
                 onSuccess={onSuccess}
               />
             </FixedSpaceRow>
@@ -388,13 +379,6 @@ const IncomeTypeSelection = React.memo(
     )
 
     const isEndDateRequired = formData.grossSelected
-    const invalidDateRange = useMemo(
-      () =>
-        isEndDateRequired && formData.endDate && formData.startDate
-          ? formData.endDate > formData.startDate.addYears(1)
-          : false,
-      [isEndDateRequired, formData.startDate, formData.endDate]
-    )
 
     const validateEndDate = useCallback(
       (endDate: LocalDate | null) => {
@@ -456,6 +440,11 @@ const IncomeTypeSelection = React.memo(
                   date={formData.endDate}
                   onChange={onEndDateChange}
                   minDate={formData.startDate ?? undefined}
+                  maxDate={
+                    isEndDateRequired
+                      ? formData.startDate?.addYears(1)
+                      : undefined
+                  }
                   hideErrorsBeforeTouched={false}
                   locale={lang}
                   info={endDateInputInfo}
@@ -505,18 +494,16 @@ const IncomeTypeSelection = React.memo(
               <Gap size="s" />
             </>
           )}
-          <LabelLike>{t.income.incomeType.title} *</LabelLike>
+          <LabelWithError
+            label={`${t.income.incomeType.title} *`}
+            showError={
+              showFormErrors &&
+              !formData.highestFeeSelected &&
+              !formData.grossSelected
+            }
+            errorText={t.income.errors.choose}
+          />
           <Gap size="s" />
-          {invalidDateRange && (
-            <>
-              <Gap size="s" />
-              <InfoBox
-                message={t.income.errors.dateRangeInvalid}
-                thin
-                data-qa="date-range-info"
-              />
-            </>
-          )}
           <Radio
             label={t.income.incomeType.agreeToHighestFee}
             data-qa="highest-fee-checkbox"
