@@ -5,6 +5,7 @@
 package fi.espoo.evaka.document.childdocument
 
 import fi.espoo.evaka.document.DocumentType
+import fi.espoo.evaka.pis.Employee
 import fi.espoo.evaka.shared.ArchivedProcessId
 import fi.espoo.evaka.shared.ChildDocumentDecisionId
 import fi.espoo.evaka.shared.ChildDocumentId
@@ -13,6 +14,7 @@ import fi.espoo.evaka.shared.DocumentTemplateId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -382,6 +384,24 @@ fun Database.Transaction.markDocumentAsArchived(id: ChildDocumentId, now: Helsin
         }
         .updateExactlyOne()
 }
+
+fun Database.Read.getChildDocumentDecisionMakers(documentId: ChildDocumentId): List<Employee> =
+    createQuery {
+            sql(
+                """
+SELECT id, first_name, last_name, email, external_id, created, updated, active, (social_security_number IS NOT NULL) AS has_ssn, last_login
+FROM employee e
+WHERE e.roles && ${bind(listOf(UserRole.ADMIN, UserRole.DIRECTOR))} OR EXISTS(
+    SELECT FROM daycare_acl acl 
+    WHERE acl.employee_id = e.id AND acl.role = ANY(${bind(listOf(UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER))})
+) OR EXISTS( -- always include currently selected even if roles change
+    SELECT FROM child_document cd
+    WHERE cd.id = ${bind(documentId)} AND cd.decision_maker = e.id
+) 
+"""
+            )
+        }
+        .toList()
 
 fun Database.Transaction.setChildDocumentDecisionMaker(
     id: ChildDocumentId,

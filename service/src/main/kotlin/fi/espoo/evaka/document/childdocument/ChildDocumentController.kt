@@ -26,7 +26,6 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
@@ -271,22 +270,7 @@ class ChildDocumentController(
                         documentId,
                     )
 
-                    tx.createQuery {
-                            sql(
-                                """
-                    SELECT id, first_name, last_name, email, external_id, created, updated, active, (social_security_number IS NOT NULL) AS has_ssn, last_login
-                    FROM employee e
-                    WHERE e.roles && ${bind(listOf(UserRole.ADMIN, UserRole.DIRECTOR))} OR EXISTS(
-                        SELECT FROM daycare_acl acl 
-                        WHERE acl.employee_id = e.id AND acl.role = ANY(${bind(listOf(UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER))})
-                    ) OR EXISTS( -- always include currently selected even if roles change
-                        SELECT FROM child_document cd
-                        WHERE cd.id = ${bind(documentId)} AND cd.decision_maker = e.id
-                    ) 
-                """
-                            )
-                        }
-                        .toList<Employee>()
+                    tx.getChildDocumentDecisionMakers(documentId)
                 }
             }
             .also { Audit.ChildDocumentReadDecisionMakers.log(targetId = AuditId(documentId)) }
@@ -662,6 +646,11 @@ class ChildDocumentController(
                         throw BadRequest("Document is not a decision")
                     if (document.status != DocumentStatus.DRAFT)
                         throw BadRequest("Document is not in correct status")
+
+                    val validDecisionMakers = tx.getChildDocumentDecisionMakers(documentId)
+                    if (validDecisionMakers.none { it.id == body.decisionMaker }) {
+                        throw BadRequest("Decision maker is not valid")
+                    }
 
                     tx.setChildDocumentDecisionMaker(documentId, body.decisionMaker)
                     tx.changeStatus(
