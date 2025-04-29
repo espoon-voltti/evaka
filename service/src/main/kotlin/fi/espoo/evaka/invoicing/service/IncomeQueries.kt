@@ -128,9 +128,10 @@ WITH fridge_parents AS (
     ) 
     WHERE pl.start_date BETWEEN ${bind(currentMonth.start)} AND ${bind(currentMonth.end)}
     AND NOT EXISTS(
-        SELECT 1 
+        SELECT 1
         FROM placement
-        WHERE start_date < ${bind(today)} AND child_id IN (
+        WHERE start_date < ${bind(currentMonth.start)}
+        AND child_id IN (
             SELECT child_id
             FROM fridge_child
             WHERE (head_of_child = fc_head.head_of_child OR head_of_child = fp_spouse.person_id)

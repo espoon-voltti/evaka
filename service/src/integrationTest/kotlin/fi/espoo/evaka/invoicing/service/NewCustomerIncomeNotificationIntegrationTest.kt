@@ -185,6 +185,57 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
     }
 
     @Test
+    fun `notifications are sent when placement for other child also starts in same month`() {
+        db.transaction { tx ->
+            val otherChild =
+                DevPerson(
+                    id = ChildId(UUID.randomUUID()),
+                    dateOfBirth = LocalDate.of(2015, 12, 1),
+                    ssn = "011215A9926",
+                    firstName = "Jackie",
+                    lastName = "Doe",
+                    streetAddress = "Kamreerintie 2",
+                    postalCode = "02770",
+                    postOffice = "Espoo",
+                    restrictedDetailsEnabled = false,
+                )
+
+            val otherChildId = tx.insert(otherChild, DevPersonType.CHILD)
+            val otherPlacementStart = clock.today().plusWeeks(2)
+            val otherPlacementEnd = clock.today().plusMonths(6)
+            tx.insert(
+                DevFridgeChild(
+                    childId = otherChildId,
+                    headOfChild = fridgeHeadOfChildId,
+                    startDate = clock.today(),
+                    endDate = clock.today().plusYears(1),
+                )
+            )
+            val placementId =
+                tx.insert(
+                    DevPlacement(
+                        childId = otherChildId,
+                        unitId = daycareId,
+                        startDate = otherPlacementStart,
+                        endDate = otherPlacementEnd,
+                    )
+                )
+            tx.insertServiceNeed(
+                placementId = placementId,
+                startDate = otherPlacementStart,
+                endDate = otherPlacementEnd,
+                optionId = snDaycareContractDays15.id,
+                shiftCare = ShiftCareType.NONE,
+                partWeek = false,
+                confirmedBy = null,
+                confirmedAt = null,
+            )
+        }
+
+        assertEquals(1, getEmails().size)
+    }
+
+    @Test
     fun `notification is sent to fridge partner also`() {
         lateinit var fridgePartnerId: PersonId
         db.transaction { tx ->
