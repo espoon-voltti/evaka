@@ -1925,27 +1925,16 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         )
                     )
                 }
-            listOf(
-                    // Child is absent, so no meals on Monday
-                    DevAbsence(
-                        childId = child.id,
-                        date = monday,
-                        absenceType = AbsenceType.PLANNED_ABSENCE,
-                        absenceCategory = AbsenceCategory.BILLABLE,
-                        modifiedBy = employee.evakaUserId,
-                        modifiedAt = HelsinkiDateTime.now(),
-                    ),
-                    // Child is absent, so no meals on Tuesday
-                    DevAbsence(
-                        childId = child.id,
-                        date = tuesday,
-                        absenceType = AbsenceType.PLANNED_ABSENCE,
-                        absenceCategory = AbsenceCategory.BILLABLE,
-                        modifiedBy = employee.evakaUserId,
-                        modifiedAt = HelsinkiDateTime.now(),
-                    ),
+            tx.insert(
+                DevAbsence(
+                    childId = child.id,
+                    date = tuesday,
+                    absenceType = AbsenceType.PLANNED_ABSENCE,
+                    absenceCategory = AbsenceCategory.BILLABLE,
+                    modifiedBy = employee.evakaUserId,
+                    modifiedAt = HelsinkiDateTime.now(),
                 )
-                .forEach { tx.insert(it) }
+            )
         }
 
         createAndSendNekkuOrder(client, db, group.id, monday, 0.9)
@@ -1959,24 +1948,16 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                             monday.toString(),
                             "2501K6089",
                             group.id.toString(),
-                            emptyList(),
+                            listOf(
+                                NekkuClient.Item("31000010", 1, null),
+                                NekkuClient.Item("31000011", 1, null),
+                                NekkuClient.Item("31000012", 1, null),
+                            ),
                             group.name,
                         )
                     ),
                     dryRun = false,
-                ),
-                NekkuClient.NekkuOrders(
-                    listOf(
-                        NekkuClient.NekkuOrder(
-                            tuesday.toString(),
-                            "2501K6089",
-                            group.id.toString(),
-                            emptyList(),
-                            group.name,
-                        )
-                    ),
-                    dryRun = false,
-                ),
+                )
             ),
             client.orders,
         )
@@ -2221,6 +2202,66 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             ),
             client.orders,
         )
+    }
+
+    @Test
+    fun `If no children in the group, order should not be generated`() {
+        val monday = LocalDate.of(2025, 4, 14)
+        val tuesday = LocalDate.of(2025, 4, 15)
+
+        // First create all of the basic backgrounds like
+        // Customer numbers
+        var client =
+            TestNekkuClient(
+                customers =
+                    listOf(
+                        NekkuApiCustomer(
+                            "2501K6089",
+                            "Ahvenojan päiväkoti",
+                            "Varhaiskasvatus",
+                            listOf(
+                                CustomerApiType(
+                                    listOf(
+                                        NekkuCustomerApiWeekday.MONDAY,
+                                        NekkuCustomerApiWeekday.TUESDAY,
+                                    ),
+                                    "100-lasta",
+                                )
+                            ),
+                        )
+                    ),
+                nekkuProducts = nekkuProductsForOrder,
+            )
+        fetchAndUpdateNekkuCustomers(client, db)
+        // products
+        fetchAndUpdateNekkuProducts(client, db)
+        // Daycare with groups
+        val area = DevCareArea()
+        val daycare =
+            DevDaycare(
+                areaId = area.id,
+                mealtimeBreakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
+                mealtimeLunch = TimeRange(LocalTime.of(11, 15), LocalTime.of(11, 45)),
+                mealtimeSnack = TimeRange(LocalTime.of(13, 30), LocalTime.of(13, 50)),
+            )
+        val group = DevDaycareGroup(daycareId = daycare.id, nekkuCustomerNumber = "2501K6089")
+        val employee = DevEmployee()
+
+        // Children with placements in the group and they are not absent
+        val child = DevPerson()
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(group)
+            tx.insert(employee)
+            tx.insert(child, DevPersonType.CHILD)
+        }
+
+        createAndSendNekkuOrder(client, db, group.id, monday, 0.9)
+        createAndSendNekkuOrder(client, db, group.id, tuesday, 0.9)
+
+        assertEquals(emptyList(), client.orders)
     }
 
     private fun getNekkuWeeklyJobs() =
