@@ -45,7 +45,7 @@ services:
       - "3000"
     hostname: api-gw
     depends_on:
-      - redis
+      - valkey
       - evaka-srv
       - dummy-idp
     volumes:
