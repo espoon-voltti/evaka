@@ -32,6 +32,8 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import {
   cancelMutation,
+  constantQuery,
+  useChainedQuery,
   useMutationResult,
   useQueryResult
 } from 'lib-common/query'
@@ -925,9 +927,13 @@ export const ChildDocumentReadView = React.memo(
     const childIdFromUrl = searchParams.get('childId') // duplicate child workaround
 
     const documentResult = useQueryResult(childDocumentQuery({ documentId }))
-    // todo: use chained query to only fetch when needed?
-    const decisionMakersResult = useQueryResult(
-      childDocumentDecisionMakersQuery({ documentId })
+
+    const decisionMakersResult = useChainedQuery(
+      documentResult.map((document) =>
+        getDocumentCategory(document.data.template.type) === 'decision'
+          ? childDocumentDecisionMakersQuery({ documentId })
+          : constantQuery([])
+      )
     )
 
     return renderResult(
