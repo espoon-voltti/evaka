@@ -196,6 +196,7 @@ class ChildDocumentControllerCitizen(
                             requestedStatus = body.status,
                             goingForward = true,
                         )
+
                     validateContentAgainstTemplate(body.content, document.template.content)
 
                     tx.updateChildDocument(
@@ -205,10 +206,12 @@ class ChildDocumentControllerCitizen(
                         clock.now(),
                         user.evakaUserId,
                     )
+
                     childDocumentService.schedulePdfGeneration(tx, listOf(documentId), clock.now())
+
                     updateDocumentProcessHistory(
                         tx = tx,
-                        documentId = documentId,
+                        document = document,
                         newStatus = statusTransition.newStatus,
                         now = clock.now(),
                         userId = user.evakaUserId,

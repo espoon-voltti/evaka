@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import DateRange from 'lib-common/date-range'
 import {
   DocumentContent,
   DocumentTemplateContent
@@ -26,7 +27,7 @@ import {
   insertGuardians,
   resetServiceState
 } from '../../generated/api-clients'
-import { DevPerson } from '../../generated/api-types'
+import { DevEmployee, DevPerson } from '../../generated/api-types'
 import { CitizenChildPage } from '../../pages/citizen/citizen-children'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import { ChildDocumentPage } from '../../pages/employee/documents/child-document'
@@ -35,12 +36,15 @@ import { enduserLogin } from '../../utils/user'
 
 let page: Page
 let child: DevPerson
+let decisionMaker: DevEmployee
 let templateIdVasu: DocumentTemplateId
 let documentIdVasu: UUID
 let templateIdHojks: DocumentTemplateId
 let documentIdHojks: UUID
 let templateIdPed: DocumentTemplateId
 let documentIdPed: UUID
+let templateIdDecision: DocumentTemplateId
+let documentIdDecision: UUID
 let header: CitizenHeader
 
 const mockedNow = HelsinkiDateTime.of(2022, 7, 31, 13, 0)
@@ -52,6 +56,8 @@ beforeEach(async () => {
   await Fixture.daycare(testDaycare).save()
   await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
   await createDaycareGroups({ body: [testDaycareGroup] })
+
+  decisionMaker = await Fixture.employee().director().save()
 
   const unitId = testDaycare.id
   child = testChild
@@ -147,6 +153,44 @@ beforeEach(async () => {
       .save()
   ).id
 
+  templateIdDecision = (
+    await Fixture.documentTemplate({
+      type: 'OTHER_DECISION',
+      name: 'Tuenpäätös'
+    })
+      .withPublished(true)
+      .save()
+  ).id
+  documentIdDecision = (
+    await Fixture.childDocument({
+      templateId: templateIdDecision,
+      childId: child.id,
+      status: 'COMPLETED',
+      decisionMaker: decisionMaker.id
+    })
+      .withModifiedAt(mockedNow)
+      .withPublishedAt(mockedNow)
+      .withPublishedContent({
+        answers: [
+          {
+            questionId: 'q1',
+            type: 'TEXT',
+            answer: 'test'
+          }
+        ]
+      })
+      .withDecision({
+        status: 'ACCEPTED',
+        validity: new DateRange(
+          mockedNow.toLocalDate().addDays(3),
+          mockedNow.toLocalDate().addDays(14)
+        ),
+        createdBy: decisionMaker.id,
+        modifiedBy: decisionMaker.id
+      })
+      .save()
+  ).id
+
   page = await Page.open({ mockedTime: mockedNow })
   header = new CitizenHeader(page, 'desktop')
   await enduserLogin(page, testAdult)
@@ -180,6 +224,17 @@ describe('Citizen child documents listing page', () => {
     await childPage.childDocumentLink(documentIdPed).click()
     expect(page.url.endsWith(`/child-documents/${documentIdPed}`)).toBeTruthy()
     await page.find('h1').assertTextEquals('Pedagoginen selvitys')
+  })
+
+  test('Published decision is in the list', async () => {
+    await header.openChildPage(child.id)
+    const childPage = new CitizenChildPage(page)
+    await childPage.openCollapsible('child-documents')
+    await childPage.childDocumentLink(documentIdDecision).click()
+    expect(
+      page.url.endsWith(`/child-documents/${documentIdDecision}`)
+    ).toBeTruthy()
+    await page.find('h1').assertTextEquals('Tuenpäätös')
   })
 
   test('Answered by employee does not show name', async () => {
@@ -287,7 +342,7 @@ describe('Citizen child documents editor page', () => {
     }).save()
 
     await page.reload()
-    await header.assertUnreadChildrenCount(4)
+    await header.assertUnreadChildrenCount(5)
     await header.openChildPage(child.id)
     const childPage = new CitizenChildPage(page)
     await childPage.openCollapsible('child-documents')
@@ -296,7 +351,7 @@ describe('Citizen child documents editor page', () => {
       `${mockedNow.toLocalDate().format()}\tLomake kuntalaiselle\tEi vastattu\tTäytettävänä huoltajalla`
     )
     await childPage.childDocumentLink(document.id).click()
-    await header.assertUnreadChildrenCount(3)
+    await header.assertUnreadChildrenCount(4)
     const childDocumentPage = new ChildDocumentPage(page)
     await childDocumentPage.editButton.click()
     await childDocumentPage.status.assertTextEquals('Täytettävänä huoltajalla')

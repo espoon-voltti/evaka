@@ -65,7 +65,11 @@ export const testTranslations: Translations = {
       DRAFT: '',
       PREPARED: '',
       CITIZEN_DRAFT: '',
-      COMPLETED: ''
+      DECISION_PROPOSAL: '',
+      COMPLETED: '',
+      ACCEPTED: '',
+      REJECTED: '',
+      ANNULLED: ''
     }
   },
   fileUpload: {

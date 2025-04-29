@@ -11,6 +11,7 @@ import fi.espoo.evaka.document.DocumentTemplate
 import fi.espoo.evaka.document.DocumentTemplateContent
 import fi.espoo.evaka.document.DocumentType
 import fi.espoo.evaka.document.getTemplate
+import fi.espoo.evaka.pis.Employee
 import fi.espoo.evaka.pis.listPersonByDuplicateOf
 import fi.espoo.evaka.process.ArchivedProcessState
 import fi.espoo.evaka.process.deleteProcessByDocumentId
@@ -19,6 +20,7 @@ import fi.espoo.evaka.process.insertProcessHistoryRow
 import fi.espoo.evaka.process.updateDocumentProcessHistory
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
@@ -27,6 +29,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
+import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
@@ -250,6 +253,29 @@ class ChildDocumentController(
             .also { Audit.ChildDocumentRead.log(targetId = AuditId(documentId)) }
     }
 
+    @GetMapping("/{documentId}/decision-makers")
+    fun getChildDocumentDecisionMakers(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable documentId: ChildDocumentId,
+    ): List<Employee> {
+        return db.connect { dbc ->
+                dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.ChildDocument.READ,
+                        documentId,
+                    )
+
+                    tx.getChildDocumentDecisionMakers(documentId)
+                }
+            }
+            .also { Audit.ChildDocumentReadDecisionMakers.log(targetId = AuditId(documentId)) }
+    }
+
     @PutMapping("/{documentId}/content")
     fun updateDocumentContent(
         db: Database,
@@ -347,6 +373,13 @@ class ChildDocumentController(
                         Action.ChildDocument.PUBLISH,
                         documentId,
                     )
+
+                    val document =
+                        tx.getChildDocument(documentId)
+                            ?: throw NotFound("Document $documentId not found")
+                    if (!document.template.type.manuallyPublishable)
+                        throw BadRequest("Document type is not publishable")
+
                     val wasUpToDate = tx.isDocumentPublishedContentUpToDate(documentId)
                     tx.publishChildDocument(documentId, clock.now())
                     if (!wasUpToDate) {
@@ -388,6 +421,7 @@ class ChildDocumentController(
                         Action.ChildDocument.NEXT_STATUS,
                         documentId,
                     )
+
                     updateChildDocumentStatusForward(tx, user, clock, documentId, body.newStatus)
                 }
             }
@@ -415,24 +449,29 @@ class ChildDocumentController(
                 goingForward = true,
             )
 
-        val wasUpToDate = tx.isDocumentPublishedContentUpToDate(documentId)
-        tx.changeStatusAndPublish(
-            documentId,
-            statusTransition,
-            clock.now(),
-            answeredBy =
-                user.evakaUserId.takeIf {
-                    document.template.type == DocumentType.CITIZEN_BASIC &&
-                        statusTransition.newStatus == DocumentStatus.COMPLETED
-                },
-        )
-        if (!wasUpToDate) {
-            childDocumentService.schedulePdfGeneration(tx, listOf(documentId), clock.now())
-            childDocumentService.scheduleEmailNotification(tx, listOf(documentId), clock.now())
+        if (document.template.type.decision) {
+            tx.changeStatus(documentId, statusTransition, clock.now())
+        } else {
+            val wasUpToDate = tx.isDocumentPublishedContentUpToDate(documentId)
+            tx.changeStatusAndPublish(
+                documentId,
+                statusTransition,
+                clock.now(),
+                answeredBy =
+                    user.evakaUserId.takeIf {
+                        document.template.type == DocumentType.CITIZEN_BASIC &&
+                            statusTransition.newStatus == DocumentStatus.COMPLETED
+                    },
+            )
+            if (!wasUpToDate) {
+                childDocumentService.schedulePdfGeneration(tx, listOf(documentId), clock.now())
+                childDocumentService.scheduleEmailNotification(tx, listOf(documentId), clock.now())
+            }
         }
+
         updateDocumentProcessHistory(
             tx = tx,
-            documentId = documentId,
+            document = document,
             newStatus = statusTransition.newStatus,
             now = clock.now(),
             userId = user.evakaUserId,
@@ -456,17 +495,23 @@ class ChildDocumentController(
                         Action.ChildDocument.PREV_STATUS,
                         documentId,
                     )
+
+                    val document =
+                        tx.getChildDocument(documentId)
+                            ?: throw NotFound("Document $documentId not found")
+
                     val statusTransition =
                         validateStatusTransition(
-                            tx = tx,
-                            documentId = documentId,
+                            document = document,
                             requestedStatus = body.newStatus,
                             goingForward = false,
                         )
+
                     tx.changeStatus(documentId, statusTransition, clock.now())
+
                     updateDocumentProcessHistory(
                         tx = tx,
-                        documentId = documentId,
+                        document = document,
                         newStatus = statusTransition.newStatus,
                         now = clock.now(),
                         userId = user.evakaUserId,
@@ -573,6 +618,203 @@ class ChildDocumentController(
             }
             .also { Audit.ChildDocumentDownload.log(targetId = AuditId(documentId)) }
     }
+
+    data class ProposeChildDocumentDecisionRequest(val decisionMaker: EmployeeId)
+
+    @PostMapping("/{documentId}/propose-decision")
+    fun proposeChildDocumentDecision(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable documentId: ChildDocumentId,
+        @RequestBody body: ProposeChildDocumentDecisionRequest,
+    ) {
+        db.connect { dbc ->
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.ChildDocument.PROPOSE_DECISION,
+                        documentId,
+                    )
+
+                    val document =
+                        tx.getChildDocument(documentId)
+                            ?: throw NotFound("Document $documentId not found")
+                    if (!document.template.type.decision)
+                        throw BadRequest("Document is not a decision")
+                    if (document.status != DocumentStatus.DRAFT)
+                        throw BadRequest("Document is not in correct status")
+
+                    val validDecisionMakers = tx.getChildDocumentDecisionMakers(documentId)
+                    if (validDecisionMakers.none { it.id == body.decisionMaker }) {
+                        throw BadRequest("Decision maker is not valid")
+                    }
+
+                    tx.setChildDocumentDecisionMaker(documentId, body.decisionMaker)
+                    tx.changeStatus(
+                        documentId,
+                        StatusTransition(
+                            currentStatus = DocumentStatus.DRAFT,
+                            newStatus = DocumentStatus.DECISION_PROPOSAL,
+                        ),
+                        clock.now(),
+                    )
+
+                    updateDocumentProcessHistory(
+                        tx = tx,
+                        document = document,
+                        newStatus = DocumentStatus.DECISION_PROPOSAL,
+                        now = clock.now(),
+                        userId = user.evakaUserId,
+                    )
+                }
+            }
+            .also { Audit.ChildDocumentProposeDecision.log(targetId = AuditId(documentId)) }
+    }
+
+    data class AcceptChildDocumentDecisionRequest(val validity: DateRange)
+
+    @PostMapping("/{documentId}/accept")
+    fun acceptChildDocumentDecision(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable documentId: ChildDocumentId,
+        @RequestBody body: AcceptChildDocumentDecisionRequest,
+    ) {
+        db.connect { dbc ->
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.ChildDocument.ACCEPT_DECISION,
+                        documentId,
+                    )
+
+                    val document =
+                        tx.getChildDocument(documentId)
+                            ?: throw NotFound("Document $documentId not found")
+                    if (!document.template.type.decision)
+                        throw BadRequest("Document is not a decision")
+                    if (document.status != DocumentStatus.DECISION_PROPOSAL)
+                        throw BadRequest("Document is not in decision proposal status")
+
+                    tx.insertChildDocumentDecision(
+                            status = ChildDocumentDecisionStatus.ACCEPTED,
+                            userId = user.evakaUserId,
+                            validity = body.validity,
+                        )
+                        .also { decisionId ->
+                            tx.setChildDocumentDecisionAndPublish(
+                                documentId,
+                                decisionId,
+                                clock.now(),
+                            )
+                        }
+
+                    updateDocumentProcessHistory(
+                        tx = tx,
+                        document = document,
+                        newStatus = DocumentStatus.COMPLETED,
+                        now = clock.now(),
+                        userId = user.evakaUserId,
+                    )
+                }
+            }
+            .also { Audit.ChildDocumentAcceptDecision.log(targetId = AuditId(documentId)) }
+    }
+
+    @PostMapping("/{documentId}/reject")
+    fun rejectChildDocumentDecision(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable documentId: ChildDocumentId,
+    ) {
+        db.connect { dbc ->
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.ChildDocument.REJECT_DECISION,
+                        documentId,
+                    )
+
+                    val document =
+                        tx.getChildDocument(documentId)
+                            ?: throw NotFound("Document $documentId not found")
+                    if (!document.template.type.decision)
+                        throw BadRequest("Document is not a decision")
+                    if (document.status != DocumentStatus.DECISION_PROPOSAL)
+                        throw BadRequest("Document is not in decision proposal status")
+
+                    tx.insertChildDocumentDecision(
+                            status = ChildDocumentDecisionStatus.REJECTED,
+                            userId = user.evakaUserId,
+                            validity = null,
+                        )
+                        .also { decisionId ->
+                            tx.setChildDocumentDecisionAndPublish(
+                                documentId,
+                                decisionId,
+                                clock.now(),
+                            )
+                        }
+
+                    updateDocumentProcessHistory(
+                        tx = tx,
+                        document = document,
+                        newStatus = DocumentStatus.COMPLETED,
+                        now = clock.now(),
+                        userId = user.evakaUserId,
+                    )
+                }
+            }
+            .also { Audit.ChildDocumentRejectDecision.log(targetId = AuditId(documentId)) }
+    }
+
+    @PostMapping("/{documentId}/annul")
+    fun annulChildDocumentDecision(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable documentId: ChildDocumentId,
+    ) {
+        db.connect { dbc ->
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.ChildDocument.ANNUL_DECISION,
+                        documentId,
+                    )
+
+                    val document =
+                        tx.getChildDocument(documentId)
+                            ?: throw NotFound("Document $documentId not found")
+                    if (!document.template.type.decision)
+                        throw BadRequest("Document is not a decision")
+                    if (
+                        document.status != DocumentStatus.COMPLETED ||
+                            document.decision == null ||
+                            document.decision.status != ChildDocumentDecisionStatus.ACCEPTED
+                    )
+                        throw BadRequest("Only accepted decision can be annulled")
+
+                    tx.annulChildDocumentDecision(
+                        decisionId = document.decision.id,
+                        userId = user.evakaUserId,
+                        now = clock.now(),
+                    )
+                }
+            }
+            .also { Audit.ChildDocumentAnnulDecision.log(targetId = AuditId(documentId)) }
+    }
 }
 
 fun validateContentAgainstTemplate(
@@ -591,4 +833,40 @@ fun validateContentAgainstTemplate(
     if (!valid) {
         throw BadRequest("Answered questions and template do not match")
     }
+}
+
+fun validateStatusTransition(
+    document: ChildDocumentDetails,
+    requestedStatus: DocumentStatus,
+    goingForward: Boolean, // false = backwards
+): StatusTransition {
+    val statusList = document.template.type.statuses
+    val currentIndex = statusList.indexOf(document.status)
+    if (currentIndex < 0) {
+        throw IllegalStateException("document ${document.id} is in invalid status")
+    }
+    val newStatus =
+        statusList.getOrNull(if (goingForward) currentIndex + 1 else currentIndex - 1)
+            ?: throw BadRequest("Already in the ${if (goingForward) "final" else "first"} status")
+    if (newStatus != requestedStatus) {
+        throw Conflict("Idempotency issue: statuses do not match")
+    }
+
+    if (document.template.type.decision) {
+        if (goingForward && newStatus == DocumentStatus.DECISION_PROPOSAL)
+            throw BadRequest(
+                "Decision document cannot be moved to DECISION_PROPOSAL using normal status transitions. Please use the separate propose-decision endpoint."
+            )
+        if (goingForward && newStatus == DocumentStatus.COMPLETED)
+            throw BadRequest(
+                "Decision document cannot be marked as completed using normal status transitions. Please use the separate accept/reject endpoints."
+            )
+
+        if (!goingForward && document.status == DocumentStatus.COMPLETED)
+            throw BadRequest(
+                "Decision can not be reverted using normal status transitions. Please use the separate annul endpoint."
+            )
+    }
+
+    return StatusTransition(currentStatus = document.status, newStatus = newStatus)
 }

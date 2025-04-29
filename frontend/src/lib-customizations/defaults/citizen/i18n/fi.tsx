@@ -2856,6 +2856,7 @@ export default {
       otherDocumentsTitle: 'Muut asiakirjat',
       noDocuments: 'Ei asiakirjoja',
       confidential: 'Salassapidettävä',
+      validityPeriod: 'Voimassa',
       unanswered: 'Ei vastattu',
       answered: 'Vastattu',
       answeredByEmployee: 'Henkilökunta',

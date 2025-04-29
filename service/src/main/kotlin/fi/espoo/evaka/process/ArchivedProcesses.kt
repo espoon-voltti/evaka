@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.process
 
+import fi.espoo.evaka.document.childdocument.ChildDocumentDetails
 import fi.espoo.evaka.document.childdocument.DocumentStatus
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ArchivedProcessId
@@ -13,6 +14,7 @@ import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -224,26 +226,62 @@ fun Database.Transaction.insertProcessHistoryRow(
 
 fun updateDocumentProcessHistory(
     tx: Database.Transaction,
-    documentId: ChildDocumentId,
+    document: ChildDocumentDetails,
     newStatus: DocumentStatus,
     now: HelsinkiDateTime,
     userId: EvakaUserId,
 ) {
-    val process = tx.getArchiveProcessByChildDocumentId(documentId) ?: return
-    val processState = process.history.lastOrNull()?.state ?: return
+    val process = tx.getArchiveProcessByChildDocumentId(document.id) ?: return
+
+    val currentProcessState = process.history.lastOrNull()?.state ?: return
+    val currentStateIndex = ArchivedProcessState.entries.indexOf(currentProcessState)
+
+    val newProcessState =
+        when (newStatus) {
+            DocumentStatus.DRAFT -> ArchivedProcessState.INITIAL
+            DocumentStatus.PREPARED -> ArchivedProcessState.PREPARATION
+            DocumentStatus.CITIZEN_DRAFT -> ArchivedProcessState.INITIAL
+            DocumentStatus.DECISION_PROPOSAL -> ArchivedProcessState.PREPARATION
+            DocumentStatus.COMPLETED ->
+                // decision documents are completed only once the SFI message is sent
+                if (document.template.type.decision) ArchivedProcessState.DECIDING
+                else ArchivedProcessState.COMPLETED
+        }
+    val newStateIndex = ArchivedProcessState.entries.indexOf(newProcessState)
 
     when {
-        newStatus == DocumentStatus.COMPLETED && processState != ArchivedProcessState.COMPLETED -> {
+        newStateIndex > currentStateIndex ->
+            // moving forwards
             tx.insertProcessHistoryRow(
                 processId = process.id,
-                state = ArchivedProcessState.COMPLETED,
+                state = newProcessState,
                 now = now,
                 userId = userId,
             )
-        }
-        newStatus != DocumentStatus.COMPLETED && processState == ArchivedProcessState.COMPLETED -> {
-            tx.cancelLastProcessHistoryRow(process.id, ArchivedProcessState.COMPLETED)
-        }
+        newStateIndex < currentStateIndex ->
+            // moving backwards
+            tx.cancelLastProcessHistoryRow(
+                processId = process.id,
+                stateToCancel = currentProcessState,
+            )
+    }
+}
+
+fun autoCompleteDocumentProcessHistory(
+    tx: Database.Transaction,
+    documentId: ChildDocumentId,
+    now: HelsinkiDateTime,
+) {
+    val process = tx.getArchiveProcessByChildDocumentId(documentId) ?: return
+    val currentProcessState = process.history.lastOrNull()?.state ?: return
+
+    if (currentProcessState != ArchivedProcessState.COMPLETED) {
+        tx.insertProcessHistoryRow(
+            processId = process.id,
+            state = ArchivedProcessState.COMPLETED,
+            now = now,
+            userId = AuthenticatedUser.SystemInternalUser.evakaUserId,
+        )
     }
 }
 

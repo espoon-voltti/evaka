@@ -199,7 +199,11 @@ export const getDocumentFormInitialState = (
     infoText: section.infoText
   }))
 
-export const isInternal = (type: DocumentType): boolean => {
+export type ChildDocumentCategory = 'internal' | 'decision' | 'external'
+
+export const getDocumentCategory = (
+  type: DocumentType
+): ChildDocumentCategory => {
   switch (type) {
     case 'PEDAGOGICAL_REPORT':
     case 'PEDAGOGICAL_ASSESSMENT':
@@ -209,8 +213,10 @@ export const isInternal = (type: DocumentType): boolean => {
     case 'VASU':
     case 'LEOPS':
     case 'OTHER':
-      return true
+      return 'internal'
+    case 'OTHER_DECISION':
+      return 'decision'
     case 'CITIZEN_BASIC':
-      return false
+      return 'external'
   }
 }

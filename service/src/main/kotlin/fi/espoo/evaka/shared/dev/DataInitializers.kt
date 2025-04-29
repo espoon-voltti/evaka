@@ -45,6 +45,7 @@ import fi.espoo.evaka.shared.CalendarEventAttendeeId
 import fi.espoo.evaka.shared.CalendarEventId
 import fi.espoo.evaka.shared.CalendarEventTimeId
 import fi.espoo.evaka.shared.ChildAttendanceId
+import fi.espoo.evaka.shared.ChildDocumentDecisionId
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ClubTermId
@@ -1459,11 +1460,26 @@ fun Database.Transaction.insert(row: DevChildDocument): ChildDocumentId {
         createQuery { sql("SELECT type FROM document_template WHERE id = ${bind(row.templateId)}") }
             .exactlyOne<DocumentType>()
 
+    val decisionId = row.decision?.let { insert(it) }
+
     return createUpdate {
             sql(
                 """
-INSERT INTO child_document (id, type, status, child_id, template_id, content, published_content, modified_at, content_modified_at, content_modified_by, published_at, answered_at, answered_by, process_id)
-VALUES (${bind(row.id)}, ${bind(type)}, ${bind(row.status)}, ${bind(row.childId)}, ${bind(row.templateId)}, ${bind(row.content)}, ${bind(row.publishedContent)}, ${bind(row.modifiedAt)}, ${bind(row.contentModifiedAt)}, ${bind(row.contentModifiedBy)}, ${bind(row.publishedAt)}, ${bind(row.answeredAt)}, ${bind(row.answeredBy)}, ${bind(row.processId)})
+INSERT INTO child_document (id, type, status, child_id, template_id, content, published_content, modified_at, content_modified_at, content_modified_by, published_at, answered_at, answered_by, process_id, decision_maker, decision_id)
+VALUES (${bind(row.id)}, ${bind(type)}, ${bind(row.status)}, ${bind(row.childId)}, ${bind(row.templateId)}, ${bind(row.content)}, ${bind(row.publishedContent)}, ${bind(row.modifiedAt)}, ${bind(row.contentModifiedAt)}, ${bind(row.contentModifiedBy)}, ${bind(row.publishedAt)}, ${bind(row.answeredAt)}, ${bind(row.answeredBy)}, ${bind(row.processId)}, ${bind(row.decisionMaker)}, ${bind(decisionId)})
+"""
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .exactlyOne()
+}
+
+fun Database.Transaction.insert(row: DevChildDocumentDecision): ChildDocumentDecisionId {
+    return createUpdate {
+            sql(
+                """
+INSERT INTO child_document_decision (id, created_at, created_by, modified_at, modified_by, status, valid_from, valid_to) 
+VALUES (${bind(row.id)}, ${bind(row.createdAt)}, ${bind(row.createdBy)}, ${bind(row.modifiedAt)}, ${bind(row.modifiedBy)}, ${bind(row.status)}, ${bind(row.validity?.start)}, ${bind(row.validity?.end)})
 """
             )
         }

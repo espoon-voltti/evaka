@@ -129,6 +129,7 @@ import {
   DevChild,
   DevChildAttendance,
   DevChildDocument,
+  DevChildDocumentDecision,
   DevClubTerm,
   DevDailyServiceTimeNotification,
   DevDailyServiceTimes,
@@ -1202,6 +1203,8 @@ export class Fixture {
       answeredAt: null,
       answeredBy: null,
       processId: null,
+      decisionMaker: null,
+      decision: null,
       ...initial
     })
   }
@@ -1879,6 +1882,21 @@ export class ChildDocumentBuilder extends FixtureBuilder<DevChildDocument> {
 
   withPublishedContent(publishedContent: DocumentContent | null) {
     this.data.publishedContent = publishedContent
+    return this
+  }
+
+  withDecision(
+    decision: SemiPartial<
+      DevChildDocumentDecision,
+      'status' | 'validity' | 'createdBy' | 'modifiedBy'
+    >
+  ) {
+    this.data.decision = {
+      id: randomId(),
+      createdAt: HelsinkiDateTime.now(),
+      modifiedAt: HelsinkiDateTime.now(),
+      ...decision
+    }
     return this
   }
 }

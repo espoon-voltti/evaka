@@ -10,16 +10,20 @@ import fi.espoo.evaka.document.DocumentTemplate
 import fi.espoo.evaka.document.DocumentType
 import fi.espoo.evaka.document.Question
 import fi.espoo.evaka.document.QuestionType
+import fi.espoo.evaka.shared.ChildDocumentDecisionId
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DocumentTemplateId
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.DatabaseEnum
+import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.user.EvakaUser
 import java.time.LocalDate
 import org.jdbi.v3.core.mapper.Nested
+import org.jdbi.v3.core.mapper.PropagateNull
 import org.jdbi.v3.json.Json
 
 data class CheckboxGroupAnswerContent(val optionId: String, val extra: String = "")
@@ -123,10 +127,25 @@ enum class DocumentStatus(val employeeEditable: Boolean, val citizenEditable: Bo
     DRAFT(employeeEditable = true, citizenEditable = false),
     PREPARED(employeeEditable = true, citizenEditable = false),
     CITIZEN_DRAFT(employeeEditable = false, citizenEditable = true),
+    DECISION_PROPOSAL(employeeEditable = false, citizenEditable = false),
     COMPLETED(employeeEditable = false, citizenEditable = false);
 
     override val sqlType: String = "child_document_status"
 }
+
+enum class ChildDocumentDecisionStatus : DatabaseEnum {
+    ACCEPTED,
+    REJECTED,
+    ANNULLED;
+
+    override val sqlType: String = "child_document_decision_status"
+}
+
+data class ChildDocumentDecision(
+    @PropagateNull val id: ChildDocumentDecisionId,
+    val status: ChildDocumentDecisionStatus,
+    val validity: DateRange?,
+)
 
 data class ChildDocumentSummary(
     val id: ChildDocumentId,
@@ -138,6 +157,7 @@ data class ChildDocumentSummary(
     val publishedAt: HelsinkiDateTime?,
     val answeredAt: HelsinkiDateTime?,
     @Nested("answered_by") val answeredBy: EvakaUser?,
+    @Nested("decision") val decision: ChildDocumentDecision? = null,
 )
 
 data class ChildBasics(
@@ -157,6 +177,8 @@ data class ChildDocumentDetails(
     @Json val publishedContent: DocumentContent?,
     @Nested("child") val child: ChildBasics,
     @Nested("template") val template: DocumentTemplate,
+    val decisionMaker: EmployeeId? = null,
+    @Nested("decision") val decision: ChildDocumentDecision? = null,
 )
 
 data class ChildDocumentWithPermittedActions(

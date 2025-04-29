@@ -846,6 +846,7 @@ export const fi = {
     childDocuments: {
       title: {
         internal: 'Pedagogiset asiakirjat',
+        decision: 'Muut päätökset',
         external: 'Huoltajien täytettävät asiakirjat'
       },
       table: {
@@ -853,6 +854,7 @@ export const fi = {
         status: 'Tila',
         open: 'Avaa lomake',
         modified: 'Muokattu',
+        valid: 'Voimassa',
         published: 'Julkaistu',
         sent: 'Lähetetty',
         notSent: 'Ei lähetetty',
@@ -861,6 +863,7 @@ export const fi = {
       },
       addNew: {
         internal: 'Luo uusi pedagoginen asiakirja',
+        decision: 'Luo uusi päätös',
         external: 'Luo huoltajille täytettävä asiakirja'
       },
       select: 'Valitse lomake',
@@ -868,7 +871,17 @@ export const fi = {
       statuses: {
         DRAFT: 'Luonnos',
         PREPARED: 'Laadittu',
+        DECISION_PROPOSAL: 'Päätösesitys',
         COMPLETED: 'Valmis'
+      },
+      decisions: {
+        accept: 'Tee myönteinen päätös',
+        acceptConfirmTitle: 'Haluatko varmasti tehdä myönteisen päätöksen?',
+        validityPeriod: 'Myönnetään ajalle',
+        reject: 'Tee kielteinen päätös',
+        rejectConfirmTitle: 'Haluatko varmasti tehdä kielteisen päätöksen?',
+        annul: 'Mitätöi päätös',
+        annulConfirmTitle: 'Haluatko varmasti mitätöidä päätöksen?'
       },
       editor: {
         lockedErrorTitle: 'Asiakirja on tilapäisesti lukittu',
@@ -890,6 +903,7 @@ export const fi = {
           DRAFT: 'Julkaise luonnos-tilassa',
           PREPARED: 'Julkaise laadittu-tilassa',
           CITIZEN_DRAFT: 'Lähetä kuntalaisen täytettäväksi',
+          DECISION_PROPOSAL: 'Lähetä päättäjälle',
           COMPLETED: 'Julkaise valmis-tilassa'
         },
         goToNextStatusConfirmTitle: {
@@ -897,6 +911,8 @@ export const fi = {
           PREPARED: 'Haluatko varmasti julkaista asiakirjan laadittu-tilassa?',
           CITIZEN_DRAFT:
             'Haluatko varmasti julkaista asiakirjan kuntalaisen täytettäväksi -tilassa?',
+          DECISION_PROPOSAL:
+            'Haluatko varmasti lähettää päätösesityksen päättäjälle?',
           COMPLETED: 'Haluatko varmasti julkaista asiakirjan valmis-tilassa?'
         },
         goToCompletedConfirmText:
@@ -905,14 +921,17 @@ export const fi = {
           DRAFT: 'Palauta luonnokseksi',
           PREPARED: 'Palauta laadituksi',
           CITIZEN_DRAFT: 'Palauta kuntalaisen täytettäväksi',
-          COMPLETED: 'Palauta valmiiksi'
+          DECISION_PROPOSAL: 'Palauta päätösesitykseksi', // not applicable,
+          COMPLETED: 'Palauta valmiiksi' // not applicable
         },
         goToPrevStatusConfirmTitle: {
           DRAFT: 'Haluatko varmasti palauttaa asiakirjan luonnokseksi?',
           PREPARED: 'Haluatko varmasti palauttaa asiakirjan laadituksi?',
           CITIZEN_DRAFT:
             'Haluatko varmasti palauttaa asiakirjan kuntalaisen täytettäväksi?',
-          COMPLETED: 'Haluatko varmasti palauttaa asiakirjan valmiiksi?'
+          DECISION_PROPOSAL:
+            'Haluatko varmasti palauttaa päätöksen päätösesitykseksi?', // not applicable,
+          COMPLETED: 'Haluatko varmasti palauttaa asiakirjan valmiiksi?' // not applicable,
         },
         deleteDraft: 'Poista luonnos',
         deleteDraftConfirmTitle: 'Haluatko varmasti poistaa luonnoksen?',
@@ -920,7 +939,9 @@ export const fi = {
         notFullyPublished: (publishedAt: HelsinkiDateTime | null) =>
           `Asiakirjassa on julkaisemattomia muutoksia ${
             publishedAt ? ` (julkaistu ${publishedAt.format()})` : ''
-          }`
+          }`,
+        decisionMaker: 'Päätöksen tekijä',
+        notSet: 'Ei asetettu'
       }
     },
     assistanceNeedPreschoolDecision: {
@@ -5045,6 +5066,7 @@ export const fi = {
       VASU: 'Varhaiskasvatussuunnitelma',
       LEOPS: 'Esiopetuksen oppimissuunnitelma',
       CITIZEN_BASIC: 'Kuntalaisen lomake - perus',
+      OTHER_DECISION: 'Muu päätös',
       OTHER: 'Muu lomake'
     },
     documentTypeInfos: {

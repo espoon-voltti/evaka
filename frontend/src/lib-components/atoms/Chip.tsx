@@ -44,7 +44,13 @@ export const StaticChip = styled.div<{
     outline: 2px solid ${(p) => p.theme.colors.main.m3};
     outline-offset: 2px;
   }
-  ${(p) => (p.fitContent ? 'width: fit-content;' : '')}
+  ${(p) =>
+    p.fitContent
+      ? css`
+          width: fit-content;
+          height: fit-content;
+        `
+      : ''}
 `
 
 type SelectionChipProps = {

@@ -2877,6 +2877,7 @@ const sv: Translations = {
       otherDocumentsTitle: 'Andra dokument',
       noDocuments: 'Inga dokument',
       confidential: 'Konfidentiellt',
+      validityPeriod: 'Giltig',
       unanswered: 'Ei vastattu (sv)',
       answered: 'Vastattu (sv)',
       answeredByEmployee: 'Henkilökunta (sv)',

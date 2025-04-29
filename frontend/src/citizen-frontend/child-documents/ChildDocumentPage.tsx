@@ -23,8 +23,8 @@ import { ChildDocumentStateChip } from 'lib-components/document-templates/ChildD
 import DocumentView from 'lib-components/document-templates/DocumentView'
 import {
   documentForm,
-  getDocumentFormInitialState,
-  isInternal
+  getDocumentCategory,
+  getDocumentFormInitialState
 } from 'lib-components/document-templates/documents'
 import Content, {
   Container,
@@ -167,7 +167,10 @@ const ChildDocumentView = React.memo(function ChildDocumentView({
               </H2>
             </FixedSpaceColumn>
             <FixedSpaceColumn spacing="xs">
-              <ChildDocumentStateChip status={document.status} />
+              <ChildDocumentStateChip
+                status={document.status}
+                decisionStatus={document.decision?.status ?? null}
+              />
               {document.template.confidentiality !== null && (
                 <Label>{i18n.children.childDocuments.confidential}</Label>
               )}
@@ -176,7 +179,7 @@ const ChildDocumentView = React.memo(function ChildDocumentView({
           </FixedSpaceRow>
           <Gap />
           <DocumentView bind={bind} readOnly={readOnly} />
-          {!isInternal(document.template.type) &&
+          {getDocumentCategory(document.template.type) === 'external' &&
             document.status === 'COMPLETED' && (
               <InfoBox message={i18n.children.childDocuments.sentInfo} />
             )}

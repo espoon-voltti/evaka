@@ -6,23 +6,23 @@ package fi.espoo.evaka.document.childdocument
 
 import fi.espoo.evaka.EmailEnv
 import fi.espoo.evaka.daycare.domain.Language
+import fi.espoo.evaka.document.DocumentType
 import fi.espoo.evaka.emailclient.Email
 import fi.espoo.evaka.emailclient.EmailClient
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
 import fi.espoo.evaka.pdfgen.PdfGenerator
 import fi.espoo.evaka.pis.EmailMessageType
-import fi.espoo.evaka.process.updateDocumentProcessHistory
+import fi.espoo.evaka.process.autoCompleteDocumentProcessHistory
 import fi.espoo.evaka.s3.DocumentKey
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
-import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.domain.toFiniteDateRange
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.LocalDate
 import org.springframework.http.ResponseEntity
@@ -84,18 +84,14 @@ class ChildDocumentService(
                     sql(
                         """
                 SELECT cd.id
-                FROM child_document cd 
+                FROM child_document cd
                 JOIN document_template dt on dt.id = cd.template_id
-                WHERE dt.validity << ${
-                        bind(
-                            FiniteDateRange(
-                                now.toLocalDate(),
-                                now.toLocalDate(),
-                            )
-                        )
-                    } AND cd.status <> 'COMPLETED'
+                WHERE dt.validity << ${bind(now.toLocalDate().toFiniteDateRange())} 
+                    AND dt.type = ANY (${bind(
+                        DocumentType.entries.filter { it.autoCompleteAtEndOfValidity }
+                    )})
+                    AND cd.status <> 'COMPLETED'
             """
-                            .trimIndent()
                     )
                 }
                 .toList<ChildDocumentId>()
@@ -111,13 +107,7 @@ class ChildDocumentService(
             tx.markCompletedAndPublish(documentIds, now)
 
             documentIds.forEach { documentId ->
-                updateDocumentProcessHistory(
-                    tx = tx,
-                    documentId = documentId,
-                    newStatus = DocumentStatus.COMPLETED,
-                    now = now,
-                    userId = AuthenticatedUser.SystemInternalUser.evakaUserId,
-                )
+                autoCompleteDocumentProcessHistory(tx = tx, documentId = documentId, now = now)
             }
         }
     }

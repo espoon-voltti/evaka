@@ -5,6 +5,7 @@
 // GENERATED FILE: no manual modifications
 
 import DateRange from 'lib-common/date-range'
+import { AcceptChildDocumentDecisionRequest } from 'lib-common/generated/api-types/document'
 import { ChildDocumentCreateRequest } from 'lib-common/generated/api-types/document'
 import { ChildDocumentId } from 'lib-common/generated/api-types/shared'
 import { ChildDocumentSummaryWithPermittedActions } from 'lib-common/generated/api-types/document'
@@ -18,11 +19,13 @@ import { DocumentTemplateContent } from 'lib-common/generated/api-types/document
 import { DocumentTemplateId } from 'lib-common/generated/api-types/shared'
 import { DocumentTemplateSummary } from 'lib-common/generated/api-types/document'
 import { DocumentType } from 'lib-common/generated/api-types/document'
+import { Employee } from 'lib-common/generated/api-types/pis'
 import { ExportedDocumentTemplate } from 'lib-common/generated/api-types/document'
 import { GroupId } from 'lib-common/generated/api-types/shared'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
 import { PersonId } from 'lib-common/generated/api-types/shared'
+import { ProposeChildDocumentDecisionRequest } from 'lib-common/generated/api-types/document'
 import { StatusChangeRequest } from 'lib-common/generated/api-types/document'
 import { Uri } from 'lib-common/uri'
 import { client } from '../../api/client'
@@ -32,6 +35,7 @@ import { deserializeJsonChildDocumentWithPermittedActions } from 'lib-common/gen
 import { deserializeJsonDocumentLockResponse } from 'lib-common/generated/api-types/document'
 import { deserializeJsonDocumentTemplate } from 'lib-common/generated/api-types/document'
 import { deserializeJsonDocumentTemplateSummary } from 'lib-common/generated/api-types/document'
+import { deserializeJsonEmployee } from 'lib-common/generated/api-types/pis'
 import { uri } from 'lib-common/uri'
 
 
@@ -274,6 +278,40 @@ export async function updateTemplateValidity(
 
 
 /**
+* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentController.acceptChildDocumentDecision
+*/
+export async function acceptChildDocumentDecision(
+  request: {
+    documentId: ChildDocumentId,
+    body: AcceptChildDocumentDecisionRequest
+  }
+): Promise<void> {
+  const { data: json } = await client.request<JsonOf<void>>({
+    url: uri`/employee/child-documents/${request.documentId}/accept`.toString(),
+    method: 'POST',
+    data: request.body satisfies JsonCompatible<AcceptChildDocumentDecisionRequest>
+  })
+  return json
+}
+
+
+/**
+* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentController.annulChildDocumentDecision
+*/
+export async function annulChildDocumentDecision(
+  request: {
+    documentId: ChildDocumentId
+  }
+): Promise<void> {
+  const { data: json } = await client.request<JsonOf<void>>({
+    url: uri`/employee/child-documents/${request.documentId}/annul`.toString(),
+    method: 'POST'
+  })
+  return json
+}
+
+
+/**
 * Generated from fi.espoo.evaka.document.childdocument.ChildDocumentController.createDocument
 */
 export async function createDocument(
@@ -334,6 +372,22 @@ export function downloadChildDocument(
   return {
     url: uri`/employee/child-documents/${request.documentId}/pdf`.withBaseUrl(client.defaults.baseURL ?? '')
   }
+}
+
+
+/**
+* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentController.getChildDocumentDecisionMakers
+*/
+export async function getChildDocumentDecisionMakers(
+  request: {
+    documentId: ChildDocumentId
+  }
+): Promise<Employee[]> {
+  const { data: json } = await client.request<JsonOf<Employee[]>>({
+    url: uri`/employee/child-documents/${request.documentId}/decision-makers`.toString(),
+    method: 'GET'
+  })
+  return json.map(e => deserializeJsonEmployee(e))
 }
 
 
@@ -426,6 +480,24 @@ export async function prevDocumentStatus(
 
 
 /**
+* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentController.proposeChildDocumentDecision
+*/
+export async function proposeChildDocumentDecision(
+  request: {
+    documentId: ChildDocumentId,
+    body: ProposeChildDocumentDecisionRequest
+  }
+): Promise<void> {
+  const { data: json } = await client.request<JsonOf<void>>({
+    url: uri`/employee/child-documents/${request.documentId}/propose-decision`.toString(),
+    method: 'POST',
+    data: request.body satisfies JsonCompatible<ProposeChildDocumentDecisionRequest>
+  })
+  return json
+}
+
+
+/**
 * Generated from fi.espoo.evaka.document.childdocument.ChildDocumentController.publishDocument
 */
 export async function publishDocument(
@@ -436,6 +508,22 @@ export async function publishDocument(
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/child-documents/${request.documentId}/publish`.toString(),
     method: 'PUT'
+  })
+  return json
+}
+
+
+/**
+* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentController.rejectChildDocumentDecision
+*/
+export async function rejectChildDocumentDecision(
+  request: {
+    documentId: ChildDocumentId
+  }
+): Promise<void> {
+  const { data: json } = await client.request<JsonOf<void>>({
+    url: uri`/employee/child-documents/${request.documentId}/reject`.toString(),
+    method: 'POST'
   })
   return json
 }
