@@ -191,36 +191,37 @@ fun getPreschoolAbsenceReportRowsForUnit(
     return tx.createQuery {
             sql(
                 """
-            WITH preschool_placement_children as
-                     (select child.id,
-                             child.first_name,
-                             child.last_name,
-                             daterange(p.start_date, p.end_date, '[]') * ${bind(preschoolTerm)} as examination_range
-                      from placement p
-                               join person child on p.child_id = child.id
-                               join daycare d
-                                    on p.unit_id = d.id
-                                        AND 'PRESCHOOL'::care_types = ANY (d.type)
-                      where daterange(p.start_date, p.end_date, '[]') &&
-                            ${bind(preschoolTerm)}
-                        and p.type = ANY
-                            ('{PRESCHOOL, PRESCHOOL_DAYCARE}'::placement_type[])
-                        and p.unit_id = ${bind(daycareId)})
-            select ppc.id            as child_id,
-                   ppc.first_name,
-                   ppc.last_name,
-                   CASE types.absence_type WHEN 'PLANNED_ABSENCE' THEN 'OTHER_ABSENCE' ELSE types.absence_type END as absence_type,
-                   count(ab.id)       as absence_count
-            from preschool_placement_children ppc
-                     left join unnest(${bind(absenceTypes)}::absence_type[]) as types (absence_type) on true
-                     left join absence ab on ppc.examination_range @> ab.date and
-                                             ppc.id = ab.child_id and
-                                             ab.absence_type = types.absence_type and
-                                             ab.category = 'NONBILLABLE' and
-                                             extract(isodow from ab.date) BETWEEN 1 AND 5 and
-                                             ab.date != ALL (${bind(holidays)}) and
-                                             not exists (SELECT FROM preschool_term pt WHERE pt.term_breaks @> ab.date)
-            group by 1, 2, 3, 4;
+WITH preschool_placement_children AS (
+    SELECT child.id,
+        child.first_name,
+        child.last_name,
+        daterange(p.start_date, p.end_date, '[]') * ${bind(preschoolTerm)} AS examination_range
+    FROM placement p
+    JOIN person child ON p.child_id = child.id
+    JOIN daycare d ON p.unit_id = d.id
+        AND 'PRESCHOOL'::care_types = ANY (d.type)
+    WHERE daterange(p.start_date, p.end_date, '[]') && ${bind(preschoolTerm)}
+        AND p.type = ANY ('{PRESCHOOL, PRESCHOOL_DAYCARE}'::placement_type[])
+        AND p.unit_id = ${bind(daycareId)}
+)
+SELECT ppc.id AS child_id,
+    ppc.first_name,
+    ppc.last_name,
+    CASE types.absence_type
+        WHEN 'PLANNED_ABSENCE' THEN 'OTHER_ABSENCE'
+        ELSE types.absence_type
+    END AS absence_type,
+    count(ab.id) AS absence_count
+FROM preschool_placement_children ppc
+    LEFT JOIN unnest(${bind(absenceTypes)}::absence_type[]) AS types (absence_type) ON TRUE
+    LEFT JOIN absence ab ON ppc.examination_range @> ab.date
+        AND ppc.id = ab.child_id
+        AND ab.absence_type = types.absence_type
+        AND ab.category = 'NONBILLABLE'
+        AND extract(ISODOW FROM ab.date) BETWEEN 1 AND 5
+        AND ab.date != ALL (${bind(holidays)})
+        AND NOT exists (SELECT FROM preschool_term pt WHERE pt.term_breaks @> ab.date)
+GROUP BY 1, 2, 3, 4;
         """
                     .trimIndent()
             )
@@ -239,41 +240,38 @@ fun getPreschoolAbsenceReportRowsForGroup(
     return tx.createQuery {
             sql(
                 """
-            WITH preschool_group_placement_children as
-         (select child.id,
-                 child.first_name,
-                 child.last_name,
-                 daterange(dgp.start_date, dgp.end_date, '[]') * ${bind(preschoolTerm)} as examination_range
-          from placement p
-                   join person child on p.child_id = child.id
-                   join daycare d
-                        on p.unit_id = d.id
-                            AND 'PRESCHOOL'::care_types = ANY (d.type)
-                   join daycare_group_placement dgp
-                        on p.id = dgp.daycare_placement_id
-                            and dgp.daycare_group_id = ${bind(groupId)}
-                            and daterange(dgp.start_date, dgp.end_date, '[]') &&
-                                ${bind(preschoolTerm)}
-          where daterange(p.start_date, p.end_date, '[]') &&
-                ${bind(preschoolTerm)}
-            and p.type = ANY
-                ('{PRESCHOOL, PRESCHOOL_DAYCARE}'::placement_type[])
-            and p.unit_id = ${bind(daycareId)})
-select pgpc.id            as child_id,
-       pgpc.first_name,
-       pgpc.last_name,
-       CASE types.absence_type WHEN 'PLANNED_ABSENCE' THEN 'OTHER_ABSENCE' ELSE types.absence_type END as absence_type,
-       count(ab.id)       as absence_count
-from preschool_group_placement_children pgpc
-         left join unnest(${bind(absenceTypes)}::absence_type[]) as types (absence_type) on true
-         left join absence ab on pgpc.examination_range @> ab.date and
-                                 pgpc.id = ab.child_id and
-                                 ab.absence_type = types.absence_type and
-                                 ab.category = 'NONBILLABLE' and
-                                 extract(isodow from ab.date) BETWEEN 1 AND 5 and
-                                 ab.date != ALL (${bind(holidays)}) and
-                                 not exists (SELECT FROM preschool_term pt WHERE pt.term_breaks @> ab.date)
-group by 1, 2, 3, 4;
+WITH preschool_group_placement_children AS (
+    SELECT child.id,
+        child.first_name,
+        child.last_name,
+        daterange(dgp.start_date, dgp.end_date, '[]') * ${bind(preschoolTerm)} AS examination_range
+    FROM placement p
+        JOIN person child ON p.child_id = child.id
+        JOIN daycare d ON p.unit_id = d.id
+            AND 'PRESCHOOL'::care_types = ANY (d.type)
+        JOIN daycare_group_placement dgp ON p.id = dgp.daycare_placement_id
+            AND dgp.daycare_group_id = ${bind(groupId)}
+            AND daterange(dgp.start_date, dgp.end_date, '[]') && ${bind(preschoolTerm)}
+    WHERE daterange(p.start_date, p.end_date, '[]') && ${bind(preschoolTerm)}
+    AND p.type = ANY
+        ('{PRESCHOOL, PRESCHOOL_DAYCARE}'::placement_type[])
+    AND p.unit_id = ${bind(daycareId)}
+)
+SELECT pgpc.id AS child_id,
+    pgpc.first_name,
+    pgpc.last_name,
+    CASE types.absence_type WHEN 'PLANNED_ABSENCE' THEN 'OTHER_ABSENCE' ELSE types.absence_type END AS absence_type,
+    count(ab.id) AS absence_count
+FROM preschool_group_placement_children pgpc
+    LEFT JOIN unnest(${bind(absenceTypes)}::absence_type[]) AS types (absence_type) ON TRUE
+    LEFT JOIN absence ab ON pgpc.examination_range @> ab.date
+        AND pgpc.id = ab.child_id
+        AND ab.absence_type = types.absence_type
+        AND ab.category = 'NONBILLABLE'
+        AND extract(ISODOW FROM ab.date) BETWEEN 1 AND 5
+        AND ab.date != ALL (${bind(holidays)})
+        AND NOT exists (SELECT FROM preschool_term pt WHERE pt.term_breaks @> ab.date)
+GROUP BY 1, 2, 3, 4;
         """
                     .trimIndent()
             )
@@ -293,35 +291,42 @@ fun calculateDailyPreschoolAttendanceDeviationForUnit(
             sql(
                 """
 -- calculate child attendance deviation from standard daily preschool service time in minutes
-select floor(extract(EPOCH FROM (${bind(endTime)} - ${bind(startTime)}) -
-                                sum((upper(intersection.range) - lower(intersection.range)))) /
-             60) as missing_minutes,
-       intersection.date,
-       intersection.child_id
-from (select (tsrange(ca.date + ca.start_time, ca.date + ca.end_time) *
-              tsrange(ca.date + ${bind(startTime)}, ca.date + ${bind(endTime)})) as range,
-             ca.date,
-             ca.child_id
-      from placement p
-               join daycare d
-                    on p.unit_id = d.id
-                        and 'PRESCHOOL'::care_types = ANY (d.type)
-               join child_attendance ca
-                    on ca.child_id = p.child_id
-                        and daterange(p.start_date, p.end_date, '[]') * ${bind(preschoolTerm)} @> ca.date
-                        and ca.end_time IS NOT NULL
-                        and ca.unit_id = d.id
-      -- pick out attendance intersecting preschool service time
-      where tsrange(ca.date + ca.start_time, ca.date + ca.end_time) &&
+SELECT floor(
+    extract(
+        EPOCH FROM (${bind(endTime)} - ${bind(startTime)}) 
+        - sum((upper(intersection.range) - lower(intersection.range)))
+    ) / 60) AS missing_minutes,
+    intersection.date,
+    intersection.child_id
+FROM (
+    SELECT
+        (tsrange(ca.date + ca.start_time, ca.date + ca.end_time) *
             tsrange(ca.date + ${bind(startTime)}, ca.date + ${bind(endTime)})
-        and daterange(p.start_date, p.end_date, '[]') && ${bind(preschoolTerm)}
-        and p.type = ANY ('{PRESCHOOL, PRESCHOOL_DAYCARE}'::placement_type[])
-        and p.unit_id = ${bind(daycareId)}) intersection
-group by intersection.date, intersection.child_id
+        ) AS range,
+        ca.date,
+        ca.child_id
+    FROM placement p
+    JOIN daycare d ON p.unit_id = d.id
+        AND 'PRESCHOOL'::care_types = ANY (d.type)
+    JOIN child_attendance ca ON ca.child_id = p.child_id
+        AND daterange(p.start_date, p.end_date, '[]') * ${bind(preschoolTerm)} @> ca.date
+        AND ca.end_time IS NOT NULL
+        AND ca.unit_id = d.id
+    -- pick out attendance intersecting preschool service time
+    WHERE tsrange(ca.date + ca.start_time, ca.date + ca.end_time) &&
+            tsrange(ca.date + ${bind(startTime)}, ca.date + ${bind(endTime)})
+        AND daterange(p.start_date, p.end_date, '[]') && ${bind(preschoolTerm)}
+        AND p.type = ANY ('{PRESCHOOL, PRESCHOOL_DAYCARE}'::placement_type[])
+        AND p.unit_id = ${bind(daycareId)}
+) intersection
+GROUP BY intersection.date, intersection.child_id
 -- filter out daily deviations below 20 minutes
-having floor(extract(EPOCH FROM (${bind(endTime)} - ${bind(startTime)}) -
-                                sum((upper(intersection.range) - lower(intersection.range)))) /
-             60) >= 20;
+HAVING floor(
+    extract(
+        EPOCH FROM (${bind(endTime)} - ${bind(startTime)})
+        - sum((upper(intersection.range) - lower(intersection.range)))
+    ) / 60
+) >= 20;
     """
                     .trimIndent()
             )
@@ -343,39 +348,46 @@ fun calculateDailyPreschoolAttendanceDeviationForGroup(
             sql(
                 """
 -- calculate child attendance deviation from standard daily preschool service time in minutes
-select floor(extract(EPOCH FROM (${bind(endTime)} - ${bind(startTime)}) -
-                                sum((upper(intersection.range) - lower(intersection.range)))) /
-             60) as missing_minutes,
-       intersection.date,
-       intersection.child_id
-from (select (tsrange(ca.date + ca.start_time, ca.date + ca.end_time) *
-              tsrange(ca.date + ${bind(startTime)}, ca.date + ${bind(endTime)})) as range,
-             ca.date,
-             ca.child_id
-      from placement p
-               join daycare d
-                    on p.unit_id = d.id
-                        and 'PRESCHOOL'::care_types = ANY (d.type)
-               join daycare_group_placement dgp
-                    on p.id = dgp.daycare_placement_id
-                        and daterange(dgp.start_date, dgp.end_date, '[]') && ${bind(preschoolTerm)}
-                        and dgp.daycare_group_id = ${bind(groupId)}
-               join child_attendance ca
-                    on ca.child_id = p.child_id
-                        and daterange(dgp.start_date, dgp.end_date, '[]') * ${bind(preschoolTerm)} @> ca.date
-                        and ca.end_time IS NOT NULL
-                        and ca.unit_id = d.id
-      -- pick out attendance intersecting preschool service time
-      where tsrange(ca.date + ca.start_time, ca.date + ca.end_time) &&
+SELECT floor(
+    extract(
+        EPOCH FROM (${bind(endTime)} - ${bind(startTime)})
+        - sum((upper(intersection.range) - lower(intersection.range)))
+    ) / 60) AS missing_minutes,
+    intersection.date,
+    intersection.child_id
+FROM (
+    SELECT
+        (tsrange(ca.date + ca.start_time, ca.date + ca.end_time) *
             tsrange(ca.date + ${bind(startTime)}, ca.date + ${bind(endTime)})
-        and daterange(p.start_date, p.end_date, '[]') && ${bind(preschoolTerm)}
-        and p.type = ANY ('{PRESCHOOL, PRESCHOOL_DAYCARE}'::placement_type[])
-        and p.unit_id = ${bind(daycareId)}) intersection
-group by intersection.date, intersection.child_id
+        ) AS range,
+        ca.date,
+        ca.child_id
+    FROM placement p
+    JOIN daycare d
+        ON p.unit_id = d.id
+        AND 'PRESCHOOL'::care_types = ANY (d.type)
+    JOIN daycare_group_placement dgp ON p.id = dgp.daycare_placement_id
+        AND daterange(dgp.start_date, dgp.end_date, '[]') && ${bind(preschoolTerm)}
+        AND dgp.daycare_group_id = ${bind(groupId)}
+    JOIN child_attendance ca ON ca.child_id = p.child_id
+        AND daterange(dgp.start_date, dgp.end_date, '[]') * ${bind(preschoolTerm)} @> ca.date
+        AND ca.end_time IS NOT NULL
+        AND ca.unit_id = d.id
+    -- pick out attendance intersecting preschool service time
+    WHERE tsrange(ca.date + ca.start_time, ca.date + ca.end_time) &&
+        tsrange(ca.date + ${bind(startTime)}, ca.date + ${bind(endTime)})
+        AND daterange(p.start_date, p.end_date, '[]') && ${bind(preschoolTerm)}
+        AND p.type = ANY ('{PRESCHOOL, PRESCHOOL_DAYCARE}'::placement_type[])
+        AND p.unit_id = ${bind(daycareId)}
+) intersection
+GROUP BY intersection.date, intersection.child_id
 -- filter out daily deviations below 20 minutes
-having floor(extract(EPOCH FROM (${bind(endTime)} - ${bind(startTime)}) -
-                                sum((upper(intersection.range) - lower(intersection.range)))) /
-             60) >= 20;
+HAVING floor(
+    extract(
+        EPOCH FROM (${bind(endTime)} - ${bind(startTime)})
+        - sum((upper(intersection.range) - lower(intersection.range)))
+    ) / 60
+) >= 20;
     """
                     .trimIndent()
             )
