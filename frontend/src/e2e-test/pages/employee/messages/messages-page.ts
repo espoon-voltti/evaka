@@ -6,7 +6,6 @@ import { MessageType } from 'lib-common/generated/api-types/messaging'
 
 import { waitUntilEqual } from '../../../utils'
 import {
-  FileInput,
   TextInput,
   Page,
   Checkbox,
@@ -14,7 +13,8 @@ import {
   TreeDropdown,
   Element,
   ElementCollection,
-  Select
+  Select,
+  FileUpload
 } from '../../../utils/page'
 
 export default class MessagesPage {
@@ -225,7 +225,7 @@ export class MessageEditor extends Element {
   messageTypeBulletin = new Checkbox(
     this.findByDataQa('radio-message-type-bulletin')
   )
-  fileUpload = this.findByDataQa('upload-message-attachment')
+  fileUpload = new FileUpload(this.findByDataQa('upload-message-attachment'))
   sendButton = this.findByDataQa('send-message-btn')
   discardButton = this.findByDataQa('discard-draft-btn')
 
@@ -306,12 +306,11 @@ export class MessageEditor extends Element {
     }
 
     if (attachmentCount > 0) {
+      const testFileName = 'test_file.odt'
+      const testFilePath = `src/e2e-test/assets/${testFileName}`
+
       for (let i = 1; i <= attachmentCount; i++) {
-        await this.addAttachment()
-        await waitUntilEqual(
-          () => this.fileUpload.findAllByDataQa('file-download-button').count(),
-          i
-        )
+        await this.fileUpload.upload(testFilePath)
       }
     }
 
@@ -320,14 +319,6 @@ export class MessageEditor extends Element {
       await this.findByDataQa('modal-okBtn').click()
     }
     await this.waitUntilHidden()
-  }
-
-  async addAttachment() {
-    const testFileName = 'test_file.odt'
-    const testFilePath = `src/e2e-test/assets/${testFileName}`
-    await new FileInput(
-      this.fileUpload.find('[data-qa="btn-upload-file"]')
-    ).setInputFiles(testFilePath)
   }
 
   async assertSimpleViewVisible() {

@@ -79,7 +79,7 @@ describe('Income', () => {
     await waitUntilEqual(() => incomesSection.incomeListItemCount(), 1)
   })
 
-  it('Create a new income with multiple values.', async () => {
+  it('Create a new income with multiple values', async () => {
     await incomesSection.openNewIncomeForm()
 
     await incomesSection.fillIncomeStartDate('1.1.2020')
@@ -97,7 +97,7 @@ describe('Income', () => {
     await waitUntilEqual(() => incomesSection.getExpensesSum(), '35,75 €')
   })
 
-  it('Create a new income without end date.', async () => {
+  it('Create a new income without end date', async () => {
     await incomesSection.openNewIncomeForm()
 
     await incomesSection.fillIncomeStartDate('1.1.2020')
@@ -128,7 +128,7 @@ describe('Income', () => {
     await waitUntilTrue(() => incomesSection.saveIsDisabled())
   })
 
-  it('Existing income item can have its values updated.', async () => {
+  it('Existing income item can have its values updated', async () => {
     // create new income item
     await incomesSection.openNewIncomeForm()
 
@@ -155,7 +155,7 @@ describe('Income', () => {
     await waitUntilEqual(() => incomesSection.getExpensesSum(), '300 €')
   })
 
-  it('Income coefficients are saved and affect the sum.', async () => {
+  it('Income coefficients are saved and affect the sum', async () => {
     await incomesSection.openNewIncomeForm()
 
     await incomesSection.fillIncomeStartDate('1.1.2020')
@@ -244,30 +244,30 @@ describe('Income', () => {
       )
   })
 
-  it('Attachments can be added.', async () => {
+  it('Attachments can be added', async () => {
     await incomesSection.openNewIncomeForm()
 
     await incomesSection.fillIncomeStartDate('1.1.2020')
     await incomesSection.fillIncomeEndDate('31.1.2020')
     await incomesSection.confirmRetroactive.check()
-    await incomesSection.addAttachment()
+    await incomesSection.attachmenUpload.uploadTestFile()
     await incomesSection.save()
     await waitUntilEqual(() => incomesSection.getAttachmentCount(), 1)
 
     await incomesSection.edit()
 
-    await incomesSection.addAttachment()
+    await incomesSection.attachmenUpload.uploadTestFile()
     await incomesSection.save()
     await waitUntilEqual(() => incomesSection.getAttachmentCount(), 2)
   })
 
-  it('Income with attachment can be deleted.', async () => {
+  it('Income with attachment can be deleted', async () => {
     await incomesSection.openNewIncomeForm()
 
     await incomesSection.fillIncomeStartDate('1.1.2020')
     await incomesSection.fillIncomeEndDate('31.1.2020')
     await incomesSection.confirmRetroactive.check()
-    await incomesSection.addAttachment()
+    await incomesSection.attachmenUpload.uploadTestFile()
     await incomesSection.save()
     await waitUntilEqual(() => incomesSection.getAttachmentCount(), 1)
 
@@ -276,22 +276,20 @@ describe('Income', () => {
     await waitUntilEqual(() => incomesSection.incomeListItemCount(), 0)
   })
 
-  it('Attachment can be deleted while editing income without dead links', async () => {
+  it('Attachment can be deleted while editing income', async () => {
     await incomesSection.openNewIncomeForm()
 
     await incomesSection.fillIncomeStartDate('1.1.2020')
     await incomesSection.fillIncomeEndDate('31.1.2020')
     await incomesSection.confirmRetroactive.check()
-    await incomesSection.addAttachment()
+    await incomesSection.attachmenUpload.uploadTestFile()
     await incomesSection.save()
     await waitUntilEqual(() => incomesSection.getAttachmentCount(), 1)
 
     await incomesSection.edit()
-
-    await incomesSection.deleteIncomeAttachment(0)
-    await waitUntilEqual(() => incomesSection.getAttachmentCount(), 0)
-
+    await incomesSection.attachmenUpload.deleteUploadedFile(0)
     await incomesSection.cancelEdit()
+
     await waitUntilEqual(() => incomesSection.getAttachmentCount(), 0)
   })
 

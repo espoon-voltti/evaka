@@ -20,7 +20,7 @@ import {
   DatePicker,
   DatePickerDeprecated,
   Element,
-  FileInput,
+  FileUpload,
   Modal,
   Page,
   Radio,
@@ -37,6 +37,7 @@ export default class ChildInformationPage {
   #ophPersonOidInput: TextInput
   #editButton: Element
   confirmButton: Element
+
   constructor(private readonly page: Page) {
     this.#deceased = page.findByDataQa('deceased-label')
     this.#ophPersonOidInput = new TextInput(
@@ -269,6 +270,10 @@ export class PedagogicalDocumentsSection extends Section {
     '[data-qa="pedagogical-document-description"]'
   )
 
+  readonly fileUpload = new FileUpload(
+    this.findByDataQa('upload-pedagogical-document-attachment-new')
+  )
+
   readonly #create = this.find('[data-qa="button-create-pedagogical-document"]')
   readonly #save = this.find('[data-qa="pedagogical-document-button-save"]')
   readonly #edit = this.find('[data-qa="pedagogical-document-button-edit"]')
@@ -311,21 +316,6 @@ export class PedagogicalDocumentsSection extends Section {
   async addNew() {
     await this.#create.click()
     return new PedagogicalDocumentsSection(this.page, this)
-  }
-
-  async addAttachmentAndAssert(
-    page: Page,
-    testfileName: string,
-    testfilePath: string
-  ) {
-    await new FileInput(page.findByDataQa('btn-upload-file')).setInputFiles(
-      testfilePath
-    )
-    await waitUntilTrue(async () =>
-      (
-        await page.findAll('[data-qa="file-download-button"]').allTexts()
-      ).includes(testfileName)
-    )
   }
 }
 
@@ -773,6 +763,7 @@ export class PlacementsSection extends Section {
       .findByDataQa(`shift-care-${shiftCareType}`)
       .waitUntilVisible()
   }
+
   async assertServiceNeedOptions(placementId: string, optionIds: string[]) {
     await this.openPlacement(placementId)
     await this.addMissingServiceNeedButton.click()
@@ -963,26 +954,33 @@ export class AssistanceSection extends Section {
   assistanceFactorRow(nth: number): AssistanceFactorRow {
     return new AssistanceFactorRow(this.#assistanceFactorRows.nth(nth))
   }
+
   async assertAssistanceFactorCount(count: number) {
     await this.#assistanceFactorRows.assertCount(count)
   }
+
   daycareAssistanceRow(nth: number): DaycareAssistanceRow {
     return new DaycareAssistanceRow(this.#daycareAssistanceRows.nth(nth))
   }
+
   async assertDaycareAssistanceCount(count: number) {
     await this.#daycareAssistanceRows.assertCount(count)
   }
+
   preschoolAssistanceRow(nth: number): PreschoolAssistanceRow {
     return new PreschoolAssistanceRow(this.#preschoolAssistanceRows.nth(nth))
   }
+
   async assertPreschoolAssistanceCount(count: number) {
     await this.#preschoolAssistanceRows.assertCount(count)
   }
+
   otherAssistanceMeasureRow(nth: number): OtherAssistanceMeasureRow {
     return new OtherAssistanceMeasureRow(
       this.#otherAssistanceMeasureRows.nth(nth)
     )
   }
+
   async assertOtherAssistanceMeasureCount(count: number) {
     await this.#otherAssistanceMeasureRows.assertCount(count)
   }
@@ -1159,8 +1157,10 @@ class FeeAlterationEditorPage {
   startDateInput: DatePickerDeprecated
   endDateInput: DatePickerDeprecated
   alterationValueInput: TextInput
+  fileUpload: FileUpload
   saveButton: Element
-  constructor(private readonly page: Page) {
+
+  constructor(readonly page: Page) {
     this.startDateInput = new DatePickerDeprecated(
       page.findByDataQa('date-range-input-start-date')
     )
@@ -1170,23 +1170,14 @@ class FeeAlterationEditorPage {
     this.alterationValueInput = new TextInput(
       page.findByDataQa('fee-alteration-amount-input')
     )
+    this.fileUpload = new FileUpload(
+      page.findByDataQa('fee-alteration-attachment-upload')
+    )
     this.saveButton = page.findByDataQa('fee-alteration-editor-save-button')
-  }
-
-  async uploadedCount() {
-    return this.page.findAllByDataQa('file-download-button').count()
   }
 
   async waitUntilReady() {
     await this.startDateInput.waitUntilVisible()
-  }
-
-  async uploadAttachmentAndAssert(filePath: string) {
-    const initiallyUploadedCount = await this.uploadedCount()
-    await new FileInput(
-      this.page.findByDataQa('btn-upload-file')
-    ).setInputFiles(filePath)
-    await waitUntilEqual(() => this.uploadedCount(), initiallyUploadedCount + 1)
   }
 }
 

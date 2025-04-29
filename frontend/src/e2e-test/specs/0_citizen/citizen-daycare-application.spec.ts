@@ -288,7 +288,6 @@ describe('Citizen daycare applications', () => {
     )
     await editorPage.fillData(minimalDaycareForm().form)
     await editorPage.markApplicationUrgentAndAddAttachment(testFilePath)
-    await editorPage.assertAttachmentUploaded(testFileName)
     await editorPage.goToVerification()
     await editorPage.assertUrgencyFileDownload()
   })

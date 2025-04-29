@@ -390,11 +390,10 @@ export const testFilePath = `src/e2e-test/assets/${testFileName}`
 export class FileUpload extends Element {
   #input = new FileInput(this.findByDataQa('btn-upload-file'))
   #uploadedFilesContainer = this.findByDataQa('uploaded-files')
+  #uploadedFiles = this.#uploadedFilesContainer.findAllByDataQa('uploaded-file')
 
   async upload(path: string | string[]) {
-    const fileCountBefore = await this.#uploadedFilesContainer
-      .findAll('> * ')
-      .count()
+    const fileCountBefore = await this.fileCount
     await this.#input.setInputFiles(path)
     await this.#uploadedFilesContainer
       .find(
@@ -405,6 +404,24 @@ export class FileUpload extends Element {
 
   async uploadTestFile() {
     await this.upload(testFilePath)
+  }
+
+  get fileCount(): Promise<number> {
+    return this.#uploadedFiles.count()
+  }
+
+  async deleteUploadedFile(index = 0) {
+    const fileCountBefore = await this.fileCount
+    if (fileCountBefore < index) {
+      throw new Error(
+        `Cannot delete file ${index} because only ${fileCountBefore} files are uploaded`
+      )
+    }
+    await this.#uploadedFiles
+      .nth(index)
+      .findByDataQa('file-delete-button')
+      .click()
+    await waitUntilEqual(() => this.fileCount, fileCountBefore - 1)
   }
 }
 

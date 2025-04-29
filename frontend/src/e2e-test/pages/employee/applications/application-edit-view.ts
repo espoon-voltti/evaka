@@ -6,16 +6,15 @@ import { OtherGuardianAgreementStatus } from 'lib-common/generated/api-types/app
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import LocalDate from 'lib-common/local-date'
 
-import { waitUntilFalse } from '../../../utils'
 import {
   Checkbox,
   Combobox,
   DatePickerDeprecated,
-  FileInput,
   Page,
   Radio,
   TextInput,
-  Element
+  Element,
+  FileUpload
 } from '../../../utils/page'
 
 import ApplicationReadView from './application-read-view'
@@ -23,7 +22,7 @@ import ApplicationReadView from './application-read-view'
 export default class ApplicationEditView {
   #saveButton: Element
   #urgentCheckbox: Checkbox
-  #urgentAttachmentFileUpload: Element
+  urgentAttachmentFileUpload: FileUpload
   #preferredStartDate: DatePickerDeprecated
   #startTime: TextInput
   #endTime: TextInput
@@ -34,7 +33,7 @@ export default class ApplicationEditView {
   #applicantPhone: TextInput
   #applicantEmail: TextInput
   #shiftCareCheckbox: Checkbox
-  #shiftCareAttachmentFileUpload: Element
+  shiftCareAttachmentFileUpload: FileUpload
   #guardianName: Element
   #guardianSsn: Element
   #guardianAddress: Element
@@ -44,7 +43,9 @@ export default class ApplicationEditView {
   constructor(private readonly page: Page) {
     this.#saveButton = page.findByDataQa('save-application')
     this.#urgentCheckbox = new Checkbox(page.findByDataQa('checkbox-urgent'))
-    this.#urgentAttachmentFileUpload = page.findByDataQa('file-upload-urgent')
+    this.urgentAttachmentFileUpload = new FileUpload(
+      page.findByDataQa('file-upload-urgent')
+    )
     this.#preferredStartDate = new DatePickerDeprecated(
       page.findByDataQa('datepicker-start-date')
     )
@@ -69,8 +70,8 @@ export default class ApplicationEditView {
     this.#shiftCareCheckbox = new Checkbox(
       page.findByDataQa('checkbox-service-need-shift-care')
     )
-    this.#shiftCareAttachmentFileUpload = page.findByDataQa(
-      'file-upload-shift-care'
+    this.shiftCareAttachmentFileUpload = new FileUpload(
+      page.findByDataQa('file-upload-shift-care')
     )
     this.#guardianName = page.findByDataQa('guardian-name')
     this.#guardianSsn = page.findByDataQa('guardian-ssn')
@@ -144,50 +145,11 @@ export default class ApplicationEditView {
     )
   }
 
-  async uploadUrgentAttachment(filePath: string) {
-    await new FileInput(
-      this.#urgentAttachmentFileUpload.find('[data-qa="btn-upload-file"]')
-    ).setInputFiles(filePath)
-  }
-
-  async assertUrgentAttachmentUploaded(fileName: string) {
-    await this.#urgentAttachmentFileUpload
-      .find('[data-qa="file-download-button"]')
-      .assertTextEquals(fileName)
-  }
-
   async setShiftCareNeeded() {
     if (await this.#shiftCareCheckbox.checked) {
       return
     }
     await this.#shiftCareCheckbox.click()
-  }
-
-  async uploadShiftCareAttachment(filePath: string) {
-    await new FileInput(
-      this.#shiftCareAttachmentFileUpload.find('[data-qa="btn-upload-file"]')
-    ).setInputFiles(filePath)
-  }
-
-  async deleteShiftCareAttachment(fileName: string) {
-    await this.#shiftCareAttachmentFileUpload
-      .find(`[data-qa="file-delete-button-${fileName}"]`)
-      .click()
-  }
-
-  async assertShiftCareAttachmentUploaded(fileName: string) {
-    await this.#shiftCareAttachmentFileUpload
-      .find('[data-qa="file-download-button"]')
-      .assertTextEquals(fileName)
-  }
-
-  async assertShiftCareAttachmentsDeleted() {
-    await waitUntilFalse(
-      () =>
-        this.#shiftCareAttachmentFileUpload.find(
-          '[data-qa="file-download-button"]'
-        ).visible
-    )
   }
 
   async assertGuardian(

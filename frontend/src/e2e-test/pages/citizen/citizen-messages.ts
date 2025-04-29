@@ -8,7 +8,7 @@ import {
   Element,
   ElementCollection,
   EnvType,
-  FileInput,
+  FileUpload,
   MultiSelect,
   Page,
   TextInput
@@ -41,7 +41,7 @@ export default class CitizenMessagesPage {
   #threadUrgent: Element
   #threadChildren: ElementCollection
   newMessageButton: Element
-  fileUpload: Element
+  fileUpload: FileUpload
   #threadOutOfOfficeInfo: Element
   markUnreadButton: Element
   constructor(
@@ -80,7 +80,9 @@ export default class CitizenMessagesPage {
       .findByDataQa('thread-reader')
       .findAllByDataQa('thread-child')
     this.newMessageButton = page.findByDataQa(`new-message-btn-${env}`)
-    this.fileUpload = page.findByDataQa('upload-message-attachment')
+    this.fileUpload = new FileUpload(
+      page.findByDataQa('upload-message-attachment')
+    )
     this.#threadOutOfOfficeInfo = page
       .findByDataQa('thread-reader')
       .findByDataQa('out-of-office-info')
@@ -197,14 +199,6 @@ export default class CitizenMessagesPage {
     await this.page.findByDataQa('modal').findByDataQa('modal-okBtn').click()
   }
 
-  async addAttachment() {
-    const testFileName = 'test_file.png'
-    const testFilePath = `src/e2e-test/assets/${testFileName}`
-    await new FileInput(
-      this.fileUpload.find('[data-qa="btn-upload-file"]')
-    ).setInputFiles(testFilePath)
-  }
-
   async sendNewMessage(
     title: string,
     content: string,
@@ -220,10 +214,7 @@ export default class CitizenMessagesPage {
     await editor.fillMessage(title, content)
 
     if (addAttachment) {
-      await this.addAttachment()
-      await this.fileUpload
-        .findByDataQa('file-download-button')
-        .waitUntilVisible()
+      await this.fileUpload.uploadTestFile()
     }
 
     await editor.sendMessage()
