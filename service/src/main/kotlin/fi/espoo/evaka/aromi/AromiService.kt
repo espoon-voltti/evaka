@@ -43,7 +43,7 @@ class AromiService(private val aromiEnv: AromiEnv?) {
     fun sendOrders(
         db: Database.Connection,
         clock: EvakaClock,
-        earliestStartDate: LocalDate = LocalDate.of(2025, 4, 22),
+        earliestStartDate: LocalDate = LocalDate.of(2025, 5, 19),
     ) {
         val today = clock.today()
         logger.info { "Scheduled sending of Aromi attendance CSV started ($today)" }
