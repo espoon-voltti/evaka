@@ -36,6 +36,7 @@ import fi.espoo.evaka.process.ProcessMetadataController
 import fi.espoo.evaka.process.getArchiveProcessByFeeDecisionId
 import fi.espoo.evaka.sficlient.MockSfiMessagesClient
 import fi.espoo.evaka.sficlient.SfiAsyncJobs
+import fi.espoo.evaka.sficlient.getSfiGetEventsContinuationTokens
 import fi.espoo.evaka.sficlient.getSfiMessageEventsByMessageId
 import fi.espoo.evaka.sficlient.rest.EventType
 import fi.espoo.evaka.shared.DaycareId
@@ -2459,12 +2460,17 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         asyncJobRunner.runPendingJobsSync(MockEvakaClock(HelsinkiDateTime.now()))
 
         val messageId = MockSfiMessagesClient.getMessages().first().messageId
+
+        db.read { assertEquals(0, it.getSfiGetEventsContinuationTokens().size) }
+
         sfiAsyncJobs.getEvents(db, MockEvakaClock(HelsinkiDateTime.now()))
 
         db.read {
             val processedEvents = it.getSfiMessageEventsByMessageId(messageId)
             assertEquals(1, processedEvents.size)
             assertEquals(EventType.ELECTRONIC_MESSAGE_CREATED, processedEvents.get(0).eventType)
+
+            assertEquals(1, it.getSfiGetEventsContinuationTokens().size)
         }
     }
 

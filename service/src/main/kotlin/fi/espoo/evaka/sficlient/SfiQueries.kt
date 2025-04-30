@@ -117,3 +117,6 @@ data class SfiMessageEvent(
     val messageId: SfiMessageId,
     val eventType: EventType,
 )
+
+fun Database.Read.getSfiGetEventsContinuationTokens(): List<String> =
+    createQuery { sql("SELECT continuation_token FROM sfi_get_events_continuation_token") }.toList()
