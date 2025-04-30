@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.document.archival
 
+import fi.espoo.evaka.document.DocumentType
 import fi.espoo.evaka.document.childdocument.ChildDocumentDetails
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.process.ArchivedProcess
@@ -210,7 +211,7 @@ private fun createAgents(
                 agent.add(
                     AgentType().apply {
                         corporateName = archivedProcess.organization
-                        role = "Henkilökunta" // TODO pitäisikö tämän olla tarkempi rooli?
+                        role = "Henkilökunta"
                         name = user.name
                     }
                 )
@@ -228,13 +229,30 @@ private fun createDocumentDescription(
     return StandardMetadataType.DocumentDescription().apply {
         // Basic document info
         title = documentMetadata.name
-        documentType = "Suunnitelma" // From Evaka_Särmä_metatietomääritykset.xlsx
+        documentType =
+            when (document.template.type) {
+                DocumentType.VASU,
+                DocumentType.MIGRATED_VASU,
+                DocumentType.LEOPS,
+                DocumentType.MIGRATED_LEOPS,
+                DocumentType.HOJKS -> "Suunnitelma"
+                DocumentType.PEDAGOGICAL_ASSESSMENT -> "Arvio"
+                DocumentType.PEDAGOGICAL_REPORT -> "Selvitys"
+                else -> null
+            }
         documentTypeSpecifier =
-            "Varhaiskasvatussuunnitelma" // From Evaka_Särmä_metatietomääritykset.xlsx
-        personalData = PersonalDataType.CONTAINS_PERSONAL_INFORMATION // TODO md_instance.xml:
-        // containsPersonalInformation tai
-        // containsSensitivePersonalInformation.
-        // Mistä tämä tulisi päätellä?
+            when (document.template.type) {
+                DocumentType.VASU,
+                DocumentType.MIGRATED_VASU -> "Varhaiskasvatussuunnitelma"
+                DocumentType.LEOPS,
+                DocumentType.MIGRATED_LEOPS -> "Lapsen esiopetuksen oppimissuunnitelma LEOPS"
+                DocumentType.PEDAGOGICAL_ASSESSMENT -> "Pedagoginen arvio"
+                DocumentType.PEDAGOGICAL_REPORT -> "Pedagoginen selvitys"
+                DocumentType.HOJKS ->
+                    "Henkilökohtaisen opetuksen järjestämistä koskeva suunnitelma HOJKS"
+                else -> null
+            }
+        personalData = PersonalDataType.CONTAINS_SENSITIVE_PERSONAL_INFORMATION
         language = document.template.language.isoLanguage.alpha2
 
         // From Evaka_Särmä_metatietomääritykset.xlsx
@@ -331,7 +349,9 @@ fun createDocumentMetadata(
                 recordIdentifiers =
                     StandardMetadataType.RecordIdentifiers().apply {
                         recordIdentifier = document.id.toString()
+                        caseIdentifier = archivedProcess?.processNumber
                     }
+
                 documentDescription =
                     createDocumentDescription(
                         document,

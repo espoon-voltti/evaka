@@ -432,7 +432,7 @@ describe('Employee - Child documents', () => {
     await modal.validityStartInput.fill('01.08.2022')
     await modal.confidentialityDurationYearsInput.fill('100')
     await modal.confidentialityBasisInput.fill('Joku laki §300')
-    await modal.processDefinitionNumberInput.fill('12.06.01')
+    await modal.processDefinitionNumberInput.fill('12.06.01.SL1.RT34')
     await modal.archiveDurationMonthsInput.fill('1320')
     await modal.archiveExternallyCheckbox.check()
     await modal.confirmCreateButton.click()
