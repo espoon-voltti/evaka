@@ -13,14 +13,14 @@ import {
   validated,
   value
 } from 'lib-common/form/form'
-import { useForm, useFormField } from 'lib-common/form/hooks'
+import { BoundForm, useForm, useFormField } from 'lib-common/form/hooks'
 import {
   ChildDocumentsCreateRequest,
   DocumentTemplateSummary
 } from 'lib-common/generated/api-types/document'
-import { GroupId } from 'lib-common/generated/api-types/shared'
+import { ChildId, GroupId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
-import { useQueryResult } from 'lib-common/query'
+import { constantQuery, useQueryResult } from 'lib-common/query'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
@@ -34,7 +34,8 @@ import { renderResult } from '../../../async-rendering'
 
 import {
   createDocumentsMutation,
-  getActiveTemplatesByGroupIdQuery
+  getActiveTemplatesByGroupIdQuery,
+  getNonCompletedChildDocumentChildIdsQuery
 } from './queries'
 
 interface Props {
@@ -43,13 +44,15 @@ interface Props {
   onClose: () => void
 }
 
+const placementsModel = validated(
+  array(value<DaycareGroupPlacementDetailed>()),
+  (placements) => (placements.length === 0 ? 'required' : undefined)
+)
+
 const formModel = mapped(
   object({
     template: required(value<DocumentTemplateSummary | undefined>()),
-    placements: validated(
-      array(value<DaycareGroupPlacementDetailed>()),
-      (placements) => (placements.length === 0 ? 'required' : undefined)
-    )
+    placements: placementsModel
   }),
   (output): ChildDocumentsCreateRequest => ({
     templateId: output.template.id,
@@ -58,14 +61,19 @@ const formModel = mapped(
 )
 
 const selectablePlacement =
-  (template: DocumentTemplateSummary, groupId: GroupId) =>
+  (
+    template: DocumentTemplateSummary,
+    groupId: GroupId,
+    nonCompleted: ChildId[]
+  ) =>
   (placement: DaycareGroupPlacementDetailed) =>
     template.placementTypes.includes(placement.type) &&
     groupId === placement.groupId &&
     LocalDate.todayInHelsinkiTz().isBetween(
       placement.startDate,
       placement.endDate
-    )
+    ) &&
+    !nonCompleted.includes(placement.child.id)
 
 export const CreateChildDocumentsModal = (props: Props) => {
   const { i18n } = useTranslation()
@@ -83,30 +91,21 @@ export const CreateChildDocumentsModal = (props: Props) => {
     }),
     i18n.validationErrors
   )
+  const templateFormField = useFormField(form, 'template')
   const placementsFormField = useFormField(form, 'placements')
+  const nonCompletedChildDocumentChildIdsResult = useQueryResult(
+    templateFormField.isValid()
+      ? getNonCompletedChildDocumentChildIdsQuery({
+          templateId: templateFormField.value().id,
+          groupId: props.groupId
+        })
+      : constantQuery([])
+  )
   const setTemplate = useCallback(
     (template: DocumentTemplateSummary | null) => {
-      if (template !== null)
-        form.update((state) => ({
-          template,
-          placements: state.placements.filter(
-            selectablePlacement(template, props.groupId)
-          )
-        }))
+      if (template !== null) form.set({ template, placements: [] })
     },
-    [form, props.groupId]
-  )
-  const placements = useMemo(
-    () =>
-      sortBy(
-        form.state.template !== undefined
-          ? props.placements.filter(
-              selectablePlacement(form.state.template, props.groupId)
-            )
-          : [],
-        [({ child }) => child.lastName, ({ child }) => child.firstName]
-      ),
-    [form.state.template, props.groupId, props.placements]
+    [form]
   )
 
   return (
@@ -130,7 +129,7 @@ export const CreateChildDocumentsModal = (props: Props) => {
             </Label>
             <Combobox
               items={templates}
-              selectedItem={form.state.template ?? null}
+              selectedItem={templateFormField.state ?? null}
               onChange={setTemplate}
               getItemLabel={(template) => template.name}
               placeholder={i18n.common.select}
@@ -140,24 +139,67 @@ export const CreateChildDocumentsModal = (props: Props) => {
               }
             />
           </div>
-          <div>
-            <Label>
-              {i18n.unit.groups.childDocuments.createModal.placements}
-            </Label>
-            <MultiSelect
-              options={placements}
-              value={placementsFormField.state}
-              onChange={placementsFormField.set}
-              getOptionId={({ child }) => child.id}
-              getOptionLabel={({ child }) =>
-                formatPersonName(child, i18n, true)
-              }
-              placeholder={i18n.common.select}
-              data-qa="create-child-documents-modal-select-children"
-            />
-          </div>
+          {templateFormField.isValid() &&
+            renderResult(
+              nonCompletedChildDocumentChildIdsResult,
+              (nonCompletedChildDocumentChildIds) => (
+                <PlacementsSelect
+                  template={templateFormField.value()}
+                  groupId={props.groupId}
+                  nonCompletedChildDocumentChildIds={
+                    nonCompletedChildDocumentChildIds
+                  }
+                  placements={props.placements}
+                  placementsFormField={placementsFormField}
+                />
+              )
+            )}
         </FixedSpaceColumn>
       ))}
     </MutateFormModal>
+  )
+}
+
+const PlacementsSelect = (props: {
+  template: DocumentTemplateSummary
+  groupId: GroupId
+  nonCompletedChildDocumentChildIds: ChildId[]
+  placements: DaycareGroupPlacementDetailed[]
+  placementsFormField: BoundForm<typeof placementsModel>
+}) => {
+  const { i18n } = useTranslation()
+  const placements = useMemo(
+    () =>
+      sortBy(
+        props.placements.filter(
+          selectablePlacement(
+            props.template,
+            props.groupId,
+            props.nonCompletedChildDocumentChildIds
+          )
+        ),
+        [({ child }) => child.lastName, ({ child }) => child.firstName]
+      ),
+    [
+      props.groupId,
+      props.nonCompletedChildDocumentChildIds,
+      props.placements,
+      props.template
+    ]
+  )
+
+  return (
+    <div>
+      <Label>{i18n.unit.groups.childDocuments.createModal.placements}</Label>
+      <MultiSelect
+        options={placements}
+        value={props.placementsFormField.state}
+        onChange={props.placementsFormField.set}
+        getOptionId={({ child }) => child.id}
+        getOptionLabel={({ child }) => formatPersonName(child, i18n, true)}
+        placeholder={i18n.common.select}
+        data-qa="create-child-documents-modal-select-children"
+      />
+    </div>
   )
 }

@@ -6,12 +6,16 @@ import { Queries } from 'lib-common/query'
 
 import {
   createDocuments,
-  getActiveTemplatesByGroupId
+  getActiveTemplatesByGroupId,
+  getNonCompletedChildDocumentChildIds
 } from '../../../../generated/api-clients/document'
 
 const q = new Queries()
 
 export const getActiveTemplatesByGroupIdQuery = q.query(
   getActiveTemplatesByGroupId
+)
+export const getNonCompletedChildDocumentChildIdsQuery = q.query(
+  getNonCompletedChildDocumentChildIds
 )
 export const createDocumentsMutation = q.mutation(createDocuments, [])

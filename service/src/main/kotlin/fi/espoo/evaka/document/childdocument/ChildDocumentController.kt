@@ -20,8 +20,10 @@ import fi.espoo.evaka.process.insertProcessHistoryRow
 import fi.espoo.evaka.process.updateDocumentProcessHistory
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.DocumentTemplateId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.FeatureConfig
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -79,9 +81,8 @@ class ChildDocumentController(
                         } ?: throw NotFound()
 
                     val sameTemplateAlreadyStarted =
-                        tx.getChildDocuments(body.childId).any {
-                            it.templateId == template.id && it.status != DocumentStatus.COMPLETED
-                        }
+                        tx.getNonCompletedChildDocumentChildIds(template.id, setOf(body.childId))
+                            .contains(body.childId)
                     if (sameTemplateAlreadyStarted) {
                         throw Conflict("Child already has incomplete document of the same template")
                     }
@@ -156,6 +157,14 @@ class ChildDocumentController(
                         throw BadRequest("Template ${body.templateId} not active")
                     if (!template.published)
                         throw BadRequest("Template ${body.templateId} not published")
+                    val sameTemplateAlreadyStarted =
+                        tx.getNonCompletedChildDocumentChildIds(template.id, body.childIds)
+                            .filter { childId -> body.childIds.contains(childId) }
+                    if (sameTemplateAlreadyStarted.isNotEmpty()) {
+                        throw Conflict(
+                            "Children $sameTemplateAlreadyStarted already has incomplete document of the same template"
+                        )
+                    }
                     body.childIds.map { childId ->
                         createChildDocument(tx, user, clock, childId, template).also {
                             updateChildDocumentStatusForward(
@@ -595,6 +604,21 @@ class ChildDocumentController(
                 }
             }
             .also { Audit.ChildDocumentArchive.log(targetId = AuditId(documentId)) }
+    }
+
+    @GetMapping("/non-completed")
+    fun getNonCompletedChildDocumentChildIds(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @RequestParam templateId: DocumentTemplateId,
+        @RequestParam groupId: GroupId,
+    ): Set<ChildId> {
+        return db.connect { dbc ->
+            dbc.read { tx ->
+                tx.getNonCompletedChildDocumentChildIds(templateId, groupId, clock.today())
+            }
+        }
     }
 
     @GetMapping("/{documentId}/pdf")

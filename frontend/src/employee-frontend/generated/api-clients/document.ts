@@ -428,6 +428,28 @@ export async function getDocuments(
 
 
 /**
+* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentController.getNonCompletedChildDocumentChildIds
+*/
+export async function getNonCompletedChildDocumentChildIds(
+  request: {
+    templateId: DocumentTemplateId,
+    groupId: GroupId
+  }
+): Promise<PersonId[]> {
+  const params = createUrlSearchParams(
+    ['templateId', request.templateId],
+    ['groupId', request.groupId]
+  )
+  const { data: json } = await client.request<JsonOf<PersonId[]>>({
+    url: uri`/employee/child-documents/non-completed`.toString(),
+    method: 'GET',
+    params
+  })
+  return json
+}
+
+
+/**
 * Generated from fi.espoo.evaka.document.childdocument.ChildDocumentController.nextDocumentStatus
 */
 export async function nextDocumentStatus(
