@@ -822,6 +822,7 @@ describe('Employee - Child documents - unit groups page', () => {
   let child3InGroup1: DevPerson
   let child4InGroup2: DevPerson
   let child5InGroup2: DevPerson
+  let child6InGroup2: DevPerson
 
   const savePlacementAndGrouping = async (
     unit: DevDaycare,
@@ -892,6 +893,11 @@ describe('Employee - Child documents - unit groups page', () => {
       lastName: '5',
       firstName: 'child'
     }).saveChild()
+    child6InGroup2 = await Fixture.person({
+      ssn: null,
+      lastName: '6',
+      firstName: 'child'
+    }).saveChild()
     const adult1 = await Fixture.person({
       ssn: null,
       email: 'adult1@evaka.test'
@@ -902,6 +908,7 @@ describe('Employee - Child documents - unit groups page', () => {
     await Fixture.guardian(child3InGroup1, adult1).save()
     await Fixture.guardian(child4InGroup2, adult1).save()
     await Fixture.guardian(child5InGroup2, adult1).save()
+    await Fixture.guardian(child6InGroup2, adult1).save()
     await savePlacementAndGrouping(unit1, child0WithoutGroup)
     await savePlacementAndGrouping(unit1, child1InGroup1, group1)
     await savePlacementAndGrouping(unit1, child2InGroup1, group1)
@@ -923,6 +930,7 @@ describe('Employee - Child documents - unit groups page', () => {
     }).save()
     await savePlacementAndGrouping(unit1, child4InGroup2, group2)
     await savePlacementAndGrouping(unit1, child5InGroup2, group2)
+    await savePlacementAndGrouping(unit1, child6InGroup2, group2)
     template = await Fixture.documentTemplate({
       type: 'CITIZEN_BASIC',
       name: 'Lomake kuntalaiselle',
@@ -932,6 +940,11 @@ describe('Employee - Child documents - unit groups page', () => {
       type: 'LEOPS',
       name: 'Esiopetuksen oppimissuunnitelma 2023 (tämän ei pitäisi näkyä)',
       published: true
+    }).save()
+    await Fixture.childDocument({
+      templateId: template.id,
+      childId: child6InGroup2.id,
+      status: 'DRAFT'
     }).save()
   })
 

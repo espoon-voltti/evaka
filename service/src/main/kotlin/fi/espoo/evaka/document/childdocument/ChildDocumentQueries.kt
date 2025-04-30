@@ -13,12 +13,15 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DocumentTemplateId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.EvakaUserId
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.Predicate
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
+import java.time.LocalDate
 
 const val lockMinutes = 5
 
@@ -74,6 +77,54 @@ WHERE cd.child_id = ${bind(childId)}
         }
         .toList<ChildDocumentSummary>()
 }
+
+private fun Database.Read.nonCompletedChildDocumentChildIdsQuery(
+    templateId: DocumentTemplateId,
+    predicate: Predicate,
+) = createQuery {
+    sql(
+        """
+SELECT child_id
+FROM child_document
+WHERE template_id = ${bind(templateId)}
+  AND status != 'COMPLETED'
+  AND ${predicate(predicate.forTable("child_document"))}
+"""
+    )
+}
+
+fun Database.Read.getNonCompletedChildDocumentChildIds(
+    templateId: DocumentTemplateId,
+    childIds: Set<ChildId>,
+) =
+    nonCompletedChildDocumentChildIdsQuery(
+            templateId,
+            Predicate { where("$it.child_id = ANY (${bind(childIds)})") },
+        )
+        .toSet<ChildId>()
+
+fun Database.Read.getNonCompletedChildDocumentChildIds(
+    templateId: DocumentTemplateId,
+    groupId: GroupId,
+    date: LocalDate,
+) =
+    nonCompletedChildDocumentChildIdsQuery(
+            templateId,
+            Predicate {
+                where(
+                    """
+EXISTS (SELECT
+    FROM daycare_group_placement dgp
+    JOIN placement p ON dgp.daycare_placement_id = p.id
+    WHERE dgp.daycare_group_id = ${bind(groupId)}
+      AND ${bind(date)} BETWEEN dgp.start_date AND dgp.end_date
+      AND p.child_id = $it.child_id
+)
+        """
+                )
+            },
+        )
+        .toSet<ChildId>()
 
 fun Database.Read.getChildDocument(id: ChildDocumentId): ChildDocumentDetails? {
     return createQuery {
