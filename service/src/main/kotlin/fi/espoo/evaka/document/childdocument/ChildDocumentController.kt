@@ -159,7 +159,6 @@ class ChildDocumentController(
                         throw BadRequest("Template ${body.templateId} not published")
                     val sameTemplateAlreadyStarted =
                         tx.getNonCompletedChildDocumentChildIds(template.id, body.childIds)
-                            .filter { childId -> body.childIds.contains(childId) }
                     if (sameTemplateAlreadyStarted.isNotEmpty()) {
                         throw Conflict(
                             "Children $sameTemplateAlreadyStarted already has incomplete document of the same template"
