@@ -317,7 +317,8 @@ const CalendarContent = React.memo(function CalendarContent({
 
       {unitInformation.permittedActions.includes('READ_CALENDAR_EVENTS') &&
       (selectedGroup.type === 'group' ||
-        (selectedGroup.type === 'all-children' && mode === 'week')) ? (
+        (selectedGroup.type === 'all-children' && mode === 'week')) &&
+      reservationEnabled ? (
         <>
           <HorizontalLine dashed slim />
 
