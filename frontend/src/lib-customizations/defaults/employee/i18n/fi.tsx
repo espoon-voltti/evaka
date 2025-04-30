@@ -5177,7 +5177,7 @@ export const fi = {
     pilotFeatures: {
       MESSAGING: 'Viestintä',
       MOBILE: 'Mobiili',
-      RESERVATIONS: 'Varaukset',
+      RESERVATIONS: 'Kuntalaisen kalenteri',
       VASU_AND_PEDADOC: 'Pedagogiset asiakirjat ja pedagoginen dokumentointi',
       MOBILE_MESSAGING: 'Mobiili­viestintä',
       PLACEMENT_TERMINATION: 'Paikan irtisanominen',
