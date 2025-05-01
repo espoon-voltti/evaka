@@ -141,8 +141,7 @@ const DocumentBasics = React.memo(function DocumentBasics({
         alignItems="flex-end"
       >
         <ChildDocumentStateChip
-          status={document.status}
-          decisionStatus={document.decision?.status ?? null}
+          status={document.decision?.status ?? document.status}
         />
         {document.template.confidentiality !== null && (
           <strong>{i18n.documentTemplates.templateEditor.confidential}</strong>

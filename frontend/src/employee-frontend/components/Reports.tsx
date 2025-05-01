@@ -689,6 +689,20 @@ export default React.memo(function Reports() {
                   )
                 }
               : null,
+            reports.has('CHILD_DOCUMENT_DECISIONS')
+              ? {
+                  name: i18n.reports.childDocumentDecisions.title,
+                  item: (
+                    <Report
+                      data-qa="report-child-document-decisions"
+                      path="/reports/child-document-decisions"
+                      color={colors.main.m2}
+                      icon={faFileAlt}
+                      i18n={i18n.reports.childDocumentDecisions}
+                    />
+                  )
+                }
+              : null,
             reports.has('CHILD_DOCUMENTS')
               ? {
                   name: i18n.reports.childDocuments.title,
