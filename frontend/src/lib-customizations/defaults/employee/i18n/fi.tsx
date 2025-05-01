@@ -3754,6 +3754,17 @@ export const fi = {
       club: 'Kerhohakemuksia',
       totalChildren: 'Lapsia hakenut yhteensä'
     },
+    childDocumentDecisions: {
+      title: 'Muut päätökset',
+      description: 'Päätöksen tekijälle lähetetyt muut lapsen päätökset.',
+      statusFilter: 'Näytettävät tilat',
+      templateName: 'Päätös',
+      childName: 'Lapsi',
+      modifiedAt: 'Muokattu',
+      decisionMaker: 'Päätöksen tekijä',
+      decisionMade: 'Päätös tehty',
+      status: 'Tila'
+    },
     decisions: {
       title: 'Päätökset',
       description: 'Raportti listaa tehtyjä päätöksiä yksiköittäin.',

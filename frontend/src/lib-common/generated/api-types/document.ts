@@ -168,6 +168,7 @@ export interface ChildDocumentCreateRequest {
 * Generated from fi.espoo.evaka.document.childdocument.ChildDocumentDecision
 */
 export interface ChildDocumentDecision {
+  createdAt: HelsinkiDateTime
   decisionNumber: number
   id: ChildDocumentDecisionId
   status: ChildDocumentDecisionStatus
@@ -200,12 +201,28 @@ export interface ChildDocumentDetails {
 }
 
 /**
+* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentOrDecisionStatus
+*/
+export type ChildDocumentOrDecisionStatus =
+  | 'DRAFT'
+  | 'PREPARED'
+  | 'CITIZEN_DRAFT'
+  | 'DECISION_PROPOSAL'
+  | 'COMPLETED'
+  | 'ACCEPTED'
+  | 'REJECTED'
+  | 'ANNULLED'
+
+/**
 * Generated from fi.espoo.evaka.document.childdocument.ChildDocumentSummary
 */
 export interface ChildDocumentSummary {
   answeredAt: HelsinkiDateTime | null
   answeredBy: EvakaUser | null
+  childFirstName: string
+  childLastName: string
   decision: ChildDocumentDecision | null
+  decisionMaker: EvakaUser | null
   id: ChildDocumentId
   modifiedAt: HelsinkiDateTime
   publishedAt: HelsinkiDateTime | null
@@ -589,6 +606,7 @@ export function deserializeJsonChildDocumentCitizenSummary(json: JsonOf<ChildDoc
 export function deserializeJsonChildDocumentDecision(json: JsonOf<ChildDocumentDecision>): ChildDocumentDecision {
   return {
     ...json,
+    createdAt: HelsinkiDateTime.parseIso(json.createdAt),
     validity: (json.validity != null) ? DateRange.parseJson(json.validity) : null
   }
 }

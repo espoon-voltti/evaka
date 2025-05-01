@@ -287,6 +287,8 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                     type = devTemplatePed.type,
                     templateId = devTemplatePed.id,
                     templateName = devTemplatePed.name,
+                    childFirstName = testChild_1.firstName,
+                    childLastName = testChild_1.lastName,
                     modifiedAt = clock.now(),
                     publishedAt = null,
                     answeredAt = null,

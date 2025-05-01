@@ -105,8 +105,7 @@ const ChildDocumentsTable = React.memo(function ChildDocumentsTable({
             </DetailsTd>
             <StateTd>
               <ChildDocumentStateChip
-                status={document.status}
-                decisionStatus={document.decision?.status ?? null}
+                status={document.decision?.status ?? document.status}
               />
             </StateTd>
           </DocumentTr>
@@ -235,8 +234,7 @@ const ChildDocumentsList = React.memo(function ChildDocumentsList({
                       {document.templateName}
                     </Link>
                     <ChildDocumentStateChip
-                      status={document.status}
-                      decisionStatus={document.decision?.status ?? null}
+                      status={document.decision?.status ?? document.status}
                     />
                   </FixedSpaceRow>
                 </MobileRowContainer>

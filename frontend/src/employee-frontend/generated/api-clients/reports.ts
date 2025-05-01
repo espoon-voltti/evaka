@@ -18,6 +18,8 @@ import { AttendanceReservationReportRow } from 'lib-common/generated/api-types/r
 import { CareType } from 'lib-common/generated/api-types/daycare'
 import { ChildAgeLanguageReportRow } from 'lib-common/generated/api-types/reports'
 import { ChildAttendanceReportRow } from 'lib-common/generated/api-types/reports'
+import { ChildDocumentOrDecisionStatus } from 'lib-common/generated/api-types/document'
+import { ChildDocumentSummary } from 'lib-common/generated/api-types/document'
 import { ChildDocumentsReportTemplate } from 'lib-common/generated/api-types/reports'
 import { ChildPreschoolAbsenceRow } from 'lib-common/generated/api-types/reports'
 import { ChildrenInDifferentAddressReportRow } from 'lib-common/generated/api-types/reports'
@@ -90,6 +92,7 @@ import { deserializeJsonAssistanceNeedDecisionsReportRow } from 'lib-common/gene
 import { deserializeJsonAttendanceReservationReportByChildGroup } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonAttendanceReservationReportRow } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonChildAttendanceReportRow } from 'lib-common/generated/api-types/reports'
+import { deserializeJsonChildDocumentSummary } from 'lib-common/generated/api-types/document'
 import { deserializeJsonCitizenDocumentResponseReportRow } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonDaycareGroup } from 'lib-common/generated/api-types/daycare'
 import { deserializeJsonDuplicatePeopleReportRow } from 'lib-common/generated/api-types/reports'
@@ -297,6 +300,26 @@ export async function getChildAttendanceReport(
     params
   })
   return json.map(e => deserializeJsonChildAttendanceReportRow(e))
+}
+
+
+/**
+* Generated from fi.espoo.evaka.reports.ChildDocumentDecisionsReportController.getChildDocumentDecisionsReport
+*/
+export async function getChildDocumentDecisionsReport(
+  request: {
+    statuses?: ChildDocumentOrDecisionStatus[] | null
+  }
+): Promise<ChildDocumentSummary[]> {
+  const params = createUrlSearchParams(
+    ...(request.statuses?.map((e): [string, string | null | undefined] => ['statuses', e.toString()]) ?? [])
+  )
+  const { data: json } = await client.request<JsonOf<ChildDocumentSummary[]>>({
+    url: uri`/employee/reports/child-document-decisions`.toString(),
+    method: 'GET',
+    params
+  })
+  return json.map(e => deserializeJsonChildDocumentSummary(e))
 }
 
 
