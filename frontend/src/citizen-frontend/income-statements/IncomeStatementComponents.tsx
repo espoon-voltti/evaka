@@ -43,7 +43,7 @@ export const LabelWithError = React.memo(function LabelWithError({
   errorText: string
 }) {
   return (
-    <FixedSpaceRow>
+    <FixedSpaceRow aria-invalid={showError}>
       <Label>{label}</Label>
       {showError ? <LabelError text={errorText} /> : null}
     </FixedSpaceRow>

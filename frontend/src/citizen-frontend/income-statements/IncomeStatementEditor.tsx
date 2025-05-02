@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
 
 import { combine, Loading, Result } from 'lib-common/api'
@@ -19,11 +19,11 @@ import {
   useQueryResult
 } from 'lib-common/query'
 import useRouteParams from 'lib-common/useRouteParams'
+import { scrollToElement } from 'lib-common/utils/scrolling'
 import Main from 'lib-components/atoms/Main'
 
 import { renderResult } from '../async-rendering'
 
-import { IncomeStatementFormAPI } from './IncomeStatementComponents'
 import IncomeStatementForm from './IncomeStatementForm'
 import {
   createIncomeStatementMutation,
@@ -81,12 +81,11 @@ export default React.memo(function IncomeStatementEditor() {
   }
 
   const [showFormErrors, setShowFormErrors] = useState<ErrorDisplayType>('NONE')
+  const [shouldScrollToError, setShouldScrollToError] = useState(false)
 
   const navigateToList = useCallback(() => {
     void navigate('/income')
   }, [navigate])
-
-  const form = useRef<IncomeStatementFormAPI | null>(null)
 
   const updateFormData = useCallback(
     (fn: (prev: Form.IncomeStatementForm) => Form.IncomeStatementForm): void =>
@@ -112,6 +111,19 @@ export default React.memo(function IncomeStatementEditor() {
     () => state.map((state) => fromBody('adult', state.formData, false)),
     [state]
   )
+
+  useEffect(() => {
+    if (shouldScrollToError) {
+      const firstInvalidElement = document.querySelector(
+        '[aria-invalid="true"]'
+      )
+      if (firstInvalidElement instanceof HTMLElement) {
+        scrollToElement(firstInvalidElement, 0, 'center')
+        firstInvalidElement.focus()
+      }
+      setShouldScrollToError(false)
+    }
+  }, [shouldScrollToError])
 
   if (
     (showFormErrors === 'SAVE' &&
@@ -140,7 +152,7 @@ export default React.memo(function IncomeStatementEditor() {
           }
         } else {
           setShowFormErrors(draft ? 'DRAFT' : 'SAVE')
-          if (form.current) form.current.scrollToErrors()
+          setShouldScrollToError(true)
           return
         }
       }
@@ -157,7 +169,6 @@ export default React.memo(function IncomeStatementEditor() {
             onSave={save}
             onSuccess={navigateToList}
             onCancel={navigateToList}
-            ref={form}
           />
         </Main>
       )

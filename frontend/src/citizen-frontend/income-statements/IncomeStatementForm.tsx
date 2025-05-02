@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useImperativeHandle, useMemo, useRef } from 'react'
+import React, { useCallback, useMemo, useRef } from 'react'
 import styled from 'styled-components'
 
 import { Result } from 'lib-common/api'
@@ -20,7 +20,6 @@ import {
 import { IncomeStatementId } from 'lib-common/generated/api-types/shared'
 import * as Form from 'lib-common/income-statements/form'
 import LocalDate from 'lib-common/local-date'
-import { scrollToRef } from 'lib-common/utils/scrolling'
 import UnorderedList from 'lib-components/atoms/UnorderedList'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { Button } from 'lib-components/atoms/buttons/Button'
@@ -65,7 +64,6 @@ import {
   ActionContainer,
   AssureCheckbox,
   identity,
-  IncomeStatementFormAPI,
   LabelError,
   LabelWithError,
   SetStateCallback,
@@ -86,243 +84,232 @@ interface Props {
   onCancel: () => void
 }
 
-export default React.memo(
-  React.forwardRef(function IncomeStatementForm(
-    {
-      incomeStatementId,
-      status,
-      formData,
-      showFormErrors,
-      otherStartDates,
-      onChange,
-      onSave,
-      onSuccess,
-      onCancel
-    }: Props,
-    ref: React.ForwardedRef<IncomeStatementFormAPI>
-  ) {
-    const t = useTranslation()
-    const onGrossChange = useFieldSetState(onChange, 'gross')
-    const onEntrepreneurChange = useFieldSetState(onChange, 'entrepreneur')
-    const scrollTarget = useRef<HTMLElement>(null)
+export default React.memo(function IncomeStatementForm({
+  incomeStatementId,
+  status,
+  formData,
+  showFormErrors,
+  otherStartDates,
+  onChange,
+  onSave,
+  onSuccess,
+  onCancel
+}: Props) {
+  const t = useTranslation()
+  const onGrossChange = useFieldSetState(onChange, 'gross')
+  const onEntrepreneurChange = useFieldSetState(onChange, 'entrepreneur')
+  const scrollTarget = useRef<HTMLElement>(null)
 
-    const isValidStartDate = useCallback(
-      (date: LocalDate) => otherStartDates.every((d) => !d.isEqual(date)),
-      [otherStartDates]
-    )
+  const isValidStartDate = useCallback(
+    (date: LocalDate) => otherStartDates.every((d) => !d.isEqual(date)),
+    [otherStartDates]
+  )
 
-    const incomeTypeSelectionFormData = useMemo(
-      () => ({
-        startDate: formData.startDate,
-        endDate: formData.endDate,
-        highestFeeSelected: formData.highestFee,
-        grossSelected: formData.gross.selected
-      }),
-      [
-        formData.endDate,
-        formData.gross.selected,
-        formData.highestFee,
-        formData.startDate
-      ]
-    )
+  const incomeTypeSelectionFormData = useMemo(
+    () => ({
+      startDate: formData.startDate,
+      endDate: formData.endDate,
+      highestFeeSelected: formData.highestFee,
+      grossSelected: formData.gross.selected
+    }),
+    [
+      formData.endDate,
+      formData.gross.selected,
+      formData.highestFee,
+      formData.startDate
+    ]
+  )
 
-    const otherIncomeFormData = useMemo(
-      () => ({
-        alimonyPayer: formData.alimonyPayer,
-        student: formData.student,
-        otherInfo: formData.otherInfo
-      }),
-      [formData.alimonyPayer, formData.otherInfo, formData.student]
-    )
+  const otherIncomeFormData = useMemo(
+    () => ({
+      alimonyPayer: formData.alimonyPayer,
+      student: formData.student,
+      otherInfo: formData.otherInfo
+    }),
+    [formData.alimonyPayer, formData.otherInfo, formData.student]
+  )
 
-    const onSelectIncomeType = useCallback(
-      (incomeType: 'highestFee' | 'gross') =>
-        onChange((prev) =>
-          incomeType === 'highestFee'
+  const onSelectIncomeType = useCallback(
+    (incomeType: 'highestFee' | 'gross') =>
+      onChange((prev) =>
+        incomeType === 'highestFee'
+          ? {
+              ...prev,
+              highestFee: true,
+              gross: { ...prev.gross, selected: false },
+              entrepreneur: { ...prev.entrepreneur, selected: false }
+            }
+          : incomeType === 'gross'
             ? {
                 ...prev,
-                highestFee: true,
-                gross: { ...prev.gross, selected: false },
-                entrepreneur: { ...prev.entrepreneur, selected: false }
+                highestFee: false,
+                gross: { ...prev.gross, selected: true }
               }
-            : incomeType === 'gross'
-              ? {
-                  ...prev,
-                  highestFee: false,
-                  gross: { ...prev.gross, selected: true }
-                }
-              : (() => {
-                  throw new Error('not reached')
-                })()
-        ),
-      [onChange]
-    )
+            : (() => {
+                throw new Error('not reached')
+              })()
+      ),
+    [onChange]
+  )
 
-    const onSelectEntrepreneur = useCallback(
-      (value: boolean) =>
-        onChange((prev) => ({
-          ...prev,
-          entrepreneur: { ...prev.entrepreneur, selected: value }
-        })),
-      [onChange]
-    )
+  const onSelectEntrepreneur = useCallback(
+    (value: boolean) =>
+      onChange((prev) => ({
+        ...prev,
+        entrepreneur: { ...prev.entrepreneur, selected: value }
+      })),
+    [onChange]
+  )
 
-    useImperativeHandle(ref, () => ({
-      scrollToErrors() {
-        scrollToRef(scrollTarget)
-      }
-    }))
+  const showOtherInfo =
+    formData.gross.selected || formData.entrepreneur.selected
 
-    const showOtherInfo =
-      formData.gross.selected || formData.entrepreneur.selected
+  const requiredAttachments = useMemo(
+    () => Form.computeRequiredAttachments(formData),
+    [formData]
+  )
 
-    const requiredAttachments = useMemo(
-      () => Form.computeRequiredAttachments(formData),
-      [formData]
-    )
+  const onAttachmentChange = useFieldSetState(onChange, 'attachments')
+  const attachmentHandler = useAttachmentHandler(
+    incomeStatementId,
+    formData.attachments,
+    onAttachmentChange
+  )
 
-    const onAttachmentChange = useFieldSetState(onChange, 'attachments')
-    const attachmentHandler = useAttachmentHandler(
-      incomeStatementId,
-      formData.attachments,
-      onAttachmentChange
-    )
-
-    return (
-      <>
-        <Container>
-          <Gap size="s" />
-          <ContentArea opaque paddingVertical="L">
-            <ResponsiveFixedSpaceRow>
-              <FixedSpaceColumn spacing="zero">
-                <H1 noMargin>{t.income.formTitle}</H1>
-                {t.income.formDescription}
-              </FixedSpaceColumn>
-              <Confidential>{t.income.confidential}</Confidential>
-            </ResponsiveFixedSpaceRow>
-          </ContentArea>
-          <Gap size="s" />
-          <IncomeTypeSelection
-            formData={incomeTypeSelectionFormData}
-            isValidStartDate={isValidStartDate}
-            showFormErrors={showFormErrors !== 'NONE'}
-            onChange={onChange}
-            onSelect={onSelectIncomeType}
-            ref={scrollTarget}
-          />
-          {formData.gross.selected && (
-            <>
-              <Gap size="L" />
-              <GrossIncomeSelection
-                formData={formData.gross}
-                showFormErrors={showFormErrors !== 'NONE'}
-                onChange={onGrossChange}
-                entrepreneurSelected={formData.entrepreneur.selected}
-                onSelectEntrepreneur={onSelectEntrepreneur}
+  return (
+    <>
+      <Container>
+        <Gap size="s" />
+        <ContentArea opaque paddingVertical="L">
+          <ResponsiveFixedSpaceRow>
+            <FixedSpaceColumn spacing="zero">
+              <H1 noMargin>{t.income.formTitle}</H1>
+              {t.income.formDescription}
+            </FixedSpaceColumn>
+            <Confidential>{t.income.confidential}</Confidential>
+          </ResponsiveFixedSpaceRow>
+        </ContentArea>
+        <Gap size="s" />
+        <IncomeTypeSelection
+          formData={incomeTypeSelectionFormData}
+          isValidStartDate={isValidStartDate}
+          showFormErrors={showFormErrors !== 'NONE'}
+          onChange={onChange}
+          onSelect={onSelectIncomeType}
+          ref={scrollTarget}
+        />
+        {formData.gross.selected && (
+          <>
+            <Gap size="L" />
+            <GrossIncomeSelection
+              formData={formData.gross}
+              showFormErrors={showFormErrors !== 'NONE'}
+              onChange={onGrossChange}
+              entrepreneurSelected={formData.entrepreneur.selected}
+              onSelectEntrepreneur={onSelectEntrepreneur}
+              attachmentHandler={attachmentHandler}
+            />
+          </>
+        )}
+        {formData.entrepreneur.selected && (
+          <>
+            <Gap size="L" />
+            <EntrepreneurIncomeSelection
+              formData={formData.entrepreneur}
+              showFormErrors={showFormErrors !== 'NONE'}
+              onChange={onEntrepreneurChange}
+              attachmentHandler={attachmentHandler}
+            />
+          </>
+        )}
+        {showOtherInfo && (
+          <>
+            <Gap size="L" />
+            <OtherInfo
+              formData={otherIncomeFormData}
+              onChange={onChange}
+              showFormErrors={showFormErrors !== 'NONE'}
+              attachmentHandler={attachmentHandler}
+            />
+            <Gap size="L" />
+            {attachmentHandler ? (
+              <IncomeStatementMissingAttachments
+                requiredAttachments={requiredAttachments}
                 attachmentHandler={attachmentHandler}
               />
-            </>
-          )}
-          {formData.entrepreneur.selected && (
-            <>
-              <Gap size="L" />
-              <EntrepreneurIncomeSelection
-                formData={formData.entrepreneur}
-                showFormErrors={showFormErrors !== 'NONE'}
-                onChange={onEntrepreneurChange}
-                attachmentHandler={attachmentHandler}
+            ) : (
+              <ContentArea opaque paddingVertical="L">
+                <FixedSpaceColumn spacing="zero">
+                  <H3 noMargin>{t.income.attachments.title}</H3>
+                  <Gap size="s" />
+                  <P noMargin>{t.income.attachments.description}</P>
+                  <Gap size="L" />
+                  {requiredAttachments.size > 0 && (
+                    <>
+                      <H4 noMargin>{t.income.attachments.required.title}</H4>
+                      <Gap size="s" />
+                      <UnorderedList data-qa="required-attachments">
+                        {[...requiredAttachments].map((attachmentType) => (
+                          <li key={attachmentType}>
+                            {
+                              t.income.attachments.attachmentNames[
+                                attachmentType
+                              ]
+                            }
+                          </li>
+                        ))}
+                      </UnorderedList>
+                      <Gap size="L" />
+                    </>
+                  )}
+                  <IncomeStatementUntypedAttachments
+                    incomeStatementId={incomeStatementId}
+                    attachments={formData.attachments}
+                    onChange={onAttachmentChange}
+                  />
+                </FixedSpaceColumn>
+              </ContentArea>
+            )}
+          </>
+        )}
+        <Gap />
+        <ActionContainer>
+          <div>
+            <AssureCheckbox>
+              <Checkbox
+                label={t.income.assure}
+                checked={formData.assure}
+                data-qa="assure-checkbox"
+                onChange={useFieldDispatch(onChange, 'assure')}
               />
-            </>
-          )}
-          {showOtherInfo && (
-            <>
-              <Gap size="L" />
-              <OtherInfo
-                formData={otherIncomeFormData}
-                onChange={onChange}
-                showFormErrors={showFormErrors !== 'NONE'}
-                attachmentHandler={attachmentHandler}
-              />
-              <Gap size="L" />
-              {attachmentHandler ? (
-                <IncomeStatementMissingAttachments
-                  requiredAttachments={requiredAttachments}
-                  attachmentHandler={attachmentHandler}
-                />
-              ) : (
-                <ContentArea opaque paddingVertical="L">
-                  <FixedSpaceColumn spacing="zero">
-                    <H3 noMargin>{t.income.attachments.title}</H3>
-                    <Gap size="s" />
-                    <P noMargin>{t.income.attachments.description}</P>
-                    <Gap size="L" />
-                    {requiredAttachments.size > 0 && (
-                      <>
-                        <H4 noMargin>{t.income.attachments.required.title}</H4>
-                        <Gap size="s" />
-                        <UnorderedList data-qa="required-attachments">
-                          {[...requiredAttachments].map((attachmentType) => (
-                            <li key={attachmentType}>
-                              {
-                                t.income.attachments.attachmentNames[
-                                  attachmentType
-                                ]
-                              }
-                            </li>
-                          ))}
-                        </UnorderedList>
-                        <Gap size="L" />
-                      </>
-                    )}
-                    <IncomeStatementUntypedAttachments
-                      incomeStatementId={incomeStatementId}
-                      attachments={formData.attachments}
-                      onChange={onAttachmentChange}
-                    />
-                  </FixedSpaceColumn>
-                </ContentArea>
-              )}
-            </>
-          )}
-          <Gap />
-          <ActionContainer>
-            <div>
-              <AssureCheckbox>
-                <Checkbox
-                  label={t.income.assure}
-                  checked={formData.assure}
-                  data-qa="assure-checkbox"
-                  onChange={useFieldDispatch(onChange, 'assure')}
-                />
-              </AssureCheckbox>
-              {showFormErrors === 'SAVE' && !formData.assure ? (
-                <LabelError text={t.income.errors.choose} />
-              ) : null}
-            </div>
-            <FixedSpaceRow>
-              <Button text={t.common.cancel} onClick={onCancel} />
-              {status === 'DRAFT' && (
-                <AsyncButton
-                  text={t.income.saveAsDraft}
-                  onClick={() => onSave(true)}
-                  onSuccess={onSuccess}
-                  data-qa="save-draft-btn"
-                />
-              )}
+            </AssureCheckbox>
+            {showFormErrors === 'SAVE' && !formData.assure ? (
+              <LabelError text={t.income.errors.choose} />
+            ) : null}
+          </div>
+          <FixedSpaceRow>
+            <Button text={t.common.cancel} onClick={onCancel} />
+            {status === 'DRAFT' && (
               <AsyncButton
-                text={status === 'DRAFT' ? t.income.send : t.income.updateSent}
-                primary
-                onClick={() => onSave(false)}
+                text={t.income.saveAsDraft}
+                onClick={() => onSave(true)}
                 onSuccess={onSuccess}
+                data-qa="save-draft-btn"
               />
-            </FixedSpaceRow>
-          </ActionContainer>
-        </Container>
-        <Footer />
-      </>
-    )
-  })
-)
+            )}
+            <AsyncButton
+              text={status === 'DRAFT' ? t.income.send : t.income.updateSent}
+              primary
+              onClick={() => onSave(false)}
+              onSuccess={onSuccess}
+            />
+          </FixedSpaceRow>
+        </ActionContainer>
+      </Container>
+      <Footer />
+    </>
+  )
+})
 
 function useSelectIncomeType(
   onSelect: (incomeType: 'highestFee' | 'gross') => void,
