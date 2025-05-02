@@ -268,7 +268,7 @@ sealed interface Action {
             HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inAnyUnit(),
         ),
         READ_CHILD_DOCUMENT_DECISIONS_REPORT(
-            HasGlobalRole(ADMIN),
+            HasGlobalRole(ADMIN, DIRECTOR),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inAnyUnit(),
             IsEmployee.andIsDecisionMakerForAnyChildDocumentDecision(),
         ),
