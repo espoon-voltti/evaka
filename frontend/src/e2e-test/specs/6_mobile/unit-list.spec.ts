@@ -25,8 +25,8 @@ const mockedNow = HelsinkiDateTime.of(2022, 7, 31, 13, 0)
 
 beforeEach(async () => {
   await resetServiceState()
-  await Fixture.careArea(testCareArea).save()
-  await Fixture.daycare(testPreschool).save()
+  await testCareArea.save()
+  await testPreschool.save()
 
   unit = await Fixture.daycare({
     areaId: testCareArea.id,
@@ -41,7 +41,7 @@ beforeEach(async () => {
 
   const unitSupervisor = await Fixture.employee()
     .unitSupervisor(unit.id)
-    .withDaycareAcl(testPreschool.id, 'UNIT_SUPERVISOR')
+    .unitSupervisor(testPreschool.id)
     .save()
   const mobileSignupUrl = await pairPersonalMobileDevice(unitSupervisor.id)
   await page.goto(mobileSignupUrl)
@@ -52,11 +52,11 @@ describe('Employee mobile unit list', () => {
   test('Staff count is as expected', async () => {
     const staff1Fixture = await Fixture.employee()
       .staff(unit.id)
-      .withGroupAcl(testDaycareGroup.id)
+      .groupAcl(testDaycareGroup.id)
       .save()
     const staff2Fixture = await Fixture.employee()
       .staff(unit.id)
-      .withGroupAcl(testDaycareGroup.id)
+      .groupAcl(testDaycareGroup.id)
       .save()
 
     await Fixture.realtimeStaffAttendance({

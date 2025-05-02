@@ -23,7 +23,7 @@ let financeAdmin: DevEmployee
 
 beforeEach(async () => {
   await resetServiceState()
-  await Fixture.person(testAdult).saveAdult()
+  await testAdult.saveAdult()
   financeAdmin = await Fixture.employee().financeAdmin().save()
   await createMessageAccounts()
 })

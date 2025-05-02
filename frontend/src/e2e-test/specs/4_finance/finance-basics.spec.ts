@@ -39,7 +39,7 @@ describe('Finance basics', () => {
   })
 
   test('Create a new set of retroactive fee thresholds', async () => {
-    const { data } = Fixture.feeThresholds()
+    const data = Fixture.feeThresholds()
     await nav.openAndClickDropdownMenuItem('finance-basics')
 
     await financeBasicsPage.feesSection.createFeeThresholdsButton.click()
@@ -82,7 +82,7 @@ describe('Finance basics', () => {
 
   test('Creating fee thresholds shows a validation error when max fees do not match', async () => {
     // Family size 2 has a different max fee
-    const { data } = Fixture.feeThresholds({
+    const data = Fixture.feeThresholds({
       maxIncomeThreshold2: 300000
     })
     await nav.openAndClickDropdownMenuItem('finance-basics')

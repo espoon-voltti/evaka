@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Fixture, testAdult } from '../../dev-api/fixtures'
+import { Fixture } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import CitizenPersonalDetailsPage, {
@@ -16,17 +16,18 @@ let header: CitizenHeader
 let personalDetailsPage: CitizenPersonalDetailsPage
 let page: Page
 
-const citizenFixture = {
-  ...testAdult,
+const citizenFixture = Fixture.person({
+  firstName: 'Johannes Olavi Antero Tapio',
+  lastName: 'Karhula',
   preferredName: '',
   phone: '',
   backupPhone: '',
   email: null
-}
+})
 
 beforeEach(async () => {
   await resetServiceState()
-  await Fixture.person(citizenFixture).saveAdult({
+  await citizenFixture.saveAdult({
     updateMockVtjWithDependants: []
   })
   page = await Page.open()
@@ -52,7 +53,7 @@ describe('Citizen personal details', () => {
 
   test('Citizen fills successfully personal data without email by selecting I have no email -option', async () => {
     const data = {
-      preferredName: testAdult.firstName.split(' ')[1],
+      preferredName: citizenFixture.firstName.split(' ')[1],
       phone: '123123',
       backupPhone: '456456',
       email: null
@@ -66,7 +67,7 @@ describe('Citizen personal details', () => {
 
   test('Citizen fills in personal data but cannot save without phone', async () => {
     const data = {
-      preferredName: testAdult.firstName.split(' ')[1],
+      preferredName: citizenFixture.firstName.split(' ')[1],
       phone: null,
       backupPhone: '456456',
       email: 'a@b.com'
@@ -79,7 +80,7 @@ describe('Citizen personal details', () => {
 
   test('Citizen fills in personal data correctly and saves', async () => {
     const data = {
-      preferredName: testAdult.firstName.split(' ')[1],
+      preferredName: citizenFixture.firstName.split(' ')[1],
       phone: '123456789',
       backupPhone: '456456',
       email: 'a@b.com'

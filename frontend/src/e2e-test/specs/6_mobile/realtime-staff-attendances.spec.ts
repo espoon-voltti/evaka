@@ -58,7 +58,7 @@ const daycareGroup2Fixture: DevDaycareGroup = {
 
 beforeEach(async () => {
   await resetServiceState()
-  await Fixture.family(familyWithTwoGuardians).save()
+  await familyWithTwoGuardians.save()
   await createDefaultServiceNeedOptions()
 
   careArea = await Fixture.careArea().save()
@@ -101,8 +101,8 @@ beforeEach(async () => {
     preferredFirstName: 'Kutsumanimi'
   })
     .staff(testDaycare2.id)
-    .withGroupAcl(testDaycareGroup.id)
-    .withGroupAcl(daycareGroup2Fixture.id)
+    .groupAcl(testDaycareGroup.id)
+    .groupAcl(daycareGroup2Fixture.id)
     .save()
   await Fixture.employeePin({ userId: staffFixture.id, pin }).save()
   employeeName = `${staffFixture.lastName} Kutsumanimi`

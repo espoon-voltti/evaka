@@ -52,23 +52,22 @@ const messageReadTime = HelsinkiDateTime.fromLocal(
 
 beforeEach(async () => {
   await resetServiceState()
-  await Fixture.careArea(testCareArea).save()
-  await Fixture.daycare(testDaycare).save()
+  await testCareArea.save()
+  await testDaycare.save()
   await Fixture.family({
     guardian: testAdult,
     children: [testChild, testChild2]
   }).save()
   childInAreaA = testChild
   childInAreaB = testChild2
-  await Fixture.careArea(testCareArea2).save()
-  await Fixture.daycare(testDaycare2).save()
-  await Fixture.daycareGroup(testDaycareGroup).save()
-  const daycareGroup2Fixture = {
+  await testCareArea2.save()
+  await testDaycare2.save()
+  await testDaycareGroup.save()
+  const daycareGroup2Fixture = await Fixture.daycareGroup({
     ...testDaycareGroup,
     id: randomId<GroupId>(),
     daycareId: testDaycare2.id
-  }
-  await Fixture.daycareGroup(daycareGroup2Fixture).save()
+  }).save()
   await Fixture.placement({
     childId: childInAreaA.id,
     unitId: testDaycare.id,
@@ -121,7 +120,7 @@ beforeEach(async () => {
   messenger = await Fixture.employee().messenger().save()
   staff = await Fixture.employee()
     .staff(testDaycare.id)
-    .withGroupAcl(testDaycareGroup.id, messageSendTime, messageSendTime)
+    .groupAcl(testDaycareGroup.id, messageSendTime, messageSendTime)
     .save()
 })
 

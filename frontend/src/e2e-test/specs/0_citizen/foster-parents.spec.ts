@@ -50,11 +50,11 @@ const mockedDate = mockedNow.toLocalDate()
 
 beforeEach(async () => {
   await resetServiceState()
-  await Fixture.careArea(testCareArea).save()
-  await Fixture.daycare(testDaycare).save()
+  await testCareArea.save()
+  await testDaycare.save()
   const employee = await Fixture.employee().save()
 
-  fosterParent = await Fixture.person(testAdult).saveAdult({
+  fosterParent = await testAdult.saveAdult({
     updateMockVtjWithDependants: []
   })
   fosterChild = await Fixture.person({ ssn: '120220A995L' }).saveChild({

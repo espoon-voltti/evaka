@@ -45,10 +45,10 @@ const mockNow = HelsinkiDateTime.of(2023, 4, 10, 12, 0, 0)
 beforeEach(async () => {
   await resetServiceState()
 
-  await Fixture.careArea(testCareArea).save()
-  await Fixture.daycare(testDaycare).save()
-  await Fixture.daycare(testDaycarePrivateVoucher).save()
-  await Fixture.family(familyWithTwoGuardians).save()
+  await testCareArea.save()
+  await testDaycare.save()
+  await testDaycarePrivateVoucher.save()
+  await familyWithTwoGuardians.save()
   await createDefaultServiceNeedOptions()
   await createDaycareGroups({ body: [testDaycareGroup] })
 

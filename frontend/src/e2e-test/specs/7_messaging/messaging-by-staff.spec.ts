@@ -61,9 +61,9 @@ const credentials = {
 }
 beforeEach(async () => {
   await resetServiceState()
-  await Fixture.careArea(testCareArea).save()
-  await Fixture.daycare(testDaycare).save()
-  await Fixture.daycare(testPreschool).save()
+  await testCareArea.save()
+  await testDaycare.save()
+  await testPreschool.save()
   await Fixture.family({
     guardian: testAdult,
     children: [testChild, testChild2]
@@ -77,12 +77,12 @@ beforeEach(async () => {
 
   staff = await Fixture.employee()
     .staff(testDaycare.id)
-    .withGroupAcl(testDaycareGroup.id, mockedDateAt10, mockedDateAt10)
+    .groupAcl(testDaycareGroup.id, mockedDateAt10, mockedDateAt10)
     .save()
 
   unitSupervisor = await Fixture.employee()
-    .withDaycareAcl(testDaycare.id, 'UNIT_SUPERVISOR')
-    .withDaycareAcl(testPreschool.id, 'UNIT_SUPERVISOR')
+    .unitSupervisor(testDaycare.id)
+    .unitSupervisor(testPreschool.id)
     .save()
 
   const unitId = testDaycare.id
@@ -305,7 +305,7 @@ describe('Sending and receiving messages', () => {
     }).save()
     const futureStaff = await Fixture.employee()
       .staff(testDaycare.id)
-      .withGroupAcl(secondGroup.id, mockedDateAt10, mockedDateAt10)
+      .groupAcl(secondGroup.id, mockedDateAt10, mockedDateAt10)
       .save()
     const daycarePlacementFixture1 = await Fixture.placement({
       childId,
@@ -392,7 +392,7 @@ describe('Sending and receiving sensitive messages', () => {
   test('VEO sends sensitive message, citizen needs strong auth and after strong auth sees message', async () => {
     staff = await Fixture.employee()
       .specialEducationTeacher(testDaycare.id)
-      .withGroupAcl(testDaycareGroup.id)
+      .groupAcl(testDaycareGroup.id)
       .save()
     // create messaging account for newly created VEO account
     await createMessageAccounts()
@@ -519,7 +519,7 @@ describe('Additional filters', () => {
   })
 
   test('Citizen receives a message when recipient filter matches', async () => {
-    await Fixture.person(testAdult2).saveAdult({
+    await testAdult2.saveAdult({
       updateMockVtjWithDependants: [testChild]
     })
     await insertGuardians({
@@ -552,7 +552,7 @@ describe('Additional filters', () => {
   })
 
   test(`Citizen doesn't receive a message when recipient filter doesn't match`, async () => {
-    await Fixture.person(testAdult2).saveAdult({
+    await testAdult2.saveAdult({
       updateMockVtjWithDependants: [testChild]
     })
     await insertGuardians({

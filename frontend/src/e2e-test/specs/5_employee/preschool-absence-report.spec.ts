@@ -27,7 +27,7 @@ let unit: DevDaycare
 
 beforeEach(async () => {
   await resetServiceState()
-  term = await Fixture.preschoolTerm(preschoolTerm2023).save()
+  term = await preschoolTerm2023.save()
   const area = await Fixture.careArea().save()
   unit = await Fixture.daycare({
     areaId: area.id,

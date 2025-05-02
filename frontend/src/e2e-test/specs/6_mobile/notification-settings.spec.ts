@@ -104,7 +104,7 @@ describe('Settings page category/group sections', () => {
     }).save()
     const employee = await Fixture.employee()
       .unitSupervisor(unit.id)
-      .withDaycareAcl(otherUnit.id, 'UNIT_SUPERVISOR')
+      .unitSupervisor(otherUnit.id)
       .save()
     const mobileSignupUrl = await pairPersonalMobileDevice(employee.id)
     await page.page.context().grantPermissions(['notifications'])

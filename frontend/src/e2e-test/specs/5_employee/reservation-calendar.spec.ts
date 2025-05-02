@@ -57,10 +57,10 @@ const insertTestDataAndLogin = async ({
 }: {
   childShiftCare?: ShiftCareType
 } = {}) => {
-  await Fixture.careArea(testCareArea).save()
-  await Fixture.daycare(testDaycare).save()
-  await Fixture.family(familyWithTwoGuardians).save()
-  const careArea = await Fixture.careArea(testCareArea2).save()
+  await testCareArea.save()
+  await testDaycare.save()
+  await familyWithTwoGuardians.save()
+  const careArea = await testCareArea2.save()
   daycare = await Fixture.daycare({
     ...testDaycare2,
     areaId: careArea.id

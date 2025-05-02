@@ -32,7 +32,7 @@ let serviceNeedOption2: ServiceNeedOption
 describe('Service applications', () => {
   beforeEach(async () => {
     await resetServiceState()
-    await Fixture.careArea(testCareArea).save()
+    await testCareArea.save()
     serviceNeedOption1 = await Fixture.serviceNeedOption({
       validPlacementType: 'DAYCARE',
       defaultOption: false,
@@ -47,7 +47,7 @@ describe('Service applications', () => {
       nameSv: 'Kokopäiväinen yli 30h/vko (sv)',
       nameEn: 'Kokopäiväinen yli 30h/vko (en)'
     }).save()
-    await Fixture.daycare(testDaycare).save()
+    await testDaycare.save()
     unitSupervisor = await Fixture.employee()
       .unitSupervisor(testDaycare.id)
       .save()

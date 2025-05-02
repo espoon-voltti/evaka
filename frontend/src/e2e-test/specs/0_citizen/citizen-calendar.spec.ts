@@ -47,8 +47,8 @@ let jariId: UUID
 
 beforeEach(async () => {
   await resetServiceState()
-  await Fixture.careArea(testCareArea).save()
-  await Fixture.daycare(testDaycare).save()
+  await testCareArea.save()
+  await testDaycare.save()
   children = [testChild, testChild2, testChildRestricted]
   jariId = testChild.id
   await Fixture.family({ guardian: testAdult, children }).save()

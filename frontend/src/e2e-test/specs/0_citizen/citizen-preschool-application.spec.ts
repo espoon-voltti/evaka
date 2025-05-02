@@ -38,14 +38,14 @@ const mockedDate = LocalDate.of(2021, 1, 15)
 
 beforeEach(async () => {
   await resetServiceState()
-  await Fixture.preschoolTerm(preschoolTerm2021).save()
-  await Fixture.careArea(testCareArea).save()
-  await Fixture.daycare(testDaycare).save()
+  await preschoolTerm2021.save()
+  await testCareArea.save()
+  await testDaycare.save()
   await Fixture.family({
     guardian: testAdult,
     children: [testChild, testChild2]
   }).save()
-  await Fixture.person(testAdult2).saveAdult({
+  await testAdult2.saveAdult({
     updateMockVtjWithDependants: [testChild]
   })
 

@@ -27,9 +27,9 @@ let applicationsPage: ApplicationListView
 
 beforeEach(async () => {
   await resetServiceState()
-  await Fixture.careArea(testCareArea).save()
-  await Fixture.daycare(testDaycare).save()
-  await Fixture.family(familyWithDeadGuardian).save()
+  await testCareArea.save()
+  await testDaycare.save()
+  await familyWithDeadGuardian.save()
   const serviceWorker = await Fixture.employee().serviceWorker().save()
 
   page = await Page.open()

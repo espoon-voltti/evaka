@@ -30,13 +30,13 @@ const mockedTime = HelsinkiDateTime.fromLocal(mockedDate, LocalTime.of(15, 0))
 
 beforeEach(async () => {
   await resetServiceState()
-  await Fixture.careArea(testCareArea).save()
-  await Fixture.daycare(testDaycare).save()
+  await testCareArea.save()
+  await testDaycare.save()
   await Fixture.family({
     guardian: testAdult,
     children: [testChild]
   }).save()
-  await Fixture.person(testAdult2).saveAdult({
+  await testAdult2.saveAdult({
     updateMockVtjWithDependants: [testChild]
   })
 })
@@ -131,7 +131,7 @@ describe('Citizen preschool applications', () => {
   let applicationsPage: CitizenApplicationsPage
 
   beforeEach(async () => {
-    await Fixture.preschoolTerm(preschoolTerm2021).save()
+    await preschoolTerm2021.save()
 
     page = await Page.open({
       mockedTime,

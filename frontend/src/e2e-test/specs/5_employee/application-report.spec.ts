@@ -18,8 +18,8 @@ let report: ApplicationsReport
 beforeEach(async () => {
   await resetServiceState()
 
-  await Fixture.careArea(testCareArea).save()
-  await Fixture.daycare(testDaycare).save()
+  await testCareArea.save()
+  await testDaycare.save()
 
   const careArea2 = await Fixture.careArea({ name: 'Toinen alue' }).save()
   await Fixture.daycare({

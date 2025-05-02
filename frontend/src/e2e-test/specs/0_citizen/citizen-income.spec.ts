@@ -41,7 +41,7 @@ describe.each(envs)('Citizen income (%s)', (env) => {
   beforeEach(async () => {
     await resetServiceState()
 
-    const area = await Fixture.careArea(testCareArea).save()
+    const area = await testCareArea.save()
     daycare = await Fixture.daycare({
       ...testDaycare,
       areaId: area.id,
@@ -52,10 +52,10 @@ describe.each(envs)('Citizen income (%s)', (env) => {
       daycareId: daycare.id
     }).save()
 
-    const child1 = await Fixture.person(child).saveChild({
+    const child1 = await child.saveChild({
       updateMockVtj: true
     })
-    guardian = await Fixture.person(testAdult).saveAdult({
+    guardian = await testAdult.saveAdult({
       updateMockVtjWithDependants: [child]
     })
     await Fixture.guardian(child1, guardian).save()

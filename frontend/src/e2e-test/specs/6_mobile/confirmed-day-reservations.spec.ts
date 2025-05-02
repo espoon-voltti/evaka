@@ -4,9 +4,8 @@
 
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
-import { GroupId, PersonId } from 'lib-common/generated/api-types/shared'
+import { PersonId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
-import { randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import TimeRange from 'lib-common/time-range'
@@ -38,12 +37,11 @@ let confirmedReservationPage: ConfirmedDayReservationPage
 let attendanceListPage: MobileListPage
 const now = HelsinkiDateTime.of(2022, 5, 17, 13, 0, 0)
 
-const group2 = {
-  id: randomId<GroupId>(),
+const group2 = Fixture.daycareGroup({
   name: '#2',
   daycareId: testDaycare.id,
   startDate: LocalDate.of(2021, 1, 1)
-}
+})
 
 beforeEach(async () => {
   await resetServiceState()
@@ -288,7 +286,7 @@ async function insertConfirmedDaysTestData() {
     ]
   }).save()
 
-  const careArea = await Fixture.careArea(testCareArea).save()
+  const careArea = await testCareArea.save()
   await Fixture.daycare({
     ...testDaycare,
     areaId: careArea.id,
@@ -296,17 +294,17 @@ async function insertConfirmedDaysTestData() {
     shiftCareOpenOnHolidays: false
   }).save()
   await Fixture.daycare({ ...testDaycare2, areaId: careArea.id }).save()
-  await Fixture.daycareGroup(testDaycareGroup).save()
-  await Fixture.daycareGroup(group2).save()
+  await testDaycareGroup.save()
+  await group2.save()
 
-  await Fixture.person(testChild2).saveChild()
-  await Fixture.person(testChild).saveChild()
+  await testChild2.saveChild()
+  await testChild.saveChild()
   await Fixture.person(familyWithTwoGuardians.children[0]).saveChild()
   await Fixture.person({
     ...testChildRestricted,
     dateOfBirth: LocalDate.of(2021, 4, 1)
   }).saveChild()
-  await Fixture.person(testChildNoSsn).saveChild()
+  await testChildNoSsn.saveChild()
 
   await Fixture.employee({ roles: ['ADMIN'] }).save()
 

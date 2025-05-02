@@ -25,13 +25,13 @@ let applicationReadView: ApplicationReadView
 
 beforeEach(async () => {
   await resetServiceState()
-  await Fixture.careArea(testCareArea).save()
-  await Fixture.daycare(testDaycare).save()
+  await testCareArea.save()
+  await testDaycare.save()
   await Fixture.family({
     guardian: testAdult,
     children: [testChild, testChild2]
   }).save()
-  await Fixture.family(familyWithTwoGuardians).save()
+  await familyWithTwoGuardians.save()
   const admin = await Fixture.employee().admin().save()
 
   page = await Page.open()
@@ -74,14 +74,14 @@ describe('Employee reads applications', () => {
     await applicationReadView.assertPageTitle('Varhaiskasvatushakemus')
 
     await applicationReadView.assertOtherVtjGuardian(
-      `${familyWithTwoGuardians.otherGuardian.lastName} ${familyWithTwoGuardians.otherGuardian.firstName}`,
-      familyWithTwoGuardians.otherGuardian.phone,
-      familyWithTwoGuardians.otherGuardian.email!
+      `${familyWithTwoGuardians.otherGuardian!.lastName} ${familyWithTwoGuardians.otherGuardian!.firstName}`,
+      familyWithTwoGuardians.otherGuardian!.phone,
+      familyWithTwoGuardians.otherGuardian!.email!
     )
 
     await applicationReadView.assertGivenOtherGuardianInfo(
-      familyWithTwoGuardians.otherGuardian.phone,
-      familyWithTwoGuardians.otherGuardian.email!
+      familyWithTwoGuardians.otherGuardian!.phone,
+      familyWithTwoGuardians.otherGuardian!.email!
     )
   })
 

@@ -46,7 +46,7 @@ const setupTestData = async ({
   placementType?: PlacementType
 } = {}) => {
   await createDefaultServiceNeedOptions()
-  await Fixture.preschoolTerm(preschoolTerm2023).save()
+  await preschoolTerm2023.save()
   daycareServiceNeedOptionId = (
     await Fixture.serviceNeedOption({ validPlacementType: 'DAYCARE' }).save()
   ).id

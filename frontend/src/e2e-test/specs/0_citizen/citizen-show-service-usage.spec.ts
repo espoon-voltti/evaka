@@ -38,12 +38,12 @@ describe('Service time usage', () => {
   beforeEach(async () => {
     await resetServiceState()
 
-    await Fixture.careArea(testCareArea).save()
-    await Fixture.daycare(testDaycare).save()
-    const child = await Fixture.person(testChild2).saveChild({
+    await testCareArea.save()
+    await testDaycare.save()
+    const child = await testChild2.saveChild({
       updateMockVtj: true
     })
-    const guardian = await Fixture.person(testAdult).saveAdult({
+    const guardian = await testAdult.saveAdult({
       updateMockVtjWithDependants: [child]
     })
     await Fixture.guardian(child, guardian).save()
@@ -187,12 +187,12 @@ describe('Service time alert', () => {
   beforeEach(async () => {
     await resetServiceState()
 
-    await Fixture.careArea(testCareArea).save()
-    await Fixture.daycare(testDaycare).save()
-    const child = await Fixture.person(testChild2).saveChild({
+    await testCareArea.save()
+    await testDaycare.save()
+    const child = await testChild2.saveChild({
       updateMockVtj: true
     })
-    const guardian = await Fixture.person(testAdult).saveAdult({
+    const guardian = await testAdult.saveAdult({
       updateMockVtjWithDependants: [child]
     })
     await Fixture.guardian(child, guardian).save()

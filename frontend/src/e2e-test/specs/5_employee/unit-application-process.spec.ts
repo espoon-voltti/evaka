@@ -54,9 +54,9 @@ const placementEndDate = LocalDate.todayInSystemTz().addWeeks(4)
 beforeEach(async () => {
   await resetServiceState()
 
-  await Fixture.careArea(testCareArea).save()
-  await Fixture.daycare(testDaycare).save()
-  await Fixture.family(familyWithTwoGuardians).save()
+  await testCareArea.save()
+  await testDaycare.save()
+  await familyWithTwoGuardians.save()
   daycare = testDaycare
 
   unitSupervisor = await Fixture.employee().unitSupervisor(daycare.id).save()

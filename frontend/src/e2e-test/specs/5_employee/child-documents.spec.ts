@@ -51,10 +51,10 @@ describe('Employee - Child documents', () => {
   let page: Page
 
   beforeEach(async () => {
-    await Fixture.careArea(testCareArea).save()
-    await Fixture.daycare(testDaycare).save()
-    await Fixture.person(testAdult).saveAdult()
-    await Fixture.person(testChild2).saveChild()
+    await testCareArea.save()
+    await testDaycare.save()
+    await testAdult.saveAdult()
+    await testChild2.saveChild()
     await Fixture.guardian(testChild2, testAdult).save()
     admin = await Fixture.employee().admin().save()
     unitSupervisor = await Fixture.employee()
@@ -1009,7 +1009,7 @@ describe('Employee - Child documents - unit groups page', () => {
   test('staff can create child documents for only own group', async () => {
     const user = await Fixture.employee()
       .staff(unit1.id)
-      .withGroupAcl(group2.id)
+      .groupAcl(group2.id)
       .save()
 
     const page = await Page.open({

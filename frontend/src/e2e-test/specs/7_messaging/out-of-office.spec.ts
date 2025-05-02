@@ -28,8 +28,8 @@ let supervisor: DevEmployee
 
 beforeEach(async () => {
   await resetServiceState()
-  await Fixture.careArea(testCareArea).save()
-  const unit = await Fixture.daycare(testDaycare).save()
+  await testCareArea.save()
+  const unit = await testDaycare.save()
   supervisor = await Fixture.employee().unitSupervisor(unit.id).save()
 
   await Fixture.family({

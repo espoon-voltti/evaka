@@ -43,14 +43,14 @@ const codebtor = Fixture.person({
   firstName: 'Code',
   lastName: 'Btor',
   ssn: '010177-1234'
-}).data
+})
 
 let financeAdmin: DevEmployee
 
 beforeEach(async () => {
   await resetServiceState()
-  await Fixture.careArea(testCareArea).save()
-  await Fixture.daycare(testDaycare).save()
+  await testCareArea.save()
+  await testDaycare.save()
 
   await Fixture.family({
     guardian: testAdult,
@@ -75,7 +75,7 @@ beforeEach(async () => {
     endDate: testChild2.dateOfBirth.addYears(18).subDays(1)
   }).save()
 
-  await Fixture.family(familyWithRestrictedDetailsGuardian).save()
+  await familyWithRestrictedDetailsGuardian.save()
 
   await Fixture.feeThresholds().save()
 })

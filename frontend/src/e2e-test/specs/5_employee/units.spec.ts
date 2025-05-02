@@ -42,12 +42,12 @@ const placementDates = () => ({
 
 beforeEach(async () => {
   await resetServiceState()
-  await Fixture.careArea(testCareArea).save()
-  await Fixture.daycare(testDaycare).save()
-  await Fixture.daycare(testDaycarePrivateVoucher).save()
-  await Fixture.daycare(testPreschool).save()
-  await Fixture.daycare(testClub).save()
-  await Fixture.family(familyWithTwoGuardians).save()
+  await testCareArea.save()
+  await testDaycare.save()
+  await testDaycarePrivateVoucher.save()
+  await testPreschool.save()
+  await testClub.save()
+  await familyWithTwoGuardians.save()
   await createDefaultServiceNeedOptions()
   unitFixture = testDaycare
   childFixture = familyWithTwoGuardians.children[0]

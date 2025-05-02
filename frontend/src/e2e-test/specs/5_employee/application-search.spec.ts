@@ -30,8 +30,8 @@ let admin: DevEmployee
 
 beforeEach(async () => {
   await resetServiceState()
-  await Fixture.careArea(testCareArea).save()
-  await Fixture.daycare(testDaycare).save()
+  await testCareArea.save()
+  await testDaycare.save()
   await Fixture.family({
     guardian: testAdult,
     children: [testChild, testChild2]

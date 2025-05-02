@@ -44,9 +44,9 @@ let guardian: DevPerson
 
 beforeEach(async () => {
   await resetServiceState()
-  await Fixture.careArea(testCareArea).save()
-  await Fixture.daycare(testDaycare).save()
-  const careArea = await Fixture.careArea(testCareArea2).save()
+  await testCareArea.save()
+  await testDaycare.save()
+  const careArea = await testCareArea2.save()
   await Fixture.daycare({ ...testDaycare2, areaId: careArea.id }).save()
   await Fixture.family({
     guardian: testAdult,

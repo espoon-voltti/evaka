@@ -43,22 +43,22 @@ const childZeroYo = Fixture.person({
   dateOfBirth: mockToday.subWeeks(9),
   firstName: 'Vauva',
   id: fromUuid<PersonId>('023c3d55-3bd5-494b-8996-60a3643fe94b')
-}).data
+})
 
 beforeEach(async () => {
   await resetServiceState()
-  await Fixture.careArea(testCareArea).save()
-  await Fixture.daycare(testDaycare).save()
-  await Fixture.family(familyWithTwoGuardians).save()
-  await Fixture.person(testAdultRestricted).saveAdult({
+  await testCareArea.save()
+  await testDaycare.save()
+  await familyWithTwoGuardians.save()
+  await testAdultRestricted.saveAdult({
     updateMockVtjWithDependants: []
   })
   await createDefaultServiceNeedOptions()
   await createVoucherValues()
   regularPerson = familyWithTwoGuardians.guardian
-  fridgePartner = familyWithTwoGuardians.otherGuardian
+  fridgePartner = familyWithTwoGuardians.otherGuardian!
   child = familyWithTwoGuardians.children[0]
-  await Fixture.person(childZeroYo).saveChild()
+  await childZeroYo.saveChild()
   await Fixture.feeThresholds({
     validDuring: new DateRange(LocalDate.of(2020, 1, 1), null),
     minIncomeThreshold2: 210200,

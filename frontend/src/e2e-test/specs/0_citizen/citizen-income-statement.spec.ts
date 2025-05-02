@@ -4,7 +4,7 @@
 
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
-import { testAdult, Fixture } from '../../dev-api/fixtures'
+import { testAdult } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import IncomeStatementsPage from '../../pages/citizen/citizen-income'
@@ -44,7 +44,7 @@ describe.each(envs)('Income statements', (env) => {
   beforeEach(async () => {
     await resetServiceState()
 
-    await Fixture.person(testAdult).saveAdult({
+    await testAdult.saveAdult({
       updateMockVtjWithDependants: []
     })
 

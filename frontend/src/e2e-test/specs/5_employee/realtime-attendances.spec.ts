@@ -52,8 +52,8 @@ const groupId2 = randomId<GroupId>()
 beforeEach(async () => {
   await resetServiceState()
 
-  await Fixture.family(familyWithTwoGuardians).save()
-  careArea = await Fixture.careArea(testCareArea2).save()
+  await familyWithTwoGuardians.save()
+  careArea = await testCareArea2.save()
   daycare = await Fixture.daycare({
     ...testDaycare2,
     areaId: careArea.id,
@@ -104,9 +104,9 @@ beforeEach(async () => {
     firstName: 'Kalle',
     lastName: 'Kasvattaja'
   })
-    .withDaycareAcl(daycare.id, 'STAFF')
-    .withGroupAcl(groupId)
-    .withGroupAcl(groupId2)
+    .staff(daycare.id)
+    .groupAcl(groupId)
+    .groupAcl(groupId2)
     .save()
   nonGroupStaff = await Fixture.employee({
     email: 'kaisa.kasvattaja@evaka.test',
@@ -291,9 +291,9 @@ describe('Realtime staff attendances', () => {
         lastName: 'Raivo',
         roles: []
       })
-        .withDaycareAcl(daycare.id, 'STAFF')
-        .withGroupAcl(groupId)
-        .withGroupAcl(groupId2)
+        .staff(daycare.id)
+        .groupAcl(groupId)
+        .groupAcl(groupId2)
         .save()
 
       await Fixture.realtimeStaffAttendance({

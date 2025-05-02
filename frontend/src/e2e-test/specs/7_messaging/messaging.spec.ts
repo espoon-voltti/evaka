@@ -80,14 +80,14 @@ const credentials = {
 }
 beforeEach(async () => {
   await resetServiceState()
-  await Fixture.careArea(testCareArea).save()
-  await Fixture.daycare(testDaycare).save()
-  await Fixture.daycare(testDaycarePrivateVoucher).save()
+  await testCareArea.save()
+  await testDaycare.save()
+  await testDaycarePrivateVoucher.save()
   await Fixture.family({
     guardian: testAdult,
     children: [testChild, testChild2, testChildRestricted]
   }).save()
-  await Fixture.person(testAdult2).saveAdult({
+  await testAdult2.saveAdult({
     updateMockVtjWithDependants: [testChild]
   })
 

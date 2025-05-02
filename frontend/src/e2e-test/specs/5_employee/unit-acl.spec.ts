@@ -2,11 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import {
-  DaycareId,
-  EmployeeId,
-  GroupId
-} from 'lib-common/generated/api-types/shared'
+import { DaycareId, GroupId } from 'lib-common/generated/api-types/shared'
 import { randomId } from 'lib-common/id-type'
 import { UUID } from 'lib-common/types'
 
@@ -25,38 +21,36 @@ let page: Page
 let daycareId: DaycareId
 const groupId = randomId<GroupId>()
 
-const eskoId = randomId<EmployeeId>()
-const esko = {
-  id: eskoId,
-  externalId: `espoo-ad:${eskoId}`,
+const eskoEmail = 'esko@evaka.test'
+const esko = Fixture.employee({
   firstName: 'Esko',
   lastName: 'Esimies',
-  email: 'esko@evaka.test'
-}
-const pete = {
-  id: randomId<EmployeeId>(),
+  email: eskoEmail
+})
+const peteEmail = 'pete@evaka.test'
+const pete = Fixture.employee({
   firstName: 'Pete',
   lastName: 'Päiväkoti',
-  email: 'pete@evaka.test'
-}
-const yrjo = {
-  id: randomId<EmployeeId>(),
+  email: peteEmail
+})
+const yrjoEmail = 'yrjo@evaka.test'
+const yrjo = Fixture.employee({
   firstName: 'Yrjö',
   lastName: 'Yksikkö',
-  email: 'yrjo@evaka.test'
-}
+  email: yrjoEmail
+})
 let admin: DevEmployee
 
 beforeEach(async () => {
   await resetServiceState()
 
-  await Fixture.careArea(testCareArea).save()
-  await Fixture.daycare(testDaycare).save()
+  await testCareArea.save()
+  await testDaycare.save()
   daycareId = testDaycare.id
 
-  await Fixture.employee(esko).unitSupervisor(testDaycare.id).save()
-  await Fixture.employee(pete).save()
-  await Fixture.employee(yrjo).save()
+  await esko.unitSupervisor(testDaycare.id).save()
+  await pete.save()
+  await yrjo.save()
   admin = await Fixture.employee().admin().save()
 })
 
@@ -106,13 +100,13 @@ describe('Employee - unit ACL', () => {
     const unitInfoPage = await unitPage.openUnitInformation()
     await unitInfoPage.activeAcl.assertRows([eskoRow('Johtaja')])
 
-    await unitInfoPage.activeAcl.addAcl('Johtaja', yrjo.email, [], false)
+    await unitInfoPage.activeAcl.addAcl('Johtaja', yrjoEmail, [], false)
     await unitInfoPage.activeAcl.assertRows([
       eskoRow('Johtaja'),
       yrjoRow('Johtaja')
     ])
 
-    await unitInfoPage.activeAcl.addAcl('Johtaja', pete.email, [], true)
+    await unitInfoPage.activeAcl.addAcl('Johtaja', peteEmail, [], true)
     await unitInfoPage.activeAcl.assertRows([
       eskoRow('Johtaja'),
       yrjoRow('Johtaja'),
@@ -135,18 +129,13 @@ describe('Employee - unit ACL', () => {
     const unitInfoPage = await unitPage.openUnitInformation()
     await unitInfoPage.activeAcl.assertRows([eskoRow('Johtaja')])
 
-    await unitInfoPage.activeAcl.addAcl('Erityisopettaja', pete.email, [], true)
+    await unitInfoPage.activeAcl.addAcl('Erityisopettaja', peteEmail, [], true)
     await unitInfoPage.activeAcl.assertRows([
       eskoRow('Johtaja'),
       peteRow('Erityisopettaja', [], true)
     ])
 
-    await unitInfoPage.activeAcl.addAcl(
-      'Erityisopettaja',
-      yrjo.email,
-      [],
-      false
-    )
+    await unitInfoPage.activeAcl.addAcl('Erityisopettaja', yrjoEmail, [], false)
     await unitInfoPage.activeAcl.assertRows([
       eskoRow('Johtaja'),
       peteRow('Erityisopettaja', [], true),
@@ -179,7 +168,7 @@ describe('Employee - unit ACL', () => {
     const unitInfoPage = await unitPage.openUnitInformation()
     await unitInfoPage.activeAcl.addAcl(
       'Henkilökunta',
-      pete.email,
+      peteEmail,
       [groupId],
       true
     )
@@ -214,7 +203,7 @@ describe('Employee - unit ACL', () => {
     await employeeLogin(page, esko)
     const unitPage = await UnitPage.openUnit(page, daycareId)
     const unitInfoPage = await unitPage.openUnitInformation()
-    await unitInfoPage.activeAcl.addAcl('Henkilökunta', pete.email, [], true)
+    await unitInfoPage.activeAcl.addAcl('Henkilökunta', peteEmail, [], true)
 
     await unitInfoPage.activeAcl.assertRows([
       eskoRow('Johtaja'),

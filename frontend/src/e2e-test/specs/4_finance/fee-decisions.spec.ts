@@ -41,11 +41,11 @@ let feeDecisionsPage: FeeDecisionsPage
 
 beforeEach(async () => {
   await resetServiceState()
-  await Fixture.careArea(testCareArea).save()
-  await Fixture.daycare(testDaycare).save()
+  await testCareArea.save()
+  await testDaycare.save()
   await Fixture.family({ guardian: testAdult, children: [testChild2] }).save()
-  await Fixture.family(familyWithTwoGuardians).save()
-  const careArea = await Fixture.careArea(testCareArea2).save()
+  await familyWithTwoGuardians.save()
+  const careArea = await testCareArea2.save()
   await Fixture.daycare({ ...testDaycare2, areaId: careArea.id }).save()
 })
 
@@ -124,7 +124,7 @@ describe('Fee decisions', () => {
   })
 
   test('Partner is shown for elementary family', async () => {
-    const partner = familyWithTwoGuardians.otherGuardian
+    const partner = familyWithTwoGuardians.otherGuardian!
     await insertGuardians({
       body: [
         {
@@ -172,7 +172,7 @@ describe('Fee decisions', () => {
   })
 
   test('Child income is shown', async () => {
-    const partner = familyWithTwoGuardians.otherGuardian
+    const partner = familyWithTwoGuardians.otherGuardian!
     await insertGuardians({
       body: [
         {

@@ -40,9 +40,9 @@ describe('Child and group notes', () => {
 
   beforeEach(async () => {
     await resetServiceState()
-    await Fixture.careArea(testCareArea).save()
-    await Fixture.daycare(testDaycare).save()
-    await Fixture.person(testChild).saveChild()
+    await testCareArea.save()
+    await testDaycare.save()
+    await testChild.saveChild()
     child = testChild
     const unit = testDaycare
 
@@ -154,9 +154,9 @@ describe('Child and group notes (backup care)', () => {
 
   beforeEach(async () => {
     await resetServiceState()
-    await Fixture.careArea(testCareArea).save()
-    await Fixture.daycare(testDaycare).save()
-    await Fixture.person(testChild).saveChild()
+    await testCareArea.save()
+    await testDaycare.save()
+    await testChild.saveChild()
     child = testChild
     const unit = testDaycare
 
