@@ -11,7 +11,7 @@ import React, {
   useRef,
   useState
 } from 'react'
-import { useSearchParams } from 'react-router'
+import { useNavigate, useSearchParams } from 'react-router'
 import styled from 'styled-components'
 
 import { wrapResult } from 'lib-common/api'
@@ -30,6 +30,7 @@ import Linkify from 'lib-components/atoms/Linkify'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import LegacyInlineButton from 'lib-components/atoms/buttons/LegacyInlineButton'
+import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import { ContentArea } from 'lib-components/layout/Container'
 import {
   FixedSpaceColumn,
@@ -42,14 +43,17 @@ import { Bold, H2, InformationText } from 'lib-components/typography'
 import { useRecipients } from 'lib-components/utils/useReplyRecipients'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
-import { faAngleLeft, faBoxArchive } from 'lib-icons'
+import { faAngleLeft, faBoxArchive, faEnvelope } from 'lib-icons'
 
 import { getAttachmentUrl } from '../../api/attachments'
 import { archiveThread } from '../../generated/api-clients/messaging'
 import { useTranslation } from '../../state/i18n'
 
 import { MessageContext } from './MessageContext'
-import { replyToThreadMutation } from './queries'
+import {
+  markLastReceivedMessageInThreadUnreadMutation,
+  replyToThreadMutation
+} from './queries'
 import { isFolderView, isStandardView, View } from './types-view'
 
 const archiveThreadResult = wrapResult(archiveThread)
@@ -191,7 +195,8 @@ export function SingleThreadView({
   onArchived
 }: Props) {
   const { i18n } = useTranslation()
-  const { getReplyContent, onReplySent, setReplyContent } =
+  const navigate = useNavigate()
+  const { getReplyContent, onReplySent, setReplyContent, refreshUnreadCounts } =
     useContext(MessageContext)
   const [searchParams] = useSearchParams()
   const [replyEditorVisible, setReplyEditorVisible] = useState<boolean>(
@@ -317,6 +322,18 @@ export function SingleThreadView({
                 onClick={() => setReplyEditorVisible(true)}
                 data-qa="message-reply-editor-btn"
                 text={i18n.messages.replyToThread}
+              />
+              <MutateButton
+                appearance="inline"
+                icon={faEnvelope}
+                text={i18n.messages.markUnread}
+                data-qa="mark-unread-btn"
+                mutation={markLastReceivedMessageInThreadUnreadMutation}
+                onClick={() => ({ accountId, threadId })}
+                onSuccess={() => {
+                  void navigate('/messages')
+                  refreshUnreadCounts()
+                }}
               />
               {onArchived && (
                 <AsyncButton

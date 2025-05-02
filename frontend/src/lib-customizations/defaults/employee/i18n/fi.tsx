@@ -4763,6 +4763,7 @@ export const fi = {
     emptyInbox: 'Tämä kansio on tyhjä',
     replyToThread: 'Vastaa viestiin',
     archiveThread: 'Arkistoi viestiketju',
+    markUnread: 'Merkitse lukemattomaksi',
     changeFolder: {
       button: 'Vaihda kansiota',
       modalTitle: 'Valitse kansio',

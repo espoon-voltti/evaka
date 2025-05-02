@@ -354,6 +354,23 @@ export async function initDraftMessage(
 
 
 /**
+* Generated from fi.espoo.evaka.messaging.MessageController.markLastReceivedMessageInThreadUnread
+*/
+export async function markLastReceivedMessageInThreadUnread(
+  request: {
+    accountId: MessageAccountId,
+    threadId: MessageThreadId
+  }
+): Promise<void> {
+  const { data: json } = await client.request<JsonOf<void>>({
+    url: uri`/employee/messages/${request.accountId}/threads/${request.threadId}/last-received-message/unread`.toString(),
+    method: 'PUT'
+  })
+  return json
+}
+
+
+/**
 * Generated from fi.espoo.evaka.messaging.MessageController.markThreadRead
 */
 export async function markThreadRead(

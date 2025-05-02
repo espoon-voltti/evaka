@@ -13,6 +13,7 @@ import {
   getDraftMessages,
   getFinanceMessagesWithPerson,
   initDraftMessage,
+  markLastReceivedMessageInThreadUnread,
   markThreadRead,
   replyToThread,
   updateDraftMessage
@@ -49,3 +50,7 @@ export const replyToFinanceThreadMutation = q.parametricMutation<{
 export const archiveFinanceThreadMutation = q.parametricMutation<{
   id: PersonId
 }>()(archiveThread, [({ id }) => financeThreadsQuery({ personId: id })])
+
+export const markLastReceivedMessageInThreadUnreadMutation = q.mutation(
+  markLastReceivedMessageInThreadUnread
+)
