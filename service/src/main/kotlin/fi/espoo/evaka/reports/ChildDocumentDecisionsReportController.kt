@@ -64,6 +64,13 @@ class ChildDocumentDecisionsReportController(private val accessControl: AccessCo
     ): Int {
         return db.connect { dbc ->
                 dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Global.READ_CHILD_DOCUMENT_DECISIONS_REPORT,
+                    )
+
                     tx.createQuery {
                             sql(
                                 """
