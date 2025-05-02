@@ -2349,7 +2349,13 @@ sealed interface Action {
                 .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
                 .inPlacementGroupOfChildOfChildDocument(),
         ),
-        PREV_STATUS(HasGlobalRole(ADMIN)),
+        PREV_STATUS(
+            HasGlobalRole(ADMIN),
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
+                .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
+                .inPlacementUnitOfChildOfChildDocument(canGoToPrevStatus = true),
+            IsEmployee.andIsDecisionMakerForChildDocumentDecision(),
+        ),
         DELETE(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
