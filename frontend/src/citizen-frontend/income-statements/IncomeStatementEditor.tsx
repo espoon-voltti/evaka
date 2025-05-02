@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router'
 
 import { combine, Loading, Result } from 'lib-common/api'
@@ -113,16 +113,14 @@ export default React.memo(function IncomeStatementEditor() {
     [state]
   )
 
-  useEffect(() => {
-    if (
-      (showFormErrors === 'SAVE' &&
-        validatedBody.isSuccess &&
-        validatedBody.value) ||
-      (showFormErrors === 'DRAFT' && draftBody.isSuccess && draftBody.value)
-    ) {
-      setShowFormErrors('NONE')
-    }
-  }, [showFormErrors, validatedBody, draftBody])
+  if (
+    (showFormErrors === 'SAVE' &&
+      validatedBody.isSuccess &&
+      validatedBody.value) ||
+    (showFormErrors === 'DRAFT' && draftBody.isSuccess && draftBody.value)
+  ) {
+    setShowFormErrors('NONE')
+  }
 
   return renderResult(
     combine(state, draftBody, validatedBody),
