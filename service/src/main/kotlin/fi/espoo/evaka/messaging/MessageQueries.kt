@@ -9,6 +9,7 @@ import fi.espoo.evaka.application.getCitizenChildren
 import fi.espoo.evaka.attachment.Attachment
 import fi.espoo.evaka.invoicing.controller.SortDirection
 import fi.espoo.evaka.messaging.MessageController.MessageThreadFolder
+import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.*
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.Predicate
@@ -1595,6 +1596,14 @@ fun Database.Read.getMessageAccountsForRecipients(
             } else null,
         )
 
+    val placementPredicate = { col: String ->
+        if (filters?.placementTypes?.isNotEmpty() == true) {
+            val placementTypesInCategory =
+                PlacementType.fromMessagingCategories(filters.placementTypes)
+            PredicateSql { where("pl.$col = ANY(${bind(placementTypesInCategory)})") }
+        } else PredicateSql.alwaysTrue()
+    }
+
     return createQuery {
             sql(
                 """
@@ -1611,7 +1620,7 @@ WITH sender AS (
         OR pl.unit_id = ANY(${bind(currentRecipients.unitIds())})
         OR pl.group_id = ANY(${bind(currentRecipients.groupIds())})
         OR pl.child_id = ANY(${bind(currentRecipients.childIds())}))
-    AND ${predicate(filterPredicates)}
+    AND ${predicate(filterPredicates.and(placementPredicate("placement_type")))}
     AND (sender.type = 'MUNICIPAL'::message_account_type OR pl.group_id IS NOT NULL)
     AND (
         EXISTS (
@@ -1659,7 +1668,7 @@ WITH sender AS (
             OR pl.unit_id = ANY(${bind(starterRecipients.unitIds())})
             OR dgp.daycare_group_id = ANY(${bind(starterRecipients.groupIds())})
             OR pl.child_id = ANY(${bind(starterRecipients.childIds())}))
-    AND ${predicate(filterPredicates)}
+    AND ${predicate(filterPredicates.and(placementPredicate("type")))}
     AND (sender.type = 'MUNICIPAL'::message_account_type OR dgp.daycare_group_id IS NOT NULL)
     AND (
         EXISTS (

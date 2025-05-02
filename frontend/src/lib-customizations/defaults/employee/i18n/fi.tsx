@@ -3253,6 +3253,11 @@ export const fi = {
       TEMPORARY_DAYCARE: 'Tilapäinen kokopäiväinen varhaiskasvatus',
       TEMPORARY_DAYCARE_PART_DAY: 'Tilapäinen osapäiväinen varhaiskasvatus',
       SCHOOL_SHIFT_CARE: 'Koululaisten vuorohoito'
+    },
+    messagingCategory: {
+      MESSAGING_CLUB: 'Kerho',
+      MESSAGING_DAYCARE: 'Varhaiskasvatus',
+      MESSAGING_PRESCHOOL: 'Esiopetus'
     }
   },
   feeAlteration: {
@@ -4857,6 +4862,7 @@ export const fi = {
         showFilters: 'Näytä lisävalinnat',
         hideFilters: 'Piilota lisävalinnat',
         yearOfBirth: 'Syntymävuosi',
+        placementType: 'Sijoitustyyppi',
         shiftCare: {
           heading: 'Vuorohoito',
           label: 'Vuorohoito',

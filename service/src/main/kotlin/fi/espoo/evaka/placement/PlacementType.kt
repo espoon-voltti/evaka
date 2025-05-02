@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.placement
 
+import fi.espoo.evaka.ConstList
 import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.daycare.ClubTerm
 import fi.espoo.evaka.daycare.PreschoolTerm
@@ -86,6 +87,25 @@ enum class PlacementType : DatabaseEnum {
                 setOf(AbsenceCategory.BILLABLE, AbsenceCategory.NONBILLABLE)
         }
 
+    private fun messagingCategory(): MessagingCategory? =
+        when (this) {
+            CLUB -> MessagingCategory.MESSAGING_CLUB
+            DAYCARE,
+            DAYCARE_PART_TIME,
+            DAYCARE_FIVE_YEAR_OLDS,
+            DAYCARE_PART_TIME_FIVE_YEAR_OLDS,
+            SCHOOL_SHIFT_CARE -> MessagingCategory.MESSAGING_DAYCARE
+            PRESCHOOL,
+            PRESCHOOL_DAYCARE,
+            PRESCHOOL_DAYCARE_ONLY,
+            PRESCHOOL_CLUB,
+            PREPARATORY,
+            PREPARATORY_DAYCARE,
+            PREPARATORY_DAYCARE_ONLY -> MessagingCategory.MESSAGING_PRESCHOOL
+            TEMPORARY_DAYCARE,
+            TEMPORARY_DAYCARE_PART_DAY -> null
+        }
+
     fun scheduleType(
         date: LocalDate,
         clubTerms: List<ClubTerm>,
@@ -150,6 +170,10 @@ enum class PlacementType : DatabaseEnum {
             entries.filter { it.absenceCategories().contains(AbsenceCategory.BILLABLE) }
         val withNonbillableAbsences =
             entries.filter { it.absenceCategories().contains(AbsenceCategory.NONBILLABLE) }
+
+        fun fromMessagingCategories(categories: List<MessagingCategory>): List<PlacementType> {
+            return PlacementType.entries.filter { categories.contains(it.messagingCategory()) }
+        }
     }
 }
 
@@ -157,4 +181,11 @@ enum class ScheduleType {
     RESERVATION_REQUIRED, // Daycare -> reservations required
     FIXED_SCHEDULE, // Preschool/club -> reservations not required
     TERM_BREAK, // Preschool/club term break -> no activity
+}
+
+@ConstList("messagingCategory")
+enum class MessagingCategory {
+    MESSAGING_CLUB,
+    MESSAGING_DAYCARE,
+    MESSAGING_PRESCHOOL,
 }
