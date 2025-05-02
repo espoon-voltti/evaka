@@ -28,9 +28,9 @@ let personId: UUID
 beforeEach(async () => {
   await resetServiceState()
 
-  await Fixture.careArea(testCareArea).save()
-  await Fixture.daycare(testDaycare).save()
-  await Fixture.person(testChild).saveChild({ updateMockVtj: true })
+  await testCareArea.save()
+  await testDaycare.save()
+  await testChild.saveChild({ updateMockVtj: true })
   personId = testChild.id
 
   const financeAdmin = await Fixture.employee().financeAdmin().save()

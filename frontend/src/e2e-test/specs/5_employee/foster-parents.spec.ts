@@ -27,7 +27,7 @@ beforeEach(async () => {
     guardian: testAdult,
     children: [testChild, testChild2]
   }).save()
-  await Fixture.person(testAdultRestricted).saveAdult({
+  await testAdultRestricted.saveAdult({
     updateMockVtjWithDependants: []
   })
 

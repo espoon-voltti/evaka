@@ -46,9 +46,9 @@ beforeEach(async () => {
 
   serviceWorker = await Fixture.employee().serviceWorker().save()
 
-  await Fixture.careArea(testCareArea).save()
-  await Fixture.daycare(testDaycare).save()
-  await Fixture.family(familyWithTwoGuardians).save()
+  await testCareArea.save()
+  await testDaycare.save()
+  await familyWithTwoGuardians.save()
   await createDaycareGroups({ body: [testDaycareGroup] })
 
   const unitId = testDaycare.id

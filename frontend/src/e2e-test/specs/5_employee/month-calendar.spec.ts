@@ -40,10 +40,10 @@ beforeEach(async () => {
   await resetServiceState()
 
   await createDefaultServiceNeedOptions()
-  const careArea = await Fixture.careArea(testCareArea).save()
+  const careArea = await testCareArea.save()
   await Fixture.daycare({ ...testDaycare, areaId: careArea.id }).save()
-  await Fixture.person(testChild2).saveChild()
-  group = await Fixture.daycareGroup(testDaycareGroup).save()
+  await testChild2.saveChild()
+  group = await testDaycareGroup.save()
 
   unitSupervisor = await Fixture.employee()
     .unitSupervisor(testDaycare.id)
@@ -368,7 +368,7 @@ describe('Employee - Unit month calendar', () => {
       endDate: kaarinaPlacement.endDate
     }).save()
 
-    await Fixture.person(testChild).saveChild()
+    await testChild.saveChild()
     const jariPlacement = await Fixture.placement({
       childId: testChild.id,
       unitId: testDaycare.id,

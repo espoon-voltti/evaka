@@ -53,17 +53,17 @@ let applicationId: ApplicationId
 beforeEach(async () => {
   await resetServiceState()
   await cleanUpMessages()
-  await Fixture.preschoolTerm(preschoolTerm2021).save()
-  await Fixture.careArea(testCareArea).save()
-  await Fixture.daycare(testDaycare).save()
-  await Fixture.daycare(testPreschool).save()
+  await preschoolTerm2021.save()
+  await testCareArea.save()
+  await testDaycare.save()
+  await testPreschool.save()
   await Fixture.family({
     guardian: testAdult,
     children: [testChild, testChild2, testChildRestricted]
   }).save()
-  await Fixture.family(familyWithTwoGuardians).save()
-  await Fixture.family(familyWithSeparatedGuardians).save()
-  await Fixture.family(familyWithRestrictedDetailsGuardian).save()
+  await familyWithTwoGuardians.save()
+  await familyWithSeparatedGuardians.save()
+  await familyWithRestrictedDetailsGuardian.save()
   serviceWorker = await Fixture.employee().serviceWorker().save()
   await createDefaultServiceNeedOptions()
   await Fixture.feeThresholds().save()

@@ -52,8 +52,8 @@ const today = mockedNow.toLocalDate()
 
 beforeEach(async () => {
   await resetServiceState()
-  await Fixture.careArea(testCareArea).save()
-  await Fixture.daycare(testDaycare).save()
+  await testCareArea.save()
+  await testDaycare.save()
   await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
   child = testChild
   const unit = testDaycare
@@ -100,7 +100,7 @@ describe('Mobile PIN login', () => {
       medication: 'Medications',
       additionalInfo: ''
     }).save()
-    await Fixture.person(testAdult2).saveAdult()
+    await testAdult2.saveAdult()
 
     const parentshipId = randomId<PartnershipId>()
     await createFridgePartner({

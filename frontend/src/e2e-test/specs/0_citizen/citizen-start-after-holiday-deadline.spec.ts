@@ -36,15 +36,15 @@ beforeEach(async () => {
     mockedTime: mockedDate.toHelsinkiDateTime(LocalTime.of(12, 0))
   })
 
-  const area = await Fixture.careArea(testCareArea).save()
+  const area = await testCareArea.save()
   daycare = await Fixture.daycare({ ...testDaycare, areaId: area.id }).save()
   await Fixture.daycareGroup({
     ...testDaycareGroup,
     daycareId: daycare.id
   }).save()
 
-  const child1 = await Fixture.person(child).saveChild({ updateMockVtj: true })
-  guardian = await Fixture.person(testAdult).saveAdult({
+  const child1 = await child.saveChild({ updateMockVtj: true })
+  guardian = await testAdult.saveAdult({
     updateMockVtjWithDependants: [child1]
   })
   await Fixture.guardian(child1, guardian).save()

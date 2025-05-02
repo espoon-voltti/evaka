@@ -42,9 +42,9 @@ const mockedDate = LocalDate.of(2022, 3, 1)
 describe('Citizen children page', () => {
   beforeEach(async () => {
     await resetServiceState()
-    await Fixture.careArea(testCareArea).save()
-    await Fixture.daycare(testDaycare).save()
-    await Fixture.daycare(testPreschool).save()
+    await testCareArea.save()
+    await testDaycare.save()
+    await testPreschool.save()
     await Fixture.family({
       guardian: testAdult,
       children: [testChild, testChild2]
@@ -147,7 +147,7 @@ describe('Citizen children page', () => {
     })
 
     test('Daycare placement cannot be terminated if termination is not enabled for unit', async () => {
-      await Fixture.daycare(testClub).save()
+      await testClub.save()
 
       const endDate = mockedDate.addYears(2)
       await createDaycarePlacement(endDate, testClub.id, 'CLUB')
@@ -523,9 +523,9 @@ describe('Citizen children page', () => {
 describe.each(envs)('Citizen children page with weak login (%s)', (env) => {
   beforeEach(async () => {
     await resetServiceState()
-    await Fixture.careArea(testCareArea).save()
-    await Fixture.daycare(testDaycare).save()
-    await Fixture.daycare(testPreschool).save()
+    await testCareArea.save()
+    await testDaycare.save()
+    await testPreschool.save()
     await Fixture.family({
       guardian: testAdult,
       children: [testChild, testChild2]

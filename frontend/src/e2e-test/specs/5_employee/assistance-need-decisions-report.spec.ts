@@ -52,9 +52,9 @@ beforeEach(async () => {
   decisionMaker = await Fixture.employee().director().save()
   director = await Fixture.employee().director().save()
 
-  await Fixture.careArea(testCareArea).save()
-  await Fixture.daycare(testDaycare).save()
-  await Fixture.family(familyWithTwoGuardians).save()
+  await testCareArea.save()
+  await testDaycare.save()
+  await familyWithTwoGuardians.save()
   await createDaycareGroups({ body: [testDaycareGroup] })
 
   unitId = testDaycare.id
@@ -372,9 +372,9 @@ describe('Assistance need decisions report', () => {
       selectedUnit: unitId
     }).save()
 
-    await Fixture.person(testChild).saveChild()
+    await testChild.saveChild()
     const anotherChildId = testChild.id
-    const careArea = await Fixture.careArea(testCareArea2).save()
+    const careArea = await testCareArea2.save()
     const anotherDaycare = await Fixture.daycare({
       ...testDaycare2,
       areaId: careArea.id

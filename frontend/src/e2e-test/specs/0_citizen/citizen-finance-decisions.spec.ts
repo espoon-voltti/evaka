@@ -57,11 +57,11 @@ const voucherValueDecisionValidDuring = new DateRange(
 
 beforeEach(async () => {
   await resetServiceState()
-  await Fixture.careArea(testCareArea).save()
-  await Fixture.daycare(testDaycare).save()
+  await testCareArea.save()
+  await testDaycare.save()
   await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
   headOfFamily = testAdult
-  partner = await Fixture.person(testAdultRestricted).saveAdult({
+  partner = await testAdultRestricted.saveAdult({
     updateMockVtjWithDependants: []
   })
   child = testChild

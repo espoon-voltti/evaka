@@ -47,13 +47,13 @@ let restrictedDetailsGuardianApplication: DevApplicationWithForm
 
 beforeEach(async () => {
   await resetServiceState()
-  await Fixture.careArea(testCareArea).save()
-  await Fixture.daycare(testDaycare).save()
-  await Fixture.daycare(testPreschool).save()
+  await testCareArea.save()
+  await testDaycare.save()
+  await testPreschool.save()
   await Fixture.family({ guardian: testAdult, children: [testChild2] }).save()
-  await Fixture.family(familyWithTwoGuardians).save()
-  await Fixture.family(familyWithSeparatedGuardians).save()
-  await Fixture.family(familyWithRestrictedDetailsGuardian).save()
+  await familyWithTwoGuardians.save()
+  await familyWithSeparatedGuardians.save()
+  await familyWithRestrictedDetailsGuardian.save()
   singleParentApplication = applicationFixture(testChild2, testAdult)
   familyWithTwoGuardiansApplication = {
     ...applicationFixture(
@@ -135,7 +135,7 @@ describe('Application details', () => {
       .applicationRow(familyWithTwoGuardiansApplication.id)
       .openApplication()
     await application.assertOtherVtjGuardianName(
-      `${familyWithTwoGuardians.otherGuardian.lastName} ${familyWithTwoGuardians.otherGuardian.firstName}`
+      `${familyWithTwoGuardians.otherGuardian!.lastName} ${familyWithTwoGuardians.otherGuardian!.firstName}`
     )
     await application.assertOtherGuardianSameAddress(true)
   })
@@ -149,7 +149,7 @@ describe('Application details', () => {
       .applicationRow(separatedFamilyApplication.id)
       .openApplication()
     await application.assertOtherVtjGuardianName(
-      `${familyWithSeparatedGuardians.otherGuardian.lastName} ${familyWithSeparatedGuardians.otherGuardian.firstName}`
+      `${familyWithSeparatedGuardians.otherGuardian!.lastName} ${familyWithSeparatedGuardians.otherGuardian!.firstName}`
     )
     await application.assertOtherGuardianSameAddress(false)
     await application.assertOtherGuardianAgreementStatus(false)

@@ -53,9 +53,9 @@ beforeEach(async () => {
   serviceWorker = await Fixture.employee().serviceWorker().save()
   director = await Fixture.employee().director().save()
 
-  await Fixture.careArea(testCareArea).save()
-  await Fixture.daycare(testDaycare).save()
-  await Fixture.family(familyWithTwoGuardians).save()
+  await testCareArea.save()
+  await testDaycare.save()
+  await familyWithTwoGuardians.save()
   await createDaycareGroups({ body: [testDaycareGroup] })
 
   const unitId = testDaycare.id
@@ -84,7 +84,7 @@ describe('Assistance Need Preschool Decisions - Editing', () => {
       childId
     })
       .withGuardian(familyWithTwoGuardians.guardian.id)
-      .withGuardian(familyWithTwoGuardians.otherGuardian.id)
+      .withGuardian(familyWithTwoGuardians.otherGuardian!.id)
       .save()
 
     page = await openPage()
@@ -163,7 +163,7 @@ describe('Assistance Need Decisions - Decision process', () => {
       childId
     })
       .withGuardian(familyWithTwoGuardians.guardian.id)
-      .withGuardian(familyWithTwoGuardians.otherGuardian.id)
+      .withGuardian(familyWithTwoGuardians.otherGuardian!.id)
       .withRequiredFieldsFilled(testDaycare.id, serviceWorker.id, director.id)
       .save()
 
@@ -268,7 +268,7 @@ describe('Decision visibility for role', () => {
       acceptedAssistanceNeedPreschoolDecision =
         await Fixture.assistanceNeedPreschoolDecision({ childId })
           .withGuardian(familyWithTwoGuardians.guardian.id)
-          .withGuardian(familyWithTwoGuardians.otherGuardian.id)
+          .withGuardian(familyWithTwoGuardians.otherGuardian!.id)
           .withForm({
             validFrom: LocalDate.of(2022, 7, 1),
             guardiansHeardOn: LocalDate.of(2022, 7, 1)
@@ -287,7 +287,7 @@ describe('Decision visibility for role', () => {
 
       await Fixture.assistanceNeedPreschoolDecision({ childId })
         .withGuardian(familyWithTwoGuardians.guardian.id)
-        .withGuardian(familyWithTwoGuardians.otherGuardian.id)
+        .withGuardian(familyWithTwoGuardians.otherGuardian!.id)
         .withRequiredFieldsFilled(
           testDaycare.id,
           serviceWorker.id,

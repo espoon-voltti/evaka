@@ -5,9 +5,9 @@
 import { BrowserContextOptions } from 'playwright'
 
 import { PlacementType } from 'lib-common/generated/api-types/placement'
-import { GroupId, PersonId } from 'lib-common/generated/api-types/shared'
+import { PersonId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
-import { evakaUserId, randomId } from 'lib-common/id-type'
+import { evakaUserId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 
 import { EvakaBrowserContextOptions, mobileViewport } from '../../browser'
@@ -43,14 +43,13 @@ let childAttendancePage: ChildAttendancePage
 
 const now = HelsinkiDateTime.of(2024, 5, 17, 13, 0, 0)
 
-const group2 = {
-  id: randomId<GroupId>(),
+const group2 = Fixture.daycareGroup({
   name: '#2',
   daycareId: testDaycare.id,
   startDate: LocalDate.of(2021, 1, 1)
-}
+})
 
-const careArea = Fixture.careArea(testCareArea)
+const careArea = testCareArea
 
 const openPage = async (
   options?: BrowserContextOptions & EvakaBrowserContextOptions
@@ -67,18 +66,18 @@ const openPage = async (
 beforeEach(async () => {
   await resetServiceState()
   await createDefaultServiceNeedOptions()
-  await Fixture.preschoolTerm(preschoolTerm2023).save()
+  await preschoolTerm2023.save()
 
   await careArea.save()
   await Fixture.daycare({ ...testDaycare, areaId: careArea.id }).save()
-  await Fixture.daycareGroup(testDaycareGroup).save()
-  await Fixture.daycareGroup(group2).save()
+  await testDaycareGroup.save()
+  await group2.save()
 
-  await Fixture.person(testChild2).saveChild()
-  await Fixture.person(testChild).saveChild()
+  await testChild2.saveChild()
+  await testChild.saveChild()
   await Fixture.person(familyWithTwoGuardians.children[0]).saveChild()
 
-  await Fixture.person(testChildRestricted).saveChild()
+  await testChildRestricted.saveChild()
 
   await Fixture.employee({ roles: ['ADMIN'] }).save()
 })
@@ -475,7 +474,6 @@ describe('Child mobile attendance list', () => {
     await Fixture.daycare({ ...testDaycare2, areaId: testCareArea.id }).save()
 
     const daycareGroup2Fixture = await Fixture.daycareGroup({
-      id: randomId<GroupId>(),
       name: 'testgroup',
       daycareId: testDaycare2.id,
       startDate: LocalDate.of(2022, 1, 1)

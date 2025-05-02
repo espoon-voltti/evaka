@@ -26,9 +26,9 @@ let activeServiceNeedOption: ServiceNeedOption
 
 beforeEach(async () => {
   await resetServiceState()
-  await Fixture.careArea(testCareArea).save()
-  await Fixture.daycare(testDaycare).save()
-  await Fixture.family(familyWithTwoGuardians).save()
+  await testCareArea.save()
+  await testDaycare.save()
+  await familyWithTwoGuardians.save()
   const unitId = testDaycare.id
   childId = familyWithTwoGuardians.children[0].id
   await Fixture.employee({ roles: ['ADMIN'] }).save()

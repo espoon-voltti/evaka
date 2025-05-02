@@ -29,8 +29,8 @@ describe('Employee - unit details', () => {
 
   beforeEach(async () => {
     await resetServiceState()
-    await Fixture.careArea(testCareArea).save()
-    await Fixture.daycare(testDaycare).save()
+    await testCareArea.save()
+    await testDaycare.save()
     daycare1 = testDaycare
     const admin = await Fixture.employee().admin().save()
 
@@ -143,8 +143,8 @@ describe('Employee - unit editor validations and warnings', () => {
   beforeEach(async () => {
     await resetServiceState()
 
-    await Fixture.careArea(testCareArea).save()
-    await Fixture.daycare(testDaycare).save()
+    await testCareArea.save()
+    await testDaycare.save()
   })
 
   const openUnitEditorPage = async () => {

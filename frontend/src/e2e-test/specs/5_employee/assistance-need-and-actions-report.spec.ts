@@ -36,9 +36,9 @@ const mockedTime = LocalDate.of(2024, 2, 19)
 beforeEach(async () => {
   await resetServiceState()
 
-  await Fixture.careArea(testCareArea).save()
-  await Fixture.daycare(testDaycare).save()
-  await Fixture.family(familyWithTwoGuardians).save()
+  await testCareArea.save()
+  await testDaycare.save()
+  await familyWithTwoGuardians.save()
   await createDefaultServiceNeedOptions()
   await createDaycareGroups({ body: [testDaycareGroup] })
 

@@ -29,10 +29,10 @@ let groupsPage: UnitGroupsPage
 
 beforeEach(async () => {
   await resetServiceState()
-  await Fixture.careArea(testCareArea).save()
-  await Fixture.daycare(testDaycare).save()
-  await Fixture.daycare(testDaycarePrivateVoucher).save()
-  await Fixture.person(testChild2).saveChild()
+  await testCareArea.save()
+  await testDaycare.save()
+  await testDaycarePrivateVoucher.save()
+  await testChild2.saveChild()
 
   const unitSupervisor = await Fixture.employee()
     .unitSupervisor(testDaycare.id)

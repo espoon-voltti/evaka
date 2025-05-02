@@ -21,7 +21,6 @@ import {
   AssistanceNeedPreschoolDecisionForm,
   AssistanceNeedVoucherCoefficient
 } from 'lib-common/generated/api-types/assistanceneed'
-import { ClubTerm } from 'lib-common/generated/api-types/daycare'
 import { DocumentContent } from 'lib-common/generated/api-types/document'
 import {
   HolidayQuestionnaire,
@@ -39,6 +38,7 @@ import { DailyReservationRequest } from 'lib-common/generated/api-types/reservat
 import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
 import {
   ApplicationId,
+  AreaId,
   DaycareId,
   EmployeeId,
   FeeDecisionId,
@@ -314,11 +314,11 @@ export class Fixture {
       | 'extendedTerm'
       | 'finnishPreschool'
       | 'swedishPreschool'
-      | 'termBreaks'
     >
   ) {
     const value: DevPreschoolTerm = {
       id: randomId(),
+      termBreaks: [],
       ...initial
     }
     return {
@@ -330,11 +330,18 @@ export class Fixture {
     }
   }
 
-  static clubTerm(initial: DevClubTerm) {
+  static clubTerm(
+    initial: SemiPartial<DevClubTerm, 'applicationPeriod' | 'term'>
+  ) {
+    const value: DevClubTerm = {
+      id: randomId(),
+      termBreaks: [],
+      ...initial
+    }
     return {
-      ...initial,
+      ...value,
       async save() {
-        await createClubTerm({ body: initial })
+        await createClubTerm({ body: value })
         return initial
       }
     }
@@ -1939,8 +1946,7 @@ export const nonFullDayTimeRange: TimeRange = new TimeRange(
   LocalTime.of(23, 0)
 )
 
-export const preschoolTerm2020: DevPreschoolTerm = {
-  id: randomId(),
+export const preschoolTerm2020 = Fixture.preschoolTerm({
   finnishPreschool: new FiniteDateRange(
     LocalDate.of(2020, 8, 13),
     LocalDate.of(2021, 6, 4)
@@ -1958,10 +1964,9 @@ export const preschoolTerm2020: DevPreschoolTerm = {
     LocalDate.of(2020, 1, 20)
   ),
   termBreaks: []
-}
+})
 
-export const preschoolTerm2021: DevPreschoolTerm = {
-  id: randomId(),
+export const preschoolTerm2021 = Fixture.preschoolTerm({
   finnishPreschool: new FiniteDateRange(
     LocalDate.of(2021, 8, 11),
     LocalDate.of(2022, 6, 3)
@@ -1979,10 +1984,9 @@ export const preschoolTerm2021: DevPreschoolTerm = {
     LocalDate.of(2021, 1, 20)
   ),
   termBreaks: []
-}
+})
 
-export const preschoolTerm2022: DevPreschoolTerm = {
-  id: randomId(),
+export const preschoolTerm2022 = Fixture.preschoolTerm({
   finnishPreschool: new FiniteDateRange(
     LocalDate.of(2022, 8, 11),
     LocalDate.of(2023, 6, 2)
@@ -2000,10 +2004,9 @@ export const preschoolTerm2022: DevPreschoolTerm = {
     LocalDate.of(2022, 1, 21)
   ),
   termBreaks: []
-}
+})
 
-export const preschoolTerm2023: DevPreschoolTerm = {
-  id: randomId(),
+export const preschoolTerm2023 = Fixture.preschoolTerm({
   finnishPreschool: new FiniteDateRange(
     LocalDate.of(2023, 8, 11),
     LocalDate.of(2024, 6, 3)
@@ -2025,10 +2028,9 @@ export const preschoolTerm2023: DevPreschoolTerm = {
     new FiniteDateRange(LocalDate.of(2023, 12, 23), LocalDate.of(2024, 1, 7)),
     new FiniteDateRange(LocalDate.of(2024, 2, 19), LocalDate.of(2024, 2, 23))
   ]
-}
+})
 
-export const clubTerm2020: ClubTerm = {
-  id: randomId(),
+export const clubTerm2020 = Fixture.clubTerm({
   term: new FiniteDateRange(
     LocalDate.of(2020, 8, 13),
     LocalDate.of(2021, 6, 4)
@@ -2038,10 +2040,9 @@ export const clubTerm2020: ClubTerm = {
     LocalDate.of(2020, 1, 20)
   ),
   termBreaks: []
-}
+})
 
-export const clubTerm2021: ClubTerm = {
-  id: randomId(),
+export const clubTerm2021 = Fixture.clubTerm({
   term: new FiniteDateRange(
     LocalDate.of(2021, 8, 11),
     LocalDate.of(2022, 6, 3)
@@ -2051,10 +2052,9 @@ export const clubTerm2021: ClubTerm = {
     LocalDate.of(2021, 1, 20)
   ),
   termBreaks: []
-}
+})
 
-export const clubTerm2022: ClubTerm = {
-  id: randomId(),
+export const clubTerm2022 = Fixture.clubTerm({
   term: new FiniteDateRange(
     LocalDate.of(2022, 8, 10),
     LocalDate.of(2023, 6, 3)
@@ -2064,10 +2064,9 @@ export const clubTerm2022: ClubTerm = {
     LocalDate.of(2022, 1, 20)
   ),
   termBreaks: []
-}
+})
 
-export const clubTerm2023: ClubTerm = {
-  id: randomId(),
+export const clubTerm2023 = Fixture.clubTerm({
   term: new FiniteDateRange(
     LocalDate.of(2023, 8, 10),
     LocalDate.of(2024, 6, 3)
@@ -2081,7 +2080,7 @@ export const clubTerm2023: ClubTerm = {
     new FiniteDateRange(LocalDate.of(2023, 12, 23), LocalDate.of(2024, 1, 7)),
     new FiniteDateRange(LocalDate.of(2024, 2, 19), LocalDate.of(2024, 2, 23))
   ]
-}
+})
 
 export const clubTerms = [
   clubTerm2020,
@@ -2090,24 +2089,24 @@ export const clubTerms = [
   clubTerm2023
 ]
 
-export const testCareArea: DevCareArea = {
-  id: fromUuid('674dfb66-8849-489e-b094-e6a0ebfb3c71'),
+export const testCareArea = Fixture.careArea({
+  id: fromUuid<AreaId>('674dfb66-8849-489e-b094-e6a0ebfb3c71'),
   name: 'Superkeskus',
   shortName: 'super-keskus',
   areaCode: 299,
   subCostCenter: '99'
-}
+})
 
-export const testCareArea2: DevCareArea = {
-  id: fromUuid('7a5b42db-451b-4394-b6a6-86993ea0ed45'),
+export const testCareArea2 = Fixture.careArea({
+  id: fromUuid<AreaId>('7a5b42db-451b-4394-b6a6-86993ea0ed45'),
   name: 'Hyperkeskus',
   shortName: 'hyper-keskus',
   areaCode: 298,
   subCostCenter: '98'
-}
+})
 
-export const testClub: DevDaycare = {
-  id: fromUuid('0b5ffd40-2f1a-476a-ad06-2861f433b0d1'),
+export const testClub = Fixture.daycare({
+  id: fromUuid<DaycareId>('0b5ffd40-2f1a-476a-ad06-2861f433b0d1'),
   areaId: testCareArea.id,
   name: 'Alkuräjähdyksen kerho',
   type: ['CLUB'],
@@ -2180,10 +2179,10 @@ export const testClub: DevDaycare = {
   mealtimeSupper: null,
   mealtimeEveningSnack: null,
   withSchool: false
-}
+})
 
-export const testDaycare: DevDaycare = {
-  id: fromUuid('4f3a32f5-d1bd-4b8b-aa4e-4fd78b18354b'),
+export const testDaycare = Fixture.daycare({
+  id: fromUuid<DaycareId>('4f3a32f5-d1bd-4b8b-aa4e-4fd78b18354b'),
   areaId: testCareArea.id,
   name: 'Alkuräjähdyksen päiväkoti',
   type: ['CENTRE', 'PRESCHOOL', 'PREPARATORY_EDUCATION'],
@@ -2275,10 +2274,10 @@ export const testDaycare: DevDaycare = {
   mealtimeSupper: null,
   mealtimeEveningSnack: null,
   withSchool: false
-}
+})
 
-export const testDaycare2: DevDaycare = {
-  id: fromUuid('6f540c39-e7f6-4222-a004-c527403378ec'),
+export const testDaycare2 = Fixture.daycare({
+  id: fromUuid<DaycareId>('6f540c39-e7f6-4222-a004-c527403378ec'),
   areaId: testCareArea2.id,
   name: 'Mustan aukon päiväkoti',
   type: ['CENTRE'],
@@ -2362,10 +2361,10 @@ export const testDaycare2: DevDaycare = {
   mealtimeSupper: null,
   mealtimeEveningSnack: null,
   withSchool: false
-}
+})
 
-export const testDaycarePrivateVoucher: DevDaycare = {
-  id: fromUuid('572adb7e-9b3d-11ea-bb37-0242ac130002'),
+export const testDaycarePrivateVoucher = Fixture.daycare({
+  id: fromUuid<DaycareId>('572adb7e-9b3d-11ea-bb37-0242ac130002'),
   areaId: testCareArea.id,
   name: 'PS-yksikkö',
   type: ['CENTRE'],
@@ -2448,10 +2447,10 @@ export const testDaycarePrivateVoucher: DevDaycare = {
   mealtimeSupper: null,
   mealtimeEveningSnack: null,
   withSchool: false
-}
+})
 
-export const testPreschool: DevDaycare = {
-  id: fromUuid('b53d80e0-319b-4d2b-950c-f5c3c9f834bc'),
+export const testPreschool = Fixture.daycare({
+  id: fromUuid<DaycareId>('b53d80e0-319b-4d2b-950c-f5c3c9f834bc'),
   areaId: testCareArea.id,
   name: 'Alkuräjähdyksen eskari',
   type: ['CENTRE', 'PRESCHOOL', 'PREPARATORY_EDUCATION'],
@@ -2532,7 +2531,7 @@ export const testPreschool: DevDaycare = {
   mealtimeSupper: null,
   mealtimeEveningSnack: null,
   withSchool: false
-}
+})
 
 export const testAdult = Fixture.person({
   id: fromUuid<PersonId>('87a5c962-9b3d-11ea-bb37-0242ac130002'),
@@ -2655,7 +2654,7 @@ export const testChildNoSsn = Fixture.person({
   restrictedDetailsEndDate: null
 })
 
-const twoGuardiansGuardian1 = {
+const twoGuardiansGuardian1 = Fixture.person({
   id: fromUuid<PersonId>('9d6289ba-9ffd-11ea-bb37-0242ac130002'),
   ssn: '220281-9456',
   firstName: 'Mikael Ilmari Juhani Johannes',
@@ -2671,8 +2670,8 @@ const twoGuardiansGuardian1 = {
   nationalities: ['FI'],
   restrictedDetailsEnabled: false,
   restrictedDetailsEndDate: null
-}
-const twoGuardiansGuardian2 = {
+})
+const twoGuardiansGuardian2 = Fixture.person({
   id: fromUuid<PersonId>('d1c30734-c02f-4546-8123-856f8101565e'),
   ssn: '170590-9540',
   firstName: 'Kaarina Marjatta Anna Liisa',
@@ -2688,7 +2687,7 @@ const twoGuardiansGuardian2 = {
   nationalities: ['FI'],
   restrictedDetailsEnabled: false,
   restrictedDetailsEndDate: null
-}
+})
 const twoGuardiansChildren = [
   Fixture.person({
     id: fromUuid<PersonId>('6ec99620-9ffd-11ea-bb37-0242ac130002'),
@@ -2707,13 +2706,13 @@ const twoGuardiansChildren = [
     restrictedDetailsEndDate: null
   })
 ]
-export const familyWithTwoGuardians = {
-  guardian: Fixture.person(twoGuardiansGuardian1),
-  otherGuardian: Fixture.person(twoGuardiansGuardian2),
+export const familyWithTwoGuardians = Fixture.family({
+  guardian: twoGuardiansGuardian1,
+  otherGuardian: twoGuardiansGuardian2,
   children: twoGuardiansChildren
-}
+})
 
-const separatedGuardiansGuardian1 = {
+const separatedGuardiansGuardian1 = Fixture.person({
   id: fromUuid<PersonId>('1c1b2946-fdf3-4e02-a3e4-2c2a797bafc3'),
   firstName: 'John',
   lastName: 'Doe',
@@ -2722,7 +2721,7 @@ const separatedGuardiansGuardian1 = {
   streetAddress: 'Kamreerintie 2',
   postalCode: '02770',
   postOffice: 'Espoo'
-}
+})
 const separatedGuardiansGuardian2 = Fixture.person({
   id: fromUuid<PersonId>('56064714-649f-457e-893a-44832936166c'),
   firstName: 'Joan',
@@ -2745,13 +2744,13 @@ const separatedGuardiansChildren = [
     postOffice: 'Espoo'
   })
 ]
-export const familyWithSeparatedGuardians = {
-  guardian: Fixture.person(separatedGuardiansGuardian1),
-  otherGuardian: Fixture.person(separatedGuardiansGuardian2),
+export const familyWithSeparatedGuardians = Fixture.family({
+  guardian: separatedGuardiansGuardian1,
+  otherGuardian: separatedGuardiansGuardian2,
   children: separatedGuardiansChildren
-}
+})
 
-const restrictedDetailsGuardian = {
+const restrictedDetailsGuardian = Fixture.person({
   id: fromUuid<PersonId>('7699f488-3fdc-11eb-b378-0242ac130002'),
   ssn: '080884-999H',
   firstName: 'Kaj Erik',
@@ -2766,9 +2765,9 @@ const restrictedDetailsGuardian = {
   nationalities: ['FI'],
   restrictedDetailsEnabled: true,
   restrictedDetailsEndDate: null
-}
+})
 
-const guardian2WithNoRestrictions = {
+const guardian2WithNoRestrictions = Fixture.person({
   id: fromUuid<PersonId>('1fd05a42-3fdd-11eb-b378-0242ac130002'),
   ssn: '130486-9980',
   firstName: 'Helga Helen',
@@ -2783,7 +2782,7 @@ const guardian2WithNoRestrictions = {
   nationalities: ['FI'],
   restrictedDetailsEnabled: false,
   restrictedDetailsEndDate: null
-}
+})
 
 const restrictedDetailsGuardiansChildren = [
   Fixture.person({
@@ -2798,11 +2797,11 @@ const restrictedDetailsGuardiansChildren = [
   })
 ]
 
-export const familyWithRestrictedDetailsGuardian = {
-  guardian: Fixture.person(restrictedDetailsGuardian),
-  otherGuardian: Fixture.person(guardian2WithNoRestrictions),
+export const familyWithRestrictedDetailsGuardian = Fixture.family({
+  guardian: restrictedDetailsGuardian,
+  otherGuardian: guardian2WithNoRestrictions,
   children: restrictedDetailsGuardiansChildren
-}
+})
 
 const deadGuardian = Fixture.person({
   id: fromUuid<PersonId>('faacfd43-878f-4a70-9e74-2051a18480e6'),
@@ -2833,10 +2832,10 @@ const deadGuardianChild = Fixture.person({
   postOffice: 'Espoo'
 })
 
-export const familyWithDeadGuardian: Family = {
+export const familyWithDeadGuardian = Fixture.family({
   guardian: deadGuardian,
   children: [deadGuardianChild]
-}
+})
 
 export const testChildZeroYearOld = Fixture.person({
   id: fromUuid<PersonId>('0909e93d-3aa8-44f8-ac30-ecd77339d849'),
@@ -3153,8 +3152,8 @@ export const voucherValueDecisionsFixture = (
   decisionHandler: null
 })
 
-export const testDaycareGroup: DevDaycareGroup = {
-  id: fromUuid('2f998c23-0f90-4afd-829b-d09ecf2f6188'),
+export const testDaycareGroup = Fixture.daycareGroup({
+  id: fromUuid<GroupId>('2f998c23-0f90-4afd-829b-d09ecf2f6188'),
   daycareId: testDaycare.id,
   name: 'Kosmiset vakiot',
   startDate: LocalDate.of(2000, 1, 1),
@@ -3162,7 +3161,7 @@ export const testDaycareGroup: DevDaycareGroup = {
   jamixCustomerNumber: null,
   aromiCustomerId: null,
   nekkuCustomerNumber: null
-}
+})
 
 /**
  *  @deprecated Use `Fixture.placement()` instead

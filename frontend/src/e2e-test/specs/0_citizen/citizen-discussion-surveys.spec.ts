@@ -56,7 +56,7 @@ let reservationData: DevCalendarEventTime
 
 beforeEach(async () => {
   await resetServiceState()
-  await Fixture.careArea(testCareArea).save()
+  await testCareArea.save()
   await Fixture.daycare({ ...testDaycare, areaId: testCareArea.id }).save()
 
   children = [testChild]

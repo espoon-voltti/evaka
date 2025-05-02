@@ -52,8 +52,8 @@ const groupId2 = randomId<GroupId>()
 beforeEach(async () => {
   await resetServiceState()
 
-  await Fixture.family(familyWithTwoGuardians).save()
-  careArea = await Fixture.careArea(testCareArea2).save()
+  await familyWithTwoGuardians.save()
+  careArea = await testCareArea2.save()
   daycare = await Fixture.daycare({
     ...testDaycare2,
     areaId: careArea.id,

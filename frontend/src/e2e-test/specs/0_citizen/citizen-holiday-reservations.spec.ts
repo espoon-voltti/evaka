@@ -92,15 +92,15 @@ beforeEach(async () => {
     mockedTime: today.toHelsinkiDateTime(LocalTime.of(12, 0))
   })
 
-  const area = await Fixture.careArea(testCareArea).save()
+  const area = await testCareArea.save()
   daycare = await Fixture.daycare({ ...testDaycare, areaId: area.id }).save()
   await Fixture.daycareGroup({
     ...testDaycareGroup,
     daycareId: daycare.id
   }).save()
 
-  const child1 = await Fixture.person(child).saveChild({ updateMockVtj: true })
-  guardian = await Fixture.person(testAdult).saveAdult({
+  const child1 = await child.saveChild({ updateMockVtj: true })
+  guardian = await testAdult.saveAdult({
     updateMockVtjWithDependants: [child1]
   })
   await Fixture.guardian(child1, guardian).save()
@@ -119,7 +119,7 @@ async function setupAnotherChild(
   startDate = LocalDate.of(2022, 1, 1),
   endDate = LocalDate.of(2036, 6, 30)
 ) {
-  const child2 = await Fixture.person(testChild2).saveChild({
+  const child2 = await testChild2.saveChild({
     updateMockVtj: true
   })
   await upsertVtjDataset({ body: vtjDependants(guardian, child2) })

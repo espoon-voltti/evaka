@@ -34,8 +34,8 @@ const mockedNow = HelsinkiDateTime.of(2022, 7, 31, 13, 0)
 beforeEach(async () => {
   await resetServiceState()
 
-  await Fixture.careArea(testCareArea).save()
-  await Fixture.daycare(testDaycare).save()
+  await testCareArea.save()
+  await testDaycare.save()
   await Fixture.family({
     guardian: testAdult,
     children: [testChildRestricted]

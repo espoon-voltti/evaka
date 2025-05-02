@@ -69,9 +69,9 @@ describe('Child Information placement info', () => {
   let unitId: DaycareId
 
   beforeEach(async () => {
-    await Fixture.careArea(testCareArea).save()
-    await Fixture.daycare(testDaycare).save()
-    await Fixture.family(familyWithTwoGuardians).save()
+    await testCareArea.save()
+    await testDaycare.save()
+    await familyWithTwoGuardians.save()
     await createDefaultServiceNeedOptions()
     await createDaycareGroups({ body: [testDaycareGroup] })
 

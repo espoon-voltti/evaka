@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Fixture, testAdult } from '../../dev-api/fixtures'
+import { testAdult } from '../../dev-api/fixtures'
 import {
   resetServiceState,
   upsertWeakCredentials
@@ -20,7 +20,7 @@ describe('Citizen authentication', () => {
 
   beforeEach(async () => {
     await resetServiceState()
-    await Fixture.person(testAdult).saveAdult({
+    await testAdult.saveAdult({
       updateMockVtjWithDependants: []
     })
     await upsertWeakCredentials({

@@ -39,13 +39,13 @@ let page: Page
 
 beforeEach(async () => {
   await resetServiceState()
-  await Fixture.careArea(testCareArea).save()
-  await Fixture.daycare(testDaycare).save()
+  await testCareArea.save()
+  await testDaycare.save()
   await Fixture.family({
     guardian: testAdult,
     children: [testChild, testChild2]
   }).save()
-  await Fixture.family(familyWithTwoGuardians).save()
+  await familyWithTwoGuardians.save()
   await createDaycareGroups({ body: [testDaycareGroup] })
 
   const admin = await Fixture.employee().admin().save()

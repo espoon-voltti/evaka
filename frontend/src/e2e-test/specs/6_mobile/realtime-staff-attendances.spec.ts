@@ -58,7 +58,7 @@ const daycareGroup2Fixture: DevDaycareGroup = {
 
 beforeEach(async () => {
   await resetServiceState()
-  await Fixture.family(familyWithTwoGuardians).save()
+  await familyWithTwoGuardians.save()
   await createDefaultServiceNeedOptions()
 
   careArea = await Fixture.careArea().save()

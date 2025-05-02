@@ -46,10 +46,10 @@ const placementEndDate = LocalDate.todayInSystemTz().addWeeks(4)
 beforeEach(async () => {
   await resetServiceState()
 
-  await Fixture.careArea(testCareArea).save()
-  await Fixture.daycare(testDaycare).save()
-  await Fixture.daycare(testDaycarePrivateVoucher).save()
-  await Fixture.family(familyWithTwoGuardians).save()
+  await testCareArea.save()
+  await testDaycare.save()
+  await testDaycarePrivateVoucher.save()
+  await familyWithTwoGuardians.save()
   daycare = testDaycare
 
   unitSupervisor = await Fixture.employee().unitSupervisor(daycare.id).save()
@@ -72,7 +72,7 @@ beforeEach(async () => {
     endDate: placementEndDate
   }).save()
 
-  child2Fixture = await Fixture.person(testChildZeroYearOld).saveChild()
+  child2Fixture = await testChildZeroYearOld.saveChild()
   child2DaycarePlacementId = randomId()
   await Fixture.placement({
     id: child2DaycarePlacementId,
@@ -82,7 +82,7 @@ beforeEach(async () => {
     endDate: placementEndDate
   }).save()
 
-  child3Fixture = await Fixture.person(testChild2).saveChild()
+  child3Fixture = await testChild2.saveChild()
   daycare2 = testDaycarePrivateVoucher
 })
 

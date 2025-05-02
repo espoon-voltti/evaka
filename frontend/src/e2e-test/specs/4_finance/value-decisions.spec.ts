@@ -46,14 +46,14 @@ const decision2DateTo = now.toLocalDate().addWeeks(5)
 
 beforeEach(async () => {
   await resetServiceState()
-  await Fixture.careArea(testCareArea).save()
-  await Fixture.daycare(testDaycare).save()
+  await testCareArea.save()
+  await testDaycare.save()
   await Fixture.family({
     guardian: testAdult,
     children: [testChild, testChild2]
   }).save()
-  await Fixture.family(familyWithTwoGuardians).save()
-  const careArea = await Fixture.careArea(testCareArea2).save()
+  await familyWithTwoGuardians.save()
+  const careArea = await testCareArea2.save()
   await Fixture.daycare({ ...testDaycare2, areaId: careArea.id }).save()
 })
 
@@ -199,7 +199,7 @@ describe('Value decisions', () => {
           childId: familyWithTwoGuardians.children[0].id
         },
         {
-          guardianId: familyWithTwoGuardians.otherGuardian.id,
+          guardianId: familyWithTwoGuardians.otherGuardian!.id,
           childId: familyWithTwoGuardians.children[0].id
         }
       ]
@@ -210,7 +210,7 @@ describe('Value decisions', () => {
     const valueDecisionDetailsPage =
       await valueDecisionsPage.openFirstValueDecision()
     await valueDecisionDetailsPage.assertPartnerName(
-      `${familyWithTwoGuardians.otherGuardian.firstName} ${familyWithTwoGuardians.otherGuardian.lastName}`
+      `${familyWithTwoGuardians.otherGuardian!.firstName} ${familyWithTwoGuardians.otherGuardian!.lastName}`
     )
   })
 

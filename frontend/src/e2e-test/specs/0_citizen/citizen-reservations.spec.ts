@@ -75,9 +75,9 @@ describe.each(envs)('Citizen attendance reservations (%s)', (env) => {
 
   beforeEach(async () => {
     await resetServiceState()
-    await Fixture.preschoolTerm(preschoolTerm2021).save()
-    await Fixture.careArea(testCareArea).save()
-    await Fixture.daycare(testDaycare).save()
+    await preschoolTerm2021.save()
+    await testCareArea.save()
+    await testDaycare.save()
 
     children = [testChild, testChild2, testChildRestricted]
     await Fixture.family({ guardian: testAdult, children }).save()
@@ -662,12 +662,12 @@ describe.each(envs)('Calendar day content (%s)', (env) => {
   async function init(options?: { placementType?: PlacementType }) {
     await resetServiceState()
 
-    await Fixture.careArea(testCareArea).save()
-    await Fixture.daycare(testDaycare).save()
-    const child = await Fixture.person(testChild2).saveChild({
+    await testCareArea.save()
+    await testDaycare.save()
+    const child = await testChild2.saveChild({
       updateMockVtj: true
     })
-    const guardian = await Fixture.person(testAdult).saveAdult({
+    const guardian = await testAdult.saveAdult({
       updateMockVtjWithDependants: [child]
     })
     await Fixture.guardian(child, guardian).save()
@@ -1168,8 +1168,8 @@ describe.each(envs)(
     beforeEach(async () => {
       const startDate = today.subMonths(4)
       await resetServiceState()
-      await Fixture.careArea(testCareArea).save()
-      await Fixture.daycare(testDaycare).save()
+      await testCareArea.save()
+      await testDaycare.save()
       await Fixture.family({
         guardian: testAdult,
         children: [testChild]
@@ -1241,8 +1241,8 @@ describe('Citizen calendar child visibility', () => {
 
   beforeEach(async () => {
     await resetServiceState()
-    await Fixture.careArea(testCareArea).save()
-    await Fixture.daycare(testDaycare).save()
+    await testCareArea.save()
+    await testDaycare.save()
     await Fixture.family({
       guardian: testAdult,
       children: [testChild, testChild2]
@@ -1328,7 +1328,7 @@ describe('Citizen calendar child visibility', () => {
   })
 
   test('If other child is in round the clock daycare, the other child is not required to fill in weekends', async () => {
-    const careArea = await Fixture.careArea(testCareArea2).save()
+    const careArea = await testCareArea2.save()
     const daycare = await Fixture.daycare({
       ...testDaycare2,
       areaId: careArea.id
@@ -1370,7 +1370,7 @@ describe('Citizen calendar child visibility', () => {
   })
 
   test('Citizen creates a reservation for a child in round the clock daycare for holidays', async () => {
-    const careArea = await Fixture.careArea(testCareArea2).save()
+    const careArea = await testCareArea2.save()
     const daycare = await Fixture.daycare({
       ...testDaycare2,
       areaId: careArea.id
@@ -1446,8 +1446,8 @@ describe('Citizen calendar visibility', () => {
 
   beforeEach(async () => {
     await resetServiceState()
-    await Fixture.careArea(testCareArea).save()
-    await Fixture.daycare(testDaycare).save()
+    await testCareArea.save()
+    await testDaycare.save()
     await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
     child = testChild
     daycareId = testDaycare.id
@@ -1532,7 +1532,7 @@ describe.each(envs)('Citizen calendar shift care reservations', (env) => {
   beforeEach(async () => {
     await resetServiceState()
     await Fixture.family({ guardian: testAdult, children: [testChild2] }).save()
-    const careArea = await Fixture.careArea(testCareArea2).save()
+    const careArea = await testCareArea2.save()
     await Fixture.daycare({ ...testDaycare2, areaId: careArea.id }).save()
 
     await createDaycarePlacements({

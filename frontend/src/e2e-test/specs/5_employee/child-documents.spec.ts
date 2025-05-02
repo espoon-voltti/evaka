@@ -51,10 +51,10 @@ describe('Employee - Child documents', () => {
   let page: Page
 
   beforeEach(async () => {
-    await Fixture.careArea(testCareArea).save()
-    await Fixture.daycare(testDaycare).save()
-    await Fixture.person(testAdult).saveAdult()
-    await Fixture.person(testChild2).saveChild()
+    await testCareArea.save()
+    await testDaycare.save()
+    await testAdult.saveAdult()
+    await testChild2.saveChild()
     await Fixture.guardian(testChild2, testAdult).save()
     admin = await Fixture.employee().admin().save()
     unitSupervisor = await Fixture.employee()
