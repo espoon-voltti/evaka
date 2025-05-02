@@ -10,6 +10,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import fi.espoo.evaka.ConstList
 import fi.espoo.evaka.NekkuEnv
 import fi.espoo.evaka.absence.AbsenceCategory
+import fi.espoo.evaka.absence.getGroupName
 import fi.espoo.evaka.daycare.DaycareMealtimes
 import fi.espoo.evaka.daycare.PreschoolTerm
 import fi.espoo.evaka.daycare.getDaycaresById
@@ -17,6 +18,7 @@ import fi.espoo.evaka.daycare.getPreschoolTerms
 import fi.espoo.evaka.daycare.isUnitOperationDay
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.ScheduleType
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.async.AsyncJob
@@ -403,6 +405,9 @@ fun createAndSendNekkuOrder(
             val nekkuOrderResult = client.createNekkuMealOrder(order)
             logger.info {
                 "Sent Nekku order for date $date for customerNumber=${nekkuDaycareCustomerMapping.customerNumber} groupId=$groupId and Nekku orders created: ${nekkuOrderResult.created}"
+            }
+            dbc.transaction { tx ->
+                tx.setNekkuReportOrderReport(order, groupId, nekkuProducts)
             }
         } else {
             logger.info {
@@ -875,3 +880,15 @@ data class NekkuOrderResult(
 )
 
 data class NekkuSpecialDietChoices(val dietId: String, val fieldId: String, val value: String)
+
+
+data class NekkuOrdersReport(
+    val deliveryDate: String,
+    val daycareId: DaycareId,
+    val customerGroupId: GroupId,
+    val mealSku: String,
+    val totalQuantity: Int,
+    val mealTime: List<NekkuProductMealTime>?,
+    val mealType: NekkuProductMealType?,
+    val mealsBySpecialDiet: String?
+)
