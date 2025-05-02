@@ -31,11 +31,12 @@ const iconWidth = 36
 
 const DatePickerWrapper = styled.div`
   position: relative;
-  display: flex;
+  display: inline-flex;
   width: ${inputWidth + iconWidth}px;
 `
+const pickerWidth = 294
 const minMargin = 16
-const overflow = 100
+const overflow = (pickerWidth / 2 + minMargin) / 2
 
 const DayPickerPositioner = styled.div<{
   openAbove?: boolean
