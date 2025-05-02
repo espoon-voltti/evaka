@@ -174,11 +174,13 @@ export default React.memo(function TemplateModal({ onClose, mode }: Props) {
   const typeOptions = useMemo(
     () =>
       documentTypes
-        .filter((type) => !type.startsWith('MIGRATED_'))
-        .filter((type) =>
-          !featureFlags.citizenChildDocumentTypes
-            ? !type.startsWith('CITIZEN_')
-            : true
+        .filter(
+          (type) =>
+            !type.startsWith('MIGRATED_') &&
+            (featureFlags.citizenChildDocumentTypes ||
+              type !== 'CITIZEN_BASIC') &&
+            (featureFlags.decisionChildDocumentTypes ||
+              type !== 'OTHER_DECISION')
         )
         .map((option) => ({
           domValue: option,

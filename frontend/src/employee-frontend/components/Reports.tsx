@@ -690,7 +690,8 @@ export default React.memo(function Reports() {
                   )
                 }
               : null,
-            reports.has('CHILD_DOCUMENT_DECISIONS')
+            reports.has('CHILD_DOCUMENT_DECISIONS') &&
+            featureFlags.decisionChildDocumentTypes
               ? {
                   name: i18n.reports.childDocumentDecisions.title,
                   item: (
