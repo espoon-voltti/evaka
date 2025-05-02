@@ -738,6 +738,8 @@ class ChildDocumentController(
                             )
                         }
 
+                    childDocumentService.schedulePdfGeneration(tx, listOf(documentId), clock.now())
+
                     updateDocumentProcessHistory(
                         tx = tx,
                         document = document,
@@ -787,6 +789,8 @@ class ChildDocumentController(
                                 clock.now(),
                             )
                         }
+
+                    childDocumentService.schedulePdfGeneration(tx, listOf(documentId), clock.now())
 
                     updateDocumentProcessHistory(
                         tx = tx,
