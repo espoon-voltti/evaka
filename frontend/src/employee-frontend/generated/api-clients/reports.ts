@@ -324,6 +324,18 @@ export async function getChildDocumentDecisionsReport(
 
 
 /**
+* Generated from fi.espoo.evaka.reports.ChildDocumentDecisionsReportController.getChildDocumentDecisionsReportNotificationCount
+*/
+export async function getChildDocumentDecisionsReportNotificationCount(): Promise<number> {
+  const { data: json } = await client.request<JsonOf<number>>({
+    url: uri`/employee/reports/child-document-decisions/notification-count`.toString(),
+    method: 'GET'
+  })
+  return json
+}
+
+
+/**
 * Generated from fi.espoo.evaka.reports.ChildDocumentsReport.getChildDocumentsReport
 */
 export async function getChildDocumentsReport(

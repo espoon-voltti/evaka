@@ -206,6 +206,7 @@ enum class Audit(
     ChildReservationStatusRead,
     ChildBasicInfoRead,
     ChildDocumentDecisionsReportRead,
+    ChildDocumentDecisionsReportNotificationsRead,
     ChildDocumentsReportRead,
     ChildDocumentsReportTemplatesRead,
     ChildSensitiveInfoRead,

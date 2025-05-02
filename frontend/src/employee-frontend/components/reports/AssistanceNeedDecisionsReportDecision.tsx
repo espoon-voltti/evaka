@@ -43,7 +43,7 @@ import {
   updateAssistanceNeedDecisionDecisionMaker
 } from '../../generated/api-clients/assistanceneed'
 
-import { AssistanceNeedDecisionReportContext } from './AssistanceNeedDecisionReportContext'
+import { ReportNotificationContext } from './ReportNotificationContext'
 
 const getAssistanceNeedDecisionResult = wrapResult(getAssistanceNeedDecision)
 const decideAssistanceNeedDecisionResult = wrapResult(
@@ -93,7 +93,7 @@ export default React.memo(function AssistanceNeedDecisionsReportDecision() {
 
   const { user } = useContext(UserContext)
   const { refreshAssistanceNeedDecisionCounts } = useContext(
-    AssistanceNeedDecisionReportContext
+    ReportNotificationContext
   )
 
   useEffect(() => {
