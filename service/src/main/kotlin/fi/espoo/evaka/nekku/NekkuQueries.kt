@@ -5,7 +5,6 @@
 package fi.espoo.evaka.nekku
 
 import fi.espoo.evaka.absence.AbsenceCategory
-import fi.espoo.evaka.daycare.getDaycareGroup
 import fi.espoo.evaka.decision.logger
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ChildId
@@ -569,3 +568,31 @@ fun Database.Read.getNekkuSpecialDietChoices(childId: ChildId): List<NekkuSpecia
             )
         }
         .toList<NekkuSpecialDietChoices>()
+
+fun Database.Transaction.setNekkuReportOrderReport(
+                                    nekkuOrders: NekkuClient.NekkuOrders,
+                                   groupId: GroupId,
+                                   nekkuProducts: List<NekkuProduct> ) {
+
+    val daycareId = getDaycareIdByGroup(groupId)
+
+    for (item in nekkuOrders.orders.first().items) {
+
+        val product = nekkuProducts.find { it.sku == item.sku } ?: error("Product.sku")
+        val report = NekkuOrdersReport(
+            nekkuOrders.orders.first().deliveryDate,
+            daycareId,
+            groupId,
+            item.sku,
+            item.quantity,
+            product.mealTime,
+            product.mealType,
+            null)
+
+        report.toString()
+        //TODO tallenna report kantaan
+    }
+
+}
+
+
