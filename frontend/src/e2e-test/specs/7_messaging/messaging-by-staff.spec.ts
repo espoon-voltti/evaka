@@ -77,12 +77,12 @@ beforeEach(async () => {
 
   staff = await Fixture.employee()
     .staff(testDaycare.id)
-    .withGroupAcl(testDaycareGroup.id, mockedDateAt10, mockedDateAt10)
+    .groupAcl(testDaycareGroup.id, mockedDateAt10, mockedDateAt10)
     .save()
 
   unitSupervisor = await Fixture.employee()
-    .withDaycareAcl(testDaycare.id, 'UNIT_SUPERVISOR')
-    .withDaycareAcl(testPreschool.id, 'UNIT_SUPERVISOR')
+    .unitSupervisor(testDaycare.id)
+    .unitSupervisor(testPreschool.id)
     .save()
 
   const unitId = testDaycare.id
@@ -305,7 +305,7 @@ describe('Sending and receiving messages', () => {
     }).save()
     const futureStaff = await Fixture.employee()
       .staff(testDaycare.id)
-      .withGroupAcl(secondGroup.id, mockedDateAt10, mockedDateAt10)
+      .groupAcl(secondGroup.id, mockedDateAt10, mockedDateAt10)
       .save()
     const daycarePlacementFixture1 = await Fixture.placement({
       childId,
@@ -392,7 +392,7 @@ describe('Sending and receiving sensitive messages', () => {
   test('VEO sends sensitive message, citizen needs strong auth and after strong auth sees message', async () => {
     staff = await Fixture.employee()
       .specialEducationTeacher(testDaycare.id)
-      .withGroupAcl(testDaycareGroup.id)
+      .groupAcl(testDaycareGroup.id)
       .save()
     // create messaging account for newly created VEO account
     await createMessageAccounts()

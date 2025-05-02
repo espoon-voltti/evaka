@@ -125,7 +125,7 @@ beforeEach(async () => {
     email: 'yy@example.com',
     roles: []
   })
-    .withDaycareAcl(testDaycare.id, 'UNIT_SUPERVISOR')
+    .unitSupervisor(testDaycare.id)
     .save()
 
   const staff = await Fixture.employee({
@@ -134,10 +134,10 @@ beforeEach(async () => {
     email: 'zz@example.com',
     roles: []
   })
-    .withDaycareAcl(testDaycare.id, 'STAFF')
-    .withGroupAcl(daycareGroup.id, mockedDateAt10)
-    .withGroupAcl(daycareGroup2.id, mockedDateAt10)
-    .withGroupAcl(daycareGroup3.id, mockedDateAt10)
+    .staff(testDaycare.id)
+    .groupAcl(daycareGroup.id, mockedDateAt10)
+    .groupAcl(daycareGroup2.id, mockedDateAt10)
+    .groupAcl(daycareGroup3.id, mockedDateAt10)
     .save()
 
   const staff2 = await Fixture.employee({
@@ -146,7 +146,7 @@ beforeEach(async () => {
     email: 'aa@example.com',
     roles: []
   })
-    .withDaycareAcl(testDaycare.id, 'STAFF')
+    .staff(testDaycare.id)
     .save()
 
   await Fixture.employeePin({ userId: employee.id, pin }).save()

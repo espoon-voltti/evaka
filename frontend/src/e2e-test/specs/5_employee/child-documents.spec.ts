@@ -1009,7 +1009,7 @@ describe('Employee - Child documents - unit groups page', () => {
   test('staff can create child documents for only own group', async () => {
     const user = await Fixture.employee()
       .staff(unit1.id)
-      .withGroupAcl(group2.id)
+      .groupAcl(group2.id)
       .save()
 
     const page = await Page.open({

@@ -69,15 +69,15 @@ beforeEach(async () => {
     lastName: 'Ankka'
   })
     .staff(testDaycare2.id)
-    .withGroupAcl(testDaycareGroup.id)
+    .groupAcl(testDaycareGroup.id)
     .save()
   mikki = await Fixture.employee({
     firstName: 'Mikki',
     lastName: 'Hiiri'
   })
     .staff(testDaycare2.id)
-    .withGroupAcl(testDaycareGroup.id)
-    .withGroupAcl(daycareGroup2Fixture.id)
+    .groupAcl(testDaycareGroup.id)
+    .groupAcl(daycareGroup2Fixture.id)
     .save()
   await Fixture.employeePin({ userId: aku.id, pin }).save()
   await Fixture.employeePin({ userId: mikki.id, pin }).save()

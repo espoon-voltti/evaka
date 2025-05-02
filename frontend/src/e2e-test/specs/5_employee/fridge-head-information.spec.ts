@@ -43,7 +43,7 @@ const childZeroYo = Fixture.person({
   dateOfBirth: mockToday.subWeeks(9),
   firstName: 'Vauva',
   id: fromUuid<PersonId>('023c3d55-3bd5-494b-8996-60a3643fe94b')
-}).data
+})
 
 beforeEach(async () => {
   await resetServiceState()

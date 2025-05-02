@@ -43,7 +43,7 @@ const codebtor = Fixture.person({
   firstName: 'Code',
   lastName: 'Btor',
   ssn: '010177-1234'
-}).data
+})
 
 let financeAdmin: DevEmployee
 

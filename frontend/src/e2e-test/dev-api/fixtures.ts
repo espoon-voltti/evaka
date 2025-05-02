@@ -175,9 +175,9 @@ export const uuidv4 = (): string =>
 type SemiPartial<T, K extends keyof T> = Partial<T> & Pick<T, K>
 
 export class Fixture {
-  static daycare(initial: SemiPartial<DevDaycare, 'areaId'>): DaycareBuilder {
+  static daycare(initial: SemiPartial<DevDaycare, 'areaId'>) {
     const id = uniqueLabel()
-    return new DaycareBuilder({
+    const value: DevDaycare = {
       id: randomId(),
       name: `daycare_${id}`,
       type: ['CENTRE'],
@@ -257,14 +257,19 @@ export class Fixture {
       mealtimeEveningSnack: null,
       withSchool: false,
       ...initial
-    })
+    }
+    return {
+      ...value,
+      async save() {
+        await createDaycares({ body: [value] })
+        return value
+      }
+    }
   }
 
-  static daycareGroup(
-    initial: SemiPartial<DevDaycareGroup, 'daycareId'>
-  ): DaycareGroupBuilder {
+  static daycareGroup(initial: SemiPartial<DevDaycareGroup, 'daycareId'>) {
     const id = uniqueLabel()
-    return new DaycareGroupBuilder({
+    const value: DevDaycareGroup = {
       id: randomId(),
       name: `daycareGroup_${id}`,
       startDate: LocalDate.of(2020, 1, 1),
@@ -273,19 +278,33 @@ export class Fixture {
       aromiCustomerId: null,
       nekkuCustomerNumber: null,
       ...initial
-    })
+    }
+    return {
+      ...value,
+      async save() {
+        await createDaycareGroups({ body: [value] })
+        return value
+      }
+    }
   }
 
-  static careArea(initial?: Partial<DevCareArea>): CareAreaBuilder {
+  static careArea(initial?: Partial<DevCareArea>) {
     const id = uniqueLabel()
-    return new CareAreaBuilder({
+    const value: DevCareArea = {
       id: randomId(),
       name: `Care Area ${id}`,
       shortName: `careArea_${id}`,
       areaCode: 2230,
       subCostCenter: `subCostCenter_${id}`,
       ...initial
-    })
+    }
+    return {
+      ...value,
+      async save() {
+        await createCareAreas({ body: [value] })
+        return value
+      }
+    }
   }
 
   static preschoolTerm(
@@ -297,20 +316,33 @@ export class Fixture {
       | 'swedishPreschool'
       | 'termBreaks'
     >
-  ): PreschoolTermBuilder {
-    return new PreschoolTermBuilder({
+  ) {
+    const value: DevPreschoolTerm = {
       id: randomId(),
       ...initial
-    })
+    }
+    return {
+      ...value,
+      async save() {
+        await createPreschoolTerm({ body: value })
+        return value
+      }
+    }
   }
 
-  static clubTerm(initial: DevClubTerm): ClubTermBuilder {
-    return new ClubTermBuilder(initial)
+  static clubTerm(initial: DevClubTerm) {
+    return {
+      ...initial,
+      async save() {
+        await createClubTerm({ body: initial })
+        return initial
+      }
+    }
   }
 
-  static person(initial?: Partial<DevPerson>): PersonBuilder {
+  static person(initial?: Partial<DevPerson>) {
     const id = uniqueLabel()
-    return new PersonBuilder({
+    const value: DevPerson = {
       id: randomId(),
       dateOfBirth: LocalDate.of(2020, 5, 5),
       dateOfDeath: null,
@@ -342,16 +374,129 @@ export class Fixture {
       ophPersonOid: null,
       updatedFromVtj: null,
       ...initial
-    })
+    }
+
+    const updateMockVtj = async (
+      dependants: DevPerson[]
+    ): Promise<DevPerson> => {
+      const person = value
+      const dependantSsns = dependants.flatMap((d) => d.ssn ?? [])
+      if (dependantSsns.length !== dependants.length) {
+        throw new Error('All dependants must have SSNs')
+      }
+      await upsertVtjDataset({
+        body: {
+          persons: [
+            {
+              firstNames: person.firstName,
+              lastName: person.lastName,
+              socialSecurityNumber: person.ssn || '',
+              address: {
+                streetAddress: person.streetAddress || '',
+                postalCode: person.postalCode || '',
+                postOffice: person.postOffice || '',
+                streetAddressSe: person.streetAddress || '',
+                postOfficeSe: person.postalCode || ''
+              },
+              dateOfDeath: person.dateOfDeath ?? null,
+              nationalities: [],
+              nativeLanguage: null,
+              residenceCode:
+                person.residenceCode ??
+                `${person.streetAddress ?? ''}${person.postalCode ?? ''}${
+                  person.postOffice ?? ''
+                }`.replace(' ', ''),
+              municipalityOfResidence: person.municipalityOfResidence,
+              restrictedDetails: {
+                enabled: person.restrictedDetailsEnabled || false,
+                endDate: person.restrictedDetailsEndDate || null
+              }
+            }
+          ],
+          guardianDependants:
+            dependantSsns.length > 0
+              ? {
+                  [person.ssn || '']: dependantSsns
+                }
+              : {}
+        }
+      })
+      return value
+    }
+
+    return {
+      ...value,
+      async saveAdult(
+        opts: {
+          updateMockVtjWithDependants?: DevPerson[]
+          updateWeakCredentials?: { username: string; password: string }
+        } = {}
+      ) {
+        await createPerson({ body: value, type: 'ADULT' })
+        if (opts.updateMockVtjWithDependants !== undefined) {
+          await updateMockVtj(opts.updateMockVtjWithDependants)
+          if (value.ssn) {
+            await upsertDummyIdpUser({
+              ssn: value.ssn,
+              commonName: `${value.firstName} ${value.lastName}`,
+              givenName: value.firstName,
+              surname: value.lastName,
+              comment: `${opts.updateMockVtjWithDependants.length} huollettavaa`
+            })
+          }
+        }
+        if (opts.updateWeakCredentials) {
+          await upsertWeakCredentials({
+            id: value.id,
+            body: opts.updateWeakCredentials
+          })
+        }
+        return value
+      },
+
+      async saveChild(opts: { updateMockVtj?: boolean } = {}) {
+        await createPerson({ body: value, type: 'CHILD' })
+        if (opts.updateMockVtj) {
+          await updateMockVtj([])
+        }
+        return value
+      }
+    }
   }
 
-  static family(initial: Family): FamilyBuilder {
-    return new FamilyBuilder(initial)
+  static family(value: Family) {
+    return {
+      ...value,
+      async save() {
+        for (const child of value.children) {
+          await Fixture.person(child).saveChild({ updateMockVtj: true })
+        }
+        await Fixture.person(value.guardian).saveAdult({
+          updateMockVtjWithDependants: value.children
+        })
+        if (value.otherGuardian) {
+          await Fixture.person(value.otherGuardian).saveAdult({
+            updateMockVtjWithDependants: value.children
+          })
+        }
+      }
+    }
   }
 
-  static employee(initial?: Partial<DevEmployee>): EmployeeBuilder {
+  static employee(
+    initial?: Partial<DevEmployee>,
+    unitRoles: {
+      unitId: DaycareId
+      role: ScopedRole
+    }[] = [],
+    groupAcl: {
+      groupId: GroupId
+      createdAt?: HelsinkiDateTime
+      updatedAt?: HelsinkiDateTime
+    }[] = []
+  ) {
     const id = uniqueLabel()
-    return new EmployeeBuilder({
+    const value: DevEmployee = {
       id: randomId(),
       email: `email_${id}@evaka.test`,
       externalId: `espoo-ad:${randomId()}`,
@@ -363,7 +508,108 @@ export class Fixture {
       lastLogin: HelsinkiDateTime.now(),
       preferredFirstName: null,
       ...initial
-    })
+    }
+    const save = async () => {
+      await createEmployee({ body: value })
+
+      for (const { unitId, role } of unitRoles) {
+        if (!value.externalId)
+          throw new Error("Can't add ACL without externalId")
+        await addAclRoleForDaycare({
+          daycareId: unitId,
+          body: { externalId: value.externalId, role }
+        })
+      }
+
+      if (groupAcl.length > 0) {
+        await createDaycareGroupAclRows({
+          body: groupAcl.map(({ groupId, createdAt, updatedAt }) => ({
+            groupId,
+            employeeId: value.id,
+            created: createdAt ?? HelsinkiDateTime.now(),
+            updated: updatedAt ?? HelsinkiDateTime.now()
+          }))
+        })
+      }
+      return value
+    }
+    return {
+      ...value,
+      admin() {
+        return Fixture.employee(
+          { ...value, roles: ['ADMIN'] },
+          unitRoles,
+          groupAcl
+        )
+      },
+      financeAdmin() {
+        return Fixture.employee(
+          { ...value, roles: ['FINANCE_ADMIN'] },
+          unitRoles,
+          groupAcl
+        )
+      },
+      director() {
+        return Fixture.employee(
+          { ...value, roles: ['DIRECTOR'] },
+          unitRoles,
+          groupAcl
+        )
+      },
+      reportViewer() {
+        return Fixture.employee(
+          { ...value, roles: ['REPORT_VIEWER'] },
+          unitRoles,
+          groupAcl
+        )
+      },
+      serviceWorker() {
+        return Fixture.employee(
+          { ...value, roles: ['SERVICE_WORKER'] },
+          unitRoles,
+          groupAcl
+        )
+      },
+      messenger() {
+        return Fixture.employee(
+          { ...value, roles: ['MESSAGING'] },
+          unitRoles,
+          groupAcl
+        )
+      },
+      unitSupervisor(unitId: DaycareId) {
+        return Fixture.employee(
+          value,
+          [...unitRoles, { unitId, role: 'UNIT_SUPERVISOR' }],
+          groupAcl
+        )
+      },
+      staff(unitId: DaycareId) {
+        return Fixture.employee(
+          value,
+          [...unitRoles, { unitId, role: 'STAFF' }],
+          groupAcl
+        )
+      },
+      specialEducationTeacher(unitId: DaycareId) {
+        return Fixture.employee(
+          value,
+          [...unitRoles, { unitId, role: 'SPECIAL_EDUCATION_TEACHER' }],
+          groupAcl
+        )
+      },
+      groupAcl(
+        groupId: GroupId,
+        createdAt?: HelsinkiDateTime,
+        updatedAt?: HelsinkiDateTime
+      ) {
+        return Fixture.employee(value, unitRoles, [
+          ...groupAcl,
+          { groupId, createdAt, updatedAt }
+        ])
+      },
+      save
+    }
   }
 
   static decision(
@@ -371,32 +617,46 @@ export class Fixture {
       DecisionRequest,
       'employeeId' | 'applicationId' | 'unitId'
     >
-  ): DecisionBuilder {
-    return new DecisionBuilder({
+  ) {
+    const value: DecisionRequest = {
       id: randomId(),
       type: 'DAYCARE',
       startDate: LocalDate.of(2020, 1, 1),
       endDate: LocalDate.of(2021, 1, 1),
       status: 'PENDING',
       ...initial
-    })
+    }
+    return {
+      ...value,
+      async save() {
+        await createDecisions({ body: [value] })
+        return value
+      }
+    }
   }
 
-  static employeePin(initial: Partial<DevEmployeePin>): EmployeePinBuilder {
-    return new EmployeePinBuilder({
+  static employeePin(initial: Partial<DevEmployeePin>) {
+    const value: DevEmployeePin = {
       id: randomId(),
       userId: null,
       pin: uniqueLabel(4),
       employeeExternalId: null,
       locked: false,
       ...initial
-    })
+    }
+    return {
+      ...value,
+      async save() {
+        await createEmployeePins({ body: [value] })
+        return value
+      }
+    }
   }
 
   static pedagogicalDocument(
     initial: SemiPartial<DevPedagogicalDocument, 'childId'>
-  ): PedagogicalDocumentBuilder {
-    return new PedagogicalDocumentBuilder({
+  ) {
+    const value: DevPedagogicalDocument = {
       id: randomId(),
       description: 'Test description',
       createdAt: HelsinkiDateTime.now(),
@@ -404,13 +664,18 @@ export class Fixture {
       modifiedAt: HelsinkiDateTime.now(),
       modifiedBy: systemInternalUser.id,
       ...initial
-    })
+    }
+    return {
+      ...value,
+      async save() {
+        await createPedagogicalDocuments({ body: [value] })
+        return value
+      }
+    }
   }
 
-  static placement(
-    initial: SemiPartial<DevPlacement, 'childId' | 'unitId'>
-  ): PlacementBuilder {
-    return new PlacementBuilder({
+  static placement(initial: SemiPartial<DevPlacement, 'childId' | 'unitId'>) {
+    const value: DevPlacement = {
       id: randomId(),
       type: 'DAYCARE',
       startDate: LocalDate.todayInSystemTz(),
@@ -419,7 +684,17 @@ export class Fixture {
       terminatedBy: null,
       terminationRequestedDate: null,
       ...initial
-    })
+    }
+    return {
+      ...value,
+      dateRange() {
+        return new FiniteDateRange(value.startDate, value.endDate)
+      },
+      async save() {
+        await createDaycarePlacements({ body: [value] })
+        return value
+      }
+    }
   }
 
   static groupPlacement(
@@ -427,17 +702,22 @@ export class Fixture {
       DevDaycareGroupPlacement,
       'daycareGroupId' | 'daycarePlacementId' | 'startDate' | 'endDate'
     >
-  ): GroupPlacementBuilder {
-    return new GroupPlacementBuilder({
+  ) {
+    const value: DevDaycareGroupPlacement = {
       id: randomId(),
       ...initial
-    })
+    }
+    return {
+      ...value,
+      async save() {
+        await createDaycareGroupPlacement({ body: [value] })
+        return value
+      }
+    }
   }
 
-  static backupCare(
-    initial: SemiPartial<DevBackupCare, 'childId' | 'unitId'>
-  ): BackupCareBuilder {
-    return new BackupCareBuilder({
+  static backupCare(initial: SemiPartial<DevBackupCare, 'childId' | 'unitId'>) {
+    const value: DevBackupCare = {
       id: randomId(),
       groupId: null,
       period: new FiniteDateRange(
@@ -445,7 +725,14 @@ export class Fixture {
         LocalDate.todayInSystemTz()
       ),
       ...initial
-    })
+    }
+    return {
+      ...value,
+      async save() {
+        await createBackupCares({ body: [value] })
+        return value
+      }
+    }
   }
 
   static serviceNeed(
@@ -453,8 +740,8 @@ export class Fixture {
       DevServiceNeed,
       'placementId' | 'optionId' | 'confirmedBy'
     >
-  ): ServiceNeedBuilder {
-    return new ServiceNeedBuilder({
+  ) {
+    const value: DevServiceNeed = {
       id: randomId(),
       startDate: LocalDate.todayInSystemTz(),
       endDate: LocalDate.todayInSystemTz(),
@@ -462,15 +749,19 @@ export class Fixture {
       partWeek: false,
       confirmedAt: HelsinkiDateTime.now(),
       ...initial
-    })
+    }
+    return {
+      ...value,
+      async save() {
+        await createServiceNeeds({ body: [value] })
+        return value
+      }
+    }
   }
 
-  static serviceNeedOption(
-    initial?: Partial<ServiceNeedOption>
-  ): ServiceNeedOptionBuilder {
+  static serviceNeedOption(initial?: Partial<ServiceNeedOption>) {
     const id = uniqueLabel()
-
-    return new ServiceNeedOptionBuilder({
+    const value: ServiceNeedOption = {
       id: randomId(),
       daycareHoursPerWeek: 0,
       contractDaysPerMonth: null,
@@ -496,13 +787,18 @@ export class Fixture {
       validTo: null,
       showForCitizen: true,
       ...initial
-    })
+    }
+    return {
+      ...value,
+      async save() {
+        await createServiceNeedOption({ body: [value] })
+        return value
+      }
+    }
   }
 
-  static childAdditionalInfo(
-    initial: SemiPartial<DevChild, 'id'>
-  ): ChildBuilder {
-    return new ChildBuilder({
+  static childAdditionalInfo(initial: SemiPartial<DevChild, 'id'>) {
+    const value: DevChild = {
       additionalInfo: '',
       allergies: '',
       diet: '',
@@ -514,13 +810,18 @@ export class Fixture {
       nekkuDiet: null,
       eatsBreakfast: true,
       ...initial
-    })
+    }
+    return {
+      ...value,
+      async save() {
+        await createChildren({ body: [value] })
+        return value
+      }
+    }
   }
 
-  static assistanceFactor(
-    initial: SemiPartial<AssistanceFactor, 'childId'>
-  ): AssistanceFactorBuilder {
-    return new AssistanceFactorBuilder({
+  static assistanceFactor(initial: SemiPartial<AssistanceFactor, 'childId'>) {
+    const value: AssistanceFactor = {
       id: randomId(),
       capacityFactor: 1.0,
       validDuring: new FiniteDateRange(
@@ -530,13 +831,18 @@ export class Fixture {
       modified: HelsinkiDateTime.now(),
       modifiedBy: systemInternalUser,
       ...initial
-    })
+    }
+    return {
+      ...value,
+      async save() {
+        await createAssistanceFactors({ body: [value] })
+        return value
+      }
+    }
   }
 
-  static daycareAssistance(
-    initial: SemiPartial<DaycareAssistance, 'childId'>
-  ): DaycareAssistanceBuilder {
-    return new DaycareAssistanceBuilder({
+  static daycareAssistance(initial: SemiPartial<DaycareAssistance, 'childId'>) {
+    const value: DaycareAssistance = {
       id: randomId(),
       level: 'GENERAL_SUPPORT',
       validDuring: new FiniteDateRange(
@@ -546,13 +852,20 @@ export class Fixture {
       modified: HelsinkiDateTime.now(),
       modifiedBy: systemInternalUser,
       ...initial
-    })
+    }
+    return {
+      ...value,
+      async save() {
+        await createDaycareAssistances({ body: [value] })
+        return value
+      }
+    }
   }
 
   static preschoolAssistance(
     initial: SemiPartial<PreschoolAssistance, 'childId'>
-  ): PreschoolAssistanceBuilder {
-    return new PreschoolAssistanceBuilder({
+  ) {
+    const value: PreschoolAssistance = {
       id: randomId(),
       level: 'SPECIAL_SUPPORT',
       validDuring: new FiniteDateRange(
@@ -562,13 +875,20 @@ export class Fixture {
       modified: HelsinkiDateTime.now(),
       modifiedBy: systemInternalUser,
       ...initial
-    })
+    }
+    return {
+      ...value,
+      async save() {
+        await createPreschoolAssistances({ body: [value] })
+        return value
+      }
+    }
   }
 
   static otherAssistanceMeasure(
     initial: SemiPartial<OtherAssistanceMeasure, 'childId'>
-  ): OtherAssistanceMeasureBuilder {
-    return new OtherAssistanceMeasureBuilder({
+  ) {
+    const value: OtherAssistanceMeasure = {
       id: randomId(),
       type: 'TRANSPORT_BENEFIT',
       validDuring: new FiniteDateRange(
@@ -578,13 +898,20 @@ export class Fixture {
       modified: HelsinkiDateTime.now(),
       modifiedBy: systemInternalUser,
       ...initial
-    })
+    }
+    return {
+      ...value,
+      async save() {
+        await createOtherAssistanceMeasures({ body: [value] })
+        return value
+      }
+    }
   }
 
   static assistanceNeedDecision(
     initial: SemiPartial<DevAssistanceNeedDecision, 'childId'>
-  ): AssistanceNeedDecisionBuilder {
-    return new AssistanceNeedDecisionBuilder({
+  ) {
+    const value: DevAssistanceNeedDecision = {
       id: randomId(),
       assistanceLevels: ['SPECIAL_ASSISTANCE'],
       careMotivation: null,
@@ -642,13 +969,20 @@ export class Fixture {
       unreadGuardianIds: null,
       annulmentReason: '',
       ...initial
-    })
+    }
+    return {
+      ...value,
+      async save() {
+        await createAssistanceNeedDecisions({ body: [value] })
+        return value
+      }
+    }
   }
 
   static preFilledAssistanceNeedDecision(
     initial: SemiPartial<DevAssistanceNeedDecision, 'childId'>
-  ): AssistanceNeedDecisionBuilder {
-    return new AssistanceNeedDecisionBuilder({
+  ) {
+    const value: DevAssistanceNeedDecision = {
       id: randomId(),
       assistanceLevels: ['ENHANCED_ASSISTANCE'],
       careMotivation: 'Care motivation text',
@@ -706,13 +1040,20 @@ export class Fixture {
       unreadGuardianIds: null,
       annulmentReason: '',
       ...initial
-    })
+    }
+    return {
+      ...value,
+      async save() {
+        await createAssistanceNeedDecisions({ body: [value] })
+        return value
+      }
+    }
   }
 
   static assistanceNeedPreschoolDecision(
     initial: SemiPartial<DevAssistanceNeedPreschoolDecision, 'childId'>
-  ): AssistanceNeedPreschoolDecisionBuilder {
-    return new AssistanceNeedPreschoolDecisionBuilder({
+  ) {
+    const value: DevAssistanceNeedPreschoolDecision = {
       id: randomId(),
       decisionNumber: 1000,
       status: 'DRAFT',
@@ -760,35 +1101,113 @@ export class Fixture {
         decisionMakerTitle: ''
       },
       ...initial
-    })
+    }
+    return {
+      ...value,
+      async save() {
+        await createAssistanceNeedPreschoolDecisions({ body: [value] })
+        return value
+      },
+      with(update: Partial<DevAssistanceNeedPreschoolDecision>) {
+        return Fixture.assistanceNeedPreschoolDecision({ ...value, ...update })
+      },
+      withGuardian(guardianId: PersonId) {
+        return Fixture.assistanceNeedPreschoolDecision({
+          ...value,
+          form: {
+            ...value.form,
+            guardianInfo: [
+              ...value.form.guardianInfo,
+              {
+                id: randomId(),
+                personId: guardianId,
+                name: '',
+                isHeard: false,
+                details: ''
+              }
+            ]
+          }
+        })
+      },
+      withForm(form: Partial<AssistanceNeedPreschoolDecisionForm>) {
+        return Fixture.assistanceNeedPreschoolDecision({
+          ...value,
+          form: {
+            ...value.form,
+            ...form
+          }
+        })
+      },
+      withRequiredFieldsFilled(
+        unitId: DaycareId,
+        preparerId: EmployeeId,
+        decisionMakerId: EmployeeId
+      ) {
+        return Fixture.assistanceNeedPreschoolDecision({
+          ...value,
+          form: {
+            ...value.form,
+            type: 'NEW',
+            validFrom: LocalDate.of(2022, 8, 1),
+            selectedUnit: unitId,
+            primaryGroup: 'Perhoset',
+            decisionBasis: 'Perustelu',
+            basisDocumentPedagogicalReport: true,
+            guardiansHeardOn: LocalDate.of(2022, 8, 1),
+            guardianInfo: value.form.guardianInfo.map((g) => ({
+              ...g,
+              isHeard: true,
+              details: 'kasvotusten'
+            })),
+            viewOfGuardians: 'ok',
+            preparer1EmployeeId: preparerId,
+            preparer1Title: 'Käsittelijä',
+            decisionMakerEmployeeId: decisionMakerId,
+            decisionMakerTitle: 'Päättäjä'
+          }
+        })
+      }
+    }
   }
 
-  static daycareCaretakers(
-    initial: SemiPartial<Caretaker, 'groupId'>
-  ): DaycareCaretakersBuilder {
-    return new DaycareCaretakersBuilder({
+  static daycareCaretakers(initial: SemiPartial<Caretaker, 'groupId'>) {
+    const value: Caretaker = {
       amount: 1,
       startDate: LocalDate.todayInSystemTz(),
       endDate: null,
       ...initial
-    })
+    }
+    return {
+      ...value,
+      async save() {
+        await createDaycareCaretakers({ body: [value] })
+        return value
+      }
+    }
   }
 
   static childAttendance(
     initial: SemiPartial<DevChildAttendance, 'childId' | 'unitId'>
-  ): ChildAttendanceBuilder {
-    return new ChildAttendanceBuilder({
+  ) {
+    const value: DevChildAttendance = {
       date: LocalDate.todayInHelsinkiTz(),
       arrived: LocalTime.nowInHelsinkiTz(),
       departed: LocalTime.nowInHelsinkiTz(),
       modifiedAt: HelsinkiDateTime.now(),
       modifiedBy: systemInternalUser.id,
       ...initial
-    })
+    }
+    return {
+      ...value,
+      async save() {
+        await postAttendances({ body: [value] })
+        return value
+      }
+    }
   }
 
-  static feeThresholds(initial?: Partial<FeeThresholds>): FeeThresholdBuilder {
-    return new FeeThresholdBuilder({
+  static feeThresholds(initial?: Partial<FeeThresholds>) {
+    const value: FeeThresholds = {
       validDuring: new DateRange(LocalDate.of(2020, 1, 1), null),
       maxFee: 10000,
       minFee: 1000,
@@ -815,13 +1234,18 @@ export class Fixture {
       temporaryFeeSibling: 1500,
       temporaryFeeSiblingPartDay: 800,
       ...initial
-    })
+    }
+    return {
+      ...value,
+      async save() {
+        await createFeeThresholds({ body: value })
+        return value
+      }
+    }
   }
 
-  static income(
-    initial: SemiPartial<DevIncome, 'personId' | 'modifiedBy'>
-  ): IncomeBuilder {
-    return new IncomeBuilder({
+  static income(initial: SemiPartial<DevIncome, 'personId' | 'modifiedBy'>) {
+    const value: DevIncome = {
       id: randomId(),
       validFrom: LocalDate.todayInSystemTz(),
       validTo: LocalDate.todayInSystemTz().addYears(1),
@@ -838,13 +1262,18 @@ export class Fixture {
       isEntrepreneur: false,
       worksAtEcha: false,
       ...initial
-    })
+    }
+    return {
+      ...value,
+      async save() {
+        await createIncome({ body: value })
+        return value
+      }
+    }
   }
 
-  static incomeStatement(
-    initial: SemiPartial<DevIncomeStatement, 'personId'>
-  ): IncomeStatementBuilder {
-    return new IncomeStatementBuilder({
+  static incomeStatement(initial: SemiPartial<DevIncomeStatement, 'personId'>) {
+    const value: DevIncomeStatement = {
       id: randomId(),
       createdAt: HelsinkiDateTime.now(),
       modifiedAt: HelsinkiDateTime.now(),
@@ -860,35 +1289,57 @@ export class Fixture {
       handledAt: null,
       handlerId: null,
       ...initial
-    })
+    }
+    return {
+      ...value,
+      async save() {
+        await createIncomeStatement({ body: value })
+        return value
+      }
+    }
   }
 
   static incomeNotification(
     initial: SemiPartial<IncomeNotification, 'receiverId'>
-  ): IncomeNotificationBuilder {
-    return new IncomeNotificationBuilder({
+  ) {
+    const value: IncomeNotification = {
       notificationType: 'INITIAL_EMAIL',
       created: HelsinkiDateTime.now(),
       ...initial
-    })
+    }
+    return {
+      ...value,
+      async save() {
+        await createIncomeNotification({ body: value })
+        return value
+      }
+    }
   }
 
   static placementPlan(
     initial: SemiPartial<PlacementPlan, 'unitId'> & {
       applicationId: ApplicationId
     }
-  ): PlacementPlanBuilder {
-    return new PlacementPlanBuilder({
+  ) {
+    const value: PlacementPlan & { applicationId: ApplicationId } = {
       periodStart: LocalDate.todayInSystemTz(),
       periodEnd: LocalDate.todayInSystemTz(),
       preschoolDaycarePeriodStart: null,
       preschoolDaycarePeriodEnd: null,
       ...initial
-    })
+    }
+    return {
+      ...value,
+      async save() {
+        const { applicationId, ...body } = value
+        await createPlacementPlan({ applicationId, body })
+        return value
+      }
+    }
   }
 
-  static holidayPeriod(initial?: Partial<HolidayPeriod>): HolidayPeriodBuilder {
-    return new HolidayPeriodBuilder({
+  static holidayPeriod(initial?: Partial<HolidayPeriod>) {
+    const value: HolidayPeriod = {
       id: randomId(),
       period: new FiniteDateRange(
         LocalDate.todayInSystemTz(),
@@ -897,13 +1348,19 @@ export class Fixture {
       reservationsOpenOn: LocalDate.todayInSystemTz(),
       reservationDeadline: LocalDate.todayInSystemTz(),
       ...initial
-    })
+    }
+    return {
+      ...value,
+      async save() {
+        const { id, ...body } = value
+        await createHolidayPeriod({ id, body })
+        return value
+      }
+    }
   }
 
-  static holidayQuestionnaire(
-    initial?: Partial<FixedPeriodQuestionnaire>
-  ): HolidayQuestionnaireBuilder {
-    return new HolidayQuestionnaireBuilder({
+  static holidayQuestionnaire(initial?: Partial<FixedPeriodQuestionnaire>) {
+    const value: FixedPeriodQuestionnaire = {
       id: randomId(),
       type: 'FIXED_PERIOD',
       absenceType: 'OTHER_ABSENCE',
@@ -921,40 +1378,69 @@ export class Fixture {
       periodOptionLabel: { fi: '', sv: '', en: '' },
       requiresStrongAuth: false,
       ...initial
-    })
+    }
+    return {
+      ...value,
+      async save() {
+        const { id, ...body } = value
+        await createHolidayQuestionnaire({ id, body })
+        return value
+      }
+    }
   }
 
   static guardian(child: DevPerson, guardian: DevPerson) {
-    return new GuardianBuilder({
+    const value = {
       childId: child.id,
       guardianId: guardian.id
-    })
+    }
+    return {
+      ...value,
+      async save() {
+        await insertGuardians({ body: [value] })
+        return value
+      }
+    }
   }
 
   static fridgeChild(
     initial: SemiPartial<DevFridgeChild, 'headOfChild' | 'childId'>
   ) {
-    return new FridgeChildBuilder({
+    const value: DevFridgeChild = {
       id: randomId(),
       startDate: LocalDate.of(2020, 1, 1),
       endDate: LocalDate.of(2020, 12, 31),
       conflict: false,
       ...initial
-    })
+    }
+    return {
+      ...value,
+      async save() {
+        await createFridgeChild({ body: [value] })
+        return value
+      }
+    }
   }
 
   static staffOccupancyCoefficient(unitId: DaycareId, employeeId: EmployeeId) {
-    return new StaffOccupancyCoefficientBuilder({
+    const value: DevUpsertStaffOccupancyCoefficient = {
       coefficient: 7,
       employeeId,
       unitId
-    })
+    }
+    return {
+      ...value,
+      async save() {
+        await upsertStaffOccupancyCoefficient({ body: value })
+        return value
+      }
+    }
   }
 
   static dailyServiceTime(
     initial: SemiPartial<DevDailyServiceTimes, 'childId'>
-  ): DailyServiceTimeBuilder {
-    return new DailyServiceTimeBuilder({
+  ) {
+    const value: DevDailyServiceTimes = {
       id: randomId(),
       validityPeriod: new DateRange(LocalDate.of(2020, 1, 1), null),
       type: 'REGULAR',
@@ -967,22 +1453,34 @@ export class Fixture {
       saturdayTimes: null,
       sundayTimes: null,
       ...initial
-    })
+    }
+    return {
+      ...value,
+      async save() {
+        await addDailyServiceTime({ body: value })
+        return value
+      }
+    }
   }
 
   static dailyServiceTimeNotification(
     initial: SemiPartial<DevDailyServiceTimeNotification, 'guardianId'>
-  ): DailyServiceTimeNotificationBuilder {
-    return new DailyServiceTimeNotificationBuilder({
+  ) {
+    const value: DevDailyServiceTimeNotification = {
       id: randomId(),
       ...initial
-    })
+    }
+    return {
+      ...value,
+      async save() {
+        await addDailyServiceTimeNotification({ body: value })
+        return value
+      }
+    }
   }
 
-  static payment(
-    initial: SemiPartial<DevPayment, 'unitId' | 'unitName'>
-  ): PaymentBuilder {
-    return new PaymentBuilder({
+  static payment(initial: SemiPartial<DevPayment, 'unitId' | 'unitName'>) {
+    const value: DevPayment = {
       id: randomId(),
       period: new FiniteDateRange(
         LocalDate.todayInHelsinkiTz(),
@@ -1000,13 +1498,21 @@ export class Fixture {
       sentAt: null,
       sentBy: null,
       ...initial
-    })
+    }
+
+    return {
+      ...value,
+      async save() {
+        await addPayment({ body: value })
+        return value
+      }
+    }
   }
 
   static realtimeStaffAttendance(
     initial: SemiPartial<DevStaffAttendance, 'employeeId' | 'groupId'>
-  ): RealtimeStaffAttendanceBuilder {
-    return new RealtimeStaffAttendanceBuilder({
+  ) {
+    const value: DevStaffAttendance = {
       id: randomId(),
       arrived: HelsinkiDateTime.now(),
       departed: null,
@@ -1016,26 +1522,38 @@ export class Fixture {
       modifiedAt: HelsinkiDateTime.now(),
       modifiedBy: systemInternalUser.id,
       ...initial
-    })
+    }
+    return {
+      ...value,
+      async save() {
+        await addStaffAttendance({ body: value })
+        return value
+      }
+    }
   }
 
   static staffAttendancePlan(
     initial: SemiPartial<DevStaffAttendancePlan, 'employeeId'>
-  ): StaffAttendancePlanBuilder {
-    return new StaffAttendancePlanBuilder({
+  ) {
+    const value: DevStaffAttendancePlan = {
       id: randomId(),
       type: 'PRESENT',
       startTime: HelsinkiDateTime.now(),
       endTime: HelsinkiDateTime.now(),
       description: null,
       ...initial
-    })
+    }
+    return {
+      ...value,
+      async save() {
+        await addStaffAttendancePlan({ body: value })
+        return value
+      }
+    }
   }
 
-  static calendarEvent(
-    initial?: Partial<DevCalendarEvent>
-  ): CalendarEventBuilder {
-    return new CalendarEventBuilder({
+  static calendarEvent(initial?: Partial<DevCalendarEvent>) {
+    const value: DevCalendarEvent = {
       id: randomId(),
       title: '',
       description: '',
@@ -1047,24 +1565,38 @@ export class Fixture {
       modifiedBy: systemInternalUser.id,
       eventType: 'DAYCARE_EVENT',
       ...initial
-    })
+    }
+    return {
+      ...value,
+      async save() {
+        await addCalendarEvent({ body: value })
+        return value
+      }
+    }
   }
 
   static calendarEventAttendee(
     initial: SemiPartial<DevCalendarEventAttendee, 'calendarEventId' | 'unitId'>
-  ): CalendarEventAttendeeBuilder {
-    return new CalendarEventAttendeeBuilder({
+  ) {
+    const value: DevCalendarEventAttendee = {
       id: randomId(),
       groupId: null,
       childId: null,
       ...initial
-    })
+    }
+    return {
+      ...value,
+      async save() {
+        await addCalendarEventAttendee({ body: value })
+        return value
+      }
+    }
   }
 
   static calendarEventTime(
     initial: SemiPartial<DevCalendarEventTime, 'calendarEventId'>
-  ): CalendarEventTimeBuilder {
-    return new CalendarEventTimeBuilder({
+  ) {
+    const value: DevCalendarEventTime = {
       id: randomId(),
       date: LocalDate.of(2020, 1, 1),
       childId: null,
@@ -1073,23 +1605,38 @@ export class Fixture {
       start: LocalTime.of(8, 0),
       end: LocalTime.of(8, 30),
       ...initial
-    })
+    }
+    return {
+      ...value,
+      async save() {
+        await addCalendarEventTime({ body: value })
+        return value
+      }
+    }
   }
 
-  static attendanceReservation(
-    data: DailyReservationRequest
-  ): AttendanceReservationBuilder {
-    return new AttendanceReservationBuilder(data)
+  static attendanceReservation(data: DailyReservationRequest) {
+    return {
+      ...data,
+      async save() {
+        await postReservations({ body: [data] })
+        return data
+      }
+    }
   }
 
-  static attendanceReservationRaw(
-    data: ReservationInsert
-  ): AttendanceReservationRawBuilder {
-    return new AttendanceReservationRawBuilder(data)
+  static attendanceReservationRaw(data: ReservationInsert) {
+    return {
+      ...data,
+      async save() {
+        await postReservationsRaw({ body: [data] })
+        return data
+      }
+    }
   }
 
-  static absence(initial: SemiPartial<DevAbsence, 'childId'>): AbsenceBuilder {
-    return new AbsenceBuilder({
+  static absence(initial: SemiPartial<DevAbsence, 'childId'>) {
+    const value: DevAbsence = {
       id: randomId(),
       date: LocalDate.todayInHelsinkiTz(),
       absenceType: 'OTHER_ABSENCE',
@@ -1098,13 +1645,18 @@ export class Fixture {
       absenceCategory: 'BILLABLE',
       questionnaireId: null,
       ...initial
-    })
+    }
+    return {
+      ...value,
+      async save() {
+        await addAbsence({ body: value })
+        return value
+      }
+    }
   }
 
-  static documentTemplate(
-    initial?: Partial<DevDocumentTemplate>
-  ): DocumentTemplateBuilder {
-    return new DocumentTemplateBuilder({
+  static documentTemplate(initial?: Partial<DevDocumentTemplate>) {
+    const value: DevDocumentTemplate = {
       id: randomId(),
       type: 'PEDAGOGICAL_REPORT',
       placementTypes: [
@@ -1152,38 +1704,61 @@ export class Fixture {
         ]
       },
       ...initial
-    })
+    }
+    return {
+      ...value,
+      async save() {
+        await createDocumentTemplate({ body: value })
+        return value
+      },
+      withPublished(published: boolean) {
+        value.published = published
+        return this
+      }
+    }
   }
 
   static assistanceAction(
     initial: SemiPartial<DevAssistanceAction, 'childId' | 'updatedBy'>
-  ): AssistanceActionBuilder {
-    return new AssistanceActionBuilder({
+  ) {
+    const value: DevAssistanceAction = {
       id: randomId(),
       actions: ['ASSISTANCE_SERVICE_CHILD'],
       endDate: LocalDate.todayInSystemTz(),
       startDate: LocalDate.todayInSystemTz(),
       otherAction: '',
       ...initial
-    })
+    }
+    return {
+      ...value,
+      async save() {
+        await createAssistanceAction({ body: [value] })
+        return value
+      }
+    }
   }
 
-  static assistanceActionOption(
-    initial?: Partial<DevAssistanceActionOption>
-  ): AssistanceActionOptionBuilder {
-    return new AssistanceActionOptionBuilder({
+  static assistanceActionOption(initial?: Partial<DevAssistanceActionOption>) {
+    const value: DevAssistanceActionOption = {
       id: randomId(),
       descriptionFi: 'a description',
       nameFi: 'a test assistance action option',
       value: 'TEST_ASSISTANCE_ACTION_OPTION',
       ...initial
-    })
+    }
+    return {
+      ...value,
+      async save() {
+        await createAssistanceActionOption({ body: [value] })
+        return value
+      }
+    }
   }
 
   static childDocument(
     initial: SemiPartial<DevChildDocument, 'childId' | 'templateId'>
-  ): ChildDocumentBuilder {
-    return new ChildDocumentBuilder({
+  ) {
+    const value: DevChildDocument = {
       id: randomId(),
       status: 'DRAFT',
       modifiedAt: HelsinkiDateTime.now(),
@@ -1206,41 +1781,101 @@ export class Fixture {
       decisionMaker: null,
       decision: null,
       ...initial
-    })
+    }
+
+    return {
+      ...value,
+      async save() {
+        await createChildDocument({ body: value })
+        return value
+      },
+      withModifiedAt(modifiedAt: HelsinkiDateTime) {
+        return Fixture.childDocument({
+          ...value,
+          modifiedAt
+        })
+      },
+      withPublishedAt(publishedAt: HelsinkiDateTime | null) {
+        return Fixture.childDocument({
+          ...value,
+          publishedAt
+        })
+      },
+
+      withPublishedContent(publishedContent: DocumentContent | null) {
+        return Fixture.childDocument({
+          ...value,
+          publishedContent
+        })
+      },
+      withDecision(
+        decision: SemiPartial<
+          DevChildDocumentDecision,
+          'status' | 'validity' | 'createdBy' | 'modifiedBy'
+        >
+      ) {
+        return Fixture.childDocument({
+          ...value,
+          decision: {
+            id: randomId(),
+            createdAt: HelsinkiDateTime.now(),
+            modifiedAt: HelsinkiDateTime.now(),
+            ...decision
+          }
+        })
+      }
+    }
   }
 
   static assistanceNeedVoucherCoefficient(
     initial: SemiPartial<AssistanceNeedVoucherCoefficient, 'childId'>
-  ): AssistanceNeedVoucherCoefficientBuilder {
-    return new AssistanceNeedVoucherCoefficientBuilder({
+  ) {
+    const value: AssistanceNeedVoucherCoefficient = {
       id: randomId(),
+      coefficient: 1.0,
       validityPeriod: new FiniteDateRange(
         LocalDate.todayInSystemTz(),
         LocalDate.todayInSystemTz()
       ),
-      coefficient: 1.0,
       modifiedAt: HelsinkiDateTime.now(),
       modifiedBy: null,
       ...initial
-    })
+    }
+    return {
+      ...value,
+      async save() {
+        await createAssistanceNeedVoucherCoefficients({ body: [value] })
+        return value
+      },
+      with(update: Partial<AssistanceNeedVoucherCoefficient>) {
+        return Fixture.assistanceNeedVoucherCoefficient({ ...value, ...update })
+      }
+    }
   }
 
   static parentship(
     initial: SemiPartial<DevParentship, 'childId' | 'headOfChildId'>
-  ): ParentshipBuilder {
-    return new ParentshipBuilder({
+  ) {
+    const value: DevParentship = {
       id: randomId(),
       createdAt: HelsinkiDateTime.now(),
       startDate: LocalDate.todayInSystemTz(),
       endDate: LocalDate.todayInSystemTz(),
       ...initial
-    })
+    }
+    return {
+      ...value,
+      async save() {
+        await createParentships({ body: [value] })
+        return value
+      }
+    }
   }
 
   static invoice(
     initial: SemiPartial<DevInvoice, 'headOfFamilyId' | 'areaId'>
-  ): InvoiceBuilder {
-    return new InvoiceBuilder({
+  ) {
+    const value: DevInvoice = {
       id: randomId(),
       status: 'DRAFT',
       number: null,
@@ -1256,135 +1891,35 @@ export class Fixture {
       replacedInvoiceId: null,
       rows: [],
       ...initial
-    })
-  }
-}
-
-abstract class FixtureBuilder<T> {
-  constructor(public data: T) {}
-}
-
-export class DaycareBuilder extends FixtureBuilder<DevDaycare> {
-  id(id: DaycareId): DaycareBuilder {
-    this.data.id = id
-    return this
-  }
-
-  async save() {
-    await createDaycares({ body: [this.data] })
-    return this.data
-  }
-}
-
-export class DaycareGroupBuilder extends FixtureBuilder<DevDaycareGroup> {
-  async save() {
-    await createDaycareGroups({ body: [this.data] })
-    return this.data
-  }
-}
-
-export class CareAreaBuilder extends FixtureBuilder<DevCareArea> {
-  async save() {
-    await createCareAreas({ body: [this.data] })
-    return this.data
-  }
-}
-
-export class PreschoolTermBuilder extends FixtureBuilder<DevPreschoolTerm> {
-  async save() {
-    await createPreschoolTerm({ body: this.data })
-    return this.data
-  }
-}
-
-export class ClubTermBuilder extends FixtureBuilder<DevClubTerm> {
-  async save() {
-    await createClubTerm({ body: this.data })
-    return this.data
-  }
-}
-
-export class PersonBuilder extends FixtureBuilder<DevPerson> {
-  async saveAdult(
-    opts: {
-      updateMockVtjWithDependants?: DevPerson[]
-      updateWeakCredentials?: { username: string; password: string }
-    } = {}
-  ) {
-    await createPerson({ body: this.data, type: 'ADULT' })
-    if (opts.updateMockVtjWithDependants !== undefined) {
-      await this.updateMockVtj(opts.updateMockVtjWithDependants)
-      if (this.data.ssn) {
-        await upsertDummyIdpUser({
-          ssn: this.data.ssn,
-          commonName: `${this.data.firstName} ${this.data.lastName}`,
-          givenName: this.data.firstName,
-          surname: this.data.lastName,
-          comment: `${opts.updateMockVtjWithDependants.length} huollettavaa`
-        })
-      }
     }
-    if (opts.updateWeakCredentials) {
-      await upsertWeakCredentials({
-        id: this.data.id,
-        body: opts.updateWeakCredentials
-      })
-    }
-    return this.data
-  }
 
-  async saveChild(opts: { updateMockVtj?: boolean } = {}) {
-    await createPerson({ body: this.data, type: 'CHILD' })
-    if (opts.updateMockVtj) {
-      await this.updateMockVtj([])
-    }
-    return this.data
-  }
-
-  private async updateMockVtj(dependants: DevPerson[]): Promise<DevPerson> {
-    const person = this.data
-    const dependantSsns = dependants.flatMap((d) => d.ssn ?? [])
-    if (dependantSsns.length !== dependants.length) {
-      throw new Error('All dependants must have SSNs')
-    }
-    await upsertVtjDataset({
-      body: {
-        persons: [
-          {
-            firstNames: person.firstName,
-            lastName: person.lastName,
-            socialSecurityNumber: person.ssn || '',
-            address: {
-              streetAddress: person.streetAddress || '',
-              postalCode: person.postalCode || '',
-              postOffice: person.postOffice || '',
-              streetAddressSe: person.streetAddress || '',
-              postOfficeSe: person.postalCode || ''
-            },
-            dateOfDeath: person.dateOfDeath ?? null,
-            nationalities: [],
-            nativeLanguage: null,
-            residenceCode:
-              person.residenceCode ??
-              `${person.streetAddress ?? ''}${person.postalCode ?? ''}${
-                person.postOffice ?? ''
-              }`.replace(' ', ''),
-            municipalityOfResidence: person.municipalityOfResidence,
-            restrictedDetails: {
-              enabled: person.restrictedDetailsEnabled || false,
-              endDate: person.restrictedDetailsEndDate || null
+    return {
+      ...value,
+      addRow(row: SemiPartial<DevInvoiceRow, 'childId' | 'unitId'>) {
+        return Fixture.invoice({
+          ...value,
+          rows: [
+            ...value.rows,
+            {
+              id: randomId(),
+              amount: 1,
+              unitPrice: 28900,
+              periodStart: value.periodStart,
+              periodEnd: value.periodEnd,
+              product: 'DAYCARE',
+              description: '',
+              correctionId: null,
+              idx: value.rows.length,
+              ...row
             }
-          }
-        ],
-        guardianDependants:
-          dependantSsns.length > 0
-            ? {
-                [person.ssn || '']: dependantSsns
-              }
-            : {}
+          ]
+        })
+      },
+      async save() {
+        await createInvoices({ body: [value] })
+        return value
       }
-    })
-    return this.data
+    }
   }
 }
 
@@ -1392,559 +1927,6 @@ export interface Family {
   guardian: DevPerson
   otherGuardian?: DevPerson
   children: DevPerson[]
-}
-
-export class FamilyBuilder extends FixtureBuilder<Family> {
-  async save() {
-    for (const child of this.data.children) {
-      await Fixture.person(child).saveChild({ updateMockVtj: true })
-    }
-    await Fixture.person(this.data.guardian).saveAdult({
-      updateMockVtjWithDependants: this.data.children
-    })
-    if (this.data.otherGuardian) {
-      await Fixture.person(this.data.otherGuardian).saveAdult({
-        updateMockVtjWithDependants: this.data.children
-      })
-    }
-  }
-}
-
-export class EmployeeBuilder extends FixtureBuilder<DevEmployee> {
-  daycareAcl: { unitId: DaycareId; role: ScopedRole }[]
-  groupAcl: {
-    groupId: GroupId
-    created?: HelsinkiDateTime
-    updated?: HelsinkiDateTime
-  }[]
-
-  constructor(data: DevEmployee) {
-    super(data)
-    this.daycareAcl = []
-    this.groupAcl = []
-  }
-
-  admin(): EmployeeBuilder {
-    return new EmployeeBuilder({ ...this.data, roles: ['ADMIN'] })
-  }
-
-  financeAdmin(): EmployeeBuilder {
-    return new EmployeeBuilder({ ...this.data, roles: ['FINANCE_ADMIN'] })
-  }
-
-  director(): EmployeeBuilder {
-    return new EmployeeBuilder({ ...this.data, roles: ['DIRECTOR'] })
-  }
-
-  reportViewer(): EmployeeBuilder {
-    return new EmployeeBuilder({ ...this.data, roles: ['REPORT_VIEWER'] })
-  }
-
-  serviceWorker(): EmployeeBuilder {
-    return new EmployeeBuilder({ ...this.data, roles: ['SERVICE_WORKER'] })
-  }
-
-  messenger(): EmployeeBuilder {
-    return new EmployeeBuilder({ ...this.data, roles: ['MESSAGING'] })
-  }
-
-  unitSupervisor(unitId: DaycareId): EmployeeBuilder {
-    return new EmployeeBuilder(this.data).withDaycareAcl(
-      unitId,
-      'UNIT_SUPERVISOR'
-    )
-  }
-
-  specialEducationTeacher(unitId: DaycareId): EmployeeBuilder {
-    return new EmployeeBuilder(this.data).withDaycareAcl(
-      unitId,
-      'SPECIAL_EDUCATION_TEACHER'
-    )
-  }
-
-  staff(unitId: DaycareId): EmployeeBuilder {
-    return new EmployeeBuilder(this.data).withDaycareAcl(unitId, 'STAFF')
-  }
-
-  withDaycareAcl(unitId: DaycareId, role: ScopedRole): this {
-    this.daycareAcl.push({ unitId, role })
-    return this
-  }
-
-  withGroupAcl(
-    groupId: GroupId,
-    created?: HelsinkiDateTime,
-    updated?: HelsinkiDateTime
-  ): this {
-    this.groupAcl.push({ groupId, created, updated })
-    return this
-  }
-
-  async save() {
-    await createEmployee({ body: this.data })
-    for (const { unitId, role } of this.daycareAcl) {
-      if (!this.data.externalId)
-        throw new Error("Can't add ACL without externalId")
-      await addAclRoleForDaycare({
-        daycareId: unitId,
-        body: { externalId: this.data.externalId, role }
-      })
-    }
-    if (this.groupAcl.length > 0) {
-      await createDaycareGroupAclRows({
-        body: this.groupAcl.map(({ groupId, created, updated }) => ({
-          groupId,
-          employeeId: this.data.id,
-          created: created ?? HelsinkiDateTime.now(),
-          updated: updated ?? HelsinkiDateTime.now()
-        }))
-      })
-    }
-    return this.data
-  }
-}
-
-export class DecisionBuilder extends FixtureBuilder<DecisionRequest> {
-  async save() {
-    await createDecisions({ body: [this.data] })
-    return this.data
-  }
-}
-
-export class EmployeePinBuilder extends FixtureBuilder<DevEmployeePin> {
-  async save() {
-    await createEmployeePins({ body: [this.data] })
-    return this.data
-  }
-}
-
-export class PedagogicalDocumentBuilder extends FixtureBuilder<DevPedagogicalDocument> {
-  async save() {
-    await createPedagogicalDocuments({ body: [this.data] })
-    return this.data
-  }
-}
-
-export class ServiceNeedOptionBuilder extends FixtureBuilder<ServiceNeedOption> {
-  async save() {
-    await createServiceNeedOption({ body: [this.data] })
-    return this.data
-  }
-}
-
-export class PlacementBuilder extends FixtureBuilder<DevPlacement> {
-  dateRange(): FiniteDateRange {
-    return new FiniteDateRange(this.data.startDate, this.data.endDate)
-  }
-
-  async save() {
-    await createDaycarePlacements({ body: [this.data] })
-    return this.data
-  }
-}
-
-export class GroupPlacementBuilder extends FixtureBuilder<DevDaycareGroupPlacement> {
-  async save() {
-    await createDaycareGroupPlacement({ body: [this.data] })
-    return this.data
-  }
-}
-
-export class BackupCareBuilder extends FixtureBuilder<DevBackupCare> {
-  async save() {
-    await createBackupCares({ body: [this.data] })
-    return this.data
-  }
-}
-
-export class ServiceNeedBuilder extends FixtureBuilder<DevServiceNeed> {
-  async save() {
-    await createServiceNeeds({ body: [this.data] })
-    return this.data
-  }
-}
-
-export class ChildBuilder extends FixtureBuilder<DevChild> {
-  async save() {
-    await createChildren({ body: [this.data] })
-    return this.data
-  }
-
-  with(data: Partial<DevChild>): this {
-    this.data = {
-      ...this.data,
-      ...data
-    }
-    return this
-  }
-}
-
-export class AssistanceFactorBuilder extends FixtureBuilder<AssistanceFactor> {
-  async save() {
-    await createAssistanceFactors({ body: [this.data] })
-    return this.data
-  }
-}
-
-export class DaycareAssistanceBuilder extends FixtureBuilder<DaycareAssistance> {
-  async save() {
-    await createDaycareAssistances({ body: [this.data] })
-    return this.data
-  }
-}
-
-export class PreschoolAssistanceBuilder extends FixtureBuilder<PreschoolAssistance> {
-  async save() {
-    await createPreschoolAssistances({ body: [this.data] })
-    return this.data
-  }
-}
-
-export class OtherAssistanceMeasureBuilder extends FixtureBuilder<OtherAssistanceMeasure> {
-  async save() {
-    await createOtherAssistanceMeasures({ body: [this.data] })
-    return this.data
-  }
-}
-
-export class AssistanceNeedDecisionBuilder extends FixtureBuilder<DevAssistanceNeedDecision> {
-  async save() {
-    await createAssistanceNeedDecisions({ body: [this.data] })
-    return this.data
-  }
-}
-
-export class AssistanceNeedVoucherCoefficientBuilder extends FixtureBuilder<AssistanceNeedVoucherCoefficient> {
-  async save() {
-    await createAssistanceNeedVoucherCoefficients({ body: [this.data] })
-    return this.data
-  }
-}
-
-export class AssistanceNeedPreschoolDecisionBuilder extends FixtureBuilder<DevAssistanceNeedPreschoolDecision> {
-  async save() {
-    await createAssistanceNeedPreschoolDecisions({ body: [this.data] })
-    return this.data
-  }
-
-  with(value: Partial<DevAssistanceNeedPreschoolDecision>): this {
-    this.data = {
-      ...this.data,
-      ...value
-    }
-    return this
-  }
-
-  withGuardian(guardianId: PersonId) {
-    this.data.form.guardianInfo.push({
-      id: randomId(),
-      personId: guardianId,
-      name: '',
-      isHeard: false,
-      details: ''
-    })
-    return this
-  }
-
-  withForm(form: Partial<AssistanceNeedPreschoolDecisionForm>) {
-    this.data.form = {
-      ...this.data.form,
-      ...form
-    }
-    return this
-  }
-
-  withRequiredFieldsFilled(
-    unitId: DaycareId,
-    preparerId: EmployeeId,
-    decisionMakerId: EmployeeId
-  ) {
-    this.data.form = {
-      ...this.data.form,
-      type: 'NEW',
-      validFrom: LocalDate.of(2022, 8, 1),
-      selectedUnit: unitId,
-      primaryGroup: 'Perhoset',
-      decisionBasis: 'Perustelu',
-      basisDocumentPedagogicalReport: true,
-      guardiansHeardOn: LocalDate.of(2022, 8, 1),
-      guardianInfo: this.data.form.guardianInfo.map((g) => ({
-        ...g,
-        isHeard: true,
-        details: 'kasvotusten'
-      })),
-      viewOfGuardians: 'ok',
-      preparer1EmployeeId: preparerId,
-      preparer1Title: 'Käsittelijä',
-      decisionMakerEmployeeId: decisionMakerId,
-      decisionMakerTitle: 'Päättäjä'
-    }
-    return this
-  }
-}
-
-export class DaycareCaretakersBuilder extends FixtureBuilder<Caretaker> {
-  async save() {
-    await createDaycareCaretakers({ body: [this.data] })
-    return this.data
-  }
-}
-
-export class ChildAttendanceBuilder extends FixtureBuilder<DevChildAttendance> {
-  async save() {
-    await postAttendances({ body: [this.data] })
-    return this.data
-  }
-}
-
-export class IncomeBuilder extends FixtureBuilder<DevIncome> {
-  async save() {
-    await createIncome({ body: this.data })
-    return this.data
-  }
-}
-
-export class IncomeStatementBuilder extends FixtureBuilder<DevIncomeStatement> {
-  async save() {
-    await createIncomeStatement({ body: this.data })
-    return this.data
-  }
-}
-
-export class IncomeNotificationBuilder extends FixtureBuilder<IncomeNotification> {
-  async save() {
-    await createIncomeNotification({ body: this.data })
-    return this.data
-  }
-}
-
-export class FeeThresholdBuilder extends FixtureBuilder<FeeThresholds> {
-  async save() {
-    await createFeeThresholds({ body: this.data })
-    return this.data
-  }
-}
-
-export class PlacementPlanBuilder extends FixtureBuilder<
-  PlacementPlan & { applicationId: ApplicationId }
-> {
-  async save() {
-    const { applicationId, ...body } = this.data
-    await createPlacementPlan({ applicationId, body })
-    return this.data
-  }
-}
-
-export class HolidayPeriodBuilder extends FixtureBuilder<HolidayPeriod> {
-  async save() {
-    const { id, ...body } = this.data
-    await createHolidayPeriod({ id, body })
-    return this.data
-  }
-}
-
-export class HolidayQuestionnaireBuilder extends FixtureBuilder<FixedPeriodQuestionnaire> {
-  async save() {
-    const { id, ...body } = this.data
-    await createHolidayQuestionnaire({ id, body })
-    return this.data
-  }
-}
-
-export class GuardianBuilder extends FixtureBuilder<{
-  guardianId: PersonId
-  childId: PersonId
-}> {
-  async save() {
-    await insertGuardians({ body: [this.data] })
-    return this.data
-  }
-}
-
-export class FridgeChildBuilder extends FixtureBuilder<DevFridgeChild> {
-  async save() {
-    await createFridgeChild({ body: [this.data] })
-    return this.data
-  }
-}
-
-export class StaffOccupancyCoefficientBuilder extends FixtureBuilder<DevUpsertStaffOccupancyCoefficient> {
-  async save() {
-    await upsertStaffOccupancyCoefficient({ body: this.data })
-    return this.data
-  }
-}
-
-export class DailyServiceTimeBuilder extends FixtureBuilder<DevDailyServiceTimes> {
-  async save() {
-    await addDailyServiceTime({ body: this.data })
-    return this.data
-  }
-}
-
-export class DailyServiceTimeNotificationBuilder extends FixtureBuilder<DevDailyServiceTimeNotification> {
-  async save() {
-    await addDailyServiceTimeNotification({ body: this.data })
-    return this.data
-  }
-}
-
-export class PaymentBuilder extends FixtureBuilder<DevPayment> {
-  async save() {
-    await addPayment({ body: this.data })
-    return this.data
-  }
-}
-
-export class CalendarEventBuilder extends FixtureBuilder<DevCalendarEvent> {
-  async save() {
-    await addCalendarEvent({ body: this.data })
-    return this.data
-  }
-}
-
-export class CalendarEventAttendeeBuilder extends FixtureBuilder<DevCalendarEventAttendee> {
-  async save() {
-    await addCalendarEventAttendee({ body: this.data })
-    return this.data
-  }
-}
-
-export class CalendarEventTimeBuilder extends FixtureBuilder<DevCalendarEventTime> {
-  async save() {
-    await addCalendarEventTime({ body: this.data })
-    return this.data
-  }
-}
-
-export class RealtimeStaffAttendanceBuilder extends FixtureBuilder<DevStaffAttendance> {
-  async save() {
-    await addStaffAttendance({ body: this.data })
-    return this.data
-  }
-}
-
-export class StaffAttendancePlanBuilder extends FixtureBuilder<DevStaffAttendancePlan> {
-  async save() {
-    await addStaffAttendancePlan({ body: this.data })
-    return this.data
-  }
-}
-
-export class AttendanceReservationBuilder extends FixtureBuilder<DailyReservationRequest> {
-  async save() {
-    await postReservations({ body: [this.data] })
-    return this.data
-  }
-}
-
-export class AttendanceReservationRawBuilder extends FixtureBuilder<ReservationInsert> {
-  async save() {
-    await postReservationsRaw({ body: [this.data] })
-    return this
-  }
-}
-
-export class AbsenceBuilder extends FixtureBuilder<DevAbsence> {
-  async save() {
-    await addAbsence({ body: this.data })
-    return this.data
-  }
-}
-
-export class DocumentTemplateBuilder extends FixtureBuilder<DevDocumentTemplate> {
-  async save() {
-    await createDocumentTemplate({ body: this.data })
-    return this.data
-  }
-
-  withPublished(published: boolean) {
-    this.data.published = published
-    return this
-  }
-}
-
-export class ChildDocumentBuilder extends FixtureBuilder<DevChildDocument> {
-  async save() {
-    await createChildDocument({ body: this.data })
-    return this.data
-  }
-
-  withModifiedAt(modifiedAt: HelsinkiDateTime) {
-    this.data.modifiedAt = modifiedAt
-    return this
-  }
-
-  withPublishedAt(publishedAt: HelsinkiDateTime | null) {
-    this.data.publishedAt = publishedAt
-    return this
-  }
-
-  withPublishedContent(publishedContent: DocumentContent | null) {
-    this.data.publishedContent = publishedContent
-    return this
-  }
-
-  withDecision(
-    decision: SemiPartial<
-      DevChildDocumentDecision,
-      'status' | 'validity' | 'createdBy' | 'modifiedBy'
-    >
-  ) {
-    this.data.decision = {
-      id: randomId(),
-      createdAt: HelsinkiDateTime.now(),
-      modifiedAt: HelsinkiDateTime.now(),
-      ...decision
-    }
-    return this
-  }
-}
-
-export class AssistanceActionBuilder extends FixtureBuilder<DevAssistanceAction> {
-  async save() {
-    await createAssistanceAction({ body: [this.data] })
-    return this.data
-  }
-}
-
-export class AssistanceActionOptionBuilder extends FixtureBuilder<DevAssistanceActionOption> {
-  async save() {
-    await createAssistanceActionOption({ body: [this.data] })
-    return this.data
-  }
-}
-
-export class ParentshipBuilder extends FixtureBuilder<DevParentship> {
-  async save() {
-    await createParentships({ body: [this.data] })
-    return this.data
-  }
-}
-
-export class InvoiceBuilder extends FixtureBuilder<DevInvoice> {
-  addRow(
-    row: SemiPartial<DevInvoiceRow, 'childId' | 'unitId'>
-  ): InvoiceBuilder {
-    this.data.rows.push({
-      id: randomId(),
-      amount: 1,
-      unitPrice: 28900,
-      periodStart: this.data.periodStart,
-      periodEnd: this.data.periodEnd,
-      product: 'DAYCARE',
-      description: '',
-      correctionId: null,
-      idx: this.data.rows.length,
-      ...row
-    })
-    return this
-  }
-
-  async save() {
-    await createInvoices({ body: [this.data] })
-    return this.data
-  }
 }
 
 export const fullDayTimeRange: TimeRange = new TimeRange(
@@ -2567,7 +2549,7 @@ export const testAdult = Fixture.person({
   nationalities: ['FI'],
   restrictedDetailsEnabled: false,
   restrictedDetailsEndDate: null
-}).data
+})
 
 export const testChild = Fixture.person({
   id: fromUuid<PersonId>('572adb7e-9b3d-11ea-bb37-0242ac130002'),
@@ -2585,7 +2567,7 @@ export const testChild = Fixture.person({
   nationalities: ['FI'],
   restrictedDetailsEnabled: false,
   restrictedDetailsEndDate: null
-}).data
+})
 
 export const testChild2 = Fixture.person({
   id: fromUuid<PersonId>('5a4f3ccc-5270-4d28-bd93-d355182b6768'),
@@ -2602,7 +2584,7 @@ export const testChild2 = Fixture.person({
   nationalities: ['FI'],
   restrictedDetailsEnabled: false,
   restrictedDetailsEndDate: null
-}).data
+})
 
 export const testChildRestricted = Fixture.person({
   id: fromUuid<PersonId>('28e189d7-abbe-4be9-9074-6e4c881f18de'),
@@ -2619,7 +2601,7 @@ export const testChildRestricted = Fixture.person({
   nationalities: ['FI'],
   restrictedDetailsEnabled: true,
   restrictedDetailsEndDate: null
-}).data
+})
 
 export const testAdult2 = Fixture.person({
   id: fromUuid<PersonId>('fb915d31-738f-453f-a2ca-2e7f61db641d'),
@@ -2636,7 +2618,7 @@ export const testAdult2 = Fixture.person({
   nationalities: ['FI'],
   restrictedDetailsEnabled: false,
   restrictedDetailsEndDate: null
-}).data
+})
 
 export const testChildDeceased = Fixture.person({
   id: fromUuid<PersonId>('b8711722-0c1b-4044-a794-5b308207d78b'),
@@ -2654,7 +2636,7 @@ export const testChildDeceased = Fixture.person({
   nationalities: ['FI'],
   restrictedDetailsEnabled: false,
   restrictedDetailsEndDate: null
-}).data
+})
 
 export const testChildNoSsn = Fixture.person({
   id: fromUuid<PersonId>('a5e87ec8-6221-46f8-8b2b-9ab124d51c22'),
@@ -2671,7 +2653,7 @@ export const testChildNoSsn = Fixture.person({
   nationalities: ['FI'],
   restrictedDetailsEnabled: false,
   restrictedDetailsEndDate: null
-}).data
+})
 
 const twoGuardiansGuardian1 = {
   id: fromUuid<PersonId>('9d6289ba-9ffd-11ea-bb37-0242ac130002'),
@@ -2723,11 +2705,11 @@ const twoGuardiansChildren = [
     nationalities: ['FI'],
     restrictedDetailsEnabled: false,
     restrictedDetailsEndDate: null
-  }).data
+  })
 ]
 export const familyWithTwoGuardians = {
-  guardian: Fixture.person(twoGuardiansGuardian1).data,
-  otherGuardian: Fixture.person(twoGuardiansGuardian2).data,
+  guardian: Fixture.person(twoGuardiansGuardian1),
+  otherGuardian: Fixture.person(twoGuardiansGuardian2),
   children: twoGuardiansChildren
 }
 
@@ -2750,7 +2732,7 @@ const separatedGuardiansGuardian2 = Fixture.person({
   streetAddress: 'Testikatu 1',
   postalCode: '02770',
   postOffice: 'Espoo'
-}).data
+})
 const separatedGuardiansChildren = [
   Fixture.person({
     id: fromUuid<PersonId>('5474ee62-16cf-4cfe-a297-40559e165a32'),
@@ -2761,11 +2743,11 @@ const separatedGuardiansChildren = [
     streetAddress: 'Kamreerintie 2',
     postalCode: '02770',
     postOffice: 'Espoo'
-  }).data
+  })
 ]
 export const familyWithSeparatedGuardians = {
-  guardian: Fixture.person(separatedGuardiansGuardian1).data,
-  otherGuardian: Fixture.person(separatedGuardiansGuardian2).data,
+  guardian: Fixture.person(separatedGuardiansGuardian1),
+  otherGuardian: Fixture.person(separatedGuardiansGuardian2),
   children: separatedGuardiansChildren
 }
 
@@ -2813,12 +2795,12 @@ const restrictedDetailsGuardiansChildren = [
     streetAddress: 'Kamreerintie 4',
     postalCode: '02100',
     postOffice: 'Espoo'
-  }).data
+  })
 ]
 
 export const familyWithRestrictedDetailsGuardian = {
-  guardian: Fixture.person(restrictedDetailsGuardian).data,
-  otherGuardian: Fixture.person(guardian2WithNoRestrictions).data,
+  guardian: Fixture.person(restrictedDetailsGuardian),
+  otherGuardian: Fixture.person(guardian2WithNoRestrictions),
   children: restrictedDetailsGuardiansChildren
 }
 
@@ -2838,7 +2820,7 @@ const deadGuardian = Fixture.person({
   nationalities: ['FI'],
   restrictedDetailsEnabled: false,
   restrictedDetailsEndDate: null
-}).data
+})
 
 const deadGuardianChild = Fixture.person({
   id: fromUuid<PersonId>('1ad3469b-593d-45e4-a68b-a09f759bd029'),
@@ -2849,7 +2831,7 @@ const deadGuardianChild = Fixture.person({
   streetAddress: 'Kamreerintie 4',
   postalCode: '02100',
   postOffice: 'Espoo'
-}).data
+})
 
 export const familyWithDeadGuardian: Family = {
   guardian: deadGuardian,
@@ -2871,7 +2853,7 @@ export const testChildZeroYearOld = Fixture.person({
   nationalities: ['FI'],
   restrictedDetailsEnabled: false,
   restrictedDetailsEndDate: null
-}).data
+})
 
 export const testAdultRestricted = Fixture.person({
   id: fromUuid<PersonId>('92d707e9-6cbc-487b-8bde-0097d90044cd'),
@@ -2888,7 +2870,7 @@ export const testAdultRestricted = Fixture.person({
   nationalities: ['FI'],
   restrictedDetailsEnabled: true,
   restrictedDetailsEndDate: null
-}).data
+})
 
 const applicationForm = (
   type: ApplicationType,
@@ -3224,7 +3206,6 @@ export const systemInternalUser: EvakaUser = {
   name: 'eVaka',
   type: 'SYSTEM'
 }
-
 export const employeeToEvakaUser = (employee: DevEmployee): EvakaUser => ({
   id: evakaUserId(employee.id),
   name: employee.firstName + ' ' + employee.lastName,

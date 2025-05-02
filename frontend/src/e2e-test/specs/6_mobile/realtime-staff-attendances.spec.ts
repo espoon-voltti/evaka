@@ -101,8 +101,8 @@ beforeEach(async () => {
     preferredFirstName: 'Kutsumanimi'
   })
     .staff(testDaycare2.id)
-    .withGroupAcl(testDaycareGroup.id)
-    .withGroupAcl(daycareGroup2Fixture.id)
+    .groupAcl(testDaycareGroup.id)
+    .groupAcl(daycareGroup2Fixture.id)
     .save()
   await Fixture.employeePin({ userId: staffFixture.id, pin }).save()
   employeeName = `${staffFixture.lastName} Kutsumanimi`

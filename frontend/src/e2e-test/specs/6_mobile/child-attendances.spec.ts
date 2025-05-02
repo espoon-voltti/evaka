@@ -50,6 +50,8 @@ const group2 = {
   startDate: LocalDate.of(2021, 1, 1)
 }
 
+const careArea = Fixture.careArea(testCareArea)
+
 const openPage = async (
   options?: BrowserContextOptions & EvakaBrowserContextOptions
 ) => {
@@ -67,7 +69,7 @@ beforeEach(async () => {
   await createDefaultServiceNeedOptions()
   await Fixture.preschoolTerm(preschoolTerm2023).save()
 
-  const careArea = await Fixture.careArea(testCareArea).save()
+  await careArea.save()
   await Fixture.daycare({ ...testDaycare, areaId: careArea.id }).save()
   await Fixture.daycareGroup(testDaycareGroup).save()
   await Fixture.daycareGroup(group2).save()

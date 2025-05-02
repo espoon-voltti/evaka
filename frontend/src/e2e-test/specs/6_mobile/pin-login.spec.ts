@@ -64,7 +64,7 @@ beforeEach(async () => {
     email: 'yy@example.com',
     roles: []
   })
-    .withDaycareAcl(unit.id, 'UNIT_SUPERVISOR')
+    .unitSupervisor(unit.id)
     .save()
   await Fixture.employeePin({ userId: employee.id, pin }).save()
   const daycareGroup = await Fixture.daycareGroup({ daycareId: unit.id }).save()
