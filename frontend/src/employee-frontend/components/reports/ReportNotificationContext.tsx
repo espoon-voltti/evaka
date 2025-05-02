@@ -8,6 +8,7 @@ import { UserContext } from 'employee-frontend/state/user'
 import { Loading, Result, Success, wrapResult } from 'lib-common/api'
 import { constantQuery, useQueryResult } from 'lib-common/query'
 import { useApiState } from 'lib-common/utils/useRestApi'
+import { featureFlags } from 'lib-customizations/employee'
 
 import { getAssistanceNeedDecisionsReportUnreadCount } from '../../generated/api-clients/reports'
 import { childDocumentDecisionsReportNotificationCountQuery } from '../../queries'
@@ -42,7 +43,7 @@ export const ReportNotificationContextProvider = React.memo(
     const childDocumentDecisionNotificationCount = useQueryResult(
       user?.permittedGlobalActions?.includes(
         'READ_CHILD_DOCUMENT_DECISIONS_REPORT'
-      )
+      ) && featureFlags.decisionChildDocumentTypes
         ? childDocumentDecisionsReportNotificationCountQuery()
         : constantQuery(0),
       {
