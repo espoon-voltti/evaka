@@ -26,7 +26,7 @@ import { useTranslation } from '../state/i18n'
 import { UserContext } from '../state/user'
 
 import { MessageContext } from './messages/MessageContext'
-import { AssistanceNeedDecisionReportContext } from './reports/AssistanceNeedDecisionReportContext'
+import { ReportNotificationContext } from './reports/ReportNotificationContext'
 
 export const headerHeight = '80px'
 
@@ -215,9 +215,10 @@ export default React.memo(function Header() {
     [accounts, unreadCountsByAccount]
   )
 
-  const { assistanceNeedDecisionCounts } = useContext(
-    AssistanceNeedDecisionReportContext
-  )
+  const {
+    assistanceNeedDecisionCounts,
+    childDocumentDecisionNotificationCount
+  } = useContext(ReportNotificationContext)
 
   const path = location.pathname
   const atCustomerInfo =
@@ -297,7 +298,11 @@ export default React.memo(function Header() {
               >
                 <NavLinkWrapper>
                   <NavLinkText>{i18n.header.reports}</NavLinkText>
-                  {assistanceNeedDecisionCounts
+                  {combine(
+                    assistanceNeedDecisionCounts,
+                    childDocumentDecisionNotificationCount
+                  )
+                    .map(([n1, n2]) => n1 + n2)
                     .map(
                       (unread) =>
                         unread > 0 && (

@@ -124,6 +124,7 @@ import {
   putServiceNeed,
   rejectServiceApplication
 } from '../../generated/api-clients/serviceneed'
+import { childDocumentDecisionsReportNotificationCountQuery } from '../../queries'
 import { unitGroupDetailsQuery, unitNotificationsQuery } from '../unit/queries'
 
 const q = new Queries()
@@ -246,21 +247,24 @@ export const proposeChildDocumentDecisionMutation = q.parametricMutation<{
   childId: ChildId
 }>()(proposeChildDocumentDecision, [
   ({ childId }) => childDocumentsQuery({ childId }),
-  ({ documentId }) => childDocumentQuery({ documentId })
+  ({ documentId }) => childDocumentQuery({ documentId }),
+  childDocumentDecisionsReportNotificationCountQuery
 ])
 
 export const acceptChildDocumentDecisionMutation = q.parametricMutation<{
   childId: ChildId
 }>()(acceptChildDocumentDecision, [
   ({ childId }) => childDocumentsQuery({ childId }),
-  ({ documentId }) => childDocumentQuery({ documentId })
+  ({ documentId }) => childDocumentQuery({ documentId }),
+  childDocumentDecisionsReportNotificationCountQuery
 ])
 
 export const rejectChildDocumentDecisionMutation = q.parametricMutation<{
   childId: ChildId
 }>()(rejectChildDocumentDecision, [
   ({ childId }) => childDocumentsQuery({ childId }),
-  ({ documentId }) => childDocumentQuery({ documentId })
+  ({ documentId }) => childDocumentQuery({ documentId }),
+  childDocumentDecisionsReportNotificationCountQuery
 ])
 
 export const annulChildDocumentDecisionMutation = q.parametricMutation<{

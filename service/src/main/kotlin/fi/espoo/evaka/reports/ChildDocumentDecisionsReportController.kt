@@ -8,6 +8,7 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.document.DocumentType
 import fi.espoo.evaka.document.childdocument.ChildDocumentOrDecisionStatus
 import fi.espoo.evaka.document.childdocument.ChildDocumentSummary
+import fi.espoo.evaka.document.childdocument.DocumentStatus
 import fi.espoo.evaka.document.childdocument.getChildDocuments
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -24,7 +25,6 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class ChildDocumentDecisionsReportController(private val accessControl: AccessControl) {
-
     @GetMapping("/employee/reports/child-document-decisions")
     fun getChildDocumentDecisionsReport(
         db: Database,
@@ -54,6 +54,30 @@ class ChildDocumentDecisionsReportController(private val accessControl: AccessCo
                 }
             }
             .also { Audit.ChildDocumentDecisionsReportRead.log() }
+    }
+
+    @GetMapping("/employee/reports/child-document-decisions/notification-count")
+    fun getChildDocumentDecisionsReportNotificationCount(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+    ): Int {
+        return db.connect { dbc ->
+                dbc.read { tx ->
+                    tx.createQuery {
+                            sql(
+                                """
+                    SELECT count(*)
+                    FROM child_document
+                    WHERE status = ${bind(DocumentStatus.DECISION_PROPOSAL)} 
+                        AND decision_maker = ${bind(user.id)}
+                """
+                            )
+                        }
+                        .exactlyOne<Int>()
+                }
+            }
+            .also { Audit.ChildDocumentDecisionsReportNotificationsRead.log() }
     }
 }
 
