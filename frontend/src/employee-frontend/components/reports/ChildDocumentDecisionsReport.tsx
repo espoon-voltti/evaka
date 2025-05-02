@@ -266,7 +266,7 @@ export default React.memo(function ChildDocumentDecisionsReport() {
                 </SortableTh>
               </Tr>
             </Thead>
-            <Tbody>
+            <Tbody data-qa="report-table">
               {rows.map((row) => (
                 <RelativeTr
                   key={row.id}
