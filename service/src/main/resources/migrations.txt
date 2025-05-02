@@ -522,3 +522,4 @@ V523__other_decision.sql
 V524__sfi_events.sql
 V525__nekku_special_diet_type_additions.sql
 V526__fix_sfi_message_event_type_enum.sql
+V527__document_template_archive_constraints.sql

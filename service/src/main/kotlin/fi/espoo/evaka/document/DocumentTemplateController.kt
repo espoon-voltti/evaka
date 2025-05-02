@@ -51,6 +51,7 @@ class DocumentTemplateController(
         clock: EvakaClock,
         @RequestBody body: DocumentTemplateBasicsRequest,
     ): DocumentTemplate {
+        validateArchiveRequirements(body)
         return db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -239,6 +240,7 @@ class DocumentTemplateController(
         @PathVariable templateId: DocumentTemplateId,
         @RequestBody body: DocumentTemplateBasicsRequest,
     ): DocumentTemplate {
+        validateArchiveRequirements(body)
         return db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -263,6 +265,7 @@ class DocumentTemplateController(
         @PathVariable templateId: DocumentTemplateId,
         @RequestBody body: DocumentTemplateBasicsRequest,
     ) {
+        validateArchiveRequirements(body)
         db.connect { dbc ->
             dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -409,6 +412,21 @@ class DocumentTemplateController(
                 }
             }
             .also { Audit.DocumentTemplateDelete.log(targetId = AuditId(templateId)) }
+    }
+
+    private fun validateArchiveRequirements(body: DocumentTemplateBasicsRequest) {
+        if (body.archiveExternally) {
+            if (body.processDefinitionNumber.isNullOrBlank()) {
+                throw BadRequest(
+                    "Process definition number is required when archive externally is enabled"
+                )
+            }
+            if (body.archiveDurationMonths == null || body.archiveDurationMonths < 1) {
+                throw BadRequest(
+                    "Valid archive duration is required when archive externally is enabled"
+                )
+            }
+        }
     }
 }
 

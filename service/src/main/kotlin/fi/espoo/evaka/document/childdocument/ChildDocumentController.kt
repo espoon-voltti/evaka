@@ -594,6 +594,21 @@ class ChildDocumentController(
                         throw BadRequest("Document template is not marked for external archiving")
                     }
 
+                    // Validate that the document template has required archival details
+                    if (document.template.processDefinitionNumber.isNullOrBlank()) {
+                        throw BadRequest(
+                            "Process definition number is required for external archiving"
+                        )
+                    }
+                    if (
+                        document.template.archiveDurationMonths == null ||
+                            document.template.archiveDurationMonths < 1
+                    ) {
+                        throw BadRequest(
+                            "Valid archive duration is required for external archiving"
+                        )
+                    }
+
                     asyncJobRunner.plan(
                         tx = tx,
                         payloads = listOf(AsyncJob.ArchiveChildDocument(documentId)),
