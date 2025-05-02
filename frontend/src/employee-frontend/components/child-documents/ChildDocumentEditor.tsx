@@ -796,6 +796,7 @@ const ChildDocumentReadViewInner = React.memo(
                         filterItems={filterEmployees}
                         getItemDataQa={(e) => e.id}
                         placeholder={i18n.common.select}
+                        openAbove
                         data-qa="decision-maker-combobox"
                       />
                     </FixedSpaceColumn>
@@ -905,6 +906,7 @@ const AcceptDecisionForm = React.memo(function AcceptDecisionForm({
           bind={validity}
           locale={lang}
           data-qa="decision-validity-picker"
+          openAbove
         />
       </FixedSpaceColumn>
       <ConfirmedMutation

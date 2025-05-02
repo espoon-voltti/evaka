@@ -7,7 +7,7 @@ import classNames from 'classnames'
 import { compute as computeScrollIntoView } from 'compute-scroll-into-view'
 import { useCombobox, UseComboboxStateChange } from 'downshift'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import styled from 'styled-components'
+import styled, { css } from 'styled-components'
 
 import { faChevronDown, faChevronUp, faTimes } from 'lib-icons'
 
@@ -29,6 +29,7 @@ export interface ComboboxProps<T> extends DropdownProps<T, HTMLInputElement> {
     menuEmptyItem?: (label: string) => React.ReactNode
   }
   fullWidth?: boolean
+  openAbove?: boolean
   info?: InputInfo
 }
 
@@ -57,16 +58,26 @@ const InputWrapper = styled.div`
 `
 
 const MenuWrapper = styled.div`
+  position: relative;
   margin: 0 -2px;
   z-index: 10;
   height: 0;
 `
 
-const Menu = styled.div`
-  position: relative;
-  width: 100%;
+const Menu = styled.div<{ $openAbove?: boolean }>`
   z-index: 10;
-  top: 10px;
+  ${(p) =>
+    p.$openAbove
+      ? css`
+          position: absolute;
+          bottom: 40px;
+          left: 0;
+        `
+      : css`
+          position: relative;
+          width: 100%;
+        `}
+
   margin: 0;
   padding: 0;
 
@@ -179,6 +190,7 @@ function Combobox<T>(props: ComboboxProps<T>) {
     onInputChange,
     children,
     fullWidth,
+    openAbove,
     'data-qa': dataQa
   } = props
   const defaultFilterItems = useCallback(
@@ -329,6 +341,7 @@ function Combobox<T>(props: ComboboxProps<T>) {
         </InputWrapper>
         <MenuWrapper onClick={stopPropagation}>
           <Menu
+            $openAbove={openAbove}
             className={classNames({ closed: !isOpen })}
             {...getMenuProps({
               // styled-components and downshift typings don't play nice together
