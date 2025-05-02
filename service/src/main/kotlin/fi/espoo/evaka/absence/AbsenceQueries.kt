@@ -112,7 +112,8 @@ RETURNING id
 data class FullDayAbsenseUpsert(
     val childId: ChildId,
     val date: LocalDate,
-    val absenceType: AbsenceType,
+    val absenceTypeBillable: AbsenceType,
+    val absenceTypeNonbillable: AbsenceType,
     val questionnaireId: HolidayQuestionnaireId? = null,
 )
 
@@ -133,7 +134,10 @@ SELECT
     ${bind { it.childId }},
     ${bind { it.date }},
     category,
-    ${bind { it.absenceType }},
+    CASE category
+        WHEN 'BILLABLE' THEN ${bind { it.absenceTypeBillable }}
+        WHEN 'NONBILLABLE' THEN ${bind { it.absenceTypeNonbillable }}
+    END,
     ${bind(now)},
     ${bind(userId)},
     ${bind { it.questionnaireId }}

@@ -411,6 +411,7 @@ class ReservationControllerCitizen(
                                             } else {
                                                 body.absenceType
                                             },
+                                            body.absenceType,
                                         )
                                     }
                             }

@@ -369,6 +369,7 @@ fun createReservationsAndAbsences(
                 if (plannedAbsenceEnabled && reservableRange.includes(it.date))
                     AbsenceType.PLANNED_ABSENCE
                 else AbsenceType.OTHER_ABSENCE,
+                AbsenceType.OTHER_ABSENCE,
             )
         }
     val upsertedFullDayAbsences =
@@ -399,7 +400,11 @@ fun createReservationsAndAbsences(
                         req.childId,
                         req.date,
                         it,
-                        if (plannedAbsenceEnabled && reservableRange.includes(req.date)) {
+                        if (
+                            plannedAbsenceEnabled &&
+                                reservableRange.includes(req.date) &&
+                                it == AbsenceCategory.BILLABLE
+                        ) {
                             AbsenceType.PLANNED_ABSENCE
                         } else {
                             AbsenceType.OTHER_ABSENCE

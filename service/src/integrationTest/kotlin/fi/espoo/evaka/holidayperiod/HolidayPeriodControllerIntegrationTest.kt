@@ -71,11 +71,13 @@ class HolidayPeriodControllerIntegrationTest : FullApplicationTest(resetDbBefore
                         testChild_1.id,
                         holidayPeriodStart.minusDays(1),
                         AbsenceType.OTHER_ABSENCE,
+                        AbsenceType.OTHER_ABSENCE,
                     ),
                     // Inside holiday period
                     FullDayAbsenseUpsert(
                         testChild_1.id,
                         holidayPeriodStart,
+                        AbsenceType.OTHER_ABSENCE,
                         AbsenceType.OTHER_ABSENCE,
                     ),
                 ),
@@ -88,6 +90,7 @@ class HolidayPeriodControllerIntegrationTest : FullApplicationTest(resetDbBefore
                     FullDayAbsenseUpsert(
                         testChild_1.id,
                         holidayPeriodStart.plusDays(1),
+                        AbsenceType.OTHER_ABSENCE,
                         AbsenceType.OTHER_ABSENCE,
                     )
                 ),
