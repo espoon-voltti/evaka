@@ -8,6 +8,7 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.absence.AbsencePushNotifications
 import fi.espoo.evaka.absence.AbsenceType
+import fi.espoo.evaka.absence.getAbsencesOfChildByDate
 import fi.espoo.evaka.absence.getAbsencesOfChildByRange
 import fi.espoo.evaka.allDayTimeRange
 import fi.espoo.evaka.allWeekOpTimes
@@ -40,6 +41,7 @@ import fi.espoo.evaka.shared.dev.DevHolidayPeriod
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
+import fi.espoo.evaka.shared.dev.DevPreschoolTerm
 import fi.espoo.evaka.shared.dev.DevReservation
 import fi.espoo.evaka.shared.dev.DevServiceNeed
 import fi.espoo.evaka.shared.dev.insert
@@ -52,6 +54,7 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.TimeInterval
 import fi.espoo.evaka.shared.domain.TimeRange
+import fi.espoo.evaka.shared.domain.toFiniteDateRange
 import fi.espoo.evaka.shared.noopTracer
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.PilotFeature
@@ -70,8 +73,11 @@ import kotlin.test.assertEquals
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.groups.Tuple
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.EnumSource
 import org.springframework.beans.factory.annotation.Autowired
 
 class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
@@ -115,6 +121,186 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
             tx.insertServiceNeedOptions()
             tx.insertServiceNeedOption(snPreschoolDaycareContractDays13)
             tx.insertServiceNeedOption(snDaycareHours120)
+        }
+    }
+
+    @Nested
+    inner class AbsenceTypeTest {
+        val area = DevCareArea()
+        val unit =
+            DevDaycare(areaId = area.id, enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS))
+        val employee = DevEmployee()
+
+        val adult = DevPerson()
+        val child = DevPerson()
+
+        @BeforeEach
+        fun setup() {
+            db.transaction { tx ->
+                tx.insert(
+                    DevPreschoolTerm(
+                        finnishPreschool = monday.toFiniteDateRange(),
+                        swedishPreschool = monday.toFiniteDateRange(),
+                        extendedTerm = monday.toFiniteDateRange(),
+                        applicationPeriod = monday.toFiniteDateRange(),
+                        termBreaks = DateSet.empty(),
+                    )
+                )
+
+                tx.insert(area)
+                tx.insert(unit)
+                tx.insert(employee)
+
+                tx.insert(adult, DevPersonType.ADULT)
+                tx.insert(child, DevPersonType.CHILD)
+                tx.insertGuardian(adult.id, child.id)
+            }
+        }
+
+        @ParameterizedTest
+        @EnumSource(
+            PlacementType::class,
+            names = ["CLUB", "PRESCHOOL", "PREPARATORY"],
+            mode = EnumSource.Mode.EXCLUDE,
+        )
+        fun `postReservations with 10 minutes Reservations should insert OTHER_ABSENCE`(
+            placementType: PlacementType
+        ) {
+            db.transaction { tx ->
+                tx.insert(
+                    DevPlacement(
+                        type = placementType,
+                        childId = child.id,
+                        unitId = unit.id,
+                        startDate = monday,
+                        endDate = monday,
+                    )
+                )
+            }
+
+            postReservations(
+                adult.user(CitizenAuthLevel.WEAK),
+                listOf(
+                    DailyReservationRequest.Reservations(
+                        childId = child.id,
+                        date = monday,
+                        reservation = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 10)),
+                    )
+                ),
+            )
+
+            assertThat(db.transaction { tx -> tx.getAbsencesOfChildByDate(child.id, monday) })
+                .extracting({ it.category }, { it.absenceType })
+                .containsExactlyInAnyOrderElementsOf(
+                    placementType.absenceCategories().map { Tuple(it, AbsenceType.OTHER_ABSENCE) }
+                )
+        }
+
+        @ParameterizedTest
+        @EnumSource(
+            PlacementType::class,
+            names = ["TEMPORARY_DAYCARE", "TEMPORARY_DAYCARE_PART_DAY"],
+            mode = EnumSource.Mode.EXCLUDE,
+        )
+        fun `postReservations with Absent should insert OTHER_ABSENCE`(
+            placementType: PlacementType
+        ) {
+            db.transaction { tx ->
+                tx.insert(
+                    DevPlacement(
+                        type = placementType,
+                        childId = child.id,
+                        unitId = unit.id,
+                        startDate = monday,
+                        endDate = monday,
+                    )
+                )
+            }
+
+            postReservations(
+                adult.user(CitizenAuthLevel.WEAK),
+                listOf(DailyReservationRequest.Absent(childId = child.id, date = monday)),
+            )
+
+            assertThat(db.transaction { tx -> tx.getAbsencesOfChildByDate(child.id, monday) })
+                .extracting({ it.category }, { it.absenceType })
+                .containsExactlyInAnyOrderElementsOf(
+                    placementType.absenceCategories().map { Tuple(it, AbsenceType.OTHER_ABSENCE) }
+                )
+        }
+
+        @ParameterizedTest
+        @EnumSource(
+            PlacementType::class,
+            names = ["TEMPORARY_DAYCARE", "TEMPORARY_DAYCARE_PART_DAY"],
+            mode = EnumSource.Mode.EXCLUDE,
+        )
+        fun `postAbsences with OTHER_ABSENCE should insert OTHER_ABSENCE`(
+            placementType: PlacementType
+        ) {
+            db.transaction { tx ->
+                tx.insert(
+                    DevPlacement(
+                        type = placementType,
+                        childId = child.id,
+                        unitId = unit.id,
+                        startDate = monday,
+                        endDate = monday,
+                    )
+                )
+            }
+
+            postAbsences(
+                adult.user(CitizenAuthLevel.WEAK),
+                AbsenceRequest(
+                    childIds = setOf(child.id),
+                    dateRange = FiniteDateRange(monday, monday),
+                    absenceType = AbsenceType.OTHER_ABSENCE,
+                ),
+            )
+
+            assertThat(db.transaction { tx -> tx.getAbsencesOfChildByDate(child.id, monday) })
+                .extracting({ it.category }, { it.absenceType })
+                .containsExactlyInAnyOrderElementsOf(
+                    placementType.absenceCategories().map { Tuple(it, AbsenceType.OTHER_ABSENCE) }
+                )
+        }
+
+        @ParameterizedTest
+        @EnumSource(
+            PlacementType::class,
+            names = ["TEMPORARY_DAYCARE", "TEMPORARY_DAYCARE_PART_DAY"],
+            mode = EnumSource.Mode.EXCLUDE,
+        )
+        fun `postAbsences with PLANNED_ABSENCE should insert PLANNED_ABSENCE`(
+            placementType: PlacementType
+        ) {
+            db.transaction { tx ->
+                tx.insert(
+                    DevPlacement(
+                        type = placementType,
+                        childId = child.id,
+                        unitId = unit.id,
+                        startDate = monday,
+                        endDate = monday,
+                    )
+                )
+            }
+
+            postAbsences(
+                adult.user(CitizenAuthLevel.WEAK),
+                AbsenceRequest(
+                    childIds = setOf(child.id),
+                    dateRange = FiniteDateRange(monday, monday),
+                    absenceType = AbsenceType.PLANNED_ABSENCE,
+                ),
+            )
+
+            assertThat(db.transaction { tx -> tx.getAbsencesOfChildByDate(child.id, monday) })
+                .extracting({ it.category }, { it.absenceType })
+                .containsExactlyInAnyOrderElementsOf(
+                    placementType.absenceCategories().map { Tuple(it, AbsenceType.PLANNED_ABSENCE) }
+                )
         }
     }
 
