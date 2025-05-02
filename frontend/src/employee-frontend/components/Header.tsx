@@ -303,11 +303,14 @@ export default React.memo(function Header() {
                     childDocumentDecisionNotificationCount
                   )
                     .map(([n1, n2]) => n1 + n2)
-                    .map(
-                      (unread) =>
-                        unread > 0 && (
-                          <UnreadCount key="unread">{unread}</UnreadCount>
-                        )
+                    .map((unread) =>
+                      unread > 0 ? (
+                        <UnreadCount key="-" data-qa="notifications">
+                          {unread}
+                        </UnreadCount>
+                      ) : (
+                        <span key="-" data-qa="no-notifications" />
+                      )
                     )
                     .getOrElse(null)}
                 </NavLinkWrapper>
@@ -323,7 +326,13 @@ export default React.memo(function Header() {
               >
                 <NavLinkWrapper>
                   <NavLinkText>{i18n.header.messages} </NavLinkText>
-                  {unreadCount > 0 && <UnreadCount>{unreadCount}</UnreadCount>}
+                  {unreadCount > 0 ? (
+                    <UnreadCount data-qa="notifications">
+                      {unreadCount}
+                    </UnreadCount>
+                  ) : (
+                    <span data-qa="no-notifications" />
+                  )}
                 </NavLinkWrapper>
               </NavbarLink>
             )}
