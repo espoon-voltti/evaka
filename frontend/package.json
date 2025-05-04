@@ -73,7 +73,7 @@
   "devDependencies": {
     "@babel/core": "7.27.1",
     "@babel/preset-env": "7.27.1",
-    "@eslint/compat": "1.2.8",
+    "@eslint/compat": "1.2.9",
     "@eslint/js": "9.25.1",
     "@evaka/eslint-plugin": "link:eslint-plugin",
     "@playwright/test": "1.52.0",
