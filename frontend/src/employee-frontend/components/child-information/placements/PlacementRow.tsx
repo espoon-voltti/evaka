@@ -18,13 +18,13 @@ import {
 } from 'lib-common/generated/api-types/placement'
 import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
 import LocalDate from 'lib-common/local-date'
-import { useMutationResult } from 'lib-common/query'
+import { cancelMutation, useMutationResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import UnorderedList from 'lib-components/atoms/UnorderedList'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
+import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { fontWeights } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
@@ -49,8 +49,8 @@ import { deletePlacementMutation, updatePlacementMutation } from '../queries'
 import ServiceNeeds from './ServiceNeeds'
 
 interface PlacementUpdate {
-  startDate: LocalDate
-  endDate: LocalDate
+  startDate: LocalDate | null
+  endDate: LocalDate | null
 }
 
 interface Props {
@@ -97,15 +97,6 @@ const ActionRow = styled.div`
   }
 `
 
-const CompactDatePicker = styled(DatePickerDeprecated)`
-  .input {
-    font-size: 1rem;
-    padding: 0;
-    height: unset;
-    min-height: unset;
-  }
-`
-
 export default React.memo(function PlacementRow({
   placement,
   permittedActions,
@@ -135,7 +126,9 @@ export default React.memo(function PlacementRow({
   const retroactive = useMemo(
     () =>
       isChangeRetroactive(
-        new DateRange(form.startDate, form.endDate),
+        form.startDate && form.endDate
+          ? new DateRange(form.startDate, form.endDate)
+          : null,
         new DateRange(placement.startDate, placement.endDate),
         false, // only range can be edited
         LocalDate.todayInHelsinkiTz()
@@ -208,7 +201,11 @@ export default React.memo(function PlacementRow({
     [backupCares, placement]
   )
 
-  function calculateOverlapWarnings(startDate: LocalDate, endDate: LocalDate) {
+  function calculateOverlapWarnings(
+    startDate: LocalDate | null,
+    endDate: LocalDate | null
+  ) {
+    if (!startDate || !endDate) return
     if (
       otherPlacementRanges.some((range) =>
         range.overlaps(new FiniteDateRange(startDate, endDate))
@@ -300,15 +297,15 @@ export default React.memo(function PlacementRow({
           <DataValue data-qa="placement-details-start-date">
             {editing ? (
               <DatepickerContainer>
-                <CompactDatePicker
+                <DatePicker
                   date={form.startDate}
-                  maxDate={form.endDate}
+                  maxDate={form.endDate ?? undefined}
                   onChange={(startDate) => {
                     setForm({ ...form, startDate })
                     calculateOverlapWarnings(startDate, placement.endDate)
                   }}
-                  type="full-width"
                   data-qa="placement-start-date-input"
+                  locale="fi"
                 />
                 {startDateWarning ? (
                   <WarningContainer>
@@ -331,14 +328,14 @@ export default React.memo(function PlacementRow({
               <div>
                 <div>
                   <DatepickerContainer>
-                    <CompactDatePicker
+                    <DatePicker
                       date={form.endDate}
-                      minDate={form.startDate}
+                      minDate={form.startDate ?? undefined}
                       onChange={(endDate) => {
                         setForm({ ...form, endDate })
                         calculateOverlapWarnings(placement.startDate, endDate)
                       }}
-                      type="full-width"
+                      locale="fi"
                       data-qa="placement-end-date-input"
                       aria-labelledby="placement-details-end-date"
                     />
@@ -470,14 +467,25 @@ export default React.memo(function PlacementRow({
               <MutateButton
                 primary
                 mutation={updatePlacementMutation}
-                onClick={() => ({
-                  placementId: placement.id,
-                  body: form
-                })}
+                onClick={() =>
+                  form.startDate && form.endDate
+                    ? {
+                        placementId: placement.id,
+                        body: {
+                          startDate: form.startDate,
+                          endDate: form.endDate
+                        }
+                      }
+                    : cancelMutation
+                }
                 onSuccess={onSuccess}
                 onFailure={onFailure}
                 text={i18n.common.save}
-                disabled={retroactive && !confirmedRetroactive}
+                disabled={
+                  form.startDate === null ||
+                  form.endDate === null ||
+                  (retroactive && !confirmedRetroactive)
+                }
               />
             </FixedSpaceRow>
           </ActionRow>
