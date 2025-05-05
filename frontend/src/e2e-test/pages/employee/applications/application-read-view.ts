@@ -9,12 +9,12 @@ import { UUID } from 'lib-common/types'
 import config from '../../../config'
 import { waitUntilTrue } from '../../../utils'
 import {
-  DatePickerDeprecated,
   Page,
   Radio,
   Element,
   ElementCollection,
-  TextInput
+  TextInput,
+  DatePicker
 } from '../../../utils/page'
 import MessagesPage from '../messages/messages-page'
 
@@ -65,15 +65,15 @@ export default class ApplicationReadView {
 
   async assertDecisionAvailableForDownload(type: DecisionType) {
     await this.page
-      .find(`[data-qa="application-decision-${type}"]`)
-      .find('[data-qa="application-decision-download-available"]')
+      .findByDataQa(`application-decision-${type}`)
+      .findByDataQa('application-decision-download-available')
       .waitUntilVisible()
   }
 
   async assertDecisionDownloadPending(type: DecisionType) {
     await this.page
-      .find(`[data-qa="application-decision-${type}"]`)
-      .find('[data-qa="application-decision-download-pending"]')
+      .findByDataQa(`application-decision-${type}`)
+      .findByDataQa('application-decision-download-pending')
       .waitUntilVisible()
   }
 
@@ -132,10 +132,10 @@ export default class ApplicationReadView {
   }
 
   async setDecisionStartDate(type: DecisionType, startDate: string) {
-    const datePicker = new DatePickerDeprecated(
+    const datePicker = new DatePicker(
       this.page
-        .find(`[data-qa="application-decision-${type}"]`)
-        .find('[data-qa="decision-start-date-picker"]')
+        .findByDataQa(`application-decision-${type}`)
+        .findByDataQa('decision-start-date-picker')
     )
     await datePicker.fill(startDate)
   }
@@ -144,11 +144,11 @@ export default class ApplicationReadView {
     const decision = this.page.findByDataQa(`application-decision-${type}`)
 
     const acceptRadio = new Radio(
-      decision.find('[data-qa="decision-radio-accept"]')
+      decision.findByDataQa('decision-radio-accept')
     )
     await acceptRadio.check()
 
-    const submit = decision.find('[data-qa="decision-send-answer-button"]')
+    const submit = decision.findByDataQa('decision-send-answer-button')
     await submit.click()
     await submit.waitUntilHidden()
   }
@@ -169,7 +169,7 @@ export default class ApplicationReadView {
     const attachment = this.page.findByDataQa(`urgent-attachment-${fileName}`)
     await attachment.waitUntilVisible()
 
-    const text = attachment.find(`[data-qa="attachment-received-at"]`)
+    const text = attachment.findByDataQa(`attachment-received-at`)
     await text.waitUntilVisible()
 
     await waitUntilTrue(async () =>
@@ -181,7 +181,7 @@ export default class ApplicationReadView {
 
   async assertExtendedCareAttachmentExists(fileName: string) {
     await this.page
-      .find(`[data-qa="extended-care-attachment-${fileName}"]`)
+      .findByDataQa(`extended-care-attachment-${fileName}`)
       .waitUntilVisible()
   }
 

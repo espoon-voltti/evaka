@@ -4,16 +4,24 @@
 
 import React, { useState } from 'react'
 
+import { errorToInputInfo } from 'employee-frontend/utils/validation/input-info-helper'
+import { required, validate } from 'lib-common/form-validation'
 import { Decision } from 'lib-common/generated/api-types/decision'
 import { ApplicationId } from 'lib-common/generated/api-types/shared'
-import { first, second, useSelectMutation } from 'lib-common/query'
+import LocalDate from 'lib-common/local-date'
+import {
+  cancelMutation,
+  first,
+  second,
+  useSelectMutation
+} from 'lib-common/query'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import Radio from 'lib-components/atoms/form/Radio'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
+import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 
 import { useTranslation } from '../../state/i18n'
 
@@ -30,16 +38,21 @@ export default React.memo(function DecisionResponse({
 }: Props) {
   const { i18n } = useTranslation()
   const [accept, setAccept] = useState(true)
-  const [acceptDate, setAcceptDate] = useState(decision.startDate)
+  const [acceptDate, setAcceptDate] = useState<LocalDate | null>(
+    decision.startDate
+  )
 
   const [mutation, onClick] = useSelectMutation(
     () => (accept ? first() : second()),
     [
       acceptDecisionMutation,
-      () => ({
-        applicationId,
-        body: { decisionId: decision.id, requestedStartDate: acceptDate }
-      })
+      () =>
+        acceptDate !== null
+          ? {
+              applicationId,
+              body: { decisionId: decision.id, requestedStartDate: acceptDate }
+            }
+          : cancelMutation
     ],
     [
       rejectDecisionMutation,
@@ -59,13 +72,18 @@ export default React.memo(function DecisionResponse({
           label={i18n.application.decisions.response.accept}
           onChange={() => setAccept(true)}
         />
-        <DatePickerDeprecated
+        <DatePicker
           data-qa="decision-start-date-picker"
-          type="short"
           date={acceptDate}
           onChange={setAcceptDate}
           minDate={decision.startDate.subMonths(1)}
           maxDate={decision.startDate.addWeeks(2)}
+          info={errorToInputInfo(
+            validate(acceptDate, required),
+            i18n.validationErrors
+          )}
+          required
+          locale="fi"
         />
       </FixedSpaceRow>
       <Radio
