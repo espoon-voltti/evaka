@@ -3758,6 +3758,8 @@ export const fi = {
       title: 'Muut päätökset',
       description: 'Päätöksen tekijälle lähetetyt muut lapsen päätökset.',
       statusFilter: 'Näytettävät tilat',
+      otherFilters: 'Muut valinnat',
+      includeEnded: 'Näytä päättyneet päätökset',
       templateName: 'Päätös',
       childName: 'Lapsi',
       modifiedAt: 'Muokattu',

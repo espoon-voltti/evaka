@@ -31,6 +31,7 @@ import {
   Tr
 } from 'lib-components/layout/Table'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import { Gap } from 'lib-components/white-space'
 
 import { useTranslation } from '../../state/i18n'
 import { UserContext } from '../../state/user'
@@ -104,9 +105,12 @@ export default React.memo(function ChildDocumentDecisionsReport() {
     (DocumentStatus | ChildDocumentDecisionStatus)[]
   >(['DRAFT', 'DECISION_PROPOSAL'])
 
+  const [includeEnded, setIncludeEnded] = useState(false)
+
   const report = useQueryResult(
     childDocumentDecisionsReportQuery({
-      statuses: shownStatuses
+      statuses: shownStatuses,
+      includeEnded
     })
   )
 
@@ -198,6 +202,19 @@ export default React.memo(function ChildDocumentDecisionsReport() {
               />
             ))}
           </FixedSpaceRow>
+        </FilterRow>
+
+        <Gap size="xs" />
+
+        <FilterRow>
+          <FilterLabel>
+            {i18n.reports.childDocumentDecisions.otherFilters}
+          </FilterLabel>
+          <Checkbox
+            label={i18n.reports.childDocumentDecisions.includeEnded}
+            checked={includeEnded}
+            onChange={setIncludeEnded}
+          />
         </FilterRow>
 
         {renderResult(sortedRows, (rows) => (

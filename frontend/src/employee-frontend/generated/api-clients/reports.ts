@@ -308,11 +308,13 @@ export async function getChildAttendanceReport(
 */
 export async function getChildDocumentDecisionsReport(
   request: {
-    statuses?: ChildDocumentOrDecisionStatus[] | null
+    statuses?: ChildDocumentOrDecisionStatus[] | null,
+    includeEnded: boolean
   }
 ): Promise<ChildDocumentSummary[]> {
   const params = createUrlSearchParams(
-    ...(request.statuses?.map((e): [string, string | null | undefined] => ['statuses', e.toString()]) ?? [])
+    ...(request.statuses?.map((e): [string, string | null | undefined] => ['statuses', e.toString()]) ?? []),
+    ['includeEnded', request.includeEnded.toString()]
   )
   const { data: json } = await client.request<JsonOf<ChildDocumentSummary[]>>({
     url: uri`/employee/reports/child-document-decisions`.toString(),

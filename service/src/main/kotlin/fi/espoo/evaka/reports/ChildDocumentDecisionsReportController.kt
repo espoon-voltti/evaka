@@ -19,6 +19,7 @@ import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import fi.espoo.evaka.shared.security.actionrule.toPredicate
+import java.time.LocalDate
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
@@ -31,6 +32,7 @@ class ChildDocumentDecisionsReportController(private val accessControl: AccessCo
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestParam statuses: Set<ChildDocumentOrDecisionStatus> = emptySet(),
+        @RequestParam includeEnded: Boolean,
     ): List<ChildDocumentSummary> {
         return db.connect { dbc ->
                 dbc.read {
@@ -50,7 +52,12 @@ class ChildDocumentDecisionsReportController(private val accessControl: AccessCo
                             Action.ChildDocument.READ,
                         )
 
-                    it.getReportRows(aclFilter, statuses)
+                    it.getReportRows(
+                        today = clock.today(),
+                        aclFilter = aclFilter,
+                        statuses = statuses,
+                        includeEnded = includeEnded,
+                    )
                 }
             }
             .also { Audit.ChildDocumentDecisionsReportRead.log() }
@@ -89,12 +96,25 @@ class ChildDocumentDecisionsReportController(private val accessControl: AccessCo
 }
 
 private fun Database.Read.getReportRows(
+    today: LocalDate,
     aclFilter: AccessControlFilter<ChildDocumentId>,
     statuses: Set<ChildDocumentOrDecisionStatus>,
+    includeEnded: Boolean,
 ): List<ChildDocumentSummary> {
     val documentPredicate =
         Predicate { where("$it.type = ${bind(DocumentType.OTHER_DECISION)}") }
             .and(aclFilter.toPredicate())
 
-    return getChildDocuments(where = documentPredicate, statuses = statuses)
+    val documentDecisionPredicate =
+        if (includeEnded) {
+            Predicate.alwaysTrue()
+        } else {
+            Predicate { where("$it.valid_to IS NULL OR $it.valid_to >= ${bind(today)}") }
+        }
+
+    return getChildDocuments(
+        documentPredicate = documentPredicate,
+        documentDecisionPredicate = documentDecisionPredicate,
+        statuses = statuses,
+    )
 }
