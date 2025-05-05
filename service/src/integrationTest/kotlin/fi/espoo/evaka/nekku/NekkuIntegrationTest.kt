@@ -4,6 +4,8 @@
 
 package fi.espoo.evaka.nekku
 
+import com.fasterxml.jackson.databind.json.JsonMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.absence.AbsenceType
@@ -212,53 +214,50 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         }
     }
 
-    fun getNekkuSpecialDiet(): NekkuApiSpecialDiet {
-        val nekkuSpecialDiet =
-            NekkuApiSpecialDiet(
-                "2",
-                "Päiväkodit er.",
-                listOf(
-                    NekkuApiSpecialDietsField(
-                        "17A9ACF0-DE9E-4C07-882E-C8C47351D009",
-                        "Muu erityisruokavalio, mikä?",
-                        NekkuApiSpecialDietType.Text,
-                    ),
-                    NekkuApiSpecialDietsField(
-                        "AE1FE5FE-9619-4D7A-9043-A6B0C615156B",
-                        "Erityisruokavaliot",
-                        NekkuApiSpecialDietType.CheckBoxLst,
-                        listOf(
-                            NekkuSpecialDietOption(
-                                1,
-                                "Kananmunaton ruokavalio",
-                                "Kananmunaton ruokavalio",
-                            ),
-                            NekkuSpecialDietOption(
-                                2,
-                                "Sianlihaton ruokavalio",
-                                "Sianlihaton ruokavalio",
-                            ),
-                            NekkuSpecialDietOption(
-                                3,
-                                "Luontaisesti gluteeniton ruokavalio",
-                                "Luontaisesti gluteeniton ruokavalio",
-                            ),
-                            NekkuSpecialDietOption(
-                                4,
-                                "Maitoallergisen ruokavalio",
-                                "Maitoallergisen ruokavalio",
-                            ),
-                            NekkuSpecialDietOption(
-                                5,
-                                "Laktoositon ruokavalio",
-                                "Laktoositon ruokavalio",
-                            ),
+    fun getNekkuSpecialDiet(): NekkuApiSpecialDiet =
+        NekkuApiSpecialDiet(
+            "2",
+            "Päiväkodit er.",
+            listOf(
+                NekkuApiSpecialDietsField(
+                    "17A9ACF0-DE9E-4C07-882E-C8C47351D009",
+                    "Muu erityisruokavalio, mikä?",
+                    NekkuApiSpecialDietType.Text,
+                ),
+                NekkuApiSpecialDietsField(
+                    "AE1FE5FE-9619-4D7A-9043-A6B0C615156B",
+                    "Erityisruokavaliot",
+                    NekkuApiSpecialDietType.CheckBoxLst,
+                    listOf(
+                        NekkuSpecialDietOption(
+                            1,
+                            "Kananmunaton ruokavalio",
+                            "Kananmunaton ruokavalio",
+                        ),
+                        NekkuSpecialDietOption(
+                            2,
+                            "Sianlihaton ruokavalio",
+                            "Sianlihaton ruokavalio",
+                        ),
+                        NekkuSpecialDietOption(
+                            3,
+                            "Luontaisesti gluteeniton ruokavalio",
+                            "Luontaisesti gluteeniton ruokavalio",
+                        ),
+                        NekkuSpecialDietOption(
+                            4,
+                            "Maitoallergisen ruokavalio",
+                            "Maitoallergisen ruokavalio",
+                        ),
+                        NekkuSpecialDietOption(
+                            5,
+                            "Laktoositon ruokavalio",
+                            "Laktoositon ruokavalio",
                         ),
                     ),
                 ),
-            )
-        return nekkuSpecialDiet
-    }
+            ),
+        )
 
     @Test
     fun `Nekku special diets sync does not sync empty data`() {
@@ -447,6 +446,138 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             val nekkuSpecialDietOptions = tx.getNekkuSpecialOptions()
             assertEquals(7, nekkuSpecialDietOptions.size)
         }
+    }
+
+    @Test
+    fun `Nekku special diet sync can deserialize all field types`() {
+        val specialDiet =
+            """
+            [
+                {
+                    "id" : "42",
+                    "name" : "Kevyt kenttätesti",
+                    "fields" : [
+                        {
+                            "id" : "A",
+                            "type" : "text",
+                            "name" : "A"
+                        },
+                        {
+                            "id" : "B",
+                            "type" : "checkboxlst",
+                            "name" : "B",
+                            "options" : [
+                                {
+                                    "key" : "BA",
+                                    "value" : "BA",
+                                    "weight" : 1
+                                },
+                                {
+                                    "key" : "BB",
+                                    "value" : "BB",
+                                    "weight" : 2
+                                },
+                                {
+                                    "key" : "BC",
+                                    "value" : "BC",
+                                    "weight" : 3
+                                }
+                            ]
+                        },
+                        {
+                            "id" : "C",
+                            "type" : "checkbox",
+                            "name" : "C"
+                        },
+                        {
+                            "id" : "D",
+                            "type" : "radio",
+                            "name" : "D",
+                            "options": [
+                                {
+                                    "key" : "DA",
+                                    "value": "DA",
+                                    "weight" : 1
+                                },
+                                {
+                                    "key" : "DB",
+                                    "value": "DB",
+                                    "weight" : 2
+                                },
+                                {
+                                    "key" : "DC",
+                                    "value": "DC",
+                                    "weight" : 3
+                                }
+                            ]
+                        },
+                        {
+                            "id" : "E",
+                            "type" : "textarea",
+                            "name" : "E"
+                        },
+                        {
+                            "id" : "F",
+                            "type" : "email",
+                            "name" : "F"
+                        }
+                    ]
+                }
+            ]
+        """
+
+        val client = DeserializingTestNekkuClient(jsonMapper, specialDiets = specialDiet)
+        val deserializedSpecialDiet = client.getSpecialDiets()
+    }
+
+    @Test
+    fun `Nekku special diet sync can save all field types to database`() {
+        val client =
+            TestNekkuClient(
+                specialDiets =
+                    listOf(
+                        NekkuApiSpecialDiet(
+                            "42",
+                            "Kanta-enumin testi",
+                            listOf(
+                                NekkuApiSpecialDietsField("A", "A", NekkuApiSpecialDietType.Text),
+                                NekkuApiSpecialDietsField(
+                                    "B",
+                                    "B",
+                                    NekkuApiSpecialDietType.CheckBoxLst,
+                                    listOf(
+                                        NekkuSpecialDietOption(1, "BA", "BB"),
+                                        NekkuSpecialDietOption(2, "BB", "BB"),
+                                    ),
+                                ),
+                                NekkuApiSpecialDietsField(
+                                    "C",
+                                    "C",
+                                    NekkuApiSpecialDietType.Checkbox,
+                                ),
+                                NekkuApiSpecialDietsField(
+                                    "D",
+                                    "D",
+                                    NekkuApiSpecialDietType.Radio,
+                                    listOf(
+                                        NekkuSpecialDietOption(1, "DA", "DA"),
+                                        NekkuSpecialDietOption(2, "DB", "DB"),
+                                    ),
+                                ),
+                                NekkuApiSpecialDietsField(
+                                    "E",
+                                    "E",
+                                    NekkuApiSpecialDietType.Textarea,
+                                ),
+                                NekkuApiSpecialDietsField("F", "F", NekkuApiSpecialDietType.Email),
+                            ),
+                        )
+                    )
+            )
+
+        fetchAndUpdateNekkuSpecialDiets(client, db)
+
+        db.read { tx -> assertEquals(6, tx.getNekkuSpecialDietFields().size) }
     }
 
     val nekkuProducts =
@@ -3100,6 +3231,37 @@ class TestNekkuClient(
 
     override fun getProducts(): List<NekkuApiProduct> {
         return nekkuProducts
+    }
+
+    override fun createNekkuMealOrder(nekkuOrders: NekkuClient.NekkuOrders): NekkuOrderResult {
+        orders.add(nekkuOrders)
+
+        return NekkuOrderResult(
+            message = "Input ok, 5 orders would be created.",
+            created = listOf("12345", "65432"),
+            cancelled = emptyList(),
+        )
+    }
+}
+
+class DeserializingTestNekkuClient(
+    private val jsonMapper: JsonMapper,
+    private val customers: String = "",
+    private val specialDiets: String = "",
+    private val nekkuProducts: String = "",
+) : NekkuClient {
+    val orders = mutableListOf<NekkuClient.NekkuOrders>()
+
+    override fun getCustomers(): List<NekkuApiCustomer> {
+        return jsonMapper.readValue<List<NekkuApiCustomer>>(customers)
+    }
+
+    override fun getSpecialDiets(): List<NekkuApiSpecialDiet> {
+        return jsonMapper.readValue<List<NekkuApiSpecialDiet>>(specialDiets)
+    }
+
+    override fun getProducts(): List<NekkuApiProduct> {
+        return jsonMapper.readValue<List<NekkuApiProduct>>(nekkuProducts)
     }
 
     override fun createNekkuMealOrder(nekkuOrders: NekkuClient.NekkuOrders): NekkuOrderResult {

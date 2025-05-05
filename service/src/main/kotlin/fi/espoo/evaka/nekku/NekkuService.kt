@@ -270,7 +270,7 @@ class NekkuHttpClient(private val env: NekkuEnv, private val jsonMapper: JsonMap
             return try {
                 jsonMapper.readValue<T>(body.string())
             } catch (e: Exception) {
-                logger.error(e) { "Failed to parse Nekku API response" }
+                logger.error(e) { "Failed to parse Nekku API response: ${body.string()}" }
                 throw IOException("Failed to parse Nekku API response", e)
             }
         }
@@ -754,7 +754,11 @@ data class NekkuSpecialDietsFieldWithoutOptions(
 @ConstList("nekku_special_diet_type")
 enum class NekkuSpecialDietType : DatabaseEnum {
     TEXT,
-    CHECKBOXLIST;
+    CHECKBOXLIST,
+    CHECKBOX,
+    RADIO,
+    TEXTAREA,
+    EMAIL;
 
     override val sqlType: String = "nekku_special_diet_type"
 }
@@ -765,6 +769,18 @@ enum class NekkuApiSpecialDietType(@JsonValue val jsonValue: String) {
     },
     CheckBoxLst("checkboxlst") {
         override fun toEvaka(): NekkuSpecialDietType = NekkuSpecialDietType.CHECKBOXLIST
+    },
+    Checkbox("checkbox") {
+        override fun toEvaka(): NekkuSpecialDietType = NekkuSpecialDietType.CHECKBOX
+    },
+    Radio("radio") {
+        override fun toEvaka(): NekkuSpecialDietType = NekkuSpecialDietType.RADIO
+    },
+    Textarea("textarea") {
+        override fun toEvaka(): NekkuSpecialDietType = NekkuSpecialDietType.TEXTAREA
+    },
+    Email("email") {
+        override fun toEvaka(): NekkuSpecialDietType = NekkuSpecialDietType.EMAIL
     };
 
     abstract fun toEvaka(): NekkuSpecialDietType

@@ -46,7 +46,11 @@ export interface NekkuSpecialDietOptionWithFieldId {
 */
 export const nekku_special_diet_type = [
   'TEXT',
-  'CHECKBOXLIST'
+  'CHECKBOXLIST',
+  'CHECKBOX',
+  'RADIO',
+  'TEXTAREA',
+  'EMAIL'
 ] as const
 
 export type NekkuSpecialDietType = typeof nekku_special_diet_type[number]

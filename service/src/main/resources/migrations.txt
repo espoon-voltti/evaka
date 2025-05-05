@@ -520,3 +520,4 @@ V521__document_template_archiveable.sql
 V522__other_decision_document_type_changes.sql
 V523__other_decision.sql
 V524__sfi_events.sql
+V525__nekku_special_diet_type_additions.sql
