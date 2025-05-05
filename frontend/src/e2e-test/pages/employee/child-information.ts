@@ -412,9 +412,8 @@ export class BackupCaresSection extends Section {
     this.find('[data-qa="backup-care-select-unit"]')
   )
 
-  #dates = this.findAll('[data-qa="dates"] > *')
-  #startDate = new DatePickerDeprecated(this.#dates.nth(0))
-  #endDate = new DatePickerDeprecated(this.#dates.nth(1))
+  #startDate = new DatePicker(this.findByDataQa('backup-care-start-date'))
+  #endDate = new DatePicker(this.findByDataQa('backup-care-end-date'))
 
   #backupCares = this.find('[data-qa="backup-cares"]')
 
