@@ -182,15 +182,51 @@ class ChildDocumentDecisionsReportTest : FullApplicationTest(resetDbBeforeEach =
         )
     }
 
+    @Test
+    fun `include ended filter works`() {
+        db.transaction { tx ->
+            // child 1 has one upcoming, one current and one ended decision
+            listOf(
+                    DateRange(clock.today().plusMonths(1), null),
+                    DateRange(clock.today().minusMonths(1), clock.today().plusDays(5)),
+                    DateRange(clock.today().minusMonths(6), clock.today().minusMonths(4)),
+                )
+                .forEach { validity ->
+                    tx.insert(
+                        child2Document.copy(
+                            id = ChildDocumentId(UUID.randomUUID()),
+                            childId = child1.id,
+                            status = DocumentStatus.COMPLETED,
+                            publishedAt = clock.now(),
+                            publishedContent = child2Document.content,
+                            contentModifiedBy = supervisor1.id,
+                            decision =
+                                DevChildDocumentDecision(
+                                    createdBy = decisionMaker.id,
+                                    modifiedBy = decisionMaker.id,
+                                    status = ChildDocumentDecisionStatus.ACCEPTED,
+                                    validity = validity,
+                                ),
+                        )
+                    )
+                }
+        }
+
+        assertEquals(4, getReport(decisionMaker.user, includeEnded = true).size)
+        assertEquals(3, getReport(decisionMaker.user, includeEnded = false).size)
+    }
+
     private fun getReport(
         user: AuthenticatedUser.Employee,
         statuses: Set<ChildDocumentOrDecisionStatus> = emptySet(),
+        includeEnded: Boolean = false,
     ) =
         controller.getChildDocumentDecisionsReport(
             db = dbInstance(),
             user = user,
             clock = clock,
             statuses = statuses,
+            includeEnded = includeEnded,
         )
 
     private fun getNotifications(user: AuthenticatedUser.Employee) =

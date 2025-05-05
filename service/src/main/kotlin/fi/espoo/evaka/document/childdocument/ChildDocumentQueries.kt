@@ -53,7 +53,8 @@ fun Database.Read.getChildDocuments(childId: PersonId): List<ChildDocumentSummar
     getChildDocuments(Predicate { where("$it.child_id = ${bind(childId)}") })
 
 fun Database.Read.getChildDocuments(
-    where: Predicate,
+    documentPredicate: Predicate,
+    documentDecisionPredicate: Predicate = Predicate.alwaysTrue(),
     statuses: Set<ChildDocumentOrDecisionStatus>? = null,
 ): List<ChildDocumentSummary> {
     val statusPredicate =
@@ -69,7 +70,12 @@ fun Database.Read.getChildDocuments(
             PredicateSql.alwaysTrue()
         }
 
-    val combinedPredicate = PredicateSql { where.forTable("cd").and(statusPredicate) }
+    val combinedPredicate = PredicateSql {
+        documentPredicate
+            .forTable("cd")
+            .and(documentDecisionPredicate.forTable("cdd"))
+            .and(statusPredicate)
+    }
 
     return createQuery {
             sql(
