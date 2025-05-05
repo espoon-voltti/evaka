@@ -358,6 +358,16 @@ export class DatePicker extends Element {
   }
 }
 
+export class DateRangePicker extends Element {
+  start = new DatePicker(this.findByDataQa('start-date'))
+  end = new DatePicker(this.findByDataQa('end-date'))
+
+  async fill(start: LocalDate | string, end: LocalDate | string) {
+    await this.start.fill(start)
+    await this.end.fill(end)
+  }
+}
+
 export class DatePickerDeprecated extends Element {
   #input: TextInput
   #clearIcon: Element

@@ -18,7 +18,7 @@ import {
   Checkbox,
   Combobox,
   DatePicker,
-  DatePickerDeprecated,
+  DateRangePicker,
   Element,
   FileUpload,
   Modal,
@@ -1155,18 +1155,14 @@ class OtherAssistanceMeasureRow extends InlineAssistanceRow {
 }
 
 class FeeAlterationEditorPage {
-  startDateInput: DatePickerDeprecated
-  endDateInput: DatePickerDeprecated
+  dateRangePicker: DateRangePicker
   alterationValueInput: TextInput
   fileUpload: FileUpload
   saveButton: Element
 
   constructor(readonly page: Page) {
-    this.startDateInput = new DatePickerDeprecated(
-      page.findByDataQa('date-range-input-start-date')
-    )
-    this.endDateInput = new DatePickerDeprecated(
-      page.findByDataQa('date-range-input-end-date')
+    this.dateRangePicker = new DateRangePicker(
+      page.findByDataQa('fee-alteration-date-range-input')
     )
     this.alterationValueInput = new TextInput(
       page.findByDataQa('fee-alteration-amount-input')
@@ -1178,7 +1174,7 @@ class FeeAlterationEditorPage {
   }
 
   async waitUntilReady() {
-    await this.startDateInput.waitUntilVisible()
+    await this.dateRangePicker.start.waitUntilVisible()
   }
 }
 

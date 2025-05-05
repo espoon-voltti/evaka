@@ -11,11 +11,11 @@ import InputField from 'lib-components/atoms/form/InputField'
 import colors from 'lib-customizations/common'
 
 import { useTranslation } from '../../../state/i18n'
-import { PartialFeeAlteration } from '../../../types/fee-alteration'
+import { FeeAlterationForm } from '../../../types/fee-alteration'
 
 interface Props {
-  edited: PartialFeeAlteration
-  setEdited: Dispatch<SetStateAction<PartialFeeAlteration>>
+  edited: FeeAlterationForm
+  setEdited: Dispatch<SetStateAction<FeeAlterationForm>>
 }
 
 export default React.memo(function FeeAlterationRowInput({
