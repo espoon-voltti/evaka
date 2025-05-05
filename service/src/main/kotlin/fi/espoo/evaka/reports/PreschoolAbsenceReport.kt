@@ -313,21 +313,14 @@ fun calculateDailyPreschoolAttendanceDeviationForUnit(
     return tx.createQuery {
             sql(
                 """
--- calculate child attendance deviation from standard daily preschool service time in minutes
-SELECT floor(
-    extract(
-        EPOCH FROM (${bind(preschoolEndTime)} - ${bind(preschoolStartTime)}) 
-        - sum((upper(intersection.range) - lower(intersection.range)))
-    ) / 60) AS missing_minutes,
-    intersection.date,
-    intersection.child_id
-FROM (
+WITH intersection AS(
     SELECT
         (tsrange(ca.date + ca.start_time, ca.date + ca.end_time) *
             tsrange(ca.date + ${bind(preschoolStartTime)}, ca.date + ${bind(preschoolEndTime)})
         ) AS range,
         ca.date,
-        ca.child_id
+        ca.child_id,
+        p.type
     FROM placement p
     JOIN daycare d ON p.unit_id = d.id
         AND 'PRESCHOOL'::care_types = ANY (d.type)
@@ -339,54 +332,46 @@ FROM (
     WHERE tsrange(ca.date + ca.start_time, ca.date + ca.end_time) &&
             tsrange(ca.date + ${bind(preschoolStartTime)}, ca.date + ${bind(preschoolEndTime)})
         AND daterange(p.start_date, p.end_date, '[]') && ${bind(preschoolTerm)}
-        AND p.type = ANY ('{PRESCHOOL, PRESCHOOL_DAYCARE}'::placement_type[])
+        AND p.type = ANY ('{PRESCHOOL, PRESCHOOL_DAYCARE, PREPARATORY, PREPARATORY_DAYCARE}'::placement_type[])
         AND p.unit_id = ${bind(daycareId)}
-) intersection
-GROUP BY intersection.date, intersection.child_id
+)
+-- calculate child attendance deviation from standard daily preschool service time in minutes
+SELECT floor(
+    extract(
+        EPOCH FROM (${bind(preschoolEndTime)} - ${bind(preschoolStartTime)}) 
+        - sum((upper(range) - lower(range)))
+    ) / 60) AS missing_minutes,
+    date,
+    child_id
+FROM  intersection
+WHERE type = ANY ('{PRESCHOOL, PRESCHOOL_DAYCARE}'::placement_type[])
+GROUP BY date, child_id
 -- filter out daily deviations below 20 minutes
 HAVING floor(
     extract(
         EPOCH FROM (${bind(preschoolEndTime)} - ${bind(preschoolStartTime)})
-        - sum((upper(intersection.range) - lower(intersection.range)))
+        - sum((upper(range) - lower(range)))
     ) / 60
 ) >= 20
 
 UNION
 
+-- calculate child attendance deviation from standard daily preparatory service time in minutes
 SELECT floor(
     extract(
         EPOCH FROM (${bind(preparatoryEndTime)} - ${bind(preparatoryStartTime)}) 
-        - sum((upper(intersection.range) - lower(intersection.range)))
+        - sum((upper(range) - lower(range)))
     ) / 60) AS missing_minutes,
-    intersection.date,
-    intersection.child_id
-FROM (
-    SELECT
-        (tsrange(ca.date + ca.start_time, ca.date + ca.end_time) *
-            tsrange(ca.date + ${bind(preparatoryStartTime)}, ca.date + ${bind(preparatoryEndTime)})
-        ) AS range,
-        ca.date,
-        ca.child_id
-    FROM placement p
-    JOIN daycare d ON p.unit_id = d.id
-        AND 'PRESCHOOL'::care_types = ANY (d.type)
-    JOIN child_attendance ca ON ca.child_id = p.child_id
-        AND daterange(p.start_date, p.end_date, '[]') * ${bind(preschoolTerm)} @> ca.date
-        AND ca.end_time IS NOT NULL
-        AND ca.unit_id = d.id
-    -- pick out attendance intersecting preschool service time
-    WHERE tsrange(ca.date + ca.start_time, ca.date + ca.end_time) &&
-            tsrange(ca.date + ${bind(preparatoryStartTime)}, ca.date + ${bind(preparatoryEndTime)})
-        AND daterange(p.start_date, p.end_date, '[]') && ${bind(preschoolTerm)}
-        AND p.type = ANY ('{PREPARATORY, PREPARATORY_DAYCARE}'::placement_type[])
-        AND p.unit_id = ${bind(daycareId)}
-) intersection
-GROUP BY intersection.date, intersection.child_id
+    date,
+    child_id
+FROM intersection
+WHERE type = ANY ('{PREPARATORY, PREPARATORY_DAYCARE}'::placement_type[])
+GROUP BY date, child_id
 -- filter out daily deviations below 20 minutes
 HAVING floor(
     extract(
         EPOCH FROM (${bind(preparatoryEndTime)} - ${bind(preparatoryStartTime)})
-        - sum((upper(intersection.range) - lower(intersection.range)))
+        - sum((upper(range) - lower(range)))
     ) / 60
 ) >= 20;
     """
@@ -412,21 +397,14 @@ fun calculateDailyPreschoolAttendanceDeviationForGroup(
     return tx.createQuery {
             sql(
                 """
--- calculate child attendance deviation from standard daily preschool service time in minutes
-SELECT floor(
-    extract(
-        EPOCH FROM (${bind(preschoolEndTime)} - ${bind(preschoolStartTime)})
-        - sum((upper(intersection.range) - lower(intersection.range)))
-    ) / 60) AS missing_minutes,
-    intersection.date,
-    intersection.child_id
-FROM (
+WITH intersection AS (
     SELECT
         (tsrange(ca.date + ca.start_time, ca.date + ca.end_time) *
             tsrange(ca.date + ${bind(preschoolStartTime)}, ca.date + ${bind(preschoolEndTime)})
         ) AS range,
         ca.date,
-        ca.child_id
+        ca.child_id,
+        p.type
     FROM placement p
     JOIN daycare d
         ON p.unit_id = d.id
@@ -442,15 +420,25 @@ FROM (
     WHERE tsrange(ca.date + ca.start_time, ca.date + ca.end_time) &&
         tsrange(ca.date + ${bind(preschoolStartTime)}, ca.date + ${bind(preschoolEndTime)})
         AND daterange(p.start_date, p.end_date, '[]') && ${bind(preschoolTerm)}
-        AND p.type = ANY ('{PRESCHOOL, PRESCHOOL_DAYCARE}'::placement_type[])
+        AND p.type = ANY ('{PRESCHOOL, PRESCHOOL_DAYCARE, PREPARATORY, PREPARATORY_DAYCARE}'::placement_type[])
         AND p.unit_id = ${bind(daycareId)}
-) intersection
-GROUP BY intersection.date, intersection.child_id
+)
+-- calculate child attendance deviation from standard daily preschool service time in minutes
+SELECT floor(
+    extract(
+        EPOCH FROM (${bind(preschoolEndTime)} - ${bind(preschoolStartTime)})
+        - sum((upper(range) - lower(range)))
+    ) / 60) AS missing_minutes,
+    date,
+    child_id
+FROM intersection
+WHERE type = ANY ('{PRESCHOOL, PRESCHOOL_DAYCARE}'::placement_type[])
+GROUP BY date, child_id
 -- filter out daily deviations below 20 minutes
 HAVING floor(
     extract(
         EPOCH FROM (${bind(preschoolEndTime)} - ${bind(preschoolStartTime)})
-        - sum((upper(intersection.range) - lower(intersection.range)))
+        - sum((upper(range) - lower(range)))
     ) / 60
 ) >= 20
 
@@ -460,41 +448,18 @@ UNION
 SELECT floor(
     extract(
         EPOCH FROM (${bind(preparatoryEndTime)} - ${bind(preparatoryStartTime)})
-        - sum((upper(intersection.range) - lower(intersection.range)))
+        - sum((upper(range) - lower(range)))
     ) / 60) AS missing_minutes,
-    intersection.date,
-    intersection.child_id
-FROM (
-    SELECT
-        (tsrange(ca.date + ca.start_time, ca.date + ca.end_time) *
-            tsrange(ca.date + ${bind(preparatoryStartTime)}, ca.date + ${bind(preparatoryEndTime)})
-        ) AS range,
-        ca.date,
-        ca.child_id
-    FROM placement p
-    JOIN daycare d
-        ON p.unit_id = d.id
-        AND 'PRESCHOOL'::care_types = ANY (d.type)
-    JOIN daycare_group_placement dgp ON p.id = dgp.daycare_placement_id
-        AND daterange(dgp.start_date, dgp.end_date, '[]') && ${bind(preschoolTerm)}
-        AND dgp.daycare_group_id = ${bind(groupId)}
-    JOIN child_attendance ca ON ca.child_id = p.child_id
-        AND daterange(dgp.start_date, dgp.end_date, '[]') * ${bind(preschoolTerm)} @> ca.date
-        AND ca.end_time IS NOT NULL
-        AND ca.unit_id = d.id
-    -- pick out attendance intersecting preschool service time
-    WHERE tsrange(ca.date + ca.start_time, ca.date + ca.end_time) &&
-        tsrange(ca.date + ${bind(preparatoryStartTime)}, ca.date + ${bind(preparatoryEndTime)})
-        AND daterange(p.start_date, p.end_date, '[]') && ${bind(preschoolTerm)}
-        AND p.type = ANY ('{ PREPARATORY, PREPARATORY_DAYCARE}'::placement_type[])
-        AND p.unit_id = ${bind(daycareId)}
-) intersection
-GROUP BY intersection.date, intersection.child_id
+    date,
+    child_id
+FROM intersection
+WHERE type = ANY ('{ PREPARATORY, PREPARATORY_DAYCARE}'::placement_type[])
+GROUP BY date, child_id
 -- filter out daily deviations below 20 minutes
 HAVING floor(
     extract(
         EPOCH FROM (${bind(preparatoryEndTime)} - ${bind(preparatoryStartTime)})
-        - sum((upper(intersection.range) - lower(intersection.range)))
+        - sum((upper(range) - lower(range)))
     ) / 60
 ) >= 20;
     """
