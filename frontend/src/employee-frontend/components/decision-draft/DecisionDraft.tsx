@@ -31,8 +31,9 @@ import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import { AlertBox, InfoBox } from 'lib-components/molecules/MessageBoxes'
+import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
+import { DatePickerSpacer } from 'lib-components/molecules/date-picker/DateRangePicker'
 import { fontWeights } from 'lib-components/typography'
 import colors from 'lib-customizations/common'
 import { featureFlags } from 'lib-customizations/employee'
@@ -56,15 +57,6 @@ const getDecisionDraftsResult = wrapResult(getDecisionDrafts)
 const ColumnTitle = styled.div`
   font-weight: ${fontWeights.semibold};
   margin-bottom: 1em;
-`
-
-const DateRangeContainer = styled.span`
-  display: flex;
-  margin-bottom: 0.25em;
-`
-
-const DateRangeSpacer = styled.span`
-  margin: auto 15px;
 `
 
 const UnitSelectContainer = styled.div`
@@ -359,29 +351,33 @@ export default React.memo(function Decision() {
                         />
                       ),
                       value: (
-                        <DateRangeContainer>
-                          <DatePickerDeprecated
+                        <FixedSpaceRow>
+                          <DatePicker
                             date={decision.startDate}
-                            type="full-width"
                             disabled={decision.type !== 'PREPARATORY_EDUCATION'}
                             onChange={(startDate) =>
-                              updateState(decision.type, { startDate })
+                              updateState(decision.type, {
+                                startDate: startDate ?? undefined
+                              })
                             }
                             minDate={minDate(decision.type)}
                             maxDate={maxDate(decision.type)}
+                            locale="fi"
                           />
-                          <DateRangeSpacer>-</DateRangeSpacer>
-                          <DatePickerDeprecated
+                          <DatePickerSpacer />
+                          <DatePicker
                             date={decision.endDate}
                             disabled={decision.type !== 'PREPARATORY_EDUCATION'}
-                            type="full-width"
                             onChange={(endDate) =>
-                              updateState(decision.type, { endDate })
+                              updateState(decision.type, {
+                                endDate: endDate ?? undefined
+                              })
                             }
                             minDate={minDate(decision.type)}
                             maxDate={maxDate(decision.type)}
+                            locale="fi"
                           />
-                        </DateRangeContainer>
+                        </FixedSpaceRow>
                       )
                     },
                     ...(featureFlags.decisionDraftMultipleUnits ||
