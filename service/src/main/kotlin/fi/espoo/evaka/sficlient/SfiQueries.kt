@@ -84,17 +84,21 @@ data class SentSfiMessage(
     val voucherValueDecisionId: VoucherValueDecisionId? = null,
 )
 
-fun Database.Transaction.upsertSfiMessageEvent(event: SfiMessageEvent): SfiMessageEventId =
+fun Database.Transaction.upsertSfiMessageEventIfSfiMessageExists(
+    event: SfiMessageEvent
+): SfiMessageEventId =
     createUpdate {
             sql(
                 """
-            INSERT INTO sfi_message_event (message_id, event_type)
-            VALUES (${bind(event.messageId)}, ${bind(event.eventType)})
-            ON CONFLICT (message_id, event_type)
-            DO UPDATE SET 
-                message_id = EXCLUDED.message_id,
-                updated_at = now()
-            RETURNING id
+WITH existing_message AS (
+    SELECT 1 FROM sfi_message WHERE id = ${bind(event.messageId)}
+)
+INSERT INTO sfi_message_event (message_id, event_type)
+SELECT ${bind(event.messageId)}, ${bind(event.eventType)}
+FROM existing_message
+ON CONFLICT (message_id, event_type)
+DO UPDATE SET updated_at = now()
+RETURNING id
             """
             )
         }

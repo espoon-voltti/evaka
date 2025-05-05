@@ -43,8 +43,9 @@ class SfiAsyncJobs(
                     val externalId =
                         UUID.fromString(event.metadata.externalId)
                             ?: throw IllegalStateException("SfiAsyncJobs: external ID is null")
+
                     val id =
-                        tx.upsertSfiMessageEvent(
+                        tx.upsertSfiMessageEventIfSfiMessageExists(
                             SfiMessageEvent(
                                 messageId = SfiMessageId(externalId),
                                 eventType = event.type,
