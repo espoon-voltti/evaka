@@ -444,18 +444,49 @@ data class ExportedDocumentTemplate(
     @Json val content: DocumentTemplateContent,
 )
 
-data class DocumentTemplateBasicsRequest(
-    val name: String,
-    val type: DocumentType,
-    val placementTypes: Set<PlacementType>,
-    val language: UiLanguage,
-    val confidentiality: DocumentConfidentiality?,
-    val legalBasis: String,
-    val validity: DateRange,
-    val processDefinitionNumber: String?,
-    val archiveDurationMonths: Int?,
-    val archiveExternally: Boolean,
-)
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "templateType")
+sealed interface DocumentTemplateBasicsRequest {
+    val archiveDurationMonths: Int?
+    val processDefinitionNumber: String?
+    val name: String
+    val type: DocumentType
+    val placementTypes: Set<PlacementType>
+    val language: UiLanguage
+    val confidentiality: DocumentConfidentiality?
+    val legalBasis: String
+    val validity: DateRange
+    val archiveExternally: Boolean
+
+    @JsonTypeName("REGULAR")
+    data class Regular(
+        override val name: String,
+        override val type: DocumentType,
+        override val placementTypes: Set<PlacementType>,
+        override val language: UiLanguage,
+        override val confidentiality: DocumentConfidentiality?,
+        override val legalBasis: String,
+        override val validity: DateRange,
+        override val processDefinitionNumber: String? = null,
+        override val archiveDurationMonths: Int? = null,
+    ) : DocumentTemplateBasicsRequest {
+        override val archiveExternally = false
+    }
+
+    @JsonTypeName("ARCHIVED_EXTERNALLY")
+    data class ArchivedExternally(
+        override val name: String,
+        override val type: DocumentType,
+        override val placementTypes: Set<PlacementType>,
+        override val language: UiLanguage,
+        override val confidentiality: DocumentConfidentiality?,
+        override val legalBasis: String,
+        override val validity: DateRange,
+        override val processDefinitionNumber: String,
+        override val archiveDurationMonths: Int,
+    ) : DocumentTemplateBasicsRequest {
+        override val archiveExternally = true
+    }
+}
 
 data class DocumentTemplateSummary(
     val id: DocumentTemplateId,

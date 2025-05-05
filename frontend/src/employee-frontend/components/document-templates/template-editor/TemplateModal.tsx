@@ -119,18 +119,28 @@ export const documentTemplateForm = transformed(
 
     const output: DocumentTemplateBasicsRequest = {
       ...value,
-      processDefinitionNumber: archived
-        ? value.processDefinitionNumber.trim()
-        : null,
-      archiveDurationMonths: archived
-        ? parseInt(value.archiveDurationMonths)
-        : null,
+
       confidentiality: confidential
         ? {
             durationYears: parseInt(value.confidentialityDurationYears),
             basis: value.confidentialityBasis.trim()
           }
-        : null
+        : null,
+      ...(value.archiveExternally
+        ? {
+            templateType: 'ARCHIVED_EXTERNALLY',
+            processDefinitionNumber: value.processDefinitionNumber.trim(),
+            archiveDurationMonths: parseInt(value.archiveDurationMonths)
+          }
+        : {
+            templateType: 'REGULAR',
+            processDefinitionNumber: archived
+              ? value.processDefinitionNumber.trim()
+              : null,
+            archiveDurationMonths: archived
+              ? parseInt(value.archiveDurationMonths)
+              : null
+          })
     }
     return ValidationSuccess.of(output)
   }

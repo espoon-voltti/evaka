@@ -282,21 +282,48 @@ export interface DocumentTemplate {
   validity: DateRange
 }
 
+
+export namespace DocumentTemplateBasicsRequest {
+  /**
+  * Generated from fi.espoo.evaka.document.DocumentTemplateBasicsRequest.ArchivedExternally
+  */
+  export interface ArchivedExternally {
+    templateType: 'ARCHIVED_EXTERNALLY'
+    archiveDurationMonths: number
+    archiveExternally: boolean
+    confidentiality: DocumentConfidentiality | null
+    language: UiLanguage
+    legalBasis: string
+    name: string
+    placementTypes: PlacementType[]
+    processDefinitionNumber: string
+    type: DocumentType
+    validity: DateRange
+  }
+
+  /**
+  * Generated from fi.espoo.evaka.document.DocumentTemplateBasicsRequest.Regular
+  */
+  export interface Regular {
+    templateType: 'REGULAR'
+    archiveDurationMonths: number | null
+    archiveExternally: boolean
+    confidentiality: DocumentConfidentiality | null
+    language: UiLanguage
+    legalBasis: string
+    name: string
+    placementTypes: PlacementType[]
+    processDefinitionNumber: string | null
+    type: DocumentType
+    validity: DateRange
+  }
+}
+
 /**
 * Generated from fi.espoo.evaka.document.DocumentTemplateBasicsRequest
 */
-export interface DocumentTemplateBasicsRequest {
-  archiveDurationMonths: number | null
-  archiveExternally: boolean
-  confidentiality: DocumentConfidentiality | null
-  language: UiLanguage
-  legalBasis: string
-  name: string
-  placementTypes: PlacementType[]
-  processDefinitionNumber: string | null
-  type: DocumentType
-  validity: DateRange
-}
+export type DocumentTemplateBasicsRequest = DocumentTemplateBasicsRequest.ArchivedExternally | DocumentTemplateBasicsRequest.Regular
+
 
 /**
 * Generated from fi.espoo.evaka.document.DocumentTemplateContent
@@ -631,10 +658,25 @@ export function deserializeJsonDocumentTemplate(json: JsonOf<DocumentTemplate>):
 }
 
 
-export function deserializeJsonDocumentTemplateBasicsRequest(json: JsonOf<DocumentTemplateBasicsRequest>): DocumentTemplateBasicsRequest {
+
+export function deserializeJsonDocumentTemplateBasicsRequestArchivedExternally(json: JsonOf<DocumentTemplateBasicsRequest.ArchivedExternally>): DocumentTemplateBasicsRequest.ArchivedExternally {
   return {
     ...json,
     validity: DateRange.parseJson(json.validity)
+  }
+}
+
+export function deserializeJsonDocumentTemplateBasicsRequestRegular(json: JsonOf<DocumentTemplateBasicsRequest.Regular>): DocumentTemplateBasicsRequest.Regular {
+  return {
+    ...json,
+    validity: DateRange.parseJson(json.validity)
+  }
+}
+export function deserializeJsonDocumentTemplateBasicsRequest(json: JsonOf<DocumentTemplateBasicsRequest>): DocumentTemplateBasicsRequest {
+  switch (json.templateType) {
+    case 'ARCHIVED_EXTERNALLY': return deserializeJsonDocumentTemplateBasicsRequestArchivedExternally(json)
+    case 'REGULAR': return deserializeJsonDocumentTemplateBasicsRequestRegular(json)
+    default: return json
   }
 }
 

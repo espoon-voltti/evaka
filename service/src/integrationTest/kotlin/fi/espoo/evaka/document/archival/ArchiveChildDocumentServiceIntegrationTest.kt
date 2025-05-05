@@ -183,7 +183,7 @@ class ArchiveChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBe
             // Create archived process
             val process =
                 tx.insertProcess(
-                    processDefinitionNumber = "1234",
+                    processDefinitionNumber = "12.06.01.SL1.RT34",
                     year = 2023,
                     organization = "Espoon kaupungin esiopetus ja varhaiskasvatus",
                     archiveDurationMonths = 120,
