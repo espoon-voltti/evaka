@@ -319,10 +319,7 @@ class FeeDecisionService(
 
         val messageId =
             tx.storeSentSfiMessage(
-                SentSfiMessage(
-                    guardianId = decision.headOfFamily.id,
-                    feeDecisionId = decision.id.raw,
-                )
+                SentSfiMessage(guardianId = decision.headOfFamily.id, feeDecisionId = decision.id)
             )
 
         val message =

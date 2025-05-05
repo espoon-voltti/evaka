@@ -5,9 +5,13 @@
 package fi.espoo.evaka.sficlient
 
 import fi.espoo.evaka.sficlient.rest.EventType
+import fi.espoo.evaka.shared.ChildDocumentId
+import fi.espoo.evaka.shared.DecisionId
+import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.SfiMessageEventId
 import fi.espoo.evaka.shared.SfiMessageId
+import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.util.UUID
@@ -74,10 +78,10 @@ data class SentSfiMessage(
     val sfiId: Int? = null,
     val createdAt: HelsinkiDateTime? = null,
     val updatedAt: HelsinkiDateTime? = null,
-    val decisionId: UUID? = null,
-    val documentId: UUID? = null,
-    val feeDecisionId: UUID? = null,
-    val voucherValueDecisionId: UUID? = null,
+    val decisionId: DecisionId? = null,
+    val documentId: ChildDocumentId? = null,
+    val feeDecisionId: FeeDecisionId? = null,
+    val voucherValueDecisionId: VoucherValueDecisionId? = null,
 )
 
 fun Database.Transaction.upsertSfiMessageEvent(event: SfiMessageEvent): SfiMessageEventId =

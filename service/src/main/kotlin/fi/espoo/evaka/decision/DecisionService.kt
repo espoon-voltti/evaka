@@ -264,7 +264,7 @@ class DecisionService(
 
         val messageId =
             tx.storeSentSfiMessage(
-                SentSfiMessage(guardianId = guardian.id, decisionId = decision.id.raw)
+                SentSfiMessage(guardianId = guardian.id, decisionId = decision.id)
             )
 
         val message =

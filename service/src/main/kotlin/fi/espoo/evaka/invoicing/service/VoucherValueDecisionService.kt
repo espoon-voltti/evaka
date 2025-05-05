@@ -139,7 +139,7 @@ class VoucherValueDecisionService(
             tx.storeSentSfiMessage(
                 SentSfiMessage(
                     guardianId = decision.headOfFamily.id,
-                    voucherValueDecisionId = decision.id.raw,
+                    voucherValueDecisionId = decision.id,
                 )
             )
 
