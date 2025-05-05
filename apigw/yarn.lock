@@ -1480,16 +1480,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*, @types/node@npm:>=13.7.0":
-  version: 22.14.1
-  resolution: "@types/node@npm:22.14.1"
-  dependencies:
-    undici-types: "npm:~6.21.0"
-  checksum: 10/561b1ad98ef5176d6da856ffbbe494f16655149f6a7d561de0423c8784910c81267d7d6459f59d68a97b3cbae9b5996b3b5dfe64f4de3de2239d295dcf4a4dcc
-  languageName: node
-  linkType: hard
-
-"@types/node@npm:22.15.3":
+"@types/node@npm:*, @types/node@npm:22.15.3, @types/node@npm:>=13.7.0":
   version: 22.15.3
   resolution: "@types/node@npm:22.15.3"
   dependencies:
@@ -7676,7 +7667,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"xml-crypto@npm:6.1.2":
+"xml-crypto@npm:6.1.2, xml-crypto@npm:^6.0.1":
   version: 6.1.2
   resolution: "xml-crypto@npm:6.1.2"
   dependencies:
@@ -7684,17 +7675,6 @@ __metadata:
     "@xmldom/xmldom": "npm:^0.8.10"
     xpath: "npm:^0.0.33"
   checksum: 10/fdaa52229404274a1aa992dbf74f4919c302a0a2091e1ba7b85673b37969b7795960d52994bf8479e1e5f37ab3cac36b8f09461efa68b59d93824ef1c2da0102
-  languageName: node
-  linkType: hard
-
-"xml-crypto@npm:^6.0.1":
-  version: 6.1.0
-  resolution: "xml-crypto@npm:6.1.0"
-  dependencies:
-    "@xmldom/is-dom-node": "npm:^1.0.1"
-    "@xmldom/xmldom": "npm:^0.8.10"
-    xpath: "npm:^0.0.33"
-  checksum: 10/70bdedf276038248906493047250c0e72d248b41c2626e8a563bb0e578f08f1028c850de53385988106d78e5bdbf9e6a3c685cc8d2b6ddf2b8b167fe5cc7587f
   languageName: node
   linkType: hard
 

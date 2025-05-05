@@ -25,6 +25,9 @@
   // Pin all dependencies to exact versions
   rangeStrategy: 'pin',
 
+  // Deduplicate npm packages
+  postUpdateOptions: ['yarnDedupeHighest', 'npmDedupe'],
+
   labels: ['dependencies'],
   packageRules: [
     {
