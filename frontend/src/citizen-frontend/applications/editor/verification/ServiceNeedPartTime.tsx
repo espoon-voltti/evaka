@@ -6,7 +6,7 @@ import React from 'react'
 
 import { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
 import { Label } from 'lib-components/typography'
-import { featureFlags } from 'lib-customizations/employee'
+import { featureFlags } from 'lib-customizations/citizen'
 
 import { useTranslation } from '../../../localization'
 

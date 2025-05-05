@@ -12,7 +12,7 @@ import { useQueryResult } from 'lib-common/query'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import ModalBackground from 'lib-components/molecules/modals/ModalBackground'
 import { defaultMargins } from 'lib-components/white-space'
-import { featureFlags } from 'lib-customizations/employee'
+import { featureFlags } from 'lib-customizations/citizen'
 import { faComment } from 'lib-icons'
 import { faCalendarPlus, faTreePalm, faUserMinus } from 'lib-icons'
 
