@@ -52,8 +52,3 @@ export const fieldHasErrors = (fieldErrors: FieldErrors) =>
   Object.values(fieldErrors).includes(true)
 
 export type FormErrors = Record<string, FieldErrors | boolean>
-
-export const formHasErrors = (formErrors: FormErrors) =>
-  Object.values(formErrors)
-    .map((e) => (typeof e == 'boolean' ? e : fieldHasErrors(e)))
-    .includes(true)
