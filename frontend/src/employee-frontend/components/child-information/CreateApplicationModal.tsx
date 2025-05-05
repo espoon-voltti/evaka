@@ -6,6 +6,7 @@ import sortBy from 'lodash/sortBy'
 import React, { useContext, useMemo, useState } from 'react'
 
 import { wrapResult } from 'lib-common/api'
+import { required, validate } from 'lib-common/form-validation'
 import {
   ApplicationType,
   PaperApplicationCreateRequest
@@ -18,7 +19,7 @@ import Select from 'lib-components/atoms/dropdowns/Select'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import Radio from 'lib-components/atoms/form/Radio'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
-import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
+import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import FormModal from 'lib-components/molecules/modals/FormModal'
 import { Label } from 'lib-components/typography'
 import { applicationTypes } from 'lib-customizations/employee'
@@ -34,6 +35,7 @@ import { createPaperApplication } from '../../generated/api-clients/application'
 import { Translations, useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
 import { formatName } from '../../utils'
+import { errorToInputInfo } from '../../utils/validation/input-info-helper'
 
 const createPaperApplicationResult = wrapResult(createPaperApplication)
 
@@ -82,7 +84,7 @@ function CreateApplicationModal({
   )
 
   const [type, setType] = useState<ApplicationType>('DAYCARE')
-  const [sentDate, setSentDate] = useState<LocalDate>(
+  const [sentDate, setSentDate] = useState<LocalDate | null>(
     LocalDate.todayInSystemTz()
   )
   const [hideFromGuardian, setHideFromGuardian] = useState(false)
@@ -143,7 +145,7 @@ function CreateApplicationModal({
   }
 
   function submit() {
-    if (!canSubmit()) return
+    if (!canSubmit() || sentDate == null) return
 
     const commonBody: PaperApplicationCreateRequest = {
       childId: child.id,
@@ -322,10 +324,15 @@ function CreateApplicationModal({
         <div>
           <Label>{i18nView.sentDate}</Label>
           <div>
-            <DatePickerDeprecated
+            <DatePicker
               date={sentDate}
               onChange={setSentDate}
-              type="full-width"
+              required
+              info={errorToInputInfo(
+                validate(sentDate, required),
+                i18n.validationErrors
+              )}
+              locale="fi"
             />
           </div>
         </div>
