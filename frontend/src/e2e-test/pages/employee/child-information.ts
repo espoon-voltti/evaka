@@ -808,20 +808,18 @@ export class PlacementsSection extends Section {
     endDate: string
     placeGuarantee?: boolean
   }) {
-    await this.find('[data-qa="create-new-placement-button"]').click()
+    await this.findByDataQa('create-new-placement-button').click()
 
     const modal = new Modal(this.page.findByDataQa('modal'))
-    const unitSelect = new Combobox(modal.find('[data-qa="unit-select"]'))
+    const unitSelect = new Combobox(modal.findByDataQa('unit-select'))
     await unitSelect.fillAndSelectFirst(unitName)
 
-    const start = new DatePickerDeprecated(
-      modal.find('[data-qa="create-placement-start-date"]')
+    const start = new DatePicker(
+      modal.findByDataQa('create-placement-start-date')
     )
     await start.fill(startDate)
 
-    const end = new DatePickerDeprecated(
-      modal.find('[data-qa="create-placement-end-date"]')
-    )
+    const end = new DatePicker(modal.findByDataQa('create-placement-end-date'))
     await end.fill(endDate)
 
     if (placeGuarantee) {

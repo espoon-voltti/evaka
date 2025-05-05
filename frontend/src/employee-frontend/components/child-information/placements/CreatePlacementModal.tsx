@@ -15,9 +15,9 @@ import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
-import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
+import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import FormModal from 'lib-components/molecules/modals/FormModal'
 import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
@@ -38,7 +38,7 @@ export interface Props {
 
 interface Form {
   type: PlacementType
-  startDate: LocalDate
+  startDate: LocalDate | null
   endDate: LocalDate | null
   unit: { id: DaycareId; name: string; ghostUnit: boolean } | null
   placeGuarantee: boolean
@@ -55,10 +55,13 @@ function CreatePlacementModal({ childId }: Props) {
     endDate: null,
     placeGuarantee: false
   })
+
   const retroactive = useMemo(
     () =>
       isChangeRetroactive(
-        form.endDate && form.endDate.isEqualOrAfter(form.startDate)
+        form.startDate &&
+          form.endDate &&
+          form.endDate.isEqualOrAfter(form.startDate)
           ? new FiniteDateRange(form.startDate, form.endDate)
           : null,
         null,
@@ -70,18 +73,18 @@ function CreatePlacementModal({ childId }: Props) {
   const [confirmedRetroactive, setConfirmedRetroactive] = useState(false)
 
   const unitOptions = useMemo(() => {
-    const activeUnits = form.startDate.isAfter(
-      form.endDate ? form.endDate : LocalDate.todayInSystemTz()
-    )
-      ? units
-      : units.map((list) =>
-          list.filter((u) =>
-            new DateRange(
-              u.openingDate ?? LocalDate.of(1900, 1, 1),
-              u.closingDate
-            ).overlapsWith(new DateRange(form.startDate, form.endDate))
+    const { startDate, endDate } = form
+    const activeUnits =
+      !startDate || !endDate || startDate.isAfter(endDate)
+        ? units
+        : units.map((list) =>
+            list.filter((u) =>
+              new DateRange(
+                u.openingDate ?? LocalDate.of(1900, 1, 1),
+                u.closingDate
+              ).overlapsWith(new DateRange(startDate, endDate))
+            )
           )
-        )
     return activeUnits
       .map((us) =>
         us
@@ -89,10 +92,10 @@ function CreatePlacementModal({ childId }: Props) {
           .sort((a, b) => (a.name < b.name ? -1 : 1))
       )
       .getOrElse([])
-  }, [units, form.startDate, form.endDate])
+  }, [units, form])
 
   const errors = useMemo(() => {
-    const errors = []
+    const errors: string[] = []
     if (!form.unit?.id) {
       errors.push(i18n.childInformation.placements.createPlacement.unitMissing)
     }
@@ -101,12 +104,20 @@ function CreatePlacementModal({ childId }: Props) {
       errors.push(i18n.childInformation.placements.warning.ghostUnit)
     }
 
+    if (form.startDate === null) {
+      errors.push(
+        i18n.childInformation.placements.createPlacement.startDateMissing
+      )
+    }
     if (form.endDate === null) {
       errors.push(i18n.validationError.endDateIsMandatoryField)
-    } else {
-      if (form.startDate.isAfter(form.endDate)) {
-        errors.push(i18n.validationError.invertedDateRange)
-      }
+    }
+    if (
+      form.startDate &&
+      form.endDate &&
+      form.startDate.isAfter(form.endDate)
+    ) {
+      errors.push(i18n.validationError.invertedDateRange)
     }
 
     return errors
@@ -116,7 +127,7 @@ function CreatePlacementModal({ childId }: Props) {
     useMutationResult(createPlacementMutation)
 
   const submitForm = () => {
-    if (!form.unit?.id) return
+    if (!form.unit?.id || !form.startDate || !form.endDate) return
 
     void createPlacement({
       body: {
@@ -124,7 +135,7 @@ function CreatePlacementModal({ childId }: Props) {
         type: form.type,
         unitId: form.unit.id,
         startDate: form.startDate,
-        endDate: form.endDate!,
+        endDate: form.endDate,
         placeGuarantee: form.placeGuarantee
       }
     }).then((res) => {
@@ -201,22 +212,22 @@ function CreatePlacementModal({ childId }: Props) {
         <section>
           <div className="bold">{i18n.common.form.startDate}</div>
 
-          <DatePickerDeprecated
+          <DatePicker
             date={form.startDate}
             onChange={(startDate) => setForm({ ...form, startDate })}
             data-qa="create-placement-start-date"
-            type="full-width"
+            locale="fi"
           />
         </section>
 
         <section>
           <div className="bold">{i18n.common.form.endDate}</div>
 
-          <DatePickerDeprecated
-            date={form.endDate || undefined}
+          <DatePicker
+            date={form.endDate}
             onChange={(endDate) => setForm({ ...form, endDate })}
             data-qa="create-placement-end-date"
-            type="full-width"
+            locale="fi"
           />
         </section>
 

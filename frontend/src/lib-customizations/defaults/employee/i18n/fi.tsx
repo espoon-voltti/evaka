@@ -1544,6 +1544,7 @@ export const fi = {
         title: 'Uusi sijoitus',
         text: 'Tästä sijoituksesta ei voi lähettää päätöstä. Jos sijoitus menee päällekkäin lapsen aiemmin luotujen sijoituksien kanssa, näitä sijoituksia lyhennetään tai ne poistetaan automaattisesti.',
         temporaryDaycareWarning: 'HUOM! Älä käytä varasijoitusta tehdessäsi!',
+        startDateMissing: 'Alkupäivä on pakollinen tieto',
         unitMissing: 'Yksikkö puuttuu',
         placeGuarantee: {
           title: 'Varhaiskasvatuspaikkatakuu',
