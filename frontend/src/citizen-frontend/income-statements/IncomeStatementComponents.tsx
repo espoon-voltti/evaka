@@ -43,7 +43,7 @@ export const LabelWithError = React.memo(function LabelWithError({
   errorText: string
 }) {
   return (
-    <FixedSpaceRow>
+    <FixedSpaceRow aria-invalid={showError}>
       <Label>{label}</Label>
       {showError ? <LabelError text={errorText} /> : null}
     </FixedSpaceRow>
@@ -60,8 +60,9 @@ export interface IncomeStatementFormAPI {
 
 export const ActionContainer = styled.div`
   display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
+  flex-direction: row;
+  justify-content: space-between;
+  flex-wrap: wrap;
   padding: ${defaultMargins.s} 0;
   background-color: ${(p) => p.theme.colors.grayscale.g0};
 
@@ -74,8 +75,6 @@ export const ActionContainer = styled.div`
   }
 
   @media (min-width: ${tabletMin}) {
-    flex-direction: row;
-
     > * {
       margin: ${defaultMargins.s} ${defaultMargins.m};
     }

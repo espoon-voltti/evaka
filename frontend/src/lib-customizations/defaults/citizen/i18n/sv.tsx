@@ -2615,7 +2615,6 @@ const sv: Translations = {
       choose: 'Välj ett alternativ',
       chooseAtLeastOne: 'Välj minst ett alternativ',
       deleteFailed: 'Inkomstutredningen kunde inte raderas',
-      dateRangeInvalid: 'Inkomstuppgifter kan vara giltiga i högst ett år',
       attachmentMissing: 'Bilaga saknas'
     },
     table: {

@@ -2368,8 +2368,6 @@ const en: Translations = {
       choose: 'Please select an option',
       chooseAtLeastOne: 'Select at least one option',
       deleteFailed: 'The income statement could not be deleted',
-      dateRangeInvalid:
-        'Income information can be valid for a maximum of one year',
       attachmentMissing: 'Attachment is missing'
     },
     table: {
