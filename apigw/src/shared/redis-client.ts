@@ -17,7 +17,7 @@ export interface RedisClient extends RedisCommands {
 
   del(key: string | string[]): Promise<number>
 
-  expire(key: string, seconds: number): Promise<boolean>
+  expire(key: string, seconds: number): Promise<number>
 
   incr(key: string): Promise<number>
 

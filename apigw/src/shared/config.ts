@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { ValidateInResponseTo } from '@node-saml/node-saml'
-import { RedisClientOptions } from 'redis'
+import { RedisClientOptions } from '@redis/client'
 
 import { TrustedCertificates } from './certificates.js'
 
@@ -401,7 +401,7 @@ export interface Config {
       }
   sfi: { type: 'mock' | 'disabled' } | { type: 'saml'; saml: EvakaSamlConfig }
   redis: {
-    host: string | undefined
+    host: string
     port: number | undefined
     password: string | undefined
     tlsServerName: string | undefined
@@ -651,7 +651,7 @@ export function configFromEnv(): Config {
     ad,
     sfi,
     redis: {
-      host: optional('REDIS_HOST', unchanged),
+      host: required('REDIS_HOST', unchanged),
       port: optional('REDIS_PORT', parseInteger),
       password: optional('REDIS_PASSWORD', unchanged),
       disableSecurity: required('REDIS_DISABLE_SECURITY', parseBoolean),
