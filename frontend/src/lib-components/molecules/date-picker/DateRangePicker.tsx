@@ -3,12 +3,13 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import classNames from 'classnames'
-import React, { useCallback, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import styled from 'styled-components'
 
 import { LocalDateRangeField } from 'lib-common/form/fields'
 import { BoundForm, useBoolean, useFormFields } from 'lib-common/form/hooks'
 import LocalDate from 'lib-common/local-date'
+import { useStableCallback } from 'lib-common/utils/useStableCallback'
 import {
   InputFieldUnderRow,
   InputInfo
@@ -47,6 +48,11 @@ const DateRangePicker = React.memo(function DateRangePicker({
   const [internalEnd, setInternalEnd] = useState(end?.format() ?? '')
   const [internalStartError, setInternalStartError] = useState<InputInfo>()
   const [internalEndError, setInternalEndError] = useState<InputInfo>()
+  const [isValid, setIsValid] = useState<boolean>()
+
+  const afterValidation = useStableCallback(
+    onValidationResult ?? (() => undefined)
+  )
 
   const validate = useCallback(
     (start: LocalDate | null, end: LocalDate | null): boolean => {
@@ -80,17 +86,20 @@ const DateRangePicker = React.memo(function DateRangePicker({
         setInternalStartError(undefined)
         setInternalEndError(undefined)
       }
-      if (onValidationResult) onValidationResult(isValid)
+      setIsValid(isValid)
       return isValid
     },
     [
       i18n.datePicker.validationErrors.dateTooEarly,
       i18n.datePicker.validationErrors.dateTooLate,
       minDate,
-      maxDate,
-      onValidationResult
+      maxDate
     ]
   )
+
+  useEffect(() => {
+    if (isValid !== undefined) afterValidation(isValid)
+  }, [afterValidation, isValid])
 
   const prevStart = useRef(start)
   const prevEnd = useRef(end)
