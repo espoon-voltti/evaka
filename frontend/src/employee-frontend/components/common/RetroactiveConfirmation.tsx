@@ -56,9 +56,9 @@ export const isChangeRetroactive = (
       return newRange.end.isEqualOrBefore(processedEnd)
     } else {
       // both are finite
-      if (newRange.start !== prevRange.start) {
+      if (!newRange.start.isEqual(prevRange.start)) {
         return eitherRangeAffectHistory
-      } else if (newRange.end !== prevRange.end) {
+      } else if (!newRange.end.isEqual(prevRange.end)) {
         return (
           newRange.end.isEqualOrBefore(processedEnd) ||
           prevRange.end.isEqualOrBefore(processedEnd)
