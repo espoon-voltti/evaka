@@ -139,7 +139,7 @@ describe('Employee - paper application', () => {
   test('Service worker fills paper application with minimal info and saves it', async () => {
     const applicationEditPage = await createApplicationModal.submit()
 
-    await applicationEditPage.fillStartDate(now.toLocalDate().format())
+    await applicationEditPage.fillStartDate(now.toLocalDate())
     await applicationEditPage.fillTimes()
     await applicationEditPage.pickUnit(testDaycare.name)
     await applicationEditPage.fillApplicantPhoneAndEmail(
@@ -153,7 +153,7 @@ describe('Employee - paper application', () => {
   test('Service worker fills paper application with second guardian contact info and agreement status', async () => {
     const applicationEditPage = await createApplicationModal.submit()
 
-    await applicationEditPage.fillStartDate(now.toLocalDate().format())
+    await applicationEditPage.fillStartDate(now.toLocalDate())
     await applicationEditPage.fillTimes()
     await applicationEditPage.pickUnit(testDaycare.name)
     await applicationEditPage.fillApplicantPhoneAndEmail(
@@ -173,7 +173,7 @@ describe('Employee - paper application', () => {
 
   test('Paper application due date is saved on submit', async () => {
     const applicationEditPage = await createApplicationModal.submit()
-    await applicationEditPage.fillStartDate(now.toLocalDate().format())
+    await applicationEditPage.fillStartDate(now.toLocalDate())
     await applicationEditPage.fillTimes()
     await applicationEditPage.pickUnit(testDaycare.name)
     await applicationEditPage.fillApplicantPhoneAndEmail(
@@ -191,7 +191,7 @@ describe('Employee - paper application', () => {
     await createApplicationModal.selectApplicationType('PRESCHOOL')
     const applicationEditPage = await createApplicationModal.submit()
 
-    await applicationEditPage.fillStartDate(now.toLocalDate().format())
+    await applicationEditPage.fillStartDate(now.toLocalDate())
     await applicationEditPage.checkConnectedDaycare()
     await applicationEditPage.fillTimes()
     await applicationEditPage.fillConnectedDaycarePreferredStartDate(

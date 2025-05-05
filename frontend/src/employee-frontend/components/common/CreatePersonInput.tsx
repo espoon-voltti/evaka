@@ -10,7 +10,7 @@ import { CreatePersonBody } from 'lib-common/generated/api-types/pis'
 import LocalDate from 'lib-common/local-date'
 import InputField from 'lib-components/atoms/form/InputField'
 import ListGrid from 'lib-components/layout/ListGrid'
-import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
+import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
@@ -52,14 +52,14 @@ export default React.memo(function CreatePersonInput({
             data-qa="input-last-name"
           />
           <Label>{i18n.personSearch.createNewPerson.form.dateOfBirth}*</Label>
-          <DatePickerDeprecated
-            type="full-width"
-            date={createPersonInfo.dateOfBirth}
+          <DatePicker
+            date={createPersonInfo.dateOfBirth ?? null}
             onChange={(value) => {
-              setCreatePersonInfo(set('dateOfBirth', value))
+              setCreatePersonInfo(set('dateOfBirth', value ?? undefined))
             }}
             onFocus={onFocus}
             maxDate={LocalDate.todayInSystemTz()}
+            locale="fi"
             data-qa="datepicker-dob"
           />
           <Label>{i18n.personSearch.createNewPerson.form.address}*</Label>

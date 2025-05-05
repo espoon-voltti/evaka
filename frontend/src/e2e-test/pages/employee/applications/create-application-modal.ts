@@ -6,7 +6,7 @@ import { ApplicationType } from 'lib-common/generated/api-types/application'
 
 import {
   Combobox,
-  DatePickerDeprecated,
+  DatePicker,
   Element,
   Page,
   Radio,
@@ -24,24 +24,24 @@ export default class CreateApplicationModal extends Element {
     super(root)
   }
 
-  #submit = this.find('[data-qa="modal-okBtn"]')
+  #submit = this.findByDataQa('modal-okBtn')
 
   async submit() {
     await this.#submit.click()
     return new ApplicationEditView(this.page)
   }
 
-  #guardianRadio = new Radio(this.find('[data-qa="select-guardian-radio"]'))
-  #guardianSelect = new Select(this.find('[data-qa="select-guardian"]'))
+  #guardianRadio = new Radio(this.findByDataQa('select-guardian-radio'))
+  #guardianSelect = new Select(this.findByDataQa('select-guardian'))
 
   async selectGuardian(name: string) {
     await this.#guardianRadio.check()
     await this.#guardianSelect.selectOption({ label: name })
   }
 
-  #vtjPersonRadio = new Radio(this.find('[data-qa="vtj-person-radio"]'))
+  #vtjPersonRadio = new Radio(this.findByDataQa('vtj-person-radio'))
   #vtjPersonSelect = new Combobox(
-    this.find('[data-qa="select-search-from-vtj-guardian"]')
+    this.findByDataQa('select-search-from-vtj-guardian')
   )
 
   async selectVtjPersonAsGuardian(ssn: string) {
@@ -49,15 +49,15 @@ export default class CreateApplicationModal extends Element {
     await this.#vtjPersonSelect.fillAndSelectFirst(ssn)
   }
 
-  #newNoSsnRadio = new Radio(this.find('[data-qa="radio-new-no-ssn"]'))
-  #firstNameInput = new TextInput(this.find('[data-qa="input-first-name"]'))
-  #lastNameInput = new TextInput(this.find('[data-qa="input-last-name"]'))
-  #dob = new DatePickerDeprecated(this.find('[data-qa="datepicker-dob"]'))
-  #streetAddress = new TextInput(this.find('[data-qa="input-street-address"]'))
-  #postalCode = new TextInput(this.find('[data-qa="input-postal-code"]'))
-  #postOffice = new TextInput(this.find('[data-qa="input-post-office"]'))
-  #phone = new TextInput(this.find('[data-qa="input-phone"]'))
-  #email = new TextInput(this.find('[data-qa="input-email"]'))
+  #newNoSsnRadio = new Radio(this.findByDataQa('radio-new-no-ssn'))
+  #firstNameInput = new TextInput(this.findByDataQa('input-first-name'))
+  #lastNameInput = new TextInput(this.findByDataQa('input-last-name'))
+  #dob = new DatePicker(this.findByDataQa('datepicker-dob'))
+  #streetAddress = new TextInput(this.findByDataQa('input-street-address'))
+  #postalCode = new TextInput(this.findByDataQa('input-postal-code'))
+  #postOffice = new TextInput(this.findByDataQa('input-post-office'))
+  #phone = new TextInput(this.findByDataQa('input-phone'))
+  #email = new TextInput(this.findByDataQa('input-email'))
 
   async selectCreateNewPersonAsGuardian(
     firstName: string,
