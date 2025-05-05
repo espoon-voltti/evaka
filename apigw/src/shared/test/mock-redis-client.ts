@@ -53,11 +53,11 @@ export class MockRedisClient implements RedisClient {
     return Promise.resolve(count)
   }
 
-  expire(key: string, seconds: number): Promise<boolean> {
+  expire(key: string, seconds: number): Promise<number> {
     const record = this.db[key]
-    if (!record) return Promise.resolve(false)
+    if (!record) return Promise.resolve(0)
     record.expires = this.time + seconds
-    return Promise.resolve(true)
+    return Promise.resolve(1)
   }
 
   incr(key: string): Promise<number> {

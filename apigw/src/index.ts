@@ -4,9 +4,9 @@
 
 import './tracer.js'
 
+import * as redis from '@redis/client'
 import express from 'express'
 import helmet from 'helmet'
-import * as redis from 'redis'
 
 import { apiRouter } from './app.js'
 import { configFromEnv, httpPort, toRedisClientOpts } from './shared/config.js'
