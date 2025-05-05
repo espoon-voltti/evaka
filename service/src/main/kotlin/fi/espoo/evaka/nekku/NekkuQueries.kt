@@ -569,30 +569,68 @@ fun Database.Read.getNekkuSpecialDietChoices(childId: ChildId): List<NekkuSpecia
         }
         .toList<NekkuSpecialDietChoices>()
 
+fun Database.Read.getNekkuOrderReport(
+    daycareId: DaycareId,
+    groupId: GroupId,
+    date: LocalDate,
+): List<NekkuOrdersReport> =
+    createQuery {
+            sql(
+                "SELECT delivery_date, daycare_id, customer_group_id, meal_sku, total_quantity, meal_time, meal_type, meals_by_special_diet FROM nekku_orders_report WHERE daycare_id = ${bind(daycareId)} AND customer_group_id = (${bind(groupId)}) AND delivery_date = ${bind(date)} "
+            )
+        }
+        .toList<NekkuOrdersReport>()
+
 fun Database.Transaction.setNekkuReportOrderReport(
-                                    nekkuOrders: NekkuClient.NekkuOrders,
-                                   groupId: GroupId,
-                                   nekkuProducts: List<NekkuProduct> ) {
+    nekkuOrders: NekkuClient.NekkuOrders,
+    groupId: GroupId,
+    nekkuProducts: List<NekkuProduct>,
+) {
 
     val daycareId = getDaycareIdByGroup(groupId)
 
     for (item in nekkuOrders.orders.first().items) {
 
         val product = nekkuProducts.find { it.sku == item.sku } ?: error("Product.sku")
-        val report = NekkuOrdersReport(
-            nekkuOrders.orders.first().deliveryDate,
-            daycareId,
-            groupId,
-            item.sku,
-            item.quantity,
-            product.mealTime,
-            product.mealType,
-            null)
+        val report =
+            NekkuOrdersReport(
+                LocalDate.parse(nekkuOrders.orders.first().deliveryDate),
+                daycareId,
+                groupId,
+                item.sku,
+                item.quantity,
+                product.mealTime,
+                product.mealType,
+                null,
+            )
 
-        report.toString()
-        //TODO tallenna report kantaan
+        createUpdate {
+            sql(
+                """
+INSERT INTO nekku_orders_report (
+delivery_date,
+daycare_id,
+customer_group_id,
+meal_sku,
+total_quantity,
+meal_time,
+meal_type,
+meals_by_special_diet)
+VALUES (
+${bind(report.deliveryDate)},
+${bind(report.daycareId)},
+${bind(report.customerGroupId)},
+${bind(report.mealSku)},
+${bind(report.totalQuantity)},
+${bind(report.mealTime)},
+${bind(report.mealType)},
+${bind(report.mealsBySpecialDiet)}
+)
+            """
+                    .trimIndent()
+            )
+        }.execute()
     }
-
 }
 
 
