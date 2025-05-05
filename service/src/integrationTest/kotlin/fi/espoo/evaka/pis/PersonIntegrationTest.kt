@@ -139,6 +139,7 @@ class PersonIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 PersonReference("preschool_assistance", "child_id"),
                 PersonReference("service_application", "child_id"),
                 PersonReference("service_application", "person_id"),
+                PersonReference("sfi_message", "guardian_id"),
                 PersonReference("varda_state", "child_id"),
                 PersonReference("voucher_value_decision", "child_id"),
                 PersonReference("voucher_value_decision", "head_of_family_id"),

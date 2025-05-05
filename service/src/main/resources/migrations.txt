@@ -519,3 +519,4 @@ V520__nekku_customer_type_changes.sql
 V521__document_template_archiveable.sql
 V522__other_decision_document_type_changes.sql
 V523__other_decision.sql
+V524__sfi_events.sql
