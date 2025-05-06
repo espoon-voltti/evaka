@@ -7,14 +7,12 @@ import React, { useState, useContext } from 'react'
 import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
 import { NekkuUnitNumber } from 'lib-common/generated/api-types/nekku'
 import LocalDate from 'lib-common/local-date'
+import { cancelMutation } from 'lib-common/query'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import InputField from 'lib-components/atoms/form/InputField'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
-import {
-  DatePickerDeprecated,
-  DatePickerClearableDeprecated
-} from 'lib-components/molecules/DatePickerDeprecated'
 import { InfoBox, MessageBox } from 'lib-components/molecules/MessageBoxes'
+import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { Gap } from 'lib-components/white-space'
 import { theme } from 'lib-customizations/common'
@@ -39,7 +37,7 @@ export default React.memo(function GroupUpdateModal({
 
   const [data, setData] = useState<{
     name: string
-    startDate: LocalDate
+    startDate: LocalDate | null
     endDate: LocalDate | null
     jamixCustomerNumber: number | null
     aromiCustomerId: string | null
@@ -60,17 +58,24 @@ export default React.memo(function GroupUpdateModal({
       icon={faPen}
       type="info"
       resolveMutation={updateGroupMutation}
-      resolveAction={() => ({
-        daycareId: group.daycareId,
-        groupId: group.id,
-        body: {
-          ...data,
-          name: data.name.trim()
-        }
-      })}
+      resolveAction={() =>
+        data.startDate !== null
+          ? {
+              daycareId: group.daycareId,
+              groupId: group.id,
+              body: {
+                ...data,
+                startDate: data.startDate,
+                name: data.name.trim()
+              }
+            }
+          : cancelMutation
+      }
       resolveLabel={i18n.common.confirm}
       resolveDisabled={
-        data.name.trim().length === 0 || data.endDate?.isBefore(data.startDate)
+        data.name.trim().length === 0 ||
+        data.startDate === null ||
+        data.endDate?.isBefore(data.startDate)
       }
       onSuccess={clearUiMode}
       rejectAction={clearUiMode}
@@ -86,21 +91,20 @@ export default React.memo(function GroupUpdateModal({
           />
           <Gap size="s" />
           <div className="bold">{i18n.unit.groups.updateModal.startDate}</div>
-          <DatePickerDeprecated
+          <DatePicker
             date={data.startDate}
             onChange={(startDate) =>
               setData((state) => ({ ...state, startDate }))
             }
-            type="full-width"
+            locale="fi"
             data-qa="start-date-input"
           />
           <Gap size="s" />
           <div className="bold">{i18n.unit.groups.updateModal.endDate}</div>
-          <DatePickerClearableDeprecated
+          <DatePicker
             date={data.endDate}
             onChange={(endDate) => setData((state) => ({ ...state, endDate }))}
-            onCleared={() => setData((state) => ({ ...state, endDate: null }))}
-            type="full-width"
+            locale="fi"
             data-qa="end-date-input"
           />
           {featureFlags.jamixIntegration && (

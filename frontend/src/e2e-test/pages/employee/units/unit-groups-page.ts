@@ -6,7 +6,6 @@ import { waitUntilDefined, waitUntilEqual, waitUntilTrue } from '../../../utils'
 import {
   Combobox,
   DatePicker,
-  DatePickerDeprecated,
   Element,
   ElementCollection,
   Modal,
@@ -39,8 +38,8 @@ export class UnitGroupsPage {
       page,
       page.findByDataQa('missing-placements-section')
     )
-    this.childCapacityFactorColumnData = page.findAll(
-      `[data-qa="child-capacity-factor-column"]`
+    this.childCapacityFactorColumnData = page.findAllByDataQa(
+      `child-capacity-factor-column`
     )
   }
 
@@ -55,7 +54,7 @@ export class UnitGroupsPage {
 
   async selectPeriod(period: '1 day' | '3 months' | '6 months' | '1 year') {
     await this.page
-      .find(`[data-qa="unit-filter-period-${period.replace(' ', '-')}"]`)
+      .findByDataQa(`unit-filter-period-${period.replace(' ', '-')}`)
       .click()
     await this.waitUntilLoaded()
   }
@@ -69,7 +68,7 @@ export class UnitGroupsPage {
 
   async assertChildCapacityFactor(childId: string, factor: string) {
     await this.page
-      .find(`[data-qa="child-capacity-factor-${childId}"]`)
+      .findByDataQa(`child-capacity-factor-${childId}`)
       .assertTextEquals(factor)
   }
 
@@ -81,14 +80,14 @@ export class UnitGroupsPage {
     const elem = this.#groupCollapsible(groupId)
     const state = await waitUntilDefined(() => elem.getAttribute('data-status'))
     if (state === 'closed') {
-      await elem.find('[data-qa="group-name"]').click()
+      await elem.findByDataQa('group-name').click()
     }
     return new GroupCollapsible(this.page, elem)
   }
 
   async assertGroupCollapsibleIsOpen(groupId: string) {
     await this.#groupCollapsible(groupId)
-      .find('[data-qa="group-name"]')
+      .findByDataQa('group-name')
       .waitUntilVisible()
   }
 
@@ -106,8 +105,8 @@ export class TerminatedPlacementsSection extends Element {
 
   constructor(page: Page, self: Element) {
     super(self)
-    this.#terminatedPlacementRows = page.findAll(
-      '[data-qa="terminated-placement-row"]'
+    this.#terminatedPlacementRows = page.findAllByDataQa(
+      'terminated-placement-row'
     )
   }
 
@@ -127,7 +126,7 @@ export class MissingPlacementsSection extends Element {
     super(self)
   }
 
-  #missingPlacementRows = this.findAll('[data-qa="missing-placement-row"]')
+  #missingPlacementRows = this.findAllByDataQa('missing-placement-row')
 
   async assertRowCount(expectedCount: number) {
     await waitUntilEqual(
@@ -170,10 +169,10 @@ export class MissingPlacementRow extends Element {
     super(self)
   }
 
-  #childName = this.find('[data-qa="child-name"]')
-  #dateOfBirth = this.find('[data-qa="child-dob"]')
-  #placementDuration = this.find('[data-qa="placement-duration"]')
-  #groupMissingDuration = this.find('[data-qa="group-missing-duration"]')
+  #childName = this.findByDataQa('child-name')
+  #dateOfBirth = this.findByDataQa('child-dob')
+  #placementDuration = this.findByDataQa('placement-duration')
+  #groupMissingDuration = this.findByDataQa('group-missing-duration')
 
   async assertFields(fields: {
     childName?: string
@@ -197,7 +196,7 @@ export class MissingPlacementRow extends Element {
     }
   }
 
-  #addToGroup = this.find('[data-qa="add-to-group-btn"]')
+  #addToGroup = this.findByDataQa('add-to-group-btn')
 
   async addToGroup() {
     await this.#addToGroup.click()
@@ -217,18 +216,18 @@ export class GroupCollapsible extends Element {
     super(self)
   }
 
-  #groupName = this.find('[data-qa="group-name"]')
-  #groupStartDate = this.find('[data-qa="group-start-date"]')
-  #groupEndDate = this.find('[data-qa="group-end-date"]')
+  #groupName = this.findByDataQa('group-name')
+  #groupStartDate = this.findByDataQa('group-start-date')
+  #groupEndDate = this.findByDataQa('group-end-date')
 
-  #monthCalendarButton = this.find('[data-qa="open-month-calendar-button"]')
-  #groupDailyNoteButton = this.find('[data-qa="btn-create-group-note"]')
+  #monthCalendarButton = this.findByDataQa('open-month-calendar-button')
+  #groupDailyNoteButton = this.findByDataQa('btn-create-group-note')
   createChildDocumentsButton = this.findByDataQa('btn-create-child-documents')
 
-  #childRows = this.find('[data-qa="table-of-group-placements"]').findAll(
+  #childRows = this.findByDataQa('table-of-group-placements').findAll(
     '[data-qa^="group-placement-row-"]'
   )
-  #noChildren = this.find('[data-qa="no-children-placeholder"]')
+  #noChildren = this.findByDataQa('no-children-placeholder')
 
   async assertGroupName(expectedName: string) {
     await this.#groupName.assertTextEquals(expectedName)
@@ -261,7 +260,7 @@ export class GroupCollapsible extends Element {
 
   async openGroupDailyNoteModal() {
     await this.#groupDailyNoteButton.click()
-    return new GroupDailyNoteModal(this.find('[data-qa="modal"]'))
+    return new GroupDailyNoteModal(this.findByDataQa('modal'))
   }
 
   async openCreateChildDocumentsModal() {
@@ -269,27 +268,27 @@ export class GroupCollapsible extends Element {
     return new CreateChildDocumentsModal(this.findByDataQa('modal'))
   }
 
-  #updateButton = this.find('[data-qa="btn-update-group"]')
+  #updateButton = this.findByDataQa('btn-update-group')
 
   async edit(fields: { name: string; startDate: string; endDate: string }) {
     await this.#updateButton.click()
 
-    const modal = new Modal(this.find('[data-qa="group-update-modal"]'))
-    await new TextInput(modal.find('[data-qa="name-input"]')).fill(fields.name)
-    await new DatePickerDeprecated(
-      modal.find('[data-qa="start-date-input"]')
-    ).fill(fields.startDate)
-    await new DatePickerDeprecated(
-      modal.find('[data-qa="end-date-input"]')
-    ).fill(fields.endDate)
+    const modal = new Modal(this.findByDataQa('group-update-modal'))
+    await new TextInput(modal.findByDataQa('name-input')).fill(fields.name)
+    await new DatePicker(modal.findByDataQa('start-date-input')).fill(
+      fields.startDate
+    )
+    await new DatePicker(modal.findByDataQa('end-date-input')).fill(
+      fields.endDate
+    )
     await modal.submit()
   }
 }
 
 export class GroupDailyNoteModal extends Modal {
-  #input = new TextInput(this.find('[data-qa="sticky-note-input"]'))
-  #save = this.find('[data-qa="sticky-note-save"]')
-  #delete = this.find('[data-qa="sticky-note-remove"]')
+  #input = new TextInput(this.findByDataQa('sticky-note-input'))
+  #save = this.findByDataQa('sticky-note-save')
+  #delete = this.findByDataQa('sticky-note-remove')
 
   async fillNote(text: string) {
     await this.#input.fill(text)
@@ -327,16 +326,16 @@ export class GroupCollapsibleChildRow extends Element {
 
   constructor(self: Element, childId: string) {
     super(self)
-    this.#dailyNoteIcon = this.find(
-      `[data-qa="daycare-daily-note-icon-${childId}"]`
+    this.#dailyNoteIcon = this.findByDataQa(
+      `daycare-daily-note-icon-${childId}`
     )
-    this.#dailyNoteTooltip = this.find(
-      `[data-qa="daycare-daily-note-hover-${childId}"]`
+    this.#dailyNoteTooltip = this.findByDataQa(
+      `daycare-daily-note-hover-${childId}`
     )
   }
 
-  #childName = this.find('[data-qa="child-name"]')
-  #placementDuration = this.find('[data-qa="placement-duration"]')
+  #childName = this.findByDataQa('child-name')
+  #placementDuration = this.findByDataQa('placement-duration')
 
   async assertFields(fields: {
     childName?: string
@@ -359,10 +358,10 @@ export class GroupCollapsibleChildRow extends Element {
 
   async openDailyNoteModal() {
     await this.#dailyNoteIcon.click()
-    return new ChildDailyNoteModal(this.find('[data-qa="modal"]'))
+    return new ChildDailyNoteModal(this.findByDataQa('modal'))
   }
 
-  #removeButton = this.find('[data-qa="remove-btn"]')
+  #removeButton = this.findByDataQa('remove-btn')
 
   async remove() {
     await this.#removeButton.click()
@@ -370,25 +369,21 @@ export class GroupCollapsibleChildRow extends Element {
 }
 
 export class ChildDailyNoteModal extends Modal {
-  noteInput = new TextInput(this.find('[data-qa="note-input"]'))
-  sleepingHoursInput = new TextInput(
-    this.find('[data-qa="sleeping-hours-input"]')
-  )
+  noteInput = new TextInput(this.findByDataQa('note-input'))
+  sleepingHoursInput = new TextInput(this.findByDataQa('sleeping-hours-input'))
   sleepingMinutesInput = new TextInput(
-    this.find('[data-qa="sleeping-minutes-input"]')
+    this.findByDataQa('sleeping-minutes-input')
   )
-  reminderNoteInput = new TextInput(
-    this.find('[data-qa="reminder-note-input"]')
-  )
-  submitButton = this.find('[data-qa="btn-submit"]')
+  reminderNoteInput = new TextInput(this.findByDataQa('reminder-note-input'))
+  submitButton = this.findByDataQa('btn-submit')
 
   async openTab(tab: 'child' | 'sticky' | 'group') {
-    await this.find(`[data-qa="tab-${tab}"]`).click()
+    await this.findByDataQa(`tab-${tab}`).click()
   }
 
   // Group
-  #groupNote = this.find('[data-qa="sticky-note-note"]')
-  #groupNoteInput = this.find('[data-qa="sticky-note"]')
+  #groupNote = this.findByDataQa('sticky-note-note')
+  #groupNoteInput = this.findByDataQa('sticky-note')
 
   async assertGroupNote(expectedText: string) {
     await this.#groupNote.assertTextEquals(expectedText)
