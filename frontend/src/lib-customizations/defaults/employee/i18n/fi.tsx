@@ -2458,6 +2458,7 @@ export const fi = {
         group: 'Ryhmä',
         errors: {
           noGroup: 'Et ole valinnut ryhmää tai aktiivisia ryhmiä ei ole',
+          noStartDate: 'Et ole valinnut aloituspäivämäärää',
           groupNotStarted: 'Ryhmä ei ole vielä alkanut',
           groupEnded: 'Ryhmä on jo lakkautettu'
         }
