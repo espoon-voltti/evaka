@@ -4684,8 +4684,6 @@ export const fi = {
     },
     placeholder: {
       name: 'Anna yksikölle nimi',
-      openingDate: 'Alkaen pp.kk.vvvv',
-      closingDate: 'Päättyen pp.kk.vvvv',
       area: 'Valitse alue',
       financeDecisionHandler: 'Valitse työntekijä',
       daycareType: 'Valitse tyyppi',

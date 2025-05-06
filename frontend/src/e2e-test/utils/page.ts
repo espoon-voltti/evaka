@@ -353,6 +353,10 @@ export class DatePicker extends Element {
     await this.#input.blur()
   }
 
+  async clear() {
+    await this.#input.clear()
+  }
+
   async assertValueEquals(value: string) {
     await this.#input.assertValueEquals(value)
   }
