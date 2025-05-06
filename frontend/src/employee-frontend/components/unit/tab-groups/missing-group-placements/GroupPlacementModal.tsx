@@ -14,7 +14,7 @@ import { first, second, useSelectMutation } from 'lib-common/query'
 import { cancelMutation } from 'lib-components/atoms/buttons/MutateButton'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
-import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
+import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { Bold } from 'lib-components/typography'
 import { faChild } from 'lib-icons'
@@ -39,8 +39,8 @@ interface Props {
 }
 
 interface GroupPlacementForm {
-  startDate: LocalDate
-  endDate: LocalDate
+  startDate: LocalDate | null
+  endDate: LocalDate | null
   groupId: GroupId | null
   errors: string[]
 }
@@ -65,7 +65,15 @@ export default React.memo(function GroupPlacementModal({
     .filter((group) => !group.endDate || !group.endDate.isBefore(minDate))
 
   const validate = (form: GroupPlacementForm): string[] => {
-    const errors = []
+    const errors: string[] = []
+    if (!form.startDate || !form.endDate) {
+      if (!form.startDate)
+        errors.push(i18n.unit.placements.modal.errors.noStartDate)
+      if (!form.endDate)
+        errors.push(i18n.unit.placements.modal.errors.noEndDate)
+      return errors
+    }
+
     if (form.endDate.isBefore(form.startDate))
       errors.push(i18n.validationError.invertedDateRange)
 
@@ -124,26 +132,32 @@ export default React.memo(function GroupPlacementModal({
           : second([missingPlacement.data.backupCareId, form.groupId] as const),
     [
       createGroupPlacementMutation,
-      ([placementId, groupId]) => ({
-        unitId,
-        placementId,
-        body: {
-          groupId,
-          startDate: form.startDate,
-          endDate: form.endDate
-        }
-      })
+      ([placementId, groupId]) =>
+        form.startDate && form.endDate
+          ? {
+              unitId,
+              placementId,
+              body: {
+                groupId,
+                startDate: form.startDate,
+                endDate: form.endDate
+              }
+            }
+          : cancelMutation
     ],
     [
       updateBackupCareMutation,
-      ([backupCareId, groupId]) => ({
-        id: backupCareId,
-        unitId,
-        body: {
-          period: new FiniteDateRange(form.startDate, form.endDate),
-          groupId
-        }
-      })
+      ([backupCareId, groupId]) =>
+        form.startDate && form.endDate
+          ? {
+              id: backupCareId,
+              unitId,
+              body: {
+                period: new FiniteDateRange(form.startDate, form.endDate),
+                groupId
+              }
+            }
+          : cancelMutation
     ]
   )
 
@@ -185,24 +199,24 @@ export default React.memo(function GroupPlacementModal({
         </FieldWrapper>
         <FieldWrapper>
           <Bold>{i18n.common.form.startDate}</Bold>
-          <DatePickerDeprecated
+          <DatePicker
             {...disableDateEditIfBackupPlacement}
             date={form.startDate}
             onChange={(startDate) => assignFormValues({ startDate })}
-            type="full-width"
             minDate={minDate}
             maxDate={maxDate}
+            locale="fi"
           />
         </FieldWrapper>
         <FieldWrapper>
           <Bold>{i18n.common.form.endDate}</Bold>
-          <DatePickerDeprecated
+          <DatePicker
             {...disableDateEditIfBackupPlacement}
             date={form.endDate}
             onChange={(endDate) => assignFormValues({ endDate })}
-            type="full-width"
             minDate={minDate}
             maxDate={maxDate}
+            locale="fi"
           />
         </FieldWrapper>
         {form.errors.length > 0 && (
