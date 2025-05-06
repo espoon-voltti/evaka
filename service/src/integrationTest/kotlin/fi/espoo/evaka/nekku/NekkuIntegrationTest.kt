@@ -3712,7 +3712,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
                         startTime = LocalTime.of(8, 0),
                         endTime = LocalTime.of(16, 0),
                         createdBy = employee.evakaUserId,
-                    ),
+                    )
                 )
                 .forEach { tx.insert(it) }
         }

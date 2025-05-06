@@ -605,8 +605,8 @@ fun Database.Transaction.setNekkuReportOrderReport(
             )
 
         createUpdate {
-            sql(
-                """
+                sql(
+                    """
 INSERT INTO nekku_orders_report (
 delivery_date,
 daycare_id,
@@ -627,10 +627,9 @@ ${bind(report.mealType)},
 ${bind(report.mealsBySpecialDiet)}
 )
             """
-                    .trimIndent()
-            )
-        }.execute()
+                        .trimIndent()
+                )
+            }
+            .execute()
     }
 }
-
-
