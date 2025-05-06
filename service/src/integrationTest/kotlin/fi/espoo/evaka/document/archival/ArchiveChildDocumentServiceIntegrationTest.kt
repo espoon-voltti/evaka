@@ -174,7 +174,7 @@ class ArchiveChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBe
                     legalBasis = "EARLY_CHILDHOOD_EDUCATION",
                     validity = DateRange(LocalDate.of(2023, 1, 1), LocalDate.of(2023, 12, 31)),
                     published = true,
-                    processDefinitionNumber = "1234",
+                    processDefinitionNumber = "12.06.01.SL1.RT34",
                     archiveDurationMonths = 120,
                     content = templateContent,
                 )
