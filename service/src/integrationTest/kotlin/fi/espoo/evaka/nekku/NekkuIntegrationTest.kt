@@ -3453,7 +3453,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         listOf("Laktoositon ruokavalio", "Pähkinätön, Alle 1-vuotiaan ruokavalio"),
                     ),
                 ),
-                nekkuOrderReportResult
+                nekkuOrderReportResult,
             )
         }
     }
