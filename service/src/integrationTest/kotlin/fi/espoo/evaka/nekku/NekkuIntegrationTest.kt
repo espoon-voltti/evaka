@@ -3883,7 +3883,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
                         listOf("Laktoositon ruokavalio", "Pähkinätön, Alle 1-vuotiaan ruokavalio"),
                     ),
                 ),
-                nekkuOrderReportResult
+                nekkuOrderReportResult,
             )
         }
     }
