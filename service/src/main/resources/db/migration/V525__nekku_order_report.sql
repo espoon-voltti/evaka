@@ -8,5 +8,5 @@ CREATE TABLE nekku_orders_report (
         total_quantity INT,
         meal_time       nekku_product_meal_time[],
         meal_type       nekku_product_meal_type,
-        meals_by_special_diet TEXT
+        meals_by_special_diet TEXT[]
 );

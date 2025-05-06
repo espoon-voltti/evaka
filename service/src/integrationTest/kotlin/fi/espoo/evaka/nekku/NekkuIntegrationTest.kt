@@ -3629,17 +3629,13 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
 
     @Test
     fun `Make sure that Nekku order is stored in database`() {
-        val monday = LocalDate.of(2025, 4, 14)
-        val tuesday = LocalDate.of(2025, 4, 15)
 
-        // First create all of the basic backgrounds like
-        // Customer numbers
-        var client =
+        val client =
             TestNekkuClient(
                 customers =
                     listOf(
                         NekkuApiCustomer(
-                            "2501K6089",
+                            "2501K6090",
                             "Ahvenojan päiväkoti",
                             "Varhaiskasvatus",
                             listOf(
@@ -3660,10 +3656,17 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
                         )
                     ),
                 nekkuProducts = nekkuProductsForOrder,
+                specialDiets = listOf(getNekkuSpecialDiet()),
             )
+
         fetchAndUpdateNekkuCustomers(client, db)
         // products
         fetchAndUpdateNekkuProducts(client, db)
+        fetchAndUpdateNekkuSpecialDiets(client, db)
+
+        val monday = LocalDate.of(2025, 4, 14)
+        val tuesday = LocalDate.of(2025, 4, 15)
+
         // Daycare with groups
         val area = DevCareArea()
         val daycare =
@@ -3673,55 +3676,215 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
                 mealtimeLunch = TimeRange(LocalTime.of(11, 15), LocalTime.of(11, 45)),
                 mealtimeSnack = TimeRange(LocalTime.of(13, 30), LocalTime.of(13, 50)),
             )
-        val group = DevDaycareGroup(daycareId = daycare.id, nekkuCustomerNumber = "2501K6089")
+        val group = DevDaycareGroup(daycareId = daycare.id, nekkuCustomerNumber = "2501K6090")
         val employee = DevEmployee()
 
-        // Children with placements in the group and they are not absent
-        val child = DevPerson()
+        val mixedBaby = DevPerson(dateOfBirth = monday.minusMonths(6))
+        val mixedBabyWithoutLactose = DevPerson(dateOfBirth = monday.minusMonths(6))
+        val mixedBabyWithOtherSpecialDiet = DevPerson(dateOfBirth = monday.minusMonths(6))
+        val mixedBabyWithoutLactoseAndAnotherSpecialDiet =
+            DevPerson(dateOfBirth = monday.minusMonths(6))
+        val allChildren =
+            listOf(
+                mixedBaby,
+                mixedBabyWithoutLactose,
+                mixedBabyWithOtherSpecialDiet,
+                mixedBabyWithoutLactoseAndAnotherSpecialDiet,
+            )
 
         db.transaction { tx ->
             tx.insert(area)
             tx.insert(daycare)
             tx.insert(group)
             tx.insert(employee)
-            tx.insert(child, DevPersonType.CHILD)
-            tx.insert(DevChild(id = child.id, nekkuDiet = NekkuProductMealType.VEGETABLE))
-            tx.insert(
-                    DevPlacement(
-                        childId = child.id,
-                        unitId = daycare.id,
-                        startDate = monday,
-                        endDate = tuesday,
-                    )
-                )
-                .also { placementId ->
-                    tx.insert(
-                        DevDaycareGroupPlacement(
-                            daycarePlacementId = placementId,
-                            daycareGroupId = group.id,
+            allChildren.forEach {
+                tx.insert(it, DevPersonType.CHILD)
+                tx.insert(
+                        DevPlacement(
+                            childId = it.id,
+                            unitId = daycare.id,
                             startDate = monday,
                             endDate = tuesday,
                         )
                     )
-                }
-            listOf(
-                    // Two meals on Monday
+                    .also { placementId ->
+                        tx.insert(
+                            DevDaycareGroupPlacement(
+                                daycarePlacementId = placementId,
+                                daycareGroupId = group.id,
+                                startDate = monday,
+                                endDate = tuesday,
+                            )
+                        )
+                    }
+                tx.insert(
+                    // Three meals on Monday
                     DevReservation(
-                        childId = child.id,
+                        childId = it.id,
                         date = monday,
                         startTime = LocalTime.of(8, 0),
                         endTime = LocalTime.of(16, 0),
                         createdBy = employee.evakaUserId,
                     )
                 )
-                .forEach { tx.insert(it) }
+            }
         }
+
+        insertNekkuSpecialDietChoice(
+            mixedBabyWithoutLactose.id,
+            "2",
+            "AE1FE5FE-9619-4D7A-9043-A6B0C615156B",
+            "Laktoositon ruokavalio",
+        )
+        insertNekkuSpecialDietChoice(
+            mixedBabyWithOtherSpecialDiet.id,
+            "2",
+            "17A9ACF0-DE9E-4C07-882E-C8C47351D009",
+            "Pähkinätön",
+        )
+        insertNekkuSpecialDietChoice(
+            mixedBabyWithoutLactoseAndAnotherSpecialDiet.id,
+            "2",
+            "AE1FE5FE-9619-4D7A-9043-A6B0C615156B",
+            "Laktoositon ruokavalio",
+        )
+        insertNekkuSpecialDietChoice(
+            mixedBabyWithoutLactoseAndAnotherSpecialDiet.id,
+            "2",
+            "17A9ACF0-DE9E-4C07-882E-C8C47351D009",
+            "Pähkinätön",
+        )
 
         createAndSendNekkuOrder(client, db, group.id, monday, 0.9)
 
         db.transaction { tx ->
             val nekkuOrderReportResult = tx.getNekkuOrderReport(daycare.id, group.id, monday)
-            assertEquals(nekkuOrderReportResult.count(), 3)
+
+            assertEquals(
+                listOf(
+                    NekkuOrdersReport(
+                        monday,
+                        daycare.id,
+                        group.id,
+                        "31000020",
+                        1,
+                        listOf(NekkuProductMealTime.BREAKFAST),
+                        null,
+                        listOf("Alle 1-vuotiaan ruokavalio"),
+                    ),
+                    NekkuOrdersReport(
+                        monday,
+                        daycare.id,
+                        group.id,
+                        "31000021",
+                        1,
+                        listOf(NekkuProductMealTime.LUNCH),
+                        null,
+                        listOf("Alle 1-vuotiaan ruokavalio"),
+                    ),
+                    NekkuOrdersReport(
+                        monday,
+                        daycare.id,
+                        group.id,
+                        "31000022",
+                        1,
+                        listOf(NekkuProductMealTime.SNACK),
+                        null,
+                        listOf("Alle 1-vuotiaan ruokavalio"),
+                    ),
+                    NekkuOrdersReport(
+                        monday,
+                        daycare.id,
+                        group.id,
+                        "31000020",
+                        1,
+                        listOf(NekkuProductMealTime.BREAKFAST),
+                        null,
+                        listOf("Laktoositon ruokavalio", "Alle 1-vuotiaan ruokavalio"),
+                    ),
+                    NekkuOrdersReport(
+                        monday,
+                        daycare.id,
+                        group.id,
+                        "31000021",
+                        1,
+                        listOf(NekkuProductMealTime.LUNCH),
+                        null,
+                        listOf("Laktoositon ruokavalio", "Alle 1-vuotiaan ruokavalio"),
+                    ),
+                    NekkuOrdersReport(
+                        monday,
+                        daycare.id,
+                        group.id,
+                        "31000022",
+                        1,
+                        listOf(NekkuProductMealTime.SNACK),
+                        null,
+                        listOf("Laktoositon ruokavalio", "Alle 1-vuotiaan ruokavalio"),
+                    ),
+                    NekkuOrdersReport(
+                        monday,
+                        daycare.id,
+                        group.id,
+                        "31000020",
+                        1,
+                        listOf(NekkuProductMealTime.BREAKFAST),
+                        null,
+                        listOf("Pähkinätön, Alle 1-vuotiaan ruokavalio"),
+                    ),
+                    NekkuOrdersReport(
+                        monday,
+                        daycare.id,
+                        group.id,
+                        "31000021",
+                        1,
+                        listOf(NekkuProductMealTime.LUNCH),
+                        null,
+                        listOf("Pähkinätön, Alle 1-vuotiaan ruokavalio"),
+                    ),
+                    NekkuOrdersReport(
+                        monday,
+                        daycare.id,
+                        group.id,
+                        "31000022",
+                        1,
+                        listOf(NekkuProductMealTime.SNACK),
+                        null,
+                        listOf("Pähkinätön, Alle 1-vuotiaan ruokavalio"),
+                    ),
+                    NekkuOrdersReport(
+                        monday,
+                        daycare.id,
+                        group.id,
+                        "31000020",
+                        1,
+                        listOf(NekkuProductMealTime.BREAKFAST),
+                        null,
+                        listOf("Laktoositon ruokavalio", "Pähkinätön, Alle 1-vuotiaan ruokavalio"),
+                    ),
+                    NekkuOrdersReport(
+                        monday,
+                        daycare.id,
+                        group.id,
+                        "31000021",
+                        1,
+                        listOf(NekkuProductMealTime.LUNCH),
+                        null,
+                        listOf("Laktoositon ruokavalio", "Pähkinätön, Alle 1-vuotiaan ruokavalio"),
+                    ),
+                    NekkuOrdersReport(
+                        monday,
+                        daycare.id,
+                        group.id,
+                        "31000022",
+                        1,
+                        listOf(NekkuProductMealTime.SNACK),
+                        null,
+                        listOf("Laktoositon ruokavalio", "Pähkinätön, Alle 1-vuotiaan ruokavalio"),
+                    ),
+                ),
+                nekkuOrderReportResult
+            )
         }
     }
 

@@ -592,6 +592,9 @@ fun Database.Transaction.setNekkuReportOrderReport(
     for (item in nekkuOrders.orders.first().items) {
 
         val product = nekkuProducts.find { it.sku == item.sku } ?: error("Product.sku")
+
+        val mealsBySpecialDiet = item.productOptions?.map { it.value }
+
         val report =
             NekkuOrdersReport(
                 LocalDate.parse(nekkuOrders.orders.first().deliveryDate),
@@ -601,7 +604,7 @@ fun Database.Transaction.setNekkuReportOrderReport(
                 item.quantity,
                 product.mealTime,
                 product.mealType,
-                null,
+                mealsBySpecialDiet,
             )
 
         createUpdate {
