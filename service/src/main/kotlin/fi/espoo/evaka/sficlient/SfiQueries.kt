@@ -22,6 +22,7 @@ fun Database.Transaction.storeSfiGetEventsContinuationToken(continuationToken: S
                 """
 INSERT INTO sfi_get_events_continuation_token (continuation_token)
 VALUES (${bind(continuationToken)})
+ON CONFLICT DO NOTHING
 """
             )
         }

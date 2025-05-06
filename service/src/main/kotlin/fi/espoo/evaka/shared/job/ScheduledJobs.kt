@@ -271,11 +271,7 @@ enum class ScheduledJob(
     ),
     GetSfiEvents(
         ScheduledJobs::getSfiEvents,
-        // ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(3, 30))),
-        ScheduledJobSettings(
-            enabled = true,
-            schedule = JobSchedule.cron("0 */10 * * * *"), // every 10 minutes for testing
-        ),
+        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(3, 30))),
     ),
     CleanTitaniaErrors(
         ScheduledJobs::cleanTitaniaErrors,
