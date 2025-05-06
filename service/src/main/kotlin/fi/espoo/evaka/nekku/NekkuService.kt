@@ -886,5 +886,5 @@ data class NekkuOrdersReport(
     val totalQuantity: Int,
     val mealTime: List<NekkuProductMealTime>?,
     val mealType: NekkuProductMealType?,
-    val mealsBySpecialDiet: String?,
+    val mealsBySpecialDiet: List<String>?,
 )
