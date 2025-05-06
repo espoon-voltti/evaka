@@ -7,10 +7,11 @@ import React, { useContext, useEffect, useState } from 'react'
 import { UpdateStateFn } from 'lib-common/form-state'
 import { DaycareId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
+import { cancelMutation } from 'lib-common/query'
 import InputField from 'lib-components/atoms/form/InputField'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
-import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import { MessageBox } from 'lib-components/molecules/MessageBoxes'
+import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
@@ -21,6 +22,7 @@ import { fasExclamation } from 'lib-icons'
 import { EVAKA_START } from '../../../../constants'
 import { useTranslation } from '../../../../state/i18n'
 import { UIContext } from '../../../../state/ui'
+import { errorToInputInfo } from '../../../../utils/validation/input-info-helper'
 import { allPropertiesTrue } from '../../../../utils/validation/validations'
 import { createGroupMutation } from '../../queries'
 
@@ -32,12 +34,13 @@ interface FormValidationResult {
   valid: boolean
   fields: {
     name: boolean
+    startDate: boolean
   }
 }
 
 interface CreateGroupForm {
   name: string
-  startDate: LocalDate
+  startDate: LocalDate | null
   initialCaretakers: number
   aromiCustomerId: string | null
 }
@@ -57,13 +60,15 @@ export default React.memo(function GroupModal({ unitId }: Props) {
     useState<FormValidationResult>({
       valid: true,
       fields: {
-        name: true
+        name: true,
+        startDate: true
       }
     })
 
   useEffect(() => {
     const fields = {
-      name: form.name.length > 0
+      name: form.name.length > 0,
+      startDate: form.startDate !== null
     }
     setValidationResult({
       valid: allPropertiesTrue(fields),
@@ -79,18 +84,23 @@ export default React.memo(function GroupModal({ unitId }: Props) {
     <MutateFormModal
       title={i18n.unit.groups.createModal.title}
       resolveMutation={createGroupMutation}
-      resolveAction={() => ({
-        daycareId: unitId,
-        body: {
-          name: form.name,
-          startDate: form.startDate,
-          initialCaretakers: form.initialCaretakers,
-          aromiCustomerId:
-            form.aromiCustomerId !== null && form.aromiCustomerId.length > 0
-              ? form.aromiCustomerId
-              : null
-        }
-      })}
+      resolveAction={() =>
+        form.startDate !== null
+          ? {
+              daycareId: unitId,
+              body: {
+                name: form.name,
+                startDate: form.startDate,
+                initialCaretakers: form.initialCaretakers,
+                aromiCustomerId:
+                  form.aromiCustomerId !== null &&
+                  form.aromiCustomerId.length > 0
+                    ? form.aromiCustomerId
+                    : null
+              }
+            }
+          : cancelMutation
+      }
       onSuccess={clearUiMode}
       resolveLabel={i18n.unit.groups.createModal.confirmButton}
       rejectAction={clearUiMode}
@@ -112,14 +122,21 @@ export default React.memo(function GroupModal({ unitId }: Props) {
                   }
                 : undefined
             }
+            hideErrorsBeforeTouched
           />
         </div>
         <div>
           <Label>{i18n.common.form.startDate}</Label>
-          <DatePickerDeprecated
+          <DatePicker
             date={form.startDate}
             onChange={(startDate) => assignForm({ startDate })}
-            type="full-width"
+            info={
+              !validationResult.fields.startDate
+                ? errorToInputInfo('required', i18n.validationErrors)
+                : undefined
+            }
+            hideErrorsBeforeTouched
+            locale="fi"
           />
         </div>
         <div>
