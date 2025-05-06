@@ -1323,14 +1323,18 @@ data class DevInvoiceCorrection(
     val unitPrice: Int,
     val description: String,
     val note: String,
+    val createdAt: HelsinkiDateTime = HelsinkiDateTime.now(),
+    val createdBy: EvakaUserId = AuthenticatedUser.SystemInternalUser.evakaUserId,
+    val modifiedAt: HelsinkiDateTime = HelsinkiDateTime.now(),
+    val modifiedBy: EvakaUserId = AuthenticatedUser.SystemInternalUser.evakaUserId,
 )
 
 fun Database.Transaction.insert(row: DevInvoiceCorrection): InvoiceCorrectionId =
     createUpdate {
             sql(
                 """
-INSERT INTO invoice_correction (id, target_month, head_of_family_id, child_id, unit_id, product, period, amount, unit_price, description, note)
-VALUES (${bind(row.id)}, ${bind(row.targetMonth)}, ${bind(row.headOfFamilyId)}, ${bind(row.childId)}, ${bind(row.unitId)}, ${bind(row.product)}, ${bind(row.period)}, ${bind(row.amount)}, ${bind(row.unitPrice)}, ${bind(row.description)}, ${bind(row.note)})
+INSERT INTO invoice_correction (id, target_month, head_of_family_id, child_id, unit_id, product, period, amount, unit_price, description, note, created_at, created_by, modified_at, modified_by)
+VALUES (${bind(row.id)}, ${bind(row.targetMonth)}, ${bind(row.headOfFamilyId)}, ${bind(row.childId)}, ${bind(row.unitId)}, ${bind(row.product)}, ${bind(row.period)}, ${bind(row.amount)}, ${bind(row.unitPrice)}, ${bind(row.description)}, ${bind(row.note)}, ${bind(row.createdAt)}, ${bind(row.createdBy)}, ${bind(row.modifiedAt)}, ${bind(row.modifiedBy)})
 RETURNING id
 """
             )

@@ -12,8 +12,11 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.InvoiceCorrectionId
 import fi.espoo.evaka.shared.InvoiceId
 import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.user.EvakaUser
 import java.time.YearMonth
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.core.mapper.PropagateNull
@@ -32,6 +35,10 @@ data class InvoiceCorrection(
     val unitPrice: Int,
     val description: String,
     val note: String,
+    val createdAt: HelsinkiDateTime,
+    @Nested("created_by") val createdBy: EvakaUser,
+    val modifiedAt: HelsinkiDateTime,
+    @Nested("modified_by") val modifiedBy: EvakaUser,
     @Nested("invoice") val invoice: InvoiceWithCorrection?, // should later be a list?
 ) {
     fun toDraftInvoiceRow() =
@@ -61,7 +68,11 @@ data class InvoiceCorrection(
         )
 }
 
-fun updateCorrectionsOfInvoices(tx: Database.Transaction, sentInvoices: List<InvoiceDetailed>) {
+fun updateCorrectionsOfInvoices(
+    tx: Database.Transaction,
+    now: HelsinkiDateTime,
+    sentInvoices: List<InvoiceDetailed>,
+) {
     val correctionIds =
         sentInvoices.flatMap { invoice -> invoice.rows.mapNotNull { it.correctionId } }.toSet()
     val corrections = tx.getInvoiceCorrectionsByIds(correctionIds)
@@ -69,8 +80,12 @@ fun updateCorrectionsOfInvoices(tx: Database.Transaction, sentInvoices: List<Inv
     val (updatedCorrections, newCorrections) =
         generateInvoiceCorrectionChanges(corrections, sentInvoices)
 
-    tx.updateInvoiceCorrections(updatedCorrections)
-    tx.insertInvoiceCorrections(newCorrections)
+    tx.updateInvoiceCorrections(updatedCorrections, modified = null)
+    tx.insertInvoiceCorrections(
+        newCorrections,
+        AuthenticatedUser.SystemInternalUser.evakaUserId,
+        now,
+    )
 }
 
 fun generateInvoiceCorrectionChanges(
