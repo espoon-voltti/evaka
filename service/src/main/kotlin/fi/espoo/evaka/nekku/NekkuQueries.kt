@@ -636,3 +636,7 @@ ${bind(report.mealsBySpecialDiet)}
             .execute()
     }
 }
+
+fun Database.Read.getDaycareGroupIds(daycareId: DaycareId): List<GroupId> =
+    createQuery { sql("SELECT id FROM daycare_group WHERE daycare_id = $daycareId") }
+        .toList<GroupId>()
