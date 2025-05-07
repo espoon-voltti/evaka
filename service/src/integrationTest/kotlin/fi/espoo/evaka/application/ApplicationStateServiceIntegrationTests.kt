@@ -119,7 +119,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
 
     @BeforeEach
     fun beforeEach() {
-        MockSfiMessagesClient.clearMessages()
+        MockSfiMessagesClient.reset()
         db.transaction { tx ->
             tx.insert(testDecisionMaker_1)
             tx.insert(testArea)

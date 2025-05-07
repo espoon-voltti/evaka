@@ -446,7 +446,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
 
     @Test
     fun `Decision maker can make a decision`() {
-        MockSfiMessagesClient.clearMessages()
+        MockSfiMessagesClient.reset()
 
         val assistanceNeedDecision =
             createAssistanceNeedDecision(AssistanceNeedDecisionRequest(decision = testDecision))
@@ -520,7 +520,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
                 testDecision.validityPeriod.start,
                 testDecision.validityPeriod.start.plusMonths(6),
             )
-        MockSfiMessagesClient.clearMessages()
+        MockSfiMessagesClient.reset()
 
         val assistanceNeedDecision =
             createAssistanceNeedDecision(
@@ -559,7 +559,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
         val previousPeriod =
             DateRange(futurePeriod.start.minusDays(10), futurePeriod.start.minusDays(5))
 
-        MockSfiMessagesClient.clearMessages()
+        MockSfiMessagesClient.reset()
 
         val futureDecision =
             createAssistanceNeedDecision(
@@ -610,7 +610,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
         val overlappingPeriod =
             DateRange(futurePeriod.start.minusDays(10), futurePeriod.end?.plusDays(5))
 
-        MockSfiMessagesClient.clearMessages()
+        MockSfiMessagesClient.reset()
 
         val assistanceNeedDecision =
             createAssistanceNeedDecision(

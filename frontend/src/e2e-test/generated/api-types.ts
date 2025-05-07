@@ -1113,12 +1113,14 @@ export interface SfiMessage {
   lastName: string
   messageContent: string
   messageHeader: string
-  messageId: string
+  messageId: SfiMessageId
   postOffice: string
   postalCode: string
   ssn: string
   streetAddress: string
 }
+
+export type SfiMessageId = Id<'SfiMessage'>
 
 export type StaffAttendancePlanId = Id<'StaffAttendancePlan'>
 

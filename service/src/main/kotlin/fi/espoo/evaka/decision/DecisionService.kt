@@ -30,7 +30,9 @@ import fi.espoo.evaka.s3.DocumentLocation
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.setting.SettingType
 import fi.espoo.evaka.setting.getSettings
+import fi.espoo.evaka.sficlient.SentSfiMessage
 import fi.espoo.evaka.sficlient.SfiMessage
+import fi.espoo.evaka.sficlient.storeSentSfiMessage
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.PersonId
@@ -259,9 +261,15 @@ class DecisionService(
         // SFI expects unique string for each message so document.id is not suitable as it is NOT
         // string and NOT unique
         val uniqueId = "${decision.id}|${guardian.id}"
+
+        val messageId =
+            tx.storeSentSfiMessage(
+                SentSfiMessage(guardianId = guardian.id, decisionId = decision.id)
+            )
+
         val message =
             SfiMessage(
-                messageId = uniqueId,
+                messageId = messageId,
                 documentId = uniqueId,
                 documentDisplayName = calculateDecisionFileName(decision, lang),
                 documentBucket = documentLocation.bucket,

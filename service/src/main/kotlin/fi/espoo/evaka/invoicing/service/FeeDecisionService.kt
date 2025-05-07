@@ -48,7 +48,9 @@ import fi.espoo.evaka.process.insertProcessHistoryRow
 import fi.espoo.evaka.s3.DocumentKey
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.setting.getSettings
+import fi.espoo.evaka.sficlient.SentSfiMessage
 import fi.espoo.evaka.sficlient.SfiMessage
+import fi.espoo.evaka.sficlient.storeSentSfiMessage
 import fi.espoo.evaka.shared.ArchiveProcessType
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.FeatureConfig
@@ -315,9 +317,14 @@ class FeeDecisionService(
 
         val documentLocation = documentClient.locate(DocumentKey.FeeDecision(decision.documentKey))
 
+        val messageId =
+            tx.storeSentSfiMessage(
+                SentSfiMessage(guardianId = decision.headOfFamily.id, feeDecisionId = decision.id)
+            )
+
         val message =
             SfiMessage(
-                messageId = decision.id.toString(),
+                messageId = messageId,
                 documentId = decision.id.toString(),
                 documentDisplayName = feeDecisionDisplayName,
                 documentBucket = documentLocation.bucket,
@@ -340,6 +347,7 @@ class FeeDecisionService(
             listOf(AsyncJob.SendNewFeeDecisionEmail(decisionId = decision.id)),
             runAt = clock.now(),
         )
+
         setSentAndUpdateProcess(
             tx,
             clock,

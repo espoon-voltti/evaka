@@ -27,6 +27,7 @@ import fi.espoo.evaka.s3.DocumentKey
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.sficlient.SfiMessage
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
+import fi.espoo.evaka.shared.SfiMessageId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -39,6 +40,7 @@ import fi.espoo.evaka.shared.message.IMessageProvider
 import fi.espoo.evaka.shared.template.ITemplateProvider
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.LocalDate
+import java.util.UUID
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Component
 import org.thymeleaf.context.Context
@@ -186,15 +188,19 @@ class AssistanceNeedDecisionService(
 
                     val messageHeader = messageProvider.getAssistanceNeedDecisionHeader(lang)
                     val messageContent = messageProvider.getAssistanceNeedDecisionContent(lang)
-                    val messageId = "${decision.id}_${guardian.id}"
+                    val uniqueId = "${decision.id}_${guardian.id}"
 
                     asyncJobRunner.plan(
                         tx,
                         listOf(
                             AsyncJob.SendMessage(
                                 SfiMessage(
-                                    messageId = messageId,
-                                    documentId = messageId,
+                                    messageId =
+                                        SfiMessageId(
+                                            UUID.randomUUID()
+                                        ), // Will be replaced soon with generic document based
+                                    // solution
+                                    documentId = uniqueId,
                                     documentDisplayName =
                                         suomiFiDocumentFileName(decision.language),
                                     documentKey = documentLocation.key,
