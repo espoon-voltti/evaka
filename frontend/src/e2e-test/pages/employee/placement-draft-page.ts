@@ -4,17 +4,17 @@
 
 import { UUID } from 'lib-common/types'
 
-import { Combobox, DatePickerDeprecated, Page, Element } from '../../utils/page'
+import { Combobox, Page, Element, DatePicker } from '../../utils/page'
 
 export class PlacementDraftPage {
   #restrictedDetailsWarning: Element
-  startDate: DatePickerDeprecated
+  startDate: DatePicker
   #addOtherUnitCombobox: Combobox
   constructor(private page: Page) {
     this.#restrictedDetailsWarning = page.findByDataQa(
       'restricted-details-warning'
     )
-    this.startDate = new DatePickerDeprecated(page.findByDataQa('start-date'))
+    this.startDate = new DatePicker(page.findByDataQa('start-date'))
     this.#addOtherUnitCombobox = new Combobox(
       page.findByDataQa('add-other-unit')
     )

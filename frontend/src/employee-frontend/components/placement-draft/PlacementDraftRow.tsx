@@ -13,7 +13,8 @@ import {
   PlacementType
 } from 'lib-common/generated/api-types/placement'
 import LocalDate from 'lib-common/local-date'
-import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
+import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
+import { DatePickerSpacer } from 'lib-components/molecules/date-picker/DateRangePicker'
 import { fontWeights, H2 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
@@ -38,17 +39,6 @@ const DateRowItem = styled.span<{
   margin-bottom: auto;
   width: ${(p) => p.width};
   font-weight: ${(p) => (p.strong ? fontWeights.semibold : fontWeights.normal)};
-
-  .react-datepicker-wrapper > div > div > input {
-    width: 150px;
-  }
-`
-
-const DateRowSpacer = styled.span`
-  margin-left: 15px;
-  margin-right: 15px;
-  margin-top: auto;
-  margin-bottom: auto;
 `
 
 const OverlapError = styled.span`
@@ -69,16 +59,16 @@ const OverlapError = styled.span`
 
 interface Props {
   placementDraft: PlacementPlanDraft
-  placement: DaycarePlacementPlanForm
-  updateStart: (date: LocalDate) => void
-  updateEnd: (date: LocalDate) => void
-  updatePreschoolStart: (date: LocalDate) => void
-  updatePreschoolEnd: (date: LocalDate) => void
+  formState: DaycarePlacementPlanForm
+  updateStart: (date: LocalDate | null) => void
+  updateEnd: (date: LocalDate | null) => void
+  updatePreschoolStart: (date: LocalDate | null) => void
+  updatePreschoolEnd: (date: LocalDate | null) => void
 }
 
 export default React.memo(function PlacementDraftSection({
   placementDraft,
-  placement,
+  formState,
   updateStart,
   updateEnd,
   updatePreschoolStart,
@@ -116,8 +106,6 @@ export default React.memo(function PlacementDraftSection({
     }
   }
 
-  if (!placement.period) return null
-
   return (
     <section>
       <H2 noMargin>{i18n.placementDraft.datesTitle}</H2>
@@ -133,56 +121,58 @@ export default React.memo(function PlacementDraftSection({
           {dateRowLabel(placementDraft.type)}
         </DateRowItem>
         <DateRowItem>
-          <DatePickerDeprecated
-            date={placement.period.start}
-            type="full-width"
+          <DatePicker
+            date={formState.period?.start ?? null}
             onChange={updateStart}
             minDate={LocalDate.todayInSystemTz()}
+            locale="fi"
             data-qa="start-date"
           />
-          <DateRowSpacer>-</DateRowSpacer>
-          <DatePickerDeprecated
-            date={placement.period.end}
-            type="full-width"
+          <DatePickerSpacer />
+          <DatePicker
+            date={formState.period?.end ?? null}
             onChange={updateEnd}
+            locale="fi"
           />
         </DateRowItem>
         <DateRowItem>
-          {hasOverlap(placement.period, placementDraft.placements) && (
-            <OverlapError>
-              <FontAwesomeIcon icon={faExclamationTriangle} />
-              {i18n.placementDraft.dateError}
-            </OverlapError>
-          )}
+          {formState.period &&
+            hasOverlap(formState.period, placementDraft.placements) && (
+              <OverlapError>
+                <FontAwesomeIcon icon={faExclamationTriangle} />
+                {i18n.placementDraft.dateError}
+              </OverlapError>
+            )}
         </DateRowItem>
       </DateRow>
-      {placement.preschoolDaycarePeriod && (
+      {formState.hasPreschoolDaycarePeriod && (
         <DateRow>
           <DateRowItem width="225px">
             {i18n.placementDraft.preschoolDaycare}
           </DateRowItem>
           <DateRowItem>
-            <DatePickerDeprecated
-              date={placement.preschoolDaycarePeriod.start}
-              type="full-width"
+            <DatePicker
+              date={formState.preschoolDaycarePeriod?.start ?? null}
               onChange={updatePreschoolStart}
+              locale="fi"
             />
-            <DateRowSpacer>-</DateRowSpacer>
-            <DatePickerDeprecated
-              date={placement.preschoolDaycarePeriod.end}
-              type="full-width"
+            <DatePickerSpacer />
+            <DatePicker
+              date={formState.preschoolDaycarePeriod?.end ?? null}
               onChange={updatePreschoolEnd}
+              locale="fi"
             />
           </DateRowItem>
-          {hasOverlap(
-            placement.preschoolDaycarePeriod,
-            placementDraft.placements
-          ) && (
-            <OverlapError>
-              <FontAwesomeIcon icon={faExclamationTriangle} />
-              {i18n.placementDraft.dateError}
-            </OverlapError>
-          )}
+          {formState.preschoolDaycarePeriod !== null &&
+            hasOverlap(
+              formState.preschoolDaycarePeriod,
+              placementDraft.placements
+            ) && (
+              <OverlapError>
+                <FontAwesomeIcon icon={faExclamationTriangle} />
+                {i18n.placementDraft.dateError}
+              </OverlapError>
+            )}
         </DateRow>
       )}
     </section>
