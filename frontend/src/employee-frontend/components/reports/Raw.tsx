@@ -11,7 +11,8 @@ import Title from 'lib-components/atoms/Title'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
-import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
+import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
+import { DatePickerSpacer } from 'lib-components/molecules/date-picker/DateRangePicker'
 import { featureFlags } from 'lib-customizations/employee'
 
 import ReportDownload from '../../components/reports/ReportDownload'
@@ -36,14 +37,16 @@ export default React.memo(function Raw() {
     from: LocalDate.todayInSystemTz(),
     to: LocalDate.todayInSystemTz()
   })
-  const invertedRange = filters.to.isBefore(filters.from)
-  const tooLongRange = filters.to.isAfter(filters.from.addDays(7))
+  const invertedRange =
+    filters.from && filters.to && filters.to.isBefore(filters.from)
+  const tooLongRange =
+    filters.from && filters.to && filters.to.isAfter(filters.from.addDays(7))
 
   const [report, setReport] = useState<Result<RawReportRow[]>>(Success.of([]))
   const { user } = useContext(UserContext)
 
   const fetchRawReport = useCallback(
-    () => getRawReportResult(filters),
+    () => getRawReportResult({ from: filters.from!, to: filters.to! }),
     [filters]
   )
 
@@ -60,7 +63,11 @@ export default React.memo(function Raw() {
   const mapFloat = (value: number | null) =>
     value?.toString().replace(/\./, ',') ?? null
 
-  const submitPatuReport = () => sendPatuReportResult(filters)
+  const submitPatuReport = () => {
+    if (filters.from && filters.to) {
+      void sendPatuReportResult({ from: filters.from, to: filters.to })
+    }
+  }
 
   return (
     <Container>
@@ -70,16 +77,16 @@ export default React.memo(function Raw() {
         <FilterRow>
           <FilterLabel>{i18n.reports.common.period}</FilterLabel>
           <FlexRow>
-            <DatePickerDeprecated
+            <DatePicker
               date={filters.from}
               onChange={(from) => setFilters({ ...filters, from })}
-              type="half-width"
+              locale="fi"
             />
-            <span>{' - '}</span>
-            <DatePickerDeprecated
+            <DatePickerSpacer />
+            <DatePicker
               date={filters.to}
               onChange={(to) => setFilters({ ...filters, to })}
-              type="half-width"
+              locale="fi"
             />
           </FlexRow>
         </FilterRow>
@@ -89,6 +96,7 @@ export default React.memo(function Raw() {
             text={i18n.common.search}
             onClick={fetchRawReport}
             onSuccess={(newReport) => setReport(Success.of(newReport))}
+            disabled={filters.from === null || filters.to === null}
             data-qa="send-button"
           />
         </FilterRow>
@@ -234,7 +242,7 @@ export default React.memo(function Raw() {
               ]}
               filename={`${
                 i18n.reports.raw.title
-              } ${filters.from.formatIso()}-${filters.to.formatIso()}.csv`}
+              } ${filters.from?.formatIso()}-${filters.to?.formatIso()}.csv`}
             />
           ))
         )}
@@ -244,8 +252,7 @@ export default React.memo(function Raw() {
               primary
               text="Lähetä patu-raportti"
               onClick={submitPatuReport}
-              // eslint-disable-next-line @typescript-eslint/no-empty-function
-              onSuccess={() => {}}
+              onSuccess={() => undefined}
             />
           </div>
         )}

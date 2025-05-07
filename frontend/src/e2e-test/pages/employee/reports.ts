@@ -16,7 +16,6 @@ import {
   Checkbox,
   Combobox,
   DatePicker,
-  DatePickerDeprecated,
   MultiSelect,
   Page,
   Select,
@@ -205,12 +204,8 @@ export class ApplicationsReport {
   }
 
   async selectDateRangePickerDates(from: LocalDate, to: LocalDate) {
-    const fromInput = new DatePickerDeprecated(
-      this.page.findByDataQa('datepicker-from')
-    )
-    const toInput = new DatePickerDeprecated(
-      this.page.findByDataQa('datepicker-to')
-    )
+    const fromInput = new DatePicker(this.page.findByDataQa('datepicker-from'))
+    const toInput = new DatePicker(this.page.findByDataQa('datepicker-to'))
     await fromInput.fill(from.format())
     await toInput.fill(to.format())
   }

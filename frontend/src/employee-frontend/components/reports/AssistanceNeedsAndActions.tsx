@@ -23,7 +23,7 @@ import {
   AssistanceNeedsAndActionsReportRowByChild
 } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
-import { useQueryResult } from 'lib-common/query'
+import { constantQuery, useQueryResult } from 'lib-common/query'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
@@ -31,7 +31,7 @@ import Checkbox from 'lib-components/atoms/form/Checkbox'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
-import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
+import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import {
   daycareAssistanceLevels,
   featureFlags,
@@ -55,7 +55,7 @@ import {
 } from './queries'
 
 type AssistanceNeedsAndActionsReportFilters = {
-  date: LocalDate
+  date: LocalDate | null
   daycareAssistanceLevels: DaycareAssistanceLevel[]
   preschoolAssistanceLevels: PreschoolAssistanceLevel[]
   otherAssistanceMeasureTypes: OtherAssistanceMeasureType[]
@@ -363,12 +363,13 @@ export default React.memo(function AssistanceNeedsAndActions() {
         <Title size={1}>{i18n.reports.assistanceNeedsAndActions.title}</Title>
         <FilterRow>
           <FilterLabel>{i18n.reports.common.date}</FilterLabel>
-          <DatePickerDeprecated
+          <DatePicker
             date={filters.date}
             onChange={(date) => {
               setFilters({ ...filters, date })
               setRowFilters(emptyRowFilters)
             }}
+            locale="fi"
           />
         </FilterRow>
 
@@ -595,28 +596,32 @@ const ReportByGroup = (props: {
   selectedOtherColumns: OtherAssistanceMeasureType[]
 }) => {
   const result = useQueryResult(
-    assistanceNeedsAndActionsReportQuery({
-      date: props.filters.date,
-      daycareAssistanceLevels:
-        props.columnFilters.type === 'DAYCARE'
-          ? props.selectedDaycareColumns
-          : undefined,
-      preschoolAssistanceLevels:
-        props.columnFilters.type === 'PRESCHOOL'
-          ? props.selectedPreschoolColumns
-          : undefined,
-      otherAssistanceMeasureTypes: props.selectedOtherColumns
-    })
+    props.filters.date !== null
+      ? assistanceNeedsAndActionsReportQuery({
+          date: props.filters.date,
+          daycareAssistanceLevels:
+            props.columnFilters.type === 'DAYCARE'
+              ? props.selectedDaycareColumns
+              : undefined,
+          preschoolAssistanceLevels:
+            props.columnFilters.type === 'PRESCHOOL'
+              ? props.selectedPreschoolColumns
+              : undefined,
+          otherAssistanceMeasureTypes: props.selectedOtherColumns
+        })
+      : constantQuery(null)
   )
   return (
     <>
-      {renderResult(result, (report) => (
-        <ReportByGroupTable
-          {...props}
-          report={report}
-          filename={`Lapsien tuentarpeet ja tukitoimet yksiköissä ${props.filters.date.formatIso()}.csv`}
-        />
-      ))}
+      {renderResult(result, (report) =>
+        report !== null ? (
+          <ReportByGroupTable
+            {...props}
+            report={report}
+            filename={`Lapsien tuentarpeet ja tukitoimet yksiköissä ${props.filters.date?.formatIso()}.csv`}
+          />
+        ) : null
+      )}
     </>
   )
 }
@@ -981,28 +986,32 @@ const ReportByChild = (props: {
   selectedOtherColumns: OtherAssistanceMeasureType[]
 }) => {
   const result = useQueryResult(
-    assistanceNeedsAndActionsReportByChildQuery({
-      date: props.filters.date,
-      daycareAssistanceLevels:
-        props.columnFilters.type === 'DAYCARE'
-          ? props.selectedDaycareColumns
-          : undefined,
-      preschoolAssistanceLevels:
-        props.columnFilters.type === 'PRESCHOOL'
-          ? props.selectedPreschoolColumns
-          : undefined,
-      otherAssistanceMeasureTypes: props.selectedOtherColumns
-    })
+    props.filters.date !== null
+      ? assistanceNeedsAndActionsReportByChildQuery({
+          date: props.filters.date,
+          daycareAssistanceLevels:
+            props.columnFilters.type === 'DAYCARE'
+              ? props.selectedDaycareColumns
+              : undefined,
+          preschoolAssistanceLevels:
+            props.columnFilters.type === 'PRESCHOOL'
+              ? props.selectedPreschoolColumns
+              : undefined,
+          otherAssistanceMeasureTypes: props.selectedOtherColumns
+        })
+      : constantQuery(null)
   )
   return (
     <>
-      {renderResult(result, (report) => (
-        <ReportByChildTable
-          {...props}
-          report={report}
-          filename={`Lapsien tuentarpeet ja tukitoimet yksiköissä ${props.filters.date.formatIso()}.csv`}
-        />
-      ))}
+      {renderResult(result, (report) =>
+        report !== null ? (
+          <ReportByChildTable
+            {...props}
+            report={report}
+            filename={`Lapsien tuentarpeet ja tukitoimet yksiköissä ${props.filters.date?.formatIso()}.csv`}
+          />
+        ) : null
+      )}
     </>
   )
 }

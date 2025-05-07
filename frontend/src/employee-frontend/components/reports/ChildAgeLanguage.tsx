@@ -8,13 +8,13 @@ import styled from 'styled-components'
 
 import { ChildAgeLanguageReportRow } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
-import { useQueryResult } from 'lib-common/query'
+import { constantQuery, useQueryResult } from 'lib-common/query'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
-import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
+import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 
 import ReportDownload from '../../components/reports/ReportDownload'
 import { useTranslation } from '../../state/i18n'
@@ -57,7 +57,11 @@ export default React.memo(function ChildAgeLanguage() {
     _setFilters(filters)
   }, [])
 
-  const rows = useQueryResult(childAgeLanguageReportQuery(filters))
+  const rows = useQueryResult(
+    filters.date !== null
+      ? childAgeLanguageReportQuery({ date: filters.date })
+      : constantQuery([])
+  )
 
   const filteredRows = useMemo(
     () => rows.map((rs) => rs.filter(displayFilter)),
@@ -71,9 +75,10 @@ export default React.memo(function ChildAgeLanguage() {
         <Title size={1}>{i18n.reports.childAgeLanguage.title}</Title>
         <FilterRow>
           <FilterLabel>{i18n.reports.common.date}</FilterLabel>
-          <DatePickerDeprecated
+          <DatePicker
             date={filters.date}
             onChange={(date) => setFilters({ date })}
+            locale="fi"
           />
         </FilterRow>
 
@@ -164,7 +169,7 @@ export default React.memo(function ChildAgeLanguage() {
                 { label: 'muu 6v', value: (row) => row.other_6y },
                 { label: 'muu 7v', value: (row) => row.other_7y }
               ]}
-              filename={`Lapsien kielet ja iät yksiköissä ${filters.date.formatIso()}.csv`}
+              filename={`Lapsien kielet ja iät yksiköissä ${filters.date?.formatIso()}.csv`}
             />
             <TableScrollable>
               <Thead>

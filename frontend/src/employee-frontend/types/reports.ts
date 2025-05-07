@@ -5,10 +5,10 @@
 import LocalDate from 'lib-common/local-date'
 
 export interface PeriodFilters {
-  from: LocalDate
-  to: LocalDate
+  from: LocalDate | null
+  to: LocalDate | null
 }
 
 export interface DateFilters {
-  date: LocalDate
+  date: LocalDate | null
 }
