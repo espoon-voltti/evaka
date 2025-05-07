@@ -1235,12 +1235,14 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     FullDayAbsenseUpsert(
                         childId = child.id,
                         date = holidayPeriodStart,
-                        absenceType = AbsenceType.OTHER_ABSENCE,
+                        absenceTypeBillable = AbsenceType.OTHER_ABSENCE,
+                        absenceTypeNonbillable = AbsenceType.OTHER_ABSENCE,
                     ),
                     FullDayAbsenseUpsert(
                         childId = child.id,
                         date = holidayPeriodStart.plusDays(1),
-                        absenceType = AbsenceType.OTHER_ABSENCE,
+                        absenceTypeBillable = AbsenceType.OTHER_ABSENCE,
+                        absenceTypeNonbillable = AbsenceType.OTHER_ABSENCE,
                     ),
                 ),
             )
@@ -1307,7 +1309,8 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     FullDayAbsenseUpsert(
                         childId = child.id,
                         date = holidayPeriodStart,
-                        absenceType = AbsenceType.OTHER_ABSENCE,
+                        absenceTypeBillable = AbsenceType.OTHER_ABSENCE,
+                        absenceTypeNonbillable = AbsenceType.OTHER_ABSENCE,
                     )
                 ),
             )
@@ -1418,7 +1421,8 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     FullDayAbsenseUpsert(
                         childId = child.id,
                         date = holidayPeriodStart,
-                        absenceType = AbsenceType.OTHER_ABSENCE,
+                        absenceTypeBillable = AbsenceType.OTHER_ABSENCE,
+                        absenceTypeNonbillable = AbsenceType.OTHER_ABSENCE,
                     )
                 ),
             )
@@ -1748,7 +1752,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                 Triple(monday, AbsenceType.PLANNED_ABSENCE, AbsenceCategory.BILLABLE),
                 Triple(tuesday, AbsenceType.PLANNED_ABSENCE, AbsenceCategory.BILLABLE),
                 // No absence for wednesday
-                Triple(thursday, AbsenceType.PLANNED_ABSENCE, AbsenceCategory.NONBILLABLE),
+                Triple(thursday, AbsenceType.OTHER_ABSENCE, AbsenceCategory.NONBILLABLE),
             ),
             absences.map { Triple(it.date, it.absenceType, it.category) },
         )

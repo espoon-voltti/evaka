@@ -150,7 +150,8 @@ class HolidayPeriodControllerCitizen(
                             FullDayAbsenseUpsert(
                                 childId = childId,
                                 date = it,
-                                absenceType = questionnaire.absenceType,
+                                absenceTypeBillable = questionnaire.absenceType,
+                                absenceTypeNonbillable = questionnaire.absenceType,
                                 questionnaireId = questionnaire.id,
                             )
                         } ?: emptySequence()
@@ -200,16 +201,18 @@ class HolidayPeriodControllerCitizen(
                     body.openRanges.entries.flatMap { (childId, ranges) ->
                         ranges.flatMap { range ->
                             range.dates().map {
+                                val absenceType =
+                                    when {
+                                        range.durationInDays() >=
+                                            questionnaire.absenceTypeThreshold ->
+                                            questionnaire.absenceType
+                                        else -> AbsenceType.OTHER_ABSENCE
+                                    }
                                 FullDayAbsenseUpsert(
                                     childId = childId,
                                     date = it,
-                                    absenceType =
-                                        when {
-                                            range.durationInDays() >=
-                                                questionnaire.absenceTypeThreshold ->
-                                                questionnaire.absenceType
-                                            else -> AbsenceType.OTHER_ABSENCE
-                                        },
+                                    absenceTypeBillable = absenceType,
+                                    absenceTypeNonbillable = absenceType,
                                     questionnaireId = questionnaire.id,
                                 )
                             }

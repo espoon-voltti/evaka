@@ -302,6 +302,260 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                     placementType.absenceCategories().map { Tuple(it, AbsenceType.PLANNED_ABSENCE) }
                 )
         }
+
+        @Test
+        fun `postReservations inserts billable planned absence and nonbillable other absence when contract days`() {
+            db.transaction { tx ->
+                val placementId =
+                    tx.insert(
+                        DevPlacement(
+                            type = PlacementType.PRESCHOOL_DAYCARE,
+                            childId = child.id,
+                            unitId = unit.id,
+                            startDate = monday,
+                            endDate = monday,
+                        )
+                    )
+                tx.insert(
+                    DevServiceNeed(
+                        placementId = placementId,
+                        startDate = monday,
+                        endDate = monday,
+                        optionId = snDaycareContractDays10.id,
+                        shiftCare = ShiftCareType.NONE,
+                        confirmedBy = employee.evakaUserId,
+                        confirmedAt = HelsinkiDateTime.now(),
+                    )
+                )
+            }
+
+            postReservations(
+                adult.user(CitizenAuthLevel.WEAK),
+                listOf(
+                    DailyReservationRequest.Reservations(
+                        childId = child.id,
+                        date = monday,
+                        reservation = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 10)),
+                    )
+                ),
+            )
+
+            assertThat(db.transaction { tx -> tx.getAbsencesOfChildByDate(child.id, monday) })
+                .extracting({ it.category }, { it.absenceType })
+                .containsExactlyInAnyOrder(
+                    Tuple(AbsenceCategory.BILLABLE, AbsenceType.PLANNED_ABSENCE),
+                    Tuple(AbsenceCategory.NONBILLABLE, AbsenceType.OTHER_ABSENCE),
+                )
+        }
+
+        @Test
+        fun `postReservations with absence inserts billable planned absence and nonbillable other absence when contract days`() {
+            db.transaction { tx ->
+                val placementId =
+                    tx.insert(
+                        DevPlacement(
+                            type = PlacementType.PRESCHOOL_DAYCARE,
+                            childId = child.id,
+                            unitId = unit.id,
+                            startDate = monday,
+                            endDate = monday,
+                        )
+                    )
+                tx.insert(
+                    DevServiceNeed(
+                        placementId = placementId,
+                        startDate = monday,
+                        endDate = monday,
+                        optionId = snDaycareContractDays10.id,
+                        shiftCare = ShiftCareType.NONE,
+                        confirmedBy = employee.evakaUserId,
+                        confirmedAt = HelsinkiDateTime.now(),
+                    )
+                )
+            }
+
+            postReservations(
+                adult.user(CitizenAuthLevel.WEAK),
+                listOf(DailyReservationRequest.Absent(childId = child.id, date = monday)),
+            )
+
+            assertThat(db.transaction { tx -> tx.getAbsencesOfChildByDate(child.id, monday) })
+                .extracting({ it.category }, { it.absenceType })
+                .containsExactlyInAnyOrder(
+                    Tuple(AbsenceCategory.BILLABLE, AbsenceType.PLANNED_ABSENCE),
+                    Tuple(AbsenceCategory.NONBILLABLE, AbsenceType.OTHER_ABSENCE),
+                )
+        }
+
+        @Test
+        fun `postAbsences inserts billable planned absence and nonbillable other absence when contract days`() {
+            db.transaction { tx ->
+                val placementId =
+                    tx.insert(
+                        DevPlacement(
+                            type = PlacementType.PRESCHOOL_DAYCARE,
+                            childId = child.id,
+                            unitId = unit.id,
+                            startDate = monday,
+                            endDate = monday,
+                        )
+                    )
+                tx.insert(
+                    DevServiceNeed(
+                        placementId = placementId,
+                        startDate = monday,
+                        endDate = monday,
+                        optionId = snDaycareContractDays10.id,
+                        shiftCare = ShiftCareType.NONE,
+                        confirmedBy = employee.evakaUserId,
+                        confirmedAt = HelsinkiDateTime.now(),
+                    )
+                )
+            }
+
+            postAbsences(
+                adult.user(CitizenAuthLevel.WEAK),
+                AbsenceRequest(
+                    childIds = setOf(child.id),
+                    dateRange = FiniteDateRange(monday, monday),
+                    absenceType = AbsenceType.OTHER_ABSENCE,
+                ),
+            )
+
+            assertThat(db.transaction { tx -> tx.getAbsencesOfChildByDate(child.id, monday) })
+                .extracting({ it.category }, { it.absenceType })
+                .containsExactlyInAnyOrder(
+                    Tuple(AbsenceCategory.BILLABLE, AbsenceType.PLANNED_ABSENCE),
+                    Tuple(AbsenceCategory.NONBILLABLE, AbsenceType.OTHER_ABSENCE),
+                )
+        }
+
+        @Test
+        fun `postReservations inserts billable planned absence and nonbillable other absence when contract hours`() {
+            db.transaction { tx ->
+                val placementId =
+                    tx.insert(
+                        DevPlacement(
+                            type = PlacementType.PRESCHOOL_DAYCARE,
+                            childId = child.id,
+                            unitId = unit.id,
+                            startDate = monday,
+                            endDate = monday,
+                        )
+                    )
+                tx.insert(
+                    DevServiceNeed(
+                        placementId = placementId,
+                        startDate = monday,
+                        endDate = monday,
+                        optionId = snDaycareHours120.id,
+                        shiftCare = ShiftCareType.NONE,
+                        confirmedBy = employee.evakaUserId,
+                        confirmedAt = HelsinkiDateTime.now(),
+                    )
+                )
+            }
+
+            postReservations(
+                adult.user(CitizenAuthLevel.WEAK),
+                listOf(
+                    DailyReservationRequest.Reservations(
+                        childId = child.id,
+                        date = monday,
+                        reservation = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 10)),
+                    )
+                ),
+            )
+
+            assertThat(db.transaction { tx -> tx.getAbsencesOfChildByDate(child.id, monday) })
+                .extracting({ it.category }, { it.absenceType })
+                .containsExactlyInAnyOrder(
+                    Tuple(AbsenceCategory.BILLABLE, AbsenceType.PLANNED_ABSENCE),
+                    Tuple(AbsenceCategory.NONBILLABLE, AbsenceType.OTHER_ABSENCE),
+                )
+        }
+
+        @Test
+        fun `postReservations with absence inserts billable planned absence and nonbillable other absence when contract hours`() {
+            db.transaction { tx ->
+                val placementId =
+                    tx.insert(
+                        DevPlacement(
+                            type = PlacementType.PRESCHOOL_DAYCARE,
+                            childId = child.id,
+                            unitId = unit.id,
+                            startDate = monday,
+                            endDate = monday,
+                        )
+                    )
+                tx.insert(
+                    DevServiceNeed(
+                        placementId = placementId,
+                        startDate = monday,
+                        endDate = monday,
+                        optionId = snDaycareHours120.id,
+                        shiftCare = ShiftCareType.NONE,
+                        confirmedBy = employee.evakaUserId,
+                        confirmedAt = HelsinkiDateTime.now(),
+                    )
+                )
+            }
+
+            postReservations(
+                adult.user(CitizenAuthLevel.WEAK),
+                listOf(DailyReservationRequest.Absent(childId = child.id, date = monday)),
+            )
+
+            assertThat(db.transaction { tx -> tx.getAbsencesOfChildByDate(child.id, monday) })
+                .extracting({ it.category }, { it.absenceType })
+                .containsExactlyInAnyOrder(
+                    Tuple(AbsenceCategory.BILLABLE, AbsenceType.PLANNED_ABSENCE),
+                    Tuple(AbsenceCategory.NONBILLABLE, AbsenceType.OTHER_ABSENCE),
+                )
+        }
+
+        @Test
+        fun `postAbsences inserts billable planned absence and nonbillable other absence when contract hours`() {
+            db.transaction { tx ->
+                val placementId =
+                    tx.insert(
+                        DevPlacement(
+                            type = PlacementType.PRESCHOOL_DAYCARE,
+                            childId = child.id,
+                            unitId = unit.id,
+                            startDate = monday,
+                            endDate = monday,
+                        )
+                    )
+                tx.insert(
+                    DevServiceNeed(
+                        placementId = placementId,
+                        startDate = monday,
+                        endDate = monday,
+                        optionId = snDaycareHours120.id,
+                        shiftCare = ShiftCareType.NONE,
+                        confirmedBy = employee.evakaUserId,
+                        confirmedAt = HelsinkiDateTime.now(),
+                    )
+                )
+            }
+
+            postAbsences(
+                adult.user(CitizenAuthLevel.WEAK),
+                AbsenceRequest(
+                    childIds = setOf(child.id),
+                    dateRange = FiniteDateRange(monday, monday),
+                    absenceType = AbsenceType.OTHER_ABSENCE,
+                ),
+            )
+
+            assertThat(db.transaction { tx -> tx.getAbsencesOfChildByDate(child.id, monday) })
+                .extracting({ it.category }, { it.absenceType })
+                .containsExactlyInAnyOrder(
+                    Tuple(AbsenceCategory.BILLABLE, AbsenceType.PLANNED_ABSENCE),
+                    Tuple(AbsenceCategory.NONBILLABLE, AbsenceType.OTHER_ABSENCE),
+                )
+        }
     }
 
     @Test
@@ -1938,7 +2192,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                 DevAbsence(
                     childId = child.id,
                     date = monday,
-                    absenceType = AbsenceType.PLANNED_ABSENCE,
+                    absenceType = AbsenceType.OTHER_ABSENCE,
                     modifiedBy = adult.evakaUserId(),
                     absenceCategory = AbsenceCategory.NONBILLABLE,
                 )
@@ -2022,7 +2276,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                 DevAbsence(
                     childId = child.id,
                     date = monday,
-                    absenceType = AbsenceType.PLANNED_ABSENCE,
+                    absenceType = AbsenceType.OTHER_ABSENCE,
                     modifiedBy = adult.evakaUserId(),
                     absenceCategory = AbsenceCategory.NONBILLABLE,
                 )
@@ -2053,7 +2307,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
             )
             .extracting({ it.date }, { it.absenceType }, { it.category })
             .containsExactlyInAnyOrder(
-                Tuple(monday, AbsenceType.PLANNED_ABSENCE, AbsenceCategory.NONBILLABLE),
+                Tuple(monday, AbsenceType.SICKLEAVE, AbsenceCategory.NONBILLABLE),
                 Tuple(monday, AbsenceType.PLANNED_ABSENCE, AbsenceCategory.BILLABLE),
                 Tuple(tuesday, AbsenceType.SICKLEAVE, AbsenceCategory.NONBILLABLE),
                 Tuple(tuesday, AbsenceType.SICKLEAVE, AbsenceCategory.BILLABLE),
