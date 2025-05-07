@@ -1,12 +1,14 @@
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.nekku.NekkuOrdersReport
+import fi.espoo.evaka.nekku.getDaycareGroupIds
 import fi.espoo.evaka.nekku.getNekkuOrderReport
 import fi.espoo.evaka.reports.REPORT_STATEMENT_TIMEOUT
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
@@ -26,9 +28,12 @@ class NekkuOrderReportController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         user: AuthenticatedUser.Employee,
         @PathVariable unitId: DaycareId,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate,
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) start: LocalDate,
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) end: LocalDate,
         @RequestParam groupIds: List<GroupId>?,
     ): List<NekkuOrdersReport> {
+        if (start.isAfter(end)) throw BadRequest("Inverted time range")
+        if (end.isAfter(start.plusWeeks(2))) throw BadRequest("Too long time range")
 
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -40,32 +45,47 @@ class NekkuOrderReportController(private val accessControl: AccessControl) {
                         unitId,
                     )
                     tx.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
-                    getNekkuOrderReportRows(tx, date, unitId, groupIds?.ifEmpty { null })
+                    getNekkuOrderReportRows(tx, start, end, unitId, groupIds?.ifEmpty { null })
                 }
             }
             .also {
                 Audit.NekkuOrdersReportRead.log(
                     targetId = AuditId(unitId),
-                    meta = mapOf("groupIds" to groupIds, "date" to date, "count" to it.size),
+                    meta =
+                        mapOf(
+                            "groupIds" to groupIds,
+                            "startDate" to start,
+                            "endDate" to end,
+                            "count" to it.size,
+                        ),
                 )
             }
     }
 
     fun getNekkuOrderReportRows(
         tx: Database.Read,
-        date: LocalDate,
+        start: LocalDate,
+        end: LocalDate,
         unitId: DaycareId,
         groupIds: List<GroupId>?,
     ): List<NekkuOrdersReport> {
 
-        var nekkuOrdersReport: List<NekkuOrdersReport> = emptyList()
+        val reports = mutableListOf<NekkuOrdersReport>()
+        var currentDate = start
+        var mutableGroupIds = groupIds?.toMutableList()
 
-        //TODO: at least one group should be added
-        if (groupIds != null) {
-            var orderRows = tx.getNekkuOrderReport(daycareId = unitId, groupIds.first(), date)
-            nekkuOrdersReport = orderRows
+        if (mutableGroupIds == null) {
+            mutableGroupIds = tx.getDaycareGroupIds(unitId) as MutableList<GroupId>?
         }
 
-        return nekkuOrdersReport
+        while (!currentDate.isAfter(end)) {
+            mutableGroupIds?.forEach { groupId ->
+                val report = tx.getNekkuOrderReport(unitId, groupId, currentDate)
+                reports.addAll(report)
+            }
+            currentDate = currentDate.plusDays(1)
+        }
+
+        return reports
     }
 }
