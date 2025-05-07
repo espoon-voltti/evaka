@@ -60,8 +60,8 @@ export interface ApplicationSearchFilters {
   basis: ApplicationBasis[]
   status: ApplicationSummaryStatusOptions
   type: ApplicationTypeToggle
-  startDate: LocalDate | undefined
-  endDate: LocalDate | undefined
+  startDate: LocalDate | null
+  endDate: LocalDate | null
   dateType: ApplicationDateType[]
   searchTerms: string
   transferApplications: TransferApplicationFilter
@@ -86,8 +86,8 @@ const defaultState: UIState = {
     basis: [],
     status: 'SENT',
     type: 'ALL',
-    startDate: undefined,
-    endDate: undefined,
+    startDate: null,
+    endDate: null,
     dateType: [],
     searchTerms: '',
     transferApplications: 'ALL',

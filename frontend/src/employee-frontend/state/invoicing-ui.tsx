@@ -44,8 +44,8 @@ interface FeeDecisionSearchFilters {
   unit?: DaycareId
   statuses: FeeDecisionStatus[]
   distinctiveDetails: DistinctiveParams[]
-  startDate: LocalDate | undefined
-  endDate: LocalDate | undefined
+  startDate: LocalDate | null
+  endDate: LocalDate | null
   searchByStartDate: boolean
   financeDecisionHandlerId: EmployeeId | undefined
   difference: FeeDecisionDifference[]
@@ -69,8 +69,8 @@ interface ValueDecisionSearchFilters {
   distinctiveDetails: VoucherValueDecisionDistinctiveParams[]
   financeDecisionHandlerId?: EmployeeId
   difference: VoucherValueDecisionDifference[]
-  startDate: LocalDate | undefined
-  endDate: LocalDate | undefined
+  startDate: LocalDate | null
+  endDate: LocalDate | null
   searchByStartDate: boolean
 }
 
@@ -90,8 +90,8 @@ export interface InvoiceSearchFilters {
   unit?: DaycareId
   status: InvoiceStatus
   distinctiveDetails: InvoiceDistinctiveParams[]
-  startDate: LocalDate | undefined
-  endDate: LocalDate | undefined
+  startDate: LocalDate | null
+  endDate: LocalDate | null
   useCustomDatesForInvoiceSending: boolean
 }
 
@@ -129,9 +129,9 @@ export interface IncomeStatementSearchFilters {
   area: string[]
   unit: DaycareId | undefined
   providerTypes: ProviderType[]
-  sentStartDate: LocalDate | undefined
-  sentEndDate: LocalDate | undefined
-  placementValidDate: LocalDate | undefined
+  sentStartDate: LocalDate | null
+  sentEndDate: LocalDate | null
+  placementValidDate: LocalDate | null
 }
 
 interface IncomeStatementSearchFilterState {
@@ -172,7 +172,7 @@ const defaultState: UiState = {
       distinctiveDetails: [],
       statuses: ['DRAFT'],
       area: [],
-      startDate: undefined,
+      startDate: null,
       endDate: LocalDate.todayInSystemTz(),
       searchByStartDate: false,
       financeDecisionHandlerId: undefined,
@@ -192,7 +192,7 @@ const defaultState: UiState = {
       statuses: ['DRAFT'],
       area: [],
       difference: [],
-      startDate: undefined,
+      startDate: null,
       endDate: LocalDate.todayInSystemTz(),
       searchByStartDate: false
     },
@@ -209,8 +209,8 @@ const defaultState: UiState = {
       distinctiveDetails: [],
       area: [],
       status: 'DRAFT',
-      startDate: undefined,
-      endDate: undefined,
+      startDate: null,
+      endDate: null,
       useCustomDatesForInvoiceSending: false
     },
     setSearchFilters: () => undefined,
@@ -242,9 +242,9 @@ const defaultState: UiState = {
       area: [],
       unit: undefined,
       providerTypes: [],
-      sentStartDate: undefined,
-      sentEndDate: undefined,
-      placementValidDate: undefined
+      sentStartDate: null,
+      sentEndDate: null,
+      placementValidDate: null
     },
     setSearchFilters: () => undefined,
     confirmedSearchFilters: undefined,

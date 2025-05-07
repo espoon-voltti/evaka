@@ -142,14 +142,14 @@ function FeeDecisionFilters() {
     }
   }
 
-  const setStartDate = (startDate: LocalDate | undefined) => {
+  const setStartDate = (startDate: LocalDate | null) => {
     setSearchFilters({
       ...searchFilters,
       startDate: startDate
     })
   }
 
-  const setEndDate = (endDate: LocalDate | undefined) => {
+  const setEndDate = (endDate: LocalDate | null) => {
     setSearchFilters({
       ...searchFilters,
       endDate: endDate
