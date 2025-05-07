@@ -4,14 +4,16 @@
 
 // GENERATED FILE: no manual modifications
 
-import { CurrentNotificationResponse } from 'lib-common/generated/api-types/systemnotifications'
+import { CurrentNotificationResponseEmployee } from 'lib-common/generated/api-types/systemnotifications'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
-import { SystemNotification } from 'lib-common/generated/api-types/systemnotifications'
+import { SystemNotificationCitizens } from 'lib-common/generated/api-types/systemnotifications'
+import { SystemNotificationEmployees } from 'lib-common/generated/api-types/systemnotifications'
 import { SystemNotificationTargetGroup } from 'lib-common/generated/api-types/systemnotifications'
+import { SystemNotificationsResponse } from 'lib-common/generated/api-types/systemnotifications'
 import { client } from '../../api/client'
-import { deserializeJsonCurrentNotificationResponse } from 'lib-common/generated/api-types/systemnotifications'
-import { deserializeJsonSystemNotification } from 'lib-common/generated/api-types/systemnotifications'
+import { deserializeJsonCurrentNotificationResponseEmployee } from 'lib-common/generated/api-types/systemnotifications'
+import { deserializeJsonSystemNotificationsResponse } from 'lib-common/generated/api-types/systemnotifications'
 import { uri } from 'lib-common/uri'
 
 
@@ -34,39 +36,56 @@ export async function deleteSystemNotification(
 /**
 * Generated from fi.espoo.evaka.systemnotifications.SystemNotificationsController.getAllSystemNotifications
 */
-export async function getAllSystemNotifications(): Promise<SystemNotification[]> {
-  const { data: json } = await client.request<JsonOf<SystemNotification[]>>({
+export async function getAllSystemNotifications(): Promise<SystemNotificationsResponse> {
+  const { data: json } = await client.request<JsonOf<SystemNotificationsResponse>>({
     url: uri`/employee/system-notifications`.toString(),
     method: 'GET'
   })
-  return json.map(e => deserializeJsonSystemNotification(e))
+  return deserializeJsonSystemNotificationsResponse(json)
 }
 
 
 /**
 * Generated from fi.espoo.evaka.systemnotifications.SystemNotificationsController.getCurrentSystemNotificationEmployee
 */
-export async function getCurrentSystemNotificationEmployee(): Promise<CurrentNotificationResponse> {
-  const { data: json } = await client.request<JsonOf<CurrentNotificationResponse>>({
+export async function getCurrentSystemNotificationEmployee(): Promise<CurrentNotificationResponseEmployee> {
+  const { data: json } = await client.request<JsonOf<CurrentNotificationResponseEmployee>>({
     url: uri`/employee/public/system-notifications/current`.toString(),
     method: 'GET'
   })
-  return deserializeJsonCurrentNotificationResponse(json)
+  return deserializeJsonCurrentNotificationResponseEmployee(json)
 }
 
 
 /**
-* Generated from fi.espoo.evaka.systemnotifications.SystemNotificationsController.putSystemNotification
+* Generated from fi.espoo.evaka.systemnotifications.SystemNotificationsController.putSystemNotificationCitizens
 */
-export async function putSystemNotification(
+export async function putSystemNotificationCitizens(
   request: {
-    body: SystemNotification
+    body: SystemNotificationCitizens
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/employee/system-notifications`.toString(),
+    url: uri`/employee/system-notifications/citizens`.toString(),
     method: 'PUT',
-    data: request.body satisfies JsonCompatible<SystemNotification>
+    data: request.body satisfies JsonCompatible<SystemNotificationCitizens>
+  })
+  return json
+}
+
+
+/**
+* Generated from fi.espoo.evaka.systemnotifications.SystemNotificationsController.putSystemNotificationEmployees
+*/
+export async function putSystemNotificationEmployees(
+  request: {
+    body: SystemNotificationEmployees
+  }
+): Promise<void> {
+  const { data: json } = await client.request<JsonOf<void>>({
+    url: uri`/employee/system-notifications/employees`.toString(),
+    method: 'PUT',
+    data: request.body satisfies JsonCompatible<SystemNotificationEmployees>
   })
   return json
 }

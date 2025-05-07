@@ -38,47 +38,51 @@ class SystemNotificationsControllerIntegrationTest : FullApplicationTest(resetDb
             it.insert(admin)
         }
         val now = HelsinkiDateTime.of(LocalDate.of(2024, 3, 1), LocalTime.of(11, 0, 0))
-        assertEquals(emptyList(), getAllSystemNotifications(now))
         assertEquals(
-            SystemNotificationsController.CurrentNotificationResponse(null),
+            SystemNotificationsController.SystemNotificationsResponse(null, null),
+            getAllSystemNotifications(now),
+        )
+        assertEquals(
+            SystemNotificationsController.CurrentNotificationResponseCitizen(null),
             getCurrentSystemNotificationCitizen(now),
         )
         assertEquals(
-            SystemNotificationsController.CurrentNotificationResponse(null),
+            SystemNotificationsController.CurrentNotificationResponseEmployee(null),
             getCurrentSystemNotificationEmployeeMobile(now),
         )
 
         val validTo = now.plusDays(1)
 
-        putSystemNotification(
+        putSystemNotificationCitizens(
             now,
-            SystemNotification(
-                targetGroup = SystemNotificationTargetGroup.CITIZENS,
-                text = "old text",
+            SystemNotificationCitizens(
+                text = "vanha teksti",
+                textSv = "gammal text",
+                textEn = "old text",
                 validTo = now,
             ),
         )
         val citizenNotification =
-            SystemNotification(
-                targetGroup = SystemNotificationTargetGroup.CITIZENS,
-                text = "new text for citizens",
+            SystemNotificationCitizens(
+                text = "uusi teksti kuntalaisille",
+                textSv = "ny text för medborgarna",
+                textEn = "new text for citizens",
                 validTo = validTo,
             )
-        putSystemNotification(now, citizenNotification)
+        putSystemNotificationCitizens(now, citizenNotification)
         val employeeNotification =
-            SystemNotification(
-                targetGroup = SystemNotificationTargetGroup.EMPLOYEES,
-                text = "text for employees",
-                validTo = validTo,
-            )
-        putSystemNotification(now, employeeNotification)
+            SystemNotificationEmployees(text = "teksti työntekijöille", validTo = validTo)
+        putSystemNotificationEmployees(now, employeeNotification)
 
         val beforeValidTo = validTo.minusHours(1)
         val afterValidTo = validTo.plusHours(1)
 
         assertEquals(
-            setOf(citizenNotification, employeeNotification),
-            getAllSystemNotifications(afterValidTo).toSet(),
+            SystemNotificationsController.SystemNotificationsResponse(
+                citizenNotification,
+                employeeNotification,
+            ),
+            getAllSystemNotifications(afterValidTo),
         )
         assertEquals(
             citizenNotification,
@@ -92,12 +96,37 @@ class SystemNotificationsControllerIntegrationTest : FullApplicationTest(resetDb
         assertNull(getCurrentSystemNotificationEmployeeMobile(afterValidTo).notification)
 
         deleteSystemNotification(now, SystemNotificationTargetGroup.CITIZENS)
-        assertEquals(listOf(employeeNotification), getAllSystemNotifications(now))
+        assertEquals(
+            SystemNotificationsController.SystemNotificationsResponse(
+                citizens = null,
+                employees = employeeNotification,
+            ),
+            getAllSystemNotifications(now),
+        )
         assertNull(getCurrentSystemNotificationCitizen(beforeValidTo).notification)
     }
 
-    private fun putSystemNotification(now: HelsinkiDateTime, body: SystemNotification) =
-        controller.putSystemNotification(dbInstance(), admin.user, MockEvakaClock(now), body)
+    private fun putSystemNotificationCitizens(
+        now: HelsinkiDateTime,
+        body: SystemNotificationCitizens,
+    ) =
+        controller.putSystemNotificationCitizens(
+            dbInstance(),
+            admin.user,
+            MockEvakaClock(now),
+            body,
+        )
+
+    private fun putSystemNotificationEmployees(
+        now: HelsinkiDateTime,
+        body: SystemNotificationEmployees,
+    ) =
+        controller.putSystemNotificationEmployees(
+            dbInstance(),
+            admin.user,
+            MockEvakaClock(now),
+            body,
+        )
 
     private fun deleteSystemNotification(
         now: HelsinkiDateTime,
