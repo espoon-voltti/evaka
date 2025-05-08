@@ -61,7 +61,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         )
 
     val testCreationRequest =
-        DocumentTemplateBasicsRequest(
+        DocumentTemplateBasicsRequest.Regular(
             name = "test",
             type = DocumentType.PEDAGOGICAL_ASSESSMENT,
             placementTypes = PlacementType.entries.toSet(),
@@ -71,7 +71,6 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             validity = DateRange(LocalDate.of(2022, 7, 1), null),
             processDefinitionNumber = "123.456.789",
             archiveDurationMonths = 120,
-            archiveExternally = false,
         )
 
     @BeforeEach
@@ -279,7 +278,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 employeeUser,
                 now,
                 created.id,
-                DocumentTemplateBasicsRequest(
+                DocumentTemplateBasicsRequest.Regular(
                     name = "another",
                     type = DocumentType.PEDAGOGICAL_REPORT,
                     placementTypes = PlacementType.entries.toSet(),
@@ -289,7 +288,6 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     validity = newValidity,
                     processDefinitionNumber = "123.456.789b",
                     archiveDurationMonths = 1200,
-                    archiveExternally = false,
                 ),
             )
 

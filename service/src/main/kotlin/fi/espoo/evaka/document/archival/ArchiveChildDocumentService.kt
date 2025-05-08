@@ -73,8 +73,10 @@ fun uploadToArchive(
         "yleinen" // Defined as fixed value in Evaka_Särmä_metatietomääritykset.xlsx specs. TODO
     // should be mapped from metadata
     val classId =
-        "12.06.01.SL1.RT34" // Defined as fixed value in Evaka_Särmä_metatietomääritykset.xlsx
-    // specs. TODO should be mapped from metadata
+        document.template.processDefinitionNumber
+            ?: throw IllegalStateException(
+                "No class ID found in document template ${document.template.id}"
+            )
     val virtualArchiveId =
         "YLEINEN" // Defined as fixed value in Evaka_Särmä_metatietomääritykset.xlsx specs. TODO
     // should be mapped from metadata

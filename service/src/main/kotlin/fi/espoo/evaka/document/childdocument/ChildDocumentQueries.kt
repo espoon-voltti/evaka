@@ -152,6 +152,8 @@ SELECT
     dt.validity as template_validity,
     dt.published as template_published,
     dt.content as template_content,
+    dt.process_definition_number as template_process_definition_number,
+    dt.archive_duration_months as template_archive_duration_months,
     dt.archive_externally as template_archive_externally,
     cd.decision_maker,
     cdd.id AS decision_id,

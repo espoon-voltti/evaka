@@ -83,6 +83,21 @@ export const documentTemplateForm = transformed(
       }
     }
 
+    if (value.archiveExternally) {
+      if (value.processDefinitionNumber.trim().length === 0) {
+        return ValidationError.field('processDefinitionNumber', 'required')
+      }
+
+      if (value.archiveDurationMonths.trim().length === 0) {
+        return ValidationError.field('archiveDurationMonths', 'required')
+      }
+
+      const archiveDurationMonths = parseInt(value.archiveDurationMonths)
+      if (isNaN(archiveDurationMonths) || archiveDurationMonths < 1) {
+        return ValidationError.field('archiveDurationMonths', 'integerFormat')
+      }
+    }
+
     const confidential = value.confidential
     if (confidential) {
       const confidentialityDurationYears = parseInt(
@@ -104,18 +119,28 @@ export const documentTemplateForm = transformed(
 
     const output: DocumentTemplateBasicsRequest = {
       ...value,
-      processDefinitionNumber: archived
-        ? value.processDefinitionNumber.trim()
-        : null,
-      archiveDurationMonths: archived
-        ? parseInt(value.archiveDurationMonths)
-        : null,
+
       confidentiality: confidential
         ? {
             durationYears: parseInt(value.confidentialityDurationYears),
             basis: value.confidentialityBasis.trim()
           }
-        : null
+        : null,
+      ...(value.archiveExternally
+        ? {
+            templateType: 'ARCHIVED_EXTERNALLY',
+            processDefinitionNumber: value.processDefinitionNumber.trim(),
+            archiveDurationMonths: parseInt(value.archiveDurationMonths)
+          }
+        : {
+            templateType: 'REGULAR',
+            processDefinitionNumber: archived
+              ? value.processDefinitionNumber.trim()
+              : null,
+            archiveDurationMonths: archived
+              ? parseInt(value.archiveDurationMonths)
+              : null
+          })
     }
     return ValidationSuccess.of(output)
   }
@@ -341,7 +366,8 @@ export default React.memo(function TemplateModal({ onClose, mode }: Props) {
         hideErrorsBeforeTouched
         data-qa="process-definition-number"
       />
-      {processDefinitionNumber.value().trim().length > 0 && (
+      {((processDefinitionNumber.state?.trim()?.length ?? 0) > 0 ||
+        archiveExternally.state) && (
         <>
           <Gap />
           <Label>
