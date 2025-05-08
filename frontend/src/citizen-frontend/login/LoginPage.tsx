@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, { useState } from 'react'
+import React, { Fragment, useState } from 'react'
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router'
 import styled from 'styled-components'
 
@@ -27,7 +27,7 @@ import { farMap } from 'lib-icons'
 
 import Footer from '../Footer'
 import { useUser } from '../auth/state'
-import { useTranslation } from '../localization'
+import { useLang, useTranslation } from '../localization'
 import { getStrongLoginUri, getWeakLoginUri } from '../navigation/const'
 
 import { systemNotificationsQuery } from './queries'
@@ -38,6 +38,7 @@ const ParagraphInfoButton = styled(InfoButton)`
 
 export default React.memo(function LoginPage() {
   const i18n = useTranslation()
+  const [lang] = useLang()
   const user = useUser()
 
   const [searchParams] = useSearchParams()
@@ -71,7 +72,23 @@ export default React.memo(function LoginPage() {
               <ContentArea opaque>
                 <AlertBox
                   title={i18n.loginPage.systemNotification}
-                  message={systemNotifications.value.notification.text}
+                  message={
+                    <div>
+                      {(lang === 'sv'
+                        ? systemNotifications.value.notification.textSv
+                        : lang === 'en'
+                          ? systemNotifications.value.notification.textEn
+                          : systemNotifications.value.notification.text
+                      )
+                        .split('\n')
+                        .map((line, index) => (
+                          <Fragment key={index}>
+                            {line}
+                            <br />
+                          </Fragment>
+                        ))}
+                    </div>
+                  }
                   wide
                   noMargin
                   data-qa="system-notification"
