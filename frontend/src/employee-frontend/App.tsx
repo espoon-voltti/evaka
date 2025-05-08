@@ -153,6 +153,7 @@ function App() {
               <UserContextProvider>
                 <StateProvider>
                   <Content />
+                  <div id="datepicker-container" />
                 </StateProvider>
               </UserContextProvider>
             </ErrorBoundary>

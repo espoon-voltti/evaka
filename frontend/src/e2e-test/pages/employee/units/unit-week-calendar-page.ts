@@ -265,8 +265,6 @@ export class ReservationModal extends Modal {
   async addAbsence(date: LocalDate) {
     await this.selectRepetitionType('IRREGULAR')
     await this.endDate.fill(date.format())
-    // dismiss datepicker
-    await this.endDate.press('Escape')
     await this.setAbsent()
     await this.save()
   }
