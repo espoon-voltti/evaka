@@ -195,7 +195,7 @@ const SystemNotificationsPageInner = React.memo(
 
     return (
       <FixedSpaceColumn spacing="XL">
-        <FixedSpaceColumn data-qa="notification-citizens">
+        <FixedSpaceColumn data-qa="notification-CITIZENS">
           <H2 noMargin>{i18n.systemNotifications.title.CITIZENS}</H2>
           {editedNotification === 'CITIZENS' ? (
             <CitizenNotificationEditor
@@ -279,7 +279,7 @@ const SystemNotificationsPageInner = React.memo(
           )}
         </FixedSpaceColumn>
 
-        <FixedSpaceColumn data-qa="notification-employees">
+        <FixedSpaceColumn data-qa="notification-EMPLOYEES">
           <H2 noMargin>{i18n.systemNotifications.title.EMPLOYEES}</H2>
           {editedNotification === 'EMPLOYEES' ? (
             <EmployeeNotificationEditor

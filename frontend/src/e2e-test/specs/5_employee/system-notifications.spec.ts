@@ -8,6 +8,7 @@ import config from '../../config'
 import { Fixture } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
 import { DevEmployee } from '../../generated/api-types'
+import CitizenHeader from '../../pages/citizen/citizen-header'
 import { SystemNotificationsPage } from '../../pages/employee/SystemNotificationsPage'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import TopNav from '../../pages/mobile/top-nav'
@@ -26,6 +27,8 @@ describe('System notifications', () => {
   test('notification for citizens', async () => {
     const notificationText =
       'Lakkojen takia eVakassa on nyt poikkeuksellisen paljon käyttäjiä. Jos mahdollista, kokeile palvelua myöhemmin uudelleen.'
+    const notificationTextSv = 'Samma på svenska'
+    const notificationTextEn = 'Same in English'
     const now = HelsinkiDateTime.of(2024, 6, 3, 11, 0)
     const validTo = HelsinkiDateTime.of(2024, 6, 3, 11, 30)
 
@@ -38,6 +41,8 @@ describe('System notifications', () => {
     const systemNotificationsPage = new SystemNotificationsPage(adminPage)
     await systemNotificationsPage.createButton('CITIZENS').click()
     await systemNotificationsPage.textInput.fill(notificationText)
+    await systemNotificationsPage.textInputSv.fill(notificationTextSv)
+    await systemNotificationsPage.textInputEn.fill(notificationTextEn)
     await systemNotificationsPage.dateInput.fill(validTo.toLocalDate().format())
     await systemNotificationsPage.timeInput.fill(validTo.toLocalTime().format())
     await systemNotificationsPage.saveButton.click()
@@ -49,6 +54,15 @@ describe('System notifications', () => {
     await citizensPage
       .findByDataQa('system-notification')
       .assertText((t) => t.includes(notificationText))
+    const header = new CitizenHeader(citizensPage)
+    await header.selectLanguage('sv')
+    await citizensPage
+      .findByDataQa('system-notification')
+      .assertText((t) => t.includes(notificationTextSv))
+    await header.selectLanguage('en')
+    await citizensPage
+      .findByDataQa('system-notification')
+      .assertText((t) => t.includes(notificationTextEn))
     await citizensPage.close()
 
     const citizensPage2 = await Page.open({ mockedTime: validTo.addHours(1) })
