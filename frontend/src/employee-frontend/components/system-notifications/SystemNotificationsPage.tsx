@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useState } from 'react'
+import React, { Fragment, useContext, useState } from 'react'
 
 import { useTranslation } from 'employee-frontend/state/i18n'
 import { localDate, localTime } from 'lib-common/form/fields'
@@ -17,15 +17,16 @@ import { useForm, useFormFields } from 'lib-common/form/hooks'
 import { ValidationSuccess } from 'lib-common/form/types'
 import { nonBlank } from 'lib-common/form/validators'
 import {
-  SystemNotification,
+  SystemNotificationCitizens,
+  SystemNotificationEmployees,
   SystemNotificationTargetGroup
 } from 'lib-common/generated/api-types/systemnotifications'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { useQueryResult } from 'lib-common/query'
 import { Button } from 'lib-components/atoms/buttons/Button'
-import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import { InputFieldF } from 'lib-components/atoms/form/InputField'
+import { TextAreaF } from 'lib-components/atoms/form/TextArea'
 import { TimeInputF } from 'lib-components/atoms/form/TimeInput'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import {
@@ -43,19 +44,37 @@ import { renderResult } from '../async-rendering'
 import {
   allSystemNotificationsQuery,
   deleteSystemNotificationMutation,
-  putSystemNotificationMutation
+  putSystemNotificationCitizensMutation,
+  putSystemNotificationEmployeesMutation
 } from './queries'
 
-const notificationForm = transformed(
+const citizenNotificationForm = transformed(
   object({
-    targetGroup: required(value<SystemNotificationTargetGroup>()),
+    text: validated(required(value<string>()), nonBlank),
+    textSv: validated(required(value<string>()), nonBlank),
+    textEn: validated(required(value<string>()), nonBlank),
+    validToDate: required(localDate()),
+    validToTime: required(localTime())
+  }),
+  ({ text, textSv, textEn, validToDate, validToTime }) => {
+    const notification: SystemNotificationCitizens = {
+      text,
+      textSv,
+      textEn,
+      validTo: HelsinkiDateTime.fromLocal(validToDate, validToTime)
+    }
+    return ValidationSuccess.of(notification)
+  }
+)
+
+const employeeNotificationForm = transformed(
+  object({
     text: validated(required(value<string>()), nonBlank),
     validToDate: required(localDate()),
     validToTime: required(localTime())
   }),
-  ({ targetGroup, text, validToDate, validToTime }) => {
-    const notification: SystemNotification = {
-      targetGroup,
+  ({ text, validToDate, validToTime }) => {
+    const notification: SystemNotificationEmployees = {
       text,
       validTo: HelsinkiDateTime.fromLocal(validToDate, validToTime)
     }
@@ -63,18 +82,67 @@ const notificationForm = transformed(
   }
 )
 
-const NotificationEditor = React.memo(function NotificationEditor({
+const CitizenNotificationEditor = React.memo(function NotificationEditor({
   notification,
   onClose
 }: {
-  notification: SystemNotification
+  notification: SystemNotificationCitizens
   onClose: () => void
 }) {
   const { i18n, lang } = useTranslation()
   const form = useForm(
-    notificationForm,
+    citizenNotificationForm,
     () => ({
-      targetGroup: notification.targetGroup,
+      text: notification.text,
+      textSv: notification.textSv,
+      textEn: notification.textEn,
+      validToDate: localDate.fromDate(notification.validTo.toLocalDate()),
+      validToTime: notification.validTo.toLocalTime().format()
+    }),
+    i18n.validationErrors
+  )
+  const { text, textSv, textEn, validToDate, validToTime } = useFormFields(form)
+
+  return (
+    <FixedSpaceColumn>
+      <Label>{i18n.systemNotifications.textFi}</Label>
+      <TextAreaF bind={text} data-qa="text-input" />
+      <Label>{i18n.systemNotifications.textSv}</Label>
+      <TextAreaF bind={textSv} data-qa="text-input-sv" />
+      <Label>{i18n.systemNotifications.textEn}</Label>
+      <TextAreaF bind={textEn} data-qa="text-input-en" />
+      <FixedSpaceRow>
+        <Label>{i18n.systemNotifications.validTo}</Label>
+        <DatePickerF bind={validToDate} locale={lang} data-qa="date-input" />
+        <TimeInputF bind={validToTime} data-qa="time-input" />
+      </FixedSpaceRow>
+      <FixedSpaceRow>
+        <Button text={i18n.common.cancel} onClick={onClose} />
+        <MutateButton
+          primary
+          text={i18n.common.save}
+          disabled={!form.isValid()}
+          mutation={putSystemNotificationCitizensMutation}
+          onClick={() => ({ body: form.value() })}
+          onSuccess={onClose}
+          data-qa="save-btn"
+        />
+      </FixedSpaceRow>
+    </FixedSpaceColumn>
+  )
+})
+
+const EmployeeNotificationEditor = React.memo(function NotificationEditor({
+  notification,
+  onClose
+}: {
+  notification: SystemNotificationEmployees
+  onClose: () => void
+}) {
+  const { i18n, lang } = useTranslation()
+  const form = useForm(
+    employeeNotificationForm,
+    () => ({
       text: notification.text,
       validToDate: localDate.fromDate(notification.validTo.toLocalDate()),
       validToTime: notification.validTo.toLocalTime().format()
@@ -93,12 +161,12 @@ const NotificationEditor = React.memo(function NotificationEditor({
         <TimeInputF bind={validToTime} data-qa="time-input" />
       </FixedSpaceRow>
       <FixedSpaceRow>
-        <LegacyButton text={i18n.common.cancel} onClick={onClose} />
+        <Button text={i18n.common.cancel} onClick={onClose} />
         <MutateButton
           primary
           text={i18n.common.save}
           disabled={!form.isValid()}
-          mutation={putSystemNotificationMutation}
+          mutation={putSystemNotificationEmployeesMutation}
           onClick={() => ({ body: form.value() })}
           onSuccess={onClose}
           data-qa="save-btn"
@@ -110,9 +178,11 @@ const NotificationEditor = React.memo(function NotificationEditor({
 
 const SystemNotificationsPageInner = React.memo(
   function SystemNotificationsPageInner({
-    notifications
+    citizenNotification,
+    employeeNotification
   }: {
-    notifications: SystemNotification[]
+    citizenNotification: SystemNotificationCitizens | null
+    employeeNotification: SystemNotificationEmployees | null
   }) {
     const { i18n } = useTranslation()
     const { user } = useContext(UserContext)
@@ -123,79 +193,148 @@ const SystemNotificationsPageInner = React.memo(
     const [editedNotification, setEditedNotification] =
       useState<SystemNotificationTargetGroup | null>(null)
 
-    const targetGroups: SystemNotificationTargetGroup[] = [
-      'CITIZENS',
-      'EMPLOYEES'
-    ]
-
     return (
       <FixedSpaceColumn spacing="XL">
-        {targetGroups.map((targetGroup) => {
-          const notification =
-            notifications.find((n) => n.targetGroup === targetGroup) ?? null
-
-          return (
-            <FixedSpaceColumn
-              key={targetGroup}
-              data-qa={`notification-${targetGroup}`}
-            >
-              <H2 noMargin>{i18n.systemNotifications.title[targetGroup]}</H2>
-              {editedNotification === targetGroup ? (
-                <NotificationEditor
-                  notification={
-                    notification ?? {
-                      targetGroup: targetGroup,
-                      text: '',
-                      validTo: HelsinkiDateTime.now().addHours(24)
-                    }
-                  }
-                  onClose={() => setEditedNotification(null)}
-                />
-              ) : notification ? (
-                <FixedSpaceColumn>
-                  <P noMargin>{notification.text}</P>
-                  <div>
-                    <Label>{i18n.systemNotifications.validTo}: </Label>
-                    <span>{notification.validTo.format()}</span>
-                  </div>
-                  {editAllowed && (
-                    <FixedSpaceRow>
-                      <Button
-                        appearance="inline"
-                        onClick={() => setEditedNotification(targetGroup)}
-                        text={i18n.common.edit}
-                        icon={faPen}
-                        disabled={editedNotification !== null}
-                      />
-                      <MutateButton
-                        appearance="inline"
-                        mutation={deleteSystemNotificationMutation}
-                        onClick={() => ({ targetGroup })}
-                        text={i18n.common.remove}
-                        icon={faTrash}
-                        disabled={editedNotification !== null}
-                      />
-                    </FixedSpaceRow>
-                  )}
-                </FixedSpaceColumn>
-              ) : (
-                <FixedSpaceColumn>
-                  <div>{i18n.systemNotifications.noNotification}</div>
-                  {editAllowed && (
-                    <Button
-                      appearance="inline"
-                      onClick={() => setEditedNotification(targetGroup)}
-                      text={i18n.systemNotifications.setNotification}
-                      icon={faPlus}
-                      disabled={editedNotification !== null}
-                      data-qa="create-btn"
-                    />
-                  )}
-                </FixedSpaceColumn>
+        <FixedSpaceColumn data-qa="notification-citizens">
+          <H2 noMargin>{i18n.systemNotifications.title.CITIZENS}</H2>
+          {editedNotification === 'CITIZENS' ? (
+            <CitizenNotificationEditor
+              notification={
+                citizenNotification ?? {
+                  text: '',
+                  textSv: '',
+                  textEn: '',
+                  validTo: HelsinkiDateTime.now().addHours(24)
+                }
+              }
+              onClose={() => setEditedNotification(null)}
+            />
+          ) : citizenNotification ? (
+            <FixedSpaceColumn>
+              <Label>{i18n.systemNotifications.textFi}</Label>
+              <P noMargin>
+                {citizenNotification.text.split('\n').map((s, i) => (
+                  <Fragment key={i}>
+                    {s}
+                    <br />
+                  </Fragment>
+                ))}
+              </P>
+              <Label>{i18n.systemNotifications.textSv}</Label>
+              <P noMargin>
+                {citizenNotification.textSv.split('\n').map((s, i) => (
+                  <Fragment key={i}>
+                    {s}
+                    <br />
+                  </Fragment>
+                ))}
+              </P>
+              <Label>{i18n.systemNotifications.textEn}</Label>
+              <P noMargin>
+                {citizenNotification.textEn.split('\n').map((s, i) => (
+                  <Fragment key={i}>
+                    {s}
+                    <br />
+                  </Fragment>
+                ))}
+              </P>
+              <div>
+                <Label>{i18n.systemNotifications.validTo}: </Label>
+                <span>{citizenNotification.validTo.format()}</span>
+              </div>
+              {editAllowed && (
+                <FixedSpaceRow>
+                  <Button
+                    appearance="inline"
+                    onClick={() => setEditedNotification('CITIZENS')}
+                    text={i18n.common.edit}
+                    icon={faPen}
+                    disabled={editedNotification !== null}
+                  />
+                  <MutateButton
+                    appearance="inline"
+                    mutation={deleteSystemNotificationMutation}
+                    onClick={() => ({ targetGroup: 'CITIZENS' as const })}
+                    text={i18n.common.remove}
+                    icon={faTrash}
+                    disabled={editedNotification !== null}
+                  />
+                </FixedSpaceRow>
               )}
             </FixedSpaceColumn>
-          )
-        })}
+          ) : (
+            <FixedSpaceColumn>
+              <div>{i18n.systemNotifications.noNotification}</div>
+              {editAllowed && (
+                <Button
+                  appearance="inline"
+                  onClick={() => setEditedNotification('CITIZENS')}
+                  text={i18n.systemNotifications.setNotification}
+                  icon={faPlus}
+                  disabled={editedNotification !== null}
+                  data-qa="create-btn"
+                />
+              )}
+            </FixedSpaceColumn>
+          )}
+        </FixedSpaceColumn>
+
+        <FixedSpaceColumn data-qa="notification-employees">
+          <H2 noMargin>{i18n.systemNotifications.title.EMPLOYEES}</H2>
+          {editedNotification === 'EMPLOYEES' ? (
+            <EmployeeNotificationEditor
+              notification={
+                employeeNotification ?? {
+                  text: '',
+                  validTo: HelsinkiDateTime.now().addHours(24)
+                }
+              }
+              onClose={() => setEditedNotification(null)}
+            />
+          ) : employeeNotification ? (
+            <FixedSpaceColumn>
+              <Label>{i18n.systemNotifications.text}</Label>
+              <P noMargin>{employeeNotification.text}</P>
+              <div>
+                <Label>{i18n.systemNotifications.validTo}: </Label>
+                <span>{employeeNotification.validTo.format()}</span>
+              </div>
+              {editAllowed && (
+                <FixedSpaceRow>
+                  <Button
+                    appearance="inline"
+                    onClick={() => setEditedNotification('EMPLOYEES')}
+                    text={i18n.common.edit}
+                    icon={faPen}
+                    disabled={editedNotification !== null}
+                  />
+                  <MutateButton
+                    appearance="inline"
+                    mutation={deleteSystemNotificationMutation}
+                    onClick={() => ({ targetGroup: 'EMPLOYEES' as const })}
+                    text={i18n.common.remove}
+                    icon={faTrash}
+                    disabled={editedNotification !== null}
+                  />
+                </FixedSpaceRow>
+              )}
+            </FixedSpaceColumn>
+          ) : (
+            <FixedSpaceColumn>
+              <div>{i18n.systemNotifications.noNotification}</div>
+              {editAllowed && (
+                <Button
+                  appearance="inline"
+                  onClick={() => setEditedNotification('EMPLOYEES')}
+                  text={i18n.systemNotifications.setNotification}
+                  icon={faPlus}
+                  disabled={editedNotification !== null}
+                  data-qa="create-btn"
+                />
+              )}
+            </FixedSpaceColumn>
+          )}
+        </FixedSpaceColumn>
       </FixedSpaceColumn>
     )
   }
@@ -211,8 +350,11 @@ export default React.memo(function SystemNotificationsPage() {
       <ContentArea opaque>
         <H1>{i18n.titles.systemNotifications}</H1>
         <Gap />
-        {renderResult(result, (notifications) => (
-          <SystemNotificationsPageInner notifications={notifications} />
+        {renderResult(result, ({ citizens, employees }) => (
+          <SystemNotificationsPageInner
+            citizenNotification={citizens}
+            employeeNotification={employees}
+          />
         ))}
       </ContentArea>
     </Container>
