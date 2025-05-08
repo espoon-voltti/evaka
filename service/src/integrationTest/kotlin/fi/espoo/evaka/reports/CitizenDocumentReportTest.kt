@@ -329,7 +329,7 @@ class CitizenDocumentReportTest : FullApplicationTest(resetDbBeforeEach = true) 
                             ),
                             AnsweredQuestion.RadioButtonGroupAnswer(
                                 questionId = templateContent.questions[1].id,
-                                answer = "Radio 1",
+                                answer = "rbgqo1",
                             ),
                         )
                 )
@@ -344,7 +344,7 @@ class CitizenDocumentReportTest : FullApplicationTest(resetDbBeforeEach = true) 
                             ),
                             AnsweredQuestion.RadioButtonGroupAnswer(
                                 questionId = templateContent.questions[1].id,
-                                answer = "Radio 2",
+                                answer = "rbgqo2",
                             ),
                         )
                 )
@@ -379,7 +379,6 @@ class CitizenDocumentReportTest : FullApplicationTest(resetDbBeforeEach = true) 
 
             val aapoLatestResponse =
                 DevChildDocument(
-                    created = mockClock.now(),
                     templateId = template.id,
                     childId = testChildAapo.id,
                     status = DocumentStatus.COMPLETED,

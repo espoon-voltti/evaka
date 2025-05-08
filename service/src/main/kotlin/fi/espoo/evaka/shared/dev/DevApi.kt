@@ -2357,7 +2357,6 @@ data class DevChildDocument(
     val processId: ArchivedProcessId? = null,
     val decisionMaker: EmployeeId? = null,
     val decision: DevChildDocumentDecision? = null,
-    val created: HelsinkiDateTime? = null,
 )
 
 data class DevChildDocumentDecision(

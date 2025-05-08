@@ -152,7 +152,7 @@ LEFT JOIN LATERAL (
     WHERE cd.child_id = pl.child_id
       AND cd.template_id = ${bind(documentTemplateId)}
       AND (cd.status = 'COMPLETED' OR cd.status = 'CITIZEN_DRAFT')
-      AND daterange(pl.start_date, pl.end_date, '[]') @> cd.created::date
+      AND daterange(pl.start_date, pl.end_date, '[]') @> cd.answered_at::date
     ORDER BY cd.answered_at DESC, cd.created DESC
     LIMIT 1) latest_doc ON true
 WHERE rp.group_id = ANY (${bind(groupIds)})
