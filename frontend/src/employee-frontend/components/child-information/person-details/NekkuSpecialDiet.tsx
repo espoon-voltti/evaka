@@ -55,6 +55,14 @@ export default React.memo(function NekkuSpecialDiet(props: Props) {
                       .sort((a, b) => a.weight - b.weight)
                       .map((option) => (
                         <Checkbox
+                          data-qa={
+                            field.diet_id +
+                            '-' +
+                            field.id +
+                            '-' +
+                            option.key +
+                            '-checkbox'
+                          }
                           key={field.id + '-' + option.key}
                           label={option.key}
                           checked={
@@ -75,7 +83,10 @@ export default React.memo(function NekkuSpecialDiet(props: Props) {
                         />
                       ))
                   ) : (
-                    <p key={field.id}>
+                    <p
+                      key={field.id}
+                      data-qa={field.diet_id + '-' + field.id + '-value'}
+                    >
                       {props.dietChoices
                         .filter(
                           (value) =>
@@ -97,6 +108,7 @@ export default React.memo(function NekkuSpecialDiet(props: Props) {
                       <Gap size="s" />
                       {field.name}
                       <TextArea
+                        data-qa={field.diet_id + '-' + field.id + '-textarea'}
                         value={
                           props.formData.nekkuSpecialDietChoices.find(
                             (value) =>
@@ -110,7 +122,10 @@ export default React.memo(function NekkuSpecialDiet(props: Props) {
                       />
                     </Fragment>
                   ) : (
-                    <p key={field.name}>
+                    <p
+                      key={field.name}
+                      data-qa={field.diet_id + '-' + field.id + '-value'}
+                    >
                       {field.name +
                         ': ' +
                         (props.dietChoices.find(

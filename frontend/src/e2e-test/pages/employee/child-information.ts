@@ -134,6 +134,8 @@ export class AdditionalInformationSection extends Section {
   languageAtHomeDetails: Element
   languageAtHomeDetailsInput: TextInput
   specialDietCombobox: Combobox
+  nekkuEatsBreakfastCheckbox: Checkbox
+  nekkuDietSelect: Combobox
 
   constructor(page: Page, root: Element) {
     super(page, root)
@@ -148,14 +150,26 @@ export class AdditionalInformationSection extends Section {
       page.findByDataQa('input-language-at-home-details')
     )
     this.specialDietCombobox = new Combobox(page.findByDataQa('diet-input'))
+    this.nekkuEatsBreakfastCheckbox = new Checkbox(
+      page.findByDataQa('nekku-eats-breakfast-checkbox')
+    )
+    this.nekkuDietSelect = new Combobox(page.findByDataQa('nekku-diet-input'))
   }
 
   medication = this.find('[data-qa="medication"]')
   editBtn = this.find('[data-qa="edit-child-settings-button"]')
   medicationInput = new TextInput(this.find('[data-qa="medication-input"]'))
   confirmBtn = this.find('[data-qa="confirm-edited-child-button"]')
+  nekkuEatsBreakfast = this.find('[data-qa="nekku-eats-breakfast-display"]')
+  nekkuDiet = this.find('[data-qa="nekku-diet-display"]')
 
   readonly specialDiet = this.page.findByDataQa('diet-value-display')
+
+  getNekkuSpecialDietEditor() {
+    return new NekkuSpecialDietEditor(
+      this.findByDataQa('nekku-special-diet-editor')
+    )
+  }
 }
 
 class DailyServiceTimeSectionBaseForm extends Section {
@@ -1202,6 +1216,26 @@ export class FeeAlterationsSection extends Section {
     await waitUntilTrue(async () =>
       (await this.page.findAllByDataQa('attachment').allTexts()).includes(name)
     )
+  }
+}
+
+export class NekkuSpecialDietEditor extends Element {
+  getCheckBox(dietId: string, fieldId: string, optionKey: string) {
+    return new Checkbox(
+      this.findByDataQa(`${dietId}-${fieldId}-${optionKey}-checkbox`)
+    )
+  }
+
+  getCheckBoxValue(dietId: string, fieldId: string) {
+    return this.findByDataQa(`${dietId}-${fieldId}-value`)
+  }
+
+  getTextField(dietId: string, fieldId: string) {
+    return new TextInput(this.findByDataQa(`${dietId}-${fieldId}-textarea`))
+  }
+
+  getTextValue(dietId: string, fieldId: string) {
+    return this.findByDataQa(`${dietId}-${fieldId}-value`)
   }
 }
 

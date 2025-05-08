@@ -176,6 +176,13 @@ fun fetchAndUpdateNekkuSpecialDiets(client: NekkuClient, db: Database.Connection
     if (specialDietsFromNekku.isEmpty())
         error("Refusing to sync empty Nekku special diet list into database")
 
+    updateNekkuSpecialDiets(specialDietsFromNekku, db)
+}
+
+fun updateNekkuSpecialDiets(
+    specialDietsFromNekku: List<NekkuSpecialDiet>,
+    db: Database.Connection,
+) {
     db.transaction { tx ->
         tx.setSpecialDiets(specialDietsFromNekku)
 
@@ -509,3 +516,16 @@ fun Database.Read.getNekkuSpecialDietFields(): List<NekkuSpecialDietsFieldWithou
 fun Database.Read.getNekkuSpecialDietOptions(): List<NekkuSpecialDietOptionWithFieldId> =
     createQuery { sql("SELECT weight, key, value, field_id FROM nekku_special_diet_option") }
         .toList<NekkuSpecialDietOptionWithFieldId>()
+
+fun Database.Read.getNekkuSpecialDietChoices(childId: ChildId): List<NekkuSpecialDietChoices> =
+    createQuery {
+            sql(
+                """
+            SELECT diet_id, field_id, value
+            FROM nekku_special_diet_choices
+            WHERE child_id = ${bind(childId)}
+        """
+                    .trimIndent()
+            )
+        }
+        .toList<NekkuSpecialDietChoices>()

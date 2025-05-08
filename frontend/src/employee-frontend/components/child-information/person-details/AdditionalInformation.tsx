@@ -430,6 +430,7 @@ export default React.memo(function AdditionalInformation({ childId }: Props) {
                         i18n.childInformation.personDetails.nekkuEatsBreakfast,
                       value: editing ? (
                         <Checkbox
+                          data-qa="nekku-eats-breakfast-checkbox"
                           label=""
                           checked={form.nekkuEatsBreakfast}
                           onChange={(checked) =>
@@ -438,11 +439,13 @@ export default React.memo(function AdditionalInformation({ childId }: Props) {
                         />
                       ) : (
                         <>
-                          {data.nekkuEatsBreakfast
-                            ? i18n.childInformation.personDetails
-                                .nekkuEatsBreakfastYes
-                            : i18n.childInformation.personDetails
-                                .nekkuEatsBreakfastNo}
+                          <div data-qa="nekku-eats-breakfast-display">
+                            {data.nekkuEatsBreakfast
+                              ? i18n.childInformation.personDetails
+                                  .nekkuEatsBreakfastYes
+                              : i18n.childInformation.personDetails
+                                  .nekkuEatsBreakfastNo}
+                          </div>
                         </>
                       )
                     },

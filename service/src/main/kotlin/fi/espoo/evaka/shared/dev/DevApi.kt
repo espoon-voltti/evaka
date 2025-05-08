@@ -99,6 +99,10 @@ import fi.espoo.evaka.invoicing.service.createIncomeNotification
 import fi.espoo.evaka.messaging.AccountType
 import fi.espoo.evaka.messaging.MessageType
 import fi.espoo.evaka.nekku.NekkuProductMealType
+import fi.espoo.evaka.nekku.NekkuSpecialDiet
+import fi.espoo.evaka.nekku.NekkuSpecialDietChoices
+import fi.espoo.evaka.nekku.getNekkuSpecialDietChoices
+import fi.espoo.evaka.nekku.updateNekkuSpecialDiets
 import fi.espoo.evaka.note.child.daily.ChildDailyNoteBody
 import fi.espoo.evaka.note.child.daily.createChildDailyNote
 import fi.espoo.evaka.note.child.sticky.ChildStickyNoteBody
@@ -380,7 +384,11 @@ class DevApi(
                     it.createUpdate {
                         sql(
                             """
-UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date = ${bind(req.terminationRequestedDate)}, terminated_by = ${bind(req.terminatedBy)} WHERE id = ${bind(req.placementId)}
+UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date = ${bind(req.terminationRequestedDate)}, terminated_by = ${
+                            bind(
+                                req.terminatedBy
+                            )
+                        } WHERE id = ${bind(req.placementId)}
 """
                         )
                     }
@@ -699,7 +707,11 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
                     application.otherGuardians.forEach { otherGuardianId ->
                         tx.createUpdate {
                                 sql(
-                                    "INSERT INTO application_other_guardian (application_id, guardian_id) VALUES (${bind(id)}, ${bind(otherGuardianId)})"
+                                    "INSERT INTO application_other_guardian (application_id, guardian_id) VALUES (${bind(id)}, ${
+                                    bind(
+                                        otherGuardianId
+                                    )
+                                })"
                                 )
                             }
                             .execute()
@@ -885,6 +897,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
                 when (body) {
                     is PairingsController.PostPairingReq.Unit ->
                         it.initPairing(clock, unitId = body.unitId)
+
                     is PairingsController.PostPairingReq.Employee ->
                         it.initPairing(clock, employeeId = body.employeeId)
                 }
@@ -938,6 +951,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
                 when (body) {
                     is QuestionnaireBody.FixedPeriodQuestionnaireBody ->
                         tx.createFixedPeriodQuestionnaire(body)
+
                     is QuestionnaireBody.OpenRangesQuestionnaireBody ->
                         tx.createOpenRangesQuestionnaire(body)
                 }.let {
@@ -1388,21 +1402,28 @@ VALUES (${bind(body.id)}, ${bind(body.guardianId)})
             when (message) {
                 EmailMessageFilter.pendingDecisionNotification ->
                     emailMessageProvider.pendingDecisionNotification(Language.fi)
+
                 EmailMessageFilter.clubApplicationReceived ->
                     emailMessageProvider.clubApplicationReceived(Language.fi)
+
                 EmailMessageFilter.daycareApplicationReceived ->
                     emailMessageProvider.daycareApplicationReceived(Language.fi)
+
                 EmailMessageFilter.preschoolApplicationReceived ->
                     emailMessageProvider.preschoolApplicationReceived(Language.fi, true)
+
                 EmailMessageFilter.assistanceNeedDecisionNotification ->
                     emailMessageProvider.assistanceNeedDecisionNotification(Language.fi)
+
                 EmailMessageFilter.assistanceNeedPreschoolDecisionNotification ->
                     emailMessageProvider.assistanceNeedPreschoolDecisionNotification(Language.fi)
+
                 EmailMessageFilter.missingReservationsNotification ->
                     emailMessageProvider.missingReservationsNotification(
                         Language.fi,
                         FiniteDateRange(LocalDate.now().minusDays(7), LocalDate.now()),
                     )
+
                 EmailMessageFilter.messageNotification ->
                     emailMessageProvider.messageNotification(
                         Language.fi,
@@ -1417,16 +1438,19 @@ VALUES (${bind(body.id)}, ${bind(body.guardianId)})
                             isCopy = false,
                         ),
                     )
+
                 EmailMessageFilter.pedagogicalDocumentNotification ->
                     emailMessageProvider.pedagogicalDocumentNotification(
                         Language.fi,
                         ChildId(UUID.randomUUID()),
                     )
+
                 EmailMessageFilter.outdatedIncomeNotification ->
                     emailMessageProvider.incomeNotification(
                         IncomeNotificationType.INITIAL_EMAIL,
                         Language.fi,
                     )
+
                 EmailMessageFilter.calendarEventNotification ->
                     emailMessageProvider.calendarEventNotification(
                         Language.fi,
@@ -1444,10 +1468,12 @@ VALUES (${bind(body.id)}, ${bind(body.guardianId)})
                             ),
                         ),
                     )
+
                 EmailMessageFilter.financeDecisionNotification ->
                     emailMessageProvider.financeDecisionNotification(
                         FinanceDecisionType.FEE_DECISION
                     )
+
                 EmailMessageFilter.discussionTimeReservation ->
                     emailMessageProvider.discussionSurveyReservationNotification(
                         Language.fi,
@@ -1462,6 +1488,7 @@ VALUES (${bind(body.id)}, ${bind(body.guardianId)})
                                 )
                         ),
                     )
+
                 EmailMessageFilter.discussionTimeCancellation ->
                     emailMessageProvider.discussionSurveyReservationCancellationNotification(
                         Language.fi,
@@ -1476,6 +1503,7 @@ VALUES (${bind(body.id)}, ${bind(body.guardianId)})
                                 )
                         ),
                     )
+
                 EmailMessageFilter.discussionTimeReservationReminder ->
                     emailMessageProvider.discussionTimeReservationReminder(
                         Language.fi,
@@ -1485,6 +1513,7 @@ VALUES (${bind(body.id)}, ${bind(body.guardianId)})
                             endTime = LocalTime.of(12, 50),
                         ),
                     )
+
                 EmailMessageFilter.discussionSurveyCreation ->
                     emailMessageProvider.discussionSurveyCreationNotification(
                         Language.fi,
@@ -1497,11 +1526,13 @@ VALUES (${bind(body.id)}, ${bind(body.guardianId)})
                                 ),
                         ),
                     )
+
                 EmailMessageFilter.serviceApplicationAcceptedNotification ->
                     emailMessageProvider.serviceApplicationDecidedNotification(
                         accepted = true,
                         startDate = LocalDate.now().plusMonths(1).withDayOfMonth(1),
                     )
+
                 EmailMessageFilter.serviceApplicationRejectedNotification ->
                     emailMessageProvider.serviceApplicationDecidedNotification(
                         accepted = false,
@@ -1624,6 +1655,19 @@ UPDATE person SET email=${bind(body.email)} WHERE id=${bind(body.personId)}
                 }
             }
         }
+    }
+
+    @PostMapping("/nekku-special-diets")
+    fun createNekkuSpecialDiets(db: Database, @RequestBody specialDiets: List<NekkuSpecialDiet>) {
+        db.connect { dbc -> updateNekkuSpecialDiets(specialDiets, dbc) }
+    }
+
+    @GetMapping("/nekku-special-diet-choices/{childId}")
+    fun getNekkuSpecialDietChoices(
+        db: Database,
+        @PathVariable childId: ChildId,
+    ): List<NekkuSpecialDietChoices> {
+        return db.connect { dbc -> dbc.read { tx -> tx.getNekkuSpecialDietChoices(childId) } }
     }
 }
 
