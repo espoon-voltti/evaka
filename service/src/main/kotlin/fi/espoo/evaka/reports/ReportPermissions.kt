@@ -54,6 +54,7 @@ enum class Report {
     VARDA_ERRORS,
     FUTURE_PRESCHOOLERS,
     MEALS,
+    NEKKU_ORDERS,
     TAMPERE_REGIONAL_SURVEY,
 }
 
@@ -247,6 +248,9 @@ class ReportPermissions(private val accessControl: AccessControl) {
                         permittedActionsForSomeUnit.contains(
                             Action.Unit.READ_HOLIDAY_PERIOD_ATTENDANCE_REPORT
                         )
+                    },
+                    Report.NEKKU_ORDERS.takeIf {
+                        permittedActionsForSomeUnit.contains(Action.Unit.READ_NEKKU_ORDER_REPORT)
                     },
                     Report.TAMPERE_REGIONAL_SURVEY.takeIf {
                         permittedGlobalActions.contains(

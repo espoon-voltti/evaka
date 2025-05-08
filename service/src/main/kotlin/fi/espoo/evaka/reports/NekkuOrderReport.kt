@@ -1,9 +1,12 @@
+// SPDX-FileCopyrightText: 2017-2025 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
+package fi.espoo.evaka.reports
+
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
-import fi.espoo.evaka.nekku.NekkuOrdersReport
 import fi.espoo.evaka.nekku.getDaycareGroupIds
-import fi.espoo.evaka.nekku.getNekkuOrderReport
-import fi.espoo.evaka.reports.REPORT_STATEMENT_TIMEOUT
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -31,9 +34,9 @@ class NekkuOrderReportController(private val accessControl: AccessControl) {
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) start: LocalDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) end: LocalDate,
         @RequestParam groupIds: List<GroupId>?,
-    ): List<NekkuOrdersReport> {
+    ): List<NekkuOrderRow> {
         if (start.isAfter(end)) throw BadRequest("Inverted time range")
-        if (end.isAfter(start.plusWeeks(2))) throw BadRequest("Too long time range")
+        if (end.isAfter(start.plusMonths(1))) throw BadRequest("Too long time range")
 
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -68,24 +71,54 @@ class NekkuOrderReportController(private val accessControl: AccessControl) {
         end: LocalDate,
         unitId: DaycareId,
         groupIds: List<GroupId>?,
-    ): List<NekkuOrdersReport> {
+    ): List<NekkuOrderRow> {
 
-        val reports = mutableListOf<NekkuOrdersReport>()
-        var currentDate = start
-        var mutableGroupIds = groupIds?.toMutableList()
+        val effectiveGroupIds = groupIds ?: tx.getDaycareGroupIds(unitId).toMutableList()
 
-        if (mutableGroupIds == null) {
-            mutableGroupIds = tx.getDaycareGroupIds(unitId) as MutableList<GroupId>?
-        }
+        val dateList = generateDateList(start, end)
 
-        while (!currentDate.isAfter(end)) {
-            mutableGroupIds?.forEach { groupId ->
-                val report = tx.getNekkuOrderReport(unitId, groupId, currentDate)
-                reports.addAll(report)
-            }
-            currentDate = currentDate.plusDays(1)
-        }
+        val orderRows = tx.getNekkuReportRows(unitId, effectiveGroupIds, dateList)
 
-        return reports
+        return orderRows
     }
 }
+
+private fun Database.Read.getNekkuReportRows(
+    daycareId: DaycareId,
+    groupIds: List<GroupId>,
+    dates: List<LocalDate>,
+): List<NekkuOrderRow> {
+    return createQuery {
+            sql(
+                """
+SELECT nor.delivery_date as date, 
+        nor.meal_sku as sku,
+        nor.total_quantity as quantity, 
+        dg.name as groupname,
+        nor.meal_time as mealtime,
+        nor.meal_type as mealtype,
+        nor.meals_by_special_diet as specialdiets
+FROM nekku_orders_report nor
+    JOIN daycare_group dg
+    ON nor.customer_group_id = dg.id
+    WHERE nor.daycare_id = ${bind(daycareId)}
+    AND nor.customer_group_id =ANY(${bind ( groupIds)})
+    AND nor.delivery_date =ANY(${bind ( dates)})
+"""
+            )
+        }
+        .toList<NekkuOrderRow>()
+}
+
+data class NekkuOrderRow(
+    val date: LocalDate,
+    val sku: String,
+    val quantity: Int,
+    val groupName: String,
+    val mealTime: String,
+    val mealType: String?,
+    val specialDiets: String?,
+)
+
+private fun generateDateList(start: LocalDate, end: LocalDate): List<LocalDate> =
+    generateSequence(start) { it.plusDays(1) }.takeWhile { it <= end }.toList()
