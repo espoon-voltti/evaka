@@ -46,7 +46,7 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import { DatePickerClearableDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
+import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors, { applicationBasisColors } from 'lib-customizations/common'
@@ -499,10 +499,10 @@ export function FeeDecisionDistinctionsFilter({
 }
 
 interface FeeDecisionDateFilterProps {
-  startDate: LocalDate | undefined
-  setStartDate: (startDate: LocalDate | undefined) => void
-  endDate: LocalDate | undefined
-  setEndDate: (endDate: LocalDate | undefined) => void
+  startDate: LocalDate | null
+  setStartDate: (startDate: LocalDate | null) => void
+  endDate: LocalDate | null
+  setEndDate: (endDate: LocalDate | null) => void
   searchByStartDate: boolean
   setSearchByStartDate: (searchByStartDate: boolean) => void
 }
@@ -521,18 +521,18 @@ export function FeeDecisionDateFilter({
     <>
       <Label>{i18n.filters.validityPeriod}</Label>
       <FlexRow>
-        <DatePickerClearableDeprecated
+        <DatePicker
           date={startDate}
           onChange={setStartDate}
+          locale="fi"
           data-qa="fee-decisions-start-date"
-          onCleared={() => setStartDate(undefined)}
         />
         <Gap horizontal size="xs" />
-        <DatePickerClearableDeprecated
+        <DatePicker
           date={endDate}
           onChange={setEndDate}
+          locale="fi"
           data-qa="fee-decisions-start-date"
-          onCleared={() => setEndDate(undefined)}
         />
       </FlexRow>
       {startDate && endDate && startDate.isAfter(endDate) ? (
@@ -599,10 +599,10 @@ export const ValueDecisionStatusFilter = React.memo(
 )
 
 interface ValueDecisionDateFilterProps {
-  startDate: LocalDate | undefined
-  setStartDate: (startDate: LocalDate | undefined) => void
-  endDate: LocalDate | undefined
-  setEndDate: (endDate: LocalDate | undefined) => void
+  startDate: LocalDate | null
+  setStartDate: (startDate: LocalDate | null) => void
+  endDate: LocalDate | null
+  setEndDate: (endDate: LocalDate | null) => void
   searchByStartDate: boolean
   setSearchByStartDate: (searchByStartDate: boolean) => void
 }
@@ -621,18 +621,18 @@ export function ValueDecisionDateFilter({
     <>
       <Label>{i18n.filters.validityPeriod}</Label>
       <FlexRow>
-        <DatePickerClearableDeprecated
+        <DatePicker
           date={startDate}
           onChange={setStartDate}
+          locale="fi"
           data-qa="value-decisions-start-date"
-          onCleared={() => setStartDate(undefined)}
         />
         <Gap horizontal size="xs" />
-        <DatePickerClearableDeprecated
+        <DatePicker
           date={endDate}
           onChange={setEndDate}
+          locale="fi"
           data-qa="value-decisions-end-date"
-          onCleared={() => setEndDate(undefined)}
         />
       </FlexRow>
       {startDate && endDate && startDate.isAfter(endDate) ? (
@@ -743,10 +743,10 @@ export function InvoiceStatusFilter({
 }
 
 interface InvoiceDateFilterProps {
-  startDate: LocalDate | undefined
-  setStartDate: (startDate: LocalDate | undefined) => void
-  endDate: LocalDate | undefined
-  setEndDate: (endDate: LocalDate | undefined) => void
+  startDate: LocalDate | null
+  setStartDate: (startDate: LocalDate | null) => void
+  endDate: LocalDate | null
+  setEndDate: (endDate: LocalDate | null) => void
   searchByStartDate: boolean
   setUseCustomDatesForInvoiceSending: (
     useCustomDatesForInvoiceSending: boolean
@@ -767,18 +767,18 @@ export function InvoiceDateFilter({
     <>
       <Label>{i18n.filters.invoiceDate}</Label>
       <FlexRow>
-        <DatePickerClearableDeprecated
+        <DatePicker
           date={startDate}
           onChange={setStartDate}
+          locale="fi"
           data-qa="invoices-start-date"
-          onCleared={() => setStartDate(undefined)}
         />
         <Gap horizontal size="xs" />
-        <DatePickerClearableDeprecated
+        <DatePicker
           date={endDate}
           onChange={setEndDate}
+          locale="fi"
           data-qa="invoices-end-date"
-          onCleared={() => setEndDate(undefined)}
         />
       </FlexRow>
       {startDate && endDate && startDate.isAfter(endDate) ? (
@@ -1019,10 +1019,10 @@ export function ApplicationStatusFilter({
 }
 
 interface ApplicationDateFilterProps {
-  startDate: LocalDate | undefined
-  setStartDate: (startDate: LocalDate | undefined) => void
-  endDate: LocalDate | undefined
-  setEndDate: (endDate: LocalDate | undefined) => void
+  startDate: LocalDate | null
+  setStartDate: (startDate: LocalDate | null) => void
+  endDate: LocalDate | null
+  setEndDate: (endDate: LocalDate | null) => void
   toggled: ApplicationDateType[]
   toggle: (applicationDateType: ApplicationDateType) => () => void
 }
@@ -1058,18 +1058,18 @@ export function ApplicationDateFilter({
       </FixedSpaceColumn>
       <Gap size="s" />
       <FlexRow>
-        <DatePickerClearableDeprecated
+        <DatePicker
           date={startDate}
           onChange={setStartDate}
+          locale="fi"
           data-qa="applications-start-date"
-          onCleared={() => setStartDate(undefined)}
         />
         <span>-</span>
-        <DatePickerClearableDeprecated
+        <DatePicker
           date={endDate}
           onChange={setEndDate}
+          locale="fi"
           data-qa="applications-end-date"
-          onCleared={() => setEndDate(undefined)}
         />
       </FlexRow>
       {startDate && endDate && startDate.isAfter(endDate) ? (
@@ -1357,10 +1357,10 @@ export function TransferApplicationsFilter({
 
 interface DateFilterProps {
   title: string
-  startDate: LocalDate | undefined
-  setStartDate: (startDate: LocalDate | undefined) => void
-  endDate: LocalDate | undefined
-  setEndDate: (endDate: LocalDate | undefined) => void
+  startDate: LocalDate | null
+  setStartDate: (startDate: LocalDate | null) => void
+  endDate: LocalDate | null
+  setEndDate: (endDate: LocalDate | null) => void
 }
 
 export function DateFilter({
@@ -1376,18 +1376,18 @@ export function DateFilter({
     <>
       <Label>{title}</Label>
       <FlexRow>
-        <DatePickerClearableDeprecated
+        <DatePicker
           date={startDate}
           onChange={setStartDate}
+          locale="fi"
           data-qa="start-date-filter-input"
-          onCleared={() => setStartDate(undefined)}
         />
         <Gap horizontal size="xs" />
-        <DatePickerClearableDeprecated
+        <DatePicker
           date={endDate}
           onChange={setEndDate}
+          locale="fi"
           data-qa="end-date-filter-input"
-          onCleared={() => setEndDate(undefined)}
         />
       </FlexRow>
       {startDate && endDate && startDate.isAfter(endDate) ? (

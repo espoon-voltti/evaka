@@ -8,13 +8,15 @@ import styled from 'styled-components'
 import { CaretakerAmount } from 'lib-common/generated/api-types/daycare'
 import { DaycareId, GroupId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
-import { first, second, useSelectMutation } from 'lib-common/query'
-import InputField from 'lib-components/atoms/form/InputField'
 import {
-  DatePickerDeprecated,
-  DatePickerClearableDeprecated
-} from 'lib-components/molecules/DatePickerDeprecated'
+  cancelMutation,
+  first,
+  second,
+  useSelectMutation
+} from 'lib-common/query'
+import InputField from 'lib-components/atoms/form/InputField'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
+import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { faPen, faPlus } from 'lib-icons'
 
@@ -29,7 +31,7 @@ const NumberInputContainer = styled.div`
 const numberRegex = /^\d{1,2}(([.,])(\d))?$/
 
 interface FormState {
-  startDate: LocalDate
+  startDate: LocalDate | null
   endDate: LocalDate | null
   amount: string
 }
@@ -79,28 +81,34 @@ function GroupCaretakersModal({
     () => (existing ? first(existing.id) : second()),
     [
       updateCaretakersMutation,
-      (id) => ({
-        id,
-        daycareId: unitId,
-        groupId,
-        body: {
-          startDate: form.startDate,
-          endDate: form.endDate,
-          amount: parseFloat(form.amount)
-        }
-      })
+      (id) =>
+        form.startDate !== null
+          ? {
+              id,
+              daycareId: unitId,
+              groupId,
+              body: {
+                startDate: form.startDate,
+                endDate: form.endDate,
+                amount: parseFloat(form.amount)
+              }
+            }
+          : cancelMutation
     ],
     [
       createCaretakersMutation,
-      () => ({
-        daycareId: unitId,
-        groupId,
-        body: {
-          startDate: form.startDate,
-          endDate: form.endDate,
-          amount: parseFloat(form.amount)
-        }
-      })
+      () =>
+        form.startDate !== null
+          ? {
+              daycareId: unitId,
+              groupId,
+              body: {
+                startDate: form.startDate,
+                endDate: form.endDate,
+                amount: parseFloat(form.amount)
+              }
+            }
+          : cancelMutation
     ]
   )
 
@@ -108,7 +116,9 @@ function GroupCaretakersModal({
     !numberRegex.test(form.amount) || Number(form.amount.replace(',', '.')) < 0
 
   const hasErrors =
-    (form.endDate && form.endDate.isBefore(form.startDate)) || invalidAmount
+    !form.startDate ||
+    (form.endDate && form.endDate.isBefore(form.startDate)) ||
+    invalidAmount
 
   const editingHistory =
     existing &&
@@ -140,19 +150,18 @@ function GroupCaretakersModal({
     >
       <section>
         <div className="bold">{i18n.common.form.startDate}</div>
-        <DatePickerDeprecated
+        <DatePicker
           date={form.startDate}
           onChange={(startDate) => assignForm({ startDate })}
-          type="full-width"
+          locale="fi"
         />
       </section>
       <section>
         <div className="bold">{i18n.common.form.endDate}</div>
-        <DatePickerClearableDeprecated
+        <DatePicker
           date={form.endDate}
           onChange={(endDate) => assignForm({ endDate })}
-          onCleared={() => assignForm({ endDate: null })}
-          type="full-width"
+          locale="fi"
         />
       </section>
       <section>

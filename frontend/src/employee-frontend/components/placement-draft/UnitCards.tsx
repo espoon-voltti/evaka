@@ -23,8 +23,8 @@ interface Props {
   additionalUnits: PublicUnit[]
   setAdditionalUnits: Dispatch<SetStateAction<PublicUnit[]>>
   applicationId: ApplicationId
-  placement: DaycarePlacementPlanForm
-  setPlacement: Dispatch<SetStateAction<DaycarePlacementPlanForm>>
+  formState: DaycarePlacementPlanForm
+  setFormState: Dispatch<SetStateAction<DaycarePlacementPlanForm>>
   placementDraft: PlacementPlanDraft
   selectedUnitIsGhostUnit: boolean
 }
@@ -33,12 +33,20 @@ export default React.memo(function UnitCards({
   additionalUnits,
   setAdditionalUnits,
   applicationId,
-  placement: { period, preschoolDaycarePeriod, unitId },
-  setPlacement,
+  formState,
+  setFormState,
   placementDraft,
   selectedUnitIsGhostUnit
 }: Props) {
-  if (!period) {
+  const { unitId, period, hasPreschoolDaycarePeriod } = formState
+
+  // null => preschoolDaycarePeriod is invalid or empty
+  // undefined => not a preschool application
+  const preschoolDaycarePeriod = hasPreschoolDaycarePeriod
+    ? formState.preschoolDaycarePeriod
+    : undefined
+
+  if (period === null || preschoolDaycarePeriod === null) {
     return null
   }
 
@@ -53,10 +61,10 @@ export default React.memo(function UnitCards({
             unitName={unit.name}
             key={unit.id}
             period={period}
-            preschoolDaycarePeriod={preschoolDaycarePeriod ?? undefined}
+            preschoolDaycarePeriod={preschoolDaycarePeriod}
             additionalUnits={additionalUnits}
             setAdditionalUnits={setAdditionalUnits}
-            setPlacement={setPlacement}
+            setPlacement={setFormState}
             isSelectedUnit={isSelectedUnit}
             displayGhostUnitWarning={isSelectedUnit && selectedUnitIsGhostUnit}
           />

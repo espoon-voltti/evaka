@@ -5,10 +5,6 @@
 import { Property } from 'csstype'
 import styled from 'styled-components'
 
-export const DivFitContent = styled.div`
-  width: fit-content;
-`
-
 interface FlexRowProps {
   justifyContent?: Property.JustifyContent
 }

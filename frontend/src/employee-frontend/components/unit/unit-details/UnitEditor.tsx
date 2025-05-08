@@ -42,11 +42,9 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import {
-  DatePickerClearableDeprecated,
-  DatePickerDeprecated
-} from 'lib-components/molecules/DatePickerDeprecated'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
+import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
+import { DatePickerSpacer } from 'lib-components/molecules/date-picker/DateRangePicker'
 import { fontWeights, H1, H3 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
@@ -1077,33 +1075,31 @@ export default function UnitEditor(props: Props) {
       <FormPart>
         <div>{`${i18n.unitEditor.label.openingDate} / ${i18n.unitEditor.label.closingDate}`}</div>
         <AlertBoxContainer>
-          <div data-qa="opening-and-closing-dates">
+          <FixedSpaceRow data-qa="opening-and-closing-dates">
             {props.editable ? (
-              <DatePickerDeprecated
-                date={form.openingDate ?? undefined}
-                placeholder={i18n.unitEditor.placeholder.openingDate}
-                onChange={(openingDate) => updateForm({ openingDate })}
-                className="inline-block"
-                maxDate={form.closingDate ?? LocalDate.of(2100, 1, 1)}
-              />
+              <>
+                <DatePicker
+                  date={form.openingDate}
+                  onChange={(openingDate) => updateForm({ openingDate })}
+                  maxDate={form.closingDate ?? LocalDate.of(2100, 1, 1)}
+                  locale="fi"
+                  data-qa="opening-date-input"
+                />
+                <DatePickerSpacer />
+                <DatePicker
+                  date={form.closingDate}
+                  onChange={(closingDate) => updateForm({ closingDate })}
+                  minDate={form.openingDate ?? LocalDate.of(1960, 1, 1)}
+                  locale="fi"
+                  data-qa="closing-date-input"
+                />
+              </>
             ) : (
-              form.openingDate?.format()
+              <>
+                {form.openingDate?.format()} - {form.closingDate?.format()}
+              </>
             )}
-            {' - '}
-            {props.editable ? (
-              <DatePickerClearableDeprecated
-                date={form.closingDate}
-                placeholder={i18n.unitEditor.placeholder.closingDate}
-                onCleared={() => updateForm({ closingDate: null })}
-                onChange={(closingDate) => updateForm({ closingDate })}
-                className="inline-block"
-                minDate={form.openingDate ?? LocalDate.of(1960, 1, 1)}
-                data-qa="closing-date-input"
-              />
-            ) : (
-              form.closingDate?.format()
-            )}
-          </div>
+          </FixedSpaceRow>
         </AlertBoxContainer>
       </FormPart>
       <FormPart>
@@ -1267,63 +1263,54 @@ export default function UnitEditor(props: Props) {
                   <IndentCheckboxLabel>
                     <FixedSpaceRow alignItems="center">
                       <div>{i18n.unitEditor.field.applyPeriod}</div>
-                      <div>
+                      <FixedSpaceRow>
                         {props.editable ? (
-                          <DatePickerDeprecated
-                            date={period?.start ?? LocalDate.todayInSystemTz()}
-                            onChange={(startDate) => {
-                              if (
-                                !period ||
-                                (period.end !== null &&
-                                  period.end.isBefore(startDate))
-                              ) {
-                                return
+                          <>
+                            <DatePicker
+                              date={
+                                period?.start ?? LocalDate.todayInSystemTz()
                               }
+                              onChange={(startDate) => {
+                                if (
+                                  !startDate ||
+                                  !period ||
+                                  (period.end !== null &&
+                                    period.end.isBefore(startDate))
+                                ) {
+                                  return
+                                }
 
-                              updateForm({
-                                [field]: {
-                                  start: startDate,
-                                  end: period?.end
-                                }
-                              })
-                            }}
-                          />
+                                updateForm({
+                                  [field]: {
+                                    start: startDate,
+                                    end: period?.end
+                                  }
+                                })
+                              }}
+                              locale="fi"
+                            />
+                            <DatePickerSpacer />
+                            <DatePicker
+                              date={period?.end}
+                              onChange={(endDate) => {
+                                updateForm({
+                                  [field]: {
+                                    start:
+                                      period?.start ??
+                                      LocalDate.todayInSystemTz(),
+                                    end: endDate
+                                  }
+                                })
+                              }}
+                              locale="fi"
+                            />
+                          </>
                         ) : (
-                          period.start.format()
+                          <>
+                            {period.start.format()} - {period.end?.format()}
+                          </>
                         )}
-                        {' - '}
-                        {props.editable ? (
-                          <DatePickerClearableDeprecated
-                            date={period?.end}
-                            onChange={(endDate) => {
-                              if (!period || endDate.isBefore(period.start)) {
-                                return
-                              }
-
-                              updateForm({
-                                [field]: {
-                                  start:
-                                    period?.start ??
-                                    LocalDate.todayInSystemTz(),
-                                  end: endDate
-                                }
-                              })
-                            }}
-                            onCleared={() => {
-                              updateForm({
-                                [field]: {
-                                  start:
-                                    period?.start ??
-                                    LocalDate.todayInSystemTz(),
-                                  end: null
-                                }
-                              })
-                            }}
-                          />
-                        ) : (
-                          period.end?.format()
-                        )}
-                      </div>
+                      </FixedSpaceRow>
                     </FixedSpaceRow>
                   </IndentCheckboxLabel>
                 </>

@@ -37,8 +37,8 @@ import TextArea from 'lib-components/atoms/form/TextArea'
 import ListGrid from 'lib-components/layout/ListGrid'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
-import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import FileUpload from 'lib-components/molecules/FileUpload'
+import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { H4, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
@@ -255,14 +255,14 @@ export default React.memo(function ApplicationEditView({
           <Label>{i18n.application.serviceNeed.startDate}</Label>
           <div>
             <HorizontalContainer>
-              <DatePickerDeprecated
-                type="short"
-                date={preferredStartDate ?? undefined}
+              <DatePicker
+                date={preferredStartDate}
                 onChange={(value) => {
                   setApplication(
                     set('form.preferences.preferredStartDate', value)
                   )
                 }}
+                locale="fi"
                 data-qa="datepicker-start-date"
               />
               {errors['form.preferences.preferredStartDate'] ? (
@@ -473,9 +473,8 @@ export default React.memo(function ApplicationEditView({
                       }
                     </Label>
                     <div>
-                      <DatePickerDeprecated
-                        type="short"
-                        date={connectedDaycarePreferredStartDate ?? undefined}
+                      <DatePicker
+                        date={connectedDaycarePreferredStartDate}
                         onChange={(value) => {
                           setApplication(
                             set(
@@ -484,6 +483,7 @@ export default React.memo(function ApplicationEditView({
                             )
                           )
                         }}
+                        locale="fi"
                         data-qa="datepicker-connected-daycare-preferred-start-date"
                       />
                       {errors[
@@ -902,14 +902,14 @@ export default React.memo(function ApplicationEditView({
                     path="child"
                   />
                   <Label>{i18n.application.person.movingDate}</Label>
-                  <DatePickerDeprecated
-                    type="short"
-                    date={child.futureAddress.movingDate ?? undefined}
+                  <DatePicker
+                    date={child.futureAddress.movingDate}
                     onChange={(value) => {
                       setApplication(
                         set('form.child.futureAddress.movingDate', value)
                       )
                     }}
+                    locale="fi"
                   />
                 </>
               )}
@@ -988,14 +988,14 @@ export default React.memo(function ApplicationEditView({
                         path="guardian"
                       />
                       <Label>{i18n.application.person.movingDate}</Label>
-                      <DatePickerDeprecated
-                        type="short"
-                        date={guardian.futureAddress.movingDate ?? undefined}
+                      <DatePicker
+                        date={guardian.futureAddress.movingDate}
                         onChange={(value) => {
                           setApplication(
                             set('form.guardian.futureAddress.movingDate', value)
                           )
                         }}
+                        locale="fi"
                       />
                     </>
                   )}
@@ -1342,9 +1342,10 @@ export default React.memo(function ApplicationEditView({
       <ApplicationStatusSection
         application={application}
         dueDateEditor={
-          <DatePickerDeprecated
-            date={application.dueDate || undefined}
+          <DatePicker
+            date={application.dueDate}
             onChange={(value) => setApplication(set('dueDate', value))}
+            locale="fi"
             data-qa="due-date"
           />
         }

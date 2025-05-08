@@ -29,11 +29,11 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import {
   ExpandingInfoBox,
   InfoButton
 } from 'lib-components/molecules/ExpandingInfo'
+import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { featureFlags } from 'lib-customizations/employee'
 import { faCalendar, faCopy, faFileAlt, faPen, faSync } from 'lib-icons'
 
@@ -72,7 +72,7 @@ interface Props {
 interface Form {
   firstName: string
   lastName: string
-  dateOfBirth: LocalDate
+  dateOfBirth: LocalDate | null
   email: string
   phone: string
   backupPhone: string
@@ -306,11 +306,11 @@ export default React.memo(function PersonDetails({
             dataQa: 'person-birthday',
             value:
               powerEditing && canEditPersonalDetails ? (
-                <DatePickerDeprecated
-                  type="full-width"
+                <DatePicker
                   date={form.dateOfBirth}
                   onChange={(dateOfBirth) => updateForm({ dateOfBirth })}
                   maxDate={LocalDate.todayInSystemTz()}
+                  locale="fi"
                   data-qa="input-birthday"
                 />
               ) : (

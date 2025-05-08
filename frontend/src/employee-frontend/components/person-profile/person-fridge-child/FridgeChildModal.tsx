@@ -14,7 +14,7 @@ import {
 import { PersonId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useMutationResult } from 'lib-common/query'
-import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
+import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import FormModal from 'lib-components/molecules/modals/FormModal'
 import { Gap } from 'lib-components/white-space'
 import { faChild } from 'lib-icons'
@@ -36,15 +36,15 @@ interface Props {
 
 export interface FridgeChildForm {
   child?: PersonSummary
-  startDate: LocalDate
-  endDate: LocalDate
+  startDate: LocalDate | null
+  endDate: LocalDate | null
 }
 
 function FridgeChildModal({ headPersonId, parentship }: Props) {
   const { i18n } = useTranslation()
   const { clearUiMode, setErrorMessage } = useContext(UIContext)
   const { person } = useContext(PersonContext)
-  const initialForm: FridgeChildForm = useMemo(
+  const initialForm = useMemo(
     () => ({
       child: parentship && parentship.child,
       startDate: parentship
@@ -58,7 +58,9 @@ function FridgeChildModal({ headPersonId, parentship }: Props) {
   const retroactive = useMemo(
     () =>
       isChangeRetroactive(
-        form.endDate.isEqualOrAfter(form.startDate)
+        form.startDate &&
+          form.endDate &&
+          form.endDate.isEqualOrAfter(form.startDate)
           ? new DateRange(form.startDate, form.endDate)
           : null,
         new DateRange(initialForm.startDate, initialForm.endDate),
@@ -71,6 +73,10 @@ function FridgeChildModal({ headPersonId, parentship }: Props) {
 
   const validationErrors = useMemo(() => {
     const errors = []
+
+    if (!form.startDate || !form.endDate) {
+      return [i18n.validationError.mandatoryField]
+    }
 
     if (form.startDate.isAfter(form.endDate)) {
       errors.push(i18n.validationError.invertedDateRange)
@@ -112,7 +118,7 @@ function FridgeChildModal({ headPersonId, parentship }: Props) {
   )
 
   const childFormActions = () => {
-    if (!form.child) return
+    if (!form.child || !form.startDate || !form.endDate) return
 
     const apiCall = parentship
       ? updateParentship({
@@ -156,101 +162,97 @@ function FridgeChildModal({ headPersonId, parentship }: Props) {
   }
 
   return (
-    <>
-      {validationErrors && (
-        <FormModal
-          title={
-            parentship
-              ? i18n.personProfile.fridgeChild.editChild
-              : i18n.personProfile.fridgeChild.newChild
-          }
-          icon={faChild}
-          type="info"
-          resolveAction={childFormActions}
-          resolveLabel={i18n.common.confirm}
-          resolveDisabled={
-            !form.child ||
-            validationErrors.length > 0 ||
-            (retroactive && !confirmedRetroactive)
-          }
-          rejectAction={clearUiMode}
-          rejectLabel={i18n.common.cancel}
-          data-qa="fridge-child-modal"
-        >
-          {errorStatusCode === 409 && (
-            <section className="error">
-              {i18n.personProfile.fridgeChild.error.conflict}
-            </section>
-          )}
-          <section>
-            {parentship ? (
-              <div>
-                {formatName(
-                  parentship.child.firstName,
-                  parentship.child.lastName,
-                  i18n,
-                  true
-                )}
-              </div>
-            ) : (
-              <>
-                <div className="bold">
-                  {i18n.personProfile.fridgeChild.searchTitle}
-                </div>
-                <PersonSearch
-                  onResult={(person) => {
-                    let endDate = form.endDate
-                    if (person) {
-                      endDate = person.dateOfBirth.addYears(18).subDays(1)
-                    }
-                    assignFridgeChildForm({ child: person, endDate })
-                  }}
-                  ageLessThan={18}
-                  excludePeople={[headPersonId]}
-                  data-qa="fridge-child-person-search"
-                />
-              </>
+    <FormModal
+      title={
+        parentship
+          ? i18n.personProfile.fridgeChild.editChild
+          : i18n.personProfile.fridgeChild.newChild
+      }
+      icon={faChild}
+      type="info"
+      resolveAction={childFormActions}
+      resolveLabel={i18n.common.confirm}
+      resolveDisabled={
+        !form.child ||
+        validationErrors.length > 0 ||
+        (retroactive && !confirmedRetroactive)
+      }
+      rejectAction={clearUiMode}
+      rejectLabel={i18n.common.cancel}
+      data-qa="fridge-child-modal"
+    >
+      {errorStatusCode === 409 && (
+        <section className="error">
+          {i18n.personProfile.fridgeChild.error.conflict}
+        </section>
+      )}
+      <section>
+        {parentship ? (
+          <div>
+            {formatName(
+              parentship.child.firstName,
+              parentship.child.lastName,
+              i18n,
+              true
             )}
-          </section>
-          <section>
-            <div className="bold">{i18n.common.form.startDate}</div>
-            <DatePickerDeprecated
-              date={form.startDate}
-              onChange={(startDate) => assignFridgeChildForm({ startDate })}
-              minDate={form.child?.dateOfBirth}
-              maxDate={form.child?.dateOfBirth.addYears(18).subDays(1)}
-              type="full-width"
-              data-qa="fridge-child-start-date"
-            />
-          </section>
-          <section>
-            <div className="bold">{i18n.common.form.endDate}</div>
-            <DatePickerDeprecated
-              date={form.endDate}
-              onChange={(endDate) => assignFridgeChildForm({ endDate })}
-              minDate={form.child?.dateOfBirth}
-              maxDate={form.child?.dateOfBirth.addYears(18).subDays(1)}
-              type="full-width"
-              data-qa="fridge-child-end-date"
-            />
-          </section>
-          {retroactive && (
-            <>
-              <Gap size="xs" />
-              <RetroactiveConfirmation
-                confirmed={confirmedRetroactive}
-                setConfirmed={setConfirmedRetroactive}
-              />
-            </>
-          )}
-          {validationErrors.map((error) => (
-            <div className="error" key={error}>
-              {error}
+          </div>
+        ) : (
+          <>
+            <div className="bold">
+              {i18n.personProfile.fridgeChild.searchTitle}
             </div>
-          ))}
-        </FormModal>
-      )}{' '}
-    </>
+            <PersonSearch
+              onResult={(person) => {
+                let endDate = form.endDate
+                if (person) {
+                  endDate = person.dateOfBirth.addYears(18).subDays(1)
+                }
+                assignFridgeChildForm({ child: person, endDate })
+              }}
+              ageLessThan={18}
+              excludePeople={[headPersonId]}
+              data-qa="fridge-child-person-search"
+            />
+          </>
+        )}
+      </section>
+      <section>
+        <div className="bold">{i18n.common.form.startDate}</div>
+        <DatePicker
+          date={form.startDate}
+          onChange={(startDate) => assignFridgeChildForm({ startDate })}
+          minDate={form.child?.dateOfBirth}
+          maxDate={form.child?.dateOfBirth.addYears(18).subDays(1)}
+          locale="fi"
+          data-qa="fridge-child-start-date"
+        />
+      </section>
+      <section>
+        <div className="bold">{i18n.common.form.endDate}</div>
+        <DatePicker
+          date={form.endDate}
+          onChange={(endDate) => assignFridgeChildForm({ endDate })}
+          minDate={form.child?.dateOfBirth}
+          maxDate={form.child?.dateOfBirth.addYears(18).subDays(1)}
+          locale="fi"
+          data-qa="fridge-child-end-date"
+        />
+      </section>
+      {retroactive && (
+        <>
+          <Gap size="xs" />
+          <RetroactiveConfirmation
+            confirmed={confirmedRetroactive}
+            setConfirmed={setConfirmedRetroactive}
+          />
+        </>
+      )}
+      {validationErrors.map((error) => (
+        <div className="error" key={error}>
+          {error}
+        </div>
+      ))}
+    </FormModal>
   )
 }
 

@@ -8,14 +8,15 @@ import styled from 'styled-components'
 
 import { DecisionsReportRow } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
-import { useQueryResult } from 'lib-common/query'
+import { constantQuery, useQueryResult } from 'lib-common/query'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
-import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import { InfoBox } from 'lib-components/molecules/MessageBoxes'
+import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
+import { DatePickerSpacer } from 'lib-components/molecules/date-picker/DateRangePicker'
 import { Gap } from 'lib-components/white-space'
 
 import ReportDownload from '../../components/reports/ReportDownload'
@@ -57,7 +58,11 @@ export default React.memo(function Decisions() {
     [displayFilters.careArea]
   )
 
-  const rows = useQueryResult(decisionReportQuery(filters))
+  const rows = useQueryResult(
+    filters.from && filters.to
+      ? decisionReportQuery({ from: filters.from, to: filters.to })
+      : constantQuery([])
+  )
 
   const filteredRows = useMemo(
     () => rows.map((rs) => rs.filter(displayFilter)),
@@ -73,17 +78,17 @@ export default React.memo(function Decisions() {
         <FilterRow>
           <FilterLabel>{i18n.reports.decisions.sentDate}</FilterLabel>
           <FlexRow>
-            <DatePickerDeprecated
+            <DatePicker
               date={filters.from}
               onChange={(from) => setFilters({ ...filters, from })}
-              type="half-width"
+              locale="fi"
               data-qa="datepicker-from"
             />
-            <span>{' - '}</span>
-            <DatePickerDeprecated
+            <DatePickerSpacer />
+            <DatePicker
               date={filters.to}
               onChange={(to) => setFilters({ ...filters, to })}
-              type="half-width"
+              locale="fi"
               data-qa="datepicker-to"
             />
           </FlexRow>
@@ -205,7 +210,7 @@ export default React.memo(function Decisions() {
               ]}
               filename={`${
                 i18n.reports.decisions.title
-              } ${filters.from.formatIso()}-${filters.to.formatIso()}.csv`}
+              } ${filters.from?.formatIso()}-${filters.to?.formatIso()}.csv`}
             />
             <TableScrollable data-qa="report-application-table">
               <Thead>

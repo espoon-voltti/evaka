@@ -70,7 +70,7 @@ describe('Employee - paper application', () => {
     await createApplicationModal.selectApplicationType('PRESCHOOL')
     const applicationEditPage = await createApplicationModal.submit()
 
-    await applicationEditPage.fillStartDate(now.toLocalDate().format())
+    await applicationEditPage.fillStartDate(now.toLocalDate())
     await applicationEditPage.checkConnectedDaycare()
     await applicationEditPage.fillConnectedDaycarePreferredStartDate(
       now.toLocalDate().format()

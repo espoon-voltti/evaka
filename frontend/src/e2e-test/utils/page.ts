@@ -353,28 +353,22 @@ export class DatePicker extends Element {
     await this.#input.blur()
   }
 
+  async clear() {
+    await this.#input.clear()
+  }
+
   async assertValueEquals(value: string) {
     await this.#input.assertValueEquals(value)
   }
 }
 
-export class DatePickerDeprecated extends Element {
-  #input: TextInput
-  #clearIcon: Element
+export class DateRangePicker extends Element {
+  start = new DatePicker(this.findByDataQa('start-date'))
+  end = new DatePicker(this.findByDataQa('end-date'))
 
-  constructor(value: Element | Locator) {
-    super(value)
-    this.#input = new TextInput(this.find('input'))
-    this.#clearIcon = this.find('.react-datepicker__close-icon')
-  }
-
-  async fill(text: string | LocalDate) {
-    await this.#input.fill(typeof text === 'string' ? text : text.format())
-    await this.#input.press('Enter')
-  }
-
-  async clear() {
-    await this.#clearIcon.click()
+  async fill(start: LocalDate | string, end: LocalDate | string) {
+    await this.start.fill(start)
+    await this.end.fill(end)
   }
 }
 

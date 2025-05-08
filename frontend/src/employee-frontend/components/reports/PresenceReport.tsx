@@ -5,11 +5,12 @@
 import React, { useState } from 'react'
 
 import LocalDate from 'lib-common/local-date'
-import { useQueryResult } from 'lib-common/query'
+import { constantQuery, useQueryResult } from 'lib-common/query'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
-import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
+import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
+import { DatePickerSpacer } from 'lib-components/molecules/date-picker/DateRangePicker'
 
 import ReportDownload from '../../components/reports/ReportDownload'
 import { useTranslation } from '../../state/i18n'
@@ -27,7 +28,11 @@ export default React.memo(function Presences() {
     to: LocalDate.todayInSystemTz()
   })
 
-  const rows = useQueryResult(presenceReportQuery(filters))
+  const rows = useQueryResult(
+    filters.from && filters.to
+      ? presenceReportQuery({ from: filters.from, to: filters.to })
+      : constantQuery([])
+  )
 
   return (
     <Container>
@@ -37,16 +42,16 @@ export default React.memo(function Presences() {
         <FilterRow>
           <FilterLabel>{i18n.reports.common.period}</FilterLabel>
           <FlexRow>
-            <DatePickerDeprecated
+            <DatePicker
               date={filters.from}
               onChange={(from) => setFilters({ ...filters, from })}
-              type="half-width"
+              locale="fi"
             />
-            <span>{' - '}</span>
-            <DatePickerDeprecated
+            <DatePickerSpacer />
+            <DatePicker
               date={filters.to}
               onChange={(to) => setFilters({ ...filters, to })}
-              type="half-width"
+              locale="fi"
             />
           </FlexRow>
         </FilterRow>
@@ -84,7 +89,7 @@ export default React.memo(function Presences() {
               ]}
               filename={`${
                 i18n.reports.presence.title
-              } ${filters.from.formatIso()}-${filters.to.formatIso()}.csv`}
+              } ${filters.from?.formatIso()}-${filters.to?.formatIso()}.csv`}
             />
           </>
         ))}

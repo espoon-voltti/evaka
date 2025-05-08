@@ -13,7 +13,6 @@ import {
   Checkbox,
   Combobox,
   DatePicker,
-  DatePickerDeprecated,
   Element,
   FileUpload,
   Modal,
@@ -102,9 +101,9 @@ class Section extends Element {
 }
 
 class PersonInfoSection extends Section {
-  #lastName = this.find('[data-qa="person-last-name"]')
-  #firstName = this.find('[data-qa="person-first-names"]')
-  #ssn = this.find('[data-qa="person-ssn"]')
+  #lastName = this.findByDataQa('person-last-name')
+  #firstName = this.findByDataQa('person-first-names')
+  #ssn = this.findByDataQa('person-ssn')
 
   async assertPersonInfo(lastName: string, firstName: string, ssn: string) {
     await this.#lastName.findText(lastName).waitUntilVisible()
@@ -123,18 +122,16 @@ class FamilyOverviewSection extends Section {
     age?: number
     incomeCents?: number
   }) {
-    const person = this.find(
-      `[data-qa="table-family-overview-row-${personId}"]`
-    )
+    const person = this.findByDataQa(`table-family-overview-row-${personId}`)
     await person.waitUntilVisible()
 
     if (age !== undefined) {
-      const personAge = person.find('[data-qa="person-age"]')
+      const personAge = person.findByDataQa('person-age')
       await personAge.assertTextEquals(age.toString())
     }
 
     if (incomeCents !== undefined) {
-      const personIncome = person.find('[data-qa="person-income-total"]')
+      const personIncome = person.findByDataQa('person-income-total')
       const expectedIncome = formatCents(incomeCents)
       await waitUntilEqual(
         async () => ((await personIncome.text) ?? '').split(' ')[0],
@@ -145,19 +142,19 @@ class FamilyOverviewSection extends Section {
 }
 
 class PartnersSection extends Section {
-  #addPartnerButton = this.find('[data-qa="add-partner-button"]')
+  #addPartnerButton = this.findByDataQa('add-partner-button')
 
   async addPartner(partnerName: string, startDate: string) {
     await this.#addPartnerButton.click()
     const modal = new Modal(this.page.findByDataQa('fridge-partner-modal'))
 
     const combobox = new Combobox(
-      modal.find('[data-qa="fridge-partner-person-search"]')
+      modal.findByDataQa('fridge-partner-person-search')
     )
     await combobox.fillAndSelectFirst(partnerName)
 
-    const startDatePicker = new DatePickerDeprecated(
-      modal.find('[data-qa="fridge-partner-start-date"]')
+    const startDatePicker = new DatePicker(
+      modal.findByDataQa('fridge-partner-start-date')
     )
     await startDatePicker.fill(startDate)
 
@@ -166,29 +163,29 @@ class PartnersSection extends Section {
 }
 
 class ChildrenSection extends Section {
-  #addChildButton = this.find('[data-qa="add-child-button"]')
+  #addChildButton = this.findByDataQa('add-child-button')
 
   async addChild(childName: string, startDate: string) {
     await this.#addChildButton.click()
     const modal = new Modal(this.page.findByDataQa('fridge-child-modal'))
 
     const combobox = new Combobox(
-      modal.find('[data-qa="fridge-child-person-search"]')
+      modal.findByDataQa('fridge-child-person-search')
     )
     await combobox.fillAndSelectFirst(childName)
 
-    const startDatePicker = new DatePickerDeprecated(
-      modal.find('[data-qa="fridge-child-start-date"]')
+    const startDatePicker = new DatePicker(
+      modal.findByDataQa('fridge-child-start-date')
     )
     await startDatePicker.fill(startDate)
 
     await modal.submit()
   }
 
-  #childrenTableRow = this.findAll('[data-qa="table-fridge-child-row"]')
+  #childrenTableRow = this.findAllByDataQa('table-fridge-child-row')
 
   async verifyChildAge(age: number) {
-    const childAge = this.#childrenTableRow.nth(0).find('[data-qa="child-age"]')
+    const childAge = this.#childrenTableRow.nth(0).findByDataQa('child-age')
     await childAge.assertTextEquals(age.toString())
   }
 }
@@ -273,7 +270,7 @@ class FosterChildrenSection extends Section {
 }
 
 class ApplicationsSection extends Section {
-  #applicationRows = this.findAll('[data-qa="table-application-row"]')
+  #applicationRows = this.findAllByDataQa('table-application-row')
 
   async assertApplicationCount(n: number) {
     await waitUntilEqual(() => this.#applicationRows.count(), n)
@@ -291,7 +288,7 @@ class ApplicationsSection extends Section {
 }
 
 class DecisionsSection extends Section {
-  #decisionRows = this.findAll('[data-qa="table-decision-row"]')
+  #decisionRows = this.findAllByDataQa('table-decision-row')
 
   async assertDecisionCount(n: number) {
     await waitUntilEqual(() => this.#decisionRows.count(), n)
@@ -341,9 +338,9 @@ export class IncomeSection extends Section {
 
   // Income statements
 
-  #incomeStatementRows = this.findAll(`[data-qa="income-statement-row"]`)
-  #childIncomeStatementsTitles = this.findAll(
-    '[data-qa="child-income-statement-title"]'
+  #incomeStatementRows = this.findAllByDataQa(`income-statement-row`)
+  #childIncomeStatementsTitles = this.findAllByDataQa(
+    'child-income-statement-title'
   )
 
   incomeNotificationRows = this.findAllByDataQa('income-notification-sent-date')
@@ -360,7 +357,7 @@ export class IncomeSection extends Section {
 
   async isIncomeStatementHandled(nth = 0) {
     return new Checkbox(
-      this.#incomeStatementRows.nth(nth).find(`[data-qa="is-handled-checkbox"]`)
+      this.#incomeStatementRows.nth(nth).findByDataQa(`is-handled-checkbox`)
     ).checked
   }
 
@@ -423,7 +420,7 @@ export class IncomeSection extends Section {
     await this.#cancelIncomeButton.click()
   }
 
-  incomeListItems = this.page.findAll('[data-qa="income-list-item"]')
+  incomeListItems = this.page.findAllByDataQa('income-list-item')
 
   async incomeListItemCount() {
     return await this.incomeListItems.count()
@@ -432,9 +429,9 @@ export class IncomeSection extends Section {
   async deleteIncomeItem(nth: number) {
     await this.incomeListItems
       .nth(nth)
-      .find('[data-qa="delete-income-item"]')
+      .findByDataQa('delete-income-item')
       .click()
-    await this.find('[data-qa="modal-okBtn"]').click()
+    await this.findByDataQa('modal-okBtn').click()
   }
 
   async getIncomeSum() {
@@ -454,13 +451,13 @@ export class IncomeSection extends Section {
   )
 
   async getAttachmentCount() {
-    return this.findAll('[data-qa="attachment"]').count()
+    return this.findAllByDataQa('attachment').count()
   }
 }
 
 class FeeDecisionsSection extends Section {
   #feeDecisionTableRows = this.findAll('tbody tr')
-  #feeDecisionSentAt = this.findAll(`[data-qa="fee-decision-sent-at"]`)
+  #feeDecisionSentAt = this.findAllByDataQa(`fee-decision-sent-at`)
 
   async assertFeeDecision(
     n: number,
@@ -486,13 +483,11 @@ class FeeDecisionsSection extends Section {
   }
 
   async createRetroactiveFeeDecisions(date: string) {
-    await this.find(
-      '[data-qa="create-retroactive-fee-decision-button"]'
-    ).click()
+    await this.findByDataQa('create-retroactive-fee-decision-button').click()
     const modal = new Modal(this.page.findByDataQa('modal'))
 
     const startDate = new DatePicker(
-      modal.find('[data-qa="retroactive-fee-decision-start-date"]')
+      modal.findByDataQa('retroactive-fee-decision-start-date')
     )
     await startDate.fill(date)
 
@@ -545,7 +540,7 @@ class VoucherValueDecisionsSection extends Section {
 }
 
 class InvoicesSection extends Section {
-  #invoiceRows = this.findAll('[data-qa="table-invoice-row"]')
+  #invoiceRows = this.findAllByDataQa('table-invoice-row')
 
   async assertInvoiceCount(n: number) {
     await waitUntilEqual(() => this.#invoiceRows.count(), n)
@@ -632,15 +627,15 @@ class InvoiceCorrectionNoteModal extends Modal {
 }
 
 class FinanceNotesAndMessagesSection extends Section {
-  #noteCreatedAt = this.findAll(`[data-qa="finance-note-created-at"]`)
-  #threadSentAt = this.findAll(`[data-qa="finance-thread-sent-at"]`)
+  #noteCreatedAt = this.findAllByDataQa(`finance-note-created-at`)
+  #threadSentAt = this.findAllByDataQa(`finance-thread-sent-at`)
   newMessageButton = this.findByDataQa('send-finance-message-button')
-  #replyThread = this.findAll(`[data-qa="reply-finance-thread-button"]`)
+  #replyThread = this.findAllByDataQa(`reply-finance-thread-button`)
   #messageReplyContent = new TextInput(
     this.findByDataQa('message-reply-content')
   )
   #sendReplyButton = this.findByDataQa('message-send-btn')
-  #deleteThread = this.findAll(`[data-qa="archive-finance-thread-button"]`)
+  #deleteThread = this.findAllByDataQa(`archive-finance-thread-button`)
 
   async checkNoteCreatedAt(nth: number, expectedCreatedAt: HelsinkiDateTime) {
     await this.#noteCreatedAt

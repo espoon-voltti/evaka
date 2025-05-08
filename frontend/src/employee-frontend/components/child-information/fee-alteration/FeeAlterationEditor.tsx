@@ -23,20 +23,23 @@ import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import TextArea from 'lib-components/atoms/form/TextArea'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import FileUpload from 'lib-components/molecules/FileUpload'
+import DateRangePicker from 'lib-components/molecules/date-picker/DateRangePicker'
 import { P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
-import DateRangeInput from '../../../components/common/DateRangeInput'
 import LabelValueList from '../../../components/common/LabelValueList'
 import { useTranslation } from '../../../state/i18n'
-import { PartialFeeAlteration } from '../../../types/fee-alteration'
+import {
+  FeeAlterationForm,
+  PartialFeeAlteration
+} from '../../../types/fee-alteration'
 
 import FeeAlterationRowInput from './FeeAlterationRowInput'
 
 const newFeeAlteration = (
   personId: PersonId,
   feeAlterationId?: FeeAlterationId
-): PartialFeeAlteration => ({
+): FeeAlterationForm => ({
   id: feeAlterationId ?? null,
   personId,
   type: 'DISCOUNT',
@@ -77,18 +80,24 @@ export default React.memo(function FeeAlterationEditor({
   >({})
 
   useEffect(() => {
-    if (edited.validTo && !edited.validFrom.isBefore(edited.validTo)) {
-      setValidationErrors((prev) => ({ ...prev, validTo: true }))
-    } else {
-      setValidationErrors((prev) => ({ ...prev, validTo: false }))
-    }
+    setValidationErrors((prev) => ({
+      ...prev,
+      validFrom: edited.validFrom === null,
+      validTo:
+        edited.validFrom !== null &&
+        edited.validTo !== null &&
+        !edited.validFrom.isEqualOrBefore(edited.validTo)
+    }))
   }, [edited])
 
   const onSubmit = useCallback(() => {
-    if (Object.values(validationErrors).some(Boolean)) return
+    if (!edited.validFrom || Object.values(validationErrors).some(Boolean)) {
+      return
+    }
+    const valid = { ...edited, validFrom: edited.validFrom }
     return !baseFeeAlteration
-      ? create(edited)
-      : update({ ...baseFeeAlteration, ...edited })
+      ? create(valid)
+      : update({ ...baseFeeAlteration, ...valid })
   }, [baseFeeAlteration, create, edited, update, validationErrors])
 
   return (
@@ -120,21 +129,21 @@ export default React.memo(function FeeAlterationEditor({
               label: i18n.childInformation.feeAlteration.editor.validDuring,
               value: (
                 <FixedSpaceRow>
-                  <DateRangeInput
-                    data-qa="fee-alteration-date-range-input"
+                  <DateRangePicker
                     start={edited.validFrom}
-                    end={edited.validTo ? edited.validTo : undefined}
-                    onChange={(start: LocalDate, end?: LocalDate) =>
+                    end={edited.validTo}
+                    data-qa="fee-alteration-date-range-input"
+                    onChange={(start, end) =>
                       setEdited((state) => ({
                         ...state,
                         validFrom: start,
-                        validTo: end ?? null
+                        validTo: end
                       }))
                     }
-                    onValidationResult={(hasErrors) =>
-                      setValidationErrors({ dates: hasErrors })
-                    }
-                    nullableEndDate
+                    onValidationResult={(isValid) => {
+                      setValidationErrors({ dates: !isValid })
+                    }}
+                    locale="fi"
                   />
                 </FixedSpaceRow>
               )

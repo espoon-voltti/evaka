@@ -18,7 +18,7 @@ import {
   Checkbox,
   Combobox,
   DatePicker,
-  DatePickerDeprecated,
+  DateRangePicker,
   Element,
   FileUpload,
   Modal,
@@ -412,9 +412,8 @@ export class BackupCaresSection extends Section {
     this.find('[data-qa="backup-care-select-unit"]')
   )
 
-  #dates = this.findAll('[data-qa="dates"] > *')
-  #startDate = new DatePickerDeprecated(this.#dates.nth(0))
-  #endDate = new DatePickerDeprecated(this.#dates.nth(1))
+  #startDate = new DatePicker(this.findByDataQa('backup-care-start-date'))
+  #endDate = new DatePicker(this.findByDataQa('backup-care-end-date'))
 
   #backupCares = this.find('[data-qa="backup-cares"]')
 
@@ -809,20 +808,18 @@ export class PlacementsSection extends Section {
     endDate: string
     placeGuarantee?: boolean
   }) {
-    await this.find('[data-qa="create-new-placement-button"]').click()
+    await this.findByDataQa('create-new-placement-button').click()
 
     const modal = new Modal(this.page.findByDataQa('modal'))
-    const unitSelect = new Combobox(modal.find('[data-qa="unit-select"]'))
+    const unitSelect = new Combobox(modal.findByDataQa('unit-select'))
     await unitSelect.fillAndSelectFirst(unitName)
 
-    const start = new DatePickerDeprecated(
-      modal.find('[data-qa="create-placement-start-date"]')
+    const start = new DatePicker(
+      modal.findByDataQa('create-placement-start-date')
     )
     await start.fill(startDate)
 
-    const end = new DatePickerDeprecated(
-      modal.find('[data-qa="create-placement-end-date"]')
-    )
+    const end = new DatePicker(modal.findByDataQa('create-placement-end-date'))
     await end.fill(endDate)
 
     if (placeGuarantee) {
@@ -1158,18 +1155,14 @@ class OtherAssistanceMeasureRow extends InlineAssistanceRow {
 }
 
 class FeeAlterationEditorPage {
-  startDateInput: DatePickerDeprecated
-  endDateInput: DatePickerDeprecated
+  dateRangePicker: DateRangePicker
   alterationValueInput: TextInput
   fileUpload: FileUpload
   saveButton: Element
 
   constructor(readonly page: Page) {
-    this.startDateInput = new DatePickerDeprecated(
-      page.findByDataQa('date-range-input-start-date')
-    )
-    this.endDateInput = new DatePickerDeprecated(
-      page.findByDataQa('date-range-input-end-date')
+    this.dateRangePicker = new DateRangePicker(
+      page.findByDataQa('fee-alteration-date-range-input')
     )
     this.alterationValueInput = new TextInput(
       page.findByDataQa('fee-alteration-amount-input')
@@ -1181,7 +1174,7 @@ class FeeAlterationEditorPage {
   }
 
   async waitUntilReady() {
-    await this.startDateInput.waitUntilVisible()
+    await this.dateRangePicker.start.waitUntilVisible()
   }
 }
 

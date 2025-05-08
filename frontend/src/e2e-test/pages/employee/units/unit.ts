@@ -17,7 +17,6 @@ import {
   Checkbox,
   Combobox,
   DatePicker,
-  DatePickerDeprecated,
   Element,
   Modal,
   Page,
@@ -239,7 +238,7 @@ export class UnitEditor {
   #managerPhoneInputField: TextInput
   #managerEmailInputField: TextInput
   #invoiceByMunicipality: Checkbox
-  #closingDateInput: DatePickerDeprecated
+  #closingDateInput: DatePicker
   #unitHandlerAddressInput: TextInput
   unitCostCenterInput: TextInput
   saveButton: Element
@@ -262,7 +261,7 @@ export class UnitEditor {
     this.#invoiceByMunicipality = new Checkbox(
       page.findByDataQa('check-invoice-by-municipality')
     )
-    this.#closingDateInput = new DatePickerDeprecated(
+    this.#closingDateInput = new DatePicker(
       page.findByDataQa('closing-date-input')
     )
     this.#unitHandlerAddressInput = new TextInput(

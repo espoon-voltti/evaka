@@ -170,8 +170,8 @@ export default React.memo(function IncomeStatementsPage() {
 
   const incomeStatements = useQueryResult(
     searchFilters !== undefined &&
-      (searchFilters.sentStartDate === undefined ||
-        searchFilters.sentEndDate === undefined ||
+      (searchFilters.sentStartDate === null ||
+        searchFilters.sentEndDate === null ||
         searchFilters.sentEndDate.isEqualOrAfter(searchFilters.sentStartDate))
       ? incomeStatementsAwaitingHandlerQuery({
           body: {

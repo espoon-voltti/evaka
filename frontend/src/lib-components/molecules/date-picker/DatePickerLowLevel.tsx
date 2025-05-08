@@ -31,11 +31,12 @@ const iconWidth = 36
 
 const DatePickerWrapper = styled.div`
   position: relative;
-  display: flex;
+  display: inline-flex;
   width: ${inputWidth + iconWidth}px;
 `
+const pickerWidth = 294
 const minMargin = 16
-const overflow = 100
+const overflow = (pickerWidth / 2 + minMargin) / 2
 
 const DayPickerPositioner = styled.div<{
   openAbove?: boolean
@@ -174,11 +175,11 @@ export default React.memo(function DatePickerLowLevel({
         }
         showDatePickerOff()
       }
-      if (!showDatePicker && e.key === 'ArrowDown') {
+      if (!disabled && !showDatePicker && e.key === 'ArrowDown') {
         showDatePickerOn()
       }
     },
-    [showDatePicker, showDatePickerOff, showDatePickerOn]
+    [disabled, showDatePicker, showDatePickerOff, showDatePickerOn]
   )
 
   const handleDayClick = useCallback(
@@ -195,12 +196,12 @@ export default React.memo(function DatePickerLowLevel({
 
   const handleFocus = useCallback(
     (e: React.FocusEvent<HTMLInputElement>) => {
-      if (openOnFocus) {
+      if (!disabled && openOnFocus) {
         showDatePickerOn()
       }
       onFocus?.(e)
     },
-    [onFocus, openOnFocus, showDatePickerOn]
+    [disabled, onFocus, openOnFocus, showDatePickerOn]
   )
 
   const handleBlur = useCallback(
@@ -301,6 +302,7 @@ export default React.memo(function DatePickerLowLevel({
       <StyledIconButton
         icon={faCalendarAlt}
         onClick={toggleDatePicker}
+        disabled={disabled}
         aria-controls="dialog"
         aria-haspopup="dialog"
         aria-expanded={showDatePicker}

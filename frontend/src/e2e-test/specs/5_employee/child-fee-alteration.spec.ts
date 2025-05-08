@@ -57,15 +57,19 @@ describe('Child fee alteration', () => {
     }
 
     const editor = await feeAlterationSection.openNewFeeAlterationEditorPage()
-    await editor.startDateInput.fill(feeAlteration.startDate)
-    await editor.endDateInput.fill(feeAlteration.endDate)
+    await editor.dateRangePicker.fill(
+      feeAlteration.startDate,
+      feeAlteration.endDate
+    )
     await editor.alterationValueInput.fill(feeAlteration.amount)
     await editor.fileUpload.upload(feeAlteration.attachment)
     await editor.saveButton.click()
 
     const editor2 = await feeAlterationSection.openNewFeeAlterationEditorPage()
-    await editor2.startDateInput.fill(feeAlteration2.startDate)
-    await editor2.endDateInput.fill(feeAlteration2.endDate)
+    await editor2.dateRangePicker.fill(
+      feeAlteration2.startDate,
+      feeAlteration2.endDate
+    )
     await editor2.alterationValueInput.fill(feeAlteration2.amount)
     await editor2.fileUpload.upload(feeAlteration2.attachment)
     await editor2.saveButton.click()

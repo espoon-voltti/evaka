@@ -23,12 +23,13 @@ import {
 } from 'lib-common/query'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import {
-  MutateButton,
-  cancelMutation
+  cancelMutation,
+  MutateButton
 } from 'lib-components/atoms/buttons/MutateButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
+import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
+import { DatePickerSpacer } from 'lib-components/molecules/date-picker/DateRangePicker'
 import { fontWeights } from 'lib-components/typography'
 
 import { unitsQuery } from '../../../queries'
@@ -49,6 +50,12 @@ export interface Props {
 
 interface FormState {
   unit: UnitStub | BackupCareUnit | undefined
+  startDate: LocalDate | null
+  endDate: LocalDate | null
+}
+
+interface ValidatedFormState {
+  unit: UnitStub | BackupCareUnit
   startDate: LocalDate
   endDate: LocalDate
 }
@@ -96,7 +103,10 @@ export default function BackupCareForm({ childId, backupCare }: Props) {
 
   const [formState, setFormState] = useState<FormState>(initialFormState)
 
-  const evaluateFormErrors = (form: FormState) => {
+  const [validatedState, formErrors] = useMemo((): [
+    ValidatedFormState | null,
+    string[]
+  ] => {
     const errors: string[] = []
     const existing: DateRange[] = backupCares
       .map((bcs) =>
@@ -112,35 +122,39 @@ export default function BackupCareForm({ childId, backupCare }: Props) {
       )
       .getOrElse([])
 
-    if (isDateRangeInverted(form))
+    const { unit, startDate, endDate } = formState
+    if (!unit) {
+      return [null, []]
+    }
+    if (!startDate || !endDate) {
+      errors.push(i18n.validationError.mandatoryField)
+      return [null, errors]
+    }
+    if (isDateRangeInverted({ startDate, endDate }))
       errors.push(i18n.validationError.invertedDateRange)
-    else if (isDateRangeOverlappingWithExisting(form, existing))
+    else if (
+      isDateRangeOverlappingWithExisting({ startDate, endDate }, existing)
+    )
       errors.push(i18n.validationError.existingDateRangeError)
     else if (
       !consecutivePlacementRanges.some((placementRange) =>
-        placementRange.contains(
-          new FiniteDateRange(form.startDate, form.endDate)
-        )
+        placementRange.contains(new FiniteDateRange(startDate, endDate))
       )
     )
       errors.push(
         i18n.childInformation.backupCares.validationNoMatchingPlacement
       )
 
-    return errors
-  }
-
-  const initialErrors = evaluateFormErrors(initialFormState)
-  const [formErrors, setFormErrors] = useState<string[]>(initialErrors)
-
-  const validateForm = (form: FormState) => {
-    setFormErrors(evaluateFormErrors(form))
-  }
+    if (errors.length > 0) {
+      return [null, errors]
+    } else {
+      return [{ unit, startDate, endDate }, []]
+    }
+  }, [backupCare, backupCares, consecutivePlacementRanges, formState, i18n])
 
   const updateFormState: UpdateStateFn<FormState> = (value) => {
     const newState = { ...formState, ...value }
     setFormState(newState)
-    validateForm(newState)
   }
 
   const options = useMemo(
@@ -158,15 +172,15 @@ export default function BackupCareForm({ childId, backupCare }: Props) {
     [
       createBackupCareMutation,
       () =>
-        formState.unit !== undefined
+        validatedState
           ? {
               childId,
               body: {
                 groupId: null,
-                unitId: formState.unit.id,
+                unitId: validatedState.unit.id,
                 period: new FiniteDateRange(
-                  formState.startDate,
-                  formState.endDate
+                  validatedState.startDate,
+                  validatedState.endDate
                 )
               }
             }
@@ -174,14 +188,20 @@ export default function BackupCareForm({ childId, backupCare }: Props) {
     ],
     [
       updateBackupCareMutation,
-      (backupCare) => ({
-        id: backupCare.id,
-        unitId: backupCare.unit.id,
-        body: {
-          groupId: null,
-          period: new FiniteDateRange(formState.startDate, formState.endDate)
-        }
-      })
+      (backupCare) =>
+        validatedState !== null
+          ? {
+              id: backupCare.id,
+              unitId: backupCare.unit.id,
+              body: {
+                groupId: null,
+                period: new FiniteDateRange(
+                  validatedState.startDate,
+                  validatedState.endDate
+                )
+              }
+            }
+          : cancelMutation
     ]
   )
 
@@ -210,17 +230,21 @@ export default function BackupCareForm({ childId, backupCare }: Props) {
         </FormField>
         <FormField>
           <FormLabel>{i18n.childInformation.backupCares.dateRange}</FormLabel>
-          <div data-qa="dates">
-            <DatePickerDeprecated
+          <FixedSpaceRow>
+            <DatePicker
               date={formState.startDate}
               onChange={(startDate) => updateFormState({ startDate })}
+              locale="fi"
+              data-qa="backup-care-start-date"
             />
-            {' - '}
-            <DatePickerDeprecated
+            <DatePickerSpacer />
+            <DatePicker
               date={formState.endDate}
               onChange={(endDate) => updateFormState({ endDate })}
+              locale="fi"
+              data-qa="backup-care-end-date"
             />
-          </div>
+          </FixedSpaceRow>
         </FormField>
         {formErrors.map((error, index) => (
           <div className="error" key={index} data-qa="form-error">

@@ -44,6 +44,9 @@ export default React.memo(function DatePickerDay({
   return (
     <DayPicker
       mode="single"
+      captionLayout="dropdown"
+      startMonth={startMonth}
+      endMonth={endMonth}
       autoFocus
       onDayClick={handleDayClick}
       locale={localeData}
@@ -61,6 +64,9 @@ export default React.memo(function DatePickerDay({
     />
   )
 })
+
+const startMonth = LocalDate.of(1900, 1, 1).toSystemTzDate()
+const endMonth = LocalDate.todayInHelsinkiTz().addYears(50).toSystemTzDate()
 
 function useLocaleWithCapitalizedNames(locale: 'fi' | 'sv' | 'en'): Locale {
   const localeData = locale === 'sv' ? sv : locale === 'en' ? enGB : fi

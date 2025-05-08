@@ -23,7 +23,7 @@ import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
+import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { H3, H4 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { faCalendarAlt, faChevronLeft, faChevronRight } from 'lib-icons'
@@ -384,13 +384,12 @@ const ActiveDateRangeSelector = React.memo(function ActiveDateRangeSelector({
           data-qa="previous-week"
           aria-label={i18n.unit.calendar.previousWeek}
         />
-        {/*Using deprecated DatePicker because it has month/year dropdowns*/}
-        <DatePickerDeprecated
+        <DatePicker
           date={startDate}
           onChange={(date) => {
             if (date) setSelectedDate(date)
           }}
-          type="short"
+          locale="fi"
         />
         <span>–</span>
         <span>{endDate.format('dd.MM.yyyy')}</span>

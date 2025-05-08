@@ -11,7 +11,7 @@ import LocalDate from 'lib-common/local-date'
 import { cancelMutation } from 'lib-components/atoms/buttons/MutateButton'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
-import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
+import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { faExchange } from 'lib-icons'
 
@@ -28,7 +28,7 @@ interface Props {
 }
 
 interface GroupPlacementForm {
-  startDate: LocalDate
+  startDate: LocalDate | null
   group: DaycareGroup | null
   errors: string[]
 }
@@ -64,6 +64,8 @@ export default React.memo(function GroupTransferModal({
     const errors = []
     if (!form.group) {
       errors.push(i18n.unit.placements.modal.errors.noGroup)
+    } else if (!form.startDate) {
+      errors.push(i18n.unit.placements.modal.errors.noStartDate)
     } else {
       const group = openGroups.find((g) => g.id === form.group?.id)
       if (group) {
@@ -95,7 +97,7 @@ export default React.memo(function GroupTransferModal({
       type="info"
       resolveMutation={transferGroupMutation}
       resolveAction={() =>
-        form.group !== null
+        form.group !== null && form.startDate !== null
           ? {
               unitId,
               groupPlacementId: groupPlacementId!,
@@ -131,12 +133,12 @@ export default React.memo(function GroupTransferModal({
         </section>
         <section>
           <div className="bold">{i18n.common.form.startDate}</div>
-          <DatePickerDeprecated
+          <DatePicker
             date={form.startDate}
             onChange={(startDate) => assignFormValues({ startDate })}
-            type="full-width"
             minDate={minDate}
             maxDate={maxDate}
+            locale="fi"
           />
         </section>
         {form.errors.length > 0 && (

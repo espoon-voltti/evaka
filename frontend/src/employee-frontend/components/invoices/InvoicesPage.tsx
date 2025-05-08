@@ -8,6 +8,7 @@ import styled from 'styled-components'
 
 import { UserContext } from 'employee-frontend/state/user'
 import { useBoolean } from 'lib-common/form/hooks'
+import { required, validate } from 'lib-common/form-validation'
 import {
   InvoiceSortParam,
   InvoiceStatus,
@@ -24,8 +25,8 @@ import {
 } from 'lib-common/query'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { Container, ContentArea } from 'lib-components/layout/Container'
-import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
+import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { ModalType } from 'lib-components/molecules/modals/BaseModal'
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
@@ -35,6 +36,7 @@ import { fasExclamationTriangle } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
 import { InvoicingUiContext } from '../../state/invoicing-ui'
+import { errorToInputInfo } from '../../utils/validation/input-info-helper'
 import { renderResult } from '../async-rendering'
 
 import Actions from './Actions'
@@ -245,8 +247,10 @@ const SendModal = React.memo(function SendModal({
     invoices: { searchFilters }
   } = useContext(InvoicingUiContext)
 
-  const [invoiceDate, setInvoiceDate] = useState(LocalDate.todayInSystemTz())
-  const [dueDate, setDueDate] = useState(
+  const [invoiceDate, setInvoiceDate] = useState<LocalDate | null>(
+    LocalDate.todayInSystemTz()
+  )
+  const [dueDate, setDueDate] = useState<LocalDate | null>(
     LocalDate.todayInSystemTz().addBusinessDays(10)
   )
 
@@ -298,6 +302,7 @@ const SendModal = React.memo(function SendModal({
       resolveMutation={mutation}
       resolveAction={onClick}
       resolveLabel={i18n.common.confirm}
+      resolveDisabled={invoiceDate === null || dueDate === null}
       onSuccess={onSendDone}
       onFailure={onSendFailure}
       rejectAction={onClose}
@@ -307,20 +312,30 @@ const SendModal = React.memo(function SendModal({
       <ModalContent>
         <Label>{i18n.invoices.sendModal.invoiceDate}</Label>
         <div>
-          <DatePickerDeprecated
+          <DatePicker
             date={invoiceDate}
             onChange={setInvoiceDate}
-            type="full-width"
+            info={errorToInputInfo(
+              validate(invoiceDate, required),
+              i18n.validationErrors
+            )}
+            hideErrorsBeforeTouched
+            locale="fi"
             data-qa="invoice-date-input"
           />
         </div>
         <Gap size="s" />
         <Label>{i18n.invoices.sendModal.dueDate}</Label>
         <div>
-          <DatePickerDeprecated
+          <DatePicker
             date={dueDate}
             onChange={setDueDate}
-            type="full-width"
+            info={errorToInputInfo(
+              validate(dueDate, required),
+              i18n.validationErrors
+            )}
+            hideErrorsBeforeTouched
+            locale="fi"
             data-qa="invoice-due-date-input"
           />
         </div>

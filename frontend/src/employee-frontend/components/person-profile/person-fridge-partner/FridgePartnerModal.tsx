@@ -10,10 +10,7 @@ import { Partnership, PersonSummary } from 'lib-common/generated/api-types/pis'
 import { PersonId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useMutationResult } from 'lib-common/query'
-import {
-  DatePickerDeprecated,
-  DatePickerClearableDeprecated
-} from 'lib-components/molecules/DatePickerDeprecated'
+import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import FormModal from 'lib-components/molecules/modals/FormModal'
 import { Gap } from 'lib-components/white-space'
 import { faPen, faUser } from 'lib-icons'
@@ -38,7 +35,7 @@ interface Props {
 
 export interface FridgePartnerForm {
   partner?: PersonSummary
-  startDate: LocalDate
+  startDate: LocalDate | null
   endDate: LocalDate | null
 }
 
@@ -46,7 +43,7 @@ function FridgePartnerModal({ partnership, headPersonId }: Props) {
   const { i18n } = useTranslation()
   const { clearUiMode, setErrorMessage } = useContext(UIContext)
   const { person } = useContext(PersonContext)
-  const initialForm: FridgePartnerForm = useMemo(
+  const initialForm = useMemo(
     () => ({
       partner:
         partnership &&
@@ -58,11 +55,12 @@ function FridgePartnerModal({ partnership, headPersonId }: Props) {
     }),
     [partnership, headPersonId]
   )
-  const [form, setForm] = useState(initialForm)
+  const [form, setForm] = useState<FridgePartnerForm>(initialForm)
   const retroactive = useMemo(
     () =>
       isChangeRetroactive(
-        form.endDate === null || form.endDate.isEqualOrAfter(form.startDate)
+        form.startDate !== null &&
+          (form.endDate === null || form.endDate.isEqualOrAfter(form.startDate))
           ? new DateRange(form.startDate, form.endDate)
           : null,
         new DateRange(initialForm.startDate, initialForm.endDate),
@@ -75,6 +73,10 @@ function FridgePartnerModal({ partnership, headPersonId }: Props) {
 
   const validationErrors = useMemo(() => {
     const errors = []
+
+    if (form.startDate === null) {
+      return [i18n.validationError.mandatoryField]
+    }
 
     if (form.endDate && form.startDate.isAfter(form.endDate)) {
       errors.push(i18n.validationError.invertedDateRange)
@@ -119,7 +121,7 @@ function FridgePartnerModal({ partnership, headPersonId }: Props) {
   )
 
   const onSubmit = () => {
-    if (!form.partner) return
+    if (!form.partner || !form.startDate) return
 
     const apiCall = partnership
       ? updatePartnership({
@@ -219,20 +221,19 @@ function FridgePartnerModal({ partnership, headPersonId }: Props) {
       </section>
       <section>
         <div className="bold">{i18n.common.form.startDate}</div>
-        <DatePickerDeprecated
+        <DatePicker
           date={form.startDate}
           onChange={(startDate) => assignFridgePartnerForm({ startDate })}
-          type="full-width"
+          locale="fi"
           data-qa="fridge-partner-start-date"
         />
       </section>
       <section>
         <div className="bold">{i18n.common.form.endDate}</div>
-        <DatePickerClearableDeprecated
+        <DatePicker
           date={form.endDate}
           onChange={(endDate) => assignFridgePartnerForm({ endDate })}
-          onCleared={() => assignFridgePartnerForm({ endDate: null })}
-          type="full-width"
+          locale="fi"
         />
         {retroactive && (
           <>

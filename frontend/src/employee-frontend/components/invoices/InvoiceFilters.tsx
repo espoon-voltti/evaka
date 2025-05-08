@@ -98,13 +98,13 @@ export default React.memo(function InvoiceFilters({
   )
 
   const setStartDate = useCallback(
-    (startDate: LocalDate | undefined) =>
+    (startDate: LocalDate | null) =>
       setSearchFilters((old) => ({ ...old, startDate })),
     [setSearchFilters]
   )
 
   const setEndDate = useCallback(
-    (endDate: LocalDate | undefined) =>
+    (endDate: LocalDate | null) =>
       setSearchFilters((old) => ({ ...old, endDate })),
     [setSearchFilters]
   )

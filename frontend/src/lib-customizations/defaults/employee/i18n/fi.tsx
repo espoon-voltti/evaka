@@ -1544,6 +1544,7 @@ export const fi = {
         title: 'Uusi sijoitus',
         text: 'Tästä sijoituksesta ei voi lähettää päätöstä. Jos sijoitus menee päällekkäin lapsen aiemmin luotujen sijoituksien kanssa, näitä sijoituksia lyhennetään tai ne poistetaan automaattisesti.',
         temporaryDaycareWarning: 'HUOM! Älä käytä varasijoitusta tehdessäsi!',
+        startDateMissing: 'Alkupäivä on pakollinen tieto',
         unitMissing: 'Yksikkö puuttuu',
         placeGuarantee: {
           title: 'Varhaiskasvatuspaikkatakuu',
@@ -2457,6 +2458,8 @@ export const fi = {
         group: 'Ryhmä',
         errors: {
           noGroup: 'Et ole valinnut ryhmää tai aktiivisia ryhmiä ei ole',
+          noStartDate: 'Et ole valinnut aloituspäivämäärää',
+          noEndDate: 'Et ole valinnut päättymispäivämäärää',
           groupNotStarted: 'Ryhmä ei ole vielä alkanut',
           groupEnded: 'Ryhmä on jo lakkautettu'
         }
@@ -4681,8 +4684,6 @@ export const fi = {
     },
     placeholder: {
       name: 'Anna yksikölle nimi',
-      openingDate: 'Alkaen pp.kk.vvvv',
-      closingDate: 'Päättyen pp.kk.vvvv',
       area: 'Valitse alue',
       financeDecisionHandler: 'Valitse työntekijä',
       daycareType: 'Valitse tyyppi',

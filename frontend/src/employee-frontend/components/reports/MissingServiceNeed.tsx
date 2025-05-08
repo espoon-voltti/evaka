@@ -8,21 +8,16 @@ import styled from 'styled-components'
 
 import { MissingServiceNeedReportRow } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
-import { useQueryResult } from 'lib-common/query'
-import { Arg0 } from 'lib-common/types'
+import { constantQuery, useQueryResult } from 'lib-common/query'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
-import {
-  DatePickerClearableDeprecated,
-  DatePickerDeprecated
-} from 'lib-components/molecules/DatePickerDeprecated'
+import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { Gap } from 'lib-components/white-space'
 
 import ReportDownload from '../../components/reports/ReportDownload'
-import { getMissingServiceNeedReport } from '../../generated/api-clients/reports'
 import { useTranslation } from '../../state/i18n'
 import { distinct } from '../../utils'
 import { renderResult } from '../async-rendering'
@@ -30,7 +25,10 @@ import { renderResult } from '../async-rendering'
 import { FilterLabel, FilterRow, RowCountInfo, TableScrollable } from './common'
 import { missingServiceNeedReportQuery } from './queries'
 
-type MissingServiceNeedReportFilters = Arg0<typeof getMissingServiceNeedReport>
+interface MissingServiceNeedReportFilters {
+  from: LocalDate | null
+  to: LocalDate | null
+}
 
 interface DisplayFilters {
   careArea: string
@@ -50,7 +48,11 @@ export default React.memo(function MissingServiceNeed() {
     from: LocalDate.todayInSystemTz().subMonths(1).withDate(1),
     to: LocalDate.todayInSystemTz().addMonths(2).lastDayOfMonth()
   })
-  const rows = useQueryResult(missingServiceNeedReportQuery(filters))
+  const rows = useQueryResult(
+    filters.from !== null
+      ? missingServiceNeedReportQuery({ from: filters.from, to: filters.to })
+      : constantQuery([])
+  )
 
   const [displayFilters, setDisplayFilters] =
     useState<DisplayFilters>(emptyDisplayFilters)
@@ -79,17 +81,18 @@ export default React.memo(function MissingServiceNeed() {
 
         <FilterRow>
           <FilterLabel>{i18n.reports.common.startDate}</FilterLabel>
-          <DatePickerDeprecated
+          <DatePicker
             date={filters.from}
             onChange={(from) => setFilters({ ...filters, from })}
+            locale="fi"
           />
         </FilterRow>
         <FilterRow>
           <FilterLabel>{i18n.reports.common.endDate}</FilterLabel>
-          <DatePickerClearableDeprecated
+          <DatePicker
             date={filters.to}
             onChange={(to) => setFilters({ ...filters, to })}
-            onCleared={() => setFilters({ ...filters, to: null })}
+            locale="fi"
           />
         </FilterRow>
 
@@ -148,7 +151,7 @@ export default React.memo(function MissingServiceNeed() {
                     value: (row) => row.daysWithoutServiceNeed
                   }
                 ]}
-                filename={`Puuttuvat palveluntarpeet ${filters.from.formatIso()}-${
+                filename={`Puuttuvat palveluntarpeet ${filters.from?.formatIso()}-${
                   filters.to?.formatIso() ?? ''
                 }.csv`}
               />

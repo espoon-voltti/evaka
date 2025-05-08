@@ -18,13 +18,13 @@ import {
   AsyncButton,
   Checkable,
   Checkbox,
-  DatePickerDeprecated,
   Page,
   Radio,
   Select,
   TextInput,
   Element,
-  ElementCollection
+  ElementCollection,
+  DatePicker
 } from '../../../utils/page'
 import ChildInformationPage from '../child-information'
 import GuardianInformationPage from '../guardian-information'
@@ -178,8 +178,8 @@ export class FeeDecisionDetailsPage {
 }
 
 export class ValueDecisionsPage {
-  #fromDateInput: DatePickerDeprecated
-  #toDateInput: DatePickerDeprecated
+  #fromDateInput: DatePicker
+  #toDateInput: DatePicker
   #dateCheckbox: Checkbox
   #allValueDecisionsToggle: Checkbox
   #sendValueDecisionsButton: AsyncButton
@@ -188,10 +188,10 @@ export class ValueDecisionsPage {
   searchButton: Element
 
   constructor(private readonly page: Page) {
-    this.#fromDateInput = new DatePickerDeprecated(
+    this.#fromDateInput = new DatePicker(
       page.findByDataQa('value-decisions-start-date')
     )
-    this.#toDateInput = new DatePickerDeprecated(
+    this.#toDateInput = new DatePicker(
       page.findByDataQa('value-decisions-end-date')
     )
     this.#dateCheckbox = new Checkbox(

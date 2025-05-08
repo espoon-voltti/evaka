@@ -107,11 +107,18 @@ function hasOverlap(
   )
 }
 
-export interface DaycarePlacementPlanForm {
-  unitId: DaycareId | null
-  period: FiniteDateRange | null
-  preschoolDaycarePeriod: FiniteDateRange | null
-}
+export type DaycarePlacementPlanForm =
+  | {
+      unitId: DaycareId | null
+      period: FiniteDateRange | null
+      hasPreschoolDaycarePeriod: false
+    }
+  | {
+      unitId: DaycareId | null
+      period: FiniteDateRange | null
+      hasPreschoolDaycarePeriod: true
+      preschoolDaycarePeriod: FiniteDateRange | null
+    }
 
 export default React.memo(function PlacementDraft() {
   const applicationId = useIdRouteParam<ApplicationId>('id')
@@ -122,10 +129,10 @@ export default React.memo(function PlacementDraft() {
   >(Loading.of())
   const [units, setUnits] = useState<Result<PublicUnit[]>>(Loading.of())
 
-  const [placement, setPlacement] = useState<DaycarePlacementPlanForm>({
+  const [formState, setFormState] = useState<DaycarePlacementPlanForm>({
     unitId: null,
     period: null,
-    preschoolDaycarePeriod: null
+    hasPreschoolDaycarePeriod: false
   })
 
   const { setTitle, formatTitleName } = useContext<TitleState>(TitleContext)
@@ -135,15 +142,15 @@ export default React.memo(function PlacementDraft() {
     useState<boolean>(false)
 
   useEffect(() => {
-    if (units.isSuccess && placement.unitId) {
+    if (units.isSuccess && formState.unitId) {
       setSelectedUnitIsGhostUnit(
         units.value
-          .filter((unit) => unit.id === placement.unitId)
+          .filter((unit) => unit.id === formState.unitId)
           .map((unit) => unit.ghostUnit)
           .includes(true)
       )
     }
-  }, [placement, units])
+  }, [formState, units])
 
   function removeOldPlacements(
     placementDraft: Result<PlacementPlanDraft>
@@ -168,12 +175,21 @@ export default React.memo(function PlacementDraft() {
         const withoutOldPlacements = removeOldPlacements(placementDraft)
         setPlacementDraft(withoutOldPlacements)
         if (withoutOldPlacements.isSuccess) {
-          setPlacement({
-            unitId: null,
-            period: withoutOldPlacements.value.period,
-            preschoolDaycarePeriod:
-              withoutOldPlacements.value.preschoolDaycarePeriod
-          })
+          if (withoutOldPlacements.value.preschoolDaycarePeriod !== null) {
+            setFormState({
+              unitId: null,
+              period: withoutOldPlacements.value.period,
+              hasPreschoolDaycarePeriod: true,
+              preschoolDaycarePeriod:
+                withoutOldPlacements.value.preschoolDaycarePeriod
+            })
+          } else {
+            setFormState({
+              unitId: null,
+              period: withoutOldPlacements.value.period,
+              hasPreschoolDaycarePeriod: false
+            })
+          }
           calculateOverLaps(withoutOldPlacements, setPlacementDraft)
         }
 
@@ -189,11 +205,11 @@ export default React.memo(function PlacementDraft() {
     if (placementDraft.isSuccess) {
       void getApplicationUnitsResult({
         type: asUnitType(placementDraft.value.type),
-        date: placement.period?.start ?? placementDraft.value.period.start,
+        date: formState.period?.start ?? placementDraft.value.period.start,
         shiftCare: null
       }).then(setUnits)
     }
-  }, [placementDraft, placement.period?.start])
+  }, [placementDraft, formState.period?.start])
 
   useEffect(() => {
     if (placementDraft.isSuccess) {
@@ -208,9 +224,10 @@ export default React.memo(function PlacementDraft() {
   function fixNullLengthPeriods(
     periodType: 'period' | 'preschoolDaycarePeriod',
     dateType: 'start' | 'end',
-    date: LocalDate
+    date: LocalDate | null
   ) {
     if (placementDraft.isSuccess) {
+      if (!date) return null
       const period = placementDraft.value[periodType]
       if (!period) return period
       if (dateType === 'start') {
@@ -235,13 +252,19 @@ export default React.memo(function PlacementDraft() {
       periodType: 'period' | 'preschoolDaycarePeriod',
       dateType: 'start' | 'end'
     ) =>
-    (date: LocalDate) => {
+    (date: LocalDate | null) => {
       const fixedPeriod = fixNullLengthPeriods(periodType, dateType, date)
-      setPlacement({
-        ...placement,
+      if (
+        periodType === 'preschoolDaycarePeriod' &&
+        !formState.hasPreschoolDaycarePeriod
+      ) {
+        throw new Error('BUG: preschoolDaycarePeriod should not be set')
+      }
+      setFormState({
+        ...formState,
         [periodType]: fixedPeriod
       })
-      if (placementDraft.isSuccess) {
+      if (fixedPeriod !== null && placementDraft.isSuccess) {
         const updatedPlacementDraft = placementDraft.map((draft) => ({
           ...draft,
           [periodType]: fixedPeriod
@@ -272,13 +295,19 @@ export default React.memo(function PlacementDraft() {
   }
 
   const validPlan: DaycarePlacementPlan | null = useMemo(() => {
-    const { unitId, period, preschoolDaycarePeriod } = placement
-    if (unitId && period && !selectedUnitIsGhostUnit) {
-      return { unitId, period, preschoolDaycarePeriod }
-    } else {
+    const { unitId, period, hasPreschoolDaycarePeriod } = formState
+    if (!unitId || !period || selectedUnitIsGhostUnit) {
       return null
+    } else {
+      return {
+        unitId,
+        period,
+        preschoolDaycarePeriod: hasPreschoolDaycarePeriod
+          ? formState.preschoolDaycarePeriod
+          : null
+      }
     }
-  }, [placement, selectedUnitIsGhostUnit])
+  }, [formState, selectedUnitIsGhostUnit])
 
   return (
     <Container
@@ -287,119 +316,115 @@ export default React.memo(function PlacementDraft() {
     >
       <ContentArea opaque>
         <Gap size="xs" />
-        {renderResult(placementDraft, (placementDraft) =>
-          placement.period ? (
-            <>
-              <section>
-                {placementDraft.guardianHasRestrictedDetails && (
-                  <FloatRight>
-                    <Tooltip
-                      tooltip={i18n.placementDraft.restrictedDetailsTooltip}
-                      position="top"
-                    >
-                      <WarningLabel
-                        text={i18n.placementDraft.restrictedDetails}
-                        data-qa="restricted-details-warning"
-                      />
-                    </Tooltip>
-                  </FloatRight>
-                )}
-                <H1 noMargin>{i18n.placementDraft.createPlacementDraft}</H1>
-                <Gap size="xs" />
-                <H2 noMargin>
-                  {formatName(
-                    placementDraft.child.firstName,
-                    placementDraft.child.lastName,
-                    i18n
-                  )}
-                </H2>
-                <Gap size="L" />
-                <ListGrid>
-                  <Label>{i18n.placementDraft.dateOfBirth}</Label>
-                  <span>{placementDraft.child.dob.format()}</span>
-                </ListGrid>
-                <Gap size="s" />
-                <Link
-                  to={`/child-information/${placementDraft.child.id}`}
-                  target="_blank"
-                >
-                  <Bold>
-                    {i18n.titles.childInformation}{' '}
-                    <FontAwesomeIcon icon={faLink} />
-                  </Bold>
-                </Link>
-              </section>
-              {placementDraft.placements && (
-                <>
-                  <Gap size="XL" />
-                  <Placements placements={placementDraft.placements} />
-                </>
+        {renderResult(placementDraft, (placementDraft) => (
+          <>
+            <section>
+              {placementDraft.guardianHasRestrictedDetails && (
+                <FloatRight>
+                  <Tooltip
+                    tooltip={i18n.placementDraft.restrictedDetailsTooltip}
+                    position="top"
+                  >
+                    <WarningLabel
+                      text={i18n.placementDraft.restrictedDetails}
+                      data-qa="restricted-details-warning"
+                    />
+                  </Tooltip>
+                </FloatRight>
               )}
-              <Gap size="XL" />
-              <PlacementDraftRow
-                placementDraft={placementDraft}
-                placement={placement}
-                updateStart={updatePlacementDate('period', 'start')}
-                updateEnd={updatePlacementDate('period', 'end')}
-                updatePreschoolStart={updatePlacementDate(
-                  'preschoolDaycarePeriod',
-                  'start'
+              <H1 noMargin>{i18n.placementDraft.createPlacementDraft}</H1>
+              <Gap size="xs" />
+              <H2 noMargin>
+                {formatName(
+                  placementDraft.child.firstName,
+                  placementDraft.child.lastName,
+                  i18n
                 )}
-                updatePreschoolEnd={updatePlacementDate(
-                  'preschoolDaycarePeriod',
-                  'end'
-                )}
-              />
+              </H2>
               <Gap size="L" />
-              <UnitCards
-                additionalUnits={additionalUnits}
-                setAdditionalUnits={setAdditionalUnits}
-                applicationId={applicationId}
-                placement={placement}
-                setPlacement={setPlacement}
-                placementDraft={placementDraft}
-                selectedUnitIsGhostUnit={selectedUnitIsGhostUnit}
+              <ListGrid>
+                <Label>{i18n.placementDraft.dateOfBirth}</Label>
+                <span>{placementDraft.child.dob.format()}</span>
+              </ListGrid>
+              <Gap size="s" />
+              <Link
+                to={`/child-information/${placementDraft.child.id}`}
+                target="_blank"
+              >
+                <Bold>
+                  {i18n.titles.childInformation}{' '}
+                  <FontAwesomeIcon icon={faLink} />
+                </Bold>
+              </Link>
+            </section>
+            {placementDraft.placements && (
+              <>
+                <Gap size="XL" />
+                <Placements placements={placementDraft.placements} />
+              </>
+            )}
+            <Gap size="XL" />
+            <PlacementDraftRow
+              placementDraft={placementDraft}
+              formState={formState}
+              updateStart={updatePlacementDate('period', 'start')}
+              updateEnd={updatePlacementDate('period', 'end')}
+              updatePreschoolStart={updatePlacementDate(
+                'preschoolDaycarePeriod',
+                'start'
+              )}
+              updatePreschoolEnd={updatePlacementDate(
+                'preschoolDaycarePeriod',
+                'end'
+              )}
+            />
+            <Gap size="L" />
+            <UnitCards
+              additionalUnits={additionalUnits}
+              setAdditionalUnits={setAdditionalUnits}
+              applicationId={applicationId}
+              formState={formState}
+              setFormState={setFormState}
+              placementDraft={placementDraft}
+              selectedUnitIsGhostUnit={selectedUnitIsGhostUnit}
+            />
+            <Gap size="XL" />
+            <SelectContainer>
+              <Label>{i18n.placementDraft.addOtherUnit}</Label>
+              <Combobox
+                placeholder={i18n.filters.unitPlaceholder}
+                selectedItem={null}
+                items={units
+                  .map((us) =>
+                    us
+                      .map(({ id, name }) => ({ name, id }))
+                      .sort((a, b) => (a.name < b.name ? -1 : 1))
+                  )
+                  .getOrElse([])}
+                getItemLabel={({ name }) => name}
+                onChange={(option) => (option ? addUnit(option.id) : undefined)}
+                isLoading={units.isLoading}
+                menuEmptyLabel={i18n.common.noResults}
+                data-qa="add-other-unit"
               />
-              <Gap size="XL" />
-              <SelectContainer>
-                <Label>{i18n.placementDraft.addOtherUnit}</Label>
-                <Combobox
-                  placeholder={i18n.filters.unitPlaceholder}
-                  selectedItem={null}
-                  items={units
-                    .map((us) =>
-                      us
-                        .map(({ id, name }) => ({ name, id }))
-                        .sort((a, b) => (a.name < b.name ? -1 : 1))
-                    )
-                    .getOrElse([])}
-                  getItemLabel={({ name }) => name}
-                  onChange={(option) =>
-                    option ? addUnit(option.id) : undefined
-                  }
-                  isLoading={units.isLoading}
-                  menuEmptyLabel={i18n.common.noResults}
-                  data-qa="add-other-unit"
-                />
-              </SelectContainer>
-              <SendButtonContainer>
-                <AsyncButton
-                  primary
-                  disabled={validPlan === null}
-                  data-qa="send-placement-button"
-                  onClick={() =>
-                    createPlacementPlanResult({
-                      applicationId,
-                      body: validPlan!
-                    })
-                  }
-                  onSuccess={redirectToMainPage}
-                  text={i18n.placementDraft.createPlacementDraft}
-                />
-              </SendButtonContainer>
-            </>
-          ) : null
-        )}
+            </SelectContainer>
+            <SendButtonContainer>
+              <AsyncButton
+                primary
+                disabled={validPlan === null}
+                data-qa="send-placement-button"
+                onClick={() =>
+                  createPlacementPlanResult({
+                    applicationId,
+                    body: validPlan!
+                  })
+                }
+                onSuccess={redirectToMainPage}
+                text={i18n.placementDraft.createPlacementDraft}
+              />
+            </SendButtonContainer>
+          </>
+        ))}
       </ContentArea>
     </Container>
   )

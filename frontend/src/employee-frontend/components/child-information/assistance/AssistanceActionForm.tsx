@@ -23,23 +23,20 @@ import LocalDate from 'lib-common/local-date'
 import { useMutationResult } from 'lib-common/query'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
-import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
+import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
+import { DatePickerSpacer } from 'lib-components/molecules/date-picker/DateRangePicker'
 import { Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/employee'
 
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
 import { DateRange, rangeContainsDate } from '../../../utils/date'
-import {
-  FormErrors,
-  formHasErrors,
-  isDateRangeInverted
-} from '../../../utils/validation/validations'
+import { isDateRangeInverted } from '../../../utils/validation/validations'
 import FormActions from '../../common/FormActions'
 import LabelValueList from '../../common/LabelValueList'
-import { DivFitContent } from '../../common/styled/containers'
 import {
   createAssistanceActionMutation,
   updateAssistanceActionMutation
@@ -52,8 +49,8 @@ const CheckboxRow = styled.div`
 `
 
 interface FormState {
-  startDate: LocalDate
-  endDate: LocalDate
+  startDate: LocalDate | null
+  endDate: LocalDate | null
   actions: string[]
   otherSelected: boolean
   otherAction: string
@@ -88,18 +85,12 @@ function isDuplicate(props: Props): props is DuplicateProps {
   )
 }
 
-interface AssistanceActionFormErrors extends FormErrors {
-  dateRange: {
-    inverted: boolean
-    conflict: boolean
-  }
+interface AssistanceActionFormErrors {
+  dateRange: 'required' | 'inverted' | 'conflict' | undefined
 }
 
 const noErrors: AssistanceActionFormErrors = {
-  dateRange: {
-    inverted: false,
-    conflict: false
-  }
+  dateRange: undefined
 }
 
 const getExistingAssistanceActionRanges = (props: Props): DateRange[] =>
@@ -110,16 +101,20 @@ const getExistingAssistanceActionRanges = (props: Props): DateRange[] =>
     .map(({ action: { startDate, endDate } }) => ({ startDate, endDate }))
 
 function checkSoftConflict(form: FormState, props: Props): boolean {
-  if (isDateRangeInverted(form)) return false
+  const { startDate, endDate } = form
+  if (!startDate || !endDate) return false
+  if (isDateRangeInverted({ startDate, endDate })) return false
   return getExistingAssistanceActionRanges(props).some((existing) =>
-    rangeContainsDate(existing, form.startDate)
+    rangeContainsDate(existing, startDate)
   )
 }
 
 function checkHardConflict(form: FormState, props: Props): boolean {
-  if (isDateRangeInverted(form)) return false
+  const { startDate, endDate } = form
+  if (!startDate || !endDate) return false
+  if (isDateRangeInverted({ startDate, endDate })) return false
   return getExistingAssistanceActionRanges(props).some((existing) =>
-    rangeContainsDate(form, existing.startDate)
+    rangeContainsDate({ startDate, endDate }, existing.startDate)
   )
 }
 
@@ -167,11 +162,19 @@ export default React.memo(function AssistanceActionForm(props: Props) {
     const isHardConflict = checkHardConflict(form, props)
     const isAnyConflict = isSoftConflict || isHardConflict
 
+    const { startDate, endDate } = form
+    const required = startDate === null || endDate === null
+    const inverted = !required && isDateRangeInverted({ startDate, endDate })
+    const conflict = isCreate(props) ? isHardConflict : isAnyConflict
+
     setFormErrors({
-      dateRange: {
-        inverted: isDateRangeInverted(form),
-        conflict: isCreate(props) ? isHardConflict : isAnyConflict
-      }
+      dateRange: required
+        ? 'required'
+        : inverted
+          ? 'inverted'
+          : conflict
+            ? 'conflict'
+            : undefined
     })
 
     setAutoCutWarning(isCreate(props) && isSoftConflict && !isHardConflict)
@@ -180,10 +183,13 @@ export default React.memo(function AssistanceActionForm(props: Props) {
   const submitForm = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
 
-    if (formHasErrors(formErrors)) return
+    const { startDate, endDate } = form
+    if (!startDate || !endDate || formHasErrors(formErrors)) return
 
     const body: AssistanceActionRequest = {
       ...form,
+      startDate,
+      endDate,
       actions: [...form.actions]
     }
 
@@ -200,13 +206,7 @@ export default React.memo(function AssistanceActionForm(props: Props) {
         clearUiMode()
       } else if (res.isFailure) {
         if (res.statusCode === 409) {
-          setFormErrors({
-            ...formErrors,
-            dateRange: {
-              ...formErrors.dateRange,
-              conflict: true
-            }
-          })
+          setFormErrors({ ...formErrors, dateRange: 'conflict' })
         } else {
           setErrorMessage({
             type: 'error',
@@ -227,24 +227,31 @@ export default React.memo(function AssistanceActionForm(props: Props) {
             label: i18n.childInformation.assistanceAction.fields.dateRange,
             value: (
               <>
-                <DivFitContent>
-                  <DatePickerDeprecated
+                <FixedSpaceRow>
+                  <DatePicker
                     date={form.startDate}
                     onChange={(startDate) => updateFormState({ startDate })}
+                    locale="fi"
                   />
-                  {' - '}
-                  <DatePickerDeprecated
+                  <DatePickerSpacer />
+                  <DatePicker
                     date={form.endDate}
                     onChange={(endDate) => updateFormState({ endDate })}
+                    locale="fi"
                   />
-                </DivFitContent>
+                </FixedSpaceRow>
 
-                {formErrors.dateRange.inverted && (
+                {formErrors.dateRange === 'required' && (
+                  <span className="error">
+                    {i18n.validationError.mandatoryField}
+                  </span>
+                )}
+                {formErrors.dateRange === 'inverted' && (
                   <span className="error">
                     {i18n.validationError.invertedDateRange}
                   </span>
                 )}
-                {formErrors.dateRange.conflict && (
+                {formErrors.dateRange === 'conflict' && (
                   <span className="error">
                     {isCreate(props)
                       ? i18n.childInformation.assistanceAction.errors
@@ -354,3 +361,7 @@ export default React.memo(function AssistanceActionForm(props: Props) {
     </form>
   )
 })
+
+function formHasErrors(errors: AssistanceActionFormErrors) {
+  return errors.dateRange !== undefined
+}

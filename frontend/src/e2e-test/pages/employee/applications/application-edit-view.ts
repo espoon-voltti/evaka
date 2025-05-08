@@ -9,12 +9,12 @@ import LocalDate from 'lib-common/local-date'
 import {
   Checkbox,
   Combobox,
-  DatePickerDeprecated,
   Page,
   Radio,
   TextInput,
   Element,
-  FileUpload
+  FileUpload,
+  DatePicker
 } from '../../../utils/page'
 
 import ApplicationReadView from './application-read-view'
@@ -23,11 +23,11 @@ export default class ApplicationEditView {
   #saveButton: Element
   #urgentCheckbox: Checkbox
   urgentAttachmentFileUpload: FileUpload
-  #preferredStartDate: DatePickerDeprecated
+  #preferredStartDate: DatePicker
   #startTime: TextInput
   #endTime: TextInput
   #connectedDaycare: Checkbox
-  #connectedDaycarePreferredStartDate: DatePickerDeprecated
+  #connectedDaycarePreferredStartDate: DatePicker
   #connectedDaycarePreferredStartDateInputWarning: Element
   #preferredUnit: Combobox
   #applicantPhone: TextInput
@@ -46,7 +46,7 @@ export default class ApplicationEditView {
     this.urgentAttachmentFileUpload = new FileUpload(
       page.findByDataQa('file-upload-urgent')
     )
-    this.#preferredStartDate = new DatePickerDeprecated(
+    this.#preferredStartDate = new DatePicker(
       page.findByDataQa('datepicker-start-date')
     )
     this.#startTime = new TextInput(page.findByDataQa('start-time'))
@@ -54,7 +54,7 @@ export default class ApplicationEditView {
     this.#connectedDaycare = new Checkbox(
       page.findByDataQa('checkbox-service-need-connected')
     )
-    this.#connectedDaycarePreferredStartDate = new DatePickerDeprecated(
+    this.#connectedDaycarePreferredStartDate = new DatePicker(
       page.findByDataQa('datepicker-connected-daycare-preferred-start-date')
     )
     this.#connectedDaycarePreferredStartDateInputWarning = page.findByDataQa(
@@ -92,7 +92,7 @@ export default class ApplicationEditView {
     return new ApplicationReadView(this.page)
   }
 
-  async fillStartDate(date: string) {
+  async fillStartDate(date: LocalDate) {
     await this.#preferredStartDate.fill(date)
   }
 
@@ -140,9 +140,7 @@ export default class ApplicationEditView {
   }
 
   async setDueDate(date: LocalDate) {
-    await new DatePickerDeprecated(this.page.findByDataQa('due-date')).fill(
-      date.format()
-    )
+    await new DatePicker(this.page.findByDataQa('due-date')).fill(date.format())
   }
 
   async setShiftCareNeeded() {

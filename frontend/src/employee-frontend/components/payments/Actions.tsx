@@ -6,13 +6,18 @@ import { faEnvelope } from '@fortawesome/free-solid-svg-icons'
 import React, { useState } from 'react'
 import styled from 'styled-components'
 
+import { errorToInputInfo } from 'employee-frontend/utils/validation/input-info-helper'
 import { useBoolean } from 'lib-common/form/hooks'
+import { required, validate } from 'lib-common/form-validation'
 import { PaymentStatus } from 'lib-common/generated/api-types/invoicing'
 import { PaymentId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { Button } from 'lib-components/atoms/buttons/Button'
-import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
-import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
+import {
+  cancelMutation,
+  MutateButton
+} from 'lib-components/atoms/buttons/MutateButton'
+import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { fontWeights, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
@@ -129,8 +134,10 @@ const SendPaymentsModal = React.memo(function Modal({
   onCancel: () => void
 }) {
   const { i18n } = useTranslation()
-  const [paymentDate, setPaymentDate] = useState(LocalDate.todayInHelsinkiTz())
-  const [dueDate, setDueDate] = useState(
+  const [paymentDate, setPaymentDate] = useState<LocalDate | null>(
+    LocalDate.todayInHelsinkiTz()
+  )
+  const [dueDate, setDueDate] = useState<LocalDate | null>(
     getPaymentsDueDate ?? LocalDate.todayInHelsinkiTz().addBusinessDays(10)
   )
 
@@ -140,7 +147,12 @@ const SendPaymentsModal = React.memo(function Modal({
       title={i18n.payments.sendModal.title}
       icon={faEnvelope}
       resolveMutation={sendPaymentsMutation}
-      resolveAction={() => ({ body: { paymentDate, dueDate, paymentIds } })}
+      resolveAction={() =>
+        paymentDate !== null && dueDate !== null
+          ? { body: { paymentDate, dueDate, paymentIds } }
+          : cancelMutation
+      }
+      resolveDisabled={paymentDate === null || dueDate === null}
       resolveLabel={i18n.common.confirm}
       onSuccess={onSuccess}
       rejectAction={onCancel}
@@ -150,19 +162,29 @@ const SendPaymentsModal = React.memo(function Modal({
       <ModalContent>
         <Label>{i18n.payments.sendModal.paymentDate}</Label>
         <div>
-          <DatePickerDeprecated
+          <DatePicker
             date={paymentDate}
             onChange={setPaymentDate}
-            type="full-width"
+            info={errorToInputInfo(
+              validate(paymentDate, required),
+              i18n.validationErrors
+            )}
+            hideErrorsBeforeTouched
+            locale="fi"
           />
         </div>
         <Gap size="s" />
         <Label>{i18n.payments.sendModal.dueDate}</Label>
         <div>
-          <DatePickerDeprecated
+          <DatePicker
             date={dueDate}
             onChange={setDueDate}
-            type="full-width"
+            info={errorToInputInfo(
+              validate(dueDate, required),
+              i18n.validationErrors
+            )}
+            hideErrorsBeforeTouched
+            locale="fi"
           />
         </div>
       </ModalContent>
