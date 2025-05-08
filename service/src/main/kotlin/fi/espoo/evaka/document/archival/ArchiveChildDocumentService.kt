@@ -92,7 +92,6 @@ fun uploadToArchive(
             childInfo.dateOfBirth,
         )
     val metadataXml = marshalMetadata(metadata)
-    logger.info { "Generated metadata XML: $metadataXml" }
 
     val (responseCode, responseBody) =
         uploadClient.putDocument(documentContent, metadataXml, masterId, classId, virtualArchiveId)
