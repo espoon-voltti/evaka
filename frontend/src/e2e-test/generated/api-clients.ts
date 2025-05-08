@@ -100,6 +100,8 @@ import { IncomeNotification } from 'lib-common/generated/api-types/invoicing'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
 import { MockVtjDataset } from './api-types'
+import { NekkuSpecialDiet } from './api-types'
+import { NekkuSpecialDietChoices } from 'lib-common/generated/api-types/nekku'
 import { Pairing } from 'lib-common/generated/api-types/pairing'
 import { PairingId } from 'lib-common/generated/api-types/shared'
 import { PaymentId } from 'lib-common/generated/api-types/shared'
@@ -1248,6 +1250,27 @@ export async function createMessageAccounts(): Promise<void> {
 
 
 /**
+* Generated from fi.espoo.evaka.shared.dev.DevApi.createNekkuSpecialDiets
+*/
+export async function createNekkuSpecialDiets(
+  request: {
+    body: NekkuSpecialDiet[]
+  }
+): Promise<void> {
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/nekku-special-diets`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<NekkuSpecialDiet[]>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+
+/**
 * Generated from fi.espoo.evaka.shared.dev.DevApi.createOtherAssistanceMeasures
 */
 export async function createOtherAssistanceMeasures(
@@ -1670,6 +1693,26 @@ export async function getMessages(): Promise<SfiMessage[]> {
   try {
     const { data: json } = await devClient.request<JsonOf<SfiMessage[]>>({
       url: uri`/messages`.toString(),
+      method: 'GET'
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+
+/**
+* Generated from fi.espoo.evaka.shared.dev.DevApi.getNekkuSpecialDietChoices
+*/
+export async function getNekkuSpecialDietChoices(
+  request: {
+    childId: PersonId
+  }
+): Promise<NekkuSpecialDietChoices[]> {
+  try {
+    const { data: json } = await devClient.request<JsonOf<NekkuSpecialDietChoices[]>>({
+      url: uri`/nekku-special-diet-choices/${request.childId}`.toString(),
       method: 'GET'
     })
     return json

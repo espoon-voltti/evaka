@@ -95,6 +95,7 @@ import {
   createIncomeNotification,
   createIncomeStatement,
   createInvoices,
+  createNekkuSpecialDiets,
   createOtherAssistanceMeasures,
   createParentships,
   createPedagogicalDocuments,
@@ -154,6 +155,7 @@ import {
   DevStaffAttendance,
   DevStaffAttendancePlan,
   DevUpsertStaffOccupancyCoefficient,
+  NekkuSpecialDiet,
   PlacementPlan,
   ReservationInsert,
   VoucherValueDecision
@@ -1924,6 +1926,18 @@ export class Fixture {
       },
       async save() {
         await createInvoices({ body: [value] })
+        return value
+      }
+    }
+  }
+
+  static nekkuSpecialDiets(initial: NekkuSpecialDiet[]) {
+    const value: NekkuSpecialDiet[] = initial
+
+    return {
+      ...value,
+      async save() {
+        await createNekkuSpecialDiets({ body: value })
         return value
       }
     }

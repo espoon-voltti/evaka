@@ -86,6 +86,7 @@ import { MobileDeviceId } from 'lib-common/generated/api-types/shared'
 import { Nationality } from 'lib-common/generated/api-types/vtjclient'
 import { NativeLanguage } from 'lib-common/generated/api-types/vtjclient'
 import { NekkuProductMealType } from 'lib-common/generated/api-types/nekku'
+import { NekkuSpecialDietType } from 'lib-common/generated/api-types/nekku'
 import { OfficialLanguage } from 'lib-common/generated/api-types/shared'
 import { OtherAssistanceMeasureId } from 'lib-common/generated/api-types/shared'
 import { OtherAssistanceMeasureType } from 'lib-common/generated/api-types/assistance'
@@ -1057,6 +1058,34 @@ export interface MockVtjPerson {
   residenceCode: string | null
   restrictedDetails: RestrictedDetails | null
   socialSecurityNumber: string
+}
+
+/**
+* Generated from fi.espoo.evaka.nekku.NekkuSpecialDiet
+*/
+export interface NekkuSpecialDiet {
+  fields: NekkuSpecialDietsField[]
+  id: string
+  name: string
+}
+
+/**
+* Generated from fi.espoo.evaka.nekku.NekkuSpecialDietOption
+*/
+export interface NekkuSpecialDietOption {
+  key: string
+  value: string
+  weight: number
+}
+
+/**
+* Generated from fi.espoo.evaka.nekku.NekkuSpecialDietsField
+*/
+export interface NekkuSpecialDietsField {
+  id: string
+  name: string
+  options: NekkuSpecialDietOption[] | null
+  type: NekkuSpecialDietType
 }
 
 /**
