@@ -521,10 +521,14 @@ export interface InvoiceCodes {
 export interface InvoiceCorrection {
   amount: number
   childId: PersonId
+  createdAt: HelsinkiDateTime
+  createdBy: EvakaUser
   description: string
   headOfFamilyId: PersonId
   id: InvoiceCorrectionId
   invoice: InvoiceWithCorrection | null
+  modifiedAt: HelsinkiDateTime
+  modifiedBy: EvakaUser
   note: string
   period: FiniteDateRange
   product: string
@@ -1314,6 +1318,8 @@ export function deserializeJsonIncomeWithPermittedActions(json: JsonOf<IncomeWit
 export function deserializeJsonInvoiceCorrection(json: JsonOf<InvoiceCorrection>): InvoiceCorrection {
   return {
     ...json,
+    createdAt: HelsinkiDateTime.parseIso(json.createdAt),
+    modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt),
     period: FiniteDateRange.parseJson(json.period),
     targetMonth: (json.targetMonth != null) ? YearMonth.parseIso(json.targetMonth) : null
   }

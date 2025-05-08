@@ -6,11 +6,13 @@ package fi.espoo.evaka.invoicing.service
 
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.InvoiceCorrectionId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.Predicate
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.YearMonth
 import kotlin.math.abs
 
@@ -30,9 +32,19 @@ SELECT
     unit_price,
     description,
     note,
+    created_at,
+    creator.id AS created_by_id,
+    creator.name AS created_by_name,
+    creator.type AS created_by_type,
+    modified_at,
+    modifier.id AS modified_by_id,
+    modifier.name AS modified_by_name,
+    modifier.type AS modified_by_type,
     invoice.id AS invoice_id,
     invoice.status AS invoice_status
 FROM invoice_correction
+JOIN evaka_user creator ON creator.id = invoice_correction.created_by
+JOIN evaka_user modifier ON modifier.id = invoice_correction.modified_by
 LEFT JOIN LATERAL (
     SELECT i.id, i.status
     FROM invoice i
@@ -79,16 +91,20 @@ data class InvoiceCorrectionInsert(
 )
 
 fun Database.Transaction.insertInvoiceCorrection(
-    correction: InvoiceCorrectionInsert
-): InvoiceCorrectionId = insertInvoiceCorrections(listOf(correction)).first()
+    correction: InvoiceCorrectionInsert,
+    userId: EvakaUserId,
+    now: HelsinkiDateTime,
+): InvoiceCorrectionId = insertInvoiceCorrections(listOf(correction), userId, now).first()
 
 fun Database.Transaction.insertInvoiceCorrections(
-    corrections: Iterable<InvoiceCorrectionInsert>
+    corrections: Iterable<InvoiceCorrectionInsert>,
+    userId: EvakaUserId,
+    now: HelsinkiDateTime,
 ): List<InvoiceCorrectionId> {
     return prepareBatch(corrections) {
             sql(
                 """
-INSERT INTO invoice_correction (head_of_family_id, child_id, unit_id, product, period, amount, unit_price, description, note)
+INSERT INTO invoice_correction (head_of_family_id, child_id, unit_id, product, period, amount, unit_price, description, note, created_by, modified_by, modified_at)
 VALUES (
     ${bind { it.headOfFamilyId }},
     ${bind { it.childId }},
@@ -98,7 +114,10 @@ VALUES (
     ${bind { it.amount }},
     ${bind { it.unitPrice }},
     ${bind { it.description }},
-    ${bind { it.note }}
+    ${bind { it.note }},
+    ${bind(userId)},
+    ${bind(userId)},
+    ${bind(now)}
 )
 RETURNING id
 """
@@ -115,12 +134,21 @@ data class InvoiceCorrectionUpdate(
     val unitPrice: Int,
 )
 
-fun Database.Transaction.updateInvoiceCorrections(items: Iterable<InvoiceCorrectionUpdate>) =
+data class InvoiceCorrectionModificationMetadata(
+    val userId: EvakaUserId,
+    val now: HelsinkiDateTime,
+)
+
+fun Database.Transaction.updateInvoiceCorrections(
+    items: Iterable<InvoiceCorrectionUpdate>,
+    modified: InvoiceCorrectionModificationMetadata?,
+) =
     executeBatch(items) {
         sql(
             """
 UPDATE invoice_correction
 SET target_month = ${bind { it.targetMonth }}, amount = ${bind { it.amount }}, unit_price = ${bind { it.unitPrice }}
+${if (modified != null) ", modified_by = ${bind(modified.userId)}, modified_at = ${bind(modified.now)}" else ""}
 WHERE id = ${bind { it.id }}
 """
         )

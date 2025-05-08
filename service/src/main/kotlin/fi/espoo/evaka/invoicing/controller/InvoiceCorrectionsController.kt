@@ -96,7 +96,7 @@ class InvoiceCorrectionsController(private val accessControl: AccessControl) {
                         Action.Person.CREATE_INVOICE_CORRECTION,
                         body.headOfFamilyId,
                     )
-                    tx.insertInvoiceCorrection(body)
+                    tx.insertInvoiceCorrection(body, user.evakaUserId, clock.now())
                 }
             }
             .also { invoiceCorrectionId ->

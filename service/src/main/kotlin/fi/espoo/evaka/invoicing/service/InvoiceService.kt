@@ -82,7 +82,7 @@ class InvoiceService(
         tx.saveCostCenterFields(
             sendResult.succeeded.map { it.id } + sendResult.manuallySent.map { it.id }
         )
-        updateCorrectionsOfInvoices(tx, invoices)
+        updateCorrectionsOfInvoices(tx, now, invoices)
     }
 
     fun resendInvoices(
