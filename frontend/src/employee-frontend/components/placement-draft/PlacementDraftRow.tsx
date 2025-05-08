@@ -76,6 +76,8 @@ export default React.memo(function PlacementDraftSection({
 }: Props) {
   const { i18n } = useTranslation()
 
+  const today = LocalDate.todayInSystemTz()
+
   function hasOverlap(
     dateRange: FiniteDateRange,
     oldPlacements: PlacementSummary[]
@@ -124,7 +126,7 @@ export default React.memo(function PlacementDraftSection({
           <DatePicker
             date={formState.period?.start ?? null}
             onChange={updateStart}
-            minDate={LocalDate.todayInSystemTz()}
+            minDate={today}
             locale="fi"
             data-qa="start-date"
           />
@@ -132,6 +134,7 @@ export default React.memo(function PlacementDraftSection({
           <DatePicker
             date={formState.period?.end ?? null}
             onChange={updateEnd}
+            minDate={formState.period?.start ?? today}
             locale="fi"
           />
         </DateRowItem>
@@ -154,12 +157,14 @@ export default React.memo(function PlacementDraftSection({
             <DatePicker
               date={formState.preschoolDaycarePeriod?.start ?? null}
               onChange={updatePreschoolStart}
+              minDate={today}
               locale="fi"
             />
             <DatePickerSpacer />
             <DatePicker
               date={formState.preschoolDaycarePeriod?.end ?? null}
               onChange={updatePreschoolEnd}
+              minDate={formState.preschoolDaycarePeriod?.start ?? today}
               locale="fi"
             />
           </DateRowItem>
