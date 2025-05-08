@@ -132,6 +132,7 @@ export interface MessagesState {
   prefilledTitle: string | null
   relatedApplicationId: ApplicationId | null
   accountAllowsNewMessage: () => boolean
+  refreshUnreadCounts: () => void
 }
 
 const defaultState: MessagesState = {
@@ -172,7 +173,8 @@ const defaultState: MessagesState = {
   prefilledRecipient: null,
   prefilledTitle: null,
   relatedApplicationId: null,
-  accountAllowsNewMessage: () => false
+  accountAllowsNewMessage: () => false,
+  refreshUnreadCounts: () => undefined
 }
 
 export const MessageContext = createContext<MessagesState>(defaultState)
@@ -845,7 +847,8 @@ export const MessageContextProvider = React.memo(
         prefilledRecipient,
         prefilledTitle,
         relatedApplicationId,
-        accountAllowsNewMessage
+        accountAllowsNewMessage,
+        refreshUnreadCounts
       }),
       [
         accounts,
@@ -882,7 +885,8 @@ export const MessageContextProvider = React.memo(
         prefilledRecipient,
         prefilledTitle,
         relatedApplicationId,
-        accountAllowsNewMessage
+        accountAllowsNewMessage,
+        refreshUnreadCounts
       ]
     )
 

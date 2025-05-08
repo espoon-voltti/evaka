@@ -31,6 +31,7 @@ export default class MessagesPage {
   #unitAccount: Element
   #draftMessagesBoxRow: TextInput
   unitReceived: Element
+  markUnreadButton: Element
   constructor(private readonly page: Page) {
     this.newMessageButton = page.findByDataQa('new-message-btn')
     this.#personalAccount = page.findByDataQa('personal-account')
@@ -51,6 +52,7 @@ export default class MessagesPage {
     this.unitReceived = this.#unitAccount.findByDataQa(
       'message-box-row-received'
     )
+    this.markUnreadButton = page.findByDataQa('mark-unread-btn')
   }
 
   async openSentMessages(nth = 0) {
@@ -88,6 +90,10 @@ export default class MessagesPage {
 
   async openReplyEditor() {
     await this.#openReplyEditorButton.click()
+  }
+
+  async openFirstThread() {
+    await this.receivedMessage.click()
   }
 
   async openFirstThreadReplyEditor() {

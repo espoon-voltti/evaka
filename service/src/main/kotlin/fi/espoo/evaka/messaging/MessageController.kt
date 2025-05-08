@@ -982,6 +982,30 @@ class MessageController(
         Audit.MessagingMarkMessagesReadWrite.log(targetId = AuditId(listOf(accountId, threadId)))
     }
 
+    @PutMapping("/employee/messages/{accountId}/threads/{threadId}/last-received-message/unread")
+    fun markLastReceivedMessageInThreadUnread(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable accountId: MessageAccountId,
+        @PathVariable threadId: MessageThreadId,
+    ) {
+        db.connect { dbc ->
+                requireMessageAccountAccess(dbc, user, clock, accountId)
+                dbc.transaction { it.markLastReceivedMessageUnread(accountId, threadId) }
+                    .also { updated ->
+                        if (updated == 0) {
+                            throw NotFound("No message to mark unread")
+                        }
+                    }
+            }
+            .also {
+                Audit.MessagingMarkMessagesUnreadWrite.log(
+                    targetId = AuditId(listOf(accountId, threadId))
+                )
+            }
+    }
+
     @PutMapping("/employee/messages/{accountId}/threads/{threadId}/archive")
     fun archiveThread(
         db: Database,

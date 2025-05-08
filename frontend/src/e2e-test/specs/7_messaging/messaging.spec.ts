@@ -894,6 +894,76 @@ describe('Sending and receiving messages', () => {
         await header.assertUnreadMessagesCount(0)
       })
 
+      test('Staff can mark message as unread, members in same group', async () => {
+        const employee = await Fixture.employee()
+          .staff(testDaycare.id)
+          .groupAcl(testDaycareGroup.id, mockedDateAt10, mockedDateAt10)
+          .save()
+        const employee2 = await Fixture.employee()
+          .staff(testDaycare.id)
+          .groupAcl(testDaycareGroup.id, mockedDateAt10, mockedDateAt10)
+          .save()
+
+        await openCitizen(mockedDateAt10)
+        await citizenPage.goto(config.enduserMessagesUrl)
+        const citizenMessagesPage = new CitizenMessagesPage(
+          citizenPage,
+          'desktop'
+        )
+        const recipients = ['Kosmiset vakiot (Henkilökunta)']
+
+        await citizenMessagesPage.sendNewMessage(
+          defaultTitle,
+          defaultContent,
+          [],
+          recipients,
+          false
+        )
+
+        await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
+
+        const employeePage = await Page.open({
+          mockedTime: mockedDateAt11
+        })
+        await employeeLogin(employeePage, employee)
+        await employeePage.goto(`${config.employeeUrl}/messages`)
+        const messagesPage = new MessagesPage(employeePage)
+
+        await messagesPage.unitReceived.click()
+
+        await waitUntilEqual(() => messagesPage.getReceivedMessageCount(), 1)
+        await messagesPage.openFirstThread()
+        await messagesPage.assertMessageContent(0, defaultContent)
+        await waitUntilEqual(() => messagesPage.getReceivedMessageCount(), 0)
+
+        await messagesPage.markUnreadButton.waitUntilVisible()
+        await messagesPage.markUnreadButton.click()
+        await waitUntilEqual(() => messagesPage.getReceivedMessageCount(), 1)
+
+        await employeePage.close()
+
+        // Another staff role in the same group should be able to repeat the same process
+        const employeePage2 = await Page.open({
+          mockedTime: mockedDateAt11.addMinutes(5)
+        })
+        await employeeLogin(employeePage2, employee2)
+        await employeePage2.goto(`${config.employeeUrl}/messages`)
+        const messagesPage2 = new MessagesPage(employeePage2)
+
+        await messagesPage2.unitReceived.click()
+
+        await waitUntilEqual(() => messagesPage2.getReceivedMessageCount(), 1)
+        await messagesPage2.openFirstThread()
+        await messagesPage2.assertMessageContent(0, defaultContent)
+        await waitUntilEqual(() => messagesPage2.getReceivedMessageCount(), 0)
+
+        await messagesPage2.markUnreadButton.waitUntilVisible()
+        await messagesPage2.markUnreadButton.click()
+        await waitUntilEqual(() => messagesPage2.getReceivedMessageCount(), 1)
+
+        await employeePage2.close()
+      })
+
       describe('Messages can be deleted / archived', () => {
         test('Unit supervisor sends message and citizen deletes the message', async () => {
           await openSupervisorPage(mockedDateAt10)

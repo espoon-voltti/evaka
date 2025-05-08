@@ -738,6 +738,47 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     }
 
     @Test
+    fun `last message in a group thread can be marked as unread by an employee`() {
+        val messageThreadId =
+            postNewThread(
+                user = person1,
+                title = "t1",
+                message = "m1",
+                recipients = listOf(group1Account),
+                children = listOf(testChild_1.id),
+            )
+
+        val unreadMessagesBefore = getUnreadReceivedMessages(group1Account, employee1)
+        assertEquals(1, unreadMessagesBefore.size)
+
+        markThreadRead(employee1, group1Account, messageThreadId, clock.now())
+        assertEquals(0, getUnreadReceivedMessages(group1Account, employee1).size)
+
+        markLastMessageInThreadUnread(employee1, group1Account, messageThreadId, clock.now())
+        assertEquals(1, getUnreadReceivedMessages(group1Account, employee1).size)
+    }
+
+    @Test
+    fun `citizen can mark last message unread`() {
+        postNewThread(
+            title = "t2",
+            message = "m2",
+            messageType = MessageType.MESSAGE,
+            sender = employee1Account,
+            recipients = listOf(MessageRecipient.Child(testChild_1.id)),
+            user = employee1,
+        )
+        val person1UnreadMessages = getUnreadReceivedMessages(person1Account, person1)
+        assertEquals(1, person1UnreadMessages.size)
+
+        markThreadRead(person1, getRegularMessageThreads(person1).first().id)
+        assertEquals(0, getUnreadReceivedMessages(person1Account, person1).size)
+
+        markLastMessageUnread(person1, person1UnreadMessages.first().threadId, clock.now())
+        assertEquals(1, getUnreadReceivedMessages(person1Account, person1).size)
+    }
+
+    @Test
     fun `messages can have attachments`() {
         val draftId = db.transaction { it.initDraft(employee1Account) }
 
@@ -2022,6 +2063,49 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             dbInstance(),
             user,
             MockEvakaClock(readTime),
+            threadId,
+        )
+    }
+
+    private fun markThreadRead(
+        user: AuthenticatedUser.Employee,
+        accountId: MessageAccountId,
+        threadId: MessageThreadId,
+        now: HelsinkiDateTime,
+    ) {
+        messageController.markThreadRead(
+            dbInstance(),
+            user,
+            MockEvakaClock(now),
+            accountId,
+            threadId,
+        )
+    }
+
+    private fun markLastMessageInThreadUnread(
+        user: AuthenticatedUser.Employee,
+        accountId: MessageAccountId,
+        threadId: MessageThreadId,
+        now: HelsinkiDateTime,
+    ) {
+        messageController.markLastReceivedMessageInThreadUnread(
+            dbInstance(),
+            user,
+            MockEvakaClock(now),
+            accountId,
+            threadId,
+        )
+    }
+
+    private fun markLastMessageUnread(
+        person1: AuthenticatedUser.Citizen,
+        threadId: MessageThreadId,
+        now: HelsinkiDateTime,
+    ) {
+        messageControllerCitizen.markLastReceivedMessageInThreadUnread(
+            dbInstance(),
+            person1,
+            MockEvakaClock(now),
             threadId,
         )
     }
