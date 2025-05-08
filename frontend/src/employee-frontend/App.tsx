@@ -138,6 +138,7 @@ import { I18nContextProvider, useTranslation } from './state/i18n'
 import { UIContext } from './state/ui'
 import { UserContext, UserContextProvider } from './state/user'
 import { hasRole } from './utils/roles'
+import NekkuOrders from './components/reports/NekkuOrders'
 
 function App() {
   const { i18n } = useTranslation()
@@ -889,6 +890,14 @@ export default createBrowserRouter(
           element: (
             <EmployeeRoute title="reports">
               <MealReport />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/reports/nekkuorders',
+          element: (
+            <EmployeeRoute title="reports">
+              <NekkuOrders />
             </EmployeeRoute>
           )
         },

@@ -4235,6 +4235,12 @@ export const fi = {
       amountWithoutAddress: 'Osoitteettomia',
       amountWithZeroPrice: 'Nollalaskuja'
     },
+    nekkuOrders: {
+      title: 'Nekku tilaukset',
+      description: 'Raportti toteutuneista Nekku tilauksista',
+      tooLongRange:
+        'Voit hakea raportin korkeintaan kuukauden kuukauden ajalta.'
+    },
     startingPlacements: {
       title: 'Varhaiskasvatuksessa aloittavat lapset',
       description:
