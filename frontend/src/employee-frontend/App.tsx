@@ -101,6 +101,7 @@ import ManualDuplicationReport from './components/reports/ManualDuplicationRepor
 import MealReport from './components/reports/MealReport'
 import ReportMissingHeadOfFamily from './components/reports/MissingHeadOfFamily'
 import ReportMissingServiceNeed from './components/reports/MissingServiceNeed'
+import NekkuOrders from './components/reports/NekkuOrders'
 import ReportNonSsnChildren from './components/reports/NonSsnChildren'
 import ReportOccupancies from './components/reports/Occupancies'
 import ReportPartnersInDifferentAddress from './components/reports/PartnersInDifferentAddress'
@@ -138,7 +139,6 @@ import { I18nContextProvider, useTranslation } from './state/i18n'
 import { UIContext } from './state/ui'
 import { UserContext, UserContextProvider } from './state/user'
 import { hasRole } from './utils/roles'
-import NekkuOrders from './components/reports/NekkuOrders'
 
 function App() {
   const { i18n } = useTranslation()
