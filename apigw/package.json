@@ -30,7 +30,7 @@
     "express-basic-auth": "1.2.1",
     "express-http-proxy": "2.1.1",
     "express-session": "1.18.1",
-    "fast-xml-parser": "5.2.1",
+    "fast-xml-parser": "5.2.2",
     "helmet": "8.1.0",
     "jsonwebtoken": "9.0.2",
     "lodash": "4.17.21",
