@@ -5350,6 +5350,9 @@ export const fi = {
     noNotification: 'Ei ilmoitusta tällä hetkellä',
     setNotification: 'Aseta ilmoitus',
     text: 'Teksti',
+    textFi: 'Teksti suomeksi',
+    textSv: 'Teksti ruotsiksi',
+    textEn: 'Teksti englanniksi',
     validTo: 'Poistuu näkyvistä'
   },
   placementTool: {

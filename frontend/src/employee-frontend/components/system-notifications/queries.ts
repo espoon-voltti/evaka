@@ -7,16 +7,23 @@ import { Queries } from 'lib-common/query'
 import {
   deleteSystemNotification,
   getAllSystemNotifications,
-  putSystemNotification
+  putSystemNotificationCitizens,
+  putSystemNotificationEmployees
 } from '../../generated/api-clients/systemnotifications'
 
 const q = new Queries()
 
 export const allSystemNotificationsQuery = q.query(getAllSystemNotifications)
 
-export const putSystemNotificationMutation = q.mutation(putSystemNotification, [
-  allSystemNotificationsQuery
-])
+export const putSystemNotificationCitizensMutation = q.mutation(
+  putSystemNotificationCitizens,
+  [allSystemNotificationsQuery]
+)
+
+export const putSystemNotificationEmployeesMutation = q.mutation(
+  putSystemNotificationEmployees,
+  [allSystemNotificationsQuery]
+)
 
 export const deleteSystemNotificationMutation = q.mutation(
   deleteSystemNotification,

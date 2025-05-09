@@ -22,12 +22,12 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 class SystemNotificationsController(private val accessControl: AccessControl) {
 
-    @PutMapping("/employee/system-notifications")
-    fun putSystemNotification(
+    @PutMapping("/employee/system-notifications/citizens")
+    fun putSystemNotificationCitizens(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestBody body: SystemNotification,
+        @RequestBody body: SystemNotificationCitizens,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -40,10 +40,56 @@ class SystemNotificationsController(private val accessControl: AccessControl) {
                 tx.execute {
                     sql(
                         """
-                    INSERT INTO system_notification (target_group, text, valid_to) 
-                    VALUES (${bind(body.targetGroup)}, ${bind(body.text)}, ${bind(body.validTo)})
+                    INSERT INTO system_notification (target_group, valid_to, text, text_sv, text_en) 
+                    VALUES (
+                        ${bind(SystemNotificationTargetGroup.CITIZENS)}, 
+                        ${bind(body.validTo)}, 
+                        ${bind(body.text)},
+                        ${bind(body.textSv)},
+                        ${bind(body.textEn)}
+                    )
                     ON CONFLICT (target_group) DO UPDATE
-                        SET text = ${bind(body.text)}, valid_to = ${bind(body.validTo)}
+                        SET 
+                            valid_to = ${bind(body.validTo)},
+                            text = ${bind(body.text)}, 
+                            text_sv = ${bind(body.textSv)},
+                            text_en = ${bind(body.textEn)}
+                """
+                    )
+                }
+            }
+        }
+        Audit.SystemNotificationsSet.log()
+    }
+
+    @PutMapping("/employee/system-notifications/employees")
+    fun putSystemNotificationEmployees(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @RequestBody body: SystemNotificationEmployees,
+    ) {
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Global.UPDATE_SYSTEM_NOTIFICATION,
+                )
+                tx.execute {
+                    sql(
+                        """
+                    INSERT INTO system_notification (target_group, valid_to, text) 
+                    VALUES (
+                        ${bind(SystemNotificationTargetGroup.EMPLOYEES)}, 
+                        ${bind(body.validTo)}, 
+                        ${bind(body.text)}
+                    )
+                    ON CONFLICT (target_group) DO UPDATE
+                        SET 
+                            valid_to = ${bind(body.validTo)},
+                            text = ${bind(body.text)}
                 """
                     )
                 }
@@ -80,12 +126,17 @@ class SystemNotificationsController(private val accessControl: AccessControl) {
         Audit.SystemNotificationsDelete.log()
     }
 
+    data class SystemNotificationsResponse(
+        val citizens: SystemNotificationCitizens?,
+        val employees: SystemNotificationEmployees?,
+    )
+
     @GetMapping("/employee/system-notifications")
     fun getAllSystemNotifications(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-    ): List<SystemNotification> {
+    ): SystemNotificationsResponse {
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -94,45 +145,55 @@ class SystemNotificationsController(private val accessControl: AccessControl) {
                         clock,
                         Action.Global.READ_SYSTEM_NOTIFICATIONS,
                     )
-                    tx.createQuery { sql("SELECT * FROM system_notification") }
-                        .toList<SystemNotification>()
+                    SystemNotificationsResponse(
+                        citizens =
+                            tx.createQuery {
+                                    sql(
+                                        """
+                            SELECT * FROM system_notification 
+                            WHERE target_group = ${bind(SystemNotificationTargetGroup.CITIZENS)}
+                        """
+                                    )
+                                }
+                                .exactlyOneOrNull<SystemNotificationCitizens>(),
+                        employees =
+                            tx.createQuery {
+                                    sql(
+                                        """
+                            SELECT * FROM system_notification 
+                            WHERE target_group = ${bind(SystemNotificationTargetGroup.EMPLOYEES)}
+                        """
+                                    )
+                                }
+                                .exactlyOneOrNull<SystemNotificationEmployees>(),
+                    )
                 }
             }
             .also { Audit.SystemNotificationsReadAll.log() }
     }
 
-    data class CurrentNotificationResponse(val notification: SystemNotification?)
+    data class CurrentNotificationResponseCitizen(val notification: SystemNotificationCitizens?)
 
     @GetMapping("/citizen/public/system-notifications/current")
     fun getCurrentSystemNotificationCitizen(
         db: Database,
         clock: EvakaClock,
-    ): CurrentNotificationResponse {
+    ): CurrentNotificationResponseCitizen {
         return db.connect { dbc ->
-                dbc.read { tx ->
-                    getCurrentSystemNotification(
-                        tx = tx,
-                        targetGroup = SystemNotificationTargetGroup.CITIZENS,
-                        now = clock.now(),
-                    )
-                }
+                dbc.read { tx -> getCurrentSystemNotificationCitizen(tx = tx, now = clock.now()) }
             }
             .also { Audit.SystemNotificationsReadCitizen.log() }
     }
+
+    data class CurrentNotificationResponseEmployee(val notification: SystemNotificationEmployees?)
 
     @GetMapping("/employee/public/system-notifications/current")
     fun getCurrentSystemNotificationEmployee(
         db: Database,
         clock: EvakaClock,
-    ): CurrentNotificationResponse {
+    ): CurrentNotificationResponseEmployee {
         return db.connect { dbc ->
-                dbc.read { tx ->
-                    getCurrentSystemNotification(
-                        tx = tx,
-                        targetGroup = SystemNotificationTargetGroup.EMPLOYEES,
-                        now = clock.now(),
-                    )
-                }
+                dbc.read { tx -> getCurrentSystemNotificationEmployee(tx = tx, now = clock.now()) }
             }
             .also { Audit.SystemNotificationsReadEmployee.log() }
     }
@@ -142,42 +203,54 @@ class SystemNotificationsController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser.MobileDevice,
         clock: EvakaClock,
-    ): CurrentNotificationResponse {
+    ): CurrentNotificationResponseEmployee {
         return db.connect { dbc ->
-                dbc.read { tx ->
-                    getCurrentSystemNotification(
-                        tx = tx,
-                        targetGroup = SystemNotificationTargetGroup.EMPLOYEES,
-                        now = clock.now(),
-                    )
-                }
+                dbc.read { tx -> getCurrentSystemNotificationEmployee(tx = tx, now = clock.now()) }
             }
             .also { Audit.SystemNotificationsReadEmployeeMobile.log() }
     }
 
-    private fun getCurrentSystemNotification(
+    private fun getCurrentSystemNotificationCitizen(
         tx: Database.Read,
-        targetGroup: SystemNotificationTargetGroup,
         now: HelsinkiDateTime,
-    ): CurrentNotificationResponse {
+    ): CurrentNotificationResponseCitizen {
         return tx.createQuery {
                 sql(
                     """
             SELECT * FROM system_notification
-            WHERE target_group = ${bind(targetGroup)} AND valid_to > ${bind(now)}
+            WHERE target_group = ${bind(SystemNotificationTargetGroup.CITIZENS)} AND valid_to > ${bind(now)}
         """
                 )
             }
-            .exactlyOneOrNull<SystemNotification?>()
-            .let { CurrentNotificationResponse(it) }
+            .exactlyOneOrNull<SystemNotificationCitizens>()
+            .let { CurrentNotificationResponseCitizen(it) }
+    }
+
+    private fun getCurrentSystemNotificationEmployee(
+        tx: Database.Read,
+        now: HelsinkiDateTime,
+    ): CurrentNotificationResponseEmployee {
+        return tx.createQuery {
+                sql(
+                    """
+            SELECT * FROM system_notification
+            WHERE target_group = ${bind(SystemNotificationTargetGroup.EMPLOYEES)} AND valid_to > ${bind(now)}
+        """
+                )
+            }
+            .exactlyOneOrNull<SystemNotificationEmployees>()
+            .let { CurrentNotificationResponseEmployee(it) }
     }
 }
 
-data class SystemNotification(
-    val targetGroup: SystemNotificationTargetGroup,
-    val text: String,
+data class SystemNotificationCitizens(
     val validTo: HelsinkiDateTime,
+    val text: String,
+    val textSv: String,
+    val textEn: String,
 )
+
+data class SystemNotificationEmployees(val validTo: HelsinkiDateTime, val text: String)
 
 enum class SystemNotificationTargetGroup : DatabaseEnum {
     CITIZENS,

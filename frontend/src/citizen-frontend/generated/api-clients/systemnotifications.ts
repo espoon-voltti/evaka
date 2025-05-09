@@ -4,20 +4,20 @@
 
 // GENERATED FILE: no manual modifications
 
-import { CurrentNotificationResponse } from 'lib-common/generated/api-types/systemnotifications'
+import { CurrentNotificationResponseCitizen } from 'lib-common/generated/api-types/systemnotifications'
 import { JsonOf } from 'lib-common/json'
 import { client } from '../../api-client'
-import { deserializeJsonCurrentNotificationResponse } from 'lib-common/generated/api-types/systemnotifications'
+import { deserializeJsonCurrentNotificationResponseCitizen } from 'lib-common/generated/api-types/systemnotifications'
 import { uri } from 'lib-common/uri'
 
 
 /**
 * Generated from fi.espoo.evaka.systemnotifications.SystemNotificationsController.getCurrentSystemNotificationCitizen
 */
-export async function getCurrentSystemNotificationCitizen(): Promise<CurrentNotificationResponse> {
-  const { data: json } = await client.request<JsonOf<CurrentNotificationResponse>>({
+export async function getCurrentSystemNotificationCitizen(): Promise<CurrentNotificationResponseCitizen> {
+  const { data: json } = await client.request<JsonOf<CurrentNotificationResponseCitizen>>({
     url: uri`/citizen/public/system-notifications/current`.toString(),
     method: 'GET'
   })
-  return deserializeJsonCurrentNotificationResponse(json)
+  return deserializeJsonCurrentNotificationResponseCitizen(json)
 }
