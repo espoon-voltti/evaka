@@ -21,8 +21,11 @@ import { ChildAttendanceReportRow } from 'lib-common/generated/api-types/reports
 import { ChildDocumentsReportTemplate } from 'lib-common/generated/api-types/reports'
 import { ChildPreschoolAbsenceRow } from 'lib-common/generated/api-types/reports'
 import { ChildrenInDifferentAddressReportRow } from 'lib-common/generated/api-types/reports'
+import { CitizenDocumentResponseReportRow } from 'lib-common/generated/api-types/reports'
+import { CitizenDocumentResponseReportTemplate } from 'lib-common/generated/api-types/reports'
 import { CustomerFeesReportRow } from 'lib-common/generated/api-types/reports'
 import { DaycareAssistanceLevel } from 'lib-common/generated/api-types/assistance'
+import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
 import { DaycareId } from 'lib-common/generated/api-types/shared'
 import { DecisionsReportRow } from 'lib-common/generated/api-types/reports'
 import { DocumentTemplateId } from 'lib-common/generated/api-types/shared'
@@ -87,6 +90,8 @@ import { deserializeJsonAssistanceNeedDecisionsReportRow } from 'lib-common/gene
 import { deserializeJsonAttendanceReservationReportByChildGroup } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonAttendanceReservationReportRow } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonChildAttendanceReportRow } from 'lib-common/generated/api-types/reports'
+import { deserializeJsonCitizenDocumentResponseReportRow } from 'lib-common/generated/api-types/reports'
+import { deserializeJsonDaycareGroup } from 'lib-common/generated/api-types/daycare'
 import { deserializeJsonDuplicatePeopleReportRow } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonEndedPlacementsReportRow } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonFuturePreschoolersReportRow } from 'lib-common/generated/api-types/reports'
@@ -335,6 +340,66 @@ export async function getChildDocumentsReportTemplateOptions(): Promise<ChildDoc
 export async function getChildrenInDifferentAddressReport(): Promise<ChildrenInDifferentAddressReportRow[]> {
   const { data: json } = await client.request<JsonOf<ChildrenInDifferentAddressReportRow[]>>({
     url: uri`/employee/reports/children-in-different-address`.toString(),
+    method: 'GET'
+  })
+  return json
+}
+
+
+/**
+* Generated from fi.espoo.evaka.reports.CitizenDocumentResponseReport.getCitizenDocumentResponseReport
+*/
+export async function getCitizenDocumentResponseReport(
+  request: {
+    unitId: DaycareId,
+    groupId: GroupId,
+    documentTemplateId: DocumentTemplateId
+  }
+): Promise<CitizenDocumentResponseReportRow[]> {
+  const params = createUrlSearchParams(
+    ['unitId', request.unitId],
+    ['groupId', request.groupId],
+    ['documentTemplateId', request.documentTemplateId]
+  )
+  const { data: json } = await client.request<JsonOf<CitizenDocumentResponseReportRow[]>>({
+    url: uri`/employee/reports/citizen-document-response-report`.toString(),
+    method: 'GET',
+    params
+  })
+  return json.map(e => deserializeJsonCitizenDocumentResponseReportRow(e))
+}
+
+
+/**
+* Generated from fi.espoo.evaka.reports.CitizenDocumentResponseReport.getCitizenDocumentResponseReportGroupOptions
+*/
+export async function getCitizenDocumentResponseReportGroupOptions(
+  request: {
+    unitId: DaycareId,
+    from?: LocalDate | null,
+    to?: LocalDate | null
+  }
+): Promise<DaycareGroup[]> {
+  const params = createUrlSearchParams(
+    ['unitId', request.unitId],
+    ['from', request.from?.formatIso()],
+    ['to', request.to?.formatIso()]
+  )
+  const { data: json } = await client.request<JsonOf<DaycareGroup[]>>({
+    url: uri`/employee/reports/citizen-document-response-report/group-options`.toString(),
+    method: 'GET',
+    params
+  })
+  return json.map(e => deserializeJsonDaycareGroup(e))
+}
+
+
+/**
+* Generated from fi.espoo.evaka.reports.CitizenDocumentResponseReport.getCitizenDocumentResponseTemplateOptions
+*/
+export async function getCitizenDocumentResponseTemplateOptions(): Promise<CitizenDocumentResponseReportTemplate[]> {
+  const { data: json } = await client.request<JsonOf<CitizenDocumentResponseReportTemplate[]>>({
+    url: uri`/employee/reports/citizen-document-response-report/template-options`.toString(),
     method: 'GET'
   })
   return json

@@ -83,6 +83,7 @@ import ReportChildAgeLanguage from './components/reports/ChildAgeLanguage'
 import ChildAttendanceReport from './components/reports/ChildAttendanceReport'
 import ReportChildDocuments from './components/reports/ChildDocumentsReport'
 import ReportChildrenInDifferentAddress from './components/reports/ChildrenInDifferentAddress'
+import CitizenDocumentResponseReport from './components/reports/CitizenDocumentResponseReport'
 import ReportCustomerFees from './components/reports/CustomerFees'
 import ReportDecisions from './components/reports/Decisions'
 import ReportDuplicatePeople from './components/reports/DuplicatePeople'
@@ -919,6 +920,14 @@ export default createBrowserRouter(
           element: (
             <EmployeeRoute title="reports">
               <TampereRegionalSurvey />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/reports/citizen-document-response',
+          element: (
+            <EmployeeRoute title="reports">
+              <CitizenDocumentResponseReport />
             </EmployeeRoute>
           )
         },

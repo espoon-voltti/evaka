@@ -16,6 +16,7 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.data.DateMap
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.Predicate
 import fi.espoo.evaka.shared.db.psqlCause
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.NotFound
@@ -63,10 +64,11 @@ class DaycareService {
         daycareId: DaycareId,
         startDate: LocalDate?,
         endDate: LocalDate?,
+        groupPredicate: Predicate = Predicate.alwaysTrue(),
     ): List<DaycareGroup> {
         if (!tx.isValidDaycareId(daycareId)) throw NotFound("No daycare found with id $daycareId")
 
-        return tx.getDaycareGroups(daycareId, startDate, endDate)
+        return tx.getDaycareGroups(daycareId, startDate, endDate, groupPredicate)
     }
 }
 

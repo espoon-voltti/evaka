@@ -8,6 +8,7 @@ import fi.espoo.evaka.daycare.service.DaycareGroup
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.Predicate
 import fi.espoo.evaka.shared.domain.DateRange
 import java.time.LocalDate
 
@@ -15,6 +16,7 @@ private fun Database.Read.createDaycareGroupQuery(
     groupId: GroupId?,
     daycareId: DaycareId?,
     period: DateRange?,
+    groupPredicate: Predicate = Predicate.alwaysTrue(),
 ) = createQuery {
     sql(
         """
@@ -45,6 +47,7 @@ FROM daycare_group
 WHERE (${bind(groupId)}::uuid IS NULL OR id = ${bind(groupId)})
 AND (${bind(daycareId)}::uuid IS NULL OR daycare_id = ${bind(daycareId)})
 AND (${bind(period)}::daterange IS NULL OR daterange(start_date, end_date, '[]') && ${bind(period)})
+AND ${predicate(groupPredicate.forTable("daycare_group"))}
 """
     )
 }
@@ -96,11 +99,13 @@ fun Database.Read.getDaycareGroups(
     daycareId: DaycareId,
     startDate: LocalDate?,
     endDate: LocalDate?,
+    groupPredicate: Predicate = Predicate.alwaysTrue(),
 ): List<DaycareGroup> =
     createDaycareGroupQuery(
             groupId = null,
             daycareId = daycareId,
             period = DateRange(startDate ?: LocalDate.of(2000, 1, 1), endDate),
+            groupPredicate = groupPredicate,
         )
         .toList<DaycareGroup>()
 
