@@ -180,7 +180,6 @@ const Modal = React.memo(function Modal({
           date={date}
           onChange={setDate}
           hideErrorsBeforeTouched
-          openAbove
           data-qa="retroactive-fee-decision-start-date"
         />
       </FixedSpaceRow>

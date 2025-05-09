@@ -196,7 +196,6 @@ const Modal = React.memo(function Modal({
           date={date}
           onChange={setDate}
           hideErrorsBeforeTouched
-          openAbove
         />
       </FixedSpaceRow>
     </AsyncFormModal>
