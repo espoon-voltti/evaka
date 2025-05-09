@@ -3370,7 +3370,7 @@ __metadata:
     express-basic-auth: "npm:1.2.1"
     express-http-proxy: "npm:2.1.1"
     express-session: "npm:1.18.1"
-    fast-xml-parser: "npm:5.2.1"
+    fast-xml-parser: "npm:5.2.2"
     helmet: "npm:8.1.0"
     jest: "npm:29.7.0"
     jest-junit: "npm:16.0.0"
@@ -3579,14 +3579,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fast-xml-parser@npm:5.2.1":
-  version: 5.2.1
-  resolution: "fast-xml-parser@npm:5.2.1"
+"fast-xml-parser@npm:5.2.2":
+  version: 5.2.2
+  resolution: "fast-xml-parser@npm:5.2.2"
   dependencies:
-    strnum: "npm:^2.0.5"
+    strnum: "npm:^2.1.0"
   bin:
     fxparser: src/cli/cli.js
-  checksum: 10/61eec0b0e075dcc0c16e5beacefa559dc4846bd9b8391c639a28177f1e2ad5534c90bdff9af86a7828ee903bed875db0bb8c1512ff9e5a194e530691ee8a5aa8
+  checksum: 10/d1a9a88d76dc6ce23d47836bbfc6239120211602833e64ca8bfd5f5f5ad1230128a033bbe136052e860c4d817f5385f4ec8bb3b31bb3ca0963e121e5d7b60264
   languageName: node
   linkType: hard
 
@@ -7033,10 +7033,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"strnum@npm:^2.0.5":
-  version: 2.0.5
-  resolution: "strnum@npm:2.0.5"
-  checksum: 10/5a9939e395dcf3f2ce0c4741c454b0e8c6492a395a6115edee287671f5c339126e2d2bddaeba757900a4a32b680ca5532bdba350514dc3770a5165b1dd5ac145
+"strnum@npm:^2.1.0":
+  version: 2.1.0
+  resolution: "strnum@npm:2.1.0"
+  checksum: 10/6237ecc0740816bb3088d89d8c17692f69b8c2a3d6bf25d6437ea40999d9afe28d1882496521d703804ce1ad3eeef71390073a6d39287ba1586d85ea360daa29
   languageName: node
   linkType: hard
 
