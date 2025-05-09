@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useCallback, useState } from 'react'
 
 import { Failure, Loading, Result, Success, wrapResult } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
@@ -10,7 +10,6 @@ import { NekkuOrderRow } from 'lib-common/generated/api-types/reports'
 import { DaycareId, GroupId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { constantQuery, useQueryResult } from 'lib-common/query'
-import { scrollRefIntoView } from 'lib-common/utils/scrolling'
 import Title from 'lib-components/atoms/Title'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
@@ -21,6 +20,7 @@ import DateRangePicker from 'lib-components/molecules/date-picker/DateRangePicke
 
 import { getNekkuOrderReportByUnit } from '../../generated/api-clients/reports'
 import { useTranslation } from '../../state/i18n'
+import { renderResult } from '../async-rendering'
 import { FlexRow } from '../common/styled/containers'
 import { daycaresQuery, unitGroupsQuery } from '../unit/queries'
 
@@ -59,8 +59,6 @@ export default React.memo(function NekkuOrders() {
 
   const [report, setReport] = useState<Result<NekkuOrderRow[]>>(Success.of([]))
 
-  const autoScrollRef = useRef<HTMLTableRowElement>(null)
-
   const fetchNekkuOrdersReport = useCallback(() => {
     if (tooLongRange) {
       return Promise.resolve(
@@ -87,10 +85,6 @@ export default React.memo(function NekkuOrders() {
     filters.groupIds
   ])
 
-  useEffect(() => {
-    scrollRefIntoView(autoScrollRef)
-  }, [report])
-
   const filteredUnits = units
     .map((data) => data.sort((a, b) => a.name.localeCompare(b.name, lang)))
     .getOrElse([])
@@ -104,7 +98,6 @@ export default React.memo(function NekkuOrders() {
       <ReturnButton label={i18n.common.goBack} />
       <ContentArea opaque>
         <Title size={1}>{i18n.reports.nekkuOrders.title}</Title>
-
         <FilterRow>
           <FilterLabel>{i18n.reports.common.period}</FilterLabel>
           <FlexRow>
@@ -173,9 +166,14 @@ export default React.memo(function NekkuOrders() {
           />
         </FilterRow>
 
-        {tooLongRange && (
-          <div>{i18n.reports.attendanceReservation.tooLongRange}</div>
-        )}
+        {tooLongRange && <div>{i18n.reports.nekkuOrders.tooLongRange}</div>}
+        {renderResult(report, (report) => (
+          <>
+            {report.map((row) => (
+              <div key={1}>{row.groupName}</div>
+            ))}
+          </>
+        ))}
       </ContentArea>
     </Container>
   )
