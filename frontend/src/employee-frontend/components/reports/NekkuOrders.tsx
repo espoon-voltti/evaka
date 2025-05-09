@@ -24,7 +24,8 @@ import { renderResult } from '../async-rendering'
 import { FlexRow } from '../common/styled/containers'
 import { daycaresQuery, unitGroupsQuery } from '../unit/queries'
 
-import { FilterLabel, FilterRow } from './common'
+import { FilterLabel, FilterRow, TableScrollable } from './common'
+import { Tbody, Td, Th, Thead, Tr } from '../../../lib-components/layout/Table'
 
 const getNekkuOrderReportByUnitResult = wrapResult(getNekkuOrderReportByUnit)
 
@@ -169,9 +170,35 @@ export default React.memo(function NekkuOrders() {
         {tooLongRange && <div>{i18n.reports.nekkuOrders.tooLongRange}</div>}
         {renderResult(report, (report) => (
           <>
-            {report.map((row) => (
-              <div key={1}>{row.groupName}</div>
-            ))}
+            <TableScrollable data-qa="report-nekkuorders">
+              <Thead>
+                <Tr>
+                  <Th>{i18n.reports.common.date}</Th>
+                  <Th>{i18n.reports.common.groupName}</Th>
+                  <Th>{i18n.reports.nekkuOrders.sku}</Th>
+                  <Th>{i18n.reports.nekkuOrders.quantity}</Th>
+                  <Th>{i18n.reports.nekkuOrders.mealTime}</Th>
+                  <Th>{i18n.reports.nekkuOrders.mealType}</Th>
+                  <Th>{i18n.reports.nekkuOrders.specialDiets}</Th>
+                </Tr>
+              </Thead>
+              <Tbody>
+                {report.map((row, index) => (
+                  <Tr
+                    key={`${index}`}
+                    data-qa="data-rows"
+                  >
+                    <Td>{row.date.toString()}</Td>
+                    <Td>{row.groupName}</Td>
+                    <Td>{row.sku}</Td>
+                    <Td>{row.quantity}</Td>
+                    <Td>{row.mealTime}</Td>
+                    <Td>{row.mealType}</Td>
+                    <Td>{row.specialDiets}</Td>
+                  </Tr>
+                ))}
+              </Tbody>
+            </TableScrollable>
           </>
         ))}
       </ContentArea>
