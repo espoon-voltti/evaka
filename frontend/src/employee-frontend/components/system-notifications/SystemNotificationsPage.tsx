@@ -104,13 +104,19 @@ const CitizenNotificationEditor = React.memo(function NotificationEditor({
   const { text, textSv, textEn, validToDate, validToTime } = useFormFields(form)
 
   return (
-    <FixedSpaceColumn>
-      <Label>{i18n.systemNotifications.textFi}</Label>
-      <TextAreaF bind={text} data-qa="text-input" />
-      <Label>{i18n.systemNotifications.textSv}</Label>
-      <TextAreaF bind={textSv} data-qa="text-input-sv" />
-      <Label>{i18n.systemNotifications.textEn}</Label>
-      <TextAreaF bind={textEn} data-qa="text-input-en" />
+    <FixedSpaceColumn spacing="L">
+      <FixedSpaceColumn spacing="zero">
+        <Label>{i18n.systemNotifications.textFi}</Label>
+        <TextAreaF bind={text} data-qa="text-input" />
+      </FixedSpaceColumn>
+      <FixedSpaceColumn spacing="zero>">
+        <Label>{i18n.systemNotifications.textSv}</Label>
+        <TextAreaF bind={textSv} data-qa="text-input-sv" />
+      </FixedSpaceColumn>
+      <FixedSpaceColumn spacing="zero">
+        <Label>{i18n.systemNotifications.textEn}</Label>
+        <TextAreaF bind={textEn} data-qa="text-input-en" />
+      </FixedSpaceColumn>
       <FixedSpaceRow>
         <Label>{i18n.systemNotifications.validTo}</Label>
         <DatePickerF bind={validToDate} locale={lang} data-qa="date-input" />
@@ -152,9 +158,11 @@ const EmployeeNotificationEditor = React.memo(function NotificationEditor({
   const { text, validToDate, validToTime } = useFormFields(form)
 
   return (
-    <FixedSpaceColumn>
-      <Label>{i18n.systemNotifications.text}</Label>
-      <InputFieldF bind={text} data-qa="text-input" />
+    <FixedSpaceColumn spacing="L">
+      <FixedSpaceColumn spacing="zero">
+        <Label>{i18n.systemNotifications.text}</Label>
+        <InputFieldF bind={text} data-qa="text-input" />
+      </FixedSpaceColumn>
       <FixedSpaceRow>
         <Label>{i18n.systemNotifications.validTo}</Label>
         <DatePickerF bind={validToDate} locale={lang} data-qa="date-input" />
@@ -211,33 +219,39 @@ const SystemNotificationsPageInner = React.memo(
             />
           ) : citizenNotification ? (
             <FixedSpaceColumn>
-              <Label>{i18n.systemNotifications.textFi}</Label>
-              <P noMargin>
-                {citizenNotification.text.split('\n').map((s, i) => (
-                  <Fragment key={i}>
-                    {s}
-                    <br />
-                  </Fragment>
-                ))}
-              </P>
-              <Label>{i18n.systemNotifications.textSv}</Label>
-              <P noMargin>
-                {citizenNotification.textSv.split('\n').map((s, i) => (
-                  <Fragment key={i}>
-                    {s}
-                    <br />
-                  </Fragment>
-                ))}
-              </P>
-              <Label>{i18n.systemNotifications.textEn}</Label>
-              <P noMargin>
-                {citizenNotification.textEn.split('\n').map((s, i) => (
-                  <Fragment key={i}>
-                    {s}
-                    <br />
-                  </Fragment>
-                ))}
-              </P>
+              <FixedSpaceColumn spacing="xs">
+                <Label>{i18n.systemNotifications.textFi}</Label>
+                <P noMargin>
+                  {citizenNotification.text.split('\n').map((s, i) => (
+                    <Fragment key={i}>
+                      {s}
+                      <br />
+                    </Fragment>
+                  ))}
+                </P>
+              </FixedSpaceColumn>
+              <FixedSpaceColumn spacing="xs">
+                <Label>{i18n.systemNotifications.textSv}</Label>
+                <P noMargin>
+                  {citizenNotification.textSv.split('\n').map((s, i) => (
+                    <Fragment key={i}>
+                      {s}
+                      <br />
+                    </Fragment>
+                  ))}
+                </P>
+              </FixedSpaceColumn>
+              <FixedSpaceColumn spacing="xs">
+                <Label>{i18n.systemNotifications.textEn}</Label>
+                <P noMargin>
+                  {citizenNotification.textEn.split('\n').map((s, i) => (
+                    <Fragment key={i}>
+                      {s}
+                      <br />
+                    </Fragment>
+                  ))}
+                </P>
+              </FixedSpaceColumn>
               <div>
                 <Label>{i18n.systemNotifications.validTo}: </Label>
                 <span>{citizenNotification.validTo.format()}</span>
@@ -293,8 +307,10 @@ const SystemNotificationsPageInner = React.memo(
             />
           ) : employeeNotification ? (
             <FixedSpaceColumn>
-              <Label>{i18n.systemNotifications.text}</Label>
-              <P noMargin>{employeeNotification.text}</P>
+              <FixedSpaceColumn spacing="xs">
+                <Label>{i18n.systemNotifications.text}</Label>
+                <P noMargin>{employeeNotification.text}</P>
+              </FixedSpaceColumn>
               <div>
                 <Label>{i18n.systemNotifications.validTo}: </Label>
                 <span>{employeeNotification.validTo.format()}</span>
