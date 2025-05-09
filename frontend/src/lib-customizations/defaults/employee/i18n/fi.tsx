@@ -4239,7 +4239,12 @@ export const fi = {
       title: 'Nekku tilaukset',
       description: 'Raportti toteutuneista Nekku tilauksista',
       tooLongRange:
-        'Voit hakea raportin korkeintaan kuukauden kuukauden ajalta.'
+        'Voit hakea raportin korkeintaan kuukauden kuukauden ajalta.',
+      sku: 'Tuotenumero',
+      quantity: 'Määrä',
+      mealTime: 'Ruoka-aika',
+      mealType: 'Ruoka-tyyppi',
+      specialDiets: 'Erikoisruokavaliot'
     },
     startingPlacements: {
       title: 'Varhaiskasvatuksessa aloittavat lapset',
