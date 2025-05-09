@@ -32,11 +32,12 @@ import { Gap } from 'lib-components/white-space'
 
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
-import { daycaresQuery, unitGroupsQuery } from '../unit/queries'
+import { daycaresQuery } from '../unit/queries'
 
 import ReportDownload from './ReportDownload'
 import { FilterLabel, FilterRow, TableScrollable } from './common'
 import {
+  getCitizenDocumentResponseReportGroupOptionsQuery,
   getCitizenDocumentResponseReportQuery,
   getCitizenDocumentResponseTemplateOptionsQuery
 } from './queries'
@@ -76,8 +77,8 @@ export default React.memo(function CitizenDocumentResponseReport() {
 
   const groups = useQueryResult(
     selectedUnit
-      ? unitGroupsQuery({
-          daycareId: selectedUnit.id,
+      ? getCitizenDocumentResponseReportGroupOptionsQuery({
+          unitId: selectedUnit.id,
           from: today,
           to: today
         })

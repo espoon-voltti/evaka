@@ -19,6 +19,7 @@ import {
   getChildDocumentsReportTemplateOptions,
   getChildrenInDifferentAddressReport,
   getCitizenDocumentResponseReport,
+  getCitizenDocumentResponseReportGroupOptions,
   getCitizenDocumentResponseTemplateOptions,
   getCustomerFeesReport,
   getDecisionsReport,
@@ -93,6 +94,10 @@ export const childDocumentsReportTemplateOptionsQuery = q.query(
 
 export const getCitizenDocumentResponseTemplateOptionsQuery = q.query(
   getCitizenDocumentResponseTemplateOptions
+)
+
+export const getCitizenDocumentResponseReportGroupOptionsQuery = q.query(
+  getCitizenDocumentResponseReportGroupOptions
 )
 
 export const getCitizenDocumentResponseReportQuery = q.query(

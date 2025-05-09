@@ -25,6 +25,7 @@ import { CitizenDocumentResponseReportRow } from 'lib-common/generated/api-types
 import { CitizenDocumentResponseReportTemplate } from 'lib-common/generated/api-types/reports'
 import { CustomerFeesReportRow } from 'lib-common/generated/api-types/reports'
 import { DaycareAssistanceLevel } from 'lib-common/generated/api-types/assistance'
+import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
 import { DaycareId } from 'lib-common/generated/api-types/shared'
 import { DecisionsReportRow } from 'lib-common/generated/api-types/reports'
 import { DocumentTemplateId } from 'lib-common/generated/api-types/shared'
@@ -90,6 +91,7 @@ import { deserializeJsonAttendanceReservationReportByChildGroup } from 'lib-comm
 import { deserializeJsonAttendanceReservationReportRow } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonChildAttendanceReportRow } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonCitizenDocumentResponseReportRow } from 'lib-common/generated/api-types/reports'
+import { deserializeJsonDaycareGroup } from 'lib-common/generated/api-types/daycare'
 import { deserializeJsonDuplicatePeopleReportRow } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonEndedPlacementsReportRow } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonFuturePreschoolersReportRow } from 'lib-common/generated/api-types/reports'
@@ -365,6 +367,30 @@ export async function getCitizenDocumentResponseReport(
     params
   })
   return json.map(e => deserializeJsonCitizenDocumentResponseReportRow(e))
+}
+
+
+/**
+* Generated from fi.espoo.evaka.reports.CitizenDocumentResponseReport.getCitizenDocumentResponseReportGroupOptions
+*/
+export async function getCitizenDocumentResponseReportGroupOptions(
+  request: {
+    unitId: DaycareId,
+    from?: LocalDate | null,
+    to?: LocalDate | null
+  }
+): Promise<DaycareGroup[]> {
+  const params = createUrlSearchParams(
+    ['unitId', request.unitId],
+    ['from', request.from?.formatIso()],
+    ['to', request.to?.formatIso()]
+  )
+  const { data: json } = await client.request<JsonOf<DaycareGroup[]>>({
+    url: uri`/employee/reports/citizen-document-response-report/group-options`.toString(),
+    method: 'GET',
+    params
+  })
+  return json.map(e => deserializeJsonDaycareGroup(e))
 }
 
 

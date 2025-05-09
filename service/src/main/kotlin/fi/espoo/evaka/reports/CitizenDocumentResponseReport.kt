@@ -7,6 +7,8 @@ package fi.espoo.evaka.reports
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.daycare.getDaycare
+import fi.espoo.evaka.daycare.service.DaycareGroup
+import fi.espoo.evaka.daycare.service.DaycareService
 import fi.espoo.evaka.document.DocumentTemplateContent
 import fi.espoo.evaka.document.childdocument.DocumentContent
 import fi.espoo.evaka.document.childdocument.DocumentStatus
@@ -16,19 +18,25 @@ import fi.espoo.evaka.shared.DocumentTemplateId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.Predicate
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import fi.espoo.evaka.shared.security.actionrule.toPredicate
 import java.time.LocalDate
 import org.jdbi.v3.json.Json
+import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class CitizenDocumentResponseReport(private val accessControl: AccessControl) {
+class CitizenDocumentResponseReport(
+    private val accessControl: AccessControl,
+    private val daycareService: DaycareService,
+) {
 
     @GetMapping("/employee/reports/citizen-document-response-report")
     fun getCitizenDocumentResponseReport(
@@ -109,6 +117,48 @@ class CitizenDocumentResponseReport(private val accessControl: AccessControl) {
                 .also { Audit.ChildDocumentsReportTemplatesRead.log() }
         }
     }
+
+    @GetMapping("/employee/reports/citizen-document-response-report/group-options")
+    fun getCitizenDocumentResponseReportGroupOptions(
+        db: Database,
+        clock: EvakaClock,
+        user: AuthenticatedUser.Employee,
+        @RequestParam unitId: DaycareId,
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate? = null,
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate? = null,
+    ): List<DaycareGroup> {
+        return db.connect { dbc ->
+                dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Unit.READ_GROUPS,
+                        unitId,
+                    )
+                    val groupFilter =
+                        accessControl.getAuthorizationFilter(
+                            tx,
+                            user,
+                            clock,
+                            Action.Group.READ_CITIZEN_DOCUMENT_RESPONSE_REPORT,
+                        )
+                    daycareService.getDaycareGroups(
+                        tx,
+                        unitId,
+                        from,
+                        to,
+                        groupFilter?.toPredicate() ?: Predicate.alwaysTrue(),
+                    )
+                }
+            }
+            .also {
+                Audit.CitizenDocumentResponseReportGroupOptionsRead.log(
+                    targetId = AuditId(unitId),
+                    meta = mapOf("size" to it.size),
+                )
+            }
+    }
 }
 
 data class CitizenDocumentResponseReportTemplate(
@@ -152,7 +202,7 @@ LEFT JOIN LATERAL (
     WHERE cd.child_id = pl.child_id
       AND cd.template_id = ${bind(documentTemplateId)}
       AND (cd.status = 'COMPLETED' OR cd.status = 'CITIZEN_DRAFT')
-      AND daterange(pl.start_date, pl.end_date, '[]') @> cd.answered_at::date
+      AND daterange(pl.start_date, pl.end_date, '[]') @> cd.content_modified_at::date
     ORDER BY cd.answered_at DESC, cd.created DESC
     LIMIT 1) latest_doc ON true
 WHERE rp.group_id = ANY (${bind(groupIds)})

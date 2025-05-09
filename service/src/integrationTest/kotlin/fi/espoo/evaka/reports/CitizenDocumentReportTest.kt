@@ -41,7 +41,6 @@ import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.domain.UiLanguage
 import fi.espoo.evaka.shared.security.PilotFeature
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.time.LocalTime
 import java.util.UUID
 import org.assertj.core.api.Assertions.assertThat
@@ -394,6 +393,7 @@ class CitizenDocumentReportTest : FullApplicationTest(resetDbBeforeEach = true) 
             val aapoEarlierResponse =
                 aapoLatestResponse.copy(
                     id = ChildDocumentId(UUID.randomUUID()),
+                    contentModifiedAt = mockClock.now().minusDays(1),
                     answeredAt = mockClock.now().minusDays(1),
                     content = negativeDocumentContent,
                 )
@@ -431,6 +431,8 @@ class CitizenDocumentReportTest : FullApplicationTest(resetDbBeforeEach = true) 
                     childId = testChildBertil.id,
                     status = DocumentStatus.CITIZEN_DRAFT,
                     content = negativeDocumentContent.copy(answers = emptyList()),
+                    answeredAt = null,
+                    answeredBy = null,
                 )
 
             // Test case Cecil:
@@ -478,18 +480,15 @@ class CitizenDocumentReportTest : FullApplicationTest(resetDbBeforeEach = true) 
                 )
             )
 
-            val cecilEarlierResponse =
+            val cecilOutdatedResponse =
                 aapoLatestResponse.copy(
                     id = ChildDocumentId(UUID.randomUUID()),
                     childId = testChildCecil.id,
                     content = affirmativeDocumentContent,
-                    answeredAt = HelsinkiDateTime.of(LocalDateTime.of(2020, 1, 1, 1, 0, 0)),
-                )
-            val cecilLatestResponse =
-                aapoLatestResponse.copy(
-                    id = ChildDocumentId(UUID.randomUUID()),
-                    childId = testChildCecil.id,
-                    content = negativeDocumentContent,
+                    contentModifiedAt =
+                        HelsinkiDateTime.of(placementC1.startDate.plusDays(1).atStartOfDay()),
+                    answeredAt =
+                        HelsinkiDateTime.of(placementC1.startDate.plusDays(1).atStartOfDay()),
                 )
 
             // Test case Demetrius
@@ -530,19 +529,13 @@ class CitizenDocumentReportTest : FullApplicationTest(resetDbBeforeEach = true) 
                 )
             )
 
-            listOf(
-                    aapoEarlierResponse,
-                    aapoLatestResponse,
-                    bertilResponse,
-                    cecilEarlierResponse,
-                    cecilLatestResponse,
-                )
+            listOf(aapoEarlierResponse, aapoLatestResponse, bertilResponse, cecilOutdatedResponse)
                 .forEach { tx.insert(it) }
 
             listOf(
                 Pair(testChildAapo, aapoLatestResponse),
                 Pair(testChildBertil, bertilResponse),
-                Pair(testChildCecil, cecilLatestResponse),
+                Pair(testChildCecil, null),
                 Pair(testChildDemetrius, null),
             )
         }

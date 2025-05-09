@@ -130,6 +130,7 @@ sealed interface Action {
                     UNIT_SUPERVISOR,
                     SPECIAL_EDUCATION_TEACHER,
                     EARLY_CHILDHOOD_EDUCATION_SECRETARY,
+                    STAFF,
                 )
                 .inAnyUnit(),
         ),
