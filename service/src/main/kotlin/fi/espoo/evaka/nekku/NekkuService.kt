@@ -453,15 +453,18 @@ fun nekkuMealReportData(
                         childInfo.mealTimes,
                         childInfo.eatsBreakfast,
                     )
-                    .map {
-                        NekkuMealInfo(
-                            sku = getNekkuProductNumber(nekkuProducts, it, childInfo, customerType),
-                            options =
-                                childInfo.specialDiet
-                                    ?.map { NekkuClient.ProductOption(it.fieldId, it.value) }
-                                    ?.toSet(),
-                            nekkuMealType = childInfo.mealType,
-                        )
+                    .mapNotNull {
+                        val sku = getNekkuProductNumber(nekkuProducts, it, childInfo, customerType)
+                        if (sku == null) null
+                        else
+                            NekkuMealInfo(
+                                sku = sku,
+                                options =
+                                    childInfo.specialDiet
+                                        ?.map { NekkuClient.ProductOption(it.fieldId, it.value) }
+                                        ?.toSet(),
+                                nekkuMealType = childInfo.mealType,
+                            )
                     }
                     .distinct()
             }
@@ -485,7 +488,7 @@ private fun getNekkuProductNumber(
     nekkuProductMealTime: NekkuProductMealTime,
     nekkuChildInfo: NekkuChildInfo,
     customerType: String,
-): String {
+): String? {
 
     val filteredNekkuProducts =
         nekkuProducts.filter {
@@ -495,14 +498,7 @@ private fun getNekkuProductNumber(
                 it.customerTypes.contains(customerType)
         }
 
-    if (filteredNekkuProducts.isEmpty()) {
-        logger.info {
-            "Cannot find any Nekku Product from database with customertype=$customerType optionsId=${nekkuChildInfo.optionsId} mealtype=${nekkuChildInfo.mealType} mealtime=${nekkuProductMealTime.description}"
-        }
-        error(
-            "Cannot find any Nekku Product from database with customertype=$customerType optionsId=${nekkuChildInfo.optionsId} mealtype=${nekkuChildInfo.mealType} mealtime=${nekkuProductMealTime.description}"
-        )
-    } else if (filteredNekkuProducts.count() > 1) {
+    if (filteredNekkuProducts.count() > 1) {
         logger.info {
             "Found too many Nekku Products from database with customertype=$customerType optionsId=${nekkuChildInfo.optionsId} mealtype=${nekkuChildInfo.mealType} mealtime=${nekkuProductMealTime.description}"
         }
@@ -510,7 +506,7 @@ private fun getNekkuProductNumber(
             "Found too many Nekku Products from database with customertype=$customerType optionsId=${nekkuChildInfo.optionsId} mealtype=${nekkuChildInfo.mealType} mealtime=${nekkuProductMealTime.description}"
         )
     } else {
-        return filteredNekkuProducts.first().sku
+        return if (filteredNekkuProducts.isEmpty()) null else filteredNekkuProducts.first().sku
     }
 }
 
