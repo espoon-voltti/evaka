@@ -3014,6 +3014,131 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     }
 
     @Test
+    fun `should skip meals for which no product is found`() {
+        val client =
+            TestNekkuClient(
+                customers =
+                    listOf(
+                        NekkuApiCustomer(
+                            "2501K6090",
+                            "Ahvenojan päiväkoti",
+                            "Varhaiskasvatus",
+                            listOf(
+                                CustomerApiType(
+                                    listOf(
+                                        NekkuCustomerApiWeekday.MONDAY,
+                                        NekkuCustomerApiWeekday.TUESDAY,
+                                        NekkuCustomerApiWeekday.WEDNESDAY,
+                                        NekkuCustomerApiWeekday.THURSDAY,
+                                        NekkuCustomerApiWeekday.FRIDAY,
+                                        NekkuCustomerApiWeekday.SATURDAY,
+                                        NekkuCustomerApiWeekday.SUNDAY,
+                                        NekkuCustomerApiWeekday.WEEKDAYHOLIDAY,
+                                    ),
+                                    "palveluovelle",
+                                )
+                            ),
+                        )
+                    ),
+                nekkuProducts =
+                    listOf(
+                        NekkuApiProduct(
+                            "Palvelu ovelle lounas 1",
+                            "310000030",
+                            "",
+                            listOf("palveluovelle"),
+                            listOf(NekkuProductMealTime.LUNCH),
+                        ),
+                        NekkuApiProduct(
+                            "Palvelu ovelle päivällinen 1",
+                            "310000031",
+                            "",
+                            listOf("palveluovelle"),
+                            listOf(NekkuProductMealTime.DINNER),
+                        ),
+                    ),
+                specialDiets = listOf(getNekkuSpecialDiet()),
+            )
+
+        fetchAndUpdateNekkuCustomers(client, db)
+        // products
+        fetchAndUpdateNekkuProducts(client, db)
+        fetchAndUpdateNekkuSpecialDiets(client, db)
+
+        val monday = LocalDate.of(2025, 4, 14)
+
+        // Daycare with groups
+        val area = DevCareArea()
+        val daycare =
+            DevDaycare(
+                areaId = area.id,
+                mealtimeBreakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
+                mealtimeLunch = TimeRange(LocalTime.of(11, 15), LocalTime.of(11, 45)),
+                mealtimeSnack = TimeRange(LocalTime.of(13, 30), LocalTime.of(13, 50)),
+            )
+        val group = DevDaycareGroup(daycareId = daycare.id, nekkuCustomerNumber = "2501K6090")
+        val employee = DevEmployee()
+
+        val child = DevPerson()
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(group)
+            tx.insert(employee)
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(
+                    DevPlacement(
+                        childId = child.id,
+                        unitId = daycare.id,
+                        startDate = monday,
+                        endDate = monday,
+                    )
+                )
+                .also { placementId ->
+                    tx.insert(
+                        DevDaycareGroupPlacement(
+                            daycarePlacementId = placementId,
+                            daycareGroupId = group.id,
+                            startDate = monday,
+                            endDate = monday,
+                        )
+                    )
+                }
+            tx.insert(
+                // Three meals on Monday
+                DevReservation(
+                    childId = child.id,
+                    date = monday,
+                    startTime = LocalTime.of(8, 0),
+                    endTime = LocalTime.of(16, 0),
+                    createdBy = employee.evakaUserId,
+                )
+            )
+        }
+
+        createAndSendNekkuOrder(client, db, group.id, monday, 0.9)
+
+        assertEquals(
+            listOf(
+                NekkuClient.NekkuOrders(
+                    listOf(
+                        NekkuClient.NekkuOrder(
+                            monday.toString(),
+                            "2501K6090",
+                            group.id.toString(),
+                            listOf(NekkuClient.Item("310000030", 1, null)),
+                            group.name,
+                        )
+                    ),
+                    dryRun = false,
+                )
+            ),
+            client.orders,
+        )
+    }
+
+    @Test
     fun `Meal types should contain the null value`() {
         val mealTypes =
             nekkuController.getNekkuMealTypes(dbInstance(), getAuthenticatedEmployee(), getClock())
