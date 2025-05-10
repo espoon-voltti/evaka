@@ -757,6 +757,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         getDocument(documentId).also { doc ->
             assertEquals(DocumentStatus.COMPLETED, doc.status)
             assertEquals(ChildDocumentDecisionStatus.ACCEPTED, doc.decision?.status)
+            assertEquals(10_000, doc.decision?.decisionNumber)
             assertNotNull(doc.publishedAt)
         }
 
@@ -791,6 +792,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         getDocument(documentId).also { doc ->
             assertEquals(DocumentStatus.COMPLETED, doc.status)
             assertEquals(ChildDocumentDecisionStatus.REJECTED, doc.decision?.status)
+            assertEquals(10_000, doc.decision?.decisionNumber)
             assertNotNull(doc.publishedAt)
         }
 

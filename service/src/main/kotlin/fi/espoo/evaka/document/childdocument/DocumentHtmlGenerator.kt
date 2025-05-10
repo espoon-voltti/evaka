@@ -49,6 +49,10 @@ private val childDocumentCss =
         text-align: right;
     }
     
+    .decision-number {
+        margin-bottom: 16px;
+    }
+    
     .legal-basis {
         margin-bottom: 8px;
     }
@@ -109,7 +113,7 @@ fun generateChildDocumentHtml(document: ChildDocumentDetails): String {
 private fun generateBody(document: ChildDocumentDetails): HtmlElement {
     return HtmlBuilder.body {
         listOf(
-            generateHeader(document.template),
+            generateHeader(document),
             h2(
                 text =
                     "${document.child.firstName} ${document.child.lastName} " +
@@ -127,17 +131,24 @@ private fun generateBody(document: ChildDocumentDetails): HtmlElement {
     }
 }
 
-private fun generateHeader(template: DocumentTemplate): HtmlElement {
+private fun generateHeader(document: ChildDocumentDetails): HtmlElement {
+    val template = document.template
     return HtmlBuilder.div(className = "header-section") {
         listOf(
             h1(template.name),
             div(className = "legal-info") {
                 listOfNotNull(
+                    document.decision?.decisionNumber?.let {
+                        div(
+                            "${getTranslations(document.template).decisionNumber} $it",
+                            className = "decision-number",
+                        )
+                    },
                     template.legalBasis
                         .takeIf { it.isNotBlank() }
                         ?.let { div(text = it, className = "legal-basis") },
                     if (template.confidentiality != null)
-                        div(getTranslations(template.language).confidential)
+                        div(getTranslations(template).confidential)
                     else null,
                 )
             },
@@ -171,17 +182,20 @@ private fun generateQuestionHtml(
     )
 }
 
-private data class Translations(val confidential: String)
+private data class Translations(val confidential: String, val decisionNumber: String)
 
-private val translationsFi = Translations(confidential = "Salassapidettävä")
+private val translationsFi =
+    Translations(confidential = "Salassapidettävä", decisionNumber = "Päätösnumero")
 
-private val translationsSv = Translations(confidential = "Konfidentiellt")
+private val translationsSv =
+    Translations(confidential = "Konfidentiellt", decisionNumber = "Beslutsnummer")
 
-private val translationsEn = Translations(confidential = "Confidential")
+private val translationsEn =
+    Translations(confidential = "Confidential", decisionNumber = "Decision number")
 
-private fun getTranslations(language: UiLanguage) =
-    when (language) {
+private fun getTranslations(template: DocumentTemplate) =
+    when (template.language) {
         UiLanguage.FI -> translationsFi
         UiLanguage.SV -> translationsSv
-        UiLanguage.EN -> translationsEn
+        UiLanguage.EN -> if (template.type.decision) translationsFi else translationsEn
     }

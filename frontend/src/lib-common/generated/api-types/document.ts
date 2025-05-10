@@ -168,6 +168,7 @@ export interface ChildDocumentCreateRequest {
 * Generated from fi.espoo.evaka.document.childdocument.ChildDocumentDecision
 */
 export interface ChildDocumentDecision {
+  decisionNumber: number
   id: ChildDocumentDecisionId
   status: ChildDocumentDecisionStatus
   validity: DateRange | null

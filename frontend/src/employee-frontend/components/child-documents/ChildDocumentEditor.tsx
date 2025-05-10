@@ -140,6 +140,15 @@ const DocumentBasics = React.memo(function DocumentBasics({
         justifyContent="start"
         alignItems="flex-end"
       >
+        {document.decision && (
+          <>
+            <div>
+              {i18n.childInformation.childDocuments.decisions.decisionNumber}{' '}
+              {document.decision.decisionNumber}
+            </div>
+            <Gap size="xs" />
+          </>
+        )}
         <ChildDocumentStateChip
           status={document.status}
           decisionStatus={document.decision?.status ?? null}
