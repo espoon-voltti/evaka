@@ -34,7 +34,7 @@ import {
   DocumentTemplatesListPage
 } from '../../pages/employee/documents/document-templates'
 import EmployeeNav from '../../pages/employee/employee-nav'
-import { ChildDocumentsReport } from '../../pages/employee/reports'
+import ReportsPage, { ChildDocumentsReport } from '../../pages/employee/reports'
 import { UnitPage } from '../../pages/employee/units/unit'
 import { waitUntilEqual } from '../../utils'
 import { Page } from '../../utils/page'
@@ -243,7 +243,16 @@ describe('Employee - Child documents', () => {
     // Director makes a decision
     page = await Page.open({ mockedTime: now })
     await employeeLogin(page, director)
-    await page.goto(documentUrl)
+    await page.goto(config.employeeUrl)
+    const nav = new EmployeeNav(page)
+    await nav.assertTabNotificationsCount('reports', 1)
+    await nav.openTab('reports')
+    const reportsPage = new ReportsPage(page)
+    const reportPage = await reportsPage.openChildDocumentDecisionsReport()
+    await reportPage.rows.assertCount(1)
+    await reportPage.rows.nth(0).click()
+    await waitUntilEqual(() => Promise.resolve(page.url), documentUrl)
+
     childDocument = new ChildDocumentPage(page)
     const validity = new DateRange(
       now.toLocalDate().addDays(2),
@@ -251,6 +260,7 @@ describe('Employee - Child documents', () => {
     )
     await childDocument.acceptDecision(validity)
     await childDocument.status.assertTextEquals('Hyväksytty')
+    await nav.assertTabNotificationsCount('reports', 0)
 
     await childDocument.annulDecision()
     await childDocument.status.assertTextEquals('Mitätöity')

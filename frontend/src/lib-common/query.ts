@@ -208,6 +208,7 @@ export interface QueryOptions {
   refetchOnMount?: boolean | 'always'
   refetchOnWindowFocus?: boolean | 'always'
   staleTime?: number
+  refetchInterval?: number
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

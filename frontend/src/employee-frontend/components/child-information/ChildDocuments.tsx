@@ -107,8 +107,7 @@ const InternalChildDocuments = React.memo(function InternalChildDocuments({
               </Td>
               <StatusTd data-qa="document-status">
                 <ChildDocumentStateChip
-                  status={document.status}
-                  decisionStatus={document.decision?.status ?? null}
+                  status={document.decision?.status ?? document.status}
                 />
               </StatusTd>
             </Tr>
@@ -171,8 +170,7 @@ const DecisionChildDocuments = React.memo(function DecisionChildDocuments({
               </Td>
               <StatusTd data-qa="document-status">
                 <ChildDocumentStateChip
-                  status={document.status}
-                  decisionStatus={document.decision?.status ?? null}
+                  status={document.decision?.status ?? document.status}
                 />
               </StatusTd>
             </Tr>
@@ -252,8 +250,7 @@ const ExternalChildDocuments = React.memo(function ExternalChildDocuments({
               </Td>
               <StatusTd data-qa="document-status">
                 <ChildDocumentStateChip
-                  status={document.status}
-                  decisionStatus={document.decision?.status ?? null}
+                  status={document.decision?.status ?? document.status}
                 />
               </StatusTd>
             </Tr>

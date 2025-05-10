@@ -4,7 +4,7 @@
 
 import React, { ReactNode } from 'react'
 
-import { AssistanceNeedDecisionReportContextProvider } from 'employee-frontend/components/reports/AssistanceNeedDecisionReportContext'
+import { ReportNotificationContextProvider } from 'employee-frontend/components/reports/ReportNotificationContext'
 import { NotificationsContextProvider } from 'lib-components/Notifications'
 
 import { MessageContextProvider } from '../components/messages/MessageContext'
@@ -32,9 +32,9 @@ const StateProvider = React.memo(function StateProvider({
                 <MessageContextProvider>
                   <TitleContextProvider>
                     <ApplicationUIContextProvider>
-                      <AssistanceNeedDecisionReportContextProvider>
+                      <ReportNotificationContextProvider>
                         {children}
-                      </AssistanceNeedDecisionReportContextProvider>
+                      </ReportNotificationContextProvider>
                     </ApplicationUIContextProvider>
                   </TitleContextProvider>
                 </MessageContextProvider>

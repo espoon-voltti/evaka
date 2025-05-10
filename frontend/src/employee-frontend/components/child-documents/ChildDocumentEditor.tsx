@@ -141,8 +141,7 @@ const DocumentBasics = React.memo(function DocumentBasics({
         alignItems="flex-end"
       >
         <ChildDocumentStateChip
-          status={document.status}
-          decisionStatus={document.decision?.status ?? null}
+          status={document.decision?.status ?? document.status}
         />
         {document.template.confidentiality !== null && (
           <strong>{i18n.documentTemplates.templateEditor.confidential}</strong>
@@ -788,6 +787,7 @@ const ChildDocumentReadViewInner = React.memo(
                         filterItems={filterEmployees}
                         getItemDataQa={(e) => e.id}
                         placeholder={i18n.common.select}
+                        openAbove
                         data-qa="decision-maker-combobox"
                       />
                     </FixedSpaceColumn>
@@ -897,6 +897,7 @@ const AcceptDecisionForm = React.memo(function AcceptDecisionForm({
           bind={validity}
           locale={lang}
           data-qa="decision-validity-picker"
+          openAbove
         />
       </FixedSpaceColumn>
       <ConfirmedMutation

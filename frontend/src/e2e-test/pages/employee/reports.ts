@@ -93,6 +93,11 @@ export default class ReportsPage {
     await this.page.findByDataQa('report-sextet').click()
     return new SextetReport(this.page)
   }
+
+  async openChildDocumentDecisionsReport() {
+    await this.page.findByDataQa('report-child-document-decisions').click()
+    return new ChildDocumentDecisionsReport(this.page)
+  }
 }
 
 export class MissingHeadOfFamilyReport {
@@ -786,6 +791,14 @@ export class ChildDocumentsReport {
       noDocuments: row.findByDataQa('no-documents-count'),
       total: row.findByDataQa('total-count')
     }
+  }
+}
+
+export class ChildDocumentDecisionsReport {
+  rows: ElementCollection
+
+  constructor(page: Page) {
+    this.rows = page.findByDataQa('report-table').findAll('tr')
   }
 }
 
