@@ -6776,7 +6776,7 @@ __metadata:
     react-select: "npm:5.10.1"
     seamless-scroll-polyfill: "npm:2.3.4"
     style-loader: "npm:4.0.0"
-    styled-components: "npm:6.1.17"
+    styled-components: "npm:6.1.18"
     ts-jest: "npm:29.3.2"
     ts-loader: "npm:9.5.2"
     ts-node: "npm:10.9.2"
@@ -11940,9 +11940,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"styled-components@npm:6.1.17":
-  version: 6.1.17
-  resolution: "styled-components@npm:6.1.17"
+"styled-components@npm:6.1.18":
+  version: 6.1.18
+  resolution: "styled-components@npm:6.1.18"
   dependencies:
     "@emotion/is-prop-valid": "npm:1.2.2"
     "@emotion/unitless": "npm:0.8.1"
@@ -11956,7 +11956,7 @@ __metadata:
   peerDependencies:
     react: ">= 16.8.0"
     react-dom: ">= 16.8.0"
-  checksum: 10/31939ba34ef8440f02cbdd2b509d03c6125d9f67876562899e6359680ad600b169a4d2c87afa57b399ecca31432b61de54bf052e1846051bbcfca64d86e5181b
+  checksum: 10/ca292af1c9441f7575ffd8e4699c57cc121877fa68e723b584e4b32215bcd8bea6d52a692a31e4dbdeb7d8666345de214014dba6b18ba3479fedc57ed7d339e3
   languageName: node
   linkType: hard
 
