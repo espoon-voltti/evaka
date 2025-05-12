@@ -26,7 +26,9 @@ export function createProxy({
     parseReqBody: false,
     proxyReqPathResolver: typeof path === 'string' ? () => path : path,
     proxyReqOptDecorator: (proxyReqOpts, srcReq) => {
-      const originalHeaders = lowercaseHeaderNames(proxyReqOpts.headers ?? {})
+      const originalHeaders = isHeaders(proxyReqOpts.headers)
+        ? lowercaseHeaderNames(proxyReqOpts.headers ?? {})
+        : {}
 
       // Remove sensitive headers
       delete originalHeaders['authorization']
@@ -42,6 +44,12 @@ export function createProxy({
       return proxyReqOpts
     }
   })
+}
+
+function isHeaders(
+  obj: OutgoingHttpHeaders | readonly string[] | undefined
+): obj is OutgoingHttpHeaders | undefined {
+  return !Array.isArray(obj)
 }
 
 function lowercaseHeaderNames(obj: OutgoingHttpHeaders): OutgoingHttpHeaders {
