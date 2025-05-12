@@ -6,7 +6,6 @@ import isEqual from 'lodash/isEqual'
 import range from 'lodash/range'
 import React, { useCallback, useContext, useMemo, useState } from 'react'
 
-import { isLoading } from 'lib-common/api'
 import { FamilyContact } from 'lib-common/generated/api-types/pis'
 import { ChildId } from 'lib-common/generated/api-types/shared'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
@@ -14,13 +13,12 @@ import { Button } from 'lib-components/atoms/buttons/Button'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import InputField from 'lib-components/atoms/form/InputField'
-import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import { H2, H3 } from 'lib-components/typography'
+import { H3 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
 import { ChildContext } from '../../state'
@@ -37,29 +35,15 @@ import {
 
 export interface Props {
   childId: ChildId
-  startOpen: boolean
 }
 
-export default React.memo(function FamilyContacts({
-  childId,
-  startOpen
-}: Props) {
-  const { i18n } = useTranslation()
+export default React.memo(function FamilyContacts({ childId }: Props) {
   const { permittedActions } = useContext(ChildContext)
 
   const contacts = useQueryResult(familyContactSummaryQuery({ childId }))
-  const [open, setOpen] = useState(startOpen)
 
   return (
-    <CollapsibleContentArea
-      title={<H2 noMargin>{i18n.childInformation.familyContacts.title}</H2>}
-      open={open}
-      toggleOpen={() => setOpen(!open)}
-      opaque
-      paddingVertical="L"
-      data-isloading={isLoading(contacts)}
-      data-qa="family-contacts-collapsible"
-    >
+    <>
       {renderResult(contacts, (contacts) => (
         <FamilyContactTable childId={childId} contacts={contacts} />
       ))}
@@ -67,7 +51,7 @@ export default React.memo(function FamilyContacts({
       {permittedActions.has('READ_BACKUP_PICKUP') && (
         <BackupPickup childId={childId} />
       )}
-    </CollapsibleContentArea>
+    </>
   )
 })
 

@@ -190,10 +190,12 @@ const components = {
     title: (i18n) => i18n.childInformation.backupCares.title,
     dataQa: 'backup-cares-collapsible'
   }),
-  'family-contacts': requireOneOfPermittedActions(
-    FamilyContacts,
-    'READ_FAMILY_CONTACTS'
-  ),
+  'family-contacts': section({
+    component: FamilyContacts,
+    requireOneOfPermittedActions: ['READ_FAMILY_CONTACTS'],
+    title: (i18n) => i18n.childInformation.familyContacts.title,
+    dataQa: 'family-contacts-collapsible'
+  }),
   applications: section({
     component: ChildApplications,
     requireOneOfPermittedActions: ['READ_APPLICATION'],

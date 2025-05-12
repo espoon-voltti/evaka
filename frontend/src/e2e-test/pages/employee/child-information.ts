@@ -1266,7 +1266,7 @@ const collapsibles = {
     section: BackupCaresSection
   },
   familyContacts: {
-    selector: '[data-qa="family-contacts-collapsible"][data-isloading="false"]',
+    selector: '[data-qa="family-contacts-collapsible"]',
     section: FamilyContactsSection
   },
   guardians: {
