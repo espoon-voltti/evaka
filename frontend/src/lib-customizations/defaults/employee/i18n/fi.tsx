@@ -82,6 +82,7 @@ export const fi = {
     download: 'Lataa',
     cancel: 'Peruuta',
     goBack: 'Palaa',
+    leavePage: 'Poistu',
     confirm: 'Vahvista',
     period: 'Ajalle',
     search: 'Hae',
