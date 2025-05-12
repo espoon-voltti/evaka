@@ -151,10 +151,12 @@ const components = {
     ServiceApplicationsSection,
     'READ_SERVICE_APPLICATIONS'
   ),
-  'daily-service-times': requireOneOfPermittedActions(
-    DailyServiceTimesSection,
-    'READ_DAILY_SERVICE_TIMES'
-  ),
+  'daily-service-times': section({
+    component: DailyServiceTimesSection,
+    requireOneOfPermittedActions: ['READ_DAILY_SERVICE_TIMES'],
+    title: (i18n) => i18n.childInformation.dailyServiceTimes.title,
+    dataQa: 'child-daily-service-times-collapsible'
+  }),
   childDocuments: requireOneOfPermittedActions(
     ChildDocumentsSection,
     'READ_CHILD_DOCUMENT'
