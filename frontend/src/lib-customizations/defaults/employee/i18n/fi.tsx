@@ -4244,6 +4244,18 @@ export const fi = {
       quantity: 'Määrä',
       mealTime: 'Ruoka-aika',
       mealType: 'Ruoka-tyyppi',
+      mealTimeValues: {
+        BREAKFAST: 'Aamupala',
+        LUNCH: 'Lounas',
+        SNACK: 'Välipala',
+        DINNER: 'Illallinen',
+        SUPPER: 'Iltapala'
+      },
+      mealTypeValues: {
+        null: 'Seka',
+        VEGAN: 'Vegaani',
+        VEGETABLE: 'Kasvis'
+      },
       specialDiets: 'Erikoisruokavaliot'
     },
     startingPlacements: {

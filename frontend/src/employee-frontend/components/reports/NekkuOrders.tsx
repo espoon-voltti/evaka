@@ -184,16 +184,15 @@ export default React.memo(function NekkuOrders() {
               </Thead>
               <Tbody>
                 {report.map((row, index) => (
-                  <Tr
-                    key={`${index}`}
-                    data-qa="data-rows"
-                  >
+                  <Tr key={`${index}`} data-qa="data-rows">
                     <Td>{row.date.toString()}</Td>
                     <Td>{row.groupName}</Td>
                     <Td>{row.sku}</Td>
                     <Td>{row.quantity}</Td>
                     <Td>{row.mealTime}</Td>
-                    <Td>{row.mealType}</Td>
+                    <Td>
+                      {i18n.reports.nekkuOrders.mealTypeValues[row.mealType]}
+                    </Td>
                     <Td>{row.specialDiets}</Td>
                   </Tr>
                 ))}
