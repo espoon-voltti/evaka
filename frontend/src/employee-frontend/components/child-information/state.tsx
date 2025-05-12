@@ -9,10 +9,6 @@ import { Loading, Result } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { Action } from 'lib-common/generated/action'
 import {
-  ChildBackupCareResponse,
-  ChildBackupCaresResponse
-} from 'lib-common/generated/api-types/backupcare'
-import {
   GuardiansResponse,
   ParentshipWithPermittedActions,
   PersonJSON
@@ -23,7 +19,6 @@ import { pendingQuery, useQueryResult } from 'lib-common/query'
 
 import { parentshipsQuery } from '../person-profile/queries'
 
-import { backupCaresQuery } from './queries'
 import { childQuery, guardiansQuery, placementsQuery } from './queries'
 
 export interface ChildState {
@@ -32,7 +27,6 @@ export interface ChildState {
   permittedActions: Set<Action.Child | Action.Person>
   placements: Result<PlacementResponse>
   parentships: Result<ParentshipWithPermittedActions[]>
-  backupCares: Result<ChildBackupCareResponse[]>
   guardians: Result<PersonJSON[]>
   assistanceNeedVoucherCoefficientsEnabled: Result<boolean>
   consecutivePlacementRanges: FiniteDateRange[]
@@ -46,7 +40,6 @@ const defaultState: ChildState = {
   permittedActions: emptyPermittedActions,
   placements: Loading.of(),
   parentships: Loading.of(),
-  backupCares: Loading.of(),
   guardians: Loading.of(),
   assistanceNeedVoucherCoefficientsEnabled: Loading.of(),
   consecutivePlacementRanges: []
@@ -90,16 +83,6 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
     permittedActions.has('READ_PARENTSHIPS')
       ? parentshipsQuery({ childId: id })
       : pendingQuery<ParentshipWithPermittedActions[]>()
-  )
-
-  const _backupCares = useQueryResult(
-    permittedActions.has('READ_BACKUP_CARE')
-      ? backupCaresQuery({ childId: id })
-      : pendingQuery<ChildBackupCaresResponse>()
-  )
-  const backupCares = useMemo(
-    () => _backupCares.map(({ backupCares }) => backupCares),
-    [_backupCares]
   )
 
   const _guardians = useQueryResult(
@@ -153,7 +136,6 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
       permittedActions,
       placements,
       parentships,
-      backupCares,
       guardians,
       assistanceNeedVoucherCoefficientsEnabled,
       consecutivePlacementRanges
@@ -164,7 +146,6 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
       permittedActions,
       placements,
       parentships,
-      backupCares,
       guardians,
       assistanceNeedVoucherCoefficientsEnabled,
       consecutivePlacementRanges

@@ -10,7 +10,8 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import { UpdateStateFn } from 'lib-common/form-state'
 import {
   BackupCareUnit,
-  ChildBackupCare
+  ChildBackupCare,
+  ChildBackupCareResponse
 } from 'lib-common/generated/api-types/backupcare'
 import { UnitStub } from 'lib-common/generated/api-types/daycare'
 import { ChildId } from 'lib-common/generated/api-types/shared'
@@ -45,6 +46,7 @@ import { createBackupCareMutation, updateBackupCareMutation } from '../queries'
 
 export interface Props {
   childId: ChildId
+  backupCares: ChildBackupCareResponse[]
   backupCare?: ChildBackupCare
 }
 
@@ -82,10 +84,14 @@ const ActionButtons = styled(FixedSpaceRow)`
   justify-content: flex-end;
 `
 
-export default function BackupCareForm({ childId, backupCare }: Props) {
+export default function BackupCareForm({
+  childId,
+  backupCares,
+  backupCare
+}: Props) {
   const { i18n } = useTranslation()
   const { uiMode, clearUiMode } = useContext(UIContext)
-  const { backupCares, consecutivePlacementRanges } = useContext(ChildContext)
+  const { consecutivePlacementRanges } = useContext(ChildContext)
 
   const units = useQueryResult(
     unitsQuery({
@@ -109,18 +115,13 @@ export default function BackupCareForm({ childId, backupCare }: Props) {
   ] => {
     const errors: string[] = []
     const existing: DateRange[] = backupCares
-      .map((bcs) =>
-        bcs
-          .filter(
-            (it) =>
-              backupCare === undefined || it.backupCare.id !== backupCare.id
-          )
-          .map(({ backupCare: { period } }) => ({
-            startDate: period.start,
-            endDate: period.end
-          }))
+      .filter(
+        (it) => backupCare === undefined || it.backupCare.id !== backupCare.id
       )
-      .getOrElse([])
+      .map(({ backupCare: { period } }) => ({
+        startDate: period.start,
+        endDate: period.end
+      }))
 
     const { unit, startDate, endDate } = formState
     if (!unit) {

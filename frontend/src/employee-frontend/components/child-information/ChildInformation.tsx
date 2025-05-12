@@ -4,7 +4,7 @@
 
 import { faCircle } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, { useContext, useEffect, useMemo } from 'react'
+import React, { useContext, useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
 import styled from 'styled-components'
 
@@ -16,16 +16,20 @@ import { useIdRouteParam } from 'lib-common/useRouteParams'
 import { getAge } from 'lib-common/utils/local-date'
 import Title from 'lib-components/atoms/Title'
 import { Button } from 'lib-components/atoms/buttons/Button'
-import { Container, ContentArea } from 'lib-components/layout/Container'
+import {
+  CollapsibleContentArea,
+  Container,
+  ContentArea
+} from 'lib-components/layout/Container'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import { fontWeights } from 'lib-components/typography'
+import { fontWeights, H2 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { faUsers } from 'lib-icons'
 
-import { useTranslation } from '../../state/i18n'
+import { Translations, useTranslation } from '../../state/i18n'
 import { TitleContext, TitleState } from '../../state/title'
 import { UserContext } from '../../state/user'
 import CircularLabel from '../common/CircularLabel'
@@ -95,6 +99,43 @@ function requireOneOfPermittedActions(
   }
 }
 
+function section({
+  component: Component,
+  requireOneOfPermittedActions,
+  title,
+  dataQa
+}: {
+  component: React.FunctionComponent<{ childId: ChildId }>
+  requireOneOfPermittedActions: (Action.Child | Action.Person)[]
+  title: (i18n: Translations) => string
+  dataQa?: string
+}): React.FunctionComponent<SectionProps> {
+  return function Section({ childId, startOpen }: SectionProps) {
+    const { permittedActions } = useContext<ChildState>(ChildContext)
+    const { i18n } = useTranslation()
+    const [open, setOpen] = useState(startOpen)
+    if (
+      !requireOneOfPermittedActions.some((action) =>
+        permittedActions.has(action)
+      )
+    ) {
+      return null
+    }
+    return (
+      <CollapsibleContentArea
+        title={<H2 noMargin>{title(i18n)}</H2>}
+        open={open}
+        toggleOpen={() => setOpen(!open)}
+        opaque
+        paddingVertical="L"
+        data-qa={dataQa}
+      >
+        <Component childId={childId} />
+      </CollapsibleContentArea>
+    )
+  }
+}
+
 const components = {
   income: requireOneOfPermittedActions(ChildIncome, 'READ_INCOME'),
   'fee-alterations': requireOneOfPermittedActions(
@@ -128,7 +169,12 @@ const components = {
     'READ_ASSISTANCE_NEED_DECISIONS',
     'READ_ASSISTANCE_NEED_PRESCHOOL_DECISIONS'
   ),
-  'backup-care': requireOneOfPermittedActions(BackupCare, 'READ_BACKUP_CARE'),
+  'backup-care': section({
+    component: BackupCare,
+    requireOneOfPermittedActions: ['READ_BACKUP_CARE'],
+    title: (i18n) => i18n.childInformation.backupCares.title,
+    dataQa: 'backup-cares-collapsible'
+  }),
   'family-contacts': requireOneOfPermittedActions(
     FamilyContacts,
     'READ_FAMILY_CONTACTS'
