@@ -78,6 +78,14 @@ services:
     ports:
       - "9090:9090"
 
+  pdf-converter:
+    build:
+      context: ../pdf-converter
+    init: true
+    restart: on-failure
+    ports:
+      - "9091:9091"
+
 volumes:
   db-data:
     driver: local
