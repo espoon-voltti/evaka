@@ -39,7 +39,7 @@ import {
 import { useTranslation } from '../state/i18n'
 
 import { renderResult } from './async-rendering'
-import { AssistanceNeedDecisionReportContext } from './reports/AssistanceNeedDecisionReportContext'
+import { ReportNotificationContext } from './reports/ReportNotificationContext'
 import { permittedReportsQuery } from './reports/queries'
 
 const ReportItems = styled.div`
@@ -115,9 +115,10 @@ const Report = React.memo(function Report(props: ReportProps) {
 
 export default React.memo(function Reports() {
   const { i18n } = useTranslation()
-  const { assistanceNeedDecisionCounts } = useContext(
-    AssistanceNeedDecisionReportContext
-  )
+  const {
+    assistanceNeedDecisionCounts,
+    childDocumentDecisionNotificationCount
+  } = useContext(ReportNotificationContext)
 
   const permittedReports = useQueryResult(permittedReportsQuery())
   const permittedReportsSet = useMemo(
@@ -686,6 +687,30 @@ export default React.memo(function Reports() {
                       icon={faDiagnoses}
                       i18n={i18n.reports.titaniaErrors}
                     />
+                  )
+                }
+              : null,
+            reports.has('CHILD_DOCUMENT_DECISIONS') &&
+            featureFlags.decisionChildDocumentTypes
+              ? {
+                  name: i18n.reports.childDocumentDecisions.title,
+                  item: (
+                    <Report
+                      data-qa="report-child-document-decisions"
+                      path="/reports/child-document-decisions"
+                      color={colors.main.m2}
+                      icon={faFileAlt}
+                      i18n={i18n.reports.childDocumentDecisions}
+                    >
+                      {childDocumentDecisionNotificationCount
+                        .map(
+                          (unread) =>
+                            unread > 0 && (
+                              <UnreadCount key="unread">{unread}</UnreadCount>
+                            )
+                        )
+                        .getOrElse(null)}
+                    </Report>
                   )
                 }
               : null,

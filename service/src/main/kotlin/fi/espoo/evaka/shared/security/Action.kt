@@ -267,6 +267,11 @@ sealed interface Action {
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inAnyUnit(),
         ),
+        READ_CHILD_DOCUMENT_DECISIONS_REPORT(
+            HasGlobalRole(ADMIN, DIRECTOR),
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inAnyUnit(),
+            IsEmployee.andIsDecisionMakerForAnyChildDocumentDecision(),
+        ),
         READ_DECISIONS_REPORT(HasGlobalRole(ADMIN, SERVICE_WORKER, DIRECTOR, REPORT_VIEWER)),
         READ_DUPLICATE_PEOPLE_REPORT(HasGlobalRole(ADMIN)),
         READ_ENDED_PLACEMENTS_REPORT(HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN)),

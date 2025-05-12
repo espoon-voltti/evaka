@@ -15,6 +15,7 @@ import {
   getAttendanceReservationReportByChild,
   getChildAgeLanguageReport,
   getChildAttendanceReport,
+  getChildDocumentDecisionsReport,
   getChildDocumentsReport,
   getChildDocumentsReportTemplateOptions,
   getChildrenInDifferentAddressReport,
@@ -200,6 +201,10 @@ export const missingServiceNeedReportQuery = q.query(
 export const manualDuplicationReportQuery = q.query(getManualDuplicationReport)
 
 export const familyDaycareMealReportQuery = q.query(getFamilyDaycareMealReport)
+
+export const childDocumentDecisionsReportQuery = q.query(
+  getChildDocumentDecisionsReport
+)
 
 export const decisionReportQuery = q.query(getDecisionsReport)
 

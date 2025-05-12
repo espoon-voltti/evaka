@@ -42,6 +42,7 @@ SELECT
     answered_by.type AS answered_by_type,
     cdd.id AS decision_id,
     cdd.status AS decision_status,
+    cdd.created_at AS decision_created_at,
     CASE WHEN cdd.valid_from IS NOT NULL THEN daterange(cdd.valid_from, cdd.valid_to, '[]') END AS decision_validity,
     cdd.decision_number AS decision_decision_number
 FROM child_document cd
@@ -108,6 +109,7 @@ fun Database.Read.getCitizenChildDocument(id: ChildDocumentId): ChildDocumentCit
                     dt.archive_externally as template_archive_externally,
                     cdd.id AS decision_id,
                     cdd.status AS decision_status,
+                    cdd.created_at AS decision_created_at,
                     CASE WHEN cdd.valid_from IS NOT NULL THEN daterange(cdd.valid_from, cdd.valid_to, '[]') END AS decision_validity,
                     cdd.decision_number AS decision_decision_number
                 FROM child_document cd

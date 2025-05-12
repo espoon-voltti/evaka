@@ -277,6 +277,39 @@ WHERE decision_maker = ${bind(employee.id)}
             )
         }
 
+    fun andIsDecisionMakerForAnyChildDocumentDecision() =
+        DatabaseActionRule.Unscoped(
+            this,
+            object : DatabaseActionRule.Unscoped.Query<IsEmployee> {
+                override fun cacheKey(user: AuthenticatedUser, now: HelsinkiDateTime): Any =
+                    Pair(user, now)
+
+                override fun execute(
+                    ctx: DatabaseActionRule.QueryContext
+                ): DatabaseActionRule.Deferred<IsEmployee> =
+                    when (ctx.user) {
+                        is AuthenticatedUser.Employee ->
+                            ctx.tx
+                                .createQuery {
+                                    sql(
+                                        """
+SELECT EXISTS (
+    SELECT FROM child_document
+    WHERE decision_maker = ${bind(ctx.user.id)}
+)
+                                """
+                                    )
+                                }
+                                .exactlyOne<Boolean>()
+                                .let { isPermitted ->
+                                    if (isPermitted) DatabaseActionRule.Deferred.Permitted
+                                    else DatabaseActionRule.Deferred.None
+                                }
+                        else -> DatabaseActionRule.Deferred.None
+                    }
+            },
+        )
+
     fun andIsDecisionMakerForAssistanceNeedDecision() =
         rule<AssistanceNeedDecisionId> { employee, _ ->
             sql(

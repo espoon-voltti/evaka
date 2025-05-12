@@ -14,6 +14,7 @@ import {
   getPersonIdentity,
   searchPerson
 } from './generated/api-clients/pis'
+import { getChildDocumentDecisionsReportNotificationCount } from './generated/api-clients/reports'
 import { getServiceNeedOptions } from './generated/api-clients/serviceneed'
 
 const q = new Queries()
@@ -41,3 +42,7 @@ export const areasQuery = q.query(getAreas)
 export const unitsQuery = q.query(getUnits)
 
 export const financeDecisionHandlersQuery = q.query(getFinanceDecisionHandlers)
+
+export const childDocumentDecisionsReportNotificationCountQuery = q.query(
+  getChildDocumentDecisionsReportNotificationCount
+)

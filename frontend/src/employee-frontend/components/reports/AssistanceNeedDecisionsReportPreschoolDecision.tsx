@@ -47,7 +47,7 @@ import {
   decideAssistanceNeedPreschoolDecisionMutation
 } from '../child-information/queries'
 
-import { AssistanceNeedDecisionReportContext } from './AssistanceNeedDecisionReportContext'
+import { ReportNotificationContext } from './ReportNotificationContext'
 
 const DangerButton = styled(LegacyButton)`
   background-color: ${(p) => p.theme.colors.status.danger};
@@ -123,7 +123,7 @@ const DecisionView = React.memo(function DecisionView({
 
   const { user } = useContext(UserContext)
   const { refreshAssistanceNeedDecisionCounts } = useContext(
-    AssistanceNeedDecisionReportContext
+    ReportNotificationContext
   )
   const { mutateAsync: decide, isPending: submitting } = useMutationResult(
     decideAssistanceNeedPreschoolDecisionMutation
