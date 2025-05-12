@@ -8,26 +8,18 @@ import React, { createContext, useMemo } from 'react'
 import { Loading, Result } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { Action } from 'lib-common/generated/action'
-import {
-  GuardiansResponse,
-  ParentshipWithPermittedActions,
-  PersonJSON
-} from 'lib-common/generated/api-types/pis'
+import { PersonJSON } from 'lib-common/generated/api-types/pis'
 import { PlacementResponse } from 'lib-common/generated/api-types/placement'
 import { ChildId } from 'lib-common/generated/api-types/shared'
 import { pendingQuery, useQueryResult } from 'lib-common/query'
 
-import { parentshipsQuery } from '../person-profile/queries'
-
-import { childQuery, guardiansQuery, placementsQuery } from './queries'
+import { childQuery, placementsQuery } from './queries'
 
 export interface ChildState {
   childId: ChildId | undefined
   person: Result<PersonJSON>
   permittedActions: Set<Action.Child | Action.Person>
   placements: Result<PlacementResponse>
-  parentships: Result<ParentshipWithPermittedActions[]>
-  guardians: Result<PersonJSON[]>
   assistanceNeedVoucherCoefficientsEnabled: Result<boolean>
   consecutivePlacementRanges: FiniteDateRange[]
 }
@@ -39,8 +31,6 @@ const defaultState: ChildState = {
   person: Loading.of(),
   permittedActions: emptyPermittedActions,
   placements: Loading.of(),
-  parentships: Loading.of(),
-  guardians: Loading.of(),
   assistanceNeedVoucherCoefficientsEnabled: Loading.of(),
   consecutivePlacementRanges: []
 }
@@ -78,21 +68,6 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
     permittedActions.has('READ_PLACEMENT')
       ? placementsQuery({ childId: id })
       : pendingQuery<PlacementResponse>()
-  )
-  const parentships = useQueryResult(
-    permittedActions.has('READ_PARENTSHIPS')
-      ? parentshipsQuery({ childId: id })
-      : pendingQuery<ParentshipWithPermittedActions[]>()
-  )
-
-  const _guardians = useQueryResult(
-    permittedActions.has('READ_GUARDIANS')
-      ? guardiansQuery({ personId: id })
-      : pendingQuery<GuardiansResponse>()
-  )
-  const guardians = useMemo(
-    () => _guardians.map(({ guardians }) => guardians),
-    [_guardians]
   )
 
   const consecutivePlacementRanges = useMemo(
@@ -135,8 +110,6 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
       person,
       permittedActions,
       placements,
-      parentships,
-      guardians,
       assistanceNeedVoucherCoefficientsEnabled,
       consecutivePlacementRanges
     }),
@@ -145,8 +118,6 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
       person,
       permittedActions,
       placements,
-      parentships,
-      guardians,
       assistanceNeedVoucherCoefficientsEnabled,
       consecutivePlacementRanges
     ]

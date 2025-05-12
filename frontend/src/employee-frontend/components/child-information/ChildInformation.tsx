@@ -12,6 +12,7 @@ import { Action } from 'lib-common/generated/action'
 import { ParentshipWithPermittedActions } from 'lib-common/generated/api-types/pis'
 import { ChildId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
+import { useQueryResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import { getAge } from 'lib-common/utils/local-date'
 import Title from 'lib-components/atoms/Title'
@@ -35,6 +36,7 @@ import { UserContext } from '../../state/user'
 import CircularLabel from '../common/CircularLabel'
 import WarningLabel from '../common/WarningLabel'
 import { getLayout, Layouts } from '../layouts'
+import { parentshipsQuery } from '../person-profile/queries'
 
 import Assistance from './Assistance'
 import BackupCare from './BackupCare'
@@ -144,10 +146,12 @@ const components = {
     title: (i18n) => i18n.childInformation.feeAlteration.title,
     dataQa: 'fee-alteration-collapsible'
   }),
-  guardiansAndParents: requireOneOfPermittedActions(
-    GuardiansAndParents,
-    'READ_GUARDIANS'
-  ),
+  guardiansAndParents: section({
+    component: GuardiansAndParents,
+    requireOneOfPermittedActions: ['READ_GUARDIANS'],
+    title: (i18n) => i18n.personProfile.guardiansAndParents,
+    dataQa: 'person-guardians-collapsible'
+  }),
   placements: requireOneOfPermittedActions(Placements, 'READ_PLACEMENT'),
   serviceApplications: requireOneOfPermittedActions(
     ServiceApplicationsSection,
@@ -183,10 +187,12 @@ const components = {
     FamilyContacts,
     'READ_FAMILY_CONTACTS'
   ),
-  applications: requireOneOfPermittedActions(
-    ChildApplications,
-    'READ_APPLICATION'
-  )
+  applications: section({
+    component: ChildApplications,
+    requireOneOfPermittedActions: ['READ_APPLICATION'],
+    title: (i18n) => i18n.childInformation.application.title,
+    dataQa: 'applications-collapsible'
+  })
 }
 
 const layouts: Layouts<typeof components> = {
@@ -343,7 +349,7 @@ const ChildInformation = React.memo(function ChildInformation({
   const { i18n } = useTranslation()
   const navigate = useNavigate()
   const { roles } = useContext(UserContext)
-  const { person, parentships } = useContext<ChildState>(ChildContext)
+  const { person } = useContext<ChildState>(ChildContext)
 
   const { setTitle, formatTitleName } = useContext<TitleState>(TitleContext)
 
@@ -359,6 +365,7 @@ const ChildInformation = React.memo(function ChildInformation({
 
   const layout = useMemo(() => getLayout(layouts, roles), [roles])
 
+  const parentships = useQueryResult(parentshipsQuery({ childId: id }))
   const currentHeadOfChildId = useMemo(
     () => parentships.map(getCurrentHeadOfChildId).getOrElse(undefined),
     [parentships]

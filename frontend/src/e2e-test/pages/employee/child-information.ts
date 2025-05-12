@@ -55,9 +55,6 @@ export default class ChildInformationPage {
     await this.page
       .find('[data-qa="person-details-section"][data-isloading="false"]')
       .waitUntilVisible()
-    await this.page
-      .find('[data-qa="person-guardians-collapsible"][data-isloading="false"]')
-      .waitUntilVisible()
   }
 
   async assertName(lastName: string, firstName: string) {
