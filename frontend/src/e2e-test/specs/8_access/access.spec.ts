@@ -106,7 +106,7 @@ describe('Child information page', () => {
     })
   })
 
-  test('Staff sees only the units and messaging tabs', async () => {
+  test('Staff sees only the units, reports and messaging tabs', async () => {
     const staff = await Fixture.employee().staff(testDaycare.id).save()
     await employeeLogin(page, staff)
     await page.goto(config.employeeUrl)
@@ -115,7 +115,7 @@ describe('Child information page', () => {
       units: true,
       search: false,
       finance: false,
-      reports: false,
+      reports: true,
       messages: true
     })
   })
