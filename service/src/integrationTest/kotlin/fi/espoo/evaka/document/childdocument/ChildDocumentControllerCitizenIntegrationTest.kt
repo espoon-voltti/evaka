@@ -11,6 +11,7 @@ import fi.espoo.evaka.document.DocumentType
 import fi.espoo.evaka.document.Question
 import fi.espoo.evaka.document.Section
 import fi.espoo.evaka.document.getTemplate
+import fi.espoo.evaka.process.DocumentConfidentiality
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DocumentTemplateId
@@ -104,6 +105,7 @@ class ChildDocumentControllerCitizenIntegrationTest :
                     name = "Pedagoginen arvio 2023",
                     validity = DateRange(clock.today(), clock.today()),
                     content = templateContent,
+                    confidentiality = DocumentConfidentiality(100, "JulkL 24.1 § 25 ja 30 kohdat"),
                 )
             )
             tx.insert(
@@ -137,6 +139,10 @@ class ChildDocumentControllerCitizenIntegrationTest :
         publishDocument(documentId)
         asyncJobRunner.runPendingJobsSync(clock)
         val template = db.read { it.getTemplate(templateId)!! }
+        assertEquals(
+            DocumentConfidentiality(durationYears = 100, basis = "JulkL 24.1 § 25 ja 30 kohdat"),
+            template.confidentiality,
+        )
 
         assertEquals(mapOf(testChild_1.id to 1), getUnreadCount())
         assertEquals(

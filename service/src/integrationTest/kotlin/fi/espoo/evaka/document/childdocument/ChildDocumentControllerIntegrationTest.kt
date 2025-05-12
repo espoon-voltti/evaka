@@ -352,6 +352,13 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                 clock,
                 ChildDocumentCreateRequest(childId = testChild_1.id, templateId = templateIdHojks),
             )
+
+        val document = getDocument(documentId)
+        assertEquals(
+            DocumentConfidentiality(durationYears = 100, basis = "JulkL 24.1 § 25 ja 30 kohdat"),
+            document.template.confidentiality,
+        )
+
         val metadata = getChildDocumentMetadata(documentId).data
         assertNotNull(metadata)
         metadata.also {
