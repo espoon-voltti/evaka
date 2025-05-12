@@ -229,7 +229,6 @@ export default React.memo(function PlacementTerminationForm({
           onChange={(terminationDate) =>
             setState((prev) => ({ ...prev, terminationDate }))
           }
-          openAbove
         />
       </div>
 

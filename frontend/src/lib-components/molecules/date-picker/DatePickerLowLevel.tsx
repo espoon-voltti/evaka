@@ -9,7 +9,9 @@ import React, {
   useRef,
   useState
 } from 'react'
-import { Modifiers } from 'react-day-picker'
+import { OnSelectHandler } from 'react-day-picker'
+import { createPortal } from 'react-dom'
+import FocusLock from 'react-focus-lock'
 import styled from 'styled-components'
 
 import { useBoolean } from 'lib-common/form/hooks'
@@ -34,28 +36,22 @@ const DatePickerWrapper = styled.div`
   display: inline-flex;
   width: ${inputWidth + iconWidth}px;
 `
-const pickerWidth = 294
-const minMargin = 16
-const overflow = (pickerWidth / 2 + minMargin) / 2
 
-const DayPickerPositioner = styled.div<{
-  openAbove?: boolean
-}>`
-  position: absolute;
-  ${({ openAbove }) =>
-    openAbove ? 'bottom' : 'top'}: calc(2.5rem + ${minMargin}px);
-  left: -${overflow}px;
-  right: -${overflow}px;
+const DayPickerPositioner = styled.div`
+  position: fixed;
   z-index: 99999;
   justify-content: center;
   align-items: center;
   display: inline-block;
 `
 
+const pickerHeight = 350
+
 const DayPickerDiv = styled.div`
-  background-color: ${(p) => p.theme.colors.grayscale.g0};
-  padding: ${defaultMargins.s} 0;
+  height: ${pickerHeight}px;
+  padding: ${defaultMargins.s};
   border-radius: 2px;
+  background-color: ${(p) => p.theme.colors.grayscale.g0};
   box-shadow: 0 0 4px rgba(0, 0, 0, 0.25);
   display: flex;
   justify-content: center;
@@ -129,18 +125,15 @@ export interface DatePickerLowLevelProps {
   'data-qa'?: string
   id?: string
   required?: boolean
-  openAbove?: boolean
   initialMonth?: LocalDate
   minDate?: LocalDate
   maxDate?: LocalDate
   useBrowserPicker?: boolean
-  openOnFocus?: boolean
 }
 
 export default React.memo(function DatePickerLowLevel({
   value,
   onChange,
-  onFocus,
   onBlur,
   locale,
   info,
@@ -148,60 +141,46 @@ export default React.memo(function DatePickerLowLevel({
   disabled,
   id,
   required,
-  openAbove,
   initialMonth,
   minDate,
   maxDate,
   useBrowserPicker = nativeDatePickerEnabled,
-  'data-qa': dataQa,
-  openOnFocus = false
+  'data-qa': dataQa
 }: DatePickerLowLevelProps) {
-  const [showDatePicker, useShowDatePicker] = useBoolean(false)
+  const [datePickerShown, useDatePickerShown] = useBoolean(false)
   const wrapperRef = useRef<HTMLDivElement>(null)
   const pickerRef = useRef<HTMLDivElement>(null)
   const [isDatePicked, setIsDatePicked] = useState(false)
 
-  const showDatePickerOn = useShowDatePicker.on
-  const showDatePickerOff = useShowDatePicker.off
+  const hideDatePicker = useDatePickerShown.off
+  const toggleDatePicker = useDatePickerShown.toggle
 
   const i18n = useTranslations()
 
-  const handleUserKeyPress = useCallback(
-    (e: React.KeyboardEvent) => {
-      if (e.key === 'Esc' || e.key === 'Escape' || e.key === 'Enter') {
-        e.stopPropagation()
-        if (e.key === 'Enter' && !(e.target instanceof HTMLInputElement)) {
-          return
-        }
-        showDatePickerOff()
-      }
-      if (!disabled && !showDatePicker && e.key === 'ArrowDown') {
-        showDatePickerOn()
-      }
-    },
-    [disabled, showDatePicker, showDatePickerOff, showDatePickerOn]
-  )
-
-  const handleDayClick = useCallback(
-    (day: Date, modifiers?: Modifiers) => {
+  const handleDateSelect = useCallback<OnSelectHandler<Date | undefined>>(
+    (day, _triggerDate, modifiers) => {
       if (modifiers?.disabled) {
         return
       }
       setIsDatePicked(true)
-      showDatePickerOff()
-      onChange(LocalDate.fromSystemTzDate(day).format())
+      hideDatePicker()
+      if (day) {
+        onChange(LocalDate.fromSystemTzDate(day).format())
+      }
     },
-    [onChange, showDatePickerOff]
+    [hideDatePicker, onChange]
   )
 
-  const handleFocus = useCallback(
-    (e: React.FocusEvent<HTMLInputElement>) => {
-      if (!disabled && openOnFocus) {
-        showDatePickerOn()
+  const handleEsc = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        // If the datepicker is inside a parent that also closes with Escape
+        // (e.g. a modal), this prevents the parent from closing
+        e.stopPropagation()
+        hideDatePicker()
       }
-      onFocus?.(e)
     },
-    [disabled, onFocus, openOnFocus, showDatePickerOn]
+    [hideDatePicker]
   )
 
   const handleBlur = useCallback(
@@ -215,81 +194,46 @@ export default React.memo(function DatePickerLowLevel({
     [onBlur, onChange]
   )
 
-  useLayoutEffect(() => {
-    if (showDatePicker) {
-      const realignPicker = () => {
-        if (wrapperRef.current) {
-          const distanceFromLeftEdge = wrapperRef.current.offsetLeft
-          const distanceFromRightEdge =
-            window.innerWidth - wrapperRef.current.offsetLeft - inputWidth
-
-          const leftOffset =
-            overflow - Math.min(overflow, distanceFromLeftEdge - minMargin)
-          const rightOffset =
-            overflow - Math.min(overflow, distanceFromRightEdge - minMargin)
-
-          if (pickerRef.current && (leftOffset !== 0 || rightOffset !== 0)) {
-            const left = -overflow + leftOffset - rightOffset
-            pickerRef.current.style.left = `${left}px`
-            const right = -overflow - leftOffset + rightOffset
-            pickerRef.current.style.right = `${right}px`
-          }
-        }
-      }
-      realignPicker()
-      addEventListener('resize', realignPicker, { passive: true })
-      return () => removeEventListener('resize', realignPicker)
-    }
-    return undefined
-  }, [showDatePicker])
+  useFloatingPositioning({
+    anchorRef: wrapperRef,
+    floatingRef: pickerRef,
+    floatingHeight: pickerHeight,
+    active: datePickerShown
+  })
 
   useEffect(() => {
-    function handleEvent(event: { target: EventTarget | null; type: string }) {
-      if (event.target instanceof Element) {
-        if (wrapperRef.current?.contains(event.target)) {
-          return
-        }
-        if (
-          event.type === 'pointerup' &&
-          event.target.classList.contains('modal-container')
-        ) {
-          return // do not close when clicking on modal scrollbar
-        }
+    const handleClickOutside = (event: {
+      target: EventTarget | null
+      type: string
+    }) => {
+      if (
+        event.target instanceof Element &&
+        !wrapperRef.current?.contains(event.target) &&
+        !pickerRef.current?.contains(event.target)
+      ) {
+        hideDatePicker()
       }
-
-      showDatePickerOff()
     }
 
-    if (showDatePicker) {
-      addEventListener('focusin', handleEvent)
-      addEventListener('pointerup', handleEvent)
+    if (datePickerShown) {
+      addEventListener('pointerup', handleClickOutside)
 
       return () => {
-        removeEventListener('focusin', handleEvent)
-        removeEventListener('pointerup', handleEvent)
+        removeEventListener('pointerup', handleClickOutside)
       }
     }
 
     return () => undefined
-  }, [showDatePickerOff, showDatePicker])
-
-  const toggleDatePicker = useCallback(() => {
-    if (showDatePicker) {
-      showDatePickerOff()
-    } else {
-      showDatePickerOn()
-    }
-  }, [showDatePicker, showDatePickerOff, showDatePickerOn])
+  }, [hideDatePicker, datePickerShown])
 
   return (
-    <DatePickerWrapper ref={wrapperRef} onKeyDown={handleUserKeyPress}>
+    <DatePickerWrapper ref={wrapperRef}>
       <DatePickerInput
         value={value}
         onChange={onChange}
-        onFocus={handleFocus}
-        onBlur={!showDatePicker ? handleBlur : onBlur}
+        onBlur={!datePickerShown ? handleBlur : onBlur}
         disabled={disabled}
-        info={showDatePicker ? undefined : info}
+        info={datePickerShown ? undefined : info}
         data-qa={dataQa}
         id={id}
         required={required}
@@ -305,25 +249,31 @@ export default React.memo(function DatePickerLowLevel({
         disabled={disabled}
         aria-controls="dialog"
         aria-haspopup="dialog"
-        aria-expanded={showDatePicker}
+        aria-expanded={datePickerShown}
         aria-label={
-          showDatePicker ? i18n.datePicker.close : i18n.datePicker.open
+          datePickerShown ? i18n.datePicker.close : i18n.datePicker.open
         }
       />
-      {!nativeDatePickerEnabled && showDatePicker ? (
-        <DayPickerPositioner ref={pickerRef} openAbove={openAbove}>
-          <DayPickerDiv>
-            <DatePickerDay
-              locale={locale}
-              inputValue={value}
-              initialMonth={initialMonth}
-              handleDayClick={handleDayClick}
-              minDate={minDate}
-              maxDate={maxDate}
-            />
-          </DayPickerDiv>
-        </DayPickerPositioner>
-      ) : null}
+      {!useBrowserPicker && datePickerShown
+        ? createPortal(
+            <FocusLock returnFocus>
+              <DayPickerPositioner ref={pickerRef} onKeyDown={handleEsc}>
+                <DayPickerDiv>
+                  <DatePickerDay
+                    locale={locale}
+                    inputValue={value}
+                    initialMonth={initialMonth}
+                    onSelect={handleDateSelect}
+                    minDate={minDate}
+                    maxDate={maxDate}
+                  />
+                </DayPickerDiv>
+              </DayPickerPositioner>
+              )
+            </FocusLock>,
+            document.getElementById('datepicker-container') ?? document.body
+          )
+        : null}
     </DatePickerWrapper>
   )
 })
@@ -332,3 +282,94 @@ const StyledIconButton = styled(IconOnlyButton)`
   width: 100%;
   margin: 0 0 0 4px;
 `
+
+export function useFloatingPositioning({
+  anchorRef,
+  floatingRef,
+  floatingHeight,
+  active
+}: {
+  anchorRef: React.RefObject<HTMLElement>
+  floatingRef: React.RefObject<HTMLElement>
+  floatingHeight: number
+  active: boolean
+}) {
+  const position = useCallback(() => {
+    // Minimum distance of the floating element from viewport edges
+    const margin = 4 // px
+
+    const viewportWidth = window.innerWidth
+    const viewportHeight = window.innerHeight
+    const scrollBarWidth = viewportWidth - document.documentElement.clientWidth
+
+    const verticalMargin = margin
+    const horizontalMargin = scrollBarWidth + margin
+
+    const anchor = anchorRef.current
+    const floating = floatingRef.current
+    if (!anchor || !floating) return
+
+    const anchorRect = anchor.getBoundingClientRect()
+
+    const spaceBelow = viewportHeight - anchorRect.bottom
+    const spaceAbove = anchorRect.top
+    const openAbove = spaceBelow < floatingHeight && spaceAbove > spaceBelow
+    const top = openAbove
+      ? anchorRect.top - floating.offsetHeight - verticalMargin
+      : anchorRect.bottom + verticalMargin
+
+    const maxLeft = viewportWidth - floating.offsetWidth - horizontalMargin
+    const minLeft = horizontalMargin
+    const left = Math.min(Math.max(anchorRect.left, minLeft), maxLeft)
+
+    Object.assign(floating.style, {
+      top: `${top}px`,
+      left: `${left}px`
+    })
+  }, [anchorRef, floatingHeight, floatingRef])
+
+  useLayoutEffect(() => {
+    if (!active) return
+    position()
+  }, [active, position])
+
+  useEffect(() => {
+    if (!active) return
+
+    const anchor = anchorRef.current
+    const floating = floatingRef.current
+    if (!anchor || !floating) return
+
+    const scrollables = getScrollableAncestors(anchor)
+    scrollables.forEach((el) =>
+      el.addEventListener('scroll', position, { passive: true })
+    )
+    window.addEventListener('resize', position)
+
+    return () => {
+      scrollables.forEach((el) => el.removeEventListener('scroll', position))
+      window.removeEventListener('resize', position)
+    }
+  }, [active, anchorRef, floatingRef, position])
+}
+
+function getScrollableAncestors(el: HTMLElement): (HTMLElement | Window)[] {
+  const scrollables: (HTMLElement | Window)[] = []
+
+  let parent = el.parentElement
+  while (parent) {
+    if (isScrollable(parent)) scrollables.push(parent)
+    parent = parent.parentElement
+  }
+  scrollables.push(window)
+
+  return scrollables
+}
+
+function isScrollable(el: HTMLElement) {
+  const { overflowX, overflowY } = window.getComputedStyle(el)
+  return (
+    /(auto|scroll|overlay)/.test(overflowX) ||
+    /(auto|scroll|overlay)/.test(overflowY)
+  )
+}
