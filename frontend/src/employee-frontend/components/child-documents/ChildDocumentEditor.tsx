@@ -906,7 +906,6 @@ const AcceptDecisionForm = React.memo(function AcceptDecisionForm({
           bind={validity}
           locale={lang}
           data-qa="decision-validity-picker"
-          openAbove
         />
       </FixedSpaceColumn>
       <ConfirmedMutation
