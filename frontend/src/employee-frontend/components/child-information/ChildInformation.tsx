@@ -138,10 +138,12 @@ function section({
 
 const components = {
   income: requireOneOfPermittedActions(ChildIncome, 'READ_INCOME'),
-  'fee-alterations': requireOneOfPermittedActions(
-    FeeAlteration,
-    'READ_FEE_ALTERATIONS'
-  ),
+  'fee-alterations': section({
+    component: FeeAlteration,
+    requireOneOfPermittedActions: ['READ_FEE_ALTERATIONS'],
+    title: (i18n) => i18n.childInformation.feeAlteration.title,
+    dataQa: 'fee-alteration-collapsible'
+  }),
   guardiansAndParents: requireOneOfPermittedActions(
     GuardiansAndParents,
     'READ_GUARDIANS'
