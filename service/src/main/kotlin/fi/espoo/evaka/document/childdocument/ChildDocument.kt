@@ -145,6 +145,7 @@ data class ChildDocumentDecision(
     @PropagateNull val id: ChildDocumentDecisionId,
     val status: ChildDocumentDecisionStatus,
     val validity: DateRange?,
+    val decisionNumber: Int,
 )
 
 data class ChildDocumentSummary(

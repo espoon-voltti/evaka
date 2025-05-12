@@ -66,7 +66,8 @@ SELECT
     answered_by.type AS answered_by_type,
     cdd.id AS decision_id, 
     cdd.status AS decision_status,
-    CASE WHEN cdd.valid_from IS NOT NULL THEN daterange(cdd.valid_from, cdd.valid_to, '[]') END AS decision_validity
+    CASE WHEN cdd.valid_from IS NOT NULL THEN daterange(cdd.valid_from, cdd.valid_to, '[]') END AS decision_validity,
+    cdd.decision_number AS decision_decision_number
 FROM child_document cd
 JOIN document_template dt on cd.template_id = dt.id
 LEFT JOIN evaka_user answered_by ON cd.answered_by = answered_by.id
@@ -159,7 +160,8 @@ SELECT
     cd.decision_maker,
     cdd.id AS decision_id,
     cdd.status AS decision_status,
-    CASE WHEN cdd.valid_from IS NOT NULL THEN daterange(cdd.valid_from, cdd.valid_to, '[]') END AS decision_validity
+    CASE WHEN cdd.valid_from IS NOT NULL THEN daterange(cdd.valid_from, cdd.valid_to, '[]') END AS decision_validity,
+    cdd.decision_number AS decision_decision_number
 FROM child_document cd
 JOIN document_template dt on cd.template_id = dt.id
 JOIN person p on cd.child_id = p.id
