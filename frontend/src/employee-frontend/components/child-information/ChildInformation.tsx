@@ -152,7 +152,12 @@ const components = {
     title: (i18n) => i18n.personProfile.guardiansAndParents,
     dataQa: 'person-guardians-collapsible'
   }),
-  placements: requireOneOfPermittedActions(Placements, 'READ_PLACEMENT'),
+  placements: section({
+    component: Placements,
+    requireOneOfPermittedActions: ['READ_PLACEMENT'],
+    title: (i18n) => i18n.childInformation.placements.title,
+    dataQa: 'child-placements-collapsible'
+  }),
   serviceApplications: requireOneOfPermittedActions(
     ServiceApplicationsSection,
     'READ_SERVICE_APPLICATIONS'
@@ -167,10 +172,12 @@ const components = {
     ChildDocumentsSection,
     'READ_CHILD_DOCUMENT'
   ),
-  pedagogicalDocuments: requireOneOfPermittedActions(
-    PedagogicalDocuments,
-    'READ_PEDAGOGICAL_DOCUMENTS'
-  ),
+  pedagogicalDocuments: section({
+    component: PedagogicalDocuments,
+    requireOneOfPermittedActions: ['READ_PEDAGOGICAL_DOCUMENTS'],
+    title: (i18n) => i18n.childInformation.pedagogicalDocument.title,
+    dataQa: 'pedagogical-documents-collapsible'
+  }),
   assistance: requireOneOfPermittedActions(
     Assistance,
     'READ_ASSISTANCE',

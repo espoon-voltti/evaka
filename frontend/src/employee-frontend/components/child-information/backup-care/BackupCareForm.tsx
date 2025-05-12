@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import orderBy from 'lodash/orderBy'
+import sortBy from 'lodash/sortBy'
 import React, { useContext, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
@@ -17,6 +18,7 @@ import { UnitStub } from 'lib-common/generated/api-types/daycare'
 import { ChildId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import {
+  constantQuery,
   first,
   second,
   useQueryResult,
@@ -42,7 +44,11 @@ import {
   isDateRangeInverted,
   isDateRangeOverlappingWithExisting
 } from '../../../utils/validation/validations'
-import { createBackupCareMutation, updateBackupCareMutation } from '../queries'
+import {
+  createBackupCareMutation,
+  placementsQuery,
+  updateBackupCareMutation
+} from '../queries'
 
 export interface Props {
   childId: ChildId
@@ -91,7 +97,7 @@ export default function BackupCareForm({
 }: Props) {
   const { i18n } = useTranslation()
   const { uiMode, clearUiMode } = useContext(UIContext)
-  const { consecutivePlacementRanges } = useContext(ChildContext)
+  const { permittedActions } = useContext(ChildContext)
 
   const units = useQueryResult(
     unitsQuery({
@@ -99,6 +105,48 @@ export default function BackupCareForm({
       type: 'DAYCARE',
       from: LocalDate.todayInHelsinkiTz()
     })
+  )
+
+  const placements = useQueryResult(
+    permittedActions.has('READ_PLACEMENT')
+      ? placementsQuery({ childId })
+      : constantQuery(null)
+  )
+
+  const consecutivePlacementRanges = useMemo(
+    () =>
+      placements
+        .map((p) =>
+          p !== null
+            ? sortBy(p.placements, (placement) =>
+                placement.startDate.toSystemTzDate().getTime()
+              ).reduce((prev, curr) => {
+                const currentRange = new FiniteDateRange(
+                  curr.startDate,
+                  curr.endDate
+                )
+                const fittingExistingIndex = prev.findIndex((range) =>
+                  range.adjacentTo(currentRange)
+                )
+
+                if (fittingExistingIndex > -1) {
+                  const fittingExisting = prev[fittingExistingIndex]
+
+                  const newRange = fittingExisting.leftAdjacentTo(currentRange)
+                    ? fittingExisting.withEnd(curr.endDate)
+                    : fittingExisting.withStart(curr.startDate)
+
+                  const copy = Array.from(prev)
+                  copy[fittingExistingIndex] = newRange
+                  return copy
+                }
+
+                return [...prev, currentRange]
+              }, [] as FiniteDateRange[])
+            : []
+        )
+        .getOrElse([]),
+    [placements]
   )
 
   const initialFormState: FormState = {
