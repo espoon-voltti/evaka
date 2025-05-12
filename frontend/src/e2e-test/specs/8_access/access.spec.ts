@@ -30,7 +30,9 @@ beforeAll(async () => {
   }).save()
 })
 beforeEach(async () => {
-  page = await Page.open()
+  page = await Page.open({
+    employeeCustomizations: { featureFlags: { absenceApplications: true } }
+  })
   nav = new EmployeeNav(page)
   childInfo = new ChildInformationPage(page)
 })
@@ -146,6 +148,7 @@ describe('Child information page sections', () => {
       feeAlterations: true,
       guardians: true,
       placements: true,
+      absenceApplications: true,
       serviceApplications: true,
       assistance: true,
       backupCares: true,
@@ -166,6 +169,7 @@ describe('Child information page sections', () => {
       feeAlterations: false,
       guardians: true,
       placements: true,
+      absenceApplications: false,
       serviceApplications: false,
       assistance: true,
       backupCares: true,
@@ -186,6 +190,7 @@ describe('Child information page sections', () => {
       feeAlterations: true,
       guardians: true,
       placements: true,
+      absenceApplications: false,
       serviceApplications: false,
       assistance: false,
       backupCares: true,
@@ -206,6 +211,7 @@ describe('Child information page sections', () => {
       feeAlterations: false,
       guardians: false,
       placements: true,
+      absenceApplications: false,
       serviceApplications: false,
       assistance: true,
       backupCares: true,
@@ -228,6 +234,7 @@ describe('Child information page sections', () => {
       feeAlterations: false,
       guardians: true,
       placements: true,
+      absenceApplications: true,
       serviceApplications: true,
       assistance: true,
       backupCares: true,
@@ -250,6 +257,7 @@ describe('Child information page sections', () => {
       feeAlterations: false,
       guardians: false,
       placements: true,
+      absenceApplications: false,
       serviceApplications: false,
       assistance: true,
       backupCares: true,

@@ -6,6 +6,7 @@ package fi.espoo.evaka.shared.security
 
 import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.daycare.domain.ProviderType
+import fi.espoo.evaka.shared.AbsenceApplicationId
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ApplicationNoteId
 import fi.espoo.evaka.shared.AssistanceActionId
@@ -338,6 +339,14 @@ sealed interface Action {
     }
 
     sealed interface Citizen : Action {
+        enum class AbsenceApplication(
+            override vararg val defaultRules: ScopedActionRule<in AbsenceApplicationId>
+        ) : ScopedAction<AbsenceApplicationId> {
+            DELETE(IsCitizen(allowWeakLogin = true).absenceApplicationCreatedBy());
+
+            override fun toString(): String = "${javaClass.name}.$name"
+        }
+
         enum class Application(
             override vararg val defaultRules: ScopedActionRule<in ApplicationId>
         ) : ScopedAction<ApplicationId> {
@@ -447,6 +456,14 @@ sealed interface Action {
             READ_PEDAGOGICAL_DOCUMENTS(
                 IsCitizen(allowWeakLogin = false).guardianOfChild(),
                 IsCitizen(allowWeakLogin = false).fosterParentOfChild(),
+            ),
+            CREATE_ABSENCE_APPLICATION(
+                IsCitizen(allowWeakLogin = true).guardianOfChild(),
+                IsCitizen(allowWeakLogin = true).fosterParentOfChild(),
+            ),
+            READ_ABSENCE_APPLICATIONS(
+                IsCitizen(allowWeakLogin = true).guardianOfChild(),
+                IsCitizen(allowWeakLogin = true).fosterParentOfChild(),
             ),
             CREATE_SERVICE_APPLICATION(
                 IsCitizen(allowWeakLogin = false).guardianOfChild(),
@@ -609,6 +626,17 @@ sealed interface Action {
                 IsCitizen(allowWeakLogin = true).fosterParentOfChildOfCalendarEventTimeReservation(),
             )
         }
+    }
+
+    enum class AbsenceApplication(
+        override vararg val defaultRules: ScopedActionRule<in AbsenceApplicationId>
+    ) : ScopedAction<AbsenceApplicationId> {
+        DECIDE(
+            HasGlobalRole(ADMIN),
+            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfAbsenceApplication(),
+        );
+
+        override fun toString(): String = "${javaClass.name}.$name"
     }
 
     enum class Application(override vararg val defaultRules: ScopedActionRule<in ApplicationId>) :
@@ -994,6 +1022,10 @@ sealed interface Action {
                     EARLY_CHILDHOOD_EDUCATION_SECRETARY,
                 )
                 .inPlacementUnitOfChild(),
+        ),
+        READ_ABSENCE_APPLICATIONS(
+            HasGlobalRole(ADMIN),
+            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChild(),
         ),
         CREATE_ABSENCE(
             HasGlobalRole(ADMIN),
@@ -2044,6 +2076,7 @@ sealed interface Action {
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(UNIT_SUPERVISOR).inUnit(),
         ),
+        READ_ABSENCE_APPLICATIONS(HasGlobalRole(ADMIN), HasUnitRole(UNIT_SUPERVISOR).inUnit()),
         READ_TRANSFER_APPLICATIONS(HasGlobalRole(ADMIN, SERVICE_WORKER)),
         READ_SERVICE_APPLICATIONS(
             HasGlobalRole(ADMIN),

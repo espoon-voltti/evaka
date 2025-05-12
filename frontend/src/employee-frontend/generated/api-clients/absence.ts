@@ -5,7 +5,12 @@
 // GENERATED FILE: no manual modifications
 
 import { Absence } from 'lib-common/generated/api-types/absence'
+import { AbsenceApplicationId } from 'lib-common/generated/api-types/shared'
+import { AbsenceApplicationStatus } from 'lib-common/generated/api-types/absence'
+import { AbsenceApplicationStatusUpdateRequest } from 'lib-common/generated/api-types/absence'
+import { AbsenceApplicationSummaryEmployee } from 'lib-common/generated/api-types/absence'
 import { AbsenceUpsert } from 'lib-common/generated/api-types/absence'
+import { DaycareId } from 'lib-common/generated/api-types/shared'
 import { GroupId } from 'lib-common/generated/api-types/shared'
 import { GroupMonthCalendar } from 'lib-common/generated/api-types/absence'
 import { HolidayReservationsDelete } from 'lib-common/generated/api-types/absence'
@@ -16,6 +21,7 @@ import { Presence } from 'lib-common/generated/api-types/absence'
 import { client } from '../../api/client'
 import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonAbsence } from 'lib-common/generated/api-types/absence'
+import { deserializeJsonAbsenceApplicationSummaryEmployee } from 'lib-common/generated/api-types/absence'
 import { deserializeJsonGroupMonthCalendar } from 'lib-common/generated/api-types/absence'
 import { uri } from 'lib-common/uri'
 
@@ -115,6 +121,48 @@ export async function upsertAbsences(
     url: uri`/employee/absences/${request.groupId}`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<AbsenceUpsert[]>
+  })
+  return json
+}
+
+
+/**
+* Generated from fi.espoo.evaka.absence.application.AbsenceApplicationControllerEmployee.getAbsenceApplications
+*/
+export async function getAbsenceApplications(
+  request: {
+    unitId?: DaycareId | null,
+    childId?: PersonId | null,
+    status?: AbsenceApplicationStatus | null
+  }
+): Promise<AbsenceApplicationSummaryEmployee[]> {
+  const params = createUrlSearchParams(
+    ['unitId', request.unitId],
+    ['childId', request.childId],
+    ['status', request.status?.toString()]
+  )
+  const { data: json } = await client.request<JsonOf<AbsenceApplicationSummaryEmployee[]>>({
+    url: uri`/employee/absence-application`.toString(),
+    method: 'GET',
+    params
+  })
+  return json.map(e => deserializeJsonAbsenceApplicationSummaryEmployee(e))
+}
+
+
+/**
+* Generated from fi.espoo.evaka.absence.application.AbsenceApplicationControllerEmployee.putAbsenceApplicationStatus
+*/
+export async function putAbsenceApplicationStatus(
+  request: {
+    id: AbsenceApplicationId,
+    body: AbsenceApplicationStatusUpdateRequest
+  }
+): Promise<void> {
+  const { data: json } = await client.request<JsonOf<void>>({
+    url: uri`/employee/absence-application/${request.id}/status`.toString(),
+    method: 'PUT',
+    data: request.body satisfies JsonCompatible<AbsenceApplicationStatusUpdateRequest>
   })
   return json
 }

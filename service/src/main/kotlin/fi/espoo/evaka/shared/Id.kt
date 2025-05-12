@@ -14,6 +14,8 @@ import java.util.UUID
 sealed interface DatabaseTable {
     sealed class Absence : DatabaseTable
 
+    sealed class AbsenceApplication : DatabaseTable
+
     sealed class Application : DatabaseTable
 
     sealed class ApplicationNote : DatabaseTable
@@ -194,6 +196,8 @@ sealed interface DatabaseTable {
 }
 
 typealias AbsenceId = Id<DatabaseTable.Absence>
+
+typealias AbsenceApplicationId = Id<DatabaseTable.AbsenceApplication>
 
 typealias ApplicationId = Id<DatabaseTable.Application>
 

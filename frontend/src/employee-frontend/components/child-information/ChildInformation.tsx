@@ -23,6 +23,7 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import { fontWeights } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+import { featureFlags } from 'lib-customizations/employee'
 import { faUsers } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
@@ -32,6 +33,7 @@ import CircularLabel from '../common/CircularLabel'
 import WarningLabel from '../common/WarningLabel'
 import { getLayout, Layouts } from '../layouts'
 
+import { AbsenceApplicationsSection } from './AbsenceApplicationsSection'
 import Assistance from './Assistance'
 import BackupCare from './BackupCare'
 import ChildApplications from './ChildApplications'
@@ -106,6 +108,10 @@ const components = {
     'READ_GUARDIANS'
   ),
   placements: requireOneOfPermittedActions(Placements, 'READ_PLACEMENT'),
+  absenceApplications: requireOneOfPermittedActions(
+    AbsenceApplicationsSection,
+    'READ_ABSENCE_APPLICATIONS'
+  ),
   serviceApplications: requireOneOfPermittedActions(
     ServiceApplicationsSection,
     'READ_SERVICE_APPLICATIONS'
@@ -144,6 +150,9 @@ const layouts: Layouts<typeof components> = {
     { component: 'family-contacts', open: false },
     { component: 'guardiansAndParents', open: false },
     { component: 'placements', open: false },
+    ...(featureFlags.absenceApplications
+      ? [{ component: 'absenceApplications' as const, open: false }]
+      : []),
     { component: 'serviceApplications', open: false },
     { component: 'backup-care', open: false },
     { component: 'daily-service-times', open: false },
@@ -213,6 +222,9 @@ const layouts: Layouts<typeof components> = {
   ['UNIT_SUPERVISOR']: [
     { component: 'guardiansAndParents', open: false },
     { component: 'placements', open: false },
+    ...(featureFlags.absenceApplications
+      ? [{ component: 'absenceApplications' as const, open: false }]
+      : []),
     { component: 'serviceApplications', open: false },
     { component: 'backup-care', open: false },
     { component: 'daily-service-times', open: false },

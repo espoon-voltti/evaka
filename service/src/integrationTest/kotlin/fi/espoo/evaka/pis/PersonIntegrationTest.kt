@@ -83,6 +83,7 @@ class PersonIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val expected =
             listOf(
                 PersonReference("absence", "child_id"),
+                PersonReference("absence_application", "child_id"),
                 PersonReference("application", "child_id"),
                 PersonReference("application", "guardian_id"),
                 PersonReference("application_other_guardian", "guardian_id"),

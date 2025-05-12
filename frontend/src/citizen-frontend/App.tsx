@@ -35,6 +35,7 @@ import { sessionKeepalive } from './auth/utils'
 import CalendarPage from './calendar/CalendarPage'
 import ChildDocumentPage from './child-documents/ChildDocumentPage'
 import ChildPage from './children/ChildPage'
+import { NewAbsenceApplicationPage } from './children/sections/absence-applications/NewAbsenceApplicationPage'
 import NewServiceApplicationPage from './children/sections/service-need-and-daily-service-time/NewServiceApplicationPage'
 import AssistanceDecisionPage from './decisions/assistance-decision-page/AssistanceDecisionPage'
 import AssistancePreschoolDecisionPage from './decisions/assistance-decision-page/AssistancePreschoolDecisionPage'
@@ -296,6 +297,18 @@ export default createBrowserRouter([
                     <NewServiceApplicationPage />
                   </ScrollToTop>
                 </RequireAuth>
+              )
+            }
+          ]
+        : []),
+      ...(featureFlags.absenceApplications
+        ? [
+            {
+              path: '/children/:childId/absence-application',
+              element: (
+                <ScrollToTop>
+                  <NewAbsenceApplicationPage />
+                </ScrollToTop>
               )
             }
           ]

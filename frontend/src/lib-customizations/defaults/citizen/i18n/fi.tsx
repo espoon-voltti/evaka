@@ -2773,6 +2773,29 @@ export default {
       variableTime: 'Päivittäinen aika vaihtelee',
       empty: 'Ei määritelty'
     },
+    absenceApplication: {
+      title: 'Pitkät poissaolot esiopetuksesta',
+      header: 'Esiopetuksen poissaolot',
+      info: 'Jos lapsesi on tarkoitus olla yli viikko poissa esiopetuksesta, tee asiasta hakemus.',
+      new: 'Uusi poissaolohakemus',
+      list: 'Haetut poissaolojaksot',
+      cancel: 'Peru',
+      cancelConfirmation: 'Perutaanko hakemus?',
+      description: 'Poissaolon syy',
+      rejectedReason: 'Hylkäyksen syy',
+      status: {
+        WAITING_DECISION: 'Odottaa päätöstä',
+        ACCEPTED: 'Hyväksytty',
+        REJECTED: 'Hylätty'
+      },
+      newPage: {
+        title: 'Pitkä poissaolo esiopetuksesta',
+        range: 'Aika, jonka lapsi on poissa esiopetuksesta',
+        info: 'Hakemuksesi lähtee esiopetuksesta vastaavalle henkilökunnalle hyväksyttäväksi.',
+        confirmation:
+          'Ymmärrän, että henkilökunta merkitsee lapselleni poissaolon vasta, kun hakemus on hyväksytty.'
+      }
+    },
     serviceApplication: {
       title: 'Palveluntarpeen muutoshakemukset',
       sentAt: 'Lähetetty',

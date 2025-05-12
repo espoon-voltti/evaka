@@ -9,6 +9,8 @@ import LocalDate from '../../local-date'
 import { Id } from '../../id-type'
 import { JsonOf } from '../../json'
 
+export type AbsenceApplicationId = Id<'AbsenceApplication'>
+
 export type ApplicationId = Id<'Application'>
 
 export type ApplicationNoteId = Id<'ApplicationNote'>

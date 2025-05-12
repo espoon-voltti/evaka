@@ -23,6 +23,7 @@ import {
   TextInput,
   TreeDropdown
 } from '../../../utils/page'
+import ChildInformationPage from '../child-information'
 
 import { UnitCalendarPageBase } from './unit-calendar-page-base'
 import { DiscussionSurveyListPage } from './unit-discussion-survey-page'
@@ -769,6 +770,19 @@ export class ApplicationProcessPage {
 
   async waitUntilVisible() {
     await this.waitingConfirmation.waitUntilVisible()
+  }
+
+  async assertAbsenceApplications(expected: string[]) {
+    const table = this.page.findByDataQa('absence-applications-table')
+    const rows = table.findAllByDataQa('absence-application-row')
+    await rows.assertTextsEqual(expected)
+  }
+
+  async openAbsenceApplication(index: number) {
+    const table = this.page.findByDataQa('absence-applications-table')
+    const rows = table.findAllByDataQa('absence-application-row')
+    await rows.nth(index).findByDataQa('child-name').click()
+    return new ChildInformationPage(this.page)
   }
 }
 

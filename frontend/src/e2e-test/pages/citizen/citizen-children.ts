@@ -11,14 +11,18 @@ import {
   TextInput,
   ElementCollection,
   Element,
-  EnvType
+  EnvType,
+  Modal
 } from '../../utils/page'
+
+import { CitizenNewAbsenceApplicationPage } from './citizen-new-absence-application'
 
 export class CitizenChildPage {
   #placements: ElementCollection
   #terminatedPlacements: ElementCollection
   createServiceApplicationButton: Element
   openApplicationInfoBox: Element
+
   constructor(
     private readonly page: Page,
     private readonly env: EnvType = 'desktop'
@@ -45,6 +49,7 @@ export class CitizenChildPage {
       | 'termination'
       | 'pedagogical-documents'
       | 'child-documents'
+      | 'absence-applications'
   ) {
     await this.page.findByDataQa(`collapsible-${collapsible}`).click()
   }
@@ -176,6 +181,39 @@ export class CitizenChildPage {
 
   childDocumentLink = (documentId: UUID) =>
     this.childDocumentRow(documentId).findByDataQa('child-document-link')
+
+  async assertAbsenceApplications(
+    expected: {
+      range: string
+      status: string
+      description: string
+    }[]
+  ) {
+    const table = this.page.findByDataQa('absence-applications-table')
+    const rows = table.findAllByDataQa('absence-application-row')
+    await rows.assertTextsEqual(
+      expected.map(
+        (e) => `${e.range}\n${e.status}\nPoissaolon syy\n${e.description}\nPeru`
+      )
+    )
+  }
+
+  async newAbsenceApplicationPage() {
+    await this.page.findByDataQa('create-absence-application').click()
+    return new CitizenNewAbsenceApplicationPage(this.page)
+  }
+
+  async deleteAbsenceApplication(index: number) {
+    const table = this.page.findByDataQa('absence-applications-table')
+    const rows = table.findAllByDataQa('absence-application-row')
+    const row = rows.nth(index)
+    await row.findByDataQa('delete-absence-application').click()
+    const modal = new Modal(
+      this.page.findByDataQa('delete-absence-application-modal')
+    )
+    await modal.submit()
+    await modal.waitUntilHidden()
+  }
 
   assertServiceApplicationsCount = (n: number) =>
     this.page.findAllByDataQa('service-application-row').assertCount(n)

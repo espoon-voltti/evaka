@@ -8,10 +8,14 @@ import FiniteDateRange from '../../finite-date-range'
 import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
 import TimeRange from '../../time-range'
+import { AbsenceApplicationId } from './shared'
+import { Action } from '../action'
+import { EvakaUser } from './user'
 import { EvakaUserType } from './user'
 import { GroupId } from './shared'
 import { JsonOf } from '../../json'
 import { PersonId } from './shared'
+import { PersonNameDetails } from './pis'
 import { Reservation } from './reservations'
 import { ScheduleType } from './placement'
 import { ServiceTimesPresenceStatus } from './dailyservicetimes'
@@ -30,6 +34,65 @@ export interface Absence {
   date: LocalDate
   modifiedAt: HelsinkiDateTime
   modifiedByStaff: boolean
+}
+
+/**
+* Generated from fi.espoo.evaka.absence.application.AbsenceApplicationCreateRequest
+*/
+export interface AbsenceApplicationCreateRequest {
+  childId: PersonId
+  description: string
+  endDate: LocalDate
+  startDate: LocalDate
+}
+
+/**
+* Generated from fi.espoo.evaka.absence.application.AbsenceApplicationStatus
+*/
+export type AbsenceApplicationStatus =
+  | 'WAITING_DECISION'
+  | 'ACCEPTED'
+  | 'REJECTED'
+
+/**
+* Generated from fi.espoo.evaka.absence.application.AbsenceApplicationStatusUpdateRequest
+*/
+export interface AbsenceApplicationStatusUpdateRequest {
+  reason: string | null
+  status: AbsenceApplicationStatus
+}
+
+/**
+* Generated from fi.espoo.evaka.absence.application.AbsenceApplicationSummary
+*/
+export interface AbsenceApplicationSummary {
+  child: PersonNameDetails
+  createdAt: HelsinkiDateTime
+  createdBy: EvakaUser
+  decidedAt: HelsinkiDateTime | null
+  decidedBy: EvakaUser | null
+  description: string
+  endDate: LocalDate
+  id: AbsenceApplicationId
+  rejectedReason: string | null
+  startDate: LocalDate
+  status: AbsenceApplicationStatus
+}
+
+/**
+* Generated from fi.espoo.evaka.absence.application.AbsenceApplicationSummaryCitizen
+*/
+export interface AbsenceApplicationSummaryCitizen {
+  actions: Action.Citizen.AbsenceApplication[]
+  data: AbsenceApplicationSummary
+}
+
+/**
+* Generated from fi.espoo.evaka.absence.application.AbsenceApplicationSummaryEmployee
+*/
+export interface AbsenceApplicationSummaryEmployee {
+  actions: Action.AbsenceApplication[]
+  data: AbsenceApplicationSummary
 }
 
 /**
@@ -178,6 +241,42 @@ export function deserializeJsonAbsence(json: JsonOf<Absence>): Absence {
     ...json,
     date: LocalDate.parseIso(json.date),
     modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt)
+  }
+}
+
+
+export function deserializeJsonAbsenceApplicationCreateRequest(json: JsonOf<AbsenceApplicationCreateRequest>): AbsenceApplicationCreateRequest {
+  return {
+    ...json,
+    endDate: LocalDate.parseIso(json.endDate),
+    startDate: LocalDate.parseIso(json.startDate)
+  }
+}
+
+
+export function deserializeJsonAbsenceApplicationSummary(json: JsonOf<AbsenceApplicationSummary>): AbsenceApplicationSummary {
+  return {
+    ...json,
+    createdAt: HelsinkiDateTime.parseIso(json.createdAt),
+    decidedAt: (json.decidedAt != null) ? HelsinkiDateTime.parseIso(json.decidedAt) : null,
+    endDate: LocalDate.parseIso(json.endDate),
+    startDate: LocalDate.parseIso(json.startDate)
+  }
+}
+
+
+export function deserializeJsonAbsenceApplicationSummaryCitizen(json: JsonOf<AbsenceApplicationSummaryCitizen>): AbsenceApplicationSummaryCitizen {
+  return {
+    ...json,
+    data: deserializeJsonAbsenceApplicationSummary(json.data)
+  }
+}
+
+
+export function deserializeJsonAbsenceApplicationSummaryEmployee(json: JsonOf<AbsenceApplicationSummaryEmployee>): AbsenceApplicationSummaryEmployee {
+  return {
+    ...json,
+    data: deserializeJsonAbsenceApplicationSummary(json.data)
   }
 }
 

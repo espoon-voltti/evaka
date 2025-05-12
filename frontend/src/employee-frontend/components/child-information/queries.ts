@@ -21,6 +21,10 @@ import {
 } from 'lib-common/generated/api-types/shared'
 import { Queries } from 'lib-common/query'
 
+import {
+  getAbsenceApplications,
+  putAbsenceApplicationStatus
+} from '../../generated/api-clients/absence'
 import { getChildApplicationSummaries } from '../../generated/api-clients/application'
 import {
   createAssistanceAction,
@@ -272,6 +276,13 @@ export const annulChildDocumentDecisionMutation = q.parametricMutation<{
 
 export const planArchiveChildDocumentMutation = q.mutation(
   planArchiveChildDocument
+)
+
+export const getAbsenceApplicationsQuery = q.query(getAbsenceApplications)
+
+export const putAbsenceApplicationStatusMutation = q.mutation(
+  putAbsenceApplicationStatus,
+  [getAbsenceApplicationsQuery.prefix]
 )
 
 export const childServiceApplicationsQuery = q.query(

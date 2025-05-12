@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.shared.dev
 
+import fi.espoo.evaka.absence.application.AbsenceApplication
 import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.application.persistence.DatabaseForm
@@ -29,6 +30,7 @@ import fi.espoo.evaka.messaging.createPersonMessageAccount
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.serviceneed.ServiceNeedOption
 import fi.espoo.evaka.serviceneed.ServiceNeedOptionFee
+import fi.espoo.evaka.shared.AbsenceApplicationId
 import fi.espoo.evaka.shared.AbsenceId
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AreaId
@@ -138,6 +140,33 @@ fun Database.Transaction.ensureDevData() {
             .forEach { runDevScript(it) }
     }
 }
+
+fun Database.Transaction.insert(row: AbsenceApplication): AbsenceApplicationId =
+    createUpdate {
+            sql(
+                """
+INSERT INTO absence_application
+VALUES (
+    ${bind(row.id)},
+    ${bind(row.createdAt)},
+    ${bind(row.createdBy)},
+    ${bind(row.updatedAt)},
+    ${bind(row.modifiedAt)},
+    ${bind(row.modifiedBy)},
+    ${bind(row.childId)},
+    ${bind(row.startDate)},
+    ${bind(row.endDate)},
+    ${bind(row.description)},
+    ${bind(row.status)},
+    ${bind(row.decidedAt)},
+    ${bind(row.decidedBy)},
+    ${bind(row.rejectedReason)}
+)
+        """
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .exactlyOne()
 
 fun Database.Transaction.insert(row: DevCareArea): AreaId =
     createUpdate {

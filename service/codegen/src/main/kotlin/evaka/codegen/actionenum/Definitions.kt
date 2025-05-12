@@ -15,6 +15,7 @@ val generatedFiles =
             generateNamespace(
                 "Action",
                 generateEnum<Action.Global>(),
+                generateEnum<Action.AbsenceApplication>(),
                 generateEnum<Action.Application>(),
                 generateEnum<Action.ApplicationNote>(),
                 generateEnum<Action.AssistanceAction>(),
@@ -53,6 +54,7 @@ val generatedFiles =
                 generateEnum<Action.VoucherValueDecision>(),
                 generateNamespace(
                     "Citizen",
+                    generateEnum<Action.Citizen.AbsenceApplication>(),
                     generateEnum<Action.Citizen.Application>(),
                     generateEnum<Action.Citizen.Child>(),
                     generateEnum<Action.Citizen.Decision>(),

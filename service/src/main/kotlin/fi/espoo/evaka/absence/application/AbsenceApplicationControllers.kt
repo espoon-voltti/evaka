@@ -1,0 +1,299 @@
+// SPDX-FileCopyrightText: 2017-2025 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
+package fi.espoo.evaka.absence.application
+
+import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
+import fi.espoo.evaka.absence.AbsenceType
+import fi.espoo.evaka.absence.FullDayAbsenseUpsert
+import fi.espoo.evaka.absence.upsertFullDayAbsences
+import fi.espoo.evaka.shared.AbsenceApplicationId
+import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.Forbidden
+import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
+import fi.espoo.evaka.shared.utils.mapOfNotNullValues
+import org.springframework.web.bind.annotation.DeleteMapping
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.RestController
+
+@RestController
+@RequestMapping("/employee/absence-application")
+class AbsenceApplicationControllerEmployee(private val accessControl: AccessControl) {
+    @GetMapping
+    fun getAbsenceApplications(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @RequestParam unitId: DaycareId?,
+        @RequestParam childId: ChildId?,
+        @RequestParam status: AbsenceApplicationStatus?,
+    ): List<AbsenceApplicationSummaryEmployee> {
+        return db.connect { dbc ->
+                dbc.read { tx ->
+                    val permissions =
+                        listOfNotNull(
+                            unitId?.let {
+                                accessControl.hasPermissionFor(
+                                    tx,
+                                    user,
+                                    clock,
+                                    Action.Unit.READ_ABSENCE_APPLICATIONS,
+                                    it,
+                                )
+                            },
+                            childId?.let {
+                                accessControl.hasPermissionFor(
+                                    tx,
+                                    user,
+                                    clock,
+                                    Action.Child.READ_ABSENCE_APPLICATIONS,
+                                    it,
+                                )
+                            },
+                        )
+                    if (permissions.isEmpty() || permissions.contains(false)) throw Forbidden()
+                    val applications =
+                        tx.selectAbsenceApplications(
+                            unitId = unitId,
+                            childId = childId,
+                            status = status,
+                        )
+                    val actions =
+                        accessControl.getPermittedActions<
+                            AbsenceApplicationId,
+                            Action.AbsenceApplication,
+                        >(
+                            tx,
+                            user,
+                            clock,
+                            applications.map { it.id },
+                        )
+                    applications.map {
+                        AbsenceApplicationSummaryEmployee(it, actions[it.id] ?: emptySet())
+                    }
+                }
+            }
+            .also {
+                Audit.AbsenceApplicationRead.log(
+                    meta =
+                        mapOfNotNullValues(
+                            "unitId" to unitId?.let { AuditId(it) },
+                            "childId" to childId?.let { AuditId(it) },
+                        )
+                )
+            }
+    }
+
+    @PutMapping("/{id}/status")
+    fun putAbsenceApplicationStatus(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable id: AbsenceApplicationId,
+        @RequestBody body: AbsenceApplicationStatusUpdateRequest,
+    ) {
+        db.connect { dbc ->
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.AbsenceApplication.DECIDE,
+                        id,
+                    )
+                    val application =
+                        tx.selectAbsenceApplication(id, forUpdate = true) ?: throw NotFound()
+                    if (application.status != AbsenceApplicationStatus.WAITING_DECISION) {
+                        throw BadRequest(
+                            "Absence application ${application.id} is not waiting decision"
+                        )
+                    }
+                    when (body.status) {
+                        AbsenceApplicationStatus.ACCEPTED -> accept(tx, user, clock, application)
+                        AbsenceApplicationStatus.REJECTED ->
+                            reject(
+                                tx,
+                                user,
+                                clock,
+                                application,
+                                body.reason ?: throw BadRequest("INVALID_REASON"),
+                            )
+                        else ->
+                            throw BadRequest(
+                                "Absence application status ${body.status} not supported"
+                            )
+                    }
+                    application
+                }
+            }
+            .also {
+                Audit.AbsenceApplicationUpdate.log(
+                    targetId = AuditId(it.id),
+                    objectId = AuditId(it.childId),
+                )
+            }
+    }
+
+    private fun accept(
+        tx: Database.Transaction,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        application: AbsenceApplication,
+    ) {
+        tx.decideAbsenceApplication(
+            application.id,
+            AbsenceApplicationStatus.ACCEPTED,
+            clock.now(),
+            user.evakaUserId,
+            rejectedReason = null,
+        )
+        tx.upsertFullDayAbsences(
+            user.evakaUserId,
+            clock.now(),
+            FiniteDateRange(application.startDate, application.endDate)
+                .dates()
+                .map { date ->
+                    FullDayAbsenseUpsert(
+                        childId = application.childId,
+                        date = date,
+                        absenceTypeBillable = AbsenceType.OTHER_ABSENCE,
+                        absenceTypeNonbillable = AbsenceType.OTHER_ABSENCE,
+                    )
+                }
+                .toList(),
+        )
+    }
+
+    private fun reject(
+        tx: Database.Transaction,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        application: AbsenceApplication,
+        reason: String,
+    ) {
+        tx.decideAbsenceApplication(
+            application.id,
+            AbsenceApplicationStatus.REJECTED,
+            clock.now(),
+            user.evakaUserId,
+            reason,
+        )
+    }
+}
+
+@RestController
+@RequestMapping("/citizen/absence-application")
+class AbsenceApplicationControllerCitizen(private val accessControl: AccessControl) {
+    @PostMapping
+    fun postAbsenceApplication(
+        db: Database,
+        user: AuthenticatedUser.Citizen,
+        clock: EvakaClock,
+        @RequestBody body: AbsenceApplicationCreateRequest,
+    ): AbsenceApplicationId {
+        return db.connect { dbc ->
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Citizen.Child.CREATE_ABSENCE_APPLICATION,
+                        body.childId,
+                    )
+                    tx.insertAbsenceApplication(body, clock.now(), user.evakaUserId)
+                }
+            }
+            .also {
+                Audit.AbsenceApplicationCreate.log(
+                    targetId = AuditId(it.id),
+                    objectId = AuditId(it.childId),
+                )
+            }
+            .id
+    }
+
+    @GetMapping
+    fun getAbsenceApplications(
+        db: Database,
+        user: AuthenticatedUser.Citizen,
+        clock: EvakaClock,
+        @RequestParam childId: ChildId,
+    ): List<AbsenceApplicationSummaryCitizen> {
+        return db.connect { dbc ->
+                dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Citizen.Child.READ_ABSENCE_APPLICATIONS,
+                        childId,
+                    )
+                    val applications = tx.selectAbsenceApplications(childId = childId)
+                    val actions =
+                        accessControl.getPermittedActions<
+                            AbsenceApplicationId,
+                            Action.Citizen.AbsenceApplication,
+                        >(
+                            tx,
+                            user,
+                            clock,
+                            applications.map { it.id },
+                        )
+                    applications.map {
+                        AbsenceApplicationSummaryCitizen(it, actions[it.id] ?: emptySet())
+                    }
+                }
+            }
+            .also { Audit.AbsenceApplicationRead.log(meta = mapOf("childId" to AuditId(childId))) }
+    }
+
+    @DeleteMapping("/{id}")
+    fun deleteAbsenceApplication(
+        db: Database,
+        user: AuthenticatedUser.Citizen,
+        clock: EvakaClock,
+        @PathVariable id: AbsenceApplicationId,
+    ) {
+        db.connect { dbc ->
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Citizen.AbsenceApplication.DELETE,
+                        id,
+                    )
+                    val application =
+                        tx.selectAbsenceApplication(id, forUpdate = true) ?: throw NotFound()
+                    if (application.status != AbsenceApplicationStatus.WAITING_DECISION) {
+                        throw BadRequest(
+                            "Absence application ${application.id} is not waiting decision"
+                        )
+                    }
+                    tx.deleteAbsenceApplication(application.id)
+                }
+            }
+            .also {
+                Audit.AbsenceApplicationDelete.log(
+                    targetId = AuditId(it.id),
+                    objectId = AuditId(it.childId),
+                )
+            }
+    }
+}

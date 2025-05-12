@@ -276,6 +276,11 @@ interface BaseFeatureFlags {
   serviceApplications?: boolean
 
   /**
+   * Enable a feature where a citizen can create absence applications.
+   */
+  absenceApplications?: boolean
+
+  /**
    * Show the Titania errors report in the reports list
    */
   titaniaErrorsReport?: boolean
