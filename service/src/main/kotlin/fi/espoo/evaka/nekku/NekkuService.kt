@@ -8,13 +8,18 @@ import com.fasterxml.jackson.annotation.JsonValue
 import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import fi.espoo.evaka.ConstList
+import fi.espoo.evaka.EmailEnv
 import fi.espoo.evaka.NekkuEnv
 import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.daycare.DaycareMealtimes
 import fi.espoo.evaka.daycare.PreschoolTerm
+import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.daycare.getDaycaresById
 import fi.espoo.evaka.daycare.getPreschoolTerms
 import fi.espoo.evaka.daycare.isUnitOperationDay
+import fi.espoo.evaka.emailclient.Email
+import fi.espoo.evaka.emailclient.EmailClient
+import fi.espoo.evaka.emailclient.EmailContent
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.ScheduleType
 import fi.espoo.evaka.shared.FeatureConfig
@@ -52,6 +57,8 @@ class NekkuService(
     jsonMapper: JsonMapper,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val featureConfig: FeatureConfig,
+    private val emailEnv: EmailEnv,
+    private val emailClient: EmailClient,
 ) {
     private val client = env?.let { NekkuHttpClient(it, jsonMapper) }
 
@@ -61,6 +68,7 @@ class NekkuService(
         asyncJobRunner.registerHandler(::syncNekkuProducts)
         asyncJobRunner.registerHandler(::sendNekkuOrder)
         asyncJobRunner.registerHandler(::sendNekkuDailyOrder)
+        asyncJobRunner.registerHandler(::sendNekkuCustomerNumberNullificationWarningEmail)
     }
 
     fun syncNekkuCustomers(
@@ -69,7 +77,7 @@ class NekkuService(
         job: AsyncJob.SyncNekkuCustomers,
     ) {
         if (client == null) error("Cannot sync Nekku customers: NekkuEnv is not configured")
-        fetchAndUpdateNekkuCustomers(client, db)
+        fetchAndUpdateNekkuCustomers(client, db, asyncJobRunner, clock.now())
     }
 
     fun planNekkuCustomersSync(db: Database.Connection, clock: EvakaClock) {
@@ -173,6 +181,29 @@ class NekkuService(
             }
             throw e
         }
+    }
+
+    fun sendNekkuCustomerNumberNullificationWarningEmail(
+        dbc: Database.Connection,
+        clock: EvakaClock,
+        job: AsyncJob.SendNekkuCustomerNumberNullificationWarningEmail,
+    ) {
+        val content =
+            EmailContent.fromHtml(
+                subject = "Muutoksia Nekku-asiakasnumeroihin",
+                html =
+                    "<p>Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumisesta Nekusta:</p>\n" +
+                        job.groupNames.joinToString("\n", transform = { "<p>- $it</p>" }),
+            )
+
+        Email.createForEmployee(
+                dbc,
+                job.employeeId,
+                content = content,
+                traceId = "${job.unitId}:${job.employeeId}",
+                emailEnv.sender(Language.fi),
+            )
+            ?.let { emailClient.send(it) }
     }
 }
 
