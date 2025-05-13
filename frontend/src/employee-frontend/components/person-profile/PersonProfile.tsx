@@ -52,20 +52,6 @@ interface SectionProps {
   open: boolean
 }
 
-function requireOneOfPermittedActions(
-  Component: React.FunctionComponent<SectionProps>,
-  ...actions: Action.Person[]
-): React.FunctionComponent<SectionProps> {
-  return function Section({ id, open }: SectionProps) {
-    const { permittedActions } = useContext<PersonState>(PersonContext)
-    if (actions.some((action) => permittedActions.has(action))) {
-      return <Component id={id} open={open} />
-    } else {
-      return null
-    }
-  }
-}
-
 function section({
   component: Component,
   enabled = true,
@@ -179,10 +165,12 @@ const components = {
     title: (i18n) => i18n.personProfile.decision.decisions,
     dataQa: 'person-decisions-collapsible'
   }),
-  'notes-and-messages': requireOneOfPermittedActions(
-    PersonFinanceNotesAndMessages,
-    'READ_FINANCE_NOTES'
-  )
+  'notes-and-messages': section({
+    component: PersonFinanceNotesAndMessages,
+    requireOneOfPermittedActions: ['READ_FINANCE_NOTES'],
+    title: (i18n) => i18n.personProfile.financeNotesAndMessages.title,
+    dataQa: 'person-finance-notes-and-messages-collapsible'
+  })
 }
 
 const layouts: Layouts<typeof components> = {
