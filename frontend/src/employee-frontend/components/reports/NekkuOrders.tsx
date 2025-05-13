@@ -16,6 +16,7 @@ import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import { Container, ContentArea } from 'lib-components/layout/Container'
+import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import DateRangePicker from 'lib-components/molecules/date-picker/DateRangePicker'
 
 import { getNekkuOrderReportByUnit } from '../../generated/api-clients/reports'
@@ -25,7 +26,6 @@ import { FlexRow } from '../common/styled/containers'
 import { daycaresQuery, unitGroupsQuery } from '../unit/queries'
 
 import { FilterLabel, FilterRow, TableScrollable } from './common'
-import { Tbody, Td, Th, Thead, Tr } from '../../../lib-components/layout/Table'
 
 const getNekkuOrderReportByUnitResult = wrapResult(getNekkuOrderReportByUnit)
 
@@ -189,7 +189,14 @@ export default React.memo(function NekkuOrders() {
                     <Td>{row.groupName}</Td>
                     <Td>{row.sku}</Td>
                     <Td>{row.quantity}</Td>
-                    <Td>{row.mealTime}</Td>
+                    <Td>
+                      {row.mealTime
+                        .map(
+                          (mealTime) =>
+                            i18n.reports.nekkuOrders.mealTimeValues[mealTime]
+                        )
+                        .join(', ')}
+                    </Td>
                     <Td>
                       {i18n.reports.nekkuOrders.mealTypeValues[row.mealType]}
                     </Td>

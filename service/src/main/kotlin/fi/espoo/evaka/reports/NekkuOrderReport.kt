@@ -48,7 +48,7 @@ class NekkuOrderReportController(private val accessControl: AccessControl) {
                         unitId,
                     )
                     tx.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
-                    getNekkuOrderReportRows(tx, start, end, unitId, groupIds?.ifEmpty { null })
+                    getNekkuOrderReportRows(tx, start, end, unitId, groupIds)
                 }
             }
             .also {
@@ -73,7 +73,7 @@ class NekkuOrderReportController(private val accessControl: AccessControl) {
         groupIds: List<GroupId>?,
     ): List<NekkuOrderRow> {
 
-        val effectiveGroupIds = groupIds ?: tx.getDaycareGroupIds(unitId).toMutableList()
+        val effectiveGroupIds = groupIds ?: tx.getDaycareGroupIds(unitId)
 
         val dateList = generateDateList(start, end)
 
@@ -115,7 +115,7 @@ data class NekkuOrderRow(
     val sku: String,
     val quantity: Int,
     val groupName: String,
-    val mealTime: String,
+    val mealTime: List<String>,
     val mealType: String?,
     val specialDiets: String?,
 )

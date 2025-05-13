@@ -642,7 +642,7 @@ export interface MissingServiceNeedReportRow {
 export interface NekkuOrderRow {
   date: LocalDate
   groupName: string
-  mealTime: string
+  mealTime: string[]
   mealType: string | null
   quantity: number
   sku: string
