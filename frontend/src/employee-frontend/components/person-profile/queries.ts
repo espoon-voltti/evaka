@@ -23,8 +23,10 @@ import {
   deleteIncome,
   deleteInvoiceCorrection,
   generateRetroactiveFeeDecisions,
+  generateRetroactiveVoucherValueDecisions,
   getHeadOfFamilyFeeDecisions,
   getHeadOfFamilyInvoices,
+  getHeadOfFamilyVoucherValueDecisions,
   getIncomeMultipliers,
   getIncomeNotifications,
   getIncomeTypeOptions,
@@ -245,4 +247,13 @@ export const headOfFamilyFeeDecisionsQuery = q.query(
 export const generateRetroactiveFeeDecisionsMutation = q.mutation(
   generateRetroactiveFeeDecisions,
   [({ id }) => headOfFamilyFeeDecisionsQuery({ id })]
+)
+
+export const headOfFamilyVoucherValueDecisionsQuery = q.query(
+  getHeadOfFamilyVoucherValueDecisions
+)
+
+export const generateRetroactiveVoucherValueDecisionsMutation = q.mutation(
+  generateRetroactiveVoucherValueDecisions,
+  [({ id }) => headOfFamilyVoucherValueDecisionsQuery({ headOfFamilyId: id })]
 )
