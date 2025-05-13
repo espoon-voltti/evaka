@@ -13,16 +13,18 @@ import fi.espoo.voltti.logging.utils.getTestAppender
 import fi.espoo.voltti.logging.utils.getTestMessages
 import fi.espoo.voltti.logging.utils.setupTestAppender
 import io.github.oshai.kotlinlogging.DelegatingKLogger
-import kotlin.test.assertEquals
 import io.github.oshai.kotlinlogging.KLogger
 import io.github.oshai.kotlinlogging.KotlinLogging
+import kotlin.test.assertEquals
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 private val logger = KotlinLogging.logger {}.also(KLogger::setupTestAppender)
+
 private fun KLogger.underlyingLogger(): Logger =
     (this as DelegatingKLogger<*>).underlyingLogger as Logger
+
 private const val message = "test message"
 private val initialLogLevel = logger.underlyingLogger().level
 

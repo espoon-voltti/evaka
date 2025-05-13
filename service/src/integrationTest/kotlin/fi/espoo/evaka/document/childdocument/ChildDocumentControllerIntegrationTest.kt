@@ -15,10 +15,13 @@ import fi.espoo.evaka.document.DocumentType
 import fi.espoo.evaka.document.Question
 import fi.espoo.evaka.document.RadioButtonGroupQuestionOption
 import fi.espoo.evaka.document.Section
+import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.process.ArchivedProcessState
 import fi.espoo.evaka.process.DocumentConfidentiality
 import fi.espoo.evaka.process.ProcessMetadataController
+import fi.espoo.evaka.process.getArchiveProcessByChildDocumentId
 import fi.espoo.evaka.process.getProcess
+import fi.espoo.evaka.sficlient.MockSfiMessagesClient
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.DocumentTemplateId
@@ -44,6 +47,7 @@ import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.security.PilotFeature
+import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
@@ -55,6 +59,8 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.groups.Tuple
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -177,6 +183,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
 
     @BeforeEach
     internal fun setUp() {
+        MockSfiMessagesClient.reset()
         db.transaction { tx ->
             areaId = tx.insert(testArea)
             val unitId =
@@ -198,6 +205,8 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                 role = UserRole.UNIT_SUPERVISOR,
             )
             tx.insert(testChild_1, DevPersonType.CHILD)
+            tx.insert(testAdult_1, DevPersonType.ADULT)
+            tx.insertGuardian(testAdult_1.id, testChild_1.id)
             tx.insert(
                 DevPlacement(
                     childId = testChild_1.id,
@@ -708,6 +717,10 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         prevState(documentId, DocumentStatus.DRAFT)
         assertEquals(DocumentStatus.DRAFT, getDocument(documentId).status)
         assertNotNull(getDocument(documentId).publishedAt)
+
+        // no sfi messages are sent
+        asyncJobRunner.runPendingJobsSync(clock)
+        assertEquals(0, MockSfiMessagesClient.getMessages().size)
     }
 
     @Test
@@ -733,6 +746,10 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         prevState(documentId, DocumentStatus.DRAFT)
         assertEquals(DocumentStatus.DRAFT, getDocument(documentId).status)
         assertNotNull(getDocument(documentId).publishedAt)
+
+        // no sfi messages are sent
+        asyncJobRunner.runPendingJobsSync(clock)
+        assertEquals(0, MockSfiMessagesClient.getMessages().size)
     }
 
     @Test
@@ -770,6 +787,14 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
             assertNotNull(doc.publishedAt)
         }
 
+        // sfi message was sent
+        asyncJobRunner.runPendingJobsSync(clock)
+        assertThat(MockSfiMessagesClient.getMessages())
+            .extracting({ it.ssn }, { it.messageHeader })
+            .containsExactly(
+                Tuple(testAdult_1.ssn, "Espoon varhaiskasvatukseen liittyvät päätökset")
+            )
+
         // cannot cancel decision
         assertThrows<BadRequest> { prevState(documentId, DocumentStatus.DECISION_PROPOSAL) }
 
@@ -777,6 +802,20 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         getDocument(documentId).also { doc ->
             assertEquals(DocumentStatus.COMPLETED, doc.status)
             assertEquals(ChildDocumentDecisionStatus.ANNULLED, doc.decision?.status)
+        }
+
+        db.read { tx ->
+            assertThat(tx.getArchiveProcessByChildDocumentId(documentId)!!.history)
+                .extracting({ it.state }, { it.enteredBy.id })
+                .containsExactly(
+                    Tuple(ArchivedProcessState.INITIAL, employeeUser.id),
+                    Tuple(ArchivedProcessState.PREPARATION, employeeUser.id),
+                    Tuple(ArchivedProcessState.DECIDING, unitSupervisorUser.id),
+                    Tuple(
+                        ArchivedProcessState.COMPLETED,
+                        AuthenticatedUser.SystemInternalUser.evakaUserId,
+                    ),
+                )
         }
     }
 
@@ -804,6 +843,14 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
             assertEquals(10_000, doc.decision?.decisionNumber)
             assertNotNull(doc.publishedAt)
         }
+
+        // sfi message was sent
+        asyncJobRunner.runPendingJobsSync(clock)
+        assertThat(MockSfiMessagesClient.getMessages())
+            .extracting({ it.ssn }, { it.messageHeader })
+            .containsExactly(
+                Tuple(testAdult_1.ssn, "Espoon varhaiskasvatukseen liittyvät päätökset")
+            )
 
         // cannot cancel decision
         assertThrows<BadRequest> { prevState(documentId, DocumentStatus.DECISION_PROPOSAL) }

@@ -12,6 +12,10 @@ interface IMessageProvider {
 
     fun getDecisionContent(lang: OfficialLanguage, skipGuardianApproval: Boolean? = false): String
 
+    fun getChildDocumentDecisionHeader(lang: OfficialLanguage): String
+
+    fun getChildDocumentDecisionContent(lang: OfficialLanguage): String
+
     fun getFeeDecisionHeader(lang: OfficialLanguage): String
 
     fun getFeeDecisionContent(lang: OfficialLanguage): String
