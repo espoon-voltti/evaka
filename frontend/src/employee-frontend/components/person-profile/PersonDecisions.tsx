@@ -6,21 +6,18 @@ import orderBy from 'lodash/orderBy'
 import React, { useState } from 'react'
 import { Link } from 'react-router'
 
-import { wrapResult } from 'lib-common/api'
 import { Decision } from 'lib-common/generated/api-types/decision'
 import { PersonId } from 'lib-common/generated/api-types/shared'
-import { useApiState } from 'lib-common/utils/useRestApi'
+import { useQueryResult } from 'lib-common/query'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { H2 } from 'lib-components/typography'
 
-import { getDecisionsByGuardian } from '../../generated/api-clients/decision'
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 
 import { DateTd, NameTd, StatusTd } from './common'
-
-const getDecisionsByGuardianResult = wrapResult(getDecisionsByGuardian)
+import { decisionsByGuardianQuery } from './queries'
 
 interface Props {
   id: PersonId
@@ -33,10 +30,7 @@ const PersonDecisions = React.memo(function PersonDecisions({
 }: Props) {
   const { i18n } = useTranslation()
   const [open, setOpen] = useState(startOpen)
-  const [decisionsResponse] = useApiState(
-    () => getDecisionsByGuardianResult({ id }),
-    [id]
-  )
+  const decisionsResponse = useQueryResult(decisionsByGuardianQuery({ id }))
 
   return (
     <div>
