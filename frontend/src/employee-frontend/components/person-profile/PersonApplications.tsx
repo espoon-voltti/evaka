@@ -6,28 +6,23 @@ import orderBy from 'lodash/orderBy'
 import React, { useState } from 'react'
 import { Link } from 'react-router'
 
-import { wrapResult } from 'lib-common/api'
 import {
   ApplicationType,
   PersonApplicationSummary
 } from 'lib-common/generated/api-types/application'
 import { PersonId } from 'lib-common/generated/api-types/shared'
-import { useApiState } from 'lib-common/utils/useRestApi'
+import { useQueryResult } from 'lib-common/query'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { H2 } from 'lib-components/typography'
 import { faFileAlt } from 'lib-icons'
 
-import { getGuardianApplicationSummaries } from '../../generated/api-clients/application'
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 
 import { DateTd, NameTd, StatusTd } from './common'
-
-const getGuardianApplicationSummariesResult = wrapResult(
-  getGuardianApplicationSummaries
-)
+import { guardianApplicationSummariesQuery } from './queries'
 
 interface Props {
   id: PersonId
@@ -40,9 +35,8 @@ export default React.memo(function PersonApplications({
 }: Props) {
   const { i18n } = useTranslation()
   const [open, setOpen] = useState(startOpen)
-  const [applications] = useApiState(
-    () => getGuardianApplicationSummariesResult({ guardianId: id }),
-    [id]
+  const applications = useQueryResult(
+    guardianApplicationSummariesQuery({ guardianId: id })
   )
 
   return (

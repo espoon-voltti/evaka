@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { getGuardianApplicationSummaries } from 'employee-frontend/generated/api-clients/application'
 import {
   getIncomeStatementChildren,
   getIncomeStatements
@@ -256,4 +257,8 @@ export const headOfFamilyVoucherValueDecisionsQuery = q.query(
 export const generateRetroactiveVoucherValueDecisionsMutation = q.mutation(
   generateRetroactiveVoucherValueDecisions,
   [({ id }) => headOfFamilyVoucherValueDecisionsQuery({ headOfFamilyId: id })]
+)
+
+export const guardianApplicationSummariesQuery = q.query(
+  getGuardianApplicationSummaries
 )
