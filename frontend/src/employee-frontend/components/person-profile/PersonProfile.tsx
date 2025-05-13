@@ -143,10 +143,12 @@ const components = {
     title: (i18n) => i18n.personProfile.voucherValueDecisions.title,
     dataQa: 'person-voucher-value-decisions-collapsible'
   }),
-  partners: requireOneOfPermittedActions(
-    PersonFridgePartner,
-    'READ_PARTNERSHIPS'
-  ),
+  partners: section({
+    component: PersonFridgePartner,
+    requireOneOfPermittedActions: ['READ_PARTNERSHIPS'],
+    title: (i18n) => i18n.personProfile.partner,
+    dataQa: 'person-partners-collapsible'
+  }),
   'fridge-children': section({
     component: PersonFridgeChild,
     requireOneOfPermittedActions: ['READ_PARENTSHIPS'],
