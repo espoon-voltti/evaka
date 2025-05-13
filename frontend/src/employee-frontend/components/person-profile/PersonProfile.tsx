@@ -167,10 +167,12 @@ const components = {
     title: (i18n) => i18n.personProfile.fosterChildren.sectionTitle,
     dataQa: 'person-foster-children-collapsible'
   }),
-  applications: requireOneOfPermittedActions(
-    PersonApplications,
-    'READ_APPLICATIONS'
-  ),
+  applications: section({
+    component: PersonApplications,
+    requireOneOfPermittedActions: ['READ_APPLICATIONS'],
+    title: (i18n) => i18n.personProfile.applications,
+    dataQa: 'person-applications-collapsible'
+  }),
   decisions: requireOneOfPermittedActions(PersonDecisions, 'READ_DECISIONS'),
   'notes-and-messages': requireOneOfPermittedActions(
     PersonFinanceNotesAndMessages,
