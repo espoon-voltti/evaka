@@ -137,10 +137,12 @@ const components = {
     title: (i18n) => i18n.personProfile.invoiceCorrections.title,
     dataQa: 'person-invoice-corrections-collapsible'
   }),
-  voucherValueDecisions: requireOneOfPermittedActions(
-    PersonVoucherValueDecisions,
-    'READ_VOUCHER_VALUE_DECISIONS'
-  ),
+  voucherValueDecisions: section({
+    component: PersonVoucherValueDecisions,
+    requireOneOfPermittedActions: ['READ_VOUCHER_VALUE_DECISIONS'],
+    title: (i18n) => i18n.personProfile.voucherValueDecisions.title,
+    dataQa: 'person-voucher-value-decisions-collapsible'
+  }),
   partners: requireOneOfPermittedActions(
     PersonFridgePartner,
     'READ_PARTNERSHIPS'
