@@ -125,7 +125,12 @@ const components = {
     title: (i18n) => i18n.personProfile.feeDecisions.title,
     dataQa: 'person-fee-decisions-collapsible'
   }),
-  invoices: requireOneOfPermittedActions(PersonInvoices, 'READ_INVOICES'),
+  invoices: section({
+    component: PersonInvoices,
+    requireOneOfPermittedActions: ['READ_INVOICES'],
+    title: (i18n) => i18n.personProfile.invoices,
+    dataQa: 'person-invoices-collapsible'
+  }),
   invoiceCorrections: requireOneOfPermittedActions(
     PersonInvoiceCorrections,
     'READ_INVOICE_CORRECTIONS'
