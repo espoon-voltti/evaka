@@ -354,6 +354,8 @@ const BasicsEditor = React.memo(function BasicsEditor({
     placementTypes,
     language,
     confidential,
+    confidentialityDurationYears,
+    confidentialityBasis,
     legalBasis,
     validity,
     processDefinitionNumber,
@@ -393,6 +395,29 @@ const BasicsEditor = React.memo(function BasicsEditor({
           bind={confidential}
           label={i18n.documentTemplates.templateModal.confidential}
         />
+        {confidential.state && (
+          <>
+            <Gap />
+            <Label>
+              {i18n.documentTemplates.templateModal.confidentialityDuration}
+            </Label>
+            <InputFieldF
+              data-qa="confidentiality-duration-years"
+              bind={confidentialityDurationYears}
+              type="number"
+              hideErrorsBeforeTouched
+            />
+            <Gap />
+            <Label>
+              {i18n.documentTemplates.templateModal.confidentialityBasis}
+            </Label>
+            <InputFieldF
+              data-qa="confidentiality-basis"
+              bind={confidentialityBasis}
+              hideErrorsBeforeTouched
+            />
+          </>
+        )}
         <Gap />
         <ExpandingInfo
           info={
