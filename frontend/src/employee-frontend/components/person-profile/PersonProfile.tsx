@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useMemo } from 'react'
+import React, { useContext, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
 
 import { Action } from 'lib-common/generated/action'
@@ -11,15 +11,20 @@ import { useIdRouteParam } from 'lib-common/useRouteParams'
 import { getAge } from 'lib-common/utils/local-date'
 import Title from 'lib-components/atoms/Title'
 import { Button } from 'lib-components/atoms/buttons/Button'
-import { Container, ContentArea } from 'lib-components/layout/Container'
+import {
+  CollapsibleContentArea,
+  Container,
+  ContentArea
+} from 'lib-components/layout/Container'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
+import { H2 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { faListTimeline } from 'lib-icons'
 
-import { useTranslation } from '../../state/i18n'
+import { Translations, useTranslation } from '../../state/i18n'
 import { UserContext } from '../../state/user'
 import CircularLabel from '../common/CircularLabel'
 import WarningLabel from '../common/WarningLabel'
@@ -61,11 +66,53 @@ function requireOneOfPermittedActions(
   }
 }
 
+function section({
+  component: Component,
+  enabled = true,
+  requireOneOfPermittedActions,
+  title,
+  dataQa
+}: {
+  component: React.FunctionComponent<{ id: PersonId }>
+  enabled?: boolean
+  requireOneOfPermittedActions: Action.Person[]
+  title: (i18n: Translations) => string
+  dataQa?: string
+}): React.FunctionComponent<SectionProps> {
+  return function Section({ id, open: startOpen }: SectionProps) {
+    const { permittedActions } = useContext<PersonState>(PersonContext)
+    const { i18n } = useTranslation()
+    const [open, setOpen] = useState(startOpen)
+    if (
+      !enabled ||
+      !requireOneOfPermittedActions.some((action) =>
+        permittedActions.has(action)
+      )
+    ) {
+      return null
+    }
+    return (
+      <CollapsibleContentArea
+        title={<H2 noMargin>{title(i18n)}</H2>}
+        open={open}
+        toggleOpen={() => setOpen(!open)}
+        opaque
+        paddingVertical="L"
+        data-qa={dataQa}
+      >
+        <Component id={id} />
+      </CollapsibleContentArea>
+    )
+  }
+}
+
 const components = {
-  'family-overview': requireOneOfPermittedActions(
-    FamilyOverview,
-    'READ_FAMILY_OVERVIEW'
-  ),
+  'family-overview': section({
+    component: FamilyOverview,
+    requireOneOfPermittedActions: ['READ_FAMILY_OVERVIEW'],
+    title: (i18n) => i18n.personProfile.familyOverview.title,
+    dataQa: 'family-overview-collapsible'
+  }),
   income: requireOneOfPermittedActions(
     PersonIncome,
     'READ_INCOME_STATEMENTS',
