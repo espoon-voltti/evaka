@@ -155,7 +155,12 @@ const components = {
     title: (i18n) => i18n.personProfile.fridgeChildOfHead,
     dataQa: 'person-children-collapsible'
   }),
-  dependants: requireOneOfPermittedActions(PersonDependants, 'READ_DEPENDANTS'),
+  dependants: section({
+    component: PersonDependants,
+    requireOneOfPermittedActions: ['READ_DEPENDANTS'],
+    title: (i18n) => i18n.personProfile.dependants,
+    dataQa: 'person-dependants-collapsible'
+  }),
   fosterChildren: requireOneOfPermittedActions(
     FosterChildren,
     'READ_FOSTER_CHILDREN'
