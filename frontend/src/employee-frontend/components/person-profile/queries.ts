@@ -22,6 +22,8 @@ import {
   createReplacementDraftsForHeadOfFamily,
   deleteIncome,
   deleteInvoiceCorrection,
+  generateRetroactiveFeeDecisions,
+  getHeadOfFamilyFeeDecisions,
   getHeadOfFamilyInvoices,
   getIncomeMultipliers,
   getIncomeNotifications,
@@ -235,3 +237,12 @@ export const incomeNotificationsQuery = q.query(getIncomeNotifications)
 export const incomeStatementsQuery = q.query(getIncomeStatements)
 
 export const incomeStatementChildrenQuery = q.query(getIncomeStatementChildren)
+
+export const headOfFamilyFeeDecisionsQuery = q.query(
+  getHeadOfFamilyFeeDecisions
+)
+
+export const generateRetroactiveFeeDecisionsMutation = q.mutation(
+  generateRetroactiveFeeDecisions,
+  [({ id }) => headOfFamilyFeeDecisionsQuery({ id })]
+)
