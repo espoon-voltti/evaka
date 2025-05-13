@@ -173,7 +173,12 @@ const components = {
     title: (i18n) => i18n.personProfile.applications,
     dataQa: 'person-applications-collapsible'
   }),
-  decisions: requireOneOfPermittedActions(PersonDecisions, 'READ_DECISIONS'),
+  decisions: section({
+    component: PersonDecisions,
+    requireOneOfPermittedActions: ['READ_DECISIONS'],
+    title: (i18n) => i18n.personProfile.decision.decisions,
+    dataQa: 'person-decisions-collapsible'
+  }),
   'notes-and-messages': requireOneOfPermittedActions(
     PersonFinanceNotesAndMessages,
     'READ_FINANCE_NOTES'
