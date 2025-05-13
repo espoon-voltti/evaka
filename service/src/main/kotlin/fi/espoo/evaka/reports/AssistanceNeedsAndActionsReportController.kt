@@ -10,6 +10,7 @@ import fi.espoo.evaka.assistance.OtherAssistanceMeasureType
 import fi.espoo.evaka.assistance.PreschoolAssistanceLevel
 import fi.espoo.evaka.assistanceaction.AssistanceActionOption
 import fi.espoo.evaka.assistanceaction.getAssistanceActionOptions
+import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.GroupId
@@ -86,6 +87,7 @@ class AssistanceNeedsAndActionsReportController(
         val careAreaName: String,
         val unitId: DaycareId,
         val unitName: String,
+        val unitProviderType: ProviderType,
         val groupId: GroupId,
         val groupName: String,
         @Json val actionCounts: Map<AssistanceActionOptionValue, Int>,
@@ -95,6 +97,8 @@ class AssistanceNeedsAndActionsReportController(
         @Json val preschoolAssistanceCounts: Map<PreschoolAssistanceLevel, Int>,
         @Json val otherAssistanceMeasureCounts: Map<OtherAssistanceMeasureType, Int>,
         val assistanceNeedVoucherCoefficientCount: Int,
+        val daycareAssistanceNeedDecisionCount: Int,
+        val preschoolAssistanceNeedDecisionCount: Int,
     )
 
     @GetMapping("/employee/reports/assistance-needs-and-actions/by-child")
@@ -149,6 +153,7 @@ class AssistanceNeedsAndActionsReportController(
         val careAreaName: String,
         val unitId: DaycareId,
         val unitName: String,
+        val unitProviderType: ProviderType,
         val groupId: GroupId,
         val groupName: String,
         val childId: PersonId,
@@ -161,6 +166,8 @@ class AssistanceNeedsAndActionsReportController(
         @Json val preschoolAssistanceCounts: Map<PreschoolAssistanceLevel, Int>,
         @Json val otherAssistanceMeasureCounts: Map<OtherAssistanceMeasureType, Int>,
         val assistanceNeedVoucherCoefficient: BigDecimal,
+        val daycareAssistanceNeedDecisionCount: Int,
+        val preschoolAssistanceNeedDecisionCount: Int,
     )
 }
 
@@ -270,11 +277,37 @@ WITH action_counts AS (
     AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(date)}
     AND vc.validity_period @> ${bind(date)}
     GROUP BY daycare_group_id
-) 
+), daycare_assistance_need_decision_count AS (
+    SELECT dgp.daycare_group_id,
+           count(decision.id) AS count
+    FROM daycare_group_placement dgp
+    JOIN placement pl ON pl.id = dgp.daycare_placement_id
+    JOIN assistance_need_decision decision ON
+        pl.child_id = decision.child_id
+        AND decision.status = 'ACCEPTED'
+    WHERE daterange(dgp.start_date, dgp.end_date, '[]') @> ${bind(date)}
+    AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(date)}
+    AND decision.validity_period @> ${bind(date)}
+    GROUP BY dgp.daycare_group_id
+), preschool_assistance_need_decision_count AS (
+    SELECT dgp.daycare_group_id,
+           count(decision.id) AS count
+    FROM daycare_group_placement dgp
+    JOIN placement pl ON pl.id = dgp.daycare_placement_id
+    JOIN assistance_need_preschool_decision decision ON
+        pl.child_id = decision.child_id
+        AND decision.status = 'ACCEPTED'
+    WHERE daterange(dgp.start_date, dgp.end_date, '[]') @> ${bind(date)}
+    AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(date)}
+    AND daterange(decision.valid_from, decision.valid_to, '[]') @> ${bind(date)}
+    GROUP BY dgp.daycare_group_id
+)
+
 SELECT
     ca.name AS care_area_name,
     u.id AS unit_id,
     u.name AS unit_name,
+    u.provider_type AS unit_provider_type,
     g.id AS group_id,
     initcap(g.name) AS group_name,
     coalesce(action_counts, '{}') AS action_counts,
@@ -283,7 +316,9 @@ SELECT
     coalesce(daycare_assistance_counts, '{}') AS daycare_assistance_counts,
     coalesce(preschool_assistance_counts, '{}') AS preschool_assistance_counts,
     coalesce(other_assistance_measure_counts, '{}') AS other_assistance_measure_counts,
-    coalesce(assistance_need_voucher_coefficient_counts.count, 0) AS assistance_need_voucher_coefficient_count
+    coalesce(assistance_need_voucher_coefficient_counts.count, 0) AS assistance_need_voucher_coefficient_count,
+    coalesce(dand.count, 0) AS daycare_assistance_need_decision_count,
+    coalesce(pand.count, 0) AS preschool_assistance_need_decision_count
 FROM daycare u
 JOIN care_area ca ON u.care_area_id = ca.id
 JOIN daycare_group g ON g.daycare_id = u.id AND daterange(g.start_date, g.end_date, '[]') @> ${bind(date)}
@@ -292,6 +327,8 @@ LEFT JOIN daycare_assistance_counts ON g.id = daycare_assistance_counts.daycare_
 LEFT JOIN preschool_assistance_counts ON g.id = preschool_assistance_counts.daycare_group_id
 LEFT JOIN other_assistance_measure_counts ON g.id = other_assistance_measure_counts.daycare_group_id
 LEFT JOIN assistance_need_voucher_coefficient_counts ON g.id = assistance_need_voucher_coefficient_counts.daycare_group_id
+LEFT JOIN daycare_assistance_need_decision_count dand ON g.id = dand.daycare_group_id
+LEFT JOIN preschool_assistance_need_decision_count pand ON g.id = pand.daycare_group_id
 WHERE ${predicate(unitFilter.forTable("u"))}
 ORDER BY ca.name, u.name, g.name
         """
@@ -401,11 +438,38 @@ WITH actions AS (
         WHERE daterange(gpl.start_date, gpl.end_date, '[]') @> ${bind(date)}
         AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(date)}
         AND vc.validity_period @> ${bind(date)}
+), daycare_assistance_need_decision_count AS (
+    SELECT dgp.daycare_group_id,
+           pl.child_id,
+           count(decision.id) AS count
+    FROM daycare_group_placement dgp
+    JOIN placement pl ON pl.id = dgp.daycare_placement_id
+    JOIN assistance_need_decision decision ON
+        pl.child_id = decision.child_id
+        AND decision.status = 'ACCEPTED'
+    WHERE daterange(dgp.start_date, dgp.end_date, '[]') @> ${bind(date)}
+    AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(date)}
+    AND decision.validity_period @> ${bind(date)}
+    GROUP BY dgp.daycare_group_id, pl.child_id
+), preschool_assistance_need_decision_count AS (
+    SELECT dgp.daycare_group_id,
+           pl.child_id,
+           count(decision.id) AS count
+    FROM daycare_group_placement dgp
+    JOIN placement pl ON pl.id = dgp.daycare_placement_id
+    JOIN assistance_need_preschool_decision decision ON
+        pl.child_id = decision.child_id
+        AND decision.status = 'ACCEPTED'
+    WHERE daterange(dgp.start_date, dgp.end_date, '[]') @> ${bind(date)}
+    AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(date)}
+    AND daterange(decision.valid_from, decision.valid_to, '[]') @> ${bind(date)}
+    GROUP BY dgp.daycare_group_id, pl.child_id
 ) 
 SELECT
     ca.name AS care_area_name,
     u.id AS unit_id,
     u.name AS unit_name,
+    u.provider_type AS unit_provider_type,
     g.id AS group_id,
     initcap(g.name) AS group_name,
     child.id AS child_id,
@@ -417,7 +481,9 @@ SELECT
     coalesce(daycare_assistance_counts, '{}') AS daycare_assistance_counts,
     coalesce(preschool_assistance_counts, '{}') AS preschool_assistance_counts,
     coalesce(other_assistance_measure_counts, '{}') AS other_assistance_measure_counts,
-    coalesce(assistance_need_voucher_coefficient.coefficient, 1.0) AS assistance_need_voucher_coefficient
+    coalesce(assistance_need_voucher_coefficient.coefficient, 1.0) AS assistance_need_voucher_coefficient,
+    coalesce(dand.count, 0) AS daycare_assistance_need_decision_count,
+    coalesce(pand.count, 0) AS preschool_assistance_need_decision_count
 FROM daycare u
 JOIN care_area ca ON u.care_area_id = ca.id
 JOIN daycare_group g ON g.daycare_id = u.id AND daterange(g.start_date, g.end_date, '[]') @> ${bind(date)}
@@ -434,6 +500,8 @@ LEFT JOIN other_assistance_measure_counts ON g.id = other_assistance_measure_cou
     AND child.id = other_assistance_measure_counts.child_id
 LEFT JOIN assistance_need_voucher_coefficient ON g.id = assistance_need_voucher_coefficient.daycare_group_id 
    AND child.id = assistance_need_voucher_coefficient.child_id
+LEFT JOIN daycare_assistance_need_decision_count dand ON g.id = dand.daycare_group_id AND child.id = dand.child_id
+LEFT JOIN preschool_assistance_need_decision_count pand ON g.id = pand.daycare_group_id AND child.id = pand.child_id
 WHERE ${predicate(unitFilter.forTable("u"))}
 ORDER BY ca.name, u.name, g.name, child.last_name, child.first_name
         """
