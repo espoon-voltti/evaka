@@ -6,12 +6,11 @@ import { useQueryClient } from '@tanstack/react-query'
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
 
-import { combine, Failure, Result, wrapResult } from 'lib-common/api'
+import { combine, Failure, Result } from 'lib-common/api'
 import { Action } from 'lib-common/generated/action'
 import { IncomeRequest } from 'lib-common/generated/api-types/invoicing'
 import { IncomeId, PersonId } from 'lib-common/generated/api-types/shared'
-import { useQueryResult } from 'lib-common/query'
-import { useApiState } from 'lib-common/utils/useRestApi'
+import { useMutationResult, useQueryResult } from 'lib-common/query'
 import Pagination from 'lib-components/Pagination'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
@@ -19,18 +18,6 @@ import { H2, H3, H4 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
-import {
-  getIncomeStatementChildren,
-  getIncomeStatements
-} from '../../generated/api-clients/incomestatement'
-import {
-  createIncome,
-  deleteIncome,
-  getIncomeNotifications,
-  getPersonIncomes,
-  updateIncome
-} from '../../generated/api-clients/invoicing'
-import { getChildPlacementPeriods } from '../../generated/api-clients/placement'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
 import { renderResult } from '../async-rendering'
@@ -39,20 +26,18 @@ import IncomeStatementsTable from './IncomeStatementsTable'
 import IncomeList from './income/IncomeList'
 import { getMissingIncomePeriodsString } from './income/missingIncomePeriodUtils'
 import {
-  familyByPersonQuery,
+  childPlacementPeriodsQuery,
+  createIncomeMutation,
+  deleteIncomeMutation,
   incomeCoefficientMultipliersQuery,
-  incomeTypeOptionsQuery
+  incomeNotificationsQuery,
+  incomeStatementChildrenQuery,
+  incomeStatementsQuery,
+  incomeTypeOptionsQuery,
+  personIncomesQuery,
+  updateIncomeMutation
 } from './queries'
 import { PersonContext } from './state'
-
-const getChildPlacementPeriodsResult = wrapResult(getChildPlacementPeriods)
-const createIncomeResult = wrapResult(createIncome)
-const getPersonIncomesResult = wrapResult(getPersonIncomes)
-const updateIncomeResult = wrapResult(updateIncome)
-const deleteIncomeResult = wrapResult(deleteIncome)
-const getIncomeNotificationsResult = wrapResult(getIncomeNotifications)
-const getIncomeStatementsResult = wrapResult(getIncomeStatements)
-const getIncomeStatementChildrenResult = wrapResult(getIncomeStatementChildren)
 
 interface Props {
   id: PersonId
@@ -67,9 +52,8 @@ export default React.memo(function PersonIncome({
   const { permittedActions } = useContext(PersonContext)
   const [open, setOpen] = useState(startOpen)
 
-  const [children] = useApiState(
-    () => getIncomeStatementChildrenResult({ guardianId: id }),
-    [id]
+  const children = useQueryResult(
+    incomeStatementChildrenQuery({ guardianId: id })
   )
 
   return (
@@ -110,9 +94,8 @@ export const IncomeStatements = React.memo(function IncomeStatements({
 }) {
   const { i18n } = useTranslation()
   const [page, setPage] = useState(1)
-  const [incomeStatements] = useApiState(
-    () => getIncomeStatementsResult({ personId, page }),
-    [personId, page]
+  const incomeStatements = useQueryResult(
+    incomeStatementsQuery({ personId, page })
   )
 
   return (
@@ -142,17 +125,12 @@ export const Incomes = React.memo(function Incomes({
 }) {
   const { i18n } = useTranslation()
   const { setErrorMessage } = useContext(UIContext)
-  const [incomes, loadIncomes] = useApiState(
-    () => getPersonIncomesResult({ personId }),
-    [personId]
+  const incomes = useQueryResult(personIncomesQuery({ personId }))
+  const incomeNotifications = useQueryResult(
+    incomeNotificationsQuery({ personId })
   )
-  const [incomeNotifications] = useApiState(
-    () => getIncomeNotificationsResult({ personId }),
-    [personId]
-  )
-  const [childPlacementPeriods] = useApiState(
-    () => getChildPlacementPeriodsResult({ adultId: personId }),
-    [personId]
+  const childPlacementPeriods = useQueryResult(
+    childPlacementPeriodsQuery({ adultId: personId })
   )
 
   const [openIncomeRows, setOpenIncomeRows] = useState<(IncomeId | 'new')[]>([])
@@ -165,15 +143,6 @@ export const Incomes = React.memo(function Incomes({
     (id: IncomeId | 'new') => openIncomeRows.includes(id),
     [openIncomeRows]
   )
-
-  const queryClient = useQueryClient()
-
-  // FIXME: This component shouldn't know about family's dependency on its data
-  const reloadIncomes = useCallback(() => {
-    void loadIncomes()
-    void queryClient.invalidateQueries(familyByPersonQuery({ id: personId }))
-  }, [loadIncomes, personId, queryClient])
-  useEffect(reloadIncomes, [reloadIncomes])
 
   useEffect(() => {
     if (incomes.isSuccess && childPlacementPeriods.isSuccess) {
@@ -225,6 +194,17 @@ export const Incomes = React.memo(function Incomes({
     })
   }
 
+  const { mutateAsync: createIncome } = useMutationResult(createIncomeMutation)
+  const { mutateAsync: updateIncome } = useMutationResult(updateIncomeMutation)
+  const { mutateAsync: deleteIncome } = useMutationResult(deleteIncomeMutation)
+
+  const queryClient = useQueryClient()
+  const handleCancelEdit = useCallback(() => {
+    setEditing(undefined)
+    // Attachments may have been added or deleted, so we need to refetch the incomes
+    void queryClient.invalidateQueries(personIncomesQuery({ personId }))
+  }, [personId, queryClient])
+
   return (
     <>
       {renderResult(
@@ -266,21 +246,21 @@ export const Incomes = React.memo(function Incomes({
               deleting={deleting}
               setDeleting={setDeleting}
               createIncome={(income: IncomeRequest) =>
-                createIncomeResult({ body: { ...income, personId } }).then(
+                createIncome({ body: { ...income, personId } }).then(
                   toggleCreated
                 )
               }
               updateIncome={(incomeId: IncomeId, income: IncomeRequest) =>
-                updateIncomeResult({ incomeId, body: income })
+                updateIncome({ incomeId, body: income })
               }
               deleteIncome={(incomeId: IncomeId) =>
-                deleteIncomeResult({ incomeId })
+                deleteIncome({ personId, incomeId })
               }
               onSuccessfulUpdate={() => {
                 setEditing(undefined)
-                reloadIncomes()
               }}
               onFailedUpdate={handleErrors}
+              onCancelEdit={handleCancelEdit}
             />
           </>
         )
