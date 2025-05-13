@@ -6,25 +6,20 @@ import React, { createContext, useMemo } from 'react'
 
 import { Loading, Result } from 'lib-common/api'
 import { Action } from 'lib-common/generated/action'
-import {
-  ParentshipWithPermittedActions,
-  PersonJSON
-} from 'lib-common/generated/api-types/pis'
+import { PersonJSON } from 'lib-common/generated/api-types/pis'
 import { PersonId } from 'lib-common/generated/api-types/shared'
-import { pendingQuery, useQueryResult } from 'lib-common/query'
+import { useQueryResult } from 'lib-common/query'
 
-import { parentshipsQuery, personQuery } from './queries'
+import { personQuery } from './queries'
 
 export interface PersonState {
   person: Result<PersonJSON>
   permittedActions: Set<Action.Person>
-  fridgeChildren: Result<ParentshipWithPermittedActions[]>
 }
 
 const defaultState: PersonState = {
   person: Loading.of(),
-  permittedActions: new Set(),
-  fridgeChildren: Loading.of()
+  permittedActions: new Set()
 }
 
 const emptyPermittedActions = new Set<Action.Person>()
@@ -52,19 +47,12 @@ export const PersonContextProvider = React.memo(function PersonContextProvider({
     [personResponse]
   )
 
-  const fridgeChildren = useQueryResult(
-    permittedActions.has('READ_PARENTSHIPS')
-      ? parentshipsQuery({ headOfChildId: id })
-      : pendingQuery<ParentshipWithPermittedActions[]>()
-  )
-
   const value = useMemo<PersonState>(
     () => ({
       person,
-      permittedActions,
-      fridgeChildren
+      permittedActions
     }),
-    [person, permittedActions, fridgeChildren]
+    [person, permittedActions]
   )
 
   return (

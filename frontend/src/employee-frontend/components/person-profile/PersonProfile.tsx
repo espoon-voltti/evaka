@@ -131,10 +131,12 @@ const components = {
     title: (i18n) => i18n.personProfile.invoices,
     dataQa: 'person-invoices-collapsible'
   }),
-  invoiceCorrections: requireOneOfPermittedActions(
-    PersonInvoiceCorrections,
-    'READ_INVOICE_CORRECTIONS'
-  ),
+  invoiceCorrections: section({
+    component: PersonInvoiceCorrections,
+    requireOneOfPermittedActions: ['READ_INVOICE_CORRECTIONS'],
+    title: (i18n) => i18n.personProfile.invoiceCorrections.title,
+    dataQa: 'person-invoice-corrections-collapsible'
+  }),
   voucherValueDecisions: requireOneOfPermittedActions(
     PersonVoucherValueDecisions,
     'READ_VOUCHER_VALUE_DECISIONS'
@@ -143,10 +145,12 @@ const components = {
     PersonFridgePartner,
     'READ_PARTNERSHIPS'
   ),
-  'fridge-children': requireOneOfPermittedActions(
-    PersonFridgeChild,
-    'READ_PARENTSHIPS'
-  ),
+  'fridge-children': section({
+    component: PersonFridgeChild,
+    requireOneOfPermittedActions: ['READ_PARENTSHIPS'],
+    title: (i18n) => i18n.personProfile.fridgeChildOfHead,
+    dataQa: 'person-children-collapsible'
+  }),
   dependants: requireOneOfPermittedActions(PersonDependants, 'READ_DEPENDANTS'),
   fosterChildren: requireOneOfPermittedActions(
     FosterChildren,

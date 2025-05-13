@@ -43,7 +43,6 @@ import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { SelectF } from 'lib-components/atoms/dropdowns/Select'
 import { InputFieldF } from 'lib-components/atoms/form/InputField'
 import TextArea, { TextAreaF } from 'lib-components/atoms/form/TextArea'
-import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import {
   FixedSpaceColumn,
@@ -52,7 +51,7 @@ import {
 import { ConfirmedMutation } from 'lib-components/molecules/ConfirmedMutation'
 import { DateRangePickerF } from 'lib-components/molecules/date-picker/DateRangePicker'
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
-import { H2, H4, Label, P } from 'lib-components/typography'
+import { H4, Label, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { faCommentAlt, fasCommentAltLines, faTrash } from 'lib-icons'
 
@@ -64,6 +63,7 @@ import {
   createInvoiceCorrectionMutation,
   deleteInvoiceCorrectionMutation,
   invoiceCorrectionsQuery,
+  parentshipsQuery,
   updateInvoiceCorrectionNoteMutation
 } from './queries'
 import { PersonContext } from './state'
@@ -74,17 +74,15 @@ interface EditTarget {
 }
 
 export default React.memo(function PersonInvoiceCorrections({
-  id,
-  open: startOpen
+  id
 }: {
   id: PersonId
-  open: boolean
 }) {
   const { i18n } = useTranslation()
-  const { fridgeChildren, permittedActions } = useContext(PersonContext)
-  const [open, setOpen] = useState(startOpen)
+  const { permittedActions } = useContext(PersonContext)
   const invoiceCodes = useQueryResult(invoiceCodesQuery())
   const corrections = useQueryResult(invoiceCorrectionsQuery({ personId: id }))
+  const fridgeChildren = useQueryResult(parentshipsQuery({ headOfChildId: id }))
 
   const [editTarget, setEditTarget] = useState<EditTarget | null>(null)
 
@@ -129,47 +127,36 @@ export default React.memo(function PersonInvoiceCorrections({
     [invoiceCodes]
   )
 
-  return (
-    <CollapsibleContentArea
-      title={<H2>{i18n.personProfile.invoiceCorrections.title}</H2>}
-      open={open}
-      toggleOpen={() => setOpen(!open)}
-      opaque
-      paddingVertical="L"
-      data-qa="person-invoice-corrections-collapsible"
-    >
-      {renderResult(
-        combine(children, groupedCorrections, products, unitIds, unitDetails),
-        ([children, groupedCorrections, products, unitIds, unitDetails]) => (
-          <FixedSpaceColumn spacing="L">
-            {children.length === 0 ? (
-              <div>{i18n.invoiceCorrections.noChildren}</div>
-            ) : (
-              children.map((child) => (
-                <ChildSection
-                  key={child.id}
-                  personId={id}
-                  permittedPersonActions={permittedActions}
-                  child={child}
-                  corrections={groupedCorrections[child.id] ?? []}
-                  products={products}
-                  unitIds={unitIds}
-                  unitDetails={unitDetails}
-                  editTarget={editTarget}
-                  onStartCreate={() =>
-                    setEditTarget({ childId: child.id, correctionId: null })
-                  }
-                  onStartEdit={(correctionId) =>
-                    setEditTarget({ childId: child.id, correctionId })
-                  }
-                  onEditorCancel={() => setEditTarget(null)}
-                />
-              ))
-            )}
-          </FixedSpaceColumn>
-        )
-      )}
-    </CollapsibleContentArea>
+  return renderResult(
+    combine(children, groupedCorrections, products, unitIds, unitDetails),
+    ([children, groupedCorrections, products, unitIds, unitDetails]) => (
+      <FixedSpaceColumn spacing="L">
+        {children.length === 0 ? (
+          <div>{i18n.invoiceCorrections.noChildren}</div>
+        ) : (
+          children.map((child) => (
+            <ChildSection
+              key={child.id}
+              personId={id}
+              permittedPersonActions={permittedActions}
+              child={child}
+              corrections={groupedCorrections[child.id] ?? []}
+              products={products}
+              unitIds={unitIds}
+              unitDetails={unitDetails}
+              editTarget={editTarget}
+              onStartCreate={() =>
+                setEditTarget({ childId: child.id, correctionId: null })
+              }
+              onStartEdit={(correctionId) =>
+                setEditTarget({ childId: child.id, correctionId })
+              }
+              onEditorCancel={() => setEditTarget(null)}
+            />
+          ))
+        )}
+      </FixedSpaceColumn>
+    )
   )
 })
 
