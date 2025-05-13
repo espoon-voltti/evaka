@@ -14,12 +14,11 @@ import LocalDate from 'lib-common/local-date'
 import { formatCents } from 'lib-common/money'
 import { cancelMutation, useQueryResult } from 'lib-common/query'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
-import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
-import { H2, Label } from 'lib-components/typography'
+import { Label } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import { faPlus } from 'lib-icons'
 
@@ -35,17 +34,12 @@ import {
 
 interface Props {
   id: PersonId
-  open: boolean
 }
 
-export default React.memo(function PersonFeeDecisions({
-  id,
-  open: startOpen
-}: Props) {
+export default React.memo(function PersonFeeDecisions({ id }: Props) {
   const { i18n } = useTranslation()
   const { uiMode, toggleUiMode, clearUiMode } = useContext(UIContext)
   const { permittedActions } = useContext(PersonContext)
-  const [open, setOpen] = useState(startOpen)
   const feeDecisions = useQueryResult(headOfFamilyFeeDecisionsQuery({ id }))
 
   const openRetroactiveDecisionsModal = useCallback(
@@ -54,14 +48,7 @@ export default React.memo(function PersonFeeDecisions({
   )
 
   return (
-    <CollapsibleContentArea
-      title={<H2>{i18n.personProfile.feeDecisions.title}</H2>}
-      open={open}
-      toggleOpen={() => setOpen(!open)}
-      opaque
-      paddingVertical="L"
-      data-qa="person-fee-decisions-collapsible"
-    >
+    <>
       {uiMode === 'create-retroactive-fee-decision' ? (
         <Modal headOfFamily={id} clear={clearUiMode} />
       ) : null}
@@ -111,7 +98,7 @@ export default React.memo(function PersonFeeDecisions({
           </Tbody>
         </Table>
       ))}
-    </CollapsibleContentArea>
+    </>
   )
 })
 
