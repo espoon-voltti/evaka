@@ -113,11 +113,12 @@ const components = {
     title: (i18n) => i18n.personProfile.familyOverview.title,
     dataQa: 'family-overview-collapsible'
   }),
-  income: requireOneOfPermittedActions(
-    PersonIncome,
-    'READ_INCOME_STATEMENTS',
-    'READ_INCOME'
-  ),
+  income: section({
+    component: PersonIncome,
+    requireOneOfPermittedActions: ['READ_INCOME_STATEMENTS', 'READ_INCOME'],
+    title: (i18n) => i18n.personProfile.income.title,
+    dataQa: 'person-income-collapsible'
+  }),
   'fee-decisions': requireOneOfPermittedActions(
     PersonFeeDecisions,
     'READ_FEE_DECISIONS'

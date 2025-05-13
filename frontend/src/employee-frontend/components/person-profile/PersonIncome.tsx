@@ -13,8 +13,7 @@ import { IncomeId, PersonId } from 'lib-common/generated/api-types/shared'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
 import Pagination from 'lib-components/Pagination'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
-import { CollapsibleContentArea } from 'lib-components/layout/Container'
-import { H2, H3, H4 } from 'lib-components/typography'
+import { H3, H4 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
@@ -41,30 +40,18 @@ import { PersonContext } from './state'
 
 interface Props {
   id: PersonId
-  open: boolean
 }
 
-export default React.memo(function PersonIncome({
-  id,
-  open: startOpen
-}: Props) {
+export default React.memo(function PersonIncome({ id }: Props) {
   const { i18n } = useTranslation()
   const { permittedActions } = useContext(PersonContext)
-  const [open, setOpen] = useState(startOpen)
 
   const children = useQueryResult(
     incomeStatementChildrenQuery({ guardianId: id })
   )
 
   return (
-    <CollapsibleContentArea
-      title={<H2>{i18n.personProfile.income.title}</H2>}
-      open={open}
-      toggleOpen={() => setOpen(!open)}
-      opaque
-      paddingVertical="L"
-      data-qa="person-income-collapsible"
-    >
+    <>
       <H4>{i18n.personProfile.incomeStatement.title}</H4>
       <IncomeStatements personId={id} />
       <Gap size="L" />
@@ -83,7 +70,7 @@ export default React.memo(function PersonIncome({
       <Gap size="L" />
       <H3>{i18n.personProfile.income.title}</H3>
       <Incomes personId={id} permittedActions={permittedActions} />
-    </CollapsibleContentArea>
+    </>
   )
 })
 
