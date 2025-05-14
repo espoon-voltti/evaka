@@ -376,7 +376,10 @@ class ApplicationStateService(
 
         tx.resetCheckedByAdminAndConfidentiality(applicationId, clock.now(), user.evakaUserId)
 
-        Audit.ApplicationSend.log(targetId = AuditId(applicationId))
+        Audit.ApplicationSend.log(
+            targetId = AuditId(applicationId),
+            objectId = AuditId(application.childId),
+        )
     }
 
     fun sendPlacementToolApplication(
