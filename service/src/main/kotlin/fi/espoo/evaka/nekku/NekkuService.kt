@@ -436,7 +436,6 @@ fun createAndSendNekkuOrder(
             logger.info {
                 "Sent Nekku order for date $date for customerNumber=${nekkuDaycareCustomerMapping.customerNumber} groupId=$groupId and Nekku orders created: ${nekkuOrderResult.created}"
             }
-            dbc.transaction { tx -> tx.setNekkuReportOrderReport(order, groupId, nekkuProducts) }
         } else {
             logger.info {
                 "Skipped Nekku order with no rows for date $date for customerNumber=${nekkuDaycareCustomerMapping.customerNumber} groupId=$groupId"
