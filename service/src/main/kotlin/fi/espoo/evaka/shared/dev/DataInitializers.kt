@@ -746,8 +746,8 @@ fun Database.Transaction.insert(row: DevAssistanceAction): AssistanceActionId =
     createUpdate {
             sql(
                 """
-INSERT INTO assistance_action (id, updated_by, child_id, start_date, end_date, other_action)
-VALUES (${bind(row.id)}, ${bind(row.updatedBy)}, ${bind(row.childId)}, ${bind(row.startDate)}, ${bind(row.endDate)}, ${bind(row.otherAction)})
+INSERT INTO assistance_action (id, created_at, modified_at, modified_by, child_id, start_date, end_date, other_action)
+VALUES (${bind(row.id)}, ${bind(row.createdAt)}, ${bind(row.modifiedAt)}, ${bind(row.modifiedBy)}, ${bind(row.childId)}, ${bind(row.startDate)}, ${bind(row.endDate)}, ${bind(row.otherAction)})
 RETURNING id
 """
             )

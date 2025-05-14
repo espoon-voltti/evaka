@@ -10,6 +10,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapPSQLException
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.core.JdbiException
 import org.springframework.stereotype.Service
 
@@ -18,14 +19,15 @@ class AssistanceActionService {
     fun createAssistanceAction(
         db: Database.Connection,
         user: AuthenticatedUser,
+        now: HelsinkiDateTime,
         childId: ChildId,
         data: AssistanceActionRequest,
     ): AssistanceAction {
         try {
             return db.transaction { tx ->
                 validateActions(data, tx.getAssistanceActionOptions().map { it.value })
-                tx.shortenOverlappingAssistanceAction(user, childId, data.startDate)
-                tx.insertAssistanceAction(user, childId, data)
+                tx.shortenOverlappingAssistanceAction(user, now, childId, data.startDate)
+                tx.insertAssistanceAction(user, now, childId, data)
             }
         } catch (e: JdbiException) {
             throw mapPSQLException(e)
@@ -35,13 +37,14 @@ class AssistanceActionService {
     fun updateAssistanceAction(
         db: Database.Connection,
         user: AuthenticatedUser,
+        now: HelsinkiDateTime,
         id: AssistanceActionId,
         data: AssistanceActionRequest,
     ): AssistanceAction {
         try {
             return db.transaction { tx ->
                 validateActions(data, tx.getAssistanceActionOptions().map { it.value })
-                tx.updateAssistanceAction(user, id, data)
+                tx.updateAssistanceAction(user, now, id, data)
             }
         } catch (e: JdbiException) {
             throw mapPSQLException(e)
