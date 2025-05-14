@@ -8,56 +8,39 @@ import { Link } from 'react-router'
 import styled from 'styled-components'
 
 import { PersonContext } from 'employee-frontend/components/person-profile/state'
-import { wrapResult } from 'lib-common/api'
 import { FeeDecision } from 'lib-common/generated/api-types/invoicing'
 import { PersonId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { formatCents } from 'lib-common/money'
-import { useApiState } from 'lib-common/utils/useRestApi'
+import { cancelMutation, useQueryResult } from 'lib-common/query'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
-import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
-import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
-import { H2, Label } from 'lib-components/typography'
+import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
+import { Label } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import { faPlus } from 'lib-icons'
 
-import {
-  generateRetroactiveFeeDecisions,
-  getHeadOfFamilyFeeDecisions
-} from '../../generated/api-clients/invoicing'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
 import { renderResult } from '../async-rendering'
 
 import { DateTd, StatusTd } from './common'
-
-const getHeadOfFamilyFeeDecisionsResult = wrapResult(
-  getHeadOfFamilyFeeDecisions
-)
-const generateRetroactiveFeeDecisionsResult = wrapResult(
-  generateRetroactiveFeeDecisions
-)
+import {
+  generateRetroactiveFeeDecisionsMutation,
+  headOfFamilyFeeDecisionsQuery
+} from './queries'
 
 interface Props {
   id: PersonId
-  open: boolean
 }
 
-export default React.memo(function PersonFeeDecisions({
-  id,
-  open: startOpen
-}: Props) {
+export default React.memo(function PersonFeeDecisions({ id }: Props) {
   const { i18n } = useTranslation()
   const { uiMode, toggleUiMode, clearUiMode } = useContext(UIContext)
   const { permittedActions } = useContext(PersonContext)
-  const [open, setOpen] = useState(startOpen)
-  const [feeDecisions, reloadFeeDecisions] = useApiState(
-    () => getHeadOfFamilyFeeDecisionsResult({ id }),
-    [id]
-  )
+  const feeDecisions = useQueryResult(headOfFamilyFeeDecisionsQuery({ id }))
 
   const openRetroactiveDecisionsModal = useCallback(
     () => toggleUiMode('create-retroactive-fee-decision'),
@@ -65,20 +48,9 @@ export default React.memo(function PersonFeeDecisions({
   )
 
   return (
-    <CollapsibleContentArea
-      title={<H2>{i18n.personProfile.feeDecisions.title}</H2>}
-      open={open}
-      toggleOpen={() => setOpen(!open)}
-      opaque
-      paddingVertical="L"
-      data-qa="person-fee-decisions-collapsible"
-    >
+    <>
       {uiMode === 'create-retroactive-fee-decision' ? (
-        <Modal
-          headOfFamily={id}
-          clear={clearUiMode}
-          loadDecisions={reloadFeeDecisions}
-        />
+        <Modal headOfFamily={id} clear={clearUiMode} />
       ) : null}
       {permittedActions.has('GENERATE_RETROACTIVE_FEE_DECISIONS') && (
         <AddButtonRow
@@ -126,7 +98,7 @@ export default React.memo(function PersonFeeDecisions({
           </Tbody>
         </Table>
       ))}
-    </CollapsibleContentArea>
+    </>
   )
 })
 
@@ -136,40 +108,31 @@ const StyledLabel = styled(Label)`
 
 const Modal = React.memo(function Modal({
   headOfFamily,
-  clear,
-  loadDecisions
+  clear
 }: {
   headOfFamily: PersonId
   clear: () => void
-  loadDecisions: () => void
 }) {
   const { i18n, lang } = useTranslation()
   const [date, setDate] = useState<LocalDate | null>(null)
 
-  const resolve = useCallback(() => {
-    if (date) {
-      return generateRetroactiveFeeDecisionsResult({
-        id: headOfFamily,
-        body: { from: date }
-      })
-    }
-    return
-  }, [headOfFamily, date])
-
-  const onSuccess = useCallback(() => {
-    clear()
-    loadDecisions()
-  }, [clear, loadDecisions])
-
   return (
-    <AsyncFormModal
+    <MutateFormModal
       icon={faPlus}
       type="info"
       title={i18n.personProfile.feeDecisions.createRetroactive}
-      resolveAction={resolve}
+      resolveMutation={generateRetroactiveFeeDecisionsMutation}
+      resolveAction={() =>
+        date !== null
+          ? {
+              id: headOfFamily,
+              body: { from: date }
+            }
+          : cancelMutation
+      }
       resolveLabel={i18n.common.create}
       resolveDisabled={!date}
-      onSuccess={onSuccess}
+      onSuccess={clear}
       rejectAction={clear}
       rejectLabel={i18n.common.cancel}
     >
@@ -183,6 +146,6 @@ const Modal = React.memo(function Modal({
           data-qa="retroactive-fee-decision-start-date"
         />
       </FixedSpaceRow>
-    </AsyncFormModal>
+    </MutateFormModal>
   )
 })

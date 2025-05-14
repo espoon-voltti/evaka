@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useState } from 'react'
+import React from 'react'
 import { Link } from 'react-router'
 import styled from 'styled-components'
 
@@ -13,18 +13,18 @@ import {
   FamilyOverviewIncome,
   FamilyOverviewPerson
 } from 'lib-common/generated/api-types/pis'
+import { PersonId } from 'lib-common/generated/api-types/shared'
 import { formatCents } from 'lib-common/money'
+import { useQueryResult } from 'lib-common/query'
 import { getAge } from 'lib-common/utils/local-date'
-import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
-import { H2 } from 'lib-components/typography'
 
 import LabelValueList from '../../components/common/LabelValueList'
 import { Translations, useTranslation } from '../../state/i18n'
 import { formatName } from '../../utils'
 import { renderResult } from '../async-rendering'
 
-import { PersonContext } from './state'
+import { familyByPersonQuery } from './queries'
 
 type FamilyOverviewPersonRole = 'HEAD' | 'PARTNER' | 'CHILD'
 
@@ -39,7 +39,7 @@ interface FamilyOverviewRow {
 }
 
 interface Props {
-  open: boolean
+  id: PersonId
 }
 
 const LabelValueListContainer = styled.div`
@@ -90,10 +90,10 @@ function getAdults(family: FamilyOverview): FamilyOverviewPerson[] {
   return partner ? [headOfFamily, partner] : [headOfFamily]
 }
 
-export default React.memo(function FamilyOverview({ open: startOpen }: Props) {
+export default React.memo(function FamilyOverview({ id }: Props) {
   const { i18n } = useTranslation()
-  const { family } = useContext(PersonContext)
-  const [open, setOpen] = useState(startOpen)
+
+  const family = useQueryResult(familyByPersonQuery({ id }))
 
   function getIncomeString(
     incomeTotal: number | undefined,
@@ -119,103 +119,94 @@ export default React.memo(function FamilyOverview({ open: startOpen }: Props) {
 
   return (
     <div data-qa="family-overview-section" data-isloading={isLoading(family)}>
-      <CollapsibleContentArea
-        title={<H2>{i18n.personProfile.familyOverview.title}</H2>}
-        open={open}
-        toggleOpen={() => setOpen(!open)}
-        opaque
-        paddingVertical="L"
-        data-qa="family-overview-collapsible"
-      >
-        {renderResult(family, (family) => (
-          <>
-            <LabelValueListContainer>
-              <LabelValueList
-                spacing="small"
-                contents={[
-                  {
-                    label: i18n.personProfile.familyOverview.familySizeLabel,
-                    value: i18n.personProfile.familyOverview.familySizeValue(
-                      getAdults(family).length,
-                      family.children.length
-                    )
-                  },
-                  ...(familyIncomeTotal !== undefined
-                    ? [
-                        {
-                          label:
-                            i18n.personProfile.familyOverview.incomeTotalLabel,
-                          value:
-                            i18n.personProfile.familyOverview.incomeValue(
-                              familyIncomeTotal
-                            )
-                        }
-                      ]
-                    : [])
-                ]}
-              />
-            </LabelValueListContainer>
-            <div>
-              <Table>
-                <Thead>
-                  <Tr>
-                    <Th>{i18n.personProfile.familyOverview.colName}</Th>
-                    <Th>{i18n.personProfile.familyOverview.colRole}</Th>
-                    <Th>{i18n.personProfile.familyOverview.colAge}</Th>
-                    {family.totalIncome ? (
-                      <Th>{i18n.personProfile.familyOverview.colIncome}</Th>
-                    ) : null}
-                    <Th>{i18n.personProfile.familyOverview.colAddress}</Th>
-                  </Tr>
-                </Thead>
-                <Tbody>
-                  {getMembers(family, i18n)?.map(
-                    ({
-                      personId,
-                      name,
-                      role,
-                      age,
-                      restrictedDetailsEnabled,
-                      address,
-                      income
-                    }) => (
-                      <Tr
-                        key={personId}
-                        data-qa={`table-family-overview-row-${personId}`}
-                      >
-                        <Td>
-                          {role === 'CHILD' ? (
-                            <Link to={`/child-information/${personId}`}>
-                              {name}
-                            </Link>
-                          ) : (
-                            <Link to={`/profile/${personId}`}>{name}</Link>
+      {renderResult(family, (family) => (
+        <>
+          <LabelValueListContainer>
+            <LabelValueList
+              spacing="small"
+              contents={[
+                {
+                  label: i18n.personProfile.familyOverview.familySizeLabel,
+                  value: i18n.personProfile.familyOverview.familySizeValue(
+                    getAdults(family).length,
+                    family.children.length
+                  )
+                },
+                ...(familyIncomeTotal !== undefined
+                  ? [
+                      {
+                        label:
+                          i18n.personProfile.familyOverview.incomeTotalLabel,
+                        value:
+                          i18n.personProfile.familyOverview.incomeValue(
+                            familyIncomeTotal
+                          )
+                      }
+                    ]
+                  : [])
+              ]}
+            />
+          </LabelValueListContainer>
+          <div>
+            <Table>
+              <Thead>
+                <Tr>
+                  <Th>{i18n.personProfile.familyOverview.colName}</Th>
+                  <Th>{i18n.personProfile.familyOverview.colRole}</Th>
+                  <Th>{i18n.personProfile.familyOverview.colAge}</Th>
+                  {family.totalIncome ? (
+                    <Th>{i18n.personProfile.familyOverview.colIncome}</Th>
+                  ) : null}
+                  <Th>{i18n.personProfile.familyOverview.colAddress}</Th>
+                </Tr>
+              </Thead>
+              <Tbody>
+                {getMembers(family, i18n)?.map(
+                  ({
+                    personId,
+                    name,
+                    role,
+                    age,
+                    restrictedDetailsEnabled,
+                    address,
+                    income
+                  }) => (
+                    <Tr
+                      key={personId}
+                      data-qa={`table-family-overview-row-${personId}`}
+                    >
+                      <Td>
+                        {role === 'CHILD' ? (
+                          <Link to={`/child-information/${personId}`}>
+                            {name}
+                          </Link>
+                        ) : (
+                          <Link to={`/profile/${personId}`}>{name}</Link>
+                        )}
+                      </Td>
+                      <Td>{i18n.personProfile.familyOverview.role[role]}</Td>
+                      <Td data-qa="person-age">{age}</Td>
+                      {family.totalIncome ? (
+                        <Td data-qa="person-income-total">
+                          {getIncomeString(
+                            income?.total ?? undefined,
+                            income?.effect ?? undefined
                           )}
                         </Td>
-                        <Td>{i18n.personProfile.familyOverview.role[role]}</Td>
-                        <Td data-qa="person-age">{age}</Td>
-                        {family.totalIncome ? (
-                          <Td data-qa="person-income-total">
-                            {getIncomeString(
-                              income?.total ?? undefined,
-                              income?.effect ?? undefined
-                            )}
-                          </Td>
-                        ) : null}
-                        <Td>
-                          {restrictedDetailsEnabled
-                            ? i18n.personProfile.restrictedDetails
-                            : address}
-                        </Td>
-                      </Tr>
-                    )
-                  )}
-                </Tbody>
-              </Table>
-            </div>
-          </>
-        ))}
-      </CollapsibleContentArea>
+                      ) : null}
+                      <Td>
+                        {restrictedDetailsEnabled
+                          ? i18n.personProfile.restrictedDetails
+                          : address}
+                      </Td>
+                    </Tr>
+                  )
+                )}
+              </Tbody>
+            </Table>
+          </div>
+        </>
+      ))}
     </div>
   )
 })

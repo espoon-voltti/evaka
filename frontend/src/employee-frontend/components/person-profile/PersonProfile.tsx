@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useMemo } from 'react'
+import React, { useContext, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
 
 import { Action } from 'lib-common/generated/action'
@@ -11,15 +11,20 @@ import { useIdRouteParam } from 'lib-common/useRouteParams'
 import { getAge } from 'lib-common/utils/local-date'
 import Title from 'lib-components/atoms/Title'
 import { Button } from 'lib-components/atoms/buttons/Button'
-import { Container, ContentArea } from 'lib-components/layout/Container'
+import {
+  CollapsibleContentArea,
+  Container,
+  ContentArea
+} from 'lib-components/layout/Container'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
+import { H2 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { faListTimeline } from 'lib-icons'
 
-import { useTranslation } from '../../state/i18n'
+import { Translations, useTranslation } from '../../state/i18n'
 import { UserContext } from '../../state/user'
 import CircularLabel from '../common/CircularLabel'
 import WarningLabel from '../common/WarningLabel'
@@ -47,65 +52,125 @@ interface SectionProps {
   open: boolean
 }
 
-function requireOneOfPermittedActions(
-  Component: React.FunctionComponent<SectionProps>,
-  ...actions: Action.Person[]
-): React.FunctionComponent<SectionProps> {
-  return function Section({ id, open }: SectionProps) {
+function section({
+  component: Component,
+  enabled = true,
+  requireOneOfPermittedActions,
+  title,
+  dataQa
+}: {
+  component: React.FunctionComponent<{ id: PersonId }>
+  enabled?: boolean
+  requireOneOfPermittedActions: Action.Person[]
+  title: (i18n: Translations) => string
+  dataQa?: string
+}): React.FunctionComponent<SectionProps> {
+  return function Section({ id, open: startOpen }: SectionProps) {
     const { permittedActions } = useContext<PersonState>(PersonContext)
-    if (actions.some((action) => permittedActions.has(action))) {
-      return <Component id={id} open={open} />
-    } else {
+    const { i18n } = useTranslation()
+    const [open, setOpen] = useState(startOpen)
+    if (
+      !enabled ||
+      !requireOneOfPermittedActions.some((action) =>
+        permittedActions.has(action)
+      )
+    ) {
       return null
     }
+    return (
+      <CollapsibleContentArea
+        title={<H2 noMargin>{title(i18n)}</H2>}
+        open={open}
+        toggleOpen={() => setOpen(!open)}
+        opaque
+        paddingVertical="L"
+        data-qa={dataQa}
+      >
+        <Component id={id} />
+      </CollapsibleContentArea>
+    )
   }
 }
 
 const components = {
-  'family-overview': requireOneOfPermittedActions(
-    FamilyOverview,
-    'READ_FAMILY_OVERVIEW'
-  ),
-  income: requireOneOfPermittedActions(
-    PersonIncome,
-    'READ_INCOME_STATEMENTS',
-    'READ_INCOME'
-  ),
-  'fee-decisions': requireOneOfPermittedActions(
-    PersonFeeDecisions,
-    'READ_FEE_DECISIONS'
-  ),
-  invoices: requireOneOfPermittedActions(PersonInvoices, 'READ_INVOICES'),
-  invoiceCorrections: requireOneOfPermittedActions(
-    PersonInvoiceCorrections,
-    'READ_INVOICE_CORRECTIONS'
-  ),
-  voucherValueDecisions: requireOneOfPermittedActions(
-    PersonVoucherValueDecisions,
-    'READ_VOUCHER_VALUE_DECISIONS'
-  ),
-  partners: requireOneOfPermittedActions(
-    PersonFridgePartner,
-    'READ_PARTNERSHIPS'
-  ),
-  'fridge-children': requireOneOfPermittedActions(
-    PersonFridgeChild,
-    'READ_PARENTSHIPS'
-  ),
-  dependants: requireOneOfPermittedActions(PersonDependants, 'READ_DEPENDANTS'),
-  fosterChildren: requireOneOfPermittedActions(
-    FosterChildren,
-    'READ_FOSTER_CHILDREN'
-  ),
-  applications: requireOneOfPermittedActions(
-    PersonApplications,
-    'READ_APPLICATIONS'
-  ),
-  decisions: requireOneOfPermittedActions(PersonDecisions, 'READ_DECISIONS'),
-  'notes-and-messages': requireOneOfPermittedActions(
-    PersonFinanceNotesAndMessages,
-    'READ_FINANCE_NOTES'
-  )
+  'family-overview': section({
+    component: FamilyOverview,
+    requireOneOfPermittedActions: ['READ_FAMILY_OVERVIEW'],
+    title: (i18n) => i18n.personProfile.familyOverview.title,
+    dataQa: 'family-overview-collapsible'
+  }),
+  income: section({
+    component: PersonIncome,
+    requireOneOfPermittedActions: ['READ_INCOME_STATEMENTS', 'READ_INCOME'],
+    title: (i18n) => i18n.personProfile.income.title,
+    dataQa: 'person-income-collapsible'
+  }),
+  'fee-decisions': section({
+    component: PersonFeeDecisions,
+    requireOneOfPermittedActions: ['READ_FEE_DECISIONS'],
+    title: (i18n) => i18n.personProfile.feeDecisions.title,
+    dataQa: 'person-fee-decisions-collapsible'
+  }),
+  invoices: section({
+    component: PersonInvoices,
+    requireOneOfPermittedActions: ['READ_INVOICES'],
+    title: (i18n) => i18n.personProfile.invoices,
+    dataQa: 'person-invoices-collapsible'
+  }),
+  invoiceCorrections: section({
+    component: PersonInvoiceCorrections,
+    requireOneOfPermittedActions: ['READ_INVOICE_CORRECTIONS'],
+    title: (i18n) => i18n.personProfile.invoiceCorrections.title,
+    dataQa: 'person-invoice-corrections-collapsible'
+  }),
+  voucherValueDecisions: section({
+    component: PersonVoucherValueDecisions,
+    requireOneOfPermittedActions: ['READ_VOUCHER_VALUE_DECISIONS'],
+    title: (i18n) => i18n.personProfile.voucherValueDecisions.title,
+    dataQa: 'person-voucher-value-decisions-collapsible'
+  }),
+  partners: section({
+    component: PersonFridgePartner,
+    requireOneOfPermittedActions: ['READ_PARTNERSHIPS'],
+    title: (i18n) => i18n.personProfile.partner,
+    dataQa: 'person-partners-collapsible'
+  }),
+  'fridge-children': section({
+    component: PersonFridgeChild,
+    requireOneOfPermittedActions: ['READ_PARENTSHIPS'],
+    title: (i18n) => i18n.personProfile.fridgeChildOfHead,
+    dataQa: 'person-children-collapsible'
+  }),
+  dependants: section({
+    component: PersonDependants,
+    requireOneOfPermittedActions: ['READ_DEPENDANTS'],
+    title: (i18n) => i18n.personProfile.dependants,
+    dataQa: 'person-dependants-collapsible'
+  }),
+  fosterChildren: section({
+    component: FosterChildren,
+    requireOneOfPermittedActions: ['READ_FOSTER_CHILDREN'],
+    title: (i18n) => i18n.personProfile.fosterChildren.sectionTitle,
+    dataQa: 'person-foster-children-collapsible'
+  }),
+  applications: section({
+    component: PersonApplications,
+    requireOneOfPermittedActions: ['READ_APPLICATIONS'],
+    title: (i18n) => i18n.personProfile.applications,
+    dataQa: 'person-applications-collapsible'
+  }),
+  decisions: section({
+    component: PersonDecisions,
+    requireOneOfPermittedActions: ['READ_DECISIONS'],
+    title: (i18n) => i18n.personProfile.decision.decisions,
+    dataQa: 'person-decisions-collapsible'
+  }),
+  'notes-and-messages': section({
+    component: PersonFinanceNotesAndMessages,
+    requireOneOfPermittedActions: ['READ_FINANCE_NOTES'],
+    title: (i18n) => i18n.personProfile.financeNotesAndMessages.title,
+    dataQa: 'person-finance-notes-and-messages-collapsible'
+  })
 }
 
 const layouts: Layouts<typeof components> = {

@@ -2,6 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { getGuardianApplicationSummaries } from 'employee-frontend/generated/api-clients/application'
+import { getDecisionsByGuardian } from 'employee-frontend/generated/api-clients/decision'
+import {
+  getIncomeStatementChildren,
+  getIncomeStatements
+} from 'employee-frontend/generated/api-clients/incomestatement'
+import { getChildPlacementPeriods } from 'employee-frontend/generated/api-clients/placement'
 import { PersonId } from 'lib-common/generated/api-types/shared'
 import { Queries } from 'lib-common/query'
 
@@ -12,13 +19,22 @@ import {
   updateFinanceNote
 } from '../../generated/api-clients/finance'
 import {
+  createIncome,
   createInvoiceCorrection,
   createReplacementDraftsForHeadOfFamily,
+  deleteIncome,
   deleteInvoiceCorrection,
+  generateRetroactiveFeeDecisions,
+  generateRetroactiveVoucherValueDecisions,
+  getHeadOfFamilyFeeDecisions,
   getHeadOfFamilyInvoices,
+  getHeadOfFamilyVoucherValueDecisions,
   getIncomeMultipliers,
+  getIncomeNotifications,
   getIncomeTypeOptions,
+  getPersonIncomes,
   getPersonInvoiceCorrections,
+  updateIncome,
   updateInvoiceCorrectionNote
 } from '../../generated/api-clients/invoicing'
 import {
@@ -198,3 +214,54 @@ export const deleteFinanceNoteMutation = q.parametricMutation<{
 }>()(deleteFinanceNote, [({ id }) => financeNotesQuery({ personId: id })])
 
 export const incomeTypeOptionsQuery = q.query(getIncomeTypeOptions)
+
+export const childPlacementPeriodsQuery = q.query(getChildPlacementPeriods)
+
+export const personIncomesQuery = q.query(getPersonIncomes)
+
+export const createIncomeMutation = q.mutation(createIncome, [
+  ({ body }) => personIncomesQuery({ personId: body.personId }),
+  ({ body }) => familyByPersonQuery({ id: body.personId })
+])
+
+export const updateIncomeMutation = q.mutation(updateIncome, [
+  ({ body }) => personIncomesQuery({ personId: body.personId }),
+  ({ body }) => familyByPersonQuery({ id: body.personId })
+])
+
+export const deleteIncomeMutation = q.parametricMutation<{
+  personId: PersonId
+}>()(deleteIncome, [
+  ({ personId }) => personIncomesQuery({ personId }),
+  ({ personId }) => familyByPersonQuery({ id: personId })
+])
+
+export const incomeNotificationsQuery = q.query(getIncomeNotifications)
+
+export const incomeStatementsQuery = q.query(getIncomeStatements)
+
+export const incomeStatementChildrenQuery = q.query(getIncomeStatementChildren)
+
+export const headOfFamilyFeeDecisionsQuery = q.query(
+  getHeadOfFamilyFeeDecisions
+)
+
+export const generateRetroactiveFeeDecisionsMutation = q.mutation(
+  generateRetroactiveFeeDecisions,
+  [({ id }) => headOfFamilyFeeDecisionsQuery({ id })]
+)
+
+export const headOfFamilyVoucherValueDecisionsQuery = q.query(
+  getHeadOfFamilyVoucherValueDecisions
+)
+
+export const generateRetroactiveVoucherValueDecisionsMutation = q.mutation(
+  generateRetroactiveVoucherValueDecisions,
+  [({ id }) => headOfFamilyVoucherValueDecisionsQuery({ headOfFamilyId: id })]
+)
+
+export const guardianApplicationSummariesQuery = q.query(
+  getGuardianApplicationSummaries
+)
+
+export const decisionsByGuardianQuery = q.query(getDecisionsByGuardian)

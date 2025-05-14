@@ -16,11 +16,10 @@ import LocalDate from 'lib-common/local-date'
 import { cancelMutation, useQueryResult } from 'lib-common/query'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
-import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import DateRangePicker from 'lib-components/molecules/date-picker/DateRangePicker'
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
-import { H2, Label, P } from 'lib-components/typography'
+import { Label, P } from 'lib-components/typography'
 
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
@@ -39,17 +38,12 @@ import { PersonContext } from './state'
 
 interface Props {
   id: PersonId
-  open: boolean
 }
 
-export default React.memo(function FosterChildren({
-  id,
-  open: startOpen
-}: Props) {
+export default React.memo(function FosterChildren({ id }: Props) {
   const { i18n } = useTranslation()
   const { permittedActions } = useContext(PersonContext)
   const { uiMode, toggleUiMode, clearUiMode } = useContext(UIContext)
-  const [open, setOpen] = useState(startOpen)
   const [editing, setEditing] = useState<{
     id: FosterParentId
     validDuring: DateRange
@@ -103,99 +97,88 @@ export default React.memo(function FosterChildren({
           close={stopDeleting}
         />
       )}
-      <CollapsibleContentArea
-        title={<H2>{i18n.personProfile.fosterChildren.sectionTitle}</H2>}
-        open={open}
-        toggleOpen={() => setOpen(!open)}
-        opaque
-        paddingVertical="L"
-        data-qa="person-foster-children-collapsible"
-      >
-        {permittedActions.has('CREATE_FOSTER_PARENT_RELATIONSHIP') && (
-          <AddButtonRow
-            text={i18n.personProfile.fridgeChildAdd}
-            onClick={() => {
-              toggleUiMode('add-foster-child')
-            }}
-            disabled={!!uiMode}
-            data-qa="add-foster-child-button"
-          />
-        )}
-        {renderResult(fosterChildren, (fosterChildren) => (
-          <Table>
-            <Thead>
-              <Tr>
-                <Th>{i18n.common.form.name}</Th>
-                <Th>{i18n.common.form.socialSecurityNumber}</Th>
-                <Th>{i18n.common.form.age}</Th>
-                <Th>{i18n.common.form.startDate}</Th>
-                <Th>{i18n.common.form.endDate}</Th>
-                <Th>{i18n.common.form.lastModified}</Th>
-                <Th />
-              </Tr>
-            </Thead>
-            <Tbody>
-              {orderBy(
-                fosterChildren,
-                [({ child }) => child.lastName, ({ child }) => child.firstName],
-                ['asc', 'asc']
-              ).map(
-                ({
-                  relationshipId,
-                  child,
-                  modifiedAt,
-                  modifiedBy,
-                  validDuring
-                }) => (
-                  <Tr
-                    key={relationshipId}
-                    data-qa={`foster-child-row-${child.id}`}
-                  >
-                    <NameTd data-qa="name">
-                      <Link to={`/child-information/${child.id}`}>
-                        {child.firstName} {child.lastName}
-                      </Link>
-                    </NameTd>
-                    <Td>{child.socialSecurityNumber}</Td>
-                    <Td>
-                      {LocalDate.todayInHelsinkiTz().differenceInYears(
-                        child.dateOfBirth
-                      )}
-                    </Td>
-                    <Td data-qa="start">{validDuring.start.format()}</Td>
-                    <Td data-qa="end">{validDuring.end?.format() ?? ''}</Td>
-                    <Td>
-                      <Tooltip
-                        tooltip={i18n.common.form.lastModifiedBy(
-                          modifiedBy.name
-                        )}
-                        position="left"
-                      >
-                        {modifiedAt.format()}
-                      </Tooltip>
-                    </Td>
-                    <Td>
-                      <Toolbar
-                        disableAll={!!uiMode}
-                        onEdit={() => startEditing(relationshipId, validDuring)}
-                        onDelete={() => startDeleting(relationshipId)}
-                        editable={true}
-                        deletable={true}
-                        dateRange={{
-                          startDate: validDuring.start,
-                          endDate: validDuring.end
-                        }}
-                        dataQaEdit="edit"
-                        dataQaDelete="delete"
-                      />
-                    </Td>
-                  </Tr>
-                )
-              )}
-            </Tbody>
-          </Table>
-        ))}
-      </CollapsibleContentArea>
+      {permittedActions.has('CREATE_FOSTER_PARENT_RELATIONSHIP') && (
+        <AddButtonRow
+          text={i18n.personProfile.fridgeChildAdd}
+          onClick={() => {
+            toggleUiMode('add-foster-child')
+          }}
+          disabled={!!uiMode}
+          data-qa="add-foster-child-button"
+        />
+      )}
+      {renderResult(fosterChildren, (fosterChildren) => (
+        <Table>
+          <Thead>
+            <Tr>
+              <Th>{i18n.common.form.name}</Th>
+              <Th>{i18n.common.form.socialSecurityNumber}</Th>
+              <Th>{i18n.common.form.age}</Th>
+              <Th>{i18n.common.form.startDate}</Th>
+              <Th>{i18n.common.form.endDate}</Th>
+              <Th>{i18n.common.form.lastModified}</Th>
+              <Th />
+            </Tr>
+          </Thead>
+          <Tbody>
+            {orderBy(
+              fosterChildren,
+              [({ child }) => child.lastName, ({ child }) => child.firstName],
+              ['asc', 'asc']
+            ).map(
+              ({
+                relationshipId,
+                child,
+                modifiedAt,
+                modifiedBy,
+                validDuring
+              }) => (
+                <Tr
+                  key={relationshipId}
+                  data-qa={`foster-child-row-${child.id}`}
+                >
+                  <NameTd data-qa="name">
+                    <Link to={`/child-information/${child.id}`}>
+                      {child.firstName} {child.lastName}
+                    </Link>
+                  </NameTd>
+                  <Td>{child.socialSecurityNumber}</Td>
+                  <Td>
+                    {LocalDate.todayInHelsinkiTz().differenceInYears(
+                      child.dateOfBirth
+                    )}
+                  </Td>
+                  <Td data-qa="start">{validDuring.start.format()}</Td>
+                  <Td data-qa="end">{validDuring.end?.format() ?? ''}</Td>
+                  <Td>
+                    <Tooltip
+                      tooltip={i18n.common.form.lastModifiedBy(modifiedBy.name)}
+                      position="left"
+                    >
+                      {modifiedAt.format()}
+                    </Tooltip>
+                  </Td>
+                  <Td>
+                    <Toolbar
+                      disableAll={!!uiMode}
+                      onEdit={() => startEditing(relationshipId, validDuring)}
+                      onDelete={() => startDeleting(relationshipId)}
+                      editable={true}
+                      deletable={true}
+                      dateRange={{
+                        startDate: validDuring.start,
+                        endDate: validDuring.end
+                      }}
+                      dataQaEdit="edit"
+                      dataQaDelete="delete"
+                    />
+                  </Td>
+                </Tr>
+              )
+            )}
+          </Tbody>
+        </Table>
+      ))}
     </>
   )
 })
