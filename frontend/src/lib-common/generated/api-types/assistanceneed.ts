@@ -383,7 +383,7 @@ export interface AssistanceNeedVoucherCoefficient {
   coefficient: number
   id: AssistanceNeedVoucherCoefficientId
   modifiedAt: HelsinkiDateTime
-  modifiedBy: EvakaUser | null
+  modifiedBy: EvakaUser
   validityPeriod: FiniteDateRange
 }
 

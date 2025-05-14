@@ -2030,7 +2030,7 @@ data class DevAssistanceNeedVoucherCoefficient(
         FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 6, 1)),
     val coefficient: BigDecimal = BigDecimal(1.0),
     val modifiedAt: HelsinkiDateTime = HelsinkiDateTime.now(),
-    val modifiedBy: EvakaUser? =
+    val modifiedBy: EvakaUser =
         EvakaUser(
             id = AuthenticatedUser.SystemInternalUser.evakaUserId,
             name = "eVaka",

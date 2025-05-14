@@ -265,7 +265,7 @@ FROM other_assistance_measure
             sql(
                 """
 SELECT
-    id, created, updated, child_id AS child, coefficient,
+    id, created_at as created, updated_at as updated, child_id AS child, coefficient,
     lower(validity_period) AS start_date, upper(validity_period) - 1 AS end_date
 FROM assistance_need_voucher_coefficient
 """

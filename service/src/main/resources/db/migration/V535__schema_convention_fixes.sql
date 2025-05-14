@@ -49,3 +49,12 @@ ALTER TABLE assistance_need_preschool_decision RENAME COLUMN updated TO updated_
 CREATE TRIGGER set_timestamp BEFORE UPDATE ON assistance_need_preschool_decision FOR EACH ROW EXECUTE PROCEDURE trigger_refresh_updated_at();
 
 ALTER TABLE assistance_need_preschool_decision_guardian RENAME COLUMN created TO created_at;
+
+DROP TRIGGER set_timestamp ON assistance_need_voucher_coefficient;
+ALTER TABLE assistance_need_voucher_coefficient RENAME COLUMN created TO created_at;
+ALTER TABLE assistance_need_voucher_coefficient RENAME COLUMN updated TO updated_at;
+CREATE TRIGGER set_timestamp BEFORE UPDATE ON assistance_need_voucher_coefficient FOR EACH ROW EXECUTE PROCEDURE trigger_refresh_updated_at();
+UPDATE assistance_need_voucher_coefficient SET modified_by = coalesce(modified_by, '00000000-0000-0000-0000-000000000000'::UUID);
+ALTER TABLE assistance_need_voucher_coefficient ALTER COLUMN modified_by SET NOT NULL;
+ALTER TABLE assistance_need_voucher_coefficient ADD CONSTRAINT check_validity_period
+    CHECK ((NOT (lower_inf(validity_period) OR upper_inf(validity_period))));
