@@ -304,7 +304,7 @@ describe('Service Worker Messaging', () => {
 
     it('should open the reply to thread box and create an application note when the service worker sends a second message', async () => {
       await openStaffPage(mockedTime, serviceWorker)
-      const applReadView = new ApplicationReadView(staffPage)
+      let applReadView = new ApplicationReadView(staffPage)
       await applReadView.navigateToApplication(applicationFixtureId)
       const messageEditor = (
         await applReadView.openMessagesPage()
@@ -329,6 +329,7 @@ describe('Service Worker Messaging', () => {
       await citizenMessagesPage.replyToFirstThread('This is a reply')
 
       await openStaffPage(mockedTime.addHours(2), serviceWorker)
+      applReadView = new ApplicationReadView(staffPage)
       await applReadView.navigateToApplication(applicationFixtureId)
       const messagesPage = await applReadView.openMessagesPage()
       await messagesPage.assertReplyContentIsEmpty()
@@ -336,7 +337,8 @@ describe('Service Worker Messaging', () => {
       await messagesPage.fillReplyContent(replyContent)
       await messagesPage.sendReplyButton.click()
 
-      await openStaffPage(mockedTime.addHours(2), serviceWorker)
+      await openStaffPage(mockedTime.addHours(3), serviceWorker)
+      applReadView = new ApplicationReadView(staffPage)
       await applReadView.navigateToApplication(applicationFixtureId)
       await applReadView.assertNote(2, `Lähetetty viesti\n\n${replyContent}`)
     })
