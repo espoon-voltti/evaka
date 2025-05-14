@@ -122,7 +122,10 @@ class ApplicationControllerCitizen(
                     }
                 }
             }
-            .also { Audit.ApplicationRead.log(targetId = AuditId(user.id)) }
+            .also { childApplicationList ->
+                val childIds = childApplicationList.map { it.childId }
+                Audit.ApplicationRead.log(targetId = AuditId(user.id), objectId = AuditId(childIds))
+            }
     }
 
     @GetMapping("/applications/children")
@@ -143,7 +146,10 @@ class ApplicationControllerCitizen(
                     tx.getCitizenChildren(clock.today(), user.id)
                 }
             }
-            .also { Audit.ApplicationRead.log(targetId = AuditId(user.id)) }
+            .also { childList ->
+                val childIds = childList.map { it.id }
+                Audit.ApplicationRead.log(targetId = AuditId(user.id), objectId = AuditId(childIds))
+            }
     }
 
     @GetMapping("/applications/{applicationId}")
@@ -194,7 +200,11 @@ class ApplicationControllerCitizen(
                     }
                 }
             }
-        Audit.ApplicationRead.log(targetId = AuditId(applicationId))
+        Audit.ApplicationRead.log(
+            targetId = AuditId(applicationId),
+            objectId = application?.childId?.let { AuditId(it) },
+            meta = mapOf("hideFromGuardian" to application?.hideFromGuardian),
+        )
 
         return if (application?.hideFromGuardian == false) {
             if (user.id == application.guardianId) {
@@ -343,24 +353,29 @@ class ApplicationControllerCitizen(
         @RequestBody update: CitizenApplicationUpdate,
     ) {
         db.connect { dbc ->
-            dbc.transaction {
-                accessControl.requirePermissionFor(
-                    it,
-                    user,
-                    clock,
-                    Action.Citizen.Application.UPDATE,
-                    applicationId,
-                )
-                applicationStateService.updateOwnApplicationContentsCitizen(
-                    it,
-                    user,
-                    clock.now(),
-                    applicationId,
-                    update,
+                dbc.transaction {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Citizen.Application.UPDATE,
+                        applicationId,
+                    )
+                    applicationStateService.updateOwnApplicationContentsCitizen(
+                        it,
+                        user,
+                        clock.now(),
+                        applicationId,
+                        update,
+                    )
+                }
+            }
+            .also { applicationDetails ->
+                Audit.ApplicationUpdate.log(
+                    targetId = AuditId(applicationId),
+                    objectId = AuditId(applicationDetails.childId),
                 )
             }
-        }
-        Audit.ApplicationUpdate.log(targetId = AuditId(applicationId))
     }
 
     @PutMapping("/applications/{applicationId}/draft")
@@ -372,25 +387,30 @@ class ApplicationControllerCitizen(
         @RequestBody applicationForm: ApplicationFormUpdate,
     ) {
         db.connect { dbc ->
-            dbc.transaction {
-                accessControl.requirePermissionFor(
-                    it,
-                    user,
-                    clock,
-                    Action.Citizen.Application.UPDATE,
-                    applicationId,
-                )
-                applicationStateService.updateOwnApplicationContentsCitizen(
-                    it,
-                    user,
-                    clock.now(),
-                    applicationId,
-                    CitizenApplicationUpdate(applicationForm, allowOtherGuardianAccess = false),
-                    asDraft = true,
+                dbc.transaction {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Citizen.Application.UPDATE,
+                        applicationId,
+                    )
+                    applicationStateService.updateOwnApplicationContentsCitizen(
+                        it,
+                        user,
+                        clock.now(),
+                        applicationId,
+                        CitizenApplicationUpdate(applicationForm, allowOtherGuardianAccess = false),
+                        asDraft = true,
+                    )
+                }
+            }
+            .also { applicationDetails ->
+                Audit.ApplicationUpdate.log(
+                    targetId = AuditId(applicationId),
+                    objectId = AuditId(applicationDetails.childId),
                 )
             }
-        }
-        Audit.ApplicationUpdate.log(targetId = AuditId(applicationId))
     }
 
     @DeleteMapping("/applications/{applicationId}")
@@ -401,40 +421,46 @@ class ApplicationControllerCitizen(
         @PathVariable applicationId: ApplicationId,
     ) {
         db.connect { dbc ->
-            dbc.transaction { tx ->
-                val application =
-                    tx.fetchApplicationDetails(applicationId)
-                        ?: throw NotFound(
-                            "Application $applicationId of guardian ${user.id} not found"
-                        )
+                dbc.transaction { tx ->
+                    val application =
+                        tx.fetchApplicationDetails(applicationId)
+                            ?: throw NotFound(
+                                "Application $applicationId of guardian ${user.id} not found"
+                            )
 
-                when (application.status) {
-                    ApplicationStatus.CREATED -> {
-                        accessControl.requirePermissionFor(
-                            tx,
-                            user,
-                            clock,
-                            Action.Citizen.Application.DELETE,
-                            applicationId,
-                        )
-                        tx.deleteApplication(applicationId)
+                    when (application.status) {
+                        ApplicationStatus.CREATED -> {
+                            accessControl.requirePermissionFor(
+                                tx,
+                                user,
+                                clock,
+                                Action.Citizen.Application.DELETE,
+                                applicationId,
+                            )
+                            tx.deleteApplication(applicationId)
+                        }
+                        ApplicationStatus.SENT ->
+                            applicationStateService.cancelApplication(
+                                tx,
+                                user,
+                                clock,
+                                applicationId,
+                                null,
+                            )
+                        else ->
+                            throw BadRequest(
+                                "Only applications which are not yet being processed can be cancelled"
+                            )
                     }
-                    ApplicationStatus.SENT ->
-                        applicationStateService.cancelApplication(
-                            tx,
-                            user,
-                            clock,
-                            applicationId,
-                            null,
-                        )
-                    else ->
-                        throw BadRequest(
-                            "Only applications which are not yet being processed can be cancelled"
-                        )
+                    application
                 }
             }
-        }
-        Audit.ApplicationDelete.log(targetId = AuditId(applicationId))
+            .also { application ->
+                Audit.ApplicationDelete.log(
+                    targetId = AuditId(applicationId),
+                    objectId = AuditId(application.childId),
+                )
+            }
     }
 
     @PostMapping("/applications/{applicationId}/actions/send-application")
@@ -550,10 +576,12 @@ class ApplicationControllerCitizen(
                     }
                 }
             }
-            .also {
+            .also { decisionWithValidStartDatePeriodList ->
+                val childIds = decisionWithValidStartDatePeriodList.map { it.decision.childId }
                 Audit.DecisionReadByApplication.log(
                     targetId = AuditId(applicationId),
-                    meta = mapOf("count" to it.size),
+                    objectId = AuditId(childIds),
+                    meta = mapOf("count" to decisionWithValidStartDatePeriodList.size),
                 )
             }
     }
@@ -611,20 +639,25 @@ class ApplicationControllerCitizen(
         @PathVariable id: DecisionId,
     ): ResponseEntity<Any> {
         return db.connect { dbc ->
-                val decision =
-                    dbc.transaction { tx ->
-                        accessControl.requirePermissionFor(
-                            tx,
-                            user,
-                            clock,
-                            Action.Citizen.Decision.DOWNLOAD_PDF,
-                            id,
-                        )
-                        tx.getSentDecision(id)
-                    } ?: throw NotFound("Decision $id does not exist")
-                decisionService.getDecisionPdf(dbc, decision)
+            val decision =
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Citizen.Decision.DOWNLOAD_PDF,
+                        id,
+                    )
+                    tx.getSentDecision(id)
+                } ?: throw NotFound("Decision $id does not exist")
+            decisionService.getDecisionPdf(dbc, decision).let { pdfResponse ->
+                Audit.DecisionDownloadPdf.log(
+                    targetId = AuditId(id),
+                    objectId = AuditId(decision.childId),
+                )
+                pdfResponse
             }
-            .also { Audit.DecisionDownloadPdf.log(targetId = AuditId(id)) }
+        }
     }
 
     @GetMapping("/applications/by-guardian/notifications")
@@ -739,10 +772,15 @@ class ApplicationControllerCitizen(
                     voucherValueDecisionInfos + feeDecisionInfos
                 }
             }
-            .also {
+            .also { financeDecisionCitizenInfoList ->
+                val childIds =
+                    financeDecisionCitizenInfoList.flatMap { decision ->
+                        decision.decisionChildren.map { child -> child.id }
+                    }
                 Audit.FinanceDecisionCitizenRead.log(
                     targetId = AuditId(user.id),
-                    meta = mapOf("count" to it.size),
+                    objectId = AuditId(childIds),
+                    meta = mapOf("count" to financeDecisionCitizenInfoList.size),
                 )
             }
     }

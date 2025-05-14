@@ -71,8 +71,7 @@ class AbsenceController(
     ) {
         val children = absences.map { it.childId }
 
-        val upserted =
-            db.connect { dbc ->
+        db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -120,11 +119,13 @@ class AbsenceController(
                     tx.upsertAbsences(clock.now(), user.evakaUserId, absences)
                 }
             }
-        Audit.AbsenceUpsert.log(
-            targetId = AuditId(groupId),
-            objectId = AuditId(upserted),
-            meta = mapOf("children" to children),
-        )
+            .also { absenceIdList ->
+                Audit.AbsenceUpsert.log(
+                    targetId = AuditId(groupId),
+                    objectId = AuditId(absenceIdList),
+                    meta = mapOf("children" to children),
+                )
+            }
     }
 
     @PostMapping("/{groupId}/present")
