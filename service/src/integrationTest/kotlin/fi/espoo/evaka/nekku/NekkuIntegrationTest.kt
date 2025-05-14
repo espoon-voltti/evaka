@@ -3659,7 +3659,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
                 specialDiets = listOf(getNekkuSpecialDiet()),
             )
 
-        fetchAndUpdateNekkuCustomers(client, db)
+        fetchAndUpdateNekkuCustomers(client, db, asyncJobRunner, now)
         // products
         fetchAndUpdateNekkuProducts(client, db)
         fetchAndUpdateNekkuSpecialDiets(client, db)
