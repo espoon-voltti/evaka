@@ -122,7 +122,7 @@ data class AssistanceNeedDecisionBasics(
     val decisionMade: LocalDate?,
     val sentForDecision: LocalDate?,
     @Nested("selected_unit") val selectedUnit: UnitInfoBasics?,
-    val created: HelsinkiDateTime,
+    val createdAt: HelsinkiDateTime,
 )
 
 @ConstList("assistanceNeedDecisionStatuses")

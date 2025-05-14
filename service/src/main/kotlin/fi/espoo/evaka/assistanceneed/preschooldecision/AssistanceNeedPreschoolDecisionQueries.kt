@@ -243,13 +243,13 @@ fun Database.Read.getAssistanceNeedPreschoolDecisionsByChildId(
     createQuery {
             sql(
                 """
-SELECT ad.id, ad.child_id, ad.created, ad.status, ad.type, ad.valid_from, ad.valid_to,
+SELECT ad.id, ad.child_id, ad.created_at, ad.status, ad.type, ad.valid_from, ad.valid_to,
     ad.selected_unit selected_unit_id, unit.name selected_unit_name,
     ad.sent_for_decision, ad.decision_made, ad.annulment_reason, ad.unread_guardian_ids
 FROM assistance_need_preschool_decision ad
 LEFT JOIN daycare unit ON unit.id = selected_unit
 WHERE child_id = ${bind(childId)}
-ORDER BY ad.valid_from DESC NULLS FIRST, ad.created DESC
+ORDER BY ad.valid_from DESC NULLS FIRST, ad.created_at DESC
 """
             )
         }
@@ -262,13 +262,13 @@ fun Database.Read.getAssistanceNeedPreschoolDecisionsByChildIdUsingFilter(
     createQuery {
             sql(
                 """
-SELECT ad.id, ad.child_id, ad.created, ad.status, ad.type, ad.valid_from, ad.valid_to,
+SELECT ad.id, ad.child_id, ad.created_at, ad.status, ad.type, ad.valid_from, ad.valid_to,
     ad.selected_unit selected_unit_id, unit.name selected_unit_name,
     ad.sent_for_decision, ad.decision_made, ad.annulment_reason, ad.unread_guardian_ids
 FROM assistance_need_preschool_decision ad
 LEFT JOIN daycare unit ON unit.id = selected_unit
 WHERE child_id = ${bind(childId)} AND ${predicate(filter.forTable("ad"))}
-ORDER BY ad.valid_from DESC NULLS FIRST, ad.created DESC;
+ORDER BY ad.valid_from DESC NULLS FIRST, ad.created_at DESC;
 """
             )
         }

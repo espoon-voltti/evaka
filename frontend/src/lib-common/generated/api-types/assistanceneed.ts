@@ -83,7 +83,7 @@ export interface AssistanceNeedDecision {
 * Generated from fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionBasics
 */
 export interface AssistanceNeedDecisionBasics {
-  created: HelsinkiDateTime
+  createdAt: HelsinkiDateTime
   decisionMade: LocalDate | null
   id: AssistanceNeedDecisionId
   selectedUnit: UnitInfoBasics | null
@@ -261,7 +261,7 @@ export interface AssistanceNeedPreschoolDecision {
 export interface AssistanceNeedPreschoolDecisionBasics {
   annulmentReason: string
   childId: PersonId
-  created: HelsinkiDateTime
+  createdAt: HelsinkiDateTime
   decisionMade: LocalDate | null
   id: AssistanceNeedPreschoolDecisionId
   selectedUnit: UnitInfoBasics | null
@@ -497,7 +497,7 @@ export function deserializeJsonAssistanceNeedDecision(json: JsonOf<AssistanceNee
 export function deserializeJsonAssistanceNeedDecisionBasics(json: JsonOf<AssistanceNeedDecisionBasics>): AssistanceNeedDecisionBasics {
   return {
     ...json,
-    created: HelsinkiDateTime.parseIso(json.created),
+    createdAt: HelsinkiDateTime.parseIso(json.createdAt),
     decisionMade: (json.decisionMade != null) ? LocalDate.parseIso(json.decisionMade) : null,
     sentForDecision: (json.sentForDecision != null) ? LocalDate.parseIso(json.sentForDecision) : null,
     validityPeriod: DateRange.parseJson(json.validityPeriod)
@@ -571,7 +571,7 @@ export function deserializeJsonAssistanceNeedPreschoolDecision(json: JsonOf<Assi
 export function deserializeJsonAssistanceNeedPreschoolDecisionBasics(json: JsonOf<AssistanceNeedPreschoolDecisionBasics>): AssistanceNeedPreschoolDecisionBasics {
   return {
     ...json,
-    created: HelsinkiDateTime.parseIso(json.created),
+    createdAt: HelsinkiDateTime.parseIso(json.createdAt),
     decisionMade: (json.decisionMade != null) ? LocalDate.parseIso(json.decisionMade) : null,
     sentForDecision: (json.sentForDecision != null) ? LocalDate.parseIso(json.sentForDecision) : null,
     validFrom: (json.validFrom != null) ? LocalDate.parseIso(json.validFrom) : null,
