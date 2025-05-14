@@ -306,7 +306,7 @@ export interface DevAssistanceNeedVoucherCoefficient {
   coefficient: number
   id: AssistanceNeedVoucherCoefficientId
   modifiedAt: HelsinkiDateTime
-  modifiedBy: EvakaUser | null
+  modifiedBy: EvakaUser
   validityPeriod: FiniteDateRange
 }
 

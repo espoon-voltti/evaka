@@ -1849,7 +1849,7 @@ export class Fixture {
         LocalDate.todayInSystemTz()
       ),
       modifiedAt: HelsinkiDateTime.now(),
-      modifiedBy: null,
+      modifiedBy: systemInternalUser,
       ...initial
     }
     return {

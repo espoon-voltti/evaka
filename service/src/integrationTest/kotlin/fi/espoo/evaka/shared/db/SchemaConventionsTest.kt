@@ -27,7 +27,6 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
     fun `creation timestamp should be called 'created_at' instead of 'created'`() {
         val permittedViolations =
             setOf(
-                "assistance_need_voucher_coefficient",
                 "attachment",
                 "backup_care",
                 "care_area",
@@ -100,7 +99,6 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
     fun `update timestamp should be called 'updated_at' instead of 'updated'`() {
         val permittedViolations =
             setOf(
-                "assistance_need_voucher_coefficient",
                 "attachment",
                 "backup_care",
                 "care_area",
@@ -395,11 +393,6 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
     fun `'modified_by' column should be 'uuid' and NOT NULL`() {
         val permittedViolations =
             setOf(
-                Column(
-                    ColumnRef("assistance_need_voucher_coefficient", "modified_by"),
-                    "uuid",
-                    nullable = true,
-                ),
                 Column(ColumnRef("fridge_partner", "modified_by"), "uuid", nullable = true),
                 Column(
                     ColumnRef("holiday_questionnaire_answer", "modified_by"),
@@ -502,7 +495,6 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
         val permittedViolations =
             setOf(
                 ColumnRef("assistance_need_decision", "validity_period"),
-                ColumnRef("assistance_need_voucher_coefficient", "validity_period"),
                 ColumnRef("calendar_event", "period"),
                 ColumnRef("daily_service_time", "validity_period"),
                 ColumnRef("daycare", "club_apply_period"),

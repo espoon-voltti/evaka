@@ -19,7 +19,7 @@ data class AssistanceNeedVoucherCoefficient(
     val coefficient: BigDecimal,
     val validityPeriod: FiniteDateRange,
     val modifiedAt: HelsinkiDateTime,
-    @Nested("modified_by") val modifiedBy: EvakaUser?,
+    @Nested("modified_by") val modifiedBy: EvakaUser,
 )
 
 data class AssistanceNeedVoucherCoefficientRequest(
