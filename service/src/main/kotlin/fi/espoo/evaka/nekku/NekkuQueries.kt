@@ -5,6 +5,8 @@
 package fi.espoo.evaka.nekku
 
 import fi.espoo.evaka.absence.AbsenceCategory
+import fi.espoo.evaka.absence.getDaycareIdByGroup
+import fi.espoo.evaka.daycare.getDaycareGroup
 import fi.espoo.evaka.decision.logger
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ChildId
@@ -639,4 +641,4 @@ ${bind(report.mealsBySpecialDiet)}
 
 fun Database.Read.getDaycareGroupIds(daycareId: DaycareId): List<GroupId> =
     createQuery { sql("SELECT id FROM daycare_group WHERE daycare_id = ${bind(daycareId)}") }
-        .toList<GroupId>()
+        .toList()
