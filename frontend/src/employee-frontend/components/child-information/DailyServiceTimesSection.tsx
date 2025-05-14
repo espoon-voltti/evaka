@@ -16,11 +16,10 @@ import {
 import { useMutationResult, useQueryResult } from 'lib-common/query'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
-import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody } from 'lib-components/layout/Table'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
-import { H2, H4, P } from 'lib-components/typography'
+import { H4, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { faQuestion } from 'lib-icons'
 
@@ -36,19 +35,17 @@ import {
 
 interface Props {
   childId: ChildId
-  startOpen: boolean
 }
 
 export default React.memo(function DailyServiceTimesSection({
-  childId,
-  startOpen
+  childId
 }: Props) {
   const { i18n } = useTranslation()
   const { permittedActions } = useContext<ChildState>(ChildContext)
 
-  const [open, setOpen] = useState(startOpen)
-
-  const apiData = useQueryResult(getDailyServiceTimesQuery({ childId }))
+  const dailyServiceTimes = useQueryResult(
+    getDailyServiceTimesQuery({ childId })
+  )
 
   const [creationFormOpen, setCreationFormOpen] = useState(false)
 
@@ -68,81 +65,67 @@ export default React.memo(function DailyServiceTimesSection({
           }}
         />
       )}
-      <CollapsibleContentArea
-        title={
-          <H2 noMargin>{i18n.childInformation.dailyServiceTimes.title}</H2>
-        }
-        open={open}
-        toggleOpen={() => setOpen(!open)}
-        opaque
-        paddingVertical="L"
-        data-qa="child-daily-service-times-collapsible"
-      >
-        <P>
-          {i18n.childInformation.dailyServiceTimes.info}
-          <br />
-          {i18n.childInformation.dailyServiceTimes.info2}
-          <br />
-          {i18n.childInformation.dailyServiceTimes.info3}
-        </P>
+      <P>
+        {i18n.childInformation.dailyServiceTimes.info}
+        <br />
+        {i18n.childInformation.dailyServiceTimes.info2}
+        <br />
+        {i18n.childInformation.dailyServiceTimes.info3}
+      </P>
 
-        {permittedActions.has('CREATE_DAILY_SERVICE_TIME') && (
-          <FixedSpaceRow justifyContent="flex-end">
-            <AddButton
-              flipped
-              text={i18n.childInformation.dailyServiceTimes.create}
-              onClick={() => {
-                setCreationFormOpen(true)
-              }}
-              disabled={creationFormOpen}
-              data-qa="create-daily-service-times"
-            />
-          </FixedSpaceRow>
-        )}
+      {permittedActions.has('CREATE_DAILY_SERVICE_TIME') && (
+        <FixedSpaceRow justifyContent="flex-end">
+          <AddButton
+            flipped
+            text={i18n.childInformation.dailyServiceTimes.create}
+            onClick={() => {
+              setCreationFormOpen(true)
+            }}
+            disabled={creationFormOpen}
+            data-qa="create-daily-service-times"
+          />
+        </FixedSpaceRow>
+      )}
 
-        {creationFormOpen && (
-          <>
-            <HorizontalLine slim dashed />
-            <H4>{i18n.childInformation.dailyServiceTimes.createNewTimes}</H4>
-            <DailyServiceTimesCreationForm
-              onClose={() => {
-                setCreationFormOpen(false)
-              }}
-              childId={childId}
-            />
-          </>
-        )}
+      {creationFormOpen && (
+        <>
+          <HorizontalLine slim dashed />
+          <H4>{i18n.childInformation.dailyServiceTimes.createNewTimes}</H4>
+          <DailyServiceTimesCreationForm
+            onClose={() => {
+              setCreationFormOpen(false)
+            }}
+            childId={childId}
+          />
+        </>
+      )}
 
-        <Gap size="m" />
+      <Gap size="m" />
 
-        {renderResult(apiData, (dailyServiceTimesList) => (
-          <Table>
-            <Tbody>
-              {orderBy(
-                dailyServiceTimesList,
-                ({ dailyServiceTimes: { times } }) =>
-                  times.validityPeriod.start,
-                ['desc']
-              ).map(
-                ({ permittedActions, dailyServiceTimes: { id, times } }) => (
-                  <DailyServiceTimesRow
-                    key={id}
-                    childId={childId}
-                    times={times}
-                    permittedActions={permittedActions}
-                    onDelete={() => setUIMode({ type: 'delete', id })}
-                    onEdit={(open) =>
-                      setUIMode(open ? { type: 'modify', id } : undefined)
-                    }
-                    isEditing={uiMode?.id === id && uiMode?.type === 'modify'}
-                    id={id}
-                  />
-                )
-              )}
-            </Tbody>
-          </Table>
-        ))}
-      </CollapsibleContentArea>
+      {renderResult(dailyServiceTimes, (dailyServiceTimesList) => (
+        <Table>
+          <Tbody>
+            {orderBy(
+              dailyServiceTimesList,
+              ({ dailyServiceTimes: { times } }) => times.validityPeriod.start,
+              ['desc']
+            ).map(({ permittedActions, dailyServiceTimes: { id, times } }) => (
+              <DailyServiceTimesRow
+                key={id}
+                childId={childId}
+                times={times}
+                permittedActions={permittedActions}
+                onDelete={() => setUIMode({ type: 'delete', id })}
+                onEdit={(open) =>
+                  setUIMode(open ? { type: 'modify', id } : undefined)
+                }
+                isEditing={uiMode?.id === id && uiMode?.type === 'modify'}
+                id={id}
+              />
+            ))}
+          </Tbody>
+        </Table>
+      ))}
     </>
   )
 })

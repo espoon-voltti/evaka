@@ -13,13 +13,12 @@ import {
 } from 'lib-common/generated/api-types/shared'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
-import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Th, Thead, Tr } from 'lib-components/layout/Table'
 import {
   InfoButton,
   ExpandingInfoBox
 } from 'lib-components/molecules/ExpandingInfo'
-import { H2, P } from 'lib-components/typography'
+import { P } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 
 import { ChildContext } from '../../state'
@@ -34,22 +33,17 @@ import {
 
 interface Props {
   childId: ChildId
-  startOpen: boolean
 }
 
-export default React.memo(function PedagogicalDocuments({
-  childId,
-  startOpen
-}: Props) {
+export default React.memo(function PedagogicalDocuments({ childId }: Props) {
   const { i18n } = useTranslation()
-  const { permittedActions, placements } = useContext(ChildContext)
+  const { permittedActions } = useContext(ChildContext)
+
+  const [editingId, setEditingId] = useState<PedagogicalDocumentId | null>(null)
 
   const pedagogicalDocuments = useQueryResult(
     childPedagogicalDocumentsQuery({ childId })
   )
-
-  const [open, setOpen] = useState(startOpen)
-  const [editingId, setEditingId] = useState<PedagogicalDocumentId | null>(null)
 
   const [expandingInfo, setExpandingInfo] = useState<string>()
   const toggleExpandingInfo = useCallback(
@@ -72,31 +66,8 @@ export default React.memo(function PedagogicalDocuments({
     })
   }
 
-  if (
-    !permittedActions.has('READ_PEDAGOGICAL_DOCUMENTS') ||
-    placements
-      .map(
-        (ps) =>
-          !ps.placements.some((placement) =>
-            placement.daycare.enabledPilotFeatures.includes('VASU_AND_PEDADOC')
-          )
-      )
-      .getOrElse(true)
-  ) {
-    return null
-  }
-
   return (
-    <CollapsibleContentArea
-      title={
-        <H2 noMargin>{i18n.childInformation.pedagogicalDocument.title}</H2>
-      }
-      open={open}
-      toggleOpen={() => setOpen(!open)}
-      opaque
-      paddingVertical="L"
-      data-qa="pedagogical-documents-collapsible"
-    >
+    <>
       {permittedActions.has('CREATE_PEDAGOGICAL_DOCUMENT') && (
         <AddButtonRow
           text={i18n.childInformation.pedagogicalDocument.create}
@@ -182,7 +153,7 @@ export default React.memo(function PedagogicalDocuments({
           </Tbody>
         </Table>
       ))}
-    </CollapsibleContentArea>
+    </>
   )
 })
 

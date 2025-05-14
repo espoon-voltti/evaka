@@ -2,17 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useState } from 'react'
+import React, { useContext } from 'react'
 
 import { Action } from 'lib-common/generated/action'
 import { ChildId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
-import { CollapsibleContentArea } from 'lib-components/layout/Container'
-import { H2 } from 'lib-components/typography'
 
 import { ChildContext } from '../../state'
-import { useTranslation } from '../../state/i18n'
 
 import AssistanceNeedDecisionSection from './AssistanceNeedDecisionSection'
 import AssistanceNeedPreschoolDecisionSection from './AssistanceNeedPreschoolDecisionSection'
@@ -26,50 +23,36 @@ import { assistanceQuery } from './queries'
 
 export interface Props {
   childId: ChildId
-  startOpen: boolean
 }
 
-export default React.memo(function Assistance({ childId, startOpen }: Props) {
-  const { i18n } = useTranslation()
-
+export default React.memo(function Assistance({ childId }: Props) {
   const { permittedActions, assistanceNeedVoucherCoefficientsEnabled } =
     useContext(ChildContext)
 
-  const [open, setOpen] = useState(startOpen)
-
   return (
     <div>
-      <CollapsibleContentArea
-        title={<H2 noMargin>{i18n.childInformation.assistance.title}</H2>}
-        open={open}
-        toggleOpen={() => setOpen(!open)}
-        opaque
-        paddingVertical="L"
-        data-qa="assistance-collapsible"
-      >
-        {permittedActions.has('READ_ASSISTANCE') && (
-          <AssistanceContent id={childId} permittedActions={permittedActions} />
-        )}
-        {permittedActions.has('READ_ASSISTANCE_NEED_DECISIONS') && (
+      {permittedActions.has('READ_ASSISTANCE') && (
+        <AssistanceContent id={childId} permittedActions={permittedActions} />
+      )}
+      {permittedActions.has('READ_ASSISTANCE_NEED_DECISIONS') && (
+        <>
+          <HorizontalLine dashed slim />
+          <AssistanceNeedDecisionSection id={childId} />
+        </>
+      )}
+      {permittedActions.has('READ_ASSISTANCE_NEED_PRESCHOOL_DECISIONS') && (
+        <>
+          <HorizontalLine dashed slim />
+          <AssistanceNeedPreschoolDecisionSection childId={childId} />
+        </>
+      )}
+      {assistanceNeedVoucherCoefficientsEnabled.getOrElse(false) &&
+        permittedActions.has('READ_ASSISTANCE_NEED_VOUCHER_COEFFICIENTS') && (
           <>
             <HorizontalLine dashed slim />
-            <AssistanceNeedDecisionSection id={childId} />
+            <AssistanceNeedVoucherCoefficientSection childId={childId} />
           </>
         )}
-        {permittedActions.has('READ_ASSISTANCE_NEED_PRESCHOOL_DECISIONS') && (
-          <>
-            <HorizontalLine dashed slim />
-            <AssistanceNeedPreschoolDecisionSection childId={childId} />
-          </>
-        )}
-        {assistanceNeedVoucherCoefficientsEnabled.getOrElse(false) &&
-          permittedActions.has('READ_ASSISTANCE_NEED_VOUCHER_COEFFICIENTS') && (
-            <>
-              <HorizontalLine dashed slim />
-              <AssistanceNeedVoucherCoefficientSection childId={childId} />
-            </>
-          )}
-      </CollapsibleContentArea>
     </div>
   )
 })

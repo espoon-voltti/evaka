@@ -14,9 +14,7 @@ import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { scrollToRef } from 'lib-common/utils/scrolling'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
-import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
-import { H2 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { faQuestion } from 'lib-icons'
 
@@ -38,17 +36,16 @@ const editFeeAlterationUiMode = (id: UUID) => `edit-fee-alteration-${id}`
 
 interface Props {
   childId: ChildId
-  startOpen: boolean
 }
 
-export default React.memo(function FeeAlteration({
-  childId,
-  startOpen
-}: Props) {
+export default React.memo(function FeeAlteration({ childId }: Props) {
   const { i18n } = useTranslation()
   const { uiMode, toggleUiMode, clearUiMode, setErrorMessage } =
     useContext(UIContext)
   const { permittedActions } = useContext<ChildState>(ChildContext)
+
+  const [deleted, setDeleted] = useState<FeeAlteration>()
+  const refSectionTop = useRef(null)
 
   const feeAlterations = useQueryResult(
     getFeeAlterationsQuery({ personId: childId })
@@ -63,10 +60,6 @@ export default React.memo(function FeeAlteration({
     deleteFeeAlterationMutation
   )
 
-  const [open, setOpen] = useState(startOpen)
-  const [deleted, setDeleted] = useState<FeeAlteration>()
-  const refSectionTop = useRef(null)
-
   const onFailure = useCallback(() => {
     setErrorMessage({
       type: 'error',
@@ -77,57 +70,48 @@ export default React.memo(function FeeAlteration({
 
   return (
     <div ref={refSectionTop}>
-      <CollapsibleContentArea
-        title={<H2 noMargin>{i18n.childInformation.feeAlteration.title}</H2>}
-        open={open}
-        toggleOpen={() => setOpen(!open)}
-        opaque
-        paddingVertical="L"
-        data-qa="fee-alteration-collapsible"
-      >
-        {permittedActions.has('CREATE_FEE_ALTERATION') && (
-          <AddButtonRow
-            text={i18n.childInformation.feeAlteration.create}
-            data-qa="create-fee-alteration-button"
-            onClick={() => {
-              toggleUiMode(newFeeAlterationUiMode)
-              scrollToRef(refSectionTop)
-            }}
-            disabled={uiMode === newFeeAlterationUiMode}
-          />
-        )}
-        <Gap size="m" />
-        {uiMode === newFeeAlterationUiMode ? (
-          <FeeAlterationEditor
-            personId={childId}
-            cancel={() => clearUiMode()}
-            create={(data) =>
-              createFeeAlteration({
-                body: { ...data, modifiedBy: null, modifiedAt: null }
-              })
-            }
-            onSuccess={clearUiMode}
-            onFailure={onFailure}
-          />
-        ) : null}
-        {renderResult(feeAlterations, (feeAlterations) => (
-          <FeeAlterationList
-            feeAlterations={feeAlterations}
-            toggleEditing={(id) => toggleUiMode(editFeeAlterationUiMode(id))}
-            isEdited={(id) => uiMode === editFeeAlterationUiMode(id)}
-            cancel={clearUiMode}
-            update={(data) =>
-              updateFeeAlteration({
-                feeAlterationId: data.id!,
-                body: data
-              })
-            }
-            onSuccess={clearUiMode}
-            onFailure={onFailure}
-            toggleDeleteModal={setDeleted}
-          />
-        ))}
-      </CollapsibleContentArea>
+      {permittedActions.has('CREATE_FEE_ALTERATION') && (
+        <AddButtonRow
+          text={i18n.childInformation.feeAlteration.create}
+          data-qa="create-fee-alteration-button"
+          onClick={() => {
+            toggleUiMode(newFeeAlterationUiMode)
+            scrollToRef(refSectionTop)
+          }}
+          disabled={uiMode === newFeeAlterationUiMode}
+        />
+      )}
+      <Gap size="m" />
+      {uiMode === newFeeAlterationUiMode ? (
+        <FeeAlterationEditor
+          personId={childId}
+          cancel={() => clearUiMode()}
+          create={(data) =>
+            createFeeAlteration({
+              body: { ...data, modifiedBy: null, modifiedAt: null }
+            })
+          }
+          onSuccess={clearUiMode}
+          onFailure={onFailure}
+        />
+      ) : null}
+      {renderResult(feeAlterations, (feeAlterations) => (
+        <FeeAlterationList
+          feeAlterations={feeAlterations}
+          toggleEditing={(id) => toggleUiMode(editFeeAlterationUiMode(id))}
+          isEdited={(id) => uiMode === editFeeAlterationUiMode(id)}
+          cancel={clearUiMode}
+          update={(data) =>
+            updateFeeAlteration({
+              feeAlterationId: data.id!,
+              body: data
+            })
+          }
+          onSuccess={clearUiMode}
+          onFailure={onFailure}
+          toggleDeleteModal={setDeleted}
+        />
+      ))}
       {deleted ? (
         <InfoModal
           type="warning"

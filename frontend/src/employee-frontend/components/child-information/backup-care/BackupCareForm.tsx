@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import orderBy from 'lodash/orderBy'
+import sortBy from 'lodash/sortBy'
 import React, { useContext, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
@@ -10,12 +11,14 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import { UpdateStateFn } from 'lib-common/form-state'
 import {
   BackupCareUnit,
-  ChildBackupCare
+  ChildBackupCare,
+  ChildBackupCareResponse
 } from 'lib-common/generated/api-types/backupcare'
 import { UnitStub } from 'lib-common/generated/api-types/daycare'
 import { ChildId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import {
+  constantQuery,
   first,
   second,
   useQueryResult,
@@ -41,10 +44,15 @@ import {
   isDateRangeInverted,
   isDateRangeOverlappingWithExisting
 } from '../../../utils/validation/validations'
-import { createBackupCareMutation, updateBackupCareMutation } from '../queries'
+import {
+  createBackupCareMutation,
+  placementsQuery,
+  updateBackupCareMutation
+} from '../queries'
 
 export interface Props {
   childId: ChildId
+  backupCares: ChildBackupCareResponse[]
   backupCare?: ChildBackupCare
 }
 
@@ -82,10 +90,14 @@ const ActionButtons = styled(FixedSpaceRow)`
   justify-content: flex-end;
 `
 
-export default function BackupCareForm({ childId, backupCare }: Props) {
+export default function BackupCareForm({
+  childId,
+  backupCares,
+  backupCare
+}: Props) {
   const { i18n } = useTranslation()
   const { uiMode, clearUiMode } = useContext(UIContext)
-  const { backupCares, consecutivePlacementRanges } = useContext(ChildContext)
+  const { permittedActions } = useContext(ChildContext)
 
   const units = useQueryResult(
     unitsQuery({
@@ -93,6 +105,48 @@ export default function BackupCareForm({ childId, backupCare }: Props) {
       type: 'DAYCARE',
       from: LocalDate.todayInHelsinkiTz()
     })
+  )
+
+  const placements = useQueryResult(
+    permittedActions.has('READ_PLACEMENT')
+      ? placementsQuery({ childId })
+      : constantQuery(null)
+  )
+
+  const consecutivePlacementRanges = useMemo(
+    () =>
+      placements
+        .map((p) =>
+          p !== null
+            ? sortBy(p.placements, (placement) =>
+                placement.startDate.toSystemTzDate().getTime()
+              ).reduce((prev, curr) => {
+                const currentRange = new FiniteDateRange(
+                  curr.startDate,
+                  curr.endDate
+                )
+                const fittingExistingIndex = prev.findIndex((range) =>
+                  range.adjacentTo(currentRange)
+                )
+
+                if (fittingExistingIndex > -1) {
+                  const fittingExisting = prev[fittingExistingIndex]
+
+                  const newRange = fittingExisting.leftAdjacentTo(currentRange)
+                    ? fittingExisting.withEnd(curr.endDate)
+                    : fittingExisting.withStart(curr.startDate)
+
+                  const copy = Array.from(prev)
+                  copy[fittingExistingIndex] = newRange
+                  return copy
+                }
+
+                return [...prev, currentRange]
+              }, [] as FiniteDateRange[])
+            : []
+        )
+        .getOrElse([]),
+    [placements]
   )
 
   const initialFormState: FormState = {
@@ -109,18 +163,13 @@ export default function BackupCareForm({ childId, backupCare }: Props) {
   ] => {
     const errors: string[] = []
     const existing: DateRange[] = backupCares
-      .map((bcs) =>
-        bcs
-          .filter(
-            (it) =>
-              backupCare === undefined || it.backupCare.id !== backupCare.id
-          )
-          .map(({ backupCare: { period } }) => ({
-            startDate: period.start,
-            endDate: period.end
-          }))
+      .filter(
+        (it) => backupCare === undefined || it.backupCare.id !== backupCare.id
       )
-      .getOrElse([])
+      .map(({ backupCare: { period } }) => ({
+        startDate: period.start,
+        endDate: period.end
+      }))
 
     const { unit, startDate, endDate } = formState
     if (!unit) {
