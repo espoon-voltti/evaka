@@ -56,9 +56,7 @@ class ChildDocumentService(
     private val pdfGenerator: PdfGenerator,
 ) {
     init {
-        asyncJobRunner.registerHandler<AsyncJob.CreateChildDocumentPdf> { db, clock, msg ->
-            createAndUploadPdf(db, clock, msg.documentId)
-        }
+        asyncJobRunner.registerHandler(::createAndUploadPdf)
         asyncJobRunner.registerHandler(::sendSfiDecision)
         asyncJobRunner.registerHandler(::sendChildDocumentNotificationEmail)
         asyncJobRunner.registerHandler<AsyncJob.DeleteChildDocumentPdf> { _, _, msg ->
@@ -69,8 +67,9 @@ class ChildDocumentService(
     fun createAndUploadPdf(
         db: Database.Connection,
         clock: EvakaClock,
-        documentId: ChildDocumentId,
+        msg: AsyncJob.CreateChildDocumentPdf,
     ) {
+        val documentId = msg.documentId
         val document =
             db.read { tx -> tx.getChildDocument(documentId) }
                 ?: throw NotFound("document $documentId not found")
