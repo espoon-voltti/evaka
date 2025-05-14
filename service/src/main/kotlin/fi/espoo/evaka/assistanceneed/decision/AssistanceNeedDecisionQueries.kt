@@ -224,7 +224,7 @@ fun Database.Read.getAssistanceNeedDecisionsByChildId(
     createQuery {
             sql(
                 """
-SELECT ad.id, validity_period, status, decision_made, sent_for_decision, ad.created,
+SELECT ad.id, validity_period, status, decision_made, sent_for_decision, ad.created_at,
     selected_unit selected_unit_id, unit.name selected_unit_name
 FROM assistance_need_decision ad
 LEFT JOIN daycare unit ON unit.id = selected_unit

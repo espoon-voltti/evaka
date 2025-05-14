@@ -35,3 +35,17 @@ ALTER TABLE assistance_factor RENAME COLUMN updated TO updated_at;
 ALTER TABLE assistance_factor RENAME COLUMN modified TO modified_at;
 CREATE TRIGGER set_timestamp BEFORE UPDATE ON assistance_factor FOR EACH ROW EXECUTE PROCEDURE trigger_refresh_updated_at();
 CREATE INDEX fk$assistance_factor_modified_by ON assistance_factor (modified_by);
+
+DROP TRIGGER set_timestamp ON assistance_need_decision;
+ALTER TABLE assistance_need_decision RENAME COLUMN created TO created_at;
+ALTER TABLE assistance_need_decision RENAME COLUMN updated TO updated_at;
+CREATE TRIGGER set_timestamp BEFORE UPDATE ON assistance_need_decision FOR EACH ROW EXECUTE PROCEDURE trigger_refresh_updated_at();
+
+ALTER TABLE assistance_need_decision_guardian RENAME COLUMN created TO created_at;
+
+DROP TRIGGER set_timestamp ON assistance_need_preschool_decision;
+ALTER TABLE assistance_need_preschool_decision RENAME COLUMN created TO created_at;
+ALTER TABLE assistance_need_preschool_decision RENAME COLUMN updated TO updated_at;
+CREATE TRIGGER set_timestamp BEFORE UPDATE ON assistance_need_preschool_decision FOR EACH ROW EXECUTE PROCEDURE trigger_refresh_updated_at();
+
+ALTER TABLE assistance_need_preschool_decision_guardian RENAME COLUMN created TO created_at;

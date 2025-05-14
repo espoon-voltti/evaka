@@ -301,7 +301,7 @@ JOIN assistance_action_option option ON option.id = option_id
             sql(
                 """
 SELECT
-    id, created, updated, child_id AS child, selected_unit AS unit,
+    id, created_at as created, updated_at as updated, child_id AS child, selected_unit AS unit,
     lower(validity_period) AS valid_from, upper(validity_period) - 1 AS valid_to,
     status,
     'ASSISTANCE_ENDS' = ANY(assistance_levels) AS assistance_ends,
@@ -319,7 +319,7 @@ WHERE status != 'DRAFT'
             sql(
                 """
 SELECT
-    id, created, updated, child_id AS child, selected_unit AS unit,
+    id, created_at as created, updated_at as updated, child_id AS child, selected_unit AS unit,
     type, valid_from, status
 FROM assistance_need_preschool_decision
 WHERE status != 'DRAFT'

@@ -148,7 +148,7 @@ data class AssistanceNeedPreschoolDecisionChild(
 data class AssistanceNeedPreschoolDecisionBasics(
     val id: AssistanceNeedPreschoolDecisionId,
     val childId: ChildId,
-    val created: HelsinkiDateTime,
+    val createdAt: HelsinkiDateTime,
     val status: AssistanceNeedDecisionStatus,
     val type: AssistanceNeedPreschoolDecisionType?,
     val validFrom: LocalDate?,
