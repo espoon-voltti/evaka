@@ -28,6 +28,7 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import { fontWeights, H2 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+import { featureFlags } from 'lib-customizations/employee'
 import { faUsers } from 'lib-icons'
 
 import { Translations, useTranslation } from '../../state/i18n'
@@ -87,27 +88,15 @@ interface SectionProps {
   startOpen: boolean
 }
 
-function requireOneOfPermittedActions(
-  Component: React.FunctionComponent<SectionProps>,
-  ...actions: (Action.Child | Action.Person)[]
-): React.FunctionComponent<SectionProps> {
-  return function Section({ childId, startOpen }: SectionProps) {
-    const { permittedActions } = useContext<ChildState>(ChildContext)
-    if (actions.some((action) => permittedActions.has(action))) {
-      return <Component childId={childId} startOpen={startOpen} />
-    } else {
-      return null
-    }
-  }
-}
-
 function section({
   component: Component,
+  enabled = true,
   requireOneOfPermittedActions,
   title,
   dataQa
 }: {
   component: React.FunctionComponent<{ childId: ChildId }>
+  enabled?: boolean
   requireOneOfPermittedActions: (Action.Child | Action.Person)[]
   title: (i18n: Translations) => string
   dataQa?: string
@@ -117,6 +106,7 @@ function section({
     const { i18n } = useTranslation()
     const [open, setOpen] = useState(startOpen)
     if (
+      !enabled ||
       !requireOneOfPermittedActions.some((action) =>
         permittedActions.has(action)
       )
@@ -139,7 +129,12 @@ function section({
 }
 
 const components = {
-  income: requireOneOfPermittedActions(ChildIncome, 'READ_INCOME'),
+  income: section({
+    component: ChildIncome,
+    requireOneOfPermittedActions: ['READ_INCOME'],
+    title: (i18n) => i18n.childInformation.income.title,
+    dataQa: 'income-collapsible'
+  }),
   'fee-alterations': section({
     component: FeeAlteration,
     requireOneOfPermittedActions: ['READ_FEE_ALTERATIONS'],
@@ -158,32 +153,41 @@ const components = {
     title: (i18n) => i18n.childInformation.placements.title,
     dataQa: 'child-placements-collapsible'
   }),
-  serviceApplications: requireOneOfPermittedActions(
-    ServiceApplicationsSection,
-    'READ_SERVICE_APPLICATIONS'
-  ),
+  serviceApplications: section({
+    component: ServiceApplicationsSection,
+    enabled: featureFlags.serviceApplications,
+    requireOneOfPermittedActions: ['READ_SERVICE_APPLICATIONS'],
+    title: (i18n) => i18n.childInformation.serviceApplications.title,
+    dataQa: 'service-applications-collapsible'
+  }),
   'daily-service-times': section({
     component: DailyServiceTimesSection,
     requireOneOfPermittedActions: ['READ_DAILY_SERVICE_TIMES'],
     title: (i18n) => i18n.childInformation.dailyServiceTimes.title,
     dataQa: 'child-daily-service-times-collapsible'
   }),
-  childDocuments: requireOneOfPermittedActions(
-    ChildDocumentsSection,
-    'READ_CHILD_DOCUMENT'
-  ),
+  childDocuments: section({
+    component: ChildDocumentsSection,
+    requireOneOfPermittedActions: ['READ_CHILD_DOCUMENT'],
+    title: (i18n) => i18n.childInformation.childDocumentsSectionTitle,
+    dataQa: 'child-documents-collapsible'
+  }),
   pedagogicalDocuments: section({
     component: PedagogicalDocuments,
     requireOneOfPermittedActions: ['READ_PEDAGOGICAL_DOCUMENTS'],
     title: (i18n) => i18n.childInformation.pedagogicalDocument.title,
     dataQa: 'pedagogical-documents-collapsible'
   }),
-  assistance: requireOneOfPermittedActions(
-    Assistance,
-    'READ_ASSISTANCE',
-    'READ_ASSISTANCE_NEED_DECISIONS',
-    'READ_ASSISTANCE_NEED_PRESCHOOL_DECISIONS'
-  ),
+  assistance: section({
+    component: Assistance,
+    requireOneOfPermittedActions: [
+      'READ_ASSISTANCE',
+      'READ_ASSISTANCE_NEED_DECISIONS',
+      'READ_ASSISTANCE_NEED_PRESCHOOL_DECISIONS'
+    ],
+    title: (i18n) => i18n.childInformation.assistance.title,
+    dataQa: 'assistance-collapsible'
+  }),
   'backup-care': section({
     component: BackupCare,
     requireOneOfPermittedActions: ['READ_BACKUP_CARE'],
