@@ -1728,13 +1728,15 @@ export class Fixture {
   }
 
   static assistanceAction(
-    initial: SemiPartial<DevAssistanceAction, 'childId' | 'updatedBy'>
+    initial: SemiPartial<DevAssistanceAction, 'childId' | 'modifiedBy'>
   ) {
     const value: DevAssistanceAction = {
       id: randomId(),
       actions: ['ASSISTANCE_SERVICE_CHILD'],
       endDate: LocalDate.todayInSystemTz(),
       startDate: LocalDate.todayInSystemTz(),
+      createdAt: HelsinkiDateTime.now(),
+      modifiedAt: HelsinkiDateTime.now(),
       otherAction: '',
       ...initial
     }

@@ -217,11 +217,13 @@ export interface DevApplicationWithForm {
 export interface DevAssistanceAction {
   actions: string[]
   childId: PersonId
+  createdAt: HelsinkiDateTime
   endDate: LocalDate
   id: AssistanceActionId
+  modifiedAt: HelsinkiDateTime
+  modifiedBy: EvakaUserId
   otherAction: string
   startDate: LocalDate
-  updatedBy: EvakaUserId
 }
 
 /**
@@ -1251,7 +1253,9 @@ export function deserializeJsonDevApplicationWithForm(json: JsonOf<DevApplicatio
 export function deserializeJsonDevAssistanceAction(json: JsonOf<DevAssistanceAction>): DevAssistanceAction {
   return {
     ...json,
+    createdAt: HelsinkiDateTime.parseIso(json.createdAt),
     endDate: LocalDate.parseIso(json.endDate),
+    modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt),
     startDate: LocalDate.parseIso(json.startDate)
   }
 }

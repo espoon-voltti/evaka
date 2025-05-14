@@ -277,7 +277,7 @@ FROM assistance_need_voucher_coefficient
             sql(
                 """
 SELECT
-    id, created, updated, child_id AS child, start_date, end_date,
+    id, created_at as created, modified_at as updated, child_id AS child, start_date, end_date,
     other_action != '' AS has_other_action
 FROM assistance_action
 """

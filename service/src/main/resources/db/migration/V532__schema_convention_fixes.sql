@@ -11,3 +11,20 @@ DROP TRIGGER set_timestamp ON application_other_guardian;
 ALTER TABLE application_other_guardian RENAME COLUMN created TO created_at;
 ALTER TABLE application_other_guardian RENAME COLUMN updated TO updated_at;
 CREATE TRIGGER set_timestamp BEFORE UPDATE ON application_other_guardian FOR EACH ROW EXECUTE PROCEDURE trigger_refresh_updated_at();
+
+DROP TRIGGER set_timestamp ON assistance_action;
+ALTER TABLE assistance_action RENAME COLUMN created TO created_at;
+ALTER TABLE assistance_action RENAME COLUMN updated TO updated_at;
+CREATE TRIGGER set_timestamp BEFORE UPDATE ON assistance_action FOR EACH ROW EXECUTE PROCEDURE trigger_refresh_updated_at();
+ALTER TABLE assistance_action ADD COLUMN modified_at TIMESTAMP WITH TIME ZONE;
+UPDATE assistance_action SET modified_at = updated_at;
+ALTER TABLE assistance_action ALTER COLUMN modified_at SET NOT NULL;
+ALTER TABLE assistance_action RENAME COLUMN updated_by TO modified_by;
+
+DROP TRIGGER set_timestamp ON assistance_action_option;
+ALTER TABLE assistance_action_option RENAME COLUMN created TO created_at;
+ALTER TABLE assistance_action_option RENAME COLUMN updated TO updated_at;
+CREATE TRIGGER set_timestamp BEFORE UPDATE ON assistance_action_option FOR EACH ROW EXECUTE PROCEDURE trigger_refresh_updated_at();
+
+ALTER TABLE assistance_action_option_ref RENAME COLUMN created TO created_at;
+CREATE INDEX fk$assistance_action_option_ref_option_id ON assistance_action_option_ref (option_id);

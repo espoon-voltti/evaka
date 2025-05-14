@@ -27,9 +27,6 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
     fun `creation timestamp should be called 'created_at' instead of 'created'`() {
         val permittedViolations =
             setOf(
-                "assistance_action",
-                "assistance_action_option",
-                "assistance_action_option_ref",
                 "assistance_factor",
                 "assistance_need_decision",
                 "assistance_need_decision_guardian",
@@ -108,8 +105,6 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
     fun `update timestamp should be called 'updated_at' instead of 'updated'`() {
         val permittedViolations =
             setOf(
-                "assistance_action",
-                "assistance_action_option",
                 "assistance_factor",
                 "assistance_need_decision",
                 "assistance_need_preschool_decision",
@@ -404,7 +399,7 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
 
     @Test
     fun `'updated_by' column should not exist and modified_at+modified_by pair should be used instead for user-visible modification timestamps`() {
-        val permittedViolations = setOf(ColumnRef("assistance_action", "updated_by"))
+        val permittedViolations = emptySet<ColumnRef>()
         val violations = columns.filter { it.ref.columnName == "updated_by" }.map { it.ref }.toSet()
         assertEquals(permittedViolations, violations)
     }
@@ -481,7 +476,6 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
         val permittedViolations =
             setOf(
                 ColumnRef("archived_process_history", "entered_by"),
-                ColumnRef("assistance_action_option_ref", "option_id"),
                 ColumnRef("assistance_factor", "modified_by"),
                 ColumnRef("child_document_read", "person_id"),
                 ColumnRef("daycare", "finance_decision_handler"),

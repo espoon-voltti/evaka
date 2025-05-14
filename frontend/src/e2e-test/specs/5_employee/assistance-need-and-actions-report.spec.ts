@@ -85,7 +85,7 @@ describe('Assistance need and actions report', () => {
 
     await Fixture.assistanceAction({
       childId,
-      updatedBy: evakaUserId(admin.id),
+      modifiedBy: evakaUserId(admin.id),
       startDate: validDuring.start,
       endDate: validDuring.end,
       actions: ['ASSISTANCE_SERVICE_CHILD']
@@ -130,7 +130,7 @@ describe('Assistance need and actions report', () => {
     }).save()
     await Fixture.assistanceAction({
       childId,
-      updatedBy: evakaUserId(admin.id),
+      modifiedBy: evakaUserId(admin.id),
       startDate: validDuring.start,
       endDate: validDuring.end,
       actions: ['ASSISTANCE_SERVICE_CHILD']
@@ -199,7 +199,7 @@ describe('Assistance need and actions report', () => {
     }).save()
     await Fixture.assistanceAction({
       childId,
-      updatedBy: evakaUserId(admin.id),
+      modifiedBy: evakaUserId(admin.id),
       startDate: validDuring.start,
       endDate: validDuring.end,
       actions: ['ASSISTANCE_SERVICE_CHILD']
