@@ -728,8 +728,7 @@ export default React.memo(function Reports() {
                   )
                 }
               : null,
-            // featureFlags.nekkuIntegration && reports.has('NEKKU_ORDERS')
-            reports.has('NEKKU_ORDERS')
+            featureFlags.nekkuIntegration && reports.has('NEKKU_ORDERS')
               ? {
                   name: i18n.reports.nekkuOrders.title,
                   item: (
