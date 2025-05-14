@@ -4252,7 +4252,7 @@ export const fi = {
         SUPPER: 'Iltapala'
       },
       mealTypeValues: {
-        null: 'Seka',
+        DEFAULT: 'Seka',
         VEGAN: 'Vegaani',
         VEGETABLE: 'Kasvis'
       },

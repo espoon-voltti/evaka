@@ -29,6 +29,10 @@ import { FilterLabel, FilterRow, TableScrollable } from './common'
 
 const getNekkuOrderReportByUnitResult = wrapResult(getNekkuOrderReportByUnit)
 
+type mealTimeOptions = 'BREAKFAST' | 'LUNCH' | 'SNACK' | 'DINNER' | 'SUPPER'
+
+type mealTypeOptions = 'DEFAULT' | 'VEGAN' | 'VEGETABLE'
+
 interface NekkuOrderReportFilters {
   range: FiniteDateRange
   groupIds: GroupId[]
@@ -191,14 +195,19 @@ export default React.memo(function NekkuOrders() {
                     <Td>{row.quantity}</Td>
                     <Td>
                       {row.mealTime
-                        .map(
-                          (mealTime) =>
-                            i18n.reports.nekkuOrders.mealTimeValues[mealTime]
-                        )
+                        .map((mealTimeValue) => {
+                          return i18n.reports.nekkuOrders.mealTimeValues[
+                            mealTimeValue as mealTimeOptions
+                          ]
+                        })
                         .join(', ')}
                     </Td>
                     <Td>
-                      {i18n.reports.nekkuOrders.mealTypeValues[row.mealType]}
+                      {
+                        i18n.reports.nekkuOrders.mealTypeValues[
+                          (row.mealType ?? 'DEFAULT') as mealTypeOptions
+                        ]
+                      }
                     </Td>
                     <Td>{row.specialDiets}</Td>
                   </Tr>

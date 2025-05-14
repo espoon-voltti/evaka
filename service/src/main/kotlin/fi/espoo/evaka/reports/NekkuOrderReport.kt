@@ -122,3 +122,5 @@ data class NekkuOrderRow(
 
 private fun generateDateList(start: LocalDate, end: LocalDate): List<LocalDate> =
     generateSequence(start) { it.plusDays(1) }.takeWhile { it <= end }.toList()
+
+enum class
