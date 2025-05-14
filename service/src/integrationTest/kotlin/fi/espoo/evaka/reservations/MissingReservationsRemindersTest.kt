@@ -10,6 +10,7 @@ import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -35,8 +36,10 @@ import fi.espoo.evaka.snDefaultDaycare
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalTime
+import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -58,6 +61,7 @@ class MissingReservationsRemindersTest : FullApplicationTest(resetDbBeforeEach =
         )
     private lateinit var guardian: PersonId
     private lateinit var child: ChildId
+    private lateinit var daycareId: DaycareId
 
     private val checkedRange =
         FiniteDateRange(LocalDate.of(2022, 10, 31), LocalDate.of(2022, 11, 6))
@@ -75,7 +79,7 @@ class MissingReservationsRemindersTest : FullApplicationTest(resetDbBeforeEach =
         db.transaction { tx ->
             guardian = tx.insert(DevPerson(email = guardianEmail), DevPersonType.ADULT)
             val areaId = tx.insert(DevCareArea())
-            val daycareId =
+            daycareId =
                 tx.insert(
                     DevDaycare(
                         areaId = areaId,
@@ -157,6 +161,33 @@ class MissingReservationsRemindersTest : FullApplicationTest(resetDbBeforeEach =
             tx.execute { sql("UPDATE placement SET type = ${bind(placementType)}") }
         }
         assertEquals(emptyList(), getReminderRecipients())
+    }
+
+    @Test
+    fun `reminder is not sent for a far away future placement`() {
+        val placementType = PlacementType.DAYCARE
+        assertTrue(PlacementType.requiringAttendanceReservations.contains(placementType))
+
+        val placementStart = clock.today().plusWeeks(4).plusDays(1)
+        assertEquals(DayOfWeek.MONDAY, placementStart.dayOfWeek)
+
+        val email = UUID.randomUUID().toString() + "@example.com"
+        db.transaction { tx ->
+            val guardianId = tx.insert(DevPerson(email = email), DevPersonType.ADULT)
+            val childId2 = tx.insert(DevPerson(), DevPersonType.CHILD)
+            tx.insert(DevGuardian(guardianId = guardianId, childId = childId2))
+            tx.insert(
+                DevPlacement(
+                    childId = childId2,
+                    unitId = daycareId,
+                    startDate = placementStart,
+                    endDate = placementStart.plusMonths(12),
+                    type = placementType,
+                )
+            )
+        }
+        val recipients = getReminderRecipients()
+        assertFalse(recipients.contains(email))
     }
 
     private fun Database.Transaction.createReservation(
