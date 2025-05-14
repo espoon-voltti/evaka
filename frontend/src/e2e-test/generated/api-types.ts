@@ -243,7 +243,7 @@ export interface DevAssistanceFactor {
   capacityFactor: number
   childId: PersonId
   id: AssistanceFactorId
-  modified: HelsinkiDateTime
+  modifiedAt: HelsinkiDateTime
   modifiedBy: EvakaUser
   validDuring: FiniteDateRange
 }
@@ -1264,7 +1264,7 @@ export function deserializeJsonDevAssistanceAction(json: JsonOf<DevAssistanceAct
 export function deserializeJsonDevAssistanceFactor(json: JsonOf<DevAssistanceFactor>): DevAssistanceFactor {
   return {
     ...json,
-    modified: HelsinkiDateTime.parseIso(json.modified),
+    modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt),
     validDuring: FiniteDateRange.parseJson(json.validDuring)
   }
 }

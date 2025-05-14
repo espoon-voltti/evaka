@@ -217,7 +217,7 @@ FROM pedagogical_document
             sql(
                 """
 SELECT
-    id, created, updated, child_id AS child, capacity_factor,
+    id, created_at as created, modified_at as updated, child_id AS child, capacity_factor,
     lower(valid_during) AS start_date, upper(valid_during) - 1 AS end_date
 FROM assistance_factor
 """

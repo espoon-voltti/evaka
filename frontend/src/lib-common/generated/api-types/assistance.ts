@@ -24,7 +24,7 @@ export interface AssistanceFactor {
   capacityFactor: number
   childId: PersonId
   id: AssistanceFactorId
-  modified: HelsinkiDateTime
+  modifiedAt: HelsinkiDateTime
   modifiedBy: EvakaUser
   validDuring: FiniteDateRange
 }
@@ -182,7 +182,7 @@ export interface PreschoolAssistanceUpdate {
 export function deserializeJsonAssistanceFactor(json: JsonOf<AssistanceFactor>): AssistanceFactor {
   return {
     ...json,
-    modified: HelsinkiDateTime.parseIso(json.modified),
+    modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt),
     validDuring: FiniteDateRange.parseJson(json.validDuring)
   }
 }
