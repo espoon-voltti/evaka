@@ -2465,7 +2465,7 @@ data class DevAssistanceFactor(
     val validDuring: FiniteDateRange =
         FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 6, 1)),
     val capacityFactor: Double = 1.0,
-    val modified: HelsinkiDateTime = HelsinkiDateTime.now(),
+    val modifiedAt: HelsinkiDateTime = HelsinkiDateTime.now(),
     val modifiedBy: EvakaUser =
         EvakaUser(
             id = AuthenticatedUser.SystemInternalUser.evakaUserId,

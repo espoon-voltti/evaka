@@ -22,7 +22,7 @@ private val assistanceSelectFields =
     a.child_id,
     a.valid_during,
     a.capacity_factor,
-    a.modified,
+    a.modified_at,
     e.id AS modified_by_id,
     e.name AS modified_by_name,
     e.type AS modified_by_type
@@ -89,7 +89,7 @@ fun Database.Transaction.insertAssistanceFactor(
     createUpdate {
             sql(
                 """
-INSERT INTO assistance_factor (child_id, modified, modified_by, valid_during, capacity_factor)
+INSERT INTO assistance_factor (child_id, modified_at, modified_by, valid_during, capacity_factor)
 VALUES (${bind(child)}, ${bind(now)}, ${bind(user.evakaUserId)}, ${bind(update.validDuring)}, ${bind(update.capacityFactor)})
 RETURNING id
 """
@@ -111,7 +111,7 @@ UPDATE assistance_factor
 SET
     capacity_factor = ${bind(update.capacityFactor)},
     valid_during = ${bind(update.validDuring)},
-    modified = ${bind(now)},
+    modified_at = ${bind(now)},
     modified_by = ${bind(user.evakaUserId)}
 WHERE id = ${bind(id)}
 """
@@ -125,7 +125,7 @@ fun Database.Transaction.deleteAssistanceFactor(id: AssistanceFactorId): Assista
                 """
 WITH a AS (
     DELETE FROM assistance_factor WHERE id = ${bind(id)}
-    RETURNING id, child_id, valid_during, capacity_factor, modified, modified_by
+    RETURNING id, child_id, valid_during, capacity_factor, modified_at, modified_by
 ) SELECT $assistanceSelectFields FROM a LEFT JOIN evaka_user e ON a.modified_by = e.id
 """
             )

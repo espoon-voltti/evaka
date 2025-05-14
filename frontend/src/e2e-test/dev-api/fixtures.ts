@@ -837,7 +837,7 @@ export class Fixture {
         LocalDate.todayInSystemTz(),
         LocalDate.todayInSystemTz()
       ),
-      modified: HelsinkiDateTime.now(),
+      modifiedAt: HelsinkiDateTime.now(),
       modifiedBy: systemInternalUser,
       ...initial
     }

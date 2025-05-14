@@ -28,3 +28,10 @@ CREATE TRIGGER set_timestamp BEFORE UPDATE ON assistance_action_option FOR EACH 
 
 ALTER TABLE assistance_action_option_ref RENAME COLUMN created TO created_at;
 CREATE INDEX fk$assistance_action_option_ref_option_id ON assistance_action_option_ref (option_id);
+
+DROP TRIGGER set_timestamp ON assistance_factor;
+ALTER TABLE assistance_factor RENAME COLUMN created TO created_at;
+ALTER TABLE assistance_factor RENAME COLUMN updated TO updated_at;
+ALTER TABLE assistance_factor RENAME COLUMN modified TO modified_at;
+CREATE TRIGGER set_timestamp BEFORE UPDATE ON assistance_factor FOR EACH ROW EXECUTE PROCEDURE trigger_refresh_updated_at();
+CREATE INDEX fk$assistance_factor_modified_by ON assistance_factor (modified_by);

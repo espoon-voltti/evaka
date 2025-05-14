@@ -1547,8 +1547,8 @@ fun Database.Transaction.insert(row: DevAssistanceFactor): AssistanceFactorId =
     createUpdate {
             sql(
                 """
-INSERT INTO assistance_factor (id, child_id, valid_during, capacity_factor, modified, modified_by)
-VALUES (${bind(row.id)}, ${bind(row.childId)}, ${bind(row.validDuring)}, ${bind(row.capacityFactor)}, ${bind(row.modified)}, ${bind(row.modifiedBy.id)})
+INSERT INTO assistance_factor (id, child_id, valid_during, capacity_factor, modified_at, modified_by)
+VALUES (${bind(row.id)}, ${bind(row.childId)}, ${bind(row.validDuring)}, ${bind(row.capacityFactor)}, ${bind(row.modifiedAt)}, ${bind(row.modifiedBy.id)})
 """
             )
         }
