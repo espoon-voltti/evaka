@@ -27,7 +27,6 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
     fun `creation timestamp should be called 'created_at' instead of 'created'`() {
         val permittedViolations =
             setOf(
-                "application_note",
                 "application_other_guardian",
                 "assistance_action",
                 "assistance_action_option",
@@ -110,7 +109,6 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
     fun `update timestamp should be called 'updated_at' instead of 'updated'`() {
         val permittedViolations =
             setOf(
-                "application_note",
                 "application_other_guardian",
                 "assistance_action",
                 "assistance_action_option",
@@ -410,7 +408,6 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
     fun `'updated_by' column should not exist and modified_at+modified_by pair should be used instead for user-visible modification timestamps`() {
         val permittedViolations =
             setOf(
-                ColumnRef("application_note", "updated_by"),
                 ColumnRef("assistance_action", "updated_by"),
             )
         val violations = columns.filter { it.ref.columnName == "updated_by" }.map { it.ref }.toSet()

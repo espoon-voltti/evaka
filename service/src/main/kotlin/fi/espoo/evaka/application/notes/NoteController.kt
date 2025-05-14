@@ -103,7 +103,12 @@ class NoteController(private val accessControl: AccessControl) {
                         Action.Application.CREATE_NOTE,
                         applicationId,
                     )
-                    it.createApplicationNote(applicationId, note.text, user.evakaUserId)
+                    it.createApplicationNote(
+                        clock.now(),
+                        applicationId,
+                        note.text,
+                        user.evakaUserId,
+                    )
                 }
             }
             .also {
@@ -128,7 +133,7 @@ class NoteController(private val accessControl: AccessControl) {
                     Action.ApplicationNote.UPDATE,
                     noteId,
                 )
-                tx.updateApplicationNote(noteId, note.text, user.evakaUserId)
+                tx.updateApplicationNote(noteId, note.text, user.evakaUserId, clock.now())
             }
         }
         Audit.NoteUpdate.log(targetId = AuditId(noteId))

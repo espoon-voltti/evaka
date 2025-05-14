@@ -229,6 +229,7 @@ class MessageService(
         asyncJobRunner.scheduleMarkMessagesAsSent(tx, contentId, now)
         if (relatedApplication != null) {
             tx.createApplicationNote(
+                now = now,
                 applicationId = relatedApplication,
                 content = msg.content,
                 createdBy = user.evakaUserId,
@@ -330,6 +331,7 @@ class MessageService(
                 asyncJobRunner.scheduleMarkMessagesAsSent(tx, contentId, now)
                 if (applicationId != null) {
                     tx.createApplicationNote(
+                        now = now,
                         applicationId = applicationId,
                         content = content,
                         createdBy = user.evakaUserId,
