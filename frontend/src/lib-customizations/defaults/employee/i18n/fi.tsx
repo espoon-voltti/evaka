@@ -4243,7 +4243,7 @@ export const fi = {
       sku: 'Tuotenumero',
       quantity: 'Määrä',
       mealTime: 'Ruoka-aika',
-      mealType: 'Ruoka-tyyppi',
+      mealType: 'Ruokavalio',
       mealTimeValues: {
         BREAKFAST: 'Aamupala',
         LUNCH: 'Lounas',
