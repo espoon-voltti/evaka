@@ -637,6 +637,19 @@ export interface MissingServiceNeedReportRow {
 }
 
 /**
+* Generated from fi.espoo.evaka.reports.NekkuOrderRow
+*/
+export interface NekkuOrderRow {
+  date: LocalDate
+  groupName: string
+  mealTime: string[]
+  mealType: string | null
+  quantity: number
+  sku: string
+  specialDiets: string | null
+}
+
+/**
 * Generated from fi.espoo.evaka.reports.NonSsnChildrenReportRow
 */
 export interface NonSsnChildrenReportRow {
@@ -957,6 +970,7 @@ export type Report =
   | 'VARDA_ERRORS'
   | 'FUTURE_PRESCHOOLERS'
   | 'MEALS'
+  | 'NEKKU_ORDERS'
   | 'TAMPERE_REGIONAL_SURVEY'
   | 'CITIZEN_DOCUMENT_RESPONSE'
 
@@ -1356,6 +1370,14 @@ export function deserializeJsonMissingHeadOfFamilyReportRow(json: JsonOf<Missing
   return {
     ...json,
     rangesWithoutHead: json.rangesWithoutHead.map(e => FiniteDateRange.parseJson(e))
+  }
+}
+
+
+export function deserializeJsonNekkuOrderRow(json: JsonOf<NekkuOrderRow>): NekkuOrderRow {
+  return {
+    ...json,
+    date: LocalDate.parseIso(json.date)
   }
 }
 

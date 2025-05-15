@@ -5,6 +5,7 @@
 package fi.espoo.evaka.nekku
 
 import fi.espoo.evaka.absence.AbsenceCategory
+import fi.espoo.evaka.absence.getDaycareIdByGroup
 import fi.espoo.evaka.daycare.getDaycareGroup
 import fi.espoo.evaka.decision.logger
 import fi.espoo.evaka.placement.PlacementType
@@ -569,3 +570,82 @@ fun Database.Read.getNekkuSpecialDietChoices(childId: ChildId): List<NekkuSpecia
             )
         }
         .toList<NekkuSpecialDietChoices>()
+
+fun Database.Read.getNekkuOrderReport(
+    daycareId: DaycareId,
+    groupId: GroupId,
+    date: LocalDate,
+): List<NekkuOrdersReport> =
+    createQuery {
+            sql(
+                "SELECT delivery_date, daycare_id, group_id, meal_sku, total_quantity, meal_time, meal_type, meals_by_special_diet FROM nekku_orders_report WHERE daycare_id = ${bind(daycareId)} AND group_id = (${bind(groupId)}) AND delivery_date = ${bind(date)} "
+            )
+        }
+        .toList<NekkuOrdersReport>()
+
+fun Database.Transaction.setNekkuReportOrderReport(
+    nekkuOrders: NekkuClient.NekkuOrders,
+    groupId: GroupId,
+    nekkuProducts: List<NekkuProduct>,
+) {
+
+    val daycareId = getDaycareIdByGroup(groupId)
+
+    val reportRows =
+        nekkuOrders.orders.first().items.map { item ->
+            val product = nekkuProducts.find { it.sku == item.sku } ?: error("Product.sku")
+            NekkuOrdersReport(
+                LocalDate.parse(nekkuOrders.orders.first().deliveryDate),
+                daycareId,
+                groupId,
+                item.sku,
+                item.quantity,
+                product.mealTime,
+                product.mealType,
+                item.productOptions?.map { it.value },
+            )
+        }
+
+    val deletedNekkuOrders = execute {
+        sql(
+            "DELETE FROM nekku_orders_report WHERE daycare_id = ${bind(daycareId)} AND group_id = ${bind(groupId)} AND delivery_date = ${bind(LocalDate.parse(nekkuOrders.orders.first().deliveryDate))}"
+        )
+    }
+
+    if (deletedNekkuOrders > 0) {
+        logger.info {
+            "Removed $deletedNekkuOrders orders for date:${nekkuOrders.orders.first().deliveryDate} daycareId=$daycareId groupId=$groupId before creating a specifying order"
+        }
+    }
+
+    executeBatch(reportRows) {
+        sql(
+            """
+INSERT INTO nekku_orders_report (
+delivery_date,
+daycare_id,
+group_id,
+meal_sku,
+total_quantity,
+meal_time,
+meal_type,
+meals_by_special_diet)
+VALUES (
+${bind {it.deliveryDate}},
+${bind {it.daycareId}},
+${bind {it.groupId}},
+${bind {it.mealSku}},
+${bind {it.totalQuantity}},
+${bind {it.mealTime}},
+${bind {it.mealType}},
+${bind {it.mealsBySpecialDiet}}
+)
+            """
+                .trimIndent()
+        )
+    }
+}
+
+fun Database.Read.getDaycareGroupIds(daycareId: DaycareId): List<GroupId> =
+    createQuery { sql("SELECT id FROM daycare_group WHERE daycare_id = ${bind(daycareId)}") }
+        .toList()

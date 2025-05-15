@@ -728,6 +728,20 @@ export default React.memo(function Reports() {
                   )
                 }
               : null,
+            featureFlags.nekkuIntegration && reports.has('NEKKU_ORDERS')
+              ? {
+                  name: i18n.reports.nekkuOrders.title,
+                  item: (
+                    <Report
+                      path="/reports/nekkuorders"
+                      color={colors.main.m2}
+                      icon={faUtensils}
+                      i18n={i18n.reports.nekkuOrders}
+                      data-qa="report-nekkuorders"
+                    />
+                  )
+                }
+              : null,
             reports.has('TAMPERE_REGIONAL_SURVEY')
               ? {
                   name: i18n.reports.tampereRegionalSurvey.title,

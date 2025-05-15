@@ -4235,6 +4235,29 @@ export const fi = {
       amountWithoutAddress: 'Osoitteettomia',
       amountWithZeroPrice: 'Nollalaskuja'
     },
+    nekkuOrders: {
+      title: 'Nekku tilaukset',
+      description: 'Raportti toteutuneista Nekku tilauksista',
+      tooLongRange:
+        'Voit hakea raportin korkeintaan kuukauden kuukauden ajalta.',
+      sku: 'Tuotenumero',
+      quantity: 'Määrä',
+      mealTime: 'Ruoka-aika',
+      mealType: 'Ruokavalio',
+      mealTimeValues: {
+        BREAKFAST: 'Aamupala',
+        LUNCH: 'Lounas',
+        SNACK: 'Välipala',
+        DINNER: 'Illallinen',
+        SUPPER: 'Iltapala'
+      },
+      mealTypeValues: {
+        DEFAULT: 'Seka',
+        VEGAN: 'Vegaani',
+        VEGETABLE: 'Kasvis'
+      },
+      specialDiets: 'Erikoisruokavaliot'
+    },
     startingPlacements: {
       title: 'Varhaiskasvatuksessa aloittavat lapset',
       description:

@@ -101,6 +101,7 @@ import ManualDuplicationReport from './components/reports/ManualDuplicationRepor
 import MealReport from './components/reports/MealReport'
 import ReportMissingHeadOfFamily from './components/reports/MissingHeadOfFamily'
 import ReportMissingServiceNeed from './components/reports/MissingServiceNeed'
+import NekkuOrders from './components/reports/NekkuOrders'
 import ReportNonSsnChildren from './components/reports/NonSsnChildren'
 import ReportOccupancies from './components/reports/Occupancies'
 import ReportPartnersInDifferentAddress from './components/reports/PartnersInDifferentAddress'
@@ -889,6 +890,14 @@ export default createBrowserRouter(
           element: (
             <EmployeeRoute title="reports">
               <MealReport />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/reports/nekkuorders',
+          element: (
+            <EmployeeRoute title="reports">
+              <NekkuOrders />
             </EmployeeRoute>
           )
         },
