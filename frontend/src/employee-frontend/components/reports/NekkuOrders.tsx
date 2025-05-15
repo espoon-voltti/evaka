@@ -90,11 +90,11 @@ export default React.memo(function NekkuOrders() {
     filters.groupIds
   ])
 
-  const filteredUnits = units
+  const sortedUnits = units
     .map((data) => data.sort((a, b) => a.name.localeCompare(b.name, lang)))
     .getOrElse([])
 
-  const filteredGroups = groups
+  const sortedGroups = groups
     .map((data) => data.sort((a, b) => a.name.localeCompare(b.name, lang)))
     .getOrElse([])
 
@@ -126,13 +126,13 @@ export default React.memo(function NekkuOrders() {
           <FilterLabel>{i18n.reports.common.unitName}</FilterLabel>
           <FlexRow>
             <Combobox
-              items={filteredUnits}
+              items={sortedUnits}
               onChange={(selectedItem) => {
                 setUnitId(selectedItem !== null ? selectedItem.id : null)
                 setFilters({ ...filters, groupIds: [] })
               }}
               selectedItem={
-                filteredUnits.find((unit) => unit.id === unitId) ?? null
+                sortedUnits.find((unit) => unit.id === unitId) ?? null
               }
               getItemLabel={(item) => item.name}
               placeholder={i18n.filters.unitPlaceholder}
@@ -143,14 +143,14 @@ export default React.memo(function NekkuOrders() {
           <FilterLabel>{i18n.reports.common.groupName}</FilterLabel>
           <div style={{ width: '100%' }}>
             <MultiSelect
-              options={filteredGroups}
+              options={sortedGroups}
               onChange={(selectedItems) =>
                 setFilters({
                   ...filters,
                   groupIds: selectedItems.map((selectedItem) => selectedItem.id)
                 })
               }
-              value={filteredGroups.filter((group) =>
+              value={sortedGroups.filter((group) =>
                 filters.groupIds.includes(group.id)
               )}
               getOptionId={(group) => group.id}

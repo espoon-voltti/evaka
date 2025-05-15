@@ -100,9 +100,9 @@ SELECT nor.delivery_date as date,
         nor.meals_by_special_diet as specialdiets
 FROM nekku_orders_report nor
     JOIN daycare_group dg
-    ON nor.customer_group_id = dg.id
+    ON nor.group_id = dg.id
     WHERE nor.daycare_id = ${bind(daycareId)}
-    AND nor.customer_group_id =ANY(${bind ( groupIds)})
+    AND nor.group_id =ANY(${bind ( groupIds)})
     AND nor.delivery_date =ANY(${bind ( dates)})
 """
             )
