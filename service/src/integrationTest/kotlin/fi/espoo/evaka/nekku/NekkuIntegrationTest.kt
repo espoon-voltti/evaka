@@ -4178,7 +4178,6 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
                     )
                     .forEach { tx.insert(it) }
             }
-
         }
 
         insertNekkuSpecialDietChoice(
