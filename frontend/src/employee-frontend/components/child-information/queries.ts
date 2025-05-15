@@ -22,8 +22,9 @@ import {
 import { Queries } from 'lib-common/query'
 
 import {
+  acceptAbsenceApplication,
   getAbsenceApplications,
-  putAbsenceApplicationStatus
+  rejectAbsenceApplication
 } from '../../generated/api-clients/absence'
 import { getChildApplicationSummaries } from '../../generated/api-clients/application'
 import {
@@ -280,8 +281,13 @@ export const planArchiveChildDocumentMutation = q.mutation(
 
 export const getAbsenceApplicationsQuery = q.query(getAbsenceApplications)
 
-export const putAbsenceApplicationStatusMutation = q.mutation(
-  putAbsenceApplicationStatus,
+export const acceptAbsenceApplicationMutation = q.mutation(
+  acceptAbsenceApplication,
+  [getAbsenceApplicationsQuery.prefix]
+)
+
+export const rejectAbsenceApplicationMutation = q.mutation(
+  rejectAbsenceApplication,
   [getAbsenceApplicationsQuery.prefix]
 )
 

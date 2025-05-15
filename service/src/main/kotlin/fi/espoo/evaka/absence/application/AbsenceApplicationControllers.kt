@@ -26,7 +26,6 @@ import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -100,13 +99,12 @@ class AbsenceApplicationControllerEmployee(private val accessControl: AccessCont
             }
     }
 
-    @PutMapping("/{id}/status")
-    fun putAbsenceApplicationStatus(
+    @PostMapping("/{id}/accept")
+    fun acceptAbsenceApplication(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: AbsenceApplicationId,
-        @RequestBody body: AbsenceApplicationStatusUpdateRequest,
     ) {
         db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -124,76 +122,79 @@ class AbsenceApplicationControllerEmployee(private val accessControl: AccessCont
                             "Absence application ${application.id} is not waiting decision"
                         )
                     }
-                    when (body.status) {
-                        AbsenceApplicationStatus.ACCEPTED -> accept(tx, user, clock, application)
-                        AbsenceApplicationStatus.REJECTED ->
-                            reject(
-                                tx,
-                                user,
-                                clock,
-                                application,
-                                body.reason ?: throw BadRequest("INVALID_REASON"),
-                            )
-                        else ->
-                            throw BadRequest(
-                                "Absence application status ${body.status} not supported"
-                            )
-                    }
+                    tx.decideAbsenceApplication(
+                        application.id,
+                        AbsenceApplicationStatus.ACCEPTED,
+                        clock.now(),
+                        user.evakaUserId,
+                        rejectedReason = null,
+                    )
+                    tx.upsertFullDayAbsences(
+                        user.evakaUserId,
+                        clock.now(),
+                        FiniteDateRange(application.startDate, application.endDate)
+                            .dates()
+                            .map { date ->
+                                FullDayAbsenseUpsert(
+                                    childId = application.childId,
+                                    date = date,
+                                    absenceTypeBillable = AbsenceType.OTHER_ABSENCE,
+                                    absenceTypeNonbillable = AbsenceType.OTHER_ABSENCE,
+                                )
+                            }
+                            .toList(),
+                    )
                     application
                 }
             }
             .also {
-                Audit.AbsenceApplicationUpdate.log(
+                Audit.AbsenceApplicationAccept.log(
                     targetId = AuditId(it.id),
                     objectId = AuditId(it.childId),
                 )
             }
     }
 
-    private fun accept(
-        tx: Database.Transaction,
+    @PostMapping("/{id}/reject")
+    fun rejectAbsenceApplication(
+        db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        application: AbsenceApplication,
+        @PathVariable id: AbsenceApplicationId,
+        @RequestBody body: AbsenceApplicationRejectRequest,
     ) {
-        tx.decideAbsenceApplication(
-            application.id,
-            AbsenceApplicationStatus.ACCEPTED,
-            clock.now(),
-            user.evakaUserId,
-            rejectedReason = null,
-        )
-        tx.upsertFullDayAbsences(
-            user.evakaUserId,
-            clock.now(),
-            FiniteDateRange(application.startDate, application.endDate)
-                .dates()
-                .map { date ->
-                    FullDayAbsenseUpsert(
-                        childId = application.childId,
-                        date = date,
-                        absenceTypeBillable = AbsenceType.OTHER_ABSENCE,
-                        absenceTypeNonbillable = AbsenceType.OTHER_ABSENCE,
+        db.connect { dbc ->
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.AbsenceApplication.DECIDE,
+                        id,
                     )
+                    val application =
+                        tx.selectAbsenceApplication(id, forUpdate = true) ?: throw NotFound()
+                    if (application.status != AbsenceApplicationStatus.WAITING_DECISION) {
+                        throw BadRequest(
+                            "Absence application ${application.id} is not waiting decision"
+                        )
+                    }
+                    tx.decideAbsenceApplication(
+                        application.id,
+                        AbsenceApplicationStatus.REJECTED,
+                        clock.now(),
+                        user.evakaUserId,
+                        body.reason,
+                    )
+                    application
                 }
-                .toList(),
-        )
-    }
-
-    private fun reject(
-        tx: Database.Transaction,
-        user: AuthenticatedUser.Employee,
-        clock: EvakaClock,
-        application: AbsenceApplication,
-        reason: String,
-    ) {
-        tx.decideAbsenceApplication(
-            application.id,
-            AbsenceApplicationStatus.REJECTED,
-            clock.now(),
-            user.evakaUserId,
-            reason,
-        )
+            }
+            .also {
+                Audit.AbsenceApplicationReject.log(
+                    targetId = AuditId(it.id),
+                    objectId = AuditId(it.childId),
+                )
+            }
     }
 }
 

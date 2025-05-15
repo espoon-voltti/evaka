@@ -6,8 +6,8 @@
 
 import { Absence } from 'lib-common/generated/api-types/absence'
 import { AbsenceApplicationId } from 'lib-common/generated/api-types/shared'
+import { AbsenceApplicationRejectRequest } from 'lib-common/generated/api-types/absence'
 import { AbsenceApplicationStatus } from 'lib-common/generated/api-types/absence'
-import { AbsenceApplicationStatusUpdateRequest } from 'lib-common/generated/api-types/absence'
 import { AbsenceApplicationSummaryEmployee } from 'lib-common/generated/api-types/absence'
 import { AbsenceUpsert } from 'lib-common/generated/api-types/absence'
 import { DaycareId } from 'lib-common/generated/api-types/shared'
@@ -127,6 +127,22 @@ export async function upsertAbsences(
 
 
 /**
+* Generated from fi.espoo.evaka.absence.application.AbsenceApplicationControllerEmployee.acceptAbsenceApplication
+*/
+export async function acceptAbsenceApplication(
+  request: {
+    id: AbsenceApplicationId
+  }
+): Promise<void> {
+  const { data: json } = await client.request<JsonOf<void>>({
+    url: uri`/employee/absence-application/${request.id}/accept`.toString(),
+    method: 'POST'
+  })
+  return json
+}
+
+
+/**
 * Generated from fi.espoo.evaka.absence.application.AbsenceApplicationControllerEmployee.getAbsenceApplications
 */
 export async function getAbsenceApplications(
@@ -151,18 +167,18 @@ export async function getAbsenceApplications(
 
 
 /**
-* Generated from fi.espoo.evaka.absence.application.AbsenceApplicationControllerEmployee.putAbsenceApplicationStatus
+* Generated from fi.espoo.evaka.absence.application.AbsenceApplicationControllerEmployee.rejectAbsenceApplication
 */
-export async function putAbsenceApplicationStatus(
+export async function rejectAbsenceApplication(
   request: {
     id: AbsenceApplicationId,
-    body: AbsenceApplicationStatusUpdateRequest
+    body: AbsenceApplicationRejectRequest
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/employee/absence-application/${request.id}/status`.toString(),
-    method: 'PUT',
-    data: request.body satisfies JsonCompatible<AbsenceApplicationStatusUpdateRequest>
+    url: uri`/employee/absence-application/${request.id}/reject`.toString(),
+    method: 'POST',
+    data: request.body satisfies JsonCompatible<AbsenceApplicationRejectRequest>
   })
   return json
 }

@@ -9,8 +9,8 @@ import fi.espoo.evaka.absence.application.AbsenceApplication
 import fi.espoo.evaka.absence.application.AbsenceApplicationControllerCitizen
 import fi.espoo.evaka.absence.application.AbsenceApplicationControllerEmployee
 import fi.espoo.evaka.absence.application.AbsenceApplicationCreateRequest
+import fi.espoo.evaka.absence.application.AbsenceApplicationRejectRequest
 import fi.espoo.evaka.absence.application.AbsenceApplicationStatus
-import fi.espoo.evaka.absence.application.AbsenceApplicationStatusUpdateRequest
 import fi.espoo.evaka.absence.application.AbsenceApplicationSummary
 import fi.espoo.evaka.absence.application.selectAbsenceApplication
 import fi.espoo.evaka.pis.PersonNameDetails
@@ -133,20 +133,18 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
                     .map { it.data.copy(createdAt = clock.now()) },
             )
 
-            absenceApplicationControllerEmployee.putAbsenceApplicationStatus(
+            absenceApplicationControllerEmployee.acceptAbsenceApplication(
                 dbInstance(),
                 employeeUser,
                 clock,
                 id,
-                AbsenceApplicationStatusUpdateRequest(AbsenceApplicationStatus.ACCEPTED, null),
             )
             assertThrows<BadRequest> {
-                absenceApplicationControllerEmployee.putAbsenceApplicationStatus(
+                absenceApplicationControllerEmployee.acceptAbsenceApplication(
                     dbInstance(),
                     employeeUser,
                     clock,
                     id,
-                    AbsenceApplicationStatusUpdateRequest(AbsenceApplicationStatus.ACCEPTED, null),
                 )
             }
 
@@ -245,23 +243,20 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
                     .map { it.data.copy(createdAt = clock.now()) },
             )
 
-            absenceApplicationControllerEmployee.putAbsenceApplicationStatus(
+            absenceApplicationControllerEmployee.rejectAbsenceApplication(
                 dbInstance(),
                 employeeUser,
                 clock,
                 id,
-                AbsenceApplicationStatusUpdateRequest(AbsenceApplicationStatus.REJECTED, "ei käy"),
+                AbsenceApplicationRejectRequest("ei käy"),
             )
             assertThrows<BadRequest> {
-                absenceApplicationControllerEmployee.putAbsenceApplicationStatus(
+                absenceApplicationControllerEmployee.rejectAbsenceApplication(
                     dbInstance(),
                     employeeUser,
                     clock,
                     id,
-                    AbsenceApplicationStatusUpdateRequest(
-                        AbsenceApplicationStatus.REJECTED,
-                        "ei käy",
-                    ),
+                    AbsenceApplicationRejectRequest("ei käy"),
                 )
             }
 
@@ -374,11 +369,7 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
             )
 
             assertThrows<NotFound> {
-                putAbsenceApplicationStatus(
-                    admin.user,
-                    AbsenceApplicationId(UUID.randomUUID()),
-                    AbsenceApplicationStatusUpdateRequest(AbsenceApplicationStatus.ACCEPTED, null),
-                )
+                acceptAbsenceApplication(admin.user, AbsenceApplicationId(UUID.randomUUID()))
             }
 
             val data =
@@ -399,11 +390,7 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
                     rejectedReason = null,
                 )
             val id = db.transaction { tx -> tx.insert(data) }
-            putAbsenceApplicationStatus(
-                admin.user,
-                id,
-                AbsenceApplicationStatusUpdateRequest(AbsenceApplicationStatus.ACCEPTED, null),
-            )
+            acceptAbsenceApplication(admin.user, id)
             assertEquals(
                 data.copy(
                     status = AbsenceApplicationStatus.ACCEPTED,
@@ -412,13 +399,7 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
                 ),
                 db.read { tx -> tx.selectAbsenceApplication(id)?.copy(updatedAt = clock.now()) },
             )
-            assertThrows<BadRequest> {
-                putAbsenceApplicationStatus(
-                    admin.user,
-                    id,
-                    AbsenceApplicationStatusUpdateRequest(AbsenceApplicationStatus.ACCEPTED, null),
-                )
-            }
+            assertThrows<BadRequest> { acceptAbsenceApplication(admin.user, id) }
         }
 
         @Test
@@ -479,17 +460,15 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
                 status,
             )
 
-        private fun putAbsenceApplicationStatus(
+        private fun acceptAbsenceApplication(
             user: AuthenticatedUser.Employee,
             id: AbsenceApplicationId,
-            request: AbsenceApplicationStatusUpdateRequest,
         ) =
-            absenceApplicationControllerEmployee.putAbsenceApplicationStatus(
+            absenceApplicationControllerEmployee.acceptAbsenceApplication(
                 dbInstance(),
                 user,
                 clock,
                 id,
-                request,
             )
     }
 }

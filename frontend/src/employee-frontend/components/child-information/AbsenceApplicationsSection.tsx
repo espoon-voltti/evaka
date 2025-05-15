@@ -8,10 +8,9 @@ import React, { useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import { string } from 'lib-common/form/fields'
-import { object, validated, value } from 'lib-common/form/form'
+import { object, validated } from 'lib-common/form/form'
 import { useBoolean, useForm, useFormFields } from 'lib-common/form/hooks'
 import { nonBlank } from 'lib-common/form/validators'
-import { AbsenceApplicationStatus } from 'lib-common/generated/api-types/absence'
 import {
   AbsenceApplicationId,
   ChildId
@@ -35,8 +34,9 @@ import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 
 import {
+  acceptAbsenceApplicationMutation,
   getAbsenceApplicationsQuery,
-  putAbsenceApplicationStatusMutation
+  rejectAbsenceApplicationMutation
 } from './queries'
 
 interface Props {
@@ -156,13 +156,9 @@ const AbsenceApplicationList = (props: Props) => {
                           text={
                             i18n.childInformation.absenceApplications.accept
                           }
-                          mutation={putAbsenceApplicationStatusMutation}
+                          mutation={acceptAbsenceApplicationMutation}
                           onClick={() => ({
-                            id: application.data.id,
-                            body: {
-                              status: 'ACCEPTED' as const,
-                              reason: null
-                            }
+                            id: application.data.id
                           })}
                           primary
                           data-qa="accept-absence-application"
@@ -238,7 +234,6 @@ const IncompleteApplicationContainer = styled.div`
 `
 
 const rejectAbsenceApplicationForm = object({
-  status: value<AbsenceApplicationStatus>(),
   reason: validated(string(), nonBlank)
 })
 
@@ -249,7 +244,7 @@ const RejectAbsenceApplicationModal = (props: {
   const { i18n } = useTranslation()
   const form = useForm(
     rejectAbsenceApplicationForm,
-    () => ({ status: 'REJECTED' as const, reason: '' }),
+    () => ({ reason: '' }),
     i18n.validationErrors
   )
   const { reason } = useFormFields(form)
@@ -257,7 +252,7 @@ const RejectAbsenceApplicationModal = (props: {
   return (
     <MutateFormModal
       title={i18n.childInformation.absenceApplications.rejectModal.title}
-      resolveMutation={putAbsenceApplicationStatusMutation}
+      resolveMutation={rejectAbsenceApplicationMutation}
       resolveAction={() => ({
         id: props.id,
         body: form.value()

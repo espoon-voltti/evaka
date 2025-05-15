@@ -47,20 +47,19 @@ export interface AbsenceApplicationCreateRequest {
 }
 
 /**
+* Generated from fi.espoo.evaka.absence.application.AbsenceApplicationRejectRequest
+*/
+export interface AbsenceApplicationRejectRequest {
+  reason: string
+}
+
+/**
 * Generated from fi.espoo.evaka.absence.application.AbsenceApplicationStatus
 */
 export type AbsenceApplicationStatus =
   | 'WAITING_DECISION'
   | 'ACCEPTED'
   | 'REJECTED'
-
-/**
-* Generated from fi.espoo.evaka.absence.application.AbsenceApplicationStatusUpdateRequest
-*/
-export interface AbsenceApplicationStatusUpdateRequest {
-  reason: string | null
-  status: AbsenceApplicationStatus
-}
 
 /**
 * Generated from fi.espoo.evaka.absence.application.AbsenceApplicationSummary

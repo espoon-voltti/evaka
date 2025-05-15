@@ -68,7 +68,4 @@ data class AbsenceApplicationCreateRequest(
     val description: String,
 )
 
-data class AbsenceApplicationStatusUpdateRequest(
-    val status: AbsenceApplicationStatus,
-    val reason: String?,
-)
+data class AbsenceApplicationRejectRequest(val reason: String)
