@@ -812,7 +812,6 @@ fun Database.Read.fetchApplicationDetails(
                             'id', attachment.id,
                             'name', attachment.name,
                             'contentType', content_type,
-                            'updated', updated,
                             'receivedAt', received_at,
                             'type', attachment.type,
                             'uploadedByEmployee', (CASE eu.type WHEN 'EMPLOYEE' THEN eu.id END),
@@ -1369,7 +1368,7 @@ fun Database.Read.getApplicationAttachments(
             sql(
                 """
 SELECT
-    attachment.id, attachment.name, content_type, updated, received_at, attachment.type,
+    attachment.id, attachment.name, content_type, received_at, attachment.type,
     (CASE evaka_user.type WHEN 'EMPLOYEE' THEN evaka_user.id END) AS uploaded_by_employee,
     (CASE evaka_user.type WHEN 'CITIZEN' THEN evaka_user.id END) AS uploaded_by_person
 FROM attachment

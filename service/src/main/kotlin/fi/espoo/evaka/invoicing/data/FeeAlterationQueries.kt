@@ -85,7 +85,7 @@ SELECT
             SELECT a.id, a.name, a.content_type
             FROM attachment a
             WHERE a.fee_alteration_id = ${bind(id)}
-            ORDER BY a.created
+            ORDER BY a.created_at
         ) s) AS attachments
 FROM fee_alteration fa
 LEFT JOIN evaka_user e ON fa.modified_by = e.id
@@ -121,7 +121,7 @@ SELECT
             SELECT a.id, a.name, a.content_type
             FROM attachment a
             WHERE a.fee_alteration_id = fa.id
-            ORDER BY a.created
+            ORDER BY a.created_at
         ) s) AS attachments
 FROM fee_alteration fa
 LEFT JOIN evaka_user e ON fa.modified_by = e.id

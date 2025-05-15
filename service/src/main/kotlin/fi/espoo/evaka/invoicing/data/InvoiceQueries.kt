@@ -135,7 +135,7 @@ fun invoiceDetailedQuery(where: Predicate) = QuerySql {
                 'id', id,
                 'name', name,
                 'contentType', content_type
-            ) ORDER BY a.created)
+            ) ORDER BY a.created_at)
             FROM attachment a
             WHERE a.invoice_id = invoice.id
         ), '[]'::jsonb) as attachments
