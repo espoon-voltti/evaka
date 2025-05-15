@@ -591,13 +591,9 @@ fun Database.Transaction.setNekkuReportOrderReport(
 
     val daycareId = getDaycareIdByGroup(groupId)
 
-    for (item in nekkuOrders.orders.first().items) {
-
-        val product = nekkuProducts.find { it.sku == item.sku } ?: error("Product.sku")
-
-        val mealsBySpecialDiet = item.productOptions?.map { it.value }
-
-        val report =
+    val reportRows =
+        nekkuOrders.orders.first().items.map { item ->
+            val product = nekkuProducts.find { it.sku == item.sku } ?: error("Product.sku")
             NekkuOrdersReport(
                 LocalDate.parse(nekkuOrders.orders.first().deliveryDate),
                 daycareId,
@@ -606,12 +602,25 @@ fun Database.Transaction.setNekkuReportOrderReport(
                 item.quantity,
                 product.mealTime,
                 product.mealType,
-                mealsBySpecialDiet,
+                item.productOptions?.map { it.value },
             )
+        }
 
-        createUpdate {
-                sql(
-                    """
+    val deletedNekkuOrders = execute {
+        sql(
+            "DELETE FROM nekku_orders_report WHERE daycare_id = ${bind(daycareId)} AND group_id = ${bind(groupId)} AND delivery_date = ${bind(LocalDate.parse(nekkuOrders.orders.first().deliveryDate))}"
+        )
+    }
+
+    if (deletedNekkuOrders > 0) {
+        logger.info {
+            "Removed $deletedNekkuOrders orders for date:${nekkuOrders.orders.first().deliveryDate} daycareId=$daycareId groupId=$groupId before creating a specifying order"
+        }
+    }
+
+    executeBatch(reportRows) {
+        sql(
+            """
 INSERT INTO nekku_orders_report (
 delivery_date,
 daycare_id,
@@ -622,20 +631,18 @@ meal_time,
 meal_type,
 meals_by_special_diet)
 VALUES (
-${bind(report.deliveryDate)},
-${bind(report.daycareId)},
-${bind(report.groupId)},
-${bind(report.mealSku)},
-${bind(report.totalQuantity)},
-${bind(report.mealTime)},
-${bind(report.mealType)},
-${bind(report.mealsBySpecialDiet)}
+${bind {it.deliveryDate}},
+${bind {it.daycareId}},
+${bind {it.groupId}},
+${bind {it.mealSku}},
+${bind {it.totalQuantity}},
+${bind {it.mealTime}},
+${bind {it.mealType}},
+${bind {it.mealsBySpecialDiet}}
 )
             """
-                        .trimIndent()
-                )
-            }
-            .execute()
+                .trimIndent()
+        )
     }
 }
 
