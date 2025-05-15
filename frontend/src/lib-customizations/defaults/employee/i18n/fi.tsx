@@ -4152,6 +4152,7 @@ export const fi = {
         DAYCARE: 'varhaiskasvatuksessa',
         PRESCHOOL: 'esiopetuksessa'
       },
+      placementType: 'Sijoitusmuoto',
       level: 'Tuen taso ja muut toimet',
       showZeroRows: 'Näytä nollarivit',
       groupingTypes: {

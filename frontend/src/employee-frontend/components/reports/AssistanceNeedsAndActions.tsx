@@ -17,6 +17,7 @@ import {
 } from 'lib-common/generated/api-types/assistance'
 import { AssistanceActionOption } from 'lib-common/generated/api-types/assistanceaction'
 import { Daycare, ProviderType } from 'lib-common/generated/api-types/daycare'
+import { PlacementType } from 'lib-common/generated/api-types/placement'
 import {
   AssistanceNeedsAndActionsReport,
   AssistanceNeedsAndActionsReportByChild,
@@ -37,6 +38,7 @@ import {
   daycareAssistanceLevels,
   featureFlags,
   otherAssistanceMeasureTypes,
+  placementTypes,
   preschoolAssistanceLevels,
   unitProviderTypes
 } from 'lib-customizations/employee'
@@ -61,6 +63,7 @@ type AssistanceNeedsAndActionsReportFilters = {
   daycareAssistanceLevels: DaycareAssistanceLevel[]
   preschoolAssistanceLevels: PreschoolAssistanceLevel[]
   otherAssistanceMeasureTypes: OtherAssistanceMeasureType[]
+  placementTypes: PlacementType[]
 }
 
 const types = ['DAYCARE', 'PRESCHOOL'] as const
@@ -286,7 +289,8 @@ export default React.memo(function AssistanceNeedsAndActions() {
       date: LocalDate.todayInSystemTz(),
       daycareAssistanceLevels: [],
       preschoolAssistanceLevels: [],
-      otherAssistanceMeasureTypes: []
+      otherAssistanceMeasureTypes: [],
+      placementTypes: []
     })
   const areasResult = useQueryResult(areasQuery())
   const sortedAreas = useMemo(
@@ -515,6 +519,27 @@ export default React.memo(function AssistanceNeedsAndActions() {
         ))}
         <FilterRow>
           <FilterLabel>
+            {i18n.reports.assistanceNeedsAndActions.placementType}
+          </FilterLabel>
+          <Wrapper>
+            <MultiSelect
+              options={placementTypes}
+              onChange={(selectedItems) =>
+                setFilters({
+                  ...filters,
+                  placementTypes: selectedItems
+                })
+              }
+              value={filters.placementTypes}
+              getOptionId={(type) => type}
+              getOptionLabel={(type) => i18n.placement.type[type]}
+              placeholder={i18n.common.all}
+              data-qa="placement-type-filter"
+            />
+          </Wrapper>
+        </FilterRow>
+        <FilterRow>
+          <FilterLabel>
             {i18n.reports.assistanceNeedsAndActions.type}
           </FilterLabel>
           <Wrapper>
@@ -670,7 +695,8 @@ const ReportByGroup = (props: {
             props.columnFilters.type === 'PRESCHOOL'
               ? props.selectedPreschoolColumns
               : undefined,
-          otherAssistanceMeasureTypes: props.selectedOtherColumns
+          otherAssistanceMeasureTypes: props.selectedOtherColumns,
+          placementTypes: props.filters.placementTypes
         })
       : constantQuery(null)
   )
@@ -1106,7 +1132,8 @@ const ReportByChild = (props: {
             props.columnFilters.type === 'PRESCHOOL'
               ? props.selectedPreschoolColumns
               : undefined,
-          otherAssistanceMeasureTypes: props.selectedOtherColumns
+          otherAssistanceMeasureTypes: props.selectedOtherColumns,
+          placementTypes: props.filters.placementTypes
         })
       : constantQuery(null)
   )

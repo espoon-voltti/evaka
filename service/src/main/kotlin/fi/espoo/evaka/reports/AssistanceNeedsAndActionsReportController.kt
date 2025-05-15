@@ -11,12 +11,14 @@ import fi.espoo.evaka.assistance.PreschoolAssistanceLevel
 import fi.espoo.evaka.assistanceaction.AssistanceActionOption
 import fi.espoo.evaka.assistanceaction.getAssistanceActionOptions
 import fi.espoo.evaka.daycare.domain.ProviderType
+import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.Predicate
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
@@ -44,26 +46,31 @@ class AssistanceNeedsAndActionsReportController(
         @RequestParam daycareAssistanceLevels: List<DaycareAssistanceLevel> = emptyList(),
         @RequestParam preschoolAssistanceLevels: List<PreschoolAssistanceLevel> = emptyList(),
         @RequestParam otherAssistanceMeasureTypes: List<OtherAssistanceMeasureType> = emptyList(),
+        @RequestParam placementTypes: List<PlacementType> = emptyList(),
     ): AssistanceNeedsAndActionsReport {
         return db.connect { dbc ->
-                dbc.read {
+                dbc.read { tx ->
                     val filter =
                         accessControl.requireAuthorizationFilter(
-                            it,
+                            tx,
                             user,
                             clock,
                             Action.Unit.READ_ASSISTANCE_NEEDS_AND_ACTIONS_REPORT,
                         )
-                    it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
+                    tx.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
+                    val placementPredicate =
+                        if (placementTypes.isEmpty()) Predicate.alwaysTrue()
+                        else Predicate { where("$it.type = ANY (${bind(placementTypes)})") }
                     AssistanceNeedsAndActionsReport(
-                        actions = it.getAssistanceActionOptions(),
+                        actions = tx.getAssistanceActionOptions(),
                         rows =
-                            it.getReportRows(
+                            tx.getReportRows(
                                 date,
                                 filter,
                                 daycareAssistanceLevels,
                                 preschoolAssistanceLevels,
                                 otherAssistanceMeasureTypes,
+                                placementPredicate,
                             ),
                         showAssistanceNeedVoucherCoefficient =
                             !featureConfig.valueDecisionCapacityFactorEnabled,
@@ -110,26 +117,31 @@ class AssistanceNeedsAndActionsReportController(
         @RequestParam daycareAssistanceLevels: List<DaycareAssistanceLevel> = emptyList(),
         @RequestParam preschoolAssistanceLevels: List<PreschoolAssistanceLevel> = emptyList(),
         @RequestParam otherAssistanceMeasureTypes: List<OtherAssistanceMeasureType> = emptyList(),
+        @RequestParam placementTypes: List<PlacementType> = emptyList(),
     ): AssistanceNeedsAndActionsReportByChild {
         return db.connect { dbc ->
-                dbc.read {
+                dbc.read { tx ->
                     val filter =
                         accessControl.requireAuthorizationFilter(
-                            it,
+                            tx,
                             user,
                             clock,
                             Action.Unit.READ_ASSISTANCE_NEEDS_AND_ACTIONS_REPORT_BY_CHILD,
                         )
-                    it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
+                    tx.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
+                    val placementPredicate =
+                        if (placementTypes.isEmpty()) Predicate.alwaysTrue()
+                        else Predicate { where("$it.type = ANY (${bind(placementTypes)})") }
                     AssistanceNeedsAndActionsReportByChild(
-                        actions = it.getAssistanceActionOptions(),
+                        actions = tx.getAssistanceActionOptions(),
                         rows =
-                            it.getReportRowsByChild(
+                            tx.getReportRowsByChild(
                                 date,
                                 filter,
                                 daycareAssistanceLevels,
                                 preschoolAssistanceLevels,
                                 otherAssistanceMeasureTypes,
+                                placementPredicate,
                             ),
                         showAssistanceNeedVoucherCoefficient =
                             !featureConfig.valueDecisionCapacityFactorEnabled,
@@ -179,6 +191,7 @@ private fun Database.Read.getReportRows(
     daycareAssistanceLevels: List<DaycareAssistanceLevel>,
     preschoolAssistanceLevels: List<PreschoolAssistanceLevel>,
     otherAssistanceMeasureTypes: List<OtherAssistanceMeasureType>,
+    placementPredicate: Predicate,
 ) =
     createQuery {
             sql(
@@ -209,6 +222,7 @@ WITH action_counts AS (
             EXISTS (SELECT FROM preschool_assistance WHERE child_id = aa.child_id AND valid_during @> ${bind(date)} AND level = ANY(${bind(preschoolAssistanceLevels)})) OR
             EXISTS (SELECT FROM other_assistance_measure WHERE child_id = aa.child_id AND valid_during @> ${bind(date)} AND type = ANY(${bind(otherAssistanceMeasureTypes)}))
         )
+        AND ${predicate(placementPredicate.forTable("pl"))}
         GROUP BY GROUPING SETS ((1, 2), (1, 3), (1, 4))
     ) action_stats
     GROUP BY daycare_group_id
@@ -227,6 +241,7 @@ WITH action_counts AS (
         WHERE daterange(gpl.start_date, gpl.end_date, '[]') @> ${bind(date)}
         AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(date)}
         AND da.valid_during @> ${bind(date)}
+        AND ${predicate(placementPredicate.forTable("pl"))} 
         GROUP BY 1, 2
     ) daycare_assistance_stats
     GROUP BY daycare_group_id
@@ -245,6 +260,7 @@ WITH action_counts AS (
         WHERE daterange(gpl.start_date, gpl.end_date, '[]') @> ${bind(date)}
         AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(date)}
         AND pa.valid_during @> ${bind(date)}
+        AND ${predicate(placementPredicate.forTable("pl"))}
         GROUP BY 1, 2
     ) daycare_assistance_stats
     GROUP BY daycare_group_id
@@ -263,6 +279,7 @@ WITH action_counts AS (
         WHERE daterange(gpl.start_date, gpl.end_date, '[]') @> ${bind(date)}
         AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(date)}
         AND oam.valid_during @> ${bind(date)}
+        AND ${predicate(placementPredicate.forTable("pl"))}
         GROUP BY 1, 2
     ) daycare_assistance_stats
     GROUP BY daycare_group_id
@@ -276,6 +293,7 @@ WITH action_counts AS (
     WHERE daterange(gpl.start_date, gpl.end_date, '[]') @> ${bind(date)}
     AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(date)}
     AND vc.validity_period @> ${bind(date)}
+    AND ${predicate(placementPredicate.forTable("pl"))}
     GROUP BY daycare_group_id
 ), daycare_assistance_need_decision_count AS (
     SELECT dgp.daycare_group_id,
@@ -288,6 +306,7 @@ WITH action_counts AS (
     WHERE daterange(dgp.start_date, dgp.end_date, '[]') @> ${bind(date)}
     AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(date)}
     AND decision.validity_period @> ${bind(date)}
+    AND ${predicate(placementPredicate.forTable("pl"))}
     GROUP BY dgp.daycare_group_id
 ), preschool_assistance_need_decision_count AS (
     SELECT dgp.daycare_group_id,
@@ -300,6 +319,7 @@ WITH action_counts AS (
     WHERE daterange(dgp.start_date, dgp.end_date, '[]') @> ${bind(date)}
     AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(date)}
     AND daterange(decision.valid_from, decision.valid_to, '[]') @> ${bind(date)}
+    AND ${predicate(placementPredicate.forTable("pl"))}
     GROUP BY dgp.daycare_group_id
 )
 
@@ -343,6 +363,7 @@ private fun Database.Read.getReportRowsByChild(
     daycareAssistanceLevels: List<DaycareAssistanceLevel>,
     preschoolAssistanceLevels: List<PreschoolAssistanceLevel>,
     otherAssistanceMeasureTypes: List<OtherAssistanceMeasureType>,
+    placementPredicate: Predicate,
 ) =
     createQuery {
             sql(
@@ -366,6 +387,7 @@ WITH actions AS (
         EXISTS (SELECT FROM preschool_assistance WHERE child_id = aa.child_id AND valid_during @> ${bind(date)} AND level = ANY(${bind(preschoolAssistanceLevels)})) OR
         EXISTS (SELECT FROM other_assistance_measure WHERE child_id = aa.child_id AND valid_during @> ${bind(date)} AND type = ANY(${bind(otherAssistanceMeasureTypes)}))
     )
+    AND ${predicate(placementPredicate.forTable("pl"))}
     GROUP BY gpl.id, aa.child_id, aa.other_action
 ), daycare_assistance_counts AS (
     SELECT
@@ -384,6 +406,7 @@ WITH actions AS (
         WHERE daterange(gpl.start_date, gpl.end_date, '[]') @> ${bind(date)}
         AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(date)}
         AND da.valid_during @> ${bind(date)}
+        AND ${predicate(placementPredicate.forTable("pl"))}
         GROUP BY 1, 2, 3
     ) daycare_assistance_stats
     GROUP BY daycare_group_id, child_id
@@ -404,6 +427,7 @@ WITH actions AS (
         WHERE daterange(gpl.start_date, gpl.end_date, '[]') @> ${bind(date)}
         AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(date)}
         AND pa.valid_during @> ${bind(date)}
+        AND ${predicate(placementPredicate.forTable("pl"))}
         GROUP BY 1, 2, 3
     ) daycare_assistance_stats
     GROUP BY daycare_group_id, child_id
@@ -424,6 +448,7 @@ WITH actions AS (
         WHERE daterange(gpl.start_date, gpl.end_date, '[]') @> ${bind(date)}
         AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(date)}
         AND oam.valid_during @> ${bind(date)}
+        AND ${predicate(placementPredicate.forTable("pl"))}
         GROUP BY 1, 2, 3
     ) daycare_assistance_stats
     GROUP BY daycare_group_id, child_id
@@ -438,6 +463,7 @@ WITH actions AS (
         WHERE daterange(gpl.start_date, gpl.end_date, '[]') @> ${bind(date)}
         AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(date)}
         AND vc.validity_period @> ${bind(date)}
+        AND ${predicate(placementPredicate.forTable("pl"))}
 ), daycare_assistance_need_decision_count AS (
     SELECT dgp.daycare_group_id,
            pl.child_id,
@@ -450,6 +476,7 @@ WITH actions AS (
     WHERE daterange(dgp.start_date, dgp.end_date, '[]') @> ${bind(date)}
     AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(date)}
     AND decision.validity_period @> ${bind(date)}
+    AND ${predicate(placementPredicate.forTable("pl"))}
     GROUP BY dgp.daycare_group_id, pl.child_id
 ), preschool_assistance_need_decision_count AS (
     SELECT dgp.daycare_group_id,
@@ -463,6 +490,7 @@ WITH actions AS (
     WHERE daterange(dgp.start_date, dgp.end_date, '[]') @> ${bind(date)}
     AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(date)}
     AND daterange(decision.valid_from, decision.valid_to, '[]') @> ${bind(date)}
+    AND ${predicate(placementPredicate.forTable("pl"))}
     GROUP BY dgp.daycare_group_id, pl.child_id
 ) 
 SELECT
@@ -503,6 +531,7 @@ LEFT JOIN assistance_need_voucher_coefficient ON g.id = assistance_need_voucher_
 LEFT JOIN daycare_assistance_need_decision_count dand ON g.id = dand.daycare_group_id AND child.id = dand.child_id
 LEFT JOIN preschool_assistance_need_decision_count pand ON g.id = pand.daycare_group_id AND child.id = pand.child_id
 WHERE ${predicate(unitFilter.forTable("u"))}
+AND ${predicate(placementPredicate.forTable("p"))}
 ORDER BY ca.name, u.name, g.name, child.last_name, child.first_name
         """
                     .trimIndent()

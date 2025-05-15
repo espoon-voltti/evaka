@@ -144,13 +144,15 @@ describe('Assistance need and actions report', () => {
     await report.typeSelect.fillAndSelectFirst('esiopetuksessa')
     await report.needsAndActionsRows
       .nth(0)
-      .assertTextEquals('Superkeskus\n' + '\t\t1\t0\t0\t0\t0\t0\t0\t1\t0\t0\t0')
+      .assertTextEquals(
+        'Superkeskus\n' + '\t\t1\t0\t0\t0\t0\t0\t0\t1\t0\t0\t0\t0\t0'
+      )
     await report.preschoolAssistanceLevelSelect.fillAndSelectFirst(
       'Tehostettu tuki'
     )
     await report.needsAndActionsRows
       .nth(0)
-      .assertTextEquals('Superkeskus\n' + '\t\t1\t1\t0\t0\t0')
+      .assertTextEquals('Superkeskus\n' + '\t\t1\t1\t0\t0\t0\t0\t0')
     await report.preschoolAssistanceLevelSelect.fillAndSelectFirst(
       'Tehostettu tuki'
     )
@@ -159,18 +161,20 @@ describe('Assistance need and actions report', () => {
     )
     await report.needsAndActionsRows
       .nth(0)
-      .assertTextEquals('Superkeskus\n' + '\t\t0\t0\t0\t0\t0')
+      .assertTextEquals('Superkeskus\n' + '\t\t0\t0\t0\t0\t0\t0\t0')
 
     await report.typeSelect.fillAndSelectFirst('varhaiskasvatuksessa')
     await report.needsAndActionsRows
       .nth(0)
-      .assertTextEquals('Superkeskus\n' + '\t\t1\t0\t0\t0\t0\t0\t0\t1\t0\t0\t0')
+      .assertTextEquals(
+        'Superkeskus\n' + '\t\t1\t0\t0\t0\t0\t0\t0\t1\t0\t0\t0\t0\t0'
+      )
     await report.daycareAssistanceLevelSelect.fillAndSelectFirst(
       'Yleinen tuki, ei päätöstä'
     )
     await report.needsAndActionsRows
       .nth(0)
-      .assertTextEquals('Superkeskus\n' + '\t\t1\t1\t0\t0\t0')
+      .assertTextEquals('Superkeskus\n' + '\t\t1\t1\t0\t0\t0\t0\t0')
     await report.daycareAssistanceLevelSelect.fillAndSelectFirst(
       'Yleinen tuki, ei päätöstä'
     )
@@ -179,7 +183,7 @@ describe('Assistance need and actions report', () => {
     )
     await report.needsAndActionsRows
       .nth(0)
-      .assertTextEquals('Superkeskus\n' + '\t\t0\t0\t0\t0\t0')
+      .assertTextEquals('Superkeskus\n' + '\t\t0\t0\t0\t0\t0\t0\t0')
   })
   test('Shows actions only if child has selected assistance', async () => {
     const validDuring = new FiniteDateRange(mockedTime, mockedTime)
