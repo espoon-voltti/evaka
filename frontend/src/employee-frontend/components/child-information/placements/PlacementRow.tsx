@@ -7,7 +7,6 @@ import React, { useCallback, useContext, useMemo, useState } from 'react'
 import { Link } from 'react-router'
 import styled from 'styled-components'
 
-import { ChildContext } from 'employee-frontend/state'
 import { Failure } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
@@ -18,7 +17,11 @@ import {
 } from 'lib-common/generated/api-types/placement'
 import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
 import LocalDate from 'lib-common/local-date'
-import { cancelMutation, useMutationResult } from 'lib-common/query'
+import {
+  cancelMutation,
+  useMutationResult,
+  useQueryResult
+} from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import UnorderedList from 'lib-components/atoms/UnorderedList'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
@@ -44,7 +47,11 @@ import { InputWarning } from '../../common/InputWarning'
 import RetroactiveConfirmation, {
   isChangeRetroactive
 } from '../../common/RetroactiveConfirmation'
-import { deletePlacementMutation, updatePlacementMutation } from '../queries'
+import {
+  backupCaresQuery,
+  deletePlacementMutation,
+  updatePlacementMutation
+} from '../queries'
 
 import ServiceNeeds from './ServiceNeeds'
 
@@ -106,7 +113,9 @@ export default React.memo(function PlacementRow({
 }: Props) {
   const { i18n } = useTranslation()
   const { setErrorMessage } = useContext<UiState>(UIContext)
-  const { backupCares } = useContext(ChildContext)
+  const backupCares = useQueryResult(
+    backupCaresQuery({ childId: placement.child.id })
+  )
 
   const expandedAtStart = isActiveDateRange(
     placement.startDate,
@@ -189,8 +198,8 @@ export default React.memo(function PlacementRow({
   const dependingBackupCares = useMemo(
     () =>
       backupCares
-        .map((backups) =>
-          backups.filter(({ backupCare }) =>
+        .map((backupCareResponse) =>
+          backupCareResponse.backupCares.filter(({ backupCare }) =>
             new FiniteDateRange(
               placement.startDate,
               placement.endDate

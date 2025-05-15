@@ -2886,7 +2886,8 @@ export default {
       send: 'Lähetä',
       success: 'Lomake lähetetty',
       sentInfo:
-        'Jos haluat muuttaa annettuja vastauksia, pyydä henkilökunnalta uusi lomake.'
+        'Jos haluat muuttaa annettuja vastauksia, pyydä henkilökunnalta uusi lomake.',
+      decisionNumber: 'Päätösnumero'
     }
   },
   accessibilityStatement: (

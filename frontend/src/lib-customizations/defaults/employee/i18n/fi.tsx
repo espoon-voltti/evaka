@@ -82,6 +82,7 @@ export const fi = {
     download: 'Lataa',
     cancel: 'Peruuta',
     goBack: 'Palaa',
+    leavePage: 'Poistu',
     confirm: 'Vahvista',
     period: 'Ajalle',
     search: 'Hae',
@@ -881,7 +882,8 @@ export const fi = {
         reject: 'Tee kielteinen päätös',
         rejectConfirmTitle: 'Haluatko varmasti tehdä kielteisen päätöksen?',
         annul: 'Mitätöi päätös',
-        annulConfirmTitle: 'Haluatko varmasti mitätöidä päätöksen?'
+        annulConfirmTitle: 'Haluatko varmasti mitätöidä päätöksen?',
+        decisionNumber: 'Päätösnumero'
       },
       editor: {
         lockedErrorTitle: 'Asiakirja on tilapäisesti lukittu',
@@ -3783,6 +3785,19 @@ export const fi = {
       club: 'Kerhohakemuksia',
       totalChildren: 'Lapsia hakenut yhteensä'
     },
+    childDocumentDecisions: {
+      title: 'Muut päätökset',
+      description: 'Päätöksen tekijälle lähetetyt muut lapsen päätökset.',
+      statusFilter: 'Näytettävät tilat',
+      otherFilters: 'Muut valinnat',
+      includeEnded: 'Näytä päättyneet päätökset',
+      templateName: 'Päätös',
+      childName: 'Lapsi',
+      modifiedAt: 'Muokattu',
+      decisionMaker: 'Päätöksen tekijä',
+      decisionMade: 'Päätös tehty',
+      status: 'Tila'
+    },
     decisions: {
       title: 'Päätökset',
       description: 'Raportti listaa tehtyjä päätöksiä yksiköittäin.',
@@ -4609,6 +4624,23 @@ export const fi = {
           'Tehostetun tuen lapsimäärä (kunnallinen)',
         statDay: '(tilanne 15.12.)'
       }
+    },
+    citizenDocumentResponseReport: {
+      title: 'Kuntalaisen lomakkeet',
+      description:
+        'Raportti listaa ryhmittäin kuntalaisten lomakkeiden uusimmat vastaukset kyllä/ei- tai monivalintakysymyksiin',
+      filters: {
+        unit: 'Yksikkö',
+        group: 'Ryhmä',
+        template: 'Lomake',
+        showBackupChildren: 'Näytä myös varasijoitettuna olevat'
+      },
+      headers: {
+        name: 'Nimi',
+        answeredAt: 'Vastattu'
+      },
+      noSentDocument: 'Ei lähetettyä lomaketta',
+      noAnswer: 'Ei vastattu'
     }
   },
   unitEditor: {
@@ -5100,8 +5132,8 @@ export const fi = {
       PEDAGOGICAL_REPORT: 'Pedagoginen selvitys',
       PEDAGOGICAL_ASSESSMENT: 'Pedagoginen arvio',
       HOJKS: 'HOJKS',
-      MIGRATED_VASU: 'Varhaiskasvatussuunnitelma',
-      MIGRATED_LEOPS: 'Esiopetuksen oppimissuunnitelma',
+      MIGRATED_VASU: 'Varhaiskasvatussuunnitelma (siirretty)',
+      MIGRATED_LEOPS: 'Esiopetuksen oppimissuunnitelma (siirretty)',
       VASU: 'Varhaiskasvatussuunnitelma',
       LEOPS: 'Esiopetuksen oppimissuunnitelma',
       CITIZEN_BASIC: 'Kuntalaisen lomake - perus',

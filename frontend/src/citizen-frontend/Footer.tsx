@@ -77,6 +77,10 @@ const FooterContainer = styled(Container)`
     justify-content: space-evenly;
   }
 
+  @media print {
+    display: none;
+  }
+
   a {
     display: inline-block;
     position: relative;

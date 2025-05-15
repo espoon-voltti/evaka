@@ -4,7 +4,7 @@
 
 import { faCircle } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, { useContext, useEffect, useMemo } from 'react'
+import React, { useContext, useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
 import styled from 'styled-components'
 
@@ -12,26 +12,32 @@ import { Action } from 'lib-common/generated/action'
 import { ParentshipWithPermittedActions } from 'lib-common/generated/api-types/pis'
 import { ChildId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
+import { useQueryResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import { getAge } from 'lib-common/utils/local-date'
 import Title from 'lib-components/atoms/Title'
 import { Button } from 'lib-components/atoms/buttons/Button'
-import { Container, ContentArea } from 'lib-components/layout/Container'
+import {
+  CollapsibleContentArea,
+  Container,
+  ContentArea
+} from 'lib-components/layout/Container'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import { fontWeights } from 'lib-components/typography'
+import { fontWeights, H2 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/employee'
 import { faUsers } from 'lib-icons'
 
-import { useTranslation } from '../../state/i18n'
+import { Translations, useTranslation } from '../../state/i18n'
 import { TitleContext, TitleState } from '../../state/title'
 import { UserContext } from '../../state/user'
 import CircularLabel from '../common/CircularLabel'
 import WarningLabel from '../common/WarningLabel'
 import { getLayout, Layouts } from '../layouts'
+import { parentshipsQuery } from '../person-profile/queries'
 
 import { AbsenceApplicationsSection } from './AbsenceApplicationsSection'
 import Assistance from './Assistance'
@@ -83,66 +89,131 @@ interface SectionProps {
   startOpen: boolean
 }
 
-function requireOneOfPermittedActions(
-  Component: React.FunctionComponent<SectionProps>,
-  ...actions: (Action.Child | Action.Person)[]
-): React.FunctionComponent<SectionProps> {
+function section({
+  component: Component,
+  enabled = true,
+  requireOneOfPermittedActions,
+  title,
+  dataQa
+}: {
+  component: React.FunctionComponent<{ childId: ChildId }>
+  enabled?: boolean
+  requireOneOfPermittedActions: (Action.Child | Action.Person)[]
+  title: (i18n: Translations) => string
+  dataQa?: string
+}): React.FunctionComponent<SectionProps> {
   return function Section({ childId, startOpen }: SectionProps) {
     const { permittedActions } = useContext<ChildState>(ChildContext)
-    if (actions.some((action) => permittedActions.has(action))) {
-      return <Component childId={childId} startOpen={startOpen} />
-    } else {
+    const { i18n } = useTranslation()
+    const [open, setOpen] = useState(startOpen)
+    if (
+      !enabled ||
+      !requireOneOfPermittedActions.some((action) =>
+        permittedActions.has(action)
+      )
+    ) {
       return null
     }
+    return (
+      <CollapsibleContentArea
+        title={<H2 noMargin>{title(i18n)}</H2>}
+        open={open}
+        toggleOpen={() => setOpen(!open)}
+        opaque
+        paddingVertical="L"
+        data-qa={dataQa}
+      >
+        <Component childId={childId} />
+      </CollapsibleContentArea>
+    )
   }
 }
 
 const components = {
-  income: requireOneOfPermittedActions(ChildIncome, 'READ_INCOME'),
-  'fee-alterations': requireOneOfPermittedActions(
-    FeeAlteration,
-    'READ_FEE_ALTERATIONS'
-  ),
-  guardiansAndParents: requireOneOfPermittedActions(
-    GuardiansAndParents,
-    'READ_GUARDIANS'
-  ),
-  placements: requireOneOfPermittedActions(Placements, 'READ_PLACEMENT'),
-  absenceApplications: requireOneOfPermittedActions(
-    AbsenceApplicationsSection,
-    'READ_ABSENCE_APPLICATIONS'
-  ),
-  serviceApplications: requireOneOfPermittedActions(
-    ServiceApplicationsSection,
-    'READ_SERVICE_APPLICATIONS'
-  ),
-  'daily-service-times': requireOneOfPermittedActions(
-    DailyServiceTimesSection,
-    'READ_DAILY_SERVICE_TIMES'
-  ),
-  childDocuments: requireOneOfPermittedActions(
-    ChildDocumentsSection,
-    'READ_CHILD_DOCUMENT'
-  ),
-  pedagogicalDocuments: requireOneOfPermittedActions(
-    PedagogicalDocuments,
-    'READ_PEDAGOGICAL_DOCUMENTS'
-  ),
-  assistance: requireOneOfPermittedActions(
-    Assistance,
-    'READ_ASSISTANCE',
-    'READ_ASSISTANCE_NEED_DECISIONS',
-    'READ_ASSISTANCE_NEED_PRESCHOOL_DECISIONS'
-  ),
-  'backup-care': requireOneOfPermittedActions(BackupCare, 'READ_BACKUP_CARE'),
-  'family-contacts': requireOneOfPermittedActions(
-    FamilyContacts,
-    'READ_FAMILY_CONTACTS'
-  ),
-  applications: requireOneOfPermittedActions(
-    ChildApplications,
-    'READ_APPLICATION'
-  )
+  income: section({
+    component: ChildIncome,
+    requireOneOfPermittedActions: ['READ_INCOME'],
+    title: (i18n) => i18n.childInformation.income.title,
+    dataQa: 'income-collapsible'
+  }),
+  'fee-alterations': section({
+    component: FeeAlteration,
+    requireOneOfPermittedActions: ['READ_FEE_ALTERATIONS'],
+    title: (i18n) => i18n.childInformation.feeAlteration.title,
+    dataQa: 'fee-alteration-collapsible'
+  }),
+  guardiansAndParents: section({
+    component: GuardiansAndParents,
+    requireOneOfPermittedActions: ['READ_GUARDIANS'],
+    title: (i18n) => i18n.personProfile.guardiansAndParents,
+    dataQa: 'person-guardians-collapsible'
+  }),
+  placements: section({
+    component: Placements,
+    requireOneOfPermittedActions: ['READ_PLACEMENT'],
+    title: (i18n) => i18n.childInformation.placements.title,
+    dataQa: 'child-placements-collapsible'
+  }),
+  absenceApplications: section({
+    component: AbsenceApplicationsSection,
+    enabled: featureFlags.absenceApplications,
+    requireOneOfPermittedActions: ['READ_ABSENCE_APPLICATIONS'],
+    title: (i18n) => i18n.childInformation.absenceApplications.title,
+    dataQa: 'absence-applications-collapsible'
+  }),
+  serviceApplications: section({
+    component: ServiceApplicationsSection,
+    enabled: featureFlags.serviceApplications,
+    requireOneOfPermittedActions: ['READ_SERVICE_APPLICATIONS'],
+    title: (i18n) => i18n.childInformation.serviceApplications.title,
+    dataQa: 'service-applications-collapsible'
+  }),
+  'daily-service-times': section({
+    component: DailyServiceTimesSection,
+    requireOneOfPermittedActions: ['READ_DAILY_SERVICE_TIMES'],
+    title: (i18n) => i18n.childInformation.dailyServiceTimes.title,
+    dataQa: 'child-daily-service-times-collapsible'
+  }),
+  childDocuments: section({
+    component: ChildDocumentsSection,
+    requireOneOfPermittedActions: ['READ_CHILD_DOCUMENT'],
+    title: (i18n) => i18n.childInformation.childDocumentsSectionTitle,
+    dataQa: 'child-documents-collapsible'
+  }),
+  pedagogicalDocuments: section({
+    component: PedagogicalDocuments,
+    requireOneOfPermittedActions: ['READ_PEDAGOGICAL_DOCUMENTS'],
+    title: (i18n) => i18n.childInformation.pedagogicalDocument.title,
+    dataQa: 'pedagogical-documents-collapsible'
+  }),
+  assistance: section({
+    component: Assistance,
+    requireOneOfPermittedActions: [
+      'READ_ASSISTANCE',
+      'READ_ASSISTANCE_NEED_DECISIONS',
+      'READ_ASSISTANCE_NEED_PRESCHOOL_DECISIONS'
+    ],
+    title: (i18n) => i18n.childInformation.assistance.title,
+    dataQa: 'assistance-collapsible'
+  }),
+  'backup-care': section({
+    component: BackupCare,
+    requireOneOfPermittedActions: ['READ_BACKUP_CARE'],
+    title: (i18n) => i18n.childInformation.backupCares.title,
+    dataQa: 'backup-cares-collapsible'
+  }),
+  'family-contacts': section({
+    component: FamilyContacts,
+    requireOneOfPermittedActions: ['READ_FAMILY_CONTACTS'],
+    title: (i18n) => i18n.childInformation.familyContacts.title,
+    dataQa: 'family-contacts-collapsible'
+  }),
+  applications: section({
+    component: ChildApplications,
+    requireOneOfPermittedActions: ['READ_APPLICATION'],
+    title: (i18n) => i18n.childInformation.application.title,
+    dataQa: 'applications-collapsible'
+  })
 }
 
 const layouts: Layouts<typeof components> = {
@@ -150,9 +221,7 @@ const layouts: Layouts<typeof components> = {
     { component: 'family-contacts', open: false },
     { component: 'guardiansAndParents', open: false },
     { component: 'placements', open: false },
-    ...(featureFlags.absenceApplications
-      ? [{ component: 'absenceApplications' as const, open: false }]
-      : []),
+    { component: 'absenceApplications', open: false },
     { component: 'serviceApplications', open: false },
     { component: 'backup-care', open: false },
     { component: 'daily-service-times', open: false },
@@ -222,9 +291,7 @@ const layouts: Layouts<typeof components> = {
   ['UNIT_SUPERVISOR']: [
     { component: 'guardiansAndParents', open: false },
     { component: 'placements', open: false },
-    ...(featureFlags.absenceApplications
-      ? [{ component: 'absenceApplications' as const, open: false }]
-      : []),
+    { component: 'absenceApplications', open: false },
     { component: 'serviceApplications', open: false },
     { component: 'backup-care', open: false },
     { component: 'daily-service-times', open: false },
@@ -305,7 +372,7 @@ const ChildInformation = React.memo(function ChildInformation({
   const { i18n } = useTranslation()
   const navigate = useNavigate()
   const { roles } = useContext(UserContext)
-  const { person, parentships } = useContext<ChildState>(ChildContext)
+  const { person } = useContext<ChildState>(ChildContext)
 
   const { setTitle, formatTitleName } = useContext<TitleState>(TitleContext)
 
@@ -321,6 +388,7 @@ const ChildInformation = React.memo(function ChildInformation({
 
   const layout = useMemo(() => getLayout(layouts, roles), [roles])
 
+  const parentships = useQueryResult(parentshipsQuery({ childId: id }))
   const currentHeadOfChildId = useMemo(
     () => parentships.map(getCurrentHeadOfChildId).getOrElse(undefined),
     [parentships]

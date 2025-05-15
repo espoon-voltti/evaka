@@ -15,9 +15,13 @@ import {
   getAttendanceReservationReportByChild,
   getChildAgeLanguageReport,
   getChildAttendanceReport,
+  getChildDocumentDecisionsReport,
   getChildDocumentsReport,
   getChildDocumentsReportTemplateOptions,
   getChildrenInDifferentAddressReport,
+  getCitizenDocumentResponseReport,
+  getCitizenDocumentResponseReportGroupOptions,
+  getCitizenDocumentResponseTemplateOptions,
   getCustomerFeesReport,
   getDecisionsReport,
   getDuplicatePeopleReport,
@@ -87,6 +91,18 @@ export const childDocumentsReportQuery = q.query(getChildDocumentsReport)
 
 export const childDocumentsReportTemplateOptionsQuery = q.query(
   getChildDocumentsReportTemplateOptions
+)
+
+export const getCitizenDocumentResponseTemplateOptionsQuery = q.query(
+  getCitizenDocumentResponseTemplateOptions
+)
+
+export const getCitizenDocumentResponseReportGroupOptionsQuery = q.query(
+  getCitizenDocumentResponseReportGroupOptions
+)
+
+export const getCitizenDocumentResponseReportQuery = q.query(
+  getCitizenDocumentResponseReport
 )
 
 export const exceededServiceNeedReportUnitsQuery = q.query(
@@ -185,6 +201,10 @@ export const missingServiceNeedReportQuery = q.query(
 export const manualDuplicationReportQuery = q.query(getManualDuplicationReport)
 
 export const familyDaycareMealReportQuery = q.query(getFamilyDaycareMealReport)
+
+export const childDocumentDecisionsReportQuery = q.query(
+  getChildDocumentDecisionsReport
+)
 
 export const decisionReportQuery = q.query(getDecisionsReport)
 

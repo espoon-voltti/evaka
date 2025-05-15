@@ -5,14 +5,14 @@
 import { Locale, Month, Day } from 'date-fns'
 import { fi, sv, enGB } from 'date-fns/locale'
 import React, { useMemo, useState } from 'react'
-import { DayPicker, Modifiers } from 'react-day-picker'
+import { DayPicker, OnSelectHandler } from 'react-day-picker'
 
 import LocalDate from 'lib-common/local-date'
 import 'react-day-picker/style.css'
 import { capitalizeFirstLetter } from 'lib-common/string'
 
 interface Props {
-  handleDayClick: (day: Date, modifiers?: Modifiers) => void
+  onSelect: OnSelectHandler<Date | undefined>
   inputValue: string
   locale: 'fi' | 'sv' | 'en'
   minDate?: LocalDate
@@ -21,7 +21,7 @@ interface Props {
 }
 
 export default React.memo(function DatePickerDay({
-  handleDayClick,
+  onSelect,
   inputValue,
   locale,
   minDate,
@@ -48,7 +48,7 @@ export default React.memo(function DatePickerDay({
       startMonth={startMonth}
       endMonth={endMonth}
       autoFocus
-      onDayClick={handleDayClick}
+      onSelect={onSelect}
       locale={localeData}
       selected={date?.toSystemTzDate()}
       month={month}

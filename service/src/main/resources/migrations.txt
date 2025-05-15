@@ -525,4 +525,5 @@ V526__fix_sfi_message_event_type_enum.sql
 V527__document_template_archive_constraints.sql
 V528__invoice_correction_modified_metadata.sql
 V529__citizen_system_notification_i18n.sql
-V530__absence_application.sql
+V530__child_document_decision_number.sql
+V531__absence_application.sql

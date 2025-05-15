@@ -166,10 +166,18 @@ const ChildDocumentView = React.memo(function ChildDocumentView({
                   : ''}
               </H2>
             </FixedSpaceColumn>
-            <FixedSpaceColumn spacing="xs">
+            <FixedSpaceColumn spacing="xs" alignItems="flex-end">
+              {document.decision && (
+                <>
+                  <div>
+                    {i18n.children.childDocuments.decisionNumber}{' '}
+                    {document.decision.decisionNumber}
+                  </div>
+                  <Gap size="xs" />
+                </>
+              )}
               <ChildDocumentStateChip
-                status={document.status}
-                decisionStatus={document.decision?.status ?? null}
+                status={document.decision?.status ?? document.status}
               />
               {document.template.confidentiality !== null && (
                 <Label>{i18n.children.childDocuments.confidential}</Label>

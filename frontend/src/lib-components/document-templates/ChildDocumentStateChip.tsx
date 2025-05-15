@@ -14,14 +14,10 @@ import { StaticChip } from 'lib-components/atoms/Chip'
 import { useTranslations } from '../i18n'
 
 interface StateChipProps {
-  status: DocumentStatus
-  decisionStatus: ChildDocumentDecisionStatus | null
+  status: DocumentStatus | ChildDocumentDecisionStatus
 }
 
-export function ChildDocumentStateChip({
-  status,
-  decisionStatus
-}: StateChipProps) {
+export function ChildDocumentStateChip({ status }: StateChipProps) {
   const i18n = useTranslations()
   const colors = useTheme().colors
 
@@ -41,11 +37,11 @@ export function ChildDocumentStateChip({
 
   return (
     <StaticChip
-      color={statusColors[decisionStatus ?? status]}
+      color={statusColors[status]}
       fitContent
       data-qa="document-state-chip"
     >
-      {i18n.documentTemplates.documentStates[decisionStatus ?? status]}
+      {i18n.documentTemplates.documentStates[status]}
     </StaticChip>
   )
 }

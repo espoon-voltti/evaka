@@ -2907,7 +2907,8 @@ const sv: Translations = {
       send: 'Lähetä (sv)',
       success: 'Lomake lähetetty (sv)',
       sentInfo:
-        'Jos haluat muuttaa annettuja vastauksia, pyydä henkilökunnalta uusi lomake. (sv)'
+        'Jos haluat muuttaa annettuja vastauksia, pyydä henkilökunnalta uusi lomake. (sv)',
+      decisionNumber: 'Beslutsnummer'
     }
   },
   accessibilityStatement: (

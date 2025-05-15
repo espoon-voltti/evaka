@@ -19,6 +19,9 @@ import { AssistanceNeedDecisionStatus } from './assistanceneed'
 import { DaycareAssistanceLevel } from './assistance'
 import { DaycareId } from './shared'
 import { DecisionType } from './decision'
+import { DocumentContent } from './document'
+import { DocumentStatus } from './document'
+import { DocumentTemplateContent } from './document'
 import { DocumentTemplateId } from './shared'
 import { DocumentType } from './document'
 import { GroupId } from './shared'
@@ -35,6 +38,7 @@ import { ServiceNeedOption } from './application'
 import { TitaniaErrorsId } from './shared'
 import { UUID } from '../../types'
 import { VoucherValueDecisionId } from './shared'
+import { deserializeJsonDocumentContent } from './document'
 
 /**
 * Generated from fi.espoo.evaka.reports.TampereRegionalSurvey.AgeStatisticsResult
@@ -281,6 +285,28 @@ export interface ChildrenInDifferentAddressReportRow {
   parentId: PersonId
   unitId: DaycareId
   unitName: string
+}
+
+/**
+* Generated from fi.espoo.evaka.reports.CitizenDocumentResponseReportRow
+*/
+export interface CitizenDocumentResponseReportRow {
+  answeredAt: HelsinkiDateTime | null
+  childId: PersonId
+  documentContent: DocumentContent | null
+  documentStatus: DocumentStatus | null
+  firstName: string
+  isBackup: boolean
+  lastName: string
+}
+
+/**
+* Generated from fi.espoo.evaka.reports.CitizenDocumentResponseReportTemplate
+*/
+export interface CitizenDocumentResponseReportTemplate {
+  content: DocumentTemplateContent
+  id: DocumentTemplateId
+  name: string
 }
 
 /**
@@ -895,6 +921,7 @@ export type Report =
   | 'ASSISTANCE_NEEDS_AND_ACTIONS_BY_CHILD'
   | 'ATTENDANCE_RESERVATION'
   | 'CHILD_AGE_LANGUAGE'
+  | 'CHILD_DOCUMENT_DECISIONS'
   | 'CHILD_DOCUMENTS'
   | 'CHILDREN_IN_DIFFERENT_ADDRESS'
   | 'CUSTOMER_FEES'
@@ -931,6 +958,7 @@ export type Report =
   | 'FUTURE_PRESCHOOLERS'
   | 'MEALS'
   | 'TAMPERE_REGIONAL_SURVEY'
+  | 'CITIZEN_DOCUMENT_RESPONSE'
 
 /**
 * Generated from fi.espoo.evaka.reports.ReservationType
@@ -1249,6 +1277,15 @@ export function deserializeJsonChildAttendanceReportRow(json: JsonOf<ChildAttend
     attendances: json.attendances.map(e => TimeInterval.parseJson(e)),
     date: LocalDate.parseIso(json.date),
     reservations: json.reservations.map(e => TimeRange.parseJson(e))
+  }
+}
+
+
+export function deserializeJsonCitizenDocumentResponseReportRow(json: JsonOf<CitizenDocumentResponseReportRow>): CitizenDocumentResponseReportRow {
+  return {
+    ...json,
+    answeredAt: (json.answeredAt != null) ? HelsinkiDateTime.parseIso(json.answeredAt) : null,
+    documentContent: (json.documentContent != null) ? deserializeJsonDocumentContent(json.documentContent) : null
   }
 }
 

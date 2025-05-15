@@ -9,7 +9,7 @@ import styled from 'styled-components'
 
 import { string } from 'lib-common/form/fields'
 import { object, validated } from 'lib-common/form/form'
-import { useBoolean, useForm, useFormFields } from 'lib-common/form/hooks'
+import { useForm, useFormFields } from 'lib-common/form/hooks'
 import { nonBlank } from 'lib-common/form/validators'
 import {
   AbsenceApplicationId,
@@ -19,7 +19,6 @@ import { useQueryResult } from 'lib-common/query'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import { InputFieldF } from 'lib-components/atoms/form/InputField'
-import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import {
   FixedSpaceColumn,
@@ -27,7 +26,7 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
-import { H2, H4, Label } from 'lib-components/typography'
+import { H4, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 
 import { useTranslation } from '../../state/i18n'
@@ -44,26 +43,6 @@ interface Props {
 }
 
 export const AbsenceApplicationsSection = (props: Props) => {
-  const { i18n } = useTranslation()
-  const [open, { toggle: toggleOpen }] = useBoolean(false)
-
-  return (
-    <CollapsibleContentArea
-      title={
-        <H2 noMargin>{i18n.childInformation.absenceApplications.title}</H2>
-      }
-      open={open}
-      toggleOpen={toggleOpen}
-      opaque
-      paddingVertical="L"
-      data-qa="absence-applications-collapsible"
-    >
-      <AbsenceApplicationList {...props} />
-    </CollapsibleContentArea>
-  )
-}
-
-const AbsenceApplicationList = (props: Props) => {
   const { i18n } = useTranslation()
   const absenceApplicationsResult = useQueryResult(
     getAbsenceApplicationsQuery({ childId: props.childId })

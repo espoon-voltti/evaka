@@ -131,6 +131,7 @@ sealed interface Action {
                     UNIT_SUPERVISOR,
                     SPECIAL_EDUCATION_TEACHER,
                     EARLY_CHILDHOOD_EDUCATION_SECRETARY,
+                    STAFF,
                 )
                 .inAnyUnit(),
         ),
@@ -266,6 +267,11 @@ sealed interface Action {
         READ_DECISION_UNITS(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inAnyUnit(),
+        ),
+        READ_CHILD_DOCUMENT_DECISIONS_REPORT(
+            HasGlobalRole(ADMIN, DIRECTOR),
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inAnyUnit(),
+            IsEmployee.andIsDecisionMakerForAnyChildDocumentDecision(),
         ),
         READ_DECISIONS_REPORT(HasGlobalRole(ADMIN, SERVICE_WORKER, DIRECTOR, REPORT_VIEWER)),
         READ_DUPLICATE_PEOPLE_REPORT(HasGlobalRole(ADMIN)),
@@ -1620,8 +1626,14 @@ sealed interface Action {
                 .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
                 .inUnitOfGroup(),
             HasGroupRole(STAFF).withUnitFeatures(PilotFeature.VASU_AND_PEDADOC).inGroup(),
-        ) // used in UI
-        ;
+        ), // used in UI
+        READ_CITIZEN_DOCUMENT_RESPONSE_REPORT(
+            HasGlobalRole(ADMIN),
+            HasUnitRole(UNIT_SUPERVISOR)
+                .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
+                .inUnitOfGroup(),
+            HasGroupRole(STAFF).withUnitFeatures(PilotFeature.VASU_AND_PEDADOC).inGroup(),
+        );
 
         override fun toString(): String = "${javaClass.name}.$name"
     }

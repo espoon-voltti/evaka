@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2023 City of Espoo
+// SPDX-FileCopyrightText: 2017-2025 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -18,6 +18,7 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.Predicate
+import fi.espoo.evaka.shared.db.PredicateSql
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
@@ -48,7 +49,34 @@ RETURNING id
         .exactlyOne<ChildDocumentId>()
 }
 
-fun Database.Read.getChildDocuments(childId: PersonId): List<ChildDocumentSummary> {
+fun Database.Read.getChildDocuments(childId: PersonId): List<ChildDocumentSummary> =
+    getChildDocuments(Predicate { where("$it.child_id = ${bind(childId)}") })
+
+fun Database.Read.getChildDocuments(
+    documentPredicate: Predicate,
+    documentDecisionPredicate: Predicate = Predicate.alwaysTrue(),
+    statuses: Set<ChildDocumentOrDecisionStatus>? = null,
+): List<ChildDocumentSummary> {
+    val statusPredicate =
+        if (!statuses.isNullOrEmpty()) {
+            val documentStatuses = statuses.mapNotNull { it.asDocumentStatus() }
+            val decisionStatuses = statuses.mapNotNull { it.asDecisionStatus() }
+            PredicateSql {
+                where(
+                    "cd.status = ANY(${bind(documentStatuses)}) OR cdd.status = ANY(${bind(decisionStatuses)})"
+                )
+            }
+        } else {
+            PredicateSql.alwaysTrue()
+        }
+
+    val combinedPredicate = PredicateSql {
+        documentPredicate
+            .forTable("cd")
+            .and(documentDecisionPredicate.forTable("cdd"))
+            .and(statusPredicate)
+    }
+
     return createQuery {
             sql(
                 """
@@ -60,18 +88,27 @@ SELECT
     cd.published_at, 
     dt.id as template_id, 
     dt.name as template_name,
+    ch.first_name AS child_first_name,
+    ch.last_name AS child_last_name,
     cd.answered_at,
     answered_by.id AS answered_by_id,
     answered_by.name AS answered_by_name, 
     answered_by.type AS answered_by_type,
+    decision_maker.id AS decision_maker_id,
+    decision_maker.name AS decision_maker_name, 
+    decision_maker.type AS decision_maker_type,
     cdd.id AS decision_id, 
     cdd.status AS decision_status,
-    CASE WHEN cdd.valid_from IS NOT NULL THEN daterange(cdd.valid_from, cdd.valid_to, '[]') END AS decision_validity
+    cdd.created_at AS decision_created_at,
+    CASE WHEN cdd.valid_from IS NOT NULL THEN daterange(cdd.valid_from, cdd.valid_to, '[]') END AS decision_validity,
+    cdd.decision_number AS decision_decision_number
 FROM child_document cd
 JOIN document_template dt on cd.template_id = dt.id
+JOIN person ch ON cd.child_id = ch.id
 LEFT JOIN evaka_user answered_by ON cd.answered_by = answered_by.id
+LEFT JOIN evaka_user decision_maker ON cd.decision_maker = decision_maker.employee_id
 LEFT JOIN child_document_decision cdd ON cdd.id = cd.decision_id
-WHERE cd.child_id = ${bind(childId)}
+WHERE ${predicate(combinedPredicate)}
 """
             )
         }
@@ -148,7 +185,8 @@ SELECT
     dt.placement_types as template_placement_types,
     dt.language as template_language,
     dt.legal_basis as template_legal_basis,
-    dt.confidential as template_confidential,
+    dt.confidentiality_basis as template_confidentiality_basis,
+    dt.confidentiality_duration_years as template_confidentiality_duration_years,
     dt.validity as template_validity,
     dt.published as template_published,
     dt.content as template_content,
@@ -158,7 +196,9 @@ SELECT
     cd.decision_maker,
     cdd.id AS decision_id,
     cdd.status AS decision_status,
-    CASE WHEN cdd.valid_from IS NOT NULL THEN daterange(cdd.valid_from, cdd.valid_to, '[]') END AS decision_validity
+    cdd.created_at AS decision_created_at,
+    CASE WHEN cdd.valid_from IS NOT NULL THEN daterange(cdd.valid_from, cdd.valid_to, '[]') END AS decision_validity,
+    cdd.decision_number AS decision_decision_number
 FROM child_document cd
 JOIN document_template dt on cd.template_id = dt.id
 JOIN person p on cd.child_id = p.id

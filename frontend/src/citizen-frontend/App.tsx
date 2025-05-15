@@ -81,6 +81,7 @@ function App() {
                       <GlobalDialog />
                       <LoginErrorModal />
                       <div id="modal-container" />
+                      <div id="datepicker-container" />
                     </MessageContextProvider>
                   </NotificationsContextProvider>
                 </OverlayContextProvider>

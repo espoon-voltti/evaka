@@ -128,6 +128,7 @@ export default function App() {
                           </EnvironmentLabel>
                         )}
                       </Router>
+                      <div id="datepicker-container" />
                     </RememberContextProvider>
                   </NotificationsContextProvider>
                 </ServiceWorkerContextProvider>

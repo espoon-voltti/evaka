@@ -55,9 +55,6 @@ export default class ChildInformationPage {
     await this.page
       .find('[data-qa="person-details-section"][data-isloading="false"]')
       .waitUntilVisible()
-    await this.page
-      .find('[data-qa="person-guardians-collapsible"][data-isloading="false"]')
-      .waitUntilVisible()
   }
 
   async assertName(lastName: string, firstName: string) {
@@ -1311,7 +1308,7 @@ const collapsibles = {
     section: BackupCaresSection
   },
   familyContacts: {
-    selector: '[data-qa="family-contacts-collapsible"][data-isloading="false"]',
+    selector: '[data-qa="family-contacts-collapsible"]',
     section: FamilyContactsSection
   },
   guardians: {

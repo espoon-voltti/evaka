@@ -287,6 +287,8 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                     type = devTemplatePed.type,
                     templateId = devTemplatePed.id,
                     templateName = devTemplatePed.name,
+                    childFirstName = testChild_1.firstName,
+                    childLastName = testChild_1.lastName,
                     modifiedAt = clock.now(),
                     publishedAt = null,
                     answeredAt = null,
@@ -352,6 +354,13 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                 clock,
                 ChildDocumentCreateRequest(childId = testChild_1.id, templateId = templateIdHojks),
             )
+
+        val document = getDocument(documentId)
+        assertEquals(
+            DocumentConfidentiality(durationYears = 100, basis = "JulkL 24.1 § 25 ja 30 kohdat"),
+            document.template.confidentiality,
+        )
+
         val metadata = getChildDocumentMetadata(documentId).data
         assertNotNull(metadata)
         metadata.also {
@@ -757,6 +766,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         getDocument(documentId).also { doc ->
             assertEquals(DocumentStatus.COMPLETED, doc.status)
             assertEquals(ChildDocumentDecisionStatus.ACCEPTED, doc.decision?.status)
+            assertEquals(10_000, doc.decision?.decisionNumber)
             assertNotNull(doc.publishedAt)
         }
 
@@ -791,6 +801,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         getDocument(documentId).also { doc ->
             assertEquals(DocumentStatus.COMPLETED, doc.status)
             assertEquals(ChildDocumentDecisionStatus.REJECTED, doc.decision?.status)
+            assertEquals(10_000, doc.decision?.decisionNumber)
             assertNotNull(doc.publishedAt)
         }
 

@@ -2,16 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useState } from 'react'
+import React from 'react'
 
-import { isLoading } from 'lib-common/api'
 import { ChildId } from 'lib-common/generated/api-types/shared'
-import { CollapsibleContentArea } from 'lib-components/layout/Container'
-import { H2 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
-
-import { ChildContext } from '../../state'
-import { useTranslation } from '../../state/i18n'
 
 import FosterParents from './FosterParents'
 import FridgeParents from './FridgeParents'
@@ -19,40 +13,17 @@ import Guardians from './Guardians'
 
 interface Props {
   childId: ChildId
-  startOpen: boolean
 }
 
-export default React.memo(function GuardiansAndParents({
-  childId,
-  startOpen
-}: Props) {
-  const { i18n } = useTranslation()
-  const { guardians, permittedActions } = useContext(ChildContext)
-
-  const [open, setOpen] = useState(startOpen)
-
+export default React.memo(function GuardiansAndParents({ childId }: Props) {
   return (
     <div>
-      <CollapsibleContentArea
-        title={<H2 noMargin>{i18n.personProfile.guardiansAndParents}</H2>}
-        open={open}
-        toggleOpen={() => setOpen(!open)}
-        opaque
-        paddingVertical="L"
-        data-qa="person-guardians-collapsible"
-        data-isloading={isLoading(guardians)}
-      >
-        <Gap size="m" />
-        <Guardians />
-        <Gap size="XL" />
-        <FridgeParents />
-        {permittedActions.has('READ_FOSTER_PARENTS') && (
-          <>
-            <Gap size="XL" />
-            <FosterParents childId={childId} />
-          </>
-        )}
-      </CollapsibleContentArea>
+      <Gap size="m" />
+      <Guardians />
+      <Gap size="XL" />
+      <FridgeParents />
+      <Gap size="XL" />
+      <FosterParents childId={childId} />
     </div>
   )
 })

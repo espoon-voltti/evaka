@@ -8,52 +8,38 @@ import { Link } from 'react-router'
 import styled from 'styled-components'
 
 import { PersonContext } from 'employee-frontend/components/person-profile/state'
-import { wrapResult } from 'lib-common/api'
 import { PersonId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { formatCents } from 'lib-common/money'
-import { useApiState } from 'lib-common/utils/useRestApi'
+import { cancelMutation, useQueryResult } from 'lib-common/query'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
-import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
-import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
-import { H2, Label } from 'lib-components/typography'
+import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
+import { Label } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import { faPlus } from 'lib-icons'
 
-import {
-  generateRetroactiveVoucherValueDecisions,
-  getHeadOfFamilyVoucherValueDecisions
-} from '../../generated/api-clients/invoicing'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
 import { renderResult } from '../async-rendering'
 
-const getHeadOfFamilyVoucherValueDecisionsResult = wrapResult(
-  getHeadOfFamilyVoucherValueDecisions
-)
-const generateRetroactiveVoucherValueDecisionsResult = wrapResult(
-  generateRetroactiveVoucherValueDecisions
-)
+import {
+  generateRetroactiveVoucherValueDecisionsMutation,
+  headOfFamilyVoucherValueDecisionsQuery
+} from './queries'
 
 interface Props {
   id: PersonId
-  open: boolean
 }
 
-export default React.memo(function PersonVoucherValueDecisions({
-  id,
-  open: startOpen
-}: Props) {
+export default React.memo(function PersonVoucherValueDecisions({ id }: Props) {
   const { i18n } = useTranslation()
   const { uiMode, toggleUiMode, clearUiMode } = useContext(UIContext)
   const { permittedActions } = useContext(PersonContext)
-  const [open, setOpen] = useState(startOpen)
-  const [voucherValueDecisions, reloadDecisions] = useApiState(
-    () => getHeadOfFamilyVoucherValueDecisionsResult({ headOfFamilyId: id }),
-    [id]
+  const voucherValueDecisions = useQueryResult(
+    headOfFamilyVoucherValueDecisionsQuery({ headOfFamilyId: id })
   )
 
   const openRetroactiveDecisionsModal = useCallback(
@@ -62,20 +48,9 @@ export default React.memo(function PersonVoucherValueDecisions({
   )
 
   return (
-    <CollapsibleContentArea
-      title={<H2>{i18n.personProfile.voucherValueDecisions.title}</H2>}
-      open={open}
-      toggleOpen={() => setOpen(!open)}
-      opaque
-      paddingVertical="L"
-      data-qa="person-voucher-value-decisions-collapsible"
-    >
+    <>
       {uiMode === 'create-retroactive-value-decisions' ? (
-        <Modal
-          headOfFamily={id}
-          clear={clearUiMode}
-          loadDecisions={reloadDecisions}
-        />
+        <Modal headOfFamily={id} clear={clearUiMode} />
       ) : null}
       {permittedActions.has('GENERATE_RETROACTIVE_VOUCHER_VALUE_DECISIONS') && (
         <AddButtonRow
@@ -141,7 +116,7 @@ export default React.memo(function PersonVoucherValueDecisions({
           </Tbody>
         </Table>
       ))}
-    </CollapsibleContentArea>
+    </>
   )
 })
 
@@ -151,40 +126,31 @@ const StyledLabel = styled(Label)`
 
 const Modal = React.memo(function Modal({
   headOfFamily,
-  clear,
-  loadDecisions
+  clear
 }: {
   headOfFamily: PersonId
   clear: () => void
-  loadDecisions: () => void
 }) {
   const { i18n, lang } = useTranslation()
   const [date, setDate] = useState<LocalDate | null>(null)
 
-  const resolve = useCallback(() => {
-    if (date) {
-      return generateRetroactiveVoucherValueDecisionsResult({
-        id: headOfFamily,
-        body: { from: date }
-      })
-    }
-    return
-  }, [headOfFamily, date])
-
-  const onSuccess = useCallback(() => {
-    clear()
-    loadDecisions()
-  }, [clear, loadDecisions])
-
   return (
-    <AsyncFormModal
+    <MutateFormModal
       icon={faPlus}
       type="info"
       title={i18n.personProfile.voucherValueDecisions.createRetroactive}
-      resolveAction={resolve}
+      resolveMutation={generateRetroactiveVoucherValueDecisionsMutation}
+      resolveAction={() =>
+        date !== null
+          ? {
+              id: headOfFamily,
+              body: { from: date }
+            }
+          : cancelMutation
+      }
       resolveLabel={i18n.common.create}
       resolveDisabled={!date}
-      onSuccess={onSuccess}
+      onSuccess={clear}
       rejectAction={clear}
       rejectLabel={i18n.common.cancel}
     >
@@ -196,9 +162,8 @@ const Modal = React.memo(function Modal({
           date={date}
           onChange={setDate}
           hideErrorsBeforeTouched
-          openAbove
         />
       </FixedSpaceRow>
-    </AsyncFormModal>
+    </MutateFormModal>
   )
 })

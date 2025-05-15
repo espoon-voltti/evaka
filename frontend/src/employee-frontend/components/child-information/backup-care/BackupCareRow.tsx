@@ -6,7 +6,10 @@ import React, { useContext } from 'react'
 import styled from 'styled-components'
 
 import { Action } from 'lib-common/generated/action'
-import { ChildBackupCare } from 'lib-common/generated/api-types/backupcare'
+import {
+  ChildBackupCare,
+  ChildBackupCareResponse
+} from 'lib-common/generated/api-types/backupcare'
 import { ChildId } from 'lib-common/generated/api-types/shared'
 import { useMutationResult } from 'lib-common/query'
 import Title from 'lib-components/atoms/Title'
@@ -21,6 +24,7 @@ import { deleteBackupCareMutation } from '../queries'
 
 export interface Props {
   childId: ChildId
+  backupCares: ChildBackupCareResponse[]
   backupCare: ChildBackupCare
   permittedActions: Action.BackupCare[]
 }
@@ -50,6 +54,7 @@ const Period = styled(Title)`
 
 export default function BackupCareRow({
   childId,
+  backupCares,
   backupCare,
   permittedActions
 }: Props) {
@@ -79,7 +84,11 @@ export default function BackupCareRow({
         />
       )}
       {uiMode === `edit-backup-care-${backupCare.id}` ? (
-        <BackupCareForm childId={childId} backupCare={backupCare} />
+        <BackupCareForm
+          childId={childId}
+          backupCares={backupCares}
+          backupCare={backupCare}
+        />
       ) : (
         <Row data-qa="backup-care-row">
           <UnitName size={4} noMargin data-qa="unit">

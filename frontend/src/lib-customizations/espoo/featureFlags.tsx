@@ -89,7 +89,7 @@ const features: Features = {
     archiveIntegrationEnabled: true,
     aromiIntegration: false,
     citizenChildDocumentTypes: true,
-    decisionChildDocumentTypes: false
+    decisionChildDocumentTypes: true
   },
   prod: {
     environmentLabel: null,

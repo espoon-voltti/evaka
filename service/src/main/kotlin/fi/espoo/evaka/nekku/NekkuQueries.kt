@@ -5,30 +5,40 @@
 package fi.espoo.evaka.nekku
 
 import fi.espoo.evaka.absence.AbsenceCategory
+import fi.espoo.evaka.daycare.getDaycareGroup
 import fi.espoo.evaka.decision.logger
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.async.AsyncJob
+import fi.espoo.evaka.shared.async.AsyncJobRunner
+import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.auth.getDaycareAclRows
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.TimeRange
 import java.time.LocalDate
 import org.jdbi.v3.json.Json
 
 /** Throws an IllegalStateException if Nekku returns an empty customer list. */
-fun fetchAndUpdateNekkuCustomers(client: NekkuClient, db: Database.Connection) {
+fun fetchAndUpdateNekkuCustomers(
+    client: NekkuClient,
+    db: Database.Connection,
+    asyncJobRunner: AsyncJobRunner<AsyncJob>,
+    now: HelsinkiDateTime,
+) {
     val customersFromNekku =
         client.getCustomers().map { it.toEvaka() }.filter { it.group.contains("Varhaiskasvatus") }
 
     if (customersFromNekku.isEmpty())
         error("Refusing to sync empty Nekku customer list into database")
     db.transaction { tx ->
-        val nulledCustomersCount =
-            tx.resetNekkuCustomerNumbersNotContainedWithin(customersFromNekku)
-        if (nulledCustomersCount != 0)
+        val nulledGroups = tx.resetNekkuCustomerNumbersNotContainedWithin(customersFromNekku)
+        if (nulledGroups.size != 0)
             logger.warn {
-                "Nekku customer list update caused $nulledCustomersCount customer numbers to be set to null"
+                "Nekku customer list update caused ${nulledGroups.size} customer numbers to be set to null"
             }
         val deletedCustomerCount = tx.setCustomerNumbers(customersFromNekku)
 
@@ -37,19 +47,49 @@ fun fetchAndUpdateNekkuCustomers(client: NekkuClient, db: Database.Connection) {
         logger.info {
             "Deleted: $deletedCustomerCount Nekku customer numbers, inserted ${customersFromNekku.size}"
         }
+
+        if (!nulledGroups.isEmpty()) {
+            val groupData = nulledGroups.mapNotNull { tx.getDaycareGroup(it) }
+            val groupsByUnit = groupData.groupBy { it.daycareId }
+            val units = groupData.map { it.daycareId }.distinct()
+            asyncJobRunner.plan(
+                tx,
+                units.flatMap {
+                    val supervisors =
+                        tx.getDaycareAclRows(it, false, UserRole.UNIT_SUPERVISOR).map {
+                            it.employee
+                        }
+                    supervisors.map { supervisor ->
+                        AsyncJob.SendNekkuCustomerNumberNullificationWarningEmail(
+                            it,
+                            supervisor.id,
+                            groupsByUnit[it]?.map { it.name } ?: listOf(),
+                        )
+                    }
+                },
+                runAt = now,
+            )
+        }
     }
 }
 
 fun Database.Transaction.resetNekkuCustomerNumbersNotContainedWithin(
     nekkuCustomerNumbers: List<NekkuCustomer>
-): Int {
+): List<GroupId> {
     val newNekkuCustomerNumbers = nekkuCustomerNumbers.map { it.number }
-    val affectedRows = execute {
+    val affectedGroups =
+        createQuery {
+                sql(
+                    "SELECT id FROM daycare_group WHERE nekku_customer_number != ALL (${bind(newNekkuCustomerNumbers)})"
+                )
+            }
+            .toList<GroupId>()
+    execute {
         sql(
             "UPDATE daycare_group SET nekku_customer_number = null WHERE nekku_customer_number != ALL (${bind(newNekkuCustomerNumbers)})"
         )
     }
-    return affectedRows
+    return affectedGroups
 }
 
 fun Database.Transaction.setCustomerNumbers(customerNumbers: List<NekkuCustomer>): Int {

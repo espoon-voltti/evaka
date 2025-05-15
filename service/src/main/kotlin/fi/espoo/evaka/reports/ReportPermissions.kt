@@ -19,6 +19,7 @@ enum class Report {
     ASSISTANCE_NEEDS_AND_ACTIONS_BY_CHILD,
     ATTENDANCE_RESERVATION,
     CHILD_AGE_LANGUAGE,
+    CHILD_DOCUMENT_DECISIONS,
     CHILD_DOCUMENTS,
     CHILDREN_IN_DIFFERENT_ADDRESS,
     CUSTOMER_FEES,
@@ -55,6 +56,7 @@ enum class Report {
     FUTURE_PRESCHOOLERS,
     MEALS,
     TAMPERE_REGIONAL_SURVEY,
+    CITIZEN_DOCUMENT_RESPONSE,
 }
 
 @RestController
@@ -71,6 +73,8 @@ class ReportPermissions(private val accessControl: AccessControl) {
                     accessControl.getPermittedActions<Action.Global>(tx, user, clock)
                 val permittedActionsForSomeUnit =
                     accessControl.getPermittedActionsForSomeTarget<Action.Unit>(tx, user, clock)
+                val permittedActionsForSomeGroup =
+                    accessControl.getPermittedActionsForSomeTarget<Action.Group>(tx, user, clock)
                 setOfNotNull(
                     Report.APPLICATIONS.takeIf {
                         permittedActionsForSomeUnit.contains(Action.Unit.READ_APPLICATIONS_REPORT)
@@ -107,6 +111,11 @@ class ReportPermissions(private val accessControl: AccessControl) {
                     Report.CHILD_AGE_LANGUAGE.takeIf {
                         permittedActionsForSomeUnit.contains(
                             Action.Unit.READ_CHILD_AGE_AND_LANGUAGE_REPORT
+                        )
+                    },
+                    Report.CHILD_DOCUMENT_DECISIONS.takeIf {
+                        permittedGlobalActions.contains(
+                            Action.Global.READ_CHILD_DOCUMENT_DECISIONS_REPORT
                         )
                     },
                     Report.CHILD_DOCUMENTS.takeIf {
@@ -251,6 +260,11 @@ class ReportPermissions(private val accessControl: AccessControl) {
                     Report.TAMPERE_REGIONAL_SURVEY.takeIf {
                         permittedGlobalActions.contains(
                             Action.Global.READ_TAMPERE_REGIONAL_SURVEY_REPORT
+                        )
+                    },
+                    Report.CITIZEN_DOCUMENT_RESPONSE.takeIf {
+                        permittedActionsForSomeGroup.contains(
+                            Action.Group.READ_CITIZEN_DOCUMENT_RESPONSE_REPORT
                         )
                     },
                 )

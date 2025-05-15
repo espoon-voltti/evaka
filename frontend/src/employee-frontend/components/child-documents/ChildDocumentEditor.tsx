@@ -140,9 +140,17 @@ const DocumentBasics = React.memo(function DocumentBasics({
         justifyContent="start"
         alignItems="flex-end"
       >
+        {document.decision && (
+          <>
+            <div>
+              {i18n.childInformation.childDocuments.decisions.decisionNumber}{' '}
+              {document.decision.decisionNumber}
+            </div>
+            <Gap size="xs" />
+          </>
+        )}
         <ChildDocumentStateChip
-          status={document.status}
-          decisionStatus={document.decision?.status ?? null}
+          status={document.decision?.status ?? document.status}
         />
         {document.template.confidentiality !== null && (
           <strong>{i18n.documentTemplates.templateEditor.confidential}</strong>
@@ -460,7 +468,7 @@ const ChildDocumentReadViewInner = React.memo(
       i18n.validationErrors
     )
 
-    const goBack = () =>
+    const goToChildProfile = () =>
       navigate(`/child-information/${childIdFromUrl ?? document.child.id}`)
 
     const nextStatus = useMemo(
@@ -597,8 +605,8 @@ const ChildDocumentReadViewInner = React.memo(
               ) : (
                 <FixedSpaceRow alignItems="flex-end">
                   <Button
-                    text={i18n.common.goBack}
-                    onClick={goBack}
+                    text={i18n.common.leavePage}
+                    onClick={goToChildProfile}
                     data-qa="return-button"
                   />
                   {permittedActions.includes('DELETE') &&
@@ -613,7 +621,7 @@ const ChildDocumentReadViewInner = React.memo(
                           documentId: document.id,
                           childId: document.child.id
                         })}
-                        onSuccess={goBack}
+                        onSuccess={goToChildProfile}
                         confirmationTitle={
                           i18n.childInformation.childDocuments.editor
                             .deleteDraftConfirmTitle
@@ -788,6 +796,7 @@ const ChildDocumentReadViewInner = React.memo(
                         filterItems={filterEmployees}
                         getItemDataQa={(e) => e.id}
                         placeholder={i18n.common.select}
+                        openAbove
                         data-qa="decision-maker-combobox"
                       />
                     </FixedSpaceColumn>

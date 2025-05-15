@@ -16,7 +16,6 @@ export interface Props {
   info?: InputInfo
   hideErrorsBeforeTouched?: boolean
   disabled?: boolean
-  onFocus: (e: React.FocusEvent<HTMLInputElement>) => void
   onBlur: ((e: React.FocusEvent<HTMLInputElement>) => void) | undefined
   'data-qa'?: string
   id?: string
@@ -54,7 +53,6 @@ type InternalProps = Omit<Props, 'useBrowserPicker'>
 const DateInputText = React.memo(function DateInputText({
   value,
   onChange,
-  onFocus,
   onBlur,
   info,
   hideErrorsBeforeTouched,
@@ -77,7 +75,6 @@ const DateInputText = React.memo(function DateInputText({
       placeholder={i18n.datePicker.placeholder}
       value={value}
       onChange={handleChange}
-      onFocus={onFocus}
       onBlur={onBlur}
       aria-label={i18n.datePicker.description}
       info={info}
@@ -94,7 +91,6 @@ const DateInputText = React.memo(function DateInputText({
 const DateInputNative = React.memo(function DateInputNative({
   value,
   onChange,
-  onFocus,
   onBlur,
   info,
   hideErrorsBeforeTouched,
@@ -128,7 +124,6 @@ const DateInputNative = React.memo(function DateInputNative({
       placeholder={i18n.datePicker.placeholder}
       value={valueAsIsoDate}
       onChangeTarget={handleChange}
-      onFocus={onFocus}
       onBlur={onBlur}
       aria-label={i18n.datePicker.description}
       info={info}

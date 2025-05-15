@@ -3,17 +3,15 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import orderBy from 'lodash/orderBy'
-import React, { useContext, useState } from 'react'
+import React, { useContext } from 'react'
 import { Link } from 'react-router'
 
 import { PersonApplicationSummary } from 'lib-common/generated/api-types/application'
 import { ChildId } from 'lib-common/generated/api-types/shared'
-import { useQueryResult } from 'lib-common/query'
+import { constantQuery, useQueryResult } from 'lib-common/query'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
-import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
-import { H2 } from 'lib-components/typography'
 import { faFileAlt } from 'lib-icons'
 
 import CreateApplicationModal from '../../components/child-information/CreateApplicationModal'
@@ -25,34 +23,28 @@ import { renderResult } from '../async-rendering'
 import { inferApplicationType } from '../person-profile/PersonApplications'
 import { DateTd, NameTd, StatusTd } from '../person-profile/common'
 
-import { getChildApplicationSummariesQuery } from './queries'
+import { getChildApplicationSummariesQuery, guardiansQuery } from './queries'
 
 interface Props {
   childId: ChildId
-  startOpen: boolean
 }
 
-export default React.memo(function ChildApplications({
-  childId,
-  startOpen
-}: Props) {
+export default React.memo(function ChildApplications({ childId }: Props) {
   const { i18n } = useTranslation()
-  const { person, guardians } = useContext(ChildContext)
   const { uiMode, toggleUiMode } = useContext(UIContext)
+  const { permittedActions, person } = useContext(ChildContext)
+
+  const guardians = useQueryResult(
+    permittedActions.has('READ_GUARDIANS')
+      ? guardiansQuery({ personId: childId })
+      : constantQuery(null)
+  )
   const applications = useQueryResult(
     getChildApplicationSummariesQuery({ childId })
   )
-  const [open, setOpen] = useState(startOpen)
 
   return (
-    <CollapsibleContentArea
-      title={<H2 noMargin>{i18n.childInformation.application.title}</H2>}
-      open={open}
-      toggleOpen={() => setOpen(!open)}
-      opaque
-      paddingVertical="L"
-      data-qa="applications-collapsible"
-    >
+    <>
       <RequireRole oneOf={['SERVICE_WORKER', 'ADMIN']}>
         <AddButtonRow
           text={i18n.childInformation.application.create.createButton}
@@ -129,12 +121,12 @@ export default React.memo(function ChildApplications({
 
       {uiMode === 'create-new-application' &&
         person.isSuccess &&
-        !guardians.isLoading && (
+        guardians.isSuccess && (
           <CreateApplicationModal
             child={person.value}
-            guardians={guardians.getOrElse([])}
+            guardians={guardians.map((g) => g?.guardians ?? []).getOrElse([])}
           />
         )}
-    </CollapsibleContentArea>
+    </>
   )
 })

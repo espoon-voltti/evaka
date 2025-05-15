@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useState } from 'react'
+import React, { useState } from 'react'
 import styled from 'styled-components'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
@@ -22,7 +22,6 @@ import { Button } from 'lib-components/atoms/buttons/Button'
 import Checkbox, { CheckboxF } from 'lib-components/atoms/form/Checkbox'
 import { InputFieldF } from 'lib-components/atoms/form/InputField'
 import Radio from 'lib-components/atoms/form/Radio'
-import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import {
   FixedSpaceColumn,
@@ -36,7 +35,6 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/employee'
 import { faFile } from 'lib-icons'
 
-import { ChildContext } from '../../state'
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 
@@ -406,7 +404,7 @@ const UndecidedServiceApplication = React.memo(
   }
 )
 
-const ServiceApplications = React.memo(function ServiceApplications({
+export default React.memo(function ServiceApplications({
   childId
 }: {
   childId: ChildId
@@ -494,41 +492,4 @@ const ServiceApplications = React.memo(function ServiceApplications({
       </div>
     )
   })
-})
-
-export default React.memo(function ServiceApplicationsSection({
-  childId,
-  startOpen
-}: {
-  childId: ChildId
-  startOpen: boolean
-}) {
-  const { i18n } = useTranslation()
-  const { permittedActions } = useContext(ChildContext)
-
-  const [open, setOpen] = useState(startOpen)
-
-  if (
-    !featureFlags.serviceApplications ||
-    !permittedActions.has('READ_SERVICE_APPLICATIONS')
-  ) {
-    return null
-  }
-
-  return (
-    <div>
-      <CollapsibleContentArea
-        title={
-          <H2 noMargin>{i18n.childInformation.serviceApplications.title}</H2>
-        }
-        open={open}
-        toggleOpen={() => setOpen(!open)}
-        opaque
-        paddingVertical="L"
-        data-qa="service-applications-collapsible"
-      >
-        <ServiceApplications childId={childId} />
-      </CollapsibleContentArea>
-    </div>
-  )
 })

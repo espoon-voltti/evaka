@@ -141,10 +141,42 @@ enum class ChildDocumentDecisionStatus : DatabaseEnum {
     override val sqlType: String = "child_document_decision_status"
 }
 
+// union of DocumentStatus and ChildDocumentDecisionStatus
+enum class ChildDocumentOrDecisionStatus {
+    DRAFT,
+    PREPARED,
+    CITIZEN_DRAFT,
+    DECISION_PROPOSAL,
+    COMPLETED,
+    ACCEPTED,
+    REJECTED,
+    ANNULLED;
+
+    fun asDocumentStatus(): DocumentStatus? =
+        when (this) {
+            DRAFT -> DocumentStatus.DRAFT
+            PREPARED -> DocumentStatus.PREPARED
+            CITIZEN_DRAFT -> DocumentStatus.CITIZEN_DRAFT
+            DECISION_PROPOSAL -> DocumentStatus.DECISION_PROPOSAL
+            COMPLETED -> DocumentStatus.COMPLETED
+            else -> null
+        }
+
+    fun asDecisionStatus(): ChildDocumentDecisionStatus? =
+        when (this) {
+            ACCEPTED -> ChildDocumentDecisionStatus.ACCEPTED
+            REJECTED -> ChildDocumentDecisionStatus.REJECTED
+            ANNULLED -> ChildDocumentDecisionStatus.ANNULLED
+            else -> null
+        }
+}
+
 data class ChildDocumentDecision(
     @PropagateNull val id: ChildDocumentDecisionId,
     val status: ChildDocumentDecisionStatus,
+    val createdAt: HelsinkiDateTime,
     val validity: DateRange?,
+    val decisionNumber: Int,
 )
 
 data class ChildDocumentSummary(
@@ -153,10 +185,13 @@ data class ChildDocumentSummary(
     val type: DocumentType,
     val templateId: DocumentTemplateId,
     val templateName: String,
+    val childFirstName: String,
+    val childLastName: String,
     val modifiedAt: HelsinkiDateTime,
     val publishedAt: HelsinkiDateTime?,
     val answeredAt: HelsinkiDateTime?,
     @Nested("answered_by") val answeredBy: EvakaUser?,
+    @Nested("decision_maker") val decisionMaker: EvakaUser? = null,
     @Nested("decision") val decision: ChildDocumentDecision? = null,
 )
 

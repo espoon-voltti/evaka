@@ -51,6 +51,28 @@ export default class EmployeeNav {
     }
   }
 
+  async assertTabNotificationsCount(
+    tab: 'reports' | 'messages',
+    count: number
+  ) {
+    let tabElem: Element
+    switch (tab) {
+      case 'reports':
+        tabElem = this.reportsTab
+        break
+      case 'messages':
+        tabElem = this.messagesTab
+        break
+    }
+    if (count > 0) {
+      await tabElem
+        .findByDataQa('notifications')
+        .assertTextEquals(count.toString())
+    } else {
+      await tabElem.findByDataQa('no-notifications').waitUntilAttached()
+    }
+  }
+
   async tabsVisible(params: {
     applications: boolean
     units: boolean

@@ -46,6 +46,7 @@ interface Props {
   deleteIncome: (incomeId: IncomeId) => Promise<Result<unknown>>
   onSuccessfulUpdate: () => void
   onFailedUpdate: (value: Failure<unknown>) => void
+  onCancelEdit: () => void
 }
 
 const IncomeList = React.memo(function IncomeList({
@@ -64,7 +65,8 @@ const IncomeList = React.memo(function IncomeList({
   updateIncome,
   deleteIncome,
   onSuccessfulUpdate,
-  onFailedUpdate
+  onFailedUpdate,
+  onCancelEdit
 }: Props) {
   const { i18n } = useTranslation()
 
@@ -167,7 +169,7 @@ const IncomeList = React.memo(function IncomeList({
                   baseIncome={item}
                   incomeTypeOptions={incomeTypeOptions}
                   coefficientMultipliers={coefficientMultipliers}
-                  cancel={onSuccessfulUpdate}
+                  cancel={onCancelEdit}
                   update={(income) => updateIncome(item.id, income)}
                   onSuccess={onSuccessfulUpdate}
                   onFailure={onFailedUpdate}

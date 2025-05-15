@@ -2663,7 +2663,9 @@ const en: Translations = {
       send: 'Lähetä (en)',
       success: 'Lomake lähetetty (en)',
       sentInfo:
-        'Jos haluat muuttaa annettuja vastauksia, pyydä henkilökunnalta uusi lomake. (en)'
+        'Jos haluat muuttaa annettuja vastauksia, pyydä henkilökunnalta uusi lomake. (en)',
+      // decision cannot be in English
+      decisionNumber: 'Päätösnumero'
     }
   },
   accessibilityStatement: (

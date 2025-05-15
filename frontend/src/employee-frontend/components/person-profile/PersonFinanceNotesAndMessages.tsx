@@ -35,10 +35,7 @@ import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import TextArea from 'lib-components/atoms/form/TextArea'
-import {
-  CollapsibleContentArea,
-  ContentArea
-} from 'lib-components/layout/Container'
+import { ContentArea } from 'lib-components/layout/Container'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
@@ -46,7 +43,7 @@ import {
 import MessageReplyEditor from 'lib-components/messages/MessageReplyEditor'
 import { ConfirmedMutation } from 'lib-components/molecules/ConfirmedMutation'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
-import { H2, Label, Light } from 'lib-components/typography'
+import { Label, Light } from 'lib-components/typography'
 import { useRecipients } from 'lib-components/utils/useReplyRecipients'
 import { Gap } from 'lib-components/white-space'
 import {
@@ -88,19 +85,16 @@ import { PersonContext } from './state'
 
 interface Props {
   id: PersonId
-  open: boolean
 }
 
 export default React.memo(function PersonFinanceNotesAndMessages({
-  id,
-  open: startOpen
+  id
 }: Props) {
   const { i18n } = useTranslation()
   const { person, permittedActions } = useContext(PersonContext)
   const { uiMode, toggleUiMode, clearUiMode, setErrorMessage } =
     useContext(UIContext)
   const { refreshMessages, financeAccount } = useContext(MessageContext)
-  const [open, setIsOpen] = useState(startOpen)
   const financeNotes = useQueryResult(financeNotesQuery({ personId: id }))
   const [text, setText] = useState<string>('')
   const financeMessages = useQueryResult(
@@ -260,138 +254,129 @@ export default React.memo(function PersonFinanceNotesAndMessages({
           />
         )}
 
-      <CollapsibleContentArea
-        title={<H2>{i18n.personProfile.financeNotesAndMessages.title}</H2>}
-        open={open}
-        toggleOpen={() => setIsOpen(!open)}
+      <BorderedContentArea
         opaque
-        paddingVertical="L"
-        data-qa="person-finance-notes-and-messages-collapsible"
+        paddingHorizontal="0"
+        paddingVertical="s"
+        data-qa="add-finance-note"
       >
+        <ExpandingInfo
+          info={
+            hasSsn
+              ? null
+              : i18n.personProfile.financeNotesAndMessages.noMessaging
+          }
+        >
+          <FlexRow>
+            <AddButton
+              text={i18n.personProfile.financeNotesAndMessages.addNote}
+              onClick={() => {
+                setText('')
+                toggleUiMode('add-finance-note')
+              }}
+              data-qa="add-finance-note-button"
+              disabled={
+                !permittedActions.has('CREATE_FINANCE_NOTE') ||
+                uiMode === 'add-finance-note' ||
+                uiMode.startsWith('edit-finance-note')
+              }
+            />
+            <Gap horizontal size="m" />
+            <AddButton
+              icon={faEnvelope}
+              text={i18n.personProfile.financeNotesAndMessages.sendMessage}
+              onClick={() => {
+                setText('')
+                setThread(undefined)
+                toggleUiMode('new-finance-message-editor')
+              }}
+              data-qa="send-finance-message-button"
+              disabled={financeAccount === undefined || !hasSsn}
+            />
+          </FlexRow>
+        </ExpandingInfo>
+      </BorderedContentArea>
+
+      {uiMode === 'add-finance-note' && (
         <BorderedContentArea
           opaque
           paddingHorizontal="0"
           paddingVertical="s"
           data-qa="add-finance-note"
         >
-          <ExpandingInfo
-            info={
-              hasSsn
-                ? null
-                : i18n.personProfile.financeNotesAndMessages.noMessaging
-            }
-          >
-            <FlexRow>
-              <AddButton
-                text={i18n.personProfile.financeNotesAndMessages.addNote}
-                onClick={() => {
-                  setText('')
-                  toggleUiMode('add-finance-note')
-                }}
-                data-qa="add-finance-note-button"
-                disabled={
-                  !permittedActions.has('CREATE_FINANCE_NOTE') ||
-                  uiMode === 'add-finance-note' ||
-                  uiMode.startsWith('edit-finance-note')
-                }
-              />
-              <Gap horizontal size="m" />
-              <AddButton
-                icon={faEnvelope}
-                text={i18n.personProfile.financeNotesAndMessages.sendMessage}
-                onClick={() => {
-                  setText('')
-                  setThread(undefined)
-                  toggleUiMode('new-finance-message-editor')
-                }}
-                data-qa="send-finance-message-button"
-                disabled={financeAccount === undefined || !hasSsn}
-              />
-            </FlexRow>
-          </ExpandingInfo>
-        </BorderedContentArea>
-
-        {uiMode === 'add-finance-note' && (
-          <BorderedContentArea
-            opaque
-            paddingHorizontal="0"
-            paddingVertical="s"
-            data-qa="add-finance-note"
-          >
-            <StyledTextArea
-              autoFocus
-              value={text}
-              rows={3}
-              onChange={setText}
-              data-qa="finance-note-text-area"
+          <StyledTextArea
+            autoFocus
+            value={text}
+            rows={3}
+            onChange={setText}
+            data-qa="finance-note-text-area"
+          />
+          <Gap size="xs" />
+          <FixedSpaceRow justifyContent="flex-start">
+            <Button
+              appearance="inline"
+              onClick={() => clearUiMode()}
+              text={i18n.common.cancel}
             />
-            <Gap size="xs" />
-            <FixedSpaceRow justifyContent="flex-start">
-              <Button
-                appearance="inline"
-                onClick={() => clearUiMode()}
-                text={i18n.common.cancel}
-              />
-              <Gap horizontal size="s" />
-              <MutateButton
-                data-qa="save-finance-note"
-                appearance="inline"
-                text={i18n.common.save}
-                mutation={createFinanceNoteMutation}
-                onClick={() => ({ body: { content: text, personId: id } })}
-                onSuccess={() => clearUiMode()}
-                disabled={!text}
-              />
-            </FixedSpaceRow>
-          </BorderedContentArea>
-        )}
+            <Gap horizontal size="s" />
+            <MutateButton
+              data-qa="save-finance-note"
+              appearance="inline"
+              text={i18n.common.save}
+              mutation={createFinanceNoteMutation}
+              onClick={() => ({ body: { content: text, personId: id } })}
+              onSuccess={() => clearUiMode()}
+              disabled={!text}
+            />
+          </FixedSpaceRow>
+        </BorderedContentArea>
+      )}
 
-        {renderResult(
-          combine(financeThreads, financeNotes),
-          ([threads, notes]) => (
-            // list note items eiter edit or view mode
-            <>
-              {[...threads, ...notes]
-                .sort((a, b) => {
-                  const dateA = isMessageThread(a)
-                    ? a.messages[0].sentAt
-                    : a.note.createdAt
-                  const dateB = isMessageThread(b)
-                    ? b.messages[0].sentAt
-                    : b.note.createdAt
-                  return dateB.formatIso().localeCompare(dateA.formatIso())
-                })
-                .map((item) =>
-                  isMessageThread(item) ? (
-                    <SingleThread
-                      key={item.id}
-                      id={id}
-                      thread={item}
-                      financeAccountId={financeAccount!.account.id}
-                      setThread={setThread}
-                      refreshMessages={refreshMessages}
-                      uiMode={uiMode}
-                      clearUiMode={clearUiMode}
-                      toggleUiMode={toggleUiMode}
-                    />
-                  ) : (
-                    <SingleNote
-                      key={item.note.id}
-                      id={id}
-                      note={item.note}
-                      permittedActions={item.permittedActions}
-                      text={text}
-                      setText={setText}
-                      uiMode={uiMode}
-                      clearUiMode={clearUiMode}
-                      toggleUiMode={toggleUiMode}
-                    />
-                  )
-                )}
-            </>
-          )
-        )}
-      </CollapsibleContentArea>
+      {renderResult(
+        combine(financeThreads, financeNotes),
+        ([threads, notes]) => (
+          // list note items eiter edit or view mode
+          <>
+            {[...threads, ...notes]
+              .sort((a, b) => {
+                const dateA = isMessageThread(a)
+                  ? a.messages[0].sentAt
+                  : a.note.createdAt
+                const dateB = isMessageThread(b)
+                  ? b.messages[0].sentAt
+                  : b.note.createdAt
+                return dateB.formatIso().localeCompare(dateA.formatIso())
+              })
+              .map((item) =>
+                isMessageThread(item) ? (
+                  <SingleThread
+                    key={item.id}
+                    id={id}
+                    thread={item}
+                    financeAccountId={financeAccount!.account.id}
+                    setThread={setThread}
+                    refreshMessages={refreshMessages}
+                    uiMode={uiMode}
+                    clearUiMode={clearUiMode}
+                    toggleUiMode={toggleUiMode}
+                  />
+                ) : (
+                  <SingleNote
+                    key={item.note.id}
+                    id={id}
+                    note={item.note}
+                    permittedActions={item.permittedActions}
+                    text={text}
+                    setText={setText}
+                    uiMode={uiMode}
+                    clearUiMode={clearUiMode}
+                    toggleUiMode={toggleUiMode}
+                  />
+                )
+              )}
+          </>
+        )
+      )}
     </>
   )
 })

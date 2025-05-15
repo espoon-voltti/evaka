@@ -42,7 +42,9 @@ SELECT
     answered_by.type AS answered_by_type,
     cdd.id AS decision_id,
     cdd.status AS decision_status,
-    CASE WHEN cdd.valid_from IS NOT NULL THEN daterange(cdd.valid_from, cdd.valid_to, '[]') END AS decision_validity
+    cdd.created_at AS decision_created_at,
+    CASE WHEN cdd.valid_from IS NOT NULL THEN daterange(cdd.valid_from, cdd.valid_to, '[]') END AS decision_validity,
+    cdd.decision_number AS decision_decision_number
 FROM child_document cd
 JOIN document_template dt ON cd.template_id = dt.id
 JOIN person child ON cd.child_id = child.id
@@ -99,14 +101,17 @@ fun Database.Read.getCitizenChildDocument(id: ChildDocumentId): ChildDocumentCit
                     dt.placement_types as template_placement_types,
                     dt.language as template_language,
                     dt.legal_basis as template_legal_basis,
-                    dt.confidential as template_confidential,
+                    dt.confidentiality_basis as template_confidentiality_basis,
+                    dt.confidentiality_duration_years as template_confidentiality_duration_years,
                     dt.validity as template_validity,
                     dt.published as template_published,
                     dt.content as template_content,
                     dt.archive_externally as template_archive_externally,
                     cdd.id AS decision_id,
                     cdd.status AS decision_status,
-                    CASE WHEN cdd.valid_from IS NOT NULL THEN daterange(cdd.valid_from, cdd.valid_to, '[]') END AS decision_validity
+                    cdd.created_at AS decision_created_at,
+                    CASE WHEN cdd.valid_from IS NOT NULL THEN daterange(cdd.valid_from, cdd.valid_to, '[]') END AS decision_validity,
+                    cdd.decision_number AS decision_decision_number
                 FROM child_document cd
                 JOIN document_template dt on cd.template_id = dt.id
                 JOIN person p on cd.child_id = p.id
