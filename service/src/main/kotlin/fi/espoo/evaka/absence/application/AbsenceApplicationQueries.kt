@@ -135,7 +135,7 @@ fun Database.Read.getChildrenWithAbsenceApplicationPossibleOnSomeDate(
                 """
 SELECT DISTINCT child_id
 FROM placement
-WHERE type = ANY ('{PRESCHOOL,PRESCHOOL_DAYCARE,PRESCHOOL_DAYCARE_ONLY,PRESCHOOL_CLUB}')
+WHERE type = ANY ('{PRESCHOOL,PRESCHOOL_DAYCARE,PRESCHOOL_DAYCARE_ONLY,PRESCHOOL_CLUB,PREPARATORY,PREPARATORY_DAYCARE,PREPARATORY_DAYCARE_ONLY}')
   AND child_id = ANY (${bind(childIds)})
         """
             )
