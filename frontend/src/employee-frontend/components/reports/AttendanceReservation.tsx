@@ -368,7 +368,7 @@ export default React.memo(function AttendanceReservation() {
 
 const getTableBody = (
   rowsByTime: Map<string, AttendanceReservationReportUiRow[]>,
-  autoScrollRef: RefObject<HTMLTableRowElement>
+  autoScrollRef: RefObject<HTMLTableRowElement | null>
 ) => {
   const components: React.ReactNode[] = []
   rowsByTime.forEach((rows, time) => {

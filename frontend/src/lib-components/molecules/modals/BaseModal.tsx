@@ -24,7 +24,7 @@ export interface ModalBaseProps {
   type?: ModalType
   mobileFullScreen?: boolean
   zIndex?: number
-  children?: React.ReactNode | React.ReactNodeArray
+  children?: React.ReactNode | readonly React.ReactNode[]
   'data-qa'?: string
   width?: ModalWidth
   padding?: SpacingSize

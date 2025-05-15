@@ -24,9 +24,9 @@
     "@fortawesome/fontawesome-svg-core": "6.7.2",
     "@fortawesome/free-regular-svg-icons": "6.7.2",
     "@fortawesome/free-solid-svg-icons": "6.7.2",
-    "@fortawesome/react-fontawesome": "0.2.2",
-    "@react-spring/rafz": "9.7.5",
-    "@react-spring/web": "9.7.5",
+    "@fortawesome/react-fontawesome": "patch:@fortawesome/react-fontawesome@npm%3A0.2.2#~/.yarn/patches/@fortawesome-react-fontawesome-npm-0.2.2-e1863961b2.patch",
+    "@react-spring/rafz": "10.0.0",
+    "@react-spring/web": "10.0.0",
     "@sentry/browser": "9.17.0",
     "@sentry/react": "9.17.0",
     "@tanstack/react-query": "5.75.5",
@@ -54,14 +54,14 @@
     "lodash": "4.17.21",
     "polished": "4.3.1",
     "punycode": "2.3.1",
-    "react": "18.3.1",
+    "react": "19.1.0",
     "react-chartjs-2": "5.3.0",
     "react-day-picker": "9.6.7",
-    "react-dom": "18.3.1",
+    "react-dom": "19.1.0",
     "react-focus-lock": "2.13.6",
     "react-focus-on": "3.9.4",
     "react-image-crop": "11.0.10",
-    "react-leaflet": "4.2.1",
+    "react-leaflet": "5.0.0",
     "react-router": "7.6.0",
     "react-select": "5.10.1",
     "seamless-scroll-polyfill": "2.3.4",
@@ -88,8 +88,8 @@
     "@types/lodash": "4.17.16",
     "@types/node": "22.15.17",
     "@types/punycode": "2.1.4",
-    "@types/react": "18.3.21",
-    "@types/react-dom": "18.3.7",
+    "@types/react": "19.1.4",
+    "@types/react-dom": "19.1.5",
     "babel-loader": "10.0.0",
     "babel-plugin-styled-components": "2.1.4",
     "concurrently": "9.1.2",
@@ -148,7 +148,7 @@
     }
   },
   "resolutions": {
-    "@react-leaflet/core@npm:^2.1.0": "patch:@react-leaflet/core@npm%3A2.1.0#~/.yarn/patches/@react-leaflet-core-npm-2.1.0-de483ca53f.patch"
+    "@react-leaflet/core@npm:^3.0.0": "patch:@react-leaflet/core@npm%3A3.0.0#~/.yarn/patches/@react-leaflet-core-npm-3.0.0-4e3f2d62b5.patch"
   },
   "engines": {
     "node": ">= 22.12.0"

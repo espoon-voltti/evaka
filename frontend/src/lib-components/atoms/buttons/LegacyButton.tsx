@@ -83,7 +83,7 @@ export const StyledButton = styled.button`
 
 export interface ButtonProps extends BaseProps {
   onClick?: (e: React.MouseEvent) => unknown
-  children?: React.ReactNode | React.ReactNodeArray
+  children?: React.ReactNode | readonly React.ReactNode[]
   text?: string
   primary?: boolean
   disabled?: boolean

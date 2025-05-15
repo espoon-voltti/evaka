@@ -17,7 +17,7 @@ export default React.memo(function StickyActionBar({
   align,
   ['data-qa']: dataQa,
   children
-}: Props & { children: React.ReactNode | React.ReactNodeArray }) {
+}: Props & { children: React.ReactNode | readonly React.ReactNode[] }) {
   return (
     <Bar data-qa={dataQa}>
       <Content align={align}>{children}</Content>
