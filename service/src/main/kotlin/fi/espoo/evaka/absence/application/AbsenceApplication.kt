@@ -24,7 +24,6 @@ data class AbsenceApplication(
     val id: AbsenceApplicationId,
     val createdAt: HelsinkiDateTime,
     val createdBy: EvakaUserId,
-    val updatedAt: HelsinkiDateTime,
     val modifiedAt: HelsinkiDateTime,
     val modifiedBy: EvakaUserId,
     val childId: ChildId,

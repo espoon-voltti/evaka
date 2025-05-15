@@ -377,7 +377,6 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
                     id = AbsenceApplicationId(UUID.randomUUID()),
                     createdAt = clock.now(),
                     createdBy = admin.evakaUserId,
-                    updatedAt = clock.now(),
                     modifiedAt = clock.now(),
                     modifiedBy = admin.evakaUserId,
                     childId = child1.id,
@@ -397,7 +396,7 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
                     decidedAt = clock.now(),
                     decidedBy = admin.evakaUserId,
                 ),
-                db.read { tx -> tx.selectAbsenceApplication(id)?.copy(updatedAt = clock.now()) },
+                db.read { tx -> tx.selectAbsenceApplication(id) },
             )
             assertThrows<BadRequest> { acceptAbsenceApplication(admin.user, id) }
         }
