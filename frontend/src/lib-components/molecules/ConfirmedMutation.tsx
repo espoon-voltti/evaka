@@ -12,6 +12,7 @@ import { LegacyButton } from '../atoms/buttons/LegacyButton'
 import { useTranslations } from '../i18n'
 import { BaseProps } from '../utils'
 
+import { ModalType } from './modals/BaseModal'
 import { MutateFormModal } from './modals/FormModal'
 
 type LargeButtonProps = {
@@ -41,6 +42,8 @@ export type ConfirmedMutationProps<Arg, Data> = BaseProps & {
   confirmLabel?: string
   cancelLabel?: string
   onSuccess?: (value: Data) => void
+  modalIcon?: IconDefinition
+  modalType?: ModalType
   'data-qa-modal'?: string
 } & (LargeButtonProps | InlineButtonProps | IconButtonProps)
 
@@ -56,6 +59,8 @@ function ConfirmedMutation_<Arg, Data>(
     confirmLabel,
     onSuccess,
     cancelLabel,
+    modalIcon,
+    modalType,
     'data-qa': dataQa,
     'data-qa-modal': dataQaModal,
     className
@@ -111,6 +116,8 @@ function ConfirmedMutation_<Arg, Data>(
           }}
           rejectAction={() => setConfirming(false)}
           rejectLabel={cancelLabel ?? i18n.common.cancel}
+          icon={modalIcon}
+          type={modalType}
           data-qa={dataQaModal}
         />
       )}

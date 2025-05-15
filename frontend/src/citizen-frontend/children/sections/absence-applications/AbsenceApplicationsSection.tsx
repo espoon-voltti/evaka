@@ -3,14 +3,11 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import orderBy from 'lodash/orderBy'
-import React, { useMemo, useState } from 'react'
+import React, { useMemo } from 'react'
 import { useNavigate } from 'react-router'
 
 import { useBoolean } from 'lib-common/form/hooks'
-import {
-  AbsenceApplicationId,
-  ChildId
-} from 'lib-common/generated/api-types/shared'
+import { ChildId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
 import { StaticChip } from 'lib-components/atoms/Chip'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
@@ -19,7 +16,7 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
+import { ConfirmedMutation } from 'lib-components/molecules/ConfirmedMutation'
 import { H3, H4, Label, P } from 'lib-components/typography'
 import colors from 'lib-customizations/common'
 import { faExclamation } from 'lib-icons'
@@ -83,17 +80,9 @@ const AbsenceApplicationList = (props: Props) => {
       ),
     [absenceApplicationsResult]
   )
-  const [deleteApplicationId, setDeleteApplicationId] =
-    useState<AbsenceApplicationId | null>(null)
 
   return (
     <div data-qa="absence-applications-table">
-      {deleteApplicationId !== null && (
-        <DeleteAbsenceApplicationModal
-          id={deleteApplicationId}
-          close={() => setDeleteApplicationId(null)}
-        />
-      )}
       {renderResult(sortedAbsenceApplicationsResult, (applications) => (
         <>
           {applications.map((application) => (
@@ -126,13 +115,21 @@ const AbsenceApplicationList = (props: Props) => {
                 )}
                 {application.data.status === 'WAITING_DECISION' &&
                   application.actions.includes('DELETE') && (
-                    <Button
+                    <ConfirmedMutation
+                      buttonStyle="INLINE"
+                      buttonText={i18n.children.absenceApplication.cancel}
                       icon={faTrash}
-                      text={i18n.children.absenceApplication.cancel}
-                      onClick={() =>
-                        setDeleteApplicationId(application.data.id)
+                      confirmationTitle={
+                        i18n.children.absenceApplication.cancelConfirmation
                       }
+                      mutation={deleteAbsenceApplicationMutation}
+                      onClick={() => ({ id: application.data.id })}
+                      confirmLabel={i18n.common.yes}
+                      cancelLabel={i18n.common.no}
+                      modalIcon={faExclamation}
+                      modalType="warning"
                       data-qa="delete-absence-application"
+                      data-qa-modal="delete-absence-application-modal"
                     />
                   )}
               </FixedSpaceColumn>
@@ -142,27 +139,5 @@ const AbsenceApplicationList = (props: Props) => {
         </>
       ))}
     </div>
-  )
-}
-
-const DeleteAbsenceApplicationModal = (props: {
-  id: AbsenceApplicationId
-  close: () => void
-}) => {
-  const i18n = useTranslation()
-
-  return (
-    <MutateFormModal
-      title={i18n.children.absenceApplication.cancelConfirmation}
-      resolveMutation={deleteAbsenceApplicationMutation}
-      resolveAction={() => ({ id: props.id })}
-      resolveLabel={i18n.common.yes}
-      onSuccess={props.close}
-      rejectAction={props.close}
-      rejectLabel={i18n.common.no}
-      icon={faExclamation}
-      type="warning"
-      data-qa="delete-absence-application-modal"
-    />
   )
 }
