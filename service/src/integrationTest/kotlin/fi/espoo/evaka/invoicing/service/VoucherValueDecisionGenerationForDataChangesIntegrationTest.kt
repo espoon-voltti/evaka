@@ -336,7 +336,13 @@ class VoucherValueDecisionGenerationForDataChangesIntegrationTest :
 
     @Test
     fun `placement is removed`() {
-        db.transaction { tx -> tx.cancelPlacement(placementId) }
+        db.transaction { tx ->
+            tx.cancelPlacement(
+                now.now(),
+                AuthenticatedUser.SystemInternalUser.evakaUserId,
+                placementId,
+            )
+        }
         generate()
         assertDrafts(listOf(dateRange(10, 20) to true))
         sendAllVoucherValueDecisions()

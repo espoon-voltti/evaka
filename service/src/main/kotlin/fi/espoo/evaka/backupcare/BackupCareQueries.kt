@@ -8,11 +8,13 @@ import fi.espoo.evaka.placement.getPlacementsForChild
 import fi.espoo.evaka.shared.BackupCareId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.data.DateMap
 import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 
 fun Database.Read.getBackupCaresForChild(childId: ChildId): List<ChildBackupCare> =
     createQuery {
@@ -113,14 +115,20 @@ WHERE id = ${bind(id)}
         .exactlyOneOrNull<BackupCareInfo>()
 
 fun Database.Transaction.createBackupCare(
+    user: EvakaUserId,
+    now: HelsinkiDateTime,
     childId: ChildId,
     backupCare: NewBackupCare,
 ): BackupCareId =
     createUpdate {
             sql(
                 """
-INSERT INTO backup_care (child_id, unit_id, group_id, start_date, end_date)
+INSERT INTO backup_care (created_at, created_by, modified_at, modified_by, child_id, unit_id, group_id, start_date, end_date)
 VALUES (
+  ${bind(now)},
+  ${bind(user)},
+  ${bind(now)},
+  ${bind(user)},
   ${bind(childId)},
   ${bind(backupCare.unitId)},
   ${bind(backupCare.groupId)},
@@ -135,6 +143,8 @@ RETURNING id
         .exactlyOne<BackupCareId>()
 
 fun Database.Transaction.updateBackupCare(
+    user: EvakaUserId,
+    now: HelsinkiDateTime,
     id: BackupCareId,
     period: FiniteDateRange,
     groupId: GroupId?,
@@ -145,7 +155,9 @@ UPDATE backup_care
 SET
   start_date = ${bind(period.start)},
   end_date = ${bind(period.end)},
-  group_id = ${bind(groupId)}
+  group_id = ${bind(groupId)},
+  modified_by = ${bind(user)},
+  modified_at = ${bind(now)}
 WHERE id = ${bind(id)}
 """
     )
@@ -171,7 +183,11 @@ SELECT child_id FROM backup_care WHERE id = ${bind(id)}
         .exactlyOne<ChildId>()
 
 /** Recreates backup cares for a child so that they are always within placements. */
-fun Database.Transaction.recreateBackupCares(childId: ChildId) {
+fun Database.Transaction.recreateBackupCares(
+    user: EvakaUserId,
+    now: HelsinkiDateTime,
+    childId: ChildId,
+) {
     val placementDates =
         DateSet.of(
             getPlacementsForChild(childId).asSequence().map {
@@ -200,6 +216,8 @@ fun Database.Transaction.recreateBackupCares(childId: ChildId) {
         val backupCare = backupCares.find { it.id == id }!!
         for (range in newRanges.ranges()) {
             createBackupCare(
+                user,
+                now,
                 childId,
                 NewBackupCare(
                     unitId = backupCare.unit.id,

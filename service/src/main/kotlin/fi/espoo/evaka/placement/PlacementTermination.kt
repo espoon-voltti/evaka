@@ -11,7 +11,6 @@ import fi.espoo.evaka.placement.PlacementType.PRESCHOOL_CLUB
 import fi.espoo.evaka.placement.PlacementType.PRESCHOOL_DAYCARE
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
-import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -139,16 +138,18 @@ fun cancelOrTerminatePlacement(
     terminationRequestedDate: LocalDate,
     placement: ChildPlacement,
     terminationDate: LocalDate,
-    terminatedBy: AuthenticatedUser.Citizen?,
+    terminatedBy: AuthenticatedUser.Citizen,
+    now: HelsinkiDateTime,
 ) {
     if (placement.startsAfter(terminationDate)) {
-        tx.cancelPlacement(placement.id)
+        tx.cancelPlacement(now, terminatedBy.evakaUserId, placement.id)
     } else {
         tx.terminatePlacementFrom(
             terminationRequestedDate,
             placement.id,
             terminationDate,
-            terminatedBy?.evakaUserId,
+            terminatedBy.evakaUserId,
+            now,
         )
     }
 }
@@ -162,13 +163,12 @@ fun terminateBilledDaycare(
     childId: ChildId,
     unitId: DaycareId,
     now: HelsinkiDateTime,
-    userId: EvakaUserId,
 ) {
     // additional placements after termination date are always cancelled
     terminatablePlacementGroup.additionalPlacements
         .filter { it.endDate.isAfter(terminationDate) }
         .forEach {
-            cancelOrTerminatePlacement(tx, terminationRequestedDate, it, terminationDate, user)
+            cancelOrTerminatePlacement(tx, terminationRequestedDate, it, terminationDate, user, now)
         }
 
     val preschoolOrPreparatoryWithDaycare =
@@ -215,8 +215,13 @@ fun terminateBilledDaycare(
             if (adjacentPlacement != null) {
                 // given an adjacent placement, do not create a duplicate PRESCHOOL or PREPARATORY
                 // placement, just update the dates
-                tx.cancelPlacement(placement.id)
-                tx.updatePlacementStartDate(adjacentPlacement.id, placement.startDate, now, userId)
+                tx.cancelPlacement(now, user.evakaUserId, placement.id)
+                tx.updatePlacementStartDate(
+                    adjacentPlacement.id,
+                    placement.startDate,
+                    now,
+                    user.evakaUserId,
+                )
             } else {
                 // convert PRESCHOOL_DAYCARE and PREPARATORY_DAYCARE placement to PRESCHOOL and
                 // PREPARATORY
@@ -226,7 +231,7 @@ fun terminateBilledDaycare(
                     placementId = placement.id,
                     type = newPlacementType,
                     now,
-                    userId,
+                    user.evakaUserId,
                 )
             }
         } else {
@@ -246,7 +251,7 @@ fun terminateBilledDaycare(
                 ),
                 terminationDate,
                 now,
-                userId,
+                user.evakaUserId,
             )
             tx.updatePlacementTermination(placement.id, terminationRequestedDate, user.evakaUserId)
             if (adjacentPlacement != null) {
@@ -254,7 +259,7 @@ fun terminateBilledDaycare(
                     adjacentPlacement.id,
                     terminationDate.plusDays(1),
                     now,
-                    userId,
+                    user.evakaUserId,
                 )
             } else {
                 // create new placement without daycare for the remaining period

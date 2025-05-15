@@ -68,7 +68,7 @@ FROM placement
 
 UNION ALL
 
-SELECT id, created, updated, child_id AS child, unit_id AS unit, start_date, end_date, TRUE AS is_backup, NULL AS type
+SELECT id, created_at as created, modified_at as updated, child_id AS child, unit_id AS unit, start_date, end_date, TRUE AS is_backup, NULL AS type
 FROM backup_care
 """
             )
@@ -83,7 +83,7 @@ FROM daycare_group_placement
 
 UNION ALL
 
-SELECT id, created, updated, id AS placement, group_id AS "group", start_date, end_date
+SELECT id, created_at as created, modified_at as updated, id AS placement, group_id AS "group", start_date, end_date
 FROM backup_care
 WHERE group_id IS NOT NULL
 """
