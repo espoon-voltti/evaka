@@ -267,7 +267,7 @@ function useReloadNotification(
   addNotification: (n: Notification) => void
 ) {
   const theme = useTheme()
-  const timer = useRef<number>()
+  const timer = useRef<number>(undefined)
   const [show, setShow] = useState(false)
 
   const maybeShow = useCallback(() => {

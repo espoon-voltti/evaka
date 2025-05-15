@@ -49,7 +49,7 @@ export default React.memo(function DayElem({
   scrollToDate
 }: DayProps) {
   const [lang] = useLang()
-  const ref = useRef<HTMLButtonElement>()
+  const ref = useRef<HTMLButtonElement>(undefined)
 
   const isToday = calendarDay.date.isToday()
   const isScrollToDate = calendarDay.date.isEqual(scrollToDate)

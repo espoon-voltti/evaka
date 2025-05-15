@@ -7,7 +7,7 @@ import { useEffect, useRef } from 'react'
 type Callback = () => void
 
 export function useInterval(cb: Callback, delayMs: number) {
-  const callbackRef = useRef<Callback>()
+  const callbackRef = useRef<Callback>(undefined)
 
   useEffect(() => {
     callbackRef.current = cb

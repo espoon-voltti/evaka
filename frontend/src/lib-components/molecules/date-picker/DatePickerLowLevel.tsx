@@ -289,8 +289,8 @@ export function useFloatingPositioning({
   floatingHeight,
   active
 }: {
-  anchorRef: React.RefObject<HTMLElement>
-  floatingRef: React.RefObject<HTMLElement>
+  anchorRef: React.RefObject<HTMLElement | null>
+  floatingRef: React.RefObject<HTMLElement | null>
   floatingHeight: number
   active: boolean
 }) {
