@@ -30,6 +30,7 @@ describe('Absence application', () => {
       .save()
     await Fixture.family({ guardian: adult, children: [child] }).save()
     await Fixture.placement({
+      type: 'PRESCHOOL',
       childId: child.id,
       unitId: unit.id,
       startDate: mockedTime.toLocalDate(),
@@ -90,6 +91,7 @@ describe('Absence application', () => {
       .save()
     await Fixture.family({ guardian: adult, children: [child] }).save()
     await Fixture.placement({
+      type: 'PRESCHOOL',
       childId: child.id,
       unitId: unit.id,
       startDate: mockedTime.toLocalDate(),
@@ -154,6 +156,7 @@ describe('Absence application', () => {
       .save()
     await Fixture.family({ guardian: adult, children: [child] }).save()
     await Fixture.placement({
+      type: 'PRESCHOOL',
       childId: child.id,
       unitId: unit.id,
       startDate: mockedTime.toLocalDate(),

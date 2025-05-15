@@ -127,6 +127,21 @@ RETURNING id,
         .executeAndReturnGeneratedKeys()
         .exactlyOne<AbsenceApplication>()
 
+fun Database.Read.getChildrenWithAbsenceApplicationPossibleOnSomeDate(
+    childIds: Set<ChildId>
+): Set<ChildId> =
+    createQuery {
+            sql(
+                """
+SELECT DISTINCT child_id
+FROM placement
+WHERE type = ANY ('{PRESCHOOL,PRESCHOOL_DAYCARE,PRESCHOOL_DAYCARE_ONLY,PRESCHOOL_CLUB}')
+  AND child_id = ANY (${bind(childIds)})
+        """
+            )
+        }
+        .toSet()
+
 private fun Database.Read.absenceApplicationSummaryQuery(predicate: Predicate) = createQuery {
     sql(
         """

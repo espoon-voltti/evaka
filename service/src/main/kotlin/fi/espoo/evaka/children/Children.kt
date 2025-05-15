@@ -44,12 +44,14 @@ data class ChildAndPermittedActions(
     val hasPedagogicalDocuments: Boolean,
     val permittedActions: Set<Action.Citizen.Child>,
     val serviceApplicationCreationPossible: Boolean,
+    val absenceApplicationCreationPossible: Boolean,
 ) {
     companion object {
         fun fromChild(
             child: Child,
             permittedActions: Set<Action.Citizen.Child>,
             serviceApplicationCreationPossible: Boolean,
+            absenceApplicationCreationPossible: Boolean,
         ) =
             ChildAndPermittedActions(
                 id = child.id,
@@ -64,6 +66,7 @@ data class ChildAndPermittedActions(
                 hasPedagogicalDocuments = child.hasPedagogicalDocuments,
                 permittedActions = permittedActions,
                 serviceApplicationCreationPossible = serviceApplicationCreationPossible,
+                absenceApplicationCreationPossible = absenceApplicationCreationPossible,
             )
     }
 }

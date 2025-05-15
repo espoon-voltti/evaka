@@ -61,12 +61,13 @@ export default React.memo(function ChildPage() {
                   <ChildDocumentsSection childId={childId} />
                 </>
               )}
-              {featureFlags.absenceApplications && (
-                <>
-                  <Gap size="s" />
-                  <AbsenceApplicationsSection childId={childId} />
-                </>
-              )}
+              {featureFlags.absenceApplications &&
+                child.absenceApplicationCreationPossible && (
+                  <>
+                    <Gap size="s" />
+                    <AbsenceApplicationsSection childId={childId} />
+                  </>
+                )}
               <Gap size="s" />
               <PlacementTerminationSection childId={childId} />
             </>

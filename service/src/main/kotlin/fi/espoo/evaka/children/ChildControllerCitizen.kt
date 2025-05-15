@@ -8,6 +8,7 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.absence.AbsenceType
+import fi.espoo.evaka.absence.application.getChildrenWithAbsenceApplicationPossibleOnSomeDate
 import fi.espoo.evaka.absence.getAbsencesOfChildByRange
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimes
 import fi.espoo.evaka.dailyservicetimes.getChildDailyServiceTimes
@@ -56,6 +57,8 @@ class ChildControllerCitizen(private val accessControl: AccessControl) {
                             childIds.toSet(),
                             clock.today(),
                         )
+                    val absenceApplicationPossible =
+                        tx.getChildrenWithAbsenceApplicationPossibleOnSomeDate(childIds.toSet())
                     val permittedActions =
                         accessControl.getPermittedActions<ChildId, Action.Citizen.Child>(
                             tx,
@@ -68,6 +71,7 @@ class ChildControllerCitizen(private val accessControl: AccessControl) {
                             c,
                             permittedActions[c.id]!!,
                             serviceApplicationPossible.contains(c.id),
+                            absenceApplicationPossible.contains(c.id),
                         )
                     }
                 }

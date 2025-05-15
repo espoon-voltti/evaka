@@ -22,6 +22,7 @@ export interface AttendanceSummary {
 * Generated from fi.espoo.evaka.children.ChildAndPermittedActions
 */
 export interface ChildAndPermittedActions {
+  absenceApplicationCreationPossible: boolean
   duplicateOf: PersonId | null
   firstName: string
   group: Group | null

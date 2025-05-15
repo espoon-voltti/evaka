@@ -333,6 +333,7 @@ class ChildControllerCitizenTest : FullApplicationTest(resetDbBeforeEach = true)
                         Action.Citizen.Child.READ_SERVICE_APPLICATIONS,
                     ),
                 serviceApplicationCreationPossible = false,
+                absenceApplicationCreationPossible = false,
             )
         assertThat(
                 childControllerCitizen.getChildren(

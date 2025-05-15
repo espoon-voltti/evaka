@@ -225,6 +225,11 @@ class AbsenceApplicationControllerCitizen(private val accessControl: AccessContr
                     )
                     if (body.startDate.isBefore(clock.today()))
                         throw BadRequest("Start date cannot be before today")
+                    if (
+                        !tx.getChildrenWithAbsenceApplicationPossibleOnSomeDate(setOf(body.childId))
+                            .contains(body.childId)
+                    )
+                        throw BadRequest("Child does not have preschool placement")
                     tx.insertAbsenceApplication(body, clock.now(), user.evakaUserId)
                 }
             }

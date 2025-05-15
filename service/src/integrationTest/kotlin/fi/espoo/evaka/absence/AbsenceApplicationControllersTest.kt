@@ -15,6 +15,7 @@ import fi.espoo.evaka.absence.application.AbsenceApplicationSummary
 import fi.espoo.evaka.absence.application.selectAbsenceApplication
 import fi.espoo.evaka.pis.PersonNameDetails
 import fi.espoo.evaka.pis.service.insertGuardian
+import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.AbsenceApplicationId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
@@ -77,6 +78,7 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
                 tx.insertGuardian(adult.id, child.id)
                 tx.insert(
                     DevPlacement(
+                        type = PlacementType.PRESCHOOL,
                         childId = child.id,
                         unitId = unit.id,
                         startDate = LocalDate.of(2022, 1, 1),
@@ -174,7 +176,7 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
                     Absence(
                         childId = child.id,
                         date = LocalDate.of(2022, 8, 10),
-                        category = AbsenceCategory.BILLABLE,
+                        category = AbsenceCategory.NONBILLABLE,
                         absenceType = AbsenceType.OTHER_ABSENCE,
                         modifiedByStaff = true,
                         modifiedAt = clock.now(),
@@ -263,7 +265,7 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
                     Absence(
                         childId = child.id,
                         date = clock.today(),
-                        category = AbsenceCategory.BILLABLE,
+                        category = AbsenceCategory.NONBILLABLE,
                         absenceType = AbsenceType.OTHER_ABSENCE,
                         modifiedByStaff = true,
                         modifiedAt = clock.now(),
@@ -272,7 +274,7 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
                     Absence(
                         childId = child.id,
                         date = clock.today().plusDays(1),
-                        category = AbsenceCategory.BILLABLE,
+                        category = AbsenceCategory.NONBILLABLE,
                         absenceType = AbsenceType.OTHER_ABSENCE,
                         modifiedByStaff = true,
                         modifiedAt = clock.now(),
