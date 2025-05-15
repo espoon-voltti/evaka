@@ -104,6 +104,7 @@ UPDATE absence_application SET
     decided_by = ${bind(decidedBy)},
     rejected_reason = ${bind(rejectedReason)}
 WHERE id = ${bind(id)}
+  AND status = 'WAITING_DECISION'
 """
             )
         }
