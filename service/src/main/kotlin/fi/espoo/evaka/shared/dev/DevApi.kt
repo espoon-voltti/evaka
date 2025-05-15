@@ -1673,8 +1673,12 @@ UPDATE person SET email=${bind(body.email)} WHERE id=${bind(body.personId)}
     }
 
     @PostMapping("/nekku-special-diets")
-    fun createNekkuSpecialDiets(db: Database, @RequestBody specialDiets: List<NekkuSpecialDiet>) {
-        db.connect { dbc -> updateNekkuSpecialDiets(specialDiets, dbc) }
+    fun createNekkuSpecialDiets(
+        db: Database,
+        clock: EvakaClock,
+        @RequestBody specialDiets: List<NekkuSpecialDiet>,
+    ) {
+        db.connect { dbc -> updateNekkuSpecialDiets(specialDiets, dbc, null, clock.now()) }
     }
 
     @GetMapping("/nekku-special-diet-choices/{childId}")

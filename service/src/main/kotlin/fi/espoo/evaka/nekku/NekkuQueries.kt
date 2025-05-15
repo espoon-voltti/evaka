@@ -201,21 +201,30 @@ fun Database.Read.getNekkuUnitNumbers(): List<NekkuUnitNumber> {
 }
 
 /** Throws an IllegalStateException if Nekku returns an empty special diet list. */
-fun fetchAndUpdateNekkuSpecialDiets(client: NekkuClient, db: Database.Connection) {
+fun fetchAndUpdateNekkuSpecialDiets(
+    client: NekkuClient,
+    db: Database.Connection,
+    asyncJobRunner: AsyncJobRunner<AsyncJob>,
+    now: HelsinkiDateTime,
+) {
 
     val specialDietsFromNekku = client.getSpecialDiets().map { it.toEvaka() }
 
     if (specialDietsFromNekku.isEmpty())
         error("Refusing to sync empty Nekku special diet list into database")
 
-    updateNekkuSpecialDiets(specialDietsFromNekku, db)
+    updateNekkuSpecialDiets(specialDietsFromNekku, db, asyncJobRunner, now)
 }
 
 fun updateNekkuSpecialDiets(
     specialDietsFromNekku: List<NekkuSpecialDiet>,
     db: Database.Connection,
+    asyncJobRunner: AsyncJobRunner<AsyncJob>?,
+    now: HelsinkiDateTime,
 ) {
     db.transaction { tx ->
+        val childrenWithRemovedDiets = tx.fetchChildrenWithRemovedDiets(specialDietsFromNekku)
+
         tx.setSpecialDiets(specialDietsFromNekku)
 
         tx.setSpecialDietFields(specialDietsFromNekku.map { it.id to it.fields })
@@ -225,6 +234,28 @@ fun updateNekkuSpecialDiets(
                 .flatMap { it.fields }
                 .mapNotNull { if (it.options == null) null else it.id to it.options }
         )
+
+        if (asyncJobRunner != null && childrenWithRemovedDiets.isNotEmpty()) {
+            val groupedChildren =
+                tx.groupByDaycareAndGroup(childrenWithRemovedDiets, now.toLocalDate())
+            asyncJobRunner.plan(
+                tx,
+                groupedChildren.flatMap { unitEntry ->
+                    val supervisors =
+                        tx.getDaycareAclRows(unitEntry.key, false, UserRole.UNIT_SUPERVISOR).map {
+                            it.employee
+                        }
+                    supervisors.map { supervisor ->
+                        AsyncJob.SendNekkuSpecialDietRemovalWarningEmail(
+                            unitEntry.key,
+                            supervisor.id,
+                            unitEntry.value,
+                        )
+                    }
+                },
+                runAt = now,
+            )
+        }
     }
 }
 
@@ -368,6 +399,125 @@ nekku_special_diet_option.key <> excluded.key;
         "Deleted: ${deletedSpecialOptionsCount.size} Nekku special diet options, inserted ${specialDietOptions.size}"
     }
 }
+
+fun Database.Transaction.fetchChildrenWithRemovedDiets(
+    newDiets: List<NekkuSpecialDiet>
+): List<NekkuSpecialDietChoicesWithChild> {
+
+    // find child IDs with choices for which there is no longer a diet ID
+    val childrenWithRemovedDietIds =
+        createQuery {
+                sql(
+                    """
+            SELECT DISTINCT child_id
+            FROM nekku_special_diet_choices
+            WHERE diet_id != ALL(${bind(newDiets.map { it.id })})
+        """
+                        .trimIndent()
+                )
+            }
+            .toSet<ChildId>()
+
+    // find child IDs with choices for which there is no longer a field
+    val childrenWithRemovedFieldIds =
+        createQuery {
+                sql(
+                    """
+            SELECT DISTINCT child_id
+            FROM nekku_special_diet_choices
+            WHERE field_id != ALL(${bind(newDiets.flatMap { it.fields.map { it.id } }) })
+        """
+                        .trimIndent()
+                )
+            }
+            .toSet<ChildId>()
+
+    // find child IDs with choices for which there is no longer an option
+    val childrenWithRemovedOptions =
+        newDiets
+            .flatMap { it.fields }
+            .filter { it.options != null }
+            .map {
+                createQuery {
+                        sql(
+                            """
+                SELECT DISTINCT child_id
+                FROM nekku_special_diet_choices
+                WHERE field_id = ${bind(it.id)} AND value != ALL(${bind(it.options?.map { it.value }) })
+            """
+                                .trimIndent()
+                        )
+                    }
+                    .toSet<ChildId>()
+            }
+            .reduce { acc, it -> acc + it }
+
+    // combine the child IDs and fetch all their choices
+
+    val allChildren =
+        childrenWithRemovedDietIds + childrenWithRemovedFieldIds + childrenWithRemovedOptions
+
+    return createQuery {
+            sql(
+                """
+            SELECT child_id, diet_id, field_id, value
+            FROM nekku_special_diet_choices
+            WHERE child_id =ANY (${bind(allChildren)})
+        """
+                    .trimIndent()
+            )
+        }
+        .toList()
+}
+
+fun Database.Transaction.groupByDaycareAndGroup(
+    childrenWithDiets: List<NekkuSpecialDietChoicesWithChild>,
+    today: LocalDate,
+): Map<DaycareId, Map<String, Map<ChildId, List<NekkuSpecialDietChoices>>>> {
+    val dietsByChildren =
+        childrenWithDiets
+            .groupBy { it.childId }
+            .mapValues { it.value.map { NekkuSpecialDietChoices(it.dietId, it.fieldId, it.value) } }
+    val unitAndGroupPerChild =
+        getUnitAndGroupForChildren(childrenWithDiets.map { it.childId }, today)
+    return unitAndGroupPerChild.mapValues { unitEntry ->
+        unitEntry.value.mapValues { groupEntry ->
+            groupEntry.value
+                .map { childId -> childId to (dietsByChildren[childId] ?: listOf()) }
+                .toMap()
+        }
+    }
+}
+
+fun Database.Transaction.getUnitAndGroupForChildren(
+    childIds: List<ChildId>,
+    today: LocalDate,
+): Map<DaycareId, Map<String, List<ChildId>>> =
+    createQuery {
+            sql(
+                """
+            SELECT p.child_id, p.unit_id, dg.name
+            FROM placement p
+            JOIN daycare_group_placement dgp on p.id = dgp.daycare_placement_id
+            JOIN daycare_group dg on dgp.daycare_group_id = dg.id
+            WHERE p.child_id =ANY (${bind(childIds)})
+            AND p.start_date >= ${bind(today)}
+            AND p.end_date <= ${bind(today)}
+            AND dgp.start_date >= ${bind(today)}
+            AND dgp.end_date <= ${bind(today)}
+        """
+                    .trimIndent()
+            )
+        }
+        .map {
+            Triple(
+                column<DaycareId>("unit_id"),
+                column<String>("name"),
+                column<ChildId>("child_id"),
+            )
+        }
+        .useSequence { rows -> rows.groupBy({ it.first }, { it.second to it.third }) }
+        .mapValues { (_, value) -> value.groupBy({ it.first }, { it.second }) }
 
 /** Throws an IllegalStateException if Nekku returns an empty product list. */
 fun fetchAndUpdateNekkuProducts(client: NekkuClient, db: Database.Connection) {

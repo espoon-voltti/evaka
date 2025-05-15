@@ -22,6 +22,7 @@ import fi.espoo.evaka.emailclient.EmailClient
 import fi.espoo.evaka.emailclient.EmailContent
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.ScheduleType
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.GroupId
@@ -70,6 +71,7 @@ class NekkuService(
         asyncJobRunner.registerHandler(::sendNekkuOrder)
         asyncJobRunner.registerHandler(::sendNekkuDailyOrder)
         asyncJobRunner.registerHandler(::sendNekkuCustomerNumberNullificationWarningEmail)
+        asyncJobRunner.registerHandler(::sendNekkuSpecialDietRemovalWarningEmail)
     }
 
     fun syncNekkuCustomers(
@@ -99,7 +101,7 @@ class NekkuService(
         job: AsyncJob.SyncNekkuSpecialDiets,
     ) {
         if (client == null) error("Cannot sync Nekku special diets: NekkuEnv is not configured")
-        fetchAndUpdateNekkuSpecialDiets(client, db)
+        fetchAndUpdateNekkuSpecialDiets(client, db, asyncJobRunner, clock.now())
     }
 
     fun planNekkuSpecialDietsSync(db: Database.Connection, clock: EvakaClock) {
@@ -195,6 +197,42 @@ class NekkuService(
                 html =
                     "<p>Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumisesta Nekusta:</p>\n" +
                         job.groupNames.joinToString("\n", transform = { "<p>- $it</p>" }),
+            )
+
+        Email.createForEmployee(
+                dbc,
+                job.employeeId,
+                content = content,
+                traceId = "${job.unitId}:${job.employeeId}",
+                emailEnv.sender(Language.fi),
+            )
+            ?.let { emailClient.send(it) }
+    }
+
+    fun sendNekkuSpecialDietRemovalWarningEmail(
+        dbc: Database.Connection,
+        clock: EvakaClock,
+        job: AsyncJob.SendNekkuSpecialDietRemovalWarningEmail,
+    ) {
+        val groupInfo =
+            job.childrenByGroup
+                .toSortedMap()
+                .map { (group, children) ->
+                    "<p>$group</p>" +
+                        children
+                            .map { (childId, diets) ->
+                                "Lapsen tunniste: $childId, lapsen ruokavaliot: " +
+                                    diets.map { it.value }.sortedBy { it }.joinToString(", ")
+                            }
+                            .joinToString("<br/>")
+                }
+                .joinToString("<br/>")
+        val content =
+            EmailContent.fromHtml(
+                subject = "Muutoksia Nekku-allergiatietoihin",
+                html =
+                    "<p>Seuraavilta lapsilta on poistunut allergiatietoja koska kyseinen kenttä on poistunut Nekusta. Tässä viestissä on lasten alkuperäiset allergiatiedot. Varmista että lasten tiedot päivitetään uusien Nekku-kenttien mukaisiksi.</p>" +
+                        groupInfo,
             )
 
         Email.createForEmployee(
@@ -965,6 +1003,13 @@ data class NekkuOrderResult(
 )
 
 data class NekkuSpecialDietChoices(val dietId: String, val fieldId: String, val value: String)
+
+data class NekkuSpecialDietChoicesWithChild(
+    val childId: ChildId,
+    val dietId: String,
+    val fieldId: String,
+    val value: String,
+)
 
 data class NekkuOrdersReport(
     val deliveryDate: LocalDate,

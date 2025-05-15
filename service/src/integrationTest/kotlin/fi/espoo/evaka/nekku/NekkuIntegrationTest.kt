@@ -775,14 +775,14 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
     @Test
     fun `Nekku special diets sync does not sync empty data`() {
         val client = TestNekkuClient()
-        assertThrows<Exception> { fetchAndUpdateNekkuSpecialDiets(client, db) }
+        assertThrows<Exception> { fetchAndUpdateNekkuSpecialDiets(client, db, asyncJobRunner, now) }
     }
 
     @Test
     fun `Nekku special diets sync does sync non-empty data`() {
         val client = TestNekkuClient(specialDiets = listOf(getNekkuSpecialDiet()))
 
-        fetchAndUpdateNekkuSpecialDiets(client, db)
+        fetchAndUpdateNekkuSpecialDiets(client, db, asyncJobRunner, now)
         db.transaction { tx ->
             val specialDiets = tx.getNekkuSpecialOptions().toSet()
             assertEquals(5, specialDiets.size)
@@ -792,7 +792,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
     @Test
     fun `Nekku special diets sync does update data`() {
         var client = TestNekkuClient(specialDiets = listOf(getNekkuSpecialDiet()))
-        fetchAndUpdateNekkuSpecialDiets(client, db)
+        fetchAndUpdateNekkuSpecialDiets(client, db, asyncJobRunner, now)
         db.transaction { tx ->
             val specialDiets = tx.getNekkuSpecialOptions().toSet()
             assertEquals(5, specialDiets.size)
@@ -847,7 +847,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
                         )
                     )
             )
-        fetchAndUpdateNekkuSpecialDiets(client, db)
+        fetchAndUpdateNekkuSpecialDiets(client, db, asyncJobRunner, now)
         db.transaction { tx ->
             val specialDiets = tx.getNekkuSpecialOptions()
             assertEquals(5, specialDiets.size)
@@ -857,7 +857,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
     @Test
     fun `Nekku special diets sync removes old data and creates new data`() {
         var client = TestNekkuClient(specialDiets = listOf(getNekkuSpecialDiet()))
-        fetchAndUpdateNekkuSpecialDiets(client, db)
+        fetchAndUpdateNekkuSpecialDiets(client, db, asyncJobRunner, now)
 
         db.transaction { tx ->
             val specialDiets = tx.getNekkuSpecialOptions().toSet()
@@ -899,7 +899,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
                     )
             )
 
-        fetchAndUpdateNekkuSpecialDiets(client, db)
+        fetchAndUpdateNekkuSpecialDiets(client, db, asyncJobRunner, now)
 
         db.transaction { tx ->
             val specialDiets = tx.getNekkuSpecialOptions()
@@ -910,7 +910,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
     @Test
     fun `Nekku special diets sync adds new special diet objects`() {
         var client = TestNekkuClient(specialDiets = listOf(getNekkuSpecialDiet()))
-        fetchAndUpdateNekkuSpecialDiets(client, db)
+        fetchAndUpdateNekkuSpecialDiets(client, db, asyncJobRunner, now)
 
         db.transaction { tx ->
             val nekkuSpecialDietOptions = tx.getNekkuSpecialOptions()
@@ -953,7 +953,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
                     )
             )
 
-        fetchAndUpdateNekkuSpecialDiets(client, db)
+        fetchAndUpdateNekkuSpecialDiets(client, db, asyncJobRunner, now)
 
         db.transaction { tx ->
             val nekkuSpecialDietOptions = tx.getNekkuSpecialOptions()
@@ -1088,7 +1088,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
                     )
             )
 
-        fetchAndUpdateNekkuSpecialDiets(client, db)
+        fetchAndUpdateNekkuSpecialDiets(client, db, asyncJobRunner, now)
 
         db.read { tx -> assertEquals(6, tx.getNekkuSpecialDietFields().size) }
     }
@@ -1096,7 +1096,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
     @Test
     fun `Nekku special diet sync removes removed special diets from children`() {
         var client = TestNekkuClient(specialDiets = listOf(getNekkuSpecialDiet()))
-        fetchAndUpdateNekkuSpecialDiets(client, db)
+        fetchAndUpdateNekkuSpecialDiets(client, db, asyncJobRunner, now)
 
         val childWithNoSpecialDiet = DevPerson()
         val childWithFreeTextField = DevPerson()
@@ -1187,7 +1187,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
                     )
             )
 
-        fetchAndUpdateNekkuSpecialDiets(client, db)
+        fetchAndUpdateNekkuSpecialDiets(client, db, asyncJobRunner, now)
 
         db.read { tx ->
             assertEquals(listOf(), tx.getNekkuSpecialDietChoices(childWithNoSpecialDiet.id))
@@ -1218,6 +1218,319 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
                 tx.getNekkuSpecialDietChoices(childWithFreeTextFieldAndRemainingCheckbox.id),
             )
         }
+    }
+
+    @Test
+    fun `removing special diets from children generates warning emails`() {
+
+        val today = LocalDate.of(2025, 5, 19)
+        val noonToday = HelsinkiDateTime.of(today, LocalTime.of(12, 0))
+
+        var client = TestNekkuClient(specialDiets = listOf(getNekkuSpecialDiet()))
+        fetchAndUpdateNekkuSpecialDiets(client, db, asyncJobRunner, noonToday)
+
+        val firstChildWithNoSpecialDiet =
+            DevPerson(firstName = "Anselmi", lastName = "Allergiation")
+        val childWithSeveralAllergies = DevPerson(firstName = "Anneli", lastName = "Allerginen")
+        val firstChildWithRemovedAllergy = DevPerson(firstName = "Lasse", lastName = "Laktoositon")
+        val firstChildWithRemainingAllergy =
+            DevPerson(firstName = "Kalle", lastName = "Kananmunaton")
+        val secondChildWithRemovedAllergy = DevPerson(firstName = "Pirjo", lastName = "Pähkinäton")
+        val secondChildWithNoAllergies =
+            DevPerson(firstName = "Kirsi", lastName = "Kaikkiruokainen")
+        val thirdChildWithNoAllergies = DevPerson(firstName = "Outi", lastName = "Ongelmaton")
+        val secondChildWithRemainingAllergy =
+            DevPerson(firstName = "Seppo", lastName = "Sianlihaton")
+
+        val allChildren =
+            listOf(
+                firstChildWithNoSpecialDiet,
+                childWithSeveralAllergies,
+                firstChildWithRemovedAllergy,
+                firstChildWithRemainingAllergy,
+                secondChildWithRemovedAllergy,
+                secondChildWithNoAllergies,
+                secondChildWithRemainingAllergy,
+                thirdChildWithNoAllergies,
+            )
+
+        db.transaction { tx -> allChildren.forEach { tx.insert(it, DevPersonType.CHILD) } }
+
+        val area = DevCareArea()
+        val daycare1 = DevDaycare(areaId = area.id)
+        val daycare2 = DevDaycare(areaId = area.id)
+        val daycare3 = DevDaycare(areaId = area.id)
+        val group1 = DevDaycareGroup(daycareId = daycare1.id, name = "Karhukoplalaiset")
+        val group2 = DevDaycareGroup(daycareId = daycare2.id, name = "Milla Magiat")
+        val group3 = DevDaycareGroup(daycareId = daycare2.id, name = "Kulta-Into Piit")
+        val group4 = DevDaycareGroup(daycareId = daycare3.id, name = "Arpin Lusènet")
+        val employee1 = DevEmployee(email = "supervisor1@city.fi")
+        val employee2 = DevEmployee(email = "supervisor2@city.fi")
+        val employee3 = DevEmployee(email = "supervisor3@city.fi")
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare1)
+            tx.insert(daycare2)
+            tx.insert(daycare3)
+            tx.insert(group1)
+            tx.insert(group2)
+            tx.insert(group3)
+            tx.insert(group4)
+            tx.insert(employee1, mapOf(daycare1.id to UserRole.UNIT_SUPERVISOR))
+            tx.insert(employee2, mapOf(daycare2.id to UserRole.UNIT_SUPERVISOR))
+            tx.insert(employee3, mapOf(daycare3.id to UserRole.UNIT_SUPERVISOR))
+        }
+
+        db.transaction { tx ->
+            tx.insert(
+                    DevPlacement(
+                        childId = firstChildWithNoSpecialDiet.id,
+                        unitId = daycare1.id,
+                        startDate = today,
+                        endDate = today,
+                    )
+                )
+                .also { placementId ->
+                    tx.insert(
+                        DevDaycareGroupPlacement(
+                            daycarePlacementId = placementId,
+                            daycareGroupId = group1.id,
+                            startDate = today,
+                            endDate = today,
+                        )
+                    )
+                }
+            tx.insert(
+                    DevPlacement(
+                        childId = childWithSeveralAllergies.id,
+                        unitId = daycare1.id,
+                        startDate = today,
+                        endDate = today,
+                    )
+                )
+                .also { placementId ->
+                    tx.insert(
+                        DevDaycareGroupPlacement(
+                            daycarePlacementId = placementId,
+                            daycareGroupId = group1.id,
+                            startDate = today,
+                            endDate = today,
+                        )
+                    )
+                }
+
+            tx.insert(
+                    DevPlacement(
+                        childId = firstChildWithRemovedAllergy.id,
+                        unitId = daycare2.id,
+                        startDate = today,
+                        endDate = today,
+                    )
+                )
+                .also { placementId ->
+                    tx.insert(
+                        DevDaycareGroupPlacement(
+                            daycarePlacementId = placementId,
+                            daycareGroupId = group2.id,
+                            startDate = today,
+                            endDate = today,
+                        )
+                    )
+                }
+            tx.insert(
+                    DevPlacement(
+                        childId = firstChildWithRemainingAllergy.id,
+                        unitId = daycare2.id,
+                        startDate = today,
+                        endDate = today,
+                    )
+                )
+                .also { placementId ->
+                    tx.insert(
+                        DevDaycareGroupPlacement(
+                            daycarePlacementId = placementId,
+                            daycareGroupId = group2.id,
+                            startDate = today,
+                            endDate = today,
+                        )
+                    )
+                }
+
+            tx.insert(
+                    DevPlacement(
+                        childId = secondChildWithNoAllergies.id,
+                        unitId = daycare2.id,
+                        startDate = today,
+                        endDate = today,
+                    )
+                )
+                .also { placementId ->
+                    tx.insert(
+                        DevDaycareGroupPlacement(
+                            daycarePlacementId = placementId,
+                            daycareGroupId = group3.id,
+                            startDate = today,
+                            endDate = today,
+                        )
+                    )
+                }
+            tx.insert(
+                    DevPlacement(
+                        childId = secondChildWithRemovedAllergy.id,
+                        unitId = daycare2.id,
+                        startDate = today,
+                        endDate = today,
+                    )
+                )
+                .also { placementId ->
+                    tx.insert(
+                        DevDaycareGroupPlacement(
+                            daycarePlacementId = placementId,
+                            daycareGroupId = group3.id,
+                            startDate = today,
+                            endDate = today,
+                        )
+                    )
+                }
+
+            tx.insert(
+                    DevPlacement(
+                        childId = thirdChildWithNoAllergies.id,
+                        unitId = daycare3.id,
+                        startDate = today,
+                        endDate = today,
+                    )
+                )
+                .also { placementId ->
+                    tx.insert(
+                        DevDaycareGroupPlacement(
+                            daycarePlacementId = placementId,
+                            daycareGroupId = group4.id,
+                            startDate = today,
+                            endDate = today,
+                        )
+                    )
+                }
+            tx.insert(
+                    DevPlacement(
+                        childId = secondChildWithRemainingAllergy.id,
+                        unitId = daycare3.id,
+                        startDate = today,
+                        endDate = today,
+                    )
+                )
+                .also { placementId ->
+                    tx.insert(
+                        DevDaycareGroupPlacement(
+                            daycarePlacementId = placementId,
+                            daycareGroupId = group4.id,
+                            startDate = today,
+                            endDate = today,
+                        )
+                    )
+                }
+        }
+
+        insertNekkuSpecialDietChoice(
+            childWithSeveralAllergies.id,
+            "2",
+            "17A9ACF0-DE9E-4C07-882E-C8C47351D009",
+            "Pähkinätön",
+        )
+        insertNekkuSpecialDietChoice(
+            childWithSeveralAllergies.id,
+            "2",
+            "AE1FE5FE-9619-4D7A-9043-A6B0C615156B",
+            "Laktoositon ruokavalio",
+        )
+        insertNekkuSpecialDietChoice(
+            firstChildWithRemovedAllergy.id,
+            "2",
+            "AE1FE5FE-9619-4D7A-9043-A6B0C615156B",
+            "Laktoositon ruokavalio",
+        )
+        insertNekkuSpecialDietChoice(
+            firstChildWithRemainingAllergy.id,
+            "2",
+            "AE1FE5FE-9619-4D7A-9043-A6B0C615156B",
+            "Kananmunaton ruokavalio",
+        )
+        insertNekkuSpecialDietChoice(
+            secondChildWithRemovedAllergy.id,
+            "2",
+            "17A9ACF0-DE9E-4C07-882E-C8C47351D009",
+            "Pähkinätön",
+        )
+        insertNekkuSpecialDietChoice(
+            secondChildWithRemainingAllergy.id,
+            "2",
+            "AE1FE5FE-9619-4D7A-9043-A6B0C615156B",
+            "Sianlihaton ruokavalio",
+        )
+
+        client =
+            TestNekkuClient(
+                specialDiets =
+                    listOf(
+                        NekkuApiSpecialDiet(
+                            "2",
+                            "Päiväkodit er.",
+                            listOf(
+                                NekkuApiSpecialDietsField(
+                                    "AE1FE5FE-9619-4D7A-9043-A6B0C615156B",
+                                    "Erityisruokavaliot",
+                                    NekkuApiSpecialDietType.CheckBoxLst,
+                                    listOf(
+                                        NekkuSpecialDietOption(
+                                            1,
+                                            "Kananmunaton ruokavalio",
+                                            "Kananmunaton ruokavalio",
+                                        ),
+                                        NekkuSpecialDietOption(
+                                            2,
+                                            "Sianlihaton ruokavalio",
+                                            "Sianlihaton ruokavalio",
+                                        ),
+                                    ),
+                                )
+                            ),
+                        )
+                    )
+            )
+
+        fetchAndUpdateNekkuSpecialDiets(client, db, asyncJobRunner, noonToday) // triggers emails
+
+        asyncJobRunner.runPendingJobsSync(MockEvakaClock(noonToday))
+
+        val expectedTestContent1 =
+            """
+Seuraavilta lapsilta on poistunut allergiatietoja koska kyseinen kenttä on poistunut Nekusta. Tässä viestissä on lasten alkuperäiset allergiatiedot. Varmista että lasten tiedot päivitetään uusien Nekku-kenttien mukaisiksi.
+
+Karhukoplalaiset
+Lapsen tunniste: ${childWithSeveralAllergies.id}, lapsen ruokavaliot: Laktoositon ruokavalio, Pähkinätön
+        """
+                .trim()
+
+        val expectedTestContent2 =
+            """
+Seuraavilta lapsilta on poistunut allergiatietoja koska kyseinen kenttä on poistunut Nekusta. Tässä viestissä on lasten alkuperäiset allergiatiedot. Varmista että lasten tiedot päivitetään uusien Nekku-kenttien mukaisiksi.
+
+Kulta-Into Piit
+Lapsen tunniste: ${secondChildWithRemovedAllergy.id}, lapsen ruokavaliot: Pähkinätön
+
+Milla Magiat
+Lapsen tunniste: ${firstChildWithRemovedAllergy.id}, lapsen ruokavaliot: Laktoositon ruokavalio
+        """
+                .trim()
+
+        assertEquals(
+            listOf(
+                "supervisor1@city.fi" to expectedTestContent1,
+                "supervisor2@city.fi" to expectedTestContent2,
+            ),
+            MockEmailClient.emails.sortedBy { it.toAddress }.map { it.toAddress to it.content.text },
+        )
     }
 
     val nekkuProducts =
@@ -1915,7 +2228,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
         fetchAndUpdateNekkuCustomers(client, db, asyncJobRunner, now)
         // products
         fetchAndUpdateNekkuProducts(client, db)
-        fetchAndUpdateNekkuSpecialDiets(client, db)
+        fetchAndUpdateNekkuSpecialDiets(client, db, asyncJobRunner, now)
 
         val area = DevCareArea()
 
@@ -1983,7 +2296,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
         fetchAndUpdateNekkuCustomers(client, db, asyncJobRunner, now)
         // products
         fetchAndUpdateNekkuProducts(client, db)
-        fetchAndUpdateNekkuSpecialDiets(client, db)
+        fetchAndUpdateNekkuSpecialDiets(client, db, asyncJobRunner, now)
 
         val area = DevCareArea()
 
@@ -2050,7 +2363,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
         fetchAndUpdateNekkuCustomers(client, db, asyncJobRunner, now)
         // products
         fetchAndUpdateNekkuProducts(client, db)
-        fetchAndUpdateNekkuSpecialDiets(client, db)
+        fetchAndUpdateNekkuSpecialDiets(client, db, asyncJobRunner, now)
         // Daycare with groups
         val area = DevCareArea()
         val daycare =
@@ -2186,7 +2499,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
         fetchAndUpdateNekkuCustomers(client, db, asyncJobRunner, now)
         // products
         fetchAndUpdateNekkuProducts(client, db)
-        fetchAndUpdateNekkuSpecialDiets(client, db)
+        fetchAndUpdateNekkuSpecialDiets(client, db, asyncJobRunner, now)
         // Daycare with groups
         val area = DevCareArea()
         val daycare =
@@ -2321,7 +2634,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
         fetchAndUpdateNekkuCustomers(client, db, asyncJobRunner, now)
         // products
         fetchAndUpdateNekkuProducts(client, db)
-        fetchAndUpdateNekkuSpecialDiets(client, db)
+        fetchAndUpdateNekkuSpecialDiets(client, db, asyncJobRunner, now)
         // Daycare with groups
         val area = DevCareArea()
         val daycare =
@@ -2480,7 +2793,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
         fetchAndUpdateNekkuCustomers(client, db, asyncJobRunner, now)
         // products
         fetchAndUpdateNekkuProducts(client, db)
-        fetchAndUpdateNekkuSpecialDiets(client, db)
+        fetchAndUpdateNekkuSpecialDiets(client, db, asyncJobRunner, now)
         // Daycare with groups
         val area = DevCareArea()
         val daycare =
@@ -2631,7 +2944,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
         fetchAndUpdateNekkuCustomers(client, db, asyncJobRunner, now)
         // products
         fetchAndUpdateNekkuProducts(client, db)
-        fetchAndUpdateNekkuSpecialDiets(client, db)
+        fetchAndUpdateNekkuSpecialDiets(client, db, asyncJobRunner, now)
         // Daycare with groups
         val area = DevCareArea()
         val daycare =
@@ -2784,7 +3097,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
         fetchAndUpdateNekkuCustomers(client, db, asyncJobRunner, now)
         // products
         fetchAndUpdateNekkuProducts(client, db)
-        fetchAndUpdateNekkuSpecialDiets(client, db)
+        fetchAndUpdateNekkuSpecialDiets(client, db, asyncJobRunner, now)
         // Daycare with groups
         val area = DevCareArea()
         val daycare =
@@ -2908,7 +3221,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
         fetchAndUpdateNekkuCustomers(client, db, asyncJobRunner, now)
         // products
         fetchAndUpdateNekkuProducts(client, db)
-        fetchAndUpdateNekkuSpecialDiets(client, db)
+        fetchAndUpdateNekkuSpecialDiets(client, db, asyncJobRunner, now)
         // Daycare with groups
         val area = DevCareArea()
         val daycare =
@@ -3023,7 +3336,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
         fetchAndUpdateNekkuCustomers(client, db, asyncJobRunner, now)
         // products
         fetchAndUpdateNekkuProducts(client, db)
-        fetchAndUpdateNekkuSpecialDiets(client, db)
+        fetchAndUpdateNekkuSpecialDiets(client, db, asyncJobRunner, now)
         // Daycare with groups
         val area = DevCareArea()
         val daycare =
@@ -3161,7 +3474,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
         fetchAndUpdateNekkuCustomers(client, db, asyncJobRunner, now)
         // products
         fetchAndUpdateNekkuProducts(client, db)
-        fetchAndUpdateNekkuSpecialDiets(client, db)
+        fetchAndUpdateNekkuSpecialDiets(client, db, asyncJobRunner, now)
         // Daycare with groups
         val area = DevCareArea()
         val daycare =
@@ -3303,7 +3616,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
         fetchAndUpdateNekkuCustomers(client, db, asyncJobRunner, now)
         // products
         fetchAndUpdateNekkuProducts(client, db)
-        fetchAndUpdateNekkuSpecialDiets(client, db)
+        fetchAndUpdateNekkuSpecialDiets(client, db, asyncJobRunner, now)
         // Daycare with groups
         val area = DevCareArea()
         val daycare =
@@ -3438,7 +3751,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
         fetchAndUpdateNekkuCustomers(client, db, asyncJobRunner, now)
         // products
         fetchAndUpdateNekkuProducts(client, db)
-        fetchAndUpdateNekkuSpecialDiets(client, db)
+        fetchAndUpdateNekkuSpecialDiets(client, db, asyncJobRunner, now)
         // Daycare with groups
         val area = DevCareArea()
         val daycare =
@@ -3562,7 +3875,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
         fetchAndUpdateNekkuCustomers(client, db, asyncJobRunner, now)
         // products
         fetchAndUpdateNekkuProducts(client, db)
-        fetchAndUpdateNekkuSpecialDiets(client, db)
+        fetchAndUpdateNekkuSpecialDiets(client, db, asyncJobRunner, now)
         // Daycare with groups
         val area = DevCareArea()
         val daycare =
@@ -3679,7 +3992,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
         fetchAndUpdateNekkuCustomers(client, db, asyncJobRunner, now)
         // products
         fetchAndUpdateNekkuProducts(client, db)
-        fetchAndUpdateNekkuSpecialDiets(client, db)
+        fetchAndUpdateNekkuSpecialDiets(client, db, asyncJobRunner, now)
 
         val monday = LocalDate.of(2025, 4, 14)
         val tuesday = LocalDate.of(2025, 4, 15)
@@ -3969,7 +4282,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
         fetchAndUpdateNekkuCustomers(client, db, asyncJobRunner, now)
         // products
         fetchAndUpdateNekkuProducts(client, db)
-        fetchAndUpdateNekkuSpecialDiets(client, db)
+        fetchAndUpdateNekkuSpecialDiets(client, db, asyncJobRunner, now)
 
         val monday = LocalDate.of(2025, 4, 14)
         val tuesday = LocalDate.of(2025, 4, 15)
@@ -4278,7 +4591,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
         fetchAndUpdateNekkuCustomers(client, db, asyncJobRunner, now)
         // products
         fetchAndUpdateNekkuProducts(client, db)
-        fetchAndUpdateNekkuSpecialDiets(client, db)
+        fetchAndUpdateNekkuSpecialDiets(client, db, asyncJobRunner, now)
 
         val monday = LocalDate.of(2025, 4, 14)
 
@@ -4603,7 +4916,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
         fetchAndUpdateNekkuCustomers(client, db, asyncJobRunner, now)
         // products
         fetchAndUpdateNekkuProducts(client, db)
-        fetchAndUpdateNekkuSpecialDiets(client, db)
+        fetchAndUpdateNekkuSpecialDiets(client, db, asyncJobRunner, now)
 
         val monday = LocalDate.of(2025, 4, 14)
         val tuesday = LocalDate.of(2025, 4, 15)
@@ -4876,7 +5189,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
         fetchAndUpdateNekkuCustomers(client, db, asyncJobRunner, now)
         // products
         fetchAndUpdateNekkuProducts(client, db)
-        fetchAndUpdateNekkuSpecialDiets(client, db)
+        fetchAndUpdateNekkuSpecialDiets(client, db, asyncJobRunner, now)
 
         val monday = LocalDate.of(2025, 4, 14)
         val tuesday = LocalDate.of(2025, 4, 15)
