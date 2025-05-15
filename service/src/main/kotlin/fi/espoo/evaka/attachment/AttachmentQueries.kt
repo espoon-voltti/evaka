@@ -107,7 +107,7 @@ fun <T : Enum<T>> Database.Transaction.insertAttachment(
             sql(
                 """
 INSERT INTO attachment (
-    created,
+    created_at,
     name,
     content_type,
     application_id,
@@ -311,7 +311,7 @@ fun Database.Read.getOrphanAttachments(olderThan: HelsinkiDateTime): List<Attach
                 """
 SELECT id
 FROM attachment
-WHERE created < ${bind(olderThan)}
+WHERE created_at < ${bind(olderThan)}
 AND ${predicate(AttachmentParent.None.toPredicate().forTable("attachment"))}
 """
             )

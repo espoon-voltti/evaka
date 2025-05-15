@@ -74,7 +74,6 @@ export interface ApplicationAttachment {
   name: string
   receivedAt: HelsinkiDateTime
   type: ApplicationAttachmentType
-  updated: HelsinkiDateTime
   uploadedByEmployee: EmployeeId | null
   uploadedByPerson: PersonId | null
 }
@@ -848,8 +847,7 @@ export function deserializeJsonAcceptDecisionRequest(json: JsonOf<AcceptDecision
 export function deserializeJsonApplicationAttachment(json: JsonOf<ApplicationAttachment>): ApplicationAttachment {
   return {
     ...json,
-    receivedAt: HelsinkiDateTime.parseIso(json.receivedAt),
-    updated: HelsinkiDateTime.parseIso(json.updated)
+    receivedAt: HelsinkiDateTime.parseIso(json.receivedAt)
   }
 }
 

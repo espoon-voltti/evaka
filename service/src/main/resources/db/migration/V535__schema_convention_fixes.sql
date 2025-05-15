@@ -58,3 +58,8 @@ UPDATE assistance_need_voucher_coefficient SET modified_by = coalesce(modified_b
 ALTER TABLE assistance_need_voucher_coefficient ALTER COLUMN modified_by SET NOT NULL;
 ALTER TABLE assistance_need_voucher_coefficient ADD CONSTRAINT check_validity_period
     CHECK ((NOT (lower_inf(validity_period) OR upper_inf(validity_period))));
+
+DROP TRIGGER set_timestamp ON attachment;
+ALTER TABLE attachment RENAME COLUMN created TO created_at;
+ALTER TABLE attachment RENAME COLUMN updated TO updated_at;
+CREATE TRIGGER set_timestamp BEFORE UPDATE ON attachment FOR EACH ROW EXECUTE PROCEDURE trigger_refresh_updated_at();

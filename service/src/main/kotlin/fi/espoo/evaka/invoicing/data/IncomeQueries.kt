@@ -124,7 +124,7 @@ FROM (
     SELECT a.id, a.name, a.content_type
     FROM attachment a
     WHERE a.income_id = income.id
-    ORDER BY a.created
+    ORDER BY a.created_at
 ) s) AS attachments
 FROM income
 JOIN evaka_user created_by ON income.created_by = created_by.id
@@ -162,7 +162,7 @@ FROM (
     SELECT a.id, a.name, a.content_type
     FROM attachment a
     WHERE a.income_id = income.id
-    ORDER BY a.created
+    ORDER BY a.created_at
 ) s) AS attachments
 FROM income
 JOIN evaka_user created_by ON income.created_by = created_by.id

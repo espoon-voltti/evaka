@@ -162,7 +162,6 @@ export default React.memo(function PreferredStartSubSection({
                         ...formData.urgencyAttachments,
                         {
                           ...attachment,
-                          updated: HelsinkiDateTime.now(),
                           receivedAt: HelsinkiDateTime.now(),
                           type: 'URGENCY',
                           uploadedByEmployee: null,

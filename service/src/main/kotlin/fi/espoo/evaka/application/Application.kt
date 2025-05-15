@@ -158,7 +158,6 @@ data class ApplicationAttachment(
     val id: AttachmentId,
     val name: String,
     val contentType: String,
-    val updated: HelsinkiDateTime,
     val receivedAt: HelsinkiDateTime,
     val type: ApplicationAttachmentType,
     val uploadedByEmployee: EmployeeId?,
