@@ -16,6 +16,7 @@ import {
 import { useForm, useFormFields } from 'lib-common/form/hooks'
 import { nonBlank } from 'lib-common/form/validators'
 import { ChildId } from 'lib-common/generated/api-types/shared'
+import LocalDate from 'lib-common/local-date'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import Main from 'lib-components/atoms/Main'
 import { Button } from 'lib-components/atoms/buttons/Button'
@@ -62,7 +63,9 @@ export const NewAbsenceApplicationPage = () => {
     formModel,
     () => ({
       childId,
-      range: localDateRange.fromRange(null),
+      range: localDateRange.fromRange(null, {
+        minDate: LocalDate.todayInHelsinkiTz()
+      }),
       description: '',
       confirmation: false
     }),

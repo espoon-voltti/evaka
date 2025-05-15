@@ -93,8 +93,8 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
                     clock,
                     AbsenceApplicationCreateRequest(
                         childId = child.id,
-                        startDate = LocalDate.of(2022, 1, 1),
-                        endDate = LocalDate.of(2022, 1, 1),
+                        startDate = LocalDate.of(2022, 8, 10),
+                        endDate = LocalDate.of(2022, 8, 10),
                         description = "Lapinreissu",
                     ),
                 )
@@ -105,8 +105,8 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
                     createdAt = clock.now(),
                     createdBy = adult.toEvakaUser(EvakaUserType.CITIZEN),
                     child = PersonNameDetails(child.id, child.firstName, child.lastName),
-                    startDate = LocalDate.of(2022, 1, 1),
-                    endDate = LocalDate.of(2022, 1, 1),
+                    startDate = LocalDate.of(2022, 8, 10),
+                    endDate = LocalDate.of(2022, 8, 10),
                     description = "Lapinreissu",
                     status = AbsenceApplicationStatus.WAITING_DECISION,
                     decidedAt = null,
@@ -171,7 +171,7 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
                 listOf(
                     Absence(
                         childId = child.id,
-                        date = LocalDate.of(2022, 1, 1),
+                        date = LocalDate.of(2022, 8, 10),
                         category = AbsenceCategory.BILLABLE,
                         absenceType = AbsenceType.OTHER_ABSENCE,
                         modifiedByStaff = true,
@@ -180,7 +180,7 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
                     )
                 ),
                 db.transaction { tx ->
-                    tx.getAbsencesOfChildByDate(child.id, LocalDate.of(2022, 1, 1))
+                    tx.getAbsencesOfChildByDate(child.id, LocalDate.of(2022, 8, 10))
                 },
             )
 
@@ -203,8 +203,8 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
                     clock,
                     AbsenceApplicationCreateRequest(
                         childId = child.id,
-                        startDate = LocalDate.of(2022, 1, 1),
-                        endDate = LocalDate.of(2022, 1, 1),
+                        startDate = LocalDate.of(2022, 8, 10),
+                        endDate = LocalDate.of(2022, 8, 10),
                         description = "Lapinreissu",
                     ),
                 )
@@ -215,8 +215,8 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
                     createdAt = clock.now(),
                     createdBy = adult.toEvakaUser(EvakaUserType.CITIZEN),
                     child = PersonNameDetails(child.id, child.firstName, child.lastName),
-                    startDate = LocalDate.of(2022, 1, 1),
-                    endDate = LocalDate.of(2022, 1, 1),
+                    startDate = LocalDate.of(2022, 8, 10),
+                    endDate = LocalDate.of(2022, 8, 10),
                     description = "Lapinreissu",
                     status = AbsenceApplicationStatus.WAITING_DECISION,
                     decidedAt = null,
@@ -283,7 +283,7 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
             assertEquals(
                 emptyList(),
                 db.transaction { tx ->
-                    tx.getAbsencesOfChildByDate(child.id, LocalDate.of(2022, 1, 1))
+                    tx.getAbsencesOfChildByDate(child.id, LocalDate.of(2022, 8, 10))
                 },
             )
 

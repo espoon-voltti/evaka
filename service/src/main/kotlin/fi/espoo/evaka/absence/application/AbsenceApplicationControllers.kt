@@ -217,6 +217,8 @@ class AbsenceApplicationControllerCitizen(private val accessControl: AccessContr
                         Action.Citizen.Child.CREATE_ABSENCE_APPLICATION,
                         body.childId,
                     )
+                    if (body.startDate.isBefore(clock.today()))
+                        throw BadRequest("Start date cannot be before today")
                     tx.insertAbsenceApplication(body, clock.now(), user.evakaUserId)
                 }
             }
