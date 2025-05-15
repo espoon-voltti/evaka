@@ -312,6 +312,16 @@ WHERE
 fun Database.Transaction.setSpecialDietOptions(
     specialDietOptions: List<Pair<String, List<NekkuSpecialDietOption>>>
 ) {
+    executeBatch(specialDietOptions) {
+        sql(
+            """
+                    DELETE FROM nekku_special_diet_choices
+                    WHERE field_id = ${bind { (fieldId, _ ) -> fieldId }}
+                    AND value != ALL(${bind { (_, option) -> option.map { it.value } }})
+                """
+                .trimIndent()
+        )
+    }
 
     val deletedSpecialOptionsCount =
         executeBatch(specialDietOptions) {

@@ -1093,6 +1093,133 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
         db.read { tx -> assertEquals(6, tx.getNekkuSpecialDietFields().size) }
     }
 
+    @Test
+    fun `Nekku special diet sync removes removed special diets from children`() {
+        var client = TestNekkuClient(specialDiets = listOf(getNekkuSpecialDiet()))
+        fetchAndUpdateNekkuSpecialDiets(client, db)
+
+        val childWithNoSpecialDiet = DevPerson()
+        val childWithFreeTextField = DevPerson()
+        val childWithRemainingCheckbox = DevPerson()
+        val childWithRemovedCheckbox = DevPerson()
+        val childWithFreeTextFieldAndRemainingCheckbox = DevPerson()
+        val childWithFreeTextFieldAndRemovedCheckbox = DevPerson()
+
+        db.transaction { tx ->
+            tx.insert(childWithNoSpecialDiet, DevPersonType.CHILD)
+            tx.insert(childWithFreeTextField, DevPersonType.CHILD)
+            tx.insert(childWithRemainingCheckbox, DevPersonType.CHILD)
+            tx.insert(childWithRemovedCheckbox, DevPersonType.CHILD)
+            tx.insert(childWithFreeTextFieldAndRemainingCheckbox, DevPersonType.CHILD)
+            tx.insert(childWithFreeTextFieldAndRemovedCheckbox, DevPersonType.CHILD)
+        }
+
+        insertNekkuSpecialDietChoice(
+            childWithFreeTextField.id,
+            "2",
+            "17A9ACF0-DE9E-4C07-882E-C8C47351D009",
+            "Random value",
+        )
+        insertNekkuSpecialDietChoice(
+            childWithRemainingCheckbox.id,
+            "2",
+            "AE1FE5FE-9619-4D7A-9043-A6B0C615156B",
+            "Kananmunaton ruokavalio",
+        )
+        insertNekkuSpecialDietChoice(
+            childWithRemovedCheckbox.id,
+            "2",
+            "AE1FE5FE-9619-4D7A-9043-A6B0C615156B",
+            "Laktoositon ruokavalio",
+        )
+        insertNekkuSpecialDietChoice(
+            childWithFreeTextFieldAndRemainingCheckbox.id,
+            "2",
+            "17A9ACF0-DE9E-4C07-882E-C8C47351D009",
+            "Random value",
+        )
+        insertNekkuSpecialDietChoice(
+            childWithFreeTextFieldAndRemainingCheckbox.id,
+            "2",
+            "AE1FE5FE-9619-4D7A-9043-A6B0C615156B",
+            "Kananmunaton ruokavalio",
+        )
+        insertNekkuSpecialDietChoice(
+            childWithFreeTextFieldAndRemovedCheckbox.id,
+            "2",
+            "17A9ACF0-DE9E-4C07-882E-C8C47351D009",
+            "Random value",
+        )
+        insertNekkuSpecialDietChoice(
+            childWithFreeTextFieldAndRemovedCheckbox.id,
+            "2",
+            "AE1FE5FE-9619-4D7A-9043-A6B0C615156B",
+            "Laktoositon ruokavalio",
+        )
+
+        client =
+            TestNekkuClient(
+                specialDiets =
+                    listOf(
+                        NekkuApiSpecialDiet(
+                            "2",
+                            "Päiväkodit er.",
+                            listOf(
+                                NekkuApiSpecialDietsField(
+                                    "AE1FE5FE-9619-4D7A-9043-A6B0C615156B",
+                                    "Erityisruokavaliot",
+                                    NekkuApiSpecialDietType.CheckBoxLst,
+                                    listOf(
+                                        NekkuSpecialDietOption(
+                                            1,
+                                            "Kananmunaton ruokavalio",
+                                            "Kananmunaton ruokavalio",
+                                        ),
+                                        NekkuSpecialDietOption(
+                                            2,
+                                            "Sianlihaton ruokavalio",
+                                            "Sianlihaton ruokavalio",
+                                        ),
+                                    ),
+                                )
+                            ),
+                        )
+                    )
+            )
+
+        fetchAndUpdateNekkuSpecialDiets(client, db)
+
+        db.read { tx ->
+            assertEquals(listOf(), tx.getNekkuSpecialDietChoices(childWithNoSpecialDiet.id))
+            assertEquals(listOf(), tx.getNekkuSpecialDietChoices(childWithFreeTextField.id))
+            assertEquals(listOf(), tx.getNekkuSpecialDietChoices(childWithRemovedCheckbox.id))
+            assertEquals(
+                listOf(
+                    NekkuSpecialDietChoices(
+                        "2",
+                        "AE1FE5FE-9619-4D7A-9043-A6B0C615156B",
+                        "Kananmunaton ruokavalio",
+                    )
+                ),
+                tx.getNekkuSpecialDietChoices(childWithRemainingCheckbox.id),
+            )
+            assertEquals(
+                listOf(),
+                tx.getNekkuSpecialDietChoices(childWithFreeTextFieldAndRemovedCheckbox.id),
+            )
+            assertEquals(
+                listOf(
+                    NekkuSpecialDietChoices(
+                        "2",
+                        "AE1FE5FE-9619-4D7A-9043-A6B0C615156B",
+                        "Kananmunaton ruokavalio",
+                    )
+                ),
+                tx.getNekkuSpecialDietChoices(childWithFreeTextFieldAndRemainingCheckbox.id),
+            )
+        }
+    }
+
     val nekkuProducts =
         listOf(
             NekkuApiProduct(
