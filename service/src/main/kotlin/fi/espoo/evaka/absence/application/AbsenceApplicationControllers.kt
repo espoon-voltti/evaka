@@ -129,21 +129,27 @@ class AbsenceApplicationControllerEmployee(private val accessControl: AccessCont
                         user.evakaUserId,
                         rejectedReason = null,
                     )
-                    tx.upsertFullDayAbsences(
-                        user.evakaUserId,
-                        clock.now(),
-                        FiniteDateRange(application.startDate, application.endDate)
-                            .dates()
-                            .map { date ->
-                                FullDayAbsenseUpsert(
-                                    childId = application.childId,
-                                    date = date,
-                                    absenceTypeBillable = AbsenceType.OTHER_ABSENCE,
-                                    absenceTypeNonbillable = AbsenceType.OTHER_ABSENCE,
-                                )
-                            }
-                            .toList(),
-                    )
+                    if (!clock.today().isAfter(application.endDate)) {
+                        val range =
+                            if (clock.today().isAfter(application.startDate))
+                                FiniteDateRange(clock.today(), application.endDate)
+                            else FiniteDateRange(application.startDate, application.endDate)
+                        tx.upsertFullDayAbsences(
+                            user.evakaUserId,
+                            clock.now(),
+                            range
+                                .dates()
+                                .map { date ->
+                                    FullDayAbsenseUpsert(
+                                        childId = application.childId,
+                                        date = date,
+                                        absenceTypeBillable = AbsenceType.OTHER_ABSENCE,
+                                        absenceTypeNonbillable = AbsenceType.OTHER_ABSENCE,
+                                    )
+                                }
+                                .toList(),
+                        )
+                    }
                     application
                 }
             }

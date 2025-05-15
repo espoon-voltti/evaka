@@ -29,10 +29,12 @@ import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.domain.toFiniteDateRange
 import fi.espoo.evaka.toEvakaUser
 import fi.espoo.evaka.user.EvakaUserType
 import java.time.LocalDate
@@ -192,6 +194,95 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
                     id,
                 )
             }
+        }
+
+        @Test
+        fun `absences not inserted if application dates are in the past`() {
+            val range = clock.today().minusDays(1).toFiniteDateRange()
+            val data =
+                AbsenceApplication(
+                    id = AbsenceApplicationId(UUID.randomUUID()),
+                    createdAt = clock.now(),
+                    createdBy = citizenUser.evakaUserId,
+                    modifiedAt = clock.now(),
+                    modifiedBy = citizenUser.evakaUserId,
+                    childId = child.id,
+                    startDate = range.start,
+                    endDate = range.end,
+                    description = "test",
+                    status = AbsenceApplicationStatus.WAITING_DECISION,
+                    decidedAt = null,
+                    decidedBy = null,
+                    rejectedReason = null,
+                )
+            db.transaction { tx -> tx.insert(data) }
+
+            absenceApplicationControllerEmployee.acceptAbsenceApplication(
+                dbInstance(),
+                employeeUser,
+                clock,
+                data.id,
+            )
+
+            assertEquals(
+                emptyList(),
+                db.transaction { tx -> tx.getAbsencesOfChildByRange(child.id, range.asDateRange()) },
+            )
+        }
+
+        @Test
+        fun `past dates are not inserted`() {
+            val range = FiniteDateRange(clock.today().minusDays(1), clock.today().plusDays(1))
+            val data =
+                AbsenceApplication(
+                    id = AbsenceApplicationId(UUID.randomUUID()),
+                    createdAt = clock.now(),
+                    createdBy = citizenUser.evakaUserId,
+                    modifiedAt = clock.now(),
+                    modifiedBy = citizenUser.evakaUserId,
+                    childId = child.id,
+                    startDate = range.start,
+                    endDate = range.end,
+                    description = "test",
+                    status = AbsenceApplicationStatus.WAITING_DECISION,
+                    decidedAt = null,
+                    decidedBy = null,
+                    rejectedReason = null,
+                )
+            db.transaction { tx -> tx.insert(data) }
+
+            absenceApplicationControllerEmployee.acceptAbsenceApplication(
+                dbInstance(),
+                employeeUser,
+                clock,
+                data.id,
+            )
+
+            assertEquals(
+                listOf(
+                    Absence(
+                        childId = child.id,
+                        date = clock.today(),
+                        category = AbsenceCategory.BILLABLE,
+                        absenceType = AbsenceType.OTHER_ABSENCE,
+                        modifiedByStaff = true,
+                        modifiedAt = clock.now(),
+                        belongsToQuestionnaire = false,
+                    ),
+                    Absence(
+                        childId = child.id,
+                        date = clock.today().plusDays(1),
+                        category = AbsenceCategory.BILLABLE,
+                        absenceType = AbsenceType.OTHER_ABSENCE,
+                        modifiedByStaff = true,
+                        modifiedAt = clock.now(),
+                        belongsToQuestionnaire = false,
+                    ),
+                ),
+                db.transaction { tx ->
+                    tx.getAbsencesOfChildByRange(child.id, range.asDateRange()).sortedBy { it.date }
+                },
+            )
         }
 
         @Test
