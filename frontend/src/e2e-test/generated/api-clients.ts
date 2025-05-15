@@ -1255,12 +1255,14 @@ export async function createMessageAccounts(): Promise<void> {
 export async function createNekkuSpecialDiets(
   request: {
     body: NekkuSpecialDiet[]
-  }
+  },
+  options?: { mockedTime?: HelsinkiDateTime }
 ): Promise<void> {
   try {
     const { data: json } = await devClient.request<JsonOf<void>>({
       url: uri`/nekku-special-diets`.toString(),
       method: 'POST',
+      headers: { EvakaMockedTime: options?.mockedTime?.formatIso() },
       data: request.body satisfies JsonCompatible<NekkuSpecialDiet[]>
     })
     return json

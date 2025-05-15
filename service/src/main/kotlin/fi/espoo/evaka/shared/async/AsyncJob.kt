@@ -12,6 +12,7 @@ import fi.espoo.evaka.calendarevent.CalendarEventTime
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.invoicing.service.IncomeNotificationType
 import fi.espoo.evaka.koski.KoskiStudyRightKey
+import fi.espoo.evaka.nekku.NekkuSpecialDietChoices
 import fi.espoo.evaka.sficlient.SfiMessage
 import fi.espoo.evaka.shared.*
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -407,6 +408,14 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
+    data class SendNekkuSpecialDietRemovalWarningEmail(
+        val unitId: DaycareId,
+        val employeeId: EmployeeId,
+        val childrenByGroup: Map<String, Map<ChildId, List<NekkuSpecialDietChoices>>>,
+    ) : AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
     data class SendAbsenceApplicationDecidedEmail(val absenceApplicationId: AbsenceApplicationId) :
         AsyncJob {
         override val user: AuthenticatedUser? = null
@@ -528,6 +537,7 @@ sealed interface AsyncJob : AsyncJobPayload {
                     SendMissingHolidayReservationsReminder::class,
                     SendMissingReservationsReminder::class,
                     SendNekkuCustomerNumberNullificationWarningEmail::class,
+                    SendNekkuSpecialDietRemovalWarningEmail::class,
                     SendNewCustomerIncomeNotificationEmail::class,
                     SendNewDecisionEmail::class,
                     SendNewFeeDecisionEmail::class,
