@@ -908,7 +908,7 @@ data class NekkuSpecialDietChoices(val dietId: String, val fieldId: String, val 
 data class NekkuOrdersReport(
     val deliveryDate: LocalDate,
     val daycareId: DaycareId,
-    val customerGroupId: GroupId,
+    val groupId: GroupId,
     val mealSku: String,
     val totalQuantity: Int,
     val mealTime: List<NekkuProductMealTime>?,

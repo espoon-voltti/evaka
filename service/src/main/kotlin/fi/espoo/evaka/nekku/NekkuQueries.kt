@@ -578,7 +578,7 @@ fun Database.Read.getNekkuOrderReport(
 ): List<NekkuOrdersReport> =
     createQuery {
             sql(
-                "SELECT delivery_date, daycare_id, customer_group_id, meal_sku, total_quantity, meal_time, meal_type, meals_by_special_diet FROM nekku_orders_report WHERE daycare_id = ${bind(daycareId)} AND customer_group_id = (${bind(groupId)}) AND delivery_date = ${bind(date)} "
+                "SELECT delivery_date, daycare_id, group_id, meal_sku, total_quantity, meal_time, meal_type, meals_by_special_diet FROM nekku_orders_report WHERE daycare_id = ${bind(daycareId)} AND group_id = (${bind(groupId)}) AND delivery_date = ${bind(date)} "
             )
         }
         .toList<NekkuOrdersReport>()
@@ -615,7 +615,7 @@ fun Database.Transaction.setNekkuReportOrderReport(
 INSERT INTO nekku_orders_report (
 delivery_date,
 daycare_id,
-customer_group_id,
+group_id,
 meal_sku,
 total_quantity,
 meal_time,
@@ -624,7 +624,7 @@ meals_by_special_diet)
 VALUES (
 ${bind(report.deliveryDate)},
 ${bind(report.daycareId)},
-${bind(report.customerGroupId)},
+${bind(report.groupId)},
 ${bind(report.mealSku)},
 ${bind(report.totalQuantity)},
 ${bind(report.mealTime)},
