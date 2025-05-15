@@ -17,7 +17,9 @@ CREATE TABLE absence_application
     decided_by      uuid REFERENCES evaka_user (id),
     rejected_reason text,
     CONSTRAINT check$start_date_before_end_date CHECK (start_date <= end_date),
-    CONSTRAINT check$decided_valid CHECK ((decided_at IS NULL) = (decided_by IS NULL)),
+    CONSTRAINT check$decided_valid CHECK (status = 'WAITING_DECISION' AND decided_at IS NULL AND decided_by IS NULL OR
+                                          status <> 'WAITING_DECISION' AND decided_at IS NOT NULL AND
+                                          decided_by IS NOT NULL),
     CONSTRAINT check$rejected_reason_valid CHECK ((status = 'REJECTED') = (rejected_reason IS NOT NULL))
 );
 
