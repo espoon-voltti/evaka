@@ -179,7 +179,7 @@ fun Database.Transaction.updatePlacement(
         }
             ?: run {
                 checkAclAuth(aclAuth, old)
-                cancelPlacement(old.id)
+                cancelPlacement(now, userId, old.id)
             }
 
         newPeriods.forEach { (period, type) ->
@@ -342,7 +342,7 @@ private fun Database.Transaction.clearOldPlacements(
                 // old placement is within new placement (or identical)
                 !old.startDate.isBefore(from) && !old.endDate.isAfter(to) -> {
                     checkAclAuth(aclAuth, old)
-                    cancelPlacement(old.id).let {}
+                    cancelPlacement(now, userId, old.id).let {}
                 }
 
                 // old placement encloses new placement

@@ -1828,6 +1828,10 @@ data class DevBackupCare(
     val unitId: DaycareId,
     val groupId: GroupId? = null,
     val period: FiniteDateRange,
+    val createdBy: EvakaUserId = AuthenticatedUser.SystemInternalUser.evakaUserId,
+    val createdAt: HelsinkiDateTime = HelsinkiDateTime.now(),
+    val modifiedBy: EvakaUserId = AuthenticatedUser.SystemInternalUser.evakaUserId,
+    val modifiedAt: HelsinkiDateTime = HelsinkiDateTime.now(),
 )
 
 data class DevChild(

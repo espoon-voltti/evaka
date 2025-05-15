@@ -27,7 +27,6 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
     fun `creation timestamp should be called 'created_at' instead of 'created'`() {
         val permittedViolations =
             setOf(
-                "backup_care",
                 "care_area",
                 "child_daily_note",
                 "child_document",
@@ -98,7 +97,6 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
     fun `update timestamp should be called 'updated_at' instead of 'updated'`() {
         val permittedViolations =
             setOf(
-                "backup_care",
                 "care_area",
                 "child_daily_note",
                 "child_document",
@@ -216,11 +214,6 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
         val permittedViolations =
             setOf(
                 Column(
-                    ColumnRef("backup_care", "created"),
-                    "timestamp with time zone",
-                    nullable = true,
-                ),
-                Column(
                     ColumnRef("daycare_group_placement", "created"),
                     "timestamp with time zone",
                     nullable = true,
@@ -283,11 +276,6 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
     fun `update timestamp should be 'timestamp with time zone' and NOT NULL`() {
         val permittedViolations =
             setOf(
-                Column(
-                    ColumnRef("backup_care", "updated"),
-                    dataType = "timestamp with time zone",
-                    nullable = true,
-                ),
                 Column(
                     ColumnRef("daycare_group_placement", "updated"),
                     dataType = "timestamp with time zone",

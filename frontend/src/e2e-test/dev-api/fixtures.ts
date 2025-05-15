@@ -728,6 +728,10 @@ export class Fixture {
   static backupCare(initial: SemiPartial<DevBackupCare, 'childId' | 'unitId'>) {
     const value: DevBackupCare = {
       id: randomId(),
+      createdAt: HelsinkiDateTime.now(),
+      createdBy: systemInternalUser.id,
+      modifiedAt: HelsinkiDateTime.now(),
+      modifiedBy: systemInternalUser.id,
       groupId: null,
       period: new FiniteDateRange(
         LocalDate.todayInSystemTz(),

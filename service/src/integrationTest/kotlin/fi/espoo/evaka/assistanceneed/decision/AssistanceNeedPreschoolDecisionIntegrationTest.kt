@@ -578,7 +578,11 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
         )
 
         db.transaction { tx ->
-            tx.cancelPlacement(placementId)
+            tx.cancelPlacement(
+                clock.now(),
+                AuthenticatedUser.SystemInternalUser.evakaUserId,
+                placementId,
+            )
             tx.insert(
                 DevPlacement(
                     type = PlacementType.PRESCHOOL,

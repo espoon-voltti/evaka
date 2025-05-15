@@ -315,8 +315,12 @@ export interface DevAssistanceNeedVoucherCoefficient {
 */
 export interface DevBackupCare {
   childId: PersonId
+  createdAt: HelsinkiDateTime
+  createdBy: EvakaUserId
   groupId: GroupId | null
   id: BackupCareId
+  modifiedAt: HelsinkiDateTime
+  modifiedBy: EvakaUserId
   period: FiniteDateRange
   unitId: DaycareId
 }
@@ -1303,6 +1307,8 @@ export function deserializeJsonDevAssistanceNeedVoucherCoefficient(json: JsonOf<
 export function deserializeJsonDevBackupCare(json: JsonOf<DevBackupCare>): DevBackupCare {
   return {
     ...json,
+    createdAt: HelsinkiDateTime.parseIso(json.createdAt),
+    modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt),
     period: FiniteDateRange.parseJson(json.period)
   }
 }
