@@ -21,7 +21,7 @@ data class AssistanceFactor(
     val childId: ChildId,
     val validDuring: FiniteDateRange,
     val capacityFactor: Double,
-    val modified: HelsinkiDateTime,
+    val modifiedAt: HelsinkiDateTime,
     @Nested("modified_by") val modifiedBy: EvakaUser,
 )
 

@@ -391,7 +391,7 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                     """
         SELECT 
             d.id,
-            d.created,
+            d.created_at,
             e.id AS created_by_id,
             e.name AS created_by_name,
             e.type AS created_by_type,
@@ -407,7 +407,7 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                 DocumentMetadata(
                     documentId = column("id"),
                     name = "Päätös tuesta varhaiskasvatuksessa",
-                    createdAt = column("created"),
+                    createdAt = column("created_at"),
                     createdBy =
                         column<EvakaUserId?>("created_by_id")?.let {
                             EvakaUser(
@@ -439,7 +439,7 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                     """
         SELECT 
             d.id,
-            d.created,
+            d.created_at,
             e.id AS created_by_id,
             e.name AS created_by_name,
             e.type AS created_by_type,
@@ -454,7 +454,7 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                 DocumentMetadata(
                     documentId = column("id"),
                     name = "Päätös tuesta esiopetuksessa",
-                    createdAt = column("created"),
+                    createdAt = column("created_at"),
                     createdBy =
                         column<EvakaUserId?>("created_by_id")?.let {
                             EvakaUser(

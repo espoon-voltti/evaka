@@ -326,7 +326,6 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
                   ...formData.shiftCareAttachments,
                   {
                     ...attachment,
-                    updated: HelsinkiDateTime.now(),
                     receivedAt: HelsinkiDateTime.now(),
                     type: 'EXTENDED_CARE',
                     uploadedByEmployee: null,

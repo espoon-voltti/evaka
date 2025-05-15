@@ -32,7 +32,6 @@ import {
 } from '../../dev-api/fixtures'
 import {
   addAclRoleForDaycare,
-  createBackupCares,
   createDaycareGroups,
   createMessageAccounts,
   insertGuardians,
@@ -231,17 +230,12 @@ describe('Sending and receiving messages', () => {
           startDate: mockedDate,
           endDate: mockedDate
         }).save()
-        await createBackupCares({
-          body: [
-            {
-              id: randomId(),
-              childId: testChild2.id,
-              unitId: testDaycare.id,
-              groupId: testDaycareGroup.id,
-              period: new FiniteDateRange(mockedDate, mockedDate)
-            }
-          ]
-        })
+        await Fixture.backupCare({
+          childId: testChild2.id,
+          unitId: testDaycare.id,
+          groupId: testDaycareGroup.id,
+          period: new FiniteDateRange(mockedDate, mockedDate)
+        }).save()
 
         await insertGuardians({
           body: [
@@ -289,17 +283,12 @@ describe('Sending and receiving messages', () => {
       })
 
       test('Citizen sends a message to backup care child', async () => {
-        await createBackupCares({
-          body: [
-            {
-              id: randomId(),
-              childId,
-              unitId: backupDaycareId,
-              groupId: backupGroupFixtureId,
-              period: new FiniteDateRange(mockedDate, mockedDate)
-            }
-          ]
-        })
+        await Fixture.backupCare({
+          childId,
+          unitId: backupDaycareId,
+          groupId: backupGroupFixtureId,
+          period: new FiniteDateRange(mockedDate, mockedDate)
+        }).save()
 
         await insertGuardians({
           body: [

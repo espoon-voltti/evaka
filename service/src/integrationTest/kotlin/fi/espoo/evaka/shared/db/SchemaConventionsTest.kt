@@ -27,19 +27,6 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
     fun `creation timestamp should be called 'created_at' instead of 'created'`() {
         val permittedViolations =
             setOf(
-                "application_note",
-                "application_other_guardian",
-                "assistance_action",
-                "assistance_action_option",
-                "assistance_action_option_ref",
-                "assistance_factor",
-                "assistance_need_decision",
-                "assistance_need_decision_guardian",
-                "assistance_need_preschool_decision",
-                "assistance_need_preschool_decision_guardian",
-                "assistance_need_voucher_coefficient",
-                "attachment",
-                "backup_care",
                 "care_area",
                 "child_daily_note",
                 "child_document",
@@ -110,16 +97,6 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
     fun `update timestamp should be called 'updated_at' instead of 'updated'`() {
         val permittedViolations =
             setOf(
-                "application_note",
-                "application_other_guardian",
-                "assistance_action",
-                "assistance_action_option",
-                "assistance_factor",
-                "assistance_need_decision",
-                "assistance_need_preschool_decision",
-                "assistance_need_voucher_coefficient",
-                "attachment",
-                "backup_care",
                 "care_area",
                 "child_daily_note",
                 "child_document",
@@ -226,12 +203,7 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
     @Test
     fun `modification timestamp should be called 'modified_at' instead of 'modified'`() {
         val permittedViolations =
-            setOf(
-                "assistance_factor",
-                "daycare_assistance",
-                "other_assistance_measure",
-                "preschool_assistance",
-            )
+            setOf("daycare_assistance", "other_assistance_measure", "preschool_assistance")
         val violations =
             columns.filter { it.ref.columnName == "modified" }.map { it.ref.tableName }.toSet()
         assertEquals(permittedViolations, violations)
@@ -241,11 +213,6 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
     fun `creation timestamp should be 'timestamp with time zone' and NOT NULL`() {
         val permittedViolations =
             setOf(
-                Column(
-                    ColumnRef("backup_care", "created"),
-                    "timestamp with time zone",
-                    nullable = true,
-                ),
                 Column(
                     ColumnRef("daycare_group_placement", "created"),
                     "timestamp with time zone",
@@ -309,11 +276,6 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
     fun `update timestamp should be 'timestamp with time zone' and NOT NULL`() {
         val permittedViolations =
             setOf(
-                Column(
-                    ColumnRef("backup_care", "updated"),
-                    dataType = "timestamp with time zone",
-                    nullable = true,
-                ),
                 Column(
                     ColumnRef("daycare_group_placement", "updated"),
                     dataType = "timestamp with time zone",
@@ -408,11 +370,7 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
 
     @Test
     fun `'updated_by' column should not exist and modified_at+modified_by pair should be used instead for user-visible modification timestamps`() {
-        val permittedViolations =
-            setOf(
-                ColumnRef("application_note", "updated_by"),
-                ColumnRef("assistance_action", "updated_by"),
-            )
+        val permittedViolations = emptySet<ColumnRef>()
         val violations = columns.filter { it.ref.columnName == "updated_by" }.map { it.ref }.toSet()
         assertEquals(permittedViolations, violations)
     }
@@ -421,11 +379,6 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
     fun `'modified_by' column should be 'uuid' and NOT NULL`() {
         val permittedViolations =
             setOf(
-                Column(
-                    ColumnRef("assistance_need_voucher_coefficient", "modified_by"),
-                    "uuid",
-                    nullable = true,
-                ),
                 Column(ColumnRef("fridge_partner", "modified_by"), "uuid", nullable = true),
                 Column(
                     ColumnRef("holiday_questionnaire_answer", "modified_by"),
@@ -489,8 +442,6 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
         val permittedViolations =
             setOf(
                 ColumnRef("archived_process_history", "entered_by"),
-                ColumnRef("assistance_action_option_ref", "option_id"),
-                ColumnRef("assistance_factor", "modified_by"),
                 ColumnRef("child_document_read", "person_id"),
                 ColumnRef("daycare", "finance_decision_handler"),
                 ColumnRef("daycare_assistance", "modified_by"),
@@ -530,7 +481,6 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
         val permittedViolations =
             setOf(
                 ColumnRef("assistance_need_decision", "validity_period"),
-                ColumnRef("assistance_need_voucher_coefficient", "validity_period"),
                 ColumnRef("calendar_event", "period"),
                 ColumnRef("daily_service_time", "validity_period"),
                 ColumnRef("daycare", "club_apply_period"),

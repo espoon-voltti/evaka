@@ -68,7 +68,7 @@ FROM placement
 
 UNION ALL
 
-SELECT id, created, updated, child_id AS child, unit_id AS unit, start_date, end_date, TRUE AS is_backup, NULL AS type
+SELECT id, created_at as created, modified_at as updated, child_id AS child, unit_id AS unit, start_date, end_date, TRUE AS is_backup, NULL AS type
 FROM backup_care
 """
             )
@@ -83,7 +83,7 @@ FROM daycare_group_placement
 
 UNION ALL
 
-SELECT id, created, updated, id AS placement, group_id AS "group", start_date, end_date
+SELECT id, created_at as created, modified_at as updated, id AS placement, group_id AS "group", start_date, end_date
 FROM backup_care
 WHERE group_id IS NOT NULL
 """
@@ -217,7 +217,7 @@ FROM pedagogical_document
             sql(
                 """
 SELECT
-    id, created, updated, child_id AS child, capacity_factor,
+    id, created_at as created, modified_at as updated, child_id AS child, capacity_factor,
     lower(valid_during) AS start_date, upper(valid_during) - 1 AS end_date
 FROM assistance_factor
 """
@@ -265,7 +265,7 @@ FROM other_assistance_measure
             sql(
                 """
 SELECT
-    id, created, updated, child_id AS child, coefficient,
+    id, created_at as created, updated_at as updated, child_id AS child, coefficient,
     lower(validity_period) AS start_date, upper(validity_period) - 1 AS end_date
 FROM assistance_need_voucher_coefficient
 """
@@ -277,7 +277,7 @@ FROM assistance_need_voucher_coefficient
             sql(
                 """
 SELECT
-    id, created, updated, child_id AS child, start_date, end_date,
+    id, created_at as created, modified_at as updated, child_id AS child, start_date, end_date,
     other_action != '' AS has_other_action
 FROM assistance_action
 """
@@ -301,7 +301,7 @@ JOIN assistance_action_option option ON option.id = option_id
             sql(
                 """
 SELECT
-    id, created, updated, child_id AS child, selected_unit AS unit,
+    id, created_at as created, updated_at as updated, child_id AS child, selected_unit AS unit,
     lower(validity_period) AS valid_from, upper(validity_period) - 1 AS valid_to,
     status,
     'ASSISTANCE_ENDS' = ANY(assistance_levels) AS assistance_ends,
@@ -319,7 +319,7 @@ WHERE status != 'DRAFT'
             sql(
                 """
 SELECT
-    id, created, updated, child_id AS child, selected_unit AS unit,
+    id, created_at as created, updated_at as updated, child_id AS child, selected_unit AS unit,
     type, valid_from, status
 FROM assistance_need_preschool_decision
 WHERE status != 'DRAFT'

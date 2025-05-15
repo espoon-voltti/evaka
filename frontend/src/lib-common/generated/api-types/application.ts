@@ -74,7 +74,6 @@ export interface ApplicationAttachment {
   name: string
   receivedAt: HelsinkiDateTime
   type: ApplicationAttachmentType
-  updated: HelsinkiDateTime
   uploadedByEmployee: EmployeeId | null
   uploadedByPerson: PersonId | null
 }
@@ -193,15 +192,15 @@ export interface ApplicationFormUpdate {
 export interface ApplicationNote {
   applicationId: ApplicationId
   content: string
-  created: HelsinkiDateTime
+  createdAt: HelsinkiDateTime
   createdBy: EvakaUserId
   createdByName: string
   id: ApplicationNoteId
   messageContentId: MessageContentId | null
   messageThreadId: MessageThreadId | null
-  updated: HelsinkiDateTime
-  updatedBy: EvakaUserId
-  updatedByName: string
+  modifiedAt: HelsinkiDateTime
+  modifiedBy: EvakaUserId
+  modifiedByName: string
 }
 
 /**
@@ -848,8 +847,7 @@ export function deserializeJsonAcceptDecisionRequest(json: JsonOf<AcceptDecision
 export function deserializeJsonApplicationAttachment(json: JsonOf<ApplicationAttachment>): ApplicationAttachment {
   return {
     ...json,
-    receivedAt: HelsinkiDateTime.parseIso(json.receivedAt),
-    updated: HelsinkiDateTime.parseIso(json.updated)
+    receivedAt: HelsinkiDateTime.parseIso(json.receivedAt)
   }
 }
 
@@ -900,8 +898,8 @@ export function deserializeJsonApplicationFormUpdate(json: JsonOf<ApplicationFor
 export function deserializeJsonApplicationNote(json: JsonOf<ApplicationNote>): ApplicationNote {
   return {
     ...json,
-    created: HelsinkiDateTime.parseIso(json.created),
-    updated: HelsinkiDateTime.parseIso(json.updated)
+    createdAt: HelsinkiDateTime.parseIso(json.createdAt),
+    modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt)
   }
 }
 

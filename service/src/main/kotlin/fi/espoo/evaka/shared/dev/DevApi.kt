@@ -1828,6 +1828,10 @@ data class DevBackupCare(
     val unitId: DaycareId,
     val groupId: GroupId? = null,
     val period: FiniteDateRange,
+    val createdBy: EvakaUserId = AuthenticatedUser.SystemInternalUser.evakaUserId,
+    val createdAt: HelsinkiDateTime = HelsinkiDateTime.now(),
+    val modifiedBy: EvakaUserId = AuthenticatedUser.SystemInternalUser.evakaUserId,
+    val modifiedAt: HelsinkiDateTime = HelsinkiDateTime.now(),
 )
 
 data class DevChild(
@@ -1997,7 +2001,9 @@ data class DevChildAttendance(
 data class DevAssistanceAction(
     val id: AssistanceActionId = AssistanceActionId(UUID.randomUUID()),
     val childId: ChildId,
-    val updatedBy: EvakaUserId = AuthenticatedUser.SystemInternalUser.evakaUserId,
+    val createdAt: HelsinkiDateTime = HelsinkiDateTime.now(),
+    val modifiedAt: HelsinkiDateTime = HelsinkiDateTime.now(),
+    val modifiedBy: EvakaUserId = AuthenticatedUser.SystemInternalUser.evakaUserId,
     val startDate: LocalDate = LocalDate.of(2019, 1, 1),
     val endDate: LocalDate = LocalDate.of(2019, 12, 31),
     val actions: Set<String> = emptySet(),
@@ -2012,7 +2018,7 @@ data class DevAssistanceNeedVoucherCoefficient(
         FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 6, 1)),
     val coefficient: BigDecimal = BigDecimal(1.0),
     val modifiedAt: HelsinkiDateTime = HelsinkiDateTime.now(),
-    val modifiedBy: EvakaUser? =
+    val modifiedBy: EvakaUser =
         EvakaUser(
             id = AuthenticatedUser.SystemInternalUser.evakaUserId,
             name = "eVaka",
@@ -2447,7 +2453,7 @@ data class DevAssistanceFactor(
     val validDuring: FiniteDateRange =
         FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 6, 1)),
     val capacityFactor: Double = 1.0,
-    val modified: HelsinkiDateTime = HelsinkiDateTime.now(),
+    val modifiedAt: HelsinkiDateTime = HelsinkiDateTime.now(),
     val modifiedBy: EvakaUser =
         EvakaUser(
             id = AuthenticatedUser.SystemInternalUser.evakaUserId,

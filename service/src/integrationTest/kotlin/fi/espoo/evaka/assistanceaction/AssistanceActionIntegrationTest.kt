@@ -450,7 +450,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     childId = childId,
                     startDate = startDate,
                     endDate = endDate,
-                    updatedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
+                    modifiedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
                 )
             )
         }
