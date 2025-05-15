@@ -145,8 +145,22 @@ fun Database.Transaction.insert(row: AbsenceApplication): AbsenceApplicationId =
     createUpdate {
             sql(
                 """
-INSERT INTO absence_application
-VALUES (
+INSERT INTO absence_application (
+    id,
+    created_at,
+    created_by,
+    updated_at,
+    modified_at,
+    modified_by,
+    child_id,
+    start_date,
+    end_date,
+    description,
+    status,
+    decided_at,
+    decided_by,
+    rejected_reason
+) VALUES (
     ${bind(row.id)},
     ${bind(row.createdAt)},
     ${bind(row.createdBy)},
