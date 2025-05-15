@@ -6,23 +6,38 @@ package fi.espoo.evaka.document.childdocument
 
 import fi.espoo.evaka.EmailEnv
 import fi.espoo.evaka.daycare.domain.Language
+import fi.espoo.evaka.decision.getSendAddress
 import fi.espoo.evaka.document.DocumentType
 import fi.espoo.evaka.emailclient.Email
 import fi.espoo.evaka.emailclient.EmailClient
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
+import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.pdfgen.PdfGenerator
 import fi.espoo.evaka.pis.EmailMessageType
+import fi.espoo.evaka.pis.getPersonById
+import fi.espoo.evaka.pis.service.getChildGuardiansAndFosterParents
+import fi.espoo.evaka.process.ArchivedProcessState
 import fi.espoo.evaka.process.autoCompleteDocumentProcessHistory
+import fi.espoo.evaka.process.getArchiveProcessByChildDocumentId
+import fi.espoo.evaka.process.insertProcessHistoryRow
 import fi.espoo.evaka.s3.DocumentKey
 import fi.espoo.evaka.s3.DocumentService
+import fi.espoo.evaka.sficlient.SentSfiMessage
+import fi.espoo.evaka.sficlient.SfiMessage
+import fi.espoo.evaka.sficlient.hasChildDocumentSfiMessageBeenSent
+import fi.espoo.evaka.sficlient.storeSentSfiMessage
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.domain.OfficialLanguage
+import fi.espoo.evaka.shared.domain.UiLanguage
 import fi.espoo.evaka.shared.domain.toFiniteDateRange
+import fi.espoo.evaka.shared.message.IMessageProvider
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.LocalDate
 import org.springframework.http.ResponseEntity
@@ -34,24 +49,29 @@ private val logger = KotlinLogging.logger {}
 class ChildDocumentService(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val documentClient: DocumentService,
+    private val messageProvider: IMessageProvider,
     private val emailClient: EmailClient,
     private val emailMessageProvider: IEmailMessageProvider,
     private val emailEnv: EmailEnv,
     private val pdfGenerator: PdfGenerator,
 ) {
     init {
-        asyncJobRunner.registerHandler<AsyncJob.CreateChildDocumentPdf> { db, _, msg ->
-            createAndUploadPdf(db, msg.documentId)
-        }
+        asyncJobRunner.registerHandler(::createAndUploadPdf)
+        asyncJobRunner.registerHandler(::sendSfiDecision)
         asyncJobRunner.registerHandler(::sendChildDocumentNotificationEmail)
         asyncJobRunner.registerHandler<AsyncJob.DeleteChildDocumentPdf> { _, _, msg ->
             documentClient.delete(DocumentKey.ChildDocument(msg.key))
         }
     }
 
-    fun createAndUploadPdf(db: Database.Connection, documentId: ChildDocumentId) {
+    fun createAndUploadPdf(
+        db: Database.Connection,
+        clock: EvakaClock,
+        msg: AsyncJob.CreateChildDocumentPdf,
+    ) {
+        val documentId = msg.documentId
         val document =
-            db.transaction { tx -> tx.getChildDocument(documentId) }
+            db.read { tx -> tx.getChildDocument(documentId) }
                 ?: throw NotFound("document $documentId not found")
         val html = generateChildDocumentHtml(document)
         val pdfBytes = pdfGenerator.render(html)
@@ -61,7 +81,114 @@ class ChildDocumentService(
                 pdfBytes,
                 "application/pdf",
             )
-        db.transaction { tx -> tx.updateChildDocumentKey(documentId, key.key) }
+
+        db.transaction { tx ->
+            tx.updateChildDocumentKey(documentId, key.key)
+
+            if (document.decision != null) {
+                if (tx.hasChildDocumentSfiMessageBeenSent(documentId)) {
+                    logger.info {
+                        "Child document decision $documentId SFI message already sent to at least one guardian"
+                    }
+                    return@transaction
+                }
+
+                asyncJobRunner.plan(
+                    tx,
+                    listOf(AsyncJob.SendChildDocumentDecisionSfiMessage(documentId)),
+                    runAt = clock.now(),
+                )
+
+                tx.getArchiveProcessByChildDocumentId(documentId)?.also {
+                    tx.insertProcessHistoryRow(
+                        processId = it.id,
+                        state = ArchivedProcessState.COMPLETED,
+                        now = clock.now(),
+                        userId = AuthenticatedUser.SystemInternalUser.evakaUserId,
+                    )
+                }
+            }
+        }
+    }
+
+    fun sendSfiDecision(
+        db: Database.Connection,
+        clock: EvakaClock,
+        msg: AsyncJob.SendChildDocumentDecisionSfiMessage,
+    ) {
+        val documentId = msg.documentId
+
+        db.transaction { tx ->
+            val document =
+                tx.getChildDocument(documentId)?.also {
+                    if (it.decision == null)
+                        throw IllegalStateException("document $documentId is not a decision")
+                } ?: throw NotFound("document $documentId not found")
+
+            val documentLocation =
+                documentClient.locate(
+                    DocumentKey.AssistanceNeedDecision(
+                        tx.getChildDocumentKey(documentId)
+                            ?: throw IllegalStateException(
+                                "Decision pdf has not yet been generated"
+                            )
+                    )
+                )
+
+            val lang =
+                if (document.template.language == UiLanguage.SV) OfficialLanguage.SV
+                else OfficialLanguage.FI
+
+            tx.getChildGuardiansAndFosterParents(document.child.id, clock.today())
+                .mapNotNull { tx.getPersonById(it) }
+                .forEach { guardian ->
+                    if (guardian.identity !is ExternalIdentifier.SSN) {
+                        logger.info {
+                            "Cannot deliver child document decision $documentId to guardian via Sfi. SSN is missing."
+                        }
+                        return@forEach
+                    }
+
+                    val sendAddress = getSendAddress(messageProvider, guardian, lang)
+
+                    val messageId =
+                        tx.storeSentSfiMessage(
+                            SentSfiMessage(guardianId = guardian.id, documentId = document.id)
+                        )
+
+                    // SFI expects unique string for each message, so document.id is not suitable as
+                    // it is NOT
+                    // string and NOT unique
+                    val uniqueId = "${document.id}|${guardian.id}"
+
+                    val message =
+                        SfiMessage(
+                            messageId = messageId,
+                            documentId = uniqueId,
+                            documentDisplayName = document.template.name,
+                            documentBucket = documentLocation.bucket,
+                            documentKey = documentLocation.key,
+                            firstName = guardian.firstName,
+                            lastName = guardian.lastName,
+                            streetAddress = sendAddress.street,
+                            postalCode = sendAddress.postalCode,
+                            postOffice = sendAddress.postOffice,
+                            ssn = guardian.identity.ssn,
+                            messageHeader = messageProvider.getChildDocumentDecisionHeader(lang),
+                            messageContent = messageProvider.getChildDocumentDecisionContent(lang),
+                        )
+
+                    asyncJobRunner.plan(
+                        tx,
+                        listOf(AsyncJob.SendMessage(message)),
+                        runAt = clock.now(),
+                    )
+                }
+
+            logger.info {
+                "Successfully scheduled child document decision pdf for Suomi.fi sending (id: $documentId)."
+            }
+        }
     }
 
     fun getPdfResponse(tx: Database.Read, documentId: ChildDocumentId): ResponseEntity<Any> {
