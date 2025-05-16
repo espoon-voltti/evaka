@@ -69,7 +69,7 @@ class AbsenceController(
         @RequestBody absences: List<AbsenceUpsert>,
         @PathVariable groupId: GroupId,
     ) {
-        val children = absences.map { it.childId }
+        val children = absences.map { it.childId }.distinct()
 
         db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -122,8 +122,7 @@ class AbsenceController(
             .also { absenceIdList ->
                 Audit.AbsenceUpsert.log(
                     targetId = AuditId(groupId),
-                    objectId = AuditId(absenceIdList),
-                    meta = mapOf("children" to children),
+                    objectId = AuditId(absenceIdList) + AuditId(children),
                 )
             }
     }
@@ -165,9 +164,8 @@ class AbsenceController(
             .also { (deleted, reservations) ->
                 Audit.AbsenceDelete.log(
                     targetId = AuditId(groupId),
-                    objectId = AuditId(deleted),
-                    meta =
-                        mapOf("children" to children, "createdHolidayReservations" to reservations),
+                    objectId = AuditId(deleted) + AuditId(children),
+                    meta = mapOf("createdHolidayReservations" to reservations),
                 )
             }
     }
@@ -203,9 +201,9 @@ class AbsenceController(
             .also { (deletedReservations, deletedAbsences) ->
                 Audit.AttendanceReservationDelete.log(
                     targetId = AuditId(groupId),
+                    objectId = AuditId(children),
                     meta =
                         mapOf(
-                            "children" to children,
                             "deletedReservations" to deletedReservations,
                             "deletedAbsences" to deletedAbsences,
                         ),
