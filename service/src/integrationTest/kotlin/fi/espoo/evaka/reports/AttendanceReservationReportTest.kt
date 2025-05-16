@@ -1510,6 +1510,121 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
         assertThat(result).containsExactlyElementsOf(expected.values)
     }
 
+    @Test
+    fun `Only include departed children with realization report`() {
+        val date = LocalDate.of(2020, 5, 28)
+        db.transaction { tx ->
+            val placementId =
+                tx.insert(
+                    DevPlacement(
+                        childId = testChild_1.id,
+                        unitId = testDaycare.id,
+                        startDate = date,
+                        endDate = date,
+                    )
+                )
+            tx.insert(
+                DevDaycareGroupPlacement(
+                    daycarePlacementId = placementId,
+                    daycareGroupId = testDaycareGroup.id,
+                    startDate = date,
+                    endDate = date,
+                )
+            )
+            tx.insert(
+                DevChildAttendance(
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    date = date,
+                    arrived = LocalTime.of(8, 0),
+                    departed = LocalTime.of(8, 15),
+                )
+            )
+
+            val placementId2 =
+                tx.insert(
+                    DevPlacement(
+                        childId = testChild_2.id,
+                        unitId = testDaycare.id,
+                        startDate = date,
+                        endDate = date,
+                    )
+                )
+            tx.insert(
+                DevDaycareGroupPlacement(
+                    daycarePlacementId = placementId2,
+                    daycareGroupId = testDaycareGroup.id,
+                    startDate = date,
+                    endDate = date,
+                )
+            )
+            tx.insert(
+                DevChildAttendance(
+                    childId = testChild_2.id,
+                    unitId = testDaycare.id,
+                    date = date,
+                    arrived = LocalTime.of(8, 0),
+                    departed = null,
+                )
+            )
+            tx.insert(
+                DevStaffAttendance(
+                    employeeId = staff.id,
+                    groupId = testDaycareGroup.id,
+                    arrived = HelsinkiDateTime.of(date, LocalTime.of(8, 0)),
+                    departed = HelsinkiDateTime.of(date, LocalTime.of(8, 30)),
+                    modifiedAt = HelsinkiDateTime.of(date, LocalTime.of(8, 0)),
+                    modifiedBy = admin.evakaUserId,
+                )
+            )
+
+            tx.insert(testDecisionMaker_2)
+            tx.insert(
+                DevStaffAttendance(
+                    employeeId = testDecisionMaker_2.id,
+                    groupId = testDaycareGroup.id,
+                    arrived = HelsinkiDateTime.of(date, LocalTime.of(8, 0)),
+                    departed = HelsinkiDateTime.of(date, LocalTime.of(8, 30)),
+                    modifiedAt = HelsinkiDateTime.of(date, LocalTime.of(8, 0)),
+                    modifiedBy = admin.evakaUserId,
+                    occupancyCoefficient = BigDecimal.ZERO,
+                )
+            )
+        }
+        val result = getReport(date, date, reservationType = ReservationType.REALIZATION)
+        val expected =
+            createEmptyReport(date, date).also {
+                addExpectedRow(
+                    it,
+                    AttendanceReservationReportRow(
+                        groupId = null,
+                        groupName = null,
+                        HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 0)),
+                        childCountUnder3 = 1,
+                        childCountOver3 = 0,
+                        childCount = 1,
+                        capacityFactor = 1.75,
+                        staffCount = 1.0,
+                        unknownChildCount = 0,
+                        unknownChildCapacityFactor = 0.0,
+                    ),
+                    AttendanceReservationReportRow(
+                        groupId = null,
+                        groupName = null,
+                        HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 15)),
+                        childCountUnder3 = 1,
+                        childCountOver3 = 0,
+                        childCount = 1,
+                        capacityFactor = 1.75,
+                        staffCount = 1.0,
+                        unknownChildCount = 0,
+                        unknownChildCapacityFactor = 0.0,
+                    ),
+                )
+            }
+        assertThat(result).containsExactlyElementsOf(expected.values)
+    }
+
     private fun getReport(
         startDate: LocalDate,
         endDate: LocalDate,
