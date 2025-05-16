@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import FiniteDateRange from 'lib-common/finite-date-range'
-import {
+import type {
   CalendarEventId,
   CalendarEventTimeId,
   GroupId,
@@ -24,8 +24,13 @@ import {
   createDefaultServiceNeedOptions,
   resetServiceState
 } from '../../generated/api-clients'
-import { DevDaycare, DevEmployee, DevPerson } from '../../generated/api-types'
-import { UnitCalendarPage, UnitPage } from '../../pages/employee/units/unit'
+import type {
+  DevDaycare,
+  DevEmployee,
+  DevPerson
+} from '../../generated/api-types'
+import type { UnitCalendarPage } from '../../pages/employee/units/unit'
+import { UnitPage } from '../../pages/employee/units/unit'
 import { DiscussionSurveyReadView } from '../../pages/employee/units/unit-discussion-survey-page'
 import { waitUntilEqual, waitUntilFalse, waitUntilTrue } from '../../utils'
 import { Page } from '../../utils/page'

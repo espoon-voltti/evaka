@@ -9,7 +9,7 @@ import React, { cloneElement } from 'react'
 
 import LocalDate from 'lib-common/local-date'
 
-import { Translations } from '../../i18n'
+import type { Translations } from '../../i18n'
 import {
   TestContextProvider,
   testTranslations

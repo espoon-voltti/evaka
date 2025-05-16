@@ -4,7 +4,7 @@
 
 import React, { useCallback } from 'react'
 
-import { Result } from 'lib-common/api'
+import type { Result } from 'lib-common/api'
 import { localDateRange, string } from 'lib-common/form/fields'
 import {
   mapped,
@@ -16,12 +16,12 @@ import {
 } from 'lib-common/form/form'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
 import { ValidationError, ValidationSuccess } from 'lib-common/form/types'
-import {
+import type {
   AssistanceFactor,
   AssistanceFactorResponse,
   AssistanceFactorUpdate
 } from 'lib-common/generated/api-types/assistance'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { InputFieldF } from 'lib-components/atoms/form/InputField'
 import { Td, Tr } from 'lib-components/layout/Table'

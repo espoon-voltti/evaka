@@ -7,12 +7,12 @@ import React, { useCallback, useContext, useState } from 'react'
 import { Link } from 'react-router'
 import styled from 'styled-components'
 
-import { Result } from 'lib-common/api'
-import {
+import type { Result } from 'lib-common/api'
+import type {
   GuardiansResponse,
   PersonJSON
 } from 'lib-common/generated/api-types/pis'
-import { ChildId, PersonId } from 'lib-common/generated/api-types/shared'
+import type { ChildId, PersonId } from 'lib-common/generated/api-types/shared'
 import { constantQuery, useQueryResult } from 'lib-common/query'
 import { getAge } from 'lib-common/utils/local-date'
 import { StaticChip } from 'lib-components/atoms/Chip'

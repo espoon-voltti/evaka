@@ -5,11 +5,11 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import DateRange from 'lib-common/date-range'
+import type DateRange from 'lib-common/date-range'
 import { useBoolean } from 'lib-common/form/hooks'
-import { UpdateStateFn } from 'lib-common/form-state'
+import type { UpdateStateFn } from 'lib-common/form-state'
 import { time } from 'lib-common/form-validation'
-import {
+import type {
   CareType,
   Daycare,
   DaycareCareArea,
@@ -18,12 +18,12 @@ import {
   ProviderType,
   UnitManager
 } from 'lib-common/generated/api-types/daycare'
-import {
+import type {
   AreaId,
   Coordinate,
   EmployeeId
 } from 'lib-common/generated/api-types/shared'
-import { JsonOf } from 'lib-common/json'
+import type { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import TimeRange from 'lib-common/time-range'
@@ -46,13 +46,12 @@ import colors from 'lib-customizations/common'
 import { featureFlags, unitProviderTypes } from 'lib-customizations/employee'
 import { faPen, farXmark } from 'lib-icons'
 
-import {
-  RangeValidationResult,
-  TimeRangeInput
-} from '../../../components/child-information/daily-service-times/DailyServiceTimesForms'
-import { Translations, useTranslation } from '../../../state/i18n'
-import { FinanceDecisionHandlerOption } from '../../../state/invoicing-ui'
-import { DayOfWeek } from '../../../types'
+import type { RangeValidationResult } from '../../../components/child-information/daily-service-times/DailyServiceTimesForms'
+import { TimeRangeInput } from '../../../components/child-information/daily-service-times/DailyServiceTimesForms'
+import type { Translations } from '../../../state/i18n'
+import { useTranslation } from '../../../state/i18n'
+import type { FinanceDecisionHandlerOption } from '../../../state/invoicing-ui'
+import type { DayOfWeek } from '../../../types'
 
 import {
   closingDateIsBeforeLastPlacementDate,

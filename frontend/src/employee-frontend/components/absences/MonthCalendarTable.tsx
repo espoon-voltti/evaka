@@ -8,15 +8,15 @@ import React, { useMemo } from 'react'
 import { Link } from 'react-router'
 import styled, { css, useTheme } from 'styled-components'
 
-import {
+import type {
   GroupMonthCalendar,
   GroupMonthCalendarChild,
   GroupMonthCalendarDay,
   GroupMonthCalendarDayChild
 } from 'lib-common/generated/api-types/absence'
-import { GroupId } from 'lib-common/generated/api-types/shared'
-import LocalDate from 'lib-common/local-date'
-import TimeRange from 'lib-common/time-range'
+import type { GroupId } from 'lib-common/generated/api-types/shared'
+import type LocalDate from 'lib-common/local-date'
+import type TimeRange from 'lib-common/time-range'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import { Td, Thead } from 'lib-components/layout/Table'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
@@ -26,11 +26,12 @@ import colors, { absenceColors } from 'lib-customizations/common'
 import { featureFlags } from 'lib-customizations/employee'
 import { fasExclamationTriangle } from 'lib-icons'
 
-import { Translations, useTranslation } from '../../state/i18n'
+import type { Translations } from '../../state/i18n'
+import { useTranslation } from '../../state/i18n'
 import { AgeIndicatorChip } from '../common/AgeIndicatorChip'
 import { ContractDaysIndicatorChip } from '../common/ContractDaysIndicatorChip'
 
-import { SelectedCell } from './GroupMonthCalendar'
+import type { SelectedCell } from './GroupMonthCalendar'
 import MonthCalendarCell, {
   AbsenceCellDiv,
   DisabledCell

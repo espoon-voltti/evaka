@@ -5,7 +5,7 @@
 import React, { useCallback, useContext, useState } from 'react'
 
 import { wrapResult } from 'lib-common/api'
-import { MobileDeviceId } from 'lib-common/generated/api-types/shared'
+import type { MobileDeviceId } from 'lib-common/generated/api-types/shared'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'

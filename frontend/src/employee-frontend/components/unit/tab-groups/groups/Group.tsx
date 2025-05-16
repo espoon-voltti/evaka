@@ -9,26 +9,30 @@ import React, { useContext, useState } from 'react'
 import { Link } from 'react-router'
 import styled from 'styled-components'
 
-import { Loading, Result, wrapResult } from 'lib-common/api'
+import type { Result } from 'lib-common/api'
+import { Loading, wrapResult } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { useBoolean } from 'lib-common/form/hooks'
-import { Action } from 'lib-common/generated/action'
-import { UnitBackupCare } from 'lib-common/generated/api-types/backupcare'
-import { Caretakers, Daycare } from 'lib-common/generated/api-types/daycare'
-import { NekkuUnitNumber } from 'lib-common/generated/api-types/nekku'
-import {
+import type { Action } from 'lib-common/generated/action'
+import type { UnitBackupCare } from 'lib-common/generated/api-types/backupcare'
+import type {
+  Caretakers,
+  Daycare
+} from 'lib-common/generated/api-types/daycare'
+import type { NekkuUnitNumber } from 'lib-common/generated/api-types/nekku'
+import type {
   ChildDailyNote,
   NotesByGroupResponse
 } from 'lib-common/generated/api-types/note'
-import { OccupancyResponse } from 'lib-common/generated/api-types/occupancy'
-import {
+import type { OccupancyResponse } from 'lib-common/generated/api-types/occupancy'
+import type {
   DaycareId,
   GroupId,
   PersonId
 } from 'lib-common/generated/api-types/shared'
 import { first, second, useSelectMutation } from 'lib-common/query'
 import { capitalizeFirstLetter } from 'lib-common/string'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import { formatPercentage } from 'lib-common/utils/number'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import PlacementCircle from 'lib-components/atoms/PlacementCircle'
@@ -66,16 +70,17 @@ import {
 
 import GroupUpdateModal from '../../../../components/unit/tab-groups/groups/group/GroupUpdateModal'
 import { getNotesByGroup } from '../../../../generated/api-clients/note'
-import { Translations, useTranslation } from '../../../../state/i18n'
+import type { Translations } from '../../../../state/i18n'
+import { useTranslation } from '../../../../state/i18n'
 import { UIContext } from '../../../../state/ui'
 import { UserContext } from '../../../../state/user'
-import {
+import type {
   DaycareGroupPlacementDetailed,
   DaycareGroupWithPlacements,
   UnitChildrenCapacityFactors
 } from '../../../../types/unit'
 import { formatPersonName } from '../../../../utils'
-import { UnitFilters } from '../../../../utils/UnitFilters'
+import type { UnitFilters } from '../../../../utils/UnitFilters'
 import { rangesOverlap } from '../../../../utils/date'
 import { isPartDayPlacement } from '../../../../utils/placements'
 import { requireRole } from '../../../../utils/roles'

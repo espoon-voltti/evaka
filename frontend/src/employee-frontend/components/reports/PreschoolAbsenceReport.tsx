@@ -7,14 +7,14 @@ import orderBy from 'lodash/orderBy'
 import React, { useCallback, useContext, useMemo, useState } from 'react'
 
 import { combine } from 'lib-common/api'
-import FiniteDateRange from 'lib-common/finite-date-range'
-import {
+import type FiniteDateRange from 'lib-common/finite-date-range'
+import type {
   Daycare,
   DaycareGroup,
   PreschoolTerm
 } from 'lib-common/generated/api-types/daycare'
-import { SortDirection } from 'lib-common/generated/api-types/invoicing'
-import { GroupId } from 'lib-common/generated/api-types/shared'
+import type { SortDirection } from 'lib-common/generated/api-types/invoicing'
+import type { GroupId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { constantQuery, useQueryResult } from 'lib-common/query'
 import Title from 'lib-components/atoms/Title'

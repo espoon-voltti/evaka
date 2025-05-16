@@ -10,16 +10,15 @@ import TimeInterval from '../time-interval'
 import TimeRange from '../time-range'
 
 import { mapped, object, required, transformed, value } from './form'
-import {
+import type {
   AnyForm,
   FieldErrors,
   Form,
   ShapeOf,
   StateOf,
-  ValidationError,
-  ValidationResult,
-  ValidationSuccess
+  ValidationResult
 } from './types'
+import { ValidationError, ValidationSuccess } from './types'
 
 export type FieldType<F extends () => AnyForm> = Form<
   unknown,

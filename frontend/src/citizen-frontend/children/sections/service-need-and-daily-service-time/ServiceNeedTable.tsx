@@ -4,8 +4,9 @@
 
 import React from 'react'
 
-import DateRange, { Tense } from 'lib-common/date-range'
-import { ServiceNeedSummary } from 'lib-common/generated/api-types/serviceneed'
+import type { Tense } from 'lib-common/date-range'
+import DateRange from 'lib-common/date-range'
+import type { ServiceNeedSummary } from 'lib-common/generated/api-types/serviceneed'
 import LocalDate from 'lib-common/local-date'
 import { StaticChip } from 'lib-components/atoms/Chip'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'

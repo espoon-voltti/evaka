@@ -2,13 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { ApplicationType } from 'lib-common/generated/api-types/application'
+import type { ApplicationType } from 'lib-common/generated/api-types/application'
 
+import type { Page } from '../../../utils/page'
 import {
   Combobox,
   DatePicker,
   Element,
-  Page,
   Radio,
   Select,
   TextInput

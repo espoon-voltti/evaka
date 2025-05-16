@@ -5,7 +5,7 @@
 import orderBy from 'lodash/orderBy'
 import React, { useMemo } from 'react'
 
-import { PersonId } from 'lib-common/generated/api-types/shared'
+import type { PersonId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
 import UnorderedList from 'lib-components/atoms/UnorderedList'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'

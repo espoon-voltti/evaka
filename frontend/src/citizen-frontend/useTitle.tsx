@@ -4,7 +4,7 @@
 
 import { useEffect } from 'react'
 
-import { Translations } from 'lib-customizations/citizen'
+import type { Translations } from 'lib-customizations/citizen'
 
 export default function useTitle(t: Translations, title: string) {
   const effectiveTitle = title ? `${t.common.title} | ${title}` : t.common.title

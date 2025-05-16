@@ -7,12 +7,13 @@ import classNames from 'classnames'
 import React, { useEffect, useMemo, useRef, useState, forwardRef } from 'react'
 import styled from 'styled-components'
 
-import { BoundFormState } from 'lib-common/form/hooks'
+import type { BoundFormState } from 'lib-common/form/hooks'
 
-import { BaseProps } from '../../utils'
+import type { BaseProps } from '../../utils'
 import UnderRowStatusIcon from '../StatusIcon'
 
-import { InputFieldUnderRow, InputInfo } from './InputField'
+import type { InputInfo } from './InputField'
+import { InputFieldUnderRow } from './InputField'
 
 interface TextAreaInputProps extends BaseProps {
   value: string

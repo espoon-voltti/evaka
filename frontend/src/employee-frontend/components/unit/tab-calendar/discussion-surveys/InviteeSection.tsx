@@ -9,12 +9,12 @@ import React, { useMemo, useState } from 'react'
 import { Link } from 'react-router'
 import styled from 'styled-components'
 
-import {
+import type {
   CalendarEvent,
   CalendarEventTime
 } from 'lib-common/generated/api-types/calendarevent'
-import { ChildBasics } from 'lib-common/generated/api-types/placement'
-import { CalendarEventId } from 'lib-common/generated/api-types/shared'
+import type { ChildBasics } from 'lib-common/generated/api-types/placement'
+import type { CalendarEventId } from 'lib-common/generated/api-types/shared'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import {
   FixedSpaceColumn,
@@ -27,7 +27,7 @@ import { defaultMargins } from 'lib-components/white-space'
 import { useTranslation } from '../../../../state/i18n'
 import { clearChildCalendarEventTimeReservationsForSurveyMutation } from '../queries'
 
-import { ChildGroupInfo } from './DiscussionSurveyView'
+import type { ChildGroupInfo } from './DiscussionSurveyView'
 
 const ReservationCount = styled.span`
   font-weight: ${fontWeights.bold};

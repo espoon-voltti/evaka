@@ -5,8 +5,9 @@
 import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 
-import { Loading, Result, wrapResult } from 'lib-common/api'
-import { PersonJSON } from 'lib-common/generated/api-types/pis'
+import type { Result } from 'lib-common/api'
+import { Loading, wrapResult } from 'lib-common/api'
+import type { PersonJSON } from 'lib-common/generated/api-types/pis'
 import InputField from 'lib-components/atoms/form/InputField'
 import Spinner from 'lib-components/atoms/state/Spinner'
 import FormModal from 'lib-components/molecules/modals/FormModal'

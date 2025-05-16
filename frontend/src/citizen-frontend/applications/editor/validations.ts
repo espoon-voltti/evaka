@@ -2,12 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
+import type { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
+import type { ErrorKey, ErrorsOf } from 'lib-common/form-validation'
 import {
   email,
   emailVerificationCheck,
-  ErrorKey,
-  ErrorsOf,
   getErrorCount,
   phone,
   regexp,
@@ -17,14 +16,14 @@ import {
   TIME_REGEXP,
   validate
 } from 'lib-common/form-validation'
-import {
+import type {
   ApplicationAttachment,
   ApplicationDetails as ApplicationDetailsGen
 } from 'lib-common/generated/api-types/application'
 import LocalDate from 'lib-common/local-date'
 import { featureFlags } from 'lib-customizations/citizen'
 
-import { Term } from './ApplicationEditor'
+import type { Term } from './ApplicationEditor'
 
 export type ApplicationFormDataErrors = {
   [section in keyof ApplicationFormData]: ErrorsOf<ApplicationFormData[section]>

@@ -6,7 +6,7 @@ import React from 'react'
 import { Link } from 'react-router'
 import styled from 'styled-components'
 
-import {
+import type {
   VoucherValueDecisionDetailed,
   VoucherValueDecisionType
 } from 'lib-common/generated/api-types/invoicing'

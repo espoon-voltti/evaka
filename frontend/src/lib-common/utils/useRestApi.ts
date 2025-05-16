@@ -2,17 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { DependencyList, useCallback, useEffect, useRef, useState } from 'react'
+import type { DependencyList } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
-import {
-  ApiFunction,
-  ApiResultOf,
-  Failure,
-  isCancelled,
-  Loading,
-  Result,
-  withStaleCancellation
-} from '../api'
+import type { ApiFunction, ApiResultOf, Result } from '../api'
+import { Failure, isCancelled, Loading, withStaleCancellation } from '../api'
 
 type APICallFn<F extends ApiFunction> = (
   ...args: Parameters<F>

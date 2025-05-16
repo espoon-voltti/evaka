@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Page, Element, ElementCollection } from '../../utils/page'
+import type { Page, Element, ElementCollection } from '../../utils/page'
 
 import { ReceivedThreadPreview } from './messages'
 

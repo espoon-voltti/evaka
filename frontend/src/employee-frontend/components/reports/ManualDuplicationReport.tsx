@@ -8,13 +8,13 @@ import React, { useCallback, useMemo, useState } from 'react'
 import { Link } from 'react-router'
 import styled from 'styled-components'
 
-import { SortDirection } from 'lib-common/generated/api-types/invoicing'
-import {
+import type { SortDirection } from 'lib-common/generated/api-types/invoicing'
+import type {
   ManualDuplicationReportRow,
   ManualDuplicationReportViewMode
 } from 'lib-common/generated/api-types/reports'
 import { useQueryResult } from 'lib-common/query'
-import { Arg0 } from 'lib-common/types'
+import type { Arg0 } from 'lib-common/types'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
@@ -29,7 +29,7 @@ import {
 } from 'lib-components/layout/Table'
 import { Gap } from 'lib-components/white-space'
 
-import { getManualDuplicationReport } from '../../generated/api-clients/reports'
+import type { getManualDuplicationReport } from '../../generated/api-clients/reports'
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 

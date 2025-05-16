@@ -5,20 +5,20 @@
 import React, { useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import { Failure } from 'lib-common/api'
+import type { Failure } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import { localDateRange } from 'lib-common/form/fields'
 import { mapped, object, required, value } from 'lib-common/form/form'
 import { useBoolean, useForm, useFormFields } from 'lib-common/form/hooks'
-import { StateOf } from 'lib-common/form/types'
-import { AbsenceType } from 'lib-common/generated/api-types/absence'
-import { HolidayPeriod } from 'lib-common/generated/api-types/holidayperiod'
-import {
+import type { StateOf } from 'lib-common/form/types'
+import type { AbsenceType } from 'lib-common/generated/api-types/absence'
+import type { HolidayPeriod } from 'lib-common/generated/api-types/holidayperiod'
+import type {
   AbsenceRequest,
   ReservationChild,
   ReservationsResponse
 } from 'lib-common/generated/api-types/reservations'
-import { ChildId } from 'lib-common/generated/api-types/shared'
+import type { ChildId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { scrollIntoViewSoftKeyboard } from 'lib-common/utils/scrolling'
 import { SelectionChip } from 'lib-components/atoms/Chip'

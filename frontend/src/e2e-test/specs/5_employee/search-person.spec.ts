@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { ApplicationId } from 'lib-common/generated/api-types/shared'
+import type { ApplicationId } from 'lib-common/generated/api-types/shared'
 import { randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 
@@ -22,7 +22,7 @@ import {
   createApplications,
   resetServiceState
 } from '../../generated/api-clients'
-import { DevEmployee } from '../../generated/api-types'
+import type { DevEmployee } from '../../generated/api-types'
 import PersonSearchPage from '../../pages/employee/person-search'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'

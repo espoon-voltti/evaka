@@ -4,9 +4,9 @@
 
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { AssistanceNeedDecisionStatus } from 'lib-common/generated/api-types/assistanceneed'
-import { PlacementType } from 'lib-common/generated/api-types/placement'
-import { DaycareId, PersonId } from 'lib-common/generated/api-types/shared'
+import type { AssistanceNeedDecisionStatus } from 'lib-common/generated/api-types/assistanceneed'
+import type { PlacementType } from 'lib-common/generated/api-types/placement'
+import type { DaycareId, PersonId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 
@@ -25,10 +25,9 @@ import {
   createDefaultServiceNeedOptions,
   resetServiceState
 } from '../../generated/api-clients'
-import { DevEmployee } from '../../generated/api-types'
-import ChildInformationPage, {
-  AssistanceSection
-} from '../../pages/employee/child-information'
+import type { DevEmployee } from '../../generated/api-types'
+import type { AssistanceSection } from '../../pages/employee/child-information'
+import ChildInformationPage from '../../pages/employee/child-information'
 import { waitUntilEqual } from '../../utils'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'

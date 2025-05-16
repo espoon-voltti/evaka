@@ -8,14 +8,14 @@ import React, { useContext, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { UpdateStateFn } from 'lib-common/form-state'
-import {
+import type { UpdateStateFn } from 'lib-common/form-state'
+import type {
   BackupCareUnit,
   ChildBackupCare,
   ChildBackupCareResponse
 } from 'lib-common/generated/api-types/backupcare'
-import { UnitStub } from 'lib-common/generated/api-types/daycare'
-import { ChildId } from 'lib-common/generated/api-types/shared'
+import type { UnitStub } from 'lib-common/generated/api-types/daycare'
+import type { ChildId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import {
   constantQuery,
@@ -39,7 +39,7 @@ import { unitsQuery } from '../../../queries'
 import { ChildContext } from '../../../state'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
-import { DateRange } from '../../../utils/date'
+import type { DateRange } from '../../../utils/date'
 import {
   isDateRangeInverted,
   isDateRangeOverlappingWithExisting

@@ -7,10 +7,13 @@ import React from 'react'
 import { localDate } from 'lib-common/form/fields'
 import { object, oneOf, required } from 'lib-common/form/form'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
-import { AreaJSON, ProviderType } from 'lib-common/generated/api-types/daycare'
-import { PlacementType } from 'lib-common/generated/api-types/placement'
-import { ServiceNeedReportRow } from 'lib-common/generated/api-types/reports'
-import { AreaId } from 'lib-common/generated/api-types/shared'
+import type {
+  AreaJSON,
+  ProviderType
+} from 'lib-common/generated/api-types/daycare'
+import type { PlacementType } from 'lib-common/generated/api-types/placement'
+import type { ServiceNeedReportRow } from 'lib-common/generated/api-types/reports'
+import type { AreaId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { constantQuery, useQueryResult } from 'lib-common/query'
 import Title from 'lib-components/atoms/Title'

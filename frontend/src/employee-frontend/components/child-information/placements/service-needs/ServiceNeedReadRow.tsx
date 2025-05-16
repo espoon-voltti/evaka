@@ -4,8 +4,8 @@
 
 import React from 'react'
 
-import { Action } from 'lib-common/generated/action'
-import { ServiceNeed } from 'lib-common/generated/api-types/serviceneed'
+import type { Action } from 'lib-common/generated/action'
+import type { ServiceNeed } from 'lib-common/generated/api-types/serviceneed'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import { Td, Tr } from 'lib-components/layout/Table'
 import { featureFlags } from 'lib-customizations/employee'

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { PlacementType } from 'lib-common/generated/api-types/placement'
+import type { PlacementType } from 'lib-common/generated/api-types/placement'
 
 export const asUnitType = (
   placementType: PlacementType

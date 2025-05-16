@@ -5,7 +5,7 @@
 import React, { Fragment, useState } from 'react'
 import styled from 'styled-components'
 
-import { OutOfOfficePeriod } from 'lib-common/generated/api-types/outofoffice'
+import type { OutOfOfficePeriod } from 'lib-common/generated/api-types/outofoffice'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { Button } from 'lib-components/atoms/buttons/Button'

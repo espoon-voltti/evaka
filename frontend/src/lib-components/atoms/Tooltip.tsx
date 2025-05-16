@@ -14,7 +14,7 @@ import {
   fasCaretUp
 } from 'lib-icons'
 
-import { BaseProps } from '../utils'
+import type { BaseProps } from '../utils'
 import { defaultMargins } from '../white-space'
 
 const TooltipWrapper = styled.div`

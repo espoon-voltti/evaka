@@ -6,7 +6,7 @@ import React, { useCallback, useMemo, useState, createContext } from 'react'
 
 import { useDebounce } from 'lib-common/utils/useDebounce'
 
-import { SearchOrder } from '../../types'
+import type { SearchOrder } from '../../types'
 
 export type SearchColumn =
   | 'last_name,first_name'

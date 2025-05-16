@@ -13,9 +13,9 @@ import colors from 'lib-customizations/common'
 import { farUser } from 'lib-icons'
 
 import { routes } from '../App'
-import { UnitOrGroup } from '../common/unit-or-group'
+import type { UnitOrGroup } from '../common/unit-or-group'
 
-import { Staff } from './utils'
+import type { Staff } from './utils'
 
 const StaffBox = styled.div`
   display: flex;

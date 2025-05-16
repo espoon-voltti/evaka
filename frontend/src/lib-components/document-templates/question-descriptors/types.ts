@@ -2,11 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { ComponentType } from 'react'
+import type { ComponentType } from 'react'
 
-import { BoundForm } from 'lib-common/form/hooks'
-import { AnyForm, StateOf } from 'lib-common/form/types'
-import { Question, QuestionType } from 'lib-common/generated/api-types/document'
+import type { BoundForm } from 'lib-common/form/hooks'
+import type { AnyForm, StateOf } from 'lib-common/form/types'
+import type {
+  Question,
+  QuestionType
+} from 'lib-common/generated/api-types/document'
 
 export interface TemplateQuestionDescriptor<
   Key extends QuestionType,

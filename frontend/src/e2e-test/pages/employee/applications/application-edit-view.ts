@@ -2,17 +2,16 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { OtherGuardianAgreementStatus } from 'lib-common/generated/api-types/application'
-import { PlacementType } from 'lib-common/generated/api-types/placement'
-import LocalDate from 'lib-common/local-date'
+import type { OtherGuardianAgreementStatus } from 'lib-common/generated/api-types/application'
+import type { PlacementType } from 'lib-common/generated/api-types/placement'
+import type LocalDate from 'lib-common/local-date'
 
+import type { Page, Element } from '../../../utils/page'
 import {
   Checkbox,
   Combobox,
-  Page,
   Radio,
   TextInput,
-  Element,
   FileUpload,
   DatePicker
 } from '../../../utils/page'

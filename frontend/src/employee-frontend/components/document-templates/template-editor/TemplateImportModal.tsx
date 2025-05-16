@@ -5,8 +5,8 @@
 import React, { useCallback, useState } from 'react'
 import styled from 'styled-components'
 
-import { ExportedDocumentTemplate } from 'lib-common/generated/api-types/document'
-import { JsonOf } from 'lib-common/json'
+import type { ExportedDocumentTemplate } from 'lib-common/generated/api-types/document'
+import type { JsonOf } from 'lib-common/json'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import BaseModal, {
   ModalButtons

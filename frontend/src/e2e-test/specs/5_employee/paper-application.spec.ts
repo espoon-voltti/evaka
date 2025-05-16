@@ -19,7 +19,7 @@ import {
   createDaycareGroups,
   resetServiceState
 } from '../../generated/api-clients'
-import CreateApplicationModal from '../../pages/employee/applications/create-application-modal'
+import type CreateApplicationModal from '../../pages/employee/applications/create-application-modal'
 import ChildInformationPage from '../../pages/employee/child-information'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'

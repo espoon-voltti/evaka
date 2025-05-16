@@ -4,7 +4,7 @@
 
 import LocalDate from 'lib-common/local-date'
 
-import { StatusLabelType } from '../components/common/StatusLabel'
+import type { StatusLabelType } from '../components/common/StatusLabel'
 import { MAX_DATE } from '../constants'
 
 export function isActiveDateRange(

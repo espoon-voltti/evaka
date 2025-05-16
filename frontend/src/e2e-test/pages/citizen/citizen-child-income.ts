@@ -2,20 +2,18 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { IncomeStatementAttachmentType } from 'lib-common/generated/api-types/incomestatement'
-import { IncomeStatementId } from 'lib-common/generated/api-types/shared'
+import type { IncomeStatementAttachmentType } from 'lib-common/generated/api-types/incomestatement'
+import type { IncomeStatementId } from 'lib-common/generated/api-types/shared'
 import { fromUuid } from 'lib-common/id-type'
 
 import { waitUntilEqual, waitUntilTrue } from '../../utils'
-import {
-  Checkbox,
+import type {
   Page,
-  TextInput,
   Element,
   ElementCollection,
-  EnvType,
-  FileUpload
+  EnvType
 } from '../../utils/page'
+import { Checkbox, TextInput, FileUpload } from '../../utils/page'
 
 export class CitizenChildIncomeStatementViewPage {
   startDate: Element

@@ -7,8 +7,8 @@ import { Link, useNavigate } from 'react-router'
 import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
-import { AttendanceStatus } from 'lib-common/generated/api-types/attendance'
-import { ChildId, DaycareId } from 'lib-common/generated/api-types/shared'
+import type { AttendanceStatus } from 'lib-common/generated/api-types/attendance'
+import type { ChildId, DaycareId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import {
   constantQuery,

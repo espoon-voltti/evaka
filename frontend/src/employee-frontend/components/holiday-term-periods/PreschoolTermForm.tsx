@@ -14,12 +14,9 @@ import {
   value
 } from 'lib-common/form/form'
 import { useForm, useFormElems, useFormFields } from 'lib-common/form/hooks'
-import {
-  StateOf,
-  ValidationError,
-  ValidationSuccess
-} from 'lib-common/form/types'
-import {
+import type { StateOf } from 'lib-common/form/types'
+import { ValidationError, ValidationSuccess } from 'lib-common/form/types'
+import type {
   PreschoolTerm,
   PreschoolTermRequest
 } from 'lib-common/generated/api-types/daycare'

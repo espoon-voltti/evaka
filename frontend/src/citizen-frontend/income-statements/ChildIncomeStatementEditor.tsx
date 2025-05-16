@@ -5,9 +5,10 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router'
 
-import { combine, Loading, Result } from 'lib-common/api'
-import { IncomeStatementStatus } from 'lib-common/generated/api-types/incomestatement'
-import {
+import type { Result } from 'lib-common/api'
+import { combine, Loading } from 'lib-common/api'
+import type { IncomeStatementStatus } from 'lib-common/generated/api-types/incomestatement'
+import type {
   ChildId,
   IncomeStatementId
 } from 'lib-common/generated/api-types/shared'
@@ -15,7 +16,7 @@ import { fromUuid } from 'lib-common/id-type'
 import { fromBody } from 'lib-common/income-statements/body'
 import * as Form from 'lib-common/income-statements/form'
 import { emptyIncomeStatementForm } from 'lib-common/income-statements/form'
-import LocalDate from 'lib-common/local-date'
+import type LocalDate from 'lib-common/local-date'
 import {
   constantQuery,
   useMutationResult,
@@ -27,7 +28,7 @@ import Main from 'lib-components/atoms/Main'
 import { renderResult } from '../async-rendering'
 
 import ChildIncomeStatementForm from './ChildIncomeStatementForm'
-import { IncomeStatementFormAPI } from './IncomeStatementComponents'
+import type { IncomeStatementFormAPI } from './IncomeStatementComponents'
 import {
   childIncomeStatementStartDatesQuery,
   createChildIncomeStatementMutation,

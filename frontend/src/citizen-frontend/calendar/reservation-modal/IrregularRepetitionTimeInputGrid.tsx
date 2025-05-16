@@ -5,7 +5,8 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import { BoundForm, useFormElems, useFormField } from 'lib-common/form/hooks'
+import type { BoundForm } from 'lib-common/form/hooks'
+import { useFormElems, useFormField } from 'lib-common/form/hooks'
 import { scrollIntoViewSoftKeyboard } from 'lib-common/utils/scrolling'
 import { fontWeights, Label } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'

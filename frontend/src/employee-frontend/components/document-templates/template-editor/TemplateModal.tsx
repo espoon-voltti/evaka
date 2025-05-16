@@ -22,19 +22,19 @@ import {
 import { useForm, useFormFields } from 'lib-common/form/hooks'
 import { ValidationError, ValidationSuccess } from 'lib-common/form/types'
 import { nonBlank } from 'lib-common/form/validators'
-import {
+import type {
   DocumentTemplateBasicsRequest,
   DocumentType,
-  documentTypes,
   ExportedDocumentTemplate
 } from 'lib-common/generated/api-types/document'
-import { PlacementType } from 'lib-common/generated/api-types/placement'
-import {
+import { documentTypes } from 'lib-common/generated/api-types/document'
+import type { PlacementType } from 'lib-common/generated/api-types/placement'
+import type {
   DocumentTemplateId,
-  UiLanguage,
-  uiLanguages
+  UiLanguage
 } from 'lib-common/generated/api-types/shared'
-import { JsonOf } from 'lib-common/json'
+import { uiLanguages } from 'lib-common/generated/api-types/shared'
+import type { JsonOf } from 'lib-common/json'
 import { useMutationResult } from 'lib-common/query'
 import { SelectF } from 'lib-components/atoms/dropdowns/Select'
 import { CheckboxF } from 'lib-components/atoms/form/Checkbox'

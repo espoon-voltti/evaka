@@ -5,9 +5,9 @@
 import React from 'react'
 
 import { useBoolean } from 'lib-common/form/hooks'
-import { ServiceNeedOptionVoucherValueRangeWithId } from 'lib-common/generated/api-types/invoicing'
-import { PlacementType } from 'lib-common/generated/api-types/placement'
-import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
+import type { ServiceNeedOptionVoucherValueRangeWithId } from 'lib-common/generated/api-types/invoicing'
+import type { PlacementType } from 'lib-common/generated/api-types/placement'
+import type { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { H3 } from 'lib-components/typography'
 

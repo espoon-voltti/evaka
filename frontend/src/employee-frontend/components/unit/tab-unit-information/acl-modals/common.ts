@@ -5,7 +5,7 @@
 import sortBy from 'lodash/sortBy'
 import { useMemo } from 'react'
 
-import { DaycareGroupResponse } from 'lib-common/generated/api-types/daycare'
+import type { DaycareGroupResponse } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
 
 export const useGroupOptions = (groups: Record<string, DaycareGroupResponse>) =>

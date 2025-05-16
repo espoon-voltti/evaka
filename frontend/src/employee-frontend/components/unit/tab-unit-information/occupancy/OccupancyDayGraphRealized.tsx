@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Chart, ChartData, ChartOptions, TooltipModel } from 'chart.js'
+import type { Chart, ChartData, ChartOptions, TooltipModel } from 'chart.js'
 import { compareAsc, isBefore, max, min, roundToNearestMinutes } from 'date-fns'
 import ceil from 'lodash/ceil'
 import first from 'lodash/first'
@@ -13,7 +13,7 @@ import { Line } from 'react-chartjs-2'
 import styled from 'styled-components'
 
 import { useBoolean } from 'lib-common/form/hooks'
-import { RealtimeOccupancy } from 'lib-common/generated/api-types/occupancy'
+import type { RealtimeOccupancy } from 'lib-common/generated/api-types/occupancy'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
@@ -26,11 +26,13 @@ import { H3, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
-import { Translations, useTranslation } from '../../../../state/i18n'
+import type { Translations } from '../../../../state/i18n'
+import { useTranslation } from '../../../../state/i18n'
 
 import { ChartTooltip } from './ChartTooltip'
 import { LegendSquare } from './OccupanciesForSingleDay'
-import { DatePoint, defaultChartOptions, line } from './chart-commons'
+import type { DatePoint } from './chart-commons'
+import { defaultChartOptions, line } from './chart-commons'
 
 interface Props {
   queryDate: LocalDate

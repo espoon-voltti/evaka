@@ -3,20 +3,16 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, {
-  ChangeEvent,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef
-} from 'react'
+import type { ChangeEvent } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef } from 'react'
 import styled from 'styled-components'
 
-import { isLoading, Result, wrapResult } from 'lib-common/api'
-import { GroupMonthCalendarDay } from 'lib-common/generated/api-types/absence'
-import { StaffAttendanceForDates } from 'lib-common/generated/api-types/daycare'
-import { GroupId } from 'lib-common/generated/api-types/shared'
-import LocalDate from 'lib-common/local-date'
+import type { Result } from 'lib-common/api'
+import { isLoading, wrapResult } from 'lib-common/api'
+import type { GroupMonthCalendarDay } from 'lib-common/generated/api-types/absence'
+import type { StaffAttendanceForDates } from 'lib-common/generated/api-types/daycare'
+import type { GroupId } from 'lib-common/generated/api-types/shared'
+import type LocalDate from 'lib-common/local-date'
 import { isAutomatedTest } from 'lib-common/utils/helpers'
 import { formatDecimal, stringToNumber } from 'lib-common/utils/number'
 import { useDebouncedSave } from 'lib-common/utils/useDebouncedSave'

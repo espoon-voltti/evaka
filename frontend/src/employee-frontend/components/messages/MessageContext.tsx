@@ -13,8 +13,9 @@ import React, {
 } from 'react'
 import { useSearchParams } from 'react-router'
 
-import { Failure, Loading, Result, wrapResult } from 'lib-common/api'
-import {
+import type { Result } from 'lib-common/api'
+import { Failure, Loading, wrapResult } from 'lib-common/api'
+import type {
   DraftContent,
   Message,
   MessageThread,
@@ -28,7 +29,7 @@ import {
   PagedMessageCopies,
   MessageThreadFolder
 } from 'lib-common/generated/api-types/messaging'
-import {
+import type {
   ApplicationId,
   DaycareId,
   MessageAccountId,
@@ -39,18 +40,18 @@ import {
 } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { fromNullableUuid, fromUuid, tryFromUuid } from 'lib-common/id-type'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import { usePeriodicRefresh } from 'lib-common/utils/usePeriodicRefresh'
 import { useApiState, useRestApi } from 'lib-common/utils/useRestApi'
+import type { GroupMessageAccount } from 'lib-components/messages/types'
 import {
-  GroupMessageAccount,
   isGroupMessageAccount,
   isMunicipalMessageAccount,
   isPersonalMessageAccount,
   isServiceWorkerMessageAccount,
   isFinanceMessageAccount
 } from 'lib-components/messages/types'
-import { SelectOption } from 'lib-components/molecules/Select'
+import type { SelectOption } from 'lib-components/molecules/Select'
 
 import { client } from '../../api/client'
 import {
@@ -68,8 +69,8 @@ import {
 } from '../../generated/api-clients/messaging'
 import { UserContext } from '../../state/user'
 
+import type { AccountView } from './types-view'
 import {
-  AccountView,
   groupMessageBoxes,
   isFolderView,
   isStandardView,

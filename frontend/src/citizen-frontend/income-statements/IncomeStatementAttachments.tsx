@@ -6,19 +6,15 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useCallback, useMemo, useRef } from 'react'
 import styled from 'styled-components'
 
-import { Attachment } from 'lib-common/generated/api-types/attachment'
-import {
-  IncomeStatementAttachmentType,
-  incomeStatementAttachmentTypes
-} from 'lib-common/generated/api-types/incomestatement'
-import {
+import type { Attachment } from 'lib-common/generated/api-types/attachment'
+import type { IncomeStatementAttachmentType } from 'lib-common/generated/api-types/incomestatement'
+import { incomeStatementAttachmentTypes } from 'lib-common/generated/api-types/incomestatement'
+import type {
   AttachmentId,
   IncomeStatementId
 } from 'lib-common/generated/api-types/shared'
-import {
-  IncomeStatementAttachments,
-  numAttachments
-} from 'lib-common/income-statements/attachments'
+import type { IncomeStatementAttachments } from 'lib-common/income-statements/attachments'
+import { numAttachments } from 'lib-common/income-statements/attachments'
 import UnorderedList from 'lib-components/atoms/UnorderedList'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { ContentArea } from 'lib-components/layout/Container'
@@ -26,10 +22,8 @@ import { Table, Tbody, Td, Tr } from 'lib-components/layout/Table'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
-import FileUpload, {
-  fileIcon,
-  UploadHandler
-} from 'lib-components/molecules/FileUpload'
+import type { UploadHandler } from 'lib-components/molecules/FileUpload'
+import FileUpload, { fileIcon } from 'lib-components/molecules/FileUpload'
 import { H2, H3, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
@@ -38,11 +32,8 @@ import { faCheck } from 'lib-icons'
 import { getAttachmentUrl, incomeStatementAttachment } from '../attachments'
 import { useTranslation } from '../localization'
 
-import {
-  LabelWithError,
-  Row,
-  SetStateCallback
-} from './IncomeStatementComponents'
+import type { SetStateCallback } from './IncomeStatementComponents'
+import { LabelWithError, Row } from './IncomeStatementComponents'
 
 function attachmentSectionDataQa(type: IncomeStatementAttachmentType): string {
   return `attachment-section-${type}`

@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { PlacementType } from 'lib-common/generated/api-types/placement'
-import {
+import type { PlacementType } from 'lib-common/generated/api-types/placement'
+import type {
   DaycareId,
   PersonId,
   PlacementId
@@ -12,7 +12,7 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { evakaUserId, randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 
 import config from '../../config'
 import {

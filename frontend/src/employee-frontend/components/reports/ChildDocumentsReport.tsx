@@ -8,12 +8,12 @@ import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
 import { useBoolean } from 'lib-common/form/hooks'
-import { Daycare } from 'lib-common/generated/api-types/daycare'
-import {
+import type { Daycare } from 'lib-common/generated/api-types/daycare'
+import type {
   ChildDocumentsReportTemplate,
   GroupRow
 } from 'lib-common/generated/api-types/reports'
-import {
+import type {
   DaycareId,
   DocumentTemplateId
 } from 'lib-common/generated/api-types/shared'
@@ -22,9 +22,8 @@ import { useQueryResult } from 'lib-common/query'
 import Title from 'lib-components/atoms/Title'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
-import TreeDropdown, {
-  TreeNode
-} from 'lib-components/atoms/dropdowns/TreeDropdown'
+import type { TreeNode } from 'lib-components/atoms/dropdowns/TreeDropdown'
+import TreeDropdown from 'lib-components/atoms/dropdowns/TreeDropdown'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'

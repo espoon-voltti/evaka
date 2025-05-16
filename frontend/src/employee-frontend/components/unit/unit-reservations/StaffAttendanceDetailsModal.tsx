@@ -11,15 +11,13 @@ import { Link } from 'react-router'
 import styled from 'styled-components'
 
 import DateRange from 'lib-common/date-range'
-import { ErrorKey } from 'lib-common/form-validation'
-import {
-  StaffAttendanceType,
-  staffAttendanceTypes
-} from 'lib-common/generated/api-types/attendance'
-import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
-import { EmployeeId, GroupId } from 'lib-common/generated/api-types/shared'
+import type { ErrorKey } from 'lib-common/form-validation'
+import type { StaffAttendanceType } from 'lib-common/generated/api-types/attendance'
+import { staffAttendanceTypes } from 'lib-common/generated/api-types/attendance'
+import type { DaycareGroup } from 'lib-common/generated/api-types/daycare'
+import type { EmployeeId, GroupId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
-import { Id } from 'lib-common/id-type'
+import type { Id } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { constantQuery, useQueryResult } from 'lib-common/query'

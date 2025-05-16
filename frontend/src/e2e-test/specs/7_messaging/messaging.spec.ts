@@ -5,7 +5,7 @@
 import fs from 'fs'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
-import {
+import type {
   DaycareId,
   GroupId,
   PersonId
@@ -39,7 +39,7 @@ import {
   resetServiceState,
   upsertWeakCredentials
 } from '../../generated/api-clients'
-import {
+import type {
   DevCareArea,
   DevEmployee,
   DevPlacement

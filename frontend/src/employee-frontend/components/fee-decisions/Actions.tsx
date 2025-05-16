@@ -5,8 +5,8 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
 
-import { FeeDecisionStatus } from 'lib-common/generated/api-types/invoicing'
-import { FeeDecisionId } from 'lib-common/generated/api-types/shared'
+import type { FeeDecisionStatus } from 'lib-common/generated/api-types/invoicing'
+import type { FeeDecisionId } from 'lib-common/generated/api-types/shared'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'

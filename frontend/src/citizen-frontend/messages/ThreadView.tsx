@@ -16,14 +16,14 @@ import { useNavigate } from 'react-router'
 import styled, { css } from 'styled-components'
 
 import { useBoolean } from 'lib-common/form/hooks'
-import {
+import type {
   ChildMessageAccountAccess,
   CitizenMessageThread,
   Message,
   MessageAccount,
   MessageAccountWithPresence
 } from 'lib-common/generated/api-types/messaging'
-import { MessageAccountId } from 'lib-common/generated/api-types/shared'
+import type { MessageAccountId } from 'lib-common/generated/api-types/shared'
 import { formatFirstName } from 'lib-common/names'
 import { scrollRefIntoView } from 'lib-common/utils/scrolling'
 import { NotificationsContext } from 'lib-components/Notifications'
@@ -55,7 +55,8 @@ import colors, { theme } from 'lib-customizations/common'
 import { faTrash, faEnvelope } from 'lib-icons'
 
 import { getAttachmentUrl } from '../attachments'
-import { Translations, useTranslation } from '../localization'
+import type { Translations } from '../localization'
+import { useTranslation } from '../localization'
 
 import { ConfirmDeleteThread } from './ConfirmDeleteThread'
 import { isPrimaryRecipient } from './MessageEditor'

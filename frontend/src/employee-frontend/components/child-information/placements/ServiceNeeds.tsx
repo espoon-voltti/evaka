@@ -7,16 +7,16 @@ import React, { useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { Action } from 'lib-common/generated/action'
-import { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
-import {
+import type { Action } from 'lib-common/generated/action'
+import type { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
+import type {
   ServiceNeed,
   ServiceNeedOption
 } from 'lib-common/generated/api-types/serviceneed'
-import { ServiceNeedId } from 'lib-common/generated/api-types/shared'
+import type { ServiceNeedId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useMutationResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { Table, Tbody, Th, Thead, Tr } from 'lib-components/layout/Table'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'

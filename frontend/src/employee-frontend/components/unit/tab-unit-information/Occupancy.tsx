@@ -2,28 +2,23 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, {
-  Dispatch,
-  SetStateAction,
-  useCallback,
-  useMemo,
-  useState
-} from 'react'
+import type { Dispatch, SetStateAction } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import { DaycareGroupResponse } from 'lib-common/generated/api-types/daycare'
-import { DaycareId, GroupId } from 'lib-common/generated/api-types/shared'
+import type { DaycareGroupResponse } from 'lib-common/generated/api-types/daycare'
+import type { DaycareId, GroupId } from 'lib-common/generated/api-types/shared'
 import Select from 'lib-components/atoms/dropdowns/Select'
-import TreeDropdown, {
-  TreeNode
-} from 'lib-components/atoms/dropdowns/TreeDropdown'
+import type { TreeNode } from 'lib-components/atoms/dropdowns/TreeDropdown'
+import TreeDropdown from 'lib-components/atoms/dropdowns/TreeDropdown'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { H3, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
-import { Translations, useTranslation } from '../../../state/i18n'
-import { UnitFilters } from '../../../utils/UnitFilters'
+import type { Translations } from '../../../state/i18n'
+import { useTranslation } from '../../../state/i18n'
+import type { UnitFilters } from '../../../utils/UnitFilters'
 import UnitDataFilters from '../UnitDataFilters'
 
 import OccupanciesForDateRange from './occupancy/OccupanciesForDateRange'

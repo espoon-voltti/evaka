@@ -2,17 +2,18 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { SyntheticEvent, useCallback, useEffect, useState } from 'react'
+import type { SyntheticEvent } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
+import type { Crop } from 'react-image-crop'
 import ReactCrop, {
   centerCrop,
   convertToPixelCrop,
-  Crop,
   makeAspectCrop
 } from 'react-image-crop'
 import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
-import { ChildId, DaycareId } from 'lib-common/generated/api-types/shared'
+import type { ChildId, DaycareId } from 'lib-common/generated/api-types/shared'
 import { useMutationResult } from 'lib-common/query'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'

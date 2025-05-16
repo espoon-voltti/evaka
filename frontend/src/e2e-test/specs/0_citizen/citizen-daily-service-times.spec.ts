@@ -13,7 +13,7 @@ import {
   Fixture
 } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
-import { DevDaycare, DevPerson } from '../../generated/api-types'
+import type { DevDaycare, DevPerson } from '../../generated/api-types'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import { waitUntilEqual } from '../../utils'

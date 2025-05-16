@@ -4,8 +4,8 @@
 
 import React, { useState } from 'react'
 
-import { ProviderType } from 'lib-common/generated/api-types/daycare'
-import { PlacementType } from 'lib-common/generated/api-types/placement'
+import type { ProviderType } from 'lib-common/generated/api-types/daycare'
+import type { PlacementType } from 'lib-common/generated/api-types/placement'
 import LocalDate from 'lib-common/local-date'
 import { constantQuery, useQueryResult } from 'lib-common/query'
 import Title from 'lib-components/atoms/Title'

@@ -5,10 +5,11 @@
 import React, { useCallback } from 'react'
 import styled from 'styled-components'
 
-import FiniteDateRange from 'lib-common/finite-date-range'
-import { AccountType } from 'lib-common/generated/api-types/messaging'
-import { MessageAccountId } from 'lib-common/generated/api-types/shared'
-import { type cancelMutation, MutationDescription } from 'lib-common/query'
+import type FiniteDateRange from 'lib-common/finite-date-range'
+import type { AccountType } from 'lib-common/generated/api-types/messaging'
+import type { MessageAccountId } from 'lib-common/generated/api-types/shared'
+import type { MutationDescription } from 'lib-common/query'
+import { type cancelMutation } from 'lib-common/query'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { faTrash } from 'lib-icons'
 

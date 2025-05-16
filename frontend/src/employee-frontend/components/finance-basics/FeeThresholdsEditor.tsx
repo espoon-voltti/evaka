@@ -5,11 +5,12 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
 
-import { Failure, Result, wrapResult } from 'lib-common/api'
+import type { Failure, Result } from 'lib-common/api'
+import { wrapResult } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import { throwIfNull } from 'lib-common/form-validation'
-import { FeeThresholds } from 'lib-common/generated/api-types/invoicing'
-import { FeeThresholdsId } from 'lib-common/generated/api-types/shared'
+import type { FeeThresholds } from 'lib-common/generated/api-types/invoicing'
+import type { FeeThresholdsId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { isValidCents, parseCents, parseCentsOrThrow } from 'lib-common/money'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
@@ -32,14 +33,14 @@ import {
   createFeeThresholds,
   updateFeeThresholds
 } from '../../generated/api-clients/invoicing'
-import { Translations } from '../../state/i18n'
-import {
+import type { Translations } from '../../state/i18n'
+import type {
   FamilySize,
-  familySizes,
   FeeThresholdsSaveError
 } from '../../types/finance-basics'
+import { familySizes } from '../../types/finance-basics'
 
-import { FormState } from './FeesSection'
+import type { FormState } from './FeesSection'
 
 const createFeeThresholdsResult = wrapResult(createFeeThresholds)
 const updateFeeThresholdsResult = wrapResult(updateFeeThresholds)

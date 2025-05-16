@@ -4,7 +4,7 @@
 
 import React, { useContext, useMemo } from 'react'
 
-import { ChildId } from 'lib-common/generated/api-types/shared'
+import type { ChildId } from 'lib-common/generated/api-types/shared'
 
 import { ChildContext } from '../../state'
 

@@ -6,7 +6,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React from 'react'
 
 import { useThrottledEventHandler } from './button-commons'
-import { BaseButtonVisualProps, renderBaseButton } from './button-visuals'
+import type { BaseButtonVisualProps } from './button-visuals'
+import { renderBaseButton } from './button-visuals'
 
 export type ButtonProps = BaseButtonVisualProps & {
   /**

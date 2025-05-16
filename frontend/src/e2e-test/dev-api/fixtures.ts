@@ -2,41 +2,39 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { ScopedRole } from 'lib-common/api-types/employee-auth'
+import type { ScopedRole } from 'lib-common/api-types/employee-auth'
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import {
+import type {
   ApplicationForm,
   ApplicationStatus,
   ApplicationType,
   OtherGuardianAgreementStatus
 } from 'lib-common/generated/api-types/application'
-import {
+import type {
   AssistanceFactor,
   DaycareAssistance,
   OtherAssistanceMeasure,
   PreschoolAssistance
 } from 'lib-common/generated/api-types/assistance'
-import {
+import type {
   AssistanceNeedPreschoolDecisionForm,
   AssistanceNeedVoucherCoefficient
 } from 'lib-common/generated/api-types/assistanceneed'
-import { DocumentContent } from 'lib-common/generated/api-types/document'
-import {
-  HolidayQuestionnaire,
-  HolidayPeriod
-} from 'lib-common/generated/api-types/holidayperiod'
-import {
+import type { DocumentContent } from 'lib-common/generated/api-types/document'
+import type { HolidayPeriod } from 'lib-common/generated/api-types/holidayperiod'
+import { HolidayQuestionnaire } from 'lib-common/generated/api-types/holidayperiod'
+import type {
   DecisionIncome,
   FeeDecision,
   FeeDecisionStatus,
   FeeThresholds,
   IncomeNotification
 } from 'lib-common/generated/api-types/invoicing'
-import { PlacementType } from 'lib-common/generated/api-types/placement'
-import { DailyReservationRequest } from 'lib-common/generated/api-types/reservations'
-import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
-import {
+import type { PlacementType } from 'lib-common/generated/api-types/placement'
+import type { DailyReservationRequest } from 'lib-common/generated/api-types/reservations'
+import type { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
+import type {
   ApplicationId,
   AreaId,
   DaycareId,
@@ -47,7 +45,7 @@ import {
   PlacementId,
   VoucherValueDecisionId
 } from 'lib-common/generated/api-types/shared'
-import { EvakaUser } from 'lib-common/generated/api-types/user'
+import type { EvakaUser } from 'lib-common/generated/api-types/user'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { evakaUserId, fromUuid, randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
@@ -113,7 +111,7 @@ import {
   upsertVtjDataset,
   upsertWeakCredentials
 } from '../generated/api-clients'
-import {
+import type {
   Caretaker,
   DecisionRequest,
   DevAbsence,

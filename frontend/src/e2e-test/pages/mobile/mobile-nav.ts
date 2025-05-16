@@ -2,9 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 
-import { Page, Element } from '../../utils/page'
+import type { Page, Element } from '../../utils/page'
 
 export default class MobileNav {
   #groupSelectorButton: Element

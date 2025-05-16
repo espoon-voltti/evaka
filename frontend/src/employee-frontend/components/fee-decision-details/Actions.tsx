@@ -5,7 +5,7 @@
 import React, { useCallback } from 'react'
 
 import { wrapResult } from 'lib-common/api'
-import {
+import type {
   FeeDecisionDetailed,
   FeeDecisionType
 } from 'lib-common/generated/api-types/invoicing'

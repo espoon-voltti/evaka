@@ -6,12 +6,12 @@ import sortBy from 'lodash/sortBy'
 import React, { useCallback, useMemo } from 'react'
 
 import DateRange from 'lib-common/date-range'
-import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
+import type { DaycareGroup } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
 import Select from 'lib-components/atoms/dropdowns/Select'
 
 import { useTranslation } from '../../../state/i18n'
-import { AttendanceGroupFilter } from '../TabCalendar'
+import type { AttendanceGroupFilter } from '../TabCalendar'
 
 interface Props {
   groups: DaycareGroup[]

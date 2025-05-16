@@ -25,11 +25,11 @@ import {
   createVoucherValues,
   resetServiceState
 } from '../../generated/api-clients'
-import { DevPerson } from '../../generated/api-types'
+import type { DevPerson } from '../../generated/api-types'
 import EmployeeNav from '../../pages/employee/employee-nav'
+import type { VoucherServiceProvidersReport } from '../../pages/employee/reports'
 import ReportsPage, {
-  ServiceVoucherUnitReport,
-  VoucherServiceProvidersReport
+  ServiceVoucherUnitReport
 } from '../../pages/employee/reports'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'

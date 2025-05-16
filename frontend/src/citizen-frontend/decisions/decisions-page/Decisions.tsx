@@ -8,12 +8,12 @@ import sortBy from 'lodash/sortBy'
 import React, { Fragment, useMemo } from 'react'
 
 import { combine } from 'lib-common/api'
-import {
+import type {
   AssistanceNeedDecisionCitizenListItem,
   AssistanceNeedPreschoolDecisionCitizenListItem
 } from 'lib-common/generated/api-types/assistanceneed'
-import { ApplicationId } from 'lib-common/generated/api-types/shared'
-import LocalDate from 'lib-common/local-date'
+import type { ApplicationId } from 'lib-common/generated/api-types/shared'
+import type LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Container, { ContentArea } from 'lib-components/layout/Container'

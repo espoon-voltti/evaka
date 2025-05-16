@@ -7,11 +7,9 @@ import React from 'react'
 import { cancelMutation } from 'lib-common/query'
 
 import { AsyncButton } from './AsyncButton'
-import { BaseButtonVisualProps } from './button-visuals'
-import {
-  MutateButtonBehaviorProps,
-  useMutateButtonBehavior
-} from './mutate-button-behavior'
+import type { BaseButtonVisualProps } from './button-visuals'
+import type { MutateButtonBehaviorProps } from './mutate-button-behavior'
+import { useMutateButtonBehavior } from './mutate-button-behavior'
 
 export { cancelMutation }
 

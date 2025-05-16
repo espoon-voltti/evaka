@@ -5,7 +5,7 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
 
-import { FeeThresholds } from 'lib-common/generated/api-types/invoicing'
+import type { FeeThresholds } from 'lib-common/generated/api-types/invoicing'
 import LocalDate from 'lib-common/local-date'
 import { formatCents } from 'lib-common/money'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
@@ -18,7 +18,7 @@ import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { H3, H4, Label } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
-import { Translations } from 'lib-customizations/employee'
+import type { Translations } from 'lib-customizations/employee'
 import { faCopy, faPen, faQuestion } from 'lib-icons'
 
 import { familySizes } from '../../types/finance-basics'

@@ -13,9 +13,9 @@ import React, {
 import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
-import { UpdateStateFn } from 'lib-common/form-state'
-import { Action } from 'lib-common/generated/action'
-import { PersonJSON } from 'lib-common/generated/api-types/pis'
+import type { UpdateStateFn } from 'lib-common/form-state'
+import type { Action } from 'lib-common/generated/action'
+import type { PersonJSON } from 'lib-common/generated/api-types/pis'
 import { isoLanguages } from 'lib-common/generated/language'
 import LocalDate from 'lib-common/local-date'
 import { useMutation } from 'lib-common/query'
@@ -41,7 +41,8 @@ import LabelValueList from '../../components/common/LabelValueList'
 import AddSsnModal from '../../components/person-shared/person-details/AddSsnModal'
 import { getAddressPagePdf } from '../../generated/api-clients/pis'
 import { useTranslation } from '../../state/i18n'
-import { UIContext, UiState } from '../../state/ui'
+import type { UiState } from '../../state/ui'
+import { UIContext } from '../../state/ui'
 import {
   disableSsnMutation,
   duplicatePersonMutation,

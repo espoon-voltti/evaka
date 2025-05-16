@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { EmployeeId, GroupId } from 'lib-common/generated/api-types/shared'
+import type { EmployeeId, GroupId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
@@ -24,7 +24,7 @@ import {
   insertGuardians,
   resetServiceState
 } from '../../generated/api-clients'
-import { DevDaycareGroup, DevPerson } from '../../generated/api-types'
+import type { DevDaycareGroup, DevPerson } from '../../generated/api-types'
 import CitizenMessagesPage from '../../pages/citizen/citizen-messages'
 import MobileChildMessagesPage from '../../pages/mobile/child-messages-page'
 import MobileChildPage from '../../pages/mobile/child-page'

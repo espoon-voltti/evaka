@@ -5,9 +5,9 @@
 import React, { useCallback, useState } from 'react'
 import styled from 'styled-components'
 
-import { Action } from 'lib-common/generated/action'
-import { DailyServiceTimesValue } from 'lib-common/generated/api-types/dailyservicetimes'
-import {
+import type { Action } from 'lib-common/generated/action'
+import type { DailyServiceTimesValue } from 'lib-common/generated/api-types/dailyservicetimes'
+import type {
   ChildId,
   DailyServiceTimeId
 } from 'lib-common/generated/api-types/shared'

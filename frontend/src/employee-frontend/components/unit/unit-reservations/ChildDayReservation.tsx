@@ -12,17 +12,17 @@ import {
   isRegular,
   isVariableTime
 } from 'lib-common/api-types/daily-service-times'
-import {
+import type {
   AbsenceType,
   ChildServiceNeedInfo
 } from 'lib-common/generated/api-types/absence'
-import { DailyServiceTimesValue } from 'lib-common/generated/api-types/dailyservicetimes'
-import { ScheduleType } from 'lib-common/generated/api-types/placement'
-import {
+import type { DailyServiceTimesValue } from 'lib-common/generated/api-types/dailyservicetimes'
+import type { ScheduleType } from 'lib-common/generated/api-types/placement'
+import type {
   ReservationResponse,
   UnitDateInfo
 } from 'lib-common/generated/api-types/reservations'
-import LocalDate from 'lib-common/local-date'
+import type LocalDate from 'lib-common/local-date'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { Light } from 'lib-components/typography'

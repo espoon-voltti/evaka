@@ -2,8 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { GroupId, PlacementId } from 'lib-common/generated/api-types/shared'
-import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import type {
+  GroupId,
+  PlacementId
+} from 'lib-common/generated/api-types/shared'
+import type HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
@@ -19,15 +22,16 @@ import {
   createDefaultServiceNeedOptions,
   resetServiceState
 } from '../../generated/api-clients'
-import {
+import type {
   DevCareArea,
   DevDaycare,
   DevEmployee,
   DevPerson,
   StaffAttendancePlanId
 } from '../../generated/api-types'
-import { UnitCalendarPage, UnitPage } from '../../pages/employee/units/unit'
-import { UnitStaffAttendancesTable } from '../../pages/employee/units/unit-calendar-page-base'
+import type { UnitCalendarPage } from '../../pages/employee/units/unit'
+import { UnitPage } from '../../pages/employee/units/unit'
+import type { UnitStaffAttendancesTable } from '../../pages/employee/units/unit-calendar-page-base'
 import { waitUntilEqual } from '../../utils'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { DecisionIncome } from 'lib-common/generated/api-types/invoicing'
+import type { DecisionIncome } from 'lib-common/generated/api-types/invoicing'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { fromUuid } from 'lib-common/id-type'
 
@@ -27,10 +27,8 @@ import {
   resetServiceState
 } from '../../generated/api-clients'
 import EmployeeNav from '../../pages/employee/employee-nav'
-import {
-  FinancePage,
-  ValueDecisionsPage
-} from '../../pages/employee/finance/finance-page'
+import type { ValueDecisionsPage } from '../../pages/employee/finance/finance-page'
+import { FinancePage } from '../../pages/employee/finance/finance-page'
 import { waitUntilEqual } from '../../utils'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'

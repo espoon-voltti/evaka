@@ -4,20 +4,18 @@
 
 import React, { useCallback, useContext, useRef, useState } from 'react'
 
-import { FeeAlteration } from 'lib-common/generated/api-types/invoicing'
-import { ChildId } from 'lib-common/generated/api-types/shared'
+import type { FeeAlteration } from 'lib-common/generated/api-types/invoicing'
+import type { ChildId } from 'lib-common/generated/api-types/shared'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import { scrollToRef } from 'lib-common/utils/scrolling'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { Gap } from 'lib-components/white-space'
 import { faQuestion } from 'lib-icons'
 
-import {
-  ChildContext,
-  ChildState
-} from '../../components/child-information/state'
+import type { ChildState } from '../../components/child-information/state'
+import { ChildContext } from '../../components/child-information/state'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
 import { renderResult } from '../async-rendering'

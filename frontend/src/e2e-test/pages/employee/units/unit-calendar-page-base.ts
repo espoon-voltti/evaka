@@ -3,13 +3,13 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { StaffAttendanceType } from 'lib-common/generated/api-types/attendance'
+import type { StaffAttendanceType } from 'lib-common/generated/api-types/attendance'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 
 import { waitUntilEqual } from '../../../utils'
+import type { Page } from '../../../utils/page'
 import {
-  Page,
   Element,
   DatePicker,
   Select,

@@ -4,12 +4,12 @@
 
 import React, { useMemo } from 'react'
 
-import {
+import type {
   AbsenceWithModifierInfo,
   ChildReservation
 } from 'lib-common/generated/api-types/absence'
-import { ServiceTimesPresenceStatus } from 'lib-common/generated/api-types/dailyservicetimes'
-import LocalDate from 'lib-common/local-date'
+import type { ServiceTimesPresenceStatus } from 'lib-common/generated/api-types/dailyservicetimes'
+import type LocalDate from 'lib-common/local-date'
 
 import { useTranslation } from '../../state/i18n'
 

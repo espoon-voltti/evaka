@@ -2,7 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { ApplicationId, DaycareId } from 'lib-common/generated/api-types/shared'
+import type {
+  ApplicationId,
+  DaycareId
+} from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { randomId } from 'lib-common/id-type'
 

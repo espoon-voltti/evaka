@@ -2,19 +2,21 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { IconProp } from '@fortawesome/fontawesome-svg-core'
+import type { IconProp } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
-import React, { HTMLAttributes, RefObject, useState } from 'react'
+import type { HTMLAttributes, RefObject } from 'react'
+import React, { useState } from 'react'
 import styled, { css } from 'styled-components'
 
-import { BoundFormState } from 'lib-common/form/hooks'
+import type { BoundFormState } from 'lib-common/form/hooks'
 import { faTimes } from 'lib-icons'
 
 import { tabletMin } from '../../breakpoints'
-import { BaseProps } from '../../utils'
+import type { BaseProps } from '../../utils'
 import { defaultMargins } from '../../white-space'
-import UnderRowStatusIcon, { InfoStatus } from '../StatusIcon'
+import type { InfoStatus } from '../StatusIcon'
+import UnderRowStatusIcon from '../StatusIcon'
 import { IconOnlyButton } from '../buttons/IconOnlyButton'
 
 const inputWidths = {

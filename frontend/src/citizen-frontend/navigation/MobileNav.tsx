@@ -31,7 +31,8 @@ import {
 
 import ModalAccessibilityWrapper from '../ModalAccessibilityWrapper'
 import { UnwrapResult } from '../async-rendering'
-import { AuthContext, User } from '../auth/state'
+import type { User } from '../auth/state'
+import { AuthContext } from '../auth/state'
 import { langs, useLang, useTranslation } from '../localization'
 import { unreadMessagesCountQuery } from '../messages/queries'
 import { getDuplicateChildInfo } from '../utils/duplicated-child-utils'

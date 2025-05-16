@@ -3,10 +3,11 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import FiniteDateRange from 'lib-common/finite-date-range'
-import LocalDate from 'lib-common/local-date'
+import type LocalDate from 'lib-common/local-date'
 
 import config from '../../../config'
-import { Page, Element, DatePicker } from '../../../utils/page'
+import type { Page, Element } from '../../../utils/page'
+import { DatePicker } from '../../../utils/page'
 
 export class OutOfOfficePage {
   #outOfOffice: Element

@@ -2,11 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { ChildAndPermittedActions } from 'lib-common/generated/api-types/children'
-import { ReservationChild } from 'lib-common/generated/api-types/reservations'
-import { ChildId } from 'lib-common/generated/api-types/shared'
+import type { ChildAndPermittedActions } from 'lib-common/generated/api-types/children'
+import type { ReservationChild } from 'lib-common/generated/api-types/reservations'
+import type { ChildId } from 'lib-common/generated/api-types/shared'
 
-import { Translations } from '../localization'
+import type { Translations } from '../localization'
 
 const toDuplicatedChildIds = (
   children: (ChildAndPermittedActions | ReservationChild)[]

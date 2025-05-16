@@ -7,7 +7,7 @@ import range from 'lodash/range'
 import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import {
+import type {
   RegionalSurveyReportAgeStatisticsResult,
   RegionalSurveyReportResult,
   RegionalSurveyReportYearlyStatisticsResult

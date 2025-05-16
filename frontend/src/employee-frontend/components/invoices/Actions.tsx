@@ -5,8 +5,8 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
 
-import { InvoiceStatus } from 'lib-common/generated/api-types/invoicing'
-import { InvoiceId } from 'lib-common/generated/api-types/shared'
+import type { InvoiceStatus } from 'lib-common/generated/api-types/invoicing'
+import type { InvoiceId } from 'lib-common/generated/api-types/shared'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'

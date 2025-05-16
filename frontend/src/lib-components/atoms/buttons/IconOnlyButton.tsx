@@ -6,10 +6,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React from 'react'
 
 import { useThrottledEventHandler } from './button-commons'
-import {
-  BaseIconOnlyButtonVisualProps,
-  renderBaseIconOnlyButton
-} from './icon-only-button-visuals'
+import type { BaseIconOnlyButtonVisualProps } from './icon-only-button-visuals'
+import { renderBaseIconOnlyButton } from './icon-only-button-visuals'
 
 export type IconOnlyButtonProps = BaseIconOnlyButtonVisualProps & {
   onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void

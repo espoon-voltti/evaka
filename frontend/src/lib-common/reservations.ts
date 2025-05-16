@@ -2,9 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Reservation } from './generated/api-types/reservations'
-import LocalTime from './local-time'
-import TimeInterval from './time-interval'
+import type { Reservation } from './generated/api-types/reservations'
+import type LocalTime from './local-time'
+import type TimeInterval from './time-interval'
 
 export function reservationHasTimes(
   reservation: Reservation

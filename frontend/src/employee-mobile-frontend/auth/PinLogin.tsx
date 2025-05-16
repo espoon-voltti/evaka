@@ -3,18 +3,13 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import sortBy from 'lodash/sortBy'
-import React, {
-  FormEventHandler,
-  useCallback,
-  useContext,
-  useMemo,
-  useState
-} from 'react'
+import type { FormEventHandler } from 'react'
+import React, { useCallback, useContext, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
 
-import { DaycareId } from 'lib-common/generated/api-types/shared'
+import type { DaycareId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import { ContentArea } from 'lib-components/layout/Container'

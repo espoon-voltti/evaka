@@ -4,10 +4,11 @@
 
 import React, { useCallback, useState } from 'react'
 
-import { Failure, Loading, Result, Success, wrapResult } from 'lib-common/api'
+import type { Result } from 'lib-common/api'
+import { Failure, Loading, Success, wrapResult } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { NekkuOrderRow } from 'lib-common/generated/api-types/reports'
-import { DaycareId, GroupId } from 'lib-common/generated/api-types/shared'
+import type { NekkuOrderRow } from 'lib-common/generated/api-types/reports'
+import type { DaycareId, GroupId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { constantQuery, useQueryResult } from 'lib-common/query'
 import Title from 'lib-components/atoms/Title'

@@ -4,13 +4,13 @@
 
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { DaycareId } from 'lib-common/generated/api-types/shared'
+import type { DaycareId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { evakaUserId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import TimeRange from 'lib-common/time-range'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 
 import {
   Fixture,
@@ -18,7 +18,7 @@ import {
   preschoolTerm2023
 } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
-import { DevDaycare, DevPerson } from '../../generated/api-types'
+import type { DevDaycare, DevPerson } from '../../generated/api-types'
 import MobileChildPage from '../../pages/mobile/child-page'
 import MobileListPage from '../../pages/mobile/list-page'
 import MobileReservationsPage from '../../pages/mobile/reservations-page'

@@ -2,14 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Locator } from 'playwright'
+import type { Locator } from 'playwright'
 
+import type { Page } from '../../../utils/page'
 import {
   Checkbox,
   Element,
   FileInput,
   MultiSelect,
-  Page,
   Select,
   TextInput
 } from '../../../utils/page'

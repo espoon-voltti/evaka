@@ -13,15 +13,15 @@ import styled, { css } from 'styled-components'
 
 import { combine } from 'lib-common/api'
 import { careTypes } from 'lib-common/generated/api-types/daycare'
-import { OccupancyType } from 'lib-common/generated/api-types/occupancy'
-import {
+import type { OccupancyType } from 'lib-common/generated/api-types/occupancy'
+import type {
   OccupancyGroupReportResultRow,
   OccupancyUnitReportResultRow
 } from 'lib-common/generated/api-types/reports'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import { constantQuery, useQueryResult } from 'lib-common/query'
-import { Arg0 } from 'lib-common/types'
+import type { Arg0 } from 'lib-common/types'
 import { mockNow } from 'lib-common/utils/helpers'
 import { formatPercentage, formatDecimal } from 'lib-common/utils/number'
 import Title from 'lib-components/atoms/Title'
@@ -41,7 +41,8 @@ import {
   type getOccupancyUnitReport
 } from '../../generated/api-clients/reports'
 import { areasQuery } from '../../queries'
-import { Translations, useTranslation } from '../../state/i18n'
+import type { Translations } from '../../state/i18n'
+import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 import { FlexRow } from '../common/styled/containers'
 

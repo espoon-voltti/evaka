@@ -2,8 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { DevEmployee } from '../../generated/api-types'
-import { Checkbox, Element, Page, TextInput } from '../../utils/page'
+import type { DevEmployee } from '../../generated/api-types'
+import type { Page } from '../../utils/page'
+import { Checkbox, Element, TextInput } from '../../utils/page'
 
 export class EmployeesPage {
   nameInput: TextInput

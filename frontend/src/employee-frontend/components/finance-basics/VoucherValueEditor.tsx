@@ -8,11 +8,11 @@ import styled from 'styled-components'
 
 import DateRange from 'lib-common/date-range'
 import { throwIfNull } from 'lib-common/form-validation'
-import {
+import type {
   ServiceNeedOptionVoucherValueRange,
   ServiceNeedOptionVoucherValueRangeWithId
 } from 'lib-common/generated/api-types/invoicing'
-import { ServiceNeedOptionVoucherValueId } from 'lib-common/generated/api-types/shared'
+import type { ServiceNeedOptionVoucherValueId } from 'lib-common/generated/api-types/shared'
 import { isValidCents, parseCentsOrThrow } from 'lib-common/money'
 import { useMutationResult } from 'lib-common/query'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
@@ -21,9 +21,9 @@ import InputField from 'lib-components/atoms/form/InputField'
 import { Td, Tr } from 'lib-components/layout/Table'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import colors from 'lib-customizations/common'
-import { Translations } from 'lib-customizations/employee'
+import type { Translations } from 'lib-customizations/employee'
 
-import { FormState } from './ServiceNeedItem'
+import type { FormState } from './ServiceNeedItem'
 import {
   createVoucherValueMutation,
   updateVoucherValueMutation

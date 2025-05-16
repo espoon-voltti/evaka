@@ -4,7 +4,7 @@
 
 import React, { useMemo, useState, createContext, useContext } from 'react'
 
-import { Translations as ComponentTranslations } from 'lib-components/i18n'
+import type { Translations as ComponentTranslations } from 'lib-components/i18n'
 import { ComponentLocalizationContextProvider } from 'lib-components/i18n'
 import { translations } from 'lib-customizations/employee'
 import type { Lang, Translations } from 'lib-customizations/employee'

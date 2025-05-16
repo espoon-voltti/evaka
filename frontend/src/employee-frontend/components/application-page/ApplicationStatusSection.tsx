@@ -4,8 +4,8 @@
 
 import React from 'react'
 
-import { ApplicationDetails } from 'lib-common/generated/api-types/application'
-import { Decision } from 'lib-common/generated/api-types/decision'
+import type { ApplicationDetails } from 'lib-common/generated/api-types/application'
+import type { Decision } from 'lib-common/generated/api-types/decision'
 import ListGrid from 'lib-components/layout/ListGrid'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 import { Label } from 'lib-components/typography'

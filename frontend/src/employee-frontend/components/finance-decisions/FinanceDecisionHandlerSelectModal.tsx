@@ -5,9 +5,10 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
 
-import { Result, wrapResult } from 'lib-common/api'
-import { EmployeeId } from 'lib-common/generated/api-types/shared'
-import { UUID } from 'lib-common/types'
+import type { Result } from 'lib-common/api'
+import { wrapResult } from 'lib-common/api'
+import type { EmployeeId } from 'lib-common/generated/api-types/shared'
+import type { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import FormModal from 'lib-components/molecules/modals/FormModal'

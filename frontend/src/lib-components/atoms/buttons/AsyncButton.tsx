@@ -9,11 +9,10 @@ import styled, { useTheme } from 'styled-components'
 
 import { faCheck, faTimes } from 'lib-icons'
 
-import {
-  AsyncButtonBehaviorProps,
-  useAsyncButtonBehavior
-} from './async-button-behavior'
-import { BaseButtonVisualProps, renderBaseButton } from './button-visuals'
+import type { AsyncButtonBehaviorProps } from './async-button-behavior'
+import { useAsyncButtonBehavior } from './async-button-behavior'
+import type { BaseButtonVisualProps } from './button-visuals'
+import { renderBaseButton } from './button-visuals'
 
 export type AsyncButtonProps<T> = BaseButtonVisualProps &
   AsyncButtonBehaviorProps<T> & {

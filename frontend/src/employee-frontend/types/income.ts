@@ -2,6 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { IncomeRequest } from 'lib-common/generated/api-types/invoicing'
+import type { IncomeRequest } from 'lib-common/generated/api-types/invoicing'
 
 export type IncomeFields = IncomeRequest['data']

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { ChildDailyNoteBody } from 'lib-common/generated/api-types/note'
+import type { ChildDailyNoteBody } from 'lib-common/generated/api-types/note'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
 import config from '../../config'
@@ -14,7 +14,7 @@ import {
   testDaycare
 } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
-import {
+import type {
   DevDaycare,
   DevDaycareGroup,
   DevPerson

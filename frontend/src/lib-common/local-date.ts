@@ -31,10 +31,11 @@ import {
   subYears
 } from 'date-fns'
 
-import { DateFormat, DateFormatWithWeekday, locales } from './date'
+import type { DateFormat, DateFormatWithWeekday } from './date'
+import { locales } from './date'
 import HelsinkiDateTime from './helsinki-date-time'
-import LocalTime from './local-time'
-import { Ordered } from './ordered'
+import type LocalTime from './local-time'
+import type { Ordered } from './ordered'
 import { isAutomatedTest } from './utils/helpers'
 import YearMonth from './year-month'
 

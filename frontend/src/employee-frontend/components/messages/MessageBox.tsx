@@ -6,7 +6,7 @@ import isEqual from 'lodash/isEqual'
 import React, { useCallback, useContext } from 'react'
 import styled, { css } from 'styled-components'
 
-import { MessageAccount } from 'lib-common/generated/api-types/messaging'
+import type { MessageAccount } from 'lib-common/generated/api-types/messaging'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { fontWeights } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
@@ -15,7 +15,8 @@ import colors from 'lib-customizations/common'
 import { useTranslation } from '../../state/i18n'
 
 import { MessageContext } from './MessageContext'
-import { AccountView, isFolderView, isStandardView, View } from './types-view'
+import type { AccountView, View } from './types-view'
+import { isFolderView, isStandardView } from './types-view'
 
 export const MessageBoxRow = styled.div<{ active: boolean; $folder: boolean }>`
   cursor: pointer;

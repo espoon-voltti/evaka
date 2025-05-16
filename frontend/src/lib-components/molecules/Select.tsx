@@ -5,10 +5,9 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import Combobox, {
-  ComboboxProps
-} from 'lib-components/atoms/dropdowns/Combobox'
-import { BaseProps } from 'lib-components/utils'
+import type { ComboboxProps } from 'lib-components/atoms/dropdowns/Combobox'
+import Combobox from 'lib-components/atoms/dropdowns/Combobox'
+import type { BaseProps } from 'lib-components/utils'
 
 export interface SelectOption<T extends string> {
   value: T

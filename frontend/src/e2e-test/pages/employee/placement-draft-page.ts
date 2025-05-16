@@ -2,9 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 
-import { Combobox, Page, Element, DatePicker } from '../../utils/page'
+import type { Page, Element } from '../../utils/page'
+import { Combobox, DatePicker } from '../../utils/page'
 
 export class PlacementDraftPage {
   #restrictedDetailsWarning: Element

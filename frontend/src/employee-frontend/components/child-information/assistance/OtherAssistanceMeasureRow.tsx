@@ -5,7 +5,7 @@
 import React, { useContext } from 'react'
 
 import { Success } from 'lib-common/api'
-import { OtherAssistanceMeasureResponse } from 'lib-common/generated/api-types/assistance'
+import type { OtherAssistanceMeasureResponse } from 'lib-common/generated/api-types/assistance'
 import { useMutationResult } from 'lib-common/query'
 import { Td, Tr } from 'lib-components/layout/Table'
 

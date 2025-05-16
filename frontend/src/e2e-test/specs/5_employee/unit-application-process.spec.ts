@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import {
+import type {
   ApplicationId,
   GroupId,
   PlacementId
@@ -25,16 +25,14 @@ import {
   createDefaultServiceNeedOptions,
   resetServiceState
 } from '../../generated/api-clients'
-import {
+import type {
   DevApplicationWithForm,
   DevDaycare,
   DevEmployee,
   DevPerson
 } from '../../generated/api-types'
-import {
-  ApplicationProcessPage,
-  UnitPage
-} from '../../pages/employee/units/unit'
+import type { ApplicationProcessPage } from '../../pages/employee/units/unit'
+import { UnitPage } from '../../pages/employee/units/unit'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 

@@ -6,10 +6,14 @@ import React, { useCallback, useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router'
 import styled from 'styled-components'
 
-import { combine, isLoading, Result } from 'lib-common/api'
+import type { Result } from 'lib-common/api'
+import { combine, isLoading } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { CitizenCalendarEvent } from 'lib-common/generated/api-types/calendarevent'
-import { CalendarEventId, ChildId } from 'lib-common/generated/api-types/shared'
+import type { CitizenCalendarEvent } from 'lib-common/generated/api-types/calendarevent'
+import type {
+  CalendarEventId,
+  ChildId
+} from 'lib-common/generated/api-types/shared'
 import { fromNullableUuid } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import { useQuery, useQueryResult } from 'lib-common/query'

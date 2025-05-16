@@ -8,14 +8,14 @@ import React, { Fragment, useCallback, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
 import styled, { useTheme } from 'styled-components'
 
-import { Result } from 'lib-common/api'
-import {
+import type { Result } from 'lib-common/api'
+import type {
   GroupInfo,
   StaffAttendanceType
 } from 'lib-common/generated/api-types/attendance'
-import { EmployeeId } from 'lib-common/generated/api-types/shared'
+import type { EmployeeId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
-import LocalTime from 'lib-common/local-time'
+import type LocalTime from 'lib-common/local-time'
 import { useQueryResult } from 'lib-common/query'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
@@ -35,7 +35,8 @@ import { routes } from '../App'
 import { renderResult } from '../async-rendering'
 import { PageWithNavigation } from '../common/PageWithNavigation'
 import { useTranslation } from '../common/i18n'
-import { UnitOrGroup, toUnitOrGroup } from '../common/unit-or-group'
+import type { UnitOrGroup } from '../common/unit-or-group'
+import { toUnitOrGroup } from '../common/unit-or-group'
 import { unitInfoQuery } from '../units/queries'
 
 import StaffListItem from './StaffListItem'

@@ -2,12 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { GroupId } from 'lib-common/generated/api-types/shared'
+import type { GroupId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
-import { FeatureFlags } from 'lib-customizations/types'
+import type { FeatureFlags } from 'lib-customizations/types'
 
 import { mobileViewport } from '../../browser'
 import {
@@ -23,7 +23,7 @@ import {
   getStaffAttendances,
   resetServiceState
 } from '../../generated/api-clients'
-import {
+import type {
   DevCareArea,
   DevDaycareGroup,
   DevEmployee,

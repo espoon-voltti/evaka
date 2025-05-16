@@ -5,9 +5,10 @@
 import React, { useMemo } from 'react'
 import styled, { useTheme } from 'styled-components'
 
-import { BoundFormState, useBoolean } from 'lib-common/form/hooks'
-import { ReservationChild } from 'lib-common/generated/api-types/reservations'
-import { ChildId } from 'lib-common/generated/api-types/shared'
+import type { BoundFormState } from 'lib-common/form/hooks'
+import { useBoolean } from 'lib-common/form/hooks'
+import type { ReservationChild } from 'lib-common/generated/api-types/reservations'
+import type { ChildId } from 'lib-common/generated/api-types/shared'
 import { formatFirstName } from 'lib-common/names'
 import { SelectionChip } from 'lib-components/atoms/Chip'
 import { StatusIcon } from 'lib-components/atoms/StatusIcon'

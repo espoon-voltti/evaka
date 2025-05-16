@@ -9,11 +9,8 @@ import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import LegacyInlineButton from 'lib-components/atoms/buttons/LegacyInlineButton'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import { fontWeights } from 'lib-components/typography'
-import {
-  defaultMargins,
-  isSpacingSize,
-  SpacingSize
-} from 'lib-components/white-space'
+import type { SpacingSize } from 'lib-components/white-space'
+import { defaultMargins, isSpacingSize } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
 const wideButtonCss = css`

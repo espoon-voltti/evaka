@@ -7,15 +7,15 @@ import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
-import { AttendanceChild } from 'lib-common/generated/api-types/attendance'
-import { AuthorizedMessageAccount } from 'lib-common/generated/api-types/messaging'
-import { DaycareId } from 'lib-common/generated/api-types/shared'
+import type { AttendanceChild } from 'lib-common/generated/api-types/attendance'
+import type { AuthorizedMessageAccount } from 'lib-common/generated/api-types/messaging'
+import type { DaycareId } from 'lib-common/generated/api-types/shared'
 import {
   constantQuery,
   useChainedQuery,
   useQueryResult
 } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import { ContentArea } from 'lib-components/layout/Container'
 import { defaultMargins } from 'lib-components/white-space'
 import { faPlus } from 'lib-icons'
@@ -27,7 +27,7 @@ import { childrenQuery } from '../child-attendance/queries'
 import { useChild } from '../child-attendance/utils'
 import ChildNameBackButton from '../common/ChildNameBackButton'
 import { useTranslation } from '../common/i18n'
-import { UnitOrGroup } from '../common/unit-or-group'
+import type { UnitOrGroup } from '../common/unit-or-group'
 import {
   FloatingPrimaryActionButton,
   TallContentArea

@@ -4,8 +4,8 @@
 
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { ShiftCareType } from 'lib-common/generated/api-types/serviceneed'
-import {
+import type { ShiftCareType } from 'lib-common/generated/api-types/serviceneed'
+import type {
   BackupCareId,
   GroupId,
   PlacementId
@@ -28,9 +28,13 @@ import {
   createDefaultServiceNeedOptions,
   resetServiceState
 } from '../../generated/api-clients'
-import { DevDaycare, DevEmployee, DevPerson } from '../../generated/api-types'
+import type {
+  DevDaycare,
+  DevEmployee,
+  DevPerson
+} from '../../generated/api-types'
 import { UnitPage } from '../../pages/employee/units/unit'
-import { UnitWeekCalendarPage } from '../../pages/employee/units/unit-week-calendar-page'
+import type { UnitWeekCalendarPage } from '../../pages/employee/units/unit-week-calendar-page'
 import { waitUntilEqual } from '../../utils'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'

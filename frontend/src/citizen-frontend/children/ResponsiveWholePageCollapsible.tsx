@@ -11,8 +11,8 @@ import styled, { useTheme } from 'styled-components'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { tabletMin, tabletMinPx } from 'lib-components/breakpoints'
+import type { CollapsibleContentAreaProps } from 'lib-components/layout/Container'
 import {
-  CollapsibleContentAreaProps,
   ContentArea,
   TitleContainer,
   TitleIcon
@@ -23,7 +23,8 @@ import {
   TabletAndDesktop
 } from 'lib-components/layout/responsive-layout'
 import { H2, fontWeights } from 'lib-components/typography'
-import { SpacingSize, defaultMargins } from 'lib-components/white-space'
+import type { SpacingSize } from 'lib-components/white-space'
+import { defaultMargins } from 'lib-components/white-space'
 import {
   faArrowLeft,
   faChevronDown,

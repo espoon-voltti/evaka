@@ -4,8 +4,8 @@
 
 import React, { useCallback, useState } from 'react'
 
-import { Result } from 'lib-common/api'
-import {
+import type { Result } from 'lib-common/api'
+import type {
   AbsenceCategory,
   AbsenceType
 } from 'lib-common/generated/api-types/absence'
@@ -17,7 +17,7 @@ import { Label } from 'lib-components/typography'
 import { absenceTypes } from 'lib-customizations/employee'
 
 import { useTranslation } from '../../state/i18n'
-import { AbsenceUpdate } from '../../types/absence'
+import type { AbsenceUpdate } from '../../types/absence'
 
 const defaultAbsenceType = 'SICKLEAVE'
 const defaultAbsenceCategories: AbsenceCategory[] = []

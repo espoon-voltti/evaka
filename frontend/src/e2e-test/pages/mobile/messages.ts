@@ -3,7 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { waitUntilTrue } from '../../utils'
-import { Element, Page, ElementCollection } from '../../utils/page'
+import type { Page, ElementCollection } from '../../utils/page'
+import { Element } from '../../utils/page'
 
 import MobileMessageEditor from './message-editor'
 

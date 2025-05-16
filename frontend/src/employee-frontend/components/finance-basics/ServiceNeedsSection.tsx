@@ -6,7 +6,7 @@ import React from 'react'
 
 import { combine, isLoading } from 'lib-common/api'
 import { useBoolean } from 'lib-common/form/hooks'
-import { PlacementType } from 'lib-common/generated/api-types/placement'
+import type { PlacementType } from 'lib-common/generated/api-types/placement'
 import { useQueryResult } from 'lib-common/query'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { H2 } from 'lib-components/typography'

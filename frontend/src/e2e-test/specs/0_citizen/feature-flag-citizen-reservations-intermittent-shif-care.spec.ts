@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import FiniteDateRange from 'lib-common/finite-date-range'
-import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import type HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { evakaUserId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
@@ -11,12 +11,12 @@ import TimeRange from 'lib-common/time-range'
 
 import { Fixture, testChild, testAdult } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
-import { DevPerson } from '../../generated/api-types'
-import CitizenCalendarPage, {
-  TwoPartReservation
-} from '../../pages/citizen/citizen-calendar'
+import type { DevPerson } from '../../generated/api-types'
+import type { TwoPartReservation } from '../../pages/citizen/citizen-calendar'
+import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
 import CitizenHeader from '../../pages/citizen/citizen-header'
-import { envs, EnvType, Page } from '../../utils/page'
+import type { EnvType } from '../../utils/page'
+import { envs, Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
 
 const june7th2023 = LocalDate.of(2023, 6, 7)

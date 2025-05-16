@@ -4,8 +4,9 @@
 
 import React, { useState } from 'react'
 
-import { combine, Failure, Result, Success } from 'lib-common/api'
-import { ChildId } from 'lib-common/generated/api-types/shared'
+import type { Result } from 'lib-common/api'
+import { combine, Failure, Success } from 'lib-common/api'
+import type { ChildId } from 'lib-common/generated/api-types/shared'
 import { constantQuery, useQueryResult } from 'lib-common/query'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import {

@@ -2,7 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Page, DatePicker, Select, TextInput, Element } from '../../utils/page'
+import type { Page, Element } from '../../utils/page'
+import { DatePicker, Select, TextInput } from '../../utils/page'
 
 export class CitizenNewServiceApplicationPage {
   startDate: DatePicker

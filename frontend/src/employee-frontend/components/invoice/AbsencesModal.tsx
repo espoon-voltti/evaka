@@ -6,13 +6,13 @@ import React, { useContext, useState } from 'react'
 import styled from 'styled-components'
 
 import { wrapResult } from 'lib-common/api'
-import {
+import type {
   Absence,
   AbsenceCategory,
   AbsenceType
 } from 'lib-common/generated/api-types/absence'
-import { ChildId } from 'lib-common/generated/api-types/shared'
-import LocalDate from 'lib-common/local-date'
+import type { ChildId } from 'lib-common/generated/api-types/shared'
+import type LocalDate from 'lib-common/local-date'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Title from 'lib-components/atoms/Title'
 import Tooltip from 'lib-components/atoms/Tooltip'
@@ -24,7 +24,8 @@ import { faAbacus } from 'lib-icons'
 import PeriodPicker from '../../components/absences/PeriodPicker'
 import ColorInfoItem from '../../components/common/ColorInfoItem'
 import { getAbsencesOfChild } from '../../generated/api-clients/absence'
-import { Lang, Translations, useTranslation } from '../../state/i18n'
+import type { Lang, Translations } from '../../state/i18n'
+import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
 import { formatName } from '../../utils'
 import { renderResult } from '../async-rendering'

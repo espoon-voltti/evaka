@@ -26,7 +26,7 @@ import {
   getApplicationDecisions,
   resetServiceState
 } from '../../generated/api-clients'
-import { DevEmployee } from '../../generated/api-types'
+import type { DevEmployee } from '../../generated/api-types'
 import CitizenDecisionsPage from '../../pages/citizen/citizen-decisions'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import CitizenMessagesPage from '../../pages/citizen/citizen-messages'

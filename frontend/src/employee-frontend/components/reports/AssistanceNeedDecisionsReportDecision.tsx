@@ -8,11 +8,11 @@ import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
 import { wrapResult } from 'lib-common/api'
-import {
+import type {
   AssistanceNeedDecision,
   AssistanceNeedDecisionStatus
 } from 'lib-common/generated/api-types/assistanceneed'
-import { AssistanceNeedDecisionId } from 'lib-common/generated/api-types/shared'
+import type { AssistanceNeedDecisionId } from 'lib-common/generated/api-types/shared'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import AssistanceNeedDecisionReadOnly from 'lib-components/assistance-need-decision/AssistanceNeedDecisionReadOnly'
@@ -25,7 +25,7 @@ import Content from 'lib-components/layout/Container'
 import StickyFooter from 'lib-components/layout/StickyFooter'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
-import { ModalType } from 'lib-components/molecules/modals/BaseModal'
+import type { ModalType } from 'lib-components/molecules/modals/BaseModal'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { faArrowDownToLine } from 'lib-icons'
@@ -40,7 +40,8 @@ import {
   markAssistanceNeedDecisionAsOpened,
   updateAssistanceNeedDecisionDecisionMaker
 } from '../../generated/api-clients/assistanceneed'
-import { I18nContext, Lang, useTranslation } from '../../state/i18n'
+import type { Lang } from '../../state/i18n'
+import { I18nContext, useTranslation } from '../../state/i18n'
 import { UserContext } from '../../state/user'
 
 import { ReportNotificationContext } from './ReportNotificationContext'

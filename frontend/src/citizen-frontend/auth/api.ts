@@ -2,9 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { CitizenUserResponse } from 'lib-common/generated/api-types/pis'
-import { CitizenAuthLevel } from 'lib-common/generated/api-types/shared'
-import { JsonOf } from 'lib-common/json'
+import type { CitizenUserResponse } from 'lib-common/generated/api-types/pis'
+import type { CitizenAuthLevel } from 'lib-common/generated/api-types/shared'
+import type { JsonOf } from 'lib-common/json'
 
 import { client } from '../api-client'
 

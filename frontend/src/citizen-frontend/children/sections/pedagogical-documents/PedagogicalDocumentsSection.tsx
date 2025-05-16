@@ -5,9 +5,9 @@
 import React, { useCallback, useState } from 'react'
 import styled from 'styled-components'
 
-import { Attachment } from 'lib-common/generated/api-types/attachment'
-import { PedagogicalDocumentCitizen } from 'lib-common/generated/api-types/pedagogicaldocument'
-import { ChildId } from 'lib-common/generated/api-types/shared'
+import type { Attachment } from 'lib-common/generated/api-types/attachment'
+import type { PedagogicalDocumentCitizen } from 'lib-common/generated/api-types/pedagogicaldocument'
+import type { ChildId } from 'lib-common/generated/api-types/shared'
 import { useMutation, useQuery, useQueryResult } from 'lib-common/query'
 import { useUniqueId } from 'lib-common/utils/useUniqueId'
 import { Button } from 'lib-components/atoms/buttons/Button'

@@ -5,12 +5,12 @@
 import React, { useContext } from 'react'
 import styled from 'styled-components'
 
-import {
+import type {
   SortDirection,
   VoucherValueDecisionSortParam,
   VoucherValueDecisionSummary
 } from 'lib-common/generated/api-types/invoicing'
-import { VoucherValueDecisionId } from 'lib-common/generated/api-types/shared'
+import type { VoucherValueDecisionId } from 'lib-common/generated/api-types/shared'
 import { formatCents } from 'lib-common/money'
 import Pagination from 'lib-components/Pagination'
 import Checkbox from 'lib-components/atoms/form/Checkbox'

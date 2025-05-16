@@ -5,14 +5,12 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useCallback } from 'react'
 
-import { Failure, Result, Success } from 'lib-common/api'
-import {
-  cancelMutation,
-  invalidateDependencies,
-  MutationDescription
-} from 'lib-common/query'
+import type { Result } from 'lib-common/api'
+import { Failure, Success } from 'lib-common/api'
+import type { MutationDescription } from 'lib-common/query'
+import { cancelMutation, invalidateDependencies } from 'lib-common/query'
 
-import { AsyncButtonBehaviorProps } from './async-button-behavior'
+import type { AsyncButtonBehaviorProps } from './async-button-behavior'
 
 /**
  * Behavioral props for a mutate button.

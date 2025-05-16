@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useCallback } from 'react'
 import styled from 'styled-components'
 
-import LocalDate from 'lib-common/local-date'
+import type LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import ModalBackground from 'lib-components/molecules/modals/ModalBackground'

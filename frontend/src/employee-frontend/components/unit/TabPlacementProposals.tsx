@@ -4,8 +4,8 @@
 
 import React, { useState } from 'react'
 
-import { PlacementPlanDetails } from 'lib-common/generated/api-types/placement'
-import { DaycareId } from 'lib-common/generated/api-types/shared'
+import type { PlacementPlanDetails } from 'lib-common/generated/api-types/placement'
+import type { DaycareId } from 'lib-common/generated/api-types/shared'
 import Title from 'lib-components/atoms/Title'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 
