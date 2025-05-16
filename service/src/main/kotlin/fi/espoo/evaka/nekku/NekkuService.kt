@@ -22,6 +22,7 @@ import fi.espoo.evaka.emailclient.EmailClient
 import fi.espoo.evaka.emailclient.EmailContent
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.ScheduleType
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.async.AsyncJob
@@ -435,6 +436,7 @@ fun createAndSendNekkuOrder(
             logger.info {
                 "Sent Nekku order for date $date for customerNumber=${nekkuDaycareCustomerMapping.customerNumber} groupId=$groupId and Nekku orders created: ${nekkuOrderResult.created}"
             }
+            dbc.transaction { tx -> tx.setNekkuReportOrderReport(order, groupId, nekkuProducts) }
         } else {
             logger.info {
                 "Skipped Nekku order with no rows for date $date for customerNumber=${nekkuDaycareCustomerMapping.customerNumber} groupId=$groupId"
@@ -902,3 +904,14 @@ data class NekkuOrderResult(
 )
 
 data class NekkuSpecialDietChoices(val dietId: String, val fieldId: String, val value: String)
+
+data class NekkuOrdersReport(
+    val deliveryDate: LocalDate,
+    val daycareId: DaycareId,
+    val groupId: GroupId,
+    val mealSku: String,
+    val totalQuantity: Int,
+    val mealTime: List<NekkuProductMealTime>?,
+    val mealType: NekkuProductMealType?,
+    val mealsBySpecialDiet: List<String>?,
+)

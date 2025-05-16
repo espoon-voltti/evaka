@@ -1,0 +1,11 @@
+diff --git a/index.d.ts b/index.d.ts
+index a36e1b022a6a7d650079b9648bb2c7465c617930..479baf2fbf0c47f2d260854bb804db3498602cb0 100644
+--- a/index.d.ts
++++ b/index.d.ts
+@@ -1,5 +1,5 @@
+ /// <reference types="react" />
+-import { CSSProperties, SVGAttributes, RefAttributes } from 'react'
++import { CSSProperties, SVGAttributes, RefAttributes, JSX } from 'react'
+ import {
+   Transform,
+   IconProp,

@@ -13,6 +13,7 @@ import fi.espoo.evaka.shared.SfiMessageEventId
 import fi.espoo.evaka.shared.SfiMessageId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.Predicate
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.util.UUID
 
@@ -46,6 +47,57 @@ fun Database.Read.getSentSfiMessageBySfiId(sfiId: Int): SentSfiMessage? =
     createQuery { sql("SELECT * FROM sfi_message WHERE sfi_id = ${bind(sfiId)}") }
         .mapTo<SentSfiMessage>()
         .exactlyOneOrNull()
+
+private fun Database.Read.hasSfiMessageBeenSent(
+    predicate: Predicate,
+    guardianId: PersonId?,
+): Boolean {
+    val fullPredicate =
+        Predicate.allNotNull(
+            predicate,
+            guardianId?.let { Predicate { where("$it.guardian_id = ${bind(guardianId)}") } },
+        )
+    return createQuery {
+            sql(
+                """
+SELECT EXISTS (
+    SELECT 1
+    FROM sfi_message
+    WHERE ${predicate(fullPredicate.forTable("sfi_message"))}
+)
+"""
+            )
+        }
+        .exactlyOne()
+}
+
+fun Database.Read.hasDecisionSfiMessageBeenSent(
+    decisionId: DecisionId,
+    guardianId: PersonId? = null,
+) = hasSfiMessageBeenSent(Predicate { where("$it.decision_id = ${bind(decisionId)}") }, guardianId)
+
+fun Database.Read.hasChildDocumentSfiMessageBeenSent(
+    documentId: ChildDocumentId,
+    guardianId: PersonId? = null,
+) = hasSfiMessageBeenSent(Predicate { where("$it.document_id = ${bind(documentId)}") }, guardianId)
+
+fun Database.Read.hasFeeDecisionSfiMessageBeenSent(
+    feeDecisionId: FeeDecisionId,
+    guardianId: PersonId? = null,
+) =
+    hasSfiMessageBeenSent(
+        Predicate { where("$it.fee_decision_id = ${bind(feeDecisionId)}") },
+        guardianId,
+    )
+
+fun Database.Read.hasVoucherValueDecisionSfiMessageBeenSent(
+    voucherValueDecisionId: VoucherValueDecisionId,
+    guardianId: PersonId? = null,
+) =
+    hasSfiMessageBeenSent(
+        Predicate { where("$it.voucher_value_decision_id = ${bind(voucherValueDecisionId)}") },
+        guardianId,
+    )
 
 fun Database.Transaction.storeSentSfiMessage(message: SentSfiMessage): SfiMessageId =
     createUpdate {

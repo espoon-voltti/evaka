@@ -239,7 +239,7 @@ function Combobox<T>(props: ComboboxProps<T>) {
     [filterItems, items, currentFilter]
   )
 
-  const menuRef = useRef<HTMLElement>()
+  const menuRef = useRef<HTMLElement>(undefined)
 
   const onInputValueChange = useCallback(
     ({ isOpen, inputValue }: UseComboboxStateChange<T>) => {

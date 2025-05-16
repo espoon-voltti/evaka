@@ -10,9 +10,9 @@ import ch.qos.logback.core.AppenderBase
 import com.fasterxml.jackson.core.JsonFactory
 import com.fasterxml.jackson.databind.json.JsonMapper
 import io.github.oshai.kotlinlogging.DelegatingKLogger
+import io.github.oshai.kotlinlogging.KLogger
 import java.io.PrintWriter
 import java.io.StringWriter
-import io.github.oshai.kotlinlogging.KLogger
 import net.logstash.logback.argument.StructuredArgument
 import org.json.JSONObject
 
@@ -65,6 +65,7 @@ class TestAppender : AppenderBase<ILoggingEvent>() {
 
 private fun KLogger.underlyingLogger(): Logger =
     (this as DelegatingKLogger<*>).underlyingLogger as Logger
+
 fun KLogger.setupTestAppender() {
     (this.underlyingLogger()).addAppender(TestAppender())
 }

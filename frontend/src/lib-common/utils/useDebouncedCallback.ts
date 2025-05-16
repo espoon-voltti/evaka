@@ -25,7 +25,7 @@ export function useDebouncedCallback<
   fn: T,
   delay: number
 ): [(...args: Parameters<T>) => void, () => void, () => void] {
-  const pendingCall = useRef<PendingCall>()
+  const pendingCall = useRef<PendingCall>(undefined)
 
   const cancelTimeout = useCallback(() => {
     if (pendingCall.current) {

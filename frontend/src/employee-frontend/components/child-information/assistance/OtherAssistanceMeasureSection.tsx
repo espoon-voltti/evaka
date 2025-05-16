@@ -85,7 +85,7 @@ export const OtherAssistanceMeasureSection = React.memo(
     )
 
     const showInfoList = Object.values(t.otherAssistanceMeasure.info).some(
-      (fn) => fn()
+      (fn) => !!fn()
     )
 
     return renderResult(rowsResult, (rows) => (

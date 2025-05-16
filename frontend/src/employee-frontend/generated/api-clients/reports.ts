@@ -52,6 +52,7 @@ import { ManualDuplicationReportViewMode } from 'lib-common/generated/api-types/
 import { MealReportData } from 'lib-common/generated/api-types/reports'
 import { MissingHeadOfFamilyReportRow } from 'lib-common/generated/api-types/reports'
 import { MissingServiceNeedReportRow } from 'lib-common/generated/api-types/reports'
+import { NekkuOrderRow } from 'lib-common/generated/api-types/reports'
 import { NonSsnChildrenReportRow } from 'lib-common/generated/api-types/reports'
 import { OccupancyGroupReportResultRow } from 'lib-common/generated/api-types/reports'
 import { OccupancyType } from 'lib-common/generated/api-types/occupancy'
@@ -103,6 +104,7 @@ import { deserializeJsonIncompleteIncomeDbRow } from 'lib-common/generated/api-t
 import { deserializeJsonManualDuplicationReportRow } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonMealReportData } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonMissingHeadOfFamilyReportRow } from 'lib-common/generated/api-types/reports'
+import { deserializeJsonNekkuOrderRow } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonNonSsnChildrenReportRow } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonPlacementGuaranteeReportRow } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonPlacementSketchingReportRow } from 'lib-common/generated/api-types/reports'
@@ -805,6 +807,31 @@ export async function getMissingServiceNeedReport(
     params
   })
   return json
+}
+
+
+/**
+* Generated from fi.espoo.evaka.reports.NekkuOrderReportController.getNekkuOrderReportByUnit
+*/
+export async function getNekkuOrderReportByUnit(
+  request: {
+    unitId: DaycareId,
+    start: LocalDate,
+    end: LocalDate,
+    groupIds?: GroupId[] | null
+  }
+): Promise<NekkuOrderRow[]> {
+  const params = createUrlSearchParams(
+    ['start', request.start.formatIso()],
+    ['end', request.end.formatIso()],
+    ...(request.groupIds?.map((e): [string, string | null | undefined] => ['groupIds', e]) ?? [])
+  )
+  const { data: json } = await client.request<JsonOf<NekkuOrderRow[]>>({
+    url: uri`/employee/reports/nekkuorders/${request.unitId}`.toString(),
+    method: 'GET',
+    params
+  })
+  return json.map(e => deserializeJsonNekkuOrderRow(e))
 }
 
 

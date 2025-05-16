@@ -2,10 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { ReactNodeArray, useState } from 'react'
+import React, { useState } from 'react'
 
 interface Props {
-  children: ReactNodeArray
+  children: React.ReactNode[]
   rowsToOccupy: number
   i18n: { others: string }
 }

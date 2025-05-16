@@ -224,6 +224,10 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
+    data class SendChildDocumentDecisionSfiMessage(val documentId: ChildDocumentId) : AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
     data class DeleteChildDocumentPdf(val key: String) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
@@ -469,6 +473,7 @@ sealed interface AsyncJob : AsyncJobPayload {
                     RunScheduledJob::class,
                     SendAssistanceNeedDecisionSfiMessage::class,
                     SendAssistanceNeedPreschoolDecisionSfiMessage::class,
+                    SendChildDocumentDecisionSfiMessage::class,
                     SendDecision::class,
                     SendJamixOrder::class,
                     SyncJamixDiets::class,
