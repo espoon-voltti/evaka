@@ -4,8 +4,8 @@
 
 // GENERATED FILE: no manual modifications
 
-import { BackupPickupId } from './shared'
-import { PersonId } from './shared'
+import type { BackupPickupId } from './shared'
+import type { PersonId } from './shared'
 
 /**
 * Generated from fi.espoo.evaka.backuppickup.ChildBackupPickup

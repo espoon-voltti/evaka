@@ -5,7 +5,7 @@
 // GENERATED FILE: no manual modifications
 
 import HelsinkiDateTime from '../../helsinki-date-time'
-import { JsonOf } from '../../json'
+import type { JsonOf } from '../../json'
 
 /**
 * Generated from fi.espoo.evaka.systemnotifications.SystemNotificationsController.CurrentNotificationResponseCitizen

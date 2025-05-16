@@ -4,11 +4,11 @@
 
 // GENERATED FILE: no manual modifications
 
-import { JsonCompatible } from 'lib-common/json'
-import { JsonOf } from 'lib-common/json'
-import { OutOfOfficeId } from 'lib-common/generated/api-types/shared'
-import { OutOfOfficePeriod } from 'lib-common/generated/api-types/outofoffice'
-import { OutOfOfficePeriodUpsert } from 'lib-common/generated/api-types/outofoffice'
+import type { JsonCompatible } from 'lib-common/json'
+import type { JsonOf } from 'lib-common/json'
+import type { OutOfOfficeId } from 'lib-common/generated/api-types/shared'
+import type { OutOfOfficePeriod } from 'lib-common/generated/api-types/outofoffice'
+import type { OutOfOfficePeriodUpsert } from 'lib-common/generated/api-types/outofoffice'
 import { client } from '../../api/client'
 import { deserializeJsonOutOfOfficePeriod } from 'lib-common/generated/api-types/outofoffice'
 import { uri } from 'lib-common/uri'

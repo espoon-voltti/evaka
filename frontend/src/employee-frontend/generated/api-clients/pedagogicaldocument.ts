@@ -4,12 +4,12 @@
 
 // GENERATED FILE: no manual modifications
 
-import { JsonCompatible } from 'lib-common/json'
-import { JsonOf } from 'lib-common/json'
-import { PedagogicalDocument } from 'lib-common/generated/api-types/pedagogicaldocument'
-import { PedagogicalDocumentId } from 'lib-common/generated/api-types/shared'
-import { PedagogicalDocumentPostBody } from 'lib-common/generated/api-types/pedagogicaldocument'
-import { PersonId } from 'lib-common/generated/api-types/shared'
+import type { JsonCompatible } from 'lib-common/json'
+import type { JsonOf } from 'lib-common/json'
+import type { PedagogicalDocument } from 'lib-common/generated/api-types/pedagogicaldocument'
+import type { PedagogicalDocumentId } from 'lib-common/generated/api-types/shared'
+import type { PedagogicalDocumentPostBody } from 'lib-common/generated/api-types/pedagogicaldocument'
+import type { PersonId } from 'lib-common/generated/api-types/shared'
 import { client } from '../../api/client'
 import { deserializeJsonPedagogicalDocument } from 'lib-common/generated/api-types/pedagogicaldocument'
 import { uri } from 'lib-common/uri'

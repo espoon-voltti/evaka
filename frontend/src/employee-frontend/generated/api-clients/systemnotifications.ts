@@ -4,13 +4,13 @@
 
 // GENERATED FILE: no manual modifications
 
-import { CurrentNotificationResponseEmployee } from 'lib-common/generated/api-types/systemnotifications'
-import { JsonCompatible } from 'lib-common/json'
-import { JsonOf } from 'lib-common/json'
-import { SystemNotificationCitizens } from 'lib-common/generated/api-types/systemnotifications'
-import { SystemNotificationEmployees } from 'lib-common/generated/api-types/systemnotifications'
-import { SystemNotificationTargetGroup } from 'lib-common/generated/api-types/systemnotifications'
-import { SystemNotificationsResponse } from 'lib-common/generated/api-types/systemnotifications'
+import type { CurrentNotificationResponseEmployee } from 'lib-common/generated/api-types/systemnotifications'
+import type { JsonCompatible } from 'lib-common/json'
+import type { JsonOf } from 'lib-common/json'
+import type { SystemNotificationCitizens } from 'lib-common/generated/api-types/systemnotifications'
+import type { SystemNotificationEmployees } from 'lib-common/generated/api-types/systemnotifications'
+import type { SystemNotificationTargetGroup } from 'lib-common/generated/api-types/systemnotifications'
+import type { SystemNotificationsResponse } from 'lib-common/generated/api-types/systemnotifications'
 import { client } from '../../api/client'
 import { deserializeJsonCurrentNotificationResponseEmployee } from 'lib-common/generated/api-types/systemnotifications'
 import { deserializeJsonSystemNotificationsResponse } from 'lib-common/generated/api-types/systemnotifications'

@@ -4,12 +4,12 @@
 
 // GENERATED FILE: no manual modifications
 
-import { JsonOf } from 'lib-common/json'
-import { NekkuMealType } from 'lib-common/generated/api-types/nekku'
-import { NekkuSpecialDietOptionWithFieldId } from 'lib-common/generated/api-types/nekku'
-import { NekkuSpecialDietWithoutFields } from 'lib-common/generated/api-types/nekku'
-import { NekkuSpecialDietsFieldWithoutOptions } from 'lib-common/generated/api-types/nekku'
-import { NekkuUnitNumber } from 'lib-common/generated/api-types/nekku'
+import type { JsonOf } from 'lib-common/json'
+import type { NekkuMealType } from 'lib-common/generated/api-types/nekku'
+import type { NekkuSpecialDietOptionWithFieldId } from 'lib-common/generated/api-types/nekku'
+import type { NekkuSpecialDietWithoutFields } from 'lib-common/generated/api-types/nekku'
+import type { NekkuSpecialDietsFieldWithoutOptions } from 'lib-common/generated/api-types/nekku'
+import type { NekkuUnitNumber } from 'lib-common/generated/api-types/nekku'
 import { client } from '../../api/client'
 import { uri } from 'lib-common/uri'
 

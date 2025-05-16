@@ -4,18 +4,18 @@
 
 // GENERATED FILE: no manual modifications
 
+import type { CalendarEventId } from './shared'
+import type { CalendarEventTimeId } from './shared'
+import type { DaycareId } from './shared'
+import type { EvakaUser } from './user'
 import FiniteDateRange from '../../finite-date-range'
+import type { GroupId } from './shared'
 import HelsinkiDateTime from '../../helsinki-date-time'
+import type { JsonOf } from '../../json'
 import LocalDate from '../../local-date'
 import LocalTime from '../../local-time'
+import type { PersonId } from './shared'
 import TimeRange from '../../time-range'
-import { CalendarEventId } from './shared'
-import { CalendarEventTimeId } from './shared'
-import { DaycareId } from './shared'
-import { EvakaUser } from './user'
-import { GroupId } from './shared'
-import { JsonOf } from '../../json'
-import { PersonId } from './shared'
 
 /**
 * Generated from fi.espoo.evaka.calendarevent.AttendanceType

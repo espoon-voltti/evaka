@@ -4,14 +4,14 @@
 
 // GENERATED FILE: no manual modifications
 
-import { ApplicationId } from 'lib-common/generated/api-types/shared'
-import { AssistanceNeedDecisionId } from 'lib-common/generated/api-types/shared'
-import { AssistanceNeedPreschoolDecisionId } from 'lib-common/generated/api-types/shared'
-import { ChildDocumentId } from 'lib-common/generated/api-types/shared'
-import { FeeDecisionId } from 'lib-common/generated/api-types/shared'
-import { JsonOf } from 'lib-common/json'
-import { ProcessMetadataResponse } from 'lib-common/generated/api-types/process'
-import { VoucherValueDecisionId } from 'lib-common/generated/api-types/shared'
+import type { ApplicationId } from 'lib-common/generated/api-types/shared'
+import type { AssistanceNeedDecisionId } from 'lib-common/generated/api-types/shared'
+import type { AssistanceNeedPreschoolDecisionId } from 'lib-common/generated/api-types/shared'
+import type { ChildDocumentId } from 'lib-common/generated/api-types/shared'
+import type { FeeDecisionId } from 'lib-common/generated/api-types/shared'
+import type { JsonOf } from 'lib-common/json'
+import type { ProcessMetadataResponse } from 'lib-common/generated/api-types/process'
+import type { VoucherValueDecisionId } from 'lib-common/generated/api-types/shared'
 import { client } from '../../api/client'
 import { deserializeJsonProcessMetadataResponse } from 'lib-common/generated/api-types/process'
 import { uri } from 'lib-common/uri'

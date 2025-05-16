@@ -15,10 +15,10 @@ abstract class TsCodeGenerator(val metadata: TypeMetadata) {
     abstract fun locateNamedType(namedType: TsNamedType<*>): TsFile
 
     private fun typeRef(namedType: TsNamedType<*>): TsImport =
-        TsImport.Named(locateNamedType(namedType), namedType.name)
+        TsImport.Type(locateNamedType(namedType), namedType.name)
 
     private fun typeRef(sealedVariant: TsSealedVariant): TsImport =
-        TsImport.Named(locateNamedType(sealedVariant.parent), sealedVariant.name)
+        TsImport.Type(locateNamedType(sealedVariant.parent), sealedVariant.name)
 
     private fun deserializerRef(namedType: TsNamedType<*>): TsImport =
         TsImport.Named(locateNamedType(namedType), "deserializeJson${namedType.name}")

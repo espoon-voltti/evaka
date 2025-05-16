@@ -4,13 +4,13 @@
 
 // GENERATED FILE: no manual modifications
 
+import type { Action } from '../action'
+import type { DailyServiceTimeId } from './shared'
 import DateRange from '../../date-range'
+import type { JsonOf } from '../../json'
 import LocalDate from '../../local-date'
+import type { PersonId } from './shared'
 import TimeRange from '../../time-range'
-import { Action } from '../action'
-import { DailyServiceTimeId } from './shared'
-import { JsonOf } from '../../json'
-import { PersonId } from './shared'
 
 /**
 * Generated from fi.espoo.evaka.dailyservicetimes.DailyServiceTimes

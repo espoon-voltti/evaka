@@ -69,6 +69,10 @@ sealed interface TsImport {
             name: String,
         ) : this(TsImportSource.File(file), originalName, name)
     }
+
+    data class Type(override val source: TsImportSource, override val name: String) : TsImport {
+        constructor(file: TsFile, name: String) : this(TsImportSource.File(file), name)
+    }
 }
 
 sealed interface TsImportSource {

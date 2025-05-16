@@ -4,14 +4,14 @@
 
 // GENERATED FILE: no manual modifications
 
-import { ApplicationAttachmentType } from 'lib-common/generated/api-types/application'
-import { ApplicationId } from 'lib-common/generated/api-types/shared'
-import { AttachmentId } from 'lib-common/generated/api-types/shared'
+import type { ApplicationAttachmentType } from 'lib-common/generated/api-types/application'
+import type { ApplicationId } from 'lib-common/generated/api-types/shared'
+import type { AttachmentId } from 'lib-common/generated/api-types/shared'
+import type { IncomeStatementAttachmentType } from 'lib-common/generated/api-types/incomestatement'
+import type { IncomeStatementId } from 'lib-common/generated/api-types/shared'
+import type { JsonOf } from 'lib-common/json'
+import type { Uri } from 'lib-common/uri'
 import { AxiosProgressEvent } from 'axios'
-import { IncomeStatementAttachmentType } from 'lib-common/generated/api-types/incomestatement'
-import { IncomeStatementId } from 'lib-common/generated/api-types/shared'
-import { JsonOf } from 'lib-common/json'
-import { Uri } from 'lib-common/uri'
 import { client } from '../../api-client'
 import { createFormData } from 'lib-common/api'
 import { createUrlSearchParams } from 'lib-common/api'

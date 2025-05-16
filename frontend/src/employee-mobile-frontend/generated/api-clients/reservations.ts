@@ -4,15 +4,15 @@
 
 // GENERATED FILE: no manual modifications
 
+import type { ConfirmedRangeDate } from 'lib-common/generated/api-types/reservations'
+import type { ConfirmedRangeDateUpdate } from 'lib-common/generated/api-types/reservations'
+import type { DailyChildReservationResult } from 'lib-common/generated/api-types/reservations'
+import type { DayReservationStatisticsResult } from 'lib-common/generated/api-types/reservations'
+import type { DaycareId } from 'lib-common/generated/api-types/shared'
+import type { JsonCompatible } from 'lib-common/json'
+import type { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
-import { ConfirmedRangeDate } from 'lib-common/generated/api-types/reservations'
-import { ConfirmedRangeDateUpdate } from 'lib-common/generated/api-types/reservations'
-import { DailyChildReservationResult } from 'lib-common/generated/api-types/reservations'
-import { DayReservationStatisticsResult } from 'lib-common/generated/api-types/reservations'
-import { DaycareId } from 'lib-common/generated/api-types/shared'
-import { JsonCompatible } from 'lib-common/json'
-import { JsonOf } from 'lib-common/json'
-import { PersonId } from 'lib-common/generated/api-types/shared'
+import type { PersonId } from 'lib-common/generated/api-types/shared'
 import { client } from '../../client'
 import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonConfirmedRangeDate } from 'lib-common/generated/api-types/reservations'

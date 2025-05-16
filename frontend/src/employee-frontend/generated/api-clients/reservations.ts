@@ -4,15 +4,15 @@
 
 // GENERATED FILE: no manual modifications
 
+import type { ChildDatePresence } from 'lib-common/generated/api-types/reservations'
+import type { DailyReservationRequest } from 'lib-common/generated/api-types/reservations'
+import type { DaycareId } from 'lib-common/generated/api-types/shared'
+import type { ExpectedAbsencesRequest } from 'lib-common/generated/api-types/reservations'
+import type { ExpectedAbsencesResponse } from 'lib-common/generated/api-types/reservations'
+import type { JsonCompatible } from 'lib-common/json'
+import type { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
-import { ChildDatePresence } from 'lib-common/generated/api-types/reservations'
-import { DailyReservationRequest } from 'lib-common/generated/api-types/reservations'
-import { DaycareId } from 'lib-common/generated/api-types/shared'
-import { ExpectedAbsencesRequest } from 'lib-common/generated/api-types/reservations'
-import { ExpectedAbsencesResponse } from 'lib-common/generated/api-types/reservations'
-import { JsonCompatible } from 'lib-common/json'
-import { JsonOf } from 'lib-common/json'
-import { UnitAttendanceReservations } from 'lib-common/generated/api-types/reservations'
+import type { UnitAttendanceReservations } from 'lib-common/generated/api-types/reservations'
 import { client } from '../../api/client'
 import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonUnitAttendanceReservations } from 'lib-common/generated/api-types/reservations'

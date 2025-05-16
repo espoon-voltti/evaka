@@ -4,13 +4,13 @@
 
 // GENERATED FILE: no manual modifications
 
+import type { Caretakers } from './daycare'
 import FiniteDateRange from '../../finite-date-range'
+import type { GroupId } from './shared'
 import HelsinkiDateTime from '../../helsinki-date-time'
+import type { JsonOf } from '../../json'
 import LocalDate from '../../local-date'
-import { Caretakers } from './daycare'
-import { GroupId } from './shared'
-import { JsonOf } from '../../json'
-import { PersonId } from './shared'
+import type { PersonId } from './shared'
 
 /**
 * Generated from fi.espoo.evaka.occupancy.ChildCapacityPoint

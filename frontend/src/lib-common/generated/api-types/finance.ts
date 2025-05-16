@@ -4,12 +4,12 @@
 
 // GENERATED FILE: no manual modifications
 
+import type { Action } from '../action'
+import type { EvakaUserId } from './shared'
+import type { FinanceNoteId } from './shared'
 import HelsinkiDateTime from '../../helsinki-date-time'
-import { Action } from '../action'
-import { EvakaUserId } from './shared'
-import { FinanceNoteId } from './shared'
-import { JsonOf } from '../../json'
-import { PersonId } from './shared'
+import type { JsonOf } from '../../json'
+import type { PersonId } from './shared'
 
 /**
 * Generated from fi.espoo.evaka.finance.notes.FinanceNote

@@ -18,7 +18,7 @@ private val dummyFile = TsProject.LibCommon / "file.ts"
 class TsCodeGeneratorTest {
     data class PlainObject(val str: String, val list: List<String>, val bool: Boolean) {
         companion object {
-            val import = TsImport.Named(dummyFile, "PlainObject")
+            val import = TsImport.Type(dummyFile, "PlainObject")
         }
     }
 
@@ -32,7 +32,7 @@ class TsCodeGeneratorTest {
         data object Variant2 : SealedInterface
 
         companion object {
-            val import = TsImport.Named(dummyFile, "SealedInterface")
+            val import = TsImport.Type(dummyFile, "SealedInterface")
         }
     }
 

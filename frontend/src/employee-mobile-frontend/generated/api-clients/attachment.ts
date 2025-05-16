@@ -4,8 +4,8 @@
 
 // GENERATED FILE: no manual modifications
 
-import { AttachmentId } from 'lib-common/generated/api-types/shared'
-import { Uri } from 'lib-common/uri'
+import type { AttachmentId } from 'lib-common/generated/api-types/shared'
+import type { Uri } from 'lib-common/uri'
 import { client } from '../../client'
 import { uri } from 'lib-common/uri'
 

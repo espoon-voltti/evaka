@@ -4,7 +4,7 @@
 
 // GENERATED FILE: no manual modifications
 
-import { EvakaUserId } from './shared'
+import type { EvakaUserId } from './shared'
 
 /**
 * Generated from fi.espoo.evaka.user.EvakaUser

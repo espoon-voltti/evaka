@@ -5,9 +5,9 @@
 // GENERATED FILE: no manual modifications
 
 import HelsinkiDateTime from '../../helsinki-date-time'
+import type { Id } from '../../id-type'
+import type { JsonOf } from '../../json'
 import LocalDate from '../../local-date'
-import { Id } from '../../id-type'
-import { JsonOf } from '../../json'
 
 export type AbsenceApplicationId = Id<'AbsenceApplication'>
 

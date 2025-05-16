@@ -4,10 +4,10 @@
 
 // GENERATED FILE: no manual modifications
 
-import { ChildBasicInformation } from 'lib-common/generated/api-types/sensitive'
-import { ChildSensitiveInformation } from 'lib-common/generated/api-types/sensitive'
-import { JsonOf } from 'lib-common/json'
-import { PersonId } from 'lib-common/generated/api-types/shared'
+import type { ChildBasicInformation } from 'lib-common/generated/api-types/sensitive'
+import type { ChildSensitiveInformation } from 'lib-common/generated/api-types/sensitive'
+import type { JsonOf } from 'lib-common/json'
+import type { PersonId } from 'lib-common/generated/api-types/shared'
 import { client } from '../../client'
 import { deserializeJsonChildBasicInformation } from 'lib-common/generated/api-types/sensitive'
 import { uri } from 'lib-common/uri'
