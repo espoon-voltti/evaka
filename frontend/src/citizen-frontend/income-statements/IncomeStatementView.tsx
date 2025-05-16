@@ -12,7 +12,7 @@ import type {
   Gross,
   IncomeStatement
 } from 'lib-common/generated/api-types/incomestatement'
-import { EstimatedIncome } from 'lib-common/generated/api-types/incomestatement'
+import type { EstimatedIncome } from 'lib-common/generated/api-types/incomestatement'
 import type { IncomeStatementId } from 'lib-common/generated/api-types/shared'
 import {
   collectAttachmentIds,

@@ -5,7 +5,7 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
 
-import { Caretakers } from 'lib-common/generated/api-types/daycare'
+import type { Caretakers } from 'lib-common/generated/api-types/daycare'
 import type { DaycareId, GroupId } from 'lib-common/generated/api-types/shared'
 import type LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
