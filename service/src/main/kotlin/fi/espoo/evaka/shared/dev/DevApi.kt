@@ -1388,6 +1388,8 @@ VALUES (${bind(body.id)}, ${bind(body.guardianId)})
         discussionTimeCancellation,
         discussionSurveyCreation,
         discussionTimeReservationReminder,
+        absenceApplicationAcceptedNotification,
+        absenceApplicationRejectedNotification,
         serviceApplicationAcceptedNotification,
         serviceApplicationRejectedNotification,
     }
@@ -1525,6 +1527,20 @@ VALUES (${bind(body.id)}, ${bind(body.guardianId)})
                                     "Hei, järjestämme keskustelut lasten varhaiskasvatussuunnitelmia varten viikolla 39. Varatkaa sopiva aika ja tulkaa juttelemaan päiväkodille. Tervetuloa ja nähdään paikanpäällä! Terveisin Testiryhmä ykkösen väki."
                                 ),
                         ),
+                    )
+
+                EmailMessageFilter.absenceApplicationAcceptedNotification ->
+                    emailMessageProvider.absenceApplicationDecidedNotification(
+                        accepted = true,
+                        startDate = LocalDate.now(),
+                        endDate = LocalDate.now().plusWeeks(1),
+                    )
+
+                EmailMessageFilter.absenceApplicationRejectedNotification ->
+                    emailMessageProvider.absenceApplicationDecidedNotification(
+                        accepted = false,
+                        startDate = LocalDate.now(),
+                        endDate = LocalDate.now().plusWeeks(1),
                     )
 
                 EmailMessageFilter.serviceApplicationAcceptedNotification ->
