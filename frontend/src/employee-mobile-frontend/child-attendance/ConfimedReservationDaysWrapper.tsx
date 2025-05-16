@@ -7,7 +7,7 @@ import React from 'react'
 import { useQueryResult } from 'lib-common/query'
 
 import { renderResult } from '../async-rendering'
-import { UnitOrGroup } from '../common/unit-or-group'
+import type { UnitOrGroup } from '../common/unit-or-group'
 
 import ConfirmedDaysReservationList from './ConfirmedDaysReservationList'
 import { confirmedDaysReservationsStatisticsQuery } from './queries'

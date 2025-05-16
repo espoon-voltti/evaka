@@ -3,17 +3,13 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { useQueryClient } from '@tanstack/react-query'
-import React, {
-  createContext,
-  ReactNode,
-  useCallback,
-  useContext,
-  useMemo
-} from 'react'
+import type { ReactNode } from 'react'
+import React, { createContext, useCallback, useContext, useMemo } from 'react'
 
-import { Loading, Result } from 'lib-common/api'
-import { CitizenUserDetails } from 'lib-common/generated/api-types/pis'
-import {
+import type { Result } from 'lib-common/api'
+import { Loading } from 'lib-common/api'
+import type { CitizenUserDetails } from 'lib-common/generated/api-types/pis'
+import type {
   CitizenAuthLevel,
   CitizenFeatures
 } from 'lib-common/generated/api-types/shared'

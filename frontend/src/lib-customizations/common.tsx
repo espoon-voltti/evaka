@@ -9,7 +9,7 @@ import isArray from 'lodash/isArray'
 import mergeWith from 'lodash/mergeWith'
 import React from 'react'
 
-import { JsonOf } from 'lib-common/json'
+import type { JsonOf } from 'lib-common/json'
 import {
   faBabyCarriage,
   faEuroSign,

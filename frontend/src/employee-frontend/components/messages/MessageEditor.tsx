@@ -8,9 +8,9 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import { useBoolean } from 'lib-common/form/hooks'
-import { UpdateStateFn } from 'lib-common/form-state'
-import { Attachment } from 'lib-common/generated/api-types/attachment'
-import {
+import type { UpdateStateFn } from 'lib-common/form-state'
+import type { Attachment } from 'lib-common/generated/api-types/attachment'
+import type {
   AuthorizedMessageAccount,
   DraftContent,
   MessageThreadFolder,
@@ -19,11 +19,9 @@ import {
   SelectableRecipientsResponse,
   UpdatableDraftContent
 } from 'lib-common/generated/api-types/messaging'
-import {
-  messagingCategory,
-  MessagingCategory
-} from 'lib-common/generated/api-types/placement'
-import {
+import type { MessagingCategory } from 'lib-common/generated/api-types/placement'
+import { messagingCategory } from 'lib-common/generated/api-types/placement'
+import type {
   AttachmentId,
   MessageAccountId,
   MessageDraftId,
@@ -31,7 +29,7 @@ import {
 } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import { useDebounce } from 'lib-common/utils/useDebounce'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import { Button } from 'lib-components/atoms/buttons/Button'
@@ -39,9 +37,8 @@ import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import Select from 'lib-components/atoms/dropdowns/Select'
-import TreeDropdown, {
-  TreeNode
-} from 'lib-components/atoms/dropdowns/TreeDropdown'
+import type { TreeNode } from 'lib-components/atoms/dropdowns/TreeDropdown'
+import TreeDropdown from 'lib-components/atoms/dropdowns/TreeDropdown'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
 import Radio from 'lib-components/atoms/form/Radio'
@@ -50,24 +47,28 @@ import {
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import { modalZIndex } from 'lib-components/layout/z-helpers'
+import type {
+  SelectedNode,
+  SelectorNode
+} from 'lib-components/messages/SelectorNode'
 import {
   getSelected,
   selectableRecipientsToNode,
-  SelectedNode,
-  SelectorNode,
   nodeToSelectableRecipient
 } from 'lib-components/messages/SelectorNode'
 import {
   ExpandingInfoBox,
   InlineInfoButton
 } from 'lib-components/molecules/ExpandingInfo'
-import FileUpload, {
-  initialUploadStatus,
+import type {
   UploadHandler,
   UploadStatus
 } from 'lib-components/molecules/FileUpload'
+import FileUpload, {
+  initialUploadStatus
+} from 'lib-components/molecules/FileUpload'
 import { InfoBox } from 'lib-components/molecules/MessageBoxes'
-import { SelectOption } from 'lib-components/molecules/Select'
+import type { SelectOption } from 'lib-components/molecules/Select'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { Bold } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
@@ -85,7 +86,8 @@ import {
 import { useTranslation } from '../../state/i18n'
 
 import { createMessagePreflightCheckQuery } from './queries'
-import { Draft, useDraft } from './useDraft'
+import type { Draft } from './useDraft'
+import { useDraft } from './useDraft'
 
 type Message = Omit<UpdatableDraftContent, 'recipients' | 'recipientNames'> & {
   sender: SelectOption<MessageAccountId>

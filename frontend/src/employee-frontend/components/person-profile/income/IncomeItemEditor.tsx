@@ -7,11 +7,11 @@ import omit from 'lodash/omit'
 import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import { Failure, Result } from 'lib-common/api'
+import type { Failure, Result } from 'lib-common/api'
 import { incomeEffects } from 'lib-common/api-types/income'
 import DateRange from 'lib-common/date-range'
-import { Attachment } from 'lib-common/generated/api-types/attachment'
-import {
+import type { Attachment } from 'lib-common/generated/api-types/attachment'
+import type {
   Income,
   IncomeCoefficient,
   IncomeEffect,
@@ -19,10 +19,10 @@ import {
   IncomeTypeOptions,
   IncomeValue
 } from 'lib-common/generated/api-types/invoicing'
-import { IncomeId, PersonId } from 'lib-common/generated/api-types/shared'
+import type { IncomeId, PersonId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { parseCents } from 'lib-common/money'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import Title from 'lib-components/atoms/Title'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
@@ -41,15 +41,13 @@ import { Gap } from 'lib-components/white-space'
 
 import { getAttachmentUrl, incomeAttachment } from '../../../api/attachments'
 import { useTranslation } from '../../../state/i18n'
-import { IncomeFields } from '../../../types/income'
+import type { IncomeFields } from '../../../types/income'
 import RetroactiveConfirmation, {
   isChangeRetroactive
 } from '../../common/RetroactiveConfirmation'
 
-import IncomeTable, {
-  IncomeTableData,
-  tableDataFromIncomeFields
-} from './IncomeTable'
+import type { IncomeTableData } from './IncomeTable'
+import IncomeTable, { tableDataFromIncomeFields } from './IncomeTable'
 
 const ButtonsContainer = styled(FixedSpaceRow)`
   margin: 20px 0;

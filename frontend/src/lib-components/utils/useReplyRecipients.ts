@@ -4,15 +4,15 @@
 
 import { useCallback, useEffect, useState } from 'react'
 
-import FiniteDateRange from 'lib-common/finite-date-range'
-import {
+import type FiniteDateRange from 'lib-common/finite-date-range'
+import type {
   Message,
   MessageAccountWithPresence
 } from 'lib-common/generated/api-types/messaging'
-import { MessageAccountId } from 'lib-common/generated/api-types/shared'
-import { UUID } from 'lib-common/types'
+import type { MessageAccountId } from 'lib-common/generated/api-types/shared'
+import type { UUID } from 'lib-common/types'
 
-import { SelectableAccount } from '../messages/MessageReplyEditor'
+import type { SelectableAccount } from '../messages/MessageReplyEditor'
 
 function getOutOfOfficeForAccount(
   accountId: MessageAccountId,

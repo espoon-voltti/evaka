@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { HolidayPeriod } from 'lib-common/generated/api-types/holidayperiod'
+import type { HolidayPeriod } from 'lib-common/generated/api-types/holidayperiod'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import TimeRange from 'lib-common/time-range'
@@ -14,7 +14,7 @@ import {
   createDefaultServiceNeedOptions,
   resetServiceState
 } from '../../generated/api-clients'
-import {
+import type {
   DevDaycare,
   DevDaycareGroup,
   DevEmployee,

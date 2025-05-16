@@ -5,7 +5,7 @@
 import React from 'react'
 import { Link } from 'react-router'
 
-import {
+import type {
   PersonDetailed,
   VoucherValueDecisionPlacementDetailed,
   VoucherValueDecisionServiceNeed

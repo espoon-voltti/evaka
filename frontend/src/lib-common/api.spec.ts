@@ -2,12 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import type { Cancelled, Result } from './api'
 import {
-  Cancelled,
   Failure,
   isCancelled,
   Loading,
-  Result,
   Success,
   withStaleCancellation,
   combine

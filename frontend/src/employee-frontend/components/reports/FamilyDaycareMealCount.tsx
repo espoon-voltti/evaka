@@ -7,7 +7,7 @@ import React, { useMemo, useState } from 'react'
 import { Link } from 'react-router'
 import styled from 'styled-components'
 
-import {
+import type {
   FamilyDaycareMealAreaResult,
   FamilyDaycareMealDaycareResult
 } from 'lib-common/generated/api-types/reports'

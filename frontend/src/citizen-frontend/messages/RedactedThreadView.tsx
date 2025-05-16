@@ -5,7 +5,7 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import { CitizenMessageThread } from 'lib-common/generated/api-types/messaging'
+import type { CitizenMessageThread } from 'lib-common/generated/api-types/messaging'
 import { FixedSpaceFlexWrap } from 'lib-components/layout/flex-helpers'
 import { MessageCharacteristics } from 'lib-components/messages/MessageCharacteristics'
 import { ThreadContainer } from 'lib-components/messages/ThreadListItem'

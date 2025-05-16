@@ -4,10 +4,8 @@
 
 import React, { useCallback, useState } from 'react'
 
-import {
-  settings as options,
-  SettingType
-} from 'lib-common/generated/api-types/setting'
+import type { SettingType } from 'lib-common/generated/api-types/setting'
+import { settings as options } from 'lib-common/generated/api-types/setting'
 import { useQueryResult } from 'lib-common/query'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import InputField from 'lib-components/atoms/form/InputField'

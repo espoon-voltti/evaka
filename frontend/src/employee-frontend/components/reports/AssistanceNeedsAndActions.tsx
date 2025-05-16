@@ -11,15 +11,18 @@ import React, { useMemo, useState } from 'react'
 import { Link } from 'react-router'
 import styled from 'styled-components'
 
-import {
+import type {
   DaycareAssistanceLevel,
   OtherAssistanceMeasureType,
   PreschoolAssistanceLevel
 } from 'lib-common/generated/api-types/assistance'
-import { AssistanceActionOption } from 'lib-common/generated/api-types/assistanceaction'
-import { Daycare, ProviderType } from 'lib-common/generated/api-types/daycare'
-import { PlacementType } from 'lib-common/generated/api-types/placement'
-import {
+import type { AssistanceActionOption } from 'lib-common/generated/api-types/assistanceaction'
+import type {
+  Daycare,
+  ProviderType
+} from 'lib-common/generated/api-types/daycare'
+import type { PlacementType } from 'lib-common/generated/api-types/placement'
+import type {
   AssistanceNeedsAndActionsReport,
   AssistanceNeedsAndActionsReportByChild,
   AssistanceNeedsAndActionsReportRow,

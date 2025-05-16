@@ -5,9 +5,13 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import { Loading, Result, wrapResult } from 'lib-common/api'
-import { Pairing } from 'lib-common/generated/api-types/pairing'
-import { DaycareId, EmployeeId } from 'lib-common/generated/api-types/shared'
+import type { Result } from 'lib-common/api'
+import { Loading, wrapResult } from 'lib-common/api'
+import type { Pairing } from 'lib-common/generated/api-types/pairing'
+import type {
+  DaycareId,
+  EmployeeId
+} from 'lib-common/generated/api-types/shared'
 import InputField from 'lib-components/atoms/form/InputField'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { Bold, fontWeights, P } from 'lib-components/typography'

@@ -7,20 +7,20 @@ import partition from 'lodash/partition'
 import React, { useMemo } from 'react'
 import styled from 'styled-components'
 
-import { Result } from 'lib-common/api'
-import {
+import type { Result } from 'lib-common/api'
+import type {
   ChildReservationInfo,
   ReservationChildInfo
 } from 'lib-common/generated/api-types/reservations'
-import LocalDate from 'lib-common/local-date'
-import LocalTime from 'lib-common/local-time'
+import type LocalDate from 'lib-common/local-date'
+import type LocalTime from 'lib-common/local-time'
 import { useQueryResult } from 'lib-common/query'
 import { reservationHasTimes } from 'lib-common/reservations'
 import { theme } from 'lib-customizations/common'
 
 import { renderResult } from '../async-rendering'
 import { getServiceTimeRangeOrNullForDate } from '../common/dailyServiceTimes'
-import { UnitOrGroup } from '../common/unit-or-group'
+import type { UnitOrGroup } from '../common/unit-or-group'
 
 import ChildSubListItem from './ChildSubListItem'
 import { confirmedDayReservationsQuery } from './queries'

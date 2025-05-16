@@ -8,7 +8,7 @@ import { Outlet, useNavigate, useOutletContext } from 'react-router'
 import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
-import {
+import type {
   AttendanceChild,
   GroupInfo
 } from 'lib-common/generated/api-types/attendance'
@@ -20,16 +20,18 @@ import colors from 'lib-customizations/common'
 import { routes } from '../App'
 import { renderResult } from '../async-rendering'
 import FreeTextSearch from '../common/FreeTextSearch'
-import { CountInfo } from '../common/GroupSelector'
+import type { CountInfo } from '../common/GroupSelector'
 import { PageWithNavigation } from '../common/PageWithNavigation'
 import { useTranslation } from '../common/i18n'
-import { toUnitOrGroup, UnitOrGroup } from '../common/unit-or-group'
+import type { UnitOrGroup } from '../common/unit-or-group'
+import { toUnitOrGroup } from '../common/unit-or-group'
 import { zIndex } from '../constants'
 import { unitInfoQuery } from '../units/queries'
 
 import ChildList from './ChildList'
 import { attendanceStatusesQuery, childrenQuery } from './queries'
-import { AttendanceStatuses, childAttendanceStatus } from './utils'
+import type { AttendanceStatuses } from './utils'
+import { childAttendanceStatus } from './utils'
 
 export default React.memo(function AttendancePageWrapper({
   unitOrGroup

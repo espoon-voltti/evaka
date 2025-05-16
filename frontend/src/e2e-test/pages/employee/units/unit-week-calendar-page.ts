@@ -2,17 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type LocalDate from 'lib-common/local-date'
+import type { UUID } from 'lib-common/types'
 
-import {
-  Element,
-  ElementCollection,
-  Modal,
-  Page,
-  Select,
-  TextInput
-} from '../../../utils/page'
+import type { ElementCollection, Page } from '../../../utils/page'
+import { Element, Modal, Select, TextInput } from '../../../utils/page'
 
 import { UnitCalendarPageBase } from './unit-calendar-page-base'
 import { UnitMonthCalendarPage } from './unit-month-calendar-page'

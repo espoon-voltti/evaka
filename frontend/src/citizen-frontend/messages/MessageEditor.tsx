@@ -7,17 +7,17 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import FocusLock from 'react-focus-lock'
 import styled from 'styled-components'
 
-import { Result } from 'lib-common/api'
+import type { Result } from 'lib-common/api'
 import { useBoolean } from 'lib-common/form/hooks'
-import { Attachment } from 'lib-common/generated/api-types/attachment'
-import { ChildAndPermittedActions } from 'lib-common/generated/api-types/children'
-import {
+import type { Attachment } from 'lib-common/generated/api-types/attachment'
+import type { ChildAndPermittedActions } from 'lib-common/generated/api-types/children'
+import type {
   AccountType,
   CitizenMessageBody,
   GetRecipientsResponse,
   MessageAccount
 } from 'lib-common/generated/api-types/messaging'
-import {
+import type {
   MessageAccountId,
   PersonId
 } from 'lib-common/generated/api-types/shared'
@@ -35,9 +35,9 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import OutOfOfficeInfo from 'lib-components/messages/OutOfOfficeInfo'
 import { ToggleableRecipient } from 'lib-components/messages/ToggleableRecipient'
+import type { UploadStatus } from 'lib-components/molecules/FileUpload'
 import FileUpload, {
-  initialUploadStatus,
-  UploadStatus
+  initialUploadStatus
 } from 'lib-components/molecules/FileUpload'
 import { InfoBox } from 'lib-components/molecules/MessageBoxes'
 import { Bold, P } from 'lib-components/typography'

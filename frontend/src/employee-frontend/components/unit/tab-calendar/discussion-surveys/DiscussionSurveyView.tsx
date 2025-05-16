@@ -4,8 +4,8 @@
 
 import groupBy from 'lodash/groupBy'
 import orderBy from 'lodash/orderBy'
+import type { MutableRefObject } from 'react'
 import React, {
-  MutableRefObject,
   useCallback,
   useContext,
   useMemo,
@@ -18,20 +18,21 @@ import styled from 'styled-components'
 import { combine } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { BoundForm, useForm, useFormFields } from 'lib-common/form/hooks'
-import {
+import type { BoundForm } from 'lib-common/form/hooks'
+import { useForm, useFormFields } from 'lib-common/form/hooks'
+import type {
   CalendarEvent,
   DiscussionReservationDay
 } from 'lib-common/generated/api-types/calendarevent'
-import { UnitGroupDetails } from 'lib-common/generated/api-types/daycare'
-import {
+import type { UnitGroupDetails } from 'lib-common/generated/api-types/daycare'
+import type {
   ChildBasics,
   DaycarePlacementWithDetails
 } from 'lib-common/generated/api-types/placement'
-import { DaycareId, GroupId } from 'lib-common/generated/api-types/shared'
+import type { DaycareId, GroupId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useMutation, useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import { scrollRefIntoView } from 'lib-common/utils/scrolling'
 import { StaticChip } from 'lib-components/atoms/Chip'
 import { Button } from 'lib-components/atoms/buttons/Button'
@@ -59,9 +60,9 @@ import {
 } from '../queries'
 
 import InviteeSection from './InviteeSection'
+import type { NewEventTimeForm } from './survey-editor/DiscussionTimesForm'
 import {
   BorderedBox,
-  NewEventTimeForm,
   TimesCalendarContainer
 } from './survey-editor/DiscussionTimesForm'
 import { type eventTimeArray, timesForm } from './survey-editor/form'

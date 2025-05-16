@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { ApplicationId } from 'lib-common/generated/api-types/shared'
+import type { ApplicationId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { fromUuid, randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
@@ -35,7 +35,10 @@ import {
   rejectDecisionByCitizen,
   resetServiceState
 } from '../../generated/api-clients'
-import { DevApplicationWithForm, DevEmployee } from '../../generated/api-types'
+import type {
+  DevApplicationWithForm,
+  DevEmployee
+} from '../../generated/api-types'
 import ApplicationListView from '../../pages/employee/applications/application-list-view'
 import ApplicationReadView from '../../pages/employee/applications/application-read-view'
 import { UnitPage } from '../../pages/employee/units/unit'

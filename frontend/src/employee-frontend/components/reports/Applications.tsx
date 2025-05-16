@@ -6,7 +6,7 @@ import React, { useCallback, useMemo, useState } from 'react'
 import { Link } from 'react-router'
 import styled from 'styled-components'
 
-import { ApplicationsReportRow } from 'lib-common/generated/api-types/reports'
+import type { ApplicationsReportRow } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
 import { constantQuery, useQueryResult } from 'lib-common/query'
 import Title from 'lib-components/atoms/Title'
@@ -20,7 +20,7 @@ import { DatePickerSpacer } from 'lib-components/molecules/date-picker/DateRange
 import { Gap } from 'lib-components/white-space'
 
 import { useTranslation } from '../../state/i18n'
-import { PeriodFilters } from '../../types/reports'
+import type { PeriodFilters } from '../../types/reports'
 import { distinct, reducePropertySum } from '../../utils'
 import { renderResult } from '../async-rendering'
 import { FlexRow } from '../common/styled/containers'

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { JsonOf } from './json'
+import type { JsonOf } from './json'
 import LocalTime from './local-time'
 import { maxOf, minOf } from './ordered'
 import TimeRangeEndpoint from './time-range-endpoint'

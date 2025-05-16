@@ -18,7 +18,7 @@ import {
   createDefaultServiceNeedOptions,
   resetServiceState
 } from '../../generated/api-clients'
-import {
+import type {
   DevDaycare,
   DevDaycareGroup,
   DevPerson,

@@ -3,7 +3,10 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { GroupId, PlacementId } from 'lib-common/generated/api-types/shared'
+import type {
+  GroupId,
+  PlacementId
+} from 'lib-common/generated/api-types/shared'
 import { evakaUserId, randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 
@@ -22,9 +25,13 @@ import {
   resetServiceState,
   terminatePlacement
 } from '../../generated/api-clients'
-import { DevDaycare, DevEmployee, DevPerson } from '../../generated/api-types'
+import type {
+  DevDaycare,
+  DevEmployee,
+  DevPerson
+} from '../../generated/api-types'
 import { UnitPage } from '../../pages/employee/units/unit'
-import { UnitGroupsPage } from '../../pages/employee/units/unit-groups-page'
+import type { UnitGroupsPage } from '../../pages/employee/units/unit-groups-page'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 

@@ -4,10 +4,11 @@
 
 import React, { createContext, useMemo } from 'react'
 
-import { Loading, Result } from 'lib-common/api'
-import { Action } from 'lib-common/generated/action'
-import { PersonJSON } from 'lib-common/generated/api-types/pis'
-import { PersonId } from 'lib-common/generated/api-types/shared'
+import type { Result } from 'lib-common/api'
+import { Loading } from 'lib-common/api'
+import type { Action } from 'lib-common/generated/action'
+import type { PersonJSON } from 'lib-common/generated/api-types/pis'
+import type { PersonId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
 
 import { personQuery } from './queries'

@@ -6,8 +6,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useMemo, useRef } from 'react'
 import styled from 'styled-components'
 
-import { CitizenCalendarEvent } from 'lib-common/generated/api-types/calendarevent'
-import {
+import type { CitizenCalendarEvent } from 'lib-common/generated/api-types/calendarevent'
+import type {
   ReservationChild,
   ReservationResponseDay
 } from 'lib-common/generated/api-types/reservations'

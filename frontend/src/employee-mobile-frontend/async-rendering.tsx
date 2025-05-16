@@ -2,11 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import {
-  makeHelpers,
+import type {
   RenderResultFn,
   UnwrapResultProps
 } from 'lib-components/async-rendering'
+import { makeHelpers } from 'lib-components/async-rendering'
 
 import { useTranslation } from './common/i18n'
 

@@ -4,20 +4,22 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
-import {
+import type {
   AttendanceChild,
   AttendanceStatus
 } from 'lib-common/generated/api-types/attendance'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import { ContentArea } from 'lib-components/layout/Container'
 import { TabLinks } from 'lib-components/molecules/Tabs'
 
 import { routes } from '../App'
 import { useTranslation } from '../common/i18n'
-import { UnitOrGroup } from '../common/unit-or-group'
+import type { UnitOrGroup } from '../common/unit-or-group'
 
-import ChildList, { ListItem } from './ChildList'
-import { AttendanceStatuses, childAttendanceStatus } from './utils'
+import type { ListItem } from './ChildList'
+import ChildList from './ChildList'
+import type { AttendanceStatuses } from './utils'
+import { childAttendanceStatus } from './utils'
 
 interface Props {
   unitOrGroup: UnitOrGroup

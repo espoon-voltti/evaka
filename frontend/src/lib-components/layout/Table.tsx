@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { Property } from 'csstype'
+import type { Property } from 'csstype'
 import React from 'react'
 import styled, { useTheme } from 'styled-components'
 
@@ -15,7 +15,8 @@ import {
 } from 'lib-icons'
 
 import { fontWeights } from '../typography'
-import { defaultMargins, Gap, SpacingSize } from '../white-space'
+import type { SpacingSize } from '../white-space'
+import { defaultMargins, Gap } from '../white-space'
 
 export const Table = styled.table`
   background-color: ${(p) => p.theme.colors.grayscale.g0};

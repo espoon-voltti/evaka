@@ -5,7 +5,7 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
+import type { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
 import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
 import { Label } from 'lib-components/typography'
 import { featureFlags } from 'lib-customizations/citizen'

@@ -6,7 +6,7 @@ import React from 'react'
 import { v4 as uuidv4 } from 'uuid'
 
 import { useForm, useFormFields } from 'lib-common/form/hooks'
-import { StateOf } from 'lib-common/form/types'
+import type { StateOf } from 'lib-common/form/types'
 import { InputFieldF } from 'lib-components/atoms/form/InputField'
 import { TextAreaF } from 'lib-components/atoms/form/TextArea'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'

@@ -15,7 +15,7 @@ import {
 } from 'lib-common/form/form'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
 import { ValidationError, ValidationSuccess } from 'lib-common/form/types'
-import {
+import type {
   ChildId,
   ServiceNeedOptionId
 } from 'lib-common/generated/api-types/shared'

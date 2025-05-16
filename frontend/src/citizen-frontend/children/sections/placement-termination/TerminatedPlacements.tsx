@@ -4,7 +4,7 @@
 
 import React from 'react'
 
-import { TerminatablePlacementGroup } from 'lib-common/generated/api-types/placement'
+import type { TerminatablePlacementGroup } from 'lib-common/generated/api-types/placement'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import { Label } from 'lib-components/typography'
 

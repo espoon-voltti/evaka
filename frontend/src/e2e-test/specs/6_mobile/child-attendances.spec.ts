@@ -2,15 +2,16 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { BrowserContextOptions } from 'playwright'
+import type { BrowserContextOptions } from 'playwright'
 
-import { PlacementType } from 'lib-common/generated/api-types/placement'
-import { PersonId } from 'lib-common/generated/api-types/shared'
+import type { PlacementType } from 'lib-common/generated/api-types/placement'
+import type { PersonId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { evakaUserId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 
-import { EvakaBrowserContextOptions, mobileViewport } from '../../browser'
+import type { EvakaBrowserContextOptions } from '../../browser'
+import { mobileViewport } from '../../browser'
 import {
   testCareArea,
   testDaycare2,
@@ -27,7 +28,7 @@ import {
   createDefaultServiceNeedOptions,
   resetServiceState
 } from '../../generated/api-clients'
-import { DevPlacement } from '../../generated/api-types'
+import type { DevPlacement } from '../../generated/api-types'
 import ChildAttendancePage from '../../pages/mobile/child-attendance-page'
 import MobileChildPage from '../../pages/mobile/child-page'
 import MobileListPage from '../../pages/mobile/list-page'

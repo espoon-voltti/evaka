@@ -5,11 +5,11 @@
 import React, { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
 
-import {
+import type {
   IncomeStatement,
   IncomeStatementAttachmentType
 } from 'lib-common/generated/api-types/incomestatement'
-import { IncomeStatementId } from 'lib-common/generated/api-types/shared'
+import type { IncomeStatementId } from 'lib-common/generated/api-types/shared'
 import {
   collectAttachmentIds,
   toIncomeStatementAttachments

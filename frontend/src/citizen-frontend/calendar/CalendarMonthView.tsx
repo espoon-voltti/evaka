@@ -4,18 +4,13 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import sum from 'lodash/sum'
-import React, {
-  MutableRefObject,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef
-} from 'react'
+import type { MutableRefObject } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef } from 'react'
 import styled, { css, useTheme } from 'styled-components'
 
-import FiniteDateRange from 'lib-common/finite-date-range'
-import { CitizenCalendarEvent } from 'lib-common/generated/api-types/calendarevent'
-import {
+import type FiniteDateRange from 'lib-common/finite-date-range'
+import type { CitizenCalendarEvent } from 'lib-common/generated/api-types/calendarevent'
+import type {
   ReservationChild,
   ReservationResponseDay
 } from 'lib-common/generated/api-types/reservations'
@@ -52,10 +47,13 @@ import {
   CalendarEventCountContainer
 } from './CalendarEventCount'
 import { getSummaryForMonth, InlineWarningIcon } from './MonthElem'
-import MonthlyHoursSummary, { MonthlyTimeSummary } from './MonthlyHoursSummary'
+import type { MonthlyTimeSummary } from './MonthlyHoursSummary'
+import MonthlyHoursSummary from './MonthlyHoursSummary'
 import ReportHolidayLabel from './ReportHolidayLabel'
-import { ChildImageData, getChildImages } from './RoundChildImages'
-import { BackgroundHighlightType, Reservations } from './calendar-elements'
+import type { ChildImageData } from './RoundChildImages'
+import { getChildImages } from './RoundChildImages'
+import type { BackgroundHighlightType } from './calendar-elements'
+import { Reservations } from './calendar-elements'
 import { useMonthlySummaryInfo } from './hooks'
 import { activeQuestionnaireQuery, holidayPeriodsQuery } from './queries'
 import { isQuestionnaireAvailable } from './utils'

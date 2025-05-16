@@ -2,10 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Locale, Month, Day } from 'date-fns'
+import type { Locale, Month, Day } from 'date-fns'
 import { fi, sv, enGB } from 'date-fns/locale'
 import React, { useMemo, useState } from 'react'
-import { DayPicker, OnSelectHandler } from 'react-day-picker'
+import type { OnSelectHandler } from 'react-day-picker'
+import { DayPicker } from 'react-day-picker'
 
 import LocalDate from 'lib-common/local-date'
 import 'react-day-picker/style.css'

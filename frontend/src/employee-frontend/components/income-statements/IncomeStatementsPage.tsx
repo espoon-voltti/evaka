@@ -8,11 +8,11 @@ import { Link } from 'react-router'
 import styled from 'styled-components'
 
 import { isLoading } from 'lib-common/api'
-import {
+import type {
   IncomeStatementAwaitingHandler,
   IncomeStatementSortParam
 } from 'lib-common/generated/api-types/incomestatement'
-import { SortDirection } from 'lib-common/generated/api-types/invoicing'
+import type { SortDirection } from 'lib-common/generated/api-types/invoicing'
 import { constantQuery, useQueryResult } from 'lib-common/query'
 import Pagination from 'lib-components/Pagination'
 import Tooltip from 'lib-components/atoms/Tooltip'

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { ChartDataset, ChartOptions } from 'chart.js'
+import type { ChartDataset, ChartOptions } from 'chart.js'
 import { fi } from 'date-fns/locale'
 
 export type DatePoint = { x: Date; y: number | null }

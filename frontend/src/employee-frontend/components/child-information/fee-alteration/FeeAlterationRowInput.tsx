@@ -2,7 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { Dispatch, SetStateAction } from 'react'
+import type { Dispatch, SetStateAction } from 'react'
+import React from 'react'
 import styled from 'styled-components'
 
 import { feeAlterationTypes } from 'lib-common/generated/api-types/invoicing'
@@ -11,7 +12,7 @@ import InputField from 'lib-components/atoms/form/InputField'
 import colors from 'lib-customizations/common'
 
 import { useTranslation } from '../../../state/i18n'
-import { FeeAlterationForm } from '../../../types/fee-alteration'
+import type { FeeAlterationForm } from '../../../types/fee-alteration'
 
 interface Props {
   edited: FeeAlterationForm

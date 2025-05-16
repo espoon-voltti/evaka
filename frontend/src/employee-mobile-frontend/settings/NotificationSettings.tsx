@@ -12,23 +12,24 @@ import React, {
 } from 'react'
 import styled from 'styled-components'
 
-import { combine, Failure, Result, Success } from 'lib-common/api'
+import type { Result } from 'lib-common/api'
+import { combine, Failure, Success } from 'lib-common/api'
 import { boolean, string } from 'lib-common/form/fields'
 import { array, mapped, object, value } from 'lib-common/form/form'
+import type { BoundForm } from 'lib-common/form/hooks'
 import {
-  BoundForm,
   useBoolean,
   useForm,
   useFormElems,
   useFormField
 } from 'lib-common/form/hooks'
-import { GroupInfo } from 'lib-common/generated/api-types/attendance'
-import { DaycareId, GroupId } from 'lib-common/generated/api-types/shared'
-import {
-  pushNotificationCategories,
+import type { GroupInfo } from 'lib-common/generated/api-types/attendance'
+import type { DaycareId, GroupId } from 'lib-common/generated/api-types/shared'
+import type {
   PushNotificationCategory,
   PushSettings
 } from 'lib-common/generated/api-types/webpush'
+import { pushNotificationCategories } from 'lib-common/generated/api-types/webpush'
 import { useQueryResult } from 'lib-common/query'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { Button } from 'lib-components/atoms/buttons/Button'

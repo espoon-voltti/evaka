@@ -2,17 +2,15 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, {
-  createContext,
-  Dispatch,
-  SetStateAction,
-  useMemo,
-  useState
-} from 'react'
+import type { Dispatch, SetStateAction } from 'react'
+import React, { createContext, useMemo, useState } from 'react'
 
-import { CareType, ProviderType } from 'lib-common/generated/api-types/daycare'
+import type {
+  CareType,
+  ProviderType
+} from 'lib-common/generated/api-types/daycare'
 
-import { SearchOrder } from '../types'
+import type { SearchOrder } from '../types'
 
 type UnitFilter = {
   text: string

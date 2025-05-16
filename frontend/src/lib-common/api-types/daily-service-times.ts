@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { DailyServiceTimesValue } from '../generated/api-types/dailyservicetimes'
-import TimeRange from '../time-range'
+import type { DailyServiceTimesValue } from '../generated/api-types/dailyservicetimes'
+import type TimeRange from '../time-range'
 
 export function isRegular(
   times: DailyServiceTimesValue

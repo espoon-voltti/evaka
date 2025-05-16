@@ -2,13 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, {
-  createContext,
-  Dispatch,
-  SetStateAction,
-  useMemo,
-  useState
-} from 'react'
+import type { Dispatch, SetStateAction } from 'react'
+import React, { createContext, useMemo, useState } from 'react'
 
 import LocalDate from 'lib-common/local-date'
 

@@ -2,12 +2,15 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { SetStateAction, useCallback, useEffect, useState } from 'react'
+import type { SetStateAction } from 'react'
+import type React from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
-import { Result, wrapResult } from 'lib-common/api'
-import { AssistanceNeedDecisionForm } from 'lib-common/generated/api-types/assistanceneed'
-import { Employee } from 'lib-common/generated/api-types/pis'
-import { AssistanceNeedDecisionId } from 'lib-common/generated/api-types/shared'
+import type { Result } from 'lib-common/api'
+import { wrapResult } from 'lib-common/api'
+import type { AssistanceNeedDecisionForm } from 'lib-common/generated/api-types/assistanceneed'
+import type { Employee } from 'lib-common/generated/api-types/pis'
+import type { AssistanceNeedDecisionId } from 'lib-common/generated/api-types/shared'
 import { useApiState } from 'lib-common/utils/useRestApi'
 
 import {
@@ -15,7 +18,8 @@ import {
   getAssistanceNeedDecision,
   updateAssistanceNeedDecision
 } from '../../../../generated/api-clients/assistanceneed'
-import { AutosaveStatus, useAutosave } from '../../../../utils/use-autosave'
+import type { AutosaveStatus } from '../../../../utils/use-autosave'
+import { useAutosave } from '../../../../utils/use-autosave'
 
 const getAssistanceDecisionMakerOptionsResult = wrapResult(
   getAssistanceDecisionMakerOptions

@@ -8,11 +8,11 @@ import React, { useContext } from 'react'
 import { Link, useNavigate } from 'react-router'
 import styled from 'styled-components'
 
-import {
+import type {
   ApplicationsOfChild,
   ApplicationStatus
 } from 'lib-common/generated/api-types/application'
-import { ApplicationId } from 'lib-common/generated/api-types/shared'
+import type { ApplicationId } from 'lib-common/generated/api-types/shared'
 import { useMutation } from 'lib-common/query'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import AddButton from 'lib-components/atoms/buttons/AddButton'

@@ -5,7 +5,7 @@
 import React, { useContext } from 'react'
 import { createSearchParams, Navigate, useLocation } from 'react-router'
 
-import { CitizenAuthLevel } from 'lib-common/generated/api-types/shared'
+import type { CitizenAuthLevel } from 'lib-common/generated/api-types/shared'
 
 import { AuthContext } from './auth/state'
 import { getStrongLoginUri } from './navigation/const'

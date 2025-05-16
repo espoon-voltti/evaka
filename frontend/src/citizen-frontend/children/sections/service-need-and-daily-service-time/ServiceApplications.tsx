@@ -6,12 +6,12 @@ import orderBy from 'lodash/orderBy'
 import React, { useContext, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
 
-import {
+import type {
   CitizenServiceApplication,
   ServiceApplication,
   ServiceNeedOptionBasics
 } from 'lib-common/generated/api-types/serviceneed'
-import { ChildId } from 'lib-common/generated/api-types/shared'
+import type { ChildId } from 'lib-common/generated/api-types/shared'
 import { StaticChip } from 'lib-components/atoms/Chip'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
@@ -45,7 +45,8 @@ import {
   CalendarModalCloseButton,
   CalendarModalSection
 } from '../../../calendar/CalendarModal'
-import { Lang, useLang, useTranslation } from '../../../localization'
+import type { Lang } from '../../../localization'
+import { useLang, useTranslation } from '../../../localization'
 import { deleteServiceApplicationsMutation } from '../../queries'
 
 export default React.memo(function ServiceApplications({

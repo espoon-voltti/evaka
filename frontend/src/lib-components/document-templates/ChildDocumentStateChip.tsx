@@ -5,7 +5,7 @@
 import React from 'react'
 import { useTheme } from 'styled-components'
 
-import {
+import type {
   ChildDocumentDecisionStatus,
   DocumentStatus
 } from 'lib-common/generated/api-types/document'

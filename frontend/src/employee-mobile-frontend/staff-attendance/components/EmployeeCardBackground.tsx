@@ -14,7 +14,7 @@ import { farUser } from 'lib-icons'
 
 import { useTranslation } from '../../common/i18n'
 import { IconBox } from '../StaffListItem'
-import { Staff } from '../utils'
+import type { Staff } from '../utils'
 
 function getColorByStatus(present: boolean) {
   return present ? colors.status.success : colors.accents.a6turquoise

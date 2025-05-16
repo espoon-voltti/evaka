@@ -2,13 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import DateRange from 'lib-common/date-range'
+import type DateRange from 'lib-common/date-range'
 
-import { DevEmployee } from '../../../generated/api-types'
+import type { DevEmployee } from '../../../generated/api-types'
+import type { Page, Element } from '../../../utils/page'
 import {
-  Page,
   TextInput,
-  Element,
   AsyncButton,
   Combobox,
   DatePicker

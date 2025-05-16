@@ -4,18 +4,17 @@
 
 import uniq from 'lodash/uniq'
 
-import FiniteDateRange from 'lib-common/finite-date-range'
-import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type FiniteDateRange from 'lib-common/finite-date-range'
+import type LocalDate from 'lib-common/local-date'
+import type { UUID } from 'lib-common/types'
 
 import { waitUntilEqual, waitUntilTrue } from '../../utils'
+import type { Page, ElementCollection } from '../../utils/page'
 import {
   Checkbox,
   Element,
-  Page,
   Select,
   TextInput,
-  ElementCollection,
   DatePicker
 } from '../../utils/page'
 

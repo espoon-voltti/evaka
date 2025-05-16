@@ -5,16 +5,16 @@
 import React, { useCallback, useState } from 'react'
 import { useNavigate } from 'react-router'
 
-import { Action } from 'lib-common/generated/action'
-import {
+import type { Action } from 'lib-common/generated/action'
+import type {
   DecisionStatus,
   DecisionType
 } from 'lib-common/generated/api-types/decision'
-import {
+import type {
   ApplicationId,
   DecisionId
 } from 'lib-common/generated/api-types/shared'
-import LocalDate from 'lib-common/local-date'
+import type LocalDate from 'lib-common/local-date'
 import { StaticChip } from 'lib-components/atoms/Chip'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import ButtonContainer from 'lib-components/layout/ButtonContainer'

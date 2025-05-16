@@ -2,16 +2,16 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
-import {
+import type { DaycareGroup } from 'lib-common/generated/api-types/daycare'
+import type {
   ChildBasics,
   DaycarePlacementWithDetails,
   PlacementType
 } from 'lib-common/generated/api-types/placement'
-import { ServiceNeed } from 'lib-common/generated/api-types/serviceneed'
-import { GroupPlacementId } from 'lib-common/generated/api-types/shared'
-import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { ServiceNeed } from 'lib-common/generated/api-types/serviceneed'
+import type { GroupPlacementId } from 'lib-common/generated/api-types/shared'
+import type LocalDate from 'lib-common/local-date'
+import type { UUID } from 'lib-common/types'
 
 export interface DaycareGroupPlacementDetailed {
   id: GroupPlacementId | null

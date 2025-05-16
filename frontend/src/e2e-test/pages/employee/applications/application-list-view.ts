@@ -2,21 +2,20 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import {
+import type {
   ApplicationStatusOption,
   ApplicationTypeToggle
 } from 'lib-common/generated/api-types/application'
-import { DecisionType } from 'lib-common/generated/api-types/decision'
-import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { DecisionType } from 'lib-common/generated/api-types/decision'
+import type LocalDate from 'lib-common/local-date'
+import type { UUID } from 'lib-common/types'
 
 import config from '../../../config'
 import { waitUntilEqual } from '../../../utils'
+import type { Page, ElementCollection } from '../../../utils/page'
 import {
   MultiSelect,
-  Page,
   Element,
-  ElementCollection,
   Radio,
   Checkbox,
   Combobox

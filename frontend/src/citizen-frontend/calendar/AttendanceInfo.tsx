@@ -4,12 +4,12 @@
 
 import React from 'react'
 
-import {
+import type {
   ReservationResponse,
   UsedServiceResult
 } from 'lib-common/generated/api-types/reservations'
 import { reservationsAndAttendancesDiffer } from 'lib-common/reservations'
-import TimeInterval from 'lib-common/time-interval'
+import type TimeInterval from 'lib-common/time-interval'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 
 import { useTranslation } from '../localization'

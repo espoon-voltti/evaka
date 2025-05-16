@@ -2,16 +2,18 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { IconProp } from '@fortawesome/fontawesome-svg-core'
+import type { IconProp } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, { FocusEventHandler, useState } from 'react'
+import type { FocusEventHandler } from 'react'
+import React, { useState } from 'react'
 import styled, { css } from 'styled-components'
 
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { tabletMin } from 'lib-components/breakpoints'
 import { modalZIndex } from 'lib-components/layout/z-helpers'
 import { H1, P } from 'lib-components/typography'
-import { defaultMargins, Gap, SpacingSize } from 'lib-components/white-space'
+import type { SpacingSize } from 'lib-components/white-space'
+import { defaultMargins, Gap } from 'lib-components/white-space'
 import { faTimes } from 'lib-icons'
 
 import ModalBackground from './ModalBackground'

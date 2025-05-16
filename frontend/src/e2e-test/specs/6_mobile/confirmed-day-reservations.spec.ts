@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { PlacementType } from 'lib-common/generated/api-types/placement'
-import { PersonId } from 'lib-common/generated/api-types/shared'
+import type { PlacementType } from 'lib-common/generated/api-types/placement'
+import type { PersonId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'

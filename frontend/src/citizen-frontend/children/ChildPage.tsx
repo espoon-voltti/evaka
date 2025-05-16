@@ -5,8 +5,8 @@
 import React from 'react'
 
 import { Failure, Success } from 'lib-common/api'
-import { ChildAndPermittedActions } from 'lib-common/generated/api-types/children'
-import { ChildId } from 'lib-common/generated/api-types/shared'
+import type { ChildAndPermittedActions } from 'lib-common/generated/api-types/children'
+import type { ChildId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import Main from 'lib-components/atoms/Main'

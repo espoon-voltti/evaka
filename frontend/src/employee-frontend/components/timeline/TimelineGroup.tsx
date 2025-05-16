@@ -4,12 +4,12 @@
 
 import React from 'react'
 
-import FiniteDateRange from 'lib-common/finite-date-range'
+import type FiniteDateRange from 'lib-common/finite-date-range'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 
 import TlLane from './TimelineLane'
-import { WithRange } from './common'
-import { EventRenderer } from './renderers'
+import type { WithRange } from './common'
+import type { EventRenderer } from './renderers'
 
 export default function TimelineGroup<T extends WithRange>({
   data,

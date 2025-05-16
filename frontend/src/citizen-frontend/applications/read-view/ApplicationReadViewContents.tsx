@@ -4,8 +4,8 @@
 
 import React, { useContext } from 'react'
 
-import { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
-import { ApplicationDetails as ApplicationDetailsGen } from 'lib-common/generated/api-types/application'
+import type { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
+import type { ApplicationDetails as ApplicationDetailsGen } from 'lib-common/generated/api-types/application'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Main from 'lib-components/atoms/Main'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'

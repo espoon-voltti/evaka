@@ -4,12 +4,12 @@
 
 import * as Sentry from '@sentry/browser'
 
-import {
+import type {
   AuthStatus,
   MobileUser,
   User
 } from 'lib-common/api-types/employee-auth'
-import { JsonOf } from 'lib-common/json'
+import type { JsonOf } from 'lib-common/json'
 
 import { client } from './client'
 

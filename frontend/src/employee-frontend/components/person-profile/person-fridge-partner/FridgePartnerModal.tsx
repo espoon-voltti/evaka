@@ -5,9 +5,12 @@
 import React, { useState, useContext, useMemo } from 'react'
 
 import DateRange from 'lib-common/date-range'
-import { UpdateStateFn } from 'lib-common/form-state'
-import { Partnership, PersonSummary } from 'lib-common/generated/api-types/pis'
-import { PersonId } from 'lib-common/generated/api-types/shared'
+import type { UpdateStateFn } from 'lib-common/form-state'
+import type {
+  Partnership,
+  PersonSummary
+} from 'lib-common/generated/api-types/pis'
+import type { PersonId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useMutationResult } from 'lib-common/query'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'

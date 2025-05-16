@@ -107,6 +107,11 @@ export default [
       ],
       'jsx-expressions/strict-logical-expressions': 'error',
       '@typescript-eslint/consistent-type-definitions': 'off',
+      '@typescript-eslint/consistent-type-exports': ['error'],
+      '@typescript-eslint/consistent-type-imports': [
+        'error',
+        { disallowTypeAnnotations: false }
+      ],
       '@typescript-eslint/no-empty-object-type': [
         'error',
         { allowInterfaces: 'always' }

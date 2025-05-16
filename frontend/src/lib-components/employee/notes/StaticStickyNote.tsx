@@ -4,8 +4,8 @@
 
 import React, { useCallback } from 'react'
 
-import { Result } from 'lib-common/api'
-import { Id } from 'lib-common/id-type'
+import type { Result } from 'lib-common/api'
+import type { Id } from 'lib-common/id-type'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
@@ -13,7 +13,7 @@ import { InformationText, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
 import { InlineAsyncButton } from './InlineAsyncButton'
-import { Note } from './notes'
+import type { Note } from './notes'
 
 export interface StaticLabels {
   edit: string

@@ -7,13 +7,9 @@ import React, { useCallback } from 'react'
 import { boolean, localDate, localDateRange } from 'lib-common/form/fields'
 import { object, required, transformed, validated } from 'lib-common/form/form'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
-import {
-  FieldErrors,
-  StateOf,
-  ValidationError,
-  ValidationSuccess
-} from 'lib-common/form/types'
-import { HolidayPeriod } from 'lib-common/generated/api-types/holidayperiod'
+import type { FieldErrors, StateOf } from 'lib-common/form/types'
+import { ValidationError, ValidationSuccess } from 'lib-common/form/types'
+import type { HolidayPeriod } from 'lib-common/generated/api-types/holidayperiod'
 import LocalDate from 'lib-common/local-date'
 import { useMutationResult } from 'lib-common/query'
 import { mockToday } from 'lib-common/utils/helpers'

@@ -4,7 +4,7 @@
 
 import React, { useEffect } from 'react'
 
-import { AssistanceNeedPreschoolDecisionId } from 'lib-common/generated/api-types/shared'
+import type { AssistanceNeedPreschoolDecisionId } from 'lib-common/generated/api-types/shared'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import AssistanceNeedPreschoolDecisionReadOnly from 'lib-components/assistance-need-decision/AssistanceNeedPreschoolDecisionReadOnly'

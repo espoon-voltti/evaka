@@ -3,20 +3,21 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import orderBy from 'lodash/orderBy'
-import React, { MutableRefObject, useCallback, useMemo } from 'react'
+import type { MutableRefObject } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import styled from 'styled-components'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { mapped } from 'lib-common/form/form'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
-import {
+import type {
   CalendarEvent,
   DiscussionReservationDay
 } from 'lib-common/generated/api-types/calendarevent'
-import { UnitGroupDetails } from 'lib-common/generated/api-types/daycare'
-import { DaycareId, GroupId } from 'lib-common/generated/api-types/shared'
+import type { UnitGroupDetails } from 'lib-common/generated/api-types/daycare'
+import type { DaycareId, GroupId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { H3 } from 'lib-components/typography'

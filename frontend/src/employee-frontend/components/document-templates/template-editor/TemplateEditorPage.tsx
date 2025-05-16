@@ -4,7 +4,7 @@
 
 import React from 'react'
 
-import { DocumentTemplateId } from 'lib-common/generated/api-types/shared'
+import type { DocumentTemplateId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import Container from 'lib-components/layout/Container'

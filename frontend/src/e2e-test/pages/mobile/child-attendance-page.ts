@@ -2,13 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import {
+import type {
   AbsenceCategory,
   AbsenceType
 } from 'lib-common/generated/api-types/absence'
 
 import { waitUntilEqual, waitUntilTrue } from '../../utils'
-import { Page, TextInput, Element, ElementCollection } from '../../utils/page'
+import type { Page, Element, ElementCollection } from '../../utils/page'
+import { TextInput } from '../../utils/page'
 
 export default class ChildAttendancePage {
   #presentTab: Element

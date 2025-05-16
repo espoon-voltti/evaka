@@ -20,7 +20,7 @@ import {
   resetServiceState
 } from '../../generated/api-clients'
 import { UnitPage } from '../../pages/employee/units/unit'
-import { UnitGroupsPage } from '../../pages/employee/units/unit-groups-page'
+import type { UnitGroupsPage } from '../../pages/employee/units/unit-groups-page'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 

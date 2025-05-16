@@ -7,7 +7,8 @@ import styled from 'styled-components'
 
 import { tabletMin } from '../../breakpoints'
 
-import LegacyInlineButton, { InlineButtonProps } from './LegacyInlineButton'
+import type { InlineButtonProps } from './LegacyInlineButton'
+import LegacyInlineButton from './LegacyInlineButton'
 
 interface ResponsiveInlineButtonProps extends InlineButtonProps {
   breakpoint?: string

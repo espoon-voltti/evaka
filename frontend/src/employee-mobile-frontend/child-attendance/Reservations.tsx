@@ -5,7 +5,7 @@
 import React, { Fragment } from 'react'
 import styled from 'styled-components'
 
-import { Reservation } from 'lib-common/generated/api-types/reservations'
+import type { Reservation } from 'lib-common/generated/api-types/reservations'
 
 import { useTranslation } from '../common/i18n'
 

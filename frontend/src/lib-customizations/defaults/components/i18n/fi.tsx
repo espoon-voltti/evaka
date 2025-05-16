@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import FiniteDateRange from 'lib-common/finite-date-range'
-import { Translations } from 'lib-components/i18n'
+import type FiniteDateRange from 'lib-common/finite-date-range'
+import type { Translations } from 'lib-components/i18n'
 
 const components: Translations = {
   asyncButton: {

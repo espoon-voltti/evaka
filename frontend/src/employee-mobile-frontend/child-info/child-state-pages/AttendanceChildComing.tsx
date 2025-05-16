@@ -4,11 +4,11 @@
 
 import React, { Fragment } from 'react'
 
-import {
+import type {
   AttendanceChild,
   AttendanceTimes
 } from 'lib-common/generated/api-types/attendance'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { Gap } from 'lib-components/white-space'
 

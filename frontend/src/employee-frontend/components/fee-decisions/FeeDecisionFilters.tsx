@@ -5,23 +5,24 @@
 import React, { Fragment, useContext, useEffect } from 'react'
 import { useMemo } from 'react'
 
-import { Result } from 'lib-common/api'
-import {
+import type { Result } from 'lib-common/api'
+import type {
   DistinctiveParams,
   FeeDecisionDifference,
   FeeDecisionStatus
 } from 'lib-common/generated/api-types/invoicing'
-import { DaycareId, EmployeeId } from 'lib-common/generated/api-types/shared'
-import LocalDate from 'lib-common/local-date'
+import type {
+  DaycareId,
+  EmployeeId
+} from 'lib-common/generated/api-types/shared'
+import type LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 import { Gap } from 'lib-components/white-space'
 
 import { financeDecisionHandlersQuery } from '../../queries'
 import { useTranslation } from '../../state/i18n'
-import {
-  FinanceDecisionHandlerOption,
-  InvoicingUiContext
-} from '../../state/invoicing-ui'
+import type { FinanceDecisionHandlerOption } from '../../state/invoicing-ui'
+import { InvoicingUiContext } from '../../state/invoicing-ui'
 import {
   AreaFilter,
   FeeDecisionDifferenceFilter,

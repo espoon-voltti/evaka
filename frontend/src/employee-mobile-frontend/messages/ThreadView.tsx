@@ -14,14 +14,14 @@ import { Navigate, useNavigate } from 'react-router'
 import styled, { css } from 'styled-components'
 
 import { combine } from 'lib-common/api'
-import {
+import type {
   Message,
   MessageAccount,
   MessageChild,
   MessageThread,
   SentMessage
 } from 'lib-common/generated/api-types/messaging'
-import {
+import type {
   DaycareId,
   MessageAccountId,
   MessageThreadId
@@ -51,7 +51,8 @@ import { routes } from '../App'
 import { renderResult } from '../async-rendering'
 import TopBar from '../common/TopBar'
 import { useTranslation } from '../common/i18n'
-import { toUnitOrGroup, UnitOrGroup } from '../common/unit-or-group'
+import type { UnitOrGroup } from '../common/unit-or-group'
+import { toUnitOrGroup } from '../common/unit-or-group'
 
 import { getAttachmentUrl } from './api'
 import { replyToThreadMutation, threadQuery } from './queries'

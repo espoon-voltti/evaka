@@ -6,10 +6,11 @@ import sum from 'lodash/sum'
 import sumBy from 'lodash/sumBy'
 import { useMemo } from 'react'
 
-import { ChildId } from 'lib-common/generated/api-types/shared'
+import type { ChildId } from 'lib-common/generated/api-types/shared'
 import { useQuery } from 'lib-common/query'
 
-import { User, useUser } from '../auth/state'
+import type { User } from '../auth/state'
+import { useUser } from '../auth/state'
 import { unreadChildDocumentsCountQuery } from '../child-documents/queries'
 import { childrenQuery } from '../children/queries'
 import { unreadPedagogicalDocumentsCountQuery } from '../children/sections/pedagogical-documents/queries'

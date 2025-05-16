@@ -5,9 +5,9 @@
 import React, { Fragment } from 'react'
 import styled, { useTheme } from 'styled-components'
 
-import FiniteDateRange from 'lib-common/finite-date-range'
-import { MessageAccountWithPresence } from 'lib-common/generated/api-types/messaging'
-import { MessageAccountId } from 'lib-common/generated/api-types/shared'
+import type FiniteDateRange from 'lib-common/finite-date-range'
+import type { MessageAccountWithPresence } from 'lib-common/generated/api-types/messaging'
+import type { MessageAccountId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { defaultMargins } from 'lib-components/white-space'

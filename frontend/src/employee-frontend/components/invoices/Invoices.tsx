@@ -7,17 +7,17 @@ import React, { useContext } from 'react'
 import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
-import { User } from 'lib-common/api-types/employee-auth'
+import type { User } from 'lib-common/api-types/employee-auth'
 import { useBoolean } from 'lib-common/form/hooks'
-import {
+import type {
   InvoiceSortParam,
   InvoiceSummaryResponse,
   PagedInvoiceSummaryResponses,
   SortDirection
 } from 'lib-common/generated/api-types/invoicing'
-import { InvoiceId } from 'lib-common/generated/api-types/shared'
+import type { InvoiceId } from 'lib-common/generated/api-types/shared'
 import { formatCents } from 'lib-common/money'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import YearMonth from 'lib-common/year-month'
 import Pagination from 'lib-components/Pagination'
 import Title from 'lib-components/atoms/Title'

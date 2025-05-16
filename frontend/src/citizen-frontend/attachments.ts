@@ -2,17 +2,17 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { AxiosProgressEvent } from 'axios'
+import type { AxiosProgressEvent } from 'axios'
 
 import { Failure, Success, wrapResult } from 'lib-common/api'
-import { ApplicationAttachmentType } from 'lib-common/generated/api-types/application'
-import { IncomeStatementAttachmentType } from 'lib-common/generated/api-types/incomestatement'
-import {
+import type { ApplicationAttachmentType } from 'lib-common/generated/api-types/application'
+import type { IncomeStatementAttachmentType } from 'lib-common/generated/api-types/incomestatement'
+import type {
   ApplicationId,
   AttachmentId,
   IncomeStatementId
 } from 'lib-common/generated/api-types/shared'
-import { UploadHandler } from 'lib-components/molecules/FileUpload'
+import type { UploadHandler } from 'lib-components/molecules/FileUpload'
 
 import {
   deleteAttachment,

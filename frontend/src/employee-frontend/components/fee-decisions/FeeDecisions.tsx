@@ -5,12 +5,12 @@
 import React, { useContext } from 'react'
 import styled from 'styled-components'
 
-import {
+import type {
   FeeDecisionSortParam,
   FeeDecisionSummary,
   SortDirection
 } from 'lib-common/generated/api-types/invoicing'
-import { FeeDecisionId } from 'lib-common/generated/api-types/shared'
+import type { FeeDecisionId } from 'lib-common/generated/api-types/shared'
 import { formatCents } from 'lib-common/money'
 import Pagination from 'lib-components/Pagination'
 import Title from 'lib-components/atoms/Title'

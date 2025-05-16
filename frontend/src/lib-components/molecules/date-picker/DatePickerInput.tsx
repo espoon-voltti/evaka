@@ -7,7 +7,8 @@ import styled from 'styled-components'
 
 import LocalDate from 'lib-common/local-date'
 
-import InputField, { InputInfo } from '../../atoms/form/InputField'
+import type { InputInfo } from '../../atoms/form/InputField'
+import InputField from '../../atoms/form/InputField'
 import { useTranslations } from '../../i18n'
 
 export interface Props {

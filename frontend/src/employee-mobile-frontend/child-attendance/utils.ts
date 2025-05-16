@@ -4,12 +4,13 @@
 
 import { useMemo } from 'react'
 
-import { Failure, Result, Success } from 'lib-common/api'
-import {
+import type { Result } from 'lib-common/api'
+import { Failure, Success } from 'lib-common/api'
+import type {
   AttendanceChild,
   ChildAttendanceStatusResponse
 } from 'lib-common/generated/api-types/attendance'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 
 export function useChild(
   children: Result<AttendanceChild[]>,

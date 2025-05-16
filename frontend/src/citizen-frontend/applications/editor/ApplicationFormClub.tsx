@@ -12,7 +12,7 @@ import ContactInfoSection from '../../applications/editor/contact-info/ContactIn
 import ServiceNeedSection from '../../applications/editor/service-need/ServiceNeedSection'
 import UnitPreferenceSection from '../../applications/editor/unit-preference/UnitPreferenceSection'
 
-import { ApplicationFormProps } from './ApplicationEditor'
+import type { ApplicationFormProps } from './ApplicationEditor'
 
 export default React.memo(function ApplicationFormClub({
   application,

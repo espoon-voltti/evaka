@@ -2,11 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import {
+import type {
   CitizenCalendarEvent,
   CitizenCalendarEventTime
 } from 'lib-common/generated/api-types/calendarevent'
-import LocalDate from 'lib-common/local-date'
+import type LocalDate from 'lib-common/local-date'
 
 export function showModalEventTime(
   et: CitizenCalendarEventTime,

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { InvoiceRowDetailed } from 'lib-common/generated/api-types/invoicing'
+import type { InvoiceRowDetailed } from 'lib-common/generated/api-types/invoicing'
 
 export function totalPrice(rows: InvoiceRowDetailed[]) {
   return rows.reduce((sum, row) => sum + row.amount * row.unitPrice, 0)

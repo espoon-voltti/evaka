@@ -2,24 +2,24 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import {
+import type {
   ApplicationType,
   TransferApplicationUnitSummary
 } from 'lib-common/generated/api-types/application'
-import { CareType } from 'lib-common/generated/api-types/daycare'
-import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { CareType } from 'lib-common/generated/api-types/daycare'
+import type LocalDate from 'lib-common/local-date'
+import type { UUID } from 'lib-common/types'
 
 import config from '../../../config'
 import { postPairingChallenge } from '../../../generated/api-clients'
 import { waitUntilEqual, waitUntilTrue } from '../../../utils'
+import type { Page } from '../../../utils/page'
 import {
   Checkbox,
   Combobox,
   DatePicker,
   Element,
   Modal,
-  Page,
   TextInput,
   TreeDropdown
 } from '../../../utils/page'

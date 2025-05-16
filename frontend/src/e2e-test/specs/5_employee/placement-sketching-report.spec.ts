@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import {
+import type {
   ApplicationId,
   PlacementId
 } from 'lib-common/generated/api-types/shared'
@@ -27,7 +27,7 @@ import {
   createDaycarePlacements,
   resetServiceState
 } from '../../generated/api-clients'
-import { DevApplicationWithForm } from '../../generated/api-types'
+import type { DevApplicationWithForm } from '../../generated/api-types'
 import ReportsPage from '../../pages/employee/reports'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'

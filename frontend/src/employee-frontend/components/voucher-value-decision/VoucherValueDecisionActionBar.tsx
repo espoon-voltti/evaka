@@ -5,7 +5,7 @@
 import React, { useCallback, useContext } from 'react'
 
 import { wrapResult } from 'lib-common/api'
-import {
+import type {
   VoucherValueDecisionDetailed,
   VoucherValueDecisionType
 } from 'lib-common/generated/api-types/invoicing'

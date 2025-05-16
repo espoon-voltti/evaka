@@ -6,10 +6,8 @@ import config from '../../config'
 import { Fixture } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
 import EmployeeNav from '../../pages/employee/employee-nav'
-import {
-  FinancePage,
-  PaymentsPage
-} from '../../pages/employee/finance/finance-page'
+import type { PaymentsPage } from '../../pages/employee/finance/finance-page'
+import { FinancePage } from '../../pages/employee/finance/finance-page'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 

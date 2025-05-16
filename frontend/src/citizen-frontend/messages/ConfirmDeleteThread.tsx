@@ -4,7 +4,7 @@
 
 import React from 'react'
 
-import { MessageThreadId } from 'lib-common/generated/api-types/shared'
+import type { MessageThreadId } from 'lib-common/generated/api-types/shared'
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { faQuestion } from 'lib-icons'
 

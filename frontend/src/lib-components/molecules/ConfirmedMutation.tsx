@@ -4,15 +4,16 @@
 
 import React, { useState } from 'react'
 
-import { type cancelMutation, MutationDescription } from 'lib-common/query'
+import type { MutationDescription } from 'lib-common/query'
+import { type cancelMutation } from 'lib-common/query'
 
 import { Button } from '../atoms/buttons/Button'
 import { IconOnlyButton } from '../atoms/buttons/IconOnlyButton'
 import { LegacyButton } from '../atoms/buttons/LegacyButton'
 import { useTranslations } from '../i18n'
-import { BaseProps } from '../utils'
+import type { BaseProps } from '../utils'
 
-import { ModalType } from './modals/BaseModal'
+import type { ModalType } from './modals/BaseModal'
 import { MutateFormModal } from './modals/FormModal'
 
 type LargeButtonProps = {

@@ -5,7 +5,7 @@
 import React, { useContext } from 'react'
 import { Navigate } from 'react-router'
 
-import { DaycareId } from 'lib-common/generated/api-types/shared'
+import type { DaycareId } from 'lib-common/generated/api-types/shared'
 
 import { PinLogin } from './auth/PinLogin'
 import { UserContext } from './auth/state'

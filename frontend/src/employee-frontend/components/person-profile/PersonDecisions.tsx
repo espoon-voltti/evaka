@@ -6,8 +6,8 @@ import orderBy from 'lodash/orderBy'
 import React from 'react'
 import { Link } from 'react-router'
 
-import { Decision } from 'lib-common/generated/api-types/decision'
-import { PersonId } from 'lib-common/generated/api-types/shared'
+import type { Decision } from 'lib-common/generated/api-types/decision'
+import type { PersonId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 

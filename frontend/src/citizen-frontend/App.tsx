@@ -4,7 +4,8 @@
 
 import isPropValid from '@emotion/is-prop-valid'
 import { ErrorBoundary } from '@sentry/react'
-import React, { ReactNode, useCallback, useContext } from 'react'
+import type { ReactNode } from 'react'
+import React, { useCallback, useContext } from 'react'
 import { Navigate, Outlet, createBrowserRouter } from 'react-router'
 import styled, { StyleSheetManager, ThemeProvider } from 'styled-components'
 

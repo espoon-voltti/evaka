@@ -5,15 +5,17 @@
 import React, { Fragment, useCallback, useState } from 'react'
 
 import { wrapResult } from 'lib-common/api'
-import { UpdateStateFn } from 'lib-common/form-state'
-import {
+import type { UpdateStateFn } from 'lib-common/form-state'
+import type {
   ChildDailyNote,
   ChildDailyNoteBody,
+  ChildDailyNoteReminder
+} from 'lib-common/generated/api-types/note'
+import {
   childDailyNoteLevelValues,
-  ChildDailyNoteReminder,
   childDailyNoteReminderValues
 } from 'lib-common/generated/api-types/note'
-import { ChildId } from 'lib-common/generated/api-types/shared'
+import type { ChildId } from 'lib-common/generated/api-types/shared'
 import { ChipWrapper, SelectionChip } from 'lib-components/atoms/Chip'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'

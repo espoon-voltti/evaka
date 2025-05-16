@@ -2,9 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import type { Dispatch, SetStateAction } from 'react'
 import React, {
-  Dispatch,
-  SetStateAction,
   useCallback,
   useMemo,
   useState,
@@ -12,13 +11,14 @@ import React, {
   useContext
 } from 'react'
 
-import { Loading, Result } from 'lib-common/api'
-import {
+import type { Result } from 'lib-common/api'
+import { Loading } from 'lib-common/api'
+import type {
   DaycareCareArea,
   ProviderType,
   UnitStub
 } from 'lib-common/generated/api-types/daycare'
-import {
+import type {
   FeeDecisionStatus,
   VoucherValueDecisionStatus,
   InvoiceStatus,
@@ -30,7 +30,10 @@ import {
   VoucherValueDecisionDifference,
   FeeDecisionDifference
 } from 'lib-common/generated/api-types/invoicing'
-import { DaycareId, EmployeeId } from 'lib-common/generated/api-types/shared'
+import type {
+  DaycareId,
+  EmployeeId
+} from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 

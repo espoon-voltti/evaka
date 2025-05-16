@@ -5,8 +5,8 @@
 import React from 'react'
 
 import { getTimesOnWeekday } from 'lib-common/api-types/daily-service-times'
-import { Tense } from 'lib-common/date-range'
-import {
+import type { Tense } from 'lib-common/date-range'
+import type {
   DailyServiceTimes,
   DailyServiceTimesValue
 } from 'lib-common/generated/api-types/dailyservicetimes'

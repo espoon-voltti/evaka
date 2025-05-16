@@ -7,7 +7,7 @@ import styled, { css } from 'styled-components'
 import { defaultMargins } from 'lib-components/white-space'
 
 import { tabletMin } from './breakpoints'
-import { BaseProps } from './utils'
+import type { BaseProps } from './utils'
 
 export const fontWeights = {
   light: 300,

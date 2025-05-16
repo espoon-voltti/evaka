@@ -6,7 +6,7 @@ import orderBy from 'lodash/orderBy'
 import React, { useCallback, useState } from 'react'
 import { useNavigate } from 'react-router'
 
-import {
+import type {
   HolidayPeriodId,
   HolidayQuestionnaireId
 } from 'lib-common/generated/api-types/shared'

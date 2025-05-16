@@ -2,17 +2,16 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { MessageType } from 'lib-common/generated/api-types/messaging'
+import type { MessageType } from 'lib-common/generated/api-types/messaging'
 
 import { waitUntilEqual } from '../../../utils'
+import type { Page, ElementCollection } from '../../../utils/page'
 import {
   TextInput,
-  Page,
   Checkbox,
   Combobox,
   TreeDropdown,
   Element,
-  ElementCollection,
   Select,
   FileUpload
 } from '../../../utils/page'

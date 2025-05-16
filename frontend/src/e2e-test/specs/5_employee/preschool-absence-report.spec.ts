@@ -9,7 +9,7 @@ import TimeRange from 'lib-common/time-range'
 import config from '../../config'
 import { Fixture, preschoolTerm2023 } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
-import {
+import type {
   DevDaycare,
   DevEmployee,
   DevPerson,

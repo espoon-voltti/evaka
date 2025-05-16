@@ -10,9 +10,12 @@ import { combine } from 'lib-common/api'
 import { globalRoles } from 'lib-common/api-types/employee-auth'
 import { array, value } from 'lib-common/form/form'
 import { useForm } from 'lib-common/form/hooks'
-import { Daycare } from 'lib-common/generated/api-types/daycare'
-import { EmployeeWithDaycareRoles } from 'lib-common/generated/api-types/pis'
-import { EmployeeId, UserRole } from 'lib-common/generated/api-types/shared'
+import type { Daycare } from 'lib-common/generated/api-types/daycare'
+import type { EmployeeWithDaycareRoles } from 'lib-common/generated/api-types/pis'
+import type {
+  EmployeeId,
+  UserRole
+} from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import Title from 'lib-components/atoms/Title'

@@ -5,7 +5,7 @@
 import React, { useMemo } from 'react'
 import styled from 'styled-components'
 
-import { CalendarEvent } from 'lib-common/generated/api-types/calendarevent'
+import type { CalendarEvent } from 'lib-common/generated/api-types/calendarevent'
 import LocalDate from 'lib-common/local-date'
 import { StaticChip } from 'lib-components/atoms/Chip'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'

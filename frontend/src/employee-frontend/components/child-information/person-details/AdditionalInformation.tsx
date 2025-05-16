@@ -6,13 +6,14 @@ import sortBy from 'lodash/sortBy'
 import React, { useCallback, useContext, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import { AdditionalInformation } from 'lib-common/generated/api-types/daycare'
-import { ChildId } from 'lib-common/generated/api-types/shared'
-import {
+import type { AdditionalInformation } from 'lib-common/generated/api-types/daycare'
+import type { ChildId } from 'lib-common/generated/api-types/shared'
+import type {
   MealTexture,
   SpecialDiet
 } from 'lib-common/generated/api-types/specialdiet'
-import { IsoLanguage, isoLanguages } from 'lib-common/generated/language'
+import type { IsoLanguage } from 'lib-common/generated/language'
+import { isoLanguages } from 'lib-common/generated/language'
 import { constantQuery, useQueryResult } from 'lib-common/query'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
@@ -27,7 +28,8 @@ import { faPen } from 'lib-icons'
 
 import LabelValueList from '../../../components/common/LabelValueList'
 import { useTranslation } from '../../../state/i18n'
-import { UIContext, UiState } from '../../../state/ui'
+import type { UiState } from '../../../state/ui'
+import { UIContext } from '../../../state/ui'
 import { formatParagraphs } from '../../../utils/html-utils'
 import { RequireRole } from '../../../utils/roles'
 import { renderResult } from '../../async-rendering'

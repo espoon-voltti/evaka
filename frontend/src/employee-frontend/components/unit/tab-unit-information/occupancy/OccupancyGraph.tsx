@@ -2,12 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { ChartDataset, ChartOptions } from 'chart.js'
+import type { ChartDataset, ChartOptions } from 'chart.js'
 import { fi } from 'date-fns/locale'
 import React from 'react'
 import { Line } from 'react-chartjs-2'
 
-import { OccupancyResponse } from 'lib-common/generated/api-types/occupancy'
+import type { OccupancyResponse } from 'lib-common/generated/api-types/occupancy'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import colors from 'lib-customizations/common'
 

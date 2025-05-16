@@ -6,22 +6,23 @@ import React, { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
-import { BoundForm, useFormFields } from 'lib-common/form/hooks'
-import {
+import type { BoundForm } from 'lib-common/form/hooks'
+import { useFormFields } from 'lib-common/form/hooks'
+import type {
   CalendarEvent,
   CalendarEventType
 } from 'lib-common/generated/api-types/calendarevent'
-import {
+import type {
   ChildId,
   DaycareId,
   GroupId
 } from 'lib-common/generated/api-types/shared'
 import { cancelMutation } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
+import type { TreeNode } from 'lib-components/atoms/dropdowns/TreeDropdown'
 import TreeDropdown, {
-  TreeNode,
   hasUncheckedChildren
 } from 'lib-components/atoms/dropdowns/TreeDropdown'
 import { TextAreaF } from 'lib-components/atoms/form/TextArea'

@@ -4,17 +4,18 @@
 
 import fs from 'fs'
 
-import playwright, {
+import type {
   Browser,
   BrowserContext,
   BrowserContextOptions,
   Download,
   Page
 } from 'playwright'
+import playwright from 'playwright'
 
-import HelsinkiDateTime from 'lib-common/helsinki-date-time'
-import { JsonOf } from 'lib-common/json'
-import {
+import type HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import type { JsonOf } from 'lib-common/json'
+import type {
   CitizenCustomizations,
   CommonCustomizations,
   DeepPartial,

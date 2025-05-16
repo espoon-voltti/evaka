@@ -6,12 +6,11 @@ import React, { useCallback, useMemo } from 'react'
 
 import LocalDate from 'lib-common/local-date'
 
-import { InputInfo } from '../../atoms/form/InputField'
+import type { InputInfo } from '../../atoms/form/InputField'
 import { FixedSpaceRow } from '../../layout/flex-helpers'
 
-import DatePickerLowLevel, {
-  DatePickerLowLevelProps
-} from './DatePickerLowLevel'
+import type { DatePickerLowLevelProps } from './DatePickerLowLevel'
+import DatePickerLowLevel from './DatePickerLowLevel'
 import { DatePickerSpacer } from './DateRangePicker'
 
 export interface DateRangePickerLowLevelProps

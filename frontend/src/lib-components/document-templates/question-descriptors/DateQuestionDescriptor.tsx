@@ -7,15 +7,16 @@ import { v4 as uuidv4 } from 'uuid'
 
 import { localDate, string } from 'lib-common/form/fields'
 import { mapped, nullBlank, object, validated } from 'lib-common/form/form'
-import { BoundForm, useForm, useFormFields } from 'lib-common/form/hooks'
-import { StateOf } from 'lib-common/form/types'
+import type { BoundForm } from 'lib-common/form/hooks'
+import { useForm, useFormFields } from 'lib-common/form/hooks'
+import type { StateOf } from 'lib-common/form/types'
 import { nonBlank } from 'lib-common/form/validators'
-import {
+import type {
   AnsweredQuestion,
   Question,
   QuestionType
 } from 'lib-common/generated/api-types/document'
-import LocalDate from 'lib-common/local-date'
+import type LocalDate from 'lib-common/local-date'
 import { InputFieldF } from 'lib-components/atoms/form/InputField'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
@@ -25,7 +26,10 @@ import { TextAreaF } from '../../atoms/form/TextArea'
 import { useTranslations } from '../../i18n'
 import { DatePickerF } from '../../molecules/date-picker/DatePicker'
 
-import { DocumentQuestionDescriptor, TemplateQuestionDescriptor } from './types'
+import type {
+  DocumentQuestionDescriptor,
+  TemplateQuestionDescriptor
+} from './types'
 
 const questionType: QuestionType = 'DATE'
 

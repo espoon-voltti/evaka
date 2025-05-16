@@ -7,10 +7,11 @@ import { v4 as uuidv4 } from 'uuid'
 
 import { boolean, string } from 'lib-common/form/fields'
 import { mapped, object, validated, value } from 'lib-common/form/form'
-import { BoundForm, useForm, useFormFields } from 'lib-common/form/hooks'
-import { StateOf } from 'lib-common/form/types'
+import type { BoundForm } from 'lib-common/form/hooks'
+import { useForm, useFormFields } from 'lib-common/form/hooks'
+import type { StateOf } from 'lib-common/form/types'
 import { nonBlank } from 'lib-common/form/validators'
-import {
+import type {
   AnsweredQuestion,
   Question,
   QuestionType
@@ -24,7 +25,10 @@ import { Label } from 'lib-components/typography'
 
 import { useTranslations } from '../../i18n'
 
-import { DocumentQuestionDescriptor, TemplateQuestionDescriptor } from './types'
+import type {
+  DocumentQuestionDescriptor,
+  TemplateQuestionDescriptor
+} from './types'
 
 const questionType: QuestionType = 'TEXT'
 

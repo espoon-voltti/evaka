@@ -6,13 +6,13 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { Fragment } from 'react'
 import styled from 'styled-components'
 
-import { Result } from 'lib-common/api'
-import { Attachment } from 'lib-common/generated/api-types/attachment'
-import {
+import type { Result } from 'lib-common/api'
+import type { Attachment } from 'lib-common/generated/api-types/attachment'
+import type {
   FeeAlteration,
   FeeAlterationWithPermittedActions
 } from 'lib-common/generated/api-types/invoicing'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import ListGrid from 'lib-components/layout/ListGrid'
