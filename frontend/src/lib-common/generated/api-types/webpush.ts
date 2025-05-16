@@ -4,9 +4,9 @@
 
 // GENERATED FILE: no manual modifications
 
+import type { GroupId } from './shared'
 import HelsinkiDateTime from '../../helsinki-date-time'
-import { GroupId } from './shared'
-import { JsonOf } from '../../json'
+import type { JsonOf } from '../../json'
 
 /**
 * Generated from fi.espoo.evaka.webpush.PushNotificationCategory

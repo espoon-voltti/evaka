@@ -4,22 +4,22 @@
 
 // GENERATED FILE: no manual modifications
 
+import type { Action } from '../action'
+import type { AssistanceNeedDecisionGuardianId } from './shared'
+import type { AssistanceNeedDecisionId } from './shared'
+import type { AssistanceNeedPreschoolDecisionGuardianId } from './shared'
+import type { AssistanceNeedPreschoolDecisionId } from './shared'
+import type { AssistanceNeedVoucherCoefficientId } from './shared'
 import DateRange from '../../date-range'
+import type { DaycareId } from './shared'
+import type { EmployeeId } from './shared'
+import type { EvakaUser } from './user'
 import FiniteDateRange from '../../finite-date-range'
 import HelsinkiDateTime from '../../helsinki-date-time'
+import type { JsonOf } from '../../json'
 import LocalDate from '../../local-date'
-import { Action } from '../action'
-import { AssistanceNeedDecisionGuardianId } from './shared'
-import { AssistanceNeedDecisionId } from './shared'
-import { AssistanceNeedPreschoolDecisionGuardianId } from './shared'
-import { AssistanceNeedPreschoolDecisionId } from './shared'
-import { AssistanceNeedVoucherCoefficientId } from './shared'
-import { DaycareId } from './shared'
-import { EmployeeId } from './shared'
-import { EvakaUser } from './user'
-import { JsonOf } from '../../json'
-import { OfficialLanguage } from './shared'
-import { PersonId } from './shared'
+import type { OfficialLanguage } from './shared'
+import type { PersonId } from './shared'
 
 /**
 * Generated from fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionController.AnnulAssistanceNeedDecisionRequest

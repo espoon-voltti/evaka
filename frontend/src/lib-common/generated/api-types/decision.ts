@@ -4,13 +4,13 @@
 
 // GENERATED FILE: no manual modifications
 
+import type { ApplicationId } from './shared'
+import type { DaycareId } from './shared'
+import type { DecisionId } from './shared'
+import type { JsonOf } from '../../json'
 import LocalDate from '../../local-date'
-import { ApplicationId } from './shared'
-import { DaycareId } from './shared'
-import { DecisionId } from './shared'
-import { JsonOf } from '../../json'
-import { PersonId } from './shared'
-import { ProviderType } from './daycare'
+import type { PersonId } from './shared'
+import type { ProviderType } from './daycare'
 
 /**
 * Generated from fi.espoo.evaka.decision.Decision

@@ -4,9 +4,9 @@
 
 // GENERATED FILE: no manual modifications
 
+import type { JsonOf } from 'lib-common/json'
+import type { PersonId } from 'lib-common/generated/api-types/shared'
 import { AxiosProgressEvent } from 'axios'
-import { JsonOf } from 'lib-common/json'
-import { PersonId } from 'lib-common/generated/api-types/shared'
 import { client } from '../../client'
 import { createFormData } from 'lib-common/api'
 import { uri } from 'lib-common/uri'

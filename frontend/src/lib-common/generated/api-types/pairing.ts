@@ -4,12 +4,12 @@
 
 // GENERATED FILE: no manual modifications
 
+import type { DaycareId } from './shared'
+import type { EmployeeId } from './shared'
 import HelsinkiDateTime from '../../helsinki-date-time'
-import { DaycareId } from './shared'
-import { EmployeeId } from './shared'
-import { JsonOf } from '../../json'
-import { MobileDeviceId } from './shared'
-import { PairingId } from './shared'
+import type { JsonOf } from '../../json'
+import type { MobileDeviceId } from './shared'
+import type { PairingId } from './shared'
 
 /**
 * Generated from fi.espoo.evaka.pairing.MobileDevice

@@ -4,11 +4,11 @@
 
 // GENERATED FILE: no manual modifications
 
-import { ChildPlacementResponse } from 'lib-common/generated/api-types/placement'
-import { JsonCompatible } from 'lib-common/json'
-import { JsonOf } from 'lib-common/json'
-import { PersonId } from 'lib-common/generated/api-types/shared'
-import { PlacementTerminationRequestBody } from 'lib-common/generated/api-types/placement'
+import type { ChildPlacementResponse } from 'lib-common/generated/api-types/placement'
+import type { JsonCompatible } from 'lib-common/json'
+import type { JsonOf } from 'lib-common/json'
+import type { PersonId } from 'lib-common/generated/api-types/shared'
+import type { PlacementTerminationRequestBody } from 'lib-common/generated/api-types/placement'
 import { client } from '../../api-client'
 import { deserializeJsonChildPlacementResponse } from 'lib-common/generated/api-types/placement'
 import { uri } from 'lib-common/uri'

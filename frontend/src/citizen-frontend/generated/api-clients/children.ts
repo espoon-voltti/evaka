@@ -4,13 +4,13 @@
 
 // GENERATED FILE: no manual modifications
 
+import type { AttendanceSummary } from 'lib-common/generated/api-types/children'
+import type { ChildAndPermittedActions } from 'lib-common/generated/api-types/children'
+import type { DailyServiceTimes } from 'lib-common/generated/api-types/dailyservicetimes'
+import type { JsonOf } from 'lib-common/json'
+import type { PersonId } from 'lib-common/generated/api-types/shared'
+import type { ServiceNeedSummary } from 'lib-common/generated/api-types/serviceneed'
 import YearMonth from 'lib-common/year-month'
-import { AttendanceSummary } from 'lib-common/generated/api-types/children'
-import { ChildAndPermittedActions } from 'lib-common/generated/api-types/children'
-import { DailyServiceTimes } from 'lib-common/generated/api-types/dailyservicetimes'
-import { JsonOf } from 'lib-common/json'
-import { PersonId } from 'lib-common/generated/api-types/shared'
-import { ServiceNeedSummary } from 'lib-common/generated/api-types/serviceneed'
 import { client } from '../../api-client'
 import { deserializeJsonDailyServiceTimes } from 'lib-common/generated/api-types/dailyservicetimes'
 import { deserializeJsonServiceNeedSummary } from 'lib-common/generated/api-types/serviceneed'

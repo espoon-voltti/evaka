@@ -4,7 +4,7 @@
 
 // GENERATED FILE: no manual modifications
 
-import { AttachmentId } from './shared'
+import type { AttachmentId } from './shared'
 
 /**
 * Generated from fi.espoo.evaka.attachment.Attachment

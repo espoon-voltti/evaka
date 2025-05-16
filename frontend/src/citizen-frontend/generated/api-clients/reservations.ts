@@ -4,12 +4,12 @@
 
 // GENERATED FILE: no manual modifications
 
+import type { AbsenceRequest } from 'lib-common/generated/api-types/reservations'
+import type { DailyReservationRequest } from 'lib-common/generated/api-types/reservations'
+import type { JsonCompatible } from 'lib-common/json'
+import type { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
-import { AbsenceRequest } from 'lib-common/generated/api-types/reservations'
-import { DailyReservationRequest } from 'lib-common/generated/api-types/reservations'
-import { JsonCompatible } from 'lib-common/json'
-import { JsonOf } from 'lib-common/json'
-import { ReservationsResponse } from 'lib-common/generated/api-types/reservations'
+import type { ReservationsResponse } from 'lib-common/generated/api-types/reservations'
 import { client } from '../../api-client'
 import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonReservationsResponse } from 'lib-common/generated/api-types/reservations'

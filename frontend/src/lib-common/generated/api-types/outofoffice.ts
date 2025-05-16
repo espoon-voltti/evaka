@@ -5,8 +5,8 @@
 // GENERATED FILE: no manual modifications
 
 import FiniteDateRange from '../../finite-date-range'
-import { JsonOf } from '../../json'
-import { OutOfOfficeId } from './shared'
+import type { JsonOf } from '../../json'
+import type { OutOfOfficeId } from './shared'
 
 /**
 * Generated from fi.espoo.evaka.outofoffice.OutOfOfficePeriod

@@ -4,8 +4,8 @@
 
 // GENERATED FILE: no manual modifications
 
+import type { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
-import { JsonOf } from 'lib-common/json'
 import { client } from '../../api-client'
 import { uri } from 'lib-common/uri'
 

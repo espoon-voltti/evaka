@@ -4,12 +4,12 @@
 
 // GENERATED FILE: no manual modifications
 
-import { FinanceNoteId } from 'lib-common/generated/api-types/shared'
-import { FinanceNoteRequest } from 'lib-common/generated/api-types/finance'
-import { FinanceNoteResponse } from 'lib-common/generated/api-types/finance'
-import { JsonCompatible } from 'lib-common/json'
-import { JsonOf } from 'lib-common/json'
-import { PersonId } from 'lib-common/generated/api-types/shared'
+import type { FinanceNoteId } from 'lib-common/generated/api-types/shared'
+import type { FinanceNoteRequest } from 'lib-common/generated/api-types/finance'
+import type { FinanceNoteResponse } from 'lib-common/generated/api-types/finance'
+import type { JsonCompatible } from 'lib-common/json'
+import type { JsonOf } from 'lib-common/json'
+import type { PersonId } from 'lib-common/generated/api-types/shared'
 import { client } from '../../api/client'
 import { deserializeJsonFinanceNoteResponse } from 'lib-common/generated/api-types/finance'
 import { uri } from 'lib-common/uri'
