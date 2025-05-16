@@ -26,6 +26,22 @@ sealed interface AuditId {
 
         operator fun invoke(value: Collection<Id<*>>): AuditId = Many(value.toList())
     }
+
+    operator fun plus(other: AuditId): AuditId {
+        return when (this) {
+            is One ->
+                when (other) {
+                    is One -> Many(listOf(value, other.value))
+                    is Many -> Many(listOf(value) + other.value)
+                }
+
+            is Many ->
+                when (other) {
+                    is One -> Many(value + other.value)
+                    is Many -> Many(value + other.value)
+                }
+        }
+    }
 }
 
 enum class Audit(
