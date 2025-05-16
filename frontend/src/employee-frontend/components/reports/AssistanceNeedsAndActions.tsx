@@ -5,6 +5,7 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import add from 'lodash/add'
 import mergeWith from 'lodash/mergeWith'
+import orderBy from 'lodash/orderBy'
 import sortBy from 'lodash/sortBy'
 import React, { useMemo, useState } from 'react'
 import { Link } from 'react-router'
@@ -16,6 +17,8 @@ import {
   PreschoolAssistanceLevel
 } from 'lib-common/generated/api-types/assistance'
 import { AssistanceActionOption } from 'lib-common/generated/api-types/assistanceaction'
+import { Daycare, ProviderType } from 'lib-common/generated/api-types/daycare'
+import { PlacementType } from 'lib-common/generated/api-types/placement'
 import {
   AssistanceNeedsAndActionsReport,
   AssistanceNeedsAndActionsReportByChild,
@@ -36,7 +39,9 @@ import {
   daycareAssistanceLevels,
   featureFlags,
   otherAssistanceMeasureTypes,
-  preschoolAssistanceLevels
+  placementTypes,
+  preschoolAssistanceLevels,
+  unitProviderTypes
 } from 'lib-customizations/employee'
 import { faChevronDown, faChevronUp } from 'lib-icons'
 
@@ -54,11 +59,17 @@ import {
   permittedReportsQuery
 } from './queries'
 
+interface PlacementTypeWithLabel {
+  label: string
+  value: PlacementType
+}
+
 type AssistanceNeedsAndActionsReportFilters = {
   date: LocalDate | null
   daycareAssistanceLevels: DaycareAssistanceLevel[]
   preschoolAssistanceLevels: PreschoolAssistanceLevel[]
   otherAssistanceMeasureTypes: OtherAssistanceMeasureType[]
+  placementTypes: PlacementTypeWithLabel[]
 }
 
 const types = ['DAYCARE', 'PRESCHOOL'] as const
@@ -76,14 +87,16 @@ const preschoolColumns = [
 ]
 
 interface RowFilters {
+  providerType: ProviderType | ''
   careArea: string
-  unit: string
+  unit: Daycare | null
   showZeroRows: boolean
 }
 
 const emptyRowFilters: RowFilters = {
+  providerType: '',
   careArea: '',
-  unit: '',
+  unit: null,
   showZeroRows: true
 }
 
@@ -111,7 +124,11 @@ const rowFilter =
       | AssistanceNeedsAndActionsReportRowByChild
   ): boolean =>
     !(rowFilters.careArea && row.careAreaName !== rowFilters.careArea) &&
-    !(rowFilters.unit && row.unitName !== rowFilters.unit) &&
+    !(rowFilters.unit && row.unitId !== rowFilters.unit.id) &&
+    !(
+      rowFilters.providerType &&
+      row.unitProviderType !== rowFilters.providerType
+    ) &&
     (rowFilters.showZeroRows ||
       (columnFilters.type === 'DAYCARE' &&
         Object.entries(row.daycareAssistanceCounts)
@@ -153,6 +170,8 @@ interface GroupingDataByGroup {
   otherActionCount: number
   noActionCount: number
   assistanceNeedVoucherCoefficientCount: number
+  daycareAssistanceNeedDecisionCount: number
+  preschoolAssistanceNeedDecisionCount: number
 }
 
 const emptyGroupingDataByGroup = (
@@ -190,7 +209,9 @@ const emptyGroupingDataByGroup = (
   ),
   otherActionCount: 0,
   noActionCount: 0,
-  assistanceNeedVoucherCoefficientCount: 0
+  assistanceNeedVoucherCoefficientCount: 0,
+  daycareAssistanceNeedDecisionCount: 0,
+  preschoolAssistanceNeedDecisionCount: 0
 })
 
 interface GroupingDataByChild {
@@ -199,6 +220,8 @@ interface GroupingDataByChild {
   daycareAssistanceCounts: Record<DaycareAssistanceLevel, number>
   preschoolAssistanceCounts: Record<PreschoolAssistanceLevel, number>
   otherAssistanceMeasureCounts: Record<OtherAssistanceMeasureType, number>
+  daycareAssistanceNeedDecisionCount: number
+  preschoolAssistanceNeedDecisionCount: number
 }
 
 const emptyGroupingDataByChild = (name: string): GroupingDataByChild => ({
@@ -223,7 +246,9 @@ const emptyGroupingDataByChild = (name: string): GroupingDataByChild => ({
     CHILD_DISCUSSION_OFFERED: 0,
     CHILD_DISCUSSION_HELD: 0,
     CHILD_DISCUSSION_COUNSELING: 0
-  }
+  },
+  daycareAssistanceNeedDecisionCount: 0,
+  preschoolAssistanceNeedDecisionCount: 0
 })
 
 const resolveGroupingType = (
@@ -241,7 +266,7 @@ const resolveGroupingType = (
       | AssistanceNeedsAndActionsReportRowByChild
   ) => string
 } => {
-  if (rowFilters.unit !== '') {
+  if (rowFilters.unit) {
     return {
       type: 'NO_GROUPING',
       groupKeyFn: () => '',
@@ -270,7 +295,8 @@ export default React.memo(function AssistanceNeedsAndActions() {
       date: LocalDate.todayInSystemTz(),
       daycareAssistanceLevels: [],
       preschoolAssistanceLevels: [],
-      otherAssistanceMeasureTypes: []
+      otherAssistanceMeasureTypes: [],
+      placementTypes: []
     })
   const areasResult = useQueryResult(areasQuery())
   const sortedAreas = useMemo(
@@ -353,8 +379,7 @@ export default React.memo(function AssistanceNeedsAndActions() {
     )
     .getOrElse(false)
   const reportByChild =
-    (rowFilters.careArea !== '' || rowFilters.unit !== '') &&
-    reportByChildPermitted
+    (rowFilters.careArea !== '' || rowFilters.unit) && reportByChildPermitted
 
   return (
     <Container>
@@ -412,44 +437,119 @@ export default React.memo(function AssistanceNeedsAndActions() {
           </Wrapper>
         </FilterRow>
 
+        {renderResult(sortedUnits, (units) => (
+          <>
+            <FilterRow>
+              <FilterLabel>{i18n.reports.common.unitProviderType}</FilterLabel>
+              <Wrapper>
+                <Combobox
+                  items={[
+                    { value: '', label: i18n.common.all },
+                    ...unitProviderTypes
+                      .filter((t) => units.find((u) => u.providerType === t))
+                      .map((t) => ({
+                        value: t,
+                        label: i18n.reports.common.unitProviderTypes[t]
+                      }))
+                  ]}
+                  onChange={(option) =>
+                    option
+                      ? setRowFilters({
+                          ...rowFilters,
+                          providerType: option.value as ProviderType,
+                          unit: null
+                        })
+                      : undefined
+                  }
+                  selectedItem={
+                    rowFilters.providerType !== ''
+                      ? {
+                          label:
+                            i18n.reports.common.unitProviderTypes[
+                              rowFilters.providerType
+                            ],
+                          value: rowFilters.providerType
+                        }
+                      : {
+                          label: i18n.common.all,
+                          value: ''
+                        }
+                  }
+                  getItemLabel={(item) => item.label}
+                  data-qa="provider-type-filter"
+                />
+              </Wrapper>
+            </FilterRow>
+            <FilterRow>
+              <FilterLabel>{i18n.reports.common.unitName}</FilterLabel>
+              <Wrapper>
+                <Combobox
+                  items={[
+                    { value: null, label: i18n.common.all },
+                    ...units
+                      .filter(
+                        (u) =>
+                          rowFilters.providerType === '' ||
+                          rowFilters.providerType === u.providerType
+                      )
+                      .map((unit) => ({
+                        value: unit,
+                        label: unit.name
+                      }))
+                  ]}
+                  onChange={(option) =>
+                    option
+                      ? setRowFilters({
+                          ...rowFilters,
+                          unit: option.value
+                        })
+                      : undefined
+                  }
+                  selectedItem={
+                    rowFilters.unit
+                      ? {
+                          label: rowFilters.unit.name,
+                          value: rowFilters.unit
+                        }
+                      : {
+                          label: i18n.common.all,
+                          value: null
+                        }
+                  }
+                  getItemLabel={(item) => item.label}
+                  data-qa="unit-filter"
+                />
+              </Wrapper>
+            </FilterRow>
+          </>
+        ))}
         <FilterRow>
-          <FilterLabel>{i18n.reports.common.unitName}</FilterLabel>
+          <FilterLabel>
+            {i18n.reports.assistanceNeedsAndActions.placementType}
+          </FilterLabel>
           <Wrapper>
-            {renderResult(sortedUnits, (units) => (
-              <Combobox
-                items={[
-                  { value: '', label: i18n.common.all },
-                  ...units.map((unit) => ({
-                    value: unit.name,
-                    label: unit.name
-                  }))
-                ]}
-                onChange={(option) =>
-                  option
-                    ? setRowFilters({
-                        ...rowFilters,
-                        unit: option.value
-                      })
-                    : undefined
-                }
-                selectedItem={
-                  rowFilters.unit !== ''
-                    ? {
-                        label: rowFilters.unit,
-                        value: rowFilters.unit
-                      }
-                    : {
-                        label: i18n.common.all,
-                        value: ''
-                      }
-                }
-                getItemLabel={(item) => item.label}
-                data-qa="unit-filter"
-              />
-            ))}
+            <MultiSelect
+              options={orderBy(
+                placementTypes.map((pt) => ({
+                  label: i18n.placement.type[pt],
+                  value: pt
+                })),
+                [(item) => item.label]
+              )}
+              onChange={(selectedItems) =>
+                setFilters({
+                  ...filters,
+                  placementTypes: selectedItems
+                })
+              }
+              value={filters.placementTypes}
+              getOptionId={(o) => o.value}
+              getOptionLabel={(o) => o.label}
+              placeholder={i18n.common.all}
+              data-qa="placement-type-filter"
+            />
           </Wrapper>
         </FilterRow>
-
         <FilterRow>
           <FilterLabel>
             {i18n.reports.assistanceNeedsAndActions.type}
@@ -607,7 +707,8 @@ const ReportByGroup = (props: {
             props.columnFilters.type === 'PRESCHOOL'
               ? props.selectedPreschoolColumns
               : undefined,
-          otherAssistanceMeasureTypes: props.selectedOtherColumns
+          otherAssistanceMeasureTypes: props.selectedOtherColumns,
+          placementTypes: props.filters.placementTypes.map((o) => o.value)
         })
       : constantQuery(null)
   )
@@ -688,7 +789,13 @@ const ReportByGroupTable = ({
             noActionCount: groupData.noActionCount + row.noActionCount,
             assistanceNeedVoucherCoefficientCount:
               groupData.assistanceNeedVoucherCoefficientCount +
-              row.assistanceNeedVoucherCoefficientCount
+              row.assistanceNeedVoucherCoefficientCount,
+            daycareAssistanceNeedDecisionCount:
+              groupData.daycareAssistanceNeedDecisionCount +
+              row.daycareAssistanceNeedDecisionCount,
+            preschoolAssistanceNeedDecisionCount:
+              groupData.preschoolAssistanceNeedDecisionCount +
+              row.preschoolAssistanceNeedDecisionCount
           }
           return data
         },
@@ -757,6 +864,18 @@ const ReportByGroupTable = ({
           {
             label: i18n.reports.assistanceNeedsAndActions.actionMissing,
             value: (row) => row.noActionCount
+          },
+          {
+            label:
+              i18n.reports.assistanceNeedsAndActions
+                .daycareAssistanceNeedDecisions,
+            value: (row) => row.daycareAssistanceNeedDecisionCount
+          },
+          {
+            label:
+              i18n.reports.assistanceNeedsAndActions
+                .preschoolAssistanceNeedDecisions,
+            value: (row) => row.preschoolAssistanceNeedDecisionCount
           }
         ]}
         filename={filename}
@@ -819,6 +938,18 @@ const ReportByGroupTable = ({
                 }
               </Th>
             )}
+            <Th>
+              {
+                i18n.reports.assistanceNeedsAndActions
+                  .daycareAssistanceNeedDecisions
+              }
+            </Th>
+            <Th>
+              {
+                i18n.reports.assistanceNeedsAndActions
+                  .preschoolAssistanceNeedDecisions
+              }
+            </Th>
           </Tr>
         </Thead>
         <Tbody>
@@ -872,6 +1003,8 @@ const ReportByGroupTable = ({
                   {report.showAssistanceNeedVoucherCoefficient && (
                     <Td>{data.assistanceNeedVoucherCoefficientCount}</Td>
                   )}
+                  <Td>{data.daycareAssistanceNeedDecisionCount}</Td>
+                  <Td>{data.preschoolAssistanceNeedDecisionCount}</Td>
                 </Tr>
               )}
               {data.rows
@@ -915,6 +1048,8 @@ const ReportByGroupTable = ({
                     {report.showAssistanceNeedVoucherCoefficient && (
                       <Td>{row.assistanceNeedVoucherCoefficientCount}</Td>
                     )}
+                    <Td>{row.daycareAssistanceNeedDecisionCount}</Td>
+                    <Td>{row.preschoolAssistanceNeedDecisionCount}</Td>
                   </Tr>
                 ))}
             </React.Fragment>
@@ -970,6 +1105,18 @@ const ReportByGroupTable = ({
                 )}
               </Td>
             )}
+            <Td>
+              {reducePropertySum(
+                filteredRows,
+                (r) => r.daycareAssistanceNeedDecisionCount
+              )}
+            </Td>
+            <Td>
+              {reducePropertySum(
+                filteredRows,
+                (r) => r.preschoolAssistanceNeedDecisionCount
+              )}
+            </Td>
           </Tr>
         </TableFooter>
       </TableScrollable>
@@ -997,7 +1144,8 @@ const ReportByChild = (props: {
             props.columnFilters.type === 'PRESCHOOL'
               ? props.selectedPreschoolColumns
               : undefined,
-          otherAssistanceMeasureTypes: props.selectedOtherColumns
+          otherAssistanceMeasureTypes: props.selectedOtherColumns,
+          placementTypes: props.filters.placementTypes.map((o) => o.value)
         })
       : constantQuery(null)
   )
@@ -1067,7 +1215,13 @@ const ReportByChildTable = ({
               groupData.otherAssistanceMeasureCounts,
               row.otherAssistanceMeasureCounts,
               add
-            )
+            ),
+            daycareAssistanceNeedDecisionCount:
+              groupData.daycareAssistanceNeedDecisionCount +
+              row.daycareAssistanceNeedDecisionCount,
+            preschoolAssistanceNeedDecisionCount:
+              groupData.preschoolAssistanceNeedDecisionCount +
+              row.preschoolAssistanceNeedDecisionCount
           }
           return data
         },
@@ -1151,6 +1305,18 @@ const ReportByChildTable = ({
                 .assistanceNeedVoucherCoefficient,
             value: (row) => row.assistanceNeedVoucherCoefficient,
             exclude: !report.showAssistanceNeedVoucherCoefficient
+          },
+          {
+            label:
+              i18n.reports.assistanceNeedsAndActions
+                .daycareAssistanceNeedDecisions,
+            value: (row) => row.daycareAssistanceNeedDecisionCount
+          },
+          {
+            label:
+              i18n.reports.assistanceNeedsAndActions
+                .preschoolAssistanceNeedDecisions,
+            value: (row) => row.preschoolAssistanceNeedDecisionCount
           }
         ]}
         filename={filename}
@@ -1201,6 +1367,18 @@ const ReportByChildTable = ({
                 }
               </Th>
             )}
+            <Th>
+              {
+                i18n.reports.assistanceNeedsAndActions
+                  .daycareAssistanceNeedDecisions
+              }
+            </Th>
+            <Th>
+              {
+                i18n.reports.assistanceNeedsAndActions
+                  .preschoolAssistanceNeedDecisions
+              }
+            </Th>
           </Tr>
         </Thead>
         <Tbody>
@@ -1247,6 +1425,8 @@ const ReportByChildTable = ({
                   ))}
                   <Td />
                   {report.showAssistanceNeedVoucherCoefficient && <Td />}
+                  <Td>{data.daycareAssistanceNeedDecisionCount}</Td>
+                  <Td>{data.preschoolAssistanceNeedDecisionCount}</Td>
                 </Tr>
               )}
               {data.rows
@@ -1307,6 +1487,8 @@ const ReportByChildTable = ({
                     {report.showAssistanceNeedVoucherCoefficient && (
                       <Td>{row.assistanceNeedVoucherCoefficient}</Td>
                     )}
+                    <Td>{row.daycareAssistanceNeedDecisionCount}</Td>
+                    <Td>{row.preschoolAssistanceNeedDecisionCount}</Td>
                   </Tr>
                 ))}
             </React.Fragment>
@@ -1350,6 +1532,18 @@ const ReportByChildTable = ({
                 )}
               </Td>
             )}
+            <Td>
+              {reducePropertySum(
+                filteredRows,
+                (r) => r.daycareAssistanceNeedDecisionCount
+              )}
+            </Td>
+            <Td>
+              {reducePropertySum(
+                filteredRows,
+                (r) => r.preschoolAssistanceNeedDecisionCount
+              )}
+            </Td>
           </Tr>
         </TableFooter>
       </TableScrollable>

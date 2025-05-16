@@ -4198,6 +4198,7 @@ export const fi = {
         DAYCARE: 'varhaiskasvatuksessa',
         PRESCHOOL: 'esiopetuksessa'
       },
+      placementType: 'Toimintamuoto',
       level: 'Tuen taso ja muut toimet',
       showZeroRows: 'Näytä nollarivit',
       groupingTypes: {
@@ -4208,7 +4209,10 @@ export const fi = {
       basisMissing: 'Peruste puuttuu',
       action: 'Tukitoimi',
       actionMissing: 'Tukitoimi puuttuu',
-      assistanceNeedVoucherCoefficient: 'Korotettu PS-kerroin'
+      assistanceNeedVoucherCoefficient: 'Korotettu PS-kerroin',
+      daycareAssistanceNeedDecisions:
+        'Aktiiviset varhaiskasvatuksen tuen päätökset',
+      preschoolAssistanceNeedDecisions: 'Aktiiviset esiopetuksen tuen päätökset'
     },
     occupancies: {
       title: 'Täyttö- ja käyttöasteet',

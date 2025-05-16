@@ -517,10 +517,12 @@ export class AssistanceNeedsAndActionsReport {
   needsAndActionsRows: ElementCollection
   childRows: ElementCollection
   careAreaSelect: Combobox
+  providerTypeSelect: Combobox
   unitSelect: Combobox
   typeSelect: Combobox
   daycareAssistanceLevelSelect: MultiSelect
   preschoolAssistanceLevelSelect: MultiSelect
+  placementTypeSelect: MultiSelect
 
   constructor(private page: Page) {
     this.needsAndActionsRows = page.findAllByDataQa(
@@ -530,11 +532,17 @@ export class AssistanceNeedsAndActionsReport {
     this.careAreaSelect = new Combobox(page.findByDataQa('care-area-filter'))
     this.unitSelect = new Combobox(page.findByDataQa('unit-filter'))
     this.typeSelect = new Combobox(this.page.findByDataQa(`type-filter`))
+    this.providerTypeSelect = new Combobox(
+      this.page.findByDataQa('provider-type-filter')
+    )
     this.daycareAssistanceLevelSelect = new MultiSelect(
       this.page.findByDataQa('daycare-assistance-level-filter')
     )
     this.preschoolAssistanceLevelSelect = new MultiSelect(
       this.page.findByDataQa('preschool-assistance-level-filter')
+    )
+    this.placementTypeSelect = new MultiSelect(
+      this.page.findByDataQa('placement-type-filter')
     )
   }
 
