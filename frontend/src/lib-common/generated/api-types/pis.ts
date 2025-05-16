@@ -533,6 +533,15 @@ export interface PersonJSON {
 }
 
 /**
+* Generated from fi.espoo.evaka.pis.PersonNameDetails
+*/
+export interface PersonNameDetails {
+  firstName: string
+  id: PersonId
+  lastName: string
+}
+
+/**
 * Generated from fi.espoo.evaka.pis.service.PersonPatch
 */
 export interface PersonPatch {

@@ -32,6 +32,11 @@ enum class Audit(
     private val securityEvent: Boolean = false,
     private val securityLevel: String = "low",
 ) {
+    AbsenceApplicationAccept,
+    AbsenceApplicationCreate,
+    AbsenceApplicationDelete,
+    AbsenceApplicationRead,
+    AbsenceApplicationReject,
     AbsenceCitizenCreate,
     AbsenceRead,
     AbsenceDelete,

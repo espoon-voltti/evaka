@@ -7,6 +7,8 @@ import { Lang } from 'lib-customizations/citizen'
 import { waitUntilFalse } from '../../utils'
 import { Page, Element, EnvType } from '../../utils/page'
 
+import { CitizenChildPage } from './citizen-children'
+
 export default class CitizenHeader {
   #languageMenuToggle: Element
   #languageOptionList: Element
@@ -102,6 +104,7 @@ export default class CitizenHeader {
     } else {
       await this.#childrenNav.click()
     }
+    return new CitizenChildPage(this.page)
   }
 
   async selectLanguage(lang: 'fi' | 'sv' | 'en') {

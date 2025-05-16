@@ -15,6 +15,7 @@ import { featureFlags } from 'lib-customizations/employee'
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 
+import { TabAbsenceApplications } from './TabAbsenceApplications'
 import TabApplications from './TabApplications'
 import TabPlacementProposals from './TabPlacementProposals'
 import TabServiceApplications from './TabServiceApplications'
@@ -38,6 +39,13 @@ export default React.memo(function TabApplicationProcess({
       <ContentArea opaque>
         <Title size={2}>{i18n.unit.applicationProcess.title}</Title>
       </ContentArea>
+      {featureFlags.absenceApplications &&
+        permittedActions.includes('READ_ABSENCE_APPLICATIONS') && (
+          <>
+            <Gap size="m" />
+            <TabAbsenceApplications unitId={unitId} />
+          </>
+        )}
       {featureFlags.serviceApplications &&
         permittedActions.includes('READ_SERVICE_APPLICATIONS') && (
           <>

@@ -527,3 +527,4 @@ V528__invoice_correction_modified_metadata.sql
 V529__citizen_system_notification_i18n.sql
 V530__child_document_decision_number.sql
 V531__nekku_order_report.sql
+V532__absence_application.sql

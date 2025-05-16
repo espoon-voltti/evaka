@@ -323,6 +323,8 @@ class ChildControllerCitizenTest : FullApplicationTest(resetDbBeforeEach = true)
                 permittedActions =
                     setOf(
                         Action.Citizen.Child.CREATE_ABSENCE,
+                        Action.Citizen.Child.CREATE_ABSENCE_APPLICATION,
+                        Action.Citizen.Child.READ_ABSENCE_APPLICATIONS,
                         Action.Citizen.Child.CREATE_HOLIDAY_ABSENCE,
                         Action.Citizen.Child.CREATE_RESERVATION,
                         Action.Citizen.Child.READ_SERVICE_NEEDS,
@@ -331,6 +333,7 @@ class ChildControllerCitizenTest : FullApplicationTest(resetDbBeforeEach = true)
                         Action.Citizen.Child.READ_SERVICE_APPLICATIONS,
                     ),
                 serviceApplicationCreationPossible = false,
+                absenceApplicationCreationPossible = false,
             )
         assertThat(
                 childControllerCitizen.getChildren(

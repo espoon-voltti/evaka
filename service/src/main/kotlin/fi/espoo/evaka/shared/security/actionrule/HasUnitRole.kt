@@ -7,6 +7,7 @@ package fi.espoo.evaka.shared.security.actionrule
 import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.document.childdocument.DocumentStatus
+import fi.espoo.evaka.shared.AbsenceApplicationId
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AssistanceActionId
 import fi.espoo.evaka.shared.AssistanceFactorId
@@ -695,6 +696,20 @@ FROM service_need
 JOIN placement ON placement.id = service_need.placement_id
 JOIN daycare_acl acl ON placement.unit_id = acl.daycare_id
 WHERE employee_id = ${bind(user.id)}
+            """
+            )
+        }
+
+    fun inPlacementUnitOfChildOfAbsenceApplication() =
+        rule<AbsenceApplicationId> { user, _ ->
+            sql(
+                """
+SELECT absence_application.id, acl.role, acl.daycare_id AS unit_id
+FROM absence_application
+JOIN placement ON absence_application.child_id = placement.child_id
+JOIN daycare_acl acl ON placement.unit_id = acl.daycare_id
+WHERE acl.employee_id = ${bind(user.id)}
+  AND absence_application.start_date BETWEEN placement.start_date AND placement.end_date
             """
             )
         }

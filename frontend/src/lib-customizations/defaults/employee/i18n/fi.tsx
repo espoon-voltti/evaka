@@ -1603,6 +1603,36 @@ export const fi = {
           'Valitun palveluntarvetyypin täytyy olla käytettävissä koko ajalla. Luo palveluntarve tarvittaessa kahdessa osassa.'
       }
     },
+    absenceApplications: {
+      title: 'Esiopetuksen poissaolohakemukset',
+      absenceApplication: 'Poissaolohakemus',
+      range: 'Poissaolojakso',
+      createdBy: 'Hakemuksen tekijä',
+      description: 'Poissaolon syy',
+      acceptInfo:
+        'Jos hyväksyt ehdotuksen, merkitään lapselle automaattisesti poissaolo huoltajan hakemalle ajalle.',
+      reject: 'Hylkää hakemus',
+      accept: 'Hyväksy hakemus',
+      list: 'Aiemmat hakemukset',
+      status: 'Tila',
+      statusText: {
+        WAITING_DECISION: 'Odottaa päätöstä',
+        ACCEPTED: 'Hyväksytty',
+        REJECTED: 'Hylätty'
+      },
+      rejectedReason: 'Syy',
+      rejectModal: {
+        title: 'Esiopetuksen poissaolohakemuksen hylkääminen',
+        reason: 'Hylkäyksen syy'
+      },
+      userType: {
+        SYSTEM: 'järjestelmä',
+        CITIZEN: 'huoltaja',
+        EMPLOYEE: 'työntekijä',
+        MOBILE_DEVICE: 'mobiili',
+        UNKNOWN: 'tuntematon'
+      }
+    },
     serviceApplications: {
       title: 'Palveluntarpeen muutoshakemukset',
       applicationTitle: 'Palveluntarpeen muutoshakemus',
@@ -3909,6 +3939,7 @@ export const fi = {
       columns: {
         'absence.child_id': 'Poissa- oloja',
         'absence.modified_by_guardian_id': 'Itse merkittyjä poissa -oloja',
+        'absence_application.child_id': 'Esiopetuksen poissaolohakemuksia',
         'application.child_id': 'Hakemuksia (lapsena)',
         'application.guardian_id': 'Hakemuksia (huoltajana)',
         'application.other_guardian_id': 'Hakemuksia (toisena huoltajana)',

@@ -201,6 +201,44 @@ class DailyServiceTimeSectionEditForm extends DailyServiceTimeSectionBaseForm {
   }
 }
 
+export class AbsenceApplicationsSection extends Section {
+  async assertIncompleted(expected: string[]) {
+    const table = this.page.findByDataQa('absence-applications-incompleted')
+    const rows = table.findAllByDataQa('absence-applications-incompleted-row')
+    await rows.assertTextsEqual(expected)
+  }
+
+  async assertCompleted(expected: string[]) {
+    const table = this.page.findByDataQa('absence-applications-completed')
+    const rows = table.findAllByDataQa('absence-applications-completed-row')
+    await rows.assertTextsEqual(expected)
+  }
+
+  async openRejectModal(index: number) {
+    const table = this.page.findByDataQa('absence-applications-incompleted')
+    const rows = table.findAllByDataQa('absence-applications-incompleted-row')
+    await rows.nth(index).findByDataQa('reject-absence-application').click()
+    return new RejectAbsenceApplicationModal(
+      this.page.findByDataQa('reject-absence-application-modal')
+    )
+  }
+
+  async accept(index: number) {
+    const table = this.page.findByDataQa('absence-applications-incompleted')
+    const rows = table.findAllByDataQa('absence-applications-incompleted-row')
+    await rows.nth(index).findByDataQa('accept-absence-application').click()
+  }
+}
+
+class RejectAbsenceApplicationModal extends Modal {
+  readonly reason: TextInput
+
+  constructor(self: Element) {
+    super(self)
+    this.reason = new TextInput(self.findByDataQa('reason'))
+  }
+}
+
 export class DailyServiceTimeSection extends Section {
   readonly #createButton = this.findByDataQa('create-daily-service-times')
 
@@ -1249,6 +1287,10 @@ class ApplicationsSection extends Section {
 }
 
 const collapsibles = {
+  absenceApplications: {
+    selector: '[data-qa="absence-applications-collapsible"]',
+    section: AbsenceApplicationsSection
+  },
   dailyServiceTimes: {
     selector: '[data-qa="child-daily-service-times-collapsible"]',
     section: DailyServiceTimeSection

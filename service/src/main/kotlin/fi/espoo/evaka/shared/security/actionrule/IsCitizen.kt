@@ -5,6 +5,7 @@
 package fi.espoo.evaka.shared.security.actionrule
 
 import fi.espoo.evaka.document.childdocument.DocumentStatus
+import fi.espoo.evaka.shared.AbsenceApplicationId
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
@@ -508,6 +509,17 @@ AND (
 )
 AND NOT decision.document_contains_contact_info
 """
+            )
+        }
+
+    fun absenceApplicationCreatedBy() =
+        rule<AbsenceApplicationId> { userId, _ ->
+            sql(
+                """
+SELECT id
+FROM absence_application
+WHERE created_by = ${bind(userId)}
+            """
             )
         }
 

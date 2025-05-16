@@ -13,6 +13,7 @@ import { useIdRouteParam } from 'lib-common/useRouteParams'
 import Main from 'lib-components/atoms/Main'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { Gap } from 'lib-components/white-space'
+import { featureFlags } from 'lib-customizations/citizen'
 
 import Footer from '../Footer'
 import { renderResult } from '../async-rendering'
@@ -20,6 +21,7 @@ import { renderResult } from '../async-rendering'
 import ChildHeader from './ChildHeader'
 import { childrenQuery } from './queries'
 import ChildDocumentsSection from './sections/ChildDocumentsSection'
+import { AbsenceApplicationsSection } from './sections/absence-applications/AbsenceApplicationsSection'
 import PedagogicalDocumentsSection from './sections/pedagogical-documents/PedagogicalDocumentsSection'
 import PlacementTerminationSection from './sections/placement-termination/PlacementTerminationSection'
 import ServiceNeedAndDailyServiceTimeSection from './sections/service-need-and-daily-service-time/ServiceNeedAndDailyServiceTimeSection'
@@ -59,6 +61,13 @@ export default React.memo(function ChildPage() {
                   <ChildDocumentsSection childId={childId} />
                 </>
               )}
+              {featureFlags.absenceApplications &&
+                child.absenceApplicationCreationPossible && (
+                  <>
+                    <Gap size="s" />
+                    <AbsenceApplicationsSection childId={childId} />
+                  </>
+                )}
               <Gap size="s" />
               <PlacementTerminationSection childId={childId} />
             </>

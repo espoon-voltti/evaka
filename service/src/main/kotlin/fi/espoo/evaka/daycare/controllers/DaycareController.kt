@@ -6,6 +6,8 @@ package fi.espoo.evaka.daycare.controllers
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
+import fi.espoo.evaka.absence.application.AbsenceApplicationStatus
+import fi.espoo.evaka.absence.application.selectAbsenceApplications
 import fi.espoo.evaka.application.getActiveTransferApplicationsFromUnit
 import fi.espoo.evaka.backupcare.UnitBackupCare
 import fi.espoo.evaka.backupcare.getBackupCaresForDaycare
@@ -722,6 +724,23 @@ class DaycareController(
                             tx.getWaitingUnitConfirmationApplicationsCount(daycareId)
                         else 0
 
+                    val absenceApplications =
+                        if (
+                            accessControl.hasPermissionFor(
+                                tx,
+                                user,
+                                clock,
+                                Action.Unit.READ_ABSENCE_APPLICATIONS,
+                                daycareId,
+                            )
+                        )
+                            tx.selectAbsenceApplications(
+                                    unitId = daycareId,
+                                    status = AbsenceApplicationStatus.WAITING_DECISION,
+                                )
+                                .size
+                        else 0
+
                     val serviceApplications =
                         if (
                             accessControl.hasPermissionFor(
@@ -736,7 +755,8 @@ class DaycareController(
                         else 0
 
                     UnitNotifications(
-                        applications = daycareApplications + serviceApplications,
+                        applications =
+                            daycareApplications + absenceApplications + serviceApplications,
                         groups =
                             if (
                                 accessControl.hasPermissionFor(

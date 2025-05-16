@@ -39,6 +39,7 @@ import WarningLabel from '../common/WarningLabel'
 import { getLayout, Layouts } from '../layouts'
 import { parentshipsQuery } from '../person-profile/queries'
 
+import { AbsenceApplicationsSection } from './AbsenceApplicationsSection'
 import Assistance from './Assistance'
 import BackupCare from './BackupCare'
 import ChildApplications from './ChildApplications'
@@ -153,6 +154,13 @@ const components = {
     title: (i18n) => i18n.childInformation.placements.title,
     dataQa: 'child-placements-collapsible'
   }),
+  absenceApplications: section({
+    component: AbsenceApplicationsSection,
+    enabled: featureFlags.absenceApplications,
+    requireOneOfPermittedActions: ['READ_ABSENCE_APPLICATIONS'],
+    title: (i18n) => i18n.childInformation.absenceApplications.title,
+    dataQa: 'absence-applications-collapsible'
+  }),
   serviceApplications: section({
     component: ServiceApplicationsSection,
     enabled: featureFlags.serviceApplications,
@@ -213,6 +221,7 @@ const layouts: Layouts<typeof components> = {
     { component: 'family-contacts', open: false },
     { component: 'guardiansAndParents', open: false },
     { component: 'placements', open: false },
+    { component: 'absenceApplications', open: false },
     { component: 'serviceApplications', open: false },
     { component: 'backup-care', open: false },
     { component: 'daily-service-times', open: false },
@@ -282,6 +291,7 @@ const layouts: Layouts<typeof components> = {
   ['UNIT_SUPERVISOR']: [
     { component: 'guardiansAndParents', open: false },
     { component: 'placements', open: false },
+    { component: 'absenceApplications', open: false },
     { component: 'serviceApplications', open: false },
     { component: 'backup-care', open: false },
     { component: 'daily-service-times', open: false },

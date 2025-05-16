@@ -104,6 +104,8 @@ export type Global =
   | 'VARDA_OPERATIONS'
   | 'WRITE_SERVICE_WORKER_APPLICATION_NOTES'
 
+export type AbsenceApplication = 'DECIDE'
+
 export type Application =
   | 'ACCEPT_DECISION'
   | 'CANCEL'
@@ -209,6 +211,7 @@ export type Child =
   | 'DELETE_IMAGE'
   | 'READ'
   | 'READ_ABSENCES'
+  | 'READ_ABSENCE_APPLICATIONS'
   | 'READ_ADDITIONAL_INFO'
   | 'READ_APPLICATION'
   | 'READ_ASSISTANCE'
@@ -445,6 +448,7 @@ export type Unit =
   | 'INSERT_ACL_STAFF'
   | 'INSERT_ACL_UNIT_SUPERVISOR'
   | 'READ'
+  | 'READ_ABSENCE_APPLICATIONS'
   | 'READ_ACL'
   | 'READ_APPLICATIONS_AND_PLACEMENT_PLANS'
   | 'READ_APPLICATIONS_REPORT'
@@ -512,6 +516,8 @@ export type VoucherValueDecision =
 
 export namespace Citizen {
 
+export type AbsenceApplication = 'DELETE'
+
 export type Application =
   | 'DELETE'
   | 'READ'
@@ -521,12 +527,14 @@ export type Application =
 
 export type Child =
   | 'CREATE_ABSENCE'
+  | 'CREATE_ABSENCE_APPLICATION'
   | 'CREATE_APPLICATION'
   | 'CREATE_CALENDAR_EVENT_TIME_RESERVATION'
   | 'CREATE_HOLIDAY_ABSENCE'
   | 'CREATE_INCOME_STATEMENT'
   | 'CREATE_RESERVATION'
   | 'CREATE_SERVICE_APPLICATION'
+  | 'READ_ABSENCE_APPLICATIONS'
   | 'READ_ATTENDANCE_SUMMARY'
   | 'READ_CHILD_DOCUMENTS'
   | 'READ_DAILY_SERVICE_TIMES'

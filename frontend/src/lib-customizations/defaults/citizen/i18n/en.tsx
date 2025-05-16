@@ -2583,6 +2583,29 @@ const en: Translations = {
       variableTime: 'Daily time varies',
       empty: 'Not defined'
     },
+    absenceApplication: {
+      title: 'Pitkät poissaolot esiopetuksesta (en)',
+      header: 'Esiopetuksen poissaolot (en)',
+      info: 'Jos lapsesi on tarkoitus olla yli viikko poissa esiopetuksesta, tee asiasta hakemus. (en)',
+      new: 'Uusi poissaolohakemus (en)',
+      list: 'Haetut poissaolojaksot (en)',
+      cancel: 'Peru (en)',
+      cancelConfirmation: 'Perutaanko hakemus? (en)',
+      description: 'Poissaolon syy (en)',
+      rejectedReason: 'Hylkäyksen syy (en)',
+      status: {
+        WAITING_DECISION: 'Odottaa päätöstä (en)',
+        ACCEPTED: 'Hyväksytty (en)',
+        REJECTED: 'Hylätty (en)'
+      },
+      newPage: {
+        title: 'Pitkä poissaolo esiopetuksesta (en)',
+        range: 'Aika, jonka lapsi on poissa esiopetuksesta (en)',
+        info: 'Hakemuksesi lähtee esiopetuksesta vastaavalle henkilökunnalle hyväksyttäväksi. (en)',
+        confirmation:
+          'Ymmärrän, että henkilökunta merkitsee lapselleni poissaolon vasta, kun hakemus on hyväksytty. (en)'
+      }
+    },
     serviceApplication: {
       title: 'Applications concerning a change in the service need',
       sentAt: 'Sent at',
