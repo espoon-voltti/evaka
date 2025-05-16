@@ -4,13 +4,13 @@
 
 // GENERATED FILE: no manual modifications
 
-import { BackupPickupId } from 'lib-common/generated/api-types/shared'
-import { ChildBackupPickup } from 'lib-common/generated/api-types/backuppickup'
-import { ChildBackupPickupContent } from 'lib-common/generated/api-types/backuppickup'
-import { ChildBackupPickupCreateResponse } from 'lib-common/generated/api-types/backuppickup'
-import { JsonCompatible } from 'lib-common/json'
-import { JsonOf } from 'lib-common/json'
-import { PersonId } from 'lib-common/generated/api-types/shared'
+import type { BackupPickupId } from 'lib-common/generated/api-types/shared'
+import type { ChildBackupPickup } from 'lib-common/generated/api-types/backuppickup'
+import type { ChildBackupPickupContent } from 'lib-common/generated/api-types/backuppickup'
+import type { ChildBackupPickupCreateResponse } from 'lib-common/generated/api-types/backuppickup'
+import type { JsonCompatible } from 'lib-common/json'
+import type { JsonOf } from 'lib-common/json'
+import type { PersonId } from 'lib-common/generated/api-types/shared'
 import { client } from '../../api/client'
 import { uri } from 'lib-common/uri'
 

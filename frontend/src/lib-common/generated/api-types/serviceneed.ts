@@ -4,20 +4,20 @@
 
 // GENERATED FILE: no manual modifications
 
+import type { Action } from '../action'
 import DateRange from '../../date-range'
+import type { DaycareId } from './shared'
+import type { EmployeeId } from './shared'
+import type { EvakaUserId } from './shared'
 import HelsinkiDateTime from '../../helsinki-date-time'
+import type { JsonOf } from '../../json'
 import LocalDate from '../../local-date'
-import { Action } from '../action'
-import { DaycareId } from './shared'
-import { EmployeeId } from './shared'
-import { EvakaUserId } from './shared'
-import { JsonOf } from '../../json'
-import { PersonId } from './shared'
-import { PlacementId } from './shared'
-import { PlacementType } from './placement'
-import { ServiceApplicationId } from './shared'
-import { ServiceNeedId } from './shared'
-import { ServiceNeedOptionId } from './shared'
+import type { PersonId } from './shared'
+import type { PlacementId } from './shared'
+import type { PlacementType } from './placement'
+import type { ServiceApplicationId } from './shared'
+import type { ServiceNeedId } from './shared'
+import type { ServiceNeedOptionId } from './shared'
 
 /**
 * Generated from fi.espoo.evaka.serviceneed.application.ServiceApplicationController.AcceptServiceApplicationBody

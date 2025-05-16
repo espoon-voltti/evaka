@@ -4,10 +4,10 @@
 
 // GENERATED FILE: no manual modifications
 
+import type { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
-import { JsonOf } from 'lib-common/json'
-import { PersonId } from 'lib-common/generated/api-types/shared'
-import { Timeline } from 'lib-common/generated/api-types/timeline'
+import type { PersonId } from 'lib-common/generated/api-types/shared'
+import type { Timeline } from 'lib-common/generated/api-types/timeline'
 import { client } from '../../api/client'
 import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonTimeline } from 'lib-common/generated/api-types/timeline'

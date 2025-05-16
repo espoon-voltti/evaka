@@ -4,14 +4,14 @@
 
 // GENERATED FILE: no manual modifications
 
-import { EmailMessageType } from 'lib-common/generated/api-types/pis'
-import { EmailVerificationRequest } from 'lib-common/generated/api-types/pis'
-import { EmailVerificationStatusResponse } from 'lib-common/generated/api-types/pis'
-import { JsonCompatible } from 'lib-common/json'
-import { JsonOf } from 'lib-common/json'
-import { PasswordConstraints } from 'lib-common/generated/api-types/shared'
-import { PersonalDataUpdate } from 'lib-common/generated/api-types/pis'
-import { UpdateWeakLoginCredentialsRequest } from 'lib-common/generated/api-types/pis'
+import type { EmailMessageType } from 'lib-common/generated/api-types/pis'
+import type { EmailVerificationRequest } from 'lib-common/generated/api-types/pis'
+import type { EmailVerificationStatusResponse } from 'lib-common/generated/api-types/pis'
+import type { JsonCompatible } from 'lib-common/json'
+import type { JsonOf } from 'lib-common/json'
+import type { PasswordConstraints } from 'lib-common/generated/api-types/shared'
+import type { PersonalDataUpdate } from 'lib-common/generated/api-types/pis'
+import type { UpdateWeakLoginCredentialsRequest } from 'lib-common/generated/api-types/pis'
 import { client } from '../../api-client'
 import { deserializeJsonEmailVerificationStatusResponse } from 'lib-common/generated/api-types/pis'
 import { uri } from 'lib-common/uri'

@@ -4,12 +4,12 @@
 
 // GENERATED FILE: no manual modifications
 
-import { Action } from '../action'
-import { ChildImageId } from './shared'
-import { DaycareId } from './shared'
-import { GroupId } from './shared'
-import { PersonId } from './shared'
-import { PlacementType } from './placement'
+import type { Action } from '../action'
+import type { ChildImageId } from './shared'
+import type { DaycareId } from './shared'
+import type { GroupId } from './shared'
+import type { PersonId } from './shared'
+import type { PlacementType } from './placement'
 
 /**
 * Generated from fi.espoo.evaka.children.AttendanceSummary

@@ -4,8 +4,8 @@
 
 // GENERATED FILE: no manual modifications
 
-import { CurrentNotificationResponseCitizen } from 'lib-common/generated/api-types/systemnotifications'
-import { JsonOf } from 'lib-common/json'
+import type { CurrentNotificationResponseCitizen } from 'lib-common/generated/api-types/systemnotifications'
+import type { JsonOf } from 'lib-common/json'
 import { client } from '../../api-client'
 import { deserializeJsonCurrentNotificationResponseCitizen } from 'lib-common/generated/api-types/systemnotifications'
 import { uri } from 'lib-common/uri'

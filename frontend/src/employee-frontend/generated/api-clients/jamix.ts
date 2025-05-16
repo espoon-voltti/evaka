@@ -4,9 +4,9 @@
 
 // GENERATED FILE: no manual modifications
 
+import type { DaycareId } from 'lib-common/generated/api-types/shared'
+import type { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
-import { DaycareId } from 'lib-common/generated/api-types/shared'
-import { JsonOf } from 'lib-common/json'
 import { client } from '../../api/client'
 import { createUrlSearchParams } from 'lib-common/api'
 import { uri } from 'lib-common/uri'

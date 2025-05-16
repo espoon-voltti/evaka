@@ -4,11 +4,11 @@
 
 // GENERATED FILE: no manual modifications
 
+import type { ArchivedProcessId } from './shared'
+import type { EvakaUser } from './user'
 import HelsinkiDateTime from '../../helsinki-date-time'
-import { ArchivedProcessId } from './shared'
-import { EvakaUser } from './user'
-import { JsonOf } from '../../json'
-import { UUID } from '../../types'
+import type { JsonOf } from '../../json'
+import type { UUID } from '../../types'
 
 /**
 * Generated from fi.espoo.evaka.process.ArchivedProcess

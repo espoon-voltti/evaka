@@ -4,13 +4,13 @@
 
 // GENERATED FILE: no manual modifications
 
-import { DailyServiceTimeId } from 'lib-common/generated/api-types/shared'
-import { DailyServiceTimesEndDate } from 'lib-common/generated/api-types/dailyservicetimes'
-import { DailyServiceTimesResponse } from 'lib-common/generated/api-types/dailyservicetimes'
-import { DailyServiceTimesValue } from 'lib-common/generated/api-types/dailyservicetimes'
-import { JsonCompatible } from 'lib-common/json'
-import { JsonOf } from 'lib-common/json'
-import { PersonId } from 'lib-common/generated/api-types/shared'
+import type { DailyServiceTimeId } from 'lib-common/generated/api-types/shared'
+import type { DailyServiceTimesEndDate } from 'lib-common/generated/api-types/dailyservicetimes'
+import type { DailyServiceTimesResponse } from 'lib-common/generated/api-types/dailyservicetimes'
+import type { DailyServiceTimesValue } from 'lib-common/generated/api-types/dailyservicetimes'
+import type { JsonCompatible } from 'lib-common/json'
+import type { JsonOf } from 'lib-common/json'
+import type { PersonId } from 'lib-common/generated/api-types/shared'
 import { client } from '../../api/client'
 import { deserializeJsonDailyServiceTimesResponse } from 'lib-common/generated/api-types/dailyservicetimes'
 import { uri } from 'lib-common/uri'

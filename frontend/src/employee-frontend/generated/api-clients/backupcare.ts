@@ -4,14 +4,14 @@
 
 // GENERATED FILE: no manual modifications
 
-import { BackupCareCreateResponse } from 'lib-common/generated/api-types/backupcare'
-import { BackupCareId } from 'lib-common/generated/api-types/shared'
-import { BackupCareUpdateRequest } from 'lib-common/generated/api-types/backupcare'
-import { ChildBackupCaresResponse } from 'lib-common/generated/api-types/backupcare'
-import { JsonCompatible } from 'lib-common/json'
-import { JsonOf } from 'lib-common/json'
-import { NewBackupCare } from 'lib-common/generated/api-types/backupcare'
-import { PersonId } from 'lib-common/generated/api-types/shared'
+import type { BackupCareCreateResponse } from 'lib-common/generated/api-types/backupcare'
+import type { BackupCareId } from 'lib-common/generated/api-types/shared'
+import type { BackupCareUpdateRequest } from 'lib-common/generated/api-types/backupcare'
+import type { ChildBackupCaresResponse } from 'lib-common/generated/api-types/backupcare'
+import type { JsonCompatible } from 'lib-common/json'
+import type { JsonOf } from 'lib-common/json'
+import type { NewBackupCare } from 'lib-common/generated/api-types/backupcare'
+import type { PersonId } from 'lib-common/generated/api-types/shared'
 import { client } from '../../api/client'
 import { deserializeJsonChildBackupCaresResponse } from 'lib-common/generated/api-types/backupcare'
 import { uri } from 'lib-common/uri'

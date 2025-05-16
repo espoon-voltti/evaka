@@ -4,13 +4,13 @@
 
 // GENERATED FILE: no manual modifications
 
+import type { CalendarEventTimeCitizenReservationForm } from 'lib-common/generated/api-types/calendarevent'
+import type { CalendarEventTimeId } from 'lib-common/generated/api-types/shared'
+import type { CitizenCalendarEvent } from 'lib-common/generated/api-types/calendarevent'
+import type { JsonCompatible } from 'lib-common/json'
+import type { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
-import { CalendarEventTimeCitizenReservationForm } from 'lib-common/generated/api-types/calendarevent'
-import { CalendarEventTimeId } from 'lib-common/generated/api-types/shared'
-import { CitizenCalendarEvent } from 'lib-common/generated/api-types/calendarevent'
-import { JsonCompatible } from 'lib-common/json'
-import { JsonOf } from 'lib-common/json'
-import { PersonId } from 'lib-common/generated/api-types/shared'
+import type { PersonId } from 'lib-common/generated/api-types/shared'
 import { client } from '../../api-client'
 import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonCitizenCalendarEvent } from 'lib-common/generated/api-types/calendarevent'
