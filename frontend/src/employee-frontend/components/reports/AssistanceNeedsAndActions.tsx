@@ -5,6 +5,7 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import add from 'lodash/add'
 import mergeWith from 'lodash/mergeWith'
+import orderBy from 'lodash/orderBy'
 import sortBy from 'lodash/sortBy'
 import React, { useMemo, useState } from 'react'
 import { Link } from 'react-router'
@@ -58,12 +59,17 @@ import {
   permittedReportsQuery
 } from './queries'
 
+interface PlacementTypeWithLabel {
+  label: string
+  value: PlacementType
+}
+
 type AssistanceNeedsAndActionsReportFilters = {
   date: LocalDate | null
   daycareAssistanceLevels: DaycareAssistanceLevel[]
   preschoolAssistanceLevels: PreschoolAssistanceLevel[]
   otherAssistanceMeasureTypes: OtherAssistanceMeasureType[]
-  placementTypes: PlacementType[]
+  placementTypes: PlacementTypeWithLabel[]
 }
 
 const types = ['DAYCARE', 'PRESCHOOL'] as const
@@ -523,7 +529,13 @@ export default React.memo(function AssistanceNeedsAndActions() {
           </FilterLabel>
           <Wrapper>
             <MultiSelect
-              options={placementTypes}
+              options={orderBy(
+                placementTypes.map((pt) => ({
+                  label: i18n.placement.type[pt],
+                  value: pt
+                })),
+                [(item) => item.label]
+              )}
               onChange={(selectedItems) =>
                 setFilters({
                   ...filters,
@@ -531,8 +543,8 @@ export default React.memo(function AssistanceNeedsAndActions() {
                 })
               }
               value={filters.placementTypes}
-              getOptionId={(type) => type}
-              getOptionLabel={(type) => i18n.placement.type[type]}
+              getOptionId={(o) => o.value}
+              getOptionLabel={(o) => o.label}
               placeholder={i18n.common.all}
               data-qa="placement-type-filter"
             />
@@ -696,7 +708,7 @@ const ReportByGroup = (props: {
               ? props.selectedPreschoolColumns
               : undefined,
           otherAssistanceMeasureTypes: props.selectedOtherColumns,
-          placementTypes: props.filters.placementTypes
+          placementTypes: props.filters.placementTypes.map((o) => o.value)
         })
       : constantQuery(null)
   )
@@ -1133,7 +1145,7 @@ const ReportByChild = (props: {
               ? props.selectedPreschoolColumns
               : undefined,
           otherAssistanceMeasureTypes: props.selectedOtherColumns,
-          placementTypes: props.filters.placementTypes
+          placementTypes: props.filters.placementTypes.map((o) => o.value)
         })
       : constantQuery(null)
   )
