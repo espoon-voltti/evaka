@@ -8,7 +8,6 @@ import React, { useEffect, useState } from 'react'
 import FocusLock from 'react-focus-lock'
 import styled, { useTheme } from 'styled-components'
 
-import { useTranslation } from 'citizen-frontend/localization'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { tabletMin, tabletMinPx } from 'lib-components/breakpoints'
@@ -31,6 +30,8 @@ import {
   faChevronRight,
   faChevronUp
 } from 'lib-icons'
+
+import { useTranslation } from '../localization'
 
 const BreakingH2 = styled(H2)`
   word-break: break-word;

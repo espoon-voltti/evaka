@@ -2,9 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Translations } from 'employee-frontend/state/i18n'
 import { InvoiceDetailed } from 'lib-common/generated/api-types/invoicing'
 import YearMonth from 'lib-common/year-month'
+
+import { Translations } from '../../state/i18n'
 
 export function formatInvoicePeriod(
   invoice: InvoiceDetailed,

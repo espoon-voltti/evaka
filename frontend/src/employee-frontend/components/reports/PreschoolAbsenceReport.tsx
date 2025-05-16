@@ -6,7 +6,6 @@ import isEqual from 'lodash/isEqual'
 import orderBy from 'lodash/orderBy'
 import React, { useCallback, useContext, useMemo, useState } from 'react'
 
-import { UserContext } from 'employee-frontend/state/user'
 import { combine } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
@@ -32,6 +31,7 @@ import {
 } from 'lib-components/layout/Table'
 
 import { useTranslation } from '../../state/i18n'
+import { UserContext } from '../../state/user'
 import { renderResult } from '../async-rendering'
 import { FlexRow } from '../common/styled/containers'
 import { preschoolTermsQuery } from '../holiday-term-periods/queries'

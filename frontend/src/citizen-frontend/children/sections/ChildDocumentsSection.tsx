@@ -6,11 +6,6 @@ import React, { useMemo, useState } from 'react'
 import { Link } from 'react-router'
 import styled from 'styled-components'
 
-import RequireAuth from 'citizen-frontend/RequireAuth'
-import { renderResult } from 'citizen-frontend/async-rendering'
-import { useUser } from 'citizen-frontend/auth/state'
-import ResponsiveWholePageCollapsible from 'citizen-frontend/children/ResponsiveWholePageCollapsible'
-import { useTranslation } from 'citizen-frontend/localization'
 import {
   ChildDocumentCitizenSummary,
   DocumentType,
@@ -34,10 +29,15 @@ import { Gap, defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faLockAlt } from 'lib-icons'
 
+import RequireAuth from '../../RequireAuth'
+import { renderResult } from '../../async-rendering'
+import { useUser } from '../../auth/state'
 import {
   childDocumentSummariesQuery,
   unreadChildDocumentsCountQuery
 } from '../../child-documents/queries'
+import ResponsiveWholePageCollapsible from '../../children/ResponsiveWholePageCollapsible'
+import { useTranslation } from '../../localization'
 
 const DocumentsTableContainer = styled.table`
   width: 100%;

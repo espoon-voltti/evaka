@@ -5,11 +5,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import {
-  RangeValidationResult,
-  TimeRangeInput
-} from 'employee-frontend/components/child-information/daily-service-times/DailyServiceTimesForms'
-import { DayOfWeek } from 'employee-frontend/types'
 import DateRange from 'lib-common/date-range'
 import { useBoolean } from 'lib-common/form/hooks'
 import { UpdateStateFn } from 'lib-common/form-state'
@@ -51,8 +46,13 @@ import colors from 'lib-customizations/common'
 import { featureFlags, unitProviderTypes } from 'lib-customizations/employee'
 import { faPen, farXmark } from 'lib-icons'
 
+import {
+  RangeValidationResult,
+  TimeRangeInput
+} from '../../../components/child-information/daily-service-times/DailyServiceTimesForms'
 import { Translations, useTranslation } from '../../../state/i18n'
 import { FinanceDecisionHandlerOption } from '../../../state/invoicing-ui'
+import { DayOfWeek } from '../../../types'
 
 import {
   closingDateIsBeforeLastPlacementDate,

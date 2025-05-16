@@ -5,7 +5,6 @@
 import React, { useMemo, useState } from 'react'
 import { Navigate, useSearchParams } from 'react-router'
 
-import { authWeakLogin } from 'citizen-frontend/auth/api'
 import { wrapResult } from 'lib-common/api'
 import { string } from 'lib-common/form/fields'
 import { object, required, validated, value } from 'lib-common/form/form'
@@ -28,6 +27,7 @@ import { H1, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
 import Footer from '../Footer'
+import { authWeakLogin } from '../auth/api'
 import { useUser } from '../auth/state'
 import { useTranslation } from '../localization'
 

@@ -11,7 +11,6 @@ import React, {
 } from 'react'
 import styled from 'styled-components'
 
-import MessageEditor from 'employee-frontend/components/messages/MessageEditor'
 import { Failure, Result, wrapResult } from 'lib-common/api'
 import {
   PostMessageBody,
@@ -29,6 +28,7 @@ import Container from 'lib-components/layout/Container'
 import { defaultMargins } from 'lib-components/white-space'
 
 import { getAttachmentUrl, messageAttachment } from '../../api/attachments'
+import MessageEditor from '../../components/messages/MessageEditor'
 import {
   createMessage,
   deleteDraftMessage

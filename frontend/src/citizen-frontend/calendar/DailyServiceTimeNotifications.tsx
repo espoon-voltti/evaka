@@ -4,13 +4,13 @@
 
 import React, { useEffect, useState } from 'react'
 
-import { useTranslation } from 'citizen-frontend/localization'
 import { DailyServiceTimeNotificationId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { faExclamation } from 'lib-icons'
 
 import { dismissDailyServiceTimeNotification } from '../generated/api-clients/dailyservicetimes'
+import { useTranslation } from '../localization'
 
 import { dailyServiceTimeNotificationsQuery } from './queries'
 

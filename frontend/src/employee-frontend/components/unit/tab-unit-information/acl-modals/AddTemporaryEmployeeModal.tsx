@@ -4,7 +4,6 @@
 
 import React, { useState } from 'react'
 
-import { isValidPinCode } from 'employee-frontend/components/employee-pin-code/EmployeePinCodePage'
 import { Action } from 'lib-common/generated/action'
 import { DaycareGroupResponse } from 'lib-common/generated/api-types/daycare'
 import { DaycareId } from 'lib-common/generated/api-types/shared'
@@ -15,6 +14,7 @@ import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { Label } from 'lib-components/typography'
 
+import { isValidPinCode } from '../../../../components/employee-pin-code/EmployeePinCodePage'
 import { useTranslation } from '../../../../state/i18n'
 import { createTemporaryEmployeeMutation } from '../../queries'
 

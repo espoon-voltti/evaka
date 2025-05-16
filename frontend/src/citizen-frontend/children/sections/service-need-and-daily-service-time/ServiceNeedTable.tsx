@@ -4,7 +4,6 @@
 
 import React from 'react'
 
-import { useLang, useTranslation } from 'citizen-frontend/localization'
 import DateRange, { Tense } from 'lib-common/date-range'
 import { ServiceNeedSummary } from 'lib-common/generated/api-types/serviceneed'
 import LocalDate from 'lib-common/local-date'
@@ -19,6 +18,8 @@ import {
   TabletAndDesktop
 } from 'lib-components/layout/responsive-layout'
 import colors from 'lib-customizations/common'
+
+import { useLang, useTranslation } from '../../../localization'
 
 const colorsByTense: Record<Tense, string> = {
   past: colors.grayscale.g15,

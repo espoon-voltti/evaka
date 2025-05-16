@@ -6,8 +6,6 @@ import React, { useEffect } from 'react'
 import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
-import { renderResult } from 'employee-frontend/components/async-rendering'
-import { I18nContext, Lang, useTranslation } from 'employee-frontend/state/i18n'
 import { wrapResult } from 'lib-common/api'
 import { AssistanceNeedDecision } from 'lib-common/generated/api-types/assistanceneed'
 import { AssistanceNeedDecisionId } from 'lib-common/generated/api-types/shared'
@@ -29,12 +27,14 @@ import { InformationText } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { faArrowDownToLine } from 'lib-icons'
 
+import { renderResult } from '../../../../components/async-rendering'
 import {
   getAssistanceNeedDecision,
   getAssistanceNeedDecisionPdf,
   revertToUnsentAssistanceNeedDecision,
   sendAssistanceNeedDecision
 } from '../../../../generated/api-clients/assistanceneed'
+import { I18nContext, Lang, useTranslation } from '../../../../state/i18n'
 import MetadataSection from '../../../archive-metadata/MetadataSection'
 import { assistanceNeedDecisionMetadataQuery } from '../../queries'
 

@@ -2,11 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import {
-  getSettings,
-  putSettings
-} from 'employee-frontend/generated/api-clients/setting'
 import { Queries } from 'lib-common/query'
+
+import { getSettings, putSettings } from '../../generated/api-clients/setting'
 
 const q = new Queries()
 

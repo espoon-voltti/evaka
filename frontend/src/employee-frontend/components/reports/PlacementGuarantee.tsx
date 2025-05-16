@@ -7,7 +7,6 @@ import orderBy from 'lodash/orderBy'
 import sortBy from 'lodash/sortBy'
 import React, { useCallback, useMemo, useState } from 'react'
 
-import { useTranslation } from 'employee-frontend/state/i18n'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { PlacementGuaranteeReportRow } from 'lib-common/generated/api-types/reports'
 import { DaycareId } from 'lib-common/generated/api-types/shared'
@@ -20,6 +19,7 @@ import Container, { ContentArea } from 'lib-components/layout/Container'
 import { SortableTh, Tbody, Td, Thead, Tr } from 'lib-components/layout/Table'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 
+import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 import { daycaresQuery } from '../unit/queries'
 

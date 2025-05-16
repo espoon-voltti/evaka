@@ -10,7 +10,6 @@ const path = require('path')
 const sentryWebpackPlugin =
   require('@sentry/webpack-plugin').sentryWebpackPlugin
 const HtmlWebpackPlugin = require('html-webpack-plugin')
-const TsConfigPaths = require('tsconfig-paths-webpack-plugin')
 const webpack = require('webpack')
 const WebpackPwaManifest = require('webpack-pwa-manifest')
 
@@ -68,15 +67,6 @@ function baseConfig({ isDevelopment }, { name, publicPath, entry }) {
         )
       }
     }),
-    new webpack.NormalModuleReplacementPlugin(
-      /@evaka\/customizations\/(.*)/,
-      (resource) => {
-        resource.request = resource.request.replace(
-          /@evaka\/customizations/,
-          `lib-customizations/${customizationsModule}`
-        )
-      }
-    ),
     new webpack.DefinePlugin({
       // This matches APP_COMMIT in apigw
       'process.env.APP_COMMIT': `'${process.env.APP_COMMIT || 'UNDEFINED'}'`
@@ -123,16 +113,19 @@ function baseConfig({ isDevelopment }, { name, publicPath, entry }) {
       extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
       symlinks: false,
       alias: {
+        'lib-common': path.resolve(__dirname, 'src/lib-common'),
+        'lib-components': path.resolve(__dirname, 'src/lib-components'),
+        'lib-customizations': path.resolve(__dirname, `src/lib-customizations`),
+        'lib-icons': path.resolve(__dirname, 'src/lib-icons'),
+        '@evaka/customizations': path.resolve(
+          __dirname,
+          `src/lib-customizations/${customizationsModule}`
+        ),
         Icons:
           icons === 'pro'
             ? path.resolve(__dirname, 'src/lib-icons/pro-icons')
             : path.resolve(__dirname, 'src/lib-icons/free-icons')
-      },
-      plugins: [
-        new TsConfigPaths({
-          configFile: path.resolve(__dirname, `src/${name}/tsconfig.json`)
-        })
-      ]
+      }
     },
     plugins,
     module: {

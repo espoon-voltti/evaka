@@ -5,8 +5,6 @@
 import React, { useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import { renderResult } from 'citizen-frontend/async-rendering'
-import { useTranslation } from 'citizen-frontend/localization'
 import { combine, Result } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { AttendanceSummary } from 'lib-common/generated/api-types/children'
@@ -21,6 +19,9 @@ import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { H3, Label } from 'lib-components/typography'
 import colors from 'lib-customizations/common'
 import { faChevronLeft, faChevronRight } from 'lib-icons'
+
+import { renderResult } from '../../../async-rendering'
+import { useTranslation } from '../../../localization'
 
 import { attendanceSummaryQuery } from './queries'
 

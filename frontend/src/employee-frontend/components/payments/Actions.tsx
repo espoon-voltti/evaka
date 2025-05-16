@@ -6,7 +6,6 @@ import { faEnvelope } from '@fortawesome/free-solid-svg-icons'
 import React, { useState } from 'react'
 import styled from 'styled-components'
 
-import { errorToInputInfo } from 'employee-frontend/utils/validation/input-info-helper'
 import { useBoolean } from 'lib-common/form/hooks'
 import { required, validate } from 'lib-common/form-validation'
 import { PaymentStatus } from 'lib-common/generated/api-types/invoicing'
@@ -25,6 +24,7 @@ import colors from 'lib-customizations/common'
 import { getPaymentsDueDate } from 'lib-customizations/employee'
 
 import { useTranslation } from '../../state/i18n'
+import { errorToInputInfo } from '../../utils/validation/input-info-helper'
 import StickyActionBar from '../common/StickyActionBar'
 
 import { selectablePaymentStatuses } from './PaymentsPage'

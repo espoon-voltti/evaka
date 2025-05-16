@@ -6,8 +6,6 @@ import orderBy from 'lodash/orderBy'
 import React, { useContext } from 'react'
 import { Link } from 'react-router'
 
-import { PersonContext } from 'employee-frontend/components/person-profile/state'
-import { UserContext } from 'employee-frontend/state/user'
 import { PersonId } from 'lib-common/generated/api-types/shared'
 import { formatCents } from 'lib-common/money'
 import { useQueryResult } from 'lib-common/query'
@@ -16,7 +14,9 @@ import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { faRefresh } from 'lib-icons'
 
+import { PersonContext } from '../../components/person-profile/state'
 import { useTranslation } from '../../state/i18n'
+import { UserContext } from '../../state/user'
 import { renderResult } from '../async-rendering'
 import { formatInvoicePeriod } from '../invoice/utils'
 
