@@ -4,15 +4,16 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
-import React, { ReactNode, useRef } from 'react'
+import type { ReactNode } from 'react'
+import React, { useRef } from 'react'
 import styled from 'styled-components'
 
-import { BoundFormState } from 'lib-common/form/hooks'
+import type { BoundFormState } from 'lib-common/form/hooks'
 import { useUniqueId } from 'lib-common/utils/useUniqueId'
 import { ExpandingInfoButtonSlot } from 'lib-components/molecules/ExpandingInfo'
 import { faCheck } from 'lib-icons'
 
-import { BaseProps } from '../../utils'
+import type { BaseProps } from '../../utils'
 import { defaultMargins } from '../../white-space'
 
 const diameter = '30px'

@@ -2,21 +2,23 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { SetStateAction, useCallback, useMemo } from 'react'
+import type { SetStateAction } from 'react'
+import React, { useCallback, useMemo } from 'react'
 
-import { Result } from 'lib-common/api'
-import {
+import type { Result } from 'lib-common/api'
+import type {
   AssistanceLevel,
   AssistanceNeedDecisionForm,
   AssistanceNeedDecisionGuardian
 } from 'lib-common/generated/api-types/assistanceneed'
-import { Employee } from 'lib-common/generated/api-types/pis'
+import type { Employee } from 'lib-common/generated/api-types/pis'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 import { ParagraphDiv } from 'lib-components/assistance-need-decision/AssistanceNeedDecisionReadOnly'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
-import InputField, { InputInfo } from 'lib-components/atoms/form/InputField'
+import type { InputInfo } from 'lib-components/atoms/form/InputField'
+import InputField from 'lib-components/atoms/form/InputField'
 import TextArea from 'lib-components/atoms/form/TextArea'
 import {
   FixedSpaceColumn,
@@ -31,7 +33,7 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 import { renderResult } from '../../../../components/async-rendering'
 import { getEmployeesQuery, unitsQuery } from '../../../../queries'
 import { useTranslation } from '../../../../state/i18n'
-import { AutosaveStatus } from '../../../../utils/use-autosave'
+import type { AutosaveStatus } from '../../../../utils/use-autosave'
 
 const FieldWithInfo = React.memo(function FieldWithInfo({
   info,

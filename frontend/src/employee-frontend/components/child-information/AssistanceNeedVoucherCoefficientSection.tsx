@@ -6,8 +6,8 @@ import orderBy from 'lodash/orderBy'
 import React, { useContext, useRef, useState } from 'react'
 import styled from 'styled-components'
 
-import { AssistanceNeedVoucherCoefficient } from 'lib-common/generated/api-types/assistanceneed'
-import {
+import type { AssistanceNeedVoucherCoefficient } from 'lib-common/generated/api-types/assistanceneed'
+import type {
   AssistanceNeedVoucherCoefficientId,
   ChildId
 } from 'lib-common/generated/api-types/shared'
@@ -21,10 +21,8 @@ import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { faQuestion } from 'lib-icons'
 
-import {
-  ChildContext,
-  ChildState
-} from '../../components/child-information/state'
+import type { ChildState } from '../../components/child-information/state'
+import { ChildContext } from '../../components/child-information/state'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
 import { renderResult } from '../async-rendering'

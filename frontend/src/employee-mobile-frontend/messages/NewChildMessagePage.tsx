@@ -7,18 +7,18 @@ import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
-import { AttendanceChild } from 'lib-common/generated/api-types/attendance'
-import {
+import type { AttendanceChild } from 'lib-common/generated/api-types/attendance'
+import type {
   AuthorizedMessageAccount,
   SelectableRecipient
 } from 'lib-common/generated/api-types/messaging'
-import { DaycareId } from 'lib-common/generated/api-types/shared'
+import type { DaycareId } from 'lib-common/generated/api-types/shared'
 import {
   constantQuery,
   useChainedQuery,
   useQueryResult
 } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import { ContentArea } from 'lib-components/layout/Container'
 import { defaultMargins } from 'lib-components/white-space'
 import { faArrowLeft } from 'lib-icons'

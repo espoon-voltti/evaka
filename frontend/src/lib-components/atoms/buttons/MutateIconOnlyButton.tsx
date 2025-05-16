@@ -5,11 +5,9 @@
 import React from 'react'
 
 import { AsyncIconOnlyButton } from './AsyncIconOnlyButton'
-import { BaseIconOnlyButtonVisualProps } from './icon-only-button-visuals'
-import {
-  MutateButtonBehaviorProps,
-  useMutateButtonBehavior
-} from './mutate-button-behavior'
+import type { BaseIconOnlyButtonVisualProps } from './icon-only-button-visuals'
+import type { MutateButtonBehaviorProps } from './mutate-button-behavior'
+import { useMutateButtonBehavior } from './mutate-button-behavior'
 
 export type MutateIconOnlyButtonProps<Arg, Data> =
   BaseIconOnlyButtonVisualProps &

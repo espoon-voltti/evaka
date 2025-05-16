@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { PublicUnit } from 'lib-common/generated/api-types/daycare'
-import { Coordinate } from 'lib-common/generated/api-types/shared'
+import type { PublicUnit } from 'lib-common/generated/api-types/daycare'
+import type { Coordinate } from 'lib-common/generated/api-types/shared'
 
 export type UnitWithStraightDistance = PublicUnit & {
   straightDistance: number | null

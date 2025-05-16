@@ -5,8 +5,8 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
 
-import { VoucherValueDecisionStatus } from 'lib-common/generated/api-types/invoicing'
-import { VoucherValueDecisionId } from 'lib-common/generated/api-types/shared'
+import type { VoucherValueDecisionStatus } from 'lib-common/generated/api-types/invoicing'
+import type { VoucherValueDecisionId } from 'lib-common/generated/api-types/shared'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import { featureFlags } from 'lib-customizations/employee'

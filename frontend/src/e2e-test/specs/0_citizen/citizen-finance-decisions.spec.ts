@@ -4,11 +4,11 @@
 
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import {
+import type {
   DecisionIncome,
   FeeDecision
 } from 'lib-common/generated/api-types/invoicing'
-import { FeeDecisionId } from 'lib-common/generated/api-types/shared'
+import type { FeeDecisionId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
@@ -29,7 +29,7 @@ import {
   createVoucherValueDecisions,
   resetServiceState
 } from '../../generated/api-clients'
-import { DevPerson, VoucherValueDecision } from '../../generated/api-types'
+import type { DevPerson, VoucherValueDecision } from '../../generated/api-types'
 import CitizenDecisionsPage from '../../pages/citizen/citizen-decisions'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import { Page } from '../../utils/page'

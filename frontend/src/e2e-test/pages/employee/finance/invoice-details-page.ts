@@ -2,15 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { InvoiceReplacementReason } from 'lib-common/generated/api-types/invoicing'
+import type { InvoiceReplacementReason } from 'lib-common/generated/api-types/invoicing'
 
-import {
-  Page,
-  Element,
-  TextInput,
-  Select,
-  FileUpload
-} from '../../../utils/page'
+import type { Page } from '../../../utils/page'
+import { Element, TextInput, Select, FileUpload } from '../../../utils/page'
 
 export class InvoiceDetailsPage {
   headOfFamilySection: InvoiceHeadOfFamilySection

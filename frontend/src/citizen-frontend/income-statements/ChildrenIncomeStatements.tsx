@@ -7,11 +7,11 @@ import React, { Fragment, useCallback, useContext, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
 import styled from 'styled-components'
 
-import {
+import type {
   ChildBasicInfo,
   IncomeStatement
 } from 'lib-common/generated/api-types/incomestatement'
-import {
+import type {
   ChildId,
   IncomeStatementId,
   PersonId

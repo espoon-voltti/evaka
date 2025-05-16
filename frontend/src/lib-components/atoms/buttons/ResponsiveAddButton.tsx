@@ -7,7 +7,8 @@ import styled from 'styled-components'
 
 import { tabletMin } from '../../breakpoints'
 
-import AddButton, { AddButtonProps } from './AddButton'
+import type { AddButtonProps } from './AddButton'
+import AddButton from './AddButton'
 
 interface ResponsiveAddButtonProps extends AddButtonProps {
   breakpoint?: string

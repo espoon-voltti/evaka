@@ -8,25 +8,22 @@ import React, { useCallback, useContext, useMemo, useState } from 'react'
 import styled, { useTheme } from 'styled-components'
 
 import { combine, isLoading } from 'lib-common/api'
-import { Action } from 'lib-common/generated/action'
-import {
+import type { Action } from 'lib-common/generated/action'
+import type {
   DaycareGroupResponse,
   DaycareResponse
 } from 'lib-common/generated/api-types/daycare'
-import { Employee } from 'lib-common/generated/api-types/pis'
-import {
+import type { Employee } from 'lib-common/generated/api-types/pis'
+import type {
   DaycareAclRow,
   DaycareId,
   EmployeeId,
   ScheduledDaycareAclRow,
   UserRole
 } from 'lib-common/generated/api-types/shared'
-import {
-  constantQuery,
-  MutationDescription,
-  useQueryResult
-} from 'lib-common/query'
-import { UUID } from 'lib-common/types'
+import type { MutationDescription } from 'lib-common/query'
+import { constantQuery, useQueryResult } from 'lib-common/query'
+import type { UUID } from 'lib-common/types'
 import { ExpandableList } from 'lib-components/atoms/ExpandableList'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Tooltip from 'lib-components/atoms/Tooltip'

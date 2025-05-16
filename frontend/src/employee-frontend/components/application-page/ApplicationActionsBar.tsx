@@ -6,7 +6,7 @@ import React, { useState } from 'react'
 import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
-import {
+import type {
   ApplicationDetails,
   ApplicationStatus
 } from 'lib-common/generated/api-types/application'

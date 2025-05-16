@@ -15,7 +15,7 @@ import {
 import { useForm, useFormFields } from 'lib-common/form/hooks'
 import { ValidationSuccess } from 'lib-common/form/types'
 import { nonBlank } from 'lib-common/form/validators'
-import {
+import type {
   SystemNotificationCitizens,
   SystemNotificationEmployees,
   SystemNotificationTargetGroup

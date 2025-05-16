@@ -2,10 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
+import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import styled from 'styled-components'
 
-import { DecisionSummary } from 'lib-common/generated/api-types/application'
+import type { DecisionSummary } from 'lib-common/generated/api-types/application'
 import { fontWeights } from 'lib-components/typography'
 import { colors } from 'lib-customizations/common'
 import {

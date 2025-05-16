@@ -2,7 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { EmployeeId, PersonId } from 'lib-common/generated/api-types/shared'
+import type {
+  EmployeeId,
+  PersonId
+} from 'lib-common/generated/api-types/shared'
 import { evakaUserId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
@@ -17,9 +20,8 @@ import {
 } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
 import ErrorModal from '../../pages/employee/error-modal'
-import GuardianInformationPage, {
-  IncomeSection
-} from '../../pages/employee/guardian-information'
+import type { IncomeSection } from '../../pages/employee/guardian-information'
+import GuardianInformationPage from '../../pages/employee/guardian-information'
 import { waitUntilEqual, waitUntilFalse, waitUntilTrue } from '../../utils'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'

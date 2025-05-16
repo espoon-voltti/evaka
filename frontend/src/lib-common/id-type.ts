@@ -4,7 +4,11 @@
 
 import { validate, v4 as uuidv4 } from 'uuid'
 
-import { EmployeeId, EvakaUserId, PersonId } from './generated/api-types/shared'
+import type {
+  EmployeeId,
+  EvakaUserId,
+  PersonId
+} from './generated/api-types/shared'
 
 declare const id: unique symbol
 export type Id<B extends string> = string & { [id]: B }

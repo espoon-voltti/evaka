@@ -4,7 +4,8 @@
 
 import styled from 'styled-components'
 
-import { defaultMargins, isSpacingSize, SpacingSize } from '../white-space'
+import type { SpacingSize } from '../white-space'
+import { defaultMargins, isSpacingSize } from '../white-space'
 
 // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
 export default styled.ul<{ spacing?: SpacingSize | string }>`

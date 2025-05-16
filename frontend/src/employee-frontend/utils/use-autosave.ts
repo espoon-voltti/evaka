@@ -2,9 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useEffect, useState } from 'react'
+import type React from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
-import { ApiFunction, Failure, Result, Success } from 'lib-common/api'
+import type { ApiFunction, Result } from 'lib-common/api'
+import { Failure, Success } from 'lib-common/api'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { isAutomatedTest } from 'lib-common/utils/helpers'
 import { useDebouncedCallback } from 'lib-common/utils/useDebouncedCallback'

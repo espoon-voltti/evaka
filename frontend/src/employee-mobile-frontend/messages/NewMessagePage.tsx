@@ -10,7 +10,8 @@ import { useQueryResult } from 'lib-common/query'
 
 import { routes } from '../App'
 import { renderResult } from '../async-rendering'
-import { toUnitOrGroup, UnitOrGroup } from '../common/unit-or-group'
+import type { UnitOrGroup } from '../common/unit-or-group'
+import { toUnitOrGroup } from '../common/unit-or-group'
 
 import MessageEditor from './MessageEditor'
 import { selectableRecipientsQuery } from './queries'

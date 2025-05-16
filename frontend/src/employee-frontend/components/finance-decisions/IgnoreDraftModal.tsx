@@ -4,11 +4,11 @@
 
 import React, { useState } from 'react'
 
-import {
+import type {
   FeeDecisionId,
   VoucherValueDecisionId
 } from 'lib-common/generated/api-types/shared'
-import { MutationDescription } from 'lib-common/query'
+import type { MutationDescription } from 'lib-common/query'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { Gap } from 'lib-components/white-space'

@@ -2,12 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import {
+import type {
   PlacementType,
   TerminatablePlacementGroup
 } from 'lib-common/generated/api-types/placement'
-import { DaycareId } from 'lib-common/generated/api-types/shared'
-import LocalDate from 'lib-common/local-date'
+import type { DaycareId } from 'lib-common/generated/api-types/shared'
+import type LocalDate from 'lib-common/local-date'
 
 type TerminatedPlacementInfoType =
   | { type: 'placement'; placementType: PlacementType }

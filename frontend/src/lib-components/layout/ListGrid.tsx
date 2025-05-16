@@ -4,7 +4,8 @@
 
 import styled from 'styled-components'
 
-import { defaultMargins, SpacingSize } from '../white-space'
+import type { SpacingSize } from '../white-space'
+import { defaultMargins } from '../white-space'
 
 interface ListGridProps {
   labelWidth?: string

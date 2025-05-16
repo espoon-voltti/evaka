@@ -10,14 +10,14 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import { boolean, localDateRange } from 'lib-common/form/fields'
 import { object, oneOf, required } from 'lib-common/form/form'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
-import { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
-import {
+import type { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
+import type {
   ServiceNeed,
   ServiceNeedOption,
-  ShiftCareType,
-  shiftCareType
+  ShiftCareType
 } from 'lib-common/generated/api-types/serviceneed'
-import {
+import { shiftCareType } from 'lib-common/generated/api-types/serviceneed'
+import type {
   ServiceNeedId,
   ServiceNeedOptionId
 } from 'lib-common/generated/api-types/shared'

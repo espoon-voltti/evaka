@@ -2,11 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { MutableRefObject, useContext, useRef, useState } from 'react'
+import type { MutableRefObject } from 'react'
+import React, { useContext, useRef, useState } from 'react'
 
 import DateRange from 'lib-common/date-range'
-import { Action } from 'lib-common/generated/action'
-import {
+import type { Action } from 'lib-common/generated/action'
+import type {
   AssistanceAction,
   AssistanceActionOption,
   AssistanceActionResponse

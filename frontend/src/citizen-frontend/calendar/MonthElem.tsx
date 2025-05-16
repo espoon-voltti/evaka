@@ -6,12 +6,12 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React from 'react'
 import styled, { css } from 'styled-components'
 
-import { CitizenCalendarEvent } from 'lib-common/generated/api-types/calendarevent'
-import {
+import type { CitizenCalendarEvent } from 'lib-common/generated/api-types/calendarevent'
+import type {
   ReservationChild,
   ReservationResponseDay
 } from 'lib-common/generated/api-types/reservations'
-import LocalDate from 'lib-common/local-date'
+import type LocalDate from 'lib-common/local-date'
 import { formatPreferredName } from 'lib-common/names'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import {
@@ -26,8 +26,9 @@ import { faArrowsRotate, fasExclamationTriangle } from 'lib-icons'
 import { useTranslation } from '../localization'
 
 import DayElem from './DayElem'
-import MonthlyHoursSummary, { MonthlyTimeSummary } from './MonthlyHoursSummary'
-import { ChildImageData } from './RoundChildImages'
+import type { MonthlyTimeSummary } from './MonthlyHoursSummary'
+import MonthlyHoursSummary from './MonthlyHoursSummary'
+import type { ChildImageData } from './RoundChildImages'
 import { useSummaryInfo } from './hooks'
 
 export function getSummaryForMonth(

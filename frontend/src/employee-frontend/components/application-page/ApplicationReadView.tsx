@@ -6,13 +6,13 @@ import React from 'react'
 import { Link } from 'react-router'
 import styled from 'styled-components'
 
-import {
+import type {
   Address,
   ApplicationAttachment,
   ApplicationResponse,
   PersonBasics
 } from 'lib-common/generated/api-types/application'
-import LocalDate from 'lib-common/local-date'
+import type LocalDate from 'lib-common/local-date'
 import { maxOf } from 'lib-common/ordered'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import ListGrid from 'lib-components/layout/ListGrid'

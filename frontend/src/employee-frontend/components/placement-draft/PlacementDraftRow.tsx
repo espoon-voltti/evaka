@@ -7,7 +7,7 @@ import React from 'react'
 import styled from 'styled-components'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
-import {
+import type {
   PlacementPlanDraft,
   PlacementSummary,
   PlacementType
@@ -22,7 +22,7 @@ import { faExclamationTriangle } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
 
-import { DaycarePlacementPlanForm } from './PlacementDraft'
+import type { DaycarePlacementPlanForm } from './PlacementDraft'
 
 const DateRow = styled.div`
   display: flex;

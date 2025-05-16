@@ -5,7 +5,7 @@
 import React from 'react'
 import { useNavigate } from 'react-router'
 
-import { AssistanceNeedPreschoolDecisionBasicsResponse } from 'lib-common/generated/api-types/assistanceneed'
+import type { AssistanceNeedPreschoolDecisionBasicsResponse } from 'lib-common/generated/api-types/assistanceneed'
 import { AssistanceNeedDecisionStatusChip } from 'lib-components/assistance-need-decision/AssistanceNeedDecisionStatusChip'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { Td, Tr } from 'lib-components/layout/Table'

@@ -6,8 +6,11 @@ import orderBy from 'lodash/orderBy'
 import React, { useContext, useState } from 'react'
 import { Link } from 'react-router'
 
-import { ParentshipWithPermittedActions } from 'lib-common/generated/api-types/pis'
-import { ParentshipId, PersonId } from 'lib-common/generated/api-types/shared'
+import type { ParentshipWithPermittedActions } from 'lib-common/generated/api-types/pis'
+import type {
+  ParentshipId,
+  PersonId
+} from 'lib-common/generated/api-types/shared'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { getAge } from 'lib-common/utils/local-date'
 import Tooltip from 'lib-components/atoms/Tooltip'

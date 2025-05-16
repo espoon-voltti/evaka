@@ -12,7 +12,8 @@ import colors from 'lib-customizations/common'
 import { useTranslation } from '../localization'
 import { headerHeightMobile } from '../navigation/const'
 
-import { mapViewBreakpoint, MobileMode } from './const'
+import type { MobileMode } from './const'
+import { mapViewBreakpoint } from './const'
 
 const MobileTabContainer = styled.div`
   display: none;

@@ -5,9 +5,10 @@
 import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import { Result, wrapResult } from 'lib-common/api'
-import { NotesByGroupResponse } from 'lib-common/generated/api-types/note'
-import {
+import type { Result } from 'lib-common/api'
+import { wrapResult } from 'lib-common/api'
+import type { NotesByGroupResponse } from 'lib-common/generated/api-types/note'
+import type {
   ChildId,
   ChildStickyNoteId,
   GroupId,
@@ -16,7 +17,7 @@ import {
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { StickyNoteTab } from 'lib-components/employee/notes/StickyNoteTab'
-import { EditedNote } from 'lib-components/employee/notes/notes'
+import type { EditedNote } from 'lib-components/employee/notes/notes'
 import { ContentArea } from 'lib-components/layout/Container'
 import { PlainModal } from 'lib-components/molecules/modals/BaseModal'
 import { fontWeights } from 'lib-components/typography'
@@ -32,7 +33,8 @@ import {
   updateChildStickyNote,
   updateGroupNote
 } from '../../../../generated/api-clients/note'
-import { Translations, useTranslation } from '../../../../state/i18n'
+import type { Translations } from '../../../../state/i18n'
+import { useTranslation } from '../../../../state/i18n'
 import { renderResult } from '../../../async-rendering'
 
 import ChildDailyNoteForm from './ChildDailyNoteForm'

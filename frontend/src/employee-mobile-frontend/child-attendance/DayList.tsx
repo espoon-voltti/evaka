@@ -6,11 +6,11 @@ import orderBy from 'lodash/orderBy'
 import React, { useMemo } from 'react'
 import styled from 'styled-components'
 
-import { DayReservationStatisticsResult } from 'lib-common/generated/api-types/reservations'
+import type { DayReservationStatisticsResult } from 'lib-common/generated/api-types/reservations'
 import colors from 'lib-customizations/common'
 
 import { useTranslation } from '../common/i18n'
-import { UnitOrGroup } from '../common/unit-or-group'
+import type { UnitOrGroup } from '../common/unit-or-group'
 
 import DayListItem, { ChevronBox, DateBox } from './DayListItem'
 

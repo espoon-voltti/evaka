@@ -14,7 +14,8 @@ import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { fasChevronDown, fasChevronUp } from 'lib-icons'
 
-import { Lang, langs, useLang, useTranslation } from '../localization'
+import type { Lang } from '../localization'
+import { langs, useLang, useTranslation } from '../localization'
 
 export const CircledChar = styled.div.attrs({
   className: 'circled-char'

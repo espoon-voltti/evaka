@@ -8,18 +8,20 @@ import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
-import { Attachment } from 'lib-common/generated/api-types/attachment'
-import {
+import type { Attachment } from 'lib-common/generated/api-types/attachment'
+import type {
   Accountant,
   Entrepreneur,
-  EstimatedIncome,
   Gross,
   IncomeStatement,
   IncomeStatementAttachment,
-  incomeStatementAttachmentTypes,
   SetIncomeStatementHandledBody
 } from 'lib-common/generated/api-types/incomestatement'
 import {
+  EstimatedIncome,
+  incomeStatementAttachmentTypes
+} from 'lib-common/generated/api-types/incomestatement'
+import type {
   IncomeStatementId,
   PersonId
 } from 'lib-common/generated/api-types/shared'
@@ -53,7 +55,8 @@ import {
   incomeStatementAttachment
 } from '../../api/attachments'
 import { personIdentityQuery } from '../../queries'
-import { Translations, useTranslation } from '../../state/i18n'
+import type { Translations } from '../../state/i18n'
+import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 
 import {

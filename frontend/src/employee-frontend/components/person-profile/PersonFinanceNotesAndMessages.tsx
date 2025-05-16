@@ -9,17 +9,17 @@ import { Link } from 'react-router'
 import styled, { useTheme } from 'styled-components'
 
 import { combine } from 'lib-common/api'
-import { Action } from 'lib-common/generated/action'
-import {
+import type { Action } from 'lib-common/generated/action'
+import type {
   FinanceNote,
   FinanceNoteResponse
 } from 'lib-common/generated/api-types/finance'
-import {
+import type {
   DraftContent,
   MessageThread,
   PostMessageBody
 } from 'lib-common/generated/api-types/messaging'
-import {
+import type {
   MessageAccountId,
   PersonId
 } from 'lib-common/generated/api-types/shared'

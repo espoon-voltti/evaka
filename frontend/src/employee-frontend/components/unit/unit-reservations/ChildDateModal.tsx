@@ -20,25 +20,21 @@ import {
   transformed,
   value
 } from 'lib-common/form/form'
-import {
-  BoundForm,
-  useForm,
-  useFormElems,
-  useFormFields
-} from 'lib-common/form/hooks'
+import type { BoundForm } from 'lib-common/form/hooks'
+import { useForm, useFormElems, useFormFields } from 'lib-common/form/hooks'
 import { ValidationError, ValidationSuccess } from 'lib-common/form/types'
-import {
+import type {
   AbsenceCategory,
   AbsenceType
 } from 'lib-common/generated/api-types/absence'
-import {
+import type {
   Child,
   ChildDatePresence,
   ChildRecordOfDay,
   ReservationResponse,
   UnitDateInfo
 } from 'lib-common/generated/api-types/reservations'
-import { ChildId, DaycareId } from 'lib-common/generated/api-types/shared'
+import type { ChildId, DaycareId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { constantQuery, useQueryResult } from 'lib-common/query'
 import { Button } from 'lib-components/atoms/buttons/Button'

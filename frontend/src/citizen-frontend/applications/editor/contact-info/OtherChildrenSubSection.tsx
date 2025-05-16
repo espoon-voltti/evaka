@@ -20,7 +20,7 @@ import { faTimes } from 'lib-icons'
 import { errorToInputInfo } from '../../../input-info-helper'
 import { useTranslation } from '../../../localization'
 
-import { ContactInfoSectionProps } from './ContactInfoSection'
+import type { ContactInfoSectionProps } from './ContactInfoSection'
 
 export default React.memo(function OtherChildrenSubSection({
   formData,

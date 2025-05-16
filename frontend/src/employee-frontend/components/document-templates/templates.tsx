@@ -6,10 +6,11 @@ import React from 'react'
 
 import { string } from 'lib-common/form/fields'
 import { array, mapped, object, union, validated } from 'lib-common/form/form'
-import { BoundForm, useFormUnion } from 'lib-common/form/hooks'
-import { StateOf } from 'lib-common/form/types'
+import type { BoundForm } from 'lib-common/form/hooks'
+import { useFormUnion } from 'lib-common/form/hooks'
+import type { StateOf } from 'lib-common/form/types'
 import { nonBlank } from 'lib-common/form/validators'
-import {
+import type {
   DocumentTemplateContent,
   Question,
   QuestionType

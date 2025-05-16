@@ -5,7 +5,7 @@
 import React from 'react'
 import { useTheme } from 'styled-components'
 
-import { VoucherValueDecisionDifference } from 'lib-common/generated/api-types/invoicing'
+import type { VoucherValueDecisionDifference } from 'lib-common/generated/api-types/invoicing'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Tooltip from 'lib-components/atoms/Tooltip'
 

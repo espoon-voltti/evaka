@@ -7,8 +7,8 @@ import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
 import { wrapResult } from 'lib-common/api'
-import { AssistanceNeedDecision } from 'lib-common/generated/api-types/assistanceneed'
-import { AssistanceNeedDecisionId } from 'lib-common/generated/api-types/shared'
+import type { AssistanceNeedDecision } from 'lib-common/generated/api-types/assistanceneed'
+import type { AssistanceNeedDecisionId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
 import useRouteParams, { useIdRouteParam } from 'lib-common/useRouteParams'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -34,7 +34,8 @@ import {
   revertToUnsentAssistanceNeedDecision,
   sendAssistanceNeedDecision
 } from '../../../../generated/api-clients/assistanceneed'
-import { I18nContext, Lang, useTranslation } from '../../../../state/i18n'
+import type { Lang } from '../../../../state/i18n'
+import { I18nContext, useTranslation } from '../../../../state/i18n'
 import MetadataSection from '../../../archive-metadata/MetadataSection'
 import { assistanceNeedDecisionMetadataQuery } from '../../queries'
 

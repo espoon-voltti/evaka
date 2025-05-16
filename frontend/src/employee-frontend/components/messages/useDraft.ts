@@ -4,15 +4,15 @@
 
 import { useCallback, useEffect, useState } from 'react'
 
-import { UpdatableDraftContent } from 'lib-common/generated/api-types/messaging'
-import {
+import type { UpdatableDraftContent } from 'lib-common/generated/api-types/messaging'
+import type {
   MessageAccountId,
   MessageDraftId
 } from 'lib-common/generated/api-types/shared'
 import { useMutation } from 'lib-common/query'
 import { isAutomatedTest } from 'lib-common/utils/helpers'
 import { useDebouncedCallback } from 'lib-common/utils/useDebouncedCallback'
-import { SaveDraftParams } from 'lib-components/messages/types'
+import type { SaveDraftParams } from 'lib-components/messages/types'
 
 import { initDraftMutation, saveDraftMutation } from './queries'
 

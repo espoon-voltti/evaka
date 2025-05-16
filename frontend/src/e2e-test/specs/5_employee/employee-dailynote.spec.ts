@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { ChildDailyNoteBody } from 'lib-common/generated/api-types/note'
+import type { ChildDailyNoteBody } from 'lib-common/generated/api-types/note'
 
 import {
   Fixture,
@@ -15,7 +15,7 @@ import {
   postChildDailyNote,
   resetServiceState
 } from '../../generated/api-clients'
-import { DevDaycare, DevDaycareGroup } from '../../generated/api-types'
+import type { DevDaycare, DevDaycareGroup } from '../../generated/api-types'
 import { UnitPage } from '../../pages/employee/units/unit'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'

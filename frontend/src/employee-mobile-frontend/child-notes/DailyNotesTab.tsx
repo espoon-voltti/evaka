@@ -6,13 +6,13 @@ import React, { Fragment, useCallback, useState } from 'react'
 import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
-import { UpdateStateFn } from 'lib-common/form-state'
+import type { UpdateStateFn } from 'lib-common/form-state'
+import type { ChildDailyNoteBody } from 'lib-common/generated/api-types/note'
 import {
-  ChildDailyNoteBody,
   childDailyNoteLevelValues,
   childDailyNoteReminderValues
 } from 'lib-common/generated/api-types/note'
-import {
+import type {
   ChildDailyNoteId,
   ChildId,
   DaycareId
@@ -42,7 +42,7 @@ import {
   deleteChildDailyNoteMutation,
   updateChildDailyNoteMutation
 } from './queries'
-import { ChildDailyNoteFormData } from './types'
+import type { ChildDailyNoteFormData } from './types'
 
 const Time = styled.div`
   display: flex;

@@ -6,9 +6,9 @@ import React, { useEffect, useMemo } from 'react'
 import styled from 'styled-components'
 
 import DateRange from 'lib-common/date-range'
-import { PlacementType } from 'lib-common/generated/api-types/placement'
-import { ServiceNeedOptionPublicInfo } from 'lib-common/generated/api-types/serviceneed'
-import { ApplicationId } from 'lib-common/generated/api-types/shared'
+import type { PlacementType } from 'lib-common/generated/api-types/placement'
+import type { ServiceNeedOptionPublicInfo } from 'lib-common/generated/api-types/serviceneed'
+import type { ApplicationId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import { useUniqueId } from 'lib-common/utils/useUniqueId'
@@ -31,7 +31,7 @@ import { getAttachmentUrl, applicationAttachment } from '../../../attachments'
 import { errorToInputInfo } from '../../../input-info-helper'
 import { useLang, useTranslation } from '../../../localization'
 
-import { ServiceNeedSectionProps } from './ServiceNeedSection'
+import type { ServiceNeedSectionProps } from './ServiceNeedSection'
 
 const Hyphenbox = styled.div`
   padding-top: 36px;

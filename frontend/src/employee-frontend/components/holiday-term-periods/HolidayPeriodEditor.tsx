@@ -5,7 +5,7 @@
 import React, { useCallback } from 'react'
 import { useNavigate } from 'react-router'
 
-import { HolidayPeriodId } from 'lib-common/generated/api-types/shared'
+import type { HolidayPeriodId } from 'lib-common/generated/api-types/shared'
 import { fromUuid } from 'lib-common/id-type'
 import { constantQuery, useQueryResult } from 'lib-common/query'
 import useRouteParams from 'lib-common/useRouteParams'

@@ -6,8 +6,8 @@ import React, { useState } from 'react'
 import { Link } from 'react-router'
 import styled from 'styled-components'
 
-import { Result } from 'lib-common/api'
-import {
+import type { Result } from 'lib-common/api'
+import type {
   Language,
   ProviderType,
   PublicUnit
@@ -31,7 +31,7 @@ import { faAngleDown, faAngleUp, faArrowLeft } from 'lib-icons'
 import { useTranslation } from '../localization'
 import SearchInput from '../map/SearchInput'
 
-import { CareTypeOption, MapAddress } from './MapView'
+import type { CareTypeOption, MapAddress } from './MapView'
 
 interface Props {
   allUnits: Result<PublicUnit[]>

@@ -4,12 +4,12 @@
 
 import React, { Fragment, useCallback, useContext, useEffect } from 'react'
 
-import {
+import type {
   InvoiceDistinctiveParams,
   InvoiceStatus
 } from 'lib-common/generated/api-types/invoicing'
-import { DaycareId } from 'lib-common/generated/api-types/shared'
-import LocalDate from 'lib-common/local-date'
+import type { DaycareId } from 'lib-common/generated/api-types/shared'
+import type LocalDate from 'lib-common/local-date'
 import { Gap } from 'lib-components/white-space'
 
 import { useTranslation } from '../../state/i18n'

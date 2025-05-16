@@ -2,18 +2,17 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import FiniteDateRange from 'lib-common/finite-date-range'
-import { DailyServiceTimesType } from 'lib-common/generated/api-types/dailyservicetimes'
-import {
-  ShiftCareType,
-  shiftCareType
-} from 'lib-common/generated/api-types/serviceneed'
-import HelsinkiDateTime from 'lib-common/helsinki-date-time'
-import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type FiniteDateRange from 'lib-common/finite-date-range'
+import type { DailyServiceTimesType } from 'lib-common/generated/api-types/dailyservicetimes'
+import type { ShiftCareType } from 'lib-common/generated/api-types/serviceneed'
+import { shiftCareType } from 'lib-common/generated/api-types/serviceneed'
+import type HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import type LocalDate from 'lib-common/local-date'
+import type { UUID } from 'lib-common/types'
 
 import config from '../../config'
 import { waitUntilEqual, waitUntilTrue } from '../../utils'
+import type { Page } from '../../utils/page'
 import {
   Checkbox,
   Combobox,
@@ -22,7 +21,6 @@ import {
   Element,
   FileUpload,
   Modal,
-  Page,
   Radio,
   Select,
   TextInput

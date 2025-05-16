@@ -2,10 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { IncomeStatementBody } from 'lib-common/generated/api-types/incomestatement'
+import type { IncomeStatementBody } from 'lib-common/generated/api-types/incomestatement'
 import { collectAttachmentIds } from 'lib-common/income-statements/attachments'
 import * as Form from 'lib-common/income-statements/form'
-import LocalDate from 'lib-common/local-date'
+import type LocalDate from 'lib-common/local-date'
 import { stringToInt } from 'lib-common/utils/number'
 
 export function fromBody(

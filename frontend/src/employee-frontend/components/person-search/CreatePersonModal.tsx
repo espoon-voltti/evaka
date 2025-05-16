@@ -7,7 +7,7 @@ import React, { useState } from 'react'
 import styled from 'styled-components'
 
 import { wrapResult } from 'lib-common/api'
-import { CreatePersonBody } from 'lib-common/generated/api-types/pis'
+import type { CreatePersonBody } from 'lib-common/generated/api-types/pis'
 import LocalDate from 'lib-common/local-date'
 import { getAge } from 'lib-common/utils/local-date'
 import InputField from 'lib-components/atoms/form/InputField'

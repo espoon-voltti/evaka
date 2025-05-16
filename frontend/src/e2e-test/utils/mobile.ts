@@ -2,7 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { DaycareId, EmployeeId } from 'lib-common/generated/api-types/shared'
+import type {
+  DaycareId,
+  EmployeeId
+} from 'lib-common/generated/api-types/shared'
 import { randomId } from 'lib-common/id-type'
 
 import config from '../config'

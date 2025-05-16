@@ -2,12 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { DateFormat } from './date'
+import type { DateFormat } from './date'
 import FiniteDateRange from './finite-date-range'
-import { JsonOf } from './json'
+import type { JsonOf } from './json'
 import LocalDate from './local-date'
 import { maxOf, minOf } from './ordered'
-import YearMonth from './year-month'
+import type YearMonth from './year-month'
 
 export type Tense = 'past' | 'present' | 'future'
 

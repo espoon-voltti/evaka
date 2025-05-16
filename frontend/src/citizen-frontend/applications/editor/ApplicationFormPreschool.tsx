@@ -4,7 +4,7 @@
 
 import React, { useCallback } from 'react'
 
-import { UnitPreferenceFormData } from 'lib-common/api-types/application/ApplicationFormData'
+import type { UnitPreferenceFormData } from 'lib-common/api-types/application/ApplicationFormData'
 import { constantQuery, useQueryResult } from 'lib-common/query'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { featureFlags } from 'lib-customizations/citizen'
@@ -17,7 +17,7 @@ import UnitPreferenceSection from '../../applications/editor/unit-preference/Uni
 import { renderResult } from '../../async-rendering'
 import { serviceNeedOptionPublicInfosQuery } from '../queries'
 
-import { ApplicationFormProps } from './ApplicationEditor'
+import type { ApplicationFormProps } from './ApplicationEditor'
 
 export default React.memo(function ApplicationFormPreschool({
   application,

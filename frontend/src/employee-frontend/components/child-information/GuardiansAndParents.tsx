@@ -4,7 +4,7 @@
 
 import React from 'react'
 
-import { ChildId } from 'lib-common/generated/api-types/shared'
+import type { ChildId } from 'lib-common/generated/api-types/shared'
 import { Gap } from 'lib-components/white-space'
 
 import FosterParents from './FosterParents'

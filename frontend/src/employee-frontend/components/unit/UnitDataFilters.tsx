@@ -2,7 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { Dispatch, SetStateAction } from 'react'
+import type { Dispatch, SetStateAction } from 'react'
+import React from 'react'
 import styled from 'styled-components'
 
 import LocalDate from 'lib-common/local-date'
@@ -11,7 +12,7 @@ import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 
 import { useTranslation } from '../../state/i18n'
-import { UnitFilters } from '../../utils/UnitFilters'
+import type { UnitFilters } from '../../utils/UnitFilters'
 
 const DatePickersContainer = styled.div`
   display: flex;

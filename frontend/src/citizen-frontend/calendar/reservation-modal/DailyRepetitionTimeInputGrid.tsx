@@ -4,7 +4,8 @@
 
 import React from 'react'
 
-import { BoundForm, useFormFields } from 'lib-common/form/hooks'
+import type { BoundForm } from 'lib-common/form/hooks'
+import { useFormFields } from 'lib-common/form/hooks'
 import { scrollIntoViewSoftKeyboard } from 'lib-common/utils/scrolling'
 import { Label } from 'lib-components/typography'
 

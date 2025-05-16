@@ -2,16 +2,16 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Attachment } from 'lib-common/generated/api-types/attachment'
-import {
+import type { Attachment } from 'lib-common/generated/api-types/attachment'
+import type {
   FeeAlteration,
   FeeAlterationType
 } from 'lib-common/generated/api-types/invoicing'
-import {
+import type {
   FeeAlterationId,
   PersonId
 } from 'lib-common/generated/api-types/shared'
-import LocalDate from 'lib-common/local-date'
+import type LocalDate from 'lib-common/local-date'
 
 export type PartialFeeAlteration = Omit<
   FeeAlteration,

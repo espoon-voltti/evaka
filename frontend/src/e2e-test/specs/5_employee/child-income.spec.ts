@@ -2,13 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 
 import config from '../../config'
 import { Fixture, testChild } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
 import ChildInformationPage from '../../pages/employee/child-information'
-import { IncomeSection } from '../../pages/employee/guardian-information'
+import type { IncomeSection } from '../../pages/employee/guardian-information'
 import { waitUntilEqual } from '../../utils'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'

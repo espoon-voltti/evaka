@@ -7,7 +7,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React from 'react'
 import styled from 'styled-components'
 
-import LocalDate from 'lib-common/local-date'
+import type LocalDate from 'lib-common/local-date'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { Td, Tr } from 'lib-components/layout/Table'
 import colors from 'lib-customizations/common'

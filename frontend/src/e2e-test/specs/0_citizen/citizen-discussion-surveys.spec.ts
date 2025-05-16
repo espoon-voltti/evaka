@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import FiniteDateRange from 'lib-common/finite-date-range'
-import {
+import type {
   CalendarEventId,
   CalendarEventTimeId,
   GroupId,
@@ -28,12 +28,13 @@ import {
   createDaycarePlacements,
   resetServiceState
 } from '../../generated/api-clients'
-import { DevCalendarEventTime, DevPerson } from '../../generated/api-types'
+import type { DevCalendarEventTime, DevPerson } from '../../generated/api-types'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
 import { DiscussionSurveyModal } from '../../pages/citizen/citizen-discussion-surveys'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import { waitUntilEqual } from '../../utils'
-import { envs, EnvType, Modal, Page } from '../../utils/page'
+import type { EnvType } from '../../utils/page'
+import { envs, Modal, Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
 
 let page: Page

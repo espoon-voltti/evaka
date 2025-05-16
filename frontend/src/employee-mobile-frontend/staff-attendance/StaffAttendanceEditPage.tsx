@@ -20,22 +20,18 @@ import {
   validated,
   value
 } from 'lib-common/form/form'
-import {
-  BoundForm,
-  useForm,
-  useFormElems,
-  useFormFields
-} from 'lib-common/form/hooks'
-import { StateOf } from 'lib-common/form/types'
-import {
+import type { BoundForm } from 'lib-common/form/hooks'
+import { useForm, useFormElems, useFormFields } from 'lib-common/form/hooks'
+import type { StateOf } from 'lib-common/form/types'
+import type {
   GroupInfo,
   StaffAttendanceType,
-  staffAttendanceTypes,
   StaffAttendanceUpsert,
   StaffMember,
   StaffMemberAttendance
 } from 'lib-common/generated/api-types/attendance'
-import {
+import { staffAttendanceTypes } from 'lib-common/generated/api-types/attendance'
+import type {
   EmployeeId,
   GroupId,
   StaffAttendanceRealtimeId
@@ -68,8 +64,9 @@ import { faLockAlt, faTrash, faArrowLeft } from 'lib-icons'
 import { routes } from '../App'
 import { renderResult } from '../async-rendering'
 import { FlexColumn } from '../common/components'
-import { Translations, useTranslation } from '../common/i18n'
-import { UnitOrGroup } from '../common/unit-or-group'
+import type { Translations } from '../common/i18n'
+import { useTranslation } from '../common/i18n'
+import type { UnitOrGroup } from '../common/unit-or-group'
 import { unitInfoQuery } from '../units/queries'
 
 import { StaffMemberPageContainer } from './components/StaffMemberPageContainer'

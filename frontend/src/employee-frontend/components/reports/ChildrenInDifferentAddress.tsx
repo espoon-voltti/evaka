@@ -6,7 +6,7 @@ import React, { useCallback, useMemo, useState } from 'react'
 import { Link } from 'react-router'
 import styled from 'styled-components'
 
-import { ChildrenInDifferentAddressReportRow } from 'lib-common/generated/api-types/reports'
+import type { ChildrenInDifferentAddressReportRow } from 'lib-common/generated/api-types/reports'
 import { useQueryResult } from 'lib-common/query'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'

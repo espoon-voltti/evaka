@@ -2,22 +2,16 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import {
+import type {
   AbsenceCategory,
   AbsenceType
 } from 'lib-common/generated/api-types/absence'
-import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type LocalDate from 'lib-common/local-date'
+import type { UUID } from 'lib-common/types'
 
 import { waitUntilEqual } from '../../../utils'
-import {
-  Checkbox,
-  Element,
-  Modal,
-  Radio,
-  TextInput,
-  Page
-} from '../../../utils/page'
+import type { Page } from '../../../utils/page'
+import { Checkbox, Element, Modal, Radio, TextInput } from '../../../utils/page'
 
 import { UnitCalendarPageBase } from './unit-calendar-page-base'
 

@@ -6,12 +6,12 @@ import React, { useMemo, useState } from 'react'
 import { Link } from 'react-router'
 import styled from 'styled-components'
 
-import {
+import type {
   ChildDocumentCitizenSummary,
-  DocumentType,
-  documentTypes
+  DocumentType
 } from 'lib-common/generated/api-types/document'
-import { ChildId } from 'lib-common/generated/api-types/shared'
+import { documentTypes } from 'lib-common/generated/api-types/document'
+import type { ChildId } from 'lib-common/generated/api-types/shared'
 import { useQuery, useQueryResult } from 'lib-common/query'
 import { tabletMin } from 'lib-components/breakpoints'
 import { ChildDocumentStateChip } from 'lib-components/document-templates/ChildDocumentStateChip'

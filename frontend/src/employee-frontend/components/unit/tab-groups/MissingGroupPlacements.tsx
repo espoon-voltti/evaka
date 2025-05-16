@@ -7,16 +7,16 @@ import React, { useContext, useMemo, useState } from 'react'
 import { Link } from 'react-router'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { Action } from 'lib-common/generated/action'
-import { UnitBackupCare } from 'lib-common/generated/api-types/backupcare'
-import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
-import {
+import type { Action } from 'lib-common/generated/action'
+import type { UnitBackupCare } from 'lib-common/generated/api-types/backupcare'
+import type { DaycareGroup } from 'lib-common/generated/api-types/daycare'
+import type {
   MissingBackupGroupPlacement,
   MissingGroupPlacement
 } from 'lib-common/generated/api-types/placement'
-import { DaycareId } from 'lib-common/generated/api-types/shared'
+import type { DaycareId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import PlacementCircle from 'lib-components/atoms/PlacementCircle'
 import Title from 'lib-components/atoms/Title'
 import { Button } from 'lib-components/atoms/buttons/Button'
@@ -26,7 +26,7 @@ import {
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import { Light } from 'lib-components/typography'
-import { Translations } from 'lib-customizations/employee'
+import type { Translations } from 'lib-customizations/employee'
 import { faArrowRight } from 'lib-icons'
 
 import GroupPlacementModal from '../../../components/unit/tab-groups/missing-group-placements/GroupPlacementModal'
@@ -38,7 +38,8 @@ import { NotificationCounter } from '../../UnitPage'
 import { AgeIndicatorChip } from '../../common/AgeIndicatorChip'
 import { CareTypeChip } from '../../common/CareTypeLabel'
 
-import { MissingPlacement, toMissingPlacements } from './types'
+import type { MissingPlacement } from './types'
+import { toMissingPlacements } from './types'
 
 function renderMissingGroupPlacementRow(
   missingPlacement: MissingPlacement,

@@ -2,10 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Result } from 'lib-common/api'
-import { ActiveQuestionnaire } from 'lib-common/generated/api-types/holidayperiod'
+import type { Result } from 'lib-common/api'
+import type { ActiveQuestionnaire } from 'lib-common/generated/api-types/holidayperiod'
 
-import { User } from '../auth/state'
+import type { User } from '../auth/state'
 
 export type QuestionnaireAvailability = boolean | 'with-strong-auth'
 

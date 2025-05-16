@@ -5,7 +5,7 @@
 import React, { useCallback, useState } from 'react'
 import { Link } from 'react-router'
 
-import { AssistanceNeedPreschoolDecisionCitizenListItem } from 'lib-common/generated/api-types/assistanceneed'
+import type { AssistanceNeedPreschoolDecisionCitizenListItem } from 'lib-common/generated/api-types/assistanceneed'
 import { AssistanceNeedDecisionStatusChip } from 'lib-components/assistance-need-decision/AssistanceNeedDecisionStatusChip'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'

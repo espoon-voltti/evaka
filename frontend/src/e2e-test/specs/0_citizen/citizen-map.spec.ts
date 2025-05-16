@@ -16,7 +16,7 @@ import {
   putDigitransitAutocomplete,
   resetServiceState
 } from '../../generated/api-clients'
-import {
+import type {
   DevDaycare,
   Feature as DigitransitFeature
 } from '../../generated/api-types'

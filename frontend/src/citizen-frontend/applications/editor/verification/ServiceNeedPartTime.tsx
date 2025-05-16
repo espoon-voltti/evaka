@@ -4,7 +4,7 @@
 
 import React from 'react'
 
-import { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
+import type { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
 import { Label } from 'lib-components/typography'
 import { featureFlags } from 'lib-customizations/citizen'
 

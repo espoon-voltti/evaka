@@ -5,9 +5,9 @@
 import React, { useState } from 'react'
 
 import { required, validate } from 'lib-common/form-validation'
-import { Decision } from 'lib-common/generated/api-types/decision'
-import { ApplicationId } from 'lib-common/generated/api-types/shared'
-import LocalDate from 'lib-common/local-date'
+import type { Decision } from 'lib-common/generated/api-types/decision'
+import type { ApplicationId } from 'lib-common/generated/api-types/shared'
+import type LocalDate from 'lib-common/local-date'
 import {
   cancelMutation,
   first,

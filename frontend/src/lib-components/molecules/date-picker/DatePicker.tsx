@@ -4,16 +4,16 @@
 
 import React, { useCallback, useRef, useState } from 'react'
 
-import { LocalDateField } from 'lib-common/form/fields'
-import { BoundForm, useFormFields } from 'lib-common/form/hooks'
+import type { LocalDateField } from 'lib-common/form/fields'
+import type { BoundForm } from 'lib-common/form/hooks'
+import { useFormFields } from 'lib-common/form/hooks'
 import LocalDate from 'lib-common/local-date'
 
-import { InputInfo } from '../../atoms/form/InputField'
+import type { InputInfo } from '../../atoms/form/InputField'
 import { useTranslations } from '../../i18n'
 
-import DatePickerLowLevel, {
-  DatePickerLowLevelProps
-} from './DatePickerLowLevel'
+import type { DatePickerLowLevelProps } from './DatePickerLowLevel'
+import DatePickerLowLevel from './DatePickerLowLevel'
 
 export interface DatePickerProps
   extends Omit<DatePickerLowLevelProps, 'value' | 'onChange'> {

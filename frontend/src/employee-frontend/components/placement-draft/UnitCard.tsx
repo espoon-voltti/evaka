@@ -3,15 +3,20 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, { Dispatch, SetStateAction, useCallback, useMemo } from 'react'
+import type { Dispatch, SetStateAction } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import { Link } from 'react-router'
 import styled from 'styled-components'
 
-import { isLoading, Result } from 'lib-common/api'
-import FiniteDateRange from 'lib-common/finite-date-range'
-import { PublicUnit } from 'lib-common/generated/api-types/daycare'
-import { OccupancyResponseSpeculated } from 'lib-common/generated/api-types/occupancy'
-import { ApplicationId, DaycareId } from 'lib-common/generated/api-types/shared'
+import type { Result } from 'lib-common/api'
+import { isLoading } from 'lib-common/api'
+import type FiniteDateRange from 'lib-common/finite-date-range'
+import type { PublicUnit } from 'lib-common/generated/api-types/daycare'
+import type { OccupancyResponseSpeculated } from 'lib-common/generated/api-types/occupancy'
+import type {
+  ApplicationId,
+  DaycareId
+} from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 import { SelectionChip } from 'lib-components/atoms/Chip'
@@ -26,7 +31,7 @@ import { renderResult } from '../async-rendering'
 import WarningLabel from '../common/WarningLabel'
 import { unitSpeculatedOccupancyRatesQuery } from '../unit/queries'
 
-import { DaycarePlacementPlanForm } from './PlacementDraft'
+import type { DaycarePlacementPlanForm } from './PlacementDraft'
 
 const Numbers = styled.div`
   display: flex;

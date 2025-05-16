@@ -3,34 +3,34 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import type { LatLngExpression } from 'leaflet'
-import React from 'react'
+import type React from 'react'
 
-import { AbsenceType } from 'lib-common/generated/api-types/absence'
-import { ApplicationType } from 'lib-common/generated/api-types/application'
-import {
+import type { AbsenceType } from 'lib-common/generated/api-types/absence'
+import type { ApplicationType } from 'lib-common/generated/api-types/application'
+import type {
   DaycareAssistanceLevel,
   OtherAssistanceMeasureType,
   PreschoolAssistanceLevel
 } from 'lib-common/generated/api-types/assistance'
-import { ProviderType } from 'lib-common/generated/api-types/daycare'
-import { VoucherValueDecisionType } from 'lib-common/generated/api-types/invoicing'
-import {
+import type { ProviderType } from 'lib-common/generated/api-types/daycare'
+import type { VoucherValueDecisionType } from 'lib-common/generated/api-types/invoicing'
+import type {
   PlacementPlanRejectReason,
   PlacementType
 } from 'lib-common/generated/api-types/placement'
-import LocalDate from 'lib-common/local-date'
-import { Theme } from 'lib-common/theme'
-import { DeepReadonly } from 'lib-common/types'
+import type LocalDate from 'lib-common/local-date'
+import type { Theme } from 'lib-common/theme'
+import type { DeepReadonly } from 'lib-common/types'
 
-import {
+import type {
   Lang as LangCitizen,
   Translations as TranslationsCitizen
 } from './citizen'
-import {
+import type {
   Lang as LangEmployee,
   Translations as TranslationsEmployee
 } from './employee'
-import {
+import type {
   Lang as LangEmployeeMobile,
   Translations as TranslationsEmployeeMobile
 } from './employeeMobile'

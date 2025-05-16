@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
+import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import classNames from 'classnames'
 import React from 'react'
 import styled, { css } from 'styled-components'
@@ -10,7 +10,7 @@ import styled, { css } from 'styled-components'
 import { defaultMargins } from 'lib-components/white-space'
 
 import { tabletMin } from '../../breakpoints'
-import { BaseProps } from '../../utils'
+import type { BaseProps } from '../../utils'
 
 import { buttonBorderRadius, defaultButtonTextStyle } from './button-commons'
 

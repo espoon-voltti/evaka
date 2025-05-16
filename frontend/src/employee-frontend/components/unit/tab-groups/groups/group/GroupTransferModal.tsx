@@ -4,10 +4,10 @@
 
 import React, { useContext, useState } from 'react'
 
-import { UpdateStateFn } from 'lib-common/form-state'
-import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
-import { DaycareId } from 'lib-common/generated/api-types/shared'
-import LocalDate from 'lib-common/local-date'
+import type { UpdateStateFn } from 'lib-common/form-state'
+import type { DaycareGroup } from 'lib-common/generated/api-types/daycare'
+import type { DaycareId } from 'lib-common/generated/api-types/shared'
+import type LocalDate from 'lib-common/local-date'
 import { cancelMutation } from 'lib-components/atoms/buttons/MutateButton'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
@@ -17,7 +17,7 @@ import { faExchange } from 'lib-icons'
 
 import { useTranslation } from '../../../../../state/i18n'
 import { UIContext } from '../../../../../state/ui'
-import { DaycareGroupPlacementDetailed } from '../../../../../types/unit'
+import type { DaycareGroupPlacementDetailed } from '../../../../../types/unit'
 import { formatName } from '../../../../../utils'
 import { transferGroupMutation } from '../../../queries'
 

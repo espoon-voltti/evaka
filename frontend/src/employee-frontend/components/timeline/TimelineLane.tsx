@@ -5,13 +5,13 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import DateRange from 'lib-common/date-range'
-import FiniteDateRange from 'lib-common/finite-date-range'
+import type DateRange from 'lib-common/date-range'
+import type FiniteDateRange from 'lib-common/finite-date-range'
 import { maxOf, minOf } from 'lib-common/ordered'
 
 import TlEvent from './TimelineEvent'
-import { WithRange } from './common'
-import { EventRenderer } from './renderers'
+import type { WithRange } from './common'
+import type { EventRenderer } from './renderers'
 
 const TlLaneWrapper = styled.div`
   width: 100%;

@@ -17,32 +17,33 @@ import React, {
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router'
 import styled from 'styled-components'
 
-import { combine, Result, wrapResult } from 'lib-common/api'
+import type { Result } from 'lib-common/api'
+import { combine, wrapResult } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import {
+import type {
   CalendarEvent,
   GroupInfo,
   IndividualChild
 } from 'lib-common/generated/api-types/calendarevent'
-import { DaycareResponse } from 'lib-common/generated/api-types/daycare'
-import { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
-import {
+import type { DaycareResponse } from 'lib-common/generated/api-types/daycare'
+import type { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
+import type {
   ChildId,
   DaycareId,
   GroupId
 } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { Button } from 'lib-components/atoms/buttons/Button'
+import type { TreeNode } from 'lib-components/atoms/dropdowns/TreeDropdown'
 import TreeDropdown, {
-  hasUncheckedChildren,
-  TreeNode
+  hasUncheckedChildren
 } from 'lib-components/atoms/dropdowns/TreeDropdown'
 import InputField from 'lib-components/atoms/form/InputField'
 import TextArea from 'lib-components/atoms/form/TextArea'
@@ -67,7 +68,7 @@ import {
   modifyCalendarEvent
 } from '../../../generated/api-clients/calendarevent'
 import { useTranslation } from '../../../state/i18n'
-import { DayOfWeek } from '../../../types'
+import type { DayOfWeek } from '../../../types'
 import { formatPersonName } from '../../../utils'
 import { renderResult } from '../../async-rendering'
 import { unitGroupDetailsQuery, daycareQuery } from '../queries'

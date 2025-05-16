@@ -2,16 +2,16 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
+import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useRef, useState } from 'react'
 import styled from 'styled-components'
 
-import { Failure, Result, Success } from 'lib-common/api'
-import { Attachment } from 'lib-common/generated/api-types/attachment'
-import { AttachmentId } from 'lib-common/generated/api-types/shared'
+import type { Failure, Result, Success } from 'lib-common/api'
+import type { Attachment } from 'lib-common/generated/api-types/attachment'
+import type { AttachmentId } from 'lib-common/generated/api-types/shared'
 import { randomId } from 'lib-common/id-type'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import { useUniqueId } from 'lib-common/utils/useUniqueId'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'

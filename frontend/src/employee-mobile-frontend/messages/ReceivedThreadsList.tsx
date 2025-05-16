@@ -6,15 +6,15 @@ import React, { useCallback, useContext } from 'react'
 import styled from 'styled-components'
 
 import { formatDateOrTime } from 'lib-common/date'
-import {
+import type {
   AuthorizedMessageAccount,
   MessageAccount,
   MessageThread
 } from 'lib-common/generated/api-types/messaging'
-import { ChildId } from 'lib-common/generated/api-types/shared'
+import type { ChildId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { useMutation, usePagedInfiniteQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import { OnEnterView } from 'lib-components/OnEnterView'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'

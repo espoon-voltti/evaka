@@ -4,14 +4,16 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
-import React, { ReactNode } from 'react'
+import type { ReactNode } from 'react'
+import React from 'react'
 import styled, { useTheme } from 'styled-components'
 
 import { faChevronDown, faChevronUp } from 'lib-icons'
 
 import RoundIcon from '../atoms/RoundIcon'
 import { desktopMin } from '../breakpoints'
-import { defaultMargins, Gap, isSpacingSize, SpacingSize } from '../white-space'
+import type { SpacingSize } from '../white-space'
+import { defaultMargins, Gap, isSpacingSize } from '../white-space'
 
 export const Container = styled.div<{ verticalMargin?: string }>`
   margin: ${({ verticalMargin }) => (verticalMargin ? verticalMargin : '0')}

@@ -4,10 +4,10 @@
 
 import React, { useMemo, useState } from 'react'
 
-import { Action } from 'lib-common/generated/action'
-import { DaycareGroupResponse } from 'lib-common/generated/api-types/daycare'
-import { Employee } from 'lib-common/generated/api-types/pis'
-import {
+import type { Action } from 'lib-common/generated/action'
+import type { DaycareGroupResponse } from 'lib-common/generated/api-types/daycare'
+import type { Employee } from 'lib-common/generated/api-types/pis'
+import type {
   DaycareId,
   EmployeeId,
   ScheduledDaycareAclRow
@@ -26,7 +26,7 @@ import { Label } from 'lib-components/typography'
 import { useTranslation } from '../../../../state/i18n'
 import { formatName } from '../../../../utils'
 import { addFullAclForRoleMutation } from '../../queries'
-import { DaycareAclRole } from '../UnitAccessControl'
+import type { DaycareAclRole } from '../UnitAccessControl'
 
 import { useGroupOptions } from './common'
 

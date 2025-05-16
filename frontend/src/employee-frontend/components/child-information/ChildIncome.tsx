@@ -4,7 +4,7 @@
 
 import React, { useContext } from 'react'
 
-import { ChildId } from 'lib-common/generated/api-types/shared'
+import type { ChildId } from 'lib-common/generated/api-types/shared'
 import { H3, H4 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 

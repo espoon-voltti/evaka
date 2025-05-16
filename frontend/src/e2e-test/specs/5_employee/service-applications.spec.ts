@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
+import type { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
 import { evakaUserId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
@@ -16,7 +16,7 @@ import {
   testDaycare
 } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
-import { DevEmployee } from '../../generated/api-types'
+import type { DevEmployee } from '../../generated/api-types'
 import { CitizenChildPage } from '../../pages/citizen/citizen-children'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import { CitizenNewServiceApplicationPage } from '../../pages/citizen/citizen-new-service-application'

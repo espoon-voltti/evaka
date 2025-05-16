@@ -4,16 +4,18 @@
 
 import React, { useCallback, useMemo } from 'react'
 
-import { GroupNote } from 'lib-common/generated/api-types/note'
-import { GroupId, GroupNoteId } from 'lib-common/generated/api-types/shared'
+import type { GroupNote } from 'lib-common/generated/api-types/note'
+import type {
+  GroupId,
+  GroupNoteId
+} from 'lib-common/generated/api-types/shared'
 import { useMutationResult } from 'lib-common/query'
-import {
-  StickyNoteTab,
-  StickyNoteTabLabels
-} from 'lib-components/employee/notes/StickyNoteTab'
-import { EditedNote } from 'lib-components/employee/notes/notes'
+import type { StickyNoteTabLabels } from 'lib-components/employee/notes/StickyNoteTab'
+import { StickyNoteTab } from 'lib-components/employee/notes/StickyNoteTab'
+import type { EditedNote } from 'lib-components/employee/notes/notes'
 
-import { Translations, useTranslation } from '../common/i18n'
+import type { Translations } from '../common/i18n'
+import { useTranslation } from '../common/i18n'
 
 import {
   createGroupNoteMutation,

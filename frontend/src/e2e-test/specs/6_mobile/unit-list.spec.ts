@@ -11,7 +11,7 @@ import {
   testPreschool
 } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
-import { DevDaycare, DevDaycareGroup } from '../../generated/api-types'
+import type { DevDaycare, DevDaycareGroup } from '../../generated/api-types'
 import UnitListPage from '../../pages/mobile/unit-list-page'
 import { pairPersonalMobileDevice } from '../../utils/mobile'
 import { Page } from '../../utils/page'

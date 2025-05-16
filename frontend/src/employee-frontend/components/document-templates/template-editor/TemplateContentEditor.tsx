@@ -14,10 +14,8 @@ import {
   useFormField,
   useFormFields
 } from 'lib-common/form/hooks'
-import {
-  DocumentTemplate,
-  documentTypes
-} from 'lib-common/generated/api-types/document'
+import type { DocumentTemplate } from 'lib-common/generated/api-types/document'
+import { documentTypes } from 'lib-common/generated/api-types/document'
 import { uiLanguages } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useMutationResult } from 'lib-common/query'

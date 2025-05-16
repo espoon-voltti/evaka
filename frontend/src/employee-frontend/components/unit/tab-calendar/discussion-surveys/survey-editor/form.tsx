@@ -4,7 +4,7 @@
 
 import orderBy from 'lodash/orderBy'
 
-import FiniteDateRange from 'lib-common/finite-date-range'
+import type FiniteDateRange from 'lib-common/finite-date-range'
 import { boolean, requiredLocalTimeRange, string } from 'lib-common/form/fields'
 import {
   array,
@@ -14,15 +14,15 @@ import {
   validated,
   value
 } from 'lib-common/form/form'
-import { Form } from 'lib-common/form/types'
-import {
+import type { Form } from 'lib-common/form/types'
+import type {
   CalendarEvent,
   IndividualChild
 } from 'lib-common/generated/api-types/calendarevent'
-import { UnitGroupDetails } from 'lib-common/generated/api-types/daycare'
-import { GroupId, PersonId } from 'lib-common/generated/api-types/shared'
-import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { UnitGroupDetails } from 'lib-common/generated/api-types/daycare'
+import type { GroupId, PersonId } from 'lib-common/generated/api-types/shared'
+import type LocalDate from 'lib-common/local-date'
+import type { UUID } from 'lib-common/types'
 
 import { getCombinedChildPlacementsForGroup } from '../DiscussionSurveyView'
 

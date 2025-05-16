@@ -3,9 +3,10 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import config from '../config'
-import { DevPerson } from '../generated/api-types'
+import type { DevPerson } from '../generated/api-types'
 
-import { Page, TextInput } from './page'
+import type { Page } from './page'
+import { TextInput } from './page'
 
 export async function enduserLogin(page: Page, person: DevPerson) {
   if (!person.ssn) {

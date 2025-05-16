@@ -5,13 +5,14 @@
 import React, { useCallback, useContext, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import { Failure, Loading, Result, Success, wrapResult } from 'lib-common/api'
-import {
+import type { Result } from 'lib-common/api'
+import { Failure, Loading, Success, wrapResult } from 'lib-common/api'
+import type {
   MessageAccount,
   MessageThread,
   MessageThreadFolder
 } from 'lib-common/generated/api-types/messaging'
-import {
+import type {
   MessageAccountId,
   MessageThreadId
 } from 'lib-common/generated/api-types/shared'
@@ -30,8 +31,10 @@ import { useTranslation } from '../../state/i18n'
 
 import { MessageContext } from './MessageContext'
 import { SingleThreadView } from './SingleThreadView'
-import { ThreadList, ThreadListItem } from './ThreadList'
-import { isFolderView, isStandardView, View } from './types-view'
+import type { ThreadListItem } from './ThreadList'
+import { ThreadList } from './ThreadList'
+import type { View } from './types-view'
+import { isFolderView, isStandardView } from './types-view'
 
 const moveThreadToFolderResult = wrapResult(moveThreadToFolder)
 

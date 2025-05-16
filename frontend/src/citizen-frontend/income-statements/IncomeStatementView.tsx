@@ -6,14 +6,14 @@ import React, { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
-import {
+import type {
   Accountant,
   Entrepreneur,
-  EstimatedIncome,
   Gross,
   IncomeStatement
 } from 'lib-common/generated/api-types/incomestatement'
-import { IncomeStatementId } from 'lib-common/generated/api-types/shared'
+import { EstimatedIncome } from 'lib-common/generated/api-types/incomestatement'
+import type { IncomeStatementId } from 'lib-common/generated/api-types/shared'
 import {
   collectAttachmentIds,
   toIncomeStatementAttachments

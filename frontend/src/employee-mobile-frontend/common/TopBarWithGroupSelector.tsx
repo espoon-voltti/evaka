@@ -6,16 +6,16 @@ import React, { useContext, useMemo } from 'react'
 import { useNavigate } from 'react-router'
 
 import { combine } from 'lib-common/api'
-import { GroupInfo } from 'lib-common/generated/api-types/attendance'
-import { DaycareId } from 'lib-common/generated/api-types/shared'
+import type { GroupInfo } from 'lib-common/generated/api-types/attendance'
+import type { DaycareId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import { Gap } from 'lib-components/white-space'
 
 import { UserContext } from '../auth/state'
 import { unitInfoQuery } from '../units/queries'
 
-import { CountInfo } from './GroupSelector'
+import type { CountInfo } from './GroupSelector'
 import { GroupSelectorBar } from './GroupSelectorBar'
 import TopBar from './TopBar'
 

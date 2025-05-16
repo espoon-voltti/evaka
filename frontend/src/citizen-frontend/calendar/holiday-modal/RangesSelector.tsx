@@ -4,15 +4,12 @@
 
 import React, { useCallback, useContext } from 'react'
 
-import FiniteDateRange from 'lib-common/finite-date-range'
+import type FiniteDateRange from 'lib-common/finite-date-range'
 import { localDateRange } from 'lib-common/form/fields'
 import { array, object, required, transformed } from 'lib-common/form/form'
 import { useForm, useFormElems, useFormFields } from 'lib-common/form/hooks'
-import {
-  StateOf,
-  ValidationError,
-  ValidationSuccess
-} from 'lib-common/form/types'
+import type { StateOf } from 'lib-common/form/types'
+import { ValidationError, ValidationSuccess } from 'lib-common/form/types'
 import LocalDate from 'lib-common/local-date'
 import UnderRowStatusIcon from 'lib-components/atoms/StatusIcon'
 import { Button } from 'lib-components/atoms/buttons/Button'

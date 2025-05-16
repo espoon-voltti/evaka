@@ -19,18 +19,15 @@ import {
   value
 } from 'lib-common/form/form'
 import { useForm, useFormField } from 'lib-common/form/hooks'
-import {
-  StateOf,
-  ValidationError,
-  ValidationSuccess
-} from 'lib-common/form/types'
-import { ExternalAttendanceBody } from 'lib-common/generated/api-types/attendance'
-import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
-import { DaycareId, GroupId } from 'lib-common/generated/api-types/shared'
+import type { StateOf } from 'lib-common/form/types'
+import { ValidationError, ValidationSuccess } from 'lib-common/form/types'
+import type { ExternalAttendanceBody } from 'lib-common/generated/api-types/attendance'
+import type { DaycareGroup } from 'lib-common/generated/api-types/daycare'
+import type { DaycareId, GroupId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import StatusIcon from 'lib-components/atoms/StatusIcon'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { SelectF } from 'lib-components/atoms/dropdowns/Select'

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { PasswordConstraints } from './generated/api-types/shared'
+import type { PasswordConstraints } from './generated/api-types/shared'
 
 export function isPasswordStructureValid(
   constraints: PasswordConstraints,

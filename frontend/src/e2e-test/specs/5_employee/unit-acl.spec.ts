@@ -2,18 +2,15 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { DaycareId, GroupId } from 'lib-common/generated/api-types/shared'
+import type { DaycareId, GroupId } from 'lib-common/generated/api-types/shared'
 import { randomId } from 'lib-common/id-type'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 
 import { testDaycare, Fixture, testCareArea } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
-import { DevEmployee } from '../../generated/api-types'
-import {
-  AclRole,
-  UnitInfoPage,
-  UnitPage
-} from '../../pages/employee/units/unit'
+import type { DevEmployee } from '../../generated/api-types'
+import type { AclRole, UnitInfoPage } from '../../pages/employee/units/unit'
+import { UnitPage } from '../../pages/employee/units/unit'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 

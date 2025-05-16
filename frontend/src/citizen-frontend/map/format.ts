@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { CareType } from 'lib-common/generated/api-types/daycare'
-import { Translations } from 'lib-customizations/citizen'
+import type { CareType } from 'lib-common/generated/api-types/daycare'
+import type { Translations } from 'lib-customizations/citizen'
 
 export function formatCareType(t: Translations, type: CareType): string {
   switch (type) {

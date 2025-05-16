@@ -2,9 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { DevChild } from '../../generated/api-types'
+import type { DevChild } from '../../generated/api-types'
 import { waitUntilEqual } from '../../utils'
-import { Page, Element, ElementCollection } from '../../utils/page'
+import type { Page, Element, ElementCollection } from '../../utils/page'
 
 export default class MobileChildPage {
   childName: Element

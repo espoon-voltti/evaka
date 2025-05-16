@@ -4,11 +4,11 @@
 
 import React, { useCallback, useContext, useMemo, useState } from 'react'
 
-import {
+import type {
   SearchVoucherValueDecisionRequest,
   VoucherValueDecisionSortParam
 } from 'lib-common/generated/api-types/invoicing'
-import { VoucherValueDecisionId } from 'lib-common/generated/api-types/shared'
+import type { VoucherValueDecisionId } from 'lib-common/generated/api-types/shared'
 import {
   constantQuery,
   useMutationResult,
@@ -19,7 +19,7 @@ import { Gap } from 'lib-components/white-space'
 
 import { useCheckedState } from '../../state/invoicing'
 import { InvoicingUiContext } from '../../state/invoicing-ui'
-import { SearchOrder } from '../../types'
+import type { SearchOrder } from '../../types'
 import { renderResult } from '../async-rendering'
 import FinanceDecisionHandlerSelectModal from '../finance-decisions/FinanceDecisionHandlerSelectModal'
 

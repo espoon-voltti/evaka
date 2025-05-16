@@ -10,7 +10,7 @@ import LocalTime from 'lib-common/local-time'
 import { mobileViewport } from '../../browser'
 import { testDaycare2, testDaycareGroup, Fixture } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
-import {
+import type {
   DevCareArea,
   DevDaycareGroup,
   DevEmployee

@@ -4,13 +4,14 @@
 
 import React from 'react'
 
-import { Result, wrapResult } from 'lib-common/api'
-import { MessageType } from 'lib-common/generated/api-types/messaging'
-import {
+import type { Result } from 'lib-common/api'
+import { wrapResult } from 'lib-common/api'
+import type { MessageType } from 'lib-common/generated/api-types/messaging'
+import type {
   MessageAccountId,
   MessageThreadId
 } from 'lib-common/generated/api-types/shared'
-import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import type HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { MessageCharacteristics } from 'lib-components/messages/MessageCharacteristics'
 

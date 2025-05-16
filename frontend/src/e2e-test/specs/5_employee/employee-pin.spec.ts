@@ -5,7 +5,7 @@
 import config from '../../config'
 import { Fixture } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
-import { DevEmployee } from '../../generated/api-types'
+import type { DevEmployee } from '../../generated/api-types'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import { EmployeePinPage } from '../../pages/employee/employee-pin'
 import { Page } from '../../utils/page'

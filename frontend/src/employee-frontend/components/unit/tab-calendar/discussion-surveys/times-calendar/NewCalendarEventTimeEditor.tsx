@@ -5,9 +5,10 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import { BoundForm, useFormField, useFormFields } from 'lib-common/form/hooks'
-import { CalendarEventTimeForm } from 'lib-common/generated/api-types/calendarevent'
-import { UUID } from 'lib-common/types'
+import type { BoundForm } from 'lib-common/form/hooks'
+import { useFormField, useFormFields } from 'lib-common/form/hooks'
+import type { CalendarEventTimeForm } from 'lib-common/generated/api-types/calendarevent'
+import type { UUID } from 'lib-common/types'
 import LegacyInlineButton from 'lib-components/atoms/buttons/LegacyInlineButton'
 import { TimeInputF } from 'lib-components/atoms/form/TimeInput'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'

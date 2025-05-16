@@ -6,10 +6,10 @@ import React from 'react'
 import { Link } from 'react-router'
 import styled from 'styled-components'
 
-import DateRange from 'lib-common/date-range'
+import type DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { CreationModificationMetadata } from 'lib-common/generated/api-types/pis'
-import {
+import type { CreationModificationMetadata } from 'lib-common/generated/api-types/pis'
+import type {
   TimelineChildDetailed,
   TimelineFeeAlteration,
   TimelineFeeDecision,
@@ -19,7 +19,7 @@ import {
   TimelineServiceNeed,
   TimelineValueDecision
 } from 'lib-common/generated/api-types/timeline'
-import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import type HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { formatCents } from 'lib-common/money'
 import { maxOf, minOf } from 'lib-common/ordered'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
@@ -28,7 +28,7 @@ import { Gap } from 'lib-components/white-space'
 import { useTranslation } from '../../state/i18n'
 
 import TimelineGroup from './TimelineGroup'
-import { WithRange } from './common'
+import type { WithRange } from './common'
 
 type SummaryRenderer<T extends WithRange> = (props: {
   elem: T

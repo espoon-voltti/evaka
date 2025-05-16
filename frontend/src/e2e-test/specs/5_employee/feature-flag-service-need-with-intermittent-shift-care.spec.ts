@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { ServiceNeedOption } from 'lib-common/generated/api-types/application'
-import { PersonId } from 'lib-common/generated/api-types/shared'
+import type { ServiceNeedOption } from 'lib-common/generated/api-types/application'
+import type { PersonId } from 'lib-common/generated/api-types/shared'
 
 import config from '../../config'
 import {
@@ -13,7 +13,7 @@ import {
   testDaycare
 } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
-import { DevEmployee, DevPlacement } from '../../generated/api-types'
+import type { DevEmployee, DevPlacement } from '../../generated/api-types'
 import ChildInformationPage from '../../pages/employee/child-information'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'

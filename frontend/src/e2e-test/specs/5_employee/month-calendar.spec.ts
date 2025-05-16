@@ -24,7 +24,7 @@ import {
   postReservations,
   resetServiceState
 } from '../../generated/api-clients'
-import { DevDaycareGroup, DevEmployee } from '../../generated/api-types'
+import type { DevDaycareGroup, DevEmployee } from '../../generated/api-types'
 import { UnitPage } from '../../pages/employee/units/unit'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'

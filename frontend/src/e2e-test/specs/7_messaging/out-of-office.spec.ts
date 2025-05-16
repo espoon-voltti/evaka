@@ -18,7 +18,7 @@ import {
   createMessageAccounts,
   resetServiceState
 } from '../../generated/api-clients'
-import { DevEmployee } from '../../generated/api-types'
+import type { DevEmployee } from '../../generated/api-types'
 import CitizenMessagesPage from '../../pages/citizen/citizen-messages'
 import { OutOfOfficePage } from '../../pages/employee/messages/out-of-office-page'
 import { Page } from '../../utils/page'

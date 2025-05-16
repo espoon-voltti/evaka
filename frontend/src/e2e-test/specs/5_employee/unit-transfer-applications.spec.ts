@@ -2,8 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { TransferApplicationUnitSummary } from 'lib-common/generated/api-types/application'
-import { ApplicationId, DaycareId } from 'lib-common/generated/api-types/shared'
+import type { TransferApplicationUnitSummary } from 'lib-common/generated/api-types/application'
+import type {
+  ApplicationId,
+  DaycareId
+} from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
@@ -13,7 +16,11 @@ import {
   createApplications,
   resetServiceState
 } from '../../generated/api-clients'
-import { DevCareArea, DevDaycare, DevEmployee } from '../../generated/api-types'
+import type {
+  DevCareArea,
+  DevDaycare,
+  DevEmployee
+} from '../../generated/api-types'
 import { UnitPage } from '../../pages/employee/units/unit'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'

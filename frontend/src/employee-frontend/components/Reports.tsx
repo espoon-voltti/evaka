@@ -3,7 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import sortBy from 'lodash/sortBy'
-import React, { Fragment, ReactNode, useContext, useMemo } from 'react'
+import type { ReactNode } from 'react'
+import React, { Fragment, useContext, useMemo } from 'react'
 import { Link } from 'react-router'
 import styled from 'styled-components'
 

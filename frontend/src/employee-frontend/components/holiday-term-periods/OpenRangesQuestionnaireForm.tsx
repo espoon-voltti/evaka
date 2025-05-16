@@ -5,19 +5,19 @@
 import React, { useCallback, useMemo, useState } from 'react'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { UpdateStateFn } from 'lib-common/form-state'
+import type { UpdateStateFn } from 'lib-common/form-state'
+import type { ErrorKey } from 'lib-common/form-validation'
 import {
-  ErrorKey,
   httpUrl,
   required,
   validate,
   validateIf
 } from 'lib-common/form-validation'
-import {
+import type {
   HolidayQuestionnaire,
   QuestionnaireBody
 } from 'lib-common/generated/api-types/holidayperiod'
-import LocalDate from 'lib-common/local-date'
+import type LocalDate from 'lib-common/local-date'
 import { useMutationResult } from 'lib-common/query'
 import { SelectionChip } from 'lib-components/atoms/Chip'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'

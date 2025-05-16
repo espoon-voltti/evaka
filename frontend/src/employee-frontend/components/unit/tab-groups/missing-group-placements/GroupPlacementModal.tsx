@@ -6,10 +6,10 @@ import React, { useContext, useState } from 'react'
 import styled from 'styled-components'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { UpdateStateFn } from 'lib-common/form-state'
-import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
-import { DaycareId, GroupId } from 'lib-common/generated/api-types/shared'
-import LocalDate from 'lib-common/local-date'
+import type { UpdateStateFn } from 'lib-common/form-state'
+import type { DaycareGroup } from 'lib-common/generated/api-types/daycare'
+import type { DaycareId, GroupId } from 'lib-common/generated/api-types/shared'
+import type LocalDate from 'lib-common/local-date'
 import { first, second, useSelectMutation } from 'lib-common/query'
 import { cancelMutation } from 'lib-components/atoms/buttons/MutateButton'
 import Select from 'lib-components/atoms/dropdowns/Select'
@@ -25,7 +25,7 @@ import { UIContext } from '../../../../state/ui'
 import { formatName } from '../../../../utils'
 import { updateBackupCareMutation } from '../../../child-information/queries'
 import { createGroupPlacementMutation } from '../../queries'
-import { MissingPlacement } from '../types'
+import type { MissingPlacement } from '../types'
 
 const FieldWrapper = styled.section`
   display: flex;

@@ -8,15 +8,11 @@ import { v4 as uuidv4 } from 'uuid'
 
 import { string } from 'lib-common/form/fields'
 import { array, mapped, object, validated, value } from 'lib-common/form/form'
-import {
-  BoundForm,
-  useForm,
-  useFormElems,
-  useFormFields
-} from 'lib-common/form/hooks'
-import { StateOf } from 'lib-common/form/types'
+import type { BoundForm } from 'lib-common/form/hooks'
+import { useForm, useFormElems, useFormFields } from 'lib-common/form/hooks'
+import type { StateOf } from 'lib-common/form/types'
 import { nonBlank } from 'lib-common/form/validators'
-import {
+import type {
   AnsweredQuestion,
   Question,
   QuestionType
@@ -36,7 +32,10 @@ import { faPlus, faTrash } from 'lib-icons'
 import { TextAreaF } from '../../atoms/form/TextArea'
 import { useTranslations } from '../../i18n'
 
-import { DocumentQuestionDescriptor, TemplateQuestionDescriptor } from './types'
+import type {
+  DocumentQuestionDescriptor,
+  TemplateQuestionDescriptor
+} from './types'
 
 const questionType: QuestionType = 'RADIO_BUTTON_GROUP'
 

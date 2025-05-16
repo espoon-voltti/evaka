@@ -4,7 +4,7 @@
 
 import React, { Fragment } from 'react'
 
-import { AbsenceType } from 'lib-common/generated/api-types/absence'
+import type { AbsenceType } from 'lib-common/generated/api-types/absence'
 import { ChipWrapper, SelectionChip } from 'lib-components/atoms/Chip'
 import { Gap } from 'lib-components/white-space'
 

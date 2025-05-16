@@ -3,9 +3,10 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { SSN_REGEXP } from 'lib-common/form-validation'
-import LocalDate from 'lib-common/local-date'
+import type LocalDate from 'lib-common/local-date'
 
-import { DateRange, rangesOverlap } from '../date'
+import type { DateRange } from '../date'
+import { rangesOverlap } from '../date'
 
 export const EMAIL_REGEX = /^([\w.%+-]+)@([\w-]+\.)+([\w]{2,})$/i
 

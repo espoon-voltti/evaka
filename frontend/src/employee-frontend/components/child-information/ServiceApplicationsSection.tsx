@@ -10,13 +10,13 @@ import { boolean } from 'lib-common/form/fields'
 import { object, oneOf, required, validated, value } from 'lib-common/form/form'
 import { useBoolean, useForm, useFormFields } from 'lib-common/form/hooks'
 import { nonBlank } from 'lib-common/form/validators'
-import {
+import type {
   EmployeeServiceApplication,
   ServiceApplication,
-  shiftCareType,
   ShiftCareType
 } from 'lib-common/generated/api-types/serviceneed'
-import { ChildId } from 'lib-common/generated/api-types/shared'
+import { shiftCareType } from 'lib-common/generated/api-types/serviceneed'
+import type { ChildId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import Checkbox, { CheckboxF } from 'lib-components/atoms/form/Checkbox'

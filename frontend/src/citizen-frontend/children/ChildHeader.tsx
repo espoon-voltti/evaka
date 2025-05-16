@@ -5,7 +5,7 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import { ChildAndPermittedActions } from 'lib-common/generated/api-types/children'
+import type { ChildAndPermittedActions } from 'lib-common/generated/api-types/children'
 import { RoundImage } from 'lib-components/atoms/RoundImage'
 import { desktopMin } from 'lib-components/breakpoints'
 import { H1, Title } from 'lib-components/typography'

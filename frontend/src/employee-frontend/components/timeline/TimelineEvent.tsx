@@ -6,7 +6,7 @@ import React, { useState } from 'react'
 import { Link } from 'react-router'
 import styled from 'styled-components'
 
-import FiniteDateRange from 'lib-common/finite-date-range'
+import type FiniteDateRange from 'lib-common/finite-date-range'
 import { TooltipWithoutAnchor } from 'lib-components/atoms/Tooltip'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import {
@@ -15,8 +15,8 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import { faChevronDown, faChevronUp } from 'lib-icons'
 
-import { WithRange } from './common'
-import { EventRenderer } from './renderers'
+import type { WithRange } from './common'
+import type { EventRenderer } from './renderers'
 
 export default function TlEvent<T extends WithRange>({
   event,

@@ -5,14 +5,14 @@
 import React, { useMemo } from 'react'
 import styled from 'styled-components'
 
-import { Result } from 'lib-common/api'
+import type { Result } from 'lib-common/api'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import {
   SpinnerOverlay,
   SpinnerSegment
 } from 'lib-components/atoms/state/Spinner'
 
-import { SpacingSize } from './white-space'
+import type { SpacingSize } from './white-space'
 
 export type RenderResultFn<T> = (
   value: T,

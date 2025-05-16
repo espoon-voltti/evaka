@@ -15,14 +15,14 @@ import { useNavigate, useSearchParams } from 'react-router'
 import styled from 'styled-components'
 
 import { wrapResult } from 'lib-common/api'
-import {
+import type {
   Message,
   MessageChild,
   MessageThread,
   MessageType,
   ThreadReply
 } from 'lib-common/generated/api-types/messaging'
-import { MessageAccountId } from 'lib-common/generated/api-types/shared'
+import type { MessageAccountId } from 'lib-common/generated/api-types/shared'
 import { formatAccountNames } from 'lib-common/messaging'
 import { scrollRefIntoView } from 'lib-common/utils/scrolling'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
@@ -54,7 +54,8 @@ import {
   markLastReceivedMessageInThreadUnreadMutation,
   replyToThreadMutation
 } from './queries'
-import { isFolderView, isStandardView, View } from './types-view'
+import type { View } from './types-view'
+import { isFolderView, isStandardView } from './types-view'
 
 const archiveThreadResult = wrapResult(archiveThread)
 

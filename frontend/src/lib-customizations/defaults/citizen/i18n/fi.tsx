@@ -2,12 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { ReactNode } from 'react'
+import type { ReactNode } from 'react'
+import React from 'react'
 
-import FiniteDateRange from 'lib-common/finite-date-range'
-import { ApplicationType } from 'lib-common/generated/api-types/application'
-import { EmailVerification } from 'lib-common/generated/api-types/pis'
-import LocalDate from 'lib-common/local-date'
+import type FiniteDateRange from 'lib-common/finite-date-range'
+import type { ApplicationType } from 'lib-common/generated/api-types/application'
+import type { EmailVerification } from 'lib-common/generated/api-types/pis'
+import type LocalDate from 'lib-common/local-date'
 import { formatFirstName } from 'lib-common/names'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
 import UnorderedList from 'lib-components/atoms/UnorderedList'

@@ -4,9 +4,9 @@
 
 import React from 'react'
 
-import DateRange from 'lib-common/date-range'
-import FiniteDateRange from 'lib-common/finite-date-range'
-import LocalDate from 'lib-common/local-date'
+import type DateRange from 'lib-common/date-range'
+import type FiniteDateRange from 'lib-common/finite-date-range'
+import type LocalDate from 'lib-common/local-date'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 

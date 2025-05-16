@@ -7,8 +7,8 @@ import React, { useContext, useMemo } from 'react'
 import { Link } from 'react-router'
 import styled from 'styled-components'
 
-import { Attachment } from 'lib-common/generated/api-types/attachment'
-import {
+import type { Attachment } from 'lib-common/generated/api-types/attachment'
+import type {
   Income,
   IncomeTypeOptions
 } from 'lib-common/generated/api-types/invoicing'

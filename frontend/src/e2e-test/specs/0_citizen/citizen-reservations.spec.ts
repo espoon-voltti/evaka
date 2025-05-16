@@ -5,14 +5,14 @@
 import zip from 'lodash/zip'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { PlacementType } from 'lib-common/generated/api-types/placement'
-import { DaycareId } from 'lib-common/generated/api-types/shared'
-import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import type { PlacementType } from 'lib-common/generated/api-types/placement'
+import type { DaycareId } from 'lib-common/generated/api-types/shared'
+import type HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { evakaUserId, randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import TimeRange from 'lib-common/time-range'
-import { DeepPartial, FeatureFlags } from 'lib-customizations/types'
+import type { DeepPartial, FeatureFlags } from 'lib-customizations/types'
 
 import {
   testCareArea2,
@@ -34,10 +34,11 @@ import {
   getAbsences,
   resetServiceState
 } from '../../generated/api-clients'
-import { DevPerson } from '../../generated/api-types'
+import type { DevPerson } from '../../generated/api-types'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
 import CitizenHeader from '../../pages/citizen/citizen-header'
-import { envs, EnvType, Page } from '../../utils/page'
+import type { EnvType } from '../../utils/page'
+import { envs, Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
 
 const today = LocalDate.of(2022, 1, 5)

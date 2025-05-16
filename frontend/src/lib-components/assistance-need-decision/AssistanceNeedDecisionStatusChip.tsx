@@ -5,7 +5,7 @@
 import React from 'react'
 import { useTheme } from 'styled-components'
 
-import { AssistanceNeedDecisionStatus } from 'lib-common/generated/api-types/assistanceneed'
+import type { AssistanceNeedDecisionStatus } from 'lib-common/generated/api-types/assistanceneed'
 import { StaticChip } from 'lib-components/atoms/Chip'
 
 export const AssistanceNeedDecisionStatusChip = React.memo(

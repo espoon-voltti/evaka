@@ -5,21 +5,21 @@
 import React, { useCallback, useMemo } from 'react'
 import styled, { css } from 'styled-components'
 
-import {
+import type {
   AbsenceCategory,
   AbsenceType,
   AbsenceWithModifierInfo,
   GroupMonthCalendarDayChild
 } from 'lib-common/generated/api-types/absence'
-import { ChildId } from 'lib-common/generated/api-types/shared'
-import LocalDate from 'lib-common/local-date'
-import TimeRange from 'lib-common/time-range'
-import { UUID } from 'lib-common/types'
+import type { ChildId } from 'lib-common/generated/api-types/shared'
+import type LocalDate from 'lib-common/local-date'
+import type TimeRange from 'lib-common/time-range'
+import type { UUID } from 'lib-common/types'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import { absenceColors } from 'lib-customizations/common'
 import colors from 'lib-customizations/common'
 
-import { SelectedCell } from './GroupMonthCalendar'
+import type { SelectedCell } from './GroupMonthCalendar'
 import UnitCalendarDayCellTooltip from './UnitCalendarDayCellTooltip'
 
 const cellSize = 20

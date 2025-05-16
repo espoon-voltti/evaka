@@ -4,7 +4,7 @@
 
 import React, { createContext, useMemo, useState } from 'react'
 
-import { GroupId } from 'lib-common/generated/api-types/shared'
+import type { GroupId } from 'lib-common/generated/api-types/shared'
 
 export interface RememberState {
   groupId: GroupId | undefined

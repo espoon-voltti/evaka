@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { AdRole } from 'lib-common/api-types/employee-auth'
+import type { AdRole } from 'lib-common/api-types/employee-auth'
 
 type Layout<Components> = { component: keyof Components; open: boolean }[]
 export type Layouts<Components> = Partial<Record<AdRole, Layout<Components>>>

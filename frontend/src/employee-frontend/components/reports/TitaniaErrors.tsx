@@ -4,7 +4,7 @@
 
 import React from 'react'
 
-import {
+import type {
   TitaniaErrorReportRow,
   TitaniaErrorUnit,
   TitaniaErrorEmployee

@@ -6,7 +6,7 @@ import React, { useContext, useMemo } from 'react'
 import { useNavigate } from 'react-router'
 
 import { combine } from 'lib-common/api'
-import { DaycareId } from 'lib-common/generated/api-types/shared'
+import type { DaycareId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
 import { ContentArea } from 'lib-components/layout/Container'
 import { H1 } from 'lib-components/typography'

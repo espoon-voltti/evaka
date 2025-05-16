@@ -13,7 +13,8 @@ import { faFileSpreadsheet } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
 
-import { Column, toCsv } from './csv'
+import type { Column } from './csv'
+import { toCsv } from './csv'
 
 const RowRightAligned = styled.div`
   display: flex;

@@ -4,8 +4,8 @@
 
 import React from 'react'
 
-import { AttendanceChild } from 'lib-common/generated/api-types/attendance'
-import { UUID } from 'lib-common/types'
+import type { AttendanceChild } from 'lib-common/generated/api-types/attendance'
+import type { UUID } from 'lib-common/types'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 
 import { routes } from '../../App'

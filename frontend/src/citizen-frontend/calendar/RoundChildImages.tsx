@@ -6,8 +6,11 @@ import take from 'lodash/take'
 import React, { useMemo } from 'react'
 import styled, { css } from 'styled-components'
 
-import { ReservationChild } from 'lib-common/generated/api-types/reservations'
-import { ChildId, ChildImageId } from 'lib-common/generated/api-types/shared'
+import type { ReservationChild } from 'lib-common/generated/api-types/reservations'
+import type {
+  ChildId,
+  ChildImageId
+} from 'lib-common/generated/api-types/shared'
 import { formatFirstName } from 'lib-common/names'
 import { fontWeights } from 'lib-components/typography'
 import { theme } from 'lib-customizations/common'

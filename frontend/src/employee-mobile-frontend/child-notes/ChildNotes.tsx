@@ -6,11 +6,11 @@ import React, { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
-import {
+import type {
   ChildDailyNote,
   ChildStickyNote
 } from 'lib-common/generated/api-types/note'
-import { ChildId, DaycareId } from 'lib-common/generated/api-types/shared'
+import type { ChildId, DaycareId } from 'lib-common/generated/api-types/shared'
 import {
   constantQuery,
   useChainedQuery,
@@ -34,7 +34,7 @@ import { ChildStickyNotesTab } from './ChildStickyNotesTab'
 import { DailyNotesTab } from './DailyNotesTab'
 import { GroupNotesTab } from './GroupNotesTab'
 import { groupNotesQuery } from './queries'
-import { ChildDailyNoteFormData } from './types'
+import type { ChildDailyNoteFormData } from './types'
 
 type NoteType = 'NOTE' | 'STICKY' | 'GROUP'
 

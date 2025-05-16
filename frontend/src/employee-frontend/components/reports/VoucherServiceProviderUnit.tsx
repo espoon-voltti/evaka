@@ -9,15 +9,15 @@ import React, { useMemo, useState } from 'react'
 import { Link, useLocation } from 'react-router'
 import styled from 'styled-components'
 
-import {
+import type {
   VoucherReportRowType,
   ServiceVoucherValueRow
 } from 'lib-common/generated/api-types/reports'
-import { DaycareId } from 'lib-common/generated/api-types/shared'
+import type { DaycareId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { formatCents } from 'lib-common/money'
 import { useQueryResult } from 'lib-common/query'
-import { Arg0 } from 'lib-common/types'
+import type { Arg0 } from 'lib-common/types'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import { formatDecimal } from 'lib-common/utils/number'
 import { useSyncQueryParams } from 'lib-common/utils/useSyncQueryParams'
@@ -45,7 +45,7 @@ import { featureFlags } from 'lib-customizations/employee'
 import { faHome, faLockAlt } from 'lib-icons'
 
 import ReportDownload from '../../components/reports/ReportDownload'
-import { getServiceVoucherReportForUnit } from '../../generated/api-clients/reports'
+import type { getServiceVoucherReportForUnit } from '../../generated/api-clients/reports'
 import { useTranslation } from '../../state/i18n'
 import { formatName } from '../../utils'
 import { renderResult } from '../async-rendering'

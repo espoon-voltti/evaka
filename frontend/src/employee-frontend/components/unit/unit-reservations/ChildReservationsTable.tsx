@@ -10,24 +10,25 @@ import React, { useMemo } from 'react'
 import { Link } from 'react-router'
 import styled from 'styled-components'
 
-import {
+import type {
   Child,
   ChildRecordOfDay,
   OperationalDay,
   UnitDateInfo
 } from 'lib-common/generated/api-types/reservations'
-import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type LocalDate from 'lib-common/local-date'
+import type { UUID } from 'lib-common/types'
 import { Table, Tbody, Td, Tr } from 'lib-components/layout/Table'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
 import EllipsisMenu from '../../../components/common/EllipsisMenu'
-import { Translations, useTranslation } from '../../../state/i18n'
+import type { Translations } from '../../../state/i18n'
+import { useTranslation } from '../../../state/i18n'
 import { formatName } from '../../../utils'
 import { AgeIndicatorChip } from '../../common/AgeIndicatorChip'
 import { ContractDaysIndicatorChip } from '../../common/ContractDaysIndicatorChip'
-import { AttendanceGroupFilter } from '../TabCalendar'
+import type { AttendanceGroupFilter } from '../TabCalendar'
 
 import ChildDayAttendance from './ChildDayAttendance'
 import ChildDayReservation from './ChildDayReservation'

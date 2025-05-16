@@ -7,7 +7,7 @@ import React from 'react'
 import { InformationText } from 'lib-components/typography'
 
 import { useTranslation } from '../../state/i18n'
-import { AutosaveStatus } from '../../utils/use-autosave'
+import type { AutosaveStatus } from '../../utils/use-autosave'
 
 export default React.memo(function AutosaveStatusIndicator({
   status

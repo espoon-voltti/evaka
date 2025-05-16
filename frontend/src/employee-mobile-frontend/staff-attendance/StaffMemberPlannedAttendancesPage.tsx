@@ -5,7 +5,7 @@
 import React, { useMemo } from 'react'
 import styled from 'styled-components'
 
-import { EmployeeId } from 'lib-common/generated/api-types/shared'
+import type { EmployeeId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
@@ -21,7 +21,7 @@ import { Gap } from 'lib-components/white-space'
 import { routes } from '../App'
 import { renderResult } from '../async-rendering'
 import { useTranslation } from '../common/i18n'
-import { UnitOrGroup } from '../common/unit-or-group'
+import type { UnitOrGroup } from '../common/unit-or-group'
 
 import { EmployeeCardBackground } from './components/EmployeeCardBackground'
 import { StaffMemberPageContainer } from './components/StaffMemberPageContainer'

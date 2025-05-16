@@ -2,12 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { ReactNode } from 'react'
+import type { ReactNode } from 'react'
+import React from 'react'
 
-import FiniteDateRange from 'lib-common/finite-date-range'
-import { InvoiceStatus } from 'lib-common/generated/api-types/invoicing'
-import HelsinkiDateTime from 'lib-common/helsinki-date-time'
-import LocalDate from 'lib-common/local-date'
+import type FiniteDateRange from 'lib-common/finite-date-range'
+import type { InvoiceStatus } from 'lib-common/generated/api-types/invoicing'
+import type HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import type LocalDate from 'lib-common/local-date'
 import { H3, P } from 'lib-components/typography'
 
 import components from '../../components/i18n/fi'

@@ -7,11 +7,9 @@ import React from 'react'
 import { boolean } from 'lib-common/form/fields'
 import { object } from 'lib-common/form/form'
 import { useBoolean, useForm, useFormFields } from 'lib-common/form/hooks'
-import { StateOf } from 'lib-common/form/types'
-import {
-  EmailMessageType,
-  emailMessageTypes
-} from 'lib-common/generated/api-types/pis'
+import type { StateOf } from 'lib-common/form/types'
+import type { EmailMessageType } from 'lib-common/generated/api-types/pis'
+import { emailMessageTypes } from 'lib-common/generated/api-types/pis'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import { CheckboxF } from 'lib-components/atoms/form/Checkbox'

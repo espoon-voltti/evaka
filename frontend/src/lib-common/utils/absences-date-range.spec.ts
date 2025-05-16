@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Absence } from 'lib-common/generated/api-types/absence'
-import { ChildId } from 'lib-common/generated/api-types/shared'
+import type { Absence } from 'lib-common/generated/api-types/absence'
+import type { ChildId } from 'lib-common/generated/api-types/shared'
 import { randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 

@@ -8,12 +8,12 @@ import styled from 'styled-components'
 
 import { useBoolean } from 'lib-common/form/hooks'
 import { required, validate } from 'lib-common/form-validation'
-import {
+import type {
   InvoiceSortParam,
   InvoiceStatus,
   SortDirection
 } from 'lib-common/generated/api-types/invoicing'
-import { InvoiceId } from 'lib-common/generated/api-types/shared'
+import type { InvoiceId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import {
   first,
@@ -26,7 +26,7 @@ import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
-import { ModalType } from 'lib-components/molecules/modals/BaseModal'
+import type { ModalType } from 'lib-components/molecules/modals/BaseModal'
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { Label } from 'lib-components/typography'

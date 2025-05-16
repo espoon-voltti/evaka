@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import { DayReservationStatisticsResult } from 'lib-common/generated/api-types/reservations'
+import type { DayReservationStatisticsResult } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { defaultMargins } from 'lib-components/white-space'
@@ -14,7 +14,7 @@ import colors, { theme } from 'lib-customizations/common'
 import { faChevronDown, faChevronUp } from 'lib-icons'
 
 import { useTranslation } from '../common/i18n'
-import { UnitOrGroup } from '../common/unit-or-group'
+import type { UnitOrGroup } from '../common/unit-or-group'
 
 import ChildReservationList from './ChildReservationList'
 

@@ -7,12 +7,12 @@ import React, { useMemo, useState } from 'react'
 import { Link } from 'react-router'
 import styled from 'styled-components'
 
-import {
+import type {
   CareType,
-  careTypes,
   ProviderType,
   UpdateFeaturesRequest
 } from 'lib-common/generated/api-types/daycare'
+import { careTypes } from 'lib-common/generated/api-types/daycare'
 import { pilotFeatures } from 'lib-common/generated/api-types/shared'
 import { cancelMutation, useMutation, useQueryResult } from 'lib-common/query'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'

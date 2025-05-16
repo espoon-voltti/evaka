@@ -4,7 +4,7 @@
 
 import React from 'react'
 
-import { InvoiceDetailedResponse } from 'lib-common/generated/api-types/invoicing'
+import type { InvoiceDetailedResponse } from 'lib-common/generated/api-types/invoicing'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 

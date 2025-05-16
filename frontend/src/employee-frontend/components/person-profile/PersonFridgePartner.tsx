@@ -7,8 +7,11 @@ import React, { useContext, useMemo, useState } from 'react'
 import { Link } from 'react-router'
 import styled from 'styled-components'
 
-import { PersonJSON } from 'lib-common/generated/api-types/pis'
-import { PartnershipId, PersonId } from 'lib-common/generated/api-types/shared'
+import type { PersonJSON } from 'lib-common/generated/api-types/pis'
+import type {
+  PartnershipId,
+  PersonId
+} from 'lib-common/generated/api-types/shared'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import AddButton from 'lib-components/atoms/buttons/AddButton'

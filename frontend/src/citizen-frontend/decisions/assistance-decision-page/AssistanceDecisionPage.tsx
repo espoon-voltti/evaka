@@ -4,8 +4,8 @@
 
 import React, { useEffect } from 'react'
 
-import { AssistanceNeedDecision } from 'lib-common/generated/api-types/assistanceneed'
-import { AssistanceNeedDecisionId } from 'lib-common/generated/api-types/shared'
+import type { AssistanceNeedDecision } from 'lib-common/generated/api-types/assistanceneed'
+import type { AssistanceNeedDecisionId } from 'lib-common/generated/api-types/shared'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import AssistanceNeedDecisionReadOnly from 'lib-components/assistance-need-decision/AssistanceNeedDecisionReadOnly'

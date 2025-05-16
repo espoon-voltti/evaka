@@ -11,7 +11,7 @@ import { string } from 'lib-common/form/fields'
 import { object, validated } from 'lib-common/form/form'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
 import { nonBlank } from 'lib-common/form/validators'
-import {
+import type {
   AbsenceApplicationId,
   ChildId
 } from 'lib-common/generated/api-types/shared'

@@ -5,7 +5,7 @@
 import React, { useState } from 'react'
 
 import { wrapResult } from 'lib-common/api'
-import { ChildId } from 'lib-common/generated/api-types/shared'
+import type { ChildId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'

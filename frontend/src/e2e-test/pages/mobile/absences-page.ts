@@ -2,10 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { AbsenceType } from 'lib-common/generated/api-types/absence'
-import LocalDate from 'lib-common/local-date'
+import type { AbsenceType } from 'lib-common/generated/api-types/absence'
+import type LocalDate from 'lib-common/local-date'
 
-import { Page, TextInput, Element } from '../../utils/page'
+import type { Page, Element } from '../../utils/page'
+import { TextInput } from '../../utils/page'
 
 export default class MobileAbsencesPage {
   #markAbsentBtn: Element

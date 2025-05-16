@@ -6,7 +6,7 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import { HolidayQuestionnaire } from 'lib-common/generated/api-types/holidayperiod'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 
 import { vtjDependants } from '../../dev-api'
 import {
@@ -22,7 +22,11 @@ import {
   resetServiceState,
   upsertVtjDataset
 } from '../../generated/api-clients'
-import { DevDaycare, DevPerson, DevPlacement } from '../../generated/api-types'
+import type {
+  DevDaycare,
+  DevPerson,
+  DevPlacement
+} from '../../generated/api-types'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import { Page } from '../../utils/page'

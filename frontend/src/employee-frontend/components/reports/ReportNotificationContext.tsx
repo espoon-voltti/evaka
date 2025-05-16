@@ -4,7 +4,8 @@
 
 import React, { createContext, useContext } from 'react'
 
-import { Loading, Result, Success, wrapResult } from 'lib-common/api'
+import type { Result } from 'lib-common/api'
+import { Loading, Success, wrapResult } from 'lib-common/api'
 import { constantQuery, useQueryResult } from 'lib-common/query'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import { featureFlags } from 'lib-customizations/employee'

@@ -4,7 +4,7 @@
 
 import React from 'react'
 
-import { ChildId, DaycareId } from 'lib-common/generated/api-types/shared'
+import type { ChildId, DaycareId } from 'lib-common/generated/api-types/shared'
 import { useMutationResult } from 'lib-common/query'
 
 import { cancelAbsenceMutation } from '../../child-attendance/queries'

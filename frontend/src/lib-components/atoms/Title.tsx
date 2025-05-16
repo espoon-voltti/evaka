@@ -5,7 +5,7 @@
 import React from 'react'
 
 import { H1, H2, H3, H4 } from '../typography'
-import { BaseProps } from '../utils'
+import type { BaseProps } from '../utils'
 
 export interface TitleProps extends BaseProps {
   'data-qa'?: string

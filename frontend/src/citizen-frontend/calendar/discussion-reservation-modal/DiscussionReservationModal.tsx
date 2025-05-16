@@ -9,17 +9,18 @@ import React, { useCallback, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
-import { Failure } from 'lib-common/api'
+import type { Failure } from 'lib-common/api'
 import { mapped, object, required, value } from 'lib-common/form/form'
-import { BoundFormState, useForm, useFormFields } from 'lib-common/form/hooks'
-import { StateOf } from 'lib-common/form/types'
-import {
+import type { BoundFormState } from 'lib-common/form/hooks'
+import { useForm, useFormFields } from 'lib-common/form/hooks'
+import type { StateOf } from 'lib-common/form/types'
+import type {
   CalendarEventTime,
   CalendarEventTimeCitizenReservationForm,
   CitizenCalendarEvent
 } from 'lib-common/generated/api-types/calendarevent'
-import { ReservationChild } from 'lib-common/generated/api-types/reservations'
-import {
+import type { ReservationChild } from 'lib-common/generated/api-types/reservations'
+import type {
   CalendarEventTimeId,
   ChildId
 } from 'lib-common/generated/api-types/shared'

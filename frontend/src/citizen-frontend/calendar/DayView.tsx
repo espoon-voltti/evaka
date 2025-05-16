@@ -9,26 +9,26 @@ import styled from 'styled-components'
 import { mapScheduleType } from 'lib-common/api-types/placement'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { array, mapped, object, value } from 'lib-common/form/form'
+import type { BoundForm } from 'lib-common/form/hooks'
 import {
-  BoundForm,
   useBoolean,
   useForm,
   useFormElems,
   useFormField
 } from 'lib-common/form/hooks'
-import { StateOf } from 'lib-common/form/types'
-import {
+import type { StateOf } from 'lib-common/form/types'
+import type {
   AttendingChild,
   CalendarEventType,
   CitizenCalendarEvent,
   CitizenCalendarEventTime
 } from 'lib-common/generated/api-types/calendarevent'
-import {
+import type {
   HolidayPeriod,
   HolidayPeriodEffect
 } from 'lib-common/generated/api-types/holidayperiod'
-import { ScheduleType } from 'lib-common/generated/api-types/placement'
-import {
+import type { ScheduleType } from 'lib-common/generated/api-types/placement'
+import type {
   AbsenceInfo,
   DailyReservationRequest,
   ReservableTimeRange,
@@ -38,7 +38,7 @@ import {
   ReservationsResponse,
   UsedServiceResult
 } from 'lib-common/generated/api-types/reservations'
-import {
+import type {
   CalendarEventTimeId,
   ChildId
 } from 'lib-common/generated/api-types/shared'
@@ -46,7 +46,7 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import { formatFirstName } from 'lib-common/names'
 import { reservationHasTimes } from 'lib-common/reservations'
-import TimeInterval from 'lib-common/time-interval'
+import type TimeInterval from 'lib-common/time-interval'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
@@ -94,7 +94,8 @@ import { faQuestion, faTimes } from 'lib-icons'
 import { faChevronLeft, faChevronRight } from 'lib-icons'
 
 import ModalAccessibilityWrapper from '../ModalAccessibilityWrapper'
-import { Translations, useLang, useTranslation } from '../localization'
+import type { Translations } from '../localization'
+import { useLang, useTranslation } from '../localization'
 import { getDuplicateChildInfo } from '../utils/duplicated-child-utils'
 
 import AttendanceInfo from './AttendanceInfo'
@@ -102,13 +103,10 @@ import { BottomFooterContainer } from './BottomFooterContainer'
 import { CalendarEventExportButton } from './CalendarEventExportButton'
 import { CalendarModalBackground, CalendarModalSection } from './CalendarModal'
 import { useCalendarModalState } from './CalendarPage'
-import {
-  ChildImageData,
-  getChildImages,
-  RoundChildImage
-} from './RoundChildImages'
+import type { ChildImageData } from './RoundChildImages'
+import { getChildImages, RoundChildImage } from './RoundChildImages'
 import { formatReservation } from './calendar-elements'
-import { ConfirmModalState } from './discussion-reservation-modal/DiscussionSurveyModal'
+import type { ConfirmModalState } from './discussion-reservation-modal/DiscussionSurveyModal'
 import {
   deleteCalendarEventTimeReservationMutation,
   postReservationsMutation

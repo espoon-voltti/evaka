@@ -18,28 +18,23 @@ import {
   union,
   value
 } from 'lib-common/form/form'
+import type { BoundForm, BoundFormShape } from 'lib-common/form/hooks'
 import {
-  BoundForm,
-  BoundFormShape,
   useForm,
   useFormElem,
   useFormElems,
   useFormField,
   useFormUnion
 } from 'lib-common/form/hooks'
-import {
-  combine,
-  Form,
-  StateOf,
-  ValidationSuccess
-} from 'lib-common/form/types'
-import {
+import type { Form, StateOf } from 'lib-common/form/types'
+import { combine, ValidationSuccess } from 'lib-common/form/types'
+import type {
   Child,
   DailyReservationRequest
 } from 'lib-common/generated/api-types/reservations'
-import { ChildId } from 'lib-common/generated/api-types/shared'
+import type { ChildId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
-import { Repetition } from 'lib-common/reservations'
+import type { Repetition } from 'lib-common/reservations'
 import UnderRowStatusIcon from 'lib-components/atoms/StatusIcon'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { cancelMutation } from 'lib-components/atoms/buttons/MutateButton'
@@ -52,7 +47,7 @@ import { DateRangePickerF } from 'lib-components/molecules/date-picker/DateRange
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { fontWeights, H2, Label, Light } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
-import { Translations } from 'lib-customizations/employee'
+import type { Translations } from 'lib-customizations/employee'
 import { faUserMinus } from 'lib-icons'
 import { faPlus, faTrash } from 'lib-icons'
 

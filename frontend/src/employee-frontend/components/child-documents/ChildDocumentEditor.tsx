@@ -20,14 +20,14 @@ import DateRange from 'lib-common/date-range'
 import { openEndedLocalDateRange } from 'lib-common/form/fields'
 import { object, required } from 'lib-common/form/form'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
-import {
+import type {
   ChildDocumentDetails,
   ChildDocumentWithPermittedActions,
   DocumentContent,
   DocumentWriteLock
 } from 'lib-common/generated/api-types/document'
-import { Employee } from 'lib-common/generated/api-types/pis'
-import { ChildDocumentId } from 'lib-common/generated/api-types/shared'
+import type { Employee } from 'lib-common/generated/api-types/pis'
+import type { ChildDocumentId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import {
@@ -37,7 +37,7 @@ import {
   useMutationResult,
   useQueryResult
 } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import { useDebounce } from 'lib-common/utils/useDebounce'
 import Tooltip from 'lib-components/atoms/Tooltip'
@@ -74,7 +74,8 @@ import {
 
 import { downloadChildDocument } from '../../generated/api-clients/document'
 import { useTranslation } from '../../state/i18n'
-import { TitleContext, TitleState } from '../../state/title'
+import type { TitleState } from '../../state/title'
+import { TitleContext } from '../../state/title'
 import MetadataSection from '../archive-metadata/MetadataSection'
 import { renderResult } from '../async-rendering'
 import {

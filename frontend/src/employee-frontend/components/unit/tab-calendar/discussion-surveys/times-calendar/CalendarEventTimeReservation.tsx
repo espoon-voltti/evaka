@@ -9,12 +9,12 @@ import styled from 'styled-components'
 
 import { mapped, object, value } from 'lib-common/form/form'
 import { useForm } from 'lib-common/form/hooks'
-import {
+import type {
   CalendarEvent,
   CalendarEventTime
 } from 'lib-common/generated/api-types/calendarevent'
-import { ChildBasics } from 'lib-common/generated/api-types/placement'
-import { ChildId } from 'lib-common/generated/api-types/shared'
+import type { ChildBasics } from 'lib-common/generated/api-types/placement'
+import type { ChildId } from 'lib-common/generated/api-types/shared'
 import { useMutation } from 'lib-common/query'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'

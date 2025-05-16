@@ -3,14 +3,14 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import FiniteDateRange from 'lib-common/finite-date-range'
-import {
+import type {
   AbsenceInfo,
   ReservationResponse,
   ReservationResponseDay,
   ReservationResponseDayChild
 } from 'lib-common/generated/api-types/reservations'
-import { ChildId } from 'lib-common/generated/api-types/shared'
-import { EvakaUser } from 'lib-common/generated/api-types/user'
+import type { ChildId } from 'lib-common/generated/api-types/shared'
+import type { EvakaUser } from 'lib-common/generated/api-types/user'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { evakaUserId, fromUuid, randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'

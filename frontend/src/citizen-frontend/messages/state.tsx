@@ -10,12 +10,13 @@ import React, {
   useState
 } from 'react'
 
-import { Loading, Result } from 'lib-common/api'
-import {
+import type { Result } from 'lib-common/api'
+import { Loading } from 'lib-common/api'
+import type {
   CitizenMessageThread,
   MyAccountResponse
 } from 'lib-common/generated/api-types/messaging'
-import { MessageThreadId } from 'lib-common/generated/api-types/shared'
+import type { MessageThreadId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import {
   useMutation,

@@ -6,7 +6,7 @@ import React from 'react'
 
 import useRouteParams from 'lib-common/useRouteParams'
 
-import { UnitOrGroup } from '../common/unit-or-group'
+import type { UnitOrGroup } from '../common/unit-or-group'
 import {
   mapChildAttendanceUIState,
   parseChildAttendanceUiState

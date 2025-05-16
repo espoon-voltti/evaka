@@ -31,7 +31,8 @@ import {
   faSignIn
 } from 'lib-icons'
 
-import { AuthContext, User } from '../auth/state'
+import type { User } from '../auth/state'
+import { AuthContext } from '../auth/state'
 import { useTranslation } from '../localization'
 import { getDuplicateChildInfo } from '../utils/duplicated-child-utils'
 

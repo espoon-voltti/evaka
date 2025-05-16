@@ -6,12 +6,12 @@ import orderBy from 'lodash/orderBy'
 import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import {
+import type {
   CitizenCalendarEvent,
   CitizenCalendarEventTime
 } from 'lib-common/generated/api-types/calendarevent'
-import { ReservationChild } from 'lib-common/generated/api-types/reservations'
-import {
+import type { ReservationChild } from 'lib-common/generated/api-types/reservations'
+import type {
   CalendarEventId,
   CalendarEventTimeId,
   ChildId

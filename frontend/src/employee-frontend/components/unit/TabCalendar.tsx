@@ -7,11 +7,11 @@ import { useSearchParams } from 'react-router'
 import styled from 'styled-components'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
-import {
+import type {
   DaycareGroup,
   DaycareResponse
 } from 'lib-common/generated/api-types/daycare'
-import { DaycareId, GroupId } from 'lib-common/generated/api-types/shared'
+import type { DaycareId, GroupId } from 'lib-common/generated/api-types/shared'
 import { tryFromUuid } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
@@ -30,7 +30,7 @@ import { faCalendarAlt, faChevronLeft, faChevronRight } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
 import { UnitContext } from '../../state/unit'
-import { DayOfWeek } from '../../types'
+import type { DayOfWeek } from '../../types'
 import GroupMonthCalendar from '../absences/GroupMonthCalendar'
 import { renderResult } from '../async-rendering'
 

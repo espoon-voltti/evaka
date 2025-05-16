@@ -5,8 +5,8 @@
 import React, { useMemo } from 'react'
 import styled from 'styled-components'
 
-import { IncomeCoefficient } from 'lib-common/api-types/income'
-import {
+import type { IncomeCoefficient } from 'lib-common/api-types/income'
+import type {
   IncomeOption,
   IncomeTypeOptions
 } from 'lib-common/generated/api-types/invoicing'
@@ -14,7 +14,7 @@ import { formatCents } from 'lib-common/money'
 import { Table, Tbody } from 'lib-components/layout/Table'
 
 import { useTranslation } from '../../../state/i18n'
-import { IncomeFields } from '../../../types/income'
+import type { IncomeFields } from '../../../types/income'
 
 import IncomeSum from './income-table/IncomeSum'
 import IncomeTableHeader from './income-table/IncomeTableHeader'
