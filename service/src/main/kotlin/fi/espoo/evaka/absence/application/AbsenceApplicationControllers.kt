@@ -12,6 +12,8 @@ import fi.espoo.evaka.absence.upsertFullDayAbsences
 import fi.espoo.evaka.shared.AbsenceApplicationId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.async.AsyncJob
+import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -33,7 +35,10 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/employee/absence-application")
-class AbsenceApplicationControllerEmployee(private val accessControl: AccessControl) {
+class AbsenceApplicationControllerEmployee(
+    private val accessControl: AccessControl,
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
+) {
     @GetMapping
     fun getAbsenceApplications(
         db: Database,
@@ -150,6 +155,11 @@ class AbsenceApplicationControllerEmployee(private val accessControl: AccessCont
                                 .toList(),
                         )
                     }
+                    asyncJobRunner.plan(
+                        tx,
+                        listOf(AsyncJob.SendAbsenceApplicationDecidedEmail(application.id)),
+                        runAt = clock.now(),
+                    )
                     application
                 }
             }
@@ -191,6 +201,11 @@ class AbsenceApplicationControllerEmployee(private val accessControl: AccessCont
                         clock.now(),
                         user.evakaUserId,
                         body.reason,
+                    )
+                    asyncJobRunner.plan(
+                        tx,
+                        listOf(AsyncJob.SendAbsenceApplicationDecidedEmail(application.id)),
+                        runAt = clock.now(),
                     )
                     application
                 }

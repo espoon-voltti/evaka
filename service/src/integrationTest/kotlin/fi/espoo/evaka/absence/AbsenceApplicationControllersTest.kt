@@ -13,12 +13,15 @@ import fi.espoo.evaka.absence.application.AbsenceApplicationRejectRequest
 import fi.espoo.evaka.absence.application.AbsenceApplicationStatus
 import fi.espoo.evaka.absence.application.AbsenceApplicationSummary
 import fi.espoo.evaka.absence.application.selectAbsenceApplication
+import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.pis.PersonNameDetails
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.AbsenceApplicationId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.async.AsyncJob
+import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
@@ -42,6 +45,8 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
 import kotlin.test.assertEquals
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.groups.Tuple
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -53,6 +58,7 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
     private lateinit var absenceApplicationControllerEmployee: AbsenceApplicationControllerEmployee
     @Autowired
     private lateinit var absenceApplicationControllerCitizen: AbsenceApplicationControllerCitizen
+    @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
     @Nested
     inner class CrudTest {
@@ -60,7 +66,7 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
         private val unit = DevDaycare(areaId = area.id)
         private val unitSupervisor = DevEmployee()
         private val child = DevPerson()
-        private val adult = DevPerson()
+        private val adult = DevPerson(email = "test@example.com")
 
         private val citizenUser = adult.user(CitizenAuthLevel.STRONG)
         private val employeeUser = unitSupervisor.user
@@ -187,6 +193,13 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
                     tx.getAbsencesOfChildByDate(child.id, LocalDate.of(2022, 8, 10))
                 },
             )
+
+            asyncJobRunner.runPendingJobsSync(clock)
+            assertThat(MockEmailClient.emails)
+                .extracting({ it.toAddress }, { it.content.subject })
+                .containsExactly(
+                    Tuple("test@example.com", "Esiopetuksen poissaolohakemus hyväksytty")
+                )
 
             assertThrows<BadRequest> {
                 absenceApplicationControllerCitizen.deleteAbsenceApplication(
@@ -379,6 +392,11 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
                     tx.getAbsencesOfChildByDate(child.id, LocalDate.of(2022, 8, 10))
                 },
             )
+
+            asyncJobRunner.runPendingJobsSync(clock)
+            assertThat(MockEmailClient.emails)
+                .extracting({ it.toAddress }, { it.content.subject })
+                .containsExactly(Tuple("test@example.com", "Esiopetuksen poissaolohakemus hylätty"))
 
             assertThrows<BadRequest> {
                 absenceApplicationControllerCitizen.deleteAbsenceApplication(
