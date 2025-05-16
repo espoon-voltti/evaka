@@ -324,6 +324,7 @@ private fun Database.Read.getRealizations(
 SELECT child_id, date, start_time, end_time
 FROM child_attendance
 WHERE child_id = ANY(${bind(children)}) AND between_start_and_end(${bind(range)}, date)
+AND end_time IS NOT NULL
     """
             )
         }
