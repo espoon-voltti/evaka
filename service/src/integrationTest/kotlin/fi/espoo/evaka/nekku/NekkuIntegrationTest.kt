@@ -165,7 +165,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                                     NekkuCustomerWeekday.THURSDAY,
                                     NekkuCustomerWeekday.FRIDAY,
                                 ),
-                                "100-lasta"
+                                "100-lasta",
                             ),
                             CustomerType(
                                 listOf(
@@ -173,9 +173,9 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                                     NekkuCustomerWeekday.SUNDAY,
                                     NekkuCustomerWeekday.WEEKDAYHOLIDAY,
                                 ),
-                                "Palvelu-Ovelle-viikonloppu"
+                                "Palvelu-Ovelle-viikonloppu",
                             ),
-                        )
+                        ),
                     ),
                     NekkuCustomer(
                         number = "2501K6089",
@@ -190,7 +190,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                                     NekkuCustomerWeekday.THURSDAY,
                                     NekkuCustomerWeekday.FRIDAY,
                                 ),
-                                "100-lasta"
+                                "100-lasta",
                             ),
                             CustomerType(
                                 listOf(
@@ -198,11 +198,13 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                                     NekkuCustomerWeekday.SUNDAY,
                                     NekkuCustomerWeekday.WEEKDAYHOLIDAY,
                                 ),
-                                "Palvelu-Ovelle-viikonloppu"
+                                "Palvelu-Ovelle-viikonloppu",
                             ),
-                        )
+                        ),
                     ),
-                ), customers)
+                ),
+                customers,
+            )
         }
     }
 
@@ -267,7 +269,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                                     NekkuCustomerWeekday.THURSDAY,
                                     NekkuCustomerWeekday.FRIDAY,
                                 ),
-                                "100-lasta"
+                                "100-lasta",
                             ),
                             CustomerType(
                                 listOf(
@@ -277,7 +279,7 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                                     NekkuCustomerWeekday.THURSDAY,
                                     NekkuCustomerWeekday.FRIDAY,
                                 ),
-                                "palvelu-ovelle-arki"
+                                "palvelu-ovelle-arki",
                             ),
                             CustomerType(
                                 listOf(
@@ -285,11 +287,13 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                                     NekkuCustomerWeekday.SUNDAY,
                                     NekkuCustomerWeekday.WEEKDAYHOLIDAY,
                                 ),
-                                "Palvelu-Ovelle-viikonloppu"
+                                "Palvelu-Ovelle-viikonloppu",
                             ),
-                        )
-                    ),
-                ), customers)
+                        ),
+                    )
+                ),
+                customers,
+            )
         }
     }
 

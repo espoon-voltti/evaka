@@ -120,9 +120,7 @@ WHERE
     return deletedCustomerCount
 }
 
-fun Database.Transaction.setNekkuCustomerTypes(
-    customerNumbers: List<NekkuCustomer>
-) {
+fun Database.Transaction.setNekkuCustomerTypes(customerNumbers: List<NekkuCustomer>) {
     val nekkuCustomerTypes = customerNumbers.map { it.number to it.customerType }
 
     val newNekkuCustomerNumbers = nekkuCustomerTypes.flatMap { it.second }.map { it.type }
