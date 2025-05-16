@@ -17,10 +17,8 @@ import type {
   IncomeStatementAttachment,
   SetIncomeStatementHandledBody
 } from 'lib-common/generated/api-types/incomestatement'
-import {
-  EstimatedIncome,
-  incomeStatementAttachmentTypes
-} from 'lib-common/generated/api-types/incomestatement'
+import type { EstimatedIncome } from 'lib-common/generated/api-types/incomestatement'
+import { incomeStatementAttachmentTypes } from 'lib-common/generated/api-types/incomestatement'
 import type {
   IncomeStatementId,
   PersonId

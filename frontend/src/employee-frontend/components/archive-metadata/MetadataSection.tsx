@@ -8,7 +8,7 @@ import styled from 'styled-components'
 import type { Result } from 'lib-common/api'
 import { useBoolean } from 'lib-common/form/hooks'
 import type { ProcessMetadataResponse } from 'lib-common/generated/api-types/process'
-import { DocumentMetadata } from 'lib-common/generated/api-types/process'
+import type { DocumentMetadata } from 'lib-common/generated/api-types/process'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { CollapsibleContentArea as Collapsible } from 'lib-components/layout/Container'
 import {
