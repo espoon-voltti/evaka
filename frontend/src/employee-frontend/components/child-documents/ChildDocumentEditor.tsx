@@ -64,6 +64,7 @@ import { H1, H2, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { featureFlags } from 'lib-customizations/employee'
+import { faExclamation } from 'lib-icons'
 import {
   faBoxArchive,
   faExclamationTriangle,
@@ -721,6 +722,14 @@ const ChildDocumentReadViewInner = React.memo(
                               : i18n.childInformation.childDocuments.editor
                                   .publishConfirmText
                         }
+                        extraConfirmationCheckboxText={
+                          nextStatus === 'COMPLETED'
+                            ? i18n.childInformation.childDocuments.editor
+                                .extraConfirmCompletion
+                            : undefined
+                        }
+                        modalIcon={faExclamation}
+                        modalType="warning"
                         data-qa="next-status-button"
                       />
                     )}

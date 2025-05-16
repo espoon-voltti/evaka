@@ -11,7 +11,8 @@ import {
   AsyncButton,
   Combobox,
   DatePicker,
-  Modal
+  Modal,
+  Checkbox
 } from '../../../utils/page'
 
 export class ChildDocumentPage {
@@ -75,6 +76,14 @@ export class ChildDocumentPage {
 
   async goToNextStatus() {
     await this.page.findByDataQa('next-status-button').click()
+    await this.page.findByDataQa('modal-okBtn').click()
+  }
+
+  async goToCompletedStatus() {
+    await this.page.findByDataQa('next-status-button').click()
+    await new Checkbox(
+      this.page.findByDataQa('modal-extra-confirmation')
+    ).check()
     await this.page.findByDataQa('modal-okBtn').click()
   }
 

@@ -175,7 +175,7 @@ describe('Employee - Child documents', () => {
     childDocument = new ChildDocumentPage(page)
     await childDocument.goToNextStatus()
     await childDocument.status.assertTextEquals('Laadittu')
-    await childDocument.goToNextStatus()
+    await childDocument.goToCompletedStatus()
     await childDocument.status.assertTextEquals('Valmis')
 
     // Assert status and new publish time
@@ -208,7 +208,7 @@ describe('Employee - Child documents', () => {
     // go to next status
     const childDocument = new ChildDocumentPage(page)
     await childDocument.status.assertTextEquals('Luonnos')
-    await childDocument.goToNextStatus()
+    await childDocument.goToCompletedStatus()
     await childDocument.status.assertTextEquals('Valmis')
   })
 
@@ -491,7 +491,7 @@ describe('Employee - Child documents', () => {
     await childDocument.previewButton.click()
     await childDocument.publish()
     await childDocument.goToNextStatus()
-    await childDocument.goToNextStatus()
+    await childDocument.goToCompletedStatus()
 
     // PDF-generation should be triggered by publishing
     await runJobs({ mockedTime: now })
@@ -726,7 +726,7 @@ describe('Employee - Child documents', () => {
     await childDocument.previewButton.click()
     await childDocument.goToNextStatus()
     await childDocument.status.assertTextEquals('Täytettävänä huoltajalla')
-    await childDocument.goToNextStatus()
+    await childDocument.goToCompletedStatus()
     await childDocument.status.assertTextEquals('Valmis')
     await childDocument.returnButton.click()
     await childInformationPage.openCollapsible('childDocuments')
