@@ -562,7 +562,10 @@ class ApplicationStateService(
             }
         }
 
-        Audit.ApplicationCancel.log(targetId = AuditId(applicationId))
+        Audit.ApplicationCancel.log(
+            targetId = AuditId(applicationId),
+            objectId = AuditId(application.childId),
+        )
     }
 
     fun setVerified(
@@ -595,7 +598,10 @@ class ApplicationStateService(
         } else if (confidential != null) throw BadRequest("Confidentiality is already set")
 
         tx.setApplicationVerified(applicationId, true, clock.now(), user.evakaUserId)
-        Audit.ApplicationAdminDetailsUpdate.log(targetId = AuditId(applicationId))
+        Audit.ApplicationAdminDetailsUpdate.log(
+            targetId = AuditId(applicationId),
+            objectId = AuditId(application.childId),
+        )
     }
 
     fun createPlacementPlan(
@@ -759,6 +765,7 @@ class ApplicationStateService(
         }
         Audit.PlacementPlanRespond.log(
             targetId = AuditId(applicationId),
+            objectId = AuditId(application.childId),
             meta = mapOf("status" to status),
         )
     }
