@@ -343,7 +343,7 @@ export class IncomeSection extends Section {
     'child-income-statement-title'
   )
 
-  incomeNotificationRows = this.findAllByDataQa('income-notification-sent-date')
+  incomeNotificationRows = this.findAllByDataQa('income-notification-sent-info')
   incomeNotifications = this.findAllByDataQa('income-notifications')
   confirmRetroactive = new Checkbox(this.findByDataQa('confirm-retroactive'))
 

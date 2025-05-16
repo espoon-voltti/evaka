@@ -38,7 +38,7 @@ export const IncomeNotifications = React.memo(function IncomeNotifications({
         <Label>{i18n.personProfile.incomeStatement.notificationSent}</Label>
         <UnorderedList>
           {notifications.map((n, i) => (
-            <li key={i}>
+            <li key={i} data-qa="income-notification-sent-info">
               {n.created.format()} (
               {
                 i18n.personProfile.incomeStatement.notificationTypes[
