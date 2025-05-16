@@ -4,12 +4,12 @@
 
 import React, { useCallback, useContext, useMemo, useState } from 'react'
 
-import {
+import type {
   FeeDecisionSortParam,
   SearchFeeDecisionRequest,
   SortDirection
 } from 'lib-common/generated/api-types/invoicing'
-import { FeeDecisionId } from 'lib-common/generated/api-types/shared'
+import type { FeeDecisionId } from 'lib-common/generated/api-types/shared'
 import {
   constantQuery,
   useMutationResult,

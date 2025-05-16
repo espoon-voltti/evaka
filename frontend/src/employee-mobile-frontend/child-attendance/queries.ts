@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { DaycareId } from 'lib-common/generated/api-types/shared'
+import type { DaycareId } from 'lib-common/generated/api-types/shared'
 import { Queries } from 'lib-common/query'
 
 import { futureAbsencesOfChild } from '../generated/api-clients/absence'

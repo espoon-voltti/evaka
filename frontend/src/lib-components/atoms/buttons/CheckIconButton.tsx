@@ -9,7 +9,7 @@ import styled from 'styled-components'
 
 import { faCheck } from 'lib-icons'
 
-import { BaseProps } from '../../utils'
+import type { BaseProps } from '../../utils'
 
 const StyledButton = styled.button`
   display: flex;

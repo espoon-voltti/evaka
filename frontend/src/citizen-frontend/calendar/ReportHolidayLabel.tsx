@@ -11,7 +11,7 @@ import { faLockAlt } from 'lib-icons'
 
 import { useTranslation } from '../localization'
 
-import { QuestionnaireAvailability } from './utils'
+import type { QuestionnaireAvailability } from './utils'
 
 const LabelContainer = styled.span`
   display: inline-flex;

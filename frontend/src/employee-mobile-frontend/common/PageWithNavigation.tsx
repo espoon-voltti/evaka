@@ -7,10 +7,10 @@ import styled from 'styled-components'
 
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 
-import BottomNavbar, { BottomNavbarProps } from './BottomNavbar'
-import TopBarWithGroupSelector, {
-  TopBarWithGroupSelectorProps
-} from './TopBarWithGroupSelector'
+import type { BottomNavbarProps } from './BottomNavbar'
+import BottomNavbar from './BottomNavbar'
+import type { TopBarWithGroupSelectorProps } from './TopBarWithGroupSelector'
+import TopBarWithGroupSelector from './TopBarWithGroupSelector'
 
 const FlexibleDiv = styled.div`
   flex-grow: 1;

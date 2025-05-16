@@ -4,18 +4,18 @@
 
 import React, { useCallback } from 'react'
 
-import { Attachment } from 'lib-common/generated/api-types/attachment'
-import {
+import type { Attachment } from 'lib-common/generated/api-types/attachment'
+import type {
   AttachmentId,
   IncomeStatementId
 } from 'lib-common/generated/api-types/shared'
-import { IncomeStatementAttachments } from 'lib-common/income-statements/attachments'
+import type { IncomeStatementAttachments } from 'lib-common/income-statements/attachments'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import FileUpload from 'lib-components/molecules/FileUpload'
 
 import { getAttachmentUrl, incomeStatementAttachment } from '../attachments'
 
-import { SetStateCallback } from './IncomeStatementComponents'
+import type { SetStateCallback } from './IncomeStatementComponents'
 
 export default React.memo(function Attachments({
   incomeStatementId,

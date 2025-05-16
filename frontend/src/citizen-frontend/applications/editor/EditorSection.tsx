@@ -2,7 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { ReactNode, useCallback, useRef, useState } from 'react'
+import type { ReactNode } from 'react'
+import React, { useCallback, useRef, useState } from 'react'
 import styled from 'styled-components'
 
 import { scrollToRef } from 'lib-common/utils/scrolling'

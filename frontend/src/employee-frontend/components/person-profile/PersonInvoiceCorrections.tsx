@@ -8,7 +8,6 @@ import React, { useContext, useMemo, useState } from 'react'
 import { Link } from 'react-router'
 import styled from 'styled-components'
 
-import { formatPersonName } from 'employee-frontend/utils'
 import { combine } from 'lib-common/api'
 import { localDate, localDateRange } from 'lib-common/form/fields'
 import {
@@ -20,15 +19,15 @@ import {
 } from 'lib-common/form/form'
 import { useBoolean, useForm, useFormFields } from 'lib-common/form/hooks'
 import { ValidationError, ValidationSuccess } from 'lib-common/form/types'
-import { Action } from 'lib-common/generated/action'
-import {
+import type { Action } from 'lib-common/generated/action'
+import type {
   InvoiceCorrection,
   InvoiceCorrectionWithPermittedActions,
   InvoiceDaycare,
   ProductWithName
 } from 'lib-common/generated/api-types/invoicing'
-import { PersonJSON } from 'lib-common/generated/api-types/pis'
-import {
+import type { PersonJSON } from 'lib-common/generated/api-types/pis'
+import type {
   ChildId,
   DaycareId,
   InvoiceCorrectionId,
@@ -36,7 +35,7 @@ import {
 } from 'lib-common/generated/api-types/shared'
 import { formatCents, parseCents } from 'lib-common/money'
 import { useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
@@ -56,6 +55,7 @@ import { Gap } from 'lib-components/white-space'
 import { faCommentAlt, fasCommentAltLines, faTrash } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
+import { formatPersonName } from '../../utils'
 import { renderResult } from '../async-rendering'
 import { invoiceCodesQuery } from '../invoices/queries'
 

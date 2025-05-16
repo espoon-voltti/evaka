@@ -7,12 +7,11 @@ import React, { Fragment, useCallback, useContext, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
 import styled from 'styled-components'
 
-import { renderResult } from 'citizen-frontend/async-rendering'
-import {
+import type {
   ChildBasicInfo,
   IncomeStatement
 } from 'lib-common/generated/api-types/incomestatement'
-import {
+import type {
   ChildId,
   IncomeStatementId,
   PersonId
@@ -40,6 +39,7 @@ import colors from 'lib-customizations/common'
 import { faFile } from 'lib-icons'
 import { faPen, faQuestion, faTrash } from 'lib-icons'
 
+import { renderResult } from '../async-rendering'
 import { useTranslation } from '../localization'
 import { OverlayContext } from '../overlay/state'
 

@@ -4,12 +4,12 @@
 
 // GENERATED FILE: no manual modifications
 
-import { JsonCompatible } from 'lib-common/json'
-import { JsonOf } from 'lib-common/json'
-import { Pairing } from 'lib-common/generated/api-types/pairing'
-import { PairingId } from 'lib-common/generated/api-types/shared'
-import { PairingStatusRes } from 'lib-common/generated/api-types/pairing'
-import { PostPairingChallengeReq } from 'lib-common/generated/api-types/pairing'
+import type { JsonCompatible } from 'lib-common/json'
+import type { JsonOf } from 'lib-common/json'
+import type { Pairing } from 'lib-common/generated/api-types/pairing'
+import type { PairingId } from 'lib-common/generated/api-types/shared'
+import type { PairingStatusRes } from 'lib-common/generated/api-types/pairing'
+import type { PostPairingChallengeReq } from 'lib-common/generated/api-types/pairing'
 import { client } from '../../client'
 import { deserializeJsonPairing } from 'lib-common/generated/api-types/pairing'
 import { uri } from 'lib-common/uri'

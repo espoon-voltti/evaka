@@ -10,11 +10,11 @@ import styled from 'styled-components'
 import { combine } from 'lib-common/api'
 import { oneOf, required } from 'lib-common/form/form'
 import { useForm } from 'lib-common/form/hooks'
-import {
+import type {
   ChildDocumentSummaryWithPermittedActions,
   DocumentTemplateSummary
 } from 'lib-common/generated/api-types/document'
-import {
+import type {
   ChildId,
   DocumentTemplateId
 } from 'lib-common/generated/api-types/shared'
@@ -23,15 +23,13 @@ import {
   useMutationResult,
   useQueryResult
 } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { SelectF } from 'lib-components/atoms/dropdowns/Select'
 import { ChildDocumentStateChip } from 'lib-components/document-templates/ChildDocumentStateChip'
-import {
-  ChildDocumentCategory,
-  getDocumentCategory
-} from 'lib-components/document-templates/documents'
+import type { ChildDocumentCategory } from 'lib-components/document-templates/documents'
+import { getDocumentCategory } from 'lib-components/document-templates/documents'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import {
   FixedSpaceColumn,

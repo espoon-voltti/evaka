@@ -7,7 +7,11 @@ import LocalTime from 'lib-common/local-time'
 
 import { Fixture } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
-import { DevCareArea, DevDaycare, DevEmployee } from '../../generated/api-types'
+import type {
+  DevCareArea,
+  DevDaycare,
+  DevEmployee
+} from '../../generated/api-types'
 import { UnitPage } from '../../pages/employee/units/unit'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'

@@ -5,7 +5,7 @@
 import React, { Fragment } from 'react'
 import styled from 'styled-components'
 
-import { VoucherValueDecisionDetailed } from 'lib-common/generated/api-types/invoicing'
+import type { VoucherValueDecisionDetailed } from 'lib-common/generated/api-types/invoicing'
 import { formatCents } from 'lib-common/money'
 import { H3 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'

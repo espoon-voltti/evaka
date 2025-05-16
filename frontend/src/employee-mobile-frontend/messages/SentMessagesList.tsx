@@ -6,7 +6,7 @@ import React from 'react'
 import styled from 'styled-components'
 
 import { formatDateOrTime } from 'lib-common/date'
-import {
+import type {
   MessageAccount,
   SentMessage
 } from 'lib-common/generated/api-types/messaging'

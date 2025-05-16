@@ -5,12 +5,13 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { Navigate, useNavigate } from 'react-router'
 
-import { Loading, Result, wrapResult } from 'lib-common/api'
-import {
+import type { Result } from 'lib-common/api'
+import { Loading, wrapResult } from 'lib-common/api'
+import type {
   VoucherValueDecisionResponse,
   VoucherValueDecisionType
 } from 'lib-common/generated/api-types/invoicing'
-import { VoucherValueDecisionId } from 'lib-common/generated/api-types/shared'
+import type { VoucherValueDecisionId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
@@ -22,7 +23,8 @@ import {
   sendVoucherValueDecisionDrafts
 } from '../../generated/api-clients/invoicing'
 import { useTranslation } from '../../state/i18n'
-import { TitleContext, TitleState } from '../../state/title'
+import type { TitleState } from '../../state/title'
+import { TitleContext } from '../../state/title'
 import MetadataSection from '../archive-metadata/MetadataSection'
 import { renderResult } from '../async-rendering'
 import FinanceDecisionHandlerSelectModal from '../finance-decisions/FinanceDecisionHandlerSelectModal'

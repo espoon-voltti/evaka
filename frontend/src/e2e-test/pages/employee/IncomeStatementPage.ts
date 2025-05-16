@@ -2,13 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import {
-  Checkbox,
-  Page,
-  TextInput,
-  Element,
-  ElementCollection
-} from '../../utils/page'
+import type { Page, Element, ElementCollection } from '../../utils/page'
+import { Checkbox, TextInput } from '../../utils/page'
 
 export class IncomeStatementPage {
   #form: Element

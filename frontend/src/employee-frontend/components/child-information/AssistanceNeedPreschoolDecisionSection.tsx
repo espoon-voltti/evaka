@@ -6,11 +6,7 @@ import orderBy from 'lodash/orderBy'
 import React, { useContext, useRef, useState } from 'react'
 import { useNavigate } from 'react-router'
 
-import {
-  ChildState,
-  ChildContext
-} from 'employee-frontend/components/child-information/state'
-import {
+import type {
   AssistanceNeedPreschoolDecisionId,
   ChildId
 } from 'lib-common/generated/api-types/shared'
@@ -22,6 +18,8 @@ import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
 import { P } from 'lib-components/typography'
 import { faQuestion } from 'lib-icons'
 
+import type { ChildState } from '../../components/child-information/state'
+import { ChildContext } from '../../components/child-information/state'
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 

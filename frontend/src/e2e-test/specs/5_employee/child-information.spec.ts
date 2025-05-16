@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { PersonId } from 'lib-common/generated/api-types/shared'
+import type { PersonId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
@@ -22,14 +22,15 @@ import {
   putDiets,
   resetServiceState
 } from '../../generated/api-clients'
-import { DevEmployee } from '../../generated/api-types'
-import ChildInformationPage, {
+import type { DevEmployee } from '../../generated/api-types'
+import type {
   AdditionalInformationSection,
   BackupCaresSection,
   DailyServiceTimeSection,
   FamilyContactsSection,
   GuardiansSection
 } from '../../pages/employee/child-information'
+import ChildInformationPage from '../../pages/employee/child-information'
 import { waitUntilEqual } from '../../utils'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'

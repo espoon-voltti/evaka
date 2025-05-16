@@ -8,17 +8,17 @@ import React, { useContext, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
 
 import { combine } from 'lib-common/api'
+import type { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
 import {
   apiDataToFormData,
-  ApplicationFormData,
   formDataToApiData
 } from 'lib-common/api-types/application/ApplicationFormData'
-import FiniteDateRange from 'lib-common/finite-date-range'
-import {
+import type FiniteDateRange from 'lib-common/finite-date-range'
+import type {
   ApplicationDetails as ApplicationDetailsGen,
   CitizenChildren
 } from 'lib-common/generated/api-types/application'
-import { ApplicationId } from 'lib-common/generated/api-types/shared'
+import type { ApplicationId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useMutation, useQuery, useQueryResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
@@ -55,8 +55,8 @@ import {
   updateApplicationMutation
 } from '../queries'
 
+import type { ApplicationFormDataErrors } from './validations'
 import {
-  ApplicationFormDataErrors,
   applicationHasErrors,
   maxPreferredStartDate,
   minPreferredStartDate,

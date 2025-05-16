@@ -2,23 +2,18 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, {
-  FormEvent,
-  useContext,
-  useEffect,
-  useMemo,
-  useState
-} from 'react'
+import type { FormEvent } from 'react'
+import React, { useContext, useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import { UpdateStateFn } from 'lib-common/form-state'
-import {
+import type { UpdateStateFn } from 'lib-common/form-state'
+import type {
   AssistanceAction,
   AssistanceActionOption,
   AssistanceActionRequest,
   AssistanceActionResponse
 } from 'lib-common/generated/api-types/assistanceaction'
-import { ChildId } from 'lib-common/generated/api-types/shared'
+import type { ChildId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useMutationResult } from 'lib-common/query'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
@@ -33,7 +28,8 @@ import { featureFlags } from 'lib-customizations/employee'
 
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
-import { DateRange, rangeContainsDate } from '../../../utils/date'
+import type { DateRange } from '../../../utils/date'
+import { rangeContainsDate } from '../../../utils/date'
 import { isDateRangeInverted } from '../../../utils/validation/validations'
 import FormActions from '../../common/FormActions'
 import LabelValueList from '../../common/LabelValueList'

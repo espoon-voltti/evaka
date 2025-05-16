@@ -4,9 +4,9 @@
 
 import React from 'react'
 
-import { Failure, Result } from 'lib-common/api'
+import type { Failure, Result } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
-import {
+import type {
   Income,
   IncomeCoefficient,
   IncomeNotification,
@@ -14,7 +14,7 @@ import {
   IncomeTypeOptions,
   IncomeWithPermittedActions
 } from 'lib-common/generated/api-types/invoicing'
-import { IncomeId, PersonId } from 'lib-common/generated/api-types/shared'
+import type { IncomeId, PersonId } from 'lib-common/generated/api-types/shared'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { Gap } from 'lib-components/white-space'
 import { faQuestion } from 'lib-icons'

@@ -11,16 +11,12 @@ import { faCheck, faTimes } from 'lib-icons'
 
 import { useTranslations } from '../../i18n'
 import { ScreenReaderOnly } from '../ScreenReaderOnly'
-import { IconSize } from '../icon-size'
+import type { IconSize } from '../icon-size'
 
-import {
-  AsyncButtonBehaviorProps,
-  useAsyncButtonBehavior
-} from './async-button-behavior'
-import {
-  BaseIconOnlyButtonVisualProps,
-  renderBaseIconOnlyButton
-} from './icon-only-button-visuals'
+import type { AsyncButtonBehaviorProps } from './async-button-behavior'
+import { useAsyncButtonBehavior } from './async-button-behavior'
+import type { BaseIconOnlyButtonVisualProps } from './icon-only-button-visuals'
+import { renderBaseIconOnlyButton } from './icon-only-button-visuals'
 
 export type AsyncIconOnlyButtonProps<T> = BaseIconOnlyButtonVisualProps &
   AsyncButtonBehaviorProps<T> & {

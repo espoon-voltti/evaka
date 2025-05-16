@@ -9,7 +9,7 @@ import { Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
 import { useTranslation } from '../../../localization'
-import { Term } from '../ApplicationEditor'
+import type { Term } from '../ApplicationEditor'
 
 const Ul = styled.ul`
   margin: 0;

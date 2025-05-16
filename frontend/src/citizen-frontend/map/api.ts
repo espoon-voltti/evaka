@@ -5,17 +5,14 @@
 import axios from 'axios'
 import sortBy from 'lodash/sortBy'
 
-import { PublicUnit } from 'lib-common/generated/api-types/daycare'
-import { Coordinate } from 'lib-common/generated/api-types/shared'
-import { JsonOf } from 'lib-common/json'
+import type { PublicUnit } from 'lib-common/generated/api-types/daycare'
+import type { Coordinate } from 'lib-common/generated/api-types/shared'
+import type { JsonOf } from 'lib-common/json'
 import { mapConfig } from 'lib-customizations/citizen'
 
-import { MapAddress } from './MapView'
-import {
-  calcStraightDistance,
-  UnitWithDistance,
-  UnitWithStraightDistance
-} from './distances'
+import type { MapAddress } from './MapView'
+import type { UnitWithDistance, UnitWithStraightDistance } from './distances'
+import { calcStraightDistance } from './distances'
 
 // Digitransit limits the maximum duration of a walk to 1.5 hours.
 // To increase the range of the search, we increase the speed of walking.

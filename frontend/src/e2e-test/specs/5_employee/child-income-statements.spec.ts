@@ -4,7 +4,7 @@
 
 import { randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 
 import config from '../../config'
 import {

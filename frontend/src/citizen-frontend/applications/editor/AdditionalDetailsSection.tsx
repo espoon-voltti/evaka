@@ -5,10 +5,10 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import { AdditionalDetailsFormData } from 'lib-common/api-types/application/ApplicationFormData'
-import { UpdateStateFn } from 'lib-common/form-state'
+import type { AdditionalDetailsFormData } from 'lib-common/api-types/application/ApplicationFormData'
+import type { UpdateStateFn } from 'lib-common/form-state'
 import { getErrorCount } from 'lib-common/form-validation'
-import { ApplicationType } from 'lib-common/generated/api-types/application'
+import type { ApplicationType } from 'lib-common/generated/api-types/application'
 import TextArea from 'lib-components/atoms/form/TextArea'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
@@ -18,7 +18,7 @@ import { Gap } from 'lib-components/white-space'
 import EditorSection from '../../applications/editor/EditorSection'
 import { useTranslation } from '../../localization'
 
-import { ApplicationFormDataErrors } from './validations'
+import type { ApplicationFormDataErrors } from './validations'
 
 type Props = {
   formData: AdditionalDetailsFormData

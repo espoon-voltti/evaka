@@ -6,14 +6,14 @@ import sortBy from 'lodash/sortBy'
 import React, { useCallback, useState } from 'react'
 import { Link } from 'react-router'
 
-import DateRange from 'lib-common/date-range'
-import {
+import type DateRange from 'lib-common/date-range'
+import type {
   AssistanceLevel,
   AssistanceNeedDecisionStatus,
   UnitInfoBasics
 } from 'lib-common/generated/api-types/assistanceneed'
-import { AssistanceNeedDecisionId } from 'lib-common/generated/api-types/shared'
-import LocalDate from 'lib-common/local-date'
+import type { AssistanceNeedDecisionId } from 'lib-common/generated/api-types/shared'
+import type LocalDate from 'lib-common/local-date'
 import { AssistanceNeedDecisionStatusChip } from 'lib-components/assistance-need-decision/AssistanceNeedDecisionStatusChip'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'

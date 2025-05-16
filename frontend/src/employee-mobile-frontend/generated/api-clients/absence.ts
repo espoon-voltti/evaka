@@ -4,9 +4,9 @@
 
 // GENERATED FILE: no manual modifications
 
-import { Absence } from 'lib-common/generated/api-types/absence'
-import { JsonOf } from 'lib-common/json'
-import { PersonId } from 'lib-common/generated/api-types/shared'
+import type { Absence } from 'lib-common/generated/api-types/absence'
+import type { JsonOf } from 'lib-common/json'
+import type { PersonId } from 'lib-common/generated/api-types/shared'
 import { client } from '../../client'
 import { deserializeJsonAbsence } from 'lib-common/generated/api-types/absence'
 import { uri } from 'lib-common/uri'

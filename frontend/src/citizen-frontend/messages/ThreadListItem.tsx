@@ -2,11 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { SyntheticEvent, useCallback } from 'react'
+import type { SyntheticEvent } from 'react'
+import React, { useCallback } from 'react'
 import { Link } from 'react-router'
 
 import { formatDateOrTime } from 'lib-common/date'
-import {
+import type {
   CitizenMessageThread,
   MessageAccount
 } from 'lib-common/generated/api-types/messaging'

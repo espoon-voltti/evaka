@@ -5,7 +5,7 @@
 import orderBy from 'lodash/orderBy'
 import React, { useContext } from 'react'
 
-import { ChildId } from 'lib-common/generated/api-types/shared'
+import type { ChildId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 

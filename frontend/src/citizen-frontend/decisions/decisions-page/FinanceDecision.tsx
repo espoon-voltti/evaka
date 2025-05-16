@@ -4,8 +4,8 @@
 
 import React, { useCallback, useState } from 'react'
 
-import { FinanceDecisionCitizenInfo } from 'lib-common/generated/api-types/application'
-import { FinanceDecisionType } from 'lib-common/generated/api-types/invoicing'
+import type { FinanceDecisionCitizenInfo } from 'lib-common/generated/api-types/application'
+import type { FinanceDecisionType } from 'lib-common/generated/api-types/invoicing'
 import { fromUuid } from 'lib-common/id-type'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'

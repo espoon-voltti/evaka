@@ -7,7 +7,7 @@ import React from 'react'
 import styled from 'styled-components'
 
 import { tabletMin } from '../../breakpoints'
-import { BaseProps } from '../../utils'
+import type { BaseProps } from '../../utils'
 
 import {
   buttonBorderRadius,

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import LocalTime from './local-time'
-import { Ordered } from './ordered'
+import type { Ordered } from './ordered'
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 namespace TimeRangeEndpoint {

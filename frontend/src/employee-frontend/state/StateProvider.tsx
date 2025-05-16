@@ -2,13 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { ReactNode } from 'react'
+import type { ReactNode } from 'react'
+import React from 'react'
 
-import { ReportNotificationContextProvider } from 'employee-frontend/components/reports/ReportNotificationContext'
 import { NotificationsContextProvider } from 'lib-components/Notifications'
 
 import { MessageContextProvider } from '../components/messages/MessageContext'
 import { CustomersContextProvider } from '../components/person-search/customers'
+import { ReportNotificationContextProvider } from '../components/reports/ReportNotificationContext'
 
 import { ApplicationUIContextProvider } from './application-ui'
 import { InvoicingUIContextProvider } from './invoicing-ui'

@@ -4,12 +4,12 @@
 
 // GENERATED FILE: no manual modifications
 
-import { DecisionId } from 'lib-common/generated/api-types/shared'
-import { DecisionListResponse } from 'lib-common/generated/api-types/decision'
-import { DecisionUnit } from 'lib-common/generated/api-types/decision'
-import { JsonOf } from 'lib-common/json'
-import { PersonId } from 'lib-common/generated/api-types/shared'
-import { Uri } from 'lib-common/uri'
+import type { DecisionId } from 'lib-common/generated/api-types/shared'
+import type { DecisionListResponse } from 'lib-common/generated/api-types/decision'
+import type { DecisionUnit } from 'lib-common/generated/api-types/decision'
+import type { JsonOf } from 'lib-common/json'
+import type { PersonId } from 'lib-common/generated/api-types/shared'
+import type { Uri } from 'lib-common/uri'
 import { client } from '../../api/client'
 import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonDecisionListResponse } from 'lib-common/generated/api-types/decision'

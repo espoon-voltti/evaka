@@ -2,19 +2,20 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { ReactNode } from 'react'
+import type { ReactNode } from 'react'
+import React from 'react'
 
-import FiniteDateRange from 'lib-common/finite-date-range'
-import { EmailVerification } from 'lib-common/generated/api-types/pis'
-import LocalDate from 'lib-common/local-date'
+import type FiniteDateRange from 'lib-common/finite-date-range'
+import type { EmailVerification } from 'lib-common/generated/api-types/pis'
+import type LocalDate from 'lib-common/local-date'
 import { formatFirstName } from 'lib-common/names'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
 import UnorderedList from 'lib-components/atoms/UnorderedList'
 import { Button } from 'lib-components/atoms/buttons/Button'
-import { Translations as ComponentTranslations } from 'lib-components/i18n'
+import type { Translations as ComponentTranslations } from 'lib-components/i18n'
 import { H1, H2, H3, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
-import { Translations } from 'lib-customizations/citizen'
+import type { Translations } from 'lib-customizations/citizen'
 import colors from 'lib-customizations/common'
 
 import components from '../../components/i18n/sv'

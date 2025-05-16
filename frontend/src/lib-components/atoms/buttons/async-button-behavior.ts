@@ -3,9 +3,10 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import * as Sentry from '@sentry/browser'
-import { FormEvent, useCallback, useEffect, useRef, useState } from 'react'
+import type { FormEvent } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { Failure, Result } from 'lib-common/api'
+import type { Failure, Result } from 'lib-common/api'
 import { isAutomatedTest } from 'lib-common/utils/helpers'
 
 const onSuccessDefaultTimeout = 800

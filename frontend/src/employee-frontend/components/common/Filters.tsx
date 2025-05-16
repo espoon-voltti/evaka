@@ -6,34 +6,38 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { Fragment, useCallback, useContext, useMemo } from 'react'
 import styled from 'styled-components'
 
-import { UserContext } from 'employee-frontend/state/user'
-import {
+import type {
   ApplicationBasis,
   ApplicationStatusOption,
-  applicationStatusOptions,
   ApplicationTypeToggle,
   TransferApplicationFilter
 } from 'lib-common/generated/api-types/application'
-import {
+import { applicationStatusOptions } from 'lib-common/generated/api-types/application'
+import type {
   DaycareCareArea,
   ProviderType
 } from 'lib-common/generated/api-types/daycare'
-import {
+import type {
   DistinctiveParams,
   FeeDecisionDifference,
-  feeDecisionDifferences,
-  feeDecisionDistinctiveParams,
   FeeDecisionStatus,
   InvoiceDistinctiveParams,
   InvoiceStatus,
   VoucherValueDecisionDifference,
-  voucherValueDecisionDifferences,
-  voucherValueDecisionDistinctiveParams,
   VoucherValueDecisionDistinctiveParams,
   VoucherValueDecisionStatus
 } from 'lib-common/generated/api-types/invoicing'
-import { DaycareId, EmployeeId } from 'lib-common/generated/api-types/shared'
-import LocalDate from 'lib-common/local-date'
+import {
+  feeDecisionDifferences,
+  feeDecisionDistinctiveParams,
+  voucherValueDecisionDifferences,
+  voucherValueDecisionDistinctiveParams
+} from 'lib-common/generated/api-types/invoicing'
+import type {
+  DaycareId,
+  EmployeeId
+} from 'lib-common/generated/api-types/shared'
+import type LocalDate from 'lib-common/local-date'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import { Button } from 'lib-components/atoms/buttons/Button'
@@ -66,7 +70,8 @@ import {
 } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
-import { FinanceDecisionHandlerOption } from '../../state/invoicing-ui'
+import type { FinanceDecisionHandlerOption } from '../../state/invoicing-ui'
+import { UserContext } from '../../state/user'
 import { FeeDecisionDifferenceIcons } from '../fee-decisions/FeeDecisionDifferenceIcon'
 import { VoucherValueDecisionDifferenceIcons } from '../voucher-value-decisions/VoucherValueDecisionDifferenceIcon'
 

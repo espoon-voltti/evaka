@@ -6,11 +6,10 @@ import { faEnvelope } from '@fortawesome/free-solid-svg-icons'
 import React, { useState } from 'react'
 import styled from 'styled-components'
 
-import { errorToInputInfo } from 'employee-frontend/utils/validation/input-info-helper'
 import { useBoolean } from 'lib-common/form/hooks'
 import { required, validate } from 'lib-common/form-validation'
-import { PaymentStatus } from 'lib-common/generated/api-types/invoicing'
-import { PaymentId } from 'lib-common/generated/api-types/shared'
+import type { PaymentStatus } from 'lib-common/generated/api-types/invoicing'
+import type { PaymentId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import {
@@ -25,6 +24,7 @@ import colors from 'lib-customizations/common'
 import { getPaymentsDueDate } from 'lib-customizations/employee'
 
 import { useTranslation } from '../../state/i18n'
+import { errorToInputInfo } from '../../utils/validation/input-info-helper'
 import StickyActionBar from '../common/StickyActionBar'
 
 import { selectablePaymentStatuses } from './PaymentsPage'

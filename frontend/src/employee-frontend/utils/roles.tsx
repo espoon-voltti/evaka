@@ -2,10 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { ReactNode, useContext, useMemo } from 'react'
+import type { ReactNode } from 'react'
+import React, { useContext, useMemo } from 'react'
 
-import { AdRole } from 'lib-common/api-types/employee-auth'
-import { Action } from 'lib-common/generated/action'
+import type { AdRole } from 'lib-common/api-types/employee-auth'
+import type { Action } from 'lib-common/generated/action'
 
 import { UserContext } from '../state/user'
 

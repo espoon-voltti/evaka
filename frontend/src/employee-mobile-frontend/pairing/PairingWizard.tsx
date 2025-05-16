@@ -5,8 +5,9 @@
 import React, { Fragment, useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
 
-import { Loading, Result, wrapResult } from 'lib-common/api'
-import { Pairing } from 'lib-common/generated/api-types/pairing'
+import type { Result } from 'lib-common/api'
+import { Loading, wrapResult } from 'lib-common/api'
+import type { Pairing } from 'lib-common/generated/api-types/pairing'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import InputField from 'lib-components/atoms/form/InputField'
 import { fontWeights, P } from 'lib-components/typography'

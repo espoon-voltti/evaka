@@ -9,7 +9,8 @@ import { resetServiceState } from '../../generated/api-clients'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import IncomeStatementsPage from '../../pages/citizen/citizen-income'
 import { waitUntilEqual } from '../../utils'
-import { envs, EnvType, Page } from '../../utils/page'
+import type { EnvType } from '../../utils/page'
+import { envs, Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
 
 let page: Page

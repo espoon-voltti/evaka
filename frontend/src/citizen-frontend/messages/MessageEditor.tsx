@@ -7,19 +7,17 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import FocusLock from 'react-focus-lock'
 import styled from 'styled-components'
 
-import { ErrorMessageBox } from 'citizen-frontend/calendar/ChildSelector'
-import { getDuplicateChildInfo } from 'citizen-frontend/utils/duplicated-child-utils'
-import { Result } from 'lib-common/api'
+import type { Result } from 'lib-common/api'
 import { useBoolean } from 'lib-common/form/hooks'
-import { Attachment } from 'lib-common/generated/api-types/attachment'
-import { ChildAndPermittedActions } from 'lib-common/generated/api-types/children'
-import {
+import type { Attachment } from 'lib-common/generated/api-types/attachment'
+import type { ChildAndPermittedActions } from 'lib-common/generated/api-types/children'
+import type {
   AccountType,
   CitizenMessageBody,
   GetRecipientsResponse,
   MessageAccount
 } from 'lib-common/generated/api-types/messaging'
-import {
+import type {
   MessageAccountId,
   PersonId
 } from 'lib-common/generated/api-types/shared'
@@ -37,9 +35,9 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import OutOfOfficeInfo from 'lib-components/messages/OutOfOfficeInfo'
 import { ToggleableRecipient } from 'lib-components/messages/ToggleableRecipient'
+import type { UploadStatus } from 'lib-components/molecules/FileUpload'
 import FileUpload, {
-  initialUploadStatus,
-  UploadStatus
+  initialUploadStatus
 } from 'lib-components/molecules/FileUpload'
 import { InfoBox } from 'lib-components/molecules/MessageBoxes'
 import { Bold, P } from 'lib-components/typography'
@@ -50,7 +48,9 @@ import { faTimes } from 'lib-icons'
 import ModalAccessibilityWrapper from '../ModalAccessibilityWrapper'
 import { getAttachmentUrl, messageAttachment } from '../attachments'
 import { useUser } from '../auth/state'
+import { ErrorMessageBox } from '../calendar/ChildSelector'
 import { useTranslation } from '../localization'
+import { getDuplicateChildInfo } from '../utils/duplicated-child-utils'
 
 const emptyMessage: CitizenMessageBody = {
   title: '',

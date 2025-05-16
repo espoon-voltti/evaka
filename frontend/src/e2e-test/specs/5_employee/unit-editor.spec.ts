@@ -8,7 +8,7 @@ import LocalTime from 'lib-common/local-time'
 import config from '../../config'
 import { Fixture, testCareArea, testDaycare } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
-import { DevDaycare } from '../../generated/api-types'
+import type { DevDaycare } from '../../generated/api-types'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import {
   UnitEditor,

@@ -4,8 +4,8 @@
 
 import React from 'react'
 
-import { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
-import { ApplicationDetails as ApplicationDetailsGen } from 'lib-common/generated/api-types/application'
+import type { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
+import type { ApplicationDetails as ApplicationDetailsGen } from 'lib-common/generated/api-types/application'
 import ListGrid from 'lib-components/layout/ListGrid'
 import { H2, Label } from 'lib-components/typography'
 

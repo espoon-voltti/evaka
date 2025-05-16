@@ -5,8 +5,8 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
-import {
+import type { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
+import type {
   ApplicationDetails as ApplicationDetailsGen,
   ApplicationType
 } from 'lib-common/generated/api-types/application'

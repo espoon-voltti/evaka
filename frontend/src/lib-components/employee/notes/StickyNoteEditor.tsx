@@ -4,8 +4,8 @@
 
 import React, { useCallback, useState } from 'react'
 
-import { Result } from 'lib-common/api'
-import { Id } from 'lib-common/id-type'
+import type { Result } from 'lib-common/api'
+import type { Id } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import TextArea from 'lib-components/atoms/form/TextArea'
@@ -14,7 +14,7 @@ import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { Gap } from 'lib-components/white-space'
 
 import { InlineAsyncButton } from './InlineAsyncButton'
-import { EditedNote } from './notes'
+import type { EditedNote } from './notes'
 
 export interface EditorLabels {
   cancel: string

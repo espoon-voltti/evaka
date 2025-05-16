@@ -8,12 +8,15 @@ import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
-import { Daycare, DaycareGroup } from 'lib-common/generated/api-types/daycare'
-import {
+import type {
+  Daycare,
+  DaycareGroup
+} from 'lib-common/generated/api-types/daycare'
+import type {
   AnsweredQuestion,
   Question
 } from 'lib-common/generated/api-types/document'
-import {
+import type {
   CitizenDocumentResponseReportRow,
   CitizenDocumentResponseReportTemplate
 } from 'lib-common/generated/api-types/reports'

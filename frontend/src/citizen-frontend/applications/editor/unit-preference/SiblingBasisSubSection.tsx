@@ -15,7 +15,7 @@ import { Gap } from 'lib-components/white-space'
 import { errorToInputInfo } from '../../../input-info-helper'
 import { useTranslation } from '../../../localization'
 
-import { UnitPreferenceSectionCommonProps } from './UnitPreferenceSection'
+import type { UnitPreferenceSectionCommonProps } from './UnitPreferenceSection'
 
 export default React.memo(function SiblingBasisSubSection({
   applicationType,

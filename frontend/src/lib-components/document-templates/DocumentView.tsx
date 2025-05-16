@@ -4,7 +4,8 @@
 
 import React from 'react'
 
-import { BoundForm, useFormElems, useFormFields } from 'lib-common/form/hooks'
+import type { BoundForm } from 'lib-common/form/hooks'
+import { useFormElems, useFormFields } from 'lib-common/form/hooks'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { H2 } from 'lib-components/typography'

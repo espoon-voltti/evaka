@@ -5,14 +5,14 @@
 import React, { useCallback, useState } from 'react'
 import styled from 'styled-components'
 
-import FiniteDateRange from 'lib-common/finite-date-range'
-import {
+import type FiniteDateRange from 'lib-common/finite-date-range'
+import type {
   HolidayQuestionnaire,
   HolidayQuestionnaireAnswer,
   OpenRangesBody
 } from 'lib-common/generated/api-types/holidayperiod'
-import { ReservationChild } from 'lib-common/generated/api-types/reservations'
-import { ChildId } from 'lib-common/generated/api-types/shared'
+import type { ReservationChild } from 'lib-common/generated/api-types/reservations'
+import type { ChildId } from 'lib-common/generated/api-types/shared'
 import { formatFirstName } from 'lib-common/names'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'

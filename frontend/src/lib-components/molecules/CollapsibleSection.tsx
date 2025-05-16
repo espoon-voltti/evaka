@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
+import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
 import React, { useCallback, useState } from 'react'
@@ -12,7 +12,7 @@ import { faAngleDown, faAngleUp } from 'lib-icons'
 
 import { desktopMin } from '../breakpoints'
 import { H3 } from '../typography'
-import { BaseProps } from '../utils'
+import type { BaseProps } from '../utils'
 import { Gap, defaultMargins } from '../white-space'
 
 const Wrapper = styled.div`

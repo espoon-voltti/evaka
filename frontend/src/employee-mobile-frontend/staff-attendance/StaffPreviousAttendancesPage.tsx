@@ -6,11 +6,11 @@ import React from 'react'
 import { useNavigate } from 'react-router'
 
 import { combine } from 'lib-common/api'
-import {
+import type {
   GroupInfo,
   StaffMemberAttendance
 } from 'lib-common/generated/api-types/attendance'
-import { EmployeeId } from 'lib-common/generated/api-types/shared'
+import type { EmployeeId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
@@ -26,7 +26,7 @@ import { faPen } from 'lib-icons'
 import { routes } from '../App'
 import { renderResult } from '../async-rendering'
 import { useTranslation } from '../common/i18n'
-import { UnitOrGroup } from '../common/unit-or-group'
+import type { UnitOrGroup } from '../common/unit-or-group'
 import { unitInfoQuery } from '../units/queries'
 
 import { EmployeeCardBackground } from './components/EmployeeCardBackground'

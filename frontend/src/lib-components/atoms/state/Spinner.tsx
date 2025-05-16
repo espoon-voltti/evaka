@@ -7,7 +7,8 @@ import React from 'react'
 import styled from 'styled-components'
 
 import { spinnerOverlayZIndex } from '../../layout/z-helpers'
-import { defaultMargins, SpacingSize } from '../../white-space'
+import type { SpacingSize } from '../../white-space'
+import { defaultMargins } from '../../white-space'
 
 export const Spinner = styled.div<{ size?: string }>`
   border-radius: 50%;

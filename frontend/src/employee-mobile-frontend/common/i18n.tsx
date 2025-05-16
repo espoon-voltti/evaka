@@ -4,15 +4,10 @@
 
 import React, { useMemo, useState, createContext, useContext } from 'react'
 
-import {
-  ComponentLocalizationContextProvider,
-  Translations as ComponentTranslations
-} from 'lib-components/i18n'
-import {
-  Lang,
-  Translations,
-  translations
-} from 'lib-customizations/employeeMobile'
+import type { Translations as ComponentTranslations } from 'lib-components/i18n'
+import { ComponentLocalizationContextProvider } from 'lib-components/i18n'
+import type { Lang, Translations } from 'lib-customizations/employeeMobile'
+import { translations } from 'lib-customizations/employeeMobile'
 
 interface I18nState {
   lang: Lang

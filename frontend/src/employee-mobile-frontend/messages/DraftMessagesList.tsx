@@ -5,7 +5,7 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import {
+import type {
   DraftContent,
   MessageAccount
 } from 'lib-common/generated/api-types/messaging'

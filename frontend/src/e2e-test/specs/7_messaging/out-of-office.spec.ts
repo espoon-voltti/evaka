@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { DevEmployee } from 'e2e-test/generated/api-types'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
@@ -19,6 +18,7 @@ import {
   createMessageAccounts,
   resetServiceState
 } from '../../generated/api-clients'
+import type { DevEmployee } from '../../generated/api-types'
 import CitizenMessagesPage from '../../pages/citizen/citizen-messages'
 import { OutOfOfficePage } from '../../pages/employee/messages/out-of-office-page'
 import { Page } from '../../utils/page'

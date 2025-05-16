@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useState } from 'react'
 import styled from 'styled-components'
 
-import { DaycareId } from 'lib-common/generated/api-types/shared'
+import type { DaycareId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'

@@ -6,7 +6,7 @@ import React, { useCallback, useMemo, useState } from 'react'
 import { Link } from 'react-router'
 import styled from 'styled-components'
 
-import { ChildAgeLanguageReportRow } from 'lib-common/generated/api-types/reports'
+import type { ChildAgeLanguageReportRow } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
 import { constantQuery, useQueryResult } from 'lib-common/query'
 import Title from 'lib-components/atoms/Title'
@@ -18,7 +18,7 @@ import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 
 import ReportDownload from '../../components/reports/ReportDownload'
 import { useTranslation } from '../../state/i18n'
-import { DateFilters } from '../../types/reports'
+import type { DateFilters } from '../../types/reports'
 import { distinct, reducePropertySum } from '../../utils'
 import { renderResult } from '../async-rendering'
 

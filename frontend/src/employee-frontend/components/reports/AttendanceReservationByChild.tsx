@@ -10,12 +10,12 @@ import { Link } from 'react-router'
 import { useTheme } from 'styled-components'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
-import {
+import type {
   AttendanceReservationReportByChildBody,
   AttendanceReservationReportByChildGroup,
   AttendanceReservationReportByChildItem
 } from 'lib-common/generated/api-types/reports'
-import { DaycareId, GroupId } from 'lib-common/generated/api-types/shared'
+import type { DaycareId, GroupId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { constantQuery, useQueryResult } from 'lib-common/query'
@@ -35,7 +35,8 @@ import DateRangePicker from 'lib-components/molecules/date-picker/DateRangePicke
 import { featureFlags } from 'lib-customizations/employee'
 
 import { getMealOrders } from '../../generated/api-clients/aromi'
-import { Translations, useTranslation } from '../../state/i18n'
+import type { Translations } from '../../state/i18n'
+import { useTranslation } from '../../state/i18n'
 import { UserContext } from '../../state/user'
 import { formatName } from '../../utils'
 import { renderResult } from '../async-rendering'

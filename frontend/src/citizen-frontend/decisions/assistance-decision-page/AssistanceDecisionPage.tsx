@@ -4,12 +4,8 @@
 
 import React, { useEffect } from 'react'
 
-import Footer from 'citizen-frontend/Footer'
-import { renderResult } from 'citizen-frontend/async-rendering'
-import { useTranslation } from 'citizen-frontend/localization'
-import { LocalizationContext } from 'citizen-frontend/localization/state'
-import { AssistanceNeedDecision } from 'lib-common/generated/api-types/assistanceneed'
-import { AssistanceNeedDecisionId } from 'lib-common/generated/api-types/shared'
+import type { AssistanceNeedDecision } from 'lib-common/generated/api-types/assistanceneed'
+import type { AssistanceNeedDecisionId } from 'lib-common/generated/api-types/shared'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import AssistanceNeedDecisionReadOnly from 'lib-components/assistance-need-decision/AssistanceNeedDecisionReadOnly'
@@ -21,7 +17,11 @@ import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faArrowDownToLine } from 'lib-icons'
 
+import Footer from '../../Footer'
+import { renderResult } from '../../async-rendering'
 import { getAssistanceNeedDecisionPdf } from '../../generated/api-clients/assistanceneed'
+import { useTranslation } from '../../localization'
+import { LocalizationContext } from '../../localization/state'
 
 import {
   assistanceDecisionQuery,

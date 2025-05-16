@@ -11,14 +11,14 @@ import React, {
 } from 'react'
 import styled from 'styled-components'
 
-import MessageEditor from 'employee-frontend/components/messages/MessageEditor'
-import { Failure, Result, wrapResult } from 'lib-common/api'
-import {
+import type { Result } from 'lib-common/api'
+import { Failure, wrapResult } from 'lib-common/api'
+import type {
   PostMessageBody,
   SelectableRecipientsResponse
 } from 'lib-common/generated/api-types/messaging'
-import { PersonJSON } from 'lib-common/generated/api-types/pis'
-import {
+import type { PersonJSON } from 'lib-common/generated/api-types/pis'
+import type {
   MessageAccountId,
   MessageDraftId,
   MessageThreadFolderId
@@ -29,6 +29,7 @@ import Container from 'lib-components/layout/Container'
 import { defaultMargins } from 'lib-components/white-space'
 
 import { getAttachmentUrl, messageAttachment } from '../../api/attachments'
+import MessageEditor from '../../components/messages/MessageEditor'
 import {
   createMessage,
   deleteDraftMessage

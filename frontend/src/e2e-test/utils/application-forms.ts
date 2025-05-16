@@ -2,16 +2,16 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
-import {
+import type { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
+import type {
   ApplicationDetails,
   OtherGuardianAgreementStatus,
   ServiceNeedOption
 } from 'lib-common/generated/api-types/application'
-import { JsonOf } from 'lib-common/json'
+import type { JsonOf } from 'lib-common/json'
 
 import { testClub, testDaycare } from '../dev-api/fixtures'
-import { DevPerson } from '../generated/api-types'
+import type { DevPerson } from '../generated/api-types'
 
 function assertEquals<T>(expected: T, actual: T) {
   if (actual !== expected)

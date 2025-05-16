@@ -6,7 +6,10 @@ import { addDays, isSaturday, isSunday } from 'date-fns'
 import React, { useCallback } from 'react'
 import styled from 'styled-components'
 
-import { CareType, PublicUnit } from 'lib-common/generated/api-types/daycare'
+import type {
+  CareType,
+  PublicUnit
+} from 'lib-common/generated/api-types/daycare'
 import { constantQuery, useQueryResult } from 'lib-common/query'
 import { capitalizeFirstLetter } from 'lib-common/string'
 import { mockNow } from 'lib-common/utils/helpers'
@@ -20,7 +23,7 @@ import { faArrowLeft } from 'lib-icons'
 
 import { useLang, useTranslation } from '../localization'
 
-import { MapAddress } from './MapView'
+import type { MapAddress } from './MapView'
 import { mapViewBreakpoint } from './const'
 import { formatDistance } from './distances'
 import { distanceQuery } from './queries'

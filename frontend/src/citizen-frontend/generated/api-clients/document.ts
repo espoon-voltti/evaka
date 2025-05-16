@@ -4,14 +4,14 @@
 
 // GENERATED FILE: no manual modifications
 
-import { ChildDocumentCitizenDetails } from 'lib-common/generated/api-types/document'
-import { ChildDocumentCitizenSummary } from 'lib-common/generated/api-types/document'
-import { ChildDocumentId } from 'lib-common/generated/api-types/shared'
-import { JsonCompatible } from 'lib-common/json'
-import { JsonOf } from 'lib-common/json'
-import { PersonId } from 'lib-common/generated/api-types/shared'
-import { UpdateChildDocumentRequest } from 'lib-common/generated/api-types/document'
-import { Uri } from 'lib-common/uri'
+import type { ChildDocumentCitizenDetails } from 'lib-common/generated/api-types/document'
+import type { ChildDocumentCitizenSummary } from 'lib-common/generated/api-types/document'
+import type { ChildDocumentId } from 'lib-common/generated/api-types/shared'
+import type { JsonCompatible } from 'lib-common/json'
+import type { JsonOf } from 'lib-common/json'
+import type { PersonId } from 'lib-common/generated/api-types/shared'
+import type { UpdateChildDocumentRequest } from 'lib-common/generated/api-types/document'
+import type { Uri } from 'lib-common/uri'
 import { client } from '../../api-client'
 import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonChildDocumentCitizenDetails } from 'lib-common/generated/api-types/document'

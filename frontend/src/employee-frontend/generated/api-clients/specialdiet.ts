@@ -4,9 +4,9 @@
 
 // GENERATED FILE: no manual modifications
 
-import { JsonOf } from 'lib-common/json'
-import { MealTexture } from 'lib-common/generated/api-types/specialdiet'
-import { SpecialDiet } from 'lib-common/generated/api-types/specialdiet'
+import type { JsonOf } from 'lib-common/json'
+import type { MealTexture } from 'lib-common/generated/api-types/specialdiet'
+import type { SpecialDiet } from 'lib-common/generated/api-types/specialdiet'
 import { client } from '../../api/client'
 import { uri } from 'lib-common/uri'
 

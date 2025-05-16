@@ -6,7 +6,7 @@ import React from 'react'
 import { Link } from 'react-router'
 import styled from 'styled-components'
 
-import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import type HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 import Title from 'lib-components/atoms/Title'

@@ -4,21 +4,21 @@
 
 // GENERATED FILE: no manual modifications
 
+import type { Action } from '../action'
+import type { ChildDocumentDecisionId } from './shared'
+import type { ChildDocumentId } from './shared'
 import DateRange from '../../date-range'
+import type { DocumentConfidentiality } from './process'
+import type { DocumentTemplateId } from './shared'
+import type { EmployeeId } from './shared'
+import type { EvakaUser } from './user'
+import type { EvakaUserId } from './shared'
 import HelsinkiDateTime from '../../helsinki-date-time'
+import type { JsonOf } from '../../json'
 import LocalDate from '../../local-date'
-import { Action } from '../action'
-import { ChildDocumentDecisionId } from './shared'
-import { ChildDocumentId } from './shared'
-import { DocumentConfidentiality } from './process'
-import { DocumentTemplateId } from './shared'
-import { EmployeeId } from './shared'
-import { EvakaUser } from './user'
-import { EvakaUserId } from './shared'
-import { JsonOf } from '../../json'
-import { PersonId } from './shared'
-import { PlacementType } from './placement'
-import { UiLanguage } from './shared'
+import type { PersonId } from './shared'
+import type { PlacementType } from './placement'
+import type { UiLanguage } from './shared'
 
 /**
 * Generated from fi.espoo.evaka.document.childdocument.ChildDocumentController.AcceptChildDocumentDecisionRequest

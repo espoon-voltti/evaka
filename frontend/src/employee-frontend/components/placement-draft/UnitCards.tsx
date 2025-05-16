@@ -2,15 +2,16 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { Dispatch, SetStateAction } from 'react'
+import type { Dispatch, SetStateAction } from 'react'
+import React from 'react'
 import styled from 'styled-components'
 
-import { PublicUnit } from 'lib-common/generated/api-types/daycare'
-import { PlacementPlanDraft } from 'lib-common/generated/api-types/placement'
-import { ApplicationId } from 'lib-common/generated/api-types/shared'
+import type { PublicUnit } from 'lib-common/generated/api-types/daycare'
+import type { PlacementPlanDraft } from 'lib-common/generated/api-types/placement'
+import type { ApplicationId } from 'lib-common/generated/api-types/shared'
 import { defaultMargins } from 'lib-components/white-space'
 
-import { DaycarePlacementPlanForm } from './PlacementDraft'
+import type { DaycarePlacementPlanForm } from './PlacementDraft'
 import UnitCard from './UnitCard'
 
 const FlexContainer = styled.div`

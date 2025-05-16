@@ -4,13 +4,13 @@
 
 // GENERATED FILE: no manual modifications
 
-import { ActiveQuestionnaire } from 'lib-common/generated/api-types/holidayperiod'
-import { FixedPeriodsBody } from 'lib-common/generated/api-types/holidayperiod'
-import { HolidayPeriod } from 'lib-common/generated/api-types/holidayperiod'
-import { HolidayQuestionnaireId } from 'lib-common/generated/api-types/shared'
-import { JsonCompatible } from 'lib-common/json'
-import { JsonOf } from 'lib-common/json'
-import { OpenRangesBody } from 'lib-common/generated/api-types/holidayperiod'
+import type { ActiveQuestionnaire } from 'lib-common/generated/api-types/holidayperiod'
+import type { FixedPeriodsBody } from 'lib-common/generated/api-types/holidayperiod'
+import type { HolidayPeriod } from 'lib-common/generated/api-types/holidayperiod'
+import type { HolidayQuestionnaireId } from 'lib-common/generated/api-types/shared'
+import type { JsonCompatible } from 'lib-common/json'
+import type { JsonOf } from 'lib-common/json'
+import type { OpenRangesBody } from 'lib-common/generated/api-types/holidayperiod'
 import { client } from '../../api-client'
 import { deserializeJsonActiveQuestionnaire } from 'lib-common/generated/api-types/holidayperiod'
 import { deserializeJsonHolidayPeriod } from 'lib-common/generated/api-types/holidayperiod'

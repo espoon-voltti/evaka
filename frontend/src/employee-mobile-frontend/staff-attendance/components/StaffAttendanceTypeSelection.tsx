@@ -5,12 +5,13 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import { CustomTitle } from 'employee-mobile-frontend/common/components'
-import { StaffAttendanceType } from 'lib-common/generated/api-types/attendance'
+import type { StaffAttendanceType } from 'lib-common/generated/api-types/attendance'
 import { ChipWrapper, SelectionChip } from 'lib-components/atoms/Chip'
 import { InfoBox } from 'lib-components/molecules/MessageBoxes'
 import { Gap } from 'lib-components/white-space'
-import { Translations } from 'lib-customizations/employeeMobile'
+import type { Translations } from 'lib-customizations/employeeMobile'
+
+import { CustomTitle } from '../../common/components'
 
 interface Props {
   i18n: Translations

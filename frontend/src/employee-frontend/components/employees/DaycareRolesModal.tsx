@@ -17,22 +17,23 @@ import {
   value
 } from 'lib-common/form/form'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
-import { Form, ValidationError, ValidationSuccess } from 'lib-common/form/types'
-import { Daycare } from 'lib-common/generated/api-types/daycare'
-import {
+import type { Form } from 'lib-common/form/types'
+import { ValidationError, ValidationSuccess } from 'lib-common/form/types'
+import type { Daycare } from 'lib-common/generated/api-types/daycare'
+import type {
   EmployeeWithDaycareRoles,
   UpsertEmployeeDaycareRolesRequest
 } from 'lib-common/generated/api-types/pis'
-import {
+import type {
   AreaId,
   DaycareId,
   UserRole
 } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { SelectF } from 'lib-components/atoms/dropdowns/Select'
+import type { TreeNode } from 'lib-components/atoms/dropdowns/TreeDropdown'
 import TreeDropdown, {
-  sortTreeByText,
-  TreeNode
+  sortTreeByText
 } from 'lib-components/atoms/dropdowns/TreeDropdown'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'

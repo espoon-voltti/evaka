@@ -8,13 +8,13 @@ import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
 import { useBoolean } from 'lib-common/form/hooks'
-import { Daycare } from 'lib-common/generated/api-types/daycare'
-import { HolidayPeriod } from 'lib-common/generated/api-types/holidayperiod'
-import {
+import type { Daycare } from 'lib-common/generated/api-types/daycare'
+import type { HolidayPeriod } from 'lib-common/generated/api-types/holidayperiod'
+import type {
   ChildWithName,
   HolidayPeriodAttendanceReportRow
 } from 'lib-common/generated/api-types/reports'
-import {
+import type {
   DaycareId,
   GroupId,
   HolidayPeriodId

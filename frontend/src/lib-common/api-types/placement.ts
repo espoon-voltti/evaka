@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { ScheduleType } from '../generated/api-types/placement'
+import type { ScheduleType } from '../generated/api-types/placement'
 
 export function mapScheduleType<T>(
   scheduleType: ScheduleType,

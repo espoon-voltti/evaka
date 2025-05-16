@@ -35,7 +35,7 @@ import { MessageContext } from '../messages/state'
 import { unitInfoQuery } from '../units/queries'
 
 import { useTranslation } from './i18n'
-import { UnitOrGroup } from './unit-or-group'
+import type { UnitOrGroup } from './unit-or-group'
 
 export type NavItem = 'child' | 'staff' | 'messages' | 'settings'
 

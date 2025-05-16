@@ -6,8 +6,8 @@ import orderBy from 'lodash/orderBy'
 import React, { useCallback, useContext, useState } from 'react'
 import styled from 'styled-components'
 
-import { PedagogicalDocument } from 'lib-common/generated/api-types/pedagogicaldocument'
-import {
+import type { PedagogicalDocument } from 'lib-common/generated/api-types/pedagogicaldocument'
+import type {
   ChildId,
   PedagogicalDocumentId
 } from 'lib-common/generated/api-types/shared'

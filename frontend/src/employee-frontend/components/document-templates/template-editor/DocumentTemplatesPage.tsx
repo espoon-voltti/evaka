@@ -8,20 +8,20 @@ import React, { useMemo, useState } from 'react'
 import { Link } from 'react-router'
 import styled from 'styled-components'
 
-import DateRange from 'lib-common/date-range'
+import type DateRange from 'lib-common/date-range'
 import { openEndedLocalDateRange } from 'lib-common/form/fields'
 import { array, object, oneOf, required, value } from 'lib-common/form/form'
 import { useBoolean, useForm, useFormFields } from 'lib-common/form/hooks'
-import {
+import type {
   DocumentTemplateSummary,
-  DocumentType,
-  documentTypes
+  DocumentType
 } from 'lib-common/generated/api-types/document'
-import {
+import { documentTypes } from 'lib-common/generated/api-types/document'
+import type {
   DocumentTemplateId,
-  UiLanguage,
-  uiLanguages
+  UiLanguage
 } from 'lib-common/generated/api-types/shared'
+import { uiLanguages } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
@@ -59,7 +59,8 @@ import {
 } from '../queries'
 
 import TemplateImportModal from './TemplateImportModal'
-import TemplateModal, { TemplateModalMode } from './TemplateModal'
+import type { TemplateModalMode } from './TemplateModal'
+import TemplateModal from './TemplateModal'
 
 const validityForm = required(openEndedLocalDateRange())
 

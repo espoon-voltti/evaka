@@ -9,7 +9,6 @@ import React, { useCallback, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
 import styled, { useTheme } from 'styled-components'
 
-import AttendanceDailyServiceTimes from 'employee-mobile-frontend/child-info/AttendanceDailyServiceTimes'
 import { combine } from 'lib-common/api'
 import { localTime } from 'lib-common/form/fields'
 import {
@@ -20,8 +19,8 @@ import {
   validated,
   value
 } from 'lib-common/form/form'
+import type { BoundForm } from 'lib-common/form/hooks'
 import {
-  BoundForm,
   useBoolean,
   useForm,
   useFormElems,
@@ -29,16 +28,19 @@ import {
   useFormFields,
   useFormUnion
 } from 'lib-common/form/hooks'
-import { StateOf } from 'lib-common/form/types'
-import { Absence, AbsenceType } from 'lib-common/generated/api-types/absence'
-import { ScheduleType } from 'lib-common/generated/api-types/placement'
-import {
+import type { StateOf } from 'lib-common/form/types'
+import type {
+  Absence,
+  AbsenceType
+} from 'lib-common/generated/api-types/absence'
+import type { ScheduleType } from 'lib-common/generated/api-types/placement'
+import type {
   ConfirmedRangeDate,
   ConfirmedRangeDateUpdate,
   Reservation
 } from 'lib-common/generated/api-types/reservations'
-import { ChildId, DaycareId } from 'lib-common/generated/api-types/shared'
-import LocalDate from 'lib-common/local-date'
+import type { ChildId, DaycareId } from 'lib-common/generated/api-types/shared'
+import type LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { useQueryResult } from 'lib-common/query'
 import TimeRange from 'lib-common/time-range'
@@ -59,6 +61,7 @@ import { faPlus, faTrash, faAngleDown, faAngleUp } from 'lib-icons'
 
 import { routes } from '../../App'
 import { renderResult } from '../../async-rendering'
+import AttendanceDailyServiceTimes from '../../child-info/AttendanceDailyServiceTimes'
 import ChildNameBackButton from '../../common/ChildNameBackButton'
 import { Actions, ServiceTime } from '../../common/components'
 import { useTranslation } from '../../common/i18n'

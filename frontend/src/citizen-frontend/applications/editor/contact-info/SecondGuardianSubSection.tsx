@@ -4,12 +4,12 @@
 
 import React from 'react'
 
-import {
+import type {
   ContactInfoFormData,
   SelectableOtherGuardianAgreementStatus
 } from 'lib-common/api-types/application/ApplicationFormData'
-import { UpdateStateFn } from 'lib-common/form-state'
-import { ApplicationType } from 'lib-common/generated/api-types/application'
+import type { UpdateStateFn } from 'lib-common/form-state'
+import type { ApplicationType } from 'lib-common/generated/api-types/application'
 import InputField from 'lib-components/atoms/form/InputField'
 import Radio from 'lib-components/atoms/form/Radio'
 import AdaptiveFlex from 'lib-components/layout/AdaptiveFlex'
@@ -20,7 +20,7 @@ import { Gap } from 'lib-components/white-space'
 
 import { errorToInputInfo } from '../../../input-info-helper'
 import { useTranslation } from '../../../localization'
-import { ApplicationFormDataErrors } from '../validations'
+import type { ApplicationFormDataErrors } from '../validations'
 
 type SecondGuardianSubSectionProps = {
   type: ApplicationType

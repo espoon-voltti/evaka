@@ -4,15 +4,15 @@
 
 // GENERATED FILE: no manual modifications
 
+import type { DaycareId } from 'lib-common/generated/api-types/shared'
+import type { EmployeeId } from 'lib-common/generated/api-types/shared'
+import type { ExternalAttendanceBody } from 'lib-common/generated/api-types/attendance'
+import type { JsonCompatible } from 'lib-common/json'
+import type { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
-import { DaycareId } from 'lib-common/generated/api-types/shared'
-import { EmployeeId } from 'lib-common/generated/api-types/shared'
-import { ExternalAttendanceBody } from 'lib-common/generated/api-types/attendance'
-import { JsonCompatible } from 'lib-common/json'
-import { JsonOf } from 'lib-common/json'
-import { OpenGroupAttendanceResponse } from 'lib-common/generated/api-types/attendance'
-import { StaffAttendanceBody } from 'lib-common/generated/api-types/attendance'
-import { StaffAttendanceResponse } from 'lib-common/generated/api-types/attendance'
+import type { OpenGroupAttendanceResponse } from 'lib-common/generated/api-types/attendance'
+import type { StaffAttendanceBody } from 'lib-common/generated/api-types/attendance'
+import type { StaffAttendanceResponse } from 'lib-common/generated/api-types/attendance'
 import { client } from '../../api/client'
 import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonOpenGroupAttendanceResponse } from 'lib-common/generated/api-types/attendance'

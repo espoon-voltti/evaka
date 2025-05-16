@@ -8,12 +8,11 @@ import React, { useEffect, useState } from 'react'
 import FocusLock from 'react-focus-lock'
 import styled, { useTheme } from 'styled-components'
 
-import { useTranslation } from 'citizen-frontend/localization'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { tabletMin, tabletMinPx } from 'lib-components/breakpoints'
+import type { CollapsibleContentAreaProps } from 'lib-components/layout/Container'
 import {
-  CollapsibleContentAreaProps,
   ContentArea,
   TitleContainer,
   TitleIcon
@@ -24,13 +23,16 @@ import {
   TabletAndDesktop
 } from 'lib-components/layout/responsive-layout'
 import { H2, fontWeights } from 'lib-components/typography'
-import { SpacingSize, defaultMargins } from 'lib-components/white-space'
+import type { SpacingSize } from 'lib-components/white-space'
+import { defaultMargins } from 'lib-components/white-space'
 import {
   faArrowLeft,
   faChevronDown,
   faChevronRight,
   faChevronUp
 } from 'lib-icons'
+
+import { useTranslation } from '../localization'
 
 const BreakingH2 = styled(H2)`
   word-break: break-word;

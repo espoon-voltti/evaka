@@ -10,10 +10,12 @@ import { H2 } from 'lib-components/typography'
 
 import PersonDetails from '../../components/person-shared/PersonDetails'
 import { useTranslation } from '../../state/i18n'
-import { TitleContext, TitleState } from '../../state/title'
+import type { TitleState } from '../../state/title'
+import { TitleContext } from '../../state/title'
 import { renderResult } from '../async-rendering'
 
-import { PersonContext, PersonState } from './state'
+import type { PersonState } from './state'
+import { PersonContext } from './state'
 
 export default React.memo(function PersonFridgeHead() {
   const { i18n } = useTranslation()

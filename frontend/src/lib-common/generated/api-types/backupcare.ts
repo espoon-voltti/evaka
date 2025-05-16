@@ -4,15 +4,15 @@
 
 // GENERATED FILE: no manual modifications
 
+import type { Action } from '../action'
+import type { BackupCareId } from './shared'
+import type { DaycareId } from './shared'
 import FiniteDateRange from '../../finite-date-range'
+import type { GroupId } from './shared'
+import type { JsonOf } from '../../json'
 import LocalDate from '../../local-date'
-import { Action } from '../action'
-import { BackupCareId } from './shared'
-import { DaycareId } from './shared'
-import { GroupId } from './shared'
-import { JsonOf } from '../../json'
-import { PersonId } from './shared'
-import { ServiceNeed } from './serviceneed'
+import type { PersonId } from './shared'
+import type { ServiceNeed } from './serviceneed'
 import { deserializeJsonServiceNeed } from './serviceneed'
 
 /**

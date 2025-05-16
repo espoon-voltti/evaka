@@ -19,20 +19,16 @@ import {
   required,
   value
 } from 'lib-common/form/form'
-import {
-  BoundForm,
-  useForm,
-  useFormElems,
-  useFormFields
-} from 'lib-common/form/hooks'
-import {
+import type { BoundForm } from 'lib-common/form/hooks'
+import { useForm, useFormElems, useFormFields } from 'lib-common/form/hooks'
+import type {
   AssistanceNeedPreschoolDecision,
   AssistanceNeedPreschoolDecisionForm,
   AssistanceNeedPreschoolDecisionType
 } from 'lib-common/generated/api-types/assistanceneed'
-import { UnitStub } from 'lib-common/generated/api-types/daycare'
-import { Employee } from 'lib-common/generated/api-types/pis'
-import {
+import type { UnitStub } from 'lib-common/generated/api-types/daycare'
+import type { Employee } from 'lib-common/generated/api-types/pis'
+import type {
   AssistanceNeedPreschoolDecisionGuardianId,
   AssistanceNeedPreschoolDecisionId,
   ChildId,

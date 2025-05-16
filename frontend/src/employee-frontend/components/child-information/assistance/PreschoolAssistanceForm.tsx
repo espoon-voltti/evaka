@@ -4,25 +4,25 @@
 
 import React, { useCallback } from 'react'
 
-import { Result } from 'lib-common/api'
+import type { Result } from 'lib-common/api'
 import { localDateRange } from 'lib-common/form/fields'
+import type { OneOfOption } from 'lib-common/form/form'
 import {
   object,
   oneOf,
-  OneOfOption,
   required,
   transformed,
   value
 } from 'lib-common/form/form'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
 import { ValidationError, ValidationSuccess } from 'lib-common/form/types'
-import {
+import type {
   PreschoolAssistance,
   PreschoolAssistanceLevel,
   PreschoolAssistanceResponse,
   PreschoolAssistanceUpdate
 } from 'lib-common/generated/api-types/assistance'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { SelectF } from 'lib-components/atoms/dropdowns/Select'
 import { Td, Tr } from 'lib-components/layout/Table'
@@ -30,7 +30,8 @@ import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { DateRangePickerF } from 'lib-components/molecules/date-picker/DateRangePicker'
 import { preschoolAssistanceLevels } from 'lib-customizations/employee'
 
-import { Translations, useTranslation } from '../../../state/i18n'
+import type { Translations } from '../../../state/i18n'
+import { useTranslation } from '../../../state/i18n'
 import { getStatusLabelByDateRange } from '../../../utils/date'
 import StatusLabel from '../../common/StatusLabel'
 

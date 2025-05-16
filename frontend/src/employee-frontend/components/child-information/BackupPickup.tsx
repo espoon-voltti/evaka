@@ -5,8 +5,8 @@
 import React, { useContext, useState } from 'react'
 import styled from 'styled-components'
 
-import { ChildBackupPickup } from 'lib-common/generated/api-types/backuppickup'
-import { ChildId } from 'lib-common/generated/api-types/shared'
+import type { ChildBackupPickup } from 'lib-common/generated/api-types/backuppickup'
+import type { ChildId } from 'lib-common/generated/api-types/shared'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'

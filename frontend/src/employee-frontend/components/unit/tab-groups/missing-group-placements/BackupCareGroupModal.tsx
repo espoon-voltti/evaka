@@ -4,9 +4,9 @@
 
 import React, { useContext, useState } from 'react'
 
-import { UnitBackupCare } from 'lib-common/generated/api-types/backupcare'
-import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
-import { DaycareId } from 'lib-common/generated/api-types/shared'
+import type { UnitBackupCare } from 'lib-common/generated/api-types/backupcare'
+import type { DaycareGroup } from 'lib-common/generated/api-types/daycare'
+import type { DaycareId } from 'lib-common/generated/api-types/shared'
 import { cancelMutation } from 'lib-components/atoms/buttons/MutateButton'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'

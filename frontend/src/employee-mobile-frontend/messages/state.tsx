@@ -10,13 +10,14 @@ import React, {
   useState
 } from 'react'
 
-import { Loading, Result } from 'lib-common/api'
-import { AuthorizedMessageAccount } from 'lib-common/generated/api-types/messaging'
+import type { Result } from 'lib-common/api'
+import { Loading } from 'lib-common/api'
+import type { AuthorizedMessageAccount } from 'lib-common/generated/api-types/messaging'
 import { constantQuery, useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 
 import { UserContext } from '../auth/state'
-import { UnitOrGroup } from '../common/unit-or-group'
+import type { UnitOrGroup } from '../common/unit-or-group'
 
 import { messagingAccountsQuery } from './queries'
 

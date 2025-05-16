@@ -4,10 +4,11 @@
 
 import React, { useMemo } from 'react'
 
-import { useTranslation } from 'citizen-frontend/localization'
-import FiniteDateRange from 'lib-common/finite-date-range'
+import type FiniteDateRange from 'lib-common/finite-date-range'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import { Label } from 'lib-components/typography'
+
+import { useTranslation } from '../../localization'
 
 interface HolidayOption {
   name: string

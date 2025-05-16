@@ -7,12 +7,12 @@ import React, { useContext } from 'react'
 import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
-import {
+import type {
   Payment,
   PaymentSortParam,
   SortDirection
 } from 'lib-common/generated/api-types/invoicing'
-import { PaymentId } from 'lib-common/generated/api-types/shared'
+import type { PaymentId } from 'lib-common/generated/api-types/shared'
 import { formatCents } from 'lib-common/money'
 import Pagination from 'lib-components/Pagination'
 import Title from 'lib-components/atoms/Title'

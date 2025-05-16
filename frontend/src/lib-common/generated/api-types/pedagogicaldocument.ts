@@ -4,12 +4,12 @@
 
 // GENERATED FILE: no manual modifications
 
+import type { Attachment } from './attachment'
+import type { EvakaUser } from './user'
 import HelsinkiDateTime from '../../helsinki-date-time'
-import { Attachment } from './attachment'
-import { EvakaUser } from './user'
-import { JsonOf } from '../../json'
-import { PedagogicalDocumentId } from './shared'
-import { PersonId } from './shared'
+import type { JsonOf } from '../../json'
+import type { PedagogicalDocumentId } from './shared'
+import type { PersonId } from './shared'
 
 /**
 * Generated from fi.espoo.evaka.pedagogicaldocument.PedagogicalDocument

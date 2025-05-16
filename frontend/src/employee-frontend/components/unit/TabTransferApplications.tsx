@@ -6,7 +6,7 @@ import sortBy from 'lodash/sortBy'
 import React, { useMemo } from 'react'
 
 import { useBoolean } from 'lib-common/form/hooks'
-import { TransferApplicationUnitSummary } from 'lib-common/generated/api-types/application'
+import type { TransferApplicationUnitSummary } from 'lib-common/generated/api-types/application'
 import Title from 'lib-components/atoms/Title'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'

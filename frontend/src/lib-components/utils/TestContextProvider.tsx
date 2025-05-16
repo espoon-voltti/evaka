@@ -7,7 +7,8 @@ import { ThemeProvider } from 'styled-components'
 
 import espooTheme from 'lib-common/themes/espoo-theme'
 
-import { ComponentLocalizationContextProvider, Translations } from '../i18n'
+import type { Translations } from '../i18n'
+import { ComponentLocalizationContextProvider } from '../i18n'
 
 export const testTranslations: Translations = {
   sessionTimeout: {

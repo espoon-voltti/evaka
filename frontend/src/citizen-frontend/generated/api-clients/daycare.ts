@@ -4,13 +4,13 @@
 
 // GENERATED FILE: no manual modifications
 
+import type { ApplicationType } from 'lib-common/generated/api-types/application'
+import type { ApplicationUnitType } from 'lib-common/generated/api-types/daycare'
+import type { ClubTerm } from 'lib-common/generated/api-types/daycare'
+import type { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
-import { ApplicationType } from 'lib-common/generated/api-types/application'
-import { ApplicationUnitType } from 'lib-common/generated/api-types/daycare'
-import { ClubTerm } from 'lib-common/generated/api-types/daycare'
-import { JsonOf } from 'lib-common/json'
-import { PreschoolTerm } from 'lib-common/generated/api-types/daycare'
-import { PublicUnit } from 'lib-common/generated/api-types/daycare'
+import type { PreschoolTerm } from 'lib-common/generated/api-types/daycare'
+import type { PublicUnit } from 'lib-common/generated/api-types/daycare'
 import { client } from '../../api-client'
 import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonClubTerm } from 'lib-common/generated/api-types/daycare'

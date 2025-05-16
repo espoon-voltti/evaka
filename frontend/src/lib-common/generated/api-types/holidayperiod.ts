@@ -4,14 +4,14 @@
 
 // GENERATED FILE: no manual modifications
 
+import type { AbsenceType } from './absence'
 import FiniteDateRange from '../../finite-date-range'
+import type { HolidayPeriodId } from './shared'
+import type { HolidayQuestionnaireId } from './shared'
+import type { JsonOf } from '../../json'
 import LocalDate from '../../local-date'
-import { AbsenceType } from './absence'
-import { HolidayPeriodId } from './shared'
-import { HolidayQuestionnaireId } from './shared'
-import { JsonOf } from '../../json'
-import { PersonId } from './shared'
-import { Translatable } from './shared'
+import type { PersonId } from './shared'
+import type { Translatable } from './shared'
 
 /**
 * Generated from fi.espoo.evaka.holidayperiod.ActiveQuestionnaire

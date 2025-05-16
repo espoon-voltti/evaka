@@ -5,8 +5,8 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
 
-import { CaretakerAmount } from 'lib-common/generated/api-types/daycare'
-import { DaycareId, GroupId } from 'lib-common/generated/api-types/shared'
+import type { CaretakerAmount } from 'lib-common/generated/api-types/daycare'
+import type { DaycareId, GroupId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import {
   cancelMutation,

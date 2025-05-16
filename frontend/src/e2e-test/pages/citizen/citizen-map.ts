@@ -2,15 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { DevDaycare } from '../../generated/api-types'
+import type { DevDaycare } from '../../generated/api-types'
 import { waitUntilEqual } from '../../utils'
-import {
-  Element,
-  Page,
-  Radio,
-  SelectionChip,
-  TextInput
-} from '../../utils/page'
+import type { Page } from '../../utils/page'
+import { Element, Radio, SelectionChip, TextInput } from '../../utils/page'
 
 export default class CitizenMapPage {
   daycareFilter: Radio

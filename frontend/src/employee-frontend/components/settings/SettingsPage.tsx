@@ -4,11 +4,8 @@
 
 import React, { useCallback, useState } from 'react'
 
-import { useTranslation } from 'employee-frontend/state/i18n'
-import {
-  settings as options,
-  SettingType
-} from 'lib-common/generated/api-types/setting'
+import type { SettingType } from 'lib-common/generated/api-types/setting'
+import { settings as options } from 'lib-common/generated/api-types/setting'
 import { useQueryResult } from 'lib-common/query'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import InputField from 'lib-components/atoms/form/InputField'
@@ -18,6 +15,7 @@ import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { H1 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
+import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 
 import { putSettingsMutation, settingsQuery } from './queries'

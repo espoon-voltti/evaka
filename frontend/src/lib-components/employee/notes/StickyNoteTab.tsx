@@ -4,19 +4,21 @@
 
 import React, { useCallback, useState } from 'react'
 
-import { Result } from 'lib-common/api'
-import { Id } from 'lib-common/id-type'
+import type { Result } from 'lib-common/api'
+import type { Id } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { H1, H2, H3 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
-import { StaticLabels, StaticStickyNote } from './StaticStickyNote'
-import { EditorLabels, StickyNoteEditor } from './StickyNoteEditor'
-import { EditedNote, Note } from './notes'
+import type { StaticLabels } from './StaticStickyNote'
+import { StaticStickyNote } from './StaticStickyNote'
+import type { EditorLabels } from './StickyNoteEditor'
+import { StickyNoteEditor } from './StickyNoteEditor'
+import type { EditedNote, Note } from './notes'
 
 const newNote = (): EditedNote<never> => ({
   expires: LocalDate.todayInSystemTz().addDays(7),

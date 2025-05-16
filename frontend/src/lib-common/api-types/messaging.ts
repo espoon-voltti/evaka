@@ -2,9 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import LocalDate from 'lib-common/local-date'
+import type LocalDate from 'lib-common/local-date'
 
-import { SelectableRecipient } from '../generated/api-types/messaging'
+import type { SelectableRecipient } from '../generated/api-types/messaging'
 
 export const sortSelectableRecipients = <T extends SelectableRecipient>(
   recipients: T[]

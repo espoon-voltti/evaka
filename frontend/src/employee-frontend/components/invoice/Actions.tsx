@@ -4,11 +4,11 @@
 
 import React from 'react'
 
-import { useTranslation } from 'employee-frontend/state/i18n'
-import { InvoiceDetailedResponse } from 'lib-common/generated/api-types/invoicing'
+import type { InvoiceDetailedResponse } from 'lib-common/generated/api-types/invoicing'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 
+import { useTranslation } from '../../state/i18n'
 import { markInvoicesSentMutation } from '../invoices/queries'
 
 type Props = {

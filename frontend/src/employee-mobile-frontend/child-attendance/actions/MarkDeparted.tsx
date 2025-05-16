@@ -8,13 +8,13 @@ import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
 import { isValidTime } from 'lib-common/date'
-import { AbsenceType } from 'lib-common/generated/api-types/absence'
-import {
+import type { AbsenceType } from 'lib-common/generated/api-types/absence'
+import type {
   AttendanceChild,
   AttendanceTimes,
   ChildAttendanceStatusResponse
 } from 'lib-common/generated/api-types/attendance'
-import { DaycareId } from 'lib-common/generated/api-types/shared'
+import type { DaycareId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
@@ -24,7 +24,7 @@ import {
   useMutationResult,
   useQueryResult
 } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import Title from 'lib-components/atoms/Title'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
@@ -48,7 +48,8 @@ import {
   CustomTitle,
   TimeWrapper
 } from '../../common/components'
-import { Translations, useTranslation } from '../../common/i18n'
+import type { Translations } from '../../common/i18n'
+import { useTranslation } from '../../common/i18n'
 import { TallContentArea } from '../../pairing/components'
 import { formatCategory } from '../../types'
 import ChildNotesSummary from '../ChildNotesSummary'
@@ -60,7 +61,8 @@ import {
 } from '../queries'
 import { childAttendanceStatus } from '../utils'
 
-import AbsenceSelector, { AbsenceTypeWithNoAbsence } from './AbsenceSelector'
+import type { AbsenceTypeWithNoAbsence } from './AbsenceSelector'
+import AbsenceSelector from './AbsenceSelector'
 
 const AbsenceTitle = styled(Title)`
   font-size: 18px;

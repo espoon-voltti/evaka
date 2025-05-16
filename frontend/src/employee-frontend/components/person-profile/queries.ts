@@ -2,22 +2,21 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { getGuardianApplicationSummaries } from 'employee-frontend/generated/api-clients/application'
-import { getDecisionsByGuardian } from 'employee-frontend/generated/api-clients/decision'
-import {
-  getIncomeStatementChildren,
-  getIncomeStatements
-} from 'employee-frontend/generated/api-clients/incomestatement'
-import { getChildPlacementPeriods } from 'employee-frontend/generated/api-clients/placement'
-import { PersonId } from 'lib-common/generated/api-types/shared'
+import type { PersonId } from 'lib-common/generated/api-types/shared'
 import { Queries } from 'lib-common/query'
 
+import { getGuardianApplicationSummaries } from '../../generated/api-clients/application'
+import { getDecisionsByGuardian } from '../../generated/api-clients/decision'
 import {
   createFinanceNote,
   deleteFinanceNote,
   getFinanceNotes,
   updateFinanceNote
 } from '../../generated/api-clients/finance'
+import {
+  getIncomeStatementChildren,
+  getIncomeStatements
+} from '../../generated/api-clients/incomestatement'
 import {
   createIncome,
   createInvoiceCorrection,
@@ -60,6 +59,7 @@ import {
   updatePersonAndFamilyFromVtj,
   updatePersonDetails
 } from '../../generated/api-clients/pis'
+import { getChildPlacementPeriods } from '../../generated/api-clients/placement'
 import { childQuery } from '../child-information/queries'
 
 const q = new Queries()

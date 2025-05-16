@@ -3,14 +3,13 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { waitUntilDefined, waitUntilEqual, waitUntilTrue } from '../../../utils'
+import type { ElementCollection, Page } from '../../../utils/page'
 import {
   Combobox,
   DatePicker,
   Element,
-  ElementCollection,
   Modal,
   MultiSelect,
-  Page,
   TextInput
 } from '../../../utils/page'
 

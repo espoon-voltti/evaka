@@ -9,12 +9,12 @@ import sortBy from 'lodash/sortBy'
 import React, { useCallback, useMemo, useState } from 'react'
 
 import { wrapResult } from 'lib-common/api'
-import {
+import type {
   PlacementTerminationRequestBody,
   PlacementType,
   TerminatablePlacementGroup
 } from 'lib-common/generated/api-types/placement'
-import { ChildId } from 'lib-common/generated/api-types/shared'
+import type { ChildId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import Checkbox from 'lib-components/atoms/form/Checkbox'

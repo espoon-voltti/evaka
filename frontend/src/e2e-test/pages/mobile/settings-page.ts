@@ -2,9 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { PushNotificationCategory } from 'lib-common/generated/api-types/webpush'
+import type { PushNotificationCategory } from 'lib-common/generated/api-types/webpush'
 
-import { Page, Element, Checkbox } from '../../utils/page'
+import type { Page } from '../../utils/page'
+import { Element, Checkbox } from '../../utils/page'
 
 export class SettingsPage {
   notificationSettings: NotificationSettings

@@ -7,12 +7,10 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router'
 import styled from 'styled-components'
 
-import {
-  AssistanceNeedDecisionStatus,
-  assistanceNeedDecisionStatuses
-} from 'lib-common/generated/api-types/assistanceneed'
-import { SortDirection } from 'lib-common/generated/api-types/invoicing'
-import { AssistanceNeedDecisionsReportRow } from 'lib-common/generated/api-types/reports'
+import type { AssistanceNeedDecisionStatus } from 'lib-common/generated/api-types/assistanceneed'
+import { assistanceNeedDecisionStatuses } from 'lib-common/generated/api-types/assistanceneed'
+import type { SortDirection } from 'lib-common/generated/api-types/invoicing'
+import type { AssistanceNeedDecisionsReportRow } from 'lib-common/generated/api-types/reports'
 import { useQueryResult } from 'lib-common/query'
 import { AssistanceNeedDecisionStatusChip } from 'lib-components/assistance-need-decision/AssistanceNeedDecisionStatusChip'
 import Title from 'lib-components/atoms/Title'

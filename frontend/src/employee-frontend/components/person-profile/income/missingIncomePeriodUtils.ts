@@ -5,7 +5,7 @@
 import sortBy from 'lodash/sortBy'
 
 import FiniteDateRange, { mergeDateRanges } from 'lib-common/finite-date-range'
-import LocalDate from 'lib-common/local-date'
+import type LocalDate from 'lib-common/local-date'
 
 type IncomeDates = { validFrom: LocalDate; validTo: LocalDate | null }
 

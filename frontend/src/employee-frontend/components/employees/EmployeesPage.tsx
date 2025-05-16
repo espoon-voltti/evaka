@@ -7,7 +7,7 @@ import React, { useCallback, useState } from 'react'
 import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
-import { Failure } from 'lib-common/api'
+import type { Failure } from 'lib-common/api'
 import {
   globalRoles,
   scopedRoles as unitRoles
@@ -17,8 +17,11 @@ import { object, required, validated } from 'lib-common/form/form'
 import { useBoolean, useForm, useFormField } from 'lib-common/form/hooks'
 import { nonBlank, optionalEmail } from 'lib-common/form/validators'
 import { ssn } from 'lib-common/form-validation'
-import { ProviderType } from 'lib-common/generated/api-types/daycare'
-import { EmployeeId, UserRole } from 'lib-common/generated/api-types/shared'
+import type { ProviderType } from 'lib-common/generated/api-types/daycare'
+import type {
+  EmployeeId,
+  UserRole
+} from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { useQueryResult } from 'lib-common/query'
 import { uri } from 'lib-common/uri'

@@ -4,11 +4,11 @@
 
 // GENERATED FILE: no manual modifications
 
+import type { ContactInfo } from './attendance'
+import type { JsonOf } from '../../json'
 import LocalDate from '../../local-date'
-import { ContactInfo } from './attendance'
-import { JsonOf } from '../../json'
-import { PersonId } from './shared'
-import { PlacementType } from './placement'
+import type { PersonId } from './shared'
+import type { PlacementType } from './placement'
 
 /**
 * Generated from fi.espoo.evaka.sensitive.ChildBasicInformation

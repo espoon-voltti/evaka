@@ -4,9 +4,9 @@
 
 import React, { useContext, useEffect, useState } from 'react'
 
-import { UpdateStateFn } from 'lib-common/form-state'
-import { DaycareId } from 'lib-common/generated/api-types/shared'
-import LocalDate from 'lib-common/local-date'
+import type { UpdateStateFn } from 'lib-common/form-state'
+import type { DaycareId } from 'lib-common/generated/api-types/shared'
+import type LocalDate from 'lib-common/local-date'
 import { cancelMutation } from 'lib-common/query'
 import InputField from 'lib-components/atoms/form/InputField'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'

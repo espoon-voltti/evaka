@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { getServiceNeedOptionPublicInfos } from 'employee-frontend/generated/api-clients/serviceneed'
 import { Queries } from 'lib-common/query'
 
 import {
@@ -12,6 +11,7 @@ import {
   simpleBatchAction,
   updateServiceWorkerNote
 } from '../../generated/api-clients/application'
+import { getServiceNeedOptionPublicInfos } from '../../generated/api-clients/serviceneed'
 
 const q = new Queries()
 

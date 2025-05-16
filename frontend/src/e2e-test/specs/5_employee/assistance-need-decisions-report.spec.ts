@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import {
+import type {
   AssistanceNeedDecisionId,
   DaycareId,
   PersonId
@@ -28,7 +28,7 @@ import {
   createDaycarePlacements,
   resetServiceState
 } from '../../generated/api-clients'
-import { DevEmployee } from '../../generated/api-types'
+import type { DevEmployee } from '../../generated/api-types'
 import {
   AssistanceNeedDecisionsReport,
   AssistanceNeedDecisionsReportDecision

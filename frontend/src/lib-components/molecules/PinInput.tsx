@@ -4,18 +4,18 @@
 
 import classNames from 'classnames'
 import range from 'lodash/range'
-import React, { RefObject, useMemo, useRef } from 'react'
+import type { RefObject } from 'react'
+import React, { useMemo, useRef } from 'react'
 import styled from 'styled-components'
 
-import { BoundFormState } from 'lib-common/form/hooks'
+import type { BoundFormState } from 'lib-common/form/hooks'
 
 import UnderRowStatusIcon from '../atoms/StatusIcon'
+import type { InputInfo, TextInputProps } from '../atoms/form/InputField'
 import InputField, {
   InputFieldF,
   InputFieldUnderRow,
-  InputInfo,
-  StyledInput,
-  TextInputProps
+  StyledInput
 } from '../atoms/form/InputField'
 import { fontWeights } from '../typography'
 import { defaultMargins } from '../white-space'

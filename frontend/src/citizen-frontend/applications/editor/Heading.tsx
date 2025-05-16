@@ -5,7 +5,7 @@
 import React from 'react'
 
 import { getErrorCount } from 'lib-common/form-validation'
-import { ApplicationType } from 'lib-common/generated/api-types/application'
+import type { ApplicationType } from 'lib-common/generated/api-types/application'
 import { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
@@ -14,7 +14,8 @@ import { Gap } from 'lib-components/white-space'
 
 import { useTranslation } from '../../localization'
 
-import { ApplicationFormDataErrors, applicationHasErrors } from './validations'
+import type { ApplicationFormDataErrors } from './validations'
+import { applicationHasErrors } from './validations'
 
 type HeadingProps = {
   type: ApplicationType

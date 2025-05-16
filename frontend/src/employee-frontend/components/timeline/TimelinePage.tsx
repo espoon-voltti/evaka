@@ -8,8 +8,8 @@ import styled from 'styled-components'
 
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { PersonId } from 'lib-common/generated/api-types/shared'
-import { Timeline } from 'lib-common/generated/api-types/timeline'
+import type { PersonId } from 'lib-common/generated/api-types/shared'
+import type { Timeline } from 'lib-common/generated/api-types/timeline'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
@@ -24,7 +24,8 @@ import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 
 import TimelineGroup from './TimelineGroup'
-import { hasRange, WithRange } from './common'
+import type { WithRange } from './common'
+import { hasRange } from './common'
 import { timelineQuery } from './queries'
 import {
   childRenderer,

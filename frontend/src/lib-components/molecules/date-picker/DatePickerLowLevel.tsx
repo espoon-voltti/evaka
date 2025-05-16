@@ -9,7 +9,7 @@ import React, {
   useRef,
   useState
 } from 'react'
-import { OnSelectHandler } from 'react-day-picker'
+import type { OnSelectHandler } from 'react-day-picker'
 import { createPortal } from 'react-dom'
 import FocusLock from 'react-focus-lock'
 import styled from 'styled-components'
@@ -20,7 +20,7 @@ import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { useTranslations } from 'lib-components/i18n'
 import { faCalendarAlt } from 'lib-icons'
 
-import { InputInfo } from '../../atoms/form/InputField'
+import type { InputInfo } from '../../atoms/form/InputField'
 import { fontWeights } from '../../typography'
 import { defaultMargins } from '../../white-space'
 

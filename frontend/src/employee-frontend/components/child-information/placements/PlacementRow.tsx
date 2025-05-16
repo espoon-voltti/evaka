@@ -7,22 +7,22 @@ import React, { useCallback, useContext, useMemo, useState } from 'react'
 import { Link } from 'react-router'
 import styled from 'styled-components'
 
-import { Failure } from 'lib-common/api'
+import type { Failure } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { Action } from 'lib-common/generated/action'
-import {
+import type { Action } from 'lib-common/generated/action'
+import type {
   DaycareGroupPlacement,
   DaycarePlacementWithDetails
 } from 'lib-common/generated/api-types/placement'
-import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
+import type { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
 import LocalDate from 'lib-common/local-date'
 import {
   cancelMutation,
   useMutationResult,
   useQueryResult
 } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import UnorderedList from 'lib-components/atoms/UnorderedList'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
@@ -38,7 +38,8 @@ import ToolbarAccordion, {
   RestrictedToolbar
 } from '../../../components/common/ToolbarAccordion'
 import { useTranslation } from '../../../state/i18n'
-import { UIContext, UiState } from '../../../state/ui'
+import type { UiState } from '../../../state/ui'
+import { UIContext } from '../../../state/ui'
 import {
   getStatusLabelByDateRange,
   isActiveDateRange

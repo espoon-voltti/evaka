@@ -5,10 +5,9 @@
 import React, { useCallback, useContext, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import { useTranslation } from 'employee-mobile-frontend/common/i18n'
 import { combine } from 'lib-common/api'
-import { Staff } from 'lib-common/generated/api-types/attendance'
-import { DaycareId } from 'lib-common/generated/api-types/shared'
+import type { Staff } from 'lib-common/generated/api-types/attendance'
+import type { DaycareId } from 'lib-common/generated/api-types/shared'
 import { constantQuery, useQueryResult } from 'lib-common/query'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
@@ -17,6 +16,7 @@ import { faLockOpenAlt, faTimes } from 'lib-icons'
 
 import { renderResult } from '../../async-rendering'
 import { UserContext } from '../../auth/state'
+import { useTranslation } from '../../common/i18n'
 import { unitInfoQuery } from '../../units/queries'
 
 import { TopBarIconContainer } from './TopBarIconContainer'

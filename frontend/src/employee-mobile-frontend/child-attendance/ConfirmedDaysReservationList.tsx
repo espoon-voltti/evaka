@@ -4,10 +4,10 @@
 
 import React, { useMemo } from 'react'
 
-import { DayReservationStatisticsResult } from 'lib-common/generated/api-types/reservations'
+import type { DayReservationStatisticsResult } from 'lib-common/generated/api-types/reservations'
 import { ContentArea } from 'lib-components/layout/Container'
 
-import { UnitOrGroup } from '../common/unit-or-group'
+import type { UnitOrGroup } from '../common/unit-or-group'
 
 import DayList from './DayList'
 

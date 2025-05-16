@@ -8,7 +8,8 @@ import { Gap } from 'lib-components/white-space'
 
 import { Button } from '../../atoms/buttons/Button'
 
-import BaseModal, { ModalBaseProps, ModalButtons } from './BaseModal'
+import type { ModalBaseProps } from './BaseModal'
+import BaseModal, { ModalButtons } from './BaseModal'
 
 type Props = Omit<ModalBaseProps, 'mobileFullScreen'> &
   (

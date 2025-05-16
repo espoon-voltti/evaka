@@ -5,7 +5,7 @@
 import React, { Fragment, useState } from 'react'
 import styled from 'styled-components'
 
-import { AssistanceNeedPreschoolDecision } from 'lib-common/generated/api-types/assistanceneed'
+import type { AssistanceNeedPreschoolDecision } from 'lib-common/generated/api-types/assistanceneed'
 
 import Container, {
   CollapsibleContentArea,

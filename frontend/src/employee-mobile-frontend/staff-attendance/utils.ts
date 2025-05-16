@@ -4,12 +4,12 @@
 
 import orderBy from 'lodash/orderBy'
 
-import {
+import type {
   ExternalStaffMember,
   StaffAttendanceType,
   StaffMember
 } from 'lib-common/generated/api-types/attendance'
-import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import type HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
 export interface Staff {
   type: 'employee' | 'external'

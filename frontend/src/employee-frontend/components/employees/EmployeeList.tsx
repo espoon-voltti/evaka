@@ -7,7 +7,7 @@ import React from 'react'
 import { Link, useNavigate } from 'react-router'
 import styled from 'styled-components'
 
-import { EmployeeWithDaycareRoles } from 'lib-common/generated/api-types/pis'
+import type { EmployeeWithDaycareRoles } from 'lib-common/generated/api-types/pis'
 import { ExpandableList } from 'lib-components/atoms/ExpandableList'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { ConfirmedMutation } from 'lib-components/molecules/ConfirmedMutation'

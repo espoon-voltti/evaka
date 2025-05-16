@@ -5,10 +5,12 @@
 import React from 'react'
 import styled, { css } from 'styled-components'
 
-import { OperationalDay } from 'lib-common/generated/api-types/reservations'
-import { Td, Th, Thead, Tr, TrProps } from 'lib-components/layout/Table'
+import type { OperationalDay } from 'lib-common/generated/api-types/reservations'
+import type { TrProps } from 'lib-components/layout/Table'
+import { Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { LabelLike } from 'lib-components/typography'
-import { defaultMargins, SpacingSize } from 'lib-components/white-space'
+import type { SpacingSize } from 'lib-components/white-space'
+import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
 import { useTranslation } from '../../../state/i18n'

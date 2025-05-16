@@ -11,12 +11,23 @@
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "importHelpers": true,
+    "isolatedModules": true,
     "moduleResolution": "bundler",
     "noImplicitReturns": true,
     "noUnusedLocals": true,
     "resolveJsonModule": true,
     "sourceMap": true,
     "strict": true,
-    "baseUrl": "src"
+    "paths": {
+      "lib-common": [
+        "./src/lib-common"
+      ],
+      "lib-components": [
+        "./src/lib-components"
+      ],
+      "lib-customization": [
+        "./src/lib-customization"
+      ]
+    }
   }
 }

@@ -4,8 +4,8 @@
 
 import React from 'react'
 
-import { DaycareResponse } from 'lib-common/generated/api-types/daycare'
-import { DaycareId } from 'lib-common/generated/api-types/shared'
+import type { DaycareResponse } from 'lib-common/generated/api-types/daycare'
+import type { DaycareId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
 import Title from 'lib-components/atoms/Title'
 import { ContentArea } from 'lib-components/layout/Container'

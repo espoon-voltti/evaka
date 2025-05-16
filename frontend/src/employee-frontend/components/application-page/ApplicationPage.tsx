@@ -7,15 +7,15 @@ import { useSearchParams } from 'react-router'
 import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
-import FiniteDateRange from 'lib-common/finite-date-range'
-import {
+import type FiniteDateRange from 'lib-common/finite-date-range'
+import type {
   ApplicationDetails,
   ApplicationResponse,
   ApplicationType
 } from 'lib-common/generated/api-types/application'
-import { PublicUnit } from 'lib-common/generated/api-types/daycare'
-import { PlacementType } from 'lib-common/generated/api-types/placement'
-import { ApplicationId } from 'lib-common/generated/api-types/shared'
+import type { PublicUnit } from 'lib-common/generated/api-types/daycare'
+import type { PlacementType } from 'lib-common/generated/api-types/placement'
+import type { ApplicationId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import {
   constantQuery,
@@ -34,8 +34,10 @@ import { featureFlags } from 'lib-customizations/employee'
 import { faEnvelope } from 'lib-icons'
 
 import { getEmployeeUrlPrefix } from '../../constants'
-import { Translations, useTranslation } from '../../state/i18n'
-import { TitleContext, TitleState } from '../../state/title'
+import type { Translations } from '../../state/i18n'
+import { useTranslation } from '../../state/i18n'
+import type { TitleState } from '../../state/title'
+import { TitleContext } from '../../state/title'
 import { asUnitType } from '../../types/daycare'
 import { isSsnValid, isTimeValid } from '../../utils/validation/validations'
 import { serviceNeedPublicInfosQuery } from '../applications/queries'

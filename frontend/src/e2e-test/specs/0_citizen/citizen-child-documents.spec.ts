@@ -3,14 +3,14 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import DateRange from 'lib-common/date-range'
-import {
+import type {
   DocumentContent,
   DocumentTemplateContent
 } from 'lib-common/generated/api-types/document'
-import { DocumentTemplateId } from 'lib-common/generated/api-types/shared'
+import type { DocumentTemplateId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { evakaUserId, randomId } from 'lib-common/id-type'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 
 import {
   createDaycarePlacementFixture,
@@ -27,7 +27,7 @@ import {
   insertGuardians,
   resetServiceState
 } from '../../generated/api-clients'
-import { DevEmployee, DevPerson } from '../../generated/api-types'
+import type { DevEmployee, DevPerson } from '../../generated/api-types'
 import { CitizenChildPage } from '../../pages/citizen/citizen-children'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import { ChildDocumentPage } from '../../pages/employee/documents/child-document'

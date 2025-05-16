@@ -2,9 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { SystemNotificationTargetGroup } from 'lib-common/generated/api-types/systemnotifications'
+import type { SystemNotificationTargetGroup } from 'lib-common/generated/api-types/systemnotifications'
 
-import { DatePicker, Page, TextInput, AsyncButton } from '../../utils/page'
+import type { Page } from '../../utils/page'
+import { DatePicker, TextInput, AsyncButton } from '../../utils/page'
 
 export class SystemNotificationsPage {
   saveButton: AsyncButton

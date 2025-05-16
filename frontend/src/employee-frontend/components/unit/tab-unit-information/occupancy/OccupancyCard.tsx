@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React from 'react'
 import styled from 'styled-components'
 
-import { OccupancyResponse } from 'lib-common/generated/api-types/occupancy'
+import type { OccupancyResponse } from 'lib-common/generated/api-types/occupancy'
 import { formatPercentage } from 'lib-common/utils/number'
 import Title from 'lib-components/atoms/Title'
 import Tooltip from 'lib-components/atoms/Tooltip'

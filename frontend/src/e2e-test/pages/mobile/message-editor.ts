@@ -2,13 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import {
-  Checkbox,
-  Element,
-  Page,
-  TextInput,
-  TreeDropdown
-} from '../../utils/page'
+import type { Page } from '../../utils/page'
+import { Checkbox, Element, TextInput, TreeDropdown } from '../../utils/page'
 
 export default class MobileMessageEditor extends Element {
   constructor(public page: Page) {

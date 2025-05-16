@@ -4,14 +4,14 @@
 
 import React, { useState, useContext, useMemo } from 'react'
 
-import { Result } from 'lib-common/api'
+import type { Result } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
-import { UpdateStateFn } from 'lib-common/form-state'
-import {
+import type { UpdateStateFn } from 'lib-common/form-state'
+import type {
   ParentshipDetailed,
   PersonSummary
 } from 'lib-common/generated/api-types/pis'
-import { PersonId } from 'lib-common/generated/api-types/shared'
+import type { PersonId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useMutationResult } from 'lib-common/query'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'

@@ -4,12 +4,12 @@
 
 // GENERATED FILE: no manual modifications
 
-import { AbsenceApplicationCreateRequest } from 'lib-common/generated/api-types/absence'
-import { AbsenceApplicationId } from 'lib-common/generated/api-types/shared'
-import { AbsenceApplicationSummaryCitizen } from 'lib-common/generated/api-types/absence'
-import { JsonCompatible } from 'lib-common/json'
-import { JsonOf } from 'lib-common/json'
-import { PersonId } from 'lib-common/generated/api-types/shared'
+import type { AbsenceApplicationCreateRequest } from 'lib-common/generated/api-types/absence'
+import type { AbsenceApplicationId } from 'lib-common/generated/api-types/shared'
+import type { AbsenceApplicationSummaryCitizen } from 'lib-common/generated/api-types/absence'
+import type { JsonCompatible } from 'lib-common/json'
+import type { JsonOf } from 'lib-common/json'
+import type { PersonId } from 'lib-common/generated/api-types/shared'
 import { client } from '../../api-client'
 import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonAbsenceApplicationSummaryCitizen } from 'lib-common/generated/api-types/absence'

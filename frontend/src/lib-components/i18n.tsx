@@ -4,13 +4,13 @@
 
 import React, { useContext, useMemo } from 'react'
 
-import FiniteDateRange from 'lib-common/finite-date-range'
-import {
+import type FiniteDateRange from 'lib-common/finite-date-range'
+import type {
   ChildDocumentDecisionStatus,
   DocumentStatus
 } from 'lib-common/generated/api-types/document'
 
-import { FileType } from './molecules/FileUpload'
+import type { FileType } from './molecules/FileUpload'
 
 export interface Translations {
   asyncButton: {

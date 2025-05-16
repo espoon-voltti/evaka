@@ -4,10 +4,10 @@
 
 // GENERATED FILE: no manual modifications
 
-import { JsonCompatible } from 'lib-common/json'
-import { JsonOf } from 'lib-common/json'
-import { PushSettings } from 'lib-common/generated/api-types/webpush'
-import { WebPushSubscription } from 'lib-common/generated/api-types/webpush'
+import type { JsonCompatible } from 'lib-common/json'
+import type { JsonOf } from 'lib-common/json'
+import type { PushSettings } from 'lib-common/generated/api-types/webpush'
+import type { WebPushSubscription } from 'lib-common/generated/api-types/webpush'
 import { client } from '../../client'
 import { uri } from 'lib-common/uri'
 

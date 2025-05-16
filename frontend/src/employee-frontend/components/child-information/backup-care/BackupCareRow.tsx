@@ -5,12 +5,12 @@
 import React, { useContext } from 'react'
 import styled from 'styled-components'
 
-import { Action } from 'lib-common/generated/action'
-import {
+import type { Action } from 'lib-common/generated/action'
+import type {
   ChildBackupCare,
   ChildBackupCareResponse
 } from 'lib-common/generated/api-types/backupcare'
-import { ChildId } from 'lib-common/generated/api-types/shared'
+import type { ChildId } from 'lib-common/generated/api-types/shared'
 import { useMutationResult } from 'lib-common/query'
 import Title from 'lib-components/atoms/Title'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'

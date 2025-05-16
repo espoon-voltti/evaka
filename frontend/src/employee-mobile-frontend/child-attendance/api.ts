@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { AttendanceChild } from 'lib-common/generated/api-types/attendance'
-import { DaycareId } from 'lib-common/generated/api-types/shared'
+import type { AttendanceChild } from 'lib-common/generated/api-types/attendance'
+import type { DaycareId } from 'lib-common/generated/api-types/shared'
 
 import { getChildren } from '../generated/api-clients/attendance'
 

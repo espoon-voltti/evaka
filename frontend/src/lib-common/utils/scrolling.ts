@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { MutableRefObject } from 'react'
+import type { MutableRefObject } from 'react'
 
 import { isAutomatedTest } from './helpers'
 

@@ -3,17 +3,16 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { memoizeLast } from './memoize'
-import {
+import type {
   AnyForm,
   ErrorOf,
   FieldErrors,
   Form,
   OutputOf,
   StateOf,
-  ValidationError,
-  ValidationResult,
-  ValidationSuccess
+  ValidationResult
 } from './types'
+import { ValidationError, ValidationSuccess } from './types'
 
 export function value<T>(): Form<T, never, T, unknown> {
   return {

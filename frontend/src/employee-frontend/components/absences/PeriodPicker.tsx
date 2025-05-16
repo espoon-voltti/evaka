@@ -5,7 +5,7 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import LocalDate from 'lib-common/local-date'
+import type LocalDate from 'lib-common/local-date'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { Title } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'

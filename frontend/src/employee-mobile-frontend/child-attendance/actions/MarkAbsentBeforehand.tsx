@@ -9,8 +9,8 @@ import styled from 'styled-components'
 
 import { wrapResult } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { AbsenceType } from 'lib-common/generated/api-types/absence'
-import { ChildId, DaycareId } from 'lib-common/generated/api-types/shared'
+import type { AbsenceType } from 'lib-common/generated/api-types/absence'
+import type { ChildId, DaycareId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 import { groupAbsencesByDateRange } from 'lib-common/utils/absences'
@@ -45,7 +45,8 @@ import { TallContentArea } from '../../pairing/components'
 import { childrenQuery } from '../queries'
 import { useChild } from '../utils'
 
-import AbsenceSelector, { AbsenceTypeWithNoAbsence } from './AbsenceSelector'
+import type { AbsenceTypeWithNoAbsence } from './AbsenceSelector'
+import AbsenceSelector from './AbsenceSelector'
 
 const postAbsenceRangeResult = wrapResult(postAbsenceRange)
 const deleteAbsenceRangeResult = wrapResult(deleteAbsenceRange)

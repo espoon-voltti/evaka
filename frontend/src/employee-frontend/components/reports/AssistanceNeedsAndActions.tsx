@@ -10,13 +10,13 @@ import React, { useMemo, useState } from 'react'
 import { Link } from 'react-router'
 import styled from 'styled-components'
 
-import {
+import type {
   DaycareAssistanceLevel,
   OtherAssistanceMeasureType,
   PreschoolAssistanceLevel
 } from 'lib-common/generated/api-types/assistance'
-import { AssistanceActionOption } from 'lib-common/generated/api-types/assistanceaction'
-import {
+import type { AssistanceActionOption } from 'lib-common/generated/api-types/assistanceaction'
+import type {
   AssistanceNeedsAndActionsReport,
   AssistanceNeedsAndActionsReportByChild,
   AssistanceNeedsAndActionsReportRow,

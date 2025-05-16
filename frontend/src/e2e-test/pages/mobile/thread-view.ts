@@ -2,7 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Page, TextInput, Element, ElementCollection } from '../../utils/page'
+import type { Page, Element, ElementCollection } from '../../utils/page'
+import { TextInput } from '../../utils/page'
 
 export default class ThreadViewPage {
   goBack: Element

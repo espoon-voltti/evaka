@@ -4,8 +4,8 @@
 
 import React, { useContext } from 'react'
 
-import { Action } from 'lib-common/generated/action'
-import { ChildId } from 'lib-common/generated/api-types/shared'
+import type { Action } from 'lib-common/generated/action'
+import type { ChildId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 

@@ -5,7 +5,7 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import { BaseProps } from '../utils'
+import type { BaseProps } from '../utils'
 import { defaultMargins } from '../white-space'
 
 import Container from './Container'

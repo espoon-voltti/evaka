@@ -5,8 +5,7 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import { getImageCitizen } from 'citizen-frontend/generated/api-clients/childimages'
-import { ChildAndPermittedActions } from 'lib-common/generated/api-types/children'
+import type { ChildAndPermittedActions } from 'lib-common/generated/api-types/children'
 import { RoundImage } from 'lib-components/atoms/RoundImage'
 import { desktopMin } from 'lib-components/breakpoints'
 import { H1, Title } from 'lib-components/typography'
@@ -14,6 +13,7 @@ import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { farUser } from 'lib-icons'
 
+import { getImageCitizen } from '../generated/api-clients/childimages'
 import { useTranslation } from '../localization'
 
 const ChildHeaderContainer = styled.div`

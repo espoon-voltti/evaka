@@ -5,7 +5,7 @@
 import React from 'react'
 import { Link } from 'react-router'
 
-import { IncompleteIncomeDbRow } from 'lib-common/generated/api-types/reports'
+import type { IncompleteIncomeDbRow } from 'lib-common/generated/api-types/reports'
 import { useQueryResult } from 'lib-common/query'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'

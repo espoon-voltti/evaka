@@ -4,7 +4,7 @@
 
 import React from 'react'
 
-import { DaycareResponse } from 'lib-common/generated/api-types/daycare'
+import type { DaycareResponse } from 'lib-common/generated/api-types/daycare'
 import { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { H2 } from 'lib-components/typography'

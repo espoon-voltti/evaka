@@ -6,7 +6,7 @@ import React from 'react'
 import styled from 'styled-components'
 
 import { formatDateOrTime } from 'lib-common/date'
-import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import type HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { fontWeights } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'

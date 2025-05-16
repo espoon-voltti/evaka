@@ -5,8 +5,8 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
 
-import { PreferredUnit } from 'lib-common/generated/api-types/application'
-import { PublicUnit } from 'lib-common/generated/api-types/daycare'
+import type { PreferredUnit } from 'lib-common/generated/api-types/application'
+import type { PublicUnit } from 'lib-common/generated/api-types/daycare'
 import { SelectionChip } from 'lib-components/atoms/Chip'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
@@ -24,7 +24,7 @@ import colors from 'lib-customizations/common'
 import PreferredUnitBox from '../../../applications/editor/unit-preference/PreferredUnitBox'
 import { useTranslation } from '../../../localization'
 
-import { UnitPreferenceSectionProps } from './UnitPreferenceSection'
+import type { UnitPreferenceSectionProps } from './UnitPreferenceSection'
 
 interface Props extends UnitPreferenceSectionProps {
   units: PublicUnit[] | null

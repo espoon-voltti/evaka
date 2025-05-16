@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { throwIfNull } from 'lib-common/form-validation'
-import {
+import type {
   Address,
   ApplicationAttachment,
   ApplicationDetails,
@@ -13,8 +13,8 @@ import {
   PreferredUnit,
   ServiceNeedOption
 } from 'lib-common/generated/api-types/application'
-import { PlacementType } from 'lib-common/generated/api-types/placement'
-import LocalDate from 'lib-common/local-date'
+import type { PlacementType } from 'lib-common/generated/api-types/placement'
+import type LocalDate from 'lib-common/local-date'
 
 export type ServiceNeedFormData = {
   preferredStartDate: LocalDate | null

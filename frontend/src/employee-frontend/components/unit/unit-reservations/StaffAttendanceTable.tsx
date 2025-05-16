@@ -12,10 +12,11 @@ import uniqBy from 'lodash/uniqBy'
 import React, { useMemo, useState, useCallback } from 'react'
 import styled from 'styled-components'
 
-import { Result, wrapResult } from 'lib-common/api'
+import type { Result } from 'lib-common/api'
+import { wrapResult } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
-import { ErrorKey } from 'lib-common/form-validation'
-import {
+import type { ErrorKey } from 'lib-common/form-validation'
+import type {
   Attendance,
   EmployeeAttendance,
   ExternalAttendance,
@@ -24,21 +25,21 @@ import {
   ExternalAttendanceUpsert,
   StaffAttendanceType
 } from 'lib-common/generated/api-types/attendance'
-import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
-import { OperationalDay } from 'lib-common/generated/api-types/reservations'
-import {
+import type { DaycareGroup } from 'lib-common/generated/api-types/daycare'
+import type { OperationalDay } from 'lib-common/generated/api-types/reservations'
+import type {
   DaycareId,
   EmployeeId,
   GroupId,
   StaffAttendanceExternalId,
   StaffAttendanceRealtimeId
 } from 'lib-common/generated/api-types/shared'
-import { EvakaUser } from 'lib-common/generated/api-types/user'
+import type { EvakaUser } from 'lib-common/generated/api-types/user'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { presentInGroup } from 'lib-common/staff-attendance'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
@@ -46,7 +47,7 @@ import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { Table, Tbody } from 'lib-components/layout/Table'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { fontWeights, Italic, P } from 'lib-components/typography'
-import { BaseProps } from 'lib-components/utils'
+import type { BaseProps } from 'lib-components/utils'
 import { defaultMargins } from 'lib-components/white-space'
 import { colors } from 'lib-customizations/common'
 import { faCircleEllipsis } from 'lib-icons'
@@ -55,15 +56,17 @@ import {
   upsertDailyExternalRealtimeAttendances,
   upsertDailyStaffRealtimeAttendances
 } from '../../../generated/api-clients/attendance'
-import { Translations, useTranslation } from '../../../state/i18n'
+import type { Translations } from '../../../state/i18n'
+import { useTranslation } from '../../../state/i18n'
 import { formatName } from '../../../utils'
 
-import StaffAttendanceDetailsModal, {
+import type {
   EditedAttendance,
   ModalAttendance,
   ModalPlannedAttendance,
   ValidationError
 } from './StaffAttendanceDetailsModal'
+import StaffAttendanceDetailsModal from './StaffAttendanceDetailsModal'
 import StaffAttendanceExternalPersonModal from './StaffAttendanceExternalPersonModal'
 import {
   AttendanceTableHeader,

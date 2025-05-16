@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Page, Element } from '../../utils/page'
+import type { Page, Element } from '../../utils/page'
 
 export default class MessageEditorPage {
   noRecipientsInfo: Element

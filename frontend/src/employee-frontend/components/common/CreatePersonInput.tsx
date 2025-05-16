@@ -3,10 +3,11 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { set } from 'lodash/fp'
-import React, { SetStateAction } from 'react'
+import type { SetStateAction } from 'react'
+import React from 'react'
 import styled from 'styled-components'
 
-import { CreatePersonBody } from 'lib-common/generated/api-types/pis'
+import type { CreatePersonBody } from 'lib-common/generated/api-types/pis'
 import LocalDate from 'lib-common/local-date'
 import InputField from 'lib-components/atoms/form/InputField'
 import ListGrid from 'lib-components/layout/ListGrid'

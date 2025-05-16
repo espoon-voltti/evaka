@@ -5,10 +5,11 @@
 import { Fixture } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
 import CitizenHeader from '../../pages/citizen/citizen-header'
-import CitizenPersonalDetailsPage, {
+import type {
   CitizenNotificationSettingsSection,
   CitizenPersonalDetailsSection
 } from '../../pages/citizen/citizen-personal-details'
+import CitizenPersonalDetailsPage from '../../pages/citizen/citizen-personal-details'
 import { Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
 

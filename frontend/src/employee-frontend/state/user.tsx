@@ -10,7 +10,7 @@ import React, {
   useState
 } from 'react'
 
-import { AdRole, User } from 'lib-common/api-types/employee-auth'
+import type { AdRole, User } from 'lib-common/api-types/employee-auth'
 import { Queries, useQuery } from 'lib-common/query'
 import { LoginStatusChangeEvent } from 'lib-common/utils/login-status'
 

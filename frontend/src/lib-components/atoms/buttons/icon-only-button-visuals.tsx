@@ -2,15 +2,16 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
+import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import classNames from 'classnames'
 import React from 'react'
 import styled from 'styled-components'
 
-import { Theme } from 'lib-common/theme'
+import type { Theme } from 'lib-common/theme'
 
-import { BaseProps } from '../../utils'
-import { diameterByIconSize, IconSize } from '../icon-size'
+import type { BaseProps } from '../../utils'
+import type { IconSize } from '../icon-size'
+import { diameterByIconSize } from '../icon-size'
 
 type PredefinedColor = 'default' | 'gray' | 'white'
 

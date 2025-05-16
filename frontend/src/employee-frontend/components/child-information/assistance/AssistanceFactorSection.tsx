@@ -11,12 +11,13 @@ import React, {
   useState
 } from 'react'
 
-import { Result, Success } from 'lib-common/api'
+import type { Result } from 'lib-common/api'
+import { Success } from 'lib-common/api'
 import { useBoolean } from 'lib-common/form/hooks'
-import { AssistanceFactorResponse } from 'lib-common/generated/api-types/assistance'
-import { ChildId } from 'lib-common/generated/api-types/shared'
+import type { AssistanceFactorResponse } from 'lib-common/generated/api-types/assistance'
+import type { ChildId } from 'lib-common/generated/api-types/shared'
 import { useMutationResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import { scrollToRef } from 'lib-common/utils/scrolling'
 import Title from 'lib-components/atoms/Title'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
@@ -32,7 +33,8 @@ import {
   createAssistanceFactorMutation,
   updateAssistanceFactorMutation
 } from '../queries'
-import { ChildContext, ChildState } from '../state'
+import type { ChildState } from '../state'
+import { ChildContext } from '../state'
 
 import { AssistanceFactorForm } from './AssistanceFactorForm'
 import { AssistanceFactorRow } from './AssistanceFactorRow'

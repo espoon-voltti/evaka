@@ -6,14 +6,14 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React from 'react'
 import styled from 'styled-components'
 
-import { MessageAccountId } from 'lib-common/generated/api-types/shared'
+import type { MessageAccountId } from 'lib-common/generated/api-types/shared'
 import { faTimes } from 'lib-icons'
 
 import { useTranslations } from '../i18n'
 import { fontWeights } from '../typography'
 import { defaultMargins } from '../white-space'
 
-import { SelectableAccount } from './MessageReplyEditor'
+import type { SelectableAccount } from './MessageReplyEditor'
 
 interface ToggleableRecipientProps {
   'data-qa'?: string

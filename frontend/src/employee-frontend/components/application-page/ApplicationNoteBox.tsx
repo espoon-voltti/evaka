@@ -7,13 +7,8 @@ import React, { useContext, useState } from 'react'
 import { Link } from 'react-router'
 import styled from 'styled-components'
 
-import {
-  createApplicationNoteMutation,
-  deleteApplicationNoteMutation,
-  updateApplicationNoteMutation
-} from 'employee-frontend/components/application-page/queries'
-import { ApplicationNote } from 'lib-common/generated/api-types/application'
-import { ApplicationId } from 'lib-common/generated/api-types/shared'
+import type { ApplicationNote } from 'lib-common/generated/api-types/application'
+import type { ApplicationId } from 'lib-common/generated/api-types/shared'
 import { useMutation } from 'lib-common/query'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
@@ -25,6 +20,11 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 import { colors } from 'lib-customizations/common'
 import { faEnvelope, faPen, faQuestion, faTrash } from 'lib-icons'
 
+import {
+  createApplicationNoteMutation,
+  deleteApplicationNoteMutation,
+  updateApplicationNoteMutation
+} from '../../components/application-page/queries'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
 import { formatParagraphs } from '../../utils/html-utils'

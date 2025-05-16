@@ -6,7 +6,7 @@ import React from 'react'
 import styled from 'styled-components'
 
 import { useForm } from 'lib-common/form/hooks'
-import { StateOf } from 'lib-common/form/types'
+import type { StateOf } from 'lib-common/form/types'
 import { questionTypes } from 'lib-common/generated/api-types/document'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import TextQuestionDescriptor from 'lib-components/document-templates/question-descriptors/TextQuestionDescriptor'

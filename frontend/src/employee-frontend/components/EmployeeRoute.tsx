@@ -5,10 +5,11 @@
 import React, { useContext, useEffect } from 'react'
 import { Navigate } from 'react-router'
 
-import { Translations } from 'lib-customizations/employee'
+import type { Translations } from 'lib-customizations/employee'
 
 import { useTranslation } from '../state/i18n'
-import { TitleContext, TitleState } from '../state/title'
+import type { TitleState } from '../state/title'
+import { TitleContext } from '../state/title'
 import { UserContext } from '../state/user'
 
 interface Props {

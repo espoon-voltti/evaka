@@ -12,7 +12,7 @@ import { ApplicationUIContext } from '../../state/application-ui'
 import { useTranslation } from '../../state/i18n'
 import { CheckedRowsInfo } from '../common/CheckedRowsInfo'
 
-import { SimpleApplicationMutationAction } from './ApplicationActions'
+import type { SimpleApplicationMutationAction } from './ApplicationActions'
 import { simpleBatchActionMutation } from './queries'
 
 export default React.memo(function ActionBar({

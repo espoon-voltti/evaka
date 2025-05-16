@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useCallback, useContext, useState } from 'react'
 import styled from 'styled-components'
 
-import { Failure } from 'lib-common/api'
+import type { Failure } from 'lib-common/api'
 import { boolean, string } from 'lib-common/form/fields'
 import {
   chained,
@@ -16,14 +16,15 @@ import {
   validated
 } from 'lib-common/form/form'
 import { useBoolean, useForm, useFormField } from 'lib-common/form/hooks'
-import { StateOf, ValidationSuccess } from 'lib-common/form/types'
+import type { StateOf } from 'lib-common/form/types'
+import { ValidationSuccess } from 'lib-common/form/types'
 import {
   optionalPhoneNumber,
   regexp,
   requiredEmail,
   requiredPhoneNumber
 } from 'lib-common/form/validators'
-import {
+import type {
   EmailVerification,
   EmailVerificationStatusResponse
 } from 'lib-common/generated/api-types/pis'
@@ -53,7 +54,7 @@ import {
   faPen
 } from 'lib-icons'
 
-import { User } from '../auth/state'
+import type { User } from '../auth/state'
 import { useTranslation } from '../localization'
 import { getStrongLoginUri } from '../navigation/const'
 

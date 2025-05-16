@@ -5,8 +5,9 @@
 import React, { useCallback, useMemo } from 'react'
 import { useNavigate } from 'react-router'
 
-import { combine, Failure, Result, Success } from 'lib-common/api'
-import { PreschoolTerm } from 'lib-common/generated/api-types/daycare'
+import type { Result } from 'lib-common/api'
+import { combine, Failure, Success } from 'lib-common/api'
+import type { PreschoolTerm } from 'lib-common/generated/api-types/daycare'
 import { useQueryResult } from 'lib-common/query'
 import useRouteParams from 'lib-common/useRouteParams'
 import Container, { ContentArea } from 'lib-components/layout/Container'

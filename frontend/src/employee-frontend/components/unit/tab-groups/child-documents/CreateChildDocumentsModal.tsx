@@ -13,12 +13,13 @@ import {
   validated,
   value
 } from 'lib-common/form/form'
-import { BoundForm, useForm, useFormField } from 'lib-common/form/hooks'
-import {
+import type { BoundForm } from 'lib-common/form/hooks'
+import { useForm, useFormField } from 'lib-common/form/hooks'
+import type {
   ChildDocumentsCreateRequest,
   DocumentTemplateSummary
 } from 'lib-common/generated/api-types/document'
-import { ChildId, GroupId } from 'lib-common/generated/api-types/shared'
+import type { ChildId, GroupId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { constantQuery, useQueryResult } from 'lib-common/query'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
@@ -28,7 +29,7 @@ import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { Label } from 'lib-components/typography'
 
 import { useTranslation } from '../../../../state/i18n'
-import { DaycareGroupPlacementDetailed } from '../../../../types/unit'
+import type { DaycareGroupPlacementDetailed } from '../../../../types/unit'
 import { formatPersonName } from '../../../../utils'
 import { renderResult } from '../../../async-rendering'
 

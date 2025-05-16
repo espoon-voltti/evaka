@@ -10,8 +10,8 @@ import { sortSelectableRecipients } from 'lib-common/api-types/messaging'
 import { boolean, string } from 'lib-common/form/fields'
 import { array, mapped, object, recursive, value } from 'lib-common/form/form'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
-import { Form } from 'lib-common/form/types'
-import {
+import type { Form } from 'lib-common/form/types'
+import type {
   DraftContent,
   MessageAccount,
   MessageRecipient,
@@ -19,7 +19,7 @@ import {
   SelectableRecipientsResponse,
   UpdatableDraftContent
 } from 'lib-common/generated/api-types/messaging'
-import {
+import type {
   DaycareId,
   MessageDraftId
 } from 'lib-common/generated/api-types/shared'
@@ -32,11 +32,11 @@ import TreeDropdown from 'lib-components/atoms/dropdowns/TreeDropdown'
 import { CheckboxF } from 'lib-components/atoms/form/Checkbox'
 import { InputFieldF } from 'lib-components/atoms/form/InputField'
 import { ContentArea } from 'lib-components/layout/Container'
+import type { SelectorNode } from 'lib-components/messages/SelectorNode'
 import {
   getSelected,
   selectableRecipientsToNode,
-  nodeToSelectableRecipient,
-  SelectorNode
+  nodeToSelectableRecipient
 } from 'lib-components/messages/SelectorNode'
 import { ConfirmedMutation } from 'lib-components/molecules/ConfirmedMutation'
 import { InfoBox } from 'lib-components/molecules/MessageBoxes'

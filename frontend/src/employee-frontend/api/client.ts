@@ -2,7 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import axios, { AxiosError } from 'axios'
+import type { AxiosError } from 'axios'
+import axios from 'axios'
 
 import { isAutomatedTest } from 'lib-common/utils/helpers'
 import { LoginStatusChangeEvent } from 'lib-common/utils/login-status'

@@ -6,14 +6,14 @@ import { useQueryClient } from '@tanstack/react-query'
 import React, { useState } from 'react'
 import styled from 'styled-components'
 
-import { Attachment } from 'lib-common/generated/api-types/attachment'
-import { PedagogicalDocument } from 'lib-common/generated/api-types/pedagogicaldocument'
-import {
+import type { Attachment } from 'lib-common/generated/api-types/attachment'
+import type { PedagogicalDocument } from 'lib-common/generated/api-types/pedagogicaldocument'
+import type {
   ChildId,
   PedagogicalDocumentId
 } from 'lib-common/generated/api-types/shared'
-import { EvakaUser } from 'lib-common/generated/api-types/user'
-import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import type { EvakaUser } from 'lib-common/generated/api-types/user'
+import type HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'

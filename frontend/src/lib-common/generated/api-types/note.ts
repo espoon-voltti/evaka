@@ -4,14 +4,14 @@
 
 // GENERATED FILE: no manual modifications
 
+import type { ChildDailyNoteId } from './shared'
+import type { ChildStickyNoteId } from './shared'
+import type { GroupId } from './shared'
+import type { GroupNoteId } from './shared'
 import HelsinkiDateTime from '../../helsinki-date-time'
+import type { JsonOf } from '../../json'
 import LocalDate from '../../local-date'
-import { ChildDailyNoteId } from './shared'
-import { ChildStickyNoteId } from './shared'
-import { GroupId } from './shared'
-import { GroupNoteId } from './shared'
-import { JsonOf } from '../../json'
-import { PersonId } from './shared'
+import type { PersonId } from './shared'
 
 /**
 * Generated from fi.espoo.evaka.note.child.daily.ChildDailyNote

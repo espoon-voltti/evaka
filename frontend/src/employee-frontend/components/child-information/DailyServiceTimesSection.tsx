@@ -5,11 +5,7 @@
 import orderBy from 'lodash/orderBy'
 import React, { useContext, useState } from 'react'
 
-import {
-  ChildContext,
-  ChildState
-} from 'employee-frontend/components/child-information/state'
-import {
+import type {
   ChildId,
   DailyServiceTimeId
 } from 'lib-common/generated/api-types/shared'
@@ -23,6 +19,8 @@ import { H4, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { faQuestion } from 'lib-icons'
 
+import type { ChildState } from '../../components/child-information/state'
+import { ChildContext } from '../../components/child-information/state'
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 

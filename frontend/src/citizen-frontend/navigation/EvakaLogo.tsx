@@ -6,10 +6,11 @@ import React from 'react'
 import { Link } from 'react-router'
 import styled from 'styled-components'
 
-import { useTranslation } from 'citizen-frontend/localization'
 import { EvakaLogo } from 'lib-components/atoms/EvakaLogo'
 import { desktopMin } from 'lib-components/breakpoints'
 import colors from 'lib-customizations/common'
+
+import { useTranslation } from '../localization'
 
 export default React.memo(function Logo() {
   const t = useTranslation()

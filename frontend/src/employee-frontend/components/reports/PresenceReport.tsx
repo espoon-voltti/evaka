@@ -14,7 +14,7 @@ import { DatePickerSpacer } from 'lib-components/molecules/date-picker/DateRange
 
 import ReportDownload from '../../components/reports/ReportDownload'
 import { useTranslation } from '../../state/i18n'
-import { PeriodFilters } from '../../types/reports'
+import type { PeriodFilters } from '../../types/reports'
 import { renderResult } from '../async-rendering'
 import { FlexRow } from '../common/styled/containers'
 

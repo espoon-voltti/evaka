@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { AbsenceType } from './generated/api-types/absence'
+import type { AbsenceType } from './generated/api-types/absence'
 
 export interface Theme {
   colors: {

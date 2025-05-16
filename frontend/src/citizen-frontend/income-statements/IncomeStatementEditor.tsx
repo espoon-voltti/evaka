@@ -5,14 +5,15 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
 
-import { combine, Loading, Result } from 'lib-common/api'
-import { IncomeStatementStatus } from 'lib-common/generated/api-types/incomestatement'
-import { IncomeStatementId } from 'lib-common/generated/api-types/shared'
+import type { Result } from 'lib-common/api'
+import { combine, Loading } from 'lib-common/api'
+import type { IncomeStatementStatus } from 'lib-common/generated/api-types/incomestatement'
+import type { IncomeStatementId } from 'lib-common/generated/api-types/shared'
 import { fromUuid } from 'lib-common/id-type'
 import { fromBody } from 'lib-common/income-statements/body'
 import * as Form from 'lib-common/income-statements/form'
 import { emptyIncomeStatementForm } from 'lib-common/income-statements/form'
-import LocalDate from 'lib-common/local-date'
+import type LocalDate from 'lib-common/local-date'
 import {
   constantQuery,
   useMutationResult,

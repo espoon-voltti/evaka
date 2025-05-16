@@ -7,7 +7,7 @@ import React, { Fragment, useContext } from 'react'
 
 import { combine } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { ChildId } from 'lib-common/generated/api-types/shared'
+import type { ChildId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import { H3 } from 'lib-components/typography'

@@ -5,14 +5,14 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import { PersonSummary } from 'lib-common/generated/api-types/pis'
-import { PersonId } from 'lib-common/generated/api-types/shared'
+import type { PersonSummary } from 'lib-common/generated/api-types/pis'
+import type { PersonId } from 'lib-common/generated/api-types/shared'
 import { tryFromUuid } from 'lib-common/id-type'
 import { constantQuery, useQueryResult } from 'lib-common/query'
 import { getAge } from 'lib-common/utils/local-date'
 import { useDebounce } from 'lib-common/utils/useDebounce'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
-import { BaseProps } from 'lib-components/utils'
+import type { BaseProps } from 'lib-components/utils'
 
 import {
   personBySsnQuery,

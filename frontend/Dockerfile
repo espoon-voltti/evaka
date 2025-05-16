@@ -42,8 +42,9 @@ ENV SENTRY_NO_PROGRESS_BAR="1"
 ENV APP_BUILD="$build"
 ENV APP_COMMIT="$commit"
 
-RUN export NODE_OPTIONS="--max-old-space-size=8192" \
- && yarn build
+RUN node build-vite.mjs build
+#RUN export NODE_OPTIONS="--max-old-space-size=8192" \
+# && yarn build
 
 FROM nginx:${NGINX_VERSION}
 ARG CACHE_BUST
@@ -98,9 +99,11 @@ COPY ./proxy/files/etc/ /etc/
 ENTRYPOINT ["/bin/proxy-entrypoint.sh"]
 CMD ["nginx", "-g", "daemon off;"]
 
-COPY --from=builder /project/dist/bundle/citizen-frontend /static/
-COPY --from=builder /project/dist/bundle/employee-frontend /static/employee
-COPY --from=builder /project/dist/bundle/employee-mobile-frontend /static/employee/mobile
+#COPY --from=builder /project/dist/bundle/citizen-frontend /static/
+#COPY --from=builder /project/dist/bundle/employee-frontend /static/employee
+#COPY --from=builder /project/dist/bundle/employee-mobile-frontend /static/employee/mobile
+COPY --from=builder /project/dist /static/
+
 COPY --from=builder /project/src/maintenance-page-frontend /static/maintenance-page
 
 # Add build and commit environment variables and labels

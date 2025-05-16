@@ -5,7 +5,8 @@
 import * as Sentry from '@sentry/browser'
 import { useParams } from 'react-router'
 
-import { fromUuid, Id } from './id-type'
+import type { Id } from './id-type'
+import { fromUuid } from './id-type'
 
 export default function useRouteParams<
   const Required extends string[],

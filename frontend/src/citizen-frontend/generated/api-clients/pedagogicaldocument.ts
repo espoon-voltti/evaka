@@ -4,10 +4,10 @@
 
 // GENERATED FILE: no manual modifications
 
-import { JsonOf } from 'lib-common/json'
-import { PedagogicalDocumentCitizen } from 'lib-common/generated/api-types/pedagogicaldocument'
-import { PedagogicalDocumentId } from 'lib-common/generated/api-types/shared'
-import { PersonId } from 'lib-common/generated/api-types/shared'
+import type { JsonOf } from 'lib-common/json'
+import type { PedagogicalDocumentCitizen } from 'lib-common/generated/api-types/pedagogicaldocument'
+import type { PedagogicalDocumentId } from 'lib-common/generated/api-types/shared'
+import type { PersonId } from 'lib-common/generated/api-types/shared'
 import { client } from '../../api-client'
 import { deserializeJsonPedagogicalDocumentCitizen } from 'lib-common/generated/api-types/pedagogicaldocument'
 import { uri } from 'lib-common/uri'

@@ -4,17 +4,17 @@
 
 // GENERATED FILE: no manual modifications
 
+import type { Action } from '../action'
+import type { AssistanceActionResponse } from './assistanceaction'
+import type { AssistanceFactorId } from './shared'
+import type { DaycareAssistanceId } from './shared'
+import type { EvakaUser } from './user'
 import FiniteDateRange from '../../finite-date-range'
 import HelsinkiDateTime from '../../helsinki-date-time'
-import { Action } from '../action'
-import { AssistanceActionResponse } from './assistanceaction'
-import { AssistanceFactorId } from './shared'
-import { DaycareAssistanceId } from './shared'
-import { EvakaUser } from './user'
-import { JsonOf } from '../../json'
-import { OtherAssistanceMeasureId } from './shared'
-import { PersonId } from './shared'
-import { PreschoolAssistanceId } from './shared'
+import type { JsonOf } from '../../json'
+import type { OtherAssistanceMeasureId } from './shared'
+import type { PersonId } from './shared'
+import type { PreschoolAssistanceId } from './shared'
 import { deserializeJsonAssistanceActionResponse } from './assistanceaction'
 
 /**

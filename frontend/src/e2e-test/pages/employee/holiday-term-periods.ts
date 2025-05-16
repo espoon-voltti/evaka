@@ -2,18 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import FiniteDateRange from 'lib-common/finite-date-range'
-import LocalDate from 'lib-common/local-date'
+import type FiniteDateRange from 'lib-common/finite-date-range'
+import type LocalDate from 'lib-common/local-date'
 
-import {
-  Checkbox,
-  DatePicker,
-  Page,
-  Radio,
-  TextInput,
-  ElementCollection,
-  Element
-} from '../../utils/page'
+import type { Page, ElementCollection, Element } from '../../utils/page'
+import { Checkbox, DatePicker, Radio, TextInput } from '../../utils/page'
 
 export class HolidayAndTermPeriodsPage {
   #periodRows: ElementCollection
