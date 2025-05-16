@@ -4,9 +4,6 @@
 
 import React, { SetStateAction, useCallback, useMemo } from 'react'
 
-import { renderResult } from 'employee-frontend/components/async-rendering'
-import { useTranslation } from 'employee-frontend/state/i18n'
-import { AutosaveStatus } from 'employee-frontend/utils/use-autosave'
 import { Result } from 'lib-common/api'
 import {
   AssistanceLevel,
@@ -31,7 +28,10 @@ import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { H2, Label, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 
+import { renderResult } from '../../../../components/async-rendering'
 import { getEmployeesQuery, unitsQuery } from '../../../../queries'
+import { useTranslation } from '../../../../state/i18n'
+import { AutosaveStatus } from '../../../../utils/use-autosave'
 
 const FieldWithInfo = React.memo(function FieldWithInfo({
   info,

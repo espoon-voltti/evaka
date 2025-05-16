@@ -6,11 +6,6 @@ import orderBy from 'lodash/orderBy'
 import React, { useContext, useRef, useState } from 'react'
 import styled from 'styled-components'
 
-import {
-  ChildContext,
-  ChildState
-} from 'employee-frontend/components/child-information/state'
-import { UIContext } from 'employee-frontend/state/ui'
 import { AssistanceNeedVoucherCoefficient } from 'lib-common/generated/api-types/assistanceneed'
 import {
   AssistanceNeedVoucherCoefficientId,
@@ -26,7 +21,12 @@ import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { faQuestion } from 'lib-icons'
 
+import {
+  ChildContext,
+  ChildState
+} from '../../components/child-information/state'
 import { useTranslation } from '../../state/i18n'
+import { UIContext } from '../../state/ui'
 import { renderResult } from '../async-rendering'
 
 import AssistanceNeedVoucherCoefficientForm from './assistance-need/voucher-coefficient/AssistanceNeedVoucherCoefficientForm'

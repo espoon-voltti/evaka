@@ -9,7 +9,6 @@ import React, { useMemo, useState } from 'react'
 import { Link } from 'react-router'
 import styled from 'styled-components'
 
-import { useTranslation } from 'employee-frontend/state/i18n'
 import {
   CalendarEvent,
   CalendarEventTime
@@ -25,6 +24,7 @@ import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { fontWeights } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 
+import { useTranslation } from '../../../../state/i18n'
 import { clearChildCalendarEventTimeReservationsForSurveyMutation } from '../queries'
 
 import { ChildGroupInfo } from './DiscussionSurveyView'

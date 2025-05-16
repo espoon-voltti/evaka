@@ -14,7 +14,6 @@ import React, {
 import { Link, NavLink, useLocation } from 'react-router'
 import styled from 'styled-components'
 
-import { getDuplicateChildInfo } from 'citizen-frontend/utils/duplicated-child-utils'
 import { formatFirstName } from 'lib-common/names'
 import { desktopMin, desktopSmall } from 'lib-components/breakpoints'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
@@ -34,6 +33,7 @@ import {
 
 import { AuthContext, User } from '../auth/state'
 import { useTranslation } from '../localization'
+import { getDuplicateChildInfo } from '../utils/duplicated-child-utils'
 
 import AttentionIndicator from './AttentionIndicator'
 import { logoutUrl } from './const'

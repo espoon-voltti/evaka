@@ -4,10 +4,6 @@
 
 import React, { useCallback, useEffect, useState } from 'react'
 
-import {
-  getAttachmentUrl,
-  feeAlterationAttachment
-} from 'employee-frontend/api/attachments'
 import { Result, Success } from 'lib-common/api'
 import { Attachment } from 'lib-common/generated/api-types/attachment'
 import { FeeAlteration } from 'lib-common/generated/api-types/invoicing'
@@ -27,6 +23,10 @@ import DateRangePicker from 'lib-components/molecules/date-picker/DateRangePicke
 import { P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
+import {
+  getAttachmentUrl,
+  feeAlterationAttachment
+} from '../../../api/attachments'
 import LabelValueList from '../../../components/common/LabelValueList'
 import { useTranslation } from '../../../state/i18n'
 import {

@@ -6,7 +6,6 @@ import mapValues from 'lodash/mapValues'
 import pick from 'lodash/pick'
 import React, { useCallback, useMemo, useState } from 'react'
 
-import { useTranslation } from 'employee-frontend/state/i18n'
 import { Failure } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import { ErrorKey, required, time, validate } from 'lib-common/form-validation'
@@ -37,6 +36,7 @@ import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { Label, LabelLike } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
+import { useTranslation } from '../../../state/i18n'
 import {
   postDailyServiceTimesMutation,
   putDailyServiceTimesEndMutation,

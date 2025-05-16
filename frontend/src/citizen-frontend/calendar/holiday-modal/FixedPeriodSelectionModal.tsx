@@ -5,8 +5,6 @@
 import React, { useCallback, useState } from 'react'
 import styled from 'styled-components'
 
-import { useLang, useTranslation } from 'citizen-frontend/localization'
-import { getDuplicateChildInfo } from 'citizen-frontend/utils/duplicated-child-utils'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   HolidayQuestionnaire,
@@ -22,6 +20,8 @@ import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { H2 } from 'lib-components/typography'
 
 import ModalAccessibilityWrapper from '../../ModalAccessibilityWrapper'
+import { useLang, useTranslation } from '../../localization'
+import { getDuplicateChildInfo } from '../../utils/duplicated-child-utils'
 import { answerFixedPeriodQuestionnaireMutation } from '../queries'
 
 import { PeriodSelector } from './PeriodSelector'

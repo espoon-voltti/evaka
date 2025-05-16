@@ -5,11 +5,12 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import { useLang, useTranslation } from 'citizen-frontend/localization'
 import { BoundForm, useFormElems, useFormField } from 'lib-common/form/hooks'
 import { scrollIntoViewSoftKeyboard } from 'lib-common/utils/scrolling'
 import { fontWeights, Label } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
+
+import { useLang, useTranslation } from '../../localization'
 
 import { Day } from './TimeInputs'
 import { type irregularDay, type irregularTimes } from './form'

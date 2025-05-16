@@ -4,8 +4,6 @@
 
 import React, { useState } from 'react'
 
-import ResponsiveWholePageCollapsible from 'citizen-frontend/children/ResponsiveWholePageCollapsible'
-import { useTranslation } from 'citizen-frontend/localization'
 import { combine, Failure, Result, Success } from 'lib-common/api'
 import { ChildId } from 'lib-common/generated/api-types/shared'
 import { constantQuery, useQueryResult } from 'lib-common/query'
@@ -19,6 +17,8 @@ import { Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/citizen'
 
 import { renderResult } from '../../../async-rendering'
+import ResponsiveWholePageCollapsible from '../../../children/ResponsiveWholePageCollapsible'
+import { useTranslation } from '../../../localization'
 import { childrenQuery, childServiceApplicationsQuery } from '../../queries'
 
 import AttendanceSummaryTable from './AttendanceSummaryTable'

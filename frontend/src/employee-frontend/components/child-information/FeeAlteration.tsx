@@ -4,10 +4,6 @@
 
 import React, { useCallback, useContext, useRef, useState } from 'react'
 
-import {
-  ChildContext,
-  ChildState
-} from 'employee-frontend/components/child-information/state'
 import { FeeAlteration } from 'lib-common/generated/api-types/invoicing'
 import { ChildId } from 'lib-common/generated/api-types/shared'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
@@ -18,6 +14,10 @@ import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { Gap } from 'lib-components/white-space'
 import { faQuestion } from 'lib-icons'
 
+import {
+  ChildContext,
+  ChildState
+} from '../../components/child-information/state'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
 import { renderResult } from '../async-rendering'

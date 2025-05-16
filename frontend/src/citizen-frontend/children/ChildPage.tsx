@@ -4,7 +4,6 @@
 
 import React from 'react'
 
-import { useUser } from 'citizen-frontend/auth/state'
 import { Failure, Success } from 'lib-common/api'
 import { ChildAndPermittedActions } from 'lib-common/generated/api-types/children'
 import { ChildId } from 'lib-common/generated/api-types/shared'
@@ -17,6 +16,7 @@ import { featureFlags } from 'lib-customizations/citizen'
 
 import Footer from '../Footer'
 import { renderResult } from '../async-rendering'
+import { useUser } from '../auth/state'
 
 import ChildHeader from './ChildHeader'
 import { childrenQuery } from './queries'

@@ -15,9 +15,6 @@ import React, {
 import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
-import { renderResult } from 'employee-frontend/components/async-rendering'
-import { useTranslation } from 'employee-frontend/state/i18n'
-import { UIContext } from 'employee-frontend/state/ui'
 import { combine } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
@@ -52,6 +49,9 @@ import { Gap } from 'lib-components/white-space'
 import { theme } from 'lib-customizations/common'
 import { faPen, faQuestion, faTrash } from 'lib-icons'
 
+import { renderResult } from '../../../../components/async-rendering'
+import { useTranslation } from '../../../../state/i18n'
+import { UIContext } from '../../../../state/ui'
 import { unitGroupDetailsQuery } from '../../queries'
 import {
   deleteCalendarEventMutation,

@@ -9,7 +9,6 @@ import React, { useCallback, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
 import styled, { useTheme } from 'styled-components'
 
-import AttendanceDailyServiceTimes from 'employee-mobile-frontend/child-info/AttendanceDailyServiceTimes'
 import { combine } from 'lib-common/api'
 import { localTime } from 'lib-common/form/fields'
 import {
@@ -59,6 +58,7 @@ import { faPlus, faTrash, faAngleDown, faAngleUp } from 'lib-icons'
 
 import { routes } from '../../App'
 import { renderResult } from '../../async-rendering'
+import AttendanceDailyServiceTimes from '../../child-info/AttendanceDailyServiceTimes'
 import ChildNameBackButton from '../../common/ChildNameBackButton'
 import { Actions, ServiceTime } from '../../common/components'
 import { useTranslation } from '../../common/i18n'

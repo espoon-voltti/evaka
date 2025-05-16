@@ -5,7 +5,6 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import { useTranslation } from 'citizen-frontend/localization'
 import {
   BoundForm,
   useBoolean,
@@ -22,6 +21,7 @@ import {
 } from 'lib-components/molecules/ExpandingInfo'
 import { faPlus, fasUserMinus, faTrash, faUserMinus } from 'lib-icons'
 
+import { useTranslation } from '../../localization'
 import { focusElementOnNextFrame } from '../../utils/focus'
 import TimeRangeInput from '../TimeRangeInput'
 

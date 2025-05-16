@@ -4,9 +4,6 @@
 
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 
-import { renderResult } from 'employee-frontend/components/async-rendering'
-import { unitGroupDetailsQuery } from 'employee-frontend/components/unit/queries'
-import { useTranslation } from 'employee-frontend/state/i18n'
 import { combine } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { CalendarEvent } from 'lib-common/generated/api-types/calendarevent'
@@ -17,6 +14,9 @@ import { scrollRefIntoView } from 'lib-common/utils/scrolling'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 
+import { renderResult } from '../../../../../components/async-rendering'
+import { unitGroupDetailsQuery } from '../../../../../components/unit/queries'
+import { useTranslation } from '../../../../../state/i18n'
 import { groupDiscussionReservationDaysQuery } from '../../queries'
 
 import DiscussionTimesForm from './DiscussionTimesForm'

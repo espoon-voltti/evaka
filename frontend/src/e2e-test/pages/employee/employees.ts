@@ -2,8 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { DevEmployee } from 'e2e-test/generated/api-types'
-
+import { DevEmployee } from '../../generated/api-types'
 import { Checkbox, Element, Page, TextInput } from '../../utils/page'
 
 export class EmployeesPage {

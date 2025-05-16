@@ -5,7 +5,6 @@
 import React, { useEffect, useRef } from 'react'
 import styled from 'styled-components'
 
-import { useTranslation } from 'employee-frontend/state/i18n'
 import { Action } from 'lib-common/generated/action'
 import { EvakaUser } from 'lib-common/generated/api-types/user'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
@@ -16,6 +15,8 @@ import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import colors from 'lib-customizations/common'
 import { faChevronDown, faChevronUp, faPen, faTrash } from 'lib-icons'
+
+import { useTranslation } from '../../../state/i18n'
 
 const Container = styled.div`
   display: flex;

@@ -6,7 +6,6 @@ import sortBy from 'lodash/sortBy'
 import React, { useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import { renderResult } from 'citizen-frontend/async-rendering'
 import { combine, Result } from 'lib-common/api'
 import { PublicUnit } from 'lib-common/generated/api-types/daycare'
 import { Button } from 'lib-components/atoms/buttons/Button'
@@ -16,6 +15,7 @@ import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faAngleDown } from 'lib-icons'
 
+import { renderResult } from '../async-rendering'
 import { useTranslation } from '../localization'
 
 import { MapAddress } from './MapView'

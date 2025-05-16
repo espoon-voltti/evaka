@@ -5,13 +5,14 @@
 import React, { useMemo } from 'react'
 import styled from 'styled-components'
 
-import { useTranslation } from 'employee-frontend/state/i18n'
 import { CalendarEvent } from 'lib-common/generated/api-types/calendarevent'
 import LocalDate from 'lib-common/local-date'
 import { StaticChip } from 'lib-components/atoms/Chip'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { H3 } from 'lib-components/typography'
 import { theme } from 'lib-customizations/common'
+
+import { useTranslation } from '../../../../state/i18n'
 
 const SurveyItemContainer = styled(FixedSpaceRow)`
   border-bottom: 1px dashed ${(p) => p.theme.colors.grayscale.g35};

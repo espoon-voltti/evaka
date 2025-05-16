@@ -6,10 +6,10 @@ import React from 'react'
 import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
-import { useTranslation } from 'employee-mobile-frontend/common/i18n'
 import colors from 'lib-customizations/common'
 import { faArrowLeft } from 'lib-icons'
 
+import { useTranslation } from '../../common/i18n'
 import { BackButton, TallContentArea } from '../../pairing/components'
 
 const TallContentAreaNoOverflow = styled(TallContentArea)`

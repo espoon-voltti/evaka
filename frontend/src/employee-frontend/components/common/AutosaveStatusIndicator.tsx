@@ -4,9 +4,10 @@
 
 import React from 'react'
 
-import { useTranslation } from 'employee-frontend/state/i18n'
-import { AutosaveStatus } from 'employee-frontend/utils/use-autosave'
 import { InformationText } from 'lib-components/typography'
+
+import { useTranslation } from '../../state/i18n'
+import { AutosaveStatus } from '../../utils/use-autosave'
 
 export default React.memo(function AutosaveStatusIndicator({
   status

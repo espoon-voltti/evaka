@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { DevEmployee, DevPlacement } from 'e2e-test/generated/api-types'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { FeeDecisionId, PersonId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
@@ -26,6 +25,7 @@ import {
   generateReplacementDraftInvoices,
   resetServiceState
 } from '../../generated/api-clients'
+import { DevEmployee, DevPlacement } from '../../generated/api-types'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import {
   FinancePage,

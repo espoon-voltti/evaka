@@ -4,12 +4,12 @@
 
 import React, { useContext } from 'react'
 
-import { ChildContext } from 'employee-frontend/state'
-import { useTranslation } from 'employee-frontend/state/i18n'
 import { ChildId } from 'lib-common/generated/api-types/shared'
 import { H3, H4 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
+import { ChildContext } from '../../state'
+import { useTranslation } from '../../state/i18n'
 import { Incomes, IncomeStatements } from '../person-profile/PersonIncome'
 
 interface Props {

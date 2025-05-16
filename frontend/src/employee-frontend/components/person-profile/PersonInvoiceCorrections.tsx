@@ -8,7 +8,6 @@ import React, { useContext, useMemo, useState } from 'react'
 import { Link } from 'react-router'
 import styled from 'styled-components'
 
-import { formatPersonName } from 'employee-frontend/utils'
 import { combine } from 'lib-common/api'
 import { localDate, localDateRange } from 'lib-common/form/fields'
 import {
@@ -56,6 +55,7 @@ import { Gap } from 'lib-components/white-space'
 import { faCommentAlt, fasCommentAltLines, faTrash } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
+import { formatPersonName } from '../../utils'
 import { renderResult } from '../async-rendering'
 import { invoiceCodesQuery } from '../invoices/queries'
 

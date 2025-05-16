@@ -4,9 +4,10 @@
 
 import React from 'react'
 
-import { useTranslation } from 'employee-frontend/state/i18n'
 import { StaticChip } from 'lib-components/atoms/Chip'
 import { theme } from 'lib-customizations/common'
+
+import { useTranslation } from '../../state/i18n'
 
 export const TimeBasedStatusChip = React.memo(function TimeBasedStatusChip({
   status,
