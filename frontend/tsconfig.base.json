@@ -11,6 +11,7 @@
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "importHelpers": true,
+    "isolatedModules": true,
     "moduleResolution": "bundler",
     "noImplicitReturns": true,
     "noUnusedLocals": true,
