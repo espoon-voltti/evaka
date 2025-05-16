@@ -2,57 +2,56 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
-import styled from 'styled-components'
+import orderBy from 'lodash/orderBy'
+import React, { useMemo } from 'react'
 
-import { IncomeNotification } from 'lib-common/generated/api-types/invoicing'
-import RoundIcon from 'lib-components/atoms/RoundIcon'
-import colors from 'lib-customizations/common'
-import { faExclamation } from 'lib-icons'
+import { PersonId } from 'lib-common/generated/api-types/shared'
+import { useQueryResult } from 'lib-common/query'
+import UnorderedList from 'lib-components/atoms/UnorderedList'
+import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import { Label } from 'lib-components/typography'
 
 import { useTranslation } from '../../../state/i18n'
-
-const IncomeNotificationsContainer = styled.div`
-  display: flex;
-  flex-direction: row;
-  justify-content: left;
-`
-
-const IncomeNotificationsListContainer = styled.div`
-  margin-left: 6px;
-`
-
-const IncomeNotificationsBulletList = styled.ul`
-  margin-top: 6px;
-`
+import { renderResult } from '../../async-rendering'
+import { incomeNotificationsQuery } from '../queries'
 
 export const IncomeNotifications = React.memo(function IncomeNotifications({
-  incomeNotifications
+  personId
 }: {
-  incomeNotifications: IncomeNotification[]
+  personId: PersonId
 }) {
   const { i18n } = useTranslation()
 
-  const sortedIncomeNotifications = incomeNotifications.sort((a, b) =>
-    a.created.toLocalDate().compareTo(b.created.toLocalDate())
+  const incomeNotifications = useQueryResult(
+    incomeNotificationsQuery({ personId })
   )
 
-  return (
-    <IncomeNotificationsContainer data-qa="income-notifications">
-      <RoundIcon content={faExclamation} color={colors.main.m1} size="s" />
-      <IncomeNotificationsListContainer>
-        {i18n.personProfile.income.incomeNotifications.title}
-        <IncomeNotificationsBulletList>
-          {sortedIncomeNotifications.map((notification) => (
-            <li
-              key={notification.created.formatIso()}
-              data-qa="income-notification-sent-date"
-            >
-              {notification.created.format()}
+  const sortedIncomeNotifications = useMemo(
+    () =>
+      incomeNotifications.map((res) => orderBy(res, (n) => n.created, 'desc')),
+    [incomeNotifications]
+  )
+
+  return renderResult(sortedIncomeNotifications, (notifications) =>
+    notifications.length > 0 ? (
+      <FixedSpaceColumn spacing="xs">
+        <Label>{i18n.personProfile.incomeStatement.notificationSent}</Label>
+        <UnorderedList>
+          {notifications.map((n, i) => (
+            <li key={i}>
+              {n.created.format()} (
+              {
+                i18n.personProfile.incomeStatement.notificationTypes[
+                  n.notificationType
+                ]
+              }
+              )
             </li>
           ))}
-        </IncomeNotificationsBulletList>
-      </IncomeNotificationsListContainer>
-    </IncomeNotificationsContainer>
+        </UnorderedList>
+      </FixedSpaceColumn>
+    ) : (
+      <span>{i18n.personProfile.incomeStatement.noNotifications}</span>
+    )
   )
 })

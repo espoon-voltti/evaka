@@ -5,11 +5,9 @@
 import React from 'react'
 
 import { Failure, Result } from 'lib-common/api'
-import DateRange from 'lib-common/date-range'
 import {
   Income,
   IncomeCoefficient,
-  IncomeNotification,
   IncomeRequest,
   IncomeTypeOptions,
   IncomeWithPermittedActions
@@ -24,14 +22,12 @@ import { useTranslation } from '../../../state/i18n'
 import IncomeItemBody from './IncomeItemBody'
 import IncomeItemEditor from './IncomeItemEditor'
 import IncomeItemHeader from './IncomeItemHeader'
-import { IncomeNotifications } from './IncomeNotifications'
 
 interface Props {
   personId: PersonId
   incomes: IncomeWithPermittedActions[]
   incomeTypeOptions: IncomeTypeOptions
   coefficientMultipliers: Partial<Record<IncomeCoefficient, number>>
-  incomeNotifications: IncomeNotification[]
   isRowOpen: (id: IncomeId | 'new') => boolean
   toggleRow: (id: IncomeId | 'new') => void
   editing: string | undefined
@@ -54,7 +50,6 @@ const IncomeList = React.memo(function IncomeList({
   incomes,
   incomeTypeOptions,
   coefficientMultipliers,
-  incomeNotifications,
   isRowOpen,
   toggleRow,
   editing,
@@ -100,18 +95,6 @@ const IncomeList = React.memo(function IncomeList({
     )
   }
 
-  const incomeNotificationsForIncome = React.useCallback(
-    (income: Income) =>
-      income
-        ? incomeNotifications.filter((incomeNotification) =>
-            new DateRange(income.validFrom, income.validTo || null).includes(
-              incomeNotification.created.toLocalDate()
-            )
-          )
-        : [],
-    [incomeNotifications]
-  )
-
   return (
     <>
       {editing === 'new' && (
@@ -155,11 +138,6 @@ const IncomeList = React.memo(function IncomeList({
             modifiedBy={item.modifiedBy}
             modifiedAt={item.modifiedAt}
           />
-          {incomeNotificationsForIncome(item).length > 0 && (
-            <IncomeNotifications
-              incomeNotifications={incomeNotificationsForIncome(item)}
-            />
-          )}
           {isRowOpen(item.id) ? (
             <>
               <Gap size="m" />
