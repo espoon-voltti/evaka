@@ -269,6 +269,7 @@ data class ReservationChildRow(
 fun Database.Read.getReservationChildren(
     guardianId: PersonId,
     today: LocalDate,
+    calendarOpenBeforePlacementDays: Int,
 ): List<ReservationChildRow> {
     return createQuery {
             sql(
@@ -288,6 +289,11 @@ SELECT
 FROM person p
 LEFT JOIN child_images ci ON ci.child_id = p.id
 WHERE p.id = ANY (SELECT child_id FROM children)
+AND EXISTS (
+    SELECT 
+    FROM placement 
+    WHERE child_id = p.id AND daterange((start_date - ${bind(calendarOpenBeforePlacementDays)}), end_date, '[]') @> ${bind(today)}
+)
 ORDER BY p.date_of_birth, p.duplicate_of
         """
             )

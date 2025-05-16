@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonTypeName
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
+import fi.espoo.evaka.CitizenCalendarEnv
 import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.absence.Absence
 import fi.espoo.evaka.absence.AbsenceCategory
@@ -65,6 +66,7 @@ class ReservationControllerCitizen(
     private val env: EvakaEnv,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val absencePushNotifications: AbsencePushNotifications,
+    private val citizenCalendarEnv: CitizenCalendarEnv,
 ) {
     @GetMapping("/citizen/reservations")
     fun getReservations(
@@ -95,7 +97,12 @@ class ReservationControllerCitizen(
                     val holidays = getHolidays(requestedRange)
                     val preschoolTerms = tx.getPreschoolTerms()
                     val clubTerms = tx.getClubTerms()
-                    val children = tx.getReservationChildren(user.id, today)
+                    val children =
+                        tx.getReservationChildren(
+                            user.id,
+                            today,
+                            citizenCalendarEnv.calendarOpenBeforePlacementDays,
+                        )
                     val childIds = children.map { it.id }.toSet()
                     val reservationEnabledPlacementRangesByChild =
                         tx.getReservationEnabledPlacementRangesByChild(childIds)
