@@ -71,7 +71,7 @@ function baseConfig({ isDevelopment }, { name, publicPath, entry }) {
     }),
     new webpack.DefinePlugin({
       // This matches APP_COMMIT in apigw
-      'process.env.APP_COMMIT': `'${process.env.APP_COMMIT || 'UNDEFINED'}'`
+      __APP_COMMIT__: JSON.stringify(process.env.APP_COMMIT || 'UNDEFINED')
     })
   ]
 
