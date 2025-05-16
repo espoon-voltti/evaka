@@ -90,6 +90,210 @@ class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     }
 
     @Test
+    fun `Nekku customer sync with multiple customer types adds every type to database`() {
+        val client =
+            TestNekkuClient(
+                customers =
+                    listOf(
+                        NekkuApiCustomer(
+                            "2501K6089",
+                            "Ahvenojan päiväkoti",
+                            "Varhaiskasvatus",
+                            listOf(
+                                CustomerApiType(
+                                    listOf(
+                                        NekkuCustomerApiWeekday.MONDAY,
+                                        NekkuCustomerApiWeekday.TUESDAY,
+                                        NekkuCustomerApiWeekday.WEDNESDAY,
+                                        NekkuCustomerApiWeekday.THURSDAY,
+                                        NekkuCustomerApiWeekday.FRIDAY,
+                                    ),
+                                    "100-lasta",
+                                ),
+                                CustomerApiType(
+                                    listOf(
+                                        NekkuCustomerApiWeekday.SATURDAY,
+                                        NekkuCustomerApiWeekday.SUNDAY,
+                                        NekkuCustomerApiWeekday.WEEKDAYHOLIDAY,
+                                    ),
+                                    "Palvelu-Ovelle-viikonloppu",
+                                ),
+                            ),
+                        ),
+                        NekkuApiCustomer(
+                            "2501K0000",
+                            "Ylikylän päiväkoti",
+                            "Varhaiskasvatus",
+                            listOf(
+                                CustomerApiType(
+                                    listOf(
+                                        NekkuCustomerApiWeekday.MONDAY,
+                                        NekkuCustomerApiWeekday.TUESDAY,
+                                        NekkuCustomerApiWeekday.WEDNESDAY,
+                                        NekkuCustomerApiWeekday.THURSDAY,
+                                        NekkuCustomerApiWeekday.FRIDAY,
+                                    ),
+                                    "100-lasta",
+                                ),
+                                CustomerApiType(
+                                    listOf(
+                                        NekkuCustomerApiWeekday.SATURDAY,
+                                        NekkuCustomerApiWeekday.SUNDAY,
+                                        NekkuCustomerApiWeekday.WEEKDAYHOLIDAY,
+                                    ),
+                                    "Palvelu-Ovelle-viikonloppu",
+                                ),
+                            ),
+                        ),
+                    )
+            )
+        fetchAndUpdateNekkuCustomers(client, db, asyncJobRunner, now)
+        db.transaction { tx ->
+            val customers = tx.getNekkuCustomers()
+            assertEquals(
+                listOf(
+                    NekkuCustomer(
+                        number = "2501K0000",
+                        name = "Ylikylän päiväkoti",
+                        group = "Varhaiskasvatus",
+                        listOf(
+                            CustomerType(
+                                listOf(
+                                    NekkuCustomerWeekday.MONDAY,
+                                    NekkuCustomerWeekday.TUESDAY,
+                                    NekkuCustomerWeekday.WEDNESDAY,
+                                    NekkuCustomerWeekday.THURSDAY,
+                                    NekkuCustomerWeekday.FRIDAY,
+                                ),
+                                "100-lasta"
+                            ),
+                            CustomerType(
+                                listOf(
+                                    NekkuCustomerWeekday.SATURDAY,
+                                    NekkuCustomerWeekday.SUNDAY,
+                                    NekkuCustomerWeekday.WEEKDAYHOLIDAY,
+                                ),
+                                "Palvelu-Ovelle-viikonloppu"
+                            ),
+                        )
+                    ),
+                    NekkuCustomer(
+                        number = "2501K6089",
+                        name = "Ahvenojan päiväkoti",
+                        group = "Varhaiskasvatus",
+                        listOf(
+                            CustomerType(
+                                listOf(
+                                    NekkuCustomerWeekday.MONDAY,
+                                    NekkuCustomerWeekday.TUESDAY,
+                                    NekkuCustomerWeekday.WEDNESDAY,
+                                    NekkuCustomerWeekday.THURSDAY,
+                                    NekkuCustomerWeekday.FRIDAY,
+                                ),
+                                "100-lasta"
+                            ),
+                            CustomerType(
+                                listOf(
+                                    NekkuCustomerWeekday.SATURDAY,
+                                    NekkuCustomerWeekday.SUNDAY,
+                                    NekkuCustomerWeekday.WEEKDAYHOLIDAY,
+                                ),
+                                "Palvelu-Ovelle-viikonloppu"
+                            ),
+                        )
+                    ),
+                ), customers)
+        }
+    }
+
+    @Test
+    fun `Nekku customer sync with different customer types and same weekdays does sync`() {
+        val client =
+            TestNekkuClient(
+                customers =
+                    listOf(
+                        NekkuApiCustomer(
+                            "2501K6089",
+                            "Ahvenojan päiväkoti",
+                            "Varhaiskasvatus",
+                            listOf(
+                                CustomerApiType(
+                                    listOf(
+                                        NekkuCustomerApiWeekday.MONDAY,
+                                        NekkuCustomerApiWeekday.TUESDAY,
+                                        NekkuCustomerApiWeekday.WEDNESDAY,
+                                        NekkuCustomerApiWeekday.THURSDAY,
+                                        NekkuCustomerApiWeekday.FRIDAY,
+                                    ),
+                                    "100-lasta",
+                                ),
+                                CustomerApiType(
+                                    listOf(
+                                        NekkuCustomerApiWeekday.MONDAY,
+                                        NekkuCustomerApiWeekday.TUESDAY,
+                                        NekkuCustomerApiWeekday.WEDNESDAY,
+                                        NekkuCustomerApiWeekday.THURSDAY,
+                                        NekkuCustomerApiWeekday.FRIDAY,
+                                    ),
+                                    "palvelu-ovelle-arki",
+                                ),
+                                CustomerApiType(
+                                    listOf(
+                                        NekkuCustomerApiWeekday.SATURDAY,
+                                        NekkuCustomerApiWeekday.SUNDAY,
+                                        NekkuCustomerApiWeekday.WEEKDAYHOLIDAY,
+                                    ),
+                                    "Palvelu-Ovelle-viikonloppu",
+                                ),
+                            ),
+                        )
+                    )
+            )
+        fetchAndUpdateNekkuCustomers(client, db, asyncJobRunner, now)
+        db.transaction { tx ->
+            val customers = tx.getNekkuCustomers()
+            assertEquals(
+                listOf(
+                    NekkuCustomer(
+                        number = "2501K6089",
+                        name = "Ahvenojan päiväkoti",
+                        group = "Varhaiskasvatus",
+                        listOf(
+                            CustomerType(
+                                listOf(
+                                    NekkuCustomerWeekday.MONDAY,
+                                    NekkuCustomerWeekday.TUESDAY,
+                                    NekkuCustomerWeekday.WEDNESDAY,
+                                    NekkuCustomerWeekday.THURSDAY,
+                                    NekkuCustomerWeekday.FRIDAY,
+                                ),
+                                "100-lasta"
+                            ),
+                            CustomerType(
+                                listOf(
+                                    NekkuCustomerWeekday.MONDAY,
+                                    NekkuCustomerWeekday.TUESDAY,
+                                    NekkuCustomerWeekday.WEDNESDAY,
+                                    NekkuCustomerWeekday.THURSDAY,
+                                    NekkuCustomerWeekday.FRIDAY,
+                                ),
+                                "palvelu-ovelle-arki"
+                            ),
+                            CustomerType(
+                                listOf(
+                                    NekkuCustomerWeekday.SATURDAY,
+                                    NekkuCustomerWeekday.SUNDAY,
+                                    NekkuCustomerWeekday.WEEKDAYHOLIDAY,
+                                ),
+                                "Palvelu-Ovelle-viikonloppu"
+                            ),
+                        )
+                    ),
+                ), customers)
+        }
+    }
+
+    @Test
     fun `Nekku customer lists only 'Varhaiskasvatus'-data`() {
         val client =
             TestNekkuClient(

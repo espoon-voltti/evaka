@@ -1,0 +1,1 @@
+ALTER TABLE nekku_customer_type DROP CONSTRAINT IF EXISTS uniq$unique_customer_number;

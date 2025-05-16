@@ -43,7 +43,7 @@ fun fetchAndUpdateNekkuCustomers(
             }
         val deletedCustomerCount = tx.setCustomerNumbers(customersFromNekku)
 
-        tx.setNekkuCustomerTypes(customersFromNekku.map { it.number to it.customerType })
+        tx.setNekkuCustomerTypes(customersFromNekku)
 
         logger.info {
             "Deleted: $deletedCustomerCount Nekku customer numbers, inserted ${customersFromNekku.size}"
@@ -121,8 +121,10 @@ WHERE
 }
 
 fun Database.Transaction.setNekkuCustomerTypes(
-    nekkuCustomerTypes: List<Pair<String, List<CustomerType>>>
+    customerNumbers: List<NekkuCustomer>
 ) {
+    val nekkuCustomerTypes = customerNumbers.map { it.number to it.customerType }
+
     val newNekkuCustomerNumbers = nekkuCustomerTypes.flatMap { it.second }.map { it.type }
     val deletedNekkuCustomerTypesCount = execute {
         sql(
@@ -147,14 +149,6 @@ INSERT INTO nekku_customer_type (
     ${bind { (_, field) -> field.type }},
     ${bind { (_, field) -> field.weekdays }}
 )
-ON CONFLICT (customer_number) DO 
-UPDATE SET
-  type = excluded.type,
-  weekdays = excluded.weekdays
-WHERE
-    nekku_customer_type.type <> excluded.type OR 
-    nekku_customer_type.weekdays <> excluded.weekdays;
-
 """
         )
     }
