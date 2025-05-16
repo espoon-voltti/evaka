@@ -7,8 +7,6 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import FocusLock from 'react-focus-lock'
 import styled from 'styled-components'
 
-import { ErrorMessageBox } from 'citizen-frontend/calendar/ChildSelector'
-import { getDuplicateChildInfo } from 'citizen-frontend/utils/duplicated-child-utils'
 import { Result } from 'lib-common/api'
 import { useBoolean } from 'lib-common/form/hooks'
 import { Attachment } from 'lib-common/generated/api-types/attachment'
@@ -50,7 +48,9 @@ import { faTimes } from 'lib-icons'
 import ModalAccessibilityWrapper from '../ModalAccessibilityWrapper'
 import { getAttachmentUrl, messageAttachment } from '../attachments'
 import { useUser } from '../auth/state'
+import { ErrorMessageBox } from '../calendar/ChildSelector'
 import { useTranslation } from '../localization'
+import { getDuplicateChildInfo } from '../utils/duplicated-child-utils'
 
 const emptyMessage: CitizenMessageBody = {
   title: '',

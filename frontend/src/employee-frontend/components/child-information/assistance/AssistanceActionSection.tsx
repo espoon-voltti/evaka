@@ -5,10 +5,6 @@
 import React, { useContext, useMemo, useRef } from 'react'
 import styled from 'styled-components'
 
-import {
-  ChildContext,
-  ChildState
-} from 'employee-frontend/components/child-information/state'
 import { combine, Result } from 'lib-common/api'
 import { AssistanceActionResponse } from 'lib-common/generated/api-types/assistanceaction'
 import { ChildId } from 'lib-common/generated/api-types/shared'
@@ -17,6 +13,10 @@ import { scrollToRef } from 'lib-common/utils/scrolling'
 import Title from 'lib-components/atoms/Title'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 
+import {
+  ChildContext,
+  ChildState
+} from '../../../components/child-information/state'
 import { getAssistanceActionOptionsQuery } from '../../../queries'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'

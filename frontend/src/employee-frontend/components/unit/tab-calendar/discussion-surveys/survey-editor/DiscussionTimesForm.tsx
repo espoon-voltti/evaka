@@ -6,7 +6,6 @@ import orderBy from 'lodash/orderBy'
 import React, { MutableRefObject, useCallback, useMemo } from 'react'
 import styled from 'styled-components'
 
-import { useTranslation } from 'employee-frontend/state/i18n'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { mapped } from 'lib-common/form/form'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
@@ -23,6 +22,7 @@ import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { H3 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
+import { useTranslation } from '../../../../../state/i18n'
 import { DiscussionTimesCalendar } from '../times-calendar/TimesCalendar'
 
 import DiscussionSurveyForm from './DiscussionSurveyForm'

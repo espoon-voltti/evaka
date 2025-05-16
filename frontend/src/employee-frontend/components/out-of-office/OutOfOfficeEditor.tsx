@@ -4,7 +4,6 @@
 
 import React from 'react'
 
-import { useTranslation } from 'employee-frontend/state/i18n'
 import { localDateRange } from 'lib-common/form/fields'
 import { object, required, validated } from 'lib-common/form/form'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
@@ -17,6 +16,8 @@ import { Button } from 'lib-components/atoms/buttons/Button'
 import ButtonContainer from 'lib-components/layout/ButtonContainer'
 import { DateRangePickerF } from 'lib-components/molecules/date-picker/DateRangePicker'
 import { Gap } from 'lib-components/white-space'
+
+import { useTranslation } from '../../state/i18n'
 
 import { upsertOutOfOfficePeriodMutation } from './queries'
 

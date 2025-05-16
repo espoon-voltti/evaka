@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { DevCalendarEventTime, DevPerson } from 'e2e-test/generated/api-types'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   CalendarEventId,
@@ -29,6 +28,7 @@ import {
   createDaycarePlacements,
   resetServiceState
 } from '../../generated/api-clients'
+import { DevCalendarEventTime, DevPerson } from '../../generated/api-types'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
 import { DiscussionSurveyModal } from '../../pages/citizen/citizen-discussion-surveys'
 import CitizenHeader from '../../pages/citizen/citizen-header'

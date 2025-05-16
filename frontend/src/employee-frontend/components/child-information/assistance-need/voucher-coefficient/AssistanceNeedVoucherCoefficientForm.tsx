@@ -11,9 +11,6 @@ import React, {
 } from 'react'
 import styled from 'styled-components'
 
-import LabelValueList from 'employee-frontend/components/common/LabelValueList'
-import { useTranslation } from 'employee-frontend/state/i18n'
-import { UIContext } from 'employee-frontend/state/ui'
 import { Failure } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { UpdateStateFn } from 'lib-common/form-state'
@@ -31,6 +28,9 @@ import DateRangePicker from 'lib-components/molecules/date-picker/DateRangePicke
 import { LabelLike } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
+import LabelValueList from '../../../../components/common/LabelValueList'
+import { useTranslation } from '../../../../state/i18n'
+import { UIContext } from '../../../../state/ui'
 import {
   createAssistanceNeedVoucherCoefficientMutation,
   updateAssistanceNeedVoucherCoefficientMutation

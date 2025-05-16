@@ -4,7 +4,6 @@
 
 import React, { createContext, useContext } from 'react'
 
-import { UserContext } from 'employee-frontend/state/user'
 import { Loading, Result, Success, wrapResult } from 'lib-common/api'
 import { constantQuery, useQueryResult } from 'lib-common/query'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -12,6 +11,7 @@ import { featureFlags } from 'lib-customizations/employee'
 
 import { getAssistanceNeedDecisionsReportUnreadCount } from '../../generated/api-clients/reports'
 import { childDocumentDecisionsReportNotificationCountQuery } from '../../queries'
+import { UserContext } from '../../state/user'
 
 const getAssistanceNeedDecisionsReportUnreadCountResult = wrapResult(
   getAssistanceNeedDecisionsReportUnreadCount

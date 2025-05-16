@@ -4,13 +4,13 @@
 
 import React, { useState } from 'react'
 
-import { useTranslation } from 'employee-frontend/state/i18n'
 import { PlacementPlanDetails } from 'lib-common/generated/api-types/placement'
 import { DaycareId } from 'lib-common/generated/api-types/shared'
 import Title from 'lib-components/atoms/Title'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 
 import PlacementProposals from '../../components/unit/tab-placement-proposals/PlacementProposals'
+import { useTranslation } from '../../state/i18n'
 import { NotificationCounter } from '../UnitPage'
 
 interface Props {

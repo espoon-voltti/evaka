@@ -7,8 +7,6 @@ import orderBy from 'lodash/orderBy'
 import React, { useCallback, useContext, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import { useTranslation } from 'employee-frontend/state/i18n'
-import { UIContext } from 'employee-frontend/state/ui'
 import { mapped, object, value } from 'lib-common/form/form'
 import { useForm } from 'lib-common/form/hooks'
 import {
@@ -31,6 +29,8 @@ import { H2, H3, Label, fontWeights } from 'lib-components/typography'
 import { Gap, defaultMargins } from 'lib-components/white-space'
 import { faPen, faPlus, faQuestion, faTrash } from 'lib-icons'
 
+import { useTranslation } from '../../../../../state/i18n'
+import { UIContext } from '../../../../../state/ui'
 import {
   deleteCalendarEventTimeMutation,
   setCalendarEventTimeReservationMutation

@@ -9,10 +9,6 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
-import { renderResult } from 'employee-frontend/components/async-rendering'
-import AutosaveStatusIndicator from 'employee-frontend/components/common/AutosaveStatusIndicator'
-import { I18nContext, Lang, useTranslation } from 'employee-frontend/state/i18n'
-import { AutosaveStatus } from 'employee-frontend/utils/use-autosave'
 import { Failure, Result, wrapResult } from 'lib-common/api'
 import { AssistanceNeedDecisionForm } from 'lib-common/generated/api-types/assistanceneed'
 import { Employee, PersonJSON } from 'lib-common/generated/api-types/pis'
@@ -40,7 +36,11 @@ import { H1, H2, Label, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { featureFlags, Translations } from 'lib-customizations/employee'
 
+import { renderResult } from '../../../../components/async-rendering'
+import AutosaveStatusIndicator from '../../../../components/common/AutosaveStatusIndicator'
 import { getPersonIdentity } from '../../../../generated/api-clients/pis'
+import { I18nContext, Lang, useTranslation } from '../../../../state/i18n'
+import { AutosaveStatus } from '../../../../utils/use-autosave'
 
 import AssistanceNeededDecisionForm, {
   FieldInfos

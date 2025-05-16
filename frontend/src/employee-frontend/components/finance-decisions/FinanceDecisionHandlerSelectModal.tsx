@@ -5,7 +5,6 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
 
-import { useTranslation } from 'employee-frontend/state/i18n'
 import { Result, wrapResult } from 'lib-common/api'
 import { EmployeeId } from 'lib-common/generated/api-types/shared'
 import { UUID } from 'lib-common/types'
@@ -17,6 +16,7 @@ import { Gap } from 'lib-components/white-space'
 import { faArrowRight } from 'lib-icons'
 
 import { getSelectableFinanceDecisionHandlers } from '../../generated/api-clients/invoicing'
+import { useTranslation } from '../../state/i18n'
 
 const getSelectableFinanceDecisionHandlersResult = wrapResult(
   getSelectableFinanceDecisionHandlers

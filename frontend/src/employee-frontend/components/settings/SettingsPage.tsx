@@ -4,7 +4,6 @@
 
 import React, { useCallback, useState } from 'react'
 
-import { useTranslation } from 'employee-frontend/state/i18n'
 import {
   settings as options,
   SettingType
@@ -18,6 +17,7 @@ import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { H1 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
+import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 
 import { putSettingsMutation, settingsQuery } from './queries'

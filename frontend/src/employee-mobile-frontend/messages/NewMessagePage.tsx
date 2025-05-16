@@ -5,15 +5,12 @@
 import React, { useContext } from 'react'
 import { Navigate, useNavigate } from 'react-router'
 
-import {
-  toUnitOrGroup,
-  UnitOrGroup
-} from 'employee-mobile-frontend/common/unit-or-group'
 import { combine } from 'lib-common/api'
 import { useQueryResult } from 'lib-common/query'
 
 import { routes } from '../App'
 import { renderResult } from '../async-rendering'
+import { toUnitOrGroup, UnitOrGroup } from '../common/unit-or-group'
 
 import MessageEditor from './MessageEditor'
 import { selectableRecipientsQuery } from './queries'

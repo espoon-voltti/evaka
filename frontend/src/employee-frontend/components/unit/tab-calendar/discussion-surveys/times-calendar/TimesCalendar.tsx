@@ -14,8 +14,6 @@ import React, {
 import styled, { css } from 'styled-components'
 import { v4 as uuidv4 } from 'uuid'
 
-import { useTranslation } from 'employee-frontend/state/i18n'
-import { UIContext } from 'employee-frontend/state/ui'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { BoundForm, useFormElems } from 'lib-common/form/hooks'
 import {
@@ -40,6 +38,8 @@ import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faPlus, faTrash } from 'lib-icons'
 
+import { useTranslation } from '../../../../../state/i18n'
+import { UIContext } from '../../../../../state/ui'
 import { addCalendarEventTimeMutation } from '../../queries'
 import { ChildGroupInfo } from '../DiscussionSurveyView'
 import { NewEventTimeForm } from '../survey-editor/DiscussionTimesForm'

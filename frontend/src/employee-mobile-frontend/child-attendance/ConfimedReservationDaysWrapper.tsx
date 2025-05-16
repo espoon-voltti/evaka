@@ -4,9 +4,9 @@
 
 import React from 'react'
 
-import { renderResult } from 'employee-mobile-frontend/async-rendering'
 import { useQueryResult } from 'lib-common/query'
 
+import { renderResult } from '../async-rendering'
 import { UnitOrGroup } from '../common/unit-or-group'
 
 import ConfirmedDaysReservationList from './ConfirmedDaysReservationList'

@@ -5,7 +5,6 @@
 import React, { useContext, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router'
 
-import { useTranslation } from 'citizen-frontend/localization'
 import { isLoading } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { CitizenCalendarEvent } from 'lib-common/generated/api-types/calendarevent'
@@ -19,6 +18,8 @@ import { featureFlags, Translations } from 'lib-customizations/citizen'
 import colors from 'lib-customizations/common'
 import { faInfo } from 'lib-icons'
 import { faTreePalm } from 'lib-icons'
+
+import { useTranslation } from '../localization'
 
 import { useCalendarModalState } from './CalendarPage'
 import { showSurveyReservationToast } from './discussion-reservation-modal/discussion-survey'

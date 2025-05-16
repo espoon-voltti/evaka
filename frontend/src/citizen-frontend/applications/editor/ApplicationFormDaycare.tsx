@@ -4,7 +4,6 @@
 
 import React, { useCallback } from 'react'
 
-import { renderResult } from 'citizen-frontend/async-rendering'
 import { UnitPreferenceFormData } from 'lib-common/api-types/application/ApplicationFormData'
 import { constantQuery, useQueryResult } from 'lib-common/query'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
@@ -15,6 +14,7 @@ import Heading from '../../applications/editor/Heading'
 import ContactInfoSection from '../../applications/editor/contact-info/ContactInfoSection'
 import ServiceNeedSection from '../../applications/editor/service-need/ServiceNeedSection'
 import UnitPreferenceSection from '../../applications/editor/unit-preference/UnitPreferenceSection'
+import { renderResult } from '../../async-rendering'
 import { serviceNeedOptionPublicInfosQuery } from '../queries'
 
 import { ApplicationFormProps } from './ApplicationEditor'

@@ -6,7 +6,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { Fragment, useCallback, useContext, useMemo } from 'react'
 import styled from 'styled-components'
 
-import { UserContext } from 'employee-frontend/state/user'
 import {
   ApplicationBasis,
   ApplicationStatusOption,
@@ -67,6 +66,7 @@ import {
 
 import { useTranslation } from '../../state/i18n'
 import { FinanceDecisionHandlerOption } from '../../state/invoicing-ui'
+import { UserContext } from '../../state/user'
 import { FeeDecisionDifferenceIcons } from '../fee-decisions/FeeDecisionDifferenceIcon'
 import { VoucherValueDecisionDifferenceIcons } from '../voucher-value-decisions/VoucherValueDecisionDifferenceIcon'
 

@@ -4,10 +4,6 @@
 
 import React, { SetStateAction, useCallback, useEffect, useState } from 'react'
 
-import {
-  AutosaveStatus,
-  useAutosave
-} from 'employee-frontend/utils/use-autosave'
 import { Result, wrapResult } from 'lib-common/api'
 import { AssistanceNeedDecisionForm } from 'lib-common/generated/api-types/assistanceneed'
 import { Employee } from 'lib-common/generated/api-types/pis'
@@ -19,6 +15,7 @@ import {
   getAssistanceNeedDecision,
   updateAssistanceNeedDecision
 } from '../../../../generated/api-clients/assistanceneed'
+import { AutosaveStatus, useAutosave } from '../../../../utils/use-autosave'
 
 const getAssistanceDecisionMakerOptionsResult = wrapResult(
   getAssistanceDecisionMakerOptions

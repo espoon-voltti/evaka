@@ -5,7 +5,6 @@
 import React, { useMemo } from 'react'
 import styled, { useTheme } from 'styled-components'
 
-import { getDuplicateChildInfo } from 'citizen-frontend/utils/duplicated-child-utils'
 import { BoundFormState, useBoolean } from 'lib-common/form/hooks'
 import { ReservationChild } from 'lib-common/generated/api-types/reservations'
 import { ChildId } from 'lib-common/generated/api-types/shared'
@@ -20,6 +19,7 @@ import { defaultMargins } from 'lib-components/white-space'
 import { fasExclamationTriangle } from 'lib-icons'
 
 import { useTranslation } from '../localization'
+import { getDuplicateChildInfo } from '../utils/duplicated-child-utils'
 
 interface ChildSelectorProps {
   childItems: ReservationChild[]

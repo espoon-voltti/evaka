@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { UnitStaffAttendancesTable } from 'e2e-test/pages/employee/units/unit-calendar-page-base'
 import { GroupId, PlacementId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { randomId } from 'lib-common/id-type'
@@ -28,6 +27,7 @@ import {
   StaffAttendancePlanId
 } from '../../generated/api-types'
 import { UnitCalendarPage, UnitPage } from '../../pages/employee/units/unit'
+import { UnitStaffAttendancesTable } from '../../pages/employee/units/unit-calendar-page-base'
 import { waitUntilEqual } from '../../utils'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'

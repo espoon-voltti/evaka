@@ -7,10 +7,6 @@ import React, { useContext, useRef, useState } from 'react'
 import { useNavigate } from 'react-router'
 
 import {
-  ChildState,
-  ChildContext
-} from 'employee-frontend/components/child-information/state'
-import {
   AssistanceNeedPreschoolDecisionId,
   ChildId
 } from 'lib-common/generated/api-types/shared'
@@ -22,6 +18,10 @@ import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
 import { P } from 'lib-components/typography'
 import { faQuestion } from 'lib-icons'
 
+import {
+  ChildState,
+  ChildContext
+} from '../../components/child-information/state'
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 

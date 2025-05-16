@@ -7,7 +7,6 @@ import React, { Fragment, useCallback, useContext, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
 import styled from 'styled-components'
 
-import { renderResult } from 'citizen-frontend/async-rendering'
 import { IncomeStatement } from 'lib-common/generated/api-types/incomestatement'
 import { IncomeStatementId } from 'lib-common/generated/api-types/shared'
 import { useMutation, useQueryResult } from 'lib-common/query'
@@ -33,6 +32,7 @@ import { Gap } from 'lib-components/white-space'
 import { faPen, faQuestion, faTrash, faFile } from 'lib-icons'
 
 import Footer from '../Footer'
+import { renderResult } from '../async-rendering'
 import { useTranslation } from '../localization'
 import { OverlayContext } from '../overlay/state'
 

@@ -5,7 +5,6 @@
 import React, { Fragment, useState } from 'react'
 import styled from 'styled-components'
 
-import { useTranslation } from 'employee-frontend/state/i18n'
 import { OutOfOfficePeriod } from 'lib-common/generated/api-types/outofoffice'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
@@ -14,6 +13,8 @@ import Container, { ContentArea } from 'lib-components/layout/Container'
 import { H1, Label, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { faPen, faTrash } from 'lib-icons'
+
+import { useTranslation } from '../../state/i18n'
 
 import OutOfOfficeEditor from './OutOfOfficeEditor'
 import {

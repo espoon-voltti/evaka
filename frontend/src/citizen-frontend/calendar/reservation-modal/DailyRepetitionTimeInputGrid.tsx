@@ -4,10 +4,11 @@
 
 import React from 'react'
 
-import { useTranslation } from 'citizen-frontend/localization'
 import { BoundForm, useFormFields } from 'lib-common/form/hooks'
 import { scrollIntoViewSoftKeyboard } from 'lib-common/utils/scrolling'
 import { Label } from 'lib-components/typography'
+
+import { useTranslation } from '../../localization'
 
 import { Day } from './TimeInputs'
 import { type dailyTimes } from './form'

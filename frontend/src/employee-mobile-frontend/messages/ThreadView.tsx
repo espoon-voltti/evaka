@@ -13,7 +13,6 @@ import React, {
 import { Navigate, useNavigate } from 'react-router'
 import styled, { css } from 'styled-components'
 
-import { routes } from 'employee-mobile-frontend/App'
 import { combine } from 'lib-common/api'
 import {
   Message,
@@ -48,6 +47,7 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faReply } from 'lib-icons'
 
+import { routes } from '../App'
 import { renderResult } from '../async-rendering'
 import TopBar from '../common/TopBar'
 import { useTranslation } from '../common/i18n'

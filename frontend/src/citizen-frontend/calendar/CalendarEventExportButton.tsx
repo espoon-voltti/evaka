@@ -5,9 +5,10 @@
 import ical, { ICalCalendarMethod } from 'ical-generator'
 import React, { useCallback } from 'react'
 
-import { useTranslation } from 'citizen-frontend/localization'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { faCalendar } from 'lib-icons'
+
+import { useTranslation } from '../localization'
 
 const helsinkiVTZLines = [
   'BEGIN:VTIMEZONE',

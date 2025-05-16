@@ -6,7 +6,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React from 'react'
 import { Link } from 'react-router'
 
-import { downloadDecisionPdf } from 'employee-frontend/generated/api-clients/decision'
 import { ApplicationStatus } from 'lib-common/generated/api-types/application'
 import { Decision } from 'lib-common/generated/api-types/decision'
 import { ApplicationId } from 'lib-common/generated/api-types/shared'
@@ -20,6 +19,7 @@ import { Label } from 'lib-components/typography'
 import { faFilePdf, faGavel, fasExclamationTriangle } from 'lib-icons'
 
 import DecisionResponse from '../../components/application-page/DecisionResponse'
+import { downloadDecisionPdf } from '../../generated/api-clients/decision'
 import { useTranslation } from '../../state/i18n'
 
 const isPending = (decision: Decision, applicationStatus: ApplicationStatus) =>

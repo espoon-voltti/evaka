@@ -7,9 +7,6 @@ import partition from 'lodash/partition'
 import React, { useMemo } from 'react'
 import styled from 'styled-components'
 
-import { renderResult } from 'employee-mobile-frontend/async-rendering'
-import { getServiceTimeRangeOrNullForDate } from 'employee-mobile-frontend/common/dailyServiceTimes'
-import { UnitOrGroup } from 'employee-mobile-frontend/common/unit-or-group'
 import { Result } from 'lib-common/api'
 import {
   ChildReservationInfo,
@@ -20,6 +17,10 @@ import LocalTime from 'lib-common/local-time'
 import { useQueryResult } from 'lib-common/query'
 import { reservationHasTimes } from 'lib-common/reservations'
 import { theme } from 'lib-customizations/common'
+
+import { renderResult } from '../async-rendering'
+import { getServiceTimeRangeOrNullForDate } from '../common/dailyServiceTimes'
+import { UnitOrGroup } from '../common/unit-or-group'
 
 import ChildSubListItem from './ChildSubListItem'
 import { confirmedDayReservationsQuery } from './queries'

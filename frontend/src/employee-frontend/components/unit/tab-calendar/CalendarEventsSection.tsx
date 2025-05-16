@@ -17,7 +17,6 @@ import React, {
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router'
 import styled from 'styled-components'
 
-import { formatPersonName } from 'employee-frontend/utils'
 import { combine, Result, wrapResult } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
@@ -69,6 +68,7 @@ import {
 } from '../../../generated/api-clients/calendarevent'
 import { useTranslation } from '../../../state/i18n'
 import { DayOfWeek } from '../../../types'
+import { formatPersonName } from '../../../utils'
 import { renderResult } from '../../async-rendering'
 import { unitGroupDetailsQuery, daycareQuery } from '../queries'
 

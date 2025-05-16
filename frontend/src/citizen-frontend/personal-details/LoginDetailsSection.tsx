@@ -5,7 +5,6 @@
 import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import ModalAccessibilityWrapper from 'citizen-frontend/ModalAccessibilityWrapper'
 import { Failure } from 'lib-common/api'
 import { object, required, validated, value } from 'lib-common/form/form'
 import { useBoolean, useForm, useFormFields } from 'lib-common/form/hooks'
@@ -29,6 +28,7 @@ import { H2, Label, LabelLike } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { faCheck, faLockAlt } from 'lib-icons'
 
+import ModalAccessibilityWrapper from '../ModalAccessibilityWrapper'
 import { User } from '../auth/state'
 import { useTranslation } from '../localization'
 import { getStrongLoginUri } from '../navigation/const'

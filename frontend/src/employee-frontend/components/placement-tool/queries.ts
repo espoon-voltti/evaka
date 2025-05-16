@@ -2,8 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { getNextPreschoolTerm } from 'employee-frontend/generated/api-clients/application'
 import { Queries } from 'lib-common/query'
+
+import { getNextPreschoolTerm } from '../../generated/api-clients/application'
 
 const q = new Queries()
 

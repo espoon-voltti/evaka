@@ -7,9 +7,6 @@ import React, { useContext, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
-import { renderResult } from 'employee-frontend/components/async-rendering'
-import { I18nContext, Lang, useTranslation } from 'employee-frontend/state/i18n'
-import { UserContext } from 'employee-frontend/state/user'
 import { wrapResult } from 'lib-common/api'
 import {
   AssistanceNeedDecision,
@@ -34,6 +31,7 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 import { faArrowDownToLine } from 'lib-icons'
 import { faQuestion, faTimes } from 'lib-icons'
 
+import { renderResult } from '../../components/async-rendering'
 import {
   annulAssistanceNeedDecision,
   decideAssistanceNeedDecision,
@@ -42,6 +40,8 @@ import {
   markAssistanceNeedDecisionAsOpened,
   updateAssistanceNeedDecisionDecisionMaker
 } from '../../generated/api-clients/assistanceneed'
+import { I18nContext, Lang, useTranslation } from '../../state/i18n'
+import { UserContext } from '../../state/user'
 
 import { ReportNotificationContext } from './ReportNotificationContext'
 

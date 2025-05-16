@@ -7,7 +7,6 @@ import orderBy from 'lodash/orderBy'
 import sortBy from 'lodash/sortBy'
 import React, { Fragment, useMemo } from 'react'
 
-import { renderResult } from 'citizen-frontend/async-rendering'
 import { combine } from 'lib-common/api'
 import {
   AssistanceNeedDecisionCitizenListItem,
@@ -23,6 +22,7 @@ import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { H1, H2 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
+import { renderResult } from '../../async-rendering'
 import { childrenQuery } from '../../children/queries'
 import { useTranslation } from '../../localization'
 import useTitle from '../../useTitle'

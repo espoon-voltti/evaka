@@ -4,9 +4,6 @@
 
 import React, { useEffect } from 'react'
 
-import Footer from 'citizen-frontend/Footer'
-import { renderResult } from 'citizen-frontend/async-rendering'
-import { useTranslation } from 'citizen-frontend/localization'
 import { AssistanceNeedPreschoolDecisionId } from 'lib-common/generated/api-types/shared'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
@@ -20,7 +17,10 @@ import { translations } from 'lib-customizations/citizen'
 import colors from 'lib-customizations/common'
 import { faArrowDownToLine } from 'lib-icons'
 
+import Footer from '../../Footer'
+import { renderResult } from '../../async-rendering'
 import { getAssistanceNeedPreschoolDecisionPdf } from '../../generated/api-clients/assistanceneed'
+import { useTranslation } from '../../localization'
 
 import {
   assistanceNeedPreschoolDecisionQuery,

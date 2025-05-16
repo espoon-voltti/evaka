@@ -6,7 +6,6 @@ import orderBy from 'lodash/orderBy'
 import React, { useContext, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
 
-import { Lang, useLang, useTranslation } from 'citizen-frontend/localization'
 import {
   CitizenServiceApplication,
   ServiceApplication,
@@ -46,6 +45,7 @@ import {
   CalendarModalCloseButton,
   CalendarModalSection
 } from '../../../calendar/CalendarModal'
+import { Lang, useLang, useTranslation } from '../../../localization'
 import { deleteServiceApplicationsMutation } from '../../queries'
 
 export default React.memo(function ServiceApplications({

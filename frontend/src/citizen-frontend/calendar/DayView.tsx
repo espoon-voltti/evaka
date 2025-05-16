@@ -6,7 +6,6 @@ import partition from 'lodash/partition'
 import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import { getDuplicateChildInfo } from 'citizen-frontend/utils/duplicated-child-utils'
 import { mapScheduleType } from 'lib-common/api-types/placement'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { array, mapped, object, value } from 'lib-common/form/form'
@@ -96,6 +95,7 @@ import { faChevronLeft, faChevronRight } from 'lib-icons'
 
 import ModalAccessibilityWrapper from '../ModalAccessibilityWrapper'
 import { Translations, useLang, useTranslation } from '../localization'
+import { getDuplicateChildInfo } from '../utils/duplicated-child-utils'
 
 import AttendanceInfo from './AttendanceInfo'
 import { BottomFooterContainer } from './BottomFooterContainer'

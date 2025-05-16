@@ -7,7 +7,6 @@ import React, { useMemo, useState } from 'react'
 import { Link } from 'react-router'
 import styled from 'styled-components'
 
-import { useTranslation } from 'employee-frontend/state/i18n'
 import {
   CareType,
   careTypes,
@@ -25,6 +24,7 @@ import { H1, LabelLike } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { unitProviderTypes } from 'lib-customizations/employee'
 
+import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 
 import { unitFeaturesQuery, updateUnitFeaturesMutation } from './queries'
