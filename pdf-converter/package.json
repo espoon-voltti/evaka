@@ -1,0 +1,35 @@
+{
+  "name": "pdf-converter",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "clean": "rm -rf ./dist",
+    "type-check": "tsc --noEmit",
+    "build": "npm run clean && npm install && tsc --build src",
+    "dev": "tsc --build src && concurrently --prefix '[{name}]' --names 'tsc,nodemon' 'tsc --build --preserveWatchOutput -w src' 'NODE_ENV=local nodemon --enable-source-maps dist/index.js'"
+  },
+  "dependencies": {
+    "express": "5.1.0",
+    "multer": "1.4.5-lts.1",
+    "tslib": "2.8.1"
+  },
+  "devDependencies": {
+    "@types/express": "5.0.1",
+    "@types/multer": "1.4.11",
+    "@types/node": "22.15.0",
+    "concurrently": "9.1.2",
+    "nodemon": "3.1.10",
+    "prettier": "3.5.3",
+    "typescript": "5.8.3"
+  },
+  "prettier": {
+    "arrowParens": "always",
+    "bracketSpacing": true,
+    "semi": false,
+    "singleQuote": true,
+    "trailingComma": "none"
+  },
+  "engines": {
+    "node": ">= 22.12.0"
+  }
+} 
