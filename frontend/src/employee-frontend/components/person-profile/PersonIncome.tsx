@@ -13,7 +13,8 @@ import { IncomeId, PersonId } from 'lib-common/generated/api-types/shared'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
 import Pagination from 'lib-components/Pagination'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
-import { H3, H4 } from 'lib-components/typography'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import { H3 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
@@ -23,13 +24,13 @@ import { renderResult } from '../async-rendering'
 
 import IncomeStatementsTable from './IncomeStatementsTable'
 import IncomeList from './income/IncomeList'
+import { IncomeNotifications } from './income/IncomeNotifications'
 import { getMissingIncomePeriodsString } from './income/missingIncomePeriodUtils'
 import {
   childPlacementPeriodsQuery,
   createIncomeMutation,
   deleteIncomeMutation,
   incomeCoefficientMultipliersQuery,
-  incomeNotificationsQuery,
   incomeStatementChildrenQuery,
   incomeStatementsQuery,
   incomeTypeOptionsQuery,
@@ -52,12 +53,18 @@ export default React.memo(function PersonIncome({ id }: Props) {
 
   return (
     <>
-      <H4>{i18n.personProfile.incomeStatement.title}</H4>
+      <H3>{i18n.personProfile.incomeStatement.title}</H3>
       <IncomeStatements personId={id} />
+      <Gap size="L" />
+      <H3>{i18n.personProfile.incomeStatement.notificationsTitle}</H3>
+      <IncomeNotifications personId={id} />
       <Gap size="L" />
       {renderResult(children, (children) => (
         <>
-          <H4>{i18n.personProfile.incomeStatement.custodianTitle}</H4>
+          <H3>{i18n.personProfile.incomeStatement.custodianTitle}</H3>
+          {children.length === 0 && (
+            <span>{i18n.personProfile.incomeStatement.noCustodians}</span>
+          )}
           {children.map((child) => (
             <ChildIncomeStatementsContainer key={child.id}>
               <Gap size="m" />
@@ -68,7 +75,6 @@ export default React.memo(function PersonIncome({ id }: Props) {
         </>
       ))}
       <Gap size="L" />
-      <H3>{i18n.personProfile.income.title}</H3>
       <Incomes personId={id} permittedActions={permittedActions} />
     </>
   )
@@ -113,9 +119,6 @@ export const Incomes = React.memo(function Incomes({
   const { i18n } = useTranslation()
   const { setErrorMessage } = useContext(UIContext)
   const incomes = useQueryResult(personIncomesQuery({ personId }))
-  const incomeNotifications = useQueryResult(
-    incomeNotificationsQuery({ personId })
-  )
   const childPlacementPeriods = useQueryResult(
     childPlacementPeriodsQuery({ adultId: personId })
   )
@@ -195,37 +198,29 @@ export const Incomes = React.memo(function Incomes({
   return (
     <>
       {renderResult(
-        combine(
-          incomes,
-          incomeTypeOptions,
-          incomeNotifications,
-          coefficientMultipliers
-        ),
-        ([
-          incomes,
-          incomeTypeOptions,
-          incomeNotifications,
-          coefficientMultipliers
-        ]) => (
+        combine(incomes, incomeTypeOptions, coefficientMultipliers),
+        ([incomes, incomeTypeOptions, coefficientMultipliers]) => (
           <>
-            {permittedActions.has('CREATE_INCOME') && (
-              <AddButtonRow
-                text={i18n.personProfile.income.add}
-                onClick={() => {
-                  toggleIncomeRow('new')
-                  setEditing('new')
-                }}
-                disabled={!!editing}
-                data-qa="add-income-button"
-              />
-            )}
-            <Gap size="m" />
+            <FixedSpaceRow justifyContent="space-between" alignItems="center">
+              <H3 noMargin>{i18n.personProfile.income.title}</H3>
+              {permittedActions.has('CREATE_INCOME') && (
+                <AddButtonRow
+                  text={i18n.personProfile.income.add}
+                  onClick={() => {
+                    toggleIncomeRow('new')
+                    setEditing('new')
+                  }}
+                  disabled={!!editing}
+                  data-qa="add-income-button"
+                />
+              )}
+            </FixedSpaceRow>
+            <Gap size="s" />
             <IncomeList
               personId={personId}
               incomes={incomes}
               incomeTypeOptions={incomeTypeOptions}
               coefficientMultipliers={coefficientMultipliers}
-              incomeNotifications={incomeNotifications}
               isRowOpen={isIncomeRowOpen}
               toggleRow={toggleIncomeRow}
               editing={editing}

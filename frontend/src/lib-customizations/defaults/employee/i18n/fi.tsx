@@ -2046,20 +2046,27 @@ export const fi = {
         confirmText: 'Haluatko varmasti poistaa tulotiedon ajalta',
         cancelButton: 'Peruuta',
         deleteButton: 'Poista'
-      },
-      incomeNotifications: {
-        title: 'Muistutus tulotietojen päivittämisestä lähetetty'
       }
     },
     incomeStatement: {
       title: 'Tuloselvitykset',
+      notificationsTitle: 'Muistutukset tuloselvityksen tekemisestä',
       custodianTitle: 'Huollettavien tuloselvitykset',
       noIncomeStatements: 'Ei tuloselvityksiä',
       incomeStatementHeading: 'Asiakkaan tuloselvityslomake',
       sentAtHeading: 'Saapumispäivä',
       handledHeading: 'Käsitelty',
       open: 'Avaa lomake',
-      handled: 'Tuloselvitys käsitelty'
+      handled: 'Tuloselvitys käsitelty',
+      notificationSent: 'Lähetetty',
+      noNotifications: 'Ei lähetettyjä muistutuksia',
+      notificationTypes: {
+        INITIAL_EMAIL: 'Ensimmäinen muistutus',
+        REMINDER_EMAIL: 'Toinen muistutus',
+        EXPIRED_EMAIL: 'Tulot päättyneet',
+        NEW_CUSTOMER: 'Aloittava asiakas'
+      },
+      noCustodians: 'Ei huollettavia'
     },
     invoice: {
       createReplacementDrafts: 'Muodosta oikaisulaskut',
