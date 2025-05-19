@@ -1,0 +1,51 @@
+<!--
+SPDX-FileCopyrightText: 2017-2025 City of Espoo
+
+SPDX-License-Identifier: LGPL-2.1-or-later
+-->
+
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+  <meta charset="utf-8" />
+  <title>Varhaiskasvatus</title>
+  <link rel="icon" href="/favicon.ico" />
+</head>
+<body>
+<noscript>
+  <main style="margin: 0 20px">
+    <p>
+      Sivusto vaatii, että JavaScript on sallittu selaimessasi.
+    </p>
+    <p>
+      Sidan kräver att JavaScript är aktiverat i din webbläsare.
+    </p>
+    <p>
+      This site requires JavaScript to be enabled in your browser.
+    </p>
+  </main>
+</noscript>
+<div id="app"></div>
+<script type="module" src="/src/citizen-frontend/index.tsx"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    var app = document.getElementById('app')
+    if (!window.evaka && app) {
+      var html = ''
+      html += '<main style="margin: 0 20px">'
+      html += '<p>'
+      html += 'Sivua ei voida avata. Kokeile avata sivu uudelleen tai päivittää selain.'
+      html += '</p>'
+      html += '<p>'
+      html += 'Sidan kunde inte laddas. Var god och försök att öppna sidan igen, eller uppdatera din webbläsare.'
+      html += '</p>'
+      html += '<p>'
+      html += 'The site could not be loaded. Please try to open the site again or update the browser.'
+      html += '</p>'
+      html += '</main>'
+      app.innerHTML = html
+    }
+  })
+</script>
+</body>
+</html>

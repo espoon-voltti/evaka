@@ -2,6 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+// For __IS_VITE__
+/// <reference types="lib-common/env" />
+
 import * as Sentry from '@sentry/browser'
 import { differenceInDays } from 'date-fns'
 import React, {
@@ -90,7 +93,15 @@ export const ServiceWorkerContextProvider = React.memo(
 
 const registerServiceWorker = async () => {
   if ('serviceWorker' in navigator) {
-    await navigator.serviceWorker.register('/employee/mobile/service-worker.js')
+    if (__IS_VITE__) {
+      // Vite tranforms the referenced file
+      const swUrl = new URL('../service-worker.js', import.meta.url)
+      await navigator.serviceWorker.register(swUrl.href)
+    } else {
+      await navigator.serviceWorker.register(
+        '/employee/mobile/service-worker.js'
+      )
+    }
     return await navigator.serviceWorker.ready
   } else {
     return undefined

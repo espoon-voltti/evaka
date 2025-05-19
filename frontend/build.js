@@ -154,7 +154,8 @@ async function buildProject(project, config) {
     resolveExtensions,
     publicPath: project.publicPath,
     define: {
-      __APP_COMMIT__: JSON.stringify(process.env.APP_COMMIT || 'UNDEFINED')
+      __APP_COMMIT__: JSON.stringify(process.env.APP_COMMIT || 'UNDEFINED'),
+      __IS_VITE__: 'false'
     },
     plugins: [
       evakaAliasesPlugin(resolveExtensions, customizationsModule, icons)

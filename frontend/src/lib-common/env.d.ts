@@ -3,3 +3,4 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 declare const __APP_COMMIT__: string
+declare const __IS_VITE__: boolean
