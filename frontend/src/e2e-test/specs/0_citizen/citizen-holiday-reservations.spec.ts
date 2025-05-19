@@ -465,8 +465,8 @@ describe('Holiday periods and questionnaires', () => {
     await setupFirstChildPlacement()
     await holidayQuestionnaireFixture().save()
     const child2 = await setupAnotherChild(
-      LocalDate.of(2035, 12, 19),
-      LocalDate.of(2036, 1, 1)
+      LocalDate.of(2035, 12, 14),
+      LocalDate.of(2035, 12, 27)
     )
 
     await enduserLogin(page, guardian)
@@ -482,7 +482,7 @@ describe('Holiday periods and questionnaires', () => {
     ])
     await holidayModal.assertOptions(child2, [
       'Ei maksutonta poissaoloa',
-      '26.12.2035 - 01.01.2036'
+      '18.12.2035 - 25.12.2035'
     ])
     await holidayModal.markHolidays([
       {
@@ -491,11 +491,11 @@ describe('Holiday periods and questionnaires', () => {
       },
       {
         child: child2,
-        option: '26.12.2035 - 01.01.2036'
+        option: '18.12.2035 - 25.12.2035'
       }
     ])
 
-    await calendar.assertDay(LocalDate.of(2035, 12, 27), [
+    await calendar.assertDay(LocalDate.of(2035, 12, 19), [
       { childIds: [child.id], text: 'Ilmoitus puuttuu' },
       { childIds: [child2.id], text: 'Maksuton poissaolo' }
     ])
@@ -503,7 +503,7 @@ describe('Holiday periods and questionnaires', () => {
       { childIds: [child.id], text: 'Maksuton poissaolo' }
     ])
 
-    const dayView1 = await calendar.openDayView(LocalDate.of(2035, 12, 27))
+    const dayView1 = await calendar.openDayView(LocalDate.of(2035, 12, 19))
     await dayView1.assertNoReservation(child.id)
     await dayView1.assertAbsence(
       child2.id,
