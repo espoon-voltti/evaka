@@ -116,14 +116,17 @@ export interface AssistanceNeedsAndActionsReportRow {
   assistanceNeedVoucherCoefficientCount: number
   careAreaName: string
   daycareAssistanceCounts: Partial<Record<DaycareAssistanceLevel, number>>
+  daycareAssistanceNeedDecisionCount: number
   groupId: GroupId
   groupName: string
   noActionCount: number
   otherActionCount: number
   otherAssistanceMeasureCounts: Partial<Record<OtherAssistanceMeasureType, number>>
   preschoolAssistanceCounts: Partial<Record<PreschoolAssistanceLevel, number>>
+  preschoolAssistanceNeedDecisionCount: number
   unitId: DaycareId
   unitName: string
+  unitProviderType: ProviderType
 }
 
 /**
@@ -138,13 +141,16 @@ export interface AssistanceNeedsAndActionsReportRowByChild {
   childId: PersonId
   childLastName: string
   daycareAssistanceCounts: Partial<Record<DaycareAssistanceLevel, number>>
+  daycareAssistanceNeedDecisionCount: number
   groupId: GroupId
   groupName: string
   otherAction: string
   otherAssistanceMeasureCounts: Partial<Record<OtherAssistanceMeasureType, number>>
   preschoolAssistanceCounts: Partial<Record<PreschoolAssistanceLevel, number>>
+  preschoolAssistanceNeedDecisionCount: number
   unitId: DaycareId
   unitName: string
+  unitProviderType: ProviderType
 }
 
 /**

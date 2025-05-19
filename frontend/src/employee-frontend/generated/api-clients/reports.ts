@@ -174,14 +174,16 @@ export async function getAssistanceNeedsAndActionsReport(
     date: LocalDate,
     daycareAssistanceLevels?: DaycareAssistanceLevel[] | null,
     preschoolAssistanceLevels?: PreschoolAssistanceLevel[] | null,
-    otherAssistanceMeasureTypes?: OtherAssistanceMeasureType[] | null
+    otherAssistanceMeasureTypes?: OtherAssistanceMeasureType[] | null,
+    placementTypes?: PlacementType[] | null
   }
 ): Promise<AssistanceNeedsAndActionsReport> {
   const params = createUrlSearchParams(
     ['date', request.date.formatIso()],
     ...(request.daycareAssistanceLevels?.map((e): [string, string | null | undefined] => ['daycareAssistanceLevels', e.toString()]) ?? []),
     ...(request.preschoolAssistanceLevels?.map((e): [string, string | null | undefined] => ['preschoolAssistanceLevels', e.toString()]) ?? []),
-    ...(request.otherAssistanceMeasureTypes?.map((e): [string, string | null | undefined] => ['otherAssistanceMeasureTypes', e.toString()]) ?? [])
+    ...(request.otherAssistanceMeasureTypes?.map((e): [string, string | null | undefined] => ['otherAssistanceMeasureTypes', e.toString()]) ?? []),
+    ...(request.placementTypes?.map((e): [string, string | null | undefined] => ['placementTypes', e.toString()]) ?? [])
   )
   const { data: json } = await client.request<JsonOf<AssistanceNeedsAndActionsReport>>({
     url: uri`/employee/reports/assistance-needs-and-actions`.toString(),
@@ -200,14 +202,16 @@ export async function getAssistanceNeedsAndActionsReportByChild(
     date: LocalDate,
     daycareAssistanceLevels?: DaycareAssistanceLevel[] | null,
     preschoolAssistanceLevels?: PreschoolAssistanceLevel[] | null,
-    otherAssistanceMeasureTypes?: OtherAssistanceMeasureType[] | null
+    otherAssistanceMeasureTypes?: OtherAssistanceMeasureType[] | null,
+    placementTypes?: PlacementType[] | null
   }
 ): Promise<AssistanceNeedsAndActionsReportByChild> {
   const params = createUrlSearchParams(
     ['date', request.date.formatIso()],
     ...(request.daycareAssistanceLevels?.map((e): [string, string | null | undefined] => ['daycareAssistanceLevels', e.toString()]) ?? []),
     ...(request.preschoolAssistanceLevels?.map((e): [string, string | null | undefined] => ['preschoolAssistanceLevels', e.toString()]) ?? []),
-    ...(request.otherAssistanceMeasureTypes?.map((e): [string, string | null | undefined] => ['otherAssistanceMeasureTypes', e.toString()]) ?? [])
+    ...(request.otherAssistanceMeasureTypes?.map((e): [string, string | null | undefined] => ['otherAssistanceMeasureTypes', e.toString()]) ?? []),
+    ...(request.placementTypes?.map((e): [string, string | null | undefined] => ['placementTypes', e.toString()]) ?? [])
   )
   const { data: json } = await client.request<JsonOf<AssistanceNeedsAndActionsReportByChild>>({
     url: uri`/employee/reports/assistance-needs-and-actions/by-child`.toString(),
