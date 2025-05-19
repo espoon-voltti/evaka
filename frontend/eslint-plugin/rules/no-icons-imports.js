@@ -6,7 +6,7 @@ function isIconsImport(node) {
   return node.source.type === 'Literal' && node.source.value === 'Icons'
 }
 
-module.exports = {
+export default {
   meta: {
     type: 'suggestion',
     docs: {

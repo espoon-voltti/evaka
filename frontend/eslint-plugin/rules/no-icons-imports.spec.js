@@ -2,9 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-const { RuleTester } = require('eslint')
+import { RuleTester } from 'eslint'
 
-const noIconsImports = require('./no-icons-imports')
+import noIconsImports from './no-icons-imports'
 
 new RuleTester().run('no-icons-imports', noIconsImports, {
   valid: [

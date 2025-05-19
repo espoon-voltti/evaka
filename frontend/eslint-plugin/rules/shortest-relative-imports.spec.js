@@ -2,9 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-const { RuleTester } = require('eslint')
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 
-const shortestRelativeImports = require('./shortest-relative-imports')
+import { RuleTester } from 'eslint'
+
+import shortestRelativeImports from './shortest-relative-imports.js'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 new RuleTester().run('shortest-relative-imports', shortestRelativeImports, {
   valid: [
