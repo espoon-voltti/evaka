@@ -127,6 +127,12 @@ interface IEmailMessageProvider {
 
     fun financeDecisionNotification(decisionType: FinanceDecisionType): EmailContent
 
+    fun absenceApplicationDecidedNotification(
+        accepted: Boolean,
+        startDate: LocalDate,
+        endDate: LocalDate,
+    ): EmailContent
+
     fun serviceApplicationDecidedNotification(accepted: Boolean, startDate: LocalDate): EmailContent
 
     fun confirmationCode(confirmationCode: HtmlSafe<String>): EmailContent

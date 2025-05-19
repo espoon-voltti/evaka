@@ -403,6 +403,11 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
+    data class SendAbsenceApplicationDecidedEmail(val absenceApplicationId: AbsenceApplicationId) :
+        AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
     data class SendServiceApplicationDecidedEmail(val serviceApplicationId: ServiceApplicationId) :
         AsyncJob {
         override val user: AuthenticatedUser? = null
@@ -518,6 +523,7 @@ sealed interface AsyncJob : AsyncJobPayload {
                     SendOutdatedIncomeNotificationEmail::class,
                     SendPedagogicalDocumentNotificationEmail::class,
                     SendPendingDecisionEmail::class,
+                    SendAbsenceApplicationDecidedEmail::class,
                     SendServiceApplicationDecidedEmail::class,
                     SendSpecialDietNullificationWarningEmail::class,
                     SendNekkuCustomerNumberNullificationWarningEmail::class,
