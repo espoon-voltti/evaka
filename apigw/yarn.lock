@@ -442,13 +442,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@datadog/native-iast-taint-tracking@npm:3.3.1":
-  version: 3.3.1
-  resolution: "@datadog/native-iast-taint-tracking@npm:3.3.1"
+"@datadog/native-iast-taint-tracking@npm:4.0.0":
+  version: 4.0.0
+  resolution: "@datadog/native-iast-taint-tracking@npm:4.0.0"
   dependencies:
     node-gyp: "npm:latest"
     node-gyp-build: "npm:^3.9.0"
-  checksum: 10/397d2358a2b9bc46c6e4cf17c898d4c4e37b201cfc715b8c87d7638da76ed4bd51cffd5125d16e1903cf7dba439410a15b5e5701db33217cb80b052b0321ff1a
+  checksum: 10/72cc2930bbd662c95d061516f059b6bd62a33c9d33c0f3f92d0efabb0c220df6ffca2ee20a1388109c61d44d68952bd056b766fa8cc501571158f108f10e6c55
   languageName: node
   linkType: hard
 
@@ -463,9 +463,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@datadog/pprof@npm:5.7.1":
-  version: 5.7.1
-  resolution: "@datadog/pprof@npm:5.7.1"
+"@datadog/pprof@npm:5.8.0":
+  version: 5.8.0
+  resolution: "@datadog/pprof@npm:5.8.0"
   dependencies:
     delay: "npm:^5.0.0"
     node-gyp: "npm:latest"
@@ -473,7 +473,7 @@ __metadata:
     p-limit: "npm:^3.1.0"
     pprof-format: "npm:^2.1.0"
     source-map: "npm:^0.7.4"
-  checksum: 10/ba7aa29a838a3ed620a6ff66dc52b7fc11022347801944769e880b676c5358d6132caa3fc70efce655c8d77b7350a1fadeac2f76df60883157524a0567661c75
+  checksum: 10/a276d19b7fe9b1e31cfd69342d665fb45c653b01992382401d2dfd7edef64da62319a70fbe65aa25de3f568b1bbbea2a5276641957e185ae8ffa98e3bb755925
   languageName: node
   linkType: hard
 
@@ -2702,15 +2702,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dd-trace@npm:5.51.0":
-  version: 5.51.0
-  resolution: "dd-trace@npm:5.51.0"
+"dd-trace@npm:5.52.0":
+  version: 5.52.0
+  resolution: "dd-trace@npm:5.52.0"
   dependencies:
     "@datadog/libdatadog": "npm:^0.5.1"
     "@datadog/native-appsec": "npm:8.5.2"
-    "@datadog/native-iast-taint-tracking": "npm:3.3.1"
+    "@datadog/native-iast-taint-tracking": "npm:4.0.0"
     "@datadog/native-metrics": "npm:^3.1.1"
-    "@datadog/pprof": "npm:5.7.1"
+    "@datadog/pprof": "npm:5.8.0"
     "@datadog/sketches-js": "npm:^2.1.0"
     "@datadog/wasm-js-rewriter": "npm:4.0.1"
     "@isaacs/ttlcache": "npm:^1.4.1"
@@ -2739,7 +2739,7 @@ __metadata:
     source-map: "npm:^0.7.4"
     tlhunter-sorted-set: "npm:^0.1.0"
     ttl-set: "npm:^1.0.0"
-  checksum: 10/d6b4466f57822722ac9b9b556cda00cc9ad9dd5e0a7832a990946031c84e1b2ea740be0b52110060bfb4513284c0a5e16f464c23dada3b34db6df37ffa7dd261
+  checksum: 10/a05e6abb775f5edbe2cc5de9a1dfc5a2b7a1edcd2274d975506e26b27109ffce55cf2c59af2d70645fabac7fa735e1ebeb3061c8e60524f1eb7dc6e41e3b83b7
   languageName: node
   linkType: hard
 
@@ -3394,7 +3394,7 @@ __metadata:
     connect-redis: "npm:8.0.3"
     cookie-parser: "npm:1.4.7"
     date-fns: "npm:4.1.0"
-    dd-trace: "npm:5.51.0"
+    dd-trace: "npm:5.52.0"
     eslint: "npm:9.26.0"
     eslint-config-prettier: "npm:10.1.5"
     eslint-plugin-import: "npm:2.31.0"
