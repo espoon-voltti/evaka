@@ -41,7 +41,6 @@ import colors from 'lib-customizations/common'
 import { featureFlags } from 'lib-customizations/employee'
 import { faEnvelope } from 'lib-icons'
 
-import LabelValueList from '../../components/common/LabelValueList'
 import {
   getDecisionDrafts,
   updateDecisionDrafts
@@ -53,6 +52,7 @@ import type { TitleState } from '../../state/title'
 import { TitleContext } from '../../state/title'
 import { formatName } from '../../utils'
 import { renderResult } from '../async-rendering'
+import LabelValueList from '../common/LabelValueList'
 
 const getDecisionUnitsResult = wrapResult(getDecisionUnits)
 const updateDecisionDraftsResult = wrapResult(updateDecisionDrafts)

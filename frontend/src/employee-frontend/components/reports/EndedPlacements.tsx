@@ -24,8 +24,8 @@ import { useTranslation } from '../../state/i18n'
 import { distinct } from '../../utils'
 import { renderResult } from '../async-rendering'
 import { FlexRow } from '../common/styled/containers'
-import ReportDownload from '../reports/ReportDownload'
 
+import ReportDownload from './ReportDownload'
 import { FilterLabel, FilterRow, RowCountInfo, TableScrollable } from './common'
 import { endedPlacementsReportQuery } from './queries'
 

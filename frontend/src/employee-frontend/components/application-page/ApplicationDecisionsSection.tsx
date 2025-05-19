@@ -18,9 +18,10 @@ import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 import { Label } from 'lib-components/typography'
 import { faFilePdf, faGavel, fasExclamationTriangle } from 'lib-icons'
 
-import DecisionResponse from '../../components/application-page/DecisionResponse'
 import { downloadDecisionPdf } from '../../generated/api-clients/decision'
 import { useTranslation } from '../../state/i18n'
+
+import DecisionResponse from './DecisionResponse'
 
 const isPending = (decision: Decision, applicationStatus: ApplicationStatus) =>
   decision.status === 'PENDING' &&

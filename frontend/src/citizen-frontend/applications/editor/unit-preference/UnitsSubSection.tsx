@@ -21,9 +21,9 @@ import { Gap } from 'lib-components/white-space'
 import { getMaxPreferredUnits } from 'lib-customizations/citizen'
 import colors from 'lib-customizations/common'
 
-import PreferredUnitBox from '../../../applications/editor/unit-preference/PreferredUnitBox'
 import { useTranslation } from '../../../localization'
 
+import PreferredUnitBox from './PreferredUnitBox'
 import type { UnitPreferenceSectionProps } from './UnitPreferenceSection'
 
 interface Props extends UnitPreferenceSectionProps {

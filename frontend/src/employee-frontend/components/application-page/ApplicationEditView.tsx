@@ -58,13 +58,14 @@ import {
 } from 'lib-icons'
 
 import { getAttachmentUrl, applicationAttachment } from '../../api/attachments'
-import ApplicationStatusSection from '../../components/application-page/ApplicationStatusSection'
-import ApplicationTitle from '../../components/application-page/ApplicationTitle'
-import VTJGuardian from '../../components/application-page/VTJGuardian'
 import type { Translations } from '../../state/i18n'
 import { useTranslation } from '../../state/i18n'
 import { formatName } from '../../utils'
 import { InputWarning } from '../common/InputWarning'
+
+import ApplicationStatusSection from './ApplicationStatusSection'
+import ApplicationTitle from './ApplicationTitle'
+import VTJGuardian from './VTJGuardian'
 
 interface PreschoolApplicationProps {
   application: ApplicationDetails

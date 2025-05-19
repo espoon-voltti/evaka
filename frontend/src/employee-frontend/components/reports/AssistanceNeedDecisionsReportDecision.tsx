@@ -31,7 +31,6 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 import { faArrowDownToLine } from 'lib-icons'
 import { faQuestion, faTimes } from 'lib-icons'
 
-import { renderResult } from '../../components/async-rendering'
 import {
   annulAssistanceNeedDecision,
   decideAssistanceNeedDecision,
@@ -43,6 +42,7 @@ import {
 import type { Lang } from '../../state/i18n'
 import { I18nContext, useTranslation } from '../../state/i18n'
 import { UserContext } from '../../state/user'
+import { renderResult } from '../async-rendering'
 
 import { ReportNotificationContext } from './ReportNotificationContext'
 

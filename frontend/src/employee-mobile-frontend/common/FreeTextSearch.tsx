@@ -12,7 +12,7 @@ import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faArrowLeft, faTimes } from 'lib-icons'
 
-import { useTranslation } from '../common/i18n'
+import { useTranslation } from './i18n'
 
 const SearchInputContainer = styled.div`
   height: 60px;

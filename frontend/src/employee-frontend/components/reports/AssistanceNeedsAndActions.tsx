@@ -48,13 +48,13 @@ import {
 } from 'lib-customizations/employee'
 import { faChevronDown, faChevronUp } from 'lib-icons'
 
-import ReportDownload from '../../components/reports/ReportDownload'
 import { areasQuery } from '../../queries'
 import { useTranslation } from '../../state/i18n'
 import { reducePropertySum } from '../../utils'
 import { renderResult } from '../async-rendering'
 import { daycaresQuery } from '../unit/queries'
 
+import ReportDownload from './ReportDownload'
 import { FilterLabel, FilterRow, TableFooter, TableScrollable } from './common'
 import {
   assistanceNeedsAndActionsReportByChildQuery,

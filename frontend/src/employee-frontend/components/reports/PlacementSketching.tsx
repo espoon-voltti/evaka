@@ -22,12 +22,12 @@ import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { faFileAlt } from 'lib-icons'
 
-import ReportDownload from '../../components/reports/ReportDownload'
 import { useTranslation } from '../../state/i18n'
 import { distinct } from '../../utils'
 import { renderResult } from '../async-rendering'
 import { FlexRow } from '../common/styled/containers'
 
+import ReportDownload from './ReportDownload'
 import { FilterLabel, FilterRow, RowCountInfo, TableScrollable } from './common'
 import { placementSketchingQuery } from './queries'
 

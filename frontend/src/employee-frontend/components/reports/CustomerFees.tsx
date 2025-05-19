@@ -26,11 +26,11 @@ import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { DatePickerF } from 'lib-components/molecules/date-picker/DatePicker'
 import { placementTypes, unitProviderTypes } from 'lib-customizations/employee'
 
-import ReportDownload from '../../components/reports/ReportDownload'
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 import { daycaresQuery } from '../unit/queries'
 
+import ReportDownload from './ReportDownload'
 import { FilterLabel, FilterRow } from './common'
 import { customerFeesReportQuery } from './queries'
 

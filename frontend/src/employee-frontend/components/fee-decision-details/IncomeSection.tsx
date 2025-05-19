@@ -15,10 +15,10 @@ import { useQueryResult } from 'lib-common/query'
 import { H3, H4 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
-import LabelValueList from '../../components/common/LabelValueList'
 import { useTranslation } from '../../state/i18n'
 import { formatName, formatPercent } from '../../utils'
 import { renderResult } from '../async-rendering'
+import LabelValueList from '../common/LabelValueList'
 import { incomeTypeOptionsQuery } from '../person-profile/queries'
 
 interface Props {

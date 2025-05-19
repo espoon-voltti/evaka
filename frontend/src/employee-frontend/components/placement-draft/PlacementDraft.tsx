@@ -38,7 +38,6 @@ import { Bold, H1, H2, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { faLink } from 'lib-icons'
 
-import WarningLabel from '../../components/common/WarningLabel'
 import {
   createPlacementPlan,
   getPlacementPlanDraft
@@ -50,6 +49,7 @@ import { TitleContext } from '../../state/title'
 import { asUnitType } from '../../types/daycare'
 import { formatName } from '../../utils'
 import { renderResult } from '../async-rendering'
+import WarningLabel from '../common/WarningLabel'
 
 import PlacementDraftRow from './PlacementDraftRow'
 import Placements from './Placements'

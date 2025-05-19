@@ -14,7 +14,6 @@ import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { faRefresh } from 'lib-icons'
 
-import { PersonContext } from '../../components/person-profile/state'
 import { useTranslation } from '../../state/i18n'
 import { UserContext } from '../../state/user'
 import { renderResult } from '../async-rendering'
@@ -25,6 +24,7 @@ import {
   createReplacementDraftsForHeadOfFamilyMutation,
   headOfFamilyInvoicesQuery
 } from './queries'
+import { PersonContext } from './state'
 
 interface Props {
   id: PersonId

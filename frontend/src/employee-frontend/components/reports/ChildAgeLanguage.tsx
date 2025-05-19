@@ -16,12 +16,12 @@ import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 
-import ReportDownload from '../../components/reports/ReportDownload'
 import { useTranslation } from '../../state/i18n'
 import type { DateFilters } from '../../types/reports'
 import { distinct, reducePropertySum } from '../../utils'
 import { renderResult } from '../async-rendering'
 
+import ReportDownload from './ReportDownload'
 import { FilterLabel, FilterRow, TableFooter, TableScrollable } from './common'
 import { childAgeLanguageReportQuery } from './queries'
 

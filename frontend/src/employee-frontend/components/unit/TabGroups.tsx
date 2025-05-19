@@ -13,12 +13,12 @@ import { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { featureFlags } from 'lib-customizations/employee'
 
-import Groups from '../../components/unit/tab-groups/Groups'
-import MissingGroupPlacements from '../../components/unit/tab-groups/MissingGroupPlacements'
 import { UnitContext } from '../../state/unit'
 import { renderResult } from '../async-rendering'
 
 import { nekkuUnitNumbersQuery, unitGroupDetailsQuery } from './queries'
+import Groups from './tab-groups/Groups'
+import MissingGroupPlacements from './tab-groups/MissingGroupPlacements'
 import TerminatedPlacements from './tab-groups/TerminatedPlacements'
 
 interface Props {

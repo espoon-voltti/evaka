@@ -44,13 +44,13 @@ import colors from 'lib-customizations/common'
 import { featureFlags } from 'lib-customizations/employee'
 import { faHome, faLockAlt } from 'lib-icons'
 
-import ReportDownload from '../../components/reports/ReportDownload'
 import type { getServiceVoucherReportForUnit } from '../../generated/api-clients/reports'
 import { useTranslation } from '../../state/i18n'
 import { formatName } from '../../utils'
 import { renderResult } from '../async-rendering'
 import { AgeIndicatorChip } from '../common/AgeIndicatorChip'
 
+import ReportDownload from './ReportDownload'
 import { FilterLabel, FilterRow, TableScrollable } from './common'
 import { serviceVoucherReportForUnitQuery } from './queries'
 

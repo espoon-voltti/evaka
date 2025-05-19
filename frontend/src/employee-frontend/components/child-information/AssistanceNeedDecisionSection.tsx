@@ -23,8 +23,6 @@ import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { P } from 'lib-components/typography'
 import { faQuestion } from 'lib-icons'
 
-import type { ChildState } from '../../components/child-information/state'
-import { ChildContext } from '../../components/child-information/state'
 import {
   createAssistanceNeedDecision,
   deleteAssistanceNeedDecision,
@@ -34,6 +32,8 @@ import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 
 import AssistanceNeedDecisionSectionRow from './AssistanceNeedDecisionSectionRow'
+import { ChildContext } from './state'
+import type { ChildState } from './state'
 
 const createAssistanceNeedDecisionResult = wrapResult(
   createAssistanceNeedDecision

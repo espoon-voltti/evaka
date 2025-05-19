@@ -16,8 +16,8 @@ import { faLockOpenAlt, faTimes } from 'lib-icons'
 
 import { renderResult } from '../../async-rendering'
 import { UserContext } from '../../auth/state'
-import { useTranslation } from '../../common/i18n'
 import { unitInfoQuery } from '../../units/queries'
+import { useTranslation } from '../i18n'
 
 import { TopBarIconContainer } from './TopBarIconContainer'
 import { UserMenu } from './UserMenu'

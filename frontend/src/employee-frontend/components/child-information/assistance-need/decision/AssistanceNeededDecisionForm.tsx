@@ -30,10 +30,10 @@ import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { H2, Label, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 
-import { renderResult } from '../../../../components/async-rendering'
 import { getEmployeesQuery, unitsQuery } from '../../../../queries'
 import { useTranslation } from '../../../../state/i18n'
 import type { AutosaveStatus } from '../../../../utils/use-autosave'
+import { renderResult } from '../../../async-rendering'
 
 const FieldWithInfo = React.memo(function FieldWithInfo({
   info,

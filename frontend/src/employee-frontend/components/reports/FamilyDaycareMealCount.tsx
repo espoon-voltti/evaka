@@ -21,10 +21,10 @@ import { Tbody, Td, Tfoot, Th, Thead, Tr } from 'lib-components/layout/Table'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { faChevronDown, faChevronUp } from 'lib-icons'
 
-import ReportDownload from '../../components/reports/ReportDownload'
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 
+import ReportDownload from './ReportDownload'
 import { FilterLabel, FilterRow, TableScrollable } from './common'
 import { familyDaycareMealReportQuery } from './queries'
 

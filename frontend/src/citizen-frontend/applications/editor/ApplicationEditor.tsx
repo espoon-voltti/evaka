@@ -37,10 +37,6 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 import { faAngleLeft, faCheck, faExclamation } from 'lib-icons'
 
 import Footer from '../../Footer'
-import ApplicationFormClub from '../../applications/editor/ApplicationFormClub'
-import ApplicationFormDaycare from '../../applications/editor/ApplicationFormDaycare'
-import ApplicationFormPreschool from '../../applications/editor/ApplicationFormPreschool'
-import ApplicationVerificationView from '../../applications/editor/verification/ApplicationVerificationView'
 import { renderResult } from '../../async-rendering'
 import { useTranslation } from '../../localization'
 import { OverlayContext } from '../../overlay/state'
@@ -55,6 +51,9 @@ import {
   updateApplicationMutation
 } from '../queries'
 
+import ApplicationFormClub from './ApplicationFormClub'
+import ApplicationFormDaycare from './ApplicationFormDaycare'
+import ApplicationFormPreschool from './ApplicationFormPreschool'
 import type { ApplicationFormDataErrors } from './validations'
 import {
   applicationHasErrors,
@@ -62,6 +61,7 @@ import {
   minPreferredStartDate,
   validateApplication
 } from './validations'
+import ApplicationVerificationView from './verification/ApplicationVerificationView'
 
 type ApplicationEditorContentProps = {
   application: ApplicationDetailsGen

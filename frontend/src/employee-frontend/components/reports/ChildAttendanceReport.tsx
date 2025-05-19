@@ -18,10 +18,10 @@ import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { DateRangePickerF } from 'lib-components/molecules/date-picker/DateRangePicker'
 
-import ReportDownload from '../../components/reports/ReportDownload'
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 
+import ReportDownload from './ReportDownload'
 import { FilterLabel, FilterRow } from './common'
 import { childAttendanceReportQuery } from './queries'
 

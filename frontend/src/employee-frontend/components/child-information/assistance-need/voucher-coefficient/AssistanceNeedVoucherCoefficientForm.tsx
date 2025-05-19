@@ -28,9 +28,9 @@ import DateRangePicker from 'lib-components/molecules/date-picker/DateRangePicke
 import { LabelLike } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
-import LabelValueList from '../../../../components/common/LabelValueList'
 import { useTranslation } from '../../../../state/i18n'
 import { UIContext } from '../../../../state/ui'
+import LabelValueList from '../../../common/LabelValueList'
 import {
   createAssistanceNeedVoucherCoefficientMutation,
   updateAssistanceNeedVoucherCoefficientMutation

@@ -19,10 +19,10 @@ import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { DateRangePickerF } from 'lib-components/molecules/date-picker/DateRangePicker'
 import { featureFlags } from 'lib-customizations/employee'
 
-import ReportDownload from '../../components/reports/ReportDownload'
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 
+import ReportDownload from './ReportDownload'
 import { FilterLabel, FilterRow, RowCountInfo, TableScrollable } from './common'
 import { missingHeadOfFamilyReportQuery } from './queries'
 

@@ -46,12 +46,12 @@ import colors from 'lib-customizations/common'
 import { featureFlags, unitProviderTypes } from 'lib-customizations/employee'
 import { faPen, farXmark } from 'lib-icons'
 
-import type { RangeValidationResult } from '../../../components/child-information/daily-service-times/DailyServiceTimesForms'
-import { TimeRangeInput } from '../../../components/child-information/daily-service-times/DailyServiceTimesForms'
 import type { Translations } from '../../../state/i18n'
 import { useTranslation } from '../../../state/i18n'
 import type { FinanceDecisionHandlerOption } from '../../../state/invoicing-ui'
 import type { DayOfWeek } from '../../../types'
+import { TimeRangeInput } from '../../child-information/daily-service-times/DailyServiceTimesForms'
+import type { RangeValidationResult } from '../../child-information/daily-service-times/DailyServiceTimesForms'
 
 import {
   closingDateIsBeforeLastPlacementDate,

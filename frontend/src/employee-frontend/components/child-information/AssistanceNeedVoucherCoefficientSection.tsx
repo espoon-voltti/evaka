@@ -21,8 +21,6 @@ import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { faQuestion } from 'lib-icons'
 
-import type { ChildState } from '../../components/child-information/state'
-import { ChildContext } from '../../components/child-information/state'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
 import { renderResult } from '../async-rendering'
@@ -33,6 +31,8 @@ import {
   deleteAssistanceNeedVoucherCoefficientMutation,
   getAssistanceNeedVoucherCoefficientsQuery
 } from './queries'
+import { ChildContext } from './state'
+import type { ChildState } from './state'
 
 const TitleRow = styled.div`
   display: flex;

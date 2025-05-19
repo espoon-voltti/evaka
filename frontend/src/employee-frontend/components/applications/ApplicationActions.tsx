@@ -20,12 +20,12 @@ import {
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { Label } from 'lib-components/typography'
 
-import ActionCheckbox from '../../components/applications/ActionCheckbox'
-import PrimaryAction from '../../components/applications/PrimaryAction'
 import { useTranslation } from '../../state/i18n'
 import type { MenuItem } from '../common/EllipsisMenu'
 import EllipsisMenu from '../common/EllipsisMenu'
 
+import ActionCheckbox from './ActionCheckbox'
+import PrimaryAction from './PrimaryAction'
 import {
   cancelApplicationMutation,
   simpleApplicationActionMutation

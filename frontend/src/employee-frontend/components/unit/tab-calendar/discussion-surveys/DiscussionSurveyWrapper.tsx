@@ -13,7 +13,7 @@ import { fromUuid } from 'lib-common/id-type'
 import { constantQuery, useQueryResult } from 'lib-common/query'
 import useRouteParams, { useIdRouteParam } from 'lib-common/useRouteParams'
 
-import { renderResult } from '../../../../components/async-rendering'
+import { renderResult } from '../../../async-rendering'
 import { discussionSurveyQuery } from '../queries'
 
 import DiscussionSurveyView from './DiscussionSurveyView'

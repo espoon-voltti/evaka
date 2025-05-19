@@ -20,14 +20,15 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 import { colors } from 'lib-customizations/common'
 import { faEnvelope, faPen, faQuestion, faTrash } from 'lib-icons'
 
+import { useTranslation } from '../../state/i18n'
+import { UIContext } from '../../state/ui'
+import { formatParagraphs } from '../../utils/html-utils'
+
 import {
   createApplicationNoteMutation,
   deleteApplicationNoteMutation,
   updateApplicationNoteMutation
-} from '../../components/application-page/queries'
-import { useTranslation } from '../../state/i18n'
-import { UIContext } from '../../state/ui'
-import { formatParagraphs } from '../../utils/html-utils'
+} from './queries'
 
 const NoteContainer = styled.div`
   display: flex;

@@ -36,8 +36,8 @@ import {
   childDocumentSummariesQuery,
   unreadChildDocumentsCountQuery
 } from '../../child-documents/queries'
-import ResponsiveWholePageCollapsible from '../../children/ResponsiveWholePageCollapsible'
 import { useTranslation } from '../../localization'
+import ResponsiveWholePageCollapsible from '../ResponsiveWholePageCollapsible'
 
 const DocumentsTableContainer = styled.table`
   width: 100%;

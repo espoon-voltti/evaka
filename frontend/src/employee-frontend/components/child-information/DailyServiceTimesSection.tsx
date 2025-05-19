@@ -19,8 +19,6 @@ import { H4, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { faQuestion } from 'lib-icons'
 
-import type { ChildState } from '../../components/child-information/state'
-import { ChildContext } from '../../components/child-information/state'
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 
@@ -30,6 +28,8 @@ import {
   deleteDailyServiceTimesMutation,
   getDailyServiceTimesQuery
 } from './queries'
+import { ChildContext } from './state'
+import type { ChildState } from './state'
 
 interface Props {
   childId: ChildId

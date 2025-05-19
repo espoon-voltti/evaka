@@ -28,12 +28,12 @@ import {
   getAttachmentUrl,
   feeAlterationAttachment
 } from '../../../api/attachments'
-import LabelValueList from '../../../components/common/LabelValueList'
 import { useTranslation } from '../../../state/i18n'
 import type {
   FeeAlterationForm,
   PartialFeeAlteration
 } from '../../../types/fee-alteration'
+import LabelValueList from '../../common/LabelValueList'
 
 import FeeAlterationRowInput from './FeeAlterationRowInput'
 

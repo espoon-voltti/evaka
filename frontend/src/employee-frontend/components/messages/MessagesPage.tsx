@@ -29,7 +29,6 @@ import Container from 'lib-components/layout/Container'
 import { defaultMargins } from 'lib-components/white-space'
 
 import { getAttachmentUrl, messageAttachment } from '../../api/attachments'
-import MessageEditor from '../../components/messages/MessageEditor'
 import {
   createMessage,
   deleteDraftMessage
@@ -41,6 +40,7 @@ import { formatPersonName } from '../../utils'
 import { headerHeight } from '../Header'
 
 import { MessageContext } from './MessageContext'
+import MessageEditor from './MessageEditor'
 import Sidebar from './Sidebar'
 import MessageList from './ThreadListContainer'
 

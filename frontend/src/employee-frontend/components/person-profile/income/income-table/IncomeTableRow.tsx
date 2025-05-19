@@ -12,8 +12,8 @@ import Select from 'lib-components/atoms/dropdowns/Select'
 import { Td, Tr } from 'lib-components/layout/Table'
 import { Light } from 'lib-components/typography'
 
-import EuroInput from '../../../../components/common/EuroInput'
 import type { Translations } from '../../../../state/i18n'
+import EuroInput from '../../../common/EuroInput'
 import type { IncomeValueString } from '../IncomeTable'
 
 type Props = {

@@ -29,7 +29,6 @@ import { Light } from 'lib-components/typography'
 import type { Translations } from 'lib-customizations/employee'
 import { faArrowRight } from 'lib-icons'
 
-import GroupPlacementModal from '../../../components/unit/tab-groups/missing-group-placements/GroupPlacementModal'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
 import { formatName } from '../../../utils'
@@ -38,6 +37,7 @@ import { NotificationCounter } from '../../UnitPage'
 import { AgeIndicatorChip } from '../../common/AgeIndicatorChip'
 import { CareTypeChip } from '../../common/CareTypeLabel'
 
+import GroupPlacementModal from './missing-group-placements/GroupPlacementModal'
 import type { MissingPlacement } from './types'
 import { toMissingPlacements } from './types'
 

@@ -12,13 +12,14 @@ import { constantQuery, useQuery } from 'lib-common/query'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import { faExclamation } from 'lib-icons'
 
-import EditorSection from '../../../applications/editor/EditorSection'
-import SiblingBasisSubSection from '../../../applications/editor/unit-preference/SiblingBasisSubSection'
-import UnitsSubSection from '../../../applications/editor/unit-preference/UnitsSubSection'
 import { useTranslation } from '../../../localization'
 import { OverlayContext } from '../../../overlay/state'
 import { applicationUnitsQuery } from '../../queries'
+import EditorSection from '../EditorSection'
 import type { ApplicationFormDataErrors } from '../validations'
+
+import SiblingBasisSubSection from './SiblingBasisSubSection'
+import UnitsSubSection from './UnitsSubSection'
 
 export type UnitPreferenceSectionCommonProps = {
   formData: UnitPreferenceFormData

@@ -27,7 +27,6 @@ import { InformationText } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { faArrowDownToLine } from 'lib-icons'
 
-import { renderResult } from '../../../../components/async-rendering'
 import {
   getAssistanceNeedDecision,
   getAssistanceNeedDecisionPdf,
@@ -37,6 +36,7 @@ import {
 import type { Lang } from '../../../../state/i18n'
 import { I18nContext, useTranslation } from '../../../../state/i18n'
 import MetadataSection from '../../../archive-metadata/MetadataSection'
+import { renderResult } from '../../../async-rendering'
 import { assistanceNeedDecisionMetadataQuery } from '../../queries'
 
 const getAssistanceNeedDecisionResult = wrapResult(getAssistanceNeedDecision)

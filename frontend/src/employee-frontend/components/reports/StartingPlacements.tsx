@@ -24,13 +24,13 @@ import { Container, ContentArea } from 'lib-components/layout/Container'
 import type { SortDirection } from 'lib-components/layout/Table'
 import { SortableTh, Tbody, Td, Thead, Tr } from 'lib-components/layout/Table'
 
-import ReportDownload from '../../components/reports/ReportDownload'
 import type { getStartingPlacementsReport } from '../../generated/api-clients/reports'
 import type { Translations } from '../../state/i18n'
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 import { FlexRow } from '../common/styled/containers'
 
+import ReportDownload from './ReportDownload'
 import { FilterLabel, FilterRow, RowCountInfo, TableScrollable } from './common'
 import { startingPlacementsReportQuery } from './queries'
 

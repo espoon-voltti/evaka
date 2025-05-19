@@ -16,7 +16,6 @@ import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { DatePickerSpacer } from 'lib-components/molecules/date-picker/DateRangePicker'
 import { featureFlags } from 'lib-customizations/employee'
 
-import ReportDownload from '../../components/reports/ReportDownload'
 import {
   getRawReport,
   sendPatuReport
@@ -27,6 +26,7 @@ import type { PeriodFilters } from '../../types/reports'
 import { renderResult } from '../async-rendering'
 import { FlexRow } from '../common/styled/containers'
 
+import ReportDownload from './ReportDownload'
 import { FilterLabel, FilterRow } from './common'
 
 const getRawReportResult = wrapResult(getRawReport)

@@ -7,10 +7,10 @@ import React, { useContext, useMemo } from 'react'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 
-import StickyActionBar from '../../components/common/StickyActionBar'
 import { ApplicationUIContext } from '../../state/application-ui'
 import { useTranslation } from '../../state/i18n'
 import { CheckedRowsInfo } from '../common/CheckedRowsInfo'
+import StickyActionBar from '../common/StickyActionBar'
 
 import type { SimpleApplicationMutationAction } from './ApplicationActions'
 import { simpleBatchActionMutation } from './queries'

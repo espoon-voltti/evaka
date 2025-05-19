@@ -33,13 +33,14 @@ import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { placementPlanRejectReasons } from 'lib-customizations/employee'
 
-import PlacementProposalRow from '../../../components/unit/tab-placement-proposals/PlacementProposalRow'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
 import {
   acceptPlacementProposalMutation,
   respondToPlacementProposalMutation
 } from '../queries'
+
+import PlacementProposalRow from './PlacementProposalRow'
 
 interface Summary {
   confirmationStates: Record<ApplicationId, PlacementPlanConfirmationStatus>
