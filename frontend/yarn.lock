@@ -6737,7 +6737,7 @@ __metadata:
     globals: "npm:16.1.0"
     history: "npm:5.3.0"
     html-webpack-plugin: "npm:5.6.3"
-    ical-generator: "npm:8.1.1"
+    ical-generator: "npm:9.0.0"
     intersection-observer: "npm:0.12.2"
     jest: "npm:29.7.0"
     jest-circus: "npm:29.7.0"
@@ -7658,11 +7658,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ical-generator@npm:8.1.1":
-  version: 8.1.1
-  resolution: "ical-generator@npm:8.1.1"
-  dependencies:
-    uuid-random: "npm:^1.3.2"
+"ical-generator@npm:9.0.0":
+  version: 9.0.0
+  resolution: "ical-generator@npm:9.0.0"
   peerDependencies:
     "@touch4it/ical-timezones": ">=1.6.0"
     "@types/luxon": ">= 1.26.0"
@@ -7691,7 +7689,7 @@ __metadata:
       optional: true
     rrule:
       optional: true
-  checksum: 10/c9ddc6f3345d6199345f8854c65302e0dc4f03ee027c2f38d70743c1b8df1fea0f5362c8bf98dfeea82f99e53af3274847448afd77ff830a4674a3bbf0be184a
+  checksum: 10/382249cca062b887c607b3abcfa6c869e94270def437f47a7b3f5d69d1864d6ebb1d900a158a0d2c5cf1e6d266d0950ab75a8b9f7bac5d98a335d9ae5e544f9a
   languageName: node
   linkType: hard
 
@@ -12665,13 +12663,6 @@ __metadata:
   version: 0.4.0
   resolution: "utila@npm:0.4.0"
   checksum: 10/b068d8cb140588da0d0c80ee3c14c6b75d3f68760d8a1c6c3908d0270e9e4056454ff16189586481b7382926c44674f6929d08e06eaf9ec8f62736cd900169c5
-  languageName: node
-  linkType: hard
-
-"uuid-random@npm:^1.3.2":
-  version: 1.3.2
-  resolution: "uuid-random@npm:1.3.2"
-  checksum: 10/9070c876651e1893f9255dddab2edc177ba34196660065be074050e4143405382b7f0f5fb922b666ebfd0794a6ef7b9f6acb627865df7b2978edb0da6b448f1d
   languageName: node
   linkType: hard
 
