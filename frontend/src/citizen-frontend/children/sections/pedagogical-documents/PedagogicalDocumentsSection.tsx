@@ -38,8 +38,8 @@ import RequireAuth from '../../../RequireAuth'
 import { renderResult } from '../../../async-rendering'
 import { getAttachmentUrl } from '../../../attachments'
 import { useUser } from '../../../auth/state'
-import CollapsibleOrWholePageContainer from '../../../children/ResponsiveWholePageCollapsible'
 import { useTranslation } from '../../../localization'
+import CollapsibleOrWholePageContainer from '../../ResponsiveWholePageCollapsible'
 
 import {
   markPedagogicalDocumentAsReadMutation,

@@ -18,8 +18,6 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faInfo } from 'lib-icons'
 
-import BasicsSection from '../../../applications/editor/verification/BasicsSection'
-import UnitPreferenceSection from '../../../applications/editor/verification/UnitPreferenceSection'
 import { useTranslation } from '../../../localization'
 import {
   getShiftCareAttachmentsValidStatus,
@@ -27,8 +25,10 @@ import {
 } from '../validations'
 
 import AdditionalDetailsSection from './AdditionalDetailsSection'
+import BasicsSection from './BasicsSection'
 import ContactInfoSection from './ContactInfoSection'
 import ServiceNeedSection from './ServiceNeedSection'
+import UnitPreferenceSection from './UnitPreferenceSection'
 
 type DaycareApplicationVerificationViewProps = {
   application: ApplicationDetailsGen

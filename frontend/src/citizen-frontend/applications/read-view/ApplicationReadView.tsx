@@ -12,11 +12,12 @@ import { useIdRouteParam } from 'lib-common/useRouteParams'
 import Container from 'lib-components/layout/Container'
 
 import Footer from '../../Footer'
-import ApplicationReadViewContents from '../../applications/read-view/ApplicationReadViewContents'
 import { renderResult } from '../../async-rendering'
 import { useTranslation } from '../../localization'
 import useTitle from '../../useTitle'
 import { applicationChildrenQuery, applicationQuery } from '../queries'
+
+import ApplicationReadViewContents from './ApplicationReadViewContents'
 
 export default React.memo(function ApplicationReadView() {
   const applicationId = useIdRouteParam<ApplicationId>('applicationId')

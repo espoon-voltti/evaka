@@ -29,9 +29,9 @@ import colors from 'lib-customizations/common'
 import { faAngleDown, faAngleUp, faArrowLeft } from 'lib-icons'
 
 import { useTranslation } from '../localization'
-import SearchInput from '../map/SearchInput'
 
 import type { CareTypeOption, MapAddress } from './MapView'
+import SearchInput from './SearchInput'
 
 interface Props {
   allUnits: Result<PublicUnit[]>

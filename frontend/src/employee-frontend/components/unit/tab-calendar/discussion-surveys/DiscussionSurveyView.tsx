@@ -50,9 +50,9 @@ import { Gap } from 'lib-components/white-space'
 import { theme } from 'lib-customizations/common'
 import { faPen, faQuestion, faTrash } from 'lib-icons'
 
-import { renderResult } from '../../../../components/async-rendering'
 import { useTranslation } from '../../../../state/i18n'
 import { UIContext } from '../../../../state/ui'
+import { renderResult } from '../../../async-rendering'
 import { unitGroupDetailsQuery } from '../../queries'
 import {
   deleteCalendarEventMutation,

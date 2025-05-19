@@ -28,11 +28,6 @@ import { H2, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { faAngleDown, faAngleUp } from 'lib-icons'
 
-import UnitDataFilters from '../../../components/unit/UnitDataFilters'
-import Group from '../../../components/unit/tab-groups/groups/Group'
-import GroupModal from '../../../components/unit/tab-groups/groups/GroupModal'
-import GroupTransferModal from '../../../components/unit/tab-groups/groups/group/GroupTransferModal'
-import BackupCareGroupModal from '../../../components/unit/tab-groups/missing-group-placements/BackupCareGroupModal'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
 import { UserContext } from '../../../state/user'
@@ -44,6 +39,12 @@ import { flatMapGroupPlacements } from '../../../types/unit'
 import type { UnitFilters } from '../../../utils/UnitFilters'
 import { requireRole } from '../../../utils/roles'
 import { permittedReportsQuery } from '../../reports/queries'
+import UnitDataFilters from '../UnitDataFilters'
+
+import Group from './groups/Group'
+import GroupModal from './groups/GroupModal'
+import GroupTransferModal from './groups/group/GroupTransferModal'
+import BackupCareGroupModal from './missing-group-placements/BackupCareGroupModal'
 
 function renderGroups(
   unit: Daycare,

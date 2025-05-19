@@ -18,8 +18,8 @@ import { Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/citizen'
 
 import { renderResult } from '../../../async-rendering'
-import ResponsiveWholePageCollapsible from '../../../children/ResponsiveWholePageCollapsible'
 import { useTranslation } from '../../../localization'
+import ResponsiveWholePageCollapsible from '../../ResponsiveWholePageCollapsible'
 import { childrenQuery, childServiceApplicationsQuery } from '../../queries'
 
 import AttendanceSummaryTable from './AttendanceSummaryTable'

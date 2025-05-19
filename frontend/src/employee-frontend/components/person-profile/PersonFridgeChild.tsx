@@ -19,14 +19,14 @@ import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { faQuestion } from 'lib-icons'
 
-import Toolbar from '../../components/common/Toolbar'
-import FridgeChildModal from '../../components/person-profile/person-fridge-child/FridgeChildModal'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
 import { formatName } from '../../utils'
 import { renderResult } from '../async-rendering'
+import Toolbar from '../common/Toolbar'
 
 import { ButtonsTd, DateTd, NameTd } from './common'
+import FridgeChildModal from './person-fridge-child/FridgeChildModal'
 import {
   deleteParentshipMutation,
   parentshipsQuery,

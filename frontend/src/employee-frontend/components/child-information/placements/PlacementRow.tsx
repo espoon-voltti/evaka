@@ -33,10 +33,6 @@ import { fontWeights } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { faQuestion } from 'lib-icons'
 
-import Toolbar from '../../../components/common/Toolbar'
-import ToolbarAccordion, {
-  RestrictedToolbar
-} from '../../../components/common/ToolbarAccordion'
 import { useTranslation } from '../../../state/i18n'
 import type { UiState } from '../../../state/ui'
 import { UIContext } from '../../../state/ui'
@@ -48,6 +44,10 @@ import { InputWarning } from '../../common/InputWarning'
 import RetroactiveConfirmation, {
   isChangeRetroactive
 } from '../../common/RetroactiveConfirmation'
+import Toolbar from '../../common/Toolbar'
+import ToolbarAccordion, {
+  RestrictedToolbar
+} from '../../common/ToolbarAccordion'
 import {
   backupCaresQuery,
   deletePlacementMutation,

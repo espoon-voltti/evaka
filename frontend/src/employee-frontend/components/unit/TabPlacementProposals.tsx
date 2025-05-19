@@ -9,9 +9,10 @@ import type { DaycareId } from 'lib-common/generated/api-types/shared'
 import Title from 'lib-components/atoms/Title'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 
-import PlacementProposals from '../../components/unit/tab-placement-proposals/PlacementProposals'
 import { useTranslation } from '../../state/i18n'
 import { NotificationCounter } from '../UnitPage'
+
+import PlacementProposals from './tab-placement-proposals/PlacementProposals'
 
 interface Props {
   unitId: DaycareId

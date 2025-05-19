@@ -24,11 +24,11 @@ import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { DatePickerF } from 'lib-components/molecules/date-picker/DatePicker'
 import { placementTypes, unitProviderTypes } from 'lib-customizations/employee'
 
-import ReportDownload from '../../components/reports/ReportDownload'
 import { areasQuery } from '../../queries'
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 
+import ReportDownload from './ReportDownload'
 import { FilterLabel, FilterRow, TableScrollable } from './common'
 import { serviceNeedReportQuery } from './queries'
 

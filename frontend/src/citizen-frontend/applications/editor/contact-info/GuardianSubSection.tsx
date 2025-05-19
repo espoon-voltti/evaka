@@ -19,11 +19,12 @@ import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { H3, Label, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
-import type { ContactInfoSectionProps } from '../../../applications/editor/contact-info/ContactInfoSection'
 import { renderResult } from '../../../async-rendering'
 import { errorToInputInfo } from '../../../input-info-helper'
 import { useLang, useTranslation } from '../../../localization'
 import { emailVerificationStatusQuery } from '../../../personal-details/queries'
+
+import type { ContactInfoSectionProps } from './ContactInfoSection'
 
 export default React.memo(function GuardianSubSection({
   formData,

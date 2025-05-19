@@ -11,9 +11,10 @@ import { H4 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { faChevronUp, faChevronDown } from 'lib-icons'
 
-import type { StatusLabelType } from '../../components/common/StatusLabel'
-import StatusLabel from '../../components/common/StatusLabel'
 import { useTranslation } from '../../state/i18n'
+
+import type { StatusLabelType } from './StatusLabel'
+import StatusLabel from './StatusLabel'
 
 interface Props {
   title?: string

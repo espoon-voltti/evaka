@@ -47,8 +47,6 @@ import {
   faTrash
 } from 'lib-icons'
 
-import ActionBar from '../../components/applications/ActionBar'
-import ApplicationActions from '../../components/applications/ApplicationActions'
 import { getEmployeeUrlPrefix } from '../../constants'
 import { ApplicationUIContext } from '../../state/application-ui'
 import { useTranslation } from '../../state/i18n'
@@ -60,6 +58,8 @@ import { hasRole, RequireRole } from '../../utils/roles'
 import { AgeIndicatorChip } from '../common/AgeIndicatorChip'
 import { CareTypeChip } from '../common/CareTypeLabel'
 
+import ActionBar from './ActionBar'
+import ApplicationActions from './ApplicationActions'
 import { CircleIconGreen, CircleIconRed } from './CircleIcon'
 import { updateServiceWorkerNoteMutation } from './queries'
 

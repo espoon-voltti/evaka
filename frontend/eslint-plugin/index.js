@@ -9,7 +9,8 @@ const plugin = {
     'no-testonly': require('./rules/no-testonly'),
     'no-relative-lib-imports': require('./rules/no-relative-lib-imports'),
     'no-icons-imports': require('./rules/no-icons-imports'),
-    'no-localdate-triple-equals': require('./rules/no-localdate-triple-equals')
+    'no-localdate-triple-equals': require('./rules/no-localdate-triple-equals'),
+    'shortest-relative-imports': require('./rules/shortest-relative-imports')
   },
   configs: {}
 }
@@ -24,7 +25,8 @@ Object.assign(plugin.configs, {
       '@evaka/no-testonly': 'error',
       '@evaka/no-relative-lib-imports': 'error',
       '@evaka/no-icons-imports': 'error',
-      '@evaka/no-localdate-triple-equals': 'error'
+      '@evaka/no-localdate-triple-equals': 'error',
+      '@evaka/shortest-relative-imports': 'error'
     }
   }
 })

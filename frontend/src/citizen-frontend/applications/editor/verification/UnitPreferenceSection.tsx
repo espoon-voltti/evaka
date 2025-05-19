@@ -10,8 +10,9 @@ import ListGrid from 'lib-components/layout/ListGrid'
 import { H2, H3, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
-import { ApplicationDataGridLabelWidth } from '../../../applications/editor/verification/const'
 import { useTranslation } from '../../../localization'
+
+import { ApplicationDataGridLabelWidth } from './const'
 
 const NumberedList = styled.ol`
   margin: 0;

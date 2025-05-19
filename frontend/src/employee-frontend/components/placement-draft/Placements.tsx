@@ -12,9 +12,9 @@ import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { fasExclamationTriangle } from 'lib-icons'
 
-import StatusLabel from '../../components/common/StatusLabel'
 import { useTranslation } from '../../state/i18n'
 import { getStatusLabelByDateRange } from '../../utils/date'
+import StatusLabel from '../common/StatusLabel'
 
 import type { PlacementSummaryWithOverlaps } from './PlacementDraft'
 

@@ -68,7 +68,6 @@ import {
   faUndo
 } from 'lib-icons'
 
-import GroupUpdateModal from '../../../../components/unit/tab-groups/groups/group/GroupUpdateModal'
 import { getNotesByGroup } from '../../../../generated/api-clients/note'
 import type { Translations } from '../../../../state/i18n'
 import { useTranslation } from '../../../../state/i18n'
@@ -96,6 +95,8 @@ import {
 } from '../../queries'
 import { CreateChildDocumentsModal } from '../child-documents/CreateChildDocumentsModal'
 import NotesModal from '../notes/NotesModal'
+
+import GroupUpdateModal from './group/GroupUpdateModal'
 
 const getNotesByGroupResult = wrapResult(getNotesByGroup)
 

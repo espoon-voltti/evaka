@@ -22,12 +22,12 @@ import { Table, Tbody, Td, Tr } from 'lib-components/layout/Table'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
-import EllipsisMenu from '../../../components/common/EllipsisMenu'
 import type { Translations } from '../../../state/i18n'
 import { useTranslation } from '../../../state/i18n'
 import { formatName } from '../../../utils'
 import { AgeIndicatorChip } from '../../common/AgeIndicatorChip'
 import { ContractDaysIndicatorChip } from '../../common/ContractDaysIndicatorChip'
+import EllipsisMenu from '../../common/EllipsisMenu'
 import type { AttendanceGroupFilter } from '../TabCalendar'
 
 import ChildDayAttendance from './ChildDayAttendance'

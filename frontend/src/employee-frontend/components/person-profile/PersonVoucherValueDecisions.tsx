@@ -20,7 +20,6 @@ import { Label } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import { faPlus } from 'lib-icons'
 
-import { PersonContext } from '../../components/person-profile/state'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
 import { renderResult } from '../async-rendering'
@@ -29,6 +28,7 @@ import {
   generateRetroactiveVoucherValueDecisionsMutation,
   headOfFamilyVoucherValueDecisionsQuery
 } from './queries'
+import { PersonContext } from './state'
 
 interface Props {
   id: PersonId

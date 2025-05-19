@@ -16,11 +16,12 @@ import Title from 'lib-components/atoms/Title'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { faQuestion } from 'lib-icons'
 
-import BackupCareForm from '../../../components/child-information/backup-care/BackupCareForm'
-import Toolbar from '../../../components/common/Toolbar'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
+import Toolbar from '../../common/Toolbar'
 import { deleteBackupCareMutation } from '../queries'
+
+import BackupCareForm from './BackupCareForm'
 
 export interface Props {
   childId: ChildId

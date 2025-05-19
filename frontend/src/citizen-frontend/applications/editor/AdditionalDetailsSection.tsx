@@ -15,9 +15,9 @@ import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
-import EditorSection from '../../applications/editor/EditorSection'
 import { useTranslation } from '../../localization'
 
+import EditorSection from './EditorSection'
 import type { ApplicationFormDataErrors } from './validations'
 
 type Props = {

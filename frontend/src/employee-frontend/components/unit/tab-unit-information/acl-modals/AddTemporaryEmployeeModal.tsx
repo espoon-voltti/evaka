@@ -14,8 +14,8 @@ import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { Label } from 'lib-components/typography'
 
-import { isValidPinCode } from '../../../../components/employee-pin-code/EmployeePinCodePage'
 import { useTranslation } from '../../../../state/i18n'
+import { isValidPinCode } from '../../../employee-pin-code/EmployeePinCodePage'
 import { createTemporaryEmployeeMutation } from '../../queries'
 
 import { useGroupOptions } from './common'

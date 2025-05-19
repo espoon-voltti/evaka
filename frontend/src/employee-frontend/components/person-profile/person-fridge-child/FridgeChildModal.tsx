@@ -19,10 +19,10 @@ import FormModal from 'lib-components/molecules/modals/FormModal'
 import { Gap } from 'lib-components/white-space'
 import { faChild } from 'lib-icons'
 
-import { DbPersonSearch as PersonSearch } from '../../../components/common/PersonSearch'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
 import { formatName } from '../../../utils'
+import { DbPersonSearch as PersonSearch } from '../../common/PersonSearch'
 import RetroactiveConfirmation, {
   isChangeRetroactive
 } from '../../common/RetroactiveConfirmation'

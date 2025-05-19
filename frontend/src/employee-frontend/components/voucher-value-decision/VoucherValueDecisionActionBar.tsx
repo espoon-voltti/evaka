@@ -14,7 +14,6 @@ import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { featureFlags } from 'lib-customizations/employee'
 
-import StickyActionBar from '../../components/common/StickyActionBar'
 import {
   markVoucherValueDecisionSent,
   sendVoucherValueDecisionDrafts,
@@ -22,6 +21,7 @@ import {
 } from '../../generated/api-clients/invoicing'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
+import StickyActionBar from '../common/StickyActionBar'
 
 const sendVoucherValueDecisionDraftsResult = wrapResult(
   sendVoucherValueDecisionDrafts

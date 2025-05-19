@@ -12,13 +12,13 @@ import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { H1 } from 'lib-components/typography'
 
-import AdditionalDetailsSection from '../../applications/editor/verification/AdditionalDetailsSection'
-import BasicsSection from '../../applications/editor/verification/BasicsSection'
-import ContactInfoSection from '../../applications/editor/verification/ContactInfoSection'
-import ServiceNeedSection from '../../applications/editor/verification/ServiceNeedSection'
-import UnitPreferenceSection from '../../applications/editor/verification/UnitPreferenceSection'
 import { AuthContext } from '../../auth/state'
 import { useTranslation } from '../../localization'
+import AdditionalDetailsSection from '../editor/verification/AdditionalDetailsSection'
+import BasicsSection from '../editor/verification/BasicsSection'
+import ContactInfoSection from '../editor/verification/ContactInfoSection'
+import ServiceNeedSection from '../editor/verification/ServiceNeedSection'
+import UnitPreferenceSection from '../editor/verification/UnitPreferenceSection'
 
 type DaycareApplicationReadViewProps = {
   application: ApplicationDetailsGen
