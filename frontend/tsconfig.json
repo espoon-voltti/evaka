@@ -3,7 +3,7 @@
   "compilerOptions": {
     "noEmit": true
   },
-  "files": [],
+  "files": ["vite.config.ts"],
   "references": [
     { "path": "./src/citizen-frontend" },
     { "path": "./src/lib-common" },

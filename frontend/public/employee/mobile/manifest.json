@@ -1,0 +1,29 @@
+{
+  "icons": [
+    {
+      "src": "/employee/mobile/evaka-512px.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/employee/mobile/evaka-192px.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/employee/mobile/evaka-180px.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "maskable any"
+    }
+  ],
+  "name": "eVaka",
+  "short_name": "eVaka",
+  "orientation": "portrait",
+  "display": "standalone",
+  "start_url": "/employee/mobile",
+  "background_color": "#ffffff",
+  "theme_color": "#3273c9"
+}

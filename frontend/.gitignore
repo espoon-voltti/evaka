@@ -23,6 +23,9 @@ traces/
 .yalc
 yalc.lock
 
+# Copied from customizations by vite.config.ts
+public/favicon.ico
+
 .yarn/*
 !.yarn/releases
 !.yarn/patches
