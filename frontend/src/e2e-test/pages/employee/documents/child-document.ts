@@ -11,7 +11,8 @@ import {
   Element,
   AsyncButton,
   Combobox,
-  DatePicker
+  DatePicker,
+  Modal
 } from '../../../utils/page'
 
 export class ChildDocumentPage {
@@ -24,6 +25,7 @@ export class ChildDocumentPage {
   archiveButton: AsyncButton
   archiveTooltip: Element
   acceptDecisionButton: Element
+  sendingConfirmationModal: Modal
   constructor(private readonly page: Page) {
     this.status = page.findByDataQa('document-state-chip')
     this.savingIndicator = page.findByDataQa('saving-spinner')
@@ -34,6 +36,7 @@ export class ChildDocumentPage {
     this.archiveButton = new AsyncButton(page.findByDataQa('archive-button'))
     this.archiveTooltip = page.findByDataQa('archive-tooltip')
     this.acceptDecisionButton = page.findByDataQa('accept-decision-button')
+    this.sendingConfirmationModal = new Modal(page.findByDataQa('modal'))
   }
 
   getTextQuestion(sectionName: string, questionName: string) {

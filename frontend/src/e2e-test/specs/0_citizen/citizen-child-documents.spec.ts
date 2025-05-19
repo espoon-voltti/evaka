@@ -365,6 +365,7 @@ describe('Citizen child documents editor page', () => {
     const answer2 = childDocumentPage.getTextAnswer('Testi', 'Kysymys 2')
     await answer2.assertTextEquals('Jonkin sortin vastaus 2\n')
     await childDocumentPage.sendButton.click()
+    await childDocumentPage.sendingConfirmationModal.submit()
     await childDocumentPage.status.assertTextEquals('Valmis')
     await childDocumentPage.returnButton.click()
     await childPage.openCollapsible('child-documents')
@@ -436,6 +437,7 @@ describe('Citizen child documents editor page', () => {
     const answer2 = childDocumentPage.getTextAnswer('Testi', 'Kysymys 2')
     await answer2.assertTextEquals('Jonkin sortin vastaus 2\n')
     await childDocumentPage.sendButton.click()
+    await childDocumentPage.sendingConfirmationModal.submit()
     await toast1.waitUntilHidden()
     const toast2 = page.findByDataQa(
       `toast-child-document-${document.id}-success`
