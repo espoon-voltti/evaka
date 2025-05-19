@@ -6,9 +6,9 @@ package fi.espoo.evaka.absence.application
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
+import fi.espoo.evaka.absence.AbsenceService
 import fi.espoo.evaka.absence.AbsenceType
-import fi.espoo.evaka.absence.FullDayAbsenseUpsert
-import fi.espoo.evaka.absence.upsertFullDayAbsences
+import fi.espoo.evaka.reservations.AbsenceRequest
 import fi.espoo.evaka.shared.AbsenceApplicationId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
@@ -37,6 +37,7 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/employee/absence-application")
 class AbsenceApplicationControllerEmployee(
     private val accessControl: AccessControl,
+    private val absenceService: AbsenceService,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
 ) {
     @GetMapping
@@ -136,27 +137,16 @@ class AbsenceApplicationControllerEmployee(
                         user.evakaUserId,
                         rejectedReason = null,
                     )
-                    if (!clock.today().isAfter(application.endDate)) {
-                        val range =
-                            if (clock.today().isAfter(application.startDate))
-                                FiniteDateRange(clock.today(), application.endDate)
-                            else FiniteDateRange(application.startDate, application.endDate)
-                        tx.upsertFullDayAbsences(
-                            user.evakaUserId,
-                            clock.now(),
-                            range
-                                .dates()
-                                .map { date ->
-                                    FullDayAbsenseUpsert(
-                                        childId = application.childId,
-                                        date = date,
-                                        absenceTypeBillable = AbsenceType.OTHER_ABSENCE,
-                                        absenceTypeNonbillable = AbsenceType.OTHER_ABSENCE,
-                                    )
-                                }
-                                .toList(),
-                        )
-                    }
+                    absenceService.createAbsences(
+                        tx,
+                        user,
+                        clock,
+                        AbsenceRequest(
+                            setOf(application.childId),
+                            FiniteDateRange(application.startDate, application.endDate),
+                            AbsenceType.OTHER_ABSENCE,
+                        ),
+                    )
                     asyncJobRunner.plan(
                         tx,
                         listOf(AsyncJob.SendAbsenceApplicationDecidedEmail(application.id)),
