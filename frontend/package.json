@@ -13,7 +13,7 @@
     "lint:fix": "yarn lint --fix",
     "type-check": "tsc --build --force .",
     "type-check:watch": "yarn type-check --watch --preserveWatchOutput",
-    "build": "webpack --mode production",
+    "build": "vite build",
     "build:dev": "node build.js --dev",
     "build:serve": "node build.js --dev --watch --serve",
     "test": "NODE_OPTIONS=--experimental-vm-modules jest src/*-frontend src/lib-* eslint-plugin",
