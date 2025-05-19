@@ -104,7 +104,9 @@ export type Global =
   | 'VARDA_OPERATIONS'
   | 'WRITE_SERVICE_WORKER_APPLICATION_NOTES'
 
-export type AbsenceApplication = 'DECIDE'
+export type AbsenceApplication =
+  | 'DECIDE'
+  | 'READ'
 
 export type Application =
   | 'ACCEPT_DECISION'

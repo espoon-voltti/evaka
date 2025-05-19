@@ -6,6 +6,7 @@ package fi.espoo.evaka.shared.security.actionrule
 
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.document.childdocument.DocumentStatus
+import fi.espoo.evaka.shared.AbsenceApplicationId
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.GroupId
@@ -147,6 +148,21 @@ SELECT child_id AS id, role, enabled_pilot_features AS unit_features, provider_t
 FROM employee_child_group_acl(${bind(now.toLocalDate())}) acl
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = ${bind(user.id)}
+            """
+                    .trimIndent()
+            )
+        }
+
+    fun inPlacementGroupOfChildOfAbsenceApplication(maxLengthInDays: Int? = null) =
+        rule<AbsenceApplicationId> { user, now ->
+            sql(
+                """
+SELECT absence_application.id AS id, role, enabled_pilot_features AS unit_features, provider_type AS unit_provider_type
+FROM absence_application
+JOIN employee_child_group_acl(${bind(now.toLocalDate())}) acl USING (child_id)
+JOIN daycare ON acl.daycare_id = daycare.id
+WHERE employee_id = ${bind(user.id)}
+${if (maxLengthInDays != null) "AND absence_application.end_date - absence_application.start_date <= ${bind(maxLengthInDays)}" else ""}
             """
                     .trimIndent()
             )
