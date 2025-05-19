@@ -2,9 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-const { RuleTester } = require('eslint')
+import { RuleTester } from 'eslint'
 
-const noRelativeLibImports = require('./no-relative-lib-imports')
+import noRelativeLibImports from './no-relative-lib-imports.js'
 
 new RuleTester().run('no-relative-lib-imports', noRelativeLibImports, {
   valid: [

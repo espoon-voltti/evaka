@@ -2,10 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-const { RuleTester } = require('eslint')
-const typescriptEslint = require('typescript-eslint')
+import { RuleTester } from 'eslint'
+import typescriptEslint from 'typescript-eslint'
 
-const rule = require('./no-localdate-triple-equals')
+import rule from './no-localdate-triple-equals'
 
 const ruleTester = new RuleTester({
   languageOptions: {

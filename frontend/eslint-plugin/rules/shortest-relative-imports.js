@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-const path = require('node:path')
+import path from 'node:path'
 
 function isRelativeImport(node) {
   return (
@@ -33,7 +33,7 @@ function toShortestRelativeImport(importPath, sourceFile) {
   return shortestRelative
 }
 
-module.exports = {
+export default {
   meta: {
     type: 'suggestion',
     docs: {

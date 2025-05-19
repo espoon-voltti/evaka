@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Frontend for eVaka",
   "private": true,
+  "type": "module",
   "license": "LGPL-2.1-or-later",
   "scripts": {
     "clean": "rm -rf dist screenshots videos node_modules/.cache",
@@ -14,7 +15,7 @@
     "build": "webpack --mode production",
     "build:dev": "node build.js --dev",
     "build:serve": "node build.js --dev --watch --serve",
-    "test": "jest src/*-frontend src/lib-* eslint-plugin",
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest src/*-frontend src/lib-* eslint-plugin",
     "test:watch": "yarn test --watchAll",
     "dev-maintenance-page": "cd src/maintenance-page-frontend && npx http-server",
     "e2e-test": "LANG=fi-FI LANGUAGE=fi_FI jest --runInBand src/e2e-test/specs",

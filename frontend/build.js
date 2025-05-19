@@ -11,14 +11,18 @@
 
 /* eslint-disable no-console */
 
-const fs = require('fs/promises')
-const path = require('path')
+import fs from 'node:fs/promises'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 
-const esbuild = require('esbuild')
-const express = require('express')
-const proxy = require('express-http-proxy')
-const _ = require('lodash')
-const yargs = require('yargs')
+import esbuild from 'esbuild'
+import express from 'express'
+import proxy from 'express-http-proxy'
+import _ from 'lodash'
+import yargs from 'yargs'
+import { hideBin } from 'yargs/helpers'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 function resolveCustomizations() {
   const customizations = process.env.EVAKA_CUSTOMIZATIONS || 'espoo'
@@ -27,7 +31,7 @@ function resolveCustomizations() {
   return customizationsPath
 }
 
-function resolveIcons() {
+async function resolveIcons() {
   switch (process.env.ICONS) {
     case 'pro':
       console.info('Using pro icons (forced)')
@@ -41,9 +45,9 @@ function resolveIcons() {
       throw new Error(`Invalid environment variable ICONS=${process.env.ICONS}`)
   }
   try {
-    require('@fortawesome/pro-light-svg-icons')
-    require('@fortawesome/pro-regular-svg-icons')
-    require('@fortawesome/pro-solid-svg-icons')
+    await import('@fortawesome/pro-light-svg-icons')
+    await import('@fortawesome/pro-regular-svg-icons')
+    await import('@fortawesome/pro-solid-svg-icons')
     console.info('Using pro icons (auto-detected)')
     return 'pro'
   } catch (e) {
@@ -264,7 +268,7 @@ function serve(projects) {
 }
 
 async function main() {
-  const args = yargs
+  const args = yargs()
     .option('--dev', {
       describe: 'Make a development build',
       type: 'boolean',
@@ -279,7 +283,8 @@ async function main() {
       describe: 'Serve the result at localhost:9099',
       type: 'boolean',
       default: false
-    }).argv
+    })
+    .parse(hideBin(process.argv))
 
   const projects = [
     {
@@ -294,7 +299,7 @@ async function main() {
     dev: args.dev,
     watch: args.watch,
     customizationsModule: resolveCustomizations(),
-    icons: resolveIcons()
+    icons: await resolveIcons()
   }
 
   console.log(`Building for ${args.dev ? 'development' : 'production'}`)

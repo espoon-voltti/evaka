@@ -2,16 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-function isCallExpression(node) {
+export function isCallExpression(node) {
   return node.type === 'CallExpression'
 }
 
-function isMethodOf(names, node) {
+export function isMethodOf(names, node) {
   return node.callee.object && names.includes(node.callee.object.name)
 }
 
-function isCallOf(names, node) {
+export function isCallOf(names, node) {
   return node.callee.property && names.includes(node.callee.property.name)
 }
-
-module.exports = { isCallExpression, isMethodOf, isCallOf }

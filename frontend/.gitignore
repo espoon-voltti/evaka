@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
 node_modules/
-eslint-plugin/tsconfig.tsbuildinfo
 .cache/
 .idea/
 *.iml
@@ -13,6 +12,7 @@ dist/
 *.log
 *.swp
 *.tmp
+*.tsbuildinfo
 .npmrc
 test-results
 junit.xml
@@ -30,8 +30,6 @@ yalc.lock
 !.yarn/sdks
 !.yarn/versions
 .pnp.*
-
-eslint-plugin/tsconfig.tsbuildinfo
 
 src/lib-customizations/**/*
 !src/lib-customizations/defaults

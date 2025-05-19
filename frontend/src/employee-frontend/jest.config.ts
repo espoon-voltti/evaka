@@ -11,8 +11,8 @@ const config: Config.InitialOptions = {
   testRunner: 'jest-circus/runner',
   moduleNameMapper: {
     Icons: '<rootDir>/../lib-icons/free-icons',
-    '\\.css$': '<rootDir>/utils/mocks/styleMock.js',
-    '\\.svg$': '<rootDir>/utils/mocks/fileMock.js',
+    '\\.css$': '<rootDir>/utils/mocks/styleMock.ts',
+    '\\.svg$': '<rootDir>/utils/mocks/fileMock.ts',
     '@evaka/customizations/(.*)': '<rootDir>/../lib-customizations/espoo/$1'
   }
 }
