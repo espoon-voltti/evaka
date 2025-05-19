@@ -14,4 +14,10 @@ SPDX-License-Identifier: LGPL-2.1-or-later
        <packageUrl regex="true">^pkg:maven/com\.pinterest\.ktlint/ktlint\-cli\-reporter\-checkstyle@.*$</packageUrl>
        <cpe>cpe:/a:checkstyle:checkstyle</cpe>
     </suppress>
+    <suppress>
+        <notes><![CDATA[
+        Does not affect eVaka: we don't use disallowedFields with DataBinder
+        ]]></notes>
+        <cve>CVE-2025-22233</cve>
+    </suppress>
 </suppressions>
