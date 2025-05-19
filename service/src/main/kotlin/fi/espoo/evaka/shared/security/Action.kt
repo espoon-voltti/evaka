@@ -637,9 +637,15 @@ sealed interface Action {
     enum class AbsenceApplication(
         override vararg val defaultRules: ScopedActionRule<in AbsenceApplicationId>
     ) : ScopedAction<AbsenceApplicationId> {
+        READ(
+            HasGlobalRole(ADMIN),
+            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfAbsenceApplication(),
+            HasGroupRole(STAFF).inPlacementGroupOfChildOfAbsenceApplication(),
+        ),
         DECIDE(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfAbsenceApplication(),
+            HasGroupRole(STAFF).inPlacementGroupOfChildOfAbsenceApplication(maxLengthInDays = 7),
         );
 
         override fun toString(): String = "${javaClass.name}.$name"
@@ -1032,6 +1038,7 @@ sealed interface Action {
         READ_ABSENCE_APPLICATIONS(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChild(),
+            HasGroupRole(STAFF).inPlacementGroupOfChild(),
         ),
         CREATE_ABSENCE(
             HasGlobalRole(ADMIN),
@@ -2088,7 +2095,10 @@ sealed interface Action {
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(UNIT_SUPERVISOR).inUnit(),
         ),
-        READ_ABSENCE_APPLICATIONS(HasGlobalRole(ADMIN), HasUnitRole(UNIT_SUPERVISOR).inUnit()),
+        READ_ABSENCE_APPLICATIONS(
+            HasGlobalRole(ADMIN),
+            HasUnitRole(UNIT_SUPERVISOR, STAFF).inUnit(),
+        ),
         READ_TRANSFER_APPLICATIONS(HasGlobalRole(ADMIN, SERVICE_WORKER)),
         READ_SERVICE_APPLICATIONS(
             HasGlobalRole(ADMIN),

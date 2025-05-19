@@ -88,8 +88,10 @@ class AbsenceApplicationControllerEmployee(
                             clock,
                             applications.map { it.id },
                         )
-                    applications.map {
-                        AbsenceApplicationSummaryEmployee(it, actions[it.id] ?: emptySet())
+                    applications.mapNotNull { application ->
+                        actions[application.id]
+                            ?.takeIf { it.contains(Action.AbsenceApplication.READ) }
+                            ?.let { AbsenceApplicationSummaryEmployee(application, it) }
                     }
                 }
             }
