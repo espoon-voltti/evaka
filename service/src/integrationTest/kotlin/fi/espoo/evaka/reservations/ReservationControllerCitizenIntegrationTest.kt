@@ -7,7 +7,6 @@ package fi.espoo.evaka.reservations
 import fi.espoo.evaka.CitizenCalendarEnv
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.absence.AbsenceCategory
-import fi.espoo.evaka.absence.AbsencePushNotifications
 import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.absence.getAbsencesOfChildByDate
 import fi.espoo.evaka.absence.getAbsencesOfChildByRange
@@ -26,8 +25,6 @@ import fi.espoo.evaka.preschoolTerm2021
 import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
-import fi.espoo.evaka.shared.async.AsyncJob
-import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
@@ -79,14 +76,12 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
+import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 
 class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
-    @Autowired private lateinit var accessControl: AccessControl
-    @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
-    @Autowired private lateinit var absencePushNotifications: AbsencePushNotifications
     @Autowired private lateinit var citizenCalendarEnv: CitizenCalendarEnv
-    private lateinit var reservationControllerCitizen: ReservationControllerCitizen
+    @Autowired private lateinit var reservationControllerCitizen: ReservationControllerCitizen
 
     // Monday
     private val mockToday: LocalDate = LocalDate.of(2021, 11, 1)
@@ -111,15 +106,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
 
     @BeforeEach
     fun before() {
-        reservationControllerCitizen =
-            ReservationControllerCitizen(
-                accessControl,
-                featureConfig,
-                evakaEnv.copy(plannedAbsenceEnabledForHourBasedServiceNeeds = true),
-                asyncJobRunner,
-                absencePushNotifications,
-                citizenCalendarEnv,
-            )
+        whenever(evakaEnv.plannedAbsenceEnabledForHourBasedServiceNeeds).thenReturn(true)
         db.transaction { tx ->
             tx.insertServiceNeedOptions()
             tx.insertServiceNeedOption(snPreschoolDaycareContractDays13)

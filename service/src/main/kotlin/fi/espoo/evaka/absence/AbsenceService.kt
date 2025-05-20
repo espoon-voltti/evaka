@@ -5,6 +5,11 @@
 package fi.espoo.evaka.absence
 
 import com.fasterxml.jackson.annotation.JsonIgnore
+import fi.espoo.evaka.EvakaEnv
+import fi.espoo.evaka.absence.AbsenceType.OTHER_ABSENCE
+import fi.espoo.evaka.absence.AbsenceType.PLANNED_ABSENCE
+import fi.espoo.evaka.absence.AbsenceType.SICKLEAVE
+import fi.espoo.evaka.attendance.childrenHaveAttendanceInRange
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue
 import fi.espoo.evaka.dailyservicetimes.ServiceTimesPresenceStatus
 import fi.espoo.evaka.dailyservicetimes.getChildDailyServiceTimes
@@ -16,16 +21,25 @@ import fi.espoo.evaka.holidayperiod.getHolidayPeriodsInRange
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.ScheduleType
 import fi.espoo.evaka.placement.getPlacementsForChildDuring
+import fi.espoo.evaka.reservations.AbsenceRequest
 import fi.espoo.evaka.reservations.Reservation
+import fi.espoo.evaka.reservations.clearOldReservations
 import fi.espoo.evaka.reservations.computeUsedService
+import fi.espoo.evaka.reservations.getPlannedAbsenceEnabledRanges
+import fi.espoo.evaka.reservations.getReservableRange
 import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.serviceneed.getActualServiceNeedInfosByRangeAndGroup
 import fi.espoo.evaka.serviceneed.getServiceNeedsByChild
 import fi.espoo.evaka.shared.AbsenceId
+import fi.espoo.evaka.shared.AttendanceReservationId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EvakaUserId
+import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
+import fi.espoo.evaka.shared.async.AsyncJob
+import fi.espoo.evaka.shared.async.AsyncJobRunner
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.data.DateTimeSet
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.DatabaseEnum
@@ -42,6 +56,127 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.LocalDate
 import java.time.Month
+import org.springframework.stereotype.Service
+
+@Service
+class AbsenceService(
+    private val featureConfig: FeatureConfig,
+    private val env: EvakaEnv,
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
+    private val absencePushNotifications: AbsencePushNotifications,
+) {
+    fun createAbsences(
+        tx: Database.Transaction,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        body: AbsenceRequest,
+    ): Triple<List<AbsenceId>, List<AttendanceReservationId>?, List<AbsenceId>> {
+        val now = clock.now()
+        val today = now.toLocalDate()
+        val reservableRange =
+            getReservableRange(now, featureConfig.citizenReservationThresholdHours)
+
+        val range = body.dateRange.intersection(FiniteDateRange(today, reservableRange.end))
+        if (range == null) {
+            return Triple<List<AbsenceId>, List<AttendanceReservationId>?, List<AbsenceId>>(
+                emptyList(),
+                emptyList(),
+                emptyList(),
+            )
+        }
+        if (!listOf(OTHER_ABSENCE, PLANNED_ABSENCE, SICKLEAVE).contains(body.absenceType)) {
+            throw BadRequest("Invalid absence type")
+        }
+
+        if (tx.childrenHaveAttendanceInRange(body.childIds, range)) {
+            throw BadRequest(
+                "Attendance already exists for given dates",
+                "ATTENDANCE_ALREADY_EXISTS",
+            )
+        }
+
+        val operationalDates = tx.getOperationalDatesForChildren(range, body.childIds)
+
+        val childPlannedAbsenceEnabled =
+            range.intersection(reservableRange)?.let {
+                tx.getPlannedAbsenceEnabledRanges(
+                    body.childIds,
+                    it,
+                    env.plannedAbsenceEnabledForHourBasedServiceNeeds,
+                )
+            } ?: emptyMap()
+
+        val deletedAbsences =
+            tx.clearOldCitizenEditableAbsences(
+                body.childIds.flatMap { childId ->
+                    range
+                        .dates()
+                        .filter { operationalDates[childId]?.contains(it) ?: false }
+                        .map { childId to it }
+                },
+                reservableRange = reservableRange,
+            )
+        // Delete reservations on days in the reservable range. Reservations in the
+        // closed range are kept.
+        val deletedReservations =
+            range.intersection(reservableRange)?.dates()?.let { dates ->
+                tx.clearOldReservations(
+                    body.childIds.flatMap { childId ->
+                        dates
+                            .filter { operationalDates[childId]?.contains(it) ?: false }
+                            .map { date -> childId to date }
+                    }
+                )
+            }
+
+        val holidayPeriods = tx.getHolidayPeriodsInRange(range)
+        val absenceInserts =
+            range
+                .dates()
+                .filter { date ->
+                    val holidayPeriod = holidayPeriods.find { it.period.includes(date) }
+                    holidayPeriod == null || holidayPeriod.reservationsOpenOn <= today
+                }
+                .flatMap { date ->
+                    body.childIds
+                        .filter { operationalDates[it]?.contains(date) ?: false }
+                        .map { childId ->
+                            FullDayAbsenseUpsert(
+                                childId,
+                                date,
+                                if (
+                                    reservableRange.includes(date) &&
+                                        body.absenceType == OTHER_ABSENCE
+                                ) {
+                                    val plannedAbsenceEnabled =
+                                        childPlannedAbsenceEnabled[childId]?.includes(date) ?: false
+                                    if (plannedAbsenceEnabled) {
+                                        PLANNED_ABSENCE
+                                    } else {
+                                        body.absenceType
+                                    }
+                                } else {
+                                    body.absenceType
+                                },
+                                body.absenceType,
+                            )
+                        }
+                }
+                .toList()
+
+        val insertedAbsences = tx.upsertFullDayAbsences(user.evakaUserId, now, absenceInserts)
+
+        val notifications =
+            if (absenceInserts.any { it.date == today }) {
+                absencePushNotifications.getAsyncJobs(tx, today, insertedAbsences)
+            } else emptyList()
+        if (notifications.isNotEmpty()) {
+            asyncJobRunner.plan(tx, notifications, runAt = now)
+        }
+
+        return Triple(deletedAbsences, deletedReservations, insertedAbsences)
+    }
+}
 
 fun getGroupMonthCalendar(
     tx: Database.Read,
@@ -404,7 +539,7 @@ fun generateAbsencesFromIrregularDailyServiceTimes(
                             AbsenceUpsert(
                                 childId = childId,
                                 date = date,
-                                absenceType = AbsenceType.OTHER_ABSENCE,
+                                absenceType = OTHER_ABSENCE,
                                 category = category,
                             )
                         }

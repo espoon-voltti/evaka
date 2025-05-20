@@ -33,7 +33,9 @@ import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
+import fi.espoo.evaka.shared.dev.DevServiceNeed
 import fi.espoo.evaka.shared.dev.insert
+import fi.espoo.evaka.shared.dev.insertServiceNeedOption
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.Forbidden
@@ -42,6 +44,7 @@ import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.domain.toFiniteDateRange
 import fi.espoo.evaka.shared.security.Action
+import fi.espoo.evaka.snPreschoolDaycareContractDays13
 import fi.espoo.evaka.toEvakaUser
 import fi.espoo.evaka.user.EvakaUserType
 import java.time.LocalDate
@@ -85,6 +88,12 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
                 tx.insert(child, DevPersonType.CHILD)
                 tx.insert(adult, DevPersonType.ADULT)
                 tx.insertGuardian(adult.id, child.id)
+            }
+        }
+
+        @Test
+        fun `accepted flow`() {
+            db.transaction { tx ->
                 tx.insert(
                     DevPlacement(
                         type = PlacementType.PRESCHOOL,
@@ -95,10 +104,7 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
                     )
                 )
             }
-        }
 
-        @Test
-        fun `accepted flow`() {
             val id =
                 absenceApplicationControllerCitizen.postAbsenceApplication(
                     dbInstance(),
@@ -216,6 +222,18 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
 
         @Test
         fun `absences not inserted if application dates are in the past`() {
+            db.transaction { tx ->
+                tx.insert(
+                    DevPlacement(
+                        type = PlacementType.PRESCHOOL,
+                        childId = child.id,
+                        unitId = unit.id,
+                        startDate = LocalDate.of(2022, 1, 1),
+                        endDate = LocalDate.of(2022, 12, 31),
+                    )
+                )
+            }
+
             val range = clock.today().minusDays(1).toFiniteDateRange()
             val data =
                 AbsenceApplication(
@@ -250,6 +268,18 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
 
         @Test
         fun `past dates are not inserted`() {
+            db.transaction { tx ->
+                tx.insert(
+                    DevPlacement(
+                        type = PlacementType.PRESCHOOL,
+                        childId = child.id,
+                        unitId = unit.id,
+                        startDate = LocalDate.of(2022, 1, 1),
+                        endDate = LocalDate.of(2022, 12, 31),
+                    )
+                )
+            }
+
             val range = FiniteDateRange(clock.today().minusDays(1), clock.today().plusDays(1))
             val data =
                 AbsenceApplication(
@@ -304,7 +334,91 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
         }
 
         @Test
+        fun `child with contract days absences are inserted correctly`() {
+            db.transaction { tx ->
+                val placement =
+                    DevPlacement(
+                        type = PlacementType.PRESCHOOL_DAYCARE,
+                        childId = child.id,
+                        unitId = unit.id,
+                        startDate = LocalDate.of(2022, 1, 1),
+                        endDate = LocalDate.of(2022, 12, 31),
+                    )
+                val placementId = tx.insert(placement)
+                tx.insertServiceNeedOption(snPreschoolDaycareContractDays13)
+                tx.insert(
+                    DevServiceNeed(
+                        placementId = placementId,
+                        startDate = placement.startDate,
+                        endDate = placement.endDate,
+                        optionId = snPreschoolDaycareContractDays13.id,
+                        confirmedBy = unitSupervisor.evakaUserId,
+                    )
+                )
+            }
+            val id =
+                absenceApplicationControllerCitizen.postAbsenceApplication(
+                    dbInstance(),
+                    adult.user(CitizenAuthLevel.STRONG),
+                    clock,
+                    AbsenceApplicationCreateRequest(
+                        childId = child.id,
+                        startDate = LocalDate.of(2022, 9, 9),
+                        endDate = LocalDate.of(2022, 9, 9),
+                        description = "Lapinreissu",
+                    ),
+                )
+
+            absenceApplicationControllerEmployee.acceptAbsenceApplication(
+                dbInstance(),
+                employeeUser,
+                clock,
+                id,
+            )
+
+            assertEquals(
+                listOf(
+                    Absence(
+                        childId = child.id,
+                        date = LocalDate.of(2022, 9, 9),
+                        category = AbsenceCategory.BILLABLE,
+                        absenceType = AbsenceType.PLANNED_ABSENCE,
+                        modifiedByStaff = true,
+                        modifiedAt = clock.now(),
+                        belongsToQuestionnaire = false,
+                    ),
+                    Absence(
+                        childId = child.id,
+                        date = LocalDate.of(2022, 9, 9),
+                        category = AbsenceCategory.NONBILLABLE,
+                        absenceType = AbsenceType.OTHER_ABSENCE,
+                        modifiedByStaff = true,
+                        modifiedAt = clock.now(),
+                        belongsToQuestionnaire = false,
+                    ),
+                ),
+                db.transaction { tx ->
+                    tx.getAbsencesOfChildByDate(child.id, LocalDate.of(2022, 9, 9)).sortedBy {
+                        it.category
+                    }
+                },
+            )
+        }
+
+        @Test
         fun `rejected flow`() {
+            db.transaction { tx ->
+                tx.insert(
+                    DevPlacement(
+                        type = PlacementType.PRESCHOOL,
+                        childId = child.id,
+                        unitId = unit.id,
+                        startDate = LocalDate.of(2022, 1, 1),
+                        endDate = LocalDate.of(2022, 12, 31),
+                    )
+                )
+            }
+
             val id =
                 absenceApplicationControllerCitizen.postAbsenceApplication(
                     dbInstance(),

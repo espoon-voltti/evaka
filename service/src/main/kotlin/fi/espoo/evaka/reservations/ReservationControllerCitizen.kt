@@ -12,16 +12,9 @@ import fi.espoo.evaka.CitizenCalendarEnv
 import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.absence.Absence
 import fi.espoo.evaka.absence.AbsenceCategory
-import fi.espoo.evaka.absence.AbsencePushNotifications
+import fi.espoo.evaka.absence.AbsenceService
 import fi.espoo.evaka.absence.AbsenceType
-import fi.espoo.evaka.absence.AbsenceType.OTHER_ABSENCE
-import fi.espoo.evaka.absence.AbsenceType.PLANNED_ABSENCE
-import fi.espoo.evaka.absence.AbsenceType.SICKLEAVE
-import fi.espoo.evaka.absence.FullDayAbsenseUpsert
-import fi.espoo.evaka.absence.clearOldCitizenEditableAbsences
 import fi.espoo.evaka.absence.getAbsencesCitizen
-import fi.espoo.evaka.absence.upsertFullDayAbsences
-import fi.espoo.evaka.attendance.childrenHaveAttendanceInRange
 import fi.espoo.evaka.attendance.getChildAttendancesCitizen
 import fi.espoo.evaka.daycare.ClubTerm
 import fi.espoo.evaka.daycare.PreschoolTerm
@@ -29,7 +22,6 @@ import fi.espoo.evaka.daycare.getClubTerms
 import fi.espoo.evaka.daycare.getPreschoolTerms
 import fi.espoo.evaka.holidayperiod.HolidayPeriodEffect
 import fi.espoo.evaka.holidayperiod.getHolidayPeriods
-import fi.espoo.evaka.holidayperiod.getHolidayPeriodsInRange
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.ScheduleType
 import fi.espoo.evaka.serviceneed.ShiftCareType
@@ -37,8 +29,6 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ChildImageId
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.PersonId
-import fi.espoo.evaka.shared.async.AsyncJob
-import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -64,9 +54,8 @@ class ReservationControllerCitizen(
     private val accessControl: AccessControl,
     private val featureConfig: FeatureConfig,
     private val env: EvakaEnv,
-    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
-    private val absencePushNotifications: AbsencePushNotifications,
     private val citizenCalendarEnv: CitizenCalendarEnv,
+    private val absenceService: AbsenceService,
 ) {
     @GetMapping("/citizen/reservations")
     fun getReservations(
@@ -325,17 +314,6 @@ class ReservationControllerCitizen(
         clock: EvakaClock,
         @RequestBody body: AbsenceRequest,
     ) {
-        val now = clock.now()
-        val today = now.toLocalDate()
-        val reservableRange =
-            getReservableRange(now, featureConfig.citizenReservationThresholdHours)
-
-        val range =
-            body.dateRange.intersection(FiniteDateRange(today, reservableRange.end)) ?: return
-        if (!listOf(OTHER_ABSENCE, PLANNED_ABSENCE, SICKLEAVE).contains(body.absenceType)) {
-            throw BadRequest("Invalid absence type")
-        }
-
         val (deletedAbsences, deletedReservations, insertedAbsences) =
             db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -346,96 +324,7 @@ class ReservationControllerCitizen(
                         Action.Citizen.Child.CREATE_ABSENCE,
                         body.childIds,
                     )
-                    if (tx.childrenHaveAttendanceInRange(body.childIds, range)) {
-                        throw BadRequest(
-                            "Attendance already exists for given dates",
-                            "ATTENDANCE_ALREADY_EXISTS",
-                        )
-                    }
-
-                    val operationalDates = tx.getOperationalDatesForChildren(range, body.childIds)
-
-                    val childPlannedAbsenceEnabled =
-                        range.intersection(reservableRange)?.let {
-                            tx.getPlannedAbsenceEnabledRanges(
-                                body.childIds,
-                                it,
-                                env.plannedAbsenceEnabledForHourBasedServiceNeeds,
-                            )
-                        } ?: emptyMap()
-
-                    val deletedAbsences =
-                        tx.clearOldCitizenEditableAbsences(
-                            body.childIds.flatMap { childId ->
-                                range
-                                    .dates()
-                                    .filter { operationalDates[childId]?.contains(it) ?: false }
-                                    .map { childId to it }
-                            },
-                            reservableRange = reservableRange,
-                        )
-                    // Delete reservations on days in the reservable range. Reservations in the
-                    // closed range are kept.
-                    val deletedReservations =
-                        range.intersection(reservableRange)?.dates()?.let { dates ->
-                            tx.clearOldReservations(
-                                body.childIds.flatMap { childId ->
-                                    dates
-                                        .filter { operationalDates[childId]?.contains(it) ?: false }
-                                        .map { date -> childId to date }
-                                }
-                            )
-                        }
-
-                    val holidayPeriods = tx.getHolidayPeriodsInRange(range)
-                    val absenceInserts =
-                        range
-                            .dates()
-                            .filter { date ->
-                                val holidayPeriod = holidayPeriods.find { it.period.includes(date) }
-                                holidayPeriod == null || holidayPeriod.reservationsOpenOn <= today
-                            }
-                            .flatMap { date ->
-                                body.childIds
-                                    .filter { operationalDates[it]?.contains(date) ?: false }
-                                    .map { childId ->
-                                        FullDayAbsenseUpsert(
-                                            childId,
-                                            date,
-                                            if (
-                                                reservableRange.includes(date) &&
-                                                    body.absenceType == OTHER_ABSENCE
-                                            ) {
-                                                val plannedAbsenceEnabled =
-                                                    childPlannedAbsenceEnabled[childId]?.includes(
-                                                        date
-                                                    ) ?: false
-                                                if (plannedAbsenceEnabled) {
-                                                    PLANNED_ABSENCE
-                                                } else {
-                                                    body.absenceType
-                                                }
-                                            } else {
-                                                body.absenceType
-                                            },
-                                            body.absenceType,
-                                        )
-                                    }
-                            }
-                            .toList()
-
-                    val insertedAbsences =
-                        tx.upsertFullDayAbsences(user.evakaUserId, now, absenceInserts)
-
-                    val notifications =
-                        if (absenceInserts.any { it.date == today }) {
-                            absencePushNotifications.getAsyncJobs(tx, today, insertedAbsences)
-                        } else emptyList()
-                    if (notifications.isNotEmpty()) {
-                        asyncJobRunner.plan(tx, notifications, runAt = now)
-                    }
-
-                    Triple(deletedAbsences, deletedReservations, insertedAbsences)
+                    absenceService.createAbsences(tx, user, clock, body)
                 }
             }
         Audit.AbsenceCitizenCreate.log(
