@@ -78,6 +78,7 @@
     "@eslint/js": "9.28.0",
     "@evaka/eslint-plugin": "link:eslint-plugin",
     "@playwright/test": "1.52.0",
+    "@sentry/vite-plugin": "3.4.0",
     "@sentry/webpack-plugin": "3.5.0",
     "@testing-library/dom": "10.4.0",
     "@testing-library/jest-dom": "6.6.3",
@@ -152,7 +153,8 @@
     }
   },
   "resolutions": {
-    "@react-leaflet/core@npm:^3.0.0": "patch:@react-leaflet/core@npm%3A3.0.0#~/.yarn/patches/@react-leaflet-core-npm-3.0.0-4e3f2d62b5.patch"
+    "@react-leaflet/core@npm:^3.0.0": "patch:@react-leaflet/core@npm%3A3.0.0#~/.yarn/patches/@react-leaflet-core-npm-3.0.0-4e3f2d62b5.patch",
+    "unplugin@npm:1.0.1": "patch:unplugin@npm%3A1.0.1#~/.yarn/patches/unplugin-npm-1.0.1-70bc9bb0e2.patch"
   },
   "engines": {
     "node": ">= 22.12.0"

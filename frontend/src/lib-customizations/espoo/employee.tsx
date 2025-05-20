@@ -10,12 +10,12 @@ import {
 } from 'lib-common/generated/api-types/assistance'
 import type { EmployeeCustomizations } from 'lib-customizations/types'
 
-import { employeeConfig } from './appConfigs'
+import { appConfig } from './appConfigs'
 import Logo from './assets/EspooLogoPrimary.svg'
 import featureFlags from './featureFlags'
 
 const customizations: EmployeeCustomizations = {
-  appConfig: employeeConfig,
+  appConfig,
   translations: {
     fi: {
       common: {
