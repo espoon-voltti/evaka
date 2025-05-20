@@ -2665,7 +2665,10 @@ const en: Translations = {
       sentInfo:
         'Jos haluat muuttaa annettuja vastauksia, pyydä henkilökunnalta uusi lomake. (en)',
       // decision cannot be in English
-      decisionNumber: 'Päätösnumero'
+      decisionNumber: 'Päätösnumero',
+      sendingConfirmationTitle: 'Are you sure you want to send the document?',
+      sendingConfirmationText:
+        'Make sure to fill in all the fields. Answers cannot be changed after submission.'
     }
   },
   accessibilityStatement: (

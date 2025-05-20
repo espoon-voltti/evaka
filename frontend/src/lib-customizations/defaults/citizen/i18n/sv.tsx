@@ -2908,7 +2908,10 @@ const sv: Translations = {
       success: 'Lomake lähetetty (sv)',
       sentInfo:
         'Jos haluat muuttaa annettuja vastauksia, pyydä henkilökunnalta uusi lomake. (sv)',
-      decisionNumber: 'Beslutsnummer'
+      decisionNumber: 'Beslutsnummer',
+      sendingConfirmationTitle: 'Är du säker på att du vill skicka dokumentet?',
+      sendingConfirmationText:
+        'Säkerställ att du har fyllt i alla fält. Svaren kan inte ändras efter att de har skickats.'
     }
   },
   accessibilityStatement: (

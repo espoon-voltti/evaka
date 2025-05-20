@@ -16,7 +16,6 @@ import { useMutation, useQueryResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import { NotificationsContext } from 'lib-components/Notifications'
 import { Button } from 'lib-components/atoms/buttons/Button'
-import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { tabletMin } from 'lib-components/breakpoints'
 import { ChildDocumentStateChip } from 'lib-components/document-templates/ChildDocumentStateChip'
@@ -35,6 +34,7 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
+import { ConfirmedMutation } from 'lib-components/molecules/ConfirmedMutation'
 import { InfoBox } from 'lib-components/molecules/MessageBoxes'
 import { H1, H2, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
@@ -211,7 +211,7 @@ const ChildDocumentView = React.memo(function ChildDocumentView({
             )}
             <AlignRight>
               {readOnly ? (
-                <MutateButton
+                <ConfirmedMutation
                   mutation={updateChildDocumentMutation}
                   onClick={() => ({
                     documentId: document.id,
@@ -220,8 +220,14 @@ const ChildDocumentView = React.memo(function ChildDocumentView({
                       content: bind.value()
                     }
                   })}
+                  confirmationTitle={
+                    i18n.children.childDocuments.sendingConfirmationTitle
+                  }
+                  confirmationText={
+                    i18n.children.childDocuments.sendingConfirmationText
+                  }
                   onSuccess={onSuccess}
-                  text={i18n.children.childDocuments.send}
+                  buttonText={i18n.children.childDocuments.send}
                   primary
                   disabled={!bind.isValid()}
                   data-qa="send-button"
