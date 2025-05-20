@@ -102,7 +102,7 @@ class BackupCareController(private val accessControl: AccessControl) {
                                     body.period,
                                 )
                             }
-                        tx.createBackupCare(childId, body)
+                        tx.createBackupCare(user.evakaUserId, clock.now(), childId, body)
                     }
                 }
             Audit.ChildBackupCareCreate.log(
@@ -209,7 +209,13 @@ class BackupCareController(private val accessControl: AccessControl) {
                             }
                         }
                     }
-                    tx.updateBackupCare(id, body.period, body.groupId)
+                    tx.updateBackupCare(
+                        user.evakaUserId,
+                        clock.now(),
+                        id,
+                        body.period,
+                        body.groupId,
+                    )
                 }
             }
             Audit.BackupCareUpdate.log(

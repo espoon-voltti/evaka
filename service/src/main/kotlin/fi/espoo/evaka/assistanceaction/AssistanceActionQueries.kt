@@ -8,11 +8,13 @@ import fi.espoo.evaka.shared.AssistanceActionId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import java.time.LocalDate
 
 fun Database.Transaction.insertAssistanceAction(
     user: AuthenticatedUser,
+    now: HelsinkiDateTime,
     childId: ChildId,
     data: AssistanceActionRequest,
 ): AssistanceAction {
@@ -23,14 +25,18 @@ fun Database.Transaction.insertAssistanceAction(
 INSERT INTO assistance_action (
     child_id, 
     start_date, 
-    end_date, 
-    updated_by, 
+    end_date,
+    created_at,
+    modified_at,
+    modified_by, 
     other_action
 )
 VALUES (
     ${bind(childId)}, 
     ${bind(data.startDate)}, 
     ${bind(data.endDate)}, 
+    ${bind(now)},
+    ${bind(now)},
     ${bind(user.evakaUserId)},
     ${bind(data.otherAction)}
 )
@@ -92,6 +98,7 @@ ORDER BY start_date DESC
 
 fun Database.Transaction.updateAssistanceAction(
     user: AuthenticatedUser,
+    now: HelsinkiDateTime,
     id: AssistanceActionId,
     data: AssistanceActionRequest,
 ): AssistanceAction {
@@ -101,7 +108,8 @@ fun Database.Transaction.updateAssistanceAction(
 UPDATE assistance_action SET 
     start_date = ${bind(data.startDate)},
     end_date = ${bind(data.endDate)},
-    updated_by = ${bind(user.evakaUserId)},
+    modified_at = ${bind(now)},
+    modified_by = ${bind(user.evakaUserId)},
     other_action = ${bind(data.otherAction)}
 WHERE id = ${bind(id)}
 RETURNING id
@@ -118,6 +126,7 @@ RETURNING id
 
 fun Database.Transaction.shortenOverlappingAssistanceAction(
     user: AuthenticatedUser,
+    now: HelsinkiDateTime,
     childId: ChildId,
     startDate: LocalDate,
 ) {
@@ -125,7 +134,7 @@ fun Database.Transaction.shortenOverlappingAssistanceAction(
         sql(
             """
 UPDATE assistance_action 
-SET end_date = ${bind(startDate)} - interval '1 day', updated_by = ${bind(user.evakaUserId)}
+SET end_date = ${bind(startDate)} - interval '1 day', modified_at = ${bind(now)}, modified_by = ${bind(user.evakaUserId)}
 WHERE child_id = ${bind(childId)} AND daterange(start_date, end_date, '[]') @> ${bind(startDate)} AND start_date <> ${bind(startDate)}
 RETURNING *
 """

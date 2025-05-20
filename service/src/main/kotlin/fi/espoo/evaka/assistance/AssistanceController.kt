@@ -196,6 +196,7 @@ class AssistanceController(
                 assistanceActionService.createAssistanceAction(
                     dbc,
                     user = user,
+                    now = clock.now(),
                     childId = childId,
                     data = body,
                 )
@@ -229,6 +230,7 @@ class AssistanceController(
                 assistanceActionService.updateAssistanceAction(
                     dbc,
                     user = user,
+                    now = clock.now(),
                     id = id,
                     data = body,
                 )

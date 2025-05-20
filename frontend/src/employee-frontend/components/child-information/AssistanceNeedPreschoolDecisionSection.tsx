@@ -122,7 +122,7 @@ export default React.memo(function AssistanceNeedPreschoolDecisionSection({
               </Tr>
             </Thead>
             <Tbody>
-              {orderBy(decisions, ({ decision }) => decision.created).map(
+              {orderBy(decisions, ({ decision }) => decision.createdAt).map(
                 (res) => (
                   <AssistanceNeedPreschoolDecisionSectionRow
                     key={res.decision.id}

@@ -27,7 +27,7 @@ interface Props {
 
 export const AssistanceFactorRow = React.memo(function AssistanceFactorRow({
   assistanceFactor: {
-    data: { capacityFactor, childId, id, modified, modifiedBy, validDuring },
+    data: { capacityFactor, childId, id, modifiedAt, modifiedBy, validDuring },
     permittedActions
   },
   onEdit
@@ -52,14 +52,14 @@ export const AssistanceFactorRow = React.memo(function AssistanceFactorRow({
         />
       </Td>
       <Td data-qa="modified-by">
-        {modified ? (
+        {modifiedAt ? (
           <Tooltip
             tooltip={
               modifiedBy ? t.fields.lastModifiedBy(modifiedBy.name) : null
             }
             position="left"
           >
-            {modified.format()}
+            {modifiedAt.format()}
           </Tooltip>
         ) : (
           t.unknown

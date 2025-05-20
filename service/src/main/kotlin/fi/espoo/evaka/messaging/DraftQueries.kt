@@ -43,7 +43,7 @@ SELECT
         SELECT id, name, content_type
         FROM attachment a
         WHERE a.message_draft_id = draft.id
-        ORDER BY a.created
+        ORDER BY a.created_at
     ) s) AS attachments
 FROM message_draft draft
 WHERE draft.account_id = ${bind(accountId)} AND

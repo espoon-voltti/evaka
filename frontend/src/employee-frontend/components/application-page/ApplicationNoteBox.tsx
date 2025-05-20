@@ -202,21 +202,21 @@ export default React.memo(function ApplicationNoteBox(props: Props) {
                 </Label>
                 <span>
                   {i18n.application.notes.created}:{' '}
-                  {props.note.created.format()}
+                  {props.note.createdAt.format()}
                 </span>
 
                 {isEdit(props) ? (
                   <DetailText>{i18n.application.notes.editing}</DetailText>
-                ) : props.note.updated.isAfter(
-                    props.note.created.addSeconds(1)
+                ) : props.note.modifiedAt.isAfter(
+                    props.note.createdAt.addSeconds(1)
                   ) ? (
                   <>
                     <DetailText>
                       {`${
                         i18n.application.notes.lastEdited
-                      }: ${props.note.updated.format()}`}
+                      }: ${props.note.modifiedAt.format()}`}
                     </DetailText>
-                    <DetailText>{props.note.updatedByName}</DetailText>
+                    <DetailText>{props.note.modifiedByName}</DetailText>
                   </>
                 ) : null}
               </>

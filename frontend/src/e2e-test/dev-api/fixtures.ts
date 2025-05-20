@@ -728,6 +728,10 @@ export class Fixture {
   static backupCare(initial: SemiPartial<DevBackupCare, 'childId' | 'unitId'>) {
     const value: DevBackupCare = {
       id: randomId(),
+      createdAt: HelsinkiDateTime.now(),
+      createdBy: systemInternalUser.id,
+      modifiedAt: HelsinkiDateTime.now(),
+      modifiedBy: systemInternalUser.id,
       groupId: null,
       period: new FiniteDateRange(
         LocalDate.todayInSystemTz(),
@@ -837,7 +841,7 @@ export class Fixture {
         LocalDate.todayInSystemTz(),
         LocalDate.todayInSystemTz()
       ),
-      modified: HelsinkiDateTime.now(),
+      modifiedAt: HelsinkiDateTime.now(),
       modifiedBy: systemInternalUser,
       ...initial
     }
@@ -1728,13 +1732,15 @@ export class Fixture {
   }
 
   static assistanceAction(
-    initial: SemiPartial<DevAssistanceAction, 'childId' | 'updatedBy'>
+    initial: SemiPartial<DevAssistanceAction, 'childId' | 'modifiedBy'>
   ) {
     const value: DevAssistanceAction = {
       id: randomId(),
       actions: ['ASSISTANCE_SERVICE_CHILD'],
       endDate: LocalDate.todayInSystemTz(),
       startDate: LocalDate.todayInSystemTz(),
+      createdAt: HelsinkiDateTime.now(),
+      modifiedAt: HelsinkiDateTime.now(),
       otherAction: '',
       ...initial
     }
@@ -1847,7 +1853,7 @@ export class Fixture {
         LocalDate.todayInSystemTz()
       ),
       modifiedAt: HelsinkiDateTime.now(),
-      modifiedBy: null,
+      modifiedBy: systemInternalUser,
       ...initial
     }
     return {

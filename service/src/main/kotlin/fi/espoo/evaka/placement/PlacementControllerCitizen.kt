@@ -130,7 +130,6 @@ class PlacementControllerCitizen(
                                 childId,
                                 body.unitId,
                                 clock.now(),
-                                user.evakaUserId,
                             )
                         } else {
                             // normal termination simply cancels or terminates the placements
@@ -144,6 +143,7 @@ class PlacementControllerCitizen(
                                         it,
                                         terminationDate,
                                         user,
+                                        clock.now(),
                                     )
                                 }
                         }

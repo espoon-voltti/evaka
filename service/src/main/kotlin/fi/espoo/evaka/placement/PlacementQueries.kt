@@ -164,7 +164,7 @@ fun Database.Transaction.updatePlacementStartDate(
         }
         .execute()
 
-    recreateBackupCares(placement.childId)
+    recreateBackupCares(modifiedBy, modifiedAt, placement.childId)
 }
 
 fun Database.Transaction.updatePlacementEndDate(
@@ -181,7 +181,7 @@ fun Database.Transaction.updatePlacementEndDate(
         }
         .execute()
 
-    recreateBackupCares(placement.childId)
+    recreateBackupCares(modifiedBy, modifiedAt, placement.childId)
 }
 
 fun Database.Transaction.updatePlacementStartAndEndDate(
@@ -199,7 +199,7 @@ fun Database.Transaction.updatePlacementStartAndEndDate(
         }
         .execute()
 
-    recreateBackupCares(placement.childId)
+    recreateBackupCares(modifiedBy, modifiedAt, placement.childId)
 }
 
 fun Database.Transaction.updatePlacementType(
@@ -228,7 +228,11 @@ data class CancelPlacementResult(
     val endDate: LocalDate,
 )
 
-fun Database.Transaction.cancelPlacement(id: PlacementId): CancelPlacementResult {
+fun Database.Transaction.cancelPlacement(
+    modifiedAt: HelsinkiDateTime,
+    modifiedBy: EvakaUserId,
+    id: PlacementId,
+): CancelPlacementResult {
     val placement = getPlacement(id) ?: throw NotFound("Placement $id not found")
     clearCalendarEventAttendees(
         placement.childId,
@@ -245,7 +249,7 @@ fun Database.Transaction.cancelPlacement(id: PlacementId): CancelPlacementResult
 
     createUpdate { sql("DELETE FROM placement WHERE id = ${bind(id)}") }.execute()
 
-    recreateBackupCares(placement.childId)
+    recreateBackupCares(modifiedBy, modifiedAt, placement.childId)
 
     return CancelPlacementResult(
         placement.childId,
@@ -832,7 +836,8 @@ fun Database.Transaction.terminatePlacementFrom(
     terminationRequestedDate: LocalDate,
     placementId: PlacementId,
     terminationDate: LocalDate,
-    terminatedBy: EvakaUserId?,
+    terminatedBy: EvakaUserId,
+    now: HelsinkiDateTime,
 ) {
     clearGroupPlacementsAfter(placementId, terminationDate)
     deleteServiceNeedsFromPlacementAfter(placementId, terminationDate)
@@ -843,7 +848,7 @@ fun Database.Transaction.terminatePlacementFrom(
             sql(
                 """
 UPDATE placement
-SET termination_requested_date = ${bind(if (terminatedBy == null) null else terminationRequestedDate)},
+SET termination_requested_date = ${bind(terminationRequestedDate)},
     terminated_by = ${bind(terminatedBy)},
     end_date = ${bind(terminationDate)}
 WHERE id = ${bind(placementId)}
@@ -852,7 +857,7 @@ WHERE id = ${bind(placementId)}
         }
         .execute()
 
-    recreateBackupCares(placement.childId)
+    recreateBackupCares(terminatedBy, now, placement.childId)
 }
 
 fun Database.Transaction.updatePlacementTermination(

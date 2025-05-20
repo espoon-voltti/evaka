@@ -530,3 +530,4 @@ V531__nekku_order_report.sql
 V532__absence_application.sql
 V533__remove_nekku_customer_number_constraint.sql
 V534__fix_nekku_special_diet_choices.sql
+V535__schema_convention_fixes.sql

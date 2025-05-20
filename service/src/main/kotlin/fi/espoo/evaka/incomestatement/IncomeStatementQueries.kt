@@ -111,7 +111,7 @@ SELECT
         JOIN evaka_user eu ON a.uploaded_by = eu.id
         WHERE a.income_statement_id = ist.id 
         AND ${predicate(attachmentVisibility.forTable("eu"))}
-        ORDER BY a.created
+        ORDER BY a.created_at
     ) s) AS attachments,
     COUNT(*) OVER () AS count
 FROM income_statement ist 

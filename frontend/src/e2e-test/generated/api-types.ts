@@ -217,11 +217,13 @@ export interface DevApplicationWithForm {
 export interface DevAssistanceAction {
   actions: string[]
   childId: PersonId
+  createdAt: HelsinkiDateTime
   endDate: LocalDate
   id: AssistanceActionId
+  modifiedAt: HelsinkiDateTime
+  modifiedBy: EvakaUserId
   otherAction: string
   startDate: LocalDate
-  updatedBy: EvakaUserId
 }
 
 /**
@@ -241,7 +243,7 @@ export interface DevAssistanceFactor {
   capacityFactor: number
   childId: PersonId
   id: AssistanceFactorId
-  modified: HelsinkiDateTime
+  modifiedAt: HelsinkiDateTime
   modifiedBy: EvakaUser
   validDuring: FiniteDateRange
 }
@@ -304,7 +306,7 @@ export interface DevAssistanceNeedVoucherCoefficient {
   coefficient: number
   id: AssistanceNeedVoucherCoefficientId
   modifiedAt: HelsinkiDateTime
-  modifiedBy: EvakaUser | null
+  modifiedBy: EvakaUser
   validityPeriod: FiniteDateRange
 }
 
@@ -313,8 +315,12 @@ export interface DevAssistanceNeedVoucherCoefficient {
 */
 export interface DevBackupCare {
   childId: PersonId
+  createdAt: HelsinkiDateTime
+  createdBy: EvakaUserId
   groupId: GroupId | null
   id: BackupCareId
+  modifiedAt: HelsinkiDateTime
+  modifiedBy: EvakaUserId
   period: FiniteDateRange
   unitId: DaycareId
 }
@@ -1251,7 +1257,9 @@ export function deserializeJsonDevApplicationWithForm(json: JsonOf<DevApplicatio
 export function deserializeJsonDevAssistanceAction(json: JsonOf<DevAssistanceAction>): DevAssistanceAction {
   return {
     ...json,
+    createdAt: HelsinkiDateTime.parseIso(json.createdAt),
     endDate: LocalDate.parseIso(json.endDate),
+    modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt),
     startDate: LocalDate.parseIso(json.startDate)
   }
 }
@@ -1260,7 +1268,7 @@ export function deserializeJsonDevAssistanceAction(json: JsonOf<DevAssistanceAct
 export function deserializeJsonDevAssistanceFactor(json: JsonOf<DevAssistanceFactor>): DevAssistanceFactor {
   return {
     ...json,
-    modified: HelsinkiDateTime.parseIso(json.modified),
+    modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt),
     validDuring: FiniteDateRange.parseJson(json.validDuring)
   }
 }
@@ -1299,6 +1307,8 @@ export function deserializeJsonDevAssistanceNeedVoucherCoefficient(json: JsonOf<
 export function deserializeJsonDevBackupCare(json: JsonOf<DevBackupCare>): DevBackupCare {
   return {
     ...json,
+    createdAt: HelsinkiDateTime.parseIso(json.createdAt),
+    modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt),
     period: FiniteDateRange.parseJson(json.period)
   }
 }

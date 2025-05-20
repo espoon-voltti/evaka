@@ -28,7 +28,6 @@ import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
-import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import java.time.LocalDate
@@ -272,10 +271,8 @@ class PlacementController(
                         Action.Placement.DELETE,
                         placementId,
                     )
-                    val placement =
-                        tx.getPlacement(placementId)
-                            ?: throw NotFound("Placement $placementId not found")
-                    tx.cancelPlacement(placementId).also {
+
+                    tx.cancelPlacement(now, user.evakaUserId, placementId).also {
                         tx.deleteFutureReservationsAndAbsencesOutsideValidPlacements(
                             it.childId,
                             now.toLocalDate(),

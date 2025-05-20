@@ -746,8 +746,8 @@ fun Database.Transaction.insert(row: DevAssistanceAction): AssistanceActionId =
     createUpdate {
             sql(
                 """
-INSERT INTO assistance_action (id, updated_by, child_id, start_date, end_date, other_action)
-VALUES (${bind(row.id)}, ${bind(row.updatedBy)}, ${bind(row.childId)}, ${bind(row.startDate)}, ${bind(row.endDate)}, ${bind(row.otherAction)})
+INSERT INTO assistance_action (id, created_at, modified_at, modified_by, child_id, start_date, end_date, other_action)
+VALUES (${bind(row.id)}, ${bind(row.createdAt)}, ${bind(row.modifiedAt)}, ${bind(row.modifiedBy)}, ${bind(row.childId)}, ${bind(row.startDate)}, ${bind(row.endDate)}, ${bind(row.otherAction)})
 RETURNING id
 """
             )
@@ -980,8 +980,8 @@ fun Database.Transaction.insert(row: DevBackupCare): BackupCareId =
     createUpdate {
             sql(
                 """
-INSERT INTO backup_care (id, child_id, unit_id, group_id, start_date, end_date)
-VALUES (${bind(row.id)}, ${bind(row.childId)}, ${bind(row.unitId)}, ${bind(row.groupId)}, ${bind(row.period.start)}, ${bind(row.period.end)})
+INSERT INTO backup_care (id, created_at, created_by, modified_at, modified_by, child_id, unit_id, group_id, start_date, end_date)
+VALUES (${bind(row.id)}, ${bind(row.createdAt)}, ${bind(row.createdBy)}, ${bind(row.modifiedAt)}, ${bind(row.modifiedBy)}, ${bind(row.childId)}, ${bind(row.unitId)}, ${bind(row.groupId)}, ${bind(row.period.start)}, ${bind(row.period.end)})
 RETURNING id
 """
             )
@@ -1547,8 +1547,8 @@ fun Database.Transaction.insert(row: DevAssistanceFactor): AssistanceFactorId =
     createUpdate {
             sql(
                 """
-INSERT INTO assistance_factor (id, child_id, valid_during, capacity_factor, modified, modified_by)
-VALUES (${bind(row.id)}, ${bind(row.childId)}, ${bind(row.validDuring)}, ${bind(row.capacityFactor)}, ${bind(row.modified)}, ${bind(row.modifiedBy.id)})
+INSERT INTO assistance_factor (id, child_id, valid_during, capacity_factor, modified_at, modified_by)
+VALUES (${bind(row.id)}, ${bind(row.childId)}, ${bind(row.validDuring)}, ${bind(row.capacityFactor)}, ${bind(row.modifiedAt)}, ${bind(row.modifiedBy.id)})
 """
             )
         }
