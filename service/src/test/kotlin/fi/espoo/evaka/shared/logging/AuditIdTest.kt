@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test
 
 class AuditIdTest {
     @Test
-    fun plusCombinesTwoOneInstancesIntoMany() {
+    fun `plus combines two One instances into Many`() {
         val one1 = AuditId.One("value1")
         val one2 = AuditId.One("value2")
         val result = one1 + one2
@@ -18,7 +18,7 @@ class AuditIdTest {
     }
 
     @Test
-    fun plusAddsOneToMany() {
+    fun `plus adds One to Many`() {
         val many = AuditId.Many(listOf("value1", "value2"))
         val one = AuditId.One("value3")
         val result = many + one
@@ -26,7 +26,7 @@ class AuditIdTest {
     }
 
     @Test
-    fun plusAddsManyToOne() {
+    fun `plus adds Many to One`() {
         val one = AuditId.One("value1")
         val many = AuditId.Many(listOf("value2", "value3"))
         val result = one + many
@@ -34,7 +34,7 @@ class AuditIdTest {
     }
 
     @Test
-    fun plusCombinesTwoManyInstances() {
+    fun `plus combines two Many instances`() {
         val many1 = AuditId.Many(listOf("value1", "value2"))
         val many2 = AuditId.Many(listOf("value3", "value4"))
         val result = many1 + many2
@@ -42,7 +42,7 @@ class AuditIdTest {
     }
 
     @Test
-    fun plusHandlesEmptyOneAndOne() {
+    fun `plus handles empty One and One`() {
         val one1 = AuditId.One("")
         val one2 = AuditId.One("")
         val result = one1 + one2
@@ -50,7 +50,7 @@ class AuditIdTest {
     }
 
     @Test
-    fun plusHandlesEmptyManyAndOne() {
+    fun `plus handles empty Many and One`() {
         val many = AuditId.Many(emptyList())
         val one = AuditId.One("value")
         val result = many + one
@@ -58,7 +58,7 @@ class AuditIdTest {
     }
 
     @Test
-    fun plusHandlesOneAndEmptyMany() {
+    fun `plus handles One and empty Many`() {
         val one = AuditId.One("value")
         val many = AuditId.Many(emptyList())
         val result = one + many
@@ -66,7 +66,7 @@ class AuditIdTest {
     }
 
     @Test
-    fun plusHandlesTwoEmptyManyInstances() {
+    fun `plus handles two empty Many instances`() {
         val many1 = AuditId.Many(emptyList())
         val many2 = AuditId.Many(emptyList())
         val result = many1 + many2

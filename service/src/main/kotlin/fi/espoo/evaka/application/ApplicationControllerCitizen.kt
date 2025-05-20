@@ -650,12 +650,11 @@ class ApplicationControllerCitizen(
                     )
                     tx.getSentDecision(id)
                 } ?: throw NotFound("Decision $id does not exist")
-            decisionService.getDecisionPdf(dbc, decision).let { pdfResponse ->
+            decisionService.getDecisionPdf(dbc, decision).also {
                 Audit.DecisionDownloadPdf.log(
                     targetId = AuditId(id),
                     objectId = AuditId(decision.childId),
                 )
-                pdfResponse
             }
         }
     }
