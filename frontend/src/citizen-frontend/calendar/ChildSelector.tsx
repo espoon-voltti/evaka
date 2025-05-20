@@ -8,7 +8,6 @@ import styled, { useTheme } from 'styled-components'
 import type { BoundFormState } from 'lib-common/form/hooks'
 import { useBoolean } from 'lib-common/form/hooks'
 import type { ReservationChild } from 'lib-common/generated/api-types/reservations'
-import type { ChildId } from 'lib-common/generated/api-types/shared'
 import { formatFirstName } from 'lib-common/names'
 import { SelectionChip } from 'lib-components/atoms/Chip'
 import { StatusIcon } from 'lib-components/atoms/StatusIcon'
@@ -24,7 +23,7 @@ import { getDuplicateChildInfo } from '../utils/duplicated-child-utils'
 
 interface ChildSelectorProps {
   childItems: ReservationChild[]
-  bind: BoundFormState<ChildId[]>
+  bind: BoundFormState<ReservationChild[]>
 }
 
 export default React.memo(function ChildSelector({
@@ -54,13 +53,13 @@ export default React.memo(function ChildSelector({
                   : ''
               }`}
               translate="no"
-              selected={bind.state.includes(child.id)}
+              selected={bind.state.some(({ id }) => id === child.id)}
               onChange={(selected) => {
                 setChildSelectionTouched.on()
                 bind.update((prev) =>
                   selected
-                    ? [...prev, child.id]
-                    : prev.filter((id) => id !== child.id)
+                    ? [...prev, child]
+                    : prev.filter(({ id }) => id !== child.id)
                 )
               }}
               onBlur={(e) => {

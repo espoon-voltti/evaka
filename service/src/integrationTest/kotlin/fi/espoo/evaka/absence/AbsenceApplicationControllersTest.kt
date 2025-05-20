@@ -730,13 +730,13 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
                 tx.insert(
                     base.copy(
                         id = AbsenceApplicationId(UUID.randomUUID()),
-                        endDate = clock.today().plusDays(7),
+                        endDate = clock.today().plusWeeks(1).minusDays(1),
                     )
                 )
                 tx.insert(
                     base.copy(
                         id = AbsenceApplicationId(UUID.randomUUID()),
-                        endDate = clock.today().plusDays(8),
+                        endDate = clock.today().plusWeeks(1),
                     )
                 )
                 tx.insert(
@@ -747,17 +747,17 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
             assertThat(getAbsenceApplications(staff.user, unitId = unit1.id))
                 .extracting({ it.data.child.id }, { it.data.endDate })
                 .containsExactlyInAnyOrder(
-                    Tuple(child11.id, clock.today().plusDays(7)),
-                    Tuple(child11.id, clock.today().plusDays(8)),
+                    Tuple(child11.id, clock.today().plusWeeks(1).minusDays(1)),
+                    Tuple(child11.id, clock.today().plusWeeks(1)),
                 )
             assertThat(getAbsenceApplications(staff.user, childId = child11.id))
                 .extracting({ it.data.endDate }, { it.actions })
                 .containsExactlyInAnyOrder(
                     Tuple(
-                        clock.today().plusDays(7),
+                        clock.today().plusWeeks(1).minusDays(1),
                         setOf(Action.AbsenceApplication.READ, Action.AbsenceApplication.DECIDE),
                     ),
-                    Tuple(clock.today().plusDays(8), setOf(Action.AbsenceApplication.READ)),
+                    Tuple(clock.today().plusWeeks(1), setOf(Action.AbsenceApplication.READ)),
                 )
             assertThrows<Forbidden> { getAbsenceApplications(staff.user, unitId = unit2.id) }
             assertThrows<Forbidden> { getAbsenceApplications(staff.user, childId = child2.id) }

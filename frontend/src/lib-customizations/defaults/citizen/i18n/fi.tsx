@@ -510,7 +510,10 @@ export default {
       attendanceAlreadyExistsErrorTitle:
         'Valituille päiville on jo läsnäolomerkintöjä',
       attendanceAlreadyExistsErrorDescription:
-        'Et voi lisätä poissaolomerkintää päivälle jolle lapsella on jo läsnäolomerkintä.'
+        'Et voi lisätä poissaolomerkintää päivälle jolle lapsella on jo läsnäolomerkintä.',
+      tooManyAbsencesErrorDescription:
+        'Yli viikon pituinen poissaolo esiopetuksesta on sallittu ainoastaan hyväksyttävästä syystä.',
+      tooManyAbsencesErrorLink: 'Tee poissaolohakemus'
     },
     holidayModal: {
       additionalInformation: 'Lisätietoja',
