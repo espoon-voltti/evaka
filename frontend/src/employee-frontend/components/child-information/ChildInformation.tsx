@@ -308,6 +308,7 @@ const layouts: Layouts<typeof components> = {
   ['STAFF']: [
     { component: 'family-contacts', open: true },
     { component: 'placements', open: false },
+    { component: 'absenceApplications', open: false },
     { component: 'backup-care', open: false },
     { component: 'daily-service-times', open: false },
     { component: 'childDocuments', open: false },
