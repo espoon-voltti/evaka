@@ -119,9 +119,13 @@ function ConfirmedMutation_<Arg, Data>(
           resolveLabel={confirmLabel ?? i18n.common.confirm}
           onSuccess={(value) => {
             setConfirming(false)
+            setExtraConfirmation(false)
             if (onSuccess) onSuccess(value)
           }}
-          rejectAction={() => setConfirming(false)}
+          rejectAction={() => {
+            setConfirming(false)
+            setExtraConfirmation(false)
+          }}
           rejectLabel={cancelLabel ?? i18n.common.cancel}
           icon={modalIcon}
           type={modalType}
