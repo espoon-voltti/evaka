@@ -18,6 +18,8 @@ interface JobSchedule {
     companion object {
         fun daily(at: LocalTime): Schedule = Daily(europeHelsinki, at)
 
+        fun nightly(): Schedule = Nightly()
+
         fun cron(expression: String): Schedule = CronSchedule(expression, europeHelsinki)
     }
 }

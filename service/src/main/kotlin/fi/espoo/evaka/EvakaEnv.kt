@@ -9,12 +9,14 @@ import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.domain.Rectangle
 import fi.espoo.evaka.shared.job.JobSchedule
+import fi.espoo.evaka.shared.job.Nightly
 import fi.espoo.evaka.shared.job.ScheduledJobSettings
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.net.URI
 import java.security.KeyStore
 import java.time.Duration
 import java.time.LocalDate
+import java.time.LocalTime
 import java.time.YearMonth
 import java.util.Locale
 import java.util.UUID
@@ -51,6 +53,10 @@ data class EvakaEnv(
 ) {
     companion object {
         fun fromEnvironment(env: Environment): EvakaEnv {
+            Nightly.configureNightlyTime(
+                env.lookup<String?>("evaka.nightly_job_run_time")?.let { LocalTime.parse(it) }
+                    ?: LocalTime.of(0, 10)
+            )
             return EvakaEnv(
                 koskiEnabled = env.lookup("evaka.integration.koski.enabled") ?: false,
                 sfiEnabled = env.lookup("evaka.integration.sfi.enabled") ?: false,

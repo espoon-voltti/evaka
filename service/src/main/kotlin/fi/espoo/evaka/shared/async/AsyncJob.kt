@@ -158,6 +158,10 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
+    data class RunNightlyJob(val job: String) : AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
     data class GenerateFinanceDecisions
     private constructor(val person: Person, val dateRange: DateRange) : AsyncJob {
         override val user: AuthenticatedUser? = null
@@ -497,6 +501,12 @@ sealed interface AsyncJob : AsyncJobPayload {
                     UploadToKoski::class,
                     VTJRefresh::class,
                 ),
+            )
+        val nightly =
+            AsyncJobRunner.Pool(
+                AsyncJobPool.Id(AsyncJob::class, "nightly"),
+                AsyncJobPool.Config(concurrency = 1),
+                setOf(RunNightlyJob::class),
             )
         val email =
             AsyncJobRunner.Pool(

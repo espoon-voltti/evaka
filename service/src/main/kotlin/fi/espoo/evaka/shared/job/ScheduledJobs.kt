@@ -59,43 +59,43 @@ enum class ScheduledJob(
 ) {
     CancelOutdatedTransferApplications(
         ScheduledJobs::cancelOutdatedTransferApplications,
-        ScheduledJobSettings(enabled = false, schedule = JobSchedule.daily(LocalTime.of(0, 35))),
+        ScheduledJobSettings(enabled = false, schedule = JobSchedule.nightly()),
     ),
     CompleteChildDocumentsWithExpiredTemplate(
         ScheduledJobs::completeChildDocumentsWithExpiredTemplate,
-        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(0, 45))),
+        ScheduledJobSettings(enabled = true, schedule = JobSchedule.nightly()),
     ),
     DvvUpdate(
         ScheduledJobs::dvvUpdate,
-        ScheduledJobSettings(enabled = false, schedule = JobSchedule.daily(LocalTime.of(4, 0))),
+        ScheduledJobSettings(enabled = false, schedule = JobSchedule.nightly()),
     ),
     EndAssistanceFactorsWhichBelongToPastPlacements(
         ScheduledJobs::endAssistanceFactorsWhichBelongToPastPlacements,
-        ScheduledJobSettings(enabled = false, schedule = JobSchedule.daily(LocalTime.of(1, 0))),
+        ScheduledJobSettings(enabled = false, schedule = JobSchedule.nightly()),
     ),
     EndOutdatedAssistanceNeedVoucherValueCoefficients(
         ScheduledJobs::endOutdatedAssistanceNeedVoucherValueCoefficients,
-        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(1, 0))),
+        ScheduledJobSettings(enabled = true, schedule = JobSchedule.nightly()),
     ),
     EndActiveDaycareAssistanceDecisions(
         ScheduledJobs::endActiveDaycareAssistanceDecisions,
-        ScheduledJobSettings(enabled = false, schedule = JobSchedule.daily(LocalTime.of(1, 0))),
+        ScheduledJobSettings(enabled = false, schedule = JobSchedule.nightly()),
     ),
     EndActivePreschoolAssistanceDecisions(
         ScheduledJobs::endActivePreschoolAssistanceDecisions,
-        ScheduledJobSettings(enabled = false, schedule = JobSchedule.daily(LocalTime.of(1, 0))),
+        ScheduledJobSettings(enabled = false, schedule = JobSchedule.nightly()),
     ),
     EndOfDayAttendanceUpkeep(
         ScheduledJobs::endOfDayAttendanceUpkeep,
-        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(0, 0))),
+        ScheduledJobSettings(enabled = true, schedule = JobSchedule.nightly()),
     ),
     EndOfDayStaffAttendanceUpkeep(
         ScheduledJobs::endOfDayStaffAttendanceUpkeep,
-        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(0, 0))),
+        ScheduledJobSettings(enabled = true, schedule = JobSchedule.nightly()),
     ),
     EndOfDayReservationUpkeep(
         ScheduledJobs::endOfDayReservationUpkeep,
-        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(0, 0))),
+        ScheduledJobSettings(enabled = true, schedule = JobSchedule.nightly()),
     ),
     FreezeVoucherValueReports(
         ScheduledJobs::freezeVoucherValueReports,
@@ -106,19 +106,15 @@ enum class ScheduledJob(
     ),
     GenerateFinanceDecisions(
         ScheduledJobs::generateFinanceDecisions,
-        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(2, 0))),
+        ScheduledJobSettings(enabled = true, schedule = JobSchedule.nightly()),
     ),
     KoskiUpdate(
         ScheduledJobs::koskiUpdate,
-        ScheduledJobSettings(
-            enabled = false,
-            schedule = JobSchedule.daily(LocalTime.of(0, 0)),
-            retryCount = 1,
-        ),
+        ScheduledJobSettings(enabled = false, schedule = JobSchedule.nightly(), retryCount = 1),
     ),
     RemoveOldAsyncJobs(
         ScheduledJobs::removeOldAsyncJobs,
-        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(3, 0))),
+        ScheduledJobSettings(enabled = true, schedule = JobSchedule.nightly()),
     ),
     RemoveOldDaycareDailyNotes(
         ScheduledJobs::removeExpiredNotes,
@@ -126,7 +122,7 @@ enum class ScheduledJob(
     ),
     RemoveOldDraftApplications(
         ScheduledJobs::removeOldDraftApplications,
-        ScheduledJobSettings(enabled = false, schedule = JobSchedule.daily(LocalTime.of(0, 30))),
+        ScheduledJobSettings(enabled = false, schedule = JobSchedule.nightly()),
     ),
     SendJamixOrders(
         ScheduledJobs::sendJamixOrders,
@@ -180,39 +176,27 @@ enum class ScheduledJob(
     ),
     SendAromiOrders(
         ScheduledJobs::sendAromiOrders,
-        ScheduledJobSettings(enabled = false, schedule = JobSchedule.daily(LocalTime.of(0, 15))),
+        ScheduledJobSettings(enabled = false, schedule = JobSchedule.nightly()),
     ),
     SendPendingDecisionReminderEmails(
         ScheduledJobs::sendPendingDecisionReminderEmails,
-        ScheduledJobSettings(enabled = false, schedule = JobSchedule.daily(LocalTime.of(7, 0))),
+        ScheduledJobSettings(enabled = false, schedule = JobSchedule.nightly()),
     ),
     VardaUpdate(
         ScheduledJobs::vardaUpdate,
-        ScheduledJobSettings(
-            enabled = false,
-            schedule = JobSchedule.daily(LocalTime.of(23, 0)),
-            retryCount = 1,
-        ),
+        ScheduledJobSettings(enabled = false, schedule = JobSchedule.nightly(), retryCount = 1),
     ),
     RemoveGuardiansFromAdults(
         ScheduledJobs::removeGuardiansFromAdults,
-        ScheduledJobSettings(
-            enabled = true,
-            schedule = JobSchedule.daily(LocalTime.of(2, 0)),
-            retryCount = 1,
-        ),
+        ScheduledJobSettings(enabled = true, schedule = JobSchedule.nightly(), retryCount = 1),
     ),
     InactivePeopleCleanup(
         ScheduledJobs::inactivePeopleCleanup,
-        ScheduledJobSettings(
-            enabled = false,
-            schedule = JobSchedule.daily(LocalTime.of(3, 30)),
-            retryCount = 1,
-        ),
+        ScheduledJobSettings(enabled = false, schedule = JobSchedule.nightly(), retryCount = 1),
     ),
     InactiveEmployeesRoleReset(
         ScheduledJobs::inactiveEmployeesRoleReset,
-        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(3, 15))),
+        ScheduledJobSettings(enabled = true, schedule = JobSchedule.nightly()),
     ),
     SendMissingReservationReminders(
         ScheduledJobs::sendMissingReservationReminders,
@@ -223,7 +207,7 @@ enum class ScheduledJob(
     ),
     SendMissingHolidayReservationReminders(
         ScheduledJobs::sendMissingHolidayReservationReminders,
-        ScheduledJobSettings(enabled = false, schedule = JobSchedule.daily(LocalTime.of(2, 45))),
+        ScheduledJobSettings(enabled = false, schedule = JobSchedule.nightly()),
     ),
     SendOutdatedIncomeNotifications(
         ScheduledJobs::sendOutdatedIncomeNotifications,
@@ -250,11 +234,11 @@ enum class ScheduledJob(
     ),
     ScheduleOrphanAttachmentDeletion(
         ScheduledJobs::scheduleOrphanAttachmentDeletion,
-        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(0, 0))),
+        ScheduledJobSettings(enabled = true, schedule = JobSchedule.nightly()),
     ),
     DatabaseSanityChecks(
         ScheduledJobs::databaseSanityChecks,
-        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(3, 45))),
+        ScheduledJobSettings(enabled = true, schedule = JobSchedule.nightly()),
     ),
     /**
      * Rotates the SFI messages REST password.
@@ -271,23 +255,23 @@ enum class ScheduledJob(
     ),
     GetSfiEvents(
         ScheduledJobs::getSfiEvents,
-        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(3, 30))),
+        ScheduledJobSettings(enabled = true, schedule = JobSchedule.nightly()),
     ),
     CleanTitaniaErrors(
         ScheduledJobs::cleanTitaniaErrors,
-        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(3, 40))),
+        ScheduledJobSettings(enabled = true, schedule = JobSchedule.nightly()),
     ),
     GenerateReplacementInvoices(
         ScheduledJobs::generateReplacementDraftInvoices,
-        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(4, 15))),
+        ScheduledJobSettings(enabled = true, schedule = JobSchedule.nightly()),
     ),
     ImportPasswordBlacklists(
         ScheduledJobs::importPasswordBlacklists,
-        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(0, 20))),
+        ScheduledJobSettings(enabled = true, schedule = JobSchedule.nightly()),
     ),
     DeleteEndedAcl(
         ScheduledJobs::syncAclRows,
-        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(0, 5))),
+        ScheduledJobSettings(enabled = true, schedule = JobSchedule.nightly()),
     ),
 }
 

@@ -47,6 +47,7 @@ class ScheduledJobRunner(
             "Scheduled job name conflict: $jobNames"
         }
         asyncJobRunner.registerHandler(::runJob)
+        asyncJobRunner.registerHandler(::runNightlyJob)
     }
 
     val scheduler: Scheduler =
@@ -84,10 +85,13 @@ class ScheduledJobRunner(
         val (job, settings) = definition
         val logMeta = mapOf("jobName" to job.name)
         logger.info(logMeta) { "Planning scheduled job ${job.name}" }
+        val payload =
+            if (definition.settings.schedule is Nightly) AsyncJob.RunNightlyJob(job.name)
+            else AsyncJob.RunScheduledJob(job.name)
         db.transaction { tx ->
             asyncJobRunner.plan(
                 tx,
-                listOf(AsyncJob.RunScheduledJob(job.name)),
+                listOf(payload),
                 retryCount = settings.retryCount ?: ASYNC_JOB_RETRY_COUNT,
                 runAt = HelsinkiDateTime.now(),
             )
@@ -95,13 +99,35 @@ class ScheduledJobRunner(
     }
 
     private fun runJob(db: Database.Connection, clock: EvakaClock, msg: AsyncJob.RunScheduledJob) {
+        runJobInternal(db, clock, msg.job, "scheduledjob") { definition, db, clock ->
+            definition.jobFn(db, clock)
+        }
+    }
+
+    private fun runNightlyJob(
+        db: Database.Connection,
+        clock: EvakaClock,
+        msg: AsyncJob.RunNightlyJob,
+    ) {
+        runJobInternal(db, clock, msg.job, "nightly") { definition, db, clock ->
+            definition.jobFn(db, clock)
+        }
+    }
+
+    private fun runJobInternal(
+        db: Database.Connection,
+        clock: EvakaClock,
+        jobName: String,
+        spanNamePrefix: String,
+        jobFn: (ScheduledJobDefinition, Database.Connection, EvakaClock) -> Unit,
+    ) {
         val definition =
             schedules.firstNotNullOfOrNull { schedule ->
-                schedule.jobs.find { it.job.name == msg.job }
-            } ?: error("Can't run unknown job ${msg.job}")
-        val logMeta = mapOf("jobName" to msg.job)
-        logger.info(logMeta) { "Running scheduled job ${msg.job}" }
-        tracer.withDetachedSpan("scheduledjob ${msg.job}") { definition.jobFn(db, clock) }
+                schedule.jobs.find { it.job.name == jobName }
+            } ?: error("Can't run unknown job $jobName")
+        val logMeta = mapOf("jobName" to jobName)
+        logger.info(logMeta) { "Running $spanNamePrefix job $jobName" }
+        tracer.withDetachedSpan("$spanNamePrefix $jobName") { jobFn(definition, db, clock) }
     }
 
     fun getScheduledExecutionsForTask(job: Enum<*>): List<ScheduledExecution<Unit>> =
