@@ -3606,6 +3606,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@sentry/vite-plugin@npm:^3.4.0":
+  version: 3.4.0
+  resolution: "@sentry/vite-plugin@npm:3.4.0"
+  dependencies:
+    "@sentry/bundler-plugin-core": "npm:3.4.0"
+    unplugin: "npm:1.0.1"
+  checksum: 10/be70dbb44b49c252dfd1ede55a08818d71f131dbfd84fb676b50ec0f640ae69602bf127d0e1488e9bd8db0bf1b6d8f5a5c51dd427856b70e9eef5c466258de65
+  languageName: node
+  linkType: hard
+
 "@sentry/webpack-plugin@npm:3.4.0":
   version: 3.4.0
   resolution: "@sentry/webpack-plugin@npm:3.4.0"
@@ -6869,6 +6879,7 @@ __metadata:
     "@react-spring/web": "npm:10.0.0"
     "@sentry/browser": "npm:9.19.0"
     "@sentry/react": "npm:9.19.0"
+    "@sentry/vite-plugin": "npm:^3.4.0"
     "@sentry/webpack-plugin": "npm:3.4.0"
     "@tanstack/react-query": "npm:5.76.1"
     "@testing-library/dom": "npm:10.4.0"
@@ -12849,6 +12860,18 @@ __metadata:
     webpack-sources: "npm:^3.2.3"
     webpack-virtual-modules: "npm:^0.5.0"
   checksum: 10/59f0d29c634adbc56e7e770f9753bff9ec52c479ff837b798354ec5d1b2e8cb971412645df43eb14a698db5bff4db23634c1506657e24d1ba86f4a8f27c1bf87
+  languageName: node
+  linkType: hard
+
+"unplugin@patch:unplugin@npm%3A1.0.1#~/.yarn/patches/unplugin-npm-1.0.1-70bc9bb0e2.patch":
+  version: 1.0.1
+  resolution: "unplugin@patch:unplugin@npm%3A1.0.1#~/.yarn/patches/unplugin-npm-1.0.1-70bc9bb0e2.patch::version=1.0.1&hash=eb4286"
+  dependencies:
+    acorn: "npm:^8.8.1"
+    chokidar: "npm:^3.5.3"
+    webpack-sources: "npm:^3.2.3"
+    webpack-virtual-modules: "npm:^0.5.0"
+  checksum: 10/d1b54b3699ef76ac62f763f6807a7441d21ef3d6fc47e6845748402a88def193c77ee6f77113887486d91bdcd225467a50e29bb1e0f0c7dc13a93eac8b362de0
   languageName: node
   linkType: hard
 

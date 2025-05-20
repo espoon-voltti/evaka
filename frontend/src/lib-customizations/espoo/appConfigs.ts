@@ -11,71 +11,30 @@ type AppConfigs = {
   default: BaseAppConfig
 } & Record<Env, BaseAppConfig>
 
-const employeeConfigs: AppConfigs = {
+const sentryDsn =
+  'https://7f01c64aa4c21cdb5edfdf50ce1f4395@o4507111645052928.ingest.de.sentry.io/4507412540883024'
+
+const appConfigs: AppConfigs = {
   default: {
     sentry: {
-      dsn: 'https://d2af0931b75ee492c4c1f4da85e035ea@o4507111645052928.ingest.de.sentry.io/4507412723990608',
+      dsn: sentryDsn,
       enabled: false
     }
   },
   staging: {
     sentry: {
-      dsn: 'https://d2af0931b75ee492c4c1f4da85e035ea@o4507111645052928.ingest.de.sentry.io/4507412723990608',
+      dsn: sentryDsn,
       enabled: true
     }
   },
   prod: {
     sentry: {
-      dsn: 'https://d2af0931b75ee492c4c1f4da85e035ea@o4507111645052928.ingest.de.sentry.io/4507412723990608',
+      dsn: sentryDsn,
       enabled: true
     }
   }
 }
 
-const employeeMobileConfigs: AppConfigs = {
-  default: {
-    sentry: {
-      dsn: 'https://2e084169f4249f5096edc78d65d4c7bc@o4507111645052928.ingest.de.sentry.io/4507412751122512',
-      enabled: false
-    }
-  },
-  staging: {
-    sentry: {
-      dsn: 'https://2e084169f4249f5096edc78d65d4c7bc@o4507111645052928.ingest.de.sentry.io/4507412751122512',
-      enabled: true
-    }
-  },
-  prod: {
-    sentry: {
-      dsn: 'https://2e084169f4249f5096edc78d65d4c7bc@o4507111645052928.ingest.de.sentry.io/4507412751122512',
-      enabled: true
-    }
-  }
-}
+const appConfig = appConfigs[env()]
 
-const citizenConfigs: AppConfigs = {
-  default: {
-    sentry: {
-      dsn: 'https://7f01c64aa4c21cdb5edfdf50ce1f4395@o4507111645052928.ingest.de.sentry.io/4507412540883024',
-      enabled: false
-    }
-  },
-  staging: {
-    sentry: {
-      dsn: 'https://7f01c64aa4c21cdb5edfdf50ce1f4395@o4507111645052928.ingest.de.sentry.io/4507412540883024',
-      enabled: true
-    }
-  },
-  prod: {
-    sentry: {
-      dsn: 'https://7f01c64aa4c21cdb5edfdf50ce1f4395@o4507111645052928.ingest.de.sentry.io/4507412540883024',
-      enabled: true
-    }
-  }
-}
-
-const employeeConfig = employeeConfigs[env()]
-const employeeMobileConfig = employeeMobileConfigs[env()]
-const citizenConfig = citizenConfigs[env()]
-
-export { employeeConfig, employeeMobileConfig, citizenConfig }
+export { appConfig }

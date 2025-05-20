@@ -8,6 +8,7 @@ import * as fs from 'node:fs'
 import * as path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
+import { sentryVitePlugin } from '@sentry/vite-plugin'
 import react from '@vitejs/plugin-react'
 import { build, defineConfig } from 'vite'
 import type { Plugin, UserConfig } from 'vite'
@@ -147,7 +148,25 @@ export default defineConfig(async (): Promise<UserConfig> => {
   const icons = await resolveIcons()
 
   return {
-    plugins: [react(), serviceWorker(), serveIndexHtml()],
+    plugins: [
+      react(),
+      serviceWorker(),
+      sentryVitePlugin({
+        disable: process.env.SENTRY_PUBLISH_ENABLED !== 'true',
+        org: process.env.SENTRY_ORG,
+        project: process.env.SENTRY_PROJECT || 'evaka',
+        authToken: process.env.SENTRY_AUTH_TOKEN,
+        release: {
+          name: process.env.APP_COMMIT,
+          setCommits: {
+            repo: 'espoon-voltti/evaka',
+            commit: process.env.APP_COMMIT || 'unknown',
+            auto: false
+          }
+        }
+      }),
+      serveIndexHtml()
+    ],
     build: {
       outDir,
       assetsInlineLimit: (filePath, content) => {
@@ -157,6 +176,7 @@ export default defineConfig(async (): Promise<UserConfig> => {
         // Otherwise, inline files up to 4 KB (this is the default)
         return content.length <= 4096
       },
+      sourcemap: true, // required by sentry
       rollupOptions: {
         input: {
           citizen: path.resolve(
