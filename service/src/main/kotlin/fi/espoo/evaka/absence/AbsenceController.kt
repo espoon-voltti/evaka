@@ -69,10 +69,9 @@ class AbsenceController(
         @RequestBody absences: List<AbsenceUpsert>,
         @PathVariable groupId: GroupId,
     ) {
-        val children = absences.map { it.childId }
+        val children = absences.map { it.childId }.distinct()
 
-        val upserted =
-            db.connect { dbc ->
+        db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -120,11 +119,12 @@ class AbsenceController(
                     tx.upsertAbsences(clock.now(), user.evakaUserId, absences)
                 }
             }
-        Audit.AbsenceUpsert.log(
-            targetId = AuditId(groupId),
-            objectId = AuditId(upserted),
-            meta = mapOf("children" to children),
-        )
+            .also { absenceIdList ->
+                Audit.AbsenceUpsert.log(
+                    targetId = AuditId(groupId),
+                    objectId = AuditId(absenceIdList) + AuditId(children),
+                )
+            }
     }
 
     @PostMapping("/{groupId}/present")
@@ -164,9 +164,8 @@ class AbsenceController(
             .also { (deleted, reservations) ->
                 Audit.AbsenceDelete.log(
                     targetId = AuditId(groupId),
-                    objectId = AuditId(deleted),
-                    meta =
-                        mapOf("children" to children, "createdHolidayReservations" to reservations),
+                    objectId = AuditId(deleted) + AuditId(children),
+                    meta = mapOf("createdHolidayReservations" to reservations),
                 )
             }
     }
@@ -202,9 +201,9 @@ class AbsenceController(
             .also { (deletedReservations, deletedAbsences) ->
                 Audit.AttendanceReservationDelete.log(
                     targetId = AuditId(groupId),
+                    objectId = AuditId(children),
                     meta =
                         mapOf(
-                            "children" to children,
                             "deletedReservations" to deletedReservations,
                             "deletedAbsences" to deletedAbsences,
                         ),

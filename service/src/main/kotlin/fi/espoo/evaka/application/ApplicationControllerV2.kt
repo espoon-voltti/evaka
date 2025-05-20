@@ -324,9 +324,13 @@ class ApplicationControllerV2(
                 }
             }
             .also {
-                Audit.ApplicationRead.log(targetId = AuditId(applicationId))
+                Audit.ApplicationRead.log(
+                    targetId = AuditId(applicationId),
+                    objectId = AuditId(it.application.childId),
+                )
                 Audit.DecisionReadByApplication.log(
                     targetId = AuditId(applicationId),
+                    objectId = AuditId(it.application.childId),
                     meta = mapOf("count" to it.decisions.size),
                 )
             }
@@ -445,7 +449,12 @@ class ApplicationControllerV2(
                     )
                 }
             }
-            .also { Audit.PlacementPlanDraftRead.log(targetId = AuditId(applicationId)) }
+            .also {
+                Audit.PlacementPlanDraftRead.log(
+                    targetId = AuditId(applicationId),
+                    objectId = AuditId(it.child.id),
+                )
+            }
     }
 
     @GetMapping("/{applicationId}/decision-drafts")
