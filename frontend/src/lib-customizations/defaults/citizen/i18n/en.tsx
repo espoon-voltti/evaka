@@ -410,7 +410,7 @@ const en: Translations = {
       _reservationOpensOn: LocalDate
     ) =>
       `Reservations for holiday period ${period.format()} cannot be made yet`,
-    missingReservation: 'No attendance',
+    missingReservation: 'Registration missing',
     reservationNotRequired: 'Reservation not required',
     termBreak: 'No teaching today',
     reservation: 'Registered attendance',
