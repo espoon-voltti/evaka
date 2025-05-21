@@ -8,6 +8,7 @@ import * as fs from 'node:fs'
 import * as path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
+import legacy from '@vitejs/plugin-legacy'
 import react from '@vitejs/plugin-react'
 import { build, defineConfig } from 'vite'
 import type { Plugin, UserConfig } from 'vite'
@@ -151,9 +152,29 @@ function serviceWorker(): Plugin {
 export default defineConfig(async (): Promise<UserConfig> => {
   const customizationsPath = resolveCustomizationsPath()
   const icons = await resolveIcons()
+  const { browserslist } = JSON.parse(
+    fs.readFileSync('package.json', 'utf-8')
+  ) as {
+    browserslist: string[]
+  }
 
   return {
-    plugins: [react(), serviceWorker(), serveIndexHtml()],
+    plugins: [
+      react(),
+      legacy({
+        // Vite considers browsers without ES module support to be legacy. We don't support them either.
+        renderLegacyChunks: false,
+        renderModernChunks: true,
+
+        // Include polyfills for our list of supported browsers. Vite runs @babel/preset-env on transpiled chunks with
+        // `useBuiltIns: 'usage'` to find out which polyfills to add. For more information, see:
+        // https://github.com/vitejs/vite/tree/main/packages/plugin-legacy
+        modernPolyfills: true,
+        modernTargets: browserslist
+      }),
+      serviceWorker(),
+      serveIndexHtml()
+    ],
     build: {
       outDir,
       assetsInlineLimit: (filePath, content) => {
