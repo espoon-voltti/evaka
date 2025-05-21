@@ -8,6 +8,7 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import config from '../../config'
 import { Fixture } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
+import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
 import type { CitizenChildPage } from '../../pages/citizen/citizen-children'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import { UnitPage } from '../../pages/employee/units/unit'
@@ -21,6 +22,85 @@ describe('Absence application', () => {
 
   const adult = Fixture.person({ ssn: '070644-937X' })
   const child = Fixture.person()
+
+  test('absence modal shows link to absence application page for child in preschool', async () => {
+    const area = await Fixture.careArea().save()
+    const unit = await Fixture.daycare({
+      areaId: area.id,
+      enabledPilotFeatures: ['RESERVATIONS']
+    }).save()
+    await Fixture.family({ guardian: adult, children: [child] }).save()
+    await Fixture.placement({
+      type: 'PRESCHOOL',
+      childId: child.id,
+      unitId: unit.id,
+      startDate: mockedTime.toLocalDate(),
+      endDate: mockedTime.toLocalDate().addYears(1)
+    }).save()
+
+    const citizenPage = await Page.open({
+      mockedTime,
+      citizenCustomizations: { featureFlags: { absenceApplications: true } }
+    })
+    await enduserLogin(citizenPage, adult)
+    const citizenHeader = new CitizenHeader(citizenPage)
+    await citizenHeader.selectTab('calendar')
+    const citizenCalendarPage = new CitizenCalendarPage(citizenPage, 'desktop')
+    const absenceModal = await citizenCalendarPage.openAbsencesModal()
+    const startDate = mockedTime.toLocalDate().addMonths(1)
+    await absenceModal.selectDates(
+      new FiniteDateRange(startDate, startDate.addWeeks(1))
+    )
+    await absenceModal.selectAbsenceType('OTHER_ABSENCE')
+    await absenceModal.tooManyAbsencesError(child.id).waitUntilVisible()
+    await absenceModal.modalSendButton.assertDisabled(true)
+    await absenceModal.selectDates(
+      new FiniteDateRange(startDate, startDate.addWeeks(1).subDays(1))
+    )
+    await absenceModal.tooManyAbsencesError(child.id).waitUntilHidden()
+    await absenceModal.modalSendButton.assertDisabled(false)
+    await absenceModal.selectDates(
+      new FiniteDateRange(startDate, startDate.addWeeks(1))
+    )
+    await absenceModal.tooManyAbsencesError(child.id).waitUntilVisible()
+    await absenceModal.modalSendButton.assertDisabled(true)
+    await absenceModal.selectAbsenceType('SICKLEAVE')
+    await absenceModal.tooManyAbsencesError(child.id).waitUntilHidden()
+    await absenceModal.modalSendButton.assertDisabled(false)
+  })
+
+  test("absence modal doesn't show link to absence application page for child in daycare", async () => {
+    const area = await Fixture.careArea().save()
+    const unit = await Fixture.daycare({
+      areaId: area.id,
+      enabledPilotFeatures: ['RESERVATIONS']
+    }).save()
+    await Fixture.family({ guardian: adult, children: [child] }).save()
+    await Fixture.placement({
+      type: 'DAYCARE',
+      childId: child.id,
+      unitId: unit.id,
+      startDate: mockedTime.toLocalDate(),
+      endDate: mockedTime.toLocalDate().addYears(1)
+    }).save()
+
+    const citizenPage = await Page.open({
+      mockedTime,
+      citizenCustomizations: { featureFlags: { absenceApplications: true } }
+    })
+    await enduserLogin(citizenPage, adult)
+    const citizenHeader = new CitizenHeader(citizenPage)
+    await citizenHeader.selectTab('calendar')
+    const citizenCalendarPage = new CitizenCalendarPage(citizenPage, 'desktop')
+    const absenceModal = await citizenCalendarPage.openAbsencesModal()
+    const startDate = mockedTime.toLocalDate().addMonths(1)
+    await absenceModal.selectDates(
+      new FiniteDateRange(startDate, startDate.addWeeks(1))
+    )
+    await absenceModal.selectAbsenceType('OTHER_ABSENCE')
+    await absenceModal.tooManyAbsencesError(child.id).waitUntilHidden()
+    await absenceModal.modalSendButton.assertDisabled(false)
+  })
 
   test('accepted flow', async () => {
     const area = await Fixture.careArea().save()

@@ -509,7 +509,10 @@ const en: Translations = {
       attendanceAlreadyExistsErrorTitle:
         'There is already attendance record for the selected days',
       attendanceAlreadyExistsErrorDescription:
-        'It is not possible to add an absence for a child on a day that already has an attendance record.'
+        'It is not possible to add an absence for a child on a day that already has an attendance record.',
+      tooManyAbsencesErrorDescription:
+        'Yli viikon pituinen poissaolo esiopetuksesta on sallittu ainoastaan hyväksyttävästä syystä. (en)',
+      tooManyAbsencesErrorLink: 'Tee poissaolohakemus (en)'
     },
     holidayModal: {
       additionalInformation: 'Read more',

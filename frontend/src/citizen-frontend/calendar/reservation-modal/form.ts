@@ -228,14 +228,14 @@ export const nonEmptyArray = <T>() =>
 
 export const reservationForm = mapped(
   object({
-    selectedChildren: nonEmptyArray<ChildId>(),
+    selectedChildren: nonEmptyArray<ReservationChild>(),
     dateRange: required(localDateRange()),
     repetition: required(oneOf<Repetition>()),
     times: timesUnion
   }),
   (output) => ({
     toRequest: (dayProperties: DayProperties): DailyReservationRequest[] =>
-      output.selectedChildren.flatMap((childId): DailyReservationRequest[] => {
+      output.selectedChildren.flatMap(({ id: childId }) => {
         const dates = dayProperties.getReservableDatesInRangeForChild(
           output.dateRange,
           childId
@@ -306,7 +306,7 @@ export function initialState(
 ): StateOf<typeof reservationForm> {
   const selectedChildren = availableChildren.map((child) => child.id)
   return {
-    selectedChildren,
+    selectedChildren: availableChildren,
     dateRange: localDateRange.fromDates(initialStart, initialEnd, {
       minDate: dayProperties.minDate,
       maxDate: dayProperties.maxDate

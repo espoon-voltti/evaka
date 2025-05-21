@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useMemo, useState } from 'react'
+import { Link } from 'react-router'
 import styled from 'styled-components'
 
 import type { Failure } from 'lib-common/api'
@@ -13,13 +14,14 @@ import { useBoolean, useForm, useFormFields } from 'lib-common/form/hooks'
 import type { StateOf } from 'lib-common/form/types'
 import type { AbsenceType } from 'lib-common/generated/api-types/absence'
 import type { HolidayPeriod } from 'lib-common/generated/api-types/holidayperiod'
+import type { PlacementType } from 'lib-common/generated/api-types/placement'
 import type {
   AbsenceRequest,
   ReservationChild,
   ReservationsResponse
 } from 'lib-common/generated/api-types/reservations'
-import type { ChildId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
+import { formatFirstName } from 'lib-common/names'
 import { scrollIntoViewSoftKeyboard } from 'lib-common/utils/scrolling'
 import { SelectionChip } from 'lib-components/atoms/Chip'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
@@ -55,14 +57,26 @@ import ChildSelector from './ChildSelector'
 import { postAbsencesMutation } from './queries'
 import { nonEmptyArray } from './reservation-modal/form'
 
+const tooManyAbsencesErrorThresholdInDays = 7
+
+const preschoolTypes: PlacementType[] = [
+  'PRESCHOOL',
+  'PRESCHOOL_DAYCARE',
+  'PRESCHOOL_DAYCARE_ONLY',
+  'PRESCHOOL_CLUB',
+  'PREPARATORY',
+  'PREPARATORY_DAYCARE',
+  'PREPARATORY_DAYCARE_ONLY'
+]
+
 const absenceForm = mapped(
   object({
-    selectedChildren: nonEmptyArray<ChildId>(),
+    selectedChildren: nonEmptyArray<ReservationChild>(),
     range: required(localDateRange()),
     absenceType: required(value<AbsenceType | undefined>())
   }),
   (output): AbsenceRequest => ({
-    childIds: output.selectedChildren,
+    childIds: output.selectedChildren.map((child) => child.id),
     dateRange: output.range,
     absenceType: output.absenceType
   })
@@ -74,7 +88,7 @@ function initialFormState(
   maxDate: LocalDate
 ): StateOf<typeof absenceForm> {
   const selectedChildren =
-    availableChildren.length === 1 ? [availableChildren[0].id] : []
+    availableChildren.length === 1 ? [availableChildren[0]] : []
   const range =
     initialDate !== undefined
       ? { startDate: initialDate, endDate: initialDate }
@@ -152,6 +166,22 @@ export default React.memo(function AbsenceModal({
 
   const [attendanceAlreadyExistsError, setAttendanceAlreadyExistsError] =
     useState(false)
+
+  const tooManyAbsencesErrors =
+    featureFlags.absenceApplications &&
+    selectedChildren.isValid() &&
+    range.isValid() &&
+    range.value().durationInDays() > tooManyAbsencesErrorThresholdInDays &&
+    absenceType.isValid() &&
+    absenceType.value() !== 'SICKLEAVE'
+      ? selectedChildren
+          .value()
+          .filter(
+            ({ upcomingPlacementType }) =>
+              upcomingPlacementType !== null &&
+              preschoolTypes.includes(upcomingPlacementType)
+          )
+      : []
 
   return (
     <ModalAccessibilityWrapper>
@@ -235,6 +265,26 @@ export default React.memo(function AbsenceModal({
                     }
                   />
                 )}
+                {tooManyAbsencesErrors.map((child) => (
+                  <AlertBox
+                    key={child.id}
+                    title={`${formatFirstName(child)} ${child.lastName}`}
+                    message={
+                      <>
+                        {
+                          i18n.calendar.absenceModal
+                            .tooManyAbsencesErrorDescription
+                        }
+                        <br />
+                        <br />
+                        <Link to={`/children/${child.id}/absence-application`}>
+                          {i18n.calendar.absenceModal.tooManyAbsencesErrorLink}
+                        </Link>
+                      </>
+                    }
+                    data-qa={`too-many-absences-error-${child.id}`}
+                  />
+                ))}
               </CalendarModalSection>
               <Gap size="zero" sizeOnMobile="s" />
               <LineContainer>
@@ -305,7 +355,10 @@ export default React.memo(function AbsenceModal({
                 primary
                 text={i18n.common.confirm}
                 textDone={i18n.common.saveSuccess}
-                disabled={selectedChildren.state.length === 0}
+                disabled={
+                  selectedChildren.state.length === 0 ||
+                  tooManyAbsencesErrors.length > 0
+                }
                 mutation={postAbsencesMutation}
                 onClick={() => {
                   if (!form.isValid()) {

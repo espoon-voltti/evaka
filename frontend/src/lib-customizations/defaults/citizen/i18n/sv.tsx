@@ -507,7 +507,10 @@ const sv: Translations = {
       attendanceAlreadyExistsErrorTitle:
         'De valda dagarna har redan anteckningar för närvaro',
       attendanceAlreadyExistsErrorDescription:
-        'Det är inte möjligt att tillägga en frånvaro för barnet på en dag som redan har en anteckning om närvaro.'
+        'Det är inte möjligt att tillägga en frånvaro för barnet på en dag som redan har en anteckning om närvaro.',
+      tooManyAbsencesErrorDescription:
+        'Yli viikon pituinen poissaolo esiopetuksesta on sallittu ainoastaan hyväksyttävästä syystä. (sv)',
+      tooManyAbsencesErrorLink: 'Tee poissaolohakemus (sv)'
     },
     holidayModal: {
       additionalInformation: 'Läs mera',

@@ -109,6 +109,7 @@ export default React.memo(function ReservationModal({
 
         if (!next.isValid) return nextState
         const [repetition, selectedRange, selectedChildren] = next.value
+        const selectedChildIds = selectedChildren.map(({ id }) => id)
 
         if (!prev.isValid) {
           return {
@@ -116,7 +117,7 @@ export default React.memo(function ReservationModal({
             times: resetTimes(dayProperties, undefined, {
               repetition,
               selectedRange,
-              selectedChildren
+              selectedChildren: selectedChildIds
             })
           }
         }
@@ -140,7 +141,7 @@ export default React.memo(function ReservationModal({
               {
                 repetition,
                 selectedRange,
-                selectedChildren
+                selectedChildren: selectedChildIds
               }
             )
           }

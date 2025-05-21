@@ -5,6 +5,7 @@
 import uniq from 'lodash/uniq'
 
 import type FiniteDateRange from 'lib-common/finite-date-range'
+import type { ChildId } from 'lib-common/generated/api-types/shared'
 import type LocalDate from 'lib-common/local-date'
 import type { UUID } from 'lib-common/types'
 
@@ -633,13 +634,13 @@ class ReservationModal extends Element {
 class AbsencesModal {
   startDateInput: TextInput
   endDateInput: TextInput
-  #modalSendButton: Element
+  modalSendButton: Element
   absenceTypeRequiredError: Element
 
   constructor(private readonly page: Page) {
     this.startDateInput = new TextInput(page.findByDataQa('start-date'))
     this.endDateInput = new TextInput(page.findByDataQa('end-date'))
-    this.#modalSendButton = page.findByDataQa('modal-okBtn')
+    this.modalSendButton = page.findByDataQa('modal-okBtn')
     this.absenceTypeRequiredError = page.findByDataQa(
       'modal-absence-type-required-error'
     )
@@ -704,8 +705,11 @@ class AbsencesModal {
     return this.#absenceChip(absenceType)
   }
 
+  tooManyAbsencesError = (childId: ChildId) =>
+    this.page.findByDataQa(`too-many-absences-error-${childId}`)
+
   async submit() {
-    await this.#modalSendButton.click()
+    await this.modalSendButton.click()
   }
 }
 
