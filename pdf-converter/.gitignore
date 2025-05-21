@@ -1,0 +1,19 @@
+# SPDX-FileCopyrightText: 2017-2025 City of Espoo
+#
+# SPDX-License-Identifier: LGPL-2.1-or-later
+
+# Dependencies
+node_modules/
+npm-debug.log
+
+# Build output
+dist/
+
+# Environment
+.env
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo 
