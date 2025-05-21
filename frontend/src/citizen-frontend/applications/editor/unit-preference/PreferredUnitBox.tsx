@@ -5,7 +5,7 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import { PublicUnit } from 'lib-common/generated/api-types/daycare'
+import type { PublicUnit } from 'lib-common/generated/api-types/daycare'
 import { StaticChip } from 'lib-components/atoms/Chip'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
 import { Button } from 'lib-components/atoms/buttons/Button'

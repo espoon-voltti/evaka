@@ -11,11 +11,11 @@ import { string } from 'lib-common/form/fields'
 import { object, validated } from 'lib-common/form/form'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
 import { nonBlank } from 'lib-common/form/validators'
-import {
+import type {
   AssistanceNeedPreschoolDecision,
   AssistanceNeedPreschoolDecisionResponse
 } from 'lib-common/generated/api-types/assistanceneed'
-import { AssistanceNeedPreschoolDecisionId } from 'lib-common/generated/api-types/shared'
+import type { AssistanceNeedPreschoolDecisionId } from 'lib-common/generated/api-types/shared'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import AssistanceNeedPreschoolDecisionReadOnly from 'lib-components/assistance-need-decision/AssistanceNeedPreschoolDecisionReadOnly'

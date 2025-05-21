@@ -7,7 +7,7 @@
 import defaultsUntyped from '@evaka/customizations/citizen'
 import mergeWith from 'lodash/mergeWith'
 
-import { JsonOf } from 'lib-common/json'
+import type { JsonOf } from 'lib-common/json'
 
 import { mergeCustomizer } from './common'
 import en from './defaults/citizen/i18n/en'

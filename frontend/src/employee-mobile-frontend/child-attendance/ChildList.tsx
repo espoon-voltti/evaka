@@ -6,29 +6,26 @@ import React from 'react'
 import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
-import {
+import type {
   AttendanceChild,
   AttendanceStatus
 } from 'lib-common/generated/api-types/attendance'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import {
-  defaultMargins,
-  isSpacingSize,
-  SpacingSize
-} from 'lib-components/white-space'
+import type { SpacingSize } from 'lib-components/white-space'
+import { defaultMargins, isSpacingSize } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { featureFlags } from 'lib-customizations/employeeMobile'
 import { faTimes } from 'lib-icons'
 
 import { routes } from '../App'
 import { useTranslation } from '../common/i18n'
-import { UnitOrGroup } from '../common/unit-or-group'
+import type { UnitOrGroup } from '../common/unit-or-group'
 
 import ChildListItem from './ChildListItem'
 

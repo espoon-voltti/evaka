@@ -8,7 +8,6 @@ import React, { useCallback, useContext, useState } from 'react'
 import { NavLink, useLocation } from 'react-router'
 import styled, { css } from 'styled-components'
 
-import { getDuplicateChildInfo } from 'citizen-frontend/utils/duplicated-child-utils'
 import { formatFirstName } from 'lib-common/names'
 import { useQuery } from 'lib-common/query'
 import { SelectionChip } from 'lib-components/atoms/Chip'
@@ -32,9 +31,11 @@ import {
 
 import ModalAccessibilityWrapper from '../ModalAccessibilityWrapper'
 import { UnwrapResult } from '../async-rendering'
-import { AuthContext, User } from '../auth/state'
+import type { User } from '../auth/state'
+import { AuthContext } from '../auth/state'
 import { langs, useLang, useTranslation } from '../localization'
 import { unreadMessagesCountQuery } from '../messages/queries'
+import { getDuplicateChildInfo } from '../utils/duplicated-child-utils'
 
 import AttentionIndicator from './AttentionIndicator'
 import { headerHeightMobile, logoutUrl, mobileBottomNavHeight } from './const'

@@ -3,7 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { waitUntilFalse, waitUntilTrue } from '../../utils'
-import { Checkbox, Element, Page, Select, TextInput } from '../../utils/page'
+import type { Page } from '../../utils/page'
+import { Checkbox, Element, Select, TextInput } from '../../utils/page'
 
 export default class CitizenPersonalDetails {
   personalDetailsSection: CitizenPersonalDetailsSection

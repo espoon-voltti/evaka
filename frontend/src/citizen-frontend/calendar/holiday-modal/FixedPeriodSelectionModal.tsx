@@ -5,16 +5,14 @@
 import React, { useCallback, useState } from 'react'
 import styled from 'styled-components'
 
-import { useLang, useTranslation } from 'citizen-frontend/localization'
-import { getDuplicateChildInfo } from 'citizen-frontend/utils/duplicated-child-utils'
-import FiniteDateRange from 'lib-common/finite-date-range'
-import {
+import type FiniteDateRange from 'lib-common/finite-date-range'
+import type {
   HolidayQuestionnaire,
   FixedPeriodsBody,
   HolidayQuestionnaireAnswer
 } from 'lib-common/generated/api-types/holidayperiod'
-import { ReservationChild } from 'lib-common/generated/api-types/reservations'
-import { ChildId } from 'lib-common/generated/api-types/shared'
+import type { ReservationChild } from 'lib-common/generated/api-types/reservations'
+import type { ChildId } from 'lib-common/generated/api-types/shared'
 import { formatFirstName } from 'lib-common/names'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
@@ -22,6 +20,8 @@ import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { H2 } from 'lib-components/typography'
 
 import ModalAccessibilityWrapper from '../../ModalAccessibilityWrapper'
+import { useLang, useTranslation } from '../../localization'
+import { getDuplicateChildInfo } from '../../utils/duplicated-child-utils'
 import { answerFixedPeriodQuestionnaireMutation } from '../queries'
 
 import { PeriodSelector } from './PeriodSelector'

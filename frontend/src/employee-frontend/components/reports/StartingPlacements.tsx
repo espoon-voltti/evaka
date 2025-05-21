@@ -13,29 +13,24 @@ import styled from 'styled-components'
 import { number } from 'lib-common/form/fields'
 import { object, required } from 'lib-common/form/form'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
-import { StartingPlacementsRow } from 'lib-common/generated/api-types/reports'
+import type { StartingPlacementsRow } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
-import { Arg0 } from 'lib-common/types'
+import type { Arg0 } from 'lib-common/types'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import { Container, ContentArea } from 'lib-components/layout/Container'
-import {
-  SortableTh,
-  SortDirection,
-  Tbody,
-  Td,
-  Thead,
-  Tr
-} from 'lib-components/layout/Table'
+import type { SortDirection } from 'lib-components/layout/Table'
+import { SortableTh, Tbody, Td, Thead, Tr } from 'lib-components/layout/Table'
 
-import ReportDownload from '../../components/reports/ReportDownload'
-import { getStartingPlacementsReport } from '../../generated/api-clients/reports'
-import { Translations, useTranslation } from '../../state/i18n'
+import type { getStartingPlacementsReport } from '../../generated/api-clients/reports'
+import type { Translations } from '../../state/i18n'
+import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 import { FlexRow } from '../common/styled/containers'
 
+import ReportDownload from './ReportDownload'
 import { FilterLabel, FilterRow, RowCountInfo, TableScrollable } from './common'
 import { startingPlacementsReportQuery } from './queries'
 

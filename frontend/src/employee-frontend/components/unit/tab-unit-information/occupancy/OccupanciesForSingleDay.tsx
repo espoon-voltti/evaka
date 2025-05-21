@@ -5,8 +5,8 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import { DaycareId, GroupId } from 'lib-common/generated/api-types/shared'
-import LocalDate from 'lib-common/local-date'
+import type { DaycareId, GroupId } from 'lib-common/generated/api-types/shared'
+import type LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 import Title from 'lib-components/atoms/Title'
 import { fontWeights } from 'lib-components/typography'

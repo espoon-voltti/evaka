@@ -6,13 +6,13 @@ import React from 'react'
 import { Link } from 'react-router'
 import styled from 'styled-components'
 
-import {
+import type {
   Address,
   ApplicationAttachment,
   ApplicationResponse,
   PersonBasics
 } from 'lib-common/generated/api-types/application'
-import LocalDate from 'lib-common/local-date'
+import type LocalDate from 'lib-common/local-date'
 import { maxOf } from 'lib-common/ordered'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import ListGrid from 'lib-components/layout/ListGrid'
@@ -31,14 +31,15 @@ import {
   faUsers
 } from 'lib-icons'
 
-import ApplicationDecisionsSection from '../../components/application-page/ApplicationDecisionsSection'
-import ApplicationStatusSection from '../../components/application-page/ApplicationStatusSection'
-import ApplicationTitle from '../../components/application-page/ApplicationTitle'
-import VTJGuardian from '../../components/application-page/VTJGuardian'
-import Attachment from '../../components/common/Attachment'
 import { useTranslation } from '../../state/i18n'
 import { formatName } from '../../utils'
 import { formatParagraphs } from '../../utils/html-utils'
+import Attachment from '../common/Attachment'
+
+import ApplicationDecisionsSection from './ApplicationDecisionsSection'
+import ApplicationStatusSection from './ApplicationStatusSection'
+import ApplicationTitle from './ApplicationTitle'
+import VTJGuardian from './VTJGuardian'
 
 const AttachmentContainer = styled.div`
   display: flex;

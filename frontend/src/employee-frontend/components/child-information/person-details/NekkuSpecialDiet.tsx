@@ -5,8 +5,8 @@
 import React, { Fragment } from 'react'
 
 import { combine } from 'lib-common/api'
-import { AdditionalInformation } from 'lib-common/generated/api-types/daycare'
-import { NekkuSpecialDietChoices } from 'lib-common/generated/api-types/nekku'
+import type { AdditionalInformation } from 'lib-common/generated/api-types/daycare'
+import type { NekkuSpecialDietChoices } from 'lib-common/generated/api-types/nekku'
 import { useQueryResult } from 'lib-common/query'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import TextArea from 'lib-components/atoms/form/TextArea'

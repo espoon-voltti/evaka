@@ -13,13 +13,13 @@ import { Navigate, useNavigate } from 'react-router'
 import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
-import { GroupInfo } from 'lib-common/generated/api-types/attendance'
-import {
+import type { GroupInfo } from 'lib-common/generated/api-types/attendance'
+import type {
   DraftContent,
   SentMessage
 } from 'lib-common/generated/api-types/messaging'
 import { useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import { ContentArea } from 'lib-components/layout/Container'
 import { Tabs } from 'lib-components/molecules/Tabs'
 import { defaultMargins } from 'lib-components/white-space'
@@ -31,7 +31,8 @@ import BottomNavbar from '../common/BottomNavbar'
 import { PageWithNavigation } from '../common/PageWithNavigation'
 import TopBar from '../common/TopBar'
 import { useTranslation } from '../common/i18n'
-import { UnitOrGroup, toUnitOrGroup } from '../common/unit-or-group'
+import type { UnitOrGroup } from '../common/unit-or-group'
+import { toUnitOrGroup } from '../common/unit-or-group'
 import { FloatingPrimaryActionButton } from '../pairing/components'
 import { unitInfoQuery } from '../units/queries'
 

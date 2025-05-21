@@ -5,8 +5,8 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
-import {
+import type { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
+import type {
   ApplicationDetails as ApplicationDetailsGen,
   ApplicationType
 } from 'lib-common/generated/api-types/application'
@@ -18,8 +18,6 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faInfo } from 'lib-icons'
 
-import BasicsSection from '../../../applications/editor/verification/BasicsSection'
-import UnitPreferenceSection from '../../../applications/editor/verification/UnitPreferenceSection'
 import { useTranslation } from '../../../localization'
 import {
   getShiftCareAttachmentsValidStatus,
@@ -27,8 +25,10 @@ import {
 } from '../validations'
 
 import AdditionalDetailsSection from './AdditionalDetailsSection'
+import BasicsSection from './BasicsSection'
 import ContactInfoSection from './ContactInfoSection'
 import ServiceNeedSection from './ServiceNeedSection'
+import UnitPreferenceSection from './UnitPreferenceSection'
 
 type DaycareApplicationVerificationViewProps = {
   application: ApplicationDetailsGen

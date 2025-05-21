@@ -2,24 +2,19 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
-import { ServiceNeedOption } from 'lib-common/generated/api-types/application'
-import { PlacementType } from 'lib-common/generated/api-types/placement'
-import { ApplicationId } from 'lib-common/generated/api-types/shared'
+import type { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
+import type { ServiceNeedOption } from 'lib-common/generated/api-types/application'
+import type { PlacementType } from 'lib-common/generated/api-types/placement'
+import type { ApplicationId } from 'lib-common/generated/api-types/shared'
 import { fromUuid } from 'lib-common/id-type'
-import { JsonOf } from 'lib-common/json'
-import { UUID } from 'lib-common/types'
+import type { JsonOf } from 'lib-common/json'
+import type { UUID } from 'lib-common/types'
 
 import { waitUntilDefined, waitUntilEqual } from '../../utils'
-import { FormInput, Section, sections } from '../../utils/application-forms'
-import {
-  Checkbox,
-  Page,
-  Radio,
-  TextInput,
-  Element,
-  FileUpload
-} from '../../utils/page'
+import type { FormInput, Section } from '../../utils/application-forms'
+import { sections } from '../../utils/application-forms'
+import type { Page, Element } from '../../utils/page'
+import { Checkbox, Radio, TextInput, FileUpload } from '../../utils/page'
 
 export default class CitizenApplicationsPage {
   #createNewApplicationButton: Element

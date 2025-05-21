@@ -48,7 +48,7 @@ private val plannedEndpoints: Set<String> = setOf()
 val endpointExcludes = plannedEndpoints + deprecatedEndpoints
 
 object Imports {
-    val id = TsImport.Named(LibCommon / "id-type.ts", "Id")
+    val id = TsImport.Type(LibCommon / "id-type.ts", "Id")
     val localDate = TsImport.Default(LibCommon / "local-date.ts", "LocalDate")
     val localTime = TsImport.Default(LibCommon / "local-time.ts", "LocalTime")
     val helsinkiDateTime =
@@ -58,12 +58,12 @@ object Imports {
     val timeInterval = TsImport.Default(LibCommon / "time-interval.ts", "TimeInterval")
     val timeRange = TsImport.Default(LibCommon / "time-range.ts", "TimeRange")
     val yearMonth = TsImport.Default(LibCommon / "year-month.ts", "YearMonth")
-    val uuid = TsImport.Named(LibCommon / "types.d.ts", "UUID")
-    val action = TsImport.Named(LibCommon / "generated/action.ts", "Action")
-    val jsonOf = TsImport.Named(LibCommon / "json.d.ts", "JsonOf")
-    val jsonCompatible = TsImport.Named(LibCommon / "json.d.ts", "JsonCompatible")
+    val uuid = TsImport.Type(LibCommon / "types.d.ts", "UUID")
+    val action = TsImport.Type(LibCommon / "generated/action.ts", "Action")
+    val jsonOf = TsImport.Type(LibCommon / "json.d.ts", "JsonOf")
+    val jsonCompatible = TsImport.Type(LibCommon / "json.d.ts", "JsonCompatible")
     val uri = TsImport.Named(LibCommon / "uri.ts", "uri")
-    val uriType = TsImport.Named(LibCommon / "uri.ts", "Uri")
+    val uriType = TsImport.Type(LibCommon / "uri.ts", "Uri")
     val createUrlSearchParams = TsImport.Named(LibCommon / "api.ts", "createUrlSearchParams")
     val createFormData = TsImport.Named(LibCommon / "api.ts", "createFormData")
     val devApiError = TsImport.Named(E2ETest / "dev-api", "DevApiError")

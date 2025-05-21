@@ -6,7 +6,7 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
 import { Fixture } from '../../dev-api/fixtures'
 import { resetServiceState, runJobs } from '../../generated/api-clients'
-import { DevPerson } from '../../generated/api-types'
+import type { DevPerson } from '../../generated/api-types'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import CitizenPersonalDetailsPage from '../../pages/citizen/citizen-personal-details'
 import { getVerificationCodeFromEmail } from '../../utils/email'

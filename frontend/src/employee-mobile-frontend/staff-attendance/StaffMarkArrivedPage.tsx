@@ -8,12 +8,12 @@ import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
-import {
+import type {
   StaffAttendanceType,
   StaffMember,
   UnitInfo
 } from 'lib-common/generated/api-types/attendance'
-import { EmployeeId, GroupId } from 'lib-common/generated/api-types/shared'
+import type { EmployeeId, GroupId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
@@ -39,7 +39,7 @@ import { renderResult } from '../async-rendering'
 import TopBar from '../common/TopBar'
 import { Actions, CustomTitle, TimeWrapper } from '../common/components'
 import { useTranslation } from '../common/i18n'
-import { UnitOrGroup } from '../common/unit-or-group'
+import type { UnitOrGroup } from '../common/unit-or-group'
 import { TallContentArea } from '../pairing/components'
 import { unitInfoQuery } from '../units/queries'
 

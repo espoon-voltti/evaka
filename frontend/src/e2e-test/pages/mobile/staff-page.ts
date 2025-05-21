@@ -2,20 +2,19 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { StaffAttendanceType } from 'lib-common/generated/api-types/attendance'
-import { EmployeeId } from 'lib-common/generated/api-types/shared'
-import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { StaffAttendanceType } from 'lib-common/generated/api-types/attendance'
+import type { EmployeeId } from 'lib-common/generated/api-types/shared'
+import type LocalDate from 'lib-common/local-date'
+import type { UUID } from 'lib-common/types'
 
-import { DevDaycareGroup } from '../../generated/api-types'
+import type { DevDaycareGroup } from '../../generated/api-types'
 import { waitUntilEqual } from '../../utils'
+import type { ElementCollection, Page } from '../../utils/page'
 import {
   AsyncButton,
   Checkbox,
   Combobox,
   Element,
-  ElementCollection,
-  Page,
   PinInput,
   Select,
   TextInput

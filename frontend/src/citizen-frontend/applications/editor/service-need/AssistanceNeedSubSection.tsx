@@ -15,7 +15,7 @@ import { featureFlags } from 'lib-customizations/citizen'
 import { errorToInputInfo } from '../../../input-info-helper'
 import { useTranslation } from '../../../localization'
 
-import { ServiceNeedSectionProps } from './ServiceNeedSection'
+import type { ServiceNeedSectionProps } from './ServiceNeedSection'
 
 export default React.memo(function AssistanceNeedSubSection({
   type,

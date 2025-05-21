@@ -5,8 +5,8 @@
 import React, { useMemo } from 'react'
 import styled from 'styled-components'
 
-import { AttendanceChild } from 'lib-common/generated/api-types/attendance'
-import { GroupNote } from 'lib-common/generated/api-types/note'
+import type { AttendanceChild } from 'lib-common/generated/api-types/attendance'
+import type { GroupNote } from 'lib-common/generated/api-types/note'
 import LocalDate from 'lib-common/local-date'
 import { constantQuery, useQueryResult } from 'lib-common/query'
 import RoundIcon from 'lib-components/atoms/RoundIcon'

@@ -7,16 +7,14 @@ import orderBy from 'lodash/orderBy'
 import React, { useCallback, useContext, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import { useTranslation } from 'employee-frontend/state/i18n'
-import { UIContext } from 'employee-frontend/state/ui'
 import { mapped, object, value } from 'lib-common/form/form'
 import { useForm } from 'lib-common/form/hooks'
-import {
+import type {
   CalendarEvent,
   CalendarEventTime
 } from 'lib-common/generated/api-types/calendarevent'
-import { ChildBasics } from 'lib-common/generated/api-types/placement'
-import { ChildId } from 'lib-common/generated/api-types/shared'
+import type { ChildBasics } from 'lib-common/generated/api-types/placement'
+import type { ChildId } from 'lib-common/generated/api-types/shared'
 import { useMutation } from 'lib-common/query'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
@@ -31,6 +29,8 @@ import { H2, H3, Label, fontWeights } from 'lib-components/typography'
 import { Gap, defaultMargins } from 'lib-components/white-space'
 import { faPen, faPlus, faQuestion, faTrash } from 'lib-icons'
 
+import { useTranslation } from '../../../../../state/i18n'
+import { UIContext } from '../../../../../state/ui'
 import {
   deleteCalendarEventTimeMutation,
   setCalendarEventTimeReservationMutation

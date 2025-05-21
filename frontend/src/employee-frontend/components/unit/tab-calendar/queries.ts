@@ -2,6 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import type {
+  CalendarEventId,
+  DaycareId,
+  GroupId
+} from 'lib-common/generated/api-types/shared'
+import { Queries } from 'lib-common/query'
+
 import {
   addCalendarEventTime,
   clearEventTimesInEventForChild,
@@ -13,13 +20,7 @@ import {
   getGroupDiscussionSurveys,
   setCalendarEventTimeReservation,
   updateCalendarEvent
-} from 'employee-frontend/generated/api-clients/calendarevent'
-import {
-  CalendarEventId,
-  DaycareId,
-  GroupId
-} from 'lib-common/generated/api-types/shared'
-import { Queries } from 'lib-common/query'
+} from '../../../generated/api-clients/calendarevent'
 
 const q = new Queries()
 

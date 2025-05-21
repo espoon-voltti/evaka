@@ -5,11 +5,9 @@
 import React, { useContext } from 'react'
 import styled from 'styled-components'
 
-import { useTranslation } from 'employee-frontend/state/i18n'
-import { UIContext } from 'employee-frontend/state/ui'
-import { Action } from 'lib-common/generated/action'
-import { AssistanceNeedVoucherCoefficient } from 'lib-common/generated/api-types/assistanceneed'
-import { ChildId } from 'lib-common/generated/api-types/shared'
+import type { Action } from 'lib-common/generated/action'
+import type { AssistanceNeedVoucherCoefficient } from 'lib-common/generated/api-types/assistanceneed'
+import type { ChildId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
@@ -19,6 +17,8 @@ import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { LabelLike } from 'lib-components/typography'
 import { faPen, faTrash } from 'lib-icons'
 
+import { useTranslation } from '../../../../state/i18n'
+import { UIContext } from '../../../../state/ui'
 import { TimeBasedStatusChip } from '../../TimeBasedStatusChip'
 
 import AssistanceNeedVoucherCoefficientForm from './AssistanceNeedVoucherCoefficientForm'

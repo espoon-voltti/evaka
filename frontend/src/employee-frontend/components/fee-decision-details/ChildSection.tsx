@@ -5,17 +5,17 @@
 import React from 'react'
 import { Link } from 'react-router'
 
-import {
+import type {
   PersonDetailed,
   UnitData
 } from 'lib-common/generated/api-types/invoicing'
-import { PlacementType } from 'lib-common/generated/api-types/placement'
+import type { PlacementType } from 'lib-common/generated/api-types/placement'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 import { faUserFriends } from 'lib-icons'
 
-import LabelValueList from '../../components/common/LabelValueList'
 import { useTranslation } from '../../state/i18n'
 import { formatName } from '../../utils'
+import LabelValueList from '../common/LabelValueList'
 
 interface Props {
   child: PersonDetailed

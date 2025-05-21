@@ -4,10 +4,10 @@
 
 import React from 'react'
 
-import { renderResult } from 'employee-mobile-frontend/async-rendering'
 import { useQueryResult } from 'lib-common/query'
 
-import { UnitOrGroup } from '../common/unit-or-group'
+import { renderResult } from '../async-rendering'
+import type { UnitOrGroup } from '../common/unit-or-group'
 
 import ConfirmedDaysReservationList from './ConfirmedDaysReservationList'
 import { confirmedDaysReservationsStatisticsQuery } from './queries'

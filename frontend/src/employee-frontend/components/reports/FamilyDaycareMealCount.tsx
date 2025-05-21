@@ -7,7 +7,7 @@ import React, { useMemo, useState } from 'react'
 import { Link } from 'react-router'
 import styled from 'styled-components'
 
-import {
+import type {
   FamilyDaycareMealAreaResult,
   FamilyDaycareMealDaycareResult
 } from 'lib-common/generated/api-types/reports'
@@ -21,10 +21,10 @@ import { Tbody, Td, Tfoot, Th, Thead, Tr } from 'lib-components/layout/Table'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { faChevronDown, faChevronUp } from 'lib-icons'
 
-import ReportDownload from '../../components/reports/ReportDownload'
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 
+import ReportDownload from './ReportDownload'
 import { FilterLabel, FilterRow, TableScrollable } from './common'
 import { familyDaycareMealReportQuery } from './queries'
 

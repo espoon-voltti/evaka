@@ -6,13 +6,13 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React from 'react'
 import styled, { useTheme } from 'styled-components'
 
-import {
+import type {
   InvoiceDaycare,
   ProductWithName
 } from 'lib-common/generated/api-types/invoicing'
-import LocalDate from 'lib-common/local-date'
+import type LocalDate from 'lib-common/local-date'
 import { formatCents } from 'lib-common/money'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import { Td, Tr } from 'lib-components/layout/Table'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'

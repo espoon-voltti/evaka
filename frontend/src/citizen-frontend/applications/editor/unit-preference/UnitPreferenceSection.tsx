@@ -4,21 +4,22 @@
 
 import React, { useContext, useEffect } from 'react'
 
-import { UnitPreferenceFormData } from 'lib-common/api-types/application/ApplicationFormData'
+import type { UnitPreferenceFormData } from 'lib-common/api-types/application/ApplicationFormData'
 import { getErrorCount } from 'lib-common/form-validation'
-import { ApplicationType } from 'lib-common/generated/api-types/application'
-import LocalDate from 'lib-common/local-date'
+import type { ApplicationType } from 'lib-common/generated/api-types/application'
+import type LocalDate from 'lib-common/local-date'
 import { constantQuery, useQuery } from 'lib-common/query'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import { faExclamation } from 'lib-icons'
 
-import EditorSection from '../../../applications/editor/EditorSection'
-import SiblingBasisSubSection from '../../../applications/editor/unit-preference/SiblingBasisSubSection'
-import UnitsSubSection from '../../../applications/editor/unit-preference/UnitsSubSection'
 import { useTranslation } from '../../../localization'
 import { OverlayContext } from '../../../overlay/state'
 import { applicationUnitsQuery } from '../../queries'
-import { ApplicationFormDataErrors } from '../validations'
+import EditorSection from '../EditorSection'
+import type { ApplicationFormDataErrors } from '../validations'
+
+import SiblingBasisSubSection from './SiblingBasisSubSection'
+import UnitsSubSection from './UnitsSubSection'
 
 export type UnitPreferenceSectionCommonProps = {
   formData: UnitPreferenceFormData

@@ -6,8 +6,8 @@ import { animated, useSpring } from '@react-spring/web'
 import React, { useState } from 'react'
 import styled from 'styled-components'
 
-import { GroupInfo } from 'lib-common/generated/api-types/attendance'
-import { DaycareId } from 'lib-common/generated/api-types/shared'
+import type { GroupInfo } from 'lib-common/generated/api-types/attendance'
+import type { DaycareId } from 'lib-common/generated/api-types/shared'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import LegacyInlineButton from 'lib-components/atoms/buttons/LegacyInlineButton'
@@ -17,7 +17,8 @@ import { faAngleDown, faAngleUp, faChevronUp, faSearch } from 'lib-icons'
 
 import { zIndex } from '../constants'
 
-import GroupSelector, { CountInfo } from './GroupSelector'
+import type { CountInfo } from './GroupSelector'
+import GroupSelector from './GroupSelector'
 import { useTranslation } from './i18n'
 
 const GroupContainer = styled.div`

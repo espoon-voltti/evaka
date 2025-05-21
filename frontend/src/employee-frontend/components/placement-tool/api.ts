@@ -2,10 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { AxiosProgressEvent } from 'axios'
+import type { AxiosProgressEvent } from 'axios'
 
-import { Failure, Result, Success } from 'lib-common/api'
-import {
+import type { Result } from 'lib-common/api'
+import { Failure, Success } from 'lib-common/api'
+import type {
   UploadHandler,
   ValidateHandler
 } from 'lib-components/molecules/FileUpload'

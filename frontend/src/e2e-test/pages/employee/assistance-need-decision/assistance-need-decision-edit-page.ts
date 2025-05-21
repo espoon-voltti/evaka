@@ -3,13 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { waitUntilEqual } from '../../../utils'
-import {
-  Page,
-  TextInput,
-  Combobox,
-  Element,
-  Checkbox
-} from '../../../utils/page'
+import type { Page, Element } from '../../../utils/page'
+import { TextInput, Combobox, Checkbox } from '../../../utils/page'
 
 export default class AssistanceNeedDecisionEditPage {
   #decisionMakerSelect: Element

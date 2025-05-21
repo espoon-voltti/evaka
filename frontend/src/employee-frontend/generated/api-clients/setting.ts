@@ -4,9 +4,9 @@
 
 // GENERATED FILE: no manual modifications
 
-import { JsonCompatible } from 'lib-common/json'
-import { JsonOf } from 'lib-common/json'
-import { SettingType } from 'lib-common/generated/api-types/setting'
+import type { JsonCompatible } from 'lib-common/json'
+import type { JsonOf } from 'lib-common/json'
+import type { SettingType } from 'lib-common/generated/api-types/setting'
 import { client } from '../../api/client'
 import { uri } from 'lib-common/uri'
 

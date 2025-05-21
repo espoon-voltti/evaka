@@ -4,7 +4,10 @@
 
 import React, { useMemo, useState, createContext, useCallback } from 'react'
 
-import { DaycareId, EmployeeId } from 'lib-common/generated/api-types/shared'
+import type {
+  DaycareId,
+  EmployeeId
+} from 'lib-common/generated/api-types/shared'
 
 export type ErrorMessageType = 'warning' | 'error'
 

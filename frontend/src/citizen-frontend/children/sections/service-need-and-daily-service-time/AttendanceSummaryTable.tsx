@@ -5,13 +5,12 @@
 import React, { useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import { renderResult } from 'citizen-frontend/async-rendering'
-import { useTranslation } from 'citizen-frontend/localization'
-import { combine, Result } from 'lib-common/api'
+import type { Result } from 'lib-common/api'
+import { combine } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { AttendanceSummary } from 'lib-common/generated/api-types/children'
-import { ServiceNeedSummary } from 'lib-common/generated/api-types/serviceneed'
-import { ChildId } from 'lib-common/generated/api-types/shared'
+import type { AttendanceSummary } from 'lib-common/generated/api-types/children'
+import type { ServiceNeedSummary } from 'lib-common/generated/api-types/serviceneed'
+import type { ChildId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
 import YearMonth from 'lib-common/year-month'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
@@ -21,6 +20,9 @@ import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { H3, Label } from 'lib-components/typography'
 import colors from 'lib-customizations/common'
 import { faChevronLeft, faChevronRight } from 'lib-icons'
+
+import { renderResult } from '../../../async-rendering'
+import { useTranslation } from '../../../localization'
 
 import { attendanceSummaryQuery } from './queries'
 

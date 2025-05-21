@@ -6,9 +6,7 @@ import orderBy from 'lodash/orderBy'
 import React, { useContext } from 'react'
 import { Link } from 'react-router'
 
-import { PersonContext } from 'employee-frontend/components/person-profile/state'
-import { UserContext } from 'employee-frontend/state/user'
-import { PersonId } from 'lib-common/generated/api-types/shared'
+import type { PersonId } from 'lib-common/generated/api-types/shared'
 import { formatCents } from 'lib-common/money'
 import { useQueryResult } from 'lib-common/query'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
@@ -17,6 +15,7 @@ import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { faRefresh } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
+import { UserContext } from '../../state/user'
 import { renderResult } from '../async-rendering'
 import { formatInvoicePeriod } from '../invoice/utils'
 
@@ -25,6 +24,7 @@ import {
   createReplacementDraftsForHeadOfFamilyMutation,
   headOfFamilyInvoicesQuery
 } from './queries'
+import { PersonContext } from './state'
 
 interface Props {
   id: PersonId

@@ -9,14 +9,11 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
-import { renderResult } from 'employee-frontend/components/async-rendering'
-import AutosaveStatusIndicator from 'employee-frontend/components/common/AutosaveStatusIndicator'
-import { I18nContext, Lang, useTranslation } from 'employee-frontend/state/i18n'
-import { AutosaveStatus } from 'employee-frontend/utils/use-autosave'
-import { Failure, Result, wrapResult } from 'lib-common/api'
-import { AssistanceNeedDecisionForm } from 'lib-common/generated/api-types/assistanceneed'
-import { Employee, PersonJSON } from 'lib-common/generated/api-types/pis'
-import {
+import type { Result } from 'lib-common/api'
+import { Failure, wrapResult } from 'lib-common/api'
+import type { AssistanceNeedDecisionForm } from 'lib-common/generated/api-types/assistanceneed'
+import type { Employee, PersonJSON } from 'lib-common/generated/api-types/pis'
+import type {
   AssistanceNeedDecisionId,
   ChildId,
   OfficialLanguage
@@ -27,7 +24,7 @@ import AssistanceNeedDecisionInfoHeader from 'lib-components/assistance-need-dec
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
-import { InputInfo } from 'lib-components/atoms/form/InputField'
+import type { InputInfo } from 'lib-components/atoms/form/InputField'
 import Content, { ContentArea } from 'lib-components/layout/Container'
 import StickyFooter from 'lib-components/layout/StickyFooter'
 import {
@@ -35,16 +32,22 @@ import {
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
-import Select, { SelectOption } from 'lib-components/molecules/Select'
+import type { SelectOption } from 'lib-components/molecules/Select'
+import Select from 'lib-components/molecules/Select'
 import { H1, H2, Label, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
-import { featureFlags, Translations } from 'lib-customizations/employee'
+import type { Translations } from 'lib-customizations/employee'
+import { featureFlags } from 'lib-customizations/employee'
 
 import { getPersonIdentity } from '../../../../generated/api-clients/pis'
+import type { Lang } from '../../../../state/i18n'
+import { I18nContext, useTranslation } from '../../../../state/i18n'
+import type { AutosaveStatus } from '../../../../utils/use-autosave'
+import { renderResult } from '../../../async-rendering'
+import AutosaveStatusIndicator from '../../../common/AutosaveStatusIndicator'
 
-import AssistanceNeededDecisionForm, {
-  FieldInfos
-} from './AssistanceNeededDecisionForm'
+import type { FieldInfos } from './AssistanceNeededDecisionForm'
+import AssistanceNeededDecisionForm from './AssistanceNeededDecisionForm'
 import { useAssistanceNeedDecision } from './assistance-need-decision-form'
 import { FooterContainer } from './common'
 

@@ -7,18 +7,14 @@ import React, { useContext, useRef, useState } from 'react'
 import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
-import {
-  ChildState,
-  ChildContext
-} from 'employee-frontend/components/child-information/state'
 import { wrapResult } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
-import {
+import type {
   AssistanceNeedDecisionId,
   ChildId
 } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Title from 'lib-components/atoms/Title'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
@@ -36,6 +32,8 @@ import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 
 import AssistanceNeedDecisionSectionRow from './AssistanceNeedDecisionSectionRow'
+import { ChildContext } from './state'
+import type { ChildState } from './state'
 
 const createAssistanceNeedDecisionResult = wrapResult(
   createAssistanceNeedDecision

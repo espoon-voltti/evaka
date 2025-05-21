@@ -4,30 +4,24 @@
 
 import orderBy from 'lodash/orderBy'
 import partition from 'lodash/partition'
-import React, {
-  MutableRefObject,
-  useCallback,
-  useContext,
-  useMemo,
-  useState
-} from 'react'
+import type { MutableRefObject } from 'react'
+import React, { useCallback, useContext, useMemo, useState } from 'react'
 import styled, { css } from 'styled-components'
 import { v4 as uuidv4 } from 'uuid'
 
-import { useTranslation } from 'employee-frontend/state/i18n'
-import { UIContext } from 'employee-frontend/state/ui'
-import FiniteDateRange from 'lib-common/finite-date-range'
-import { BoundForm, useFormElems } from 'lib-common/form/hooks'
-import {
+import type FiniteDateRange from 'lib-common/finite-date-range'
+import type { BoundForm } from 'lib-common/form/hooks'
+import { useFormElems } from 'lib-common/form/hooks'
+import type {
   CalendarEvent,
   CalendarEventTime,
   CalendarEventTimeForm,
   DiscussionReservationDay
 } from 'lib-common/generated/api-types/calendarevent'
-import { ChildBasics } from 'lib-common/generated/api-types/placement'
+import type { ChildBasics } from 'lib-common/generated/api-types/placement'
 import LocalDate from 'lib-common/local-date'
 import { useMutation } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { ContentArea } from 'lib-components/layout/Container'
@@ -40,9 +34,11 @@ import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faPlus, faTrash } from 'lib-icons'
 
+import { useTranslation } from '../../../../../state/i18n'
+import { UIContext } from '../../../../../state/ui'
 import { addCalendarEventTimeMutation } from '../../queries'
-import { ChildGroupInfo } from '../DiscussionSurveyView'
-import { NewEventTimeForm } from '../survey-editor/DiscussionTimesForm'
+import type { ChildGroupInfo } from '../DiscussionSurveyView'
+import type { NewEventTimeForm } from '../survey-editor/DiscussionTimesForm'
 import { type eventTimeArray } from '../survey-editor/form'
 
 import CalendarEventTimeInput from './CalendarEventTimeInput'

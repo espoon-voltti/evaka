@@ -3,7 +3,10 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import DateRange from 'lib-common/date-range'
-import { ParentshipId, PersonId } from 'lib-common/generated/api-types/shared'
+import type {
+  ParentshipId,
+  PersonId
+} from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { evakaUserId, fromUuid, randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
@@ -23,7 +26,7 @@ import {
   createVoucherValues,
   resetServiceState
 } from '../../generated/api-clients'
-import { DevPerson } from '../../generated/api-types'
+import type { DevPerson } from '../../generated/api-types'
 import ChildInformationPage from '../../pages/employee/child-information'
 import GuardianInformationPage from '../../pages/employee/guardian-information'
 import { Page } from '../../utils/page'

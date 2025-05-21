@@ -4,7 +4,6 @@
 
 import React, { Fragment, useContext, useState } from 'react'
 
-import { useTranslation } from 'employee-frontend/state/i18n'
 import { localDate, localTime } from 'lib-common/form/fields'
 import {
   object,
@@ -16,7 +15,7 @@ import {
 import { useForm, useFormFields } from 'lib-common/form/hooks'
 import { ValidationSuccess } from 'lib-common/form/types'
 import { nonBlank } from 'lib-common/form/validators'
-import {
+import type {
   SystemNotificationCitizens,
   SystemNotificationEmployees,
   SystemNotificationTargetGroup
@@ -38,6 +37,7 @@ import { H1, H2, Label, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { faPen, faPlus, faTrash } from 'lib-icons'
 
+import { useTranslation } from '../../state/i18n'
 import { UserContext } from '../../state/user'
 import { renderResult } from '../async-rendering'
 

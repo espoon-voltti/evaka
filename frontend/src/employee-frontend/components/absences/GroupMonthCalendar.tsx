@@ -11,14 +11,13 @@ import React, {
 } from 'react'
 import styled from 'styled-components'
 
-import { Result, wrapResult } from 'lib-common/api'
+import type { Result } from 'lib-common/api'
+import { wrapResult } from 'lib-common/api'
 import { useBoolean } from 'lib-common/form/hooks'
-import {
-  AbsenceCategory,
-  GroupMonthCalendar
-} from 'lib-common/generated/api-types/absence'
-import { ChildId, GroupId } from 'lib-common/generated/api-types/shared'
-import LocalDate from 'lib-common/local-date'
+import type { AbsenceCategory } from 'lib-common/generated/api-types/absence'
+import type { GroupMonthCalendar } from 'lib-common/generated/api-types/absence'
+import type { ChildId, GroupId } from 'lib-common/generated/api-types/shared'
+import type LocalDate from 'lib-common/local-date'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
@@ -33,8 +32,9 @@ import {
   upsertAbsences
 } from '../../generated/api-clients/absence'
 import { useTranslation } from '../../state/i18n'
-import { TitleContext, TitleState } from '../../state/title'
-import { AbsenceUpdate } from '../../types/absence'
+import type { TitleState } from '../../state/title'
+import { TitleContext } from '../../state/title'
+import type { AbsenceUpdate } from '../../types/absence'
 import { renderResult } from '../async-rendering'
 
 import { AbsenceLegend } from './AbsenceLegend'

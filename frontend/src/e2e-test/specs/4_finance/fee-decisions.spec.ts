@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { DecisionIncome } from 'lib-common/generated/api-types/invoicing'
+import type { DecisionIncome } from 'lib-common/generated/api-types/invoicing'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 
@@ -26,12 +26,10 @@ import {
   insertGuardians,
   resetServiceState
 } from '../../generated/api-clients'
-import { DevPerson } from '../../generated/api-types'
+import type { DevPerson } from '../../generated/api-types'
 import EmployeeNav from '../../pages/employee/employee-nav'
-import {
-  FeeDecisionsPage,
-  FinancePage
-} from '../../pages/employee/finance/finance-page'
+import type { FeeDecisionsPage } from '../../pages/employee/finance/finance-page'
+import { FinancePage } from '../../pages/employee/finance/finance-page'
 import { waitUntilEqual } from '../../utils'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'

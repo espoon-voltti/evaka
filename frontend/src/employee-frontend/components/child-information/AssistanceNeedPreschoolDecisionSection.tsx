@@ -6,11 +6,7 @@ import orderBy from 'lodash/orderBy'
 import React, { useContext, useRef, useState } from 'react'
 import { useNavigate } from 'react-router'
 
-import {
-  ChildState,
-  ChildContext
-} from 'employee-frontend/components/child-information/state'
-import {
+import type {
   AssistanceNeedPreschoolDecisionId,
   ChildId
 } from 'lib-common/generated/api-types/shared'
@@ -32,6 +28,8 @@ import {
   createAssistanceNeedPreschoolDecisionMutation,
   deleteAssistanceNeedPreschoolDecisionMutation
 } from './queries'
+import { ChildContext } from './state'
+import type { ChildState } from './state'
 
 export interface Props {
   childId: ChildId

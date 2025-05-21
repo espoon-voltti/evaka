@@ -7,9 +7,8 @@ import React, { useCallback, useContext, useState } from 'react'
 import { Link } from 'react-router'
 import styled from 'styled-components'
 
-import { PersonContext } from 'employee-frontend/components/person-profile/state'
-import { PersonId } from 'lib-common/generated/api-types/shared'
-import LocalDate from 'lib-common/local-date'
+import type { PersonId } from 'lib-common/generated/api-types/shared'
+import type LocalDate from 'lib-common/local-date'
 import { formatCents } from 'lib-common/money'
 import { cancelMutation, useQueryResult } from 'lib-common/query'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
@@ -29,6 +28,7 @@ import {
   generateRetroactiveVoucherValueDecisionsMutation,
   headOfFamilyVoucherValueDecisionsQuery
 } from './queries'
+import { PersonContext } from './state'
 
 interface Props {
   id: PersonId

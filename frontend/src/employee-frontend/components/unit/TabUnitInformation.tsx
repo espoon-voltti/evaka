@@ -4,15 +4,14 @@
 
 import React from 'react'
 
-import { DaycareResponse } from 'lib-common/generated/api-types/daycare'
+import type { DaycareResponse } from 'lib-common/generated/api-types/daycare'
 import { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { H2 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
-import UnitAccessControl from '../../components/unit/tab-unit-information/UnitAccessControl'
-import UnitInformation from '../../components/unit/tab-unit-information/UnitInformation'
-
+import UnitAccessControl from './tab-unit-information/UnitAccessControl'
+import UnitInformation from './tab-unit-information/UnitInformation'
 import UnitMobileDevices from './tab-unit-information/UnitMobileDevices'
 
 export default React.memo(function TabUnitInformation({

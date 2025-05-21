@@ -6,15 +6,14 @@ import orderBy from 'lodash/orderBy'
 import React, { useContext } from 'react'
 import { Link } from 'react-router'
 
-import { PersonApplicationSummary } from 'lib-common/generated/api-types/application'
-import { ChildId } from 'lib-common/generated/api-types/shared'
+import type { PersonApplicationSummary } from 'lib-common/generated/api-types/application'
+import type { ChildId } from 'lib-common/generated/api-types/shared'
 import { constantQuery, useQueryResult } from 'lib-common/query'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { faFileAlt } from 'lib-icons'
 
-import CreateApplicationModal from '../../components/child-information/CreateApplicationModal'
 import { ChildContext } from '../../state'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
@@ -23,6 +22,7 @@ import { renderResult } from '../async-rendering'
 import { inferApplicationType } from '../person-profile/PersonApplications'
 import { DateTd, NameTd, StatusTd } from '../person-profile/common'
 
+import CreateApplicationModal from './CreateApplicationModal'
 import { getChildApplicationSummariesQuery, guardiansQuery } from './queries'
 
 interface Props {

@@ -4,7 +4,7 @@
 
 import React from 'react'
 
-import { AssistanceNeedDecisionStatus } from 'lib-common/generated/api-types/assistanceneed'
+import type { AssistanceNeedDecisionStatus } from 'lib-common/generated/api-types/assistanceneed'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { Strong } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'

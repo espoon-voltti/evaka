@@ -5,8 +5,8 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
-import { ApplicationType } from 'lib-common/generated/api-types/application'
+import type { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
+import type { ApplicationType } from 'lib-common/generated/api-types/application'
 import ListGrid from 'lib-components/layout/ListGrid'
 import { H2, H3, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'

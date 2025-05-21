@@ -5,17 +5,20 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
 import { compute as computeScrollIntoView } from 'compute-scroll-into-view'
-import { useCombobox, UseComboboxStateChange } from 'downshift'
+import type { UseComboboxStateChange } from 'downshift'
+import { useCombobox } from 'downshift'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import styled, { css } from 'styled-components'
 
 import { faChevronDown, faChevronUp, faTimes } from 'lib-icons'
 
 import UnderRowStatusIcon from '../StatusIcon'
-import { InputFieldUnderRow, InputInfo } from '../form/InputField'
+import type { InputInfo } from '../form/InputField'
+import { InputFieldUnderRow } from '../form/InputField'
 import { SpinnerSegment } from '../state/Spinner'
 
-import { borderRadius, borderStyles, DropdownProps, Root } from './shared'
+import type { DropdownProps } from './shared'
+import { borderRadius, borderStyles, Root } from './shared'
 
 export interface ComboboxProps<T> extends DropdownProps<T, HTMLInputElement> {
   clearable?: boolean

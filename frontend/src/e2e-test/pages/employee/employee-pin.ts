@@ -1,7 +1,8 @@
 // SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
-import { Page, TextInput, Element } from '../../utils/page'
+import type { Page, Element } from '../../utils/page'
+import { TextInput } from '../../utils/page'
 
 export class EmployeePinPage {
   pinInput: TextInput

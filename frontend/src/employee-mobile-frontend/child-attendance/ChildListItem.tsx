@@ -7,7 +7,7 @@ import React, { useMemo } from 'react'
 import { Link } from 'react-router'
 import styled from 'styled-components'
 
-import {
+import type {
   AttendanceChild,
   AttendanceStatus
 } from 'lib-common/generated/api-types/attendance'
@@ -26,10 +26,10 @@ import { routes } from '../App'
 import { groupNotesQuery } from '../child-notes/queries'
 import { getTodaysServiceTimes } from '../common/dailyServiceTimes'
 import { useTranslation } from '../common/i18n'
-import { UnitOrGroup } from '../common/unit-or-group'
+import type { UnitOrGroup } from '../common/unit-or-group'
 import { unitInfoQuery } from '../units/queries'
 
-import { ListItem } from './ChildList'
+import type { ListItem } from './ChildList'
 import { Reservations } from './Reservations'
 
 const imageHeight = '56px'

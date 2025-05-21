@@ -4,16 +4,17 @@
 
 import { useCallback, useState, useEffect } from 'react'
 
-import { Result, Success } from 'lib-common/api'
-import FiniteDateRange from 'lib-common/finite-date-range'
-import {
+import type { Result } from 'lib-common/api'
+import { Success } from 'lib-common/api'
+import type FiniteDateRange from 'lib-common/finite-date-range'
+import type {
   ReservationResponseDay,
   ReservationsResponse
 } from 'lib-common/generated/api-types/reservations'
-import LocalDate from 'lib-common/local-date'
+import type LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 
-import { MonthlyTimeSummary } from './MonthlyHoursSummary'
+import type { MonthlyTimeSummary } from './MonthlyHoursSummary'
 import { reservationsQuery } from './queries'
 
 export function useSummaryInfo(childSummaries: MonthlyTimeSummary[]) {

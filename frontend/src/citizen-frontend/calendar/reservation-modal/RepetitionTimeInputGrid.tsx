@@ -4,7 +4,8 @@
 
 import React from 'react'
 
-import { BoundForm, useFormUnion } from 'lib-common/form/hooks'
+import type { BoundForm } from 'lib-common/form/hooks'
+import { useFormUnion } from 'lib-common/form/hooks'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 
 import { useTranslation } from '../../localization'

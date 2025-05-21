@@ -11,8 +11,10 @@ import Tooltip from 'lib-components/atoms/Tooltip'
 import colors from 'lib-customizations/common'
 import { faCopy, faPen, faSync, faTrash } from 'lib-icons'
 
-import StatusLabel from '../../components/common/StatusLabel'
-import { DateRangeOpen, getStatusLabelByDateRange } from '../../utils/date'
+import type { DateRangeOpen } from '../../utils/date'
+import { getStatusLabelByDateRange } from '../../utils/date'
+
+import StatusLabel from './StatusLabel'
 
 const ToolbarWrapper = styled.div`
   display: flex;

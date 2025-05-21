@@ -2,20 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { DecisionType } from 'lib-common/generated/api-types/decision'
-import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { DecisionType } from 'lib-common/generated/api-types/decision'
+import type LocalDate from 'lib-common/local-date'
+import type { UUID } from 'lib-common/types'
 
 import config from '../../../config'
 import { waitUntilTrue } from '../../../utils'
-import {
-  Page,
-  Radio,
-  Element,
-  ElementCollection,
-  TextInput,
-  DatePicker
-} from '../../../utils/page'
+import type { Page, Element, ElementCollection } from '../../../utils/page'
+import { Radio, TextInput, DatePicker } from '../../../utils/page'
 import MessagesPage from '../messages/messages-page'
 
 import ApplicationEditView from './application-edit-view'

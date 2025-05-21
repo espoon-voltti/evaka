@@ -5,12 +5,12 @@
 import React, { useCallback, useImperativeHandle, useMemo, useRef } from 'react'
 import styled from 'styled-components'
 
-import { Result } from 'lib-common/api'
-import { IncomeStatementStatus } from 'lib-common/generated/api-types/incomestatement'
-import { IncomeStatementId } from 'lib-common/generated/api-types/shared'
+import type { Result } from 'lib-common/api'
+import type { IncomeStatementStatus } from 'lib-common/generated/api-types/incomestatement'
+import type { IncomeStatementId } from 'lib-common/generated/api-types/shared'
 import { numAttachments } from 'lib-common/income-statements/attachments'
-import * as Form from 'lib-common/income-statements/form'
-import LocalDate from 'lib-common/local-date'
+import type * as Form from 'lib-common/income-statements/form'
+import type LocalDate from 'lib-common/local-date'
 import { scrollToRef } from 'lib-common/utils/scrolling'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { Button } from 'lib-components/atoms/buttons/Button'
@@ -34,12 +34,14 @@ import {
   AttachmentSection,
   useAttachmentHandler
 } from './IncomeStatementAttachments'
+import type {
+  IncomeStatementFormAPI,
+  SetStateCallback
+} from './IncomeStatementComponents'
 import {
   ActionContainer,
   AssureCheckbox,
-  IncomeStatementFormAPI,
   LabelError,
-  SetStateCallback,
   useFieldDispatch,
   useFieldSetState
 } from './IncomeStatementComponents'

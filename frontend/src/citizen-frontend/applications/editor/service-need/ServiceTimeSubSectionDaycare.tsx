@@ -6,7 +6,7 @@ import React, { useEffect, useMemo } from 'react'
 import styled from 'styled-components'
 
 import DateRange from 'lib-common/date-range'
-import { ApplicationId } from 'lib-common/generated/api-types/shared'
+import type { ApplicationId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
@@ -29,7 +29,7 @@ import { getAttachmentUrl, applicationAttachment } from '../../../attachments'
 import { errorToInputInfo } from '../../../input-info-helper'
 import { useLang, useTranslation } from '../../../localization'
 
-import { ServiceNeedSectionProps } from './ServiceNeedSection'
+import type { ServiceNeedSectionProps } from './ServiceNeedSection'
 
 const Hyphenbox = styled.div`
   padding-top: 36px;

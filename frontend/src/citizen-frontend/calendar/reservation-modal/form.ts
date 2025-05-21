@@ -6,11 +6,8 @@ import groupBy from 'lodash/groupBy'
 import uniqBy from 'lodash/uniqBy'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
-import {
-  localTimeRange,
-  localDateRange,
-  FieldType
-} from 'lib-common/form/fields'
+import type { FieldType } from 'lib-common/form/fields'
+import { localTimeRange, localDateRange } from 'lib-common/form/fields'
 import {
   array,
   mapped,
@@ -22,26 +19,25 @@ import {
   validated,
   value
 } from 'lib-common/form/form'
-import {
+import type {
   FieldErrors,
   StateOf,
-  ValidationError,
-  ValidationResult,
-  ValidationSuccess
+  ValidationResult
 } from 'lib-common/form/types'
-import { HolidayPeriodEffect } from 'lib-common/generated/api-types/holidayperiod'
-import {
+import { ValidationError, ValidationSuccess } from 'lib-common/form/types'
+import type { HolidayPeriodEffect } from 'lib-common/generated/api-types/holidayperiod'
+import type {
   DailyReservationRequest,
   ReservationChild,
   ReservationResponseDay,
   ReservationResponseDayChild
 } from 'lib-common/generated/api-types/reservations'
-import { ChildId } from 'lib-common/generated/api-types/shared'
-import LocalDate from 'lib-common/local-date'
+import type { ChildId } from 'lib-common/generated/api-types/shared'
+import type LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
-import { Repetition } from 'lib-common/reservations'
+import type { Repetition } from 'lib-common/reservations'
 import TimeRange from 'lib-common/time-range'
-import { Translations } from 'lib-customizations/citizen'
+import type { Translations } from 'lib-customizations/citizen'
 
 export const MAX_TIME_RANGE = new TimeRange(
   LocalTime.MIDNIGHT,

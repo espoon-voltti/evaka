@@ -6,7 +6,7 @@ import React, { useState } from 'react'
 import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
-import { ChildId, DaycareId } from 'lib-common/generated/api-types/shared'
+import type { ChildId, DaycareId } from 'lib-common/generated/api-types/shared'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
@@ -26,7 +26,8 @@ import ChildNotesSummary from '../ChildNotesSummary'
 import { childrenQuery, createFullDayAbsenceMutation } from '../queries'
 import { useChild } from '../utils'
 
-import AbsenceSelector, { AbsenceTypeWithNoAbsence } from './AbsenceSelector'
+import type { AbsenceTypeWithNoAbsence } from './AbsenceSelector'
+import AbsenceSelector from './AbsenceSelector'
 
 export default React.memo(function MarkAbsent({
   unitId,

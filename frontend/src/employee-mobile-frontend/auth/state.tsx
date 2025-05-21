@@ -5,8 +5,9 @@
 import { useQueryClient } from '@tanstack/react-query'
 import React, { createContext, useCallback, useMemo } from 'react'
 
-import { Loading, Result } from 'lib-common/api'
-import { MobileUser } from 'lib-common/api-types/employee-auth'
+import type { Result } from 'lib-common/api'
+import { Loading } from 'lib-common/api'
+import type { MobileUser } from 'lib-common/api-types/employee-auth'
 import { Queries, useQueryResult } from 'lib-common/query'
 
 import { renderResult } from '../async-rendering'

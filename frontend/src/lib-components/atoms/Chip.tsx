@@ -4,7 +4,7 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
-import { Property } from 'csstype'
+import type { Property } from 'csstype'
 import { readableColor } from 'polished'
 import React, { useCallback } from 'react'
 import styled, { css } from 'styled-components'

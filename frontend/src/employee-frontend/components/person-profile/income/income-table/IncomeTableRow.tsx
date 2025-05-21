@@ -6,15 +6,15 @@ import React from 'react'
 import styled from 'styled-components'
 
 import { incomeCoefficients } from 'lib-common/api-types/income'
-import { IncomeOption } from 'lib-common/generated/api-types/invoicing'
+import type { IncomeOption } from 'lib-common/generated/api-types/invoicing'
 import { formatCents } from 'lib-common/money'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import { Td, Tr } from 'lib-components/layout/Table'
 import { Light } from 'lib-components/typography'
 
-import EuroInput from '../../../../components/common/EuroInput'
-import { Translations } from '../../../../state/i18n'
-import { IncomeValueString } from '../IncomeTable'
+import type { Translations } from '../../../../state/i18n'
+import EuroInput from '../../../common/EuroInput'
+import type { IncomeValueString } from '../IncomeTable'
 
 type Props = {
   i18n: Translations

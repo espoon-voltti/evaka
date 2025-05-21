@@ -2,18 +2,16 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type LocalDate from 'lib-common/local-date'
+import type { UUID } from 'lib-common/types'
 
-import {
-  AsyncButton,
+import type {
   Page,
-  TextInput,
   ElementCollection,
   Element,
-  EnvType,
-  Modal
+  EnvType
 } from '../../utils/page'
+import { AsyncButton, Modal, TextInput } from '../../utils/page'
 
 import { CitizenNewAbsenceApplicationPage } from './citizen-new-absence-application'
 

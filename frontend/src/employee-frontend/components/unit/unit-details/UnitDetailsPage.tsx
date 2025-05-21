@@ -4,9 +4,10 @@
 
 import React, { useContext, useEffect, useState } from 'react'
 
-import { combine, Loading, Result } from 'lib-common/api'
+import type { Result } from 'lib-common/api'
+import { combine, Loading } from 'lib-common/api'
 import { useBoolean } from 'lib-common/form/hooks'
-import { DaycareId } from 'lib-common/generated/api-types/shared'
+import type { DaycareId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
@@ -17,13 +18,15 @@ import {
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Gap } from 'lib-components/white-space'
 
-import UnitEditor from '../../../components/unit/unit-details/UnitEditor'
 import { areasQuery, getEmployeesQuery } from '../../../queries'
 import { useTranslation } from '../../../state/i18n'
-import { FinanceDecisionHandlerOption } from '../../../state/invoicing-ui'
-import { TitleContext, TitleState } from '../../../state/title'
+import type { FinanceDecisionHandlerOption } from '../../../state/invoicing-ui'
+import type { TitleState } from '../../../state/title'
+import { TitleContext } from '../../../state/title'
 import { renderResult } from '../../async-rendering'
 import { daycareQuery, updateUnitMutation } from '../queries'
+
+import UnitEditor from './UnitEditor'
 
 export default React.memo(function UnitDetailsPage() {
   const id = useIdRouteParam<DaycareId>('id')

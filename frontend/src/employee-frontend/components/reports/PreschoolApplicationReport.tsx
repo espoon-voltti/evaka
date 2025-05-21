@@ -7,20 +7,14 @@ import React, { useCallback, useMemo, useState } from 'react'
 import { Link } from 'react-router'
 import styled from 'styled-components'
 
-import { PreschoolApplicationReportRow } from 'lib-common/generated/api-types/reports'
+import type { PreschoolApplicationReportRow } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Container, { ContentArea } from 'lib-components/layout/Container'
-import {
-  SortableTh,
-  SortDirection,
-  Tbody,
-  Td,
-  Thead,
-  Tr
-} from 'lib-components/layout/Table'
+import type { SortDirection } from 'lib-components/layout/Table'
+import { SortableTh, Tbody, Td, Thead, Tr } from 'lib-components/layout/Table'
 
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'

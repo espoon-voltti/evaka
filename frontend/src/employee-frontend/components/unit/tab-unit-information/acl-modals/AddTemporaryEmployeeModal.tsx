@@ -4,10 +4,9 @@
 
 import React, { useState } from 'react'
 
-import { isValidPinCode } from 'employee-frontend/components/employee-pin-code/EmployeePinCodePage'
-import { Action } from 'lib-common/generated/action'
-import { DaycareGroupResponse } from 'lib-common/generated/api-types/daycare'
-import { DaycareId } from 'lib-common/generated/api-types/shared'
+import type { Action } from 'lib-common/generated/action'
+import type { DaycareGroupResponse } from 'lib-common/generated/api-types/daycare'
+import type { DaycareId } from 'lib-common/generated/api-types/shared'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
@@ -16,6 +15,7 @@ import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { Label } from 'lib-components/typography'
 
 import { useTranslation } from '../../../../state/i18n'
+import { isValidPinCode } from '../../../employee-pin-code/EmployeePinCodePage'
 import { createTemporaryEmployeeMutation } from '../../queries'
 
 import { useGroupOptions } from './common'

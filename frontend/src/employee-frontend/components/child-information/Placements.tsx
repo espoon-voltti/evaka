@@ -7,14 +7,12 @@ import React, { Fragment, useContext } from 'react'
 
 import { combine } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { ChildId } from 'lib-common/generated/api-types/shared'
+import type { ChildId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import { H3 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
-import CreatePlacementModal from '../../components/child-information/placements/CreatePlacementModal'
-import PlacementRow from '../../components/child-information/placements/PlacementRow'
 import { serviceNeedOptionsQuery } from '../../queries'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
@@ -22,6 +20,8 @@ import { UserContext } from '../../state/user'
 import { renderResult } from '../async-rendering'
 import { FlexRow } from '../common/styled/containers'
 
+import CreatePlacementModal from './placements/CreatePlacementModal'
+import PlacementRow from './placements/PlacementRow'
 import { placementsQuery } from './queries'
 
 interface Props {

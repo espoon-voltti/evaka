@@ -4,8 +4,8 @@
 
 import React, { useCallback, useContext } from 'react'
 
-import { Result } from 'lib-common/api'
-import DateRange from 'lib-common/date-range'
+import type { Result } from 'lib-common/api'
+import type DateRange from 'lib-common/date-range'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { faQuestion } from 'lib-icons'
 

@@ -5,17 +5,18 @@
 import React, { useContext, useState } from 'react'
 
 import { isLoading } from 'lib-common/api'
-import { ChildId } from 'lib-common/generated/api-types/shared'
+import type { ChildId } from 'lib-common/generated/api-types/shared'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { H2 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
-import AdditionalInformation from '../../components/child-information/person-details/AdditionalInformation'
-import PersonDetails from '../../components/person-shared/PersonDetails'
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
+import PersonDetails from '../person-shared/PersonDetails'
 
-import { ChildContext, ChildState } from './state'
+import AdditionalInformation from './person-details/AdditionalInformation'
+import type { ChildState } from './state'
+import { ChildContext } from './state'
 
 interface Props {
   id: ChildId

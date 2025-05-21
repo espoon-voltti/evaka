@@ -8,17 +8,17 @@ import React, { useContext, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
 
 import { combine } from 'lib-common/api'
+import type { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
 import {
   apiDataToFormData,
-  ApplicationFormData,
   formDataToApiData
 } from 'lib-common/api-types/application/ApplicationFormData'
-import FiniteDateRange from 'lib-common/finite-date-range'
-import {
+import type FiniteDateRange from 'lib-common/finite-date-range'
+import type {
   ApplicationDetails as ApplicationDetailsGen,
   CitizenChildren
 } from 'lib-common/generated/api-types/application'
-import { ApplicationId } from 'lib-common/generated/api-types/shared'
+import type { ApplicationId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useMutation, useQuery, useQueryResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
@@ -37,10 +37,6 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 import { faAngleLeft, faCheck, faExclamation } from 'lib-icons'
 
 import Footer from '../../Footer'
-import ApplicationFormClub from '../../applications/editor/ApplicationFormClub'
-import ApplicationFormDaycare from '../../applications/editor/ApplicationFormDaycare'
-import ApplicationFormPreschool from '../../applications/editor/ApplicationFormPreschool'
-import ApplicationVerificationView from '../../applications/editor/verification/ApplicationVerificationView'
 import { renderResult } from '../../async-rendering'
 import { useTranslation } from '../../localization'
 import { OverlayContext } from '../../overlay/state'
@@ -55,13 +51,17 @@ import {
   updateApplicationMutation
 } from '../queries'
 
+import ApplicationFormClub from './ApplicationFormClub'
+import ApplicationFormDaycare from './ApplicationFormDaycare'
+import ApplicationFormPreschool from './ApplicationFormPreschool'
+import type { ApplicationFormDataErrors } from './validations'
 import {
-  ApplicationFormDataErrors,
   applicationHasErrors,
   maxPreferredStartDate,
   minPreferredStartDate,
   validateApplication
 } from './validations'
+import ApplicationVerificationView from './verification/ApplicationVerificationView'
 
 type ApplicationEditorContentProps = {
   application: ApplicationDetailsGen

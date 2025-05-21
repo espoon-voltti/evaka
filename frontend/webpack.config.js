@@ -4,15 +4,16 @@
 
 /* eslint-disable no-console */
 
-const fs = require('fs')
-const path = require('path')
+import fs from 'node:fs'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 
-const sentryWebpackPlugin =
-  require('@sentry/webpack-plugin').sentryWebpackPlugin
-const HtmlWebpackPlugin = require('html-webpack-plugin')
-const TsConfigPaths = require('tsconfig-paths-webpack-plugin')
-const webpack = require('webpack')
-const WebpackPwaManifest = require('webpack-pwa-manifest')
+import { sentryWebpackPlugin } from '@sentry/webpack-plugin'
+import HtmlWebpackPlugin from 'html-webpack-plugin'
+import webpack from 'webpack'
+import WebpackPwaManifest from 'webpack-pwa-manifest'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 function resolveCustomizations() {
   const customizations = process.env.EVAKA_CUSTOMIZATIONS
@@ -29,7 +30,7 @@ function resolveCustomizations() {
   }
 }
 
-function resolveIcons() {
+async function resolveIcons() {
   switch (process.env.ICONS) {
     case 'pro':
       console.info('Using pro icons (forced)')
@@ -43,9 +44,9 @@ function resolveIcons() {
       throw new Error(`Invalid environment variable ICONS=${process.env.ICONS}`)
   }
   try {
-    require('@fortawesome/pro-light-svg-icons')
-    require('@fortawesome/pro-regular-svg-icons')
-    require('@fortawesome/pro-solid-svg-icons')
+    await import('@fortawesome/pro-light-svg-icons')
+    await import('@fortawesome/pro-regular-svg-icons')
+    await import('@fortawesome/pro-solid-svg-icons')
     console.info('Using pro icons (auto-detected)')
     return 'pro'
   } catch (e) {
@@ -55,7 +56,7 @@ function resolveIcons() {
 }
 
 const customizationsModule = resolveCustomizations()
-const icons = resolveIcons()
+const icons = await resolveIcons()
 
 function baseConfig({ isDevelopment }, { name, publicPath, entry }) {
   const plugins = [
@@ -68,15 +69,6 @@ function baseConfig({ isDevelopment }, { name, publicPath, entry }) {
         )
       }
     }),
-    new webpack.NormalModuleReplacementPlugin(
-      /@evaka\/customizations\/(.*)/,
-      (resource) => {
-        resource.request = resource.request.replace(
-          /@evaka\/customizations/,
-          `lib-customizations/${customizationsModule}`
-        )
-      }
-    ),
     new webpack.DefinePlugin({
       // This matches APP_COMMIT in apigw
       'process.env.APP_COMMIT': `'${process.env.APP_COMMIT || 'UNDEFINED'}'`
@@ -123,16 +115,19 @@ function baseConfig({ isDevelopment }, { name, publicPath, entry }) {
       extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
       symlinks: false,
       alias: {
+        'lib-common': path.resolve(__dirname, 'src/lib-common'),
+        'lib-components': path.resolve(__dirname, 'src/lib-components'),
+        'lib-customizations': path.resolve(__dirname, `src/lib-customizations`),
+        'lib-icons': path.resolve(__dirname, 'src/lib-icons'),
+        '@evaka/customizations': path.resolve(
+          __dirname,
+          `src/lib-customizations/${customizationsModule}`
+        ),
         Icons:
           icons === 'pro'
             ? path.resolve(__dirname, 'src/lib-icons/pro-icons')
             : path.resolve(__dirname, 'src/lib-icons/free-icons')
-      },
-      plugins: [
-        new TsConfigPaths({
-          configFile: path.resolve(__dirname, `src/${name}/tsconfig.json`)
-        })
-      ]
+      }
     },
     plugins,
     module: {
@@ -301,7 +296,7 @@ function employeeMobile(flags) {
   return config
 }
 
-module.exports = (_env, argv) => {
+export default (_env, argv) => {
   const isDevelopment = !!(argv && argv['mode'] !== 'production')
   const flags = { isDevelopment }
 

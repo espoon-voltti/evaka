@@ -5,13 +5,10 @@
 import React, { useContext, useMemo, useRef } from 'react'
 import styled from 'styled-components'
 
-import {
-  ChildContext,
-  ChildState
-} from 'employee-frontend/components/child-information/state'
-import { combine, Result } from 'lib-common/api'
-import { AssistanceActionResponse } from 'lib-common/generated/api-types/assistanceaction'
-import { ChildId } from 'lib-common/generated/api-types/shared'
+import type { Result } from 'lib-common/api'
+import { combine } from 'lib-common/api'
+import type { AssistanceActionResponse } from 'lib-common/generated/api-types/assistanceaction'
+import type { ChildId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
 import { scrollToRef } from 'lib-common/utils/scrolling'
 import Title from 'lib-components/atoms/Title'
@@ -21,6 +18,8 @@ import { getAssistanceActionOptionsQuery } from '../../../queries'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
 import { renderResult } from '../../async-rendering'
+import { ChildContext } from '../state'
+import type { ChildState } from '../state'
 
 import AssistanceActionForm from './AssistanceActionForm'
 import AssistanceActionRow from './AssistanceActionRow'

@@ -6,19 +6,19 @@ import mapValues from 'lodash/mapValues'
 import pick from 'lodash/pick'
 import React, { useCallback, useMemo, useState } from 'react'
 
-import { useTranslation } from 'employee-frontend/state/i18n'
 import { Failure } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
-import { ErrorKey, required, time, validate } from 'lib-common/form-validation'
-import {
+import type { ErrorKey } from 'lib-common/form-validation'
+import { required, time, validate } from 'lib-common/form-validation'
+import type {
   DailyServiceTimesType,
   DailyServiceTimesValue
 } from 'lib-common/generated/api-types/dailyservicetimes'
-import {
+import type {
   ChildId,
   DailyServiceTimeId
 } from 'lib-common/generated/api-types/shared'
-import { JsonOf } from 'lib-common/json'
+import type { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { useMutationResult } from 'lib-common/query'
@@ -37,6 +37,7 @@ import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { Label, LabelLike } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
+import { useTranslation } from '../../../state/i18n'
 import {
   postDailyServiceTimesMutation,
   putDailyServiceTimesEndMutation,

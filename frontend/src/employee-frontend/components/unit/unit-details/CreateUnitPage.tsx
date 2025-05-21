@@ -5,7 +5,8 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
 
-import { combine, Loading, Result } from 'lib-common/api'
+import type { Result } from 'lib-common/api'
+import { combine, Loading } from 'lib-common/api'
 import { useQueryResult } from 'lib-common/query'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import {
@@ -14,12 +15,13 @@ import {
 } from 'lib-components/atoms/buttons/MutateButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 
-import UnitEditor from '../../../components/unit/unit-details/UnitEditor'
 import { areasQuery, getEmployeesQuery } from '../../../queries'
 import { useTranslation } from '../../../state/i18n'
-import { FinanceDecisionHandlerOption } from '../../../state/invoicing-ui'
+import type { FinanceDecisionHandlerOption } from '../../../state/invoicing-ui'
 import { renderResult } from '../../async-rendering'
 import { createUnitMutation } from '../queries'
+
+import UnitEditor from './UnitEditor'
 
 export default React.memo(function CreateUnitPage() {
   const { i18n } = useTranslation()

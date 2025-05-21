@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import * as Sentry from '@sentry/browser'
+import type * as Sentry from '@sentry/browser'
 
 function isInlineScriptException(event: Sentry.Event): boolean {
   if (

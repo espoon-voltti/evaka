@@ -7,13 +7,13 @@ import React, { useContext, useMemo, useState } from 'react'
 
 import { wrapResult } from 'lib-common/api'
 import { required, validate } from 'lib-common/form-validation'
-import {
+import type {
   ApplicationType,
   PaperApplicationCreateRequest
 } from 'lib-common/generated/api-types/application'
-import { CreatePersonBody } from 'lib-common/generated/api-types/pis'
-import { PersonJSON } from 'lib-common/generated/api-types/pis'
-import { PersonId } from 'lib-common/generated/api-types/shared'
+import type { CreatePersonBody } from 'lib-common/generated/api-types/pis'
+import type { PersonJSON } from 'lib-common/generated/api-types/pis'
+import type { PersonId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
@@ -25,17 +25,18 @@ import { Label } from 'lib-components/typography'
 import { applicationTypes } from 'lib-customizations/employee'
 import { faFileAlt } from 'lib-icons'
 
-import CreatePersonInput from '../../components/common/CreatePersonInput'
-import {
-  DbPersonSearch as PersonSearch,
-  VtjPersonSearch
-} from '../../components/common/PersonSearch'
 import { getEmployeeUrlPrefix } from '../../constants'
 import { createPaperApplication } from '../../generated/api-clients/application'
-import { Translations, useTranslation } from '../../state/i18n'
+import type { Translations } from '../../state/i18n'
+import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
 import { formatName } from '../../utils'
 import { errorToInputInfo } from '../../utils/validation/input-info-helper'
+import CreatePersonInput from '../common/CreatePersonInput'
+import {
+  DbPersonSearch as PersonSearch,
+  VtjPersonSearch
+} from '../common/PersonSearch'
 
 const createPaperApplicationResult = wrapResult(createPaperApplication)
 

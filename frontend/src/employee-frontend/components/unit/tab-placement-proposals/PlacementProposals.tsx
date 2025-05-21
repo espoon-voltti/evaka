@@ -6,12 +6,15 @@ import sortBy from 'lodash/sortBy'
 import React, { useCallback, useContext, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import {
+import type {
   PlacementPlanConfirmationStatus,
   PlacementPlanDetails,
   PlacementPlanRejectReason
 } from 'lib-common/generated/api-types/placement'
-import { ApplicationId, DaycareId } from 'lib-common/generated/api-types/shared'
+import type {
+  ApplicationId,
+  DaycareId
+} from 'lib-common/generated/api-types/shared'
 import { useMutationResult } from 'lib-common/query'
 import {
   MutateButton,
@@ -30,13 +33,14 @@ import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { placementPlanRejectReasons } from 'lib-customizations/employee'
 
-import PlacementProposalRow from '../../../components/unit/tab-placement-proposals/PlacementProposalRow'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
 import {
   acceptPlacementProposalMutation,
   respondToPlacementProposalMutation
 } from '../queries'
+
+import PlacementProposalRow from './PlacementProposalRow'
 
 interface Summary {
   confirmationStates: Record<ApplicationId, PlacementPlanConfirmationStatus>

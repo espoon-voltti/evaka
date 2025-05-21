@@ -4,9 +4,9 @@
 
 import React, { useState, useContext } from 'react'
 
-import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
-import { NekkuUnitNumber } from 'lib-common/generated/api-types/nekku'
-import LocalDate from 'lib-common/local-date'
+import type { DaycareGroup } from 'lib-common/generated/api-types/daycare'
+import type { NekkuUnitNumber } from 'lib-common/generated/api-types/nekku'
+import type LocalDate from 'lib-common/local-date'
 import { cancelMutation } from 'lib-common/query'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import InputField from 'lib-components/atoms/form/InputField'

@@ -5,8 +5,8 @@
 import React, { useCallback, useMemo, useState } from 'react'
 
 import { isLoading, wrapResult } from 'lib-common/api'
-import { FeeThresholds } from 'lib-common/generated/api-types/invoicing'
-import LocalDate from 'lib-common/local-date'
+import type { FeeThresholds } from 'lib-common/generated/api-types/invoicing'
+import type LocalDate from 'lib-common/local-date'
 import { formatCents } from 'lib-common/money'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'

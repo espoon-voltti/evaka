@@ -5,14 +5,9 @@
 import React, { useCallback, useState } from 'react'
 import styled from 'styled-components'
 
-import { renderResult } from 'citizen-frontend/async-rendering'
-import { getAttachmentUrl } from 'citizen-frontend/attachments'
-import { useUser } from 'citizen-frontend/auth/state'
-import CollapsibleOrWholePageContainer from 'citizen-frontend/children/ResponsiveWholePageCollapsible'
-import { useTranslation } from 'citizen-frontend/localization'
-import { Attachment } from 'lib-common/generated/api-types/attachment'
-import { PedagogicalDocumentCitizen } from 'lib-common/generated/api-types/pedagogicaldocument'
-import { ChildId } from 'lib-common/generated/api-types/shared'
+import type { Attachment } from 'lib-common/generated/api-types/attachment'
+import type { PedagogicalDocumentCitizen } from 'lib-common/generated/api-types/pedagogicaldocument'
+import type { ChildId } from 'lib-common/generated/api-types/shared'
 import { useMutation, useQuery, useQueryResult } from 'lib-common/query'
 import { useUniqueId } from 'lib-common/utils/useUniqueId'
 import { Button } from 'lib-components/atoms/buttons/Button'
@@ -40,6 +35,11 @@ import {
 } from 'lib-icons'
 
 import RequireAuth from '../../../RequireAuth'
+import { renderResult } from '../../../async-rendering'
+import { getAttachmentUrl } from '../../../attachments'
+import { useUser } from '../../../auth/state'
+import { useTranslation } from '../../../localization'
+import CollapsibleOrWholePageContainer from '../../ResponsiveWholePageCollapsible'
 
 import {
   markPedagogicalDocumentAsReadMutation,

@@ -4,7 +4,7 @@
 
 import { renderHook, act } from '@testing-library/react'
 
-import { MonthlyTimeSummary } from './MonthlyHoursSummary'
+import type { MonthlyTimeSummary } from './MonthlyHoursSummary'
 import { useSummaryInfo } from './hooks'
 
 describe('useSummaryInfo', () => {

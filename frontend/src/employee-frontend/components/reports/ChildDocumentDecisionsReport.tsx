@@ -7,14 +7,14 @@ import React, { useCallback, useContext, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
-import { Result } from 'lib-common/api'
-import {
+import type { Result } from 'lib-common/api'
+import type {
   ChildDocumentDecisionStatus,
   DocumentStatus
 } from 'lib-common/generated/api-types/document'
-import { SortDirection } from 'lib-common/generated/api-types/invoicing'
-import { ChildDocumentId } from 'lib-common/generated/api-types/shared'
-import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import type { SortDirection } from 'lib-common/generated/api-types/invoicing'
+import type { ChildDocumentId } from 'lib-common/generated/api-types/shared'
+import type HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { evakaUserId } from 'lib-common/id-type'
 import { useQueryResult } from 'lib-common/query'
 import Title from 'lib-components/atoms/Title'

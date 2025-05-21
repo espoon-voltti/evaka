@@ -3,16 +3,17 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import sortBy from 'lodash/sortBy'
-import React, { ReactNode, useMemo, useState } from 'react'
+import type { ReactNode } from 'react'
+import React, { useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import { ApplicationType } from 'lib-common/generated/api-types/application'
-import {
+import type { ApplicationType } from 'lib-common/generated/api-types/application'
+import type {
   Language,
   ProviderType,
   PublicUnit
 } from 'lib-common/generated/api-types/daycare'
-import { Coordinate } from 'lib-common/generated/api-types/shared'
+import type { Coordinate } from 'lib-common/generated/api-types/shared'
 import {
   constantQuery,
   useChainedQuery,
@@ -31,7 +32,8 @@ import MobileTabs from './MobileTabs'
 import SearchSection from './SearchSection'
 import UnitDetailsPanel from './UnitDetailsPanel'
 import UnitList from './UnitList'
-import { mapViewBreakpoint, MobileMode } from './const'
+import type { MobileMode } from './const'
+import { mapViewBreakpoint } from './const'
 import { unitsQuery, unitsWithDistancesQuery } from './queries'
 
 export type MapAddress = {

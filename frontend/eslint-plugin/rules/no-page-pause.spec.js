@@ -2,9 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-const { RuleTester } = require('eslint')
+import { RuleTester } from 'eslint'
 
-const noPagePause = require('./no-page-pause')
+import noPagePause from './no-page-pause.js'
 
 new RuleTester().run('no-page-pause', noPagePause, {
   valid: [

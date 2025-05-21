@@ -7,7 +7,7 @@ import isInteger from 'lodash/isInteger'
 
 import { isValidTime } from './date'
 import HelsinkiDateTime from './helsinki-date-time'
-import { Ordered } from './ordered'
+import type { Ordered } from './ordered'
 import { isAutomatedTest } from './utils/helpers'
 
 // ISO local time with nanosecond precision

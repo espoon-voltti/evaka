@@ -5,11 +5,7 @@
 import orderBy from 'lodash/orderBy'
 import React, { useContext, useState } from 'react'
 
-import {
-  ChildContext,
-  ChildState
-} from 'employee-frontend/components/child-information/state'
-import {
+import type {
   ChildId,
   DailyServiceTimeId
 } from 'lib-common/generated/api-types/shared'
@@ -32,6 +28,8 @@ import {
   deleteDailyServiceTimesMutation,
   getDailyServiceTimesQuery
 } from './queries'
+import { ChildContext } from './state'
+import type { ChildState } from './state'
 
 interface Props {
   childId: ChildId

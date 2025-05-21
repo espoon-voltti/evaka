@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React from 'react'
 import styled from 'styled-components'
 
-import { ChildBasicInformation } from 'lib-common/generated/api-types/sensitive'
+import type { ChildBasicInformation } from 'lib-common/generated/api-types/sensitive'
 import { getAge } from 'lib-common/utils/local-date'
 import Title from 'lib-components/atoms/Title'
 import { ContentArea } from 'lib-components/layout/Container'

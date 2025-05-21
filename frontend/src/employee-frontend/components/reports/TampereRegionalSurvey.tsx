@@ -7,8 +7,7 @@ import range from 'lodash/range'
 import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import { useTranslation } from 'employee-frontend/state/i18n'
-import {
+import type {
   RegionalSurveyReportAgeStatisticsResult,
   RegionalSurveyReportResult,
   RegionalSurveyReportYearlyStatisticsResult
@@ -27,6 +26,7 @@ import {
 import { H2, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
+import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 import { FlexRow } from '../common/styled/containers'
 

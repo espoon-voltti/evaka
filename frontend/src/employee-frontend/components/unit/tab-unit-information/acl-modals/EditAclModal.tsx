@@ -4,9 +4,12 @@
 
 import React, { useState } from 'react'
 
-import { Action } from 'lib-common/generated/action'
-import { DaycareGroupResponse } from 'lib-common/generated/api-types/daycare'
-import { DaycareAclRow, DaycareId } from 'lib-common/generated/api-types/shared'
+import type { Action } from 'lib-common/generated/action'
+import type { DaycareGroupResponse } from 'lib-common/generated/api-types/daycare'
+import type {
+  DaycareAclRow,
+  DaycareId
+} from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'

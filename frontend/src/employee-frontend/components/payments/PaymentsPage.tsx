@@ -4,12 +4,12 @@
 
 import React, { useCallback, useContext, useState } from 'react'
 
-import {
+import type {
   PaymentSortParam,
   PaymentStatus,
   SortDirection
 } from 'lib-common/generated/api-types/invoicing'
-import { PaymentId } from 'lib-common/generated/api-types/shared'
+import type { PaymentId } from 'lib-common/generated/api-types/shared'
 import { constantQuery, useQueryResult } from 'lib-common/query'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Gap } from 'lib-components/white-space'

@@ -6,7 +6,7 @@ import React from 'react'
 import { Link } from 'react-router'
 import styled from 'styled-components'
 
-import {
+import type {
   VoucherValueDecisionDetailed,
   VoucherValueDecisionType
 } from 'lib-common/generated/api-types/invoicing'
@@ -14,11 +14,11 @@ import { H1 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
-import LabelValueList from '../../components/common/LabelValueList'
-import WarningLabel from '../../components/common/WarningLabel'
 import { getVoucherValueDecisionPdf } from '../../generated/api-clients/invoicing'
 import { useTranslation } from '../../state/i18n'
 import { formatName } from '../../utils'
+import LabelValueList from '../common/LabelValueList'
+import WarningLabel from '../common/WarningLabel'
 import { TypeSelect } from '../fee-decision-details/TypeSelect'
 
 type Props = {

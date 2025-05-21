@@ -4,8 +4,8 @@
 
 // GENERATED FILE: no manual modifications
 
-import { JsonOf } from 'lib-common/json'
-import { PersonId } from 'lib-common/generated/api-types/shared'
+import type { JsonOf } from 'lib-common/json'
+import type { PersonId } from 'lib-common/generated/api-types/shared'
 import { client } from '../../api/client'
 import { uri } from 'lib-common/uri'
 

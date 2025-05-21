@@ -4,7 +4,7 @@
 
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { randomId } from 'lib-common/id-type'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 
 import config from '../../config'
 import {
@@ -20,7 +20,7 @@ import {
   insertGuardians,
   resetServiceState
 } from '../../generated/api-clients'
-import { DevPerson } from '../../generated/api-types'
+import type { DevPerson } from '../../generated/api-types'
 import GuardianInformationPage from '../../pages/employee/guardian-information'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'

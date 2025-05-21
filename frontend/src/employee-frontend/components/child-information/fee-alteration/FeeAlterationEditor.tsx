@@ -4,19 +4,16 @@
 
 import React, { useCallback, useEffect, useState } from 'react'
 
-import {
-  getAttachmentUrl,
-  feeAlterationAttachment
-} from 'employee-frontend/api/attachments'
-import { Result, Success } from 'lib-common/api'
-import { Attachment } from 'lib-common/generated/api-types/attachment'
-import { FeeAlteration } from 'lib-common/generated/api-types/invoicing'
-import {
+import type { Result } from 'lib-common/api'
+import { Success } from 'lib-common/api'
+import type { Attachment } from 'lib-common/generated/api-types/attachment'
+import type { FeeAlteration } from 'lib-common/generated/api-types/invoicing'
+import type {
   FeeAlterationId,
   PersonId
 } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import Title from 'lib-components/atoms/Title'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
@@ -27,12 +24,16 @@ import DateRangePicker from 'lib-components/molecules/date-picker/DateRangePicke
 import { P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
-import LabelValueList from '../../../components/common/LabelValueList'
-import { useTranslation } from '../../../state/i18n'
 import {
+  getAttachmentUrl,
+  feeAlterationAttachment
+} from '../../../api/attachments'
+import { useTranslation } from '../../../state/i18n'
+import type {
   FeeAlterationForm,
   PartialFeeAlteration
 } from '../../../types/fee-alteration'
+import LabelValueList from '../../common/LabelValueList'
 
 import FeeAlterationRowInput from './FeeAlterationRowInput'
 

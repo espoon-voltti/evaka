@@ -4,20 +4,20 @@
 
 import React, { useCallback } from 'react'
 
-import { renderResult } from 'citizen-frontend/async-rendering'
-import { UnitPreferenceFormData } from 'lib-common/api-types/application/ApplicationFormData'
+import type { UnitPreferenceFormData } from 'lib-common/api-types/application/ApplicationFormData'
 import { constantQuery, useQueryResult } from 'lib-common/query'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { featureFlags } from 'lib-customizations/citizen'
 
-import AdditionalDetailsSection from '../../applications/editor/AdditionalDetailsSection'
-import Heading from '../../applications/editor/Heading'
-import ContactInfoSection from '../../applications/editor/contact-info/ContactInfoSection'
-import ServiceNeedSection from '../../applications/editor/service-need/ServiceNeedSection'
-import UnitPreferenceSection from '../../applications/editor/unit-preference/UnitPreferenceSection'
+import { renderResult } from '../../async-rendering'
 import { serviceNeedOptionPublicInfosQuery } from '../queries'
 
-import { ApplicationFormProps } from './ApplicationEditor'
+import AdditionalDetailsSection from './AdditionalDetailsSection'
+import type { ApplicationFormProps } from './ApplicationEditor'
+import Heading from './Heading'
+import ContactInfoSection from './contact-info/ContactInfoSection'
+import ServiceNeedSection from './service-need/ServiceNeedSection'
+import UnitPreferenceSection from './unit-preference/UnitPreferenceSection'
 
 export default React.memo(function ApplicationFormPreschool({
   application,

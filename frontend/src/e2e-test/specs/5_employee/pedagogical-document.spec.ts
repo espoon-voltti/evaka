@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { PersonId } from 'lib-common/generated/api-types/shared'
+import type { PersonId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { randomId } from 'lib-common/id-type'
 
@@ -20,9 +20,8 @@ import {
   createDaycarePlacements,
   resetServiceState
 } from '../../generated/api-clients'
-import ChildInformationPage, {
-  PedagogicalDocumentsSection
-} from '../../pages/employee/child-information'
+import type { PedagogicalDocumentsSection } from '../../pages/employee/child-information'
+import ChildInformationPage from '../../pages/employee/child-information'
 import { waitUntilEqual } from '../../utils'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'

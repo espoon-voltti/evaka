@@ -11,18 +11,20 @@ import React, {
   useMemo,
   useState
 } from 'react'
-import { NavigateFunction, useNavigate } from 'react-router'
+import type { NavigateFunction } from 'react-router'
+import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
-import { Loading, Result, wrapResult } from 'lib-common/api'
-import { DecisionDraftGroup } from 'lib-common/generated/api-types/application'
-import {
+import type { Result } from 'lib-common/api'
+import { Loading, wrapResult } from 'lib-common/api'
+import type { DecisionDraftGroup } from 'lib-common/generated/api-types/application'
+import type {
   DecisionDraft,
   DecisionDraftUpdate,
   DecisionType,
   DecisionUnit
 } from 'lib-common/generated/api-types/decision'
-import { ApplicationId } from 'lib-common/generated/api-types/shared'
+import type { ApplicationId } from 'lib-common/generated/api-types/shared'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import Title from 'lib-components/atoms/Title'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
@@ -39,16 +41,18 @@ import colors from 'lib-customizations/common'
 import { featureFlags } from 'lib-customizations/employee'
 import { faEnvelope } from 'lib-icons'
 
-import LabelValueList from '../../components/common/LabelValueList'
 import {
   getDecisionDrafts,
   updateDecisionDrafts
 } from '../../generated/api-clients/application'
 import { getDecisionUnits } from '../../generated/api-clients/decision'
-import { Translations, useTranslation } from '../../state/i18n'
-import { TitleContext, TitleState } from '../../state/title'
+import type { Translations } from '../../state/i18n'
+import { useTranslation } from '../../state/i18n'
+import type { TitleState } from '../../state/title'
+import { TitleContext } from '../../state/title'
 import { formatName } from '../../utils'
 import { renderResult } from '../async-rendering'
+import LabelValueList from '../common/LabelValueList'
 
 const getDecisionUnitsResult = wrapResult(getDecisionUnits)
 const updateDecisionDraftsResult = wrapResult(updateDecisionDrafts)

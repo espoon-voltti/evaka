@@ -4,15 +4,15 @@
 
 // GENERATED FILE: no manual modifications
 
+import type { AttachmentId } from './shared'
+import type { DaycareId } from './shared'
 import HelsinkiDateTime from '../../helsinki-date-time'
+import type { IncomeStatementId } from './shared'
+import type { JsonOf } from '../../json'
 import LocalDate from '../../local-date'
-import { AttachmentId } from './shared'
-import { DaycareId } from './shared'
-import { IncomeStatementId } from './shared'
-import { JsonOf } from '../../json'
-import { PersonId } from './shared'
-import { ProviderType } from './daycare'
-import { SortDirection } from './invoicing'
+import type { PersonId } from './shared'
+import type { ProviderType } from './daycare'
+import type { SortDirection } from './invoicing'
 
 /**
 * Generated from fi.espoo.evaka.incomestatement.Accountant

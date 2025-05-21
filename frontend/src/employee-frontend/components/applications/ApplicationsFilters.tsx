@@ -4,14 +4,14 @@
 
 import React, { Fragment, useContext, useEffect } from 'react'
 
-import {
+import type {
   ApplicationBasis,
   ApplicationStatusOption,
-  applicationStatusOptions,
   ApplicationTypeToggle
 } from 'lib-common/generated/api-types/application'
-import { DaycareCareArea } from 'lib-common/generated/api-types/daycare'
-import { AreaId, DaycareId } from 'lib-common/generated/api-types/shared'
+import { applicationStatusOptions } from 'lib-common/generated/api-types/application'
+import type { DaycareCareArea } from 'lib-common/generated/api-types/daycare'
+import type { AreaId, DaycareId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import Radio from 'lib-components/atoms/form/Radio'
@@ -19,24 +19,24 @@ import { Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
 import { unitsQuery } from '../../queries'
-import {
-  ApplicationUIContext,
-  VoucherApplicationFilter
-} from '../../state/application-ui'
+import type { VoucherApplicationFilter } from '../../state/application-ui'
+import { ApplicationUIContext } from '../../state/application-ui'
 import { useTranslation } from '../../state/i18n'
+import type {
+  ApplicationDateType,
+  ApplicationSummaryStatusOptions,
+  PreschoolType,
+  ApplicationDistinctions
+} from '../common/Filters'
 import {
   Filters,
   ApplicationDistinctionsFilter,
   ApplicationStatusFilter,
   ApplicationTypeFilter,
   ApplicationDateFilter,
-  ApplicationDateType,
   ApplicationBasisFilter,
-  ApplicationSummaryStatusOptions,
-  PreschoolType,
   preschoolTypes,
   MultiSelectUnitFilter,
-  ApplicationDistinctions,
   TransferApplicationsFilter
 } from '../common/Filters'
 

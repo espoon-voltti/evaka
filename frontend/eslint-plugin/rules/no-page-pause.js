@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-const { isCallExpression, isMethodOf, isCallOf } = require('./utils')
+import { isCallExpression, isMethodOf, isCallOf } from './utils.js'
 
 function isPagePauseCall(node) {
   return (
@@ -12,7 +12,7 @@ function isPagePauseCall(node) {
   )
 }
 
-module.exports = {
+export default {
   meta: {
     type: 'problem',
     docs: {

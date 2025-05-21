@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import 'styled-components'
-import { Theme } from 'lib-common/theme'
+import type { Theme } from 'lib-common/theme'
 
 declare module 'styled-components' {
   export interface DefaultTheme extends Theme {}

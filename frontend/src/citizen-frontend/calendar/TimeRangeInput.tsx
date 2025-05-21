@@ -5,9 +5,11 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
 
-import { LocalTimeRangeField } from 'lib-common/form/fields'
-import { BoundForm, useFormField } from 'lib-common/form/hooks'
-import UnderRowStatusIcon, { InfoStatus } from 'lib-components/atoms/StatusIcon'
+import type { LocalTimeRangeField } from 'lib-common/form/fields'
+import type { BoundForm } from 'lib-common/form/hooks'
+import { useFormField } from 'lib-common/form/hooks'
+import type { InfoStatus } from 'lib-components/atoms/StatusIcon'
+import UnderRowStatusIcon from 'lib-components/atoms/StatusIcon'
 import { TimeInputF } from 'lib-components/atoms/form/TimeInput'
 import { defaultMargins } from 'lib-components/white-space'
 

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import DateRange from 'lib-common/date-range'
-import { DocumentContent } from 'lib-common/generated/api-types/document'
+import type { DocumentContent } from 'lib-common/generated/api-types/document'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { evakaUserId } from 'lib-common/id-type'
 
@@ -20,7 +20,7 @@ import {
   resetServiceState,
   runJobs
 } from '../../generated/api-clients'
-import {
+import type {
   DevDaycare,
   DevDaycareGroup,
   DevDocumentTemplate,

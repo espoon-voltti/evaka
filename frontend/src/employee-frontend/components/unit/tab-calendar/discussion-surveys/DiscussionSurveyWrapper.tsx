@@ -4,8 +4,7 @@
 
 import React from 'react'
 
-import { renderResult } from 'employee-frontend/components/async-rendering'
-import {
+import type {
   CalendarEventId,
   DaycareId,
   GroupId
@@ -14,6 +13,7 @@ import { fromUuid } from 'lib-common/id-type'
 import { constantQuery, useQueryResult } from 'lib-common/query'
 import useRouteParams, { useIdRouteParam } from 'lib-common/useRouteParams'
 
+import { renderResult } from '../../../async-rendering'
 import { discussionSurveyQuery } from '../queries'
 
 import DiscussionSurveyView from './DiscussionSurveyView'

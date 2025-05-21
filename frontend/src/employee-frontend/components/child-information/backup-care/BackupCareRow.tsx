@@ -5,22 +5,23 @@
 import React, { useContext } from 'react'
 import styled from 'styled-components'
 
-import { Action } from 'lib-common/generated/action'
-import {
+import type { Action } from 'lib-common/generated/action'
+import type {
   ChildBackupCare,
   ChildBackupCareResponse
 } from 'lib-common/generated/api-types/backupcare'
-import { ChildId } from 'lib-common/generated/api-types/shared'
+import type { ChildId } from 'lib-common/generated/api-types/shared'
 import { useMutationResult } from 'lib-common/query'
 import Title from 'lib-components/atoms/Title'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { faQuestion } from 'lib-icons'
 
-import BackupCareForm from '../../../components/child-information/backup-care/BackupCareForm'
-import Toolbar from '../../../components/common/Toolbar'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
+import Toolbar from '../../common/Toolbar'
 import { deleteBackupCareMutation } from '../queries'
+
+import BackupCareForm from './BackupCareForm'
 
 export interface Props {
   childId: ChildId

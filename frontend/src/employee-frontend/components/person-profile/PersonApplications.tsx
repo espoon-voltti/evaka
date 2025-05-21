@@ -6,11 +6,11 @@ import orderBy from 'lodash/orderBy'
 import React from 'react'
 import { Link } from 'react-router'
 
-import {
+import type {
   ApplicationType,
   PersonApplicationSummary
 } from 'lib-common/generated/api-types/application'
-import { PersonId } from 'lib-common/generated/api-types/shared'
+import type { PersonId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'

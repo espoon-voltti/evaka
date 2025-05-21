@@ -2,17 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import FiniteDateRange from 'lib-common/finite-date-range'
+import type FiniteDateRange from 'lib-common/finite-date-range'
 
-import {
-  Element,
-  ElementCollection,
-  EnvType,
-  FileUpload,
-  MultiSelect,
-  Page,
-  TextInput
-} from '../../utils/page'
+import type { ElementCollection, EnvType, Page } from '../../utils/page'
+import { Element, FileUpload, MultiSelect, TextInput } from '../../utils/page'
 
 export class MockStrongAuthPage {
   constructor(private readonly page: Page) {}

@@ -4,20 +4,21 @@
 
 import React from 'react'
 
-import { ContactInfoFormData } from 'lib-common/api-types/application/ApplicationFormData'
-import { UpdateStateFn } from 'lib-common/form-state'
+import type { ContactInfoFormData } from 'lib-common/api-types/application/ApplicationFormData'
+import type { UpdateStateFn } from 'lib-common/form-state'
 import { getErrorCount } from 'lib-common/form-validation'
-import { ApplicationType } from 'lib-common/generated/api-types/application'
+import type { ApplicationType } from 'lib-common/generated/api-types/application'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 
-import EditorSection from '../../../applications/editor/EditorSection'
-import ChildSubSection from '../../../applications/editor/contact-info/ChildSubSection'
-import GuardianSubSection from '../../../applications/editor/contact-info/GuardianSubSection'
-import OtherChildrenSubSection from '../../../applications/editor/contact-info/OtherChildrenSubSection'
-import OtherPartnerSubSection from '../../../applications/editor/contact-info/OtherPartnerSubSection'
-import SecondGuardianSubSection from '../../../applications/editor/contact-info/SecondGuardianSubSection'
 import { useTranslation } from '../../../localization'
-import { ApplicationFormDataErrors } from '../validations'
+import EditorSection from '../EditorSection'
+import type { ApplicationFormDataErrors } from '../validations'
+
+import ChildSubSection from './ChildSubSection'
+import GuardianSubSection from './GuardianSubSection'
+import OtherChildrenSubSection from './OtherChildrenSubSection'
+import OtherPartnerSubSection from './OtherPartnerSubSection'
+import SecondGuardianSubSection from './SecondGuardianSubSection'
 
 export type ContactInfoSectionProps = {
   type: ApplicationType

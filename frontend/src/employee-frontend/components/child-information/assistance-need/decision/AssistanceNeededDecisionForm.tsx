@@ -2,24 +2,23 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { SetStateAction, useCallback, useMemo } from 'react'
+import type { SetStateAction } from 'react'
+import React, { useCallback, useMemo } from 'react'
 
-import { renderResult } from 'employee-frontend/components/async-rendering'
-import { useTranslation } from 'employee-frontend/state/i18n'
-import { AutosaveStatus } from 'employee-frontend/utils/use-autosave'
-import { Result } from 'lib-common/api'
-import {
+import type { Result } from 'lib-common/api'
+import type {
   AssistanceLevel,
   AssistanceNeedDecisionForm,
   AssistanceNeedDecisionGuardian
 } from 'lib-common/generated/api-types/assistanceneed'
-import { Employee } from 'lib-common/generated/api-types/pis'
+import type { Employee } from 'lib-common/generated/api-types/pis'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 import { ParagraphDiv } from 'lib-components/assistance-need-decision/AssistanceNeedDecisionReadOnly'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
-import InputField, { InputInfo } from 'lib-components/atoms/form/InputField'
+import type { InputInfo } from 'lib-components/atoms/form/InputField'
+import InputField from 'lib-components/atoms/form/InputField'
 import TextArea from 'lib-components/atoms/form/TextArea'
 import {
   FixedSpaceColumn,
@@ -32,6 +31,9 @@ import { H2, Label, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 
 import { getEmployeesQuery, unitsQuery } from '../../../../queries'
+import { useTranslation } from '../../../../state/i18n'
+import type { AutosaveStatus } from '../../../../utils/use-autosave'
+import { renderResult } from '../../../async-rendering'
 
 const FieldWithInfo = React.memo(function FieldWithInfo({
   info,

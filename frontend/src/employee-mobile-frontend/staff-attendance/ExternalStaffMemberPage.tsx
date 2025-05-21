@@ -5,7 +5,7 @@
 import React, { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
 
-import {
+import type {
   DaycareId,
   StaffAttendanceExternalId
 } from 'lib-common/generated/api-types/shared'

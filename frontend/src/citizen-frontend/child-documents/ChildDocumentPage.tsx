@@ -6,12 +6,9 @@ import React, { useCallback, useContext, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router'
 import styled from 'styled-components'
 
-import Footer from 'citizen-frontend/Footer'
-import { renderResult } from 'citizen-frontend/async-rendering'
-import { useTranslation } from 'citizen-frontend/localization'
 import { useBoolean, useForm } from 'lib-common/form/hooks'
-import { ChildDocumentCitizenDetails } from 'lib-common/generated/api-types/document'
-import { ChildDocumentId } from 'lib-common/generated/api-types/shared'
+import type { ChildDocumentCitizenDetails } from 'lib-common/generated/api-types/document'
+import type { ChildDocumentId } from 'lib-common/generated/api-types/shared'
 import { useMutation, useQueryResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import { NotificationsContext } from 'lib-components/Notifications'
@@ -41,7 +38,10 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faArrowDownToLine, faCheck, faPrint } from 'lib-icons'
 
+import Footer from '../Footer'
+import { renderResult } from '../async-rendering'
 import { downloadChildDocument } from '../generated/api-clients/document'
+import { useTranslation } from '../localization'
 
 import {
   childDocumentDetailsQuery,

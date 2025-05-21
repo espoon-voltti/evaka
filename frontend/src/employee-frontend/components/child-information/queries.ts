@@ -2,19 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import {
-  createBackupCare,
-  deleteBackupCare,
-  getChildBackupCares,
-  updateBackupCare
-} from 'employee-frontend/generated/api-clients/backupcare'
-import {
-  createPlacement,
-  deletePlacement,
-  getChildPlacements,
-  updatePlacementById
-} from 'employee-frontend/generated/api-clients/placement'
-import {
+import type {
   ChildId,
   DaycareId,
   PersonId
@@ -61,6 +49,12 @@ import {
   updateAssistanceNeedPreschoolDecision,
   updateAssistanceNeedVoucherCoefficient
 } from '../../generated/api-clients/assistanceneed'
+import {
+  createBackupCare,
+  deleteBackupCare,
+  getChildBackupCares,
+  updateBackupCare
+} from '../../generated/api-clients/backupcare'
 import {
   createBackupPickup,
   deleteBackupPickup,
@@ -116,6 +110,12 @@ import {
   updateFamilyContactPriority,
   updateGuardianEvakaRights
 } from '../../generated/api-clients/pis'
+import {
+  createPlacement,
+  deletePlacement,
+  getChildPlacements,
+  updatePlacementById
+} from '../../generated/api-clients/placement'
 import {
   getAssistanceNeedDecisionMetadata,
   getAssistanceNeedPreschoolDecisionMetadata,

@@ -7,8 +7,8 @@ import React, { useCallback, useContext, useState } from 'react'
 import styled from 'styled-components'
 
 import { isLoading, wrapResult } from 'lib-common/api'
-import { MobileDevice } from 'lib-common/generated/api-types/pairing'
-import {
+import type { MobileDevice } from 'lib-common/generated/api-types/pairing'
+import type {
   DaycareId,
   MobileDeviceId
 } from 'lib-common/generated/api-types/shared'

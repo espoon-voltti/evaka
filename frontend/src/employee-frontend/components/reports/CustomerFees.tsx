@@ -10,13 +10,11 @@ import styled from 'styled-components'
 import { localDate } from 'lib-common/form/fields'
 import { object, oneOf, required } from 'lib-common/form/form'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
-import { ProviderType } from 'lib-common/generated/api-types/daycare'
-import {
-  FinanceDecisionType,
-  financeDecisionTypes
-} from 'lib-common/generated/api-types/invoicing'
-import { PlacementType } from 'lib-common/generated/api-types/placement'
-import { AreaId, DaycareId } from 'lib-common/generated/api-types/shared'
+import type { ProviderType } from 'lib-common/generated/api-types/daycare'
+import type { FinanceDecisionType } from 'lib-common/generated/api-types/invoicing'
+import { financeDecisionTypes } from 'lib-common/generated/api-types/invoicing'
+import type { PlacementType } from 'lib-common/generated/api-types/placement'
+import type { AreaId, DaycareId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { formatCents } from 'lib-common/money'
 import { constantQuery, useQueryResult } from 'lib-common/query'
@@ -28,11 +26,11 @@ import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { DatePickerF } from 'lib-components/molecules/date-picker/DatePicker'
 import { placementTypes, unitProviderTypes } from 'lib-customizations/employee'
 
-import ReportDownload from '../../components/reports/ReportDownload'
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 import { daycaresQuery } from '../unit/queries'
 
+import ReportDownload from './ReportDownload'
 import { FilterLabel, FilterRow } from './common'
 import { customerFeesReportQuery } from './queries'
 

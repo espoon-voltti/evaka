@@ -15,11 +15,11 @@ import { fontWeights, H1, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { farMap } from 'lib-icons'
 
-import ChildApplicationsBlock from '../applications/ChildApplicationsBlock'
 import { renderResult } from '../async-rendering'
 import { useTranslation } from '../localization'
 import useTitle from '../useTitle'
 
+import ChildApplicationsBlock from './ChildApplicationsBlock'
 import { guardianApplicationsQuery } from './queries'
 
 export default React.memo(function Applications() {

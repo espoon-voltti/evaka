@@ -2,18 +2,15 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { IncomeStatementAttachmentType } from 'lib-common/generated/api-types/incomestatement'
+import type { IncomeStatementAttachmentType } from 'lib-common/generated/api-types/incomestatement'
 
-import {
-  Checkbox,
+import type {
   Page,
-  Radio,
-  TextInput,
   Element,
   ElementCollection,
-  EnvType,
-  FileUpload
+  EnvType
 } from '../../utils/page'
+import { Checkbox, Radio, TextInput, FileUpload } from '../../utils/page'
 
 export default class CitizenIncomePage {
   missingAttachments: Element

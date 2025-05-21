@@ -4,11 +4,11 @@
 
 // GENERATED FILE: no manual modifications
 
+import type { Action } from '../action'
+import type { AssistanceActionId } from './shared'
+import type { JsonOf } from '../../json'
 import LocalDate from '../../local-date'
-import { Action } from '../action'
-import { AssistanceActionId } from './shared'
-import { JsonOf } from '../../json'
-import { PersonId } from './shared'
+import type { PersonId } from './shared'
 
 /**
 * Generated from fi.espoo.evaka.assistanceaction.AssistanceAction

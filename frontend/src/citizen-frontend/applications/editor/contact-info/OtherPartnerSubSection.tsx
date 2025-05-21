@@ -14,9 +14,10 @@ import {
 import { H3, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
-import { ContactInfoSectionProps } from '../../../applications/editor/contact-info/ContactInfoSection'
 import { errorToInputInfo } from '../../../input-info-helper'
 import { useTranslation } from '../../../localization'
+
+import type { ContactInfoSectionProps } from './ContactInfoSection'
 
 export default React.memo(function OtherPartnerSubSection({
   formData,

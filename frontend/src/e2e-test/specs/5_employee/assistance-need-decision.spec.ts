@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { PersonId } from 'lib-common/generated/api-types/shared'
+import type { PersonId } from 'lib-common/generated/api-types/shared'
 import { randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
@@ -21,7 +21,7 @@ import {
   createDaycarePlacements,
   resetServiceState
 } from '../../generated/api-clients'
-import {
+import type {
   DevAssistanceNeedDecision,
   DevEmployee
 } from '../../generated/api-types'

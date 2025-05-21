@@ -7,8 +7,11 @@ import React, { useContext, useMemo, useState } from 'react'
 import { Link } from 'react-router'
 import styled from 'styled-components'
 
-import { PersonJSON } from 'lib-common/generated/api-types/pis'
-import { PartnershipId, PersonId } from 'lib-common/generated/api-types/shared'
+import type { PersonJSON } from 'lib-common/generated/api-types/pis'
+import type {
+  PartnershipId,
+  PersonId
+} from 'lib-common/generated/api-types/shared'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
@@ -16,14 +19,14 @@ import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { faQuestion } from 'lib-icons'
 
-import Toolbar from '../../components/common/Toolbar'
-import FridgePartnerModal from '../../components/person-profile/person-fridge-partner/FridgePartnerModal'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
 import { formatName } from '../../utils'
 import { renderResult } from '../async-rendering'
+import Toolbar from '../common/Toolbar'
 
 import { ButtonsTd, DateTd, NameTd } from './common'
+import FridgePartnerModal from './person-fridge-partner/FridgePartnerModal'
 import {
   deletePartnershipMutation,
   partnershipsQuery,

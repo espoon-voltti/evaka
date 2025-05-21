@@ -2,9 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-const { RuleTester } = require('eslint')
+import { RuleTester } from 'eslint'
 
-const noTestOnly = require('./no-testonly')
+import noTestOnly from './no-testonly.js'
 
 new RuleTester().run('no-testonly', noTestOnly, {
   valid: [

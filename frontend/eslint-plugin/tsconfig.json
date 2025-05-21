@@ -1,7 +1,7 @@
 {
   "extends": "../tsconfig.base.json",
   "compilerOptions": {
-    "noEmit": true,
-    "baseUrl": "."
+    "composite": true,
+    "outDir": "../../dist/eslint-plugin",
   }
 }

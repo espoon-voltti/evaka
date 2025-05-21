@@ -5,13 +5,14 @@
 import React from 'react'
 import { useNavigate } from 'react-router'
 
-import { useTranslation } from 'employee-frontend/state/i18n'
-import { AssistanceNeedDecisionBasicsResponse } from 'lib-common/generated/api-types/assistanceneed'
+import type { AssistanceNeedDecisionBasicsResponse } from 'lib-common/generated/api-types/assistanceneed'
 import { AssistanceNeedDecisionStatusChip } from 'lib-components/assistance-need-decision/AssistanceNeedDecisionStatusChip'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { Td, Tr } from 'lib-components/layout/Table'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { faFileAlt, faPen, faTrash } from 'lib-icons'
+
+import { useTranslation } from '../../state/i18n'
 
 interface Props {
   decision: AssistanceNeedDecisionBasicsResponse

@@ -7,22 +7,23 @@ import { Link } from 'react-router'
 import styled from 'styled-components'
 
 import { isLoading } from 'lib-common/api'
-import { IncomeEffect } from 'lib-common/generated/api-types/invoicing'
-import {
+import type { IncomeEffect } from 'lib-common/generated/api-types/invoicing'
+import type {
   FamilyOverview,
   FamilyOverviewIncome,
   FamilyOverviewPerson
 } from 'lib-common/generated/api-types/pis'
-import { PersonId } from 'lib-common/generated/api-types/shared'
+import type { PersonId } from 'lib-common/generated/api-types/shared'
 import { formatCents } from 'lib-common/money'
 import { useQueryResult } from 'lib-common/query'
 import { getAge } from 'lib-common/utils/local-date'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 
-import LabelValueList from '../../components/common/LabelValueList'
-import { Translations, useTranslation } from '../../state/i18n'
+import type { Translations } from '../../state/i18n'
+import { useTranslation } from '../../state/i18n'
 import { formatName } from '../../utils'
 import { renderResult } from '../async-rendering'
+import LabelValueList from '../common/LabelValueList'
 
 import { familyByPersonQuery } from './queries'
 

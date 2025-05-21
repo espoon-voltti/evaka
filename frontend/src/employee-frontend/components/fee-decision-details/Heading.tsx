@@ -6,23 +6,23 @@ import React from 'react'
 import { Link } from 'react-router'
 import styled from 'styled-components'
 
-import FiniteDateRange from 'lib-common/finite-date-range'
-import {
+import type FiniteDateRange from 'lib-common/finite-date-range'
+import type {
   FeeDecisionStatus,
   FeeDecisionType,
   PersonDetailed
 } from 'lib-common/generated/api-types/invoicing'
-import { FeeDecisionId } from 'lib-common/generated/api-types/shared'
-import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import type { FeeDecisionId } from 'lib-common/generated/api-types/shared'
+import type HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { H1 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
-import LabelValueList from '../../components/common/LabelValueList'
-import WarningLabel from '../../components/common/WarningLabel'
 import { getFeeDecisionPdf } from '../../generated/api-clients/invoicing'
 import { useTranslation } from '../../state/i18n'
 import { formatName } from '../../utils'
+import LabelValueList from '../common/LabelValueList'
+import WarningLabel from '../common/WarningLabel'
 
 import { TypeSelect } from './TypeSelect'
 

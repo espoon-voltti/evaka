@@ -5,8 +5,8 @@
 import React, { useContext, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
 
-import { Action } from 'lib-common/generated/action'
-import { PersonId } from 'lib-common/generated/api-types/shared'
+import type { Action } from 'lib-common/generated/action'
+import type { PersonId } from 'lib-common/generated/api-types/shared'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import { getAge } from 'lib-common/utils/local-date'
 import Title from 'lib-components/atoms/Title'
@@ -24,11 +24,13 @@ import { H2 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { faListTimeline } from 'lib-icons'
 
-import { Translations, useTranslation } from '../../state/i18n'
+import type { Translations } from '../../state/i18n'
+import { useTranslation } from '../../state/i18n'
 import { UserContext } from '../../state/user'
 import CircularLabel from '../common/CircularLabel'
 import WarningLabel from '../common/WarningLabel'
-import { getLayout, Layouts } from '../layouts'
+import type { Layouts } from '../layouts'
+import { getLayout } from '../layouts'
 
 import FosterChildren from './FosterChildren'
 import PersonApplications from './PersonApplications'
@@ -45,7 +47,8 @@ import PersonInvoiceCorrections from './PersonInvoiceCorrections'
 import PersonInvoices from './PersonInvoices'
 import PersonVoucherValueDecisions from './PersonVoucherValueDecisions'
 import { HeaderRow, InfoLabelContainer } from './common'
-import { PersonContext, PersonContextProvider, PersonState } from './state'
+import type { PersonState } from './state'
+import { PersonContext, PersonContextProvider } from './state'
 
 interface SectionProps {
   id: PersonId

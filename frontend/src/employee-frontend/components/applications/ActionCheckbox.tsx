@@ -5,7 +5,7 @@
 import React, { useContext } from 'react'
 import styled from 'styled-components'
 
-import { ApplicationId } from 'lib-common/generated/api-types/shared'
+import type { ApplicationId } from 'lib-common/generated/api-types/shared'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 
 import { ApplicationUIContext } from '../../state/application-ui'

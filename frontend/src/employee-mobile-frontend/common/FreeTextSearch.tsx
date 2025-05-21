@@ -6,12 +6,13 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useCallback } from 'react'
 import styled from 'styled-components'
 
-import { useTranslation } from 'employee-mobile-frontend/common/i18n'
-import { AttendanceChild } from 'lib-common/generated/api-types/attendance'
+import type { AttendanceChild } from 'lib-common/generated/api-types/attendance'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faArrowLeft, faTimes } from 'lib-icons'
+
+import { useTranslation } from './i18n'
 
 const SearchInputContainer = styled.div`
   height: 60px;

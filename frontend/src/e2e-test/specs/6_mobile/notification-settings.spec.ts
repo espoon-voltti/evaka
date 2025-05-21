@@ -2,12 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { PilotFeature } from 'lib-common/generated/api-types/shared'
+import type { PilotFeature } from 'lib-common/generated/api-types/shared'
 
 import { mobileViewport } from '../../browser'
 import { Fixture } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
-import { DevCareArea, DevDaycare } from '../../generated/api-types'
+import type { DevCareArea, DevDaycare } from '../../generated/api-types'
 import MobileNav from '../../pages/mobile/mobile-nav'
 import { SettingsPage } from '../../pages/mobile/settings-page'
 import UnitListPage from '../../pages/mobile/unit-list-page'

@@ -7,7 +7,7 @@ import React, { useMemo } from 'react'
 import { useNavigate } from 'react-router'
 
 import { useBoolean } from 'lib-common/form/hooks'
-import { ChildId } from 'lib-common/generated/api-types/shared'
+import type { ChildId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
 import { StaticChip } from 'lib-components/atoms/Chip'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'

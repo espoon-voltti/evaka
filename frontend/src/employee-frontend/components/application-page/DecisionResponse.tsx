@@ -4,11 +4,10 @@
 
 import React, { useState } from 'react'
 
-import { errorToInputInfo } from 'employee-frontend/utils/validation/input-info-helper'
 import { required, validate } from 'lib-common/form-validation'
-import { Decision } from 'lib-common/generated/api-types/decision'
-import { ApplicationId } from 'lib-common/generated/api-types/shared'
-import LocalDate from 'lib-common/local-date'
+import type { Decision } from 'lib-common/generated/api-types/decision'
+import type { ApplicationId } from 'lib-common/generated/api-types/shared'
+import type LocalDate from 'lib-common/local-date'
 import {
   cancelMutation,
   first,
@@ -24,6 +23,7 @@ import {
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 
 import { useTranslation } from '../../state/i18n'
+import { errorToInputInfo } from '../../utils/validation/input-info-helper'
 
 import { acceptDecisionMutation, rejectDecisionMutation } from './queries'
 

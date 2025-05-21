@@ -4,7 +4,7 @@
 
 import React, { useContext, useState } from 'react'
 
-import {
+import type {
   ApplicationSortColumn,
   PagedApplicationSummaries
 } from 'lib-common/generated/api-types/application'
@@ -12,12 +12,12 @@ import { constantQuery, useQueryResult } from 'lib-common/query'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Gap } from 'lib-components/white-space'
 
-import ApplicationsList from '../../components/applications/ApplicationsList'
 import { ApplicationUIContext } from '../../state/application-ui'
-import { SearchOrder } from '../../types'
+import type { SearchOrder } from '../../types'
 import { renderResult } from '../async-rendering'
 
 import ApplicationFilters from './ApplicationsFilters'
+import ApplicationsList from './ApplicationsList'
 import { getApplicationSummariesQuery } from './queries'
 
 export default React.memo(function ApplicationsPage() {

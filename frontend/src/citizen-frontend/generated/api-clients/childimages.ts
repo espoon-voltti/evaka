@@ -4,8 +4,8 @@
 
 // GENERATED FILE: no manual modifications
 
-import { ChildImageId } from 'lib-common/generated/api-types/shared'
-import { Uri } from 'lib-common/uri'
+import type { ChildImageId } from 'lib-common/generated/api-types/shared'
+import type { Uri } from 'lib-common/uri'
 import { client } from '../../api-client'
 import { uri } from 'lib-common/uri'
 

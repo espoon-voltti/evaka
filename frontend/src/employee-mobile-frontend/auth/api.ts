@@ -4,14 +4,15 @@
 
 import * as Sentry from '@sentry/browser'
 
-import { Failure, Result, Success } from 'lib-common/api'
-import {
+import type { Result } from 'lib-common/api'
+import { Failure, Success } from 'lib-common/api'
+import type {
   AuthStatus,
   MobileUser,
   User
 } from 'lib-common/api-types/employee-auth'
-import { PinLoginResponse } from 'lib-common/generated/api-types/pis'
-import { JsonOf } from 'lib-common/json'
+import type { PinLoginResponse } from 'lib-common/generated/api-types/pis'
+import type { JsonOf } from 'lib-common/json'
 
 import { client } from '../client'
 

@@ -4,25 +4,26 @@
 
 import React from 'react'
 
-import { ServiceNeedFormData } from 'lib-common/api-types/application/ApplicationFormData'
-import { UpdateStateFn } from 'lib-common/form-state'
+import type { ServiceNeedFormData } from 'lib-common/api-types/application/ApplicationFormData'
+import type { UpdateStateFn } from 'lib-common/form-state'
 import { getErrorCount } from 'lib-common/form-validation'
-import {
+import type {
   ApplicationStatus,
   ApplicationType
 } from 'lib-common/generated/api-types/application'
-import { ServiceNeedOptionPublicInfo } from 'lib-common/generated/api-types/serviceneed'
-import LocalDate from 'lib-common/local-date'
+import type { ServiceNeedOptionPublicInfo } from 'lib-common/generated/api-types/serviceneed'
+import type LocalDate from 'lib-common/local-date'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 
-import EditorSection from '../../../applications/editor/EditorSection'
-import AssistanceNeedSubSection from '../../../applications/editor/service-need/AssistanceNeedSubSection'
-import PreferredStartSubSection from '../../../applications/editor/service-need/PreferredStartSubSection'
-import ServiceTimeSubSectionDaycare from '../../../applications/editor/service-need/ServiceTimeSubSectionDaycare'
-import ServiceTimeSubSectionPreschool from '../../../applications/editor/service-need/ServiceTimeSubSectionPreschool'
 import { useTranslation } from '../../../localization'
-import { Term } from '../ApplicationEditor'
-import { ApplicationFormDataErrors } from '../validations'
+import type { Term } from '../ApplicationEditor'
+import EditorSection from '../EditorSection'
+import type { ApplicationFormDataErrors } from '../validations'
+
+import AssistanceNeedSubSection from './AssistanceNeedSubSection'
+import PreferredStartSubSection from './PreferredStartSubSection'
+import ServiceTimeSubSectionDaycare from './ServiceTimeSubSectionDaycare'
+import ServiceTimeSubSectionPreschool from './ServiceTimeSubSectionPreschool'
 
 export type ServiceNeedSectionProps = {
   status: ApplicationStatus

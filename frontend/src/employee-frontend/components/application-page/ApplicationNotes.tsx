@@ -5,17 +5,18 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
 
-import { ApplicationId } from 'lib-common/generated/api-types/shared'
+import type { ApplicationId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 
-import ApplicationNoteBox from '../../components/application-page/ApplicationNoteBox'
 import { useTranslation } from '../../state/i18n'
-import { applicationNotesQuery } from '../application-page/queries'
 import { renderResult } from '../async-rendering'
+
+import ApplicationNoteBox from './ApplicationNoteBox'
+import { applicationNotesQuery } from './queries'
 
 const Sticky = styled.div`
   position: sticky;

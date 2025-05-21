@@ -7,12 +7,12 @@ import React, { useContext, useState } from 'react'
 import styled from 'styled-components'
 
 import { useBoolean } from 'lib-common/form/hooks'
-import {
+import type {
   ApplicationSortColumn,
   ApplicationSummary,
   PagedApplicationSummaries
 } from 'lib-common/generated/api-types/application'
-import { ApplicationId } from 'lib-common/generated/api-types/shared'
+import type { ApplicationId } from 'lib-common/generated/api-types/shared'
 import Pagination from 'lib-components/Pagination'
 import PlacementCircle from 'lib-components/atoms/PlacementCircle'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
@@ -47,19 +47,19 @@ import {
   faTrash
 } from 'lib-icons'
 
-import ActionBar from '../../components/applications/ActionBar'
-import ApplicationActions from '../../components/applications/ApplicationActions'
 import { getEmployeeUrlPrefix } from '../../constants'
 import { ApplicationUIContext } from '../../state/application-ui'
 import { useTranslation } from '../../state/i18n'
 import { UserContext } from '../../state/user'
-import { SearchOrder } from '../../types'
+import type { SearchOrder } from '../../types'
 import { formatName } from '../../utils'
 import { isPartDayPlacement } from '../../utils/placements'
 import { hasRole, RequireRole } from '../../utils/roles'
 import { AgeIndicatorChip } from '../common/AgeIndicatorChip'
 import { CareTypeChip } from '../common/CareTypeLabel'
 
+import ActionBar from './ActionBar'
+import ApplicationActions from './ApplicationActions'
 import { CircleIconGreen, CircleIconRed } from './CircleIcon'
 import { updateServiceWorkerNoteMutation } from './queries'
 

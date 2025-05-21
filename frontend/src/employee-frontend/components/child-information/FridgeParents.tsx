@@ -6,15 +6,15 @@ import orderBy from 'lodash/orderBy'
 import React, { useContext } from 'react'
 import { Link } from 'react-router'
 
-import { ParentshipWithPermittedActions } from 'lib-common/generated/api-types/pis'
+import type { ParentshipWithPermittedActions } from 'lib-common/generated/api-types/pis'
 import { constantQuery, useQueryResult } from 'lib-common/query'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { H3 } from 'lib-components/typography'
 
-import StatusLabel from '../../components/common/StatusLabel'
 import { useTranslation } from '../../state/i18n'
 import { getStatusLabelByDateRange } from '../../utils/date'
 import { renderResult } from '../async-rendering'
+import StatusLabel from '../common/StatusLabel'
 import { NameTd } from '../person-profile/common'
 import { parentshipsQuery } from '../person-profile/queries'
 

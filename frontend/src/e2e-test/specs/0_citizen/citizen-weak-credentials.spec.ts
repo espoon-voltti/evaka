@@ -10,7 +10,7 @@ import {
   runJobs,
   upsertPasswordBlacklist
 } from '../../generated/api-clients'
-import { DevPerson } from '../../generated/api-types'
+import type { DevPerson } from '../../generated/api-types'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import CitizenPersonalDetailsPage, {
   WeakCredentialsModal

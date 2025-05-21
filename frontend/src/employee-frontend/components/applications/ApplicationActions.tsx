@@ -6,11 +6,11 @@ import React, { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
-import {
+import type {
   ApplicationSummary,
   SimpleApplicationAction as SimpleApplicationActionType
 } from 'lib-common/generated/api-types/application'
-import { ApplicationId } from 'lib-common/generated/api-types/shared'
+import type { ApplicationId } from 'lib-common/generated/api-types/shared'
 import { useMutation } from 'lib-common/query'
 import Radio from 'lib-components/atoms/form/Radio'
 import {
@@ -20,11 +20,12 @@ import {
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { Label } from 'lib-components/typography'
 
-import ActionCheckbox from '../../components/applications/ActionCheckbox'
-import PrimaryAction from '../../components/applications/PrimaryAction'
 import { useTranslation } from '../../state/i18n'
-import EllipsisMenu, { MenuItem } from '../common/EllipsisMenu'
+import type { MenuItem } from '../common/EllipsisMenu'
+import EllipsisMenu from '../common/EllipsisMenu'
 
+import ActionCheckbox from './ActionCheckbox'
+import PrimaryAction from './PrimaryAction'
 import {
   cancelApplicationMutation,
   simpleApplicationActionMutation

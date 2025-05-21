@@ -8,12 +8,12 @@ import styled from 'styled-components'
 import { string } from 'lib-common/form/fields'
 import { object, oneOf, required, validated } from 'lib-common/form/form'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
-import { FieldErrors } from 'lib-common/form/types'
-import {
+import type { FieldErrors } from 'lib-common/form/types'
+import type {
   InvoiceDetailedResponse,
-  InvoiceReplacementReason,
-  invoiceReplacementReasons
+  InvoiceReplacementReason
 } from 'lib-common/generated/api-types/invoicing'
+import { invoiceReplacementReasons } from 'lib-common/generated/api-types/invoicing'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import { SelectF } from 'lib-components/atoms/dropdowns/Select'
 import { TextAreaF } from 'lib-components/atoms/form/TextArea'

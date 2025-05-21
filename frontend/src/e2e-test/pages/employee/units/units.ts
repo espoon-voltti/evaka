@@ -2,18 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 
 import config from '../../../config'
 import { waitUntilEqual } from '../../../utils'
-import {
-  Checkbox,
-  Element,
-  ElementCollection,
-  MultiSelect,
-  Page,
-  TextInput
-} from '../../../utils/page'
+import type { ElementCollection, Page } from '../../../utils/page'
+import { Checkbox, Element, MultiSelect, TextInput } from '../../../utils/page'
 
 import { UnitEditor, UnitPage } from './unit'
 

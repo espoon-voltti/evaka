@@ -5,7 +5,8 @@
 import assert from 'assert'
 
 import { waitUntilEqual } from '../../utils'
-import { AsyncButton, Page, Select } from '../../utils/page'
+import type { Page } from '../../utils/page'
+import { AsyncButton, Select } from '../../utils/page'
 
 export class EmployeePreferredFirstNamePage {
   preferredFirstNameSelect: Select

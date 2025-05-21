@@ -7,12 +7,12 @@ import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import { useBoolean } from 'lib-common/form/hooks'
-import {
+import type {
   ServiceNeedOptionVoucherValueRange,
   ServiceNeedOptionVoucherValueRangeWithId
 } from 'lib-common/generated/api-types/invoicing'
-import { ServiceNeedOptionId } from 'lib-common/generated/api-types/shared'
-import LocalDate from 'lib-common/local-date'
+import type { ServiceNeedOptionId } from 'lib-common/generated/api-types/shared'
+import type LocalDate from 'lib-common/local-date'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'

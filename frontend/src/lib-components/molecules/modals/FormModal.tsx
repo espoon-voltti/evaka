@@ -2,10 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { FormEvent, useCallback } from 'react'
+import type { FormEvent } from 'react'
+import React, { useCallback } from 'react'
 
-import { Failure, Result } from 'lib-common/api'
-import { MutationDescription } from 'lib-common/query'
+import type { Failure, Result } from 'lib-common/api'
+import type { MutationDescription } from 'lib-common/query'
 
 import { AsyncButton } from '../../atoms/buttons/AsyncButton'
 import { LegacyButton } from '../../atoms/buttons/LegacyButton'
@@ -15,7 +16,8 @@ import {
 } from '../../atoms/buttons/MutateButton'
 import { Gap } from '../../white-space'
 
-import BaseModal, { ModalBaseProps, ModalButtons } from './BaseModal'
+import type { ModalBaseProps } from './BaseModal'
+import BaseModal, { ModalButtons } from './BaseModal'
 
 type FormModalProps = ModalBaseProps & {
   resolveAction: () => void

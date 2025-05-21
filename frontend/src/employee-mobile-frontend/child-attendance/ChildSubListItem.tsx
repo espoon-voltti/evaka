@@ -6,17 +6,17 @@ import filter from 'lodash/filter'
 import React, { useMemo } from 'react'
 import styled from 'styled-components'
 
-import { getTodaysServiceTimes } from 'employee-mobile-frontend/common/dailyServiceTimes'
-import LocalDate from 'lib-common/local-date'
+import type LocalDate from 'lib-common/local-date'
 import { reservationHasTimes } from 'lib-common/reservations'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { Bold } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
+import { getTodaysServiceTimes } from '../common/dailyServiceTimes'
 import { useTranslation } from '../common/i18n'
 
-import { CategorizedReservationInfo } from './ChildReservationList'
+import type { CategorizedReservationInfo } from './ChildReservationList'
 
 const ChildBoxInfo = styled.div`
   margin-left: 24px;

@@ -6,17 +6,12 @@ import React, { useMemo, useState } from 'react'
 import { Link } from 'react-router'
 import styled from 'styled-components'
 
-import RequireAuth from 'citizen-frontend/RequireAuth'
-import { renderResult } from 'citizen-frontend/async-rendering'
-import { useUser } from 'citizen-frontend/auth/state'
-import ResponsiveWholePageCollapsible from 'citizen-frontend/children/ResponsiveWholePageCollapsible'
-import { useTranslation } from 'citizen-frontend/localization'
-import {
+import type {
   ChildDocumentCitizenSummary,
-  DocumentType,
-  documentTypes
+  DocumentType
 } from 'lib-common/generated/api-types/document'
-import { ChildId } from 'lib-common/generated/api-types/shared'
+import { documentTypes } from 'lib-common/generated/api-types/document'
+import type { ChildId } from 'lib-common/generated/api-types/shared'
 import { useQuery, useQueryResult } from 'lib-common/query'
 import { tabletMin } from 'lib-components/breakpoints'
 import { ChildDocumentStateChip } from 'lib-components/document-templates/ChildDocumentStateChip'
@@ -34,10 +29,15 @@ import { Gap, defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faLockAlt } from 'lib-icons'
 
+import RequireAuth from '../../RequireAuth'
+import { renderResult } from '../../async-rendering'
+import { useUser } from '../../auth/state'
 import {
   childDocumentSummariesQuery,
   unreadChildDocumentsCountQuery
 } from '../../child-documents/queries'
+import { useTranslation } from '../../localization'
+import ResponsiveWholePageCollapsible from '../ResponsiveWholePageCollapsible'
 
 const DocumentsTableContainer = styled.table`
   width: 100%;

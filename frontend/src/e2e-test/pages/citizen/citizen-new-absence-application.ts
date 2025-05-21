@@ -2,13 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import {
-  Checkbox,
-  DatePicker,
-  Element,
-  Page,
-  TextInput
-} from '../../utils/page'
+import type { Element, Page } from '../../utils/page'
+import { Checkbox, DatePicker, TextInput } from '../../utils/page'
 
 export class CitizenNewAbsenceApplicationPage {
   startDate: DatePicker

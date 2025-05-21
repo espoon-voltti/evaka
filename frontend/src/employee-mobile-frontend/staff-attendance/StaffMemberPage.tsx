@@ -9,11 +9,11 @@ import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
-import {
+import type {
   EmployeeId,
   HelsinkiDateTimeRange
 } from 'lib-common/generated/api-types/shared'
-import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import type HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import { constantQuery, useQueryResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
@@ -33,7 +33,7 @@ import { faCalendar } from 'lib-icons'
 import { routes } from '../App'
 import { renderResult } from '../async-rendering'
 import { useTranslation } from '../common/i18n'
-import { UnitOrGroup } from '../common/unit-or-group'
+import type { UnitOrGroup } from '../common/unit-or-group'
 import { unitInfoQuery } from '../units/queries'
 
 import { EmployeeCardBackground } from './components/EmployeeCardBackground'

@@ -2,30 +2,18 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, {
-  RefObject,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState
-} from 'react'
+import type { RefObject } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import styled from 'styled-components'
 
-import {
-  combine,
-  Failure,
-  Loading,
-  Result,
-  Success,
-  wrapResult
-} from 'lib-common/api'
+import type { Result } from 'lib-common/api'
+import { combine, Failure, Loading, Success, wrapResult } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import {
+import type {
   AttendanceReservationReportRow,
   ReservationType
 } from 'lib-common/generated/api-types/reports'
-import { DaycareId, GroupId } from 'lib-common/generated/api-types/shared'
+import type { DaycareId, GroupId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import { constantQuery, useQueryResult } from 'lib-common/query'
@@ -40,13 +28,13 @@ import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import DateRangePicker from 'lib-components/molecules/date-picker/DateRangePicker'
 
-import ReportDownload from '../../components/reports/ReportDownload'
 import { getAttendanceReservationReportByUnit } from '../../generated/api-clients/reports'
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 import { FlexRow } from '../common/styled/containers'
 import { unitGroupsQuery, daycaresQuery } from '../unit/queries'
 
+import ReportDownload from './ReportDownload'
 import { FilterLabel, FilterRow, TableScrollable } from './common'
 
 const getAttendanceReservationReportByUnitResult = wrapResult(

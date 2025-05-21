@@ -6,17 +6,18 @@ import React from 'react'
 
 import { combine } from 'lib-common/api'
 import { apiDataToFormData } from 'lib-common/api-types/application/ApplicationFormData'
-import { ApplicationId } from 'lib-common/generated/api-types/shared'
+import type { ApplicationId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import Container from 'lib-components/layout/Container'
 
 import Footer from '../../Footer'
-import ApplicationReadViewContents from '../../applications/read-view/ApplicationReadViewContents'
 import { renderResult } from '../../async-rendering'
 import { useTranslation } from '../../localization'
 import useTitle from '../../useTitle'
 import { applicationChildrenQuery, applicationQuery } from '../queries'
+
+import ApplicationReadViewContents from './ApplicationReadViewContents'
 
 export default React.memo(function ApplicationReadView() {
   const applicationId = useIdRouteParam<ApplicationId>('applicationId')

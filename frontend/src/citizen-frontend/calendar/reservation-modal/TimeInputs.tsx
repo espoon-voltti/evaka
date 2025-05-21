@@ -5,9 +5,8 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import { useTranslation } from 'citizen-frontend/localization'
+import type { BoundForm } from 'lib-common/form/hooks'
 import {
-  BoundForm,
   useBoolean,
   useFormElem,
   useFormField,
@@ -22,17 +21,17 @@ import {
 } from 'lib-components/molecules/ExpandingInfo'
 import { faPlus, fasUserMinus, faTrash, faUserMinus } from 'lib-icons'
 
+import { useTranslation } from '../../localization'
 import { focusElementOnNextFrame } from '../../utils/focus'
 import TimeRangeInput from '../TimeRangeInput'
 
+import type { LimitedLocalTimeRangeField, ReadOnlyState } from './form'
 import {
   type day,
   emptyTimeRange,
   type noTimes,
   type timeRanges,
-  type reservation,
-  LimitedLocalTimeRangeField,
-  ReadOnlyState
+  type reservation
 } from './form'
 
 interface DayProps {

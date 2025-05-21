@@ -3,13 +3,14 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, { SetStateAction, useCallback, useMemo, useState } from 'react'
+import type { SetStateAction } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { Link } from 'react-router'
 import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
-import { ApplicationStatus } from 'lib-common/generated/api-types/application'
-import { PlacementSketchingReportRow } from 'lib-common/generated/api-types/reports'
+import type { ApplicationStatus } from 'lib-common/generated/api-types/application'
+import type { PlacementSketchingReportRow } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
 import { constantQuery, useQueryResult } from 'lib-common/query'
 import Title from 'lib-components/atoms/Title'
@@ -21,12 +22,12 @@ import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { faFileAlt } from 'lib-icons'
 
-import ReportDownload from '../../components/reports/ReportDownload'
 import { useTranslation } from '../../state/i18n'
 import { distinct } from '../../utils'
 import { renderResult } from '../async-rendering'
 import { FlexRow } from '../common/styled/containers'
 
+import ReportDownload from './ReportDownload'
 import { FilterLabel, FilterRow, RowCountInfo, TableScrollable } from './common'
 import { placementSketchingQuery } from './queries'
 

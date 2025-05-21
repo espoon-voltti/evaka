@@ -12,18 +12,18 @@ import {
   isRegular,
   isVariableTime
 } from 'lib-common/api-types/daily-service-times'
-import { ChildServiceNeedInfo } from 'lib-common/generated/api-types/absence'
-import { DailyServiceTimesValue } from 'lib-common/generated/api-types/dailyservicetimes'
-import { ScheduleType } from 'lib-common/generated/api-types/placement'
-import {
+import type { ChildServiceNeedInfo } from 'lib-common/generated/api-types/absence'
+import type { DailyServiceTimesValue } from 'lib-common/generated/api-types/dailyservicetimes'
+import type { ScheduleType } from 'lib-common/generated/api-types/placement'
+import type {
   AttendanceTimesForDate,
   Reservation,
   UnitDateInfo
 } from 'lib-common/generated/api-types/reservations'
-import LocalDate from 'lib-common/local-date'
+import type LocalDate from 'lib-common/local-date'
 import { reservationHasTimes } from 'lib-common/reservations'
-import TimeRange from 'lib-common/time-range'
-import TimeRangeEndpoint from 'lib-common/time-range-endpoint'
+import type TimeRange from 'lib-common/time-range'
+import type TimeRangeEndpoint from 'lib-common/time-range-endpoint'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { fontWeights } from 'lib-components/typography'

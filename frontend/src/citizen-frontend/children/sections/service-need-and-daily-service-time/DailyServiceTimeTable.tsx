@@ -4,10 +4,9 @@
 
 import React from 'react'
 
-import { useTranslation } from 'citizen-frontend/localization'
 import { getTimesOnWeekday } from 'lib-common/api-types/daily-service-times'
-import { Tense } from 'lib-common/date-range'
-import {
+import type { Tense } from 'lib-common/date-range'
+import type {
   DailyServiceTimes,
   DailyServiceTimesValue
 } from 'lib-common/generated/api-types/dailyservicetimes'
@@ -23,6 +22,8 @@ import {
   TabletAndDesktop
 } from 'lib-components/layout/responsive-layout'
 import colors from 'lib-customizations/common'
+
+import { useTranslation } from '../../../localization'
 
 const weekDays = [1, 2, 3, 4, 5, 6, 7] as const
 const colorsByTense: Record<Tense, string> = {

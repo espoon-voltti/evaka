@@ -2,10 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Lang } from 'lib-customizations/citizen'
+import type { Lang } from 'lib-customizations/citizen'
 
 import { waitUntilFalse } from '../../utils'
-import { Page, Element, EnvType } from '../../utils/page'
+import type { Page, Element, EnvType } from '../../utils/page'
 
 import { CitizenChildPage } from './citizen-children'
 

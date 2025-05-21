@@ -4,14 +4,10 @@
 
 import React, { useCallback, useContext, useRef, useState } from 'react'
 
-import {
-  ChildContext,
-  ChildState
-} from 'employee-frontend/components/child-information/state'
-import { FeeAlteration } from 'lib-common/generated/api-types/invoicing'
-import { ChildId } from 'lib-common/generated/api-types/shared'
+import type { FeeAlteration } from 'lib-common/generated/api-types/invoicing'
+import type { ChildId } from 'lib-common/generated/api-types/shared'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import { scrollToRef } from 'lib-common/utils/scrolling'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
@@ -30,6 +26,8 @@ import {
   getFeeAlterationsQuery,
   updateFeeAlterationMutation
 } from './queries'
+import { ChildContext } from './state'
+import type { ChildState } from './state'
 
 const newFeeAlterationUiMode = 'create-new-fee-alteration'
 const editFeeAlterationUiMode = (id: UUID) => `edit-fee-alteration-${id}`

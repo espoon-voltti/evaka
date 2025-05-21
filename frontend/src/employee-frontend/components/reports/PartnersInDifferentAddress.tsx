@@ -6,7 +6,7 @@ import React, { useCallback, useMemo, useState } from 'react'
 import { Link } from 'react-router'
 import styled from 'styled-components'
 
-import { PartnersInDifferentAddressReportRow } from 'lib-common/generated/api-types/reports'
+import type { PartnersInDifferentAddressReportRow } from 'lib-common/generated/api-types/reports'
 import { useQueryResult } from 'lib-common/query'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
@@ -14,11 +14,11 @@ import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 
-import ReportDownload from '../../components/reports/ReportDownload'
 import { useTranslation } from '../../state/i18n'
 import { distinct } from '../../utils'
 import { renderResult } from '../async-rendering'
 
+import ReportDownload from './ReportDownload'
 import { FilterLabel, FilterRow, RowCountInfo, TableScrollable } from './common'
 import { partnersInDifferentAddressReportQuery } from './queries'
 

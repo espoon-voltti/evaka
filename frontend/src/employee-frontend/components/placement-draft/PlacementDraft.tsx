@@ -3,9 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import type { Dispatch, SetStateAction } from 'react'
 import React, {
-  Dispatch,
-  SetStateAction,
   useCallback,
   useContext,
   useEffect,
@@ -15,15 +14,19 @@ import React, {
 import { Link, useNavigate } from 'react-router'
 import styled from 'styled-components'
 
-import { isLoading, Loading, Result, Success, wrapResult } from 'lib-common/api'
+import type { Result, Success } from 'lib-common/api'
+import { isLoading, Loading, wrapResult } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { DaycarePlacementPlan } from 'lib-common/generated/api-types/application'
-import { PublicUnit } from 'lib-common/generated/api-types/daycare'
-import {
+import type { DaycarePlacementPlan } from 'lib-common/generated/api-types/application'
+import type { PublicUnit } from 'lib-common/generated/api-types/daycare'
+import type {
   PlacementPlanDraft,
   PlacementSummary
 } from 'lib-common/generated/api-types/placement'
-import { ApplicationId, DaycareId } from 'lib-common/generated/api-types/shared'
+import type {
+  ApplicationId,
+  DaycareId
+} from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import Tooltip from 'lib-components/atoms/Tooltip'
@@ -35,17 +38,18 @@ import { Bold, H1, H2, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { faLink } from 'lib-icons'
 
-import WarningLabel from '../../components/common/WarningLabel'
 import {
   createPlacementPlan,
   getPlacementPlanDraft
 } from '../../generated/api-clients/application'
 import { getApplicationUnits } from '../../generated/api-clients/daycare'
 import { useTranslation } from '../../state/i18n'
-import { TitleContext, TitleState } from '../../state/title'
+import type { TitleState } from '../../state/title'
+import { TitleContext } from '../../state/title'
 import { asUnitType } from '../../types/daycare'
 import { formatName } from '../../utils'
 import { renderResult } from '../async-rendering'
+import WarningLabel from '../common/WarningLabel'
 
 import PlacementDraftRow from './PlacementDraftRow'
 import Placements from './Placements'

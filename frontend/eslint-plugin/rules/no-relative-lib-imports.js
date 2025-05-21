@@ -10,7 +10,7 @@ function toAbsoluteImport(str) {
   return '"' + str.replace(/^(\.\.\/)+/, '').replace(/^\.\//, '') + '"'
 }
 
-module.exports = {
+export default {
   meta: {
     type: 'suggestion',
     docs: {

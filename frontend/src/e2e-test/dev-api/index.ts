@@ -4,16 +4,17 @@
 
 import * as fs from 'fs/promises'
 
-import axios, { AxiosResponse, InternalAxiosRequestConfig } from 'axios'
+import type { AxiosResponse, InternalAxiosRequestConfig } from 'axios'
+import axios from 'axios'
 import { BaseError } from 'make-error-cause'
 
-import { SimpleApplicationAction } from 'lib-common/generated/api-types/application'
-import {
+import type { SimpleApplicationAction } from 'lib-common/generated/api-types/application'
+import type {
   ApplicationId,
   EmployeeId,
   PedagogicalDocumentId
 } from 'lib-common/generated/api-types/shared'
-import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import type HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
 import config from '../config'
 import {
@@ -22,7 +23,7 @@ import {
   runJobs,
   simpleAction
 } from '../generated/api-clients'
-import { DevPerson, MockVtjDataset } from '../generated/api-types'
+import type { DevPerson, MockVtjDataset } from '../generated/api-types'
 
 export class DevApiError extends BaseError {
   constructor(cause: unknown) {

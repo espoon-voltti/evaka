@@ -5,13 +5,13 @@
 import React from 'react'
 import { Link } from 'react-router'
 
-import { InvoiceDetailed } from 'lib-common/generated/api-types/invoicing'
+import type { InvoiceDetailed } from 'lib-common/generated/api-types/invoicing'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 import { featureFlags } from 'lib-customizations/employee'
 import { faMoneyCheck } from 'lib-icons'
 
-import LabelValueList from '../../components/common/LabelValueList'
 import { useTranslation } from '../../state/i18n'
+import LabelValueList from '../common/LabelValueList'
 
 import { formatInvoicePeriod } from './utils'
 

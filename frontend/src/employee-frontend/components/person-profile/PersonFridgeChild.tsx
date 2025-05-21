@@ -6,8 +6,11 @@ import orderBy from 'lodash/orderBy'
 import React, { useContext, useState } from 'react'
 import { Link } from 'react-router'
 
-import { ParentshipWithPermittedActions } from 'lib-common/generated/api-types/pis'
-import { ParentshipId, PersonId } from 'lib-common/generated/api-types/shared'
+import type { ParentshipWithPermittedActions } from 'lib-common/generated/api-types/pis'
+import type {
+  ParentshipId,
+  PersonId
+} from 'lib-common/generated/api-types/shared'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { getAge } from 'lib-common/utils/local-date'
 import Tooltip from 'lib-components/atoms/Tooltip'
@@ -16,14 +19,14 @@ import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { faQuestion } from 'lib-icons'
 
-import Toolbar from '../../components/common/Toolbar'
-import FridgeChildModal from '../../components/person-profile/person-fridge-child/FridgeChildModal'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
 import { formatName } from '../../utils'
 import { renderResult } from '../async-rendering'
+import Toolbar from '../common/Toolbar'
 
 import { ButtonsTd, DateTd, NameTd } from './common'
+import FridgeChildModal from './person-fridge-child/FridgeChildModal'
 import {
   deleteParentshipMutation,
   parentshipsQuery,

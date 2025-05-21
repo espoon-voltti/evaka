@@ -198,6 +198,7 @@ fun generateImports(currentFile: TsFile, imports: Iterable<TsImport>): String =
                 is TsImport.NamedAs ->
                     "import { ${import.originalName} as ${import.name} } from '$path'"
                 is TsImport.Named -> "import { ${import.name} } from '$path'"
+                is TsImport.Type -> "import type { ${import.name} } from '$path'"
             }
         }
 

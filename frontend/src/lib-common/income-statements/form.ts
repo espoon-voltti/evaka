@@ -2,17 +2,15 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import * as ApiTypes from 'lib-common/generated/api-types/incomestatement'
-import {
+import type * as ApiTypes from 'lib-common/generated/api-types/incomestatement'
+import type {
   IncomeSource,
   IncomeStatementAttachmentType,
   OtherIncome
 } from 'lib-common/generated/api-types/incomestatement'
-import {
-  IncomeStatementAttachments,
-  toIncomeStatementAttachments
-} from 'lib-common/income-statements/attachments'
-import LocalDate from 'lib-common/local-date'
+import type { IncomeStatementAttachments } from 'lib-common/income-statements/attachments'
+import { toIncomeStatementAttachments } from 'lib-common/income-statements/attachments'
+import type LocalDate from 'lib-common/local-date'
 
 export interface IncomeStatementForm {
   startDate: LocalDate | null

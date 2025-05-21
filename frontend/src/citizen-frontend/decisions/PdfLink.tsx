@@ -5,7 +5,7 @@
 import noop from 'lodash/noop'
 import React from 'react'
 
-import { DecisionId } from 'lib-common/generated/api-types/shared'
+import type { DecisionId } from 'lib-common/generated/api-types/shared'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { faFileAlt } from 'lib-icons'
 

@@ -11,14 +11,11 @@ import React, {
 } from 'react'
 import styled from 'styled-components'
 
-import LabelValueList from 'employee-frontend/components/common/LabelValueList'
-import { useTranslation } from 'employee-frontend/state/i18n'
-import { UIContext } from 'employee-frontend/state/ui'
 import { Failure } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { UpdateStateFn } from 'lib-common/form-state'
-import { AssistanceNeedVoucherCoefficient } from 'lib-common/generated/api-types/assistanceneed'
-import { ChildId } from 'lib-common/generated/api-types/shared'
+import type { UpdateStateFn } from 'lib-common/form-state'
+import type { AssistanceNeedVoucherCoefficient } from 'lib-common/generated/api-types/assistanceneed'
+import type { ChildId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useMutationResult } from 'lib-common/query'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
@@ -31,6 +28,9 @@ import DateRangePicker from 'lib-components/molecules/date-picker/DateRangePicke
 import { LabelLike } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
+import { useTranslation } from '../../../../state/i18n'
+import { UIContext } from '../../../../state/ui'
+import LabelValueList from '../../../common/LabelValueList'
 import {
   createAssistanceNeedVoucherCoefficientMutation,
   updateAssistanceNeedVoucherCoefficientMutation
