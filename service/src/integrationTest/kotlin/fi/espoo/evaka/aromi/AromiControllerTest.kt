@@ -18,6 +18,7 @@ import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.dev.DevAbsence
 import fi.espoo.evaka.shared.dev.DevBackupCare
 import fi.espoo.evaka.shared.dev.DevCareArea
+import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
@@ -36,7 +37,6 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.snDefaultDaycare
-import java.lang.IllegalStateException
 import java.nio.charset.StandardCharsets
 import java.time.LocalDate
 import java.time.LocalTime
@@ -727,6 +727,146 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
         assertEquals(
             getExpectedCsv("aromi/unit_closing_cases.csv"),
             getMealOrders(FiniteDateRange(LocalDate.of(2024, 11, 30), LocalDate.of(2024, 12, 8))),
+        )
+    }
+
+    @Test
+    fun `breakfast exceptions work`() {
+        db.transaction { tx ->
+            val dateOfBirthHarri = LocalDate.of(2021, 7, 2)
+            val placementEnd = LocalDate.of(2027, 7, 31)
+            tx.insert(
+                    DevPerson(
+                        lastName = "Hämäläinen",
+                        firstName = "Harri",
+                        ssn = null,
+                        dateOfBirth = dateOfBirthHarri,
+                        id = PersonId(UUID.fromString("f800197e-336c-4e98-ac2c-da305e3d605b")),
+                    ),
+                    DevPersonType.RAW_ROW,
+                )
+                .also { childId ->
+                    tx.insert(DevChild(id = childId, eatsBreakfast = false))
+                    val placementId =
+                        tx.insert(
+                            DevPlacement(
+                                childId = childId,
+                                unitId = unitId,
+                                startDate = dateOfBirthHarri,
+                                endDate = placementEnd,
+                            )
+                        )
+
+                    tx.insert(
+                        DevServiceNeed(
+                            placementId = placementId,
+                            startDate = dateOfBirthHarri,
+                            endDate = placementEnd,
+                            optionId = snDefaultDaycare.id,
+                            confirmedBy = admin.evakaUserId,
+                        )
+                    )
+                    tx.insert(
+                        DevDaycareGroupPlacement(
+                            daycarePlacementId = placementId,
+                            daycareGroupId = group2.id,
+                            startDate = dateOfBirthHarri,
+                            endDate = placementEnd,
+                        )
+                    )
+                    // 2024-11-28 expectation 10:00-14:00
+                    tx.insert(
+                        DevReservation(
+                            childId = childId,
+                            date = LocalDate.of(2024, 11, 28),
+                            startTime = LocalTime.of(9, 0),
+                            endTime = LocalTime.of(14, 0),
+                            createdBy = admin.evakaUserId,
+                        )
+                    )
+
+                    // 2024-11-29 expectation -
+                    tx.insert(
+                        DevReservation(
+                            childId = childId,
+                            date = LocalDate.of(2024, 11, 29),
+                            startTime = LocalTime.of(7, 0),
+                            endTime = LocalTime.of(8, 0),
+                            createdBy = admin.evakaUserId,
+                        )
+                    )
+                    tx.insert(
+                        DevReservation(
+                            childId = childId,
+                            date = LocalDate.of(2024, 11, 29),
+                            startTime = LocalTime.of(9, 0),
+                            endTime = LocalTime.of(10, 0),
+                            createdBy = admin.evakaUserId,
+                        )
+                    )
+                    // 2024-12-02 expectation 10:00-16:00
+                    tx.insert(
+                        DevReservation(
+                            childId = childId,
+                            date = LocalDate.of(2024, 12, 2),
+                            startTime = LocalTime.of(7, 0),
+                            endTime = LocalTime.of(8, 0),
+                            createdBy = admin.evakaUserId,
+                        )
+                    )
+                    tx.insert(
+                        DevReservation(
+                            childId = childId,
+                            date = LocalDate.of(2024, 12, 2),
+                            startTime = LocalTime.of(9, 0),
+                            endTime = LocalTime.of(16, 0),
+                            createdBy = admin.evakaUserId,
+                        )
+                    )
+                    // 2024-12-03 expectation 10:00-16:00
+                    tx.insert(
+                        DevReservation(
+                            childId = childId,
+                            date = LocalDate.of(2024, 12, 3),
+                            startTime = LocalTime.of(8, 0),
+                            endTime = LocalTime.of(9, 0),
+                            createdBy = admin.evakaUserId,
+                        )
+                    )
+                    tx.insert(
+                        DevReservation(
+                            childId = childId,
+                            date = LocalDate.of(2024, 12, 3),
+                            startTime = LocalTime.of(10, 0),
+                            endTime = LocalTime.of(16, 0),
+                            createdBy = admin.evakaUserId,
+                        )
+                    )
+                    // 2024-12-04 expectation 10:00-11:00 + 12:00-16:00
+                    tx.insert(
+                        DevReservation(
+                            childId = childId,
+                            date = LocalDate.of(2024, 12, 4),
+                            startTime = LocalTime.of(8, 0),
+                            endTime = LocalTime.of(11, 0),
+                            createdBy = admin.evakaUserId,
+                        )
+                    )
+                    tx.insert(
+                        DevReservation(
+                            childId = childId,
+                            date = LocalDate.of(2024, 12, 4),
+                            startTime = LocalTime.of(12, 0),
+                            endTime = LocalTime.of(16, 0),
+                            createdBy = admin.evakaUserId,
+                        )
+                    )
+                    // 2024-12-05 expectation 10:00-23:59
+                }
+        }
+        assertEquals(
+            getExpectedCsv("aromi/breakfast_exception_cases.csv"),
+            getMealOrders(FiniteDateRange(LocalDate.of(2024, 11, 28), LocalDate.of(2024, 12, 8))),
         )
     }
 

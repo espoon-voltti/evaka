@@ -34,6 +34,7 @@ import org.jdbi.v3.json.Json
 import org.springframework.stereotype.Service
 
 private val logger = KotlinLogging.logger {}
+private val breakfastRefusalStartTime = LocalTime.of(10, 0)
 
 @Service
 class AromiService(private val aromiEnv: AromiEnv?) {
@@ -226,6 +227,7 @@ data class AromiOrderDailyChildInfo(
     val absences: Set<AbsenceCategory>?,
     val dailyPreschoolTime: TimeRange?,
     val dailyPreparatoryTime: TimeRange?,
+    val eatsBreakfast: Boolean,
 )
 
 data class AromiDailyChildData(
@@ -239,6 +241,7 @@ data class AromiDailyChildData(
     val lastName: String,
     @Json val reservations: List<TimeRange>,
     val absences: Set<AbsenceCategory>,
+    val eatsBreakfast: Boolean,
 )
 
 fun Database.Read.getAromiDailyChildData(date: LocalDate): List<AromiDailyChildData> =
@@ -254,6 +257,7 @@ SELECT
     p.last_name,
     p.date_of_birth,
     dg.id AS group_id,
+    ch.nekku_eats_breakfast IS NOT FALSE as eats_breakfast,
     coalesce((
         SELECT jsonb_agg(jsonb_build_object('start', ar.start_time, 'end', ar.end_time))
         FROM attendance_reservation ar
@@ -273,6 +277,7 @@ FROM realized_placement_one(${bind(date)}) rp
 JOIN daycare_group dg ON dg.id = rp.group_id
 JOIN person p ON p.id = rp.child_id
 JOIN daycare d ON rp.unit_id = d.id
+JOIN child ch ON p.id = ch.id
 LEFT JOIN service_need sn ON sn.placement_id = rp.placement_id AND daterange(sn.start_date, sn.end_date, '[]') @> ${bind(date)}
 WHERE dg.aromi_customer_id IS NOT NULL 
 AND daterange(dg.start_date, dg.end_date, '[]') @> ${bind(date)}
@@ -316,6 +321,7 @@ private fun Database.Read.getAromiChildInfos(
             groupId = child.groupId,
             childId = child.childId,
             dateOfBirth = child.dateOfBirth,
+            eatsBreakfast = child.eatsBreakfast,
         )
     }
 }
@@ -342,7 +348,7 @@ private fun getAttendancePredictionRows(
 
                     // list of time ranges when child will be present according to fixed schedule or
                     // reservation times
-                    val presentTimeRanges =
+                    val evakaAttendanceTimes =
                         if (scheduleType == ScheduleType.FIXED_SCHEDULE)
                             listOfNotNull(
                                 childInfo.placementType.fixedScheduleRange(
@@ -351,6 +357,34 @@ private fun getAttendancePredictionRows(
                                 )
                             )
                         else childInfo.reservations ?: emptyList()
+
+                    // if a child does not eat breakfast, modify reservation/fixed schedule to begin
+                    // at breakfastRefusalStartTime
+                    val breakfastCorrectedTimes =
+                        if (!childInfo.eatsBreakfast) {
+                            if (
+                                evakaAttendanceTimes.isEmpty()
+                            ) // default attendance without breakfast
+                             listOf(TimeRange(breakfastRefusalStartTime, LocalTime.of(23, 59)))
+                            else // modified attendance without breakfast
+                                evakaAttendanceTimes.mapNotNull { timeRange ->
+                                    return@mapNotNull when {
+                                        breakfastRefusalStartTime.isBefore(timeRange.start.inner) ->
+                                            timeRange
+
+                                        breakfastRefusalStartTime.equals(timeRange.end.inner) ||
+                                            breakfastRefusalStartTime.isAfter(
+                                                timeRange.end.inner
+                                            ) -> null
+
+                                        else ->
+                                            TimeRange(
+                                                breakfastRefusalStartTime,
+                                                timeRange.end.inner,
+                                            )
+                                    }
+                                }
+                        } else evakaAttendanceTimes
 
                     val entry = { reservation: TimeRange? ->
                         AromiAttendanceRow(
@@ -368,12 +402,18 @@ private fun getAttendancePredictionRows(
                     if (effectivelyAbsent) {
                         emptyList()
                     } else {
-                        if (presentTimeRanges.isEmpty()) {
-                            // full day for any non-reserved and non-absent with schedule type
-                            // RESERVATION_REQUIRED
-                            listOf(entry(null))
+                        if (breakfastCorrectedTimes.isEmpty()) {
+                            if (evakaAttendanceTimes.isNotEmpty()) {
+                                // child only has excepted reservations -> no meal order impact ->
+                                // marked effectively absent
+                                emptyList()
+                            } else {
+                                // full day for any non-reserved and non-absent with schedule type
+                                // RESERVATION_REQUIRED
+                                listOf(entry(null))
+                            }
                         } else {
-                            presentTimeRanges.map { entry(it) }
+                            breakfastCorrectedTimes.map { entry(it) }
                         }
                     }
                 }

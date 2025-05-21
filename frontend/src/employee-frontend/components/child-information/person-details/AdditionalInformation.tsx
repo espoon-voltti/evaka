@@ -425,7 +425,7 @@ export default React.memo(function AdditionalInformation({ childId }: Props) {
                     }
                   ]
                 : []),
-              ...(featureFlags.nekkuIntegration
+              ...(featureFlags.nekkuIntegration || featureFlags.aromiIntegration
                 ? [
                     {
                       label:
@@ -450,7 +450,11 @@ export default React.memo(function AdditionalInformation({ childId }: Props) {
                           </div>
                         </>
                       )
-                    },
+                    }
+                  ]
+                : []),
+              ...(featureFlags.nekkuIntegration
+                ? [
                     {
                       label: i18n.childInformation.personDetails.nekkuDiet,
                       value: editing ? (
