@@ -3,7 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, { useContext } from 'react'
+import orderBy from 'lodash/orderBy'
+import React, { useContext, useMemo } from 'react'
 import { Link } from 'react-router'
 import styled from 'styled-components'
 
@@ -37,12 +38,17 @@ export default React.memo(function UnitList() {
     refetchOnMount: 'always'
   })
 
+  const orderedUnits = useMemo(
+    () => units.map((units) => orderBy(units, (u) => u.name)),
+    [units]
+  )
+
   return (
     <>
       <TopBar title={i18n.units.title} unitId={undefined} />
       <Gap size="xs" />
       <FixedSpaceColumn spacing="xs">
-        {renderResult(units, (units) => (
+        {renderResult(orderedUnits, (units) => (
           <ContentArea paddingVertical="s" opaque>
             <FixedSpaceColumn spacing="m">
               {units.map(
