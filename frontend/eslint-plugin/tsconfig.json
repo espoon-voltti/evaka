@@ -2,6 +2,6 @@
   "extends": "../tsconfig.base.json",
   "compilerOptions": {
     "composite": true,
-    "outDir": "../../dist/eslint-plugin",
+    "outDir": "../dist/eslint-plugin",
   }
 }
