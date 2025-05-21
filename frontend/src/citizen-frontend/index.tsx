@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import 'core-js/stable'
 import * as Sentry from '@sentry/browser'
 import React from 'react'
 import { createRoot } from 'react-dom/client'
