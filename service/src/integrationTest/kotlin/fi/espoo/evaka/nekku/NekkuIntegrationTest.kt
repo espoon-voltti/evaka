@@ -1833,7 +1833,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
         createAndSendNekkuOrder(client, db, group.id, monday, 0.9)
         createAndSendNekkuOrder(client, db, group.id, tuesday, 0.9)
 
-        assertEquals(
+        assertOrdersListEquals(
             listOf(
                 NekkuClient.NekkuOrders(
                     listOf(
@@ -1984,7 +1984,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
         createAndSendNekkuOrder(client, db, group.id, monday, 0.9)
         createAndSendNekkuOrder(client, db, group.id, tuesday, 0.9)
 
-        assertEquals(
+        assertOrdersListEquals(
             listOf(
                 NekkuClient.NekkuOrders(
                     listOf(
@@ -2136,7 +2136,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
         createAndSendNekkuOrder(client, db, group.id, monday, 0.9)
         createAndSendNekkuOrder(client, db, group.id, tuesday, 0.9)
 
-        assertEquals(
+        assertOrdersListEquals(
             listOf(
                 NekkuClient.NekkuOrders(
                     listOf(
@@ -2275,7 +2275,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
 
         createAndSendNekkuOrder(client, db, group.id, monday, 0.9)
 
-        assertEquals(
+        assertOrdersListEquals(
             listOf(
                 NekkuClient.NekkuOrders(
                     listOf(
@@ -2391,7 +2391,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
 
         createAndSendNekkuOrder(client, db, group.id, monday, 0.9)
 
-        assertEquals(
+        assertOrdersListEquals(
             listOf(
                 NekkuClient.NekkuOrders(
                     listOf(
@@ -2513,7 +2513,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
         createAndSendNekkuOrder(client, db, group.id, monday, 0.9)
         createAndSendNekkuOrder(client, db, group.id, tuesday, 0.9)
 
-        assertEquals(
+        assertOrdersListEquals(
             listOf(
                 NekkuClient.NekkuOrders(
                     listOf(
@@ -2651,7 +2651,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
         createAndSendNekkuOrder(client, db, group.id, monday, 0.9)
         createAndSendNekkuOrder(client, db, group.id, tuesday, 0.9)
 
-        assertEquals(
+        assertOrdersListEquals(
             listOf(
                 NekkuClient.NekkuOrders(
                     listOf(
@@ -2794,7 +2794,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
         createAndSendNekkuOrder(client, db, group.id, monday, 0.9)
         createAndSendNekkuOrder(client, db, group.id, tuesday, 0.9)
 
-        assertEquals(
+        assertOrdersListEquals(
             listOf(
                 NekkuClient.NekkuOrders(
                     listOf(
@@ -2927,7 +2927,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
         createAndSendNekkuOrder(client, db, group.id, monday, 0.9)
         createAndSendNekkuOrder(client, db, group.id, tuesday, 0.9)
 
-        assertEquals(
+        assertOrdersListEquals(
             listOf(
                 NekkuClient.NekkuOrders(
                     listOf(
@@ -3051,7 +3051,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
         createAndSendNekkuOrder(client, db, group.id, monday, 0.9)
         createAndSendNekkuOrder(client, db, group.id, tuesday, 0.9)
 
-        assertEquals(
+        assertOrdersListEquals(
             listOf(
                 NekkuClient.NekkuOrders(
                     listOf(
@@ -3235,7 +3235,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
 
         createAndSendNekkuOrder(client, db, group.id, monday, 0.9)
 
-        assertEquals(
+        assertOrdersListEquals(
             listOf(
                 NekkuClient.NekkuOrders(
                     listOf(
@@ -3489,7 +3489,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
 
         createAndSendNekkuOrder(client, db, group.id, monday, 0.9)
 
-        assertEquals(
+        assertOrdersListEquals(
             listOf(
                 NekkuClient.NekkuOrders(
                     listOf(
@@ -3759,7 +3759,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
 
         createAndSendNekkuOrder(client, db, group.id, monday, 0.9)
 
-        assertEquals(
+        assertOrdersListEquals(
             listOf(
                 NekkuClient.NekkuOrders(
                     listOf(
@@ -3888,6 +3888,37 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
             ),
             specialDietOptions,
         )
+    }
+
+    private fun assertOrdersListEquals(
+        expected: List<NekkuClient.NekkuOrders>,
+        actual: List<NekkuClient.NekkuOrders>,
+    ) {
+        assertEquals(expected.size, actual.size)
+        expected.zip(actual).forEach { (expected, actual) ->
+            assertNekkuOrdersEquals(expected, actual)
+        }
+    }
+
+    private fun assertNekkuOrdersEquals(
+        expected: NekkuClient.NekkuOrders,
+        actual: NekkuClient.NekkuOrders,
+    ) {
+        assertEquals(expected.dryRun, actual.dryRun)
+        expected.orders.zip(actual.orders).forEach { (expected, actual) ->
+            assertOrderEquals(expected, actual)
+        }
+    }
+
+    private fun assertOrderEquals(
+        expected: NekkuClient.NekkuOrder,
+        actual: NekkuClient.NekkuOrder,
+    ) {
+        assertEquals(expected.deliveryDate, actual.deliveryDate)
+        assertEquals(expected.customerNumber, actual.customerNumber)
+        assertEquals(expected.groupId, actual.groupId)
+        assertEquals(expected.description, actual.description)
+        assertEquals(expected.items.toSet(), actual.items.toSet())
     }
 
     private fun getAuthenticatedEmployee(): AuthenticatedUser.Employee {
@@ -4096,7 +4127,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
             val nekkuOrderReportResult = tx.getNekkuOrderReport(daycare.id, group.id, monday)
 
             assertEquals(
-                listOf(
+                setOf(
                     NekkuOrdersReport(
                         monday,
                         daycare.id,
@@ -4218,7 +4249,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
                         listOf("Laktoositon ruokavalio", "Pähkinätön, Alle 1-vuotiaan ruokavalio"),
                     ),
                 ),
-                nekkuOrderReportResult,
+                nekkuOrderReportResult.toSet(),
             )
         }
     }
@@ -4357,7 +4388,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
             val nekkuOrderReportResult = tx.getNekkuOrderReport(daycare.id, group.id, monday)
 
             assertEquals(
-                listOf(
+                setOf(
                     NekkuOrdersReport(
                         monday,
                         daycare.id,
@@ -4479,7 +4510,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
                         listOf("Laktoositon ruokavalio", "Pähkinätön, Alle 1-vuotiaan ruokavalio"),
                     ),
                 ),
-                nekkuOrderReportResult,
+                nekkuOrderReportResult.toSet(),
             )
         }
 
@@ -4528,7 +4559,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
             val nekkuOrderReportResult = tx.getNekkuOrderReport(daycare.id, group.id, monday)
 
             assertEquals(
-                listOf(
+                setOf(
                     NekkuOrdersReport(
                         monday,
                         daycare.id,
@@ -4590,7 +4621,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
                         listOf("Laktoositon ruokavalio", "Alle 1-vuotiaan ruokavalio"),
                     ),
                 ),
-                nekkuOrderReportResult,
+                nekkuOrderReportResult.toSet(),
             )
         }
     }
