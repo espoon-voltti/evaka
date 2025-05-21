@@ -7,7 +7,7 @@ import type { Config } from '@jest/types'
 const config: Config.InitialOptions = {
   displayName: 'e2e-test',
   preset: 'ts-jest',
-  testEnvironment: './jest-environment',
+  testEnvironment: './jest-environment.cjs',
   testRunner: 'jest-circus/runner'
 }
 export default config
