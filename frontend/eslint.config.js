@@ -30,7 +30,7 @@ export default [
     }
   },
   {
-    files: ['**/*.{js,mjs}'],
+    files: ['**/*.{js,cjs,mjs}'],
     ...typescriptEslint.configs.disableTypeChecked
   },
   {
@@ -43,7 +43,7 @@ export default [
     }
   },
   {
-    files: ['**/*.{ts,tsx,js,mjs}'],
+    files: ['**/*.{ts,tsx,js,cjs,mjs}'],
     rules: {
       'import/order': [
         'warn',
@@ -68,7 +68,7 @@ export default [
     }
   },
   {
-    files: ['**/*.{ts,tsx,js,mjs}'],
+    files: ['**/*.{ts,tsx,js,cjs,mjs}'],
     rules: {
       '@typescript-eslint/no-unused-vars': [
         'warn',
@@ -126,7 +126,7 @@ export default [
     }
   },
   {
-    files: ['**/*.{js,mjs}'],
+    files: ['**/*.{js,cjs,mjs}'],
     languageOptions: {
       globals: globals.node
     },
@@ -142,7 +142,7 @@ export default [
   },
   {
     // Only files that end up in the bundles
-    files: ['src/**/*.{ts,tsx,js,mjs}'],
+    files: ['src/**/*.{ts,tsx,js,cjs,mjs}'],
     plugins: {
       lodash: fixupPluginRules(lodashPlugin)
     },
