@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2023 City of Espoo
+// SPDX-FileCopyrightText: 2017-2025 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -9,8 +9,9 @@ import { type cancelMutation } from 'lib-common/query'
 
 import { Button } from '../atoms/buttons/Button'
 import { IconOnlyButton } from '../atoms/buttons/IconOnlyButton'
-import { LegacyButton } from '../atoms/buttons/LegacyButton'
+import Checkbox from '../atoms/form/Checkbox'
 import { useTranslations } from '../i18n'
+import { FixedSpaceRow } from '../layout/flex-helpers'
 import type { BaseProps } from '../utils'
 
 import type { ModalType } from './modals/BaseModal'
@@ -40,6 +41,7 @@ export type ConfirmedMutationProps<Arg, Data> = BaseProps & {
   onClick: () => Arg | typeof cancelMutation
   disabled?: boolean
   confirmationText?: React.ReactNode
+  extraConfirmationCheckboxText?: string
   confirmLabel?: string
   cancelLabel?: string
   onSuccess?: (value: Data) => void
@@ -55,6 +57,7 @@ function ConfirmedMutation_<Arg, Data>(
     disabled,
     confirmationTitle,
     confirmationText,
+    extraConfirmationCheckboxText,
     mutation,
     onClick,
     confirmLabel,
@@ -68,6 +71,8 @@ function ConfirmedMutation_<Arg, Data>(
   } = props
   const i18n = useTranslations()
   const [confirming, setConfirming] = useState(false)
+  const needsExtraConfirmation = !!extraConfirmationCheckboxText
+  const [extraConfirmation, setExtraConfirmation] = useState(false)
   const openConfirmation = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
@@ -76,7 +81,7 @@ function ConfirmedMutation_<Arg, Data>(
   return (
     <div className={className}>
       {(props.buttonStyle === undefined || props.buttonStyle === 'BUTTON') && (
-        <LegacyButton
+        <Button
           text={props.buttonText}
           onClick={openConfirmation}
           primary={props.primary}
@@ -110,17 +115,33 @@ function ConfirmedMutation_<Arg, Data>(
           text={confirmationText}
           resolveMutation={mutation}
           resolveAction={onClick}
+          resolveDisabled={needsExtraConfirmation && !extraConfirmation}
           resolveLabel={confirmLabel ?? i18n.common.confirm}
           onSuccess={(value) => {
             setConfirming(false)
+            setExtraConfirmation(false)
             if (onSuccess) onSuccess(value)
           }}
-          rejectAction={() => setConfirming(false)}
+          rejectAction={() => {
+            setConfirming(false)
+            setExtraConfirmation(false)
+          }}
           rejectLabel={cancelLabel ?? i18n.common.cancel}
           icon={modalIcon}
           type={modalType}
           data-qa={dataQaModal}
-        />
+        >
+          {!!extraConfirmationCheckboxText && (
+            <FixedSpaceRow justifyContent="center">
+              <Checkbox
+                label={extraConfirmationCheckboxText}
+                checked={extraConfirmation}
+                onChange={setExtraConfirmation}
+                data-qa="modal-extra-confirmation"
+              />
+            </FixedSpaceRow>
+          )}
+        </MutateFormModal>
       )}
     </div>
   )
