@@ -9,6 +9,7 @@ import * as path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import { sentryVitePlugin } from '@sentry/vite-plugin'
+import legacy from '@vitejs/plugin-legacy'
 import react from '@vitejs/plugin-react'
 import { build, defineConfig } from 'vite'
 import type { Plugin, UserConfig } from 'vite'
@@ -156,6 +157,29 @@ export default defineConfig(async (): Promise<UserConfig> => {
   return {
     plugins: [
       react(),
+      legacy({
+        // Vite considers browsers without ES module support to be legacy. We don't support them either.
+        renderLegacyChunks: false,
+        renderModernChunks: true,
+
+        // Include polyfills for our list of supported browsers. Vite runs @babel/preset-env on transpiled chunks with
+        // `useBuiltIns: 'usage'` to find out which polyfills to add. For more information, see:
+        // https://github.com/vitejs/vite/tree/main/packages/plugin-legacy
+        modernPolyfills: true,
+        modernTargets: [
+          'Firefox ESR',
+          'last 2 Chrome versions',
+          'last 2 Android versions',
+          'last 2 FirefoxAndroid versions',
+          'last 2 ChromeAndroid versions',
+          'last 2 Safari versions',
+          'last 2 iOS versions',
+          'last 2 Edge versions',
+          'last 2 Samsung versions',
+          '> 5% in FI',
+          'last 3 years'
+        ]
+      }),
       serviceWorker(),
       sentryVitePlugin({
         disable: process.env.SENTRY_PUBLISH_ENABLED !== 'true',
