@@ -160,14 +160,14 @@ const components = {
   }),
   absenceApplications: section({
     component: AbsenceApplicationsSection,
-    enabled: featureFlags.absenceApplications,
+    enabled: !!featureFlags.absenceApplications,
     requireOneOfPermittedActions: ['READ_ABSENCE_APPLICATIONS'],
     title: (i18n) => i18n.childInformation.absenceApplications.title,
     dataQa: 'absence-applications-collapsible'
   }),
   serviceApplications: section({
     component: ServiceApplicationsSection,
-    enabled: featureFlags.serviceApplications,
+    enabled: !!featureFlags.serviceApplications,
     requireOneOfPermittedActions: ['READ_SERVICE_APPLICATIONS'],
     title: (i18n) => i18n.childInformation.serviceApplications.title,
     dataQa: 'service-applications-collapsible'
