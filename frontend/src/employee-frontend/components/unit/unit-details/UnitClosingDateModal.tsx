@@ -17,20 +17,13 @@ import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { useTranslation } from '../../../state/i18n'
 import { updateUnitClosingDateMutation } from '../queries'
 
+import { closingDateIsBeforeLastPlacementDate } from './utils'
+
 interface UnitClosingDateModalProps {
   unit: Daycare
   lastPlacementDate: LocalDate | null
   onClose: () => void
 }
-
-export const closingDateIsBeforeLastPlacementDate = (
-  closingDate: LocalDate | null,
-  lastPlacementDate: LocalDate | null | undefined
-) =>
-  closingDate !== null &&
-  lastPlacementDate !== null &&
-  lastPlacementDate !== undefined &&
-  closingDate.isBefore(lastPlacementDate)
 
 const form = validated(
   object({
