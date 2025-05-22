@@ -9,7 +9,6 @@ import styled from 'styled-components'
 import type {
   ApplicationBasis,
   ApplicationStatusOption,
-  ApplicationTypeToggle,
   TransferApplicationFilter
 } from 'lib-common/generated/api-types/application'
 import { applicationStatusOptions } from 'lib-common/generated/api-types/application'
@@ -54,11 +53,7 @@ import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors, { applicationBasisColors } from 'lib-customizations/common'
-import {
-  applicationTypes,
-  featureFlags,
-  unitProviderTypes
-} from 'lib-customizations/employee'
+import { featureFlags, unitProviderTypes } from 'lib-customizations/employee'
 import {
   faAngleDown,
   faAngleUp,
@@ -842,100 +837,9 @@ export function InvoiceDistinctionsFilter({
   )
 }
 
-export const preschoolTypes = [
-  'PRESCHOOL_ONLY',
-  'PRESCHOOL_DAYCARE',
-  'PRESCHOOL_CLUB',
-  ...(featureFlags.preparatory
-    ? (['PREPARATORY_ONLY', 'PREPARATORY_DAYCARE'] as const)
-    : ([] as const)),
-  'DAYCARE_ONLY'
-] as const
-
-export type PreschoolType = (typeof preschoolTypes)[number]
-
-interface ApplicationTypeFilterProps {
-  toggled: ApplicationTypeToggle
-  toggledPreschool: PreschoolType[]
-  toggle: (type: ApplicationTypeToggle) => () => void
-  togglePreschool: (type: PreschoolType) => () => void
-}
-
-const CustomDiv = styled(FixedSpaceColumn)`
-  margin-left: 18px;
-  padding-left: 32px;
-  border-left: 1px solid ${colors.grayscale.g70};
-`
-
-const ApplicationOpenIcon = styled(FontAwesomeIcon)`
+export const ApplicationOpenIcon = styled(FontAwesomeIcon)`
   margin-left: 10px;
 `
-
-export function ApplicationTypeFilter({
-  toggled,
-  toggledPreschool,
-  toggle,
-  togglePreschool
-}: ApplicationTypeFilterProps) {
-  const { i18n } = useTranslation()
-
-  const types: ApplicationTypeToggle[] = [...applicationTypes, 'ALL']
-
-  return (
-    <>
-      <Label>{i18n.applications.list.type}</Label>
-      <Gap size="xs" />
-      <FixedSpaceColumn spacing="xs">
-        {types.map((id) =>
-          id !== 'PRESCHOOL' ? (
-            <Radio
-              key={id}
-              label={i18n.applications.types[id]}
-              checked={toggled === id}
-              onChange={toggle(id)}
-              data-qa={`application-type-filter-${id}`}
-              small
-            />
-          ) : (
-            <Fragment key={id}>
-              <Radio
-                key={id}
-                label={
-                  <>
-                    {i18n.applications.types[id]}
-                    <ApplicationOpenIcon
-                      icon={toggled === id ? faAngleUp : faAngleDown}
-                      size="lg"
-                      color={colors.grayscale.g70}
-                    />
-                  </>
-                }
-                ariaLabel={i18n.applications.types[id]}
-                checked={toggled === id}
-                onChange={toggle(id)}
-                data-qa={`application-type-filter-${id}`}
-                small
-              />
-              {toggled === id && (
-                <CustomDiv spacing="xs">
-                  {preschoolTypes.map((type) => (
-                    <Checkbox
-                      key={type}
-                      label={i18n.applications.types[type]}
-                      checked={toggledPreschool.includes(type)}
-                      onChange={togglePreschool(type)}
-                      data-qa={`application-type-filter-preschool-${type}`}
-                    />
-                  ))}
-                </CustomDiv>
-              )}
-            </Fragment>
-          )
-        )}
-      </FixedSpaceColumn>
-    </>
-  )
-}
 
 interface ApplicationStatusFilterProps {
   toggled: ApplicationSummaryStatusOptions
@@ -944,11 +848,14 @@ interface ApplicationStatusFilterProps {
   toggleAllStatuses: (status: ApplicationStatusOption) => () => void
 }
 
-const CustomDivWithMargin = styled(CustomDiv)`
+const CustomDivWithMargin = styled(FixedSpaceColumn)`
+  margin-left: 18px;
+  padding-left: 32px;
+  border-left: 1px solid ${colors.grayscale.g70};
   margin-top: ${defaultMargins.xs};
 `
 
-export const applicationSummaryStatuses = [
+const applicationSummaryStatuses = [
   'SENT',
   'WAITING_PLACEMENT',
   'WAITING_DECISION',
