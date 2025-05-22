@@ -692,9 +692,5 @@ fun Database.Read.isDaycareOpen(groupId: GroupId, date: LocalDate): Boolean {
             }
             .exactlyOne<List<Int>>()
 
-    if (operationDays.contains(date.dayOfWeek.value)) {
-        return true
-    } else {
-        return false
-    }
+    return operationDays.contains(date.dayOfWeek.value)
 }
