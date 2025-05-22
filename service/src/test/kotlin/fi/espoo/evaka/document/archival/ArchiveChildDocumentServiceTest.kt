@@ -177,6 +177,7 @@ class ArchiveChildDocumentServiceTest {
                 downloadPath =
                     "/employee/child-documents/child-documents/child_document_c3cc95f8-f045-11ef-9114-87ea771c5c89.pdf/pdf",
                 receivedBy = DocumentOrigin.ELECTRONIC,
+                sfiDeliveries = emptyList(),
             )
 
         val archivedProcess =

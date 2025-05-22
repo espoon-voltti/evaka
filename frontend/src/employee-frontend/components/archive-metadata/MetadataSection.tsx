@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import orderBy from 'lodash/orderBy'
 import React from 'react'
 import styled from 'styled-components'
 
@@ -9,6 +10,7 @@ import type { Result } from 'lib-common/api'
 import { useBoolean } from 'lib-common/form/hooks'
 import type { ProcessMetadataResponse } from 'lib-common/generated/api-types/process'
 import type { DocumentMetadata } from 'lib-common/generated/api-types/process'
+import UnorderedList from 'lib-components/atoms/UnorderedList'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { CollapsibleContentArea as Collapsible } from 'lib-components/layout/Container'
 import {
@@ -76,6 +78,27 @@ const DocumentMetadata = React.memo(function DocumentMetadata({
                 {
                   label: i18n.metadata.receivedBy.label,
                   value: i18n.metadata.receivedBy[document.receivedBy]
+                }
+              ]
+            : []),
+          ...(document.sfiDeliveries.length > 0
+            ? [
+                {
+                  label: i18n.metadata.sfiDelivery.label,
+                  value: (
+                    <UnorderedList>
+                      {orderBy(
+                        document.sfiDeliveries,
+                        (d) => d.recipientName
+                      ).map((delivery, i) => (
+                        <li key={i}>
+                          {delivery.recipientName} -{' '}
+                          {i18n.metadata.sfiDelivery.method[delivery.method]} (
+                          {delivery.time.format()})
+                        </li>
+                      ))}
+                    </UnorderedList>
+                  )
                 }
               ]
             : []),
