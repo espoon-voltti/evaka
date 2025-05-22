@@ -15,7 +15,7 @@ import { getEnvironment } from 'lib-common/utils/helpers'
 import 'leaflet/dist/leaflet.css'
 import { appConfig } from 'lib-customizations/citizen'
 
-import router from './App'
+import { router } from './router'
 import './index.css'
 
 // Load Sentry before React to make Sentry's integrations work automatically
