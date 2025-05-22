@@ -35,6 +35,7 @@ import fi.espoo.evaka.shared.domain.TimeRange
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.*
+import kotlin.collections.List
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertNull
@@ -1606,11 +1607,11 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
 
         planNekkuOrderJobs(db, asyncJobRunner, now)
 
-        assertEquals(7, getNekkuWeeklyJobs().count())
+        assertEquals(5, getNekkuWeeklyJobs().count())
     }
 
     @Test
-    fun `meal order jobs for daycare groups are planned for two week time`() {
+    fun `meal order jobs for daycare groups are planned for two week time and it does not create job for daycare that is not open`() {
 
         val client =
             TestNekkuClient(
@@ -1648,6 +1649,16 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
                 mealtimeBreakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
                 mealtimeLunch = TimeRange(LocalTime.of(11, 15), LocalTime.of(11, 45)),
                 mealtimeSnack = TimeRange(LocalTime.of(13, 30), LocalTime.of(13, 50)),
+                shiftCareOperationTimes =
+                    listOf(
+                        TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+                        TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+                        TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+                        TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+                        TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+                        TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+                        null,
+                    ),
             )
         val group = DevDaycareGroup(daycareId = daycare.id, nekkuCustomerNumber = "2501K6089")
 
@@ -1668,6 +1679,8 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
             nowPlusTwoWeeks.toLocalDate().toString(),
             getNekkuWeeklyJobs().first().date.toString(),
         )
+
+        assertEquals(6, getNekkuWeeklyJobs().count())
     }
 
     @Test

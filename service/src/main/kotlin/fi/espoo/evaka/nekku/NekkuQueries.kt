@@ -657,7 +657,7 @@ fun Database.Read.daycareOpenNextTime(groupId: GroupId, date: LocalDate): LocalD
     val operationDays =
         createQuery {
                 sql(
-                    "SELECT d.operation_days FROM daycare_group dcg JOIN daycare d ON d.id = dcg.daycare_id WHERE dcg.id = ${bind(groupId)}"
+                    "SELECT ARRAY(SELECT unnest(d.operation_days) UNION SELECT unnest(d.shift_care_operation_days)) AS combined_days FROM daycare_group dcg JOIN daycare d ON d.id = dcg.daycare_id WHERE dcg.id = ${bind(groupId)}"
                 )
             }
             .exactlyOne<List<Int>>()
@@ -680,4 +680,21 @@ fun Database.Read.daycareOpenNextTime(groupId: GroupId, date: LocalDate): LocalD
     }
 
     return date.plusDays(daysUntilNextOperationDay.toLong())
+}
+
+fun Database.Read.daycareOpen(groupId: GroupId, date: LocalDate): LocalDate? {
+
+    val operationDays =
+        createQuery {
+                sql(
+                    "SELECT ARRAY(SELECT unnest(d.operation_days) UNION SELECT unnest(d.shift_care_operation_days)) AS combined_days FROM daycare_group dcg JOIN daycare d ON d.id = dcg.daycare_id WHERE dcg.id = ${bind(groupId)}"
+                )
+            }
+            .exactlyOne<List<Int>>()
+
+    if (operationDays.contains(date.dayOfWeek.value)) {
+        return date
+    } else {
+        return null
+    }
 }
