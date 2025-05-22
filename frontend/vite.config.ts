@@ -176,6 +176,9 @@ export default defineConfig(async (): Promise<UserConfig> => {
     },
     server: {
       port: 9099,
+      warmup: {
+        clientFiles: ['src/**/index-vite.html']
+      },
       proxy: {
         '/api': 'http://localhost:3000'
       }
