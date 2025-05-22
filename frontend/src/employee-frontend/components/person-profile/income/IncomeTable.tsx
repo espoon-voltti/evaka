@@ -10,42 +10,19 @@ import type {
   IncomeOption,
   IncomeTypeOptions
 } from 'lib-common/generated/api-types/invoicing'
-import { formatCents } from 'lib-common/money'
 import { Table, Tbody } from 'lib-components/layout/Table'
 
 import { useTranslation } from '../../../state/i18n'
-import type { IncomeFields } from '../../../types/income'
 
 import IncomeSum from './income-table/IncomeSum'
 import IncomeTableHeader from './income-table/IncomeTableHeader'
 import IncomeTableRow from './income-table/IncomeTableRow'
+import type { IncomeTableData } from './utils'
 
 export interface IncomeValueString {
   amount: string
   coefficient: IncomeCoefficient
   monthlyAmount: number
-}
-
-export type IncomeTableData = Partial<Record<string, IncomeValueString>>
-
-export function tableDataFromIncomeFields(
-  value: IncomeFields
-): IncomeTableData {
-  return Object.fromEntries(
-    Object.entries(value).map(([key, value]) => [
-      key,
-      value
-        ? {
-            ...value,
-            amount: formatCents(value.amount)
-          }
-        : {
-            amount: '',
-            coefficient: 'MONTHLY_NO_HOLIDAY_BONUS',
-            monthlyAmount: 0
-          }
-    ])
-  )
 }
 
 interface Props {

@@ -46,8 +46,9 @@ import RetroactiveConfirmation, {
   isChangeRetroactive
 } from '../../common/RetroactiveConfirmation'
 
-import type { IncomeTableData } from './IncomeTable'
-import IncomeTable, { tableDataFromIncomeFields } from './IncomeTable'
+import IncomeTable from './IncomeTable'
+import type { IncomeTableData } from './utils'
+import { tableDataFromIncomeFields } from './utils'
 
 const ButtonsContainer = styled(FixedSpaceRow)`
   margin: 20px 0;

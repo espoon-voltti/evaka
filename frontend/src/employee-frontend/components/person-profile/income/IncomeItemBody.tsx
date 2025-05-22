@@ -24,7 +24,8 @@ import { getAttachmentUrl } from '../../../api/attachments'
 import { useTranslation } from '../../../state/i18n'
 import { UserContext } from '../../../state/user'
 
-import IncomeTable, { tableDataFromIncomeFields } from './IncomeTable'
+import IncomeTable from './IncomeTable'
+import { tableDataFromIncomeFields } from './utils'
 
 interface Props {
   incomeTypeOptions: IncomeTypeOptions
