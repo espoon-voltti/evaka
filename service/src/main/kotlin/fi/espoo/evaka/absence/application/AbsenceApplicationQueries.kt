@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.absence.application
 
+import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.AbsenceApplicationId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
@@ -135,7 +136,7 @@ fun Database.Read.getChildrenWithAbsenceApplicationPossibleOnSomeDate(
                 """
 SELECT DISTINCT child_id
 FROM placement
-WHERE type = ANY ('{PRESCHOOL,PRESCHOOL_DAYCARE,PRESCHOOL_DAYCARE_ONLY,PRESCHOOL_CLUB,PREPARATORY,PREPARATORY_DAYCARE,PREPARATORY_DAYCARE_ONLY}')
+WHERE type = ANY (${bind(PlacementType.preschool)})
   AND child_id = ANY (${bind(childIds)})
         """
             )

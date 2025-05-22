@@ -39,6 +39,7 @@ import fi.espoo.evaka.shared.domain.TimeInterval
 import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.domain.getHolidays
 import fi.espoo.evaka.shared.domain.getOperationalDatesForChildren
+import fi.espoo.evaka.shared.domain.getPreschoolOperationalDatesForChildren
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import java.time.LocalDate
@@ -336,6 +337,29 @@ class ReservationControllerCitizen(
                     "deletedReservations" to deletedReservations,
                 ),
         )
+    }
+
+    data class OperationalDatesRequest(val range: FiniteDateRange, val childIds: Set<ChildId>)
+
+    @PostMapping("/citizen/preschool-operational-dates")
+    fun getPreschoolOperationalDates(
+        db: Database,
+        user: AuthenticatedUser.Citizen,
+        clock: EvakaClock,
+        @RequestBody body: OperationalDatesRequest,
+    ): Map<ChildId, Set<LocalDate>> {
+        return db.connect { dbc ->
+            dbc.read { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Citizen.Child.CREATE_ABSENCE,
+                    body.childIds,
+                )
+                tx.getPreschoolOperationalDatesForChildren(body.range, body.childIds)
+            }
+        }
     }
 }
 

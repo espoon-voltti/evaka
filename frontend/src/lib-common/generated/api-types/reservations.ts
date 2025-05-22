@@ -246,6 +246,14 @@ export interface MonthSummary {
 }
 
 /**
+* Generated from fi.espoo.evaka.reservations.ReservationControllerCitizen.OperationalDatesRequest
+*/
+export interface OperationalDatesRequest {
+  childIds: PersonId[]
+  range: FiniteDateRange
+}
+
+/**
 * Generated from fi.espoo.evaka.reservations.UnitAttendanceReservations.OperationalDay
 */
 export interface OperationalDay {
@@ -578,6 +586,14 @@ export function deserializeJsonExpectedAbsencesRequest(json: JsonOf<ExpectedAbse
     ...json,
     attendances: json.attendances.map(e => TimeRange.parseJson(e)),
     date: LocalDate.parseIso(json.date)
+  }
+}
+
+
+export function deserializeJsonOperationalDatesRequest(json: JsonOf<OperationalDatesRequest>): OperationalDatesRequest {
+  return {
+    ...json,
+    range: FiniteDateRange.parseJson(json.range)
   }
 }
 
