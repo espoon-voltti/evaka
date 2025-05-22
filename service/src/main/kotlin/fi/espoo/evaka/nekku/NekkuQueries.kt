@@ -651,3 +651,29 @@ ${bind {it.mealsBySpecialDiet}}
 fun Database.Read.getDaycareGroupIds(daycareId: DaycareId): List<GroupId> =
     createQuery { sql("SELECT id FROM daycare_group WHERE daycare_id = ${bind(daycareId)}") }
         .toList()
+
+fun Database.Read.getDaycareOperationDays(groupId: GroupId): List<Int> =
+    createQuery {
+            sql(
+                "SELECT ARRAY(SELECT unnest(d.operation_days) UNION SELECT unnest(d.shift_care_operation_days)) AS combined_days FROM daycare_group dcg JOIN daycare d ON d.id = dcg.daycare_id WHERE dcg.id = ${bind(groupId)}"
+            )
+        }
+        .exactlyOne<List<Int>>()
+
+fun daycareOpenNextTime(date: LocalDate, operationDays: List<Int>): LocalDate {
+
+    var nextDay = date.plusDays(1).dayOfWeek.value
+
+    var daysUntilNextOperationDay = 1
+
+    while (nextDay !in operationDays) {
+        if (nextDay == 7) {
+            nextDay = 1
+        } else {
+            nextDay++
+        }
+        daysUntilNextOperationDay++
+    }
+
+    return date.plusDays(daysUntilNextOperationDay.toLong())
+}
