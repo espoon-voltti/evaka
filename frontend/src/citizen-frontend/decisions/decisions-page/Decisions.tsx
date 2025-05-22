@@ -8,6 +8,7 @@ import sortBy from 'lodash/sortBy'
 import React, { Fragment, useMemo } from 'react'
 
 import { combine } from 'lib-common/api'
+import type { DecisionSummary } from 'lib-common/generated/api-types/application'
 import type {
   AssistanceNeedDecisionCitizenListItem,
   AssistanceNeedPreschoolDecisionCitizenListItem
@@ -29,7 +30,6 @@ import useTitle from '../../useTitle'
 import { assistanceDecisionsQuery } from '../assistance-decision-page/queries'
 import { assistanceNeedPreschoolDecisionsQuery } from '../assistance-decision-page/queries-preschool'
 import { decisionsQuery, financeDecisionsQuery } from '../queries'
-import { applicationDecisionIsUnread } from '../shared'
 
 import ApplicationDecision from './ApplicationDecision'
 import AssistanceDecision from './AssistanceDecision'
@@ -254,3 +254,6 @@ export default React.memo(function Decisions() {
     </Container>
   )
 })
+
+const applicationDecisionIsUnread = (decision: DecisionSummary) =>
+  decision.status === 'PENDING'

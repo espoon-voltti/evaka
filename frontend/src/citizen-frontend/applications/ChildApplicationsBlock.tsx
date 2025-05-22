@@ -25,14 +25,19 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import {
   faArrowRight,
+  faCheck,
+  faEnvelope,
   faExclamation,
+  faFile,
   faFileAlt,
+  faGavel,
   faPen,
+  faPlay,
   faTimes,
   faTrash
 } from 'lib-icons'
 
-import { applicationStatusIcon, Status } from '../decisions/shared'
+import { Status } from '../decisions/shared'
 import { useTranslation } from '../localization'
 import { OverlayContext } from '../overlay/state'
 
@@ -85,6 +90,71 @@ const ChildHeading = styled(H2)`
   margin: 0;
   margin-bottom: ${defaultMargins.s};
 `
+
+const applicationStatusIcon = {
+  PROCESSING: {
+    icon: faPlay,
+    color: colors.main.m1
+  },
+  PENDING: {
+    icon: faGavel,
+    color: colors.status.warning
+  },
+  ACCEPTED: {
+    icon: faCheck,
+    color: colors.status.success
+  },
+  REJECTED: {
+    icon: faTimes,
+    color: colors.status.danger
+  },
+  CREATED: {
+    icon: faFile,
+    color: colors.grayscale.g70
+  },
+  SENT: {
+    icon: faEnvelope,
+    color: colors.main.m1
+  }
+}
+
+const applicationStatusToIcon = (
+  applicationStatus: ApplicationStatus,
+  decidable: boolean
+): keyof typeof applicationStatusIcon => {
+  switch (applicationStatus) {
+    case 'ACTIVE':
+      return decidable ? 'PENDING' : 'ACCEPTED'
+    case 'WAITING_PLACEMENT':
+    case 'WAITING_DECISION':
+    case 'WAITING_UNIT_CONFIRMATION':
+    case 'WAITING_MAILING':
+      return 'PROCESSING'
+    case 'WAITING_CONFIRMATION':
+      return 'PENDING'
+    case 'CANCELLED':
+      return 'REJECTED'
+    default:
+      return applicationStatus
+  }
+}
+
+const ApplicationStatusIcon = React.memo(function ApplicationStatusIcon({
+  status,
+  decidable
+}: {
+  status: ApplicationStatus
+  decidable: boolean
+}) {
+  const icon = applicationStatusToIcon(status, decidable)
+  return (
+    <RoundIcon
+      content={applicationStatusIcon[icon].icon}
+      color={applicationStatusIcon[icon].color}
+      size="m"
+    />
+  )
+})
 
 export default React.memo(function ChildApplicationsBlock({
   data: {
@@ -147,27 +217,6 @@ export default React.memo(function ChildApplicationsBlock({
       },
       'data-qa': 'info-message-draft-saved'
     })
-  }
-
-  const applicationStatusToIcon = (
-    applicationStatus: ApplicationStatus,
-    decidable: boolean
-  ): string => {
-    switch (applicationStatus) {
-      case 'ACTIVE':
-        return decidable ? 'PENDING' : 'ACCEPTED'
-      case 'WAITING_PLACEMENT':
-      case 'WAITING_DECISION':
-      case 'WAITING_UNIT_CONFIRMATION':
-      case 'WAITING_MAILING':
-        return 'PROCESSING'
-      case 'WAITING_CONFIRMATION':
-        return 'PENDING'
-      case 'CANCELLED':
-        return 'REJECTED'
-      default:
-        return applicationStatus
-    }
   }
 
   const hasName = childName?.trim().length > 0
@@ -237,24 +286,9 @@ export default React.memo(function ChildApplicationsBlock({
                 <Label>{t.applicationsList.status.title}</Label>
                 <StatusContainer>
                   <div>
-                    <RoundIcon
-                      content={
-                        applicationStatusIcon[
-                          applicationStatusToIcon(
-                            applicationStatus,
-                            decidableApplications.includes(applicationId)
-                          )
-                        ].icon
-                      }
-                      color={
-                        applicationStatusIcon[
-                          applicationStatusToIcon(
-                            applicationStatus,
-                            decidableApplications.includes(applicationId)
-                          )
-                        ].color
-                      }
-                      size="m"
+                    <ApplicationStatusIcon
+                      status={applicationStatus}
+                      decidable={decidableApplications.includes(applicationId)}
                     />
                     <Gap size="xs" horizontal={true} />
                     <Status data-qa={`application-status-${applicationId}`}>
