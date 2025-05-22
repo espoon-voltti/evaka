@@ -4,17 +4,8 @@
 
 import React from 'react'
 
-import { string } from 'lib-common/form/fields'
-import { array, mapped, object, union, validated } from 'lib-common/form/form'
 import type { BoundForm } from 'lib-common/form/hooks'
 import { useFormUnion } from 'lib-common/form/hooks'
-import type { StateOf } from 'lib-common/form/types'
-import { nonBlank } from 'lib-common/form/validators'
-import type {
-  DocumentTemplateContent,
-  Question,
-  QuestionType
-} from 'lib-common/generated/api-types/document'
 import CheckboxGroupQuestionDescriptor from 'lib-components/document-templates/question-descriptors/CheckboxGroupQuestionDescriptor'
 import CheckboxQuestionDescriptor from 'lib-components/document-templates/question-descriptors/CheckboxQuestionDescriptor'
 import DateQuestionDescriptor from 'lib-components/document-templates/question-descriptors/DateQuestionDescriptor'
@@ -23,67 +14,7 @@ import RadioButtonGroupQuestionDescriptor from 'lib-components/document-template
 import StaticTextDisplayQuestionDescriptor from 'lib-components/document-templates/question-descriptors/StaticTextDisplayQuestionDescriptor'
 import TextQuestionDescriptor from 'lib-components/document-templates/question-descriptors/TextQuestionDescriptor'
 
-export const templateQuestionForm = mapped(
-  union({
-    TEXT: TextQuestionDescriptor.template.form,
-    CHECKBOX: CheckboxQuestionDescriptor.template.form,
-    CHECKBOX_GROUP: CheckboxGroupQuestionDescriptor.template.form,
-    RADIO_BUTTON_GROUP: RadioButtonGroupQuestionDescriptor.template.form,
-    STATIC_TEXT_DISPLAY: StaticTextDisplayQuestionDescriptor.template.form,
-    DATE: DateQuestionDescriptor.template.form,
-    GROUPED_TEXT_FIELDS: GroupedTextFieldsQuestionDescriptor.template.form
-  }),
-  (output): Question => {
-    switch (output.branch) {
-      case 'TEXT':
-        return {
-          type: output.branch,
-          ...output.value
-        }
-      case 'CHECKBOX':
-        return {
-          type: output.branch,
-          ...output.value
-        }
-      case 'CHECKBOX_GROUP':
-        return {
-          type: output.branch,
-          ...output.value
-        }
-      case 'RADIO_BUTTON_GROUP':
-        return {
-          type: output.branch,
-          ...output.value
-        }
-      case 'STATIC_TEXT_DISPLAY':
-        return {
-          type: output.branch,
-          ...output.value
-        }
-      case 'DATE':
-        return {
-          type: output.branch,
-          ...output.value
-        }
-      case 'GROUPED_TEXT_FIELDS':
-        return {
-          type: output.branch,
-          ...output.value
-        }
-    }
-  }
-)
-
-export const templateSectionForm = object({
-  id: validated(string(), nonBlank),
-  label: validated(string(), nonBlank),
-  questions: array(templateQuestionForm),
-  infoText: string()
-})
-
-export const templateContentForm = object({
-  sections: array(templateSectionForm)
-})
+import type { templateQuestionForm } from './forms'
 
 export const TemplateQuestionConfigView = React.memo(
   function TemplateQuestionConfigView({
@@ -164,58 +95,3 @@ export const TemplateQuestionPreview = React.memo(
     }
   }
 )
-
-export const getTemplateQuestionInitialState = (question: Question) => {
-  switch (question.type) {
-    case 'TEXT':
-      return TextQuestionDescriptor.template.getInitialState(question)
-    case 'CHECKBOX':
-      return CheckboxQuestionDescriptor.template.getInitialState(question)
-    case 'CHECKBOX_GROUP':
-      return CheckboxGroupQuestionDescriptor.template.getInitialState(question)
-    case 'RADIO_BUTTON_GROUP':
-      return RadioButtonGroupQuestionDescriptor.template.getInitialState(
-        question
-      )
-    case 'STATIC_TEXT_DISPLAY':
-      return StaticTextDisplayQuestionDescriptor.template.getInitialState(
-        question
-      )
-    case 'DATE':
-      return DateQuestionDescriptor.template.getInitialState(question)
-    case 'GROUPED_TEXT_FIELDS':
-      return GroupedTextFieldsQuestionDescriptor.template.getInitialState(
-        question
-      )
-  }
-}
-
-export const getTemplateQuestionInitialStateByType = (type: QuestionType) => {
-  switch (type) {
-    case 'TEXT':
-      return TextQuestionDescriptor.template.getInitialState()
-    case 'CHECKBOX':
-      return CheckboxQuestionDescriptor.template.getInitialState()
-    case 'CHECKBOX_GROUP':
-      return CheckboxGroupQuestionDescriptor.template.getInitialState()
-    case 'RADIO_BUTTON_GROUP':
-      return RadioButtonGroupQuestionDescriptor.template.getInitialState()
-    case 'STATIC_TEXT_DISPLAY':
-      return StaticTextDisplayQuestionDescriptor.template.getInitialState()
-    case 'DATE':
-      return DateQuestionDescriptor.template.getInitialState()
-    case 'GROUPED_TEXT_FIELDS':
-      return GroupedTextFieldsQuestionDescriptor.template.getInitialState()
-  }
-}
-
-export const getTemplateFormInitialState = (
-  template: DocumentTemplateContent
-): StateOf<typeof templateContentForm> => ({
-  sections: template.sections.map((section) => ({
-    id: section.id,
-    label: section.label,
-    questions: section.questions.map(getTemplateQuestionInitialState),
-    infoText: section.infoText
-  }))
-})

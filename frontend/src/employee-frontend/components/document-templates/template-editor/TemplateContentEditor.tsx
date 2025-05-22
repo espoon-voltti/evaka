@@ -48,14 +48,17 @@ import { faPen } from 'lib-icons'
 import { useTranslation } from '../../../state/i18n'
 import LabelValueList from '../../common/LabelValueList'
 import {
+  documentTemplateForm,
+  getTemplateFormInitialState,
+  templateContentForm
+} from '../forms'
+import {
   forceUnpublishDocumentTemplateMutation,
   publishDocumentTemplateMutation,
   updateDocumentTemplateBasicsMutation,
   updateDocumentTemplateContentMutation
 } from '../queries'
-import { getTemplateFormInitialState, templateContentForm } from '../templates'
 
-import { documentTemplateForm } from './TemplateModal'
 import TemplateSectionModal from './TemplateSectionModal'
 import TemplateSectionView from './TemplateSectionView'
 

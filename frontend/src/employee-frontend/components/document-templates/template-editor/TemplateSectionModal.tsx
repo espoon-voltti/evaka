@@ -14,7 +14,7 @@ import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
 import { Label } from 'lib-components/typography'
 
 import { useTranslation } from '../../../state/i18n'
-import { templateSectionForm } from '../templates'
+import { templateSectionForm } from '../forms'
 
 interface Props {
   initialState?: StateOf<typeof templateSectionForm>

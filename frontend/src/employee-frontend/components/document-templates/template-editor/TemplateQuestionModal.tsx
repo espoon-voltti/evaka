@@ -17,8 +17,10 @@ import colors from 'lib-customizations/common'
 import { useTranslation } from '../../../state/i18n'
 import {
   getTemplateQuestionInitialStateByType,
+  templateQuestionForm
+} from '../forms'
+import {
   TemplateQuestionConfigView,
-  templateQuestionForm,
   TemplateQuestionPreview
 } from '../templates'
 
