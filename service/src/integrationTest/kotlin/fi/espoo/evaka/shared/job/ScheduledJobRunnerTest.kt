@@ -43,7 +43,13 @@ class ScheduledJobRunnerTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @BeforeEach
     fun beforeEach() {
-        asyncJobRunner = AsyncJobRunner(AsyncJob::class, listOf(AsyncJob.main), jdbi, noopTracer)
+        asyncJobRunner =
+            AsyncJobRunner(
+                AsyncJob::class,
+                listOf(AsyncJob.main, AsyncJob.nightly),
+                jdbi,
+                noopTracer,
+            )
         jobExecuted.set(false)
     }
 

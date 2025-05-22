@@ -38,6 +38,7 @@ class AsyncJobConfig {
                 AsyncJob.suomiFi.withThrottleInterval(
                     Duration.ofSeconds(1).takeIf { env.activeProfiles.contains("production") }
                 ),
+                AsyncJob.nightly,
             ),
             jdbi,
             tracer,
