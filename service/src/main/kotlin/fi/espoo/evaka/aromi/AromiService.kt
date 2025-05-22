@@ -257,7 +257,7 @@ SELECT
     p.last_name,
     p.date_of_birth,
     dg.id AS group_id,
-    ch.nekku_eats_breakfast IS NOT FALSE as eats_breakfast,
+    ch.participates_in_breakfast IS NOT FALSE as eats_breakfast,
     coalesce((
         SELECT jsonb_agg(jsonb_build_object('start', ar.start_time, 'end', ar.end_time))
         FROM attendance_reservation ar

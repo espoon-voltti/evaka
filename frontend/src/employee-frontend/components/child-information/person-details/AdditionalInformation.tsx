@@ -115,7 +115,7 @@ export default React.memo(function AdditionalInformation({ childId }: Props) {
     specialDiet: null,
     mealTexture: null,
     nekkuDiet: null,
-    nekkuEatsBreakfast: true,
+    participatesInBreakfast: true,
     nekkuSpecialDietChoices: []
   })
 
@@ -135,7 +135,8 @@ export default React.memo(function AdditionalInformation({ childId }: Props) {
         specialDiet: additionalInformation.value.specialDiet,
         mealTexture: additionalInformation.value.mealTexture,
         nekkuDiet: additionalInformation.value.nekkuDiet,
-        nekkuEatsBreakfast: additionalInformation.value.nekkuEatsBreakfast,
+        participatesInBreakfast:
+          additionalInformation.value.participatesInBreakfast,
         nekkuSpecialDietChoices:
           additionalInformation.value.nekkuSpecialDietChoices
       })
@@ -429,24 +430,28 @@ export default React.memo(function AdditionalInformation({ childId }: Props) {
                 ? [
                     {
                       label:
-                        i18n.childInformation.personDetails.nekkuEatsBreakfast,
+                        i18n.childInformation.personDetails
+                          .participatesInBreakfast,
                       value: editing ? (
                         <Checkbox
-                          data-qa="nekku-eats-breakfast-checkbox"
+                          data-qa="participates-in-breakfast-checkbox"
                           label=""
-                          checked={form.nekkuEatsBreakfast}
+                          checked={form.participatesInBreakfast}
                           onChange={(checked) =>
-                            setForm({ ...form, nekkuEatsBreakfast: checked })
+                            setForm({
+                              ...form,
+                              participatesInBreakfast: checked
+                            })
                           }
                         />
                       ) : (
                         <>
-                          <div data-qa="nekku-eats-breakfast-display">
-                            {data.nekkuEatsBreakfast
+                          <div data-qa="participates-in-breakfast-display">
+                            {data.participatesInBreakfast
                               ? i18n.childInformation.personDetails
-                                  .nekkuEatsBreakfastYes
+                                  .participatesInBreakfastYes
                               : i18n.childInformation.personDetails
-                                  .nekkuEatsBreakfastNo}
+                                  .participatesInBreakfastNo}
                           </div>
                         </>
                       )

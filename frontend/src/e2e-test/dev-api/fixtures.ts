@@ -819,7 +819,7 @@ export class Fixture {
       languageAtHomeDetails: '',
       medication: '',
       nekkuDiet: null,
-      eatsBreakfast: true,
+      participatesInBreakfast: true,
       ...initial
     }
     return {

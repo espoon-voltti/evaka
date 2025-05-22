@@ -746,7 +746,7 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                     DevPersonType.RAW_ROW,
                 )
                 .also { childId ->
-                    tx.insert(DevChild(id = childId, eatsBreakfast = false))
+                    tx.insert(DevChild(id = childId, participatesInBreakfast = false))
                     val placementId =
                         tx.insert(
                             DevPlacement(
