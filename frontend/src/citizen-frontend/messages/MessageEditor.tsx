@@ -12,7 +12,6 @@ import { useBoolean } from 'lib-common/form/hooks'
 import type { Attachment } from 'lib-common/generated/api-types/attachment'
 import type { ChildAndPermittedActions } from 'lib-common/generated/api-types/children'
 import type {
-  AccountType,
   CitizenMessageBody,
   GetRecipientsResponse,
   MessageAccount
@@ -52,6 +51,8 @@ import { ErrorMessageBox } from '../calendar/ChildSelector'
 import { useTranslation } from '../localization'
 import { getDuplicateChildInfo } from '../utils/duplicated-child-utils'
 
+import { isPrimaryRecipient } from './utils'
+
 const emptyMessage: CitizenMessageBody = {
   title: '',
   content: '',
@@ -59,9 +60,6 @@ const emptyMessage: CitizenMessageBody = {
   children: [],
   attachmentIds: []
 }
-
-export const isPrimaryRecipient = ({ type }: { type: AccountType }) =>
-  type !== 'CITIZEN'
 
 interface Props {
   children_: ChildAndPermittedActions[]

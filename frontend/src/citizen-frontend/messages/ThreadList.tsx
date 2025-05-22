@@ -30,7 +30,8 @@ import { mobileBottomNavHeight } from '../navigation/const'
 
 import { ConfirmDeleteThread } from './ConfirmDeleteThread'
 import ThreadListItem from './ThreadListItem'
-import { isRedactedThread, MessageContext } from './state'
+import { MessageContext } from './state'
+import { isRedactedThread } from './utils'
 
 const hasUnreadMessages = (
   thread: CitizenMessageThread,
