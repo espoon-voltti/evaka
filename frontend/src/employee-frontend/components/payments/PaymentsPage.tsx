@@ -6,7 +6,6 @@ import React, { useCallback, useContext, useState } from 'react'
 
 import type {
   PaymentSortParam,
-  PaymentStatus,
   SortDirection
 } from 'lib-common/generated/api-types/invoicing'
 import type { PaymentId } from 'lib-common/generated/api-types/shared'
@@ -22,8 +21,7 @@ import Actions from './Actions'
 import PaymentFilters from './PaymentFilters'
 import Payments from './Payments'
 import { searchPaymentsQuery } from './queries'
-
-export const selectablePaymentStatuses: PaymentStatus[] = ['DRAFT', 'CONFIRMED']
+import { selectablePaymentStatuses } from './utils'
 
 export default React.memo(function PaymentsPage() {
   const {
