@@ -17,10 +17,8 @@ import Units from './components/Units'
 import WelcomePage from './components/WelcomePage'
 import ApplicationPage from './components/application-page/ApplicationPage'
 import ApplicationsPage from './components/applications/ApplicationsPage'
-import {
-  ChildDocumentEditView,
-  ChildDocumentReadView
-} from './components/child-documents/ChildDocumentEditor'
+import ChildDocumentEditView from './components/child-documents/ChildDocumentEditView'
+import ChildDocumentReadView from './components/child-documents/ChildDocumentReadView'
 import ChildInformation from './components/child-information/ChildInformation'
 import AssistanceNeedDecisionEditPage from './components/child-information/assistance-need/decision/AssistanceNeedDecisionEditPage'
 import AssistanceNeedDecisionPage from './components/child-information/assistance-need/decision/AssistanceNeedDecisionPage'
