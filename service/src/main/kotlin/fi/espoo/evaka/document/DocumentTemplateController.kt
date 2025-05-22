@@ -252,6 +252,8 @@ class DocumentTemplateController(
                         templateId,
                     )
 
+                    validateLanguage(body.language, body.type)
+
                     tx.duplicateTemplate(templateId, body)
                 }
             }
