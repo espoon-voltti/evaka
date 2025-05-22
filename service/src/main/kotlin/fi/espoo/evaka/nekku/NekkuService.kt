@@ -342,11 +342,16 @@ fun planNekkuDailyOrderJobs(
         val nekkuDaycareGroupIds = tx.getNekkuDaycareGroupId(range)
         asyncJobRunner.plan(
             tx,
-            nekkuDaycareGroupIds.map { nekkuDaycareGroupId ->
-                AsyncJob.SendNekkuDailyOrder(
-                    customerGroupId = nekkuDaycareGroupId,
-                    date = now.plusDays(1).toLocalDate(),
-                )
+            nekkuDaycareGroupIds.mapNotNull { nekkuDaycareGroupId ->
+                val nextOrderDate = tx.daycareOpenNextTime(nekkuDaycareGroupId, now.toLocalDate())
+                if (nextOrderDate != null) {
+                    AsyncJob.SendNekkuDailyOrder(
+                        customerGroupId = nekkuDaycareGroupId,
+                        date = nextOrderDate,
+                    )
+                } else {
+                    null
+                }
             },
             runAt = now,
             retryInterval = Duration.ofHours(1),

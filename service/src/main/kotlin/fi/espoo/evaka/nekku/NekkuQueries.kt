@@ -651,3 +651,33 @@ ${bind {it.mealsBySpecialDiet}}
 fun Database.Read.getDaycareGroupIds(daycareId: DaycareId): List<GroupId> =
     createQuery { sql("SELECT id FROM daycare_group WHERE daycare_id = ${bind(daycareId)}") }
         .toList()
+
+fun Database.Read.daycareOpenNextTime(groupId: GroupId, date: LocalDate): LocalDate? {
+
+    val operationDays =
+        createQuery {
+                sql(
+                    "SELECT d.operation_days FROM daycare_group dcg JOIN daycare d ON d.id = dcg.daycare_id WHERE dcg.id = ${bind(groupId)}"
+                )
+            }
+            .exactlyOne<List<Int>>()
+
+    if (!operationDays.contains(date.dayOfWeek.value)) {
+        return null
+    }
+
+    var nextDay = date.plusDays(1).dayOfWeek.value
+
+    var daysUntilNextOperationDay = 1
+
+    while (nextDay !in operationDays) {
+        if (nextDay == 7) {
+            nextDay = 1
+        } else {
+            nextDay++
+        }
+        daysUntilNextOperationDay++
+    }
+
+    return date.plusDays(daysUntilNextOperationDay.toLong())
+}
