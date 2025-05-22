@@ -63,6 +63,7 @@ export interface DocumentMetadata {
   downloadPath: string | null
   name: string
   receivedBy: DocumentOrigin | null
+  sfiDeliveries: SfiDelivery[]
 }
 
 /**
@@ -89,6 +90,23 @@ export interface ProcessMetadataResponse {
   data: ProcessMetadata | null
 }
 
+/**
+* Generated from fi.espoo.evaka.process.SfiDelivery
+*/
+export interface SfiDelivery {
+  method: SfiMethod
+  recipientName: string
+  time: HelsinkiDateTime
+}
+
+/**
+* Generated from fi.espoo.evaka.process.SfiMethod
+*/
+export type SfiMethod =
+  | 'ELECTRONIC'
+  | 'PAPER_MAIL'
+  | 'PENDING'
+
 
 export function deserializeJsonArchivedProcess(json: JsonOf<ArchivedProcess>): ArchivedProcess {
   return {
@@ -109,7 +127,8 @@ export function deserializeJsonArchivedProcessHistoryRow(json: JsonOf<ArchivedPr
 export function deserializeJsonDocumentMetadata(json: JsonOf<DocumentMetadata>): DocumentMetadata {
   return {
     ...json,
-    createdAt: (json.createdAt != null) ? HelsinkiDateTime.parseIso(json.createdAt) : null
+    createdAt: (json.createdAt != null) ? HelsinkiDateTime.parseIso(json.createdAt) : null,
+    sfiDeliveries: json.sfiDeliveries.map(e => deserializeJsonSfiDelivery(e))
   }
 }
 
@@ -128,5 +147,13 @@ export function deserializeJsonProcessMetadataResponse(json: JsonOf<ProcessMetad
   return {
     ...json,
     data: (json.data != null) ? deserializeJsonProcessMetadata(json.data) : null
+  }
+}
+
+
+export function deserializeJsonSfiDelivery(json: JsonOf<SfiDelivery>): SfiDelivery {
+  return {
+    ...json,
+    time: HelsinkiDateTime.parseIso(json.time)
   }
 }
