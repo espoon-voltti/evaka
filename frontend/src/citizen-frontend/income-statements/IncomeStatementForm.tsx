@@ -53,24 +53,22 @@ import Footer from '../Footer'
 import { errorToInputInfo } from '../input-info-helper'
 import { useLang, useTranslation } from '../localization'
 
-import type { AttachmentHandler } from './IncomeStatementAttachments'
 import {
-  IncomeStatementUntypedAttachments,
-  IncomeStatementMissingAttachments,
   AttachmentSection,
-  useAttachmentHandler
+  IncomeStatementMissingAttachments,
+  IncomeStatementUntypedAttachments
 } from './IncomeStatementAttachments'
-import type { SetStateCallback } from './IncomeStatementComponents'
 import {
   ActionContainer,
   AssureCheckbox,
-  identity,
   LabelError,
-  LabelWithError,
-  useFieldDispatch,
-  useFieldSetState
+  LabelWithError
 } from './IncomeStatementComponents'
 import type { ErrorDisplayType } from './IncomeStatementEditor'
+import type { AttachmentHandler } from './attachmentHandler'
+import { useAttachmentHandler } from './attachmentHandler'
+import type { SetStateCallback } from './hooks'
+import { useFieldDispatch, useFieldSetState } from './hooks'
 
 interface Props {
   incomeStatementId: IncomeStatementId | undefined
@@ -525,6 +523,10 @@ const IncomeTypeSelection = React.memo(
     )
   })
 )
+
+function identity<T>(value: T): T {
+  return value
+}
 
 const GrossIncomeSelection = React.memo(function GrossIncomeSelection({
   formData,

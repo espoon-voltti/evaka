@@ -15,7 +15,7 @@ import FileUpload from 'lib-components/molecules/FileUpload'
 
 import { getAttachmentUrl, incomeStatementAttachment } from '../attachments'
 
-import type { SetStateCallback } from './IncomeStatementComponents'
+import type { SetStateCallback } from './hooks'
 
 export default React.memo(function Attachments({
   incomeStatementId,
