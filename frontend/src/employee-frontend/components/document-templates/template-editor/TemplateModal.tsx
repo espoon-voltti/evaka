@@ -7,7 +7,10 @@ import React, { useCallback, useMemo } from 'react'
 import DateRange from 'lib-common/date-range'
 import { openEndedLocalDateRange } from 'lib-common/form/fields'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
-import type { ExportedDocumentTemplate } from 'lib-common/generated/api-types/document'
+import type {
+  ExportedDocumentTemplate,
+  DocumentType
+} from 'lib-common/generated/api-types/document'
 import { documentTypes } from 'lib-common/generated/api-types/document'
 import type { DocumentTemplateId } from 'lib-common/generated/api-types/shared'
 import { uiLanguages } from 'lib-common/generated/api-types/shared'
