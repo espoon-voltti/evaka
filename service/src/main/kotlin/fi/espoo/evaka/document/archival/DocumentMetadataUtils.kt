@@ -14,11 +14,12 @@ import fi.espoo.evaka.sarma.model.*
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import jakarta.xml.bind.JAXBContext
 import java.io.StringWriter
+import java.time.LocalDate
 import java.time.ZoneId
 import javax.xml.datatype.DatatypeFactory
 import javax.xml.datatype.XMLGregorianCalendar
 
-private fun HelsinkiDateTime.asXMLGregorianCalendar(): XMLGregorianCalendar {
+fun HelsinkiDateTime.asXMLGregorianCalendar(): XMLGregorianCalendar {
     val zdt = this.toLocalDateTime().atZone(ZoneId.of("Europe/Helsinki"))
     return DatatypeFactory.newInstance()
         .newXMLGregorianCalendar(
@@ -31,6 +32,30 @@ private fun HelsinkiDateTime.asXMLGregorianCalendar(): XMLGregorianCalendar {
             javax.xml.datatype.DatatypeConstants.FIELD_UNDEFINED,
             javax.xml.datatype.DatatypeConstants.FIELD_UNDEFINED,
         )
+}
+
+/** Converts LocalDate to XMLGregorianCalendar with only date fields. */
+fun LocalDate.toXMLGregorianCalendar(): XMLGregorianCalendar {
+    return DatatypeFactory.newInstance()
+        .newXMLGregorianCalendar(
+            this.year,
+            this.monthValue,
+            this.dayOfMonth,
+            javax.xml.datatype.DatatypeConstants.FIELD_UNDEFINED,
+            javax.xml.datatype.DatatypeConstants.FIELD_UNDEFINED,
+            javax.xml.datatype.DatatypeConstants.FIELD_UNDEFINED,
+            javax.xml.datatype.DatatypeConstants.FIELD_UNDEFINED,
+            javax.xml.datatype.DatatypeConstants.FIELD_UNDEFINED,
+        )
+}
+
+/**
+ * Calculates the next July 31 date from the given date. If the date is before or on July 31 of the
+ * current year, returns July 31 of the current year. Otherwise, returns July 31 of the next year.
+ */
+private fun calculateNextJuly31(date: LocalDate): LocalDate {
+    val year = if (date.monthValue <= 7 && date.dayOfMonth <= 31) date.year else date.year + 1
+    return LocalDate.of(year, 7, 31)
 }
 
 fun marshalMetadata(metadata: RecordMetadataInstance): String {
@@ -219,7 +244,7 @@ private fun createAgents(
     }
 }
 
-private fun createDocumentDescription(
+fun createDocumentDescription(
     document: ChildDocumentDetails,
     documentMetadata: DocumentMetadata,
     archivedProcess: ArchivedProcess?,
@@ -267,20 +292,7 @@ private fun createDocumentDescription(
         lastName = document.child.lastName
         socialSecurityNumber =
             if (childIdentifier is ExternalIdentifier.SSN) childIdentifier.ssn else null
-        birthDate =
-            childBirthDate.let { date ->
-                DatatypeFactory.newInstance()
-                    .newXMLGregorianCalendar(
-                        date.year,
-                        date.monthValue,
-                        date.dayOfMonth,
-                        javax.xml.datatype.DatatypeConstants.FIELD_UNDEFINED,
-                        javax.xml.datatype.DatatypeConstants.FIELD_UNDEFINED,
-                        javax.xml.datatype.DatatypeConstants.FIELD_UNDEFINED,
-                        javax.xml.datatype.DatatypeConstants.FIELD_UNDEFINED,
-                        javax.xml.datatype.DatatypeConstants.FIELD_UNDEFINED,
-                    )
-            }
+        birthDate = childBirthDate.toXMLGregorianCalendar()
         agents = createAgents(archivedProcess)
     }
 }
@@ -314,18 +326,26 @@ private fun createPolicies(documentMetadata: DocumentMetadata): StandardMetadata
     }
 }
 
-private fun createCaseFile(
+fun createCaseFile(
     documentMetadata: DocumentMetadata,
     archivedProcess: ArchivedProcess?,
+    document: ChildDocumentDetails,
 ): CaseFileType {
     return CaseFileType().apply {
         caseCreated = documentMetadata.createdAt?.asXMLGregorianCalendar()
+
+        // Determine the case finished date with fallback logic
         caseFinished =
             archivedProcess
                 ?.history
                 ?.find { it.state == ArchivedProcessState.COMPLETED }
                 ?.enteredAt
                 ?.asXMLGregorianCalendar()
+                ?: document.template.validity.end?.toXMLGregorianCalendar()
+                ?: documentMetadata.createdAt?.let {
+                    val createdDate = it.toLocalDateTime().toLocalDate()
+                    calculateNextJuly31(createdDate).toXMLGregorianCalendar()
+                }
     }
 }
 
@@ -363,7 +383,7 @@ fun createDocumentMetadata(
                 format = createFormat(filename)
                 creation = createCreation(documentMetadata)
                 policies = createPolicies(documentMetadata)
-                caseFile = createCaseFile(documentMetadata, archivedProcess)
+                caseFile = createCaseFile(documentMetadata, archivedProcess, document)
             }
     }
 }
