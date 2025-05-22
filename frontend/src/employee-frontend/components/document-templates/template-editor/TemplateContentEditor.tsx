@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
@@ -14,7 +14,10 @@ import {
   useFormField,
   useFormFields
 } from 'lib-common/form/hooks'
-import type { DocumentTemplate } from 'lib-common/generated/api-types/document'
+import type {
+  DocumentTemplate,
+  DocumentType
+} from 'lib-common/generated/api-types/document'
 import { documentTypes } from 'lib-common/generated/api-types/document'
 import { uiLanguages } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
@@ -311,13 +314,15 @@ const BasicsEditor = React.memo(function BasicsEditor({
     [i18n.documentTemplates]
   )
 
-  const languageOptions = useMemo(
-    () =>
-      uiLanguages.map((option) => ({
-        domValue: option,
-        value: option,
-        label: i18n.documentTemplates.languages[option]
-      })),
+  const getLanguageOptions = useCallback(
+    (type: DocumentType) =>
+      uiLanguages
+        .filter((option) => type === 'CITIZEN_BASIC' || option !== 'EN')
+        .map((option) => ({
+          domValue: option,
+          value: option,
+          label: i18n.documentTemplates.languages[option]
+        })),
     [i18n.documentTemplates]
   )
 
@@ -332,7 +337,7 @@ const BasicsEditor = React.memo(function BasicsEditor({
       placementTypes: template.placementTypes,
       language: {
         domValue: template.language,
-        options: languageOptions
+        options: getLanguageOptions(template.type)
       },
       confidential: template.confidentiality !== null,
       confidentialityDurationYears:
@@ -346,6 +351,28 @@ const BasicsEditor = React.memo(function BasicsEditor({
     }),
     {
       ...i18n.validationErrors
+    },
+    {
+      onUpdate: (_, next, form) => {
+        const shape = form.shape()
+        const type = shape.type.validate(next.type)
+        if (type.isValid) {
+          const options = getLanguageOptions(type.value)
+          return {
+            ...next,
+            language: {
+              options,
+              domValue: options.some(
+                (o) => o.domValue === next.language.domValue
+              )
+                ? next.language.domValue
+                : 'FI'
+            }
+          }
+        } else {
+          return next
+        }
+      }
     }
   )
 

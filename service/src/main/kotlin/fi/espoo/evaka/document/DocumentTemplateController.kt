@@ -22,6 +22,7 @@ import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.domain.UiLanguage
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import java.time.LocalDate
@@ -59,6 +60,7 @@ class DocumentTemplateController(
                         clock,
                         Action.Global.CREATE_DOCUMENT_TEMPLATE,
                     )
+                    validateLanguage(body.language, body.type)
                     tx.insertTemplate(body)
                 }
             }
@@ -80,6 +82,7 @@ class DocumentTemplateController(
                         clock,
                         Action.Global.CREATE_DOCUMENT_TEMPLATE,
                     )
+                    validateLanguage(body.language, body.type)
                     tx.importTemplate(body)
                 }
             }
@@ -249,6 +252,8 @@ class DocumentTemplateController(
                         templateId,
                     )
 
+                    validateLanguage(body.language, body.type)
+
                     tx.duplicateTemplate(templateId, body)
                 }
             }
@@ -272,6 +277,8 @@ class DocumentTemplateController(
                         Action.DocumentTemplate.UPDATE,
                         templateId,
                     )
+                    validateLanguage(body.language, body.type)
+
                     tx.getTemplate(templateId)?.also {
                         if (it.published) throw BadRequest("Cannot update published template")
                     } ?: throw NotFound("Template $templateId not found")
@@ -409,6 +416,12 @@ class DocumentTemplateController(
                 }
             }
             .also { Audit.DocumentTemplateDelete.log(targetId = AuditId(templateId)) }
+    }
+}
+
+private fun validateLanguage(lang: UiLanguage, type: DocumentType) {
+    if (type != DocumentType.CITIZEN_BASIC && lang == UiLanguage.EN) {
+        throw BadRequest("English is not supported for this document type")
     }
 }
 
