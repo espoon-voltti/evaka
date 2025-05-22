@@ -10,8 +10,6 @@ import styled, { css } from 'styled-components'
 import { mapScheduleType } from 'lib-common/api-types/placement'
 import type {
   AbsenceInfo,
-  ReservableTimeRange,
-  Reservation,
   ReservationResponseDay,
   ReservationResponseDayChild
 } from 'lib-common/generated/api-types/reservations'
@@ -34,6 +32,7 @@ import { useTranslation } from '../localization'
 
 import type { ChildImageData } from './RoundChildImages'
 import RoundChildImages from './RoundChildImages'
+import { formatReservation } from './utils'
 
 export const Reservations = React.memo(function Reservations({
   data,
@@ -273,26 +272,3 @@ const groupChildren = ({
       key
     })
   )
-
-export const formatReservation = (
-  reservation: Reservation.Times,
-  reservableTimeRange: ReservableTimeRange,
-  i18n: Translations
-) => {
-  const timeOutput = reservation.range.format()
-
-  if (!featureFlags.intermittentShiftCare) {
-    return timeOutput
-  } else {
-    const showIntermittentShiftCareNotice =
-      reservableTimeRange.type === 'INTERMITTENT_SHIFT_CARE' &&
-      (reservableTimeRange.placementUnitOperationTime === null ||
-        !reservableTimeRange.placementUnitOperationTime.contains(
-          reservation.range
-        ))
-
-    return showIntermittentShiftCareNotice
-      ? `${timeOutput} ${i18n.calendar.intermittentShiftCareNotification}`
-      : timeOutput
-  }
-}

@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import sum from 'lodash/sum'
 import type { MutableRefObject } from 'react'
 import React, { useCallback, useEffect, useMemo, useRef } from 'react'
 import styled, { css, useTheme } from 'styled-components'
@@ -46,17 +45,21 @@ import {
   CalendarEventCount,
   CalendarEventCountContainer
 } from './CalendarEventCount'
-import { getSummaryForMonth, InlineWarningIcon } from './MonthElem'
+import { InlineWarningIcon } from './MonthElem'
 import type { MonthlyTimeSummary } from './MonthlyHoursSummary'
 import MonthlyHoursSummary from './MonthlyHoursSummary'
 import ReportHolidayLabel from './ReportHolidayLabel'
 import type { ChildImageData } from './RoundChildImages'
-import { getChildImages } from './RoundChildImages'
 import type { BackgroundHighlightType } from './calendar-elements'
 import { Reservations } from './calendar-elements'
 import { useMonthlySummaryInfo } from './hooks'
 import { activeQuestionnaireQuery, holidayPeriodsQuery } from './queries'
-import { isQuestionnaireAvailable } from './utils'
+import {
+  countEventsForDay,
+  getChildImages,
+  getSummaryForMonth,
+  isQuestionnaireAvailable
+} from './utils'
 
 export interface Props {
   childData: ReservationChild[]
@@ -76,48 +79,6 @@ export interface Props {
   nextMonth: (monthDataLength: number) => void
   prevMonth: (beforeDate: LocalDate) => void
   setSelectedMonthIndex: (monthIndex: number) => void
-}
-
-export function countEventsForDay(
-  events: CitizenCalendarEvent[],
-  day: LocalDate
-) {
-  const currentEvents = events.filter((e) => e.period.includes(day))
-
-  if (currentEvents.length > 0) {
-    const daycareEvents = currentEvents.filter(
-      (e) => e.eventType === 'DAYCARE_EVENT'
-    )
-    const discussionSurveys = currentEvents.filter(
-      (e) => e.eventType === 'DISCUSSION_SURVEY'
-    )
-    //the number of children that are attending the event at this calendar day
-    const eventCount = sum(
-      daycareEvents.map(
-        ({ attendingChildren }) =>
-          Object.values(attendingChildren).filter((ac) =>
-            ac!.some(({ periods }) => periods.some((p) => p.includes(day)))
-          ).length
-      )
-    )
-
-    const discussionReservationCount = featureFlags.discussionReservations
-      ? discussionSurveys.reduce(
-          (acc, curr) =>
-            //the number of children that have a reserved discussion time for this survey at this calendar date
-            //(if a reserved time is returned, it belongs to the child)
-            acc +
-            Object.values(curr.timesByChild).filter((times) =>
-              times!.some((t) => t.date.isEqual(day) && t.childId)
-            ).length,
-          0
-        )
-      : 0
-
-    return eventCount + discussionReservationCount
-  } else {
-    return 0
-  }
 }
 
 export default React.memo(function CalendarMonthView({

@@ -3,18 +3,12 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useMemo, useState } from 'react'
-import { useLocation, useNavigate } from 'react-router'
 import styled from 'styled-components'
 
 import type { Result } from 'lib-common/api'
 import { combine, isLoading } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import type { CitizenCalendarEvent } from 'lib-common/generated/api-types/calendarevent'
-import type {
-  CalendarEventId,
-  ChildId
-} from 'lib-common/generated/api-types/shared'
-import { fromNullableUuid } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import { useQuery, useQueryResult } from 'lib-common/query'
 import Main from 'lib-components/atoms/Main'
@@ -43,6 +37,7 @@ import { showModalEventTime } from './discussion-reservation-modal/discussion-su
 import FixedPeriodSelectionModal from './holiday-modal/FixedPeriodSelectionModal'
 import OpenRangesSelectionModal from './holiday-modal/OpenRangesSelectionModal'
 import { useExtendedReservationsRange } from './hooks'
+import { useCalendarModalState } from './modalState'
 import {
   activeQuestionnaireQuery,
   calendarEventsQuery,
@@ -351,187 +346,6 @@ const CalendarPage = React.memo(function CalendarPage() {
     </>
   )
 })
-
-// Modal states stored to the URL
-type URLModalState =
-  | { type: 'day'; date: LocalDate }
-  | {
-      type: 'absences'
-      initialDate: LocalDate | undefined
-      returnToDayModal: boolean
-    }
-  | { type: 'reservations'; initialRange: FiniteDateRange | undefined }
-  | { type: 'holidays' }
-  | { type: 'discussions' }
-  | {
-      type: 'discussion-reservations'
-      selectedEventId: CalendarEventId | undefined
-      selectedChildId: ChildId | undefined
-    }
-
-// Modal state not stored to the URL
-type NonURLModalState = { type: 'pickAction' }
-
-// All possible modal states
-type ModalState = URLModalState | NonURLModalState
-
-interface UseModalStateResult {
-  modalState: ModalState | undefined
-  openDayModal: (date: LocalDate) => void
-  openPickActionModal: () => void
-  openReservationModal: (initialRange: FiniteDateRange | undefined) => void
-  openAbsenceModal: (
-    initialDate: LocalDate | undefined,
-    returnToDayModal: boolean
-  ) => void
-  openHolidayModal: () => void
-  openDiscussionSurveyModal: () => void
-  openDiscussionReservationModal: (
-    selectedChildId: ChildId | undefined,
-    selectedEventId: CalendarEventId | undefined
-  ) => void
-  closeModal: () => void
-}
-
-export function useCalendarModalState(): UseModalStateResult {
-  const location = useLocation()
-  const navigate = useNavigate()
-
-  const urlModalState = useMemo(
-    () => parseQueryString(location.search),
-    [location.search]
-  )
-  const [nonUrlModalState, setNonUrlModalState] = useState<NonURLModalState>()
-
-  const openModal = useCallback(
-    (modal: URLModalState) => {
-      setNonUrlModalState(undefined)
-      void navigate(`/calendar?${buildQueryString(modal)}`)
-    },
-    [navigate]
-  )
-  const closeModal = useCallback(() => {
-    setNonUrlModalState(undefined)
-    void navigate('/calendar')
-  }, [navigate])
-
-  const openDayModal = useCallback(
-    (date: LocalDate) => openModal({ type: 'day', date }),
-    [openModal]
-  )
-  const openReservationModal = useCallback(
-    (initialRange: FiniteDateRange | undefined) =>
-      openModal({ type: 'reservations', initialRange }),
-    [openModal]
-  )
-  const openAbsenceModal = useCallback(
-    (initialDate: LocalDate | undefined, returnToDayModal: boolean) =>
-      openModal({ type: 'absences', initialDate, returnToDayModal }),
-    [openModal]
-  )
-
-  const openDiscussionSurveyModal = useCallback(
-    () => openModal({ type: 'discussions' }),
-    [openModal]
-  )
-  const openDiscussionReservationModal = useCallback(
-    (
-      selectedChildId: ChildId | undefined,
-      selectedEventId: CalendarEventId | undefined
-    ) =>
-      openModal({
-        type: 'discussion-reservations',
-        selectedChildId,
-        selectedEventId
-      }),
-    [openModal]
-  )
-  const openHolidayModal = useCallback(
-    () => openModal({ type: 'holidays' }),
-    [openModal]
-  )
-
-  const openPickActionModal = useCallback(
-    () => setNonUrlModalState({ type: 'pickAction' }),
-    []
-  )
-
-  return {
-    modalState: nonUrlModalState ?? urlModalState,
-    openDayModal,
-    openPickActionModal,
-    openReservationModal,
-    openAbsenceModal,
-    openHolidayModal,
-    openDiscussionSurveyModal,
-    openDiscussionReservationModal,
-    closeModal
-  }
-}
-
-function parseQueryString(qs: string): URLModalState | undefined {
-  const searchParams = new URLSearchParams(qs)
-  const dateParam = searchParams.get('day')
-  const modalParam = searchParams.get('modal')
-  const startDateParam = searchParams.get('startDate')
-  const endDateParam = searchParams.get('endDate')
-  const selectedChildId =
-    fromNullableUuid<ChildId>(searchParams.get('selectedChildId')) ?? undefined
-  const selectedEventId =
-    fromNullableUuid<CalendarEventId>(searchParams.get('selectedEventId')) ??
-    undefined
-  const returnToDayModal = searchParams.has('returnToDayModal')
-
-  const date = dateParam ? LocalDate.tryParseIso(dateParam) : undefined
-  const startDate = startDateParam
-    ? LocalDate.tryParseIso(startDateParam)
-    : undefined
-  const endDate = endDateParam ? LocalDate.tryParseIso(endDateParam) : undefined
-  const range =
-    startDate && endDate
-      ? FiniteDateRange.tryCreate(startDate, endDate)
-      : undefined
-  return modalParam === 'reservations'
-    ? { type: 'reservations', initialRange: range }
-    : modalParam === 'holidays'
-      ? { type: 'holidays' }
-      : modalParam === 'absences'
-        ? { type: 'absences', initialDate: date, returnToDayModal }
-        : modalParam === 'discussions'
-          ? { type: 'discussions' }
-          : modalParam === 'discussion-reservations'
-            ? {
-                type: 'discussion-reservations',
-                selectedChildId,
-                selectedEventId
-              }
-            : date
-              ? { type: 'day', date }
-              : undefined
-}
-
-function buildQueryString(modal: URLModalState): string {
-  switch (modal.type) {
-    case 'holidays':
-      return 'modal=holidays'
-    case 'reservations':
-      return `modal=reservations${
-        modal.initialRange
-          ? `&startDate=${modal.initialRange.start.formatIso()}&endDate=${modal.initialRange.end.formatIso()}`
-          : ''
-      }`
-    case 'absences':
-      return `modal=absences${
-        modal.initialDate ? '&day=' + modal.initialDate.toString() : ''
-      }${modal.returnToDayModal ? '&returnToDayModal=true' : ''}`
-    case 'day':
-      return `day=${modal.date.toString()}`
-    case 'discussions':
-      return `modal=discussions`
-    case 'discussion-reservations':
-      return `modal=discussion-reservations${modal.selectedChildId ? '&selectedChildId=' + modal.selectedChildId : ''}${modal.selectedEventId ? '&selectedEventId=' + modal.selectedEventId : ''}`
-  }
-}
 
 const DesktopOnly = styled(Desktop)`
   position: relative;
