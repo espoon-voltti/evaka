@@ -321,9 +321,8 @@ fun planNekkuOrderJobs(
             tx,
             range.dates().flatMap { date ->
                 nekkuGroupIds.mapNotNull { nekkuGroupId ->
-                    val orderDate = tx.daycareOpen(nekkuGroupId, date)
-                    if (orderDate != null) {
-                        AsyncJob.SendNekkuOrder(customerGroupId = nekkuGroupId, date = orderDate)
+                    if (tx.isDaycareOpen(nekkuGroupId, date)) {
+                        AsyncJob.SendNekkuOrder(customerGroupId = nekkuGroupId, date = date)
                     } else null
                 }
             },

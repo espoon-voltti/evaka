@@ -682,7 +682,7 @@ fun Database.Read.daycareOpenNextTime(groupId: GroupId, date: LocalDate): LocalD
     return date.plusDays(daysUntilNextOperationDay.toLong())
 }
 
-fun Database.Read.daycareOpen(groupId: GroupId, date: LocalDate): LocalDate? {
+fun Database.Read.isDaycareOpen(groupId: GroupId, date: LocalDate): Boolean {
 
     val operationDays =
         createQuery {
@@ -693,8 +693,8 @@ fun Database.Read.daycareOpen(groupId: GroupId, date: LocalDate): LocalDate? {
             .exactlyOne<List<Int>>()
 
     if (operationDays.contains(date.dayOfWeek.value)) {
-        return date
+        return true
     } else {
-        return null
+        return false
     }
 }
