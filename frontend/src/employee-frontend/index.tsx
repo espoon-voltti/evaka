@@ -25,7 +25,7 @@ import { getEnvironment } from 'lib-common/utils/helpers'
 import colors from 'lib-customizations/common'
 import { appConfig } from 'lib-customizations/employee'
 
-import router from './App'
+import { router } from './router'
 import 'chartjs-adapter-date-fns'
 import './index.css'
 

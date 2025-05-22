@@ -28,10 +28,10 @@ import type {
 import type LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 
+import type { PreschoolType } from '../components/applications/ApplicationsFilters'
 import type {
   ApplicationDateType,
   ApplicationSummaryStatusOptions,
-  PreschoolType,
   ApplicationDistinctions
 } from '../components/common/Filters'
 import { areasQuery } from '../queries'

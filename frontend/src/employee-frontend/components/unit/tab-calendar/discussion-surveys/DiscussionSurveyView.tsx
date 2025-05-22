@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import groupBy from 'lodash/groupBy'
 import orderBy from 'lodash/orderBy'
 import type { MutableRefObject } from 'react'
 import React, {
@@ -25,10 +24,7 @@ import type {
   DiscussionReservationDay
 } from 'lib-common/generated/api-types/calendarevent'
 import type { UnitGroupDetails } from 'lib-common/generated/api-types/daycare'
-import type {
-  ChildBasics,
-  DaycarePlacementWithDetails
-} from 'lib-common/generated/api-types/placement'
+import type { ChildBasics } from 'lib-common/generated/api-types/placement'
 import type { DaycareId, GroupId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useMutation, useQueryResult } from 'lib-common/query'
@@ -67,31 +63,14 @@ import {
 } from './survey-editor/DiscussionTimesForm'
 import { type eventTimeArray, timesForm } from './survey-editor/form'
 import { DiscussionReservationCalendar } from './times-calendar/TimesCalendar'
+import { getCombinedChildPlacementsForGroup } from './utils'
 
 export interface ChildGroupInfo {
   child: ChildBasics
   groupPlacements: DateRange[]
 }
 
-export const getCombinedChildPlacementsForGroup = (
-  placements: DaycarePlacementWithDetails[],
-  groupId: GroupId
-) => {
-  const validPlacements = placements.filter((p) =>
-    p.groupPlacements.some((gp) => gp.groupId === groupId)
-  )
-  return Object.values(groupBy(validPlacements, (p) => p.child.id)).map(
-    (placements) => ({
-      child: placements[0].child,
-      groupPlacements: placements
-        .flatMap((p) => p.groupPlacements)
-        .filter((gp) => gp.groupId === groupId)
-        .map((gp) => new DateRange(gp.startDate, gp.endDate))
-    })
-  )
-}
-
-export const getInvitedChildInfo = (
+const getInvitedChildInfo = (
   unitDetails: UnitGroupDetails,
   eventData: CalendarEvent,
   groupId: GroupId

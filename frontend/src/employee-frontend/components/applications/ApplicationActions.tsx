@@ -30,6 +30,7 @@ import {
   cancelApplicationMutation,
   simpleApplicationActionMutation
 } from './queries'
+import { isSimpleApplicationMutationAction } from './utils'
 
 export type BaseAction = {
   id: string
@@ -43,12 +44,6 @@ export type SimpleApplicationMutationAction = BaseAction & {
 
 export type OnClickAction = BaseAction & {
   onClick: () => void
-}
-
-export function isSimpleApplicationMutationAction(
-  action: ApplicationAction
-): action is SimpleApplicationMutationAction {
-  return 'actionType' in action
 }
 
 export type ApplicationAction = SimpleApplicationMutationAction | OnClickAction

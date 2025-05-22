@@ -24,7 +24,7 @@ import type { GroupId, PersonId } from 'lib-common/generated/api-types/shared'
 import type LocalDate from 'lib-common/local-date'
 import type { UUID } from 'lib-common/types'
 
-import { getCombinedChildPlacementsForGroup } from '../DiscussionSurveyView'
+import { getCombinedChildPlacementsForGroup } from '../utils'
 
 export interface TreeNodeInfo {
   key: GroupId | PersonId

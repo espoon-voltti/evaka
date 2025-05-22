@@ -10,8 +10,8 @@ import { Button } from 'lib-components/atoms/buttons/Button'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 
 import type { ApplicationAction } from './ApplicationActions'
-import { isSimpleApplicationMutationAction } from './ApplicationActions'
 import { simpleApplicationActionMutation } from './queries'
+import { isSimpleApplicationMutationAction } from './utils'
 
 type Props = {
   applicationId: ApplicationId

@@ -20,8 +20,9 @@ import { faPlus } from 'lib-icons'
 import { useTranslation } from '../localization'
 import { mobileBottomNavHeight } from '../navigation/const'
 
-import MonthElem, { getSummaryForMonth, groupByMonth } from './MonthElem'
-import { getChildImages } from './RoundChildImages'
+import type { CalendarMonth } from './MonthElem'
+import MonthElem from './MonthElem'
+import { getChildImages, getSummaryForMonth } from './utils'
 
 export interface Props {
   childData: ReservationChild[]
@@ -34,6 +35,27 @@ export interface Props {
   showDiscussionAction: boolean
   fetchPrevious: (beforeDate: LocalDate) => void
   loading: boolean
+}
+
+function groupByMonth(days: ReservationResponseDay[]): CalendarMonth[] {
+  const months: CalendarMonth[] = []
+  let currentMonth: CalendarMonth | undefined = undefined
+  days.forEach((d) => {
+    if (
+      !currentMonth ||
+      currentMonth.year !== d.date.year ||
+      currentMonth.monthNumber !== d.date.month
+    ) {
+      currentMonth = {
+        year: d.date.year,
+        monthNumber: d.date.month,
+        calendarDays: []
+      }
+      months.push(currentMonth)
+    }
+    currentMonth.calendarDays.push(d)
+  })
+  return months
 }
 
 export default React.memo(function CalendarListView({

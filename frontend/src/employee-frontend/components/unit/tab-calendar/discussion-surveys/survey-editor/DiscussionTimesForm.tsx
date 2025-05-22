@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import orderBy from 'lodash/orderBy'
 import type { MutableRefObject } from 'react'
 import React, { useCallback, useMemo } from 'react'
 import styled from 'styled-components'
@@ -25,6 +24,7 @@ import { Gap } from 'lib-components/white-space'
 
 import { useTranslation } from '../../../../../state/i18n'
 import { DiscussionTimesCalendar } from '../times-calendar/TimesCalendar'
+import { getPeriodFromDatesOrToday } from '../utils'
 
 import DiscussionSurveyForm from './DiscussionSurveyForm'
 import { filterAttendees, mergeAttendeeChanges, surveyForm } from './form'
@@ -48,16 +48,6 @@ export type NewEventTimeForm = {
   date: LocalDate
   childId: null
   timeRange: { startTime: string; endTime: string }
-}
-
-export const getPeriodFromDatesOrToday = (
-  dates: LocalDate[]
-): FiniteDateRange => {
-  const today = LocalDate.todayInSystemTz()
-  const sortedDates = orderBy(dates)
-  return sortedDates.length > 0
-    ? new FiniteDateRange(sortedDates[0], sortedDates[sortedDates.length - 1])
-    : new FiniteDateRange(today, today)
 }
 
 export default React.memo(function DiscussionTimesForm({

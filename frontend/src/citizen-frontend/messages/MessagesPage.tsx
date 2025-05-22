@@ -37,7 +37,8 @@ import ThreadList from './ThreadList'
 import type { ThreadViewApi } from './ThreadView'
 import ThreadView from './ThreadView'
 import { recipientsQuery, sendMessageMutation } from './queries'
-import { isRegularThread, MessageContext } from './state'
+import { MessageContext } from './state'
+import { isRegularThread } from './utils'
 
 const StyledFlex = styled(AdaptiveFlex)`
   align-items: stretch;

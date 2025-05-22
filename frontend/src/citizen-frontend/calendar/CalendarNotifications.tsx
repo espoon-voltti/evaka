@@ -22,8 +22,8 @@ import { faTreePalm } from 'lib-icons'
 
 import { useTranslation } from '../localization'
 
-import { useCalendarModalState } from './CalendarPage'
 import { showSurveyReservationToast } from './discussion-reservation-modal/discussion-survey'
+import { useCalendarModalState } from './modalState'
 import {
   activeQuestionnaireQuery,
   holidayPeriodsQuery,

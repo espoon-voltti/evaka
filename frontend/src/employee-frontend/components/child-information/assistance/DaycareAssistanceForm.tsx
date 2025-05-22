@@ -35,7 +35,7 @@ import { useTranslation } from '../../../state/i18n'
 import { getStatusLabelByDateRange } from '../../../utils/date'
 import StatusLabel from '../../common/StatusLabel'
 
-export const daycareAssistanceForm = transformed(
+const daycareAssistanceForm = transformed(
   object({
     level: required(oneOf<DaycareAssistanceLevel>()),
     validDuring: required(localDateRange()),

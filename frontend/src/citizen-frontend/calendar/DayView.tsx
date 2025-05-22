@@ -102,11 +102,10 @@ import AttendanceInfo from './AttendanceInfo'
 import { BottomFooterContainer } from './BottomFooterContainer'
 import { CalendarEventExportButton } from './CalendarEventExportButton'
 import { CalendarModalBackground, CalendarModalSection } from './CalendarModal'
-import { useCalendarModalState } from './CalendarPage'
 import type { ChildImageData } from './RoundChildImages'
-import { getChildImages, RoundChildImage } from './RoundChildImages'
-import { formatReservation } from './calendar-elements'
+import { RoundChildImage } from './RoundChildImages'
 import type { ConfirmModalState } from './discussion-reservation-modal/DiscussionSurveyModal'
+import { useCalendarModalState } from './modalState'
 import {
   deleteCalendarEventTimeReservationMutation,
   postReservationsMutation
@@ -117,6 +116,7 @@ import {
   resetDay,
   toDailyReservationRequest
 } from './reservation-modal/form'
+import { formatReservation, getChildImages } from './utils'
 
 interface Props {
   date: LocalDate

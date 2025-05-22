@@ -85,7 +85,7 @@ function groupByWeek(days: DiscussionReservationDay[]): CalendarWeek[] {
   return weeks
 }
 
-export const groupByMonth = (
+const groupByMonth = (
   dailyData: DiscussionReservationDay[]
 ): CalendarMonth[] => {
   const getWeekMonths = (weeklyData: CalendarWeek) => {

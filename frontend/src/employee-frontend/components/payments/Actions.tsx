@@ -27,13 +27,13 @@ import { useTranslation } from '../../state/i18n'
 import { errorToInputInfo } from '../../utils/validation/input-info-helper'
 import StickyActionBar from '../common/StickyActionBar'
 
-import { selectablePaymentStatuses } from './PaymentsPage'
 import {
   confirmDraftPaymentsMutation,
   deleteDraftPaymentsMutation,
   revertPaymentsToDraftsMutation,
   sendPaymentsMutation
 } from './queries'
+import { selectablePaymentStatuses } from './utils'
 
 const CheckedRowsInfo = styled.div`
   color: ${colors.grayscale.g35};

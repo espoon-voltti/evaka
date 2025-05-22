@@ -26,14 +26,15 @@ import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
 import { H2, H3, Label, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
-import { faExclamation } from 'lib-icons'
+import colors from 'lib-customizations/common'
+import { faCheck, faExclamation, faGavel, faTimes } from 'lib-icons'
 
 import ModalAccessibilityWrapper from '../../ModalAccessibilityWrapper'
 import { useLang, useTranslation } from '../../localization'
 import { OverlayContext } from '../../overlay/state'
 import { PdfLink } from '../PdfLink'
 import { acceptDecisionMutation, rejectDecisionMutation } from '../queries'
-import { decisionStatusIcon, Status } from '../shared'
+import { Status } from '../shared'
 
 interface SingleDecisionProps {
   decision: Decision
@@ -327,3 +328,18 @@ export default React.memo(function DecisionResponse({
 const DatePickerContainer = styled.div`
   margin-top: -${defaultMargins.s};
 `
+
+const decisionStatusIcon = {
+  PENDING: {
+    icon: faGavel,
+    color: colors.status.warning
+  },
+  ACCEPTED: {
+    icon: faCheck,
+    color: colors.status.success
+  },
+  REJECTED: {
+    icon: faTimes,
+    color: colors.status.danger
+  }
+}

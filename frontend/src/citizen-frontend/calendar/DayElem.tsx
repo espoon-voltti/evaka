@@ -24,10 +24,10 @@ import {
   CalendarEventCount,
   CalendarEventCountContainer
 } from './CalendarEventCount'
-import { countEventsForDay } from './CalendarMonthView'
 import { HistoryOverlay } from './HistoryOverlay'
 import type { ChildImageData } from './RoundChildImages'
 import { Reservations } from './calendar-elements'
+import { countEventsForDay } from './utils'
 
 interface DayProps {
   calendarDay: ReservationResponseDay

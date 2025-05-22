@@ -53,10 +53,8 @@ import type { DayOfWeek } from '../../../types'
 import { TimeRangeInput } from '../../child-information/daily-service-times/DailyServiceTimesForms'
 import type { RangeValidationResult } from '../../child-information/daily-service-times/DailyServiceTimesForms'
 
-import {
-  closingDateIsBeforeLastPlacementDate,
-  UnitClosingDateModal
-} from './UnitClosingDateModal'
+import { UnitClosingDateModal } from './UnitClosingDateModal'
+import { closingDateIsBeforeLastPlacementDate } from './utils'
 
 // CareType is a mix of these two enums
 type OnlyCareType = 'DAYCARE' | 'PRESCHOOL' | 'PREPARATORY_EDUCATION' | 'CLUB'

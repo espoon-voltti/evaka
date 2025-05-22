@@ -30,21 +30,16 @@ import { errorToInputInfo } from '../input-info-helper'
 import { useLang, useTranslation } from '../localization'
 
 import ChildIncomeStatementAttachments from './ChildIncomeStatementAttachments'
-import {
-  AttachmentSection,
-  useAttachmentHandler
-} from './IncomeStatementAttachments'
-import type {
-  IncomeStatementFormAPI,
-  SetStateCallback
-} from './IncomeStatementComponents'
+import { AttachmentSection } from './IncomeStatementAttachments'
+import type { IncomeStatementFormAPI } from './IncomeStatementComponents'
 import {
   ActionContainer,
   AssureCheckbox,
-  LabelError,
-  useFieldDispatch,
-  useFieldSetState
+  LabelError
 } from './IncomeStatementComponents'
+import { useAttachmentHandler } from './attachmentHandler'
+import type { SetStateCallback } from './hooks'
+import { useFieldDispatch, useFieldSetState } from './hooks'
 
 const OtherInfoContainer = styled.div`
   max-width: 716px;

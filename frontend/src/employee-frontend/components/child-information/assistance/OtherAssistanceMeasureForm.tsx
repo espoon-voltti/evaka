@@ -35,7 +35,7 @@ import { useTranslation } from '../../../state/i18n'
 import { getStatusLabelByDateRange } from '../../../utils/date'
 import StatusLabel from '../../common/StatusLabel'
 
-export const otherAssistanceMeasureForm = transformed(
+const otherAssistanceMeasureForm = transformed(
   object({
     type: required(oneOf<OtherAssistanceMeasureType>()),
     validDuring: required(localDateRange()),

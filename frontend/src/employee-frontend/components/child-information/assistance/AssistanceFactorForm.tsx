@@ -32,7 +32,7 @@ import { useTranslation } from '../../../state/i18n'
 import { getStatusLabelByDateRange } from '../../../utils/date'
 import StatusLabel from '../../common/StatusLabel'
 
-export const assistanceFactorForm = transformed(
+const assistanceFactorForm = transformed(
   object({
     capacityFactor: validated(mapped(string(), Number.parseFloat), (number) =>
       Number.isFinite(number) && number >= 0.0 ? undefined : 'format'

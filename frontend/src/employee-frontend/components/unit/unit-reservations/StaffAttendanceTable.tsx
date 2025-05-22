@@ -847,7 +847,7 @@ function computeModalAttendances(
 
 type ValidatorConfig = Pick<DetailsModalConfig, 'date' | 'attendances'>
 
-export const staffAttendanceValidator =
+const staffAttendanceValidator =
   (config: ValidatorConfig) =>
   (
     state: EditedAttendance[]
@@ -910,7 +910,7 @@ export const staffAttendanceValidator =
     return [undefined, errors]
   }
 
-export const externalAttendanceValidator =
+const externalAttendanceValidator =
   (config: ValidatorConfig) =>
   (
     state: EditedAttendance[]

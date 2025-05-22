@@ -6,10 +6,7 @@ import orderBy from 'lodash/orderBy'
 import React from 'react'
 import { Link } from 'react-router'
 
-import type {
-  ApplicationType,
-  PersonApplicationSummary
-} from 'lib-common/generated/api-types/application'
+import type { PersonApplicationSummary } from 'lib-common/generated/api-types/application'
 import type { PersonId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
@@ -17,6 +14,7 @@ import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { faFileAlt } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
+import { inferApplicationType } from '../application'
 import { renderResult } from '../async-rendering'
 
 import { DateTd, NameTd, StatusTd } from './common'
@@ -94,26 +92,3 @@ export default React.memo(function PersonApplications({ id }: Props) {
     </Table>
   ))
 })
-
-export type InferredApplicationType =
-  | ApplicationType
-  | 'PRESCHOOL_WITH_DAYCARE'
-  | 'PREPARATORY_WITH_DAYCARE'
-  | 'PREPARATORY_EDUCATION'
-
-export function inferApplicationType(
-  application: PersonApplicationSummary
-): InferredApplicationType {
-  const baseType = application.type
-  if (baseType !== 'PRESCHOOL') return baseType
-  else if (application.connectedDaycare && !application.preparatoryEducation) {
-    return 'PRESCHOOL_WITH_DAYCARE'
-  } else if (application.connectedDaycare && application.preparatoryEducation) {
-    return 'PREPARATORY_WITH_DAYCARE'
-  } else if (
-    !application.connectedDaycare &&
-    application.preparatoryEducation
-  ) {
-    return 'PREPARATORY_EDUCATION'
-  } else return 'PRESCHOOL'
-}

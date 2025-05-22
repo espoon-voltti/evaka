@@ -65,7 +65,7 @@ const reservableDates = new FiniteDateRange(
   LocalDate.todayInSystemTz().addYears(1)
 )
 const ranges = array(required(localTimeRange()))
-export const reservation = union({
+const reservation = union({
   timeRanges: ranges,
   absent: value<true>()
 })
@@ -188,7 +188,7 @@ function repetitionOptions(i18n: Translations) {
   ]
 }
 
-export function initialState(
+function initialState(
   initialStart: LocalDate | null,
   initialEnd: LocalDate | null,
   i18n: Translations

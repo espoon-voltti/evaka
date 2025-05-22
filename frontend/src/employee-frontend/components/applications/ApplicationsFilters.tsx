@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { Fragment, useContext, useEffect } from 'react'
+import styled from 'styled-components'
 
 import type {
   ApplicationBasis,
@@ -13,10 +14,15 @@ import { applicationStatusOptions } from 'lib-common/generated/api-types/applica
 import type { DaycareCareArea } from 'lib-common/generated/api-types/daycare'
 import type { AreaId, DaycareId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import Radio from 'lib-components/atoms/form/Radio'
+import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+import colors from 'lib-customizations/common'
+import { applicationTypes, featureFlags } from 'lib-customizations/employee'
+import { faAngleDown, faAngleUp } from 'lib-icons'
 
 import { unitsQuery } from '../../queries'
 import type { VoucherApplicationFilter } from '../../state/application-ui'
@@ -25,19 +31,17 @@ import { useTranslation } from '../../state/i18n'
 import type {
   ApplicationDateType,
   ApplicationSummaryStatusOptions,
-  PreschoolType,
   ApplicationDistinctions
 } from '../common/Filters'
 import {
   Filters,
   ApplicationDistinctionsFilter,
   ApplicationStatusFilter,
-  ApplicationTypeFilter,
   ApplicationDateFilter,
   ApplicationBasisFilter,
-  preschoolTypes,
   MultiSelectUnitFilter,
-  TransferApplicationsFilter
+  TransferApplicationsFilter,
+  ApplicationOpenIcon
 } from '../common/Filters'
 
 export default React.memo(function ApplicationFilters() {
@@ -348,3 +352,94 @@ const VoucherApplicationsFilter = React.memo(
     )
   }
 )
+
+const preschoolTypes = [
+  'PRESCHOOL_ONLY',
+  'PRESCHOOL_DAYCARE',
+  'PRESCHOOL_CLUB',
+  ...(featureFlags.preparatory
+    ? (['PREPARATORY_ONLY', 'PREPARATORY_DAYCARE'] as const)
+    : ([] as const)),
+  'DAYCARE_ONLY'
+] as const
+
+export type PreschoolType = (typeof preschoolTypes)[number]
+
+interface ApplicationTypeFilterProps {
+  toggled: ApplicationTypeToggle
+  toggledPreschool: PreschoolType[]
+  toggle: (type: ApplicationTypeToggle) => () => void
+  togglePreschool: (type: PreschoolType) => () => void
+}
+
+function ApplicationTypeFilter({
+  toggled,
+  toggledPreschool,
+  toggle,
+  togglePreschool
+}: ApplicationTypeFilterProps) {
+  const { i18n } = useTranslation()
+
+  const types: ApplicationTypeToggle[] = [...applicationTypes, 'ALL']
+
+  return (
+    <>
+      <Label>{i18n.applications.list.type}</Label>
+      <Gap size="xs" />
+      <FixedSpaceColumn spacing="xs">
+        {types.map((id) =>
+          id !== 'PRESCHOOL' ? (
+            <Radio
+              key={id}
+              label={i18n.applications.types[id]}
+              checked={toggled === id}
+              onChange={toggle(id)}
+              data-qa={`application-type-filter-${id}`}
+              small
+            />
+          ) : (
+            <Fragment key={id}>
+              <Radio
+                key={id}
+                label={
+                  <>
+                    {i18n.applications.types[id]}
+                    <ApplicationOpenIcon
+                      icon={toggled === id ? faAngleUp : faAngleDown}
+                      size="lg"
+                      color={colors.grayscale.g70}
+                    />
+                  </>
+                }
+                ariaLabel={i18n.applications.types[id]}
+                checked={toggled === id}
+                onChange={toggle(id)}
+                data-qa={`application-type-filter-${id}`}
+                small
+              />
+              {toggled === id && (
+                <CustomDiv spacing="xs">
+                  {preschoolTypes.map((type) => (
+                    <Checkbox
+                      key={type}
+                      label={i18n.applications.types[type]}
+                      checked={toggledPreschool.includes(type)}
+                      onChange={togglePreschool(type)}
+                      data-qa={`application-type-filter-preschool-${type}`}
+                    />
+                  ))}
+                </CustomDiv>
+              )}
+            </Fragment>
+          )
+        )}
+      </FixedSpaceColumn>
+    </>
+  )
+}
+
+const CustomDiv = styled(FixedSpaceColumn)`
+  margin-left: 18px;
+  padding-left: 32px;
+  border-left: 1px solid ${colors.grayscale.g70};
+`

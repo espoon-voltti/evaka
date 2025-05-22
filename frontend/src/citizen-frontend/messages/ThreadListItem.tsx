@@ -30,7 +30,7 @@ import { faTrash } from 'lib-icons'
 import { getAttachmentUrl } from '../attachments'
 import { useTranslation } from '../localization'
 
-import { isRegularThread } from './state'
+import { isRegularThread } from './utils'
 
 interface Props {
   thread: CitizenMessageThread

@@ -12,10 +12,8 @@ import colors from 'lib-customizations/common'
 import { faArrowDown, faArrowUp, faPen, faTrash } from 'lib-icons'
 
 import { useTranslation } from '../../../state/i18n'
-import {
-  type templateQuestionForm,
-  TemplateQuestionPreview
-} from '../templates'
+import type { templateQuestionForm } from '../forms'
+import { TemplateQuestionPreview } from '../templates'
 
 import TemplateQuestionModal from './TemplateQuestionModal'
 

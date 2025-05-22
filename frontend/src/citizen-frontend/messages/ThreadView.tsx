@@ -59,12 +59,12 @@ import type { Translations } from '../localization'
 import { useTranslation } from '../localization'
 
 import { ConfirmDeleteThread } from './ConfirmDeleteThread'
-import { isPrimaryRecipient } from './MessageEditor'
 import {
   markLastReceivedMessageInThreadUnreadMutation,
   replyToThreadMutation
 } from './queries'
 import { MessageContext } from './state'
+import { isPrimaryRecipient } from './utils'
 
 const TitleRow = styled.div`
   display: flex;
