@@ -40,8 +40,8 @@ import {
   createCalendarEventMutation,
   updateCalendarEventMutation
 } from '../../queries'
+import { getPeriodFromDatesOrToday } from '../utils'
 
-import { getPeriodFromDatesOrToday } from './DiscussionTimesForm'
 import { type surveyForm } from './form'
 
 const SurveyFormFieldGroup = styled(FixedSpaceColumn).attrs({ spacing: 'S' })``
