@@ -6,7 +6,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import type { Dispatch, SetStateAction } from 'react'
 import React, { useCallback, useMemo } from 'react'
 import styled from 'styled-components'
-import { Link } from 'wouter'
 
 import type { Result } from 'lib-common/api'
 import { isLoading } from 'lib-common/api'
@@ -197,14 +196,15 @@ export default React.memo(function UnitCard({
           <CrossIconButton active={false} onClick={removeUnit} />
         </RemoveBtn>
       )}
-      <Link
-        to={`/units/${unitId}/unit-info?start=${period.start.formatIso()}`}
+      <a
+        href={`/employee/units/${unitId}/unit-info?start=${period.start.formatIso()}`}
         target="_blank"
+        rel="noreferrer"
       >
         <Bold>
           <Title primary>{unitName}</Title> <FontAwesomeIcon icon={faLink} />
         </Bold>
-      </Link>
+      </a>
       <Gap size="m" />
       <OccupancyContainer>
         {renderResult(occupancies, (occupancies) => {

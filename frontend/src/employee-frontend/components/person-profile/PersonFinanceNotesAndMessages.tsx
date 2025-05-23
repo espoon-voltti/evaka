@@ -6,7 +6,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import React, { useCallback, useContext, useMemo, useState } from 'react'
 import styled, { useTheme } from 'styled-components'
-import { Link } from 'wouter'
 
 import { combine } from 'lib-common/api'
 import type { Action } from 'lib-common/generated/action'
@@ -431,7 +430,7 @@ const SingleThread = React.memo(function SingleThread({
             {thread.title} ({thread.messages.length}) (
             <UnderlinedLink
               data-qa="finance-message-thread-link"
-              to={`/messages?accountId=${financeAccountId}&messageBox=thread&threadId=${thread.id}`}
+              href={`/employee/messages?accountId=${financeAccountId}&messageBox=thread&threadId=${thread.id}`}
               target="_blank"
             >
               {i18n.personProfile.financeNotesAndMessages.link}
@@ -695,7 +694,7 @@ const AccordionToggle = styled.span`
 const SmallLight = styled(Light)`
   font-size: 14px;
 `
-const UnderlinedLink = styled(Link)`
+const UnderlinedLink = styled.a`
   font-weight: normal;
   text-decoration: underline;
 `
