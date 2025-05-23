@@ -652,19 +652,33 @@ fun Database.Read.getDaycareGroupIds(daycareId: DaycareId): List<GroupId> =
     createQuery { sql("SELECT id FROM daycare_group WHERE daycare_id = ${bind(daycareId)}") }
         .toList()
 
-fun Database.Read.getDaycareOperationDays(groupId: GroupId): List<Int> =
-    createQuery {
-            sql(
-                "SELECT ARRAY(SELECT unnest(d.operation_days) UNION SELECT unnest(d.shift_care_operation_days)) AS combined_days FROM daycare_group dcg JOIN daycare d ON d.id = dcg.daycare_id WHERE dcg.id = ${bind(groupId)}"
+fun Database.Read.getDaycareOperationDays(groupId: GroupId): List<Int> {
+    return createQuery {
+        sql(
+        """
+            SELECT ARRAY(
+                SELECT DISTINCT unnest(
+                COALESCE(d.operation_days, '{}')::int[] || 
+                COALESCE(d.shift_care_operation_days, '{}')::int[]
+                )
+                ) AS combined_days
+                FROM daycare_group dcg
+                JOIN daycare d ON d.id = dcg.daycare_id
+            WHERE dcg.id = ${bind(groupId)}
+            """
             )
         }
-        .exactlyOne<List<Int>>()
+        .exactlyOneOrNull<List<Int>>() ?: emptyList()
+}
+
 
 fun daycareOpenNextTime(date: LocalDate, operationDays: List<Int>): LocalDate {
 
     var nextDay = date.plusDays(1).dayOfWeek.value
 
     var daysUntilNextOperationDay = 1
+
+    //TODO: otetaan huomioon myös arkipyhät daycaressa shift_care_open_on_holidays-tieto
 
     while (nextDay !in operationDays) {
         if (nextDay == 7) {
