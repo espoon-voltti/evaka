@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useMemo, useState } from 'react'
-import { Navigate, useNavigate } from 'react-router'
 import styled from 'styled-components'
+import { Redirect } from 'wouter'
 
 import { combine } from 'lib-common/api'
 import type { StaffAttendanceType } from 'lib-common/generated/api-types/attendance'
@@ -47,7 +47,6 @@ export default React.memo(function StaffMarkDepartedPage({
   unitOrGroup: UnitOrGroup
 }) {
   const { i18n } = useTranslation()
-  const navigate = useNavigate()
 
   const employeeId = useIdRouteParam<EmployeeId>('employeeId')
 
@@ -161,7 +160,7 @@ export default React.memo(function StaffMarkDepartedPage({
     >
       <TopBar
         title={backButtonText}
-        onBack={() => navigate(-1)}
+        onBack={() => history.go(-1)}
         unitId={unitId}
         invertedColors
       />
@@ -179,7 +178,7 @@ export default React.memo(function StaffMarkDepartedPage({
           ]) => {
             if (staffMember === undefined) {
               return (
-                <Navigate
+                <Redirect
                   replace
                   to={routes.staffAttendancesToday(unitOrGroup, 'absent').value}
                 />
@@ -187,7 +186,7 @@ export default React.memo(function StaffMarkDepartedPage({
             }
             if (attendanceId === undefined) {
               return (
-                <Navigate
+                <Redirect
                   replace
                   to={routes.staffAttendance(unitOrGroup, employeeId).value}
                 />
@@ -278,7 +277,7 @@ export default React.memo(function StaffMarkDepartedPage({
                   <FixedSpaceRow fullWidth>
                     <LegacyButton
                       text={i18n.common.cancel}
-                      onClick={() => navigate(-1)}
+                      onClick={() => history.go(-1)}
                     />
                     <MutateButton
                       primary

@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext } from 'react'
-import { useNavigate } from 'react-router'
 import styled from 'styled-components'
+import { useLocation } from 'wouter'
 
 import { combine } from 'lib-common/api'
 import type { AttendanceChild } from 'lib-common/generated/api-types/attendance'
@@ -48,7 +48,7 @@ const ChildMessagesPage = React.memo(function ChildMessagesPage({
   child
 }: Props) {
   const { i18n } = useTranslation()
-  const navigate = useNavigate()
+  const [, navigate] = useLocation()
   const childGroupAccount = child.groupId
     ? groupAccounts.find((a) => a.daycareGroup?.id === child.groupId)
     : undefined
@@ -60,7 +60,7 @@ const ChildMessagesPage = React.memo(function ChildMessagesPage({
       paddingVertical="zero"
     >
       <div>
-        <ChildNameBackButton child={child} onClick={() => navigate(-1)} />
+        <ChildNameBackButton child={child} onClick={() => history.go(-1)} />
       </div>
       <ContentArea
         opaque
@@ -84,9 +84,7 @@ const ChildMessagesPage = React.memo(function ChildMessagesPage({
                 const unitOrGroup: UnitOrGroup = child.groupId
                   ? { type: 'group', unitId, id: child.groupId }
                   : { type: 'unit', unitId }
-                void navigate(
-                  routes.receivedThread(unitOrGroup, threadId).value
-                )
+                navigate(routes.receivedThread(unitOrGroup, threadId).value)
               }}
               childId={child.id}
             />

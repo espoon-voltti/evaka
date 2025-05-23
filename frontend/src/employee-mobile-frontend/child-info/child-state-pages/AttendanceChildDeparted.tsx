@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { useNavigate } from 'react-router'
 import styled from 'styled-components'
+import { useLocation } from 'wouter'
 
 import type { AttendanceChild } from 'lib-common/generated/api-types/attendance'
 import type { UUID } from 'lib-common/types'
@@ -26,7 +26,7 @@ export default React.memo(function AttendanceChildDeparted({
   child
 }: Props) {
   const { i18n } = useTranslation()
-  const navigate = useNavigate()
+  const [, navigate] = useLocation()
 
   return (
     <ReturnToPresentButton

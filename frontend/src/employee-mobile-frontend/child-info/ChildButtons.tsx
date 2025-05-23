@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { Link } from 'react-router'
 import styled, { useTheme } from 'styled-components'
+import { Link } from 'wouter'
 
 import type { AttendanceChild } from 'lib-common/generated/api-types/attendance'
 import type { DaycareId } from 'lib-common/generated/api-types/shared'

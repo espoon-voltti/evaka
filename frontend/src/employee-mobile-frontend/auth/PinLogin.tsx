@@ -5,7 +5,6 @@
 import sortBy from 'lodash/sortBy'
 import type { FormEventHandler } from 'react'
 import React, { useCallback, useContext, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router'
 
 import type { DaycareId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
@@ -159,8 +158,7 @@ export const PinLogin = React.memo(function PinLogin({
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
   const unitChildren = useQueryResult(childrenQuery(unitId))
 
-  const navigate = useNavigate()
-  const onClose = useCallback(() => navigate(-1), [navigate])
+  const onClose = useCallback(() => history.go(-1), [])
 
   const title = childId
     ? unitChildren

@@ -9,8 +9,8 @@ import React, {
   useMemo,
   useState
 } from 'react'
-import { Navigate, useNavigate } from 'react-router'
 import styled from 'styled-components'
+import { Redirect, useLocation } from 'wouter'
 
 import { combine } from 'lib-common/api'
 import type { GroupInfo } from 'lib-common/generated/api-types/attendance'
@@ -57,7 +57,7 @@ export default function MessagesPage({
   unitOrGroup: UnitOrGroup
 }) {
   const { i18n } = useTranslation()
-  const navigate = useNavigate()
+  const [, navigate] = useLocation()
 
   const unitId = unitOrGroup.unitId
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
@@ -96,11 +96,11 @@ export default function MessagesPage({
   }, [unitOrGroup])
 
   const onSelectThread = (threadId: UUID) => {
-    void navigate(routes.receivedThread(unitOrGroup, threadId).value)
+    navigate(routes.receivedThread(unitOrGroup, threadId).value)
   }
 
   const onNewMessageClick = () => {
-    void navigate(routes.newMessage(unitOrGroup).value)
+    navigate(routes.newMessage(unitOrGroup).value)
   }
 
   const selectSentMessage = useCallback(
@@ -116,7 +116,7 @@ export default function MessagesPage({
   const changeGroup = useCallback(
     (group: GroupInfo | undefined) => {
       if (group)
-        void navigate(routes.messages(toUnitOrGroup(unitId, group.id)).value)
+        navigate(routes.messages(toUnitOrGroup(unitId, group.id)).value)
     },
     [navigate, unitId]
   )
@@ -137,7 +137,7 @@ export default function MessagesPage({
               {i18n.messages.noAccountAccess}
             </NoAccounts>
           ) : (
-            <Navigate
+            <Redirect
               to={routes.unreadMessages(unitOrGroup).value}
               replace={true}
             />
@@ -151,7 +151,7 @@ export default function MessagesPage({
       combine(groupAccounts, groupAccount(unitOrGroup.id)),
       ([groupAccounts, selectedAccount]) => {
         if (!selectedAccount) {
-          return <Navigate to={routes.messages(toUnitOrGroup(unitId)).value} />
+          return <Redirect to={routes.messages(toUnitOrGroup(unitId)).value} />
         }
         switch (uiState.type) {
           case 'list':

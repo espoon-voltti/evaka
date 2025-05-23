@@ -5,8 +5,8 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import sortBy from 'lodash/sortBy'
 import React, { Fragment, useCallback, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router'
 import styled, { useTheme } from 'styled-components'
+import { useLocation } from 'wouter'
 
 import type { Result } from 'lib-common/api'
 import type {
@@ -67,14 +67,14 @@ type Props = {
 
 export default React.memo(function StaffAttendancesPage(props: Props) {
   const { i18n } = useTranslation()
-  const navigate = useNavigate()
+  const [, navigate] = useLocation()
   const unitOrGroup = props.unitOrGroup
   const unitId = unitOrGroup.unitId
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
 
   const changeGroup = useCallback(
     (group: GroupInfo | undefined) => {
-      void navigate(
+      navigate(
         props.primaryTab === 'today'
           ? routes.staffAttendancesToday(
               toUnitOrGroup(unitId, group?.id),
@@ -143,7 +143,7 @@ const StaffAttendancesToday = React.memo(function StaffAttendancesToday({
   tab: StatusTab
 }) {
   const { i18n } = useTranslation()
-  const navigate = useNavigate()
+  const [, navigate] = useLocation()
 
   const staffAttendanceResponse = useQueryResult(
     staffAttendanceQuery({ unitId: unitOrGroup.unitId })

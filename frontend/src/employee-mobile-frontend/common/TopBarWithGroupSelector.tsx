@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useMemo } from 'react'
-import { useNavigate } from 'react-router'
+import { useLocation } from 'wouter'
 
 import { combine } from 'lib-common/api'
 import type { GroupInfo } from 'lib-common/generated/api-types/attendance'
@@ -38,7 +38,7 @@ export default React.memo(function TopBarWithGroupSelector({
   includeSelectAll = true,
   allowedGroupIds = undefined
 }: TopBarWithGroupSelectorProps) {
-  const navigate = useNavigate()
+  const [, navigate] = useLocation()
   const { user } = useContext(UserContext)
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
 
@@ -49,7 +49,7 @@ export default React.memo(function TopBarWithGroupSelector({
           const title = unitInfo.name
           const onBack =
             user && user.unitIds.length > 1
-              ? () => void navigate('/units')
+              ? () => navigate('/units')
               : undefined
           return { title, onBack }
         })

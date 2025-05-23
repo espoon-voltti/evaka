@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useMemo, useState } from 'react'
-import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
 import type { ChildId, DaycareId } from 'lib-common/generated/api-types/shared'
@@ -31,7 +30,6 @@ export default React.memo(function ChildInfoPage({
   childId: ChildId
 }) {
   const { i18n } = useTranslation()
-  const navigate = useNavigate()
 
   const childBasicInfo = useQueryResult(childBasicInfoQuery({ childId }))
   const childName = useMemo(
@@ -52,7 +50,7 @@ export default React.memo(function ChildInfoPage({
     >
       <TopBar
         title={childName ?? i18n.common.back}
-        onBack={() => navigate(-1)}
+        onBack={() => history.go(-1)}
         unitId={unitId}
         invertedColors
       />

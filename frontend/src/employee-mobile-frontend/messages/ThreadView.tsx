@@ -10,8 +10,8 @@ import React, {
   useRef,
   useState
 } from 'react'
-import { Navigate, useNavigate } from 'react-router'
 import styled, { css } from 'styled-components'
+import { Redirect } from 'wouter'
 
 import { combine } from 'lib-common/api'
 import type {
@@ -63,7 +63,6 @@ export const ReceivedThreadPage = React.memo(function ReceivedThreadPage({
 }: {
   unitOrGroup: UnitOrGroup
 }) {
-  const navigate = useNavigate()
   const threadId = useIdRouteParam<MessageThreadId>('threadId')
   const { groupAccount } = useContext(MessageContext)
 
@@ -91,12 +90,12 @@ export const ReceivedThreadPage = React.memo(function ReceivedThreadPage({
           <ReceivedThread
             accountId={selectedAccount.account.id}
             thread={thread}
-            onBack={() => navigate(-1)}
+            onBack={() => history.go(-1)}
             unitId={unitOrGroup.unitId}
           />
         </ContentArea>
       ) : (
-        <Navigate
+        <Redirect
           to={routes.messages(toUnitOrGroup(unitOrGroup.unitId)).value}
         />
       )

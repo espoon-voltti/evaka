@@ -4,8 +4,8 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useContext } from 'react'
-import { Link } from 'react-router'
 import styled from 'styled-components'
+import { Link } from 'wouter'
 
 import { useQueryResult } from 'lib-common/query'
 import { ContentArea } from 'lib-components/layout/Container'
