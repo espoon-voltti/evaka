@@ -46,11 +46,11 @@ import colors from 'lib-customizations/common'
 import { faTimes } from 'lib-icons'
 
 import ModalAccessibilityWrapper from '../ModalAccessibilityWrapper'
-import { getAttachmentUrl, messageAttachment } from '../attachments'
+import { getAttachmentUrl, messageAttachment } from '../attachments/attachments'
+import { deleteAttachmentMutation } from '../attachments/queries'
 import { useUser } from '../auth/state'
 import { ErrorMessageBox } from '../calendar/ChildSelector'
 import { useTranslation } from '../localization'
-import { deleteAttachmentMutation } from '../queries'
 import { getDuplicateChildInfo } from '../utils/duplicated-child-utils'
 
 import { isPrimaryRecipient } from './utils'

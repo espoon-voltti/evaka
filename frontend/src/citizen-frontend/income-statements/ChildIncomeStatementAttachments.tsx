@@ -14,8 +14,11 @@ import { useMutationResult } from 'lib-common/query'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import FileUpload from 'lib-components/molecules/FileUpload'
 
-import { getAttachmentUrl, incomeStatementAttachment } from '../attachments'
-import { deleteAttachmentMutation } from '../queries'
+import {
+  getAttachmentUrl,
+  incomeStatementAttachment
+} from '../attachments/attachments'
+import { deleteAttachmentMutation } from '../attachments/queries'
 
 import type { SetStateCallback } from './hooks'
 

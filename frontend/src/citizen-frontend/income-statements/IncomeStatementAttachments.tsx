@@ -29,9 +29,12 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faCheck } from 'lib-icons'
 
-import { getAttachmentUrl, incomeStatementAttachment } from '../attachments'
+import {
+  getAttachmentUrl,
+  incomeStatementAttachment
+} from '../attachments/attachments'
+import { deleteAttachmentMutation } from '../attachments/queries'
 import { useTranslation } from '../localization'
-import { deleteAttachmentMutation } from '../queries'
 
 import { LabelWithError, Row } from './IncomeStatementComponents'
 import type { AttachmentHandler } from './attachmentHandler'

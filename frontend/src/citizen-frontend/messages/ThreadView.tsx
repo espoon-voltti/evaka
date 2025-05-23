@@ -54,7 +54,7 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors, { theme } from 'lib-customizations/common'
 import { faTrash, faEnvelope } from 'lib-icons'
 
-import { getAttachmentUrl } from '../attachments'
+import { getAttachmentUrl } from '../attachments/attachments'
 import type { Translations } from '../localization'
 import { useTranslation } from '../localization'
 

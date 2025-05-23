@@ -36,7 +36,7 @@ import {
 
 import RequireAuth from '../../../RequireAuth'
 import { renderResult } from '../../../async-rendering'
-import { getAttachmentUrl } from '../../../attachments'
+import { getAttachmentUrl } from '../../../attachments/attachments'
 import { useUser } from '../../../auth/state'
 import { useTranslation } from '../../../localization'
 import CollapsibleOrWholePageContainer from '../../ResponsiveWholePageCollapsible'
