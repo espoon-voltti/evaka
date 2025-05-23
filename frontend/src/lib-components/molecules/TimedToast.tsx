@@ -4,8 +4,8 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useEffect, useRef } from 'react'
-import { useLocation } from 'react-router'
 import styled, { useTheme } from 'styled-components'
+import { useLocation } from 'wouter'
 
 import { useStableCallback } from 'lib-common/utils/useStableCallback'
 import { faCheck, faTimes } from 'lib-icons'
@@ -37,8 +37,8 @@ export default React.memo(function TimedToast({
 }: Props) {
   const { colors } = useTheme()
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const location = useLocation()
-  const initialUrlPath = useRef(location.pathname)
+  const [path] = useLocation()
+  const initialUrlPath = useRef(path)
   const onClose_ = useStableCallback(onClose)
 
   const stopTimer = () => {
@@ -62,7 +62,7 @@ export default React.memo(function TimedToast({
     if (location.pathname !== initialUrlPath.current) {
       onClose_()
     }
-  }, [location.pathname, onClose_])
+  }, [path, onClose_])
 
   return (
     <ToastRoot
