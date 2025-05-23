@@ -21,15 +21,11 @@ export async function getAuthStatus(): Promise<AuthStatus> {
   return (await client.get<JsonOf<AuthStatus>>('/citizen/auth/status')).data
 }
 
-interface WeakLoginRequest {
+export interface WeakLoginRequest {
   username: string
   password: string
 }
 
-export async function authWeakLogin(
-  username: string,
-  password: string
-): Promise<void> {
-  const reqBody: WeakLoginRequest = { username, password }
-  await client.post('/citizen/auth/weak-login', reqBody)
+export async function authWeakLogin(request: WeakLoginRequest): Promise<void> {
+  await client.post('/citizen/auth/weak-login', request)
 }
