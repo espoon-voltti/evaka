@@ -20,6 +20,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.TimeRange
+import fi.espoo.evaka.shared.domain.isHoliday
 import java.time.LocalDate
 import org.jdbi.v3.json.Json
 
@@ -652,42 +653,54 @@ fun Database.Read.getDaycareGroupIds(daycareId: DaycareId): List<GroupId> =
     createQuery { sql("SELECT id FROM daycare_group WHERE daycare_id = ${bind(daycareId)}") }
         .toList()
 
-fun Database.Read.getDaycareOperationDays(groupId: GroupId): List<Int> {
+fun Database.Read.getDaycareOperationInfo(groupId: GroupId): NekkuDaycareOperationInfo? {
     return createQuery {
-        sql(
-        """
+            sql(
+                """
             SELECT ARRAY(
                 SELECT DISTINCT unnest(
                 COALESCE(d.operation_days, '{}')::int[] || 
                 COALESCE(d.shift_care_operation_days, '{}')::int[]
                 )
-                ) AS combined_days
+                ) AS combined_days,
+                d.shift_care_open_on_holidays
                 FROM daycare_group dcg
                 JOIN daycare d ON d.id = dcg.daycare_id
             WHERE dcg.id = ${bind(groupId)}
             """
             )
         }
-        .exactlyOneOrNull<List<Int>>() ?: emptyList()
+        .exactlyOneOrNull<NekkuDaycareOperationInfo>()
 }
 
+data class NekkuDaycareOperationInfo(
+    val combinedDays: List<Int>,
+    val shiftCareOpenOnHolidays: Boolean,
+)
 
-fun daycareOpenNextTime(date: LocalDate, operationDays: List<Int>): LocalDate {
+fun isDaycareOpenOnDate(date: LocalDate, daycareOperationInfo: NekkuDaycareOperationInfo): Boolean {
+    return date.dayOfWeek.value in daycareOperationInfo.combinedDays &&
+        (daycareOperationInfo.shiftCareOpenOnHolidays || !isHoliday(date))
+}
 
-    var nextDay = date.plusDays(1).dayOfWeek.value
+fun daycareOpenNextTime(
+    date: LocalDate,
+    daycareOperationInfo: NekkuDaycareOperationInfo,
+): LocalDate {
 
-    var daysUntilNextOperationDay = 1
-
-    //TODO: otetaan huomioon myös arkipyhät daycaressa shift_care_open_on_holidays-tieto
-
-    while (nextDay !in operationDays) {
-        if (nextDay == 7) {
-            nextDay = 1
-        } else {
-            nextDay++
-        }
-        daysUntilNextOperationDay++
+    if (daycareOperationInfo.combinedDays.isEmpty()) {
+        throw IllegalStateException(
+            "Päiväkodin aukioloaikoja ei olla asetettu Nekku-tilausta luotaessa"
+        )
     }
 
-    return date.plusDays(daysUntilNextOperationDay.toLong())
+    for (i in 1..7) {
+        val candidateDate = date.plusDays(i.toLong())
+
+        if (isDaycareOpenOnDate(candidateDate, daycareOperationInfo)) {
+            return candidateDate
+        }
+    }
+
+    throw IllegalStateException("Päiväkodin seuraavaa aukioloa ei löydetty")
 }

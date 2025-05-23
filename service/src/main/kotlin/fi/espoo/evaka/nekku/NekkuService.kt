@@ -136,11 +136,25 @@ class NekkuService(
     }
 
     fun planNekkuOrders(dbc: Database.Connection, clock: EvakaClock) {
-        planNekkuOrderJobs(dbc, asyncJobRunner, clock.now())
+        try {
+            planNekkuOrderJobs(dbc, asyncJobRunner, clock.now())
+        } catch (e: Exception) {
+            logger.warn(e) {
+                "Failed to plan Nekku order to Nekku: date=${clock.now()} ,error=${e.localizedMessage}"
+            }
+            throw e
+        }
     }
 
     fun planNekkuDailyOrders(dbc: Database.Connection, clock: EvakaClock) {
-        planNekkuDailyOrderJobs(dbc, asyncJobRunner, clock.now())
+        try {
+            planNekkuDailyOrderJobs(dbc, asyncJobRunner, clock.now())
+        } catch (e: Exception) {
+            logger.warn(e) {
+                "Failed to plan Nekku daily order to Nekku: date=${clock.now()} ,error=${e.localizedMessage}"
+            }
+            throw e
+        }
     }
 
     fun sendNekkuOrder(dbc: Database.Connection, clock: EvakaClock, job: AsyncJob.SendNekkuOrder) {
@@ -320,9 +334,12 @@ fun planNekkuOrderJobs(
         asyncJobRunner.plan(
             tx,
             nekkuGroupIds.flatMap { nekkuGroupId ->
-                val daycareOperationDays = tx.getDaycareOperationDays(nekkuGroupId)
+                val daycareOperationInfo = tx.getDaycareOperationInfo(nekkuGroupId)
+                if (daycareOperationInfo == null) {
+                    return@flatMap emptySequence()
+                }
                 range.dates().mapNotNull { date ->
-                    if (daycareOperationDays.contains(date.dayOfWeek.value)) {
+                    if (isDaycareOpenOnDate(date, daycareOperationInfo)) {
                         AsyncJob.SendNekkuOrder(customerGroupId = nekkuGroupId, date = date)
                     } else null
                 }
@@ -346,11 +363,14 @@ fun planNekkuDailyOrderJobs(
         asyncJobRunner.plan(
             tx,
             nekkuDaycareGroupIds.mapNotNull { nekkuDaycareGroupId ->
-                val daycareOperationDays = tx.getDaycareOperationDays(nekkuDaycareGroupId)
-                if (daycareOperationDays.contains(now.dayOfWeek.value)) {
+                val daycareOperationInfo = tx.getDaycareOperationInfo(nekkuDaycareGroupId)
+                if (
+                    daycareOperationInfo != null &&
+                        isDaycareOpenOnDate(now.toLocalDate(), daycareOperationInfo)
+                ) {
                     AsyncJob.SendNekkuDailyOrder(
                         customerGroupId = nekkuDaycareGroupId,
-                        date = daycareOpenNextTime(now.toLocalDate(), daycareOperationDays),
+                        date = daycareOpenNextTime(now.toLocalDate(), daycareOperationInfo),
                     )
                 } else null
             },
