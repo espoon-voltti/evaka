@@ -9,11 +9,32 @@ import type { DailyReservationRequest } from 'lib-common/generated/api-types/res
 import type { JsonCompatible } from 'lib-common/json'
 import type { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
+import type { OperationalDatesRequest } from 'lib-common/generated/api-types/reservations'
+import type { PersonId } from 'lib-common/generated/api-types/shared'
 import type { ReservationsResponse } from 'lib-common/generated/api-types/reservations'
 import { client } from '../../api-client'
 import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonReservationsResponse } from 'lib-common/generated/api-types/reservations'
 import { uri } from 'lib-common/uri'
+
+
+/**
+* Generated from fi.espoo.evaka.reservations.ReservationControllerCitizen.getPreschoolOperationalDates
+*/
+export async function getPreschoolOperationalDates(
+  request: {
+    body: OperationalDatesRequest
+  }
+): Promise<Partial<Record<PersonId, LocalDate[]>>> {
+  const { data: json } = await client.request<JsonOf<Partial<Record<PersonId, LocalDate[]>>>>({
+    url: uri`/citizen/preschool-operational-dates`.toString(),
+    method: 'POST',
+    data: request.body satisfies JsonCompatible<OperationalDatesRequest>
+  })
+  return Object.fromEntries(Object.entries(json).map(
+    ([k, v]) => [k, v !== undefined ? v.map(e => LocalDate.parseIso(e)) : v]
+  ))
+}
 
 
 /**

@@ -21,6 +21,7 @@ import {
 } from '../generated/api-clients/holidayperiod'
 import { getExpiringIncome } from '../generated/api-clients/invoicing'
 import {
+  getPreschoolOperationalDates,
   getReservations,
   postAbsences,
   postReservations
@@ -43,6 +44,10 @@ export const postReservationsMutation = q.mutation(postReservations, [
 export const postAbsencesMutation = q.mutation(postAbsences, [
   reservationsQuery.prefix
 ])
+
+export const preschoolOperationalDatesQuery = q.query(
+  getPreschoolOperationalDates
+)
 
 export const addCalendarEventTimeReservationMutation = q.mutation(
   addCalendarEventTimeReservation,

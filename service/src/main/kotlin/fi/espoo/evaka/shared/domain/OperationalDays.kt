@@ -4,6 +4,9 @@
 
 package fi.espoo.evaka.shared.domain
 
+import fi.espoo.evaka.daycare.getPreschoolTerms
+import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.placement.getPlacementsForChildDuring
 import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
@@ -140,3 +143,35 @@ fun Database.Read.getOperationalDatesForChild(
     range: FiniteDateRange,
     childId: ChildId,
 ): Set<LocalDate> = getOperationalDatesForChildren(range, setOf(childId))[childId] ?: emptySet()
+
+fun Database.Read.getPreschoolOperationalDatesForChildren(
+    range: FiniteDateRange,
+    children: Set<ChildId>,
+): Map<ChildId, Set<LocalDate>> {
+    val terms = getPreschoolTerms().filter { it.extendedTerm.overlaps(range) }
+    val operationalDates = DateSet.of(terms.map { it.extendedTerm }).intersection(listOf(range))
+    if (operationalDates.isEmpty()) return children.associateWith { emptySet() }
+
+    val breaks = terms.flatMap { it.termBreaks.ranges() }
+    val weekends = range.dates().filter { it.isWeekend() }
+    val holidays = getHolidays(range)
+    val nonOperationalDates =
+        DateSet.of(
+            breaks +
+                weekends.map { it.toFiniteDateRange() } +
+                holidays.map { it.toFiniteDateRange() }
+        )
+
+    return children.associateWith { childId ->
+        val placementRanges =
+            getPlacementsForChildDuring(childId, range.start, range.end)
+                .filter { PlacementType.preschool.contains(it.type) }
+                .map { FiniteDateRange(it.startDate, it.endDate) }
+        DateSet.of(placementRanges)
+            .intersection(operationalDates)
+            .removeAll(nonOperationalDates)
+            .ranges()
+            .flatMap { it.dates() }
+            .toSet()
+    }
+}

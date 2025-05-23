@@ -7,6 +7,7 @@ import { Link } from 'react-router'
 import styled from 'styled-components'
 
 import type { Failure } from 'lib-common/api'
+import { Success } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import { localDateRange } from 'lib-common/form/fields'
 import { mapped, object, required, value } from 'lib-common/form/form'
@@ -14,14 +15,15 @@ import { useBoolean, useForm, useFormFields } from 'lib-common/form/hooks'
 import type { StateOf } from 'lib-common/form/types'
 import type { AbsenceType } from 'lib-common/generated/api-types/absence'
 import type { HolidayPeriod } from 'lib-common/generated/api-types/holidayperiod'
-import type { PlacementType } from 'lib-common/generated/api-types/placement'
 import type {
   AbsenceRequest,
   ReservationChild,
   ReservationsResponse
 } from 'lib-common/generated/api-types/reservations'
+import type { PersonId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { formatFirstName } from 'lib-common/names'
+import { constantQuery, useQueryResult } from 'lib-common/query'
 import { scrollIntoViewSoftKeyboard } from 'lib-common/utils/scrolling'
 import { SelectionChip } from 'lib-components/atoms/Chip'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
@@ -44,6 +46,7 @@ import { featureFlags } from 'lib-customizations/citizen'
 import { faTimes } from 'lib-icons'
 
 import ModalAccessibilityWrapper from '../ModalAccessibilityWrapper'
+import { renderResult } from '../async-rendering'
 import { useLang, useTranslation } from '../localization'
 
 import { BottomFooterContainer } from './BottomFooterContainer'
@@ -54,20 +57,10 @@ import {
   CalendarModalSection
 } from './CalendarModal'
 import ChildSelector from './ChildSelector'
-import { postAbsencesMutation } from './queries'
+import { postAbsencesMutation, preschoolOperationalDatesQuery } from './queries'
 import { nonEmptyArray } from './reservation-modal/form'
 
-const tooManyAbsencesErrorThresholdInDays = 7
-
-const preschoolTypes: PlacementType[] = [
-  'PRESCHOOL',
-  'PRESCHOOL_DAYCARE',
-  'PRESCHOOL_DAYCARE_ONLY',
-  'PRESCHOOL_CLUB',
-  'PREPARATORY',
-  'PREPARATORY_DAYCARE',
-  'PREPARATORY_DAYCARE_ONLY'
-]
+const tooManyAbsencesErrorThresholdInDays = 5
 
 const absenceForm = mapped(
   object({
@@ -167,21 +160,35 @@ export default React.memo(function AbsenceModal({
   const [attendanceAlreadyExistsError, setAttendanceAlreadyExistsError] =
     useState(false)
 
-  const tooManyAbsencesErrors =
-    featureFlags.absenceApplications &&
-    selectedChildren.isValid() &&
-    range.isValid() &&
-    range.value().durationInDays() > tooManyAbsencesErrorThresholdInDays &&
-    absenceType.isValid() &&
-    absenceType.value() !== 'SICKLEAVE'
-      ? selectedChildren
-          .value()
-          .filter(
-            ({ upcomingPlacementType }) =>
-              upcomingPlacementType !== null &&
-              preschoolTypes.includes(upcomingPlacementType)
-          )
-      : []
+  const preschoolOperationalDatesResult = useQueryResult(
+    featureFlags.absenceApplications && range.isValid()
+      ? preschoolOperationalDatesQuery({
+          body: {
+            range: range.value(),
+            childIds: reservationsResponse.children.map((child) => child.id)
+          }
+        })
+      : constantQuery<Partial<Record<PersonId, LocalDate[]>>>({})
+  )
+  const tooManyAbsencesErrors = useMemo(() => {
+    if (
+      !featureFlags.absenceApplications ||
+      !selectedChildren.isValid() ||
+      !absenceType.isValid() ||
+      absenceType.value() === 'SICKLEAVE'
+    ) {
+      return Success.of<ReservationChild[]>([])
+    }
+    return preschoolOperationalDatesResult.map((operationalDates) =>
+      selectedChildren
+        .value()
+        .filter(
+          (child) =>
+            (operationalDates[child.id] ?? []).length >
+            tooManyAbsencesErrorThresholdInDays
+        )
+    )
+  }, [absenceType, preschoolOperationalDatesResult, selectedChildren])
 
   return (
     <ModalAccessibilityWrapper>
@@ -265,25 +272,34 @@ export default React.memo(function AbsenceModal({
                     }
                   />
                 )}
-                {tooManyAbsencesErrors.map((child) => (
-                  <AlertBox
-                    key={child.id}
-                    title={`${formatFirstName(child)} ${child.lastName}`}
-                    message={
-                      <>
-                        {
-                          i18n.calendar.absenceModal
-                            .tooManyAbsencesErrorDescription
+                {renderResult(tooManyAbsencesErrors, (errors) => (
+                  <>
+                    {errors.map((child) => (
+                      <AlertBox
+                        key={child.id}
+                        title={`${formatFirstName(child)} ${child.lastName}`}
+                        message={
+                          <>
+                            {
+                              i18n.calendar.absenceModal
+                                .tooManyAbsencesErrorDescription
+                            }
+                            <br />
+                            <br />
+                            <Link
+                              to={`/children/${child.id}/absence-application`}
+                            >
+                              {
+                                i18n.calendar.absenceModal
+                                  .tooManyAbsencesErrorLink
+                              }
+                            </Link>
+                          </>
                         }
-                        <br />
-                        <br />
-                        <Link to={`/children/${child.id}/absence-application`}>
-                          {i18n.calendar.absenceModal.tooManyAbsencesErrorLink}
-                        </Link>
-                      </>
-                    }
-                    data-qa={`too-many-absences-error-${child.id}`}
-                  />
+                        data-qa={`too-many-absences-error-${child.id}`}
+                      />
+                    ))}
+                  </>
                 ))}
               </CalendarModalSection>
               <Gap size="zero" sizeOnMobile="s" />
@@ -357,7 +373,8 @@ export default React.memo(function AbsenceModal({
                 textDone={i18n.common.saveSuccess}
                 disabled={
                   selectedChildren.state.length === 0 ||
-                  tooManyAbsencesErrors.length > 0
+                  tooManyAbsencesErrors.isLoading ||
+                  tooManyAbsencesErrors.getOrElse([]).length > 0
                 }
                 mutation={postAbsencesMutation}
                 onClick={() => {
