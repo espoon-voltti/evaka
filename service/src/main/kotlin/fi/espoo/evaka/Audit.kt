@@ -64,7 +64,6 @@ enum class Audit(
     ApplicationConfirmDecisionsMailed,
     ApplicationCreate,
     ApplicationDelete,
-    ApplicationRead,
     ApplicationReadMetadata,
     ApplicationReadNotifications,
     ApplicationReadDuplicates,
@@ -631,6 +630,38 @@ enum class Audit(
                 "eventCode" to eventCode,
                 "targetId" to targetId?.value,
                 "objectId" to objectId?.value,
+                "securityLevel" to securityLevel,
+                "securityEvent" to securityEvent,
+            ) + if (meta.isNotEmpty()) mapOf("meta" to meta) else emptyMap()
+        ) {
+            eventCode
+        }
+    }
+}
+
+// Audit events that are enforced to be logged with child id(s)
+enum class ChildAudit(
+    private val securityEvent: Boolean = false,
+    private val securityLevel: String = "low",
+) {
+    ApplicationRead;
+
+    private val eventCode = name
+
+    class UseNamedArguments private constructor()
+
+    fun log(
+        // This is a hack to force passing all real parameters by name
+        @Suppress("UNUSED_PARAMETER") vararg forceNamed: Array<out UseNamedArguments>,
+        targetId: AuditId? = null,
+        childId: AuditId,
+        meta: Map<String, Any?> = emptyMap(),
+    ) {
+        logger.audit(
+            mapOf(
+                "eventCode" to eventCode,
+                "targetId" to targetId?.value,
+                "objectId" to childId.value,
                 "securityLevel" to securityLevel,
                 "securityEvent" to securityEvent,
             ) + if (meta.isNotEmpty()) mapOf("meta" to meta) else emptyMap()

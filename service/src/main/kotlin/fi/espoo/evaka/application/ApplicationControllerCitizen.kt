@@ -6,6 +6,7 @@ package fi.espoo.evaka.application
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
+import fi.espoo.evaka.ChildAudit
 import fi.espoo.evaka.children.getCitizenChildIds
 import fi.espoo.evaka.decision.Decision
 import fi.espoo.evaka.decision.DecisionService
@@ -124,7 +125,10 @@ class ApplicationControllerCitizen(
             }
             .also { childApplicationList ->
                 val childIds = childApplicationList.map { it.childId }
-                Audit.ApplicationRead.log(targetId = AuditId(user.id), objectId = AuditId(childIds))
+                ChildAudit.ApplicationRead.log(
+                    targetId = AuditId(user.id),
+                    childId = AuditId(childIds),
+                )
             }
     }
 
@@ -148,7 +152,10 @@ class ApplicationControllerCitizen(
             }
             .also { childList ->
                 val childIds = childList.map { it.id }
-                Audit.ApplicationRead.log(targetId = AuditId(user.id), objectId = AuditId(childIds))
+                ChildAudit.ApplicationRead.log(
+                    targetId = AuditId(user.id),
+                    childId = AuditId(childIds),
+                )
             }
     }
 
@@ -200,21 +207,22 @@ class ApplicationControllerCitizen(
                     }
                 }
             }
-        Audit.ApplicationRead.log(
-            targetId = AuditId(applicationId),
-            objectId = application?.childId?.let { AuditId(it) },
-            meta = mapOf("hideFromGuardian" to application?.hideFromGuardian),
-        )
 
         return if (application?.hideFromGuardian == false) {
-            if (user.id == application.guardianId) {
-                application
+                if (user.id == application.guardianId) {
+                    application
+                } else {
+                    hideCriticalApplicationInfoFromOtherGuardian(application)
+                }
             } else {
-                hideCriticalApplicationInfoFromOtherGuardian(application)
+                throw NotFound("Application not found")
             }
-        } else {
-            throw NotFound("Application not found")
-        }
+            .also {
+                ChildAudit.ApplicationRead.log(
+                    targetId = AuditId(applicationId),
+                    childId = AuditId(application.childId),
+                )
+            }
     }
 
     @PostMapping("/applications")
