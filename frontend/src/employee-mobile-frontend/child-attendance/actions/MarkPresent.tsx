@@ -4,8 +4,8 @@
 
 import { isAfter } from 'date-fns'
 import React, { useMemo, useState } from 'react'
-import { Navigate, useNavigate, useSearchParams } from 'react-router'
 import styled from 'styled-components'
+import { Redirect, useSearchParams } from 'wouter'
 
 import { combine } from 'lib-common/api'
 import type {
@@ -61,7 +61,6 @@ const MarkPresentInner = React.memo(function MarkPresentInner({
   }[]
   multiselect: boolean
 }) {
-  const navigate = useNavigate()
   const { i18n } = useTranslation()
 
   const [time, setTime] = useState(() => LocalTime.nowInHelsinkiTz().format())
@@ -102,13 +101,13 @@ const MarkPresentInner = React.memo(function MarkPresentInner({
         {childList.length === 1 ? (
           <ChildNameBackButton
             child={childList[0].child}
-            onClick={() => navigate(-1)}
+            onClick={() => history.go(-1)}
           />
         ) : (
           <BackButtonInline
             icon={faArrowLeft}
             text={i18n.common.return}
-            onClick={() => navigate(-1)}
+            onClick={() => history.go(-1)}
           />
         )}
       </div>
@@ -131,7 +130,7 @@ const MarkPresentInner = React.memo(function MarkPresentInner({
           <FixedSpaceRow fullWidth>
             <LegacyButton
               text={i18n.common.cancel}
-              onClick={() => navigate(-1)}
+              onClick={() => history.go(-1)}
             />
             <AsyncButton
               primary
@@ -149,7 +148,7 @@ const MarkPresentInner = React.memo(function MarkPresentInner({
                   : Promise.reject()
               }
               onSuccess={() => {
-                void navigate(multiselect ? -1 : -2)
+                history.go(multiselect ? -1 : -2)
               }}
               data-qa="mark-present-btn"
             />
@@ -165,7 +164,7 @@ const MarkPresentInner = React.memo(function MarkPresentInner({
                 text={i18n.attendances.actions.returnToPresentNoTimeNeeded}
                 mutation={returnToPresentMutation}
                 onClick={() => ({ unitId, childId: childList[0].child.id })}
-                onSuccess={() => navigate(-2)}
+                onSuccess={() => history.go(-2)}
                 data-qa="return-to-present-btn"
               />
             </JustifyContainer>
@@ -231,10 +230,10 @@ export default React.memo(function MarkPresent({
   const children = searchParams.get('children')
   const multiselect = searchParams.get('multiselect') === 'true'
   if (children === null)
-    return <Navigate replace to={routes.unit(unitId).value} />
+    return <Redirect replace to={routes.unit(unitId).value} />
   const childIds = children.split(',').filter((id) => id.length > 0)
   if (childIds.length === 0)
-    return <Navigate replace to={routes.unit(unitId).value} />
+    return <Redirect replace to={routes.unit(unitId).value} />
 
   return (
     <MarkPresentWithParams

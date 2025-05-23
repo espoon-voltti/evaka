@@ -4,7 +4,6 @@
 
 import { addDays, isAfter, isBefore, subDays } from 'date-fns'
 import React, { useCallback, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
 import { wrapResult } from 'lib-common/api'
@@ -59,7 +58,6 @@ export default React.memo(function MarkAbsentBeforehand({
   unitId: DaycareId
   childId: ChildId
 }) {
-  const navigate = useNavigate()
   const { i18n } = useTranslation()
 
   const child = useChild(useQueryResult(childrenQuery(unitId)), childId)
@@ -111,9 +109,9 @@ export default React.memo(function MarkAbsentBeforehand({
       selectedAbsenceType !== 'NO_ABSENCE'
     ) {
       await postAbsence(selectedAbsenceType)
-      void navigate(-1)
+      history.go(-1)
     }
-  }, [navigate, postAbsence, selectedAbsenceType])
+  }, [postAbsence, selectedAbsenceType])
 
   const deleteAbsences = useCallback(async () => {
     if (deleteRange) {
@@ -135,8 +133,8 @@ export default React.memo(function MarkAbsentBeforehand({
   }, [])
 
   const goBack = useCallback(() => {
-    void navigate(-1)
-  }, [navigate])
+    history.go(-1)
+  }, [])
 
   return (
     <>

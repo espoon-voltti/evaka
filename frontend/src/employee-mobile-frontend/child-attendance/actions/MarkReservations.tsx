@@ -6,8 +6,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
 import sortBy from 'lodash/sortBy'
 import React, { useCallback, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router'
 import styled, { useTheme } from 'styled-components'
+import { useLocation } from 'wouter'
 
 import { combine } from 'lib-common/api'
 import { localTime } from 'lib-common/form/fields'
@@ -223,15 +223,15 @@ export default React.memo(function MarkReservations({
   unitId: DaycareId
   childId: ChildId
 }) {
-  const navigate = useNavigate()
+  const [, navigate] = useLocation()
   const { i18n } = useTranslation()
   const child = useChild(useQueryResult(childrenQuery(unitId)), childId)
   const reservations = useQueryResult(getConfirmedRangeQuery({ childId }))
   const absences = useQueryResult(getFutureAbsencesByChildQuery({ childId }))
   const [mode, setMode] = useState<Mode>('view')
   const goBack = useCallback(() => {
-    void navigate(-1)
-  }, [navigate])
+    history.go(-1)
+  }, [])
 
   return (
     <TallContentArea

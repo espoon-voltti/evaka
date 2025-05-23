@@ -4,8 +4,8 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useCallback, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router'
 import styled from 'styled-components'
+import { useLocation } from 'wouter'
 
 import { combine } from 'lib-common/api'
 import type { Attachment } from 'lib-common/generated/api-types/attachment'
@@ -67,7 +67,7 @@ export default React.memo(function IncomeStatementPage() {
   const incomeStatementId =
     useIdRouteParam<IncomeStatementId>('incomeStatementId')
   const { i18n } = useTranslation()
-  const navigate = useNavigate()
+  const [, navigate] = useLocation()
 
   const person = useQueryResult(personIdentityQuery({ personId }))
   const incomeStatement = useQueryResult(

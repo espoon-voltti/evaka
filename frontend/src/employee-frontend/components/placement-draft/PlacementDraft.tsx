@@ -11,8 +11,8 @@ import React, {
   useMemo,
   useState
 } from 'react'
-import { Link, useNavigate } from 'react-router'
 import styled from 'styled-components'
+import { useLocation } from 'wouter'
 
 import type { Result, Success } from 'lib-common/api'
 import { isLoading, Loading, wrapResult } from 'lib-common/api'
@@ -127,7 +127,7 @@ export type DaycarePlacementPlanForm =
 export default React.memo(function PlacementDraft() {
   const applicationId = useIdRouteParam<ApplicationId>('id')
   const { i18n } = useTranslation()
-  const navigate = useNavigate()
+  const [, navigate] = useLocation()
   const [placementDraft, setPlacementDraft] = useState<
     Result<PlacementPlanDraftWithOverlaps>
   >(Loading.of())
@@ -168,7 +168,7 @@ export default React.memo(function PlacementDraft() {
   }
 
   const redirectToMainPage = useCallback(
-    () => void navigate('/applications'),
+    () => navigate('/applications'),
     [navigate]
   )
 
@@ -351,15 +351,16 @@ export default React.memo(function PlacementDraft() {
                 <span>{placementDraft.child.dob.format()}</span>
               </ListGrid>
               <Gap size="s" />
-              <Link
-                to={`/child-information/${placementDraft.child.id}`}
+              <a
+                href={`/employee/child-information/${placementDraft.child.id}`}
                 target="_blank"
+                rel="noreferrer"
               >
                 <Bold>
                   {i18n.titles.childInformation}{' '}
                   <FontAwesomeIcon icon={faLink} />
                 </Bold>
-              </Link>
+              </a>
             </section>
             {placementDraft.placements && (
               <>

@@ -10,7 +10,6 @@ import ReactCrop, {
   convertToPixelCrop,
   makeAspectCrop
 } from 'react-image-crop'
-import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
 import type { ChildId, DaycareId } from 'lib-common/generated/api-types/shared'
@@ -44,7 +43,6 @@ export default React.memo(function ImageEditor({
   const [crop, setCrop] = useState<Crop>()
   const [imageElem, setImageElem] = useState<HTMLImageElement | null>(null)
   const [submitting, setSubmitting] = useState(false)
-  const navigate = useNavigate()
 
   const { mutateAsync: uploadChildImage } = useMutationResult(
     uploadChildImageMutation
@@ -58,7 +56,7 @@ export default React.memo(function ImageEditor({
 
     const popStateHandler = (e: PopStateEvent) => {
       e.preventDefault()
-      void navigate(1)
+      history.go(1)
       onReturn()
     }
 
@@ -70,7 +68,7 @@ export default React.memo(function ImageEditor({
       }
       window.removeEventListener('popstate', popStateHandler)
     }
-  }, [onReturn, navigate])
+  }, [onReturn])
 
   const onImageLoad = useCallback((e: SyntheticEvent<HTMLImageElement>) => {
     const image = e.currentTarget

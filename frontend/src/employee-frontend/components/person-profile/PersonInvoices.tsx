@@ -4,7 +4,7 @@
 
 import orderBy from 'lodash/orderBy'
 import React, { useContext } from 'react'
-import { Link } from 'react-router'
+import { Link } from 'wouter'
 
 import type { PersonId } from 'lib-common/generated/api-types/shared'
 import { formatCents } from 'lib-common/money'

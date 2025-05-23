@@ -6,8 +6,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
 import sortBy from 'lodash/sortBy'
 import React, { useMemo, useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router'
 import styled from 'styled-components'
+import { useLocation, useSearchParams } from 'wouter'
 
 import { combine } from 'lib-common/api'
 import { boolean, localDate, localTime, string } from 'lib-common/form/fields'
@@ -284,7 +284,7 @@ const StaffAttendancesEditor = ({
 }) => {
   const unitId = unitOrGroup.unitId
   const { i18n, lang } = useTranslation()
-  const navigate = useNavigate()
+  const [, navigate] = useLocation()
 
   const [mode, setMode] = useState<'editor' | 'pin'>('editor')
   const form = useForm(

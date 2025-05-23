@@ -14,8 +14,8 @@ import React, {
   useMemo,
   useState
 } from 'react'
-import { Link, useNavigate, useParams, useSearchParams } from 'react-router'
 import styled from 'styled-components'
+import { Link, useLocation, useParams, useSearchParams } from 'wouter'
 
 import type { Result } from 'lib-common/api'
 import { combine, wrapResult } from 'lib-common/api'
@@ -231,7 +231,7 @@ export default React.memo(function CalendarEventsSection({
   )
 
   const { calendarEventId } = useParams<{ calendarEventId: UUID }>()
-  const navigate = useNavigate()
+  const [, navigate] = useLocation()
 
   const { i18n } = useTranslation()
 
@@ -245,7 +245,7 @@ export default React.memo(function CalendarEventsSection({
     const event = events.getOrElse([]).find(({ id }) => id === calendarEventId)
 
     if (!event && events.isSuccess) {
-      void navigate(`/units/${unitId}/calendar`)
+      navigate(`/units/${unitId}/calendar`)
       return undefined
     }
 
@@ -284,7 +284,7 @@ export default React.memo(function CalendarEventsSection({
             if (shouldRefresh) {
               void reloadEvents()
             }
-            void navigate(`/units/${unitId}/calendar`)
+            navigate(`/units/${unitId}/calendar`)
           }}
         />
       )}
@@ -312,7 +312,7 @@ export default React.memo(function CalendarEventsSection({
             groupId={groupId}
             placements={groups.placements}
             onClose={() => {
-              void navigate(`/units/${unitId}/calendar`)
+              navigate(`/units/${unitId}/calendar`)
             }}
           />
         ) : null

@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useMemo, useState } from 'react'
-import { useNavigate } from 'react-router'
 import styled from 'styled-components'
+import { useLocation } from 'wouter'
 
 import type { BoundForm } from 'lib-common/form/hooks'
 import { useFormFields } from 'lib-common/form/hooks'
@@ -85,7 +85,7 @@ export default React.memo(function DiscussionSurveyForm({
   const [cancelConfirmModalVisible, setCancelConfirmModalVisible] =
     useState(false)
 
-  const navigate = useNavigate()
+  const [, navigate] = useLocation()
 
   const { title, description, attendees } = useFormFields(form)
 
@@ -109,12 +109,12 @@ export default React.memo(function DiscussionSurveyForm({
             action: () => {
               setCancelConfirmModalVisible(false)
               if (eventData) {
-                void navigate(
+                navigate(
                   `/units/${unitId}/groups/${groupId}/discussion-reservation-surveys/${eventData.id}`,
                   { replace: true }
                 )
               } else {
-                void navigate(
+                navigate(
                   `/units/${unitId}/groups/${groupId}/discussion-reservation-surveys`,
                   { replace: true }
                 )

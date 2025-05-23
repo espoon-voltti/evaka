@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext } from 'react'
-import { Navigate, useNavigate } from 'react-router'
+import { Redirect, useLocation } from 'wouter'
 
 import { combine } from 'lib-common/api'
 import { useQueryResult } from 'lib-common/query'
@@ -26,14 +26,14 @@ export default function NewMessagePage({
   const recipients = useQueryResult(selectableRecipientsQuery(), {
     enabled: unitOrGroup.type === 'group'
   })
-  const navigate = useNavigate()
+  const [, navigate] = useLocation()
 
   const onClose = () => {
-    void navigate(routes.messages(unitOrGroup).value)
+    navigate(routes.messages(unitOrGroup).value)
   }
 
   if (unitOrGroup.type === 'unit') {
-    return <Navigate to={routes.messages(unitOrGroup).value} />
+    return <Redirect to={routes.messages(unitOrGroup).value} />
   }
 
   return renderResult(
@@ -48,7 +48,7 @@ export default function NewMessagePage({
           onClose={onClose}
         />
       ) : (
-        <Navigate
+        <Redirect
           to={routes.messages(toUnitOrGroup(unitOrGroup.unitId)).value}
         />
       )

@@ -4,7 +4,6 @@
 
 import { differenceInMinutes } from 'date-fns'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
-import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
@@ -59,7 +58,6 @@ const StaffMarkArrivedInner = React.memo(function StaffMarkArrivedInner({
   staffMember: StaffMember
 }) {
   const { i18n } = useTranslation()
-  const navigate = useNavigate()
 
   const unitId = unitOrGroup.unitId
   const [pinCode, setPinCode] = useState(EMPTY_PIN)
@@ -299,7 +297,7 @@ const StaffMarkArrivedInner = React.memo(function StaffMarkArrivedInner({
         <FixedSpaceRow fullWidth>
           <LegacyButton
             text={i18n.common.cancel}
-            onClick={() => navigate(-1)}
+            onClick={() => history.go(-1)}
           />
           <MutateButton
             primary
@@ -352,7 +350,6 @@ export default React.memo(function StaffMarkArrivedPage({
   unitOrGroup: UnitOrGroup
 }) {
   const { i18n } = useTranslation()
-  const navigate = useNavigate()
 
   const employeeId = useIdRouteParam<EmployeeId>('employeeId')
 
@@ -393,7 +390,7 @@ export default React.memo(function StaffMarkArrivedPage({
     >
       <TopBar
         title={backButtonText}
-        onBack={() => navigate(-1)}
+        onBack={() => history.go(-1)}
         unitId={unitId}
         invertedColors
       />

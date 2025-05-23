@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { animated, useSpring } from '@react-spring/web'
-import React, { useCallback, useMemo, useState } from 'react'
-import { Outlet, useNavigate, useOutletContext } from 'react-router'
+import React, { useCallback, useContext, useMemo, useState } from 'react'
 import styled from 'styled-components'
+import { useLocation } from 'wouter'
 
 import { combine } from 'lib-common/api'
 import type {
@@ -34,11 +34,13 @@ import type { AttendanceStatuses } from './utils'
 import { childAttendanceStatus } from './utils'
 
 export default React.memo(function AttendancePageWrapper({
-  unitOrGroup
+  unitOrGroup,
+  children
 }: {
   unitOrGroup: UnitOrGroup
+  children: React.ReactNode
 }) {
-  const navigate = useNavigate()
+  const [, navigate] = useLocation()
   const { i18n } = useTranslation()
   const unitId = unitOrGroup.unitId
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
@@ -60,9 +62,7 @@ export default React.memo(function AttendancePageWrapper({
 
   const changeGroup = useCallback(
     (group: GroupInfo | undefined) => {
-      void navigate(
-        routes.childAttendances(toUnitOrGroup(unitId, group?.id)).value
-      )
+      navigate(routes.childAttendances(toUnitOrGroup(unitId, group?.id)).value)
     },
     [navigate, unitId]
   )
@@ -131,15 +131,12 @@ export default React.memo(function AttendancePageWrapper({
         <TabLinks tabs={tabs} mobile sticky />
         {renderResult(
           combine(unitChildren, attendanceStatuses),
-          ([children, attendanceStatuses]) => (
-            <Outlet
-              context={
-                {
-                  unitChildren: children,
-                  attendanceStatuses
-                } satisfies AttendanceContext
-              }
-            />
+          ([unitChildren, attendanceStatuses]) => (
+            <AttendanceContext.Provider
+              value={{ unitChildren, attendanceStatuses }}
+            >
+              {children}
+            </AttendanceContext.Provider>
           )
         )}
       </PageWithNavigation>
@@ -147,11 +144,19 @@ export default React.memo(function AttendancePageWrapper({
   )
 })
 
-export type AttendanceContext = {
+export type AttendanceState = {
   unitChildren: AttendanceChild[]
   attendanceStatuses: AttendanceStatuses
 }
-export const useAttendanceContext = () => useOutletContext<AttendanceContext>()
+
+const defaultState: AttendanceState = {
+  unitChildren: [],
+  attendanceStatuses: {}
+}
+
+const AttendanceContext = React.createContext<AttendanceState>(defaultState)
+
+export const useAttendanceContext = () => useContext(AttendanceContext)
 
 const ChildSearch = React.memo(function Search({
   unitOrGroup,

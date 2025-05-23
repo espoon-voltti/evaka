@@ -4,8 +4,8 @@
 
 import orderBy from 'lodash/orderBy'
 import React, { useMemo, useState } from 'react'
-import { useNavigate } from 'react-router'
 import styled from 'styled-components'
+import { useLocation } from 'wouter'
 
 import { combine } from 'lib-common/api'
 import { oneOf, required } from 'lib-common/form/form'
@@ -63,7 +63,7 @@ const InternalChildDocuments = React.memo(function InternalChildDocuments({
   documents: ChildDocumentSummaryWithPermittedActions[]
 }) {
   const { i18n } = useTranslation()
-  const navigate = useNavigate()
+  const [, navigate] = useLocation()
 
   return (
     <div>
@@ -91,10 +91,9 @@ const InternalChildDocuments = React.memo(function InternalChildDocuments({
                   icon={faFile}
                   disabled={!permittedActions.includes('READ')}
                   onClick={() =>
-                    navigate({
-                      pathname: `/child-documents/${document.id}`,
-                      search: `?childId=${childId}`
-                    })
+                    navigate(
+                      `/child-documents/${document.id}?childId=${childId}`
+                    )
                   }
                   data-qa="open-document"
                 />
@@ -124,7 +123,7 @@ const DecisionChildDocuments = React.memo(function DecisionChildDocuments({
   documents: ChildDocumentSummaryWithPermittedActions[]
 }) {
   const { i18n } = useTranslation()
-  const navigate = useNavigate()
+  const [, navigate] = useLocation()
 
   return (
     <div>
@@ -152,10 +151,9 @@ const DecisionChildDocuments = React.memo(function DecisionChildDocuments({
                   icon={faFile}
                   disabled={!permittedActions.includes('READ')}
                   onClick={() =>
-                    navigate({
-                      pathname: `/child-documents/${document.id}`,
-                      search: `?childId=${childId}`
-                    })
+                    navigate(
+                      `/child-documents/${document.id}?childId=${childId}`
+                    )
                   }
                   data-qa="open-document"
                 />
@@ -187,7 +185,7 @@ const ExternalChildDocuments = React.memo(function ExternalChildDocuments({
   documents: ChildDocumentSummaryWithPermittedActions[]
 }) {
   const { i18n } = useTranslation()
-  const navigate = useNavigate()
+  const [, navigate] = useLocation()
 
   return (
     <div>
@@ -215,10 +213,9 @@ const ExternalChildDocuments = React.memo(function ExternalChildDocuments({
                   icon={faFile}
                   disabled={!permittedActions.includes('READ')}
                   onClick={() =>
-                    navigate({
-                      pathname: `/child-documents/${document.id}`,
-                      search: `?childId=${childId}`
-                    })
+                    navigate(
+                      `/child-documents/${document.id}?childId=${childId}`
+                    )
                   }
                   data-qa="open-document"
                 />
@@ -394,7 +391,7 @@ const CreationModal = React.memo(function CreationModal({
   const { mutateAsync: createChildDocument } = useMutationResult(
     createChildDocumentMutation
   )
-  const navigate = useNavigate()
+  const [, navigate] = useLocation()
 
   const form = required(oneOf<DocumentTemplateId>())
   const bind = useForm(
@@ -418,7 +415,7 @@ const CreationModal = React.memo(function CreationModal({
       }
     })
     if (res.isSuccess) {
-      void navigate(`/child-documents/${res.value}`)
+      navigate(`/child-documents/${res.value}`)
     }
     return res
   }

@@ -12,8 +12,8 @@ import React, {
   useRef,
   useState
 } from 'react'
-import { useNavigate } from 'react-router'
 import styled, { css } from 'styled-components'
+import { useLocation } from 'wouter'
 
 import { useBoolean } from 'lib-common/form/hooks'
 import type {
@@ -251,7 +251,7 @@ export default React.memo(
     ref
   ) {
     const i18n = useTranslation()
-    const navigate = useNavigate()
+    const [, navigate] = useLocation()
     const { setReplyContent, getReplyContent } = useContext(MessageContext)
     const { addTimedNotification } = useContext(NotificationsContext)
 

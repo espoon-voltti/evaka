@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { useNavigate } from 'react-router'
+import { useLocation } from 'wouter'
 
 import type { AssistanceNeedDecisionBasicsResponse } from 'lib-common/generated/api-types/assistanceneed'
 import { AssistanceNeedDecisionStatusChip } from 'lib-components/assistance-need-decision/AssistanceNeedDecisionStatusChip'
@@ -25,7 +25,7 @@ export default React.memo(function AssistanceNeedDecisionSectionRow({
   childId,
   onDelete
 }: Props) {
-  const navigate = useNavigate()
+  const [, navigate] = useLocation()
 
   const { i18n } = useTranslation()
 

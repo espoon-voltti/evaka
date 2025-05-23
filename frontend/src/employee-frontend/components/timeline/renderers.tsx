@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { Link } from 'react-router'
 import styled from 'styled-components'
+import { Link } from 'wouter'
 
 import type DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
@@ -82,7 +82,7 @@ export const feeDecisionRenderer: EventRenderer<TimelineFeeDecision> = {
         return '#e8e8e8'
     }
   },
-  linkProvider: (elem) => `/finance/fee-decisions/${elem.id}`,
+  linkProvider: (elem) => `/employee/finance/fee-decisions/${elem.id}`,
   Summary: ({ elem }) => {
     const { i18n } = useTranslation()
     return `${i18n.timeline.feeDecision} ${
@@ -117,7 +117,7 @@ export const valueDecisionRenderer: EventRenderer<TimelineValueDecision> = {
         return '#e8e8e8'
     }
   },
-  linkProvider: (elem) => `/finance/value-decisions/${elem.id}`,
+  linkProvider: (elem) => `/employee/finance/value-decisions/${elem.id}`,
   Summary: ({ elem }) => {
     const { i18n } = useTranslation()
     return `${i18n.timeline.valueDecision} ${
@@ -239,7 +239,7 @@ const FridgeRelationMetadata = React.memo(function PartnershipMetadata({
 })
 export const partnerRenderer: EventRenderer<TimelinePartnerDetailed> = {
   color: () => '#f4bcff',
-  linkProvider: (elem) => `/profile/${elem.partnerId}`,
+  linkProvider: (elem) => `/employee/profile/${elem.partnerId}`,
   Summary: ({ elem }) => {
     const { i18n } = useTranslation()
     return `${i18n.timeline.partner} ${elem.firstName} ${elem.lastName}`
@@ -377,7 +377,7 @@ export const partnerRenderer: EventRenderer<TimelinePartnerDetailed> = {
 
 export const childRenderer: EventRenderer<TimelineChildDetailed> = {
   color: () => '#ffffc1',
-  linkProvider: (elem) => `/child-information/${elem.childId}`,
+  linkProvider: (elem) => `/employee/child-information/${elem.childId}`,
   Summary: ({ elem }) => {
     const { i18n } = useTranslation()
     return `${i18n.timeline.child} ${elem.firstName} ${elem.lastName}`

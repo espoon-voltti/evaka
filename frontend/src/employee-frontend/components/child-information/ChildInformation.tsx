@@ -5,8 +5,8 @@
 import { faCircle } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useContext, useEffect, useMemo, useState } from 'react'
-import { Link, useNavigate } from 'react-router'
 import styled from 'styled-components'
+import { Link, useLocation } from 'wouter'
 
 import type { Action } from 'lib-common/generated/action'
 import type { ParentshipWithPermittedActions } from 'lib-common/generated/api-types/pis'
@@ -375,7 +375,7 @@ const ChildInformation = React.memo(function ChildInformation({
   id: ChildId
 }) {
   const { i18n } = useTranslation()
-  const navigate = useNavigate()
+  const [, navigate] = useLocation()
   const { roles } = useContext(UserContext)
   const { person } = useContext<ChildState>(ChildContext)
 

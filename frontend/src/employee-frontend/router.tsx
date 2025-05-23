@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { createBrowserRouter, Navigate } from 'react-router'
+import { Redirect, Route, Router, Switch } from 'wouter'
 
 import { featureFlags } from 'lib-customizations/employee'
 
@@ -17,10 +17,8 @@ import Units from './components/Units'
 import WelcomePage from './components/WelcomePage'
 import ApplicationPage from './components/application-page/ApplicationPage'
 import ApplicationsPage from './components/applications/ApplicationsPage'
-import {
-  ChildDocumentEditView,
-  ChildDocumentReadView
-} from './components/child-documents/ChildDocumentEditor'
+import ChildDocumentEditView from './components/child-documents/ChildDocumentEditView'
+import ChildDocumentReadView from './components/child-documents/ChildDocumentReadView'
 import ChildInformation from './components/child-information/ChildInformation'
 import AssistanceNeedDecisionEditPage from './components/child-information/assistance-need/decision/AssistanceNeedDecisionEditPage'
 import AssistanceNeedDecisionPage from './components/child-information/assistance-need/decision/AssistanceNeedDecisionPage'
@@ -115,903 +113,571 @@ import UnitFeaturesPage from './components/unit-features/UnitFeaturesPage'
 import VoucherValueDecisionPage from './components/voucher-value-decision/VoucherValueDecisionPage'
 import VoucherValueDecisionsPage from './components/voucher-value-decisions/VoucherValueDecisionsPage'
 
-export const router = createBrowserRouter(
-  [
-    {
-      path: '/',
-      element: <App />,
-      children: [
-        {
-          path: '/login',
-          element: (
+export function Root() {
+  return (
+    <Router base="/employee">
+      <App>
+        <Switch>
+          <Route path="/login">
             <EmployeeRoute requireAuth={false} title="login">
               <LoginPage />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/settings',
-          element: (
+          </Route>
+          <Route path="/settings">
             <EmployeeRoute title="settings">
               <SettingsPage />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/system-notifications',
-          element: (
+          </Route>
+          <Route path="/system-notifications">
             <EmployeeRoute title="systemNotifications">
               <SystemNotificationsPage />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/unit-features',
-          element: (
+          </Route>
+          <Route path="/unit-features">
             <EmployeeRoute title="unitFeatures">
               <UnitFeaturesPage />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/units',
-          element: (
+          </Route>
+          <Route path="/units">
             <EmployeeRoute title="units">
               <Units />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/units/new',
-          element: (
+          </Route>
+          <Route path="/units/new">
             <EmployeeRoute title="createUnit">
               <CreateUnitPage />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/units/:id/details',
-          element: (
+          </Route>
+          <Route path="/units/:id/details">
             <EmployeeRoute>
               <UnitDetailsPage />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/units/:unitId/family-contacts',
-          element: (
+          </Route>
+          <Route path="/units/:unitId/family-contacts">
             <EmployeeRoute>
               <ReportFamilyContacts />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/units/:unitId/groups/:groupId/caretakers',
-          element: (
+          </Route>
+          <Route path="/units/:unitId/groups/:groupId/caretakers">
             <EmployeeRoute title="groupCaretakers">
               <GroupCaretakers />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/units/:unitId/groups/:groupId/discussion-reservation-surveys',
-          element: featureFlags.discussionReservations ? (
-            <EmployeeRoute>
-              <DiscussionReservationSurveysPage />
-            </EmployeeRoute>
-          ) : null
-        },
-        {
-          path: '/units/:unitId/groups/:groupId/discussion-reservation-surveys/:eventId',
-          element: featureFlags.discussionReservations ? (
-            <EmployeeRoute>
-              <DiscussionReservationSurveyWrapper mode="VIEW" />
-            </EmployeeRoute>
-          ) : null
-        },
-        {
-          path: '/units/:unitId/groups/:groupId/discussion-reservation-surveys/:eventId/edit',
-          element: featureFlags.discussionReservations ? (
-            <EmployeeRoute>
-              <DiscussionReservationSurveyWrapper mode="EDIT" />
-            </EmployeeRoute>
-          ) : null
-        },
-        {
-          path: '/units/:id/*',
-          element: (
+          </Route>
+          <Route path="/units/:unitId/groups/:groupId/discussion-reservation-surveys">
+            {featureFlags.discussionReservations ? (
+              <EmployeeRoute>
+                <DiscussionReservationSurveysPage />
+              </EmployeeRoute>
+            ) : null}
+          </Route>
+          <Route path="/units/:unitId/groups/:groupId/discussion-reservation-surveys/:eventId">
+            {featureFlags.discussionReservations ? (
+              <EmployeeRoute>
+                <DiscussionReservationSurveyWrapper mode="VIEW" />
+              </EmployeeRoute>
+            ) : null}
+          </Route>
+          <Route path="/units/:unitId/groups/:groupId/discussion-reservation-surveys/:eventId/edit">
+            {featureFlags.discussionReservations ? (
+              <EmployeeRoute>
+                <DiscussionReservationSurveyWrapper mode="EDIT" />
+              </EmployeeRoute>
+            ) : null}
+          </Route>
+          <Route path="/units/:id/*?">
             <EmployeeRoute>
               <UnitPage />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/search',
-          element: (
+          </Route>
+          <Route path="/search">
             <EmployeeRoute title="customers">
               <Search />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/profile/:id',
-          element: (
+          </Route>
+          <Route path="/profile/:id">
             <EmployeeRoute title="personProfile">
               <PersonProfile />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/profile/:personId/timeline',
-          element: (
+          </Route>
+          <Route path="/profile/:personId/timeline">
             <EmployeeRoute title="personTimeline">
               <TimelinePage />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/profile/:personId/income-statement/:incomeStatementId',
-          element: (
+          </Route>
+          <Route path="/profile/:personId/income-statement/:incomeStatementId">
             <EmployeeRoute title="incomeStatement">
               <IncomeStatementPage />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/child-information/:id',
-          element: (
+          </Route>
+          <Route path="/child-information/:id">
             <EmployeeRoute title="childInformation">
               <ChildInformation />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/child-information/:childId/assistance-need-decision/:id',
-          element: (
+          </Route>
+          <Route path="/child-information/:childId/assistance-need-decision/:id">
             <EmployeeRoute
               title="assistanceNeedDecision"
               hideDefaultTitle={true}
             >
               <AssistanceNeedDecisionPage />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/child-information/:childId/assistance-need-decision/:id/edit',
-          element: (
+          </Route>
+          <Route path="/child-information/:childId/assistance-need-decision/:id/edit">
             <EmployeeRoute
               title="assistanceNeedDecision"
               hideDefaultTitle={true}
             >
               <AssistanceNeedDecisionEditPage />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/child-information/:childId/assistance-need-preschool-decisions/:decisionId',
-          element: (
+          </Route>
+          <Route path="/child-information/:childId/assistance-need-preschool-decisions/:decisionId">
             <EmployeeRoute
               title="assistanceNeedPreschoolDecision"
               hideDefaultTitle={true}
             >
               <AssistanceNeedPreschoolDecisionReadPage />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/child-information/:childId/assistance-need-preschool-decisions/:decisionId/edit',
-          element: (
+          </Route>
+          <Route path="/child-information/:childId/assistance-need-preschool-decisions/:decisionId/edit">
             <EmployeeRoute
               title="assistanceNeedPreschoolDecision"
               hideDefaultTitle={true}
             >
               <AssistanceNeedPreschoolDecisionEditPage />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/applications',
-          element: (
+          </Route>
+          <Route path="/applications">
             <EmployeeRoute title="applications">
               <ApplicationsPage />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/applications/:id',
-          element: (
+          </Route>
+          <Route path="/applications/:id">
             <EmployeeRoute title="applications">
               <ApplicationPage />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/applications/:id/placement',
-          element: (
+          </Route>
+          <Route path="/applications/:id/placement">
             <EmployeeRoute title="placementDraft">
               <PlacementDraftPage />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/applications/:id/decisions',
-          element: (
+          </Route>
+          <Route path="/applications/:id/decisions">
             <EmployeeRoute title="decision">
               <DecisionPage />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/finance/basics',
-          element: (
+          </Route>
+          <Route path="/finance/basics">
             <EmployeeRoute title="financeBasics">
               <FinanceBasicsPage />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/finance/fee-decisions/:id',
-          element: (
+          </Route>
+          <Route path="/finance/fee-decisions/:id">
             <EmployeeRoute>
               <FeeDecisionDetailsPage />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/finance/value-decisions/:id',
-          element: (
+          </Route>
+          <Route path="/finance/value-decisions/:id">
             <EmployeeRoute>
               <VoucherValueDecisionPage />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/finance/invoices/:id',
-          element: (
+          </Route>
+          <Route path="/finance/invoices/:id">
             <EmployeeRoute>
               <InvoicePage />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/finance/*',
-          element: (
-            <EmployeeRoute>
-              <FinancePage />
-            </EmployeeRoute>
-          ),
-          children: [
-            {
-              path: 'fee-decisions',
-              element: (
+          </Route>
+          <Route path="/finance/*?">
+            <FinancePage />
+            <Switch>
+              <Route path="/finance/fee-decisions">
                 <EmployeeRoute title="feeDecisions">
                   <FeeDecisionsPage />
                 </EmployeeRoute>
-              )
-            },
-            {
-              path: 'value-decisions',
-              element: (
+              </Route>
+              <Route path="/finance/value-decisions">
                 <EmployeeRoute title="valueDecisions">
                   <VoucherValueDecisionsPage />
                 </EmployeeRoute>
-              )
-            },
-            {
-              path: 'invoices',
-              element: (
+              </Route>
+              <Route path="/finance/invoices">
                 <EmployeeRoute title="invoices">
                   <InvoicesPage />
                 </EmployeeRoute>
-              )
-            },
-            {
-              path: 'payments',
-              element: featureFlags.voucherUnitPayments ? (
-                <EmployeeRoute title="payments">
-                  <PaymentsPage />
-                </EmployeeRoute>
-              ) : (
-                <Navigate replace to="/finance/fee-decisions" />
-              )
-            },
-            {
-              path: 'income-statements',
-              element: (
+              </Route>
+              <Route path="/finance/payments">
+                {featureFlags.voucherUnitPayments ? (
+                  <EmployeeRoute title="payments">
+                    <PaymentsPage />
+                  </EmployeeRoute>
+                ) : (
+                  <RedirectToMainPage />
+                )}
+              </Route>
+              <Route path="/finance/income-statements">
                 <EmployeeRoute title="incomeStatements">
                   <IncomeStatementsPage />
                 </EmployeeRoute>
-              )
-            },
-            {
-              path: '*',
-              element: <Navigate replace to="/finance/fee-decisions" />
-            },
-            {
-              index: true,
-              element: <Navigate replace to="/finance/fee-decisions" />
-            }
-          ]
-        },
-        {
-          path: '/reports',
-          element: (
+              </Route>
+              <Route>
+                <Redirect replace to="/finance/fee-decisions" />
+              </Route>
+            </Switch>
+          </Route>
+          <Route path="/reports">
             <EmployeeRoute title="reports">
               <Reports />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/family-conflicts',
-          element: (
+          </Route>
+          <Route path="/reports/family-conflicts">
             <EmployeeRoute title="reports">
               <ReportFamilyConflicts />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/missing-head-of-family',
-          element: (
+          </Route>
+          <Route path="/reports/missing-head-of-family">
             <EmployeeRoute title="reports">
               <ReportMissingHeadOfFamily />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/missing-service-need',
-          element: (
+          </Route>
+          <Route path="/reports/missing-service-need">
             <EmployeeRoute title="reports">
               <ReportMissingServiceNeed />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/non-ssn-children',
-          element: (
+          </Route>
+          <Route path="/reports/non-ssn-children">
             <EmployeeRoute title="reports">
               <ReportNonSsnChildren />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/applications',
-          element: (
+          </Route>
+          <Route path="/reports/applications">
             <EmployeeRoute title="reports">
               <ReportApplications />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/decisions',
-          element: (
+          </Route>
+          <Route path="/reports/decisions">
             <EmployeeRoute title="reports">
               <ReportDecisions />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/partners-in-different-address',
-          element: (
+          </Route>
+          <Route path="/reports/partners-in-different-address">
             <EmployeeRoute title="reports">
               <ReportPartnersInDifferentAddress />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/children-in-different-address',
-          element: (
+          </Route>
+          <Route path="/reports/children-in-different-address">
             <EmployeeRoute title="reports">
               <ReportChildrenInDifferentAddress />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/child-age-language',
-          element: (
+          </Route>
+          <Route path="/reports/child-age-language">
             <EmployeeRoute title="reports">
               <ReportChildAgeLanguage />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/child-document-decisions',
-          element: (
+          </Route>
+          <Route path="/reports/child-document-decisions">
             <EmployeeRoute title="reports">
               <ReportChildDocumentDecisions />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/child-documents',
-          element: (
+          </Route>
+          <Route path="/reports/child-documents">
             <EmployeeRoute title="reports">
               <ReportChildDocuments />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/assistance-needs-and-actions',
-          element: (
+          </Route>
+          <Route path="/reports/assistance-needs-and-actions">
             <EmployeeRoute title="reports">
               <ReportAssistanceNeedsAndActions />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/occupancies',
-          element: (
+          </Route>
+          <Route path="/reports/occupancies">
             <EmployeeRoute title="reports">
               <ReportOccupancies />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/invoices',
-          element: (
+          </Route>
+          <Route path="/reports/invoices">
             <EmployeeRoute title="reports">
               <ReportInvoices />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/customer-fees',
-          element: (
+          </Route>
+          <Route path="/reports/customer-fees">
             <EmployeeRoute title="reports">
               <ReportCustomerFees />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/starting-placements',
-          element: (
+          </Route>
+          <Route path="/reports/starting-placements">
             <EmployeeRoute title="reports">
               <ReportStartingPlacements />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/ended-placements',
-          element: (
+          </Route>
+          <Route path="/reports/ended-placements">
             <EmployeeRoute title="reports">
               <ReportEndedPlacements />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/exceeded-service-needs',
-          element: (
+          </Route>
+          <Route path="/reports/exceeded-service-needs">
             <EmployeeRoute title="reports">
               <ReportExceededServiceNeeds />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/duplicate-people',
-          element: (
+          </Route>
+          <Route path="/reports/duplicate-people">
             <EmployeeRoute title="reports">
               <ReportDuplicatePeople />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/presences',
-          element: (
+          </Route>
+          <Route path="/reports/presences">
             <EmployeeRoute title="reports">
               <ReportPresences />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/service-needs',
-          element: (
+          </Route>
+          <Route path="/reports/service-needs">
             <EmployeeRoute title="reports">
               <ReportServiceNeeds />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/sextet',
-          element: (
+          </Route>
+          <Route path="/reports/sextet">
             <EmployeeRoute title="reports">
               <ReportSextet />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/voucher-service-providers',
-          element: (
+          </Route>
+          <Route path="/reports/voucher-service-providers">
             <EmployeeRoute title="reports">
               <VoucherServiceProviders />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/voucher-service-providers/:unitId',
-          element: (
+          </Route>
+          <Route path="/reports/voucher-service-providers/:unitId">
             <EmployeeRoute title="reports">
               <VoucherServiceProviderUnit />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/attendance-reservation',
-          element: (
+          </Route>
+          <Route path="/reports/attendance-reservation">
             <EmployeeRoute title="reports">
               <AttendanceReservation />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/attendance-reservation-by-child',
-          element: (
+          </Route>
+          <Route path="/reports/attendance-reservation-by-child">
             <EmployeeRoute title="reports">
               <AttendanceReservationByChild />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/varda-child-errors',
-          element: (
+          </Route>
+          <Route path="/reports/varda-child-errors">
             <EmployeeRoute title="reports">
               <VardaChildErrors />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/varda-unit-errors',
-          element: (
+          </Route>
+          <Route path="/reports/varda-unit-errors">
             <EmployeeRoute title="reports">
               <VardaUnitErrors />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/placement-count',
-          element: (
+          </Route>
+          <Route path="/reports/placement-count">
             <EmployeeRoute title="reports">
               <PlacementCount />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/placement-sketching',
-          element: (
+          </Route>
+          <Route path="/reports/placement-sketching">
             <EmployeeRoute title="reports">
               <PlacementSketching />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/raw',
-          element: (
+          </Route>
+          <Route path="/reports/raw">
             <EmployeeRoute title="reports">
               <ReportRaw />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/assistance-need-decisions/:id',
-          element: (
+          </Route>
+          <Route path="/reports/assistance-need-decisions/:id">
             <EmployeeRoute title="reports">
               <AssistanceNeedDecisionsReportDecision />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/assistance-need-preschool-decisions/:decisionId',
-          element: (
+          </Route>
+          <Route path="/reports/assistance-need-preschool-decisions/:decisionId">
             <EmployeeRoute title="reports">
               <AssistanceNeedDecisionsReportPreschoolDecision />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/assistance-need-decisions',
-          element: (
+          </Route>
+          <Route path="/reports/assistance-need-decisions">
             <EmployeeRoute title="reports">
               <AssistanceNeedDecisionsReport />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/manual-duplication',
-          element: (
+          </Route>
+          <Route path="/reports/manual-duplication">
             <EmployeeRoute title="reports">
               <ManualDuplicationReport />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/family-daycare-meal-count',
-          element: (
+          </Route>
+          <Route path="/reports/family-daycare-meal-count">
             <EmployeeRoute title="reports">
               <FamilyDaycareMealCount />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/preschool-absence',
-          element: (
+          </Route>
+          <Route path="/reports/preschool-absence">
             <EmployeeRoute title="reports">
               <PreschoolAbsenceReport />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/preschool-application',
-          element: (
+          </Route>
+          <Route path="/reports/preschool-application">
             <EmployeeRoute title="reports">
               <PreschoolApplicationReport />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/future-preschoolers',
-          element: (
+          </Route>
+          <Route path="/reports/future-preschoolers">
             <EmployeeRoute title="reports">
               <FuturePreschoolersReport />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/placement-guarantee',
-          element: (
+          </Route>
+          <Route path="/reports/placement-guarantee">
             <EmployeeRoute title="reports">
               <PlacementGuarantee />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/units',
-          element: (
+          </Route>
+          <Route path="/reports/units">
             <EmployeeRoute title="reports">
               <ReportUnits />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/meals',
-          element: (
+          </Route>
+          <Route path="/reports/meals">
             <EmployeeRoute title="reports">
               <MealReport />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/nekkuorders',
-          element: (
+          </Route>
+          <Route path="/reports/nekkuorders">
             <EmployeeRoute title="reports">
               <NekkuOrders />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/child-attendance/:childId',
-          element: (
+          </Route>
+          <Route path="/reports/child-attendance/:childId">
             <EmployeeRoute title="reports">
               <ChildAttendanceReport />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/holiday-period-attendance',
-          element: (
+          </Route>
+          <Route path="/reports/holiday-period-attendance">
             <EmployeeRoute title="reports">
               <HolidayPeriodAttendanceReport />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/titania-errors',
-          element: (
+          </Route>
+          <Route path="/reports/titania-errors">
             <EmployeeRoute title="reports">
               <TitaniaErrors />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/incomplete-income',
-          element: (
+          </Route>
+          <Route path="/reports/incomplete-income">
             <EmployeeRoute title="reports">
               <IncompleteIncomes />
             </EmployeeRoute>
-          )
-        },
-
-        {
-          path: '/reports/tampere-regional-survey',
-          element: (
+          </Route>
+          <Route path="/reports/tampere-regional-survey">
             <EmployeeRoute title="reports">
               <TampereRegionalSurvey />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/citizen-document-response',
-          element: (
+          </Route>
+          <Route path="/reports/citizen-document-response">
             <EmployeeRoute title="reports">
               <CitizenDocumentResponseReport />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/messages',
-          element: (
+          </Route>
+          <Route path="/messages">
             <EmployeeRoute title="messages">
               <MessagesPage />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/messages/send',
-          element: (
+          </Route>
+          <Route path="/messages/send">
             <EmployeeRoute title="messages">
               <MessagesPage showEditor />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/personal-mobile-devices',
-          element: (
+          </Route>
+          <Route path="/personal-mobile-devices">
             <EmployeeRoute title="personalMobileDevices">
               <PersonalMobileDevicesPage />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/pin-code',
-          element: (
+          </Route>
+          <Route path="/pin-code">
             <EmployeeRoute title="employeePinCode">
               <EmployeePinCodePage />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/preferred-first-name',
-          element: (
+          </Route>
+          <Route path="/preferred-first-name">
             <EmployeeRoute title="preferredFirstName">
               <EmployeePreferredFirstNamePage />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/employees',
-          element: (
+          </Route>
+          <Route path="/employees">
             <EmployeeRoute title="employees">
               <EmployeesPage />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/employees/:id',
-          element: (
+          </Route>
+          <Route path="/employees/:id">
             <EmployeeRoute title="employees">
               <EmployeePage />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/welcome',
-          element: (
+          </Route>
+          <Route path="/welcome">
             <EmployeeRoute title="welcomePage">
               <WelcomePage />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/document-templates',
-          element: (
+          </Route>
+          <Route path="/document-templates">
             <EmployeeRoute title="documentTemplates">
               <DocumentTemplatesPage />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/document-templates/:templateId',
-          element: (
+          </Route>
+          <Route path="/document-templates/:templateId">
             <EmployeeRoute title="documentTemplates">
               <TemplateEditorPage />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/child-documents/:documentId',
-          element: (
+          </Route>
+          <Route path="/child-documents/:documentId">
             <EmployeeRoute>
               <ChildDocumentReadView />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/child-documents/:documentId/edit',
-          element: (
+          </Route>
+          <Route path="/child-documents/:documentId/edit">
             <EmployeeRoute>
               <ChildDocumentEditView />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/holiday-periods',
-          element: (
+          </Route>
+          <Route path="/holiday-periods">
             <EmployeeRoute title="holidayAndTermPeriods">
               <HolidayAndTermPeriodsPage />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/holiday-periods/:id',
-          element: (
+          </Route>
+          <Route path="/holiday-periods/:id">
             <EmployeeRoute title="holidayAndTermPeriods">
               <HolidayPeriodEditor />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/holiday-periods/questionnaire/:id',
-          element: (
+          </Route>
+          <Route path="/holiday-periods/questionnaire/:id">
             <EmployeeRoute title="holidayQuestionnaire">
               <QuestionnaireEditor />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/holiday-periods/club-term/:termId',
-          element: (
+          </Route>
+          <Route path="/holiday-periods/club-term/:termId">
             <EmployeeRoute title="clubTerm">
               <ClubTermPeriodEditor />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/holiday-periods/preschool-term/:termId',
-          element: (
+          </Route>
+          <Route path="/holiday-periods/preschool-term/:termId">
             <EmployeeRoute title="preschoolTerm">
               <PreschoolTermPeriodEditor />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/placement-tool',
-          element: (
+          </Route>
+          <Route path="/placement-tool">
             <EmployeeRoute title="placementTool">
               <PlacementToolPage />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/out-of-office',
-          element: (
+          </Route>
+          <Route path="/out-of-office">
             <EmployeeRoute title="outOfOffice">
               <OutOfOfficePage />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/close-after-login',
-          element: (
+          </Route>
+          <Route path="/close-after-login">
             <EmployeeRoute title="login" requireAuth={false}>
               <CloseAfterLogin />
             </EmployeeRoute>
-          )
-        },
-        {
-          path: '/*',
-          element: (
-            <EmployeeRoute requireAuth={false}>
-              <RedirectToMainPage />
-            </EmployeeRoute>
-          )
-        },
-        {
-          index: true,
-          element: (
-            <EmployeeRoute requireAuth={false}>
-              <RedirectToMainPage />
-            </EmployeeRoute>
-          )
-        }
-      ]
-    }
-  ],
-  { basename: '/employee' }
-)
+          </Route>
+          <Route>
+            <RedirectToMainPage />
+          </Route>
+        </Switch>
+      </App>
+    </Router>
+  )
+}

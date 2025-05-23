@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { Fragment, useCallback, useState } from 'react'
-import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
 import type { UpdateStateFn } from 'lib-common/form-state'
@@ -121,7 +120,6 @@ export const DailyNotesTab = React.memo(function DailyNotesTab({
   dailyNoteId
 }: Props) {
   const { i18n } = useTranslation()
-  const navigate = useNavigate()
 
   const [uiMode, setUiMode] = useState<
     'default' | 'confirmExit' | 'confirmDelete'
@@ -184,7 +182,7 @@ export const DailyNotesTab = React.memo(function DailyNotesTab({
           action: () => {
             if (dailyNoteId) {
               void deleteDailyNote({ unitId, noteId: dailyNoteId }).then(() => {
-                void navigate(-1)
+                history.go(-1)
               })
             }
           },
@@ -203,14 +201,14 @@ export const DailyNotesTab = React.memo(function DailyNotesTab({
         close={() => setUiMode('default')}
         reject={{
           action: () => {
-            void navigate(-1)
+            history.go(-1)
           },
           label: i18n.attendances.notes.closeWithoutSaving
         }}
         resolve={{
           action: () => {
             void saveChildDailyNote().then(() => {
-              void navigate(-1)
+              history.go(-1)
             })
           },
           label: i18n.common.save,
@@ -226,9 +224,9 @@ export const DailyNotesTab = React.memo(function DailyNotesTab({
     if (dirty) {
       setUiMode('confirmExit')
     } else {
-      void navigate(-1)
+      history.go(-1)
     }
-  }, [dirty, navigate])
+  }, [dirty])
 
   return (
     <>
@@ -379,7 +377,7 @@ export const DailyNotesTab = React.memo(function DailyNotesTab({
             primary
             onClick={saveChildDailyNote}
             onSuccess={() => {
-              void navigate(-1)
+              history.go(-1)
             }}
             text={i18n.common.save}
             data-qa="create-daily-note-btn"

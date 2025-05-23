@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useMemo, useRef, useState } from 'react'
-import { Link, useNavigate } from 'react-router'
 import styled from 'styled-components'
+import { Link } from 'wouter'
 
 import { combine } from 'lib-common/api'
 import type { AttendanceStatus } from 'lib-common/generated/api-types/attendance'
@@ -61,7 +61,6 @@ export default React.memo(function AttendanceChildPage({
   childId: ChildId
 }) {
   const { i18n } = useTranslation()
-  const navigate = useNavigate()
 
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
   const attendanceStatuses = useQueryResult(attendanceStatusesQuery({ unitId }))
@@ -125,7 +124,7 @@ export default React.memo(function AttendanceChildPage({
         shadow
       >
         <BackButtonMargin
-          onClick={() => navigate(-1)}
+          onClick={() => history.go(-1)}
           icon={faArrowLeft}
           data-qa="back-btn"
           aria-label={i18n.common.back}
@@ -369,7 +368,7 @@ export default React.memo(function AttendanceChildPage({
             action: () => {
               void returnToComing({ unitId, childId }).finally(() => {
                 setUiMode('default')
-                void navigate(-1)
+                history.go(-1)
               })
             }
           }}

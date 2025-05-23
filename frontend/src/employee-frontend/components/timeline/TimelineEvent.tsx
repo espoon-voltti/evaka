@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useState } from 'react'
-import { Link } from 'react-router'
 import styled from 'styled-components'
 
 import type FiniteDateRange from 'lib-common/finite-date-range'
@@ -57,9 +56,13 @@ export default function TlEvent<T extends WithRange>({
               )}
               <SummaryLabel data-qa="event-summary">
                 {renderer.linkProvider ? (
-                  <Link to={renderer.linkProvider(event)} target="_blank">
+                  <a
+                    href={renderer.linkProvider(event)}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
                     <renderer.Summary elem={event} />
-                  </Link>
+                  </a>
                 ) : (
                   <renderer.Summary elem={event} />
                 )}
