@@ -5,7 +5,6 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useContext, useState } from 'react'
 import styled from 'styled-components'
-import { Link } from 'wouter'
 
 import type { ApplicationNote } from 'lib-common/generated/api-types/application'
 import type { ApplicationId } from 'lib-common/generated/api-types/shared'
@@ -256,13 +255,14 @@ export default React.memo(function ApplicationNoteBox(props: Props) {
             {props.note.messageThreadId !== null && (
               <span>
                 {i18n.application.notes.sent}{' '}
-                <Link
+                <a
                   data-qa="note-message-thread-link"
-                  to={`/messages?applicationId=${props.note.applicationId}&messageBox=thread&threadId=${props.note.messageThreadId}`}
+                  href={`/employee/messages?applicationId=${props.note.applicationId}&messageBox=thread&threadId=${props.note.messageThreadId}`}
                   target="_blank"
+                  rel="noreferrer"
                 >
                   {i18n.application.notes.message}
-                </Link>
+                </a>
               </span>
             )}
             {formatParagraphs(props.note.content)}

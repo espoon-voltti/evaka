@@ -4,7 +4,6 @@
 
 import React, { useState } from 'react'
 import styled from 'styled-components'
-import { Link } from 'wouter'
 
 import type FiniteDateRange from 'lib-common/finite-date-range'
 import { TooltipWithoutAnchor } from 'lib-components/atoms/Tooltip'
@@ -57,9 +56,13 @@ export default function TlEvent<T extends WithRange>({
               )}
               <SummaryLabel data-qa="event-summary">
                 {renderer.linkProvider ? (
-                  <Link to={renderer.linkProvider(event)} target="_blank">
+                  <a
+                    href={renderer.linkProvider(event)}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
                     <renderer.Summary elem={event} />
-                  </Link>
+                  </a>
                 ) : (
                   <renderer.Summary elem={event} />
                 )}

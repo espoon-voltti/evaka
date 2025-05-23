@@ -6,7 +6,6 @@ import isEqual from 'lodash/isEqual'
 import orderBy from 'lodash/orderBy'
 import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
-import { Link } from 'wouter'
 
 import type { SortDirection } from 'lib-common/generated/api-types/invoicing'
 import type {
@@ -171,21 +170,23 @@ export default React.memo(function ManualDuplicationReport() {
               {reportRows.map((row: ManualDuplicationReportRow) => (
                 <Tr data-qa="manual-duplication-row" key={row.applicationId}>
                   <WrappableTd data-qa="child-name">
-                    <Link
+                    <a
                       target="_blank"
-                      to={`/child-information/${row.childId}`}
+                      href={`/child-information/${row.childId}`}
+                      rel="noreferrer"
                     >
                       {`${row.childLastName}, ${row.childFirstName}`}
-                    </Link>
+                    </a>
                   </WrappableTd>
                   <WrappableTd>{row.dateOfBirth.format()}</WrappableTd>
                   <WrappableTd data-qa="connected-unit-name">
-                    <Link
+                    <a
                       target="_blank"
-                      to={`/units/${row.connectedDaycareId}`}
+                      href={`/units/${row.connectedDaycareId}`}
+                      rel="noreferrer"
                     >
                       {row.connectedDaycareName}
-                    </Link>
+                    </a>
                   </WrappableTd>
 
                   <WrappableTd data-qa="service-need-option-name">
@@ -194,12 +195,13 @@ export default React.memo(function ManualDuplicationReport() {
                   <WrappableTd>{`${row.connectedStartDate.format()} - ${row.connectedEndDate.format()}`}</WrappableTd>
 
                   <WrappableTd data-qa="preschool-unit-name">
-                    <Link
+                    <a
                       target="_blank"
-                      to={`/units/${row.preschoolDaycareId}`}
+                      href={`/employee/units/${row.preschoolDaycareId}`}
+                      rel="noreferrer"
                     >
                       {row.preschoolDaycareName}
-                    </Link>
+                    </a>
                   </WrappableTd>
                   <WrappableTd>{`${row.preschoolStartDate.format()} - ${row.preschoolEndDate.format()}`}</WrappableTd>
                 </Tr>
