@@ -136,11 +136,25 @@ class NekkuService(
     }
 
     fun planNekkuOrders(dbc: Database.Connection, clock: EvakaClock) {
-        planNekkuOrderJobs(dbc, asyncJobRunner, clock.now())
+        try {
+            planNekkuOrderJobs(dbc, asyncJobRunner, clock.now())
+        } catch (e: Exception) {
+            logger.warn(e) {
+                "Failed to plan Nekku order to Nekku: date=${clock.now()} ,error=${e.localizedMessage}"
+            }
+            throw e
+        }
     }
 
     fun planNekkuDailyOrders(dbc: Database.Connection, clock: EvakaClock) {
-        planNekkuDailyOrderJobs(dbc, asyncJobRunner, clock.now())
+        try {
+            planNekkuDailyOrderJobs(dbc, asyncJobRunner, clock.now())
+        } catch (e: Exception) {
+            logger.warn(e) {
+                "Failed to plan Nekku daily order to Nekku: date=${clock.now()} ,error=${e.localizedMessage}"
+            }
+            throw e
+        }
     }
 
     fun sendNekkuOrder(dbc: Database.Connection, clock: EvakaClock, job: AsyncJob.SendNekkuOrder) {
@@ -320,9 +334,12 @@ fun planNekkuOrderJobs(
         asyncJobRunner.plan(
             tx,
             nekkuGroupIds.flatMap { nekkuGroupId ->
-                val daycareOperationDays = tx.getDaycareOperationDays(nekkuGroupId)
+                val daycareOperationInfo = tx.getDaycareOperationInfo(nekkuGroupId)
+                if (daycareOperationInfo == null) {
+                    return@flatMap emptySequence()
+                }
                 range.dates().mapNotNull { date ->
-                    if (daycareOperationDays.contains(date.dayOfWeek.value)) {
+                    if (isDaycareOpenOnDate(date, daycareOperationInfo)) {
                         AsyncJob.SendNekkuOrder(customerGroupId = nekkuGroupId, date = date)
                     } else null
                 }
@@ -346,11 +363,14 @@ fun planNekkuDailyOrderJobs(
         asyncJobRunner.plan(
             tx,
             nekkuDaycareGroupIds.mapNotNull { nekkuDaycareGroupId ->
-                val daycareOperationDays = tx.getDaycareOperationDays(nekkuDaycareGroupId)
-                if (daycareOperationDays.contains(now.dayOfWeek.value)) {
+                val daycareOperationInfo = tx.getDaycareOperationInfo(nekkuDaycareGroupId)
+                if (
+                    daycareOperationInfo != null &&
+                        isDaycareOpenOnDate(now.toLocalDate(), daycareOperationInfo)
+                ) {
                     AsyncJob.SendNekkuDailyOrder(
                         customerGroupId = nekkuDaycareGroupId,
-                        date = daycareOpenNextTime(now.toLocalDate(), daycareOperationDays),
+                        date = daycareOpenNextTime(now.toLocalDate(), daycareOperationInfo),
                     )
                 } else null
             },
@@ -882,6 +902,33 @@ enum class NekkuProductMealType(val description: String) : DatabaseEnum {
     VEGETABLE("Kasvis");
 
     override val sqlType: String = "nekku_product_meal_type"
+}
+
+fun isDaycareOpenOnDate(date: LocalDate, daycareOperationInfo: NekkuDaycareOperationInfo): Boolean {
+    return date.dayOfWeek.value in daycareOperationInfo.combinedDays &&
+        (daycareOperationInfo.shiftCareOpenOnHolidays || !isHoliday(date))
+}
+
+fun daycareOpenNextTime(
+    date: LocalDate,
+    daycareOperationInfo: NekkuDaycareOperationInfo,
+): LocalDate {
+
+    if (daycareOperationInfo.combinedDays.isEmpty()) {
+        throw IllegalStateException(
+            "Päiväkodin aukioloaikoja ei olla asetettu Nekku-tilausta luotaessa"
+        )
+    }
+
+    for (i in 1..7) {
+        val candidateDate = date.plusDays(i.toLong())
+
+        if (isDaycareOpenOnDate(candidateDate, daycareOperationInfo)) {
+            return candidateDate
+        }
+    }
+
+    throw IllegalStateException("Päiväkodin seuraavaa aukioloa ei löydetty")
 }
 
 data class NekkuChildInfo(

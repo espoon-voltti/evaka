@@ -1603,7 +1603,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
         }
 
         // Tuesday
-        val now = HelsinkiDateTime.of(LocalDate.of(2025, 3, 31), LocalTime.of(2, 25))
+        val now = HelsinkiDateTime.of(LocalDate.of(2025, 3, 24), LocalTime.of(2, 25))
 
         planNekkuOrderJobs(db, asyncJobRunner, now)
 
@@ -1659,6 +1659,143 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
                         TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
                         null,
                     ),
+            )
+        val group = DevDaycareGroup(daycareId = daycare.id, nekkuCustomerNumber = "2501K6089")
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(group)
+        }
+
+        // monday
+        val now = HelsinkiDateTime.of(LocalDate.of(2025, 3, 24), LocalTime.of(2, 25))
+
+        val nowPlusTwoWeeks = HelsinkiDateTime.of(LocalDate.of(2025, 4, 7), LocalTime.of(2, 25))
+
+        planNekkuOrderJobs(db, asyncJobRunner, now)
+
+        assertEquals(
+            nowPlusTwoWeeks.toLocalDate().toString(),
+            getNekkuWeeklyJobs().first().date.toString(),
+        )
+
+        assertEquals(6, getNekkuWeeklyJobs().count())
+    }
+
+    @Test
+    fun `meal order jobs for daycare groups are planned for two week time and it checks holidays`() {
+
+        val client =
+            TestNekkuClient(
+                customers =
+                    listOf(
+                        NekkuApiCustomer(
+                            "2501K6089",
+                            "Ahvenojan päiväkoti",
+                            "Varhaiskasvatus",
+                            listOf(
+                                CustomerApiType(
+                                    listOf(
+                                        NekkuCustomerApiWeekday.MONDAY,
+                                        NekkuCustomerApiWeekday.TUESDAY,
+                                        NekkuCustomerApiWeekday.WEDNESDAY,
+                                        NekkuCustomerApiWeekday.THURSDAY,
+                                        NekkuCustomerApiWeekday.FRIDAY,
+                                        NekkuCustomerApiWeekday.SATURDAY,
+                                        NekkuCustomerApiWeekday.SUNDAY,
+                                        NekkuCustomerApiWeekday.WEEKDAYHOLIDAY,
+                                    ),
+                                    "100-lasta",
+                                )
+                            ),
+                        )
+                    )
+            )
+        fetchAndUpdateNekkuCustomers(client, db, asyncJobRunner, now)
+
+        val area = DevCareArea()
+
+        val daycare =
+            DevDaycare(
+                areaId = area.id,
+                mealtimeBreakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
+                mealtimeLunch = TimeRange(LocalTime.of(11, 15), LocalTime.of(11, 45)),
+                mealtimeSnack = TimeRange(LocalTime.of(13, 30), LocalTime.of(13, 50)),
+            )
+        val group = DevDaycareGroup(daycareId = daycare.id, nekkuCustomerNumber = "2501K6089")
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(group)
+        }
+
+        // monday
+        val now = HelsinkiDateTime.of(LocalDate.of(2025, 3, 31), LocalTime.of(2, 25))
+
+        val nowPlusTwoWeeks = HelsinkiDateTime.of(LocalDate.of(2025, 4, 14), LocalTime.of(2, 25))
+
+        planNekkuOrderJobs(db, asyncJobRunner, now)
+
+        assertEquals(
+            nowPlusTwoWeeks.toLocalDate().toString(),
+            getNekkuWeeklyJobs().first().date.toString(),
+        )
+
+        assertEquals(4, getNekkuWeeklyJobs().count())
+    }
+
+    @Test
+    fun `meal order jobs for daycare groups are planned if daycare has shift care open on holiday`() {
+
+        val client =
+            TestNekkuClient(
+                customers =
+                    listOf(
+                        NekkuApiCustomer(
+                            "2501K6089",
+                            "Ahvenojan päiväkoti",
+                            "Varhaiskasvatus",
+                            listOf(
+                                CustomerApiType(
+                                    listOf(
+                                        NekkuCustomerApiWeekday.MONDAY,
+                                        NekkuCustomerApiWeekday.TUESDAY,
+                                        NekkuCustomerApiWeekday.WEDNESDAY,
+                                        NekkuCustomerApiWeekday.THURSDAY,
+                                        NekkuCustomerApiWeekday.FRIDAY,
+                                        NekkuCustomerApiWeekday.SATURDAY,
+                                        NekkuCustomerApiWeekday.SUNDAY,
+                                        NekkuCustomerApiWeekday.WEEKDAYHOLIDAY,
+                                    ),
+                                    "100-lasta",
+                                )
+                            ),
+                        )
+                    )
+            )
+        fetchAndUpdateNekkuCustomers(client, db, asyncJobRunner, now)
+
+        val area = DevCareArea()
+
+        val daycare =
+            DevDaycare(
+                areaId = area.id,
+                mealtimeBreakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
+                mealtimeLunch = TimeRange(LocalTime.of(11, 15), LocalTime.of(11, 45)),
+                mealtimeSnack = TimeRange(LocalTime.of(13, 30), LocalTime.of(13, 50)),
+                shiftCareOperationTimes =
+                    listOf(
+                        TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+                        TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+                        TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+                        TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+                        TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+                        TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+                        null,
+                    ),
+                shiftCareOpenOnHolidays = true,
             )
         val group = DevDaycareGroup(daycareId = daycare.id, nekkuCustomerNumber = "2501K6089")
 
@@ -1810,6 +1947,70 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
             nextMonday.toLocalDate().toString(),
             getNekkuDailyJobs().single().date.toString(),
         )
+    }
+
+    @Test
+    fun `meal order jobs for daycare groups are not planned if daycare has no operation days`() {
+
+        val client =
+            TestNekkuClient(
+                customers =
+                    listOf(
+                        NekkuApiCustomer(
+                            "2501K6089",
+                            "Ahvenojan päiväkoti",
+                            "Varhaiskasvatus",
+                            listOf(
+                                CustomerApiType(
+                                    listOf(
+                                        NekkuCustomerApiWeekday.MONDAY,
+                                        NekkuCustomerApiWeekday.TUESDAY,
+                                        NekkuCustomerApiWeekday.WEDNESDAY,
+                                        NekkuCustomerApiWeekday.THURSDAY,
+                                        NekkuCustomerApiWeekday.FRIDAY,
+                                        NekkuCustomerApiWeekday.SATURDAY,
+                                        NekkuCustomerApiWeekday.SUNDAY,
+                                        NekkuCustomerApiWeekday.WEEKDAYHOLIDAY,
+                                    ),
+                                    "100-lasta",
+                                )
+                            ),
+                        )
+                    ),
+                nekkuProducts = nekkuProductsForOrder,
+                specialDiets = listOf(getNekkuSpecialDiet()),
+            )
+
+        fetchAndUpdateNekkuCustomers(client, db, asyncJobRunner, now)
+        // products
+        fetchAndUpdateNekkuProducts(client, db)
+        fetchAndUpdateNekkuSpecialDiets(client, db)
+
+        val area = DevCareArea()
+
+        val daycare =
+            DevDaycare(
+                areaId = area.id,
+                mealtimeBreakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
+                mealtimeLunch = TimeRange(LocalTime.of(11, 15), LocalTime.of(11, 45)),
+                mealtimeSnack = TimeRange(LocalTime.of(13, 30), LocalTime.of(13, 50)),
+                operationTimes = listOf(null, null, null, null, null, null, null),
+            )
+
+        val group = DevDaycareGroup(daycareId = daycare.id, nekkuCustomerNumber = "2501K6089")
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(group)
+        }
+
+        // tuesday
+        val tuesday = HelsinkiDateTime.of(LocalDate.of(2025, 4, 1), LocalTime.of(2, 25))
+
+        planNekkuDailyOrderJobs(db, asyncJobRunner, tuesday)
+
+        assertEquals(0, getNekkuDailyJobs().count())
     }
 
     @Test
