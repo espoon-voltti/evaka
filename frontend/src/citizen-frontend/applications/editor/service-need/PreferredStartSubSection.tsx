@@ -7,6 +7,7 @@ import React from 'react'
 import type { ApplicationId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
+import { useMutationResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import { useUniqueId } from 'lib-common/utils/useUniqueId'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
@@ -22,6 +23,7 @@ import { featureFlags } from 'lib-customizations/citizen'
 import { getAttachmentUrl, applicationAttachment } from '../../../attachments'
 import { errorToInputInfo } from '../../../input-info-helper'
 import { useLang, useTranslation } from '../../../localization'
+import { deleteAttachmentMutation } from '../../../queries'
 import { isValidPreferredStartDate } from '../validations'
 
 import { ClubTermsInfo } from './ClubTermsInfo'
@@ -43,6 +45,9 @@ export default React.memo(function PreferredStartSubSection({
   const t = useTranslation()
   const [lang] = useLang()
   const labelId = useUniqueId()
+  const { mutateAsync: deleteAttachment } = useMutationResult(
+    deleteAttachmentMutation
+  )
 
   const showDaycare4MonthWarning = (): boolean =>
     type === 'DAYCARE' &&
@@ -158,7 +163,8 @@ export default React.memo(function PreferredStartSubSection({
                   files={formData.urgencyAttachments}
                   uploadHandler={applicationAttachment(
                     applicationId,
-                    'URGENCY'
+                    'URGENCY',
+                    deleteAttachment
                   )}
                   onUploaded={(attachment) =>
                     updateFormData({

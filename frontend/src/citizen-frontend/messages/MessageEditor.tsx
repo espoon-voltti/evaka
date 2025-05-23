@@ -21,6 +21,7 @@ import type {
   PersonId
 } from 'lib-common/generated/api-types/shared'
 import { formatFirstName } from 'lib-common/names'
+import { useMutationResult } from 'lib-common/query'
 import { SelectionChip } from 'lib-components/atoms/Chip'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
@@ -49,6 +50,7 @@ import { getAttachmentUrl, messageAttachment } from '../attachments'
 import { useUser } from '../auth/state'
 import { ErrorMessageBox } from '../calendar/ChildSelector'
 import { useTranslation } from '../localization'
+import { deleteAttachmentMutation } from '../queries'
 import { getDuplicateChildInfo } from '../utils/duplicated-child-utils'
 
 import { isPrimaryRecipient } from './utils'
@@ -116,6 +118,10 @@ export default React.memo(function MessageEditor({
         attachmentIds: attachments.map((a) => a.id)
       })),
     [attachments]
+  )
+
+  const { mutateAsync: deleteAttachment } = useMutationResult(
+    deleteAttachmentMutation
   )
 
   const send = useCallback(() => onSend(message), [message, onSend])
@@ -406,7 +412,7 @@ export default React.memo(function MessageEditor({
                 <FileUpload
                   slimSingleFile
                   files={attachments}
-                  uploadHandler={messageAttachment}
+                  uploadHandler={messageAttachment(deleteAttachment)}
                   onUploaded={(attachment) =>
                     setAttachments((prev) => [...prev, attachment])
                   }
