@@ -5,14 +5,8 @@
 import isPropValid from '@emotion/is-prop-valid'
 import { ErrorBoundary } from '@sentry/react'
 import React, { useContext, useEffect, useMemo } from 'react'
-import {
-  BrowserRouter as Router,
-  Navigate,
-  Route,
-  Routes,
-  useNavigate
-} from 'react-router'
 import { StyleSheetManager, ThemeProvider } from 'styled-components'
+import { Router, Route, Redirect, useLocation, Switch } from 'wouter'
 
 import type { ChildId, DaycareId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
@@ -99,31 +93,28 @@ export default function App() {
                   <NotificationsContextProvider>
                     <Notifications apiVersion={apiVersion} />
                     <RememberContextProvider>
-                      <Router basename="/employee/mobile">
-                        <Routes>
-                          <Route path="/landing" element={<MobileLander />} />
-                          <Route path="/pairing" element={<PairingWizard />} />
-                          <Route
-                            path="/units"
-                            element={
-                              <RequireAuth>
-                                <UnitList />
-                              </RequireAuth>
-                            }
-                          />
-                          <Route
-                            path="/units/:unitId/*"
-                            element={
-                              <RequireAuth>
-                                <UnitRouter />
-                              </RequireAuth>
-                            }
-                          />
-                          <Route
-                            index
-                            element={<Navigate replace to="/landing" />}
-                          />
-                        </Routes>
+                      <Router base="/employee/mobile">
+                        <Switch>
+                          <Route path="/landing">
+                            <MobileLander />
+                          </Route>
+                          <Route path="/pairing">
+                            <PairingWizard />
+                          </Route>
+                          <Route path="/units">
+                            <RequireAuth>
+                              <UnitList />
+                            </RequireAuth>
+                          </Route>
+                          <Route path="/units/:unitId" nest>
+                            <RequireAuth>
+                              <UnitRouter />
+                            </RequireAuth>
+                          </Route>
+                          <Route>
+                            <Redirect replace to="/landing" />
+                          </Route>
+                        </Switch>
                         {!!featureFlags.environmentLabel && (
                           <EnvironmentLabel>
                             {featureFlags.environmentLabel}
@@ -158,20 +149,26 @@ function UnitRouter() {
   const unitId = useIdRouteParam<DaycareId>('unitId')
 
   return (
-    <Routes>
-      <Route path="/settings" element={<SettingsPage unitId={unitId} />} />
-      <Route
-        path="/groups/:groupId/*"
-        element={<GroupRouter unitId={unitId} />}
-      />
-      <Route
-        path="/children/:childId/*"
-        element={<ChildRouter unitId={unitId} />}
-      />
-      <Route path="/mark-present" element={<MarkPresent unitId={unitId} />} />
-      <Route path="/mark-departed" element={<MarkDeparted unitId={unitId} />} />
-      <Route index element={<Navigate replace to="groups/all" />} />
-    </Routes>
+    <Switch>
+      <Route path="/settings">
+        <SettingsPage unitId={unitId} />
+      </Route>
+      <Route path="/groups/:groupId" nest>
+        <GroupRouter unitId={unitId} />
+      </Route>
+      <Route path="/children/:childId" nest>
+        <ChildRouter unitId={unitId} />
+      </Route>
+      <Route path="/mark-present">
+        <MarkPresent unitId={unitId} />
+      </Route>
+      <Route path="/mark-departed">
+        <MarkDeparted unitId={unitId} />
+      </Route>
+      <Route>
+        <Redirect replace to="/groups/all" />
+      </Route>
+    </Switch>
   )
 }
 
@@ -193,7 +190,7 @@ function GroupRouter({ unitId }: { unitId: DaycareId }) {
     unitInfoQuery({ unitId: unitOrGroup.unitId })
   )
 
-  const navigate = useNavigate()
+  const [, navigate] = useLocation()
   useEffect(() => {
     // If we somehow end up with a groupId that doesn't exist in the current unit,
     // just navigate to some "default page" instead of allowing things to break
@@ -202,7 +199,7 @@ function GroupRouter({ unitId }: { unitId: DaycareId }) {
         (group) => group.id === unitOrGroup.id
       )
       if (!validGroupId) {
-        void navigate(
+        navigate(
           routes.childAttendances(toUnitOrGroup(unitOrGroup.unitId)).value
         )
       }
@@ -211,21 +208,20 @@ function GroupRouter({ unitId }: { unitId: DaycareId }) {
 
   return (
     <MessageContextProvider unitOrGroup={unitOrGroup}>
-      <Routes>
-        <Route
-          path="child-attendance/*"
-          element={<ChildAttendanceRouter unitOrGroup={unitOrGroup} />}
-        />
-        <Route
-          path="staff-attendance/*"
-          element={<StaffAttendanceRouter unitOrGroup={unitOrGroup} />}
-        />
-        <Route
-          path="messages/*"
-          element={<MessagesRouter unitOrGroup={unitOrGroup} />}
-        />
-        <Route index element={<Navigate replace to="child-attendance" />} />
-      </Routes>
+      <Switch>
+        <Route path="/child-attendance" nest>
+          <ChildAttendanceRouter unitOrGroup={unitOrGroup} />
+        </Route>
+        <Route path="/staff-attendance" nest>
+          <StaffAttendanceRouter unitOrGroup={unitOrGroup} />
+        </Route>
+        <Route path="/messages" nest>
+          <MessagesRouter unitOrGroup={unitOrGroup} />
+        </Route>
+        <Route>
+          <Redirect replace to="/child-attendance" />
+        </Route>
+      </Switch>
     </MessageContextProvider>
   )
 }
@@ -238,24 +234,22 @@ function ChildAttendanceRouter({ unitOrGroup }: { unitOrGroup: UnitOrGroup }) {
   })
 
   return (
-    <Routes>
-      <Route
-        path="/"
-        element={<AttendancePageWrapper unitOrGroup={unitOrGroup} />}
-      >
-        <Route
-          path="list/:attendanceStatus"
-          element={<AttendanceTodayWrapper unitOrGroup={unitOrGroup} />}
-        />
-        <Route
-          path="daylist"
-          id="daylist"
-          element={<ConfimedReservationDaysWrapper unitOrGroup={unitOrGroup} />}
-        />
-        <Route path="list" element={<Navigate replace to="/" />} />
-      </Route>
-      <Route index element={<Navigate replace to="list/coming" />} />
-    </Routes>
+    <AttendancePageWrapper unitOrGroup={unitOrGroup}>
+      <Switch>
+        <Route path="/list/:attendanceStatus">
+          <AttendanceTodayWrapper unitOrGroup={unitOrGroup} />
+        </Route>
+        <Route path="/daylist">
+          <ConfimedReservationDaysWrapper unitOrGroup={unitOrGroup} />
+        </Route>
+        <Route path="/list">
+          <Redirect replace to="/" />
+        </Route>
+        <Route>
+          <Redirect replace to="/list/coming" />
+        </Route>
+      </Switch>
+    </AttendancePageWrapper>
   )
 }
 
@@ -263,159 +257,121 @@ function ChildRouter({ unitId }: { unitId: DaycareId }) {
   const childId = useIdRouteParam<ChildId>('childId')
 
   return (
-    <Routes>
-      <Route
-        path="/"
-        index
-        element={<AttendanceChildPage unitId={unitId} childId={childId} />}
-      />
-      <Route
-        path="/mark-absent"
-        element={<MarkAbsent unitId={unitId} childId={childId} />}
-      />
-      <Route
-        path="/mark-reservations"
-        element={<MarkReservations unitId={unitId} childId={childId} />}
-      />
-      <Route
-        path="/mark-absent-beforehand"
-        element={<MarkAbsentBeforehand unitId={unitId} childId={childId} />}
-      />
-      <Route
-        path="/note"
-        element={<ChildNotes unitId={unitId} childId={childId} />}
-      />
-      <Route
-        path="/info"
-        element={
-          <RequirePinAuth unitId={unitId}>
-            <ChildSensitiveInfoPage unitId={unitId} childId={childId} />
-          </RequirePinAuth>
-        }
-      />
-      <Route
-        path="/new-message"
-        element={
-          <RequirePinAuth unitId={unitId}>
-            <NewChildMessagePage unitId={unitId} childId={childId} />
-          </RequirePinAuth>
-        }
-      />
-      <Route
-        path="/received-messages"
-        element={
-          <RequirePinAuth unitId={unitId}>
-            <ChildMessagesPage unitId={unitId} childId={childId} />
-          </RequirePinAuth>
-        }
-      />
-    </Routes>
+    <Switch>
+      <Route path="/">
+        <AttendanceChildPage unitId={unitId} childId={childId} />
+      </Route>
+      <Route path="/mark-absent">
+        <MarkAbsent unitId={unitId} childId={childId} />
+      </Route>
+      <Route path="/mark-reservations">
+        <MarkReservations unitId={unitId} childId={childId} />
+      </Route>
+      <Route path="/mark-absent-beforehand">
+        <MarkAbsentBeforehand unitId={unitId} childId={childId} />
+      </Route>
+      <Route path="/note">
+        <ChildNotes unitId={unitId} childId={childId} />
+      </Route>
+      <Route path="/info">
+        <RequirePinAuth unitId={unitId}>
+          <ChildSensitiveInfoPage unitId={unitId} childId={childId} />
+        </RequirePinAuth>
+      </Route>
+      <Route path="/new-message">
+        <RequirePinAuth unitId={unitId}>
+          <NewChildMessagePage unitId={unitId} childId={childId} />
+        </RequirePinAuth>
+      </Route>
+      <Route path="/received-messages">
+        <RequirePinAuth unitId={unitId}>
+          <ChildMessagesPage unitId={unitId} childId={childId} />
+        </RequirePinAuth>
+      </Route>
+    </Switch>
   )
 }
 
 function StaffAttendanceRouter({ unitOrGroup }: { unitOrGroup: UnitOrGroup }) {
   return (
-    <Routes>
-      <Route
-        path="today/absent"
-        element={
-          <StaffAttendancesPage
-            primaryTab="today"
-            statusTab="absent"
-            unitOrGroup={unitOrGroup}
-          />
-        }
-      />
-      <Route
-        path="today/present"
-        element={
-          <StaffAttendancesPage
-            primaryTab="today"
-            statusTab="present"
-            unitOrGroup={unitOrGroup}
-          />
-        }
-      />
-      <Route
-        path="planned"
-        element={
-          <StaffAttendancesPage
-            primaryTab="planned"
-            unitOrGroup={unitOrGroup}
-          />
-        }
-      />
-      <Route
-        path="external"
-        element={
-          <MarkExternalStaffMemberArrivalPage unitOrGroup={unitOrGroup} />
-        }
-      />
-      <Route
-        path="external/:attendanceId"
-        element={<ExternalStaffMemberPage unitId={unitOrGroup.unitId} />}
-      />
-      <Route
-        path=":employeeId"
-        element={<StaffMemberPage unitOrGroup={unitOrGroup} />}
-      />
-      <Route
-        path=":employeeId/previous"
-        element={<StaffPreviousAttendancesPage unitOrGroup={unitOrGroup} />}
-      />
-      <Route
-        path=":employeeId/planned"
-        element={
-          <StaffMemberPlannedAttendancesPage unitOrGroup={unitOrGroup} />
-        }
-      />
-      <Route
-        path=":employeeId/edit"
-        element={<StaffAttendanceEditPage unitOrGroup={unitOrGroup} />}
-      />
-      <Route
-        path=":employeeId/mark-arrived"
-        element={<StaffMarkArrivedPage unitOrGroup={unitOrGroup} />}
-      />
-      <Route
-        path=":employeeId/mark-departed"
-        element={<StaffMarkDepartedPage unitOrGroup={unitOrGroup} />}
-      />
-      <Route index element={<Navigate replace to="today/absent" />} />
-    </Routes>
+    <Switch>
+      <Route path="/today/absent">
+        <StaffAttendancesPage
+          primaryTab="today"
+          statusTab="absent"
+          unitOrGroup={unitOrGroup}
+        />
+      </Route>
+      <Route path="/today/present">
+        <StaffAttendancesPage
+          primaryTab="today"
+          statusTab="present"
+          unitOrGroup={unitOrGroup}
+        />
+      </Route>
+      <Route path="/planned">
+        <StaffAttendancesPage primaryTab="planned" unitOrGroup={unitOrGroup} />
+      </Route>
+      <Route path="/external">
+        <MarkExternalStaffMemberArrivalPage unitOrGroup={unitOrGroup} />
+      </Route>
+      <Route path="/external/:attendanceId">
+        <ExternalStaffMemberPage unitId={unitOrGroup.unitId} />
+      </Route>
+      <Route path="/:employeeId">
+        <StaffMemberPage unitOrGroup={unitOrGroup} />
+      </Route>
+      <Route path="/:employeeId/previous">
+        <StaffPreviousAttendancesPage unitOrGroup={unitOrGroup} />
+      </Route>
+      <Route path="/:employeeId/planned">
+        <StaffMemberPlannedAttendancesPage unitOrGroup={unitOrGroup} />
+      </Route>
+      <Route path="/:employeeId/edit">
+        <StaffAttendanceEditPage unitOrGroup={unitOrGroup} />
+      </Route>
+      <Route path="/:employeeId/mark-arrived">
+        <StaffMarkArrivedPage unitOrGroup={unitOrGroup} />
+      </Route>
+      <Route path="/:employeeId/mark-departed">
+        <StaffMarkDepartedPage unitOrGroup={unitOrGroup} />
+      </Route>
+      <Route>
+        <Redirect replace to="today/absent" />
+      </Route>
+    </Switch>
   )
 }
 
 function MessagesRouter({ unitOrGroup }: { unitOrGroup: UnitOrGroup }) {
   return (
-    <Routes>
-      <Route
-        index
-        element={
-          <RequirePinAuth unitId={unitOrGroup.unitId}>
-            <MessagesPage unitOrGroup={unitOrGroup} />
-          </RequirePinAuth>
-        }
-      />
-      <Route
-        path="unread-messages"
-        element={<UnreadMessagesPage unitOrGroup={unitOrGroup} />}
-      />
-      <Route
-        path="thread/:threadId"
-        element={<ReceivedThreadPage unitOrGroup={unitOrGroup} />}
-      />
-      <Route
-        path="new"
-        element={<NewMessagePage unitOrGroup={unitOrGroup} />}
-      />
-    </Routes>
+    <Switch>
+      <Route path="/">
+        <RequirePinAuth unitId={unitOrGroup.unitId}>
+          <MessagesPage unitOrGroup={unitOrGroup} />
+        </RequirePinAuth>
+      </Route>
+      <Route path="unread-messages">
+        <UnreadMessagesPage unitOrGroup={unitOrGroup} />
+      </Route>
+      <Route path="thread/:threadId">
+        <ReceivedThreadPage unitOrGroup={unitOrGroup} />
+      </Route>
+      <Route path="new">
+        <NewMessagePage unitOrGroup={unitOrGroup} />
+      </Route>
+    </Switch>
   )
 }
 
+const root = uri`~/employee/mobile`
+
 export const routes = {
+  unitList(): Uri {
+    return uri`${root}/mobile/units/`
+  },
   unit(unitId: UUID): Uri {
-    return uri`/units/${unitId}`
+    return uri`${root}/units/${unitId}`
   },
   settings(unitId: UUID): Uri {
     return uri`${this.unit(unitId)}/settings`

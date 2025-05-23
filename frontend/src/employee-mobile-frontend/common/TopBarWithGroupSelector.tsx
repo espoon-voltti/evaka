@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useMemo } from 'react'
-import { useNavigate } from 'react-router'
+import { useLocation } from 'wouter'
 
 import { combine } from 'lib-common/api'
 import type { GroupInfo } from 'lib-common/generated/api-types/attendance'
@@ -12,6 +12,7 @@ import { useQueryResult } from 'lib-common/query'
 import type { UUID } from 'lib-common/types'
 import { Gap } from 'lib-components/white-space'
 
+import { routes } from '../App'
 import { UserContext } from '../auth/state'
 import { unitInfoQuery } from '../units/queries'
 
@@ -38,7 +39,7 @@ export default React.memo(function TopBarWithGroupSelector({
   includeSelectAll = true,
   allowedGroupIds = undefined
 }: TopBarWithGroupSelectorProps) {
-  const navigate = useNavigate()
+  const [, navigate] = useLocation()
   const { user } = useContext(UserContext)
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
 
@@ -49,7 +50,7 @@ export default React.memo(function TopBarWithGroupSelector({
           const title = unitInfo.name
           const onBack =
             user && user.unitIds.length > 1
-              ? () => void navigate('/units')
+              ? () => navigate(routes.unitList().value)
               : undefined
           return { title, onBack }
         })

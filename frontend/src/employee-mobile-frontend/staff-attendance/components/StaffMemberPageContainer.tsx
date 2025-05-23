@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { useNavigate } from 'react-router'
 import styled from 'styled-components'
+import { useLocation } from 'wouter'
 
 import colors from 'lib-customizations/common'
 import { faArrowLeft } from 'lib-icons'
@@ -35,7 +35,7 @@ export function StaffMemberPageContainer({
   children
 }: React.PropsWithChildren & { back?: string }) {
   const { i18n } = useTranslation()
-  const navigate = useNavigate()
+  const [, navigate] = useLocation()
 
   return (
     <TallContentAreaNoOverflow
@@ -45,7 +45,7 @@ export function StaffMemberPageContainer({
       shadow
     >
       <BackButtonMargin
-        onClick={() => (back !== undefined ? navigate(back) : navigate(-1))}
+        onClick={() => (back !== undefined ? navigate(back) : history.go(-1))}
         icon={faArrowLeft}
         data-qa="back-btn"
         aria-label={i18n.common.close}

@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { Link } from 'react-router'
 import styled, { useTheme } from 'styled-components'
+import { Link } from 'wouter'
 
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { Bold } from 'lib-components/typography'

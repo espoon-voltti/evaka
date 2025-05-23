@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext } from 'react'
-import { Link } from 'react-router'
 import styled from 'styled-components'
+import { Link } from 'wouter'
 
 import { combine } from 'lib-common/api'
 import { useQuery, useQueryResult } from 'lib-common/query'

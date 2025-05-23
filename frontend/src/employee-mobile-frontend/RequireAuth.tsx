@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext } from 'react'
-import { Navigate } from 'react-router'
+import { Redirect } from 'wouter'
 
 import { UserContext } from './auth/state'
 
@@ -14,5 +14,5 @@ interface Props {
 export default React.memo(function RequireAuth({ children }: Props) {
   const { loggedIn } = useContext(UserContext)
 
-  return loggedIn ? <>{children}</> : <Navigate replace to="/" />
+  return loggedIn ? <>{children}</> : <Redirect replace to="/" />
 })

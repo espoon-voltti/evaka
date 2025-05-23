@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useContext, useMemo } from 'react'
-import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
@@ -47,7 +46,6 @@ const NewChildMessagePage = React.memo(function NewChildMessagePage({
 }: Props) {
   const { i18n } = useTranslation()
 
-  const navigate = useNavigate()
   const messageRecipients = useQueryResult(selectableRecipientsQuery())
 
   const recipients = useMemo(() => {
@@ -71,8 +69,8 @@ const NewChildMessagePage = React.memo(function NewChildMessagePage({
   }, [child.id, messageRecipients])
 
   const onHide = useCallback(() => {
-    void navigate(-1)
-  }, [navigate])
+    history.go(-1)
+  }, [])
 
   return renderResult(recipients, (recipients) =>
     childGroupAccount !== undefined && recipients.length > 0 ? (
@@ -104,7 +102,7 @@ const NewChildMessagePage = React.memo(function NewChildMessagePage({
           )}
         </PaddedContainer>
         <BackButtonInline
-          onClick={() => navigate(-1)}
+          onClick={() => history.go(-1)}
           icon={faArrowLeft}
           text={i18n.common.back}
         />

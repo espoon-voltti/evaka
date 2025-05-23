@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useMemo, useState } from 'react'
-import { Navigate, useNavigate, useSearchParams } from 'react-router'
 import styled from 'styled-components'
+import { Redirect, useSearchParams } from 'wouter'
 
 import { combine } from 'lib-common/api'
 import { isValidTime } from 'lib-common/date'
@@ -121,7 +121,6 @@ const MarkDepartedInner = React.memo(function MarkDepartedWithChild({
 }) {
   const childIds = childList.map(({ child }) => child.id)
 
-  const navigate = useNavigate()
   const { i18n } = useTranslation()
 
   const [time, setTime] = useState(() =>
@@ -219,13 +218,13 @@ const MarkDepartedInner = React.memo(function MarkDepartedWithChild({
         {childList.length === 1 ? (
           <ChildNameBackButton
             child={childList[0].child}
-            onClick={() => navigate(-1)}
+            onClick={() => history.go(-1)}
           />
         ) : (
           <BackButtonInline
             icon={faArrowLeft}
             text={i18n.common.return}
-            onClick={() => navigate(-1)}
+            onClick={() => history.go(-1)}
           />
         )}
       </div>
@@ -370,7 +369,7 @@ const MarkDepartedInner = React.memo(function MarkDepartedWithChild({
           <FixedSpaceRow fullWidth>
             <LegacyButton
               text={i18n.common.cancel}
-              onClick={() => navigate(-1)}
+              onClick={() => history.go(-1)}
             />
             <AsyncButton
               primary
@@ -408,7 +407,7 @@ const MarkDepartedInner = React.memo(function MarkDepartedWithChild({
                 })
               }}
               onSuccess={() => {
-                void navigate(multiselect ? -1 : -2)
+                history.go(multiselect ? -1 : -2)
               }}
               data-qa="mark-departed-btn"
             />
@@ -466,7 +465,7 @@ export default React.memo(function MarkDeparted({
 
   const childIds = children.split(',').filter((id) => id.length > 0)
   if (childIds.length === 0)
-    return <Navigate replace to={routes.unit(unitId).value} />
+    return <Redirect replace to={routes.unit(unitId).value} />
 
   return (
     <MarkDepartedWithParams

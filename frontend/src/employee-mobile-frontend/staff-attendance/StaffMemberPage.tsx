@@ -5,8 +5,8 @@
 import { faEdit } from '@fortawesome/free-solid-svg-icons'
 import orderBy from 'lodash/orderBy'
 import React, { useMemo } from 'react'
-import { useNavigate } from 'react-router'
 import styled from 'styled-components'
+import { useLocation } from 'wouter'
 
 import { combine } from 'lib-common/api'
 import type {
@@ -49,7 +49,7 @@ export default React.memo(function StaffMemberPage({
 }) {
   const employeeId = useIdRouteParam<EmployeeId>('employeeId')
   const { i18n } = useTranslation()
-  const navigate = useNavigate()
+  const [, navigate] = useLocation()
 
   const unitId = unitOrGroup.unitId
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))

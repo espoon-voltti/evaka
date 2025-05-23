@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useState } from 'react'
-import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
 import type { ChildId, DaycareId } from 'lib-common/generated/api-types/shared'
@@ -36,7 +35,6 @@ export default React.memo(function MarkAbsent({
   unitId: DaycareId
   childId: ChildId
 }) {
-  const navigate = useNavigate()
   const { i18n } = useTranslation()
 
   const child = useChild(useQueryResult(childrenQuery(unitId)), childId)
@@ -57,7 +55,7 @@ export default React.memo(function MarkAbsent({
     >
       {renderResult(child, (child) => (
         <>
-          <ChildNameBackButton child={child} onClick={() => navigate(-2)} />
+          <ChildNameBackButton child={child} onClick={() => history.go(-2)} />
           <ContentArea
             shadow
             opaque={true}
@@ -85,7 +83,7 @@ export default React.memo(function MarkAbsent({
               <FixedSpaceRow fullWidth>
                 <LegacyButton
                   text={i18n.common.cancel}
-                  onClick={() => navigate(-1)}
+                  onClick={() => history.go(-1)}
                 />
                 {selectedAbsenceType !== undefined &&
                 selectedAbsenceType !== 'NO_ABSENCE' ? (
@@ -102,7 +100,7 @@ export default React.memo(function MarkAbsent({
                       })
                     }
                     onSuccess={() => {
-                      void navigate(-1)
+                      history.go(-1)
                     }}
                     data-qa="mark-absent-btn"
                   />

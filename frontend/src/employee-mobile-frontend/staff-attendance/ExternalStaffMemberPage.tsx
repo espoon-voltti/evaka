@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useMemo, useState } from 'react'
-import { useNavigate } from 'react-router'
 
 import type {
   DaycareId,
@@ -38,7 +37,6 @@ export default React.memo(function ExternalStaffMemberPage({
 }: {
   unitId: DaycareId
 }) {
-  const navigate = useNavigate()
   const attendanceId =
     useIdRouteParam<StaffAttendanceExternalId>('attendanceId')
   const { i18n } = useTranslation()
@@ -132,7 +130,7 @@ export default React.memo(function ExternalStaffMemberPage({
                 : cancelMutation
             }
             onSuccess={() => {
-              void navigate(-1)
+              history.go(-1)
             }}
           />
         </FixedSpaceColumn>
