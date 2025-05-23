@@ -11,9 +11,11 @@ import type {
   IncomeStatementId
 } from 'lib-common/generated/api-types/shared'
 import type { IncomeStatementAttachments } from 'lib-common/income-statements/attachments'
+import { useMutationResult } from 'lib-common/query'
 import type { UploadHandler } from 'lib-components/molecules/FileUpload'
 
 import { incomeStatementAttachment } from '../attachments'
+import { deleteAttachmentMutation } from '../queries'
 
 import type { SetStateCallback } from './hooks'
 
@@ -42,6 +44,9 @@ export function useAttachmentHandler(
   const refs = useRef<
     Partial<Record<IncomeStatementAttachmentType, HTMLElement>>
   >({})
+  const { mutateAsync: deleteAttachment } = useMutationResult(
+    deleteAttachmentMutation
+  )
   return useMemo(() => {
     if (!attachments.typed) {
       // Has untyped attachments
@@ -55,7 +60,11 @@ export function useAttachmentHandler(
         const files = attachmentsByType[attachmentType] ?? []
         return {
           files,
-          uploadHandler: incomeStatementAttachment(id, attachmentType),
+          uploadHandler: incomeStatementAttachment(
+            id,
+            attachmentType,
+            deleteAttachment
+          ),
           onUploaded: (attachment: Attachment) => {
             onChange((prev) => {
               // Should not happen
@@ -123,5 +132,5 @@ export function useAttachmentHandler(
         if (element) element.focus()
       }
     }
-  }, [attachments, id, onChange])
+  }, [attachments, deleteAttachment, id, onChange])
 }

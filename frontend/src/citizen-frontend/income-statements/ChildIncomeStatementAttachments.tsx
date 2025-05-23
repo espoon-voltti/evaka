@@ -10,10 +10,12 @@ import type {
   IncomeStatementId
 } from 'lib-common/generated/api-types/shared'
 import type { IncomeStatementAttachments } from 'lib-common/income-statements/attachments'
+import { useMutationResult } from 'lib-common/query'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import FileUpload from 'lib-components/molecules/FileUpload'
 
 import { getAttachmentUrl, incomeStatementAttachment } from '../attachments'
+import { deleteAttachmentMutation } from '../queries'
 
 import type { SetStateCallback } from './hooks'
 
@@ -26,6 +28,9 @@ export default React.memo(function Attachments({
   attachments: IncomeStatementAttachments
   onChange: SetStateCallback<IncomeStatementAttachments>
 }) {
+  const { mutateAsync: deleteAttachment } = useMutationResult(
+    deleteAttachmentMutation
+  )
   const onUploaded = useCallback(
     (attachment: Attachment) =>
       onChange((prev) =>
@@ -55,7 +60,11 @@ export default React.memo(function Attachments({
     <FixedSpaceColumn spacing="zero">
       <FileUpload
         files={attachments.untypedAttachments}
-        uploadHandler={incomeStatementAttachment(incomeStatementId, null)}
+        uploadHandler={incomeStatementAttachment(
+          incomeStatementId,
+          null,
+          deleteAttachment
+        )}
         onUploaded={onUploaded}
         onDeleted={onDeleted}
         getDownloadUrl={getAttachmentUrl}
