@@ -4,7 +4,7 @@
 
 import sortBy from 'lodash/sortBy'
 import React, { useContext, useMemo, useState } from 'react'
-import { Link } from 'react-router'
+import { Link } from 'wouter'
 
 import { combine } from 'lib-common/api'
 import { globalRoles } from 'lib-common/api-types/employee-auth'

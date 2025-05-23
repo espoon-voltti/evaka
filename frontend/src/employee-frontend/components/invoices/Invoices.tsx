@@ -4,8 +4,8 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useContext } from 'react'
-import { useNavigate } from 'react-router'
 import styled from 'styled-components'
+import { useLocation } from 'wouter'
 
 import type { User } from 'lib-common/api-types/employee-auth'
 import { useBoolean } from 'lib-common/form/hooks'
@@ -306,7 +306,7 @@ const InvoiceTableBody = React.memo(function InvoiceTableBody({
   invoices: InvoiceSummaryResponse[]
 }) {
   const { i18n } = useTranslation()
-  const navigate = useNavigate()
+  const [, navigate] = useLocation()
 
   return (
     <Tbody>

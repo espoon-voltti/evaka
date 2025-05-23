@@ -4,8 +4,8 @@
 
 import orderBy from 'lodash/orderBy'
 import React, { useCallback, useMemo } from 'react'
-import { useNavigate } from 'react-router'
 import styled from 'styled-components'
+import { useLocation } from 'wouter'
 
 import { isLoading } from 'lib-common/api'
 import type { CalendarEvent } from 'lib-common/generated/api-types/calendarevent'
@@ -45,12 +45,12 @@ export default React.memo(function DiscussionReservationSurveysPage() {
   const discussionSurveys = useQueryResult(
     groupDiscussionSurveysQuery({ unitId, groupId })
   )
-  const navigate = useNavigate()
+  const [, navigate] = useLocation()
   const t = i18n.unit.calendar.events
 
   const navigateToSurvey = useCallback(
     (surveyId: string) => {
-      void navigate(
+      navigate(
         `/units/${unitId}/groups/${groupId}/discussion-reservation-surveys/${surveyId}`
       )
     },
@@ -70,7 +70,7 @@ export default React.memo(function DiscussionReservationSurveysPage() {
       <ReturnButton
         label={i18n.common.goBack}
         onClick={() => {
-          void navigate(`/units/${unitId}/calendar/?group=${groupId}`)
+          navigate(`/units/${unitId}/calendar/?group=${groupId}`)
         }}
       />
       <ContentArea opaque>

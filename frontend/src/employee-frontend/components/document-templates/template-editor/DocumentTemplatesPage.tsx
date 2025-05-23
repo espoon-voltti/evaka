@@ -5,8 +5,8 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import orderBy from 'lodash/orderBy'
 import React, { useMemo, useState } from 'react'
-import { Link } from 'react-router'
 import styled from 'styled-components'
+import { Link } from 'wouter'
 
 import type DateRange from 'lib-common/date-range'
 import { openEndedLocalDateRange } from 'lib-common/form/fields'

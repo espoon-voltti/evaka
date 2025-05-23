@@ -5,8 +5,8 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { flow, set } from 'lodash/fp'
 import React, { useCallback, useMemo, useState } from 'react'
-import { Link } from 'react-router'
 import styled from 'styled-components'
+import { Link } from 'wouter'
 
 import type { Result } from 'lib-common/api'
 import type { SelectableOtherGuardianAgreementStatus } from 'lib-common/api-types/application/ApplicationFormData'

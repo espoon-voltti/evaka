@@ -4,7 +4,7 @@
 
 import sortBy from 'lodash/sortBy'
 import React, { useMemo } from 'react'
-import { Link } from 'react-router'
+import { Link } from 'wouter'
 
 import { useBoolean } from 'lib-common/form/hooks'
 import type { AbsenceApplicationSummaryEmployee } from 'lib-common/generated/api-types/absence'

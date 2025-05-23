@@ -4,7 +4,7 @@
 
 import orderBy from 'lodash/orderBy'
 import React, { useContext } from 'react'
-import { Link } from 'react-router'
+import { Link } from 'wouter'
 
 import type { PersonApplicationSummary } from 'lib-common/generated/api-types/application'
 import type { ChildId } from 'lib-common/generated/api-types/shared'

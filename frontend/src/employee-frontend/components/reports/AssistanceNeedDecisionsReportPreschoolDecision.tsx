@@ -4,8 +4,8 @@
 
 import { shade } from 'polished'
 import React, { useContext, useEffect, useState } from 'react'
-import { useNavigate } from 'react-router'
 import styled from 'styled-components'
+import { useLocation } from 'wouter'
 
 import { string } from 'lib-common/form/fields'
 import { object, validated } from 'lib-common/form/form'
@@ -116,7 +116,7 @@ const DecisionView = React.memo(function DecisionView({
   decision: AssistanceNeedPreschoolDecisionResponse
 }) {
   const { i18n } = useTranslation()
-  const navigate = useNavigate()
+  const [, navigate] = useLocation()
   const [confirmationModal, setConfirmationModal] = useState<
     'REJECT' | 'ACCEPT' | 'ANNUL' | null
   >(null)

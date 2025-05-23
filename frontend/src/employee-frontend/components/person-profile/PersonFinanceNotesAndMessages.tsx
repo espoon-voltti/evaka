@@ -5,8 +5,8 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import React, { useCallback, useContext, useMemo, useState } from 'react'
-import { Link } from 'react-router'
 import styled, { useTheme } from 'styled-components'
+import { Link } from 'wouter'
 
 import { combine } from 'lib-common/api'
 import type { Action } from 'lib-common/generated/action'

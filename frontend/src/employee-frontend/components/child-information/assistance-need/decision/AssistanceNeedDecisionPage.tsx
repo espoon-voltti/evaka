@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useEffect } from 'react'
-import { useNavigate } from 'react-router'
 import styled from 'styled-components'
+import { useLocation } from 'wouter'
 
 import { wrapResult } from 'lib-common/api'
 import type { AssistanceNeedDecision } from 'lib-common/generated/api-types/assistanceneed'
@@ -67,7 +67,7 @@ const DecisionMetadataSection = React.memo(function DecisionMetadataSection({
 export default React.memo(function AssistanceNeedDecisionPage() {
   const { childId } = useRouteParams(['childId'])
   const id = useIdRouteParam<AssistanceNeedDecisionId>('id')
-  const navigate = useNavigate()
+  const [, navigate] = useLocation()
 
   const [assistanceNeedDecision, reloadDecision] = useApiState(
     () => getAssistanceNeedDecisionResult({ id }),
@@ -88,7 +88,7 @@ export default React.memo(function AssistanceNeedDecisionPage() {
       response.hasMissingFields &&
       canBeEdited(response.decision)
     ) {
-      void navigate(
+      navigate(
         `/child-information/${childId}/assistance-need-decision/${id}/edit`,
         {
           replace: true

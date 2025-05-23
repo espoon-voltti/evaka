@@ -6,8 +6,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
 import partition from 'lodash/partition'
 import React, { useCallback, useContext, useMemo, useState } from 'react'
-import { Link, NavLink, useLocation } from 'react-router'
 import styled, { useTheme } from 'styled-components'
+import { Link, useLocation } from 'wouter'
 
 import { combine } from 'lib-common/api'
 import { EvakaLogo } from 'lib-components/atoms/EvakaLogo'
@@ -104,7 +104,8 @@ const NavLinkWrapper = styled.div`
   padding: 10px 0;
 `
 
-const NavbarLink = styled(NavLink)`
+// TODO: NavLink
+const NavbarLink = styled(Link)`
   flex: 0 0 auto;
   display: flex;
   align-items: center;
@@ -187,7 +188,7 @@ const UserPopup = styled.div`
 `
 
 export default React.memo(function Header() {
-  const location = useLocation()
+  const [path] = useLocation()
   const { i18n } = useTranslation()
   const { user, loggedIn } = useContext(UserContext)
   const { accounts, unreadCountsByAccount } = useContext(MessageContext)
@@ -220,7 +221,6 @@ export default React.memo(function Header() {
     childDocumentDecisionNotificationCount
   } = useContext(ReportNotificationContext)
 
-  const path = location.pathname
   const atCustomerInfo =
     path.includes('/profile') || path.includes('/child-information')
 

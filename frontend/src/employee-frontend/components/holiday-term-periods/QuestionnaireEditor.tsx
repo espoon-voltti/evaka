@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useContext } from 'react'
-import { useNavigate } from 'react-router'
+import { useLocation } from 'wouter'
 
 import type { HolidayQuestionnaireId } from 'lib-common/generated/api-types/shared'
 import { fromUuid } from 'lib-common/id-type'
@@ -30,10 +30,10 @@ export default React.memo(function QuestionnaireEditor() {
       : constantQuery(null)
   )
 
-  const navigate = useNavigate()
+  const [, navigate] = useLocation()
 
   const navigateToList = useCallback(
-    () => void navigate('/holiday-periods'),
+    () => navigate('/holiday-periods'),
     [navigate]
   )
 

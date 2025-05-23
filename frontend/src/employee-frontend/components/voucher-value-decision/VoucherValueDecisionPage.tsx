@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useContext, useEffect, useState } from 'react'
-import { Navigate, useNavigate } from 'react-router'
+import { Redirect } from 'wouter'
 
 import type { Result } from 'lib-common/api'
 import { Loading, wrapResult } from 'lib-common/api'
@@ -55,7 +55,6 @@ const VoucherValueDecisionMetadataSection = React.memo(
 
 export default React.memo(function VoucherValueDecisionPage() {
   const [showHandlerSelectModal, setShowHandlerSelectModal] = useState(false)
-  const navigate = useNavigate()
   const id = useIdRouteParam<VoucherValueDecisionId>('id')
   const { i18n } = useTranslation()
   const { setTitle, formatTitleName } = useContext<TitleState>(TitleContext)
@@ -100,10 +99,10 @@ export default React.memo(function VoucherValueDecisionPage() {
     [decisionType]
   )
 
-  const goBack = useCallback(() => navigate(-1), [navigate])
+  const goBack = useCallback(() => history.go(-1), [])
 
   if (decisionResponse.isFailure) {
-    return <Navigate replace to="/finance/value-decisions" />
+    return <Redirect replace to="/finance/value-decisions" />
   }
 
   return (

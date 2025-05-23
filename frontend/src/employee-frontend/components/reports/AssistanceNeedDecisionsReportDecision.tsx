@@ -4,8 +4,8 @@
 
 import { shade } from 'polished'
 import React, { useContext, useEffect, useState } from 'react'
-import { useNavigate } from 'react-router'
 import styled from 'styled-components'
+import { useLocation } from 'wouter'
 
 import { wrapResult } from 'lib-common/api'
 import type {
@@ -85,7 +85,7 @@ const DangerAsyncButton = styled(AsyncButton)`
 
 export default React.memo(function AssistanceNeedDecisionsReportDecision() {
   const id = useIdRouteParam<AssistanceNeedDecisionId>('id')
-  const navigate = useNavigate()
+  const [, navigate] = useLocation()
 
   const [assistanceNeedDecision, reloadDecision] = useApiState(
     () => getAssistanceNeedDecisionResult({ id }),

@@ -4,8 +4,8 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useMemo, useState } from 'react'
-import { Link } from 'react-router'
 import styled from 'styled-components'
+import { Link } from 'wouter'
 
 import type {
   FamilyDaycareMealAreaResult,

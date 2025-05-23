@@ -4,8 +4,8 @@
 
 import sortBy from 'lodash/sortBy'
 import React from 'react'
-import { Link, useNavigate } from 'react-router'
 import styled from 'styled-components'
+import { Link, useLocation } from 'wouter'
 
 import type { EmployeeWithDaycareRoles } from 'lib-common/generated/api-types/pis'
 import { ExpandableList } from 'lib-components/atoms/ExpandableList'
@@ -51,7 +51,7 @@ interface Props {
 
 export function EmployeeList({ employees }: Props) {
   const { i18n } = useTranslation()
-  const navigate = useNavigate()
+  const [, navigate] = useLocation()
 
   const rows = employees.map(
     ({

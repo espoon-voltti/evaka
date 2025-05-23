@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useEffect } from 'react'
-import { Navigate } from 'react-router'
+import { Redirect } from 'wouter'
 
 import type { Translations } from 'lib-customizations/employee'
 
@@ -45,6 +45,6 @@ const RequireAuth = React.memo(function EnsureAuthenticated({
   return loggedIn || unauthorizedApiCallDetected ? (
     <>{element}</>
   ) : (
-    <Navigate replace to="/" />
+    <Redirect replace to="~/employee" />
   )
 })
