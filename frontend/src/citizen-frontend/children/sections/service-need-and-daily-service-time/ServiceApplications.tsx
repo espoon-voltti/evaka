@@ -4,7 +4,7 @@
 
 import orderBy from 'lodash/orderBy'
 import React, { useContext, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router'
+import { useLocation } from 'wouter'
 
 import type {
   CitizenServiceApplication,
@@ -59,7 +59,7 @@ export default React.memo(function ServiceApplications({
   canCreate: boolean
 }) {
   const i18n = useTranslation()
-  const navigate = useNavigate()
+  const [, navigate] = useLocation()
   const { user } = useContext(AuthContext)
   const weakAuth = user.map((u) => u?.authLevel === 'WEAK').getOrElse(false)
   const [detailsView, setDetailsView] = useState<ServiceApplication | null>(

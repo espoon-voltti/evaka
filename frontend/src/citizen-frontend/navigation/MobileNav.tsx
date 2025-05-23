@@ -5,8 +5,8 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
 import React, { useCallback, useContext, useState } from 'react'
-import { NavLink, useLocation } from 'react-router'
 import styled, { css } from 'styled-components'
+import { Link, useLocation } from 'wouter'
 
 import { formatFirstName } from 'lib-common/names'
 import { useQuery } from 'lib-common/query'
@@ -186,8 +186,8 @@ const BottomBarLink = React.memo(function BottomBarLink({
   onClick?: (e: React.MouseEvent<HTMLAnchorElement>) => void
   'data-qa': string
 }) {
-  const location = useLocation()
-  const active = location.pathname.includes(to)
+  const [path] = useLocation()
+  const active = path.includes(to)
   return (
     <StyledLink to={to} onClick={onClick} data-qa={dataQa}>
       <AttentionIndicator
@@ -230,7 +230,8 @@ const bottomNavClickableStyles = css`
   }
 `
 
-const StyledLink = styled(NavLink)`
+// TODO: NavLink
+const StyledLink = styled(Link)`
   ${bottomNavClickableStyles}
 `
 
@@ -246,10 +247,10 @@ const ChildrenLink = React.memo(function ChildrenLink({
   closeMenu: () => void
 }) {
   const t = useTranslation()
-  const location = useLocation()
+  const [path] = useLocation()
   const childrenWithOwnPage = useChildrenWithOwnPage()
   const { totalUnreadChildNotifications } = useUnreadChildNotifications()
-  const active = location.pathname.startsWith('/children')
+  const active = path.startsWith('/children')
 
   if (childrenWithOwnPage.length === 0) {
     return null

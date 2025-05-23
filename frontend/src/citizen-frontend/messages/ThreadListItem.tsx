@@ -4,7 +4,7 @@
 
 import type { SyntheticEvent } from 'react'
 import React, { useCallback } from 'react'
-import { Link } from 'react-router'
+import { Link } from 'wouter'
 
 import { formatDateOrTime } from 'lib-common/date'
 import type {

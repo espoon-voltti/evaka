@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useMemo, useState } from 'react'
-import { useNavigate } from 'react-router'
+import { useLocation } from 'wouter'
 
 import type {
   IncomeStatement,
@@ -78,7 +78,7 @@ const ChildIncomeInfo = React.memo(function IncomeInfo({
   incomeStatement: IncomeStatement.ChildIncome
 }) {
   const t = useTranslation()
-  const navigate = useNavigate()
+  const [, navigate] = useLocation()
 
   const editable = incomeStatement.status !== 'HANDLED'
 

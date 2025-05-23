@@ -4,8 +4,8 @@
 
 import noop from 'lodash/noop'
 import React, { Fragment, useCallback, useContext, useState } from 'react'
-import { Link, useNavigate } from 'react-router'
 import styled from 'styled-components'
+import { Link, useLocation } from 'wouter'
 
 import type { IncomeStatement } from 'lib-common/generated/api-types/incomestatement'
 import type { IncomeStatementId } from 'lib-common/generated/api-types/shared'
@@ -215,7 +215,7 @@ type DeletionState =
 
 export default React.memo(function IncomeStatements() {
   const t = useTranslation()
-  const navigate = useNavigate()
+  const [, navigate] = useLocation()
   const { setErrorMessage } = useContext(OverlayContext)
 
   const [page, setPage] = useState(1)
@@ -273,7 +273,7 @@ export default React.memo(function IncomeStatements() {
             <HeadingContainer>
               <H2>{t.income.table.title}</H2>
               <ResponsiveAddButton
-                onClick={() => void navigate('/income/new/edit')}
+                onClick={() => navigate('/income/new/edit')}
                 text={t.income.addNew}
                 data-qa="new-income-statement-btn"
               />

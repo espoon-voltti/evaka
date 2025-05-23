@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { useCallback, useMemo, useState } from 'react'
-import { useLocation, useNavigate } from 'react-router'
+import { useLocation, useSearchParams } from 'wouter'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
 import type {
@@ -55,25 +55,25 @@ interface UseModalStateResult {
 }
 
 export function useCalendarModalState(): UseModalStateResult {
-  const location = useLocation()
-  const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const [, navigate] = useLocation()
 
   const urlModalState = useMemo(
-    () => parseQueryString(location.search),
-    [location.search]
+    () => parseQueryString(searchParams),
+    [searchParams]
   )
   const [nonUrlModalState, setNonUrlModalState] = useState<NonURLModalState>()
 
   const openModal = useCallback(
     (modal: URLModalState) => {
       setNonUrlModalState(undefined)
-      void navigate(`/calendar?${buildQueryString(modal)}`)
+      navigate(`/calendar?${buildQueryString(modal)}`)
     },
     [navigate]
   )
   const closeModal = useCallback(() => {
     setNonUrlModalState(undefined)
-    void navigate('/calendar')
+    navigate('/calendar')
   }, [navigate])
 
   const openDayModal = useCallback(
@@ -130,8 +130,9 @@ export function useCalendarModalState(): UseModalStateResult {
   }
 }
 
-function parseQueryString(qs: string): URLModalState | undefined {
-  const searchParams = new URLSearchParams(qs)
+function parseQueryString(
+  searchParams: URLSearchParams
+): URLModalState | undefined {
   const dateParam = searchParams.get('day')
   const modalParam = searchParams.get('modal')
   const startDateParam = searchParams.get('startDate')

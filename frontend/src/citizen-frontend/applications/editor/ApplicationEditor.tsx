@@ -5,7 +5,7 @@
 import maxBy from 'lodash/maxBy'
 import minBy from 'lodash/minBy'
 import React, { useContext, useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router'
+import { useLocation } from 'wouter'
 
 import { combine } from 'lib-common/api'
 import type { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
@@ -92,7 +92,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
   citizenChildren
 }: ApplicationEditorContentProps) {
   const t = useTranslation()
-  const navigate = useNavigate()
+  const [, navigate] = useLocation()
 
   const { setErrorMessage, setInfoMessage, clearInfoMessage } =
     useContext(OverlayContext)
@@ -204,7 +204,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
           icon: faExclamation,
           resolve: {
             action: () => {
-              void navigate('/applications')
+              navigate('/applications')
               clearInfoMessage()
             },
             label: t.applications.editor.draftPolicyInfo.ok
@@ -236,14 +236,14 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
           icon: faCheck,
           resolve: {
             action: () => {
-              void navigate('/applications')
+              navigate('/applications')
               clearInfoMessage()
             },
             label: t.applications.editor.sentInfo.ok
           },
           'data-qa': 'info-message-application-sent'
         })
-        void navigate('/applications')
+        navigate('/applications')
       })
       .catch(() => {
         setErrorMessage({
@@ -268,14 +268,14 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
           icon: faCheck,
           resolve: {
             action: () => {
-              void navigate('/applications')
+              navigate('/applications')
               clearInfoMessage()
             },
             label: t.applications.editor.updateInfo.ok
           },
           'data-qa': 'info-message-application-sent'
         })
-        void navigate('/applications')
+        navigate('/applications')
       })
       .catch(() => {
         setErrorMessage({
@@ -394,7 +394,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
           <LegacyButton
             data-qa="cancel-application-button"
             text={t.applications.editor.actions.cancel}
-            onClick={() => navigate(-1)}
+            onClick={() => history.go(-1)}
             disabled={submitting}
           />
         )}

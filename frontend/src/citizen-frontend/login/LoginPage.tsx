@@ -4,8 +4,8 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { Fragment, useState } from 'react'
-import { Link, Navigate, useNavigate, useSearchParams } from 'react-router'
 import styled from 'styled-components'
+import { Link, Redirect, useLocation, useSearchParams } from 'wouter'
 
 import { useQueryResult } from 'lib-common/query'
 import Main from 'lib-components/atoms/Main'
@@ -43,7 +43,7 @@ export default React.memo(function LoginPage() {
 
   const [searchParams] = useSearchParams()
   const unvalidatedNextPath = searchParams.get('next')
-  const navigate = useNavigate()
+  const [, navigate] = useLocation()
 
   const [showInfoBoxText1, setShowInfoBoxText1] = useState(false)
   const [showInfoBoxText2, setShowInfoBoxText2] = useState(false)
@@ -51,7 +51,7 @@ export default React.memo(function LoginPage() {
   const systemNotifications = useQueryResult(systemNotificationsQuery())
 
   if (user) {
-    return <Navigate to="/" replace />
+    return <Redirect to="/" replace />
   }
 
   return (
@@ -117,7 +117,7 @@ export default React.memo(function LoginPage() {
               href={getWeakLoginUri(unvalidatedNextPath ?? '/')}
               onClick={(e) => {
                 e.preventDefault()
-                void navigate(getWeakLoginUri(unvalidatedNextPath ?? '/'))
+                navigate(getWeakLoginUri(unvalidatedNextPath ?? '/'))
               }}
               data-qa="weak-login"
             >

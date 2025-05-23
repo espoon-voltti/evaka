@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { createBrowserRouter } from 'react-router'
+import { Route, Router, Switch } from 'wouter'
 
 import { featureFlags } from 'lib-customizations/citizen'
 
@@ -35,265 +35,94 @@ import MapPage from './map/MapPage'
 import MessagesPage from './messages/MessagesPage'
 import PersonalDetails from './personal-details/PersonalDetails'
 
-export const router = createBrowserRouter([
+interface CitizenRoute {
+  path: string
+  component: React.FunctionComponent
+  auth?: 'STRONG' | 'WEAK' | null // STRONG auth is required by default
+  disabled?: boolean
+}
+
+const routes: CitizenRoute[] = [
+  { path: '/login/form', component: LoginFormPage, auth: null },
+  { path: '/login', component: LoginPage, auth: null },
+  { path: '/map', component: MapPage, auth: null },
+  { path: '/accessibility', component: AccessibilityStatement },
+  { path: '/applications', component: Applications },
+  { path: '/applications/new', component: Applications },
+  { path: '/applications/new/:childId', component: ApplicationCreation },
+  { path: '/applications/:applicationId', component: ApplicationReadView },
+  { path: '/applications/:applicationId/edit', component: ApplicationEditor },
+  { path: '/personal-details', component: PersonalDetails, auth: 'WEAK' },
+  { path: '/income', component: IncomeStatements },
+  { path: '/income/:incomeStatementId/edit', component: IncomeStatementEditor },
+  { path: '/income/:incomeStatementId', component: IncomeStatementView },
   {
-    path: '/',
-    element: <App />,
-    children: [
-      {
-        path: '/login/form',
-        element: (
-          <ScrollToTop>
-            <LoginFormPage />
-          </ScrollToTop>
-        )
-      },
-      {
-        path: '/login',
-        element: (
-          <ScrollToTop>
-            <LoginPage />
-          </ScrollToTop>
-        )
-      },
-      {
-        path: '/map',
-        element: (
-          <ScrollToTop>
-            <MapPage />
-          </ScrollToTop>
-        )
-      },
-      {
-        path: '/accessibility',
-        element: (
-          <ScrollToTop>
-            <AccessibilityStatement />
-          </ScrollToTop>
-        )
-      },
-      {
-        path: '/applications',
-        element: (
-          <RequireAuth>
-            <ScrollToTop>
-              <Applications />
-            </ScrollToTop>
-          </RequireAuth>
-        )
-      },
-      {
-        path: '/applications/new/:childId',
-        element: (
-          <RequireAuth>
-            <ScrollToTop>
-              <ApplicationCreation />
-            </ScrollToTop>
-          </RequireAuth>
-        )
-      },
-      {
-        path: '/applications/:applicationId',
-        element: (
-          <RequireAuth>
-            <ScrollToTop>
-              <ApplicationReadView />
-            </ScrollToTop>
-          </RequireAuth>
-        )
-      },
-      {
-        path: '/applications/:applicationId/edit',
-        element: (
-          <RequireAuth>
-            <ScrollToTop>
-              <ApplicationEditor />
-            </ScrollToTop>
-          </RequireAuth>
-        )
-      },
-      {
-        path: '/personal-details',
-        element: (
-          <RequireAuth strength="WEAK">
-            <ScrollToTop>
-              <PersonalDetails />
-            </ScrollToTop>
-          </RequireAuth>
-        )
-      },
-      {
-        path: '/income',
-        element: (
-          <RequireAuth>
-            <ScrollToTop>
-              <IncomeStatements />
-            </ScrollToTop>
-          </RequireAuth>
-        )
-      },
-      {
-        path: '/income/:incomeStatementId/edit',
-        element: (
-          <RequireAuth>
-            <ScrollToTop>
-              <IncomeStatementEditor />
-            </ScrollToTop>
-          </RequireAuth>
-        )
-      },
-      {
-        path: '/income/:incomeStatementId',
-        element: (
-          <RequireAuth>
-            <ScrollToTop>
-              <IncomeStatementView />
-            </ScrollToTop>
-          </RequireAuth>
-        )
-      },
-      {
-        path: '/child-income/:childId/:incomeStatementId/edit',
-        element: (
-          <RequireAuth>
-            <ScrollToTop>
-              <ChildIncomeStatementEditor />
-            </ScrollToTop>
-          </RequireAuth>
-        )
-      },
-      {
-        path: '/child-income/:childId/:incomeStatementId',
-        element: (
-          <RequireAuth>
-            <ScrollToTop>
-              <ChildIncomeStatementView />
-            </ScrollToTop>
-          </RequireAuth>
-        )
-      },
-      {
-        path: '/children/:childId',
-        element: (
-          <RequireAuth strength="WEAK">
-            <ScrollToTop>
-              <ChildPage />
-            </ScrollToTop>
-          </RequireAuth>
-        )
-      },
-      ...(featureFlags.serviceApplications
-        ? [
-            {
-              path: '/children/:childId/service-application',
-              element: (
-                <RequireAuth strength="STRONG">
-                  <ScrollToTop>
-                    <NewServiceApplicationPage />
-                  </ScrollToTop>
-                </RequireAuth>
-              )
-            }
-          ]
-        : []),
-      ...(featureFlags.absenceApplications
-        ? [
-            {
-              path: '/children/:childId/absence-application',
-              element: (
-                <ScrollToTop>
-                  <NewAbsenceApplicationPage />
-                </ScrollToTop>
-              )
-            }
-          ]
-        : []),
-      {
-        path: '/child-documents/:id',
-        element: (
-          <RequireAuth>
-            <ScrollToTop>
-              <ChildDocumentPage />
-            </ScrollToTop>
-          </RequireAuth>
-        )
-      },
-      {
-        path: '/decisions',
-        element: (
-          <RequireAuth>
-            <ScrollToTop>
-              <Decisions />
-            </ScrollToTop>
-          </RequireAuth>
-        )
-      },
-      {
-        path: '/decisions/by-application/:applicationId',
-        element: (
-          <RequireAuth>
-            <ScrollToTop>
-              <DecisionResponseList />
-            </ScrollToTop>
-          </RequireAuth>
-        )
-      },
-      {
-        path: '/decisions/assistance/:id',
-        element: (
-          <RequireAuth>
-            <ScrollToTop>
-              <AssistanceDecisionPage />
-            </ScrollToTop>
-          </RequireAuth>
-        )
-      },
-      {
-        path: '/decisions/assistance-preschool/:id',
-        element: (
-          <RequireAuth>
-            <ScrollToTop>
-              <AssistancePreschoolDecisionPage />
-            </ScrollToTop>
-          </RequireAuth>
-        )
-      },
-      {
-        path: '/messages/:threadId',
-        element: (
-          <RequireAuth strength="WEAK">
-            <MessagesPage />
-          </RequireAuth>
-        )
-      },
-      {
-        path: '/messages',
-        element: (
-          <RequireAuth strength="WEAK">
-            <ScrollToTop>
-              <MessagesPage />
-            </ScrollToTop>
-          </RequireAuth>
-        )
-      },
-      {
-        path: '/calendar',
-        element: (
-          <RequireAuth strength="WEAK">
-            <ScrollToTop>
-              <CalendarPage />
-            </ScrollToTop>
-          </RequireAuth>
-        )
-      },
-      {
-        path: '/*',
-        element: <HandleRedirection />
-      },
-      {
-        index: true,
-        element: <HandleRedirection />
-      }
-    ]
+    path: '/child-income/:childId/:incomeStatementId/edit',
+    component: ChildIncomeStatementEditor
+  },
+  {
+    path: '/child-income/:childId/:incomeStatementId',
+    component: ChildIncomeStatementView
+  },
+  { path: '/children/:childId', component: ChildPage, auth: 'WEAK' },
+  { path: '/child-documents/:id', component: ChildDocumentPage },
+  { path: '/decisions', component: Decisions },
+  {
+    path: '/decisions/by-application/:applicationId',
+    component: DecisionResponseList
+  },
+  { path: '/decisions/assistance/:id', component: AssistanceDecisionPage },
+  {
+    path: '/decisions/assistance-preschool/:id',
+    component: AssistancePreschoolDecisionPage
+  },
+  { path: '/messages/:threadId', component: MessagesPage, auth: 'WEAK' },
+  { path: '/messages', component: MessagesPage, auth: 'WEAK' },
+  { path: '/calendar', component: CalendarPage, auth: 'WEAK' },
+  {
+    path: '/children/:childId/service-application',
+    component: NewServiceApplicationPage,
+    disabled: !featureFlags.serviceApplications
+  },
+  {
+    path: '/children/:childId/absence-application',
+    component: NewAbsenceApplicationPage,
+    disabled: !featureFlags.absenceApplications
   }
-])
+]
+
+function renderRoute({
+  path,
+  component: Component,
+  auth,
+  disabled
+}: CitizenRoute) {
+  if (disabled) return null
+  const inner = (
+    <ScrollToTop>
+      <Component />
+    </ScrollToTop>
+  )
+  const outer =
+    auth !== null ? <RequireAuth strength={auth}>{inner}</RequireAuth> : inner
+  return (
+    <Route key={path} path={path}>
+      {outer}
+    </Route>
+  )
+}
+
+export default function Root() {
+  return (
+    <Router>
+      <App>
+        <Switch>
+          {routes.map(renderRoute)}
+          <Route>
+            <HandleRedirection />
+          </Route>
+        </Switch>
+      </App>
+    </Router>
+  )
+}

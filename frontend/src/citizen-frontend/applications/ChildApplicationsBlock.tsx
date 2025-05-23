@@ -5,8 +5,8 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import noop from 'lodash/noop'
 import React, { useContext } from 'react'
-import { Link, useNavigate } from 'react-router'
 import styled from 'styled-components'
+import { Link, useLocation } from 'wouter'
 
 import type {
   ApplicationsOfChild,
@@ -165,7 +165,7 @@ export default React.memo(function ChildApplicationsBlock({
     decidableApplications
   }
 }: ChildApplicationsBlockProps) {
-  const navigate = useNavigate()
+  const [, navigate] = useLocation()
   const t = useTranslation()
   const { setErrorMessage, setInfoMessage, clearInfoMessage } =
     useContext(OverlayContext)

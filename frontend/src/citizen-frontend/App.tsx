@@ -6,8 +6,8 @@ import isPropValid from '@emotion/is-prop-valid'
 import { ErrorBoundary } from '@sentry/react'
 import type { ReactNode } from 'react'
 import React, { useCallback, useContext } from 'react'
-import { Navigate, Outlet } from 'react-router'
 import styled, { StyleSheetManager, ThemeProvider } from 'styled-components'
+import { Redirect } from 'wouter'
 
 import {
   Notifications,
@@ -35,7 +35,7 @@ import GlobalDialog from './overlay/GlobalDialog'
 import { OverlayContext, OverlayContextProvider } from './overlay/state'
 import { queryClient, QueryClientProvider } from './query'
 
-export function App() {
+export function App({ children }: { children: React.ReactNode }) {
   const i18n = useTranslation()
 
   return (
@@ -52,7 +52,7 @@ export function App() {
                 <OverlayContextProvider>
                   <NotificationsContextProvider>
                     <MessageContextProvider>
-                      <Content />
+                      <Content>{children}</Content>
                       <GlobalDialog />
                       <LoginErrorModal />
                       <div id="modal-container" />
@@ -86,7 +86,11 @@ const FullPageContainer = styled.div`
   min-height: 100vh;
 `
 
-const Content = React.memo(function Content() {
+const Content = React.memo(function Content({
+  children
+}: {
+  children: React.ReactNode
+}) {
   const t = useTranslation()
   const { apiVersion } = useContext(AuthContext)
   const { modalOpen } = useContext(OverlayContext)
@@ -102,9 +106,7 @@ const Content = React.memo(function Content() {
       <SkipToContent target="main">{t.skipLinks.mainContent}</SkipToContent>
       <Header ariaHidden={modalOpen} />
       <Notifications apiVersion={apiVersion} />
-      <MainContainer ariaHidden={modalOpen}>
-        <Outlet />
-      </MainContainer>
+      <MainContainer ariaHidden={modalOpen}>{children}</MainContainer>
       <MobileNav />
       {sessionExpirationDetected && (
         <SessionExpiredModal onClose={() => dismissSessionExpiredDetection()} />
@@ -136,14 +138,14 @@ export function HandleRedirection() {
   const user = useUser()
 
   if (!user) {
-    return <Navigate replace to="/login" />
+    return <Redirect replace to="/login" />
   }
 
   const hasAccessToCalendar = !!user?.accessibleFeatures.reservations
   return hasAccessToCalendar ? (
-    <Navigate replace to="/calendar" />
+    <Redirect replace to="/calendar" />
   ) : (
-    <Navigate replace to="/map" />
+    <Redirect replace to="/map" />
   )
 }
 

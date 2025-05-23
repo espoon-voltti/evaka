@@ -9,8 +9,8 @@ import React, {
   useRef,
   useState
 } from 'react'
-import { useNavigate, useParams, useSearchParams } from 'react-router'
 import styled from 'styled-components'
+import { useLocation, useParams, useSearchParams } from 'wouter'
 
 import { combine } from 'lib-common/api'
 import type { MessageThreadId } from 'lib-common/generated/api-types/shared'
@@ -55,7 +55,7 @@ const StyledFlex = styled(AdaptiveFlex)`
 
 export default React.memo(function MessagesPage() {
   const i18n = useTranslation()
-  const navigate = useNavigate()
+  const [, navigate] = useLocation()
   const [searchParams] = useSearchParams()
   const { messageAccount, selectedThread, setSelectedThread } =
     useContext(MessageContext)
@@ -75,9 +75,9 @@ export default React.memo(function MessagesPage() {
   const changeEditorVisibility = useCallback(
     (setEditorVisible: boolean) => {
       if (!setEditorVisible) {
-        void navigate('/messages')
+        navigate('/messages')
       } else {
-        void navigate(`/messages?editorVisible=true`)
+        navigate(`/messages?editorVisible=true`)
       }
     },
     [navigate]
@@ -93,10 +93,10 @@ export default React.memo(function MessagesPage() {
   const selectThread = useCallback(
     (threadId: MessageThreadId | undefined) => {
       if (!threadId) {
-        void navigate('/messages')
+        navigate('/messages')
       } else {
         if (params.threadId !== threadId) {
-          void navigate(`/messages/${threadId}`)
+          navigate(`/messages/${threadId}`)
         } else {
           threadView.current?.focusThreadTitle()
         }

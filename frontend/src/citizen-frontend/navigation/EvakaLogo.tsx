@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { Link } from 'react-router'
 import styled from 'styled-components'
+import { Link } from 'wouter'
 
 import { EvakaLogo } from 'lib-components/atoms/EvakaLogo'
 import { desktopMin } from 'lib-components/breakpoints'

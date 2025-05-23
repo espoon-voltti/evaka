@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useMemo, useState } from 'react'
-import { Navigate, useSearchParams } from 'react-router'
+import { Redirect, useSearchParams } from 'wouter'
 
 import { wrapResult } from 'lib-common/api'
 import { string } from 'lib-common/form/fields'
@@ -39,7 +39,7 @@ export default React.memo(function WeakLoginFormPage() {
   const unvalidatedNextPath = searchParams.get('next')
 
   if (user) {
-    return <Navigate to="/" replace />
+    return <Redirect to="/" replace />
   }
 
   return (
