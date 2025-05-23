@@ -5,11 +5,11 @@
 import React, { useMemo, useState } from 'react'
 import { Redirect, useSearchParams } from 'wouter'
 
-import { wrapResult } from 'lib-common/api'
 import { string } from 'lib-common/form/fields'
 import { object, required, validated, value } from 'lib-common/form/form'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
 import { nonBlank } from 'lib-common/form/validators'
+import { useMutationResult } from 'lib-common/query'
 import { parseUrlWithOrigin } from 'lib-common/utils/parse-url-with-origin'
 import Main from 'lib-components/atoms/Main'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
@@ -27,9 +27,10 @@ import { H1, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
 import Footer from '../Footer'
-import { authWeakLogin } from '../auth/api'
 import { useUser } from '../auth/state'
 import { useTranslation } from '../localization'
+
+import { authWeakLoginMutation } from './queries'
 
 export default React.memo(function WeakLoginFormPage() {
   const i18n = useTranslation()
@@ -71,8 +72,6 @@ const weakLoginForm = object({
   password: validated(required(value<string>()), nonBlank)
 })
 
-const authWeakLoginResult = wrapResult(authWeakLogin)
-
 const WeakLoginForm = React.memo(function WeakLogin({
   unvalidatedNextPath
 }: {
@@ -81,6 +80,9 @@ const WeakLoginForm = React.memo(function WeakLogin({
   const i18n = useTranslation()
   const t = i18n.loginPage.login
   const [rateLimitError, setRateLimitError] = useState(false)
+  const { mutateAsync: authWeakLogin } = useMutationResult(
+    authWeakLoginMutation
+  )
 
   const nextUrl = useMemo(
     () =>
@@ -137,7 +139,7 @@ const WeakLoginForm = React.memo(function WeakLogin({
           disabled={!form.isValid()}
           onClick={() => {
             const { username, password } = form.value()
-            return authWeakLoginResult(username, password)
+            return authWeakLogin({ username, password })
           }}
           onSuccess={() => window.location.replace(nextUrl ?? '/')}
           onFailure={(error) => {
