@@ -94,13 +94,11 @@ const maybeCreateDaycareOnlyTerminatable = (
 interface Props {
   childId: ChildId
   placementGroup: TerminatablePlacementGroup
-  onSuccess: () => void
 }
 
 export default React.memo(function PlacementTerminationForm({
   childId,
-  placementGroup,
-  onSuccess
+  placementGroup
 }: Props) {
   const t = useTranslation()
   const [lang] = useLang()
@@ -159,8 +157,7 @@ export default React.memo(function PlacementTerminationForm({
   const onTerminateSuccess = useCallback(() => {
     setShowConfirmDialog(false)
     setState(emptyState())
-    onSuccess()
-  }, [onSuccess])
+  }, [])
 
   // Add option for terminating only the invoiced placements if in preschool or preparatory placement
   const options: CheckboxOption[] = useMemo(
