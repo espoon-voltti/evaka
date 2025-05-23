@@ -85,13 +85,13 @@ describe('Nekku fields are editable', () => {
     section = childInformationPage.additionalInformationSection()
   })
 
-  test('Nekku eats breakfast information can be unset', async () => {
-    await section.nekkuEatsBreakfast.assertTextEquals('Kyllä')
+  test('Participates in breakfast information can be unset', async () => {
+    await section.participatesInBreakfast.assertTextEquals('Kyllä')
 
     await section.editBtn.click()
-    await section.nekkuEatsBreakfastCheckbox.uncheck()
+    await section.participatesInBreakfastCheckbox.uncheck()
     await section.confirmBtn.click()
-    await section.nekkuEatsBreakfast.assertTextEquals('Ei')
+    await section.participatesInBreakfast.assertTextEquals('Ei')
   })
 
   test('Nekku diet can be edited', async () => {

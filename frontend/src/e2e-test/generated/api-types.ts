@@ -392,13 +392,13 @@ export interface DevChild {
   allergies: string
   diet: string
   dietId: number | null
-  eatsBreakfast: boolean
   id: PersonId
   languageAtHome: string
   languageAtHomeDetails: string
   mealTextureId: number | null
   medication: string
   nekkuDiet: NekkuProductMealType | null
+  participatesInBreakfast: boolean
 }
 
 /**

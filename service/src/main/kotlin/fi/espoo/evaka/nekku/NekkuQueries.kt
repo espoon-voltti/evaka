@@ -438,7 +438,7 @@ SELECT
     rp.unit_id,
     rp.group_id,
     rp.placement_type,
-    ch.nekku_eats_breakfast as eats_breakfast,
+    ch.participates_in_breakfast as eats_breakfast,
     p.date_of_birth,
     (sn.shift_care IS NOT NULL AND sn.shift_care != 'NONE') AS has_shift_care,
     coalesce((

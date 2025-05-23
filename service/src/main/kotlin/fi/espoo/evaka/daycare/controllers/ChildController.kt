@@ -166,6 +166,6 @@ data class AdditionalInformation(
     @Nested("special_diet") val specialDiet: SpecialDiet? = null,
     @Nested("meal_texture") val mealTexture: MealTexture? = null,
     val nekkuDiet: NekkuProductMealType? = null,
-    val nekkuEatsBreakfast: Boolean = true,
+    val participatesInBreakfast: Boolean = true,
     @Json val nekkuSpecialDietChoices: List<NekkuSpecialDietChoices> = emptyList(),
 )

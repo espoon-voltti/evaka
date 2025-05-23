@@ -129,7 +129,7 @@ export class AdditionalInformationSection extends Section {
   languageAtHomeDetails: Element
   languageAtHomeDetailsInput: TextInput
   specialDietCombobox: Combobox
-  nekkuEatsBreakfastCheckbox: Checkbox
+  participatesInBreakfastCheckbox: Checkbox
   nekkuDietSelect: Combobox
 
   constructor(page: Page, root: Element) {
@@ -145,8 +145,8 @@ export class AdditionalInformationSection extends Section {
       page.findByDataQa('input-language-at-home-details')
     )
     this.specialDietCombobox = new Combobox(page.findByDataQa('diet-input'))
-    this.nekkuEatsBreakfastCheckbox = new Checkbox(
-      page.findByDataQa('nekku-eats-breakfast-checkbox')
+    this.participatesInBreakfastCheckbox = new Checkbox(
+      page.findByDataQa('participates-in-breakfast-checkbox')
     )
     this.nekkuDietSelect = new Combobox(page.findByDataQa('nekku-diet-input'))
   }
@@ -155,7 +155,9 @@ export class AdditionalInformationSection extends Section {
   editBtn = this.find('[data-qa="edit-child-settings-button"]')
   medicationInput = new TextInput(this.find('[data-qa="medication-input"]'))
   confirmBtn = this.find('[data-qa="confirm-edited-child-button"]')
-  nekkuEatsBreakfast = this.find('[data-qa="nekku-eats-breakfast-display"]')
+  participatesInBreakfast = this.find(
+    '[data-qa="participates-in-breakfast-display"]'
+  )
   nekkuDiet = this.find('[data-qa="nekku-diet-display"]')
 
   readonly specialDiet = this.page.findByDataQa('diet-value-display')
