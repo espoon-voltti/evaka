@@ -8,6 +8,7 @@ import styled from 'styled-components'
 import DateRange from 'lib-common/date-range'
 import type { ApplicationId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import { useMutationResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import Radio from 'lib-components/atoms/form/Radio'
@@ -25,7 +26,11 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/citizen'
 import { placementTypes } from 'lib-customizations/employee'
 
-import { getAttachmentUrl, applicationAttachment } from '../../../attachments'
+import {
+  getAttachmentUrl,
+  applicationAttachment
+} from '../../../attachments/attachments'
+import { deleteAttachmentMutation } from '../../../attachments/queries'
 import { errorToInputInfo } from '../../../input-info-helper'
 import { useLang, useTranslation } from '../../../localization'
 
@@ -96,6 +101,10 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
     optionsValidAtTime,
     updateFormData
   ])
+
+  const { mutateAsync: deleteAttachment } = useMutationResult(
+    deleteAttachmentMutation
+  )
 
   const updateServiceNeed = (partTime: boolean) => {
     let serviceNeedOption = formData.serviceNeedOption
@@ -318,7 +327,8 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
             files={formData.shiftCareAttachments}
             uploadHandler={applicationAttachment(
               applicationId,
-              'EXTENDED_CARE'
+              'EXTENDED_CARE',
+              deleteAttachment
             )}
             onUploaded={(attachment) =>
               updateFormData({

@@ -4,7 +4,8 @@
 
 import type { AxiosProgressEvent } from 'axios'
 
-import { Failure, Success, wrapResult } from 'lib-common/api'
+import type { Result } from 'lib-common/api'
+import { Failure, Success } from 'lib-common/api'
 import type { ApplicationAttachmentType } from 'lib-common/generated/api-types/application'
 import type { IncomeStatementAttachmentType } from 'lib-common/generated/api-types/incomestatement'
 import type {
@@ -15,19 +16,21 @@ import type {
 import type { UploadHandler } from 'lib-components/molecules/FileUpload'
 
 import {
-  deleteAttachment,
   getAttachment,
   uploadApplicationAttachmentCitizen,
   uploadIncomeStatementAttachmentCitizen,
   uploadMessageAttachmentCitizen,
   uploadOrphanIncomeStatementAttachmentCitizen
-} from './generated/api-clients/attachment'
+} from '../generated/api-clients/attachment'
 
 function uploadHandler(
   upload: (
     file: File,
     onUploadProgress: (event: AxiosProgressEvent) => void
-  ) => Promise<AttachmentId>
+  ) => Promise<AttachmentId>,
+  deleteAttachmentResult: (arg: {
+    attachmentId: AttachmentId
+  }) => Promise<Result<void>>
 ): UploadHandler {
   return {
     upload: async (file, onUploadProgress) => {
@@ -48,42 +51,58 @@ function uploadHandler(
   }
 }
 
-const deleteAttachmentResult = wrapResult(deleteAttachment)
-
 export function incomeStatementAttachment(
   incomeStatementId: IncomeStatementId | undefined,
-  attachmentType: IncomeStatementAttachmentType | null
+  attachmentType: IncomeStatementAttachmentType | null,
+  deleteAttachmentResult: (arg: {
+    attachmentId: AttachmentId
+  }) => Promise<Result<void>>
 ): UploadHandler {
-  return uploadHandler((file, onUploadProgress) =>
-    incomeStatementId
-      ? uploadIncomeStatementAttachmentCitizen(
-          {
-            incomeStatementId,
-            attachmentType,
-            file
-          },
-          { onUploadProgress }
-        )
-      : uploadOrphanIncomeStatementAttachmentCitizen(
-          { attachmentType, file },
-          { onUploadProgress }
-        )
+  return uploadHandler(
+    (file, onUploadProgress) =>
+      incomeStatementId
+        ? uploadIncomeStatementAttachmentCitizen(
+            {
+              incomeStatementId,
+              attachmentType,
+              file
+            },
+            { onUploadProgress }
+          )
+        : uploadOrphanIncomeStatementAttachmentCitizen(
+            { attachmentType, file },
+            { onUploadProgress }
+          ),
+    deleteAttachmentResult
   )
 }
 
-export const messageAttachment = uploadHandler((file, onUploadProgress) =>
-  uploadMessageAttachmentCitizen({ file }, { onUploadProgress })
-)
+export function messageAttachment(
+  deleteAttachment: (arg: {
+    attachmentId: AttachmentId
+  }) => Promise<Result<void>>
+): UploadHandler {
+  return uploadHandler(
+    (file, onUploadProgress) =>
+      uploadMessageAttachmentCitizen({ file }, { onUploadProgress }),
+    deleteAttachment
+  )
+}
 
 export function applicationAttachment(
   applicationId: ApplicationId,
-  attachmentType: ApplicationAttachmentType
+  attachmentType: ApplicationAttachmentType,
+  deleteAttachmentResult: (arg: {
+    attachmentId: AttachmentId
+  }) => Promise<Result<void>>
 ): UploadHandler {
-  return uploadHandler((file, onUploadProgress) =>
-    uploadApplicationAttachmentCitizen(
-      { applicationId, type: attachmentType, file },
-      { onUploadProgress }
-    )
+  return uploadHandler(
+    (file, onUploadProgress) =>
+      uploadApplicationAttachmentCitizen(
+        { applicationId, type: attachmentType, file },
+        { onUploadProgress }
+      ),
+    deleteAttachmentResult
   )
 }
 

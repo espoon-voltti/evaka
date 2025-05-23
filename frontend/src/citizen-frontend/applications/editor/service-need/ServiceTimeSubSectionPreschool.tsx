@@ -10,6 +10,7 @@ import type { PlacementType } from 'lib-common/generated/api-types/placement'
 import type { ServiceNeedOptionPublicInfo } from 'lib-common/generated/api-types/serviceneed'
 import type { ApplicationId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import { useMutationResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import { useUniqueId } from 'lib-common/utils/useUniqueId'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
@@ -27,7 +28,11 @@ import { H3, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/citizen'
 
-import { getAttachmentUrl, applicationAttachment } from '../../../attachments'
+import {
+  getAttachmentUrl,
+  applicationAttachment
+} from '../../../attachments/attachments'
+import { deleteAttachmentMutation } from '../../../attachments/queries'
 import { errorToInputInfo } from '../../../input-info-helper'
 import { useLang, useTranslation } from '../../../localization'
 
@@ -102,6 +107,10 @@ export default React.memo(function ServiceTimeSubSectionPreschool({
     serviceNeedOptionsByType,
     updateFormData
   ])
+
+  const { mutateAsync: deleteAttachment } = useMutationResult(
+    deleteAttachmentMutation
+  )
 
   return (
     <>
@@ -329,7 +338,8 @@ export default React.memo(function ServiceTimeSubSectionPreschool({
                 files={formData.shiftCareAttachments}
                 uploadHandler={applicationAttachment(
                   applicationId,
-                  'EXTENDED_CARE'
+                  'EXTENDED_CARE',
+                  deleteAttachment
                 )}
                 onUploaded={(attachment) =>
                   updateFormData({

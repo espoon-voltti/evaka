@@ -8,7 +8,6 @@ import maxBy from 'lodash/maxBy'
 import sortBy from 'lodash/sortBy'
 import React, { useCallback, useMemo, useState } from 'react'
 
-import { wrapResult } from 'lib-common/api'
 import type {
   PlacementTerminationRequestBody,
   PlacementType,
@@ -16,6 +15,7 @@ import type {
 } from 'lib-common/generated/api-types/placement'
 import type { ChildId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
+import { useMutationResult } from 'lib-common/query'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
@@ -24,10 +24,8 @@ import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
 import { H3, Label } from 'lib-components/typography'
 
 import ModalAccessibilityWrapper from '../../../ModalAccessibilityWrapper'
-import { postPlacementTermination } from '../../../generated/api-clients/placement'
 import { useLang, useTranslation } from '../../../localization'
-
-const postPlacementTerminationResult = wrapResult(postPlacementTermination)
+import { terminatePlacementMutation } from '../../queries'
 
 type TerminationFormState =
   | { type: 'valid'; data: PlacementTerminationRequestBody }
@@ -96,13 +94,11 @@ const maybeCreateDaycareOnlyTerminatable = (
 interface Props {
   childId: ChildId
   placementGroup: TerminatablePlacementGroup
-  onSuccess: () => void
 }
 
 export default React.memo(function PlacementTerminationForm({
   childId,
-  placementGroup,
-  onSuccess
+  placementGroup
 }: Props) {
   const t = useTranslation()
   const [lang] = useLang()
@@ -121,6 +117,9 @@ export default React.memo(function PlacementTerminationForm({
 
   const [showConfirmDialog, setShowConfirmDialog] = useState(false)
   const [state, setState] = useState<UiState>(emptyState())
+  const { mutateAsync: terminatePlacement } = useMutationResult(
+    terminatePlacementMutation
+  )
 
   const terminationState = useMemo<TerminationFormState>(() => {
     if (!(state.placements.length > 0 && state.terminationDate)) {
@@ -147,19 +146,18 @@ export default React.memo(function PlacementTerminationForm({
   const onSubmit = useCallback(
     () =>
       terminationState.type === 'valid'
-        ? postPlacementTerminationResult({
+        ? terminatePlacement({
             childId,
             body: terminationState.data
           })
         : Promise.reject('Invalid params'),
-    [childId, terminationState]
+    [childId, terminationState, terminatePlacement]
   )
 
   const onTerminateSuccess = useCallback(() => {
     setShowConfirmDialog(false)
     setState(emptyState())
-    onSuccess()
-  }, [onSuccess])
+  }, [])
 
   // Add option for terminating only the invoiced placements if in preschool or preparatory placement
   const options: CheckboxOption[] = useMemo(
