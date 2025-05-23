@@ -4,10 +4,9 @@
 
 import React, { useState } from 'react'
 
-import { wrapResult } from 'lib-common/api'
 import type { ChildId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
-import { useApiState } from 'lib-common/utils/useRestApi'
+import { useQueryResult } from 'lib-common/query'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { P } from 'lib-components/typography'
 import { faLockAlt } from 'lib-icons'
@@ -15,9 +14,9 @@ import { faLockAlt } from 'lib-icons'
 import RequireAuth from '../../../RequireAuth'
 import { renderResult } from '../../../async-rendering'
 import { useUser } from '../../../auth/state'
-import { getPlacements } from '../../../generated/api-clients/placement'
 import { useTranslation } from '../../../localization'
 import ResponsiveWholePageCollapsible from '../../ResponsiveWholePageCollapsible'
+import { getPlacementsQuery } from '../../queries'
 
 import NonTerminatablePlacement from './NonTerminatablePlacement'
 import PlacementTerminationForm from './PlacementTerminationForm'
@@ -26,8 +25,6 @@ import TerminatedPlacements from './TerminatedPlacements'
 interface PlacementTerminationProps {
   childId: ChildId
 }
-
-const getPlacementsResult = wrapResult(getPlacements)
 
 export default React.memo(function PlacementTerminationSection({
   childId
@@ -55,14 +52,12 @@ export default React.memo(function PlacementTerminationSection({
 const PlacementTerminationContent = React.memo(
   function PlacementTerminationContent({ childId }: PlacementTerminationProps) {
     const t = useTranslation()
-    const [placementsResponse, refreshPlacements] = useApiState(
-      () => getPlacementsResult({ childId }),
-      [childId]
-    )
+
+    const getPlacementsResult = useQueryResult(getPlacementsQuery({ childId }))
 
     return (
       <>
-        {renderResult(placementsResponse, ({ placements }) => {
+        {renderResult(getPlacementsResult, ({ placements }) => {
           const terminatedPlacements = placements.filter((placementGroup) =>
             placementGroup.placements
               .concat(placementGroup.additionalPlacements)
@@ -80,7 +75,6 @@ const PlacementTerminationContent = React.memo(
                     key={`${grp.type}-${grp.unitId}`}
                     childId={childId}
                     placementGroup={grp}
-                    onSuccess={refreshPlacements}
                   />
                 ) : (
                   <NonTerminatablePlacement
