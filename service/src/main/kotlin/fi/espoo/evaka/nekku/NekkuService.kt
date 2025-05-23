@@ -904,6 +904,33 @@ enum class NekkuProductMealType(val description: String) : DatabaseEnum {
     override val sqlType: String = "nekku_product_meal_type"
 }
 
+fun isDaycareOpenOnDate(date: LocalDate, daycareOperationInfo: NekkuDaycareOperationInfo): Boolean {
+    return date.dayOfWeek.value in daycareOperationInfo.combinedDays &&
+        (daycareOperationInfo.shiftCareOpenOnHolidays || !isHoliday(date))
+}
+
+fun daycareOpenNextTime(
+    date: LocalDate,
+    daycareOperationInfo: NekkuDaycareOperationInfo,
+): LocalDate {
+
+    if (daycareOperationInfo.combinedDays.isEmpty()) {
+        throw IllegalStateException(
+            "Päiväkodin aukioloaikoja ei olla asetettu Nekku-tilausta luotaessa"
+        )
+    }
+
+    for (i in 1..7) {
+        val candidateDate = date.plusDays(i.toLong())
+
+        if (isDaycareOpenOnDate(candidateDate, daycareOperationInfo)) {
+            return candidateDate
+        }
+    }
+
+    throw IllegalStateException("Päiväkodin seuraavaa aukioloa ei löydetty")
+}
+
 data class NekkuChildInfo(
     val placementType: PlacementType,
     val reservations: List<TimeRange>?,

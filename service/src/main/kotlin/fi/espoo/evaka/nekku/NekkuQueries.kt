@@ -20,7 +20,6 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.TimeRange
-import fi.espoo.evaka.shared.domain.isHoliday
 import java.time.LocalDate
 import org.jdbi.v3.json.Json
 
@@ -676,30 +675,3 @@ data class NekkuDaycareOperationInfo(
     val combinedDays: List<Int>,
     val shiftCareOpenOnHolidays: Boolean,
 )
-
-fun isDaycareOpenOnDate(date: LocalDate, daycareOperationInfo: NekkuDaycareOperationInfo): Boolean {
-    return date.dayOfWeek.value in daycareOperationInfo.combinedDays &&
-        (daycareOperationInfo.shiftCareOpenOnHolidays || !isHoliday(date))
-}
-
-fun daycareOpenNextTime(
-    date: LocalDate,
-    daycareOperationInfo: NekkuDaycareOperationInfo,
-): LocalDate {
-
-    if (daycareOperationInfo.combinedDays.isEmpty()) {
-        throw IllegalStateException(
-            "Päiväkodin aukioloaikoja ei olla asetettu Nekku-tilausta luotaessa"
-        )
-    }
-
-    for (i in 1..7) {
-        val candidateDate = date.plusDays(i.toLong())
-
-        if (isDaycareOpenOnDate(candidateDate, daycareOperationInfo)) {
-            return candidateDate
-        }
-    }
-
-    throw IllegalStateException("Päiväkodin seuraavaa aukioloa ei löydetty")
-}
