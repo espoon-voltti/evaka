@@ -14,8 +14,8 @@ import type { IncomeStatementAttachments } from 'lib-common/income-statements/at
 import { useMutationResult } from 'lib-common/query'
 import type { UploadHandler } from 'lib-components/molecules/FileUpload'
 
-import { incomeStatementAttachment } from '../attachments'
-import { deleteAttachmentMutation } from '../queries'
+import { incomeStatementAttachment } from '../attachments/attachments'
+import { deleteAttachmentMutation } from '../attachments/queries'
 
 import type { SetStateCallback } from './hooks'
 

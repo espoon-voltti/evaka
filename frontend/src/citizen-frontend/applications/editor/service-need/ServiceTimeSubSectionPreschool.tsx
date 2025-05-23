@@ -28,10 +28,13 @@ import { H3, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/citizen'
 
-import { getAttachmentUrl, applicationAttachment } from '../../../attachments'
+import {
+  getAttachmentUrl,
+  applicationAttachment
+} from '../../../attachments/attachments'
+import { deleteAttachmentMutation } from '../../../attachments/queries'
 import { errorToInputInfo } from '../../../input-info-helper'
 import { useLang, useTranslation } from '../../../localization'
-import { deleteAttachmentMutation } from '../../../queries'
 
 import type { ServiceNeedSectionProps } from './ServiceNeedSection'
 

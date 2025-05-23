@@ -21,7 +21,7 @@ import {
   uploadIncomeStatementAttachmentCitizen,
   uploadMessageAttachmentCitizen,
   uploadOrphanIncomeStatementAttachmentCitizen
-} from './generated/api-clients/attachment'
+} from '../generated/api-clients/attachment'
 
 function uploadHandler(
   upload: (

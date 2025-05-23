@@ -4,7 +4,7 @@
 
 import { Queries } from 'lib-common/query'
 
-import { deleteAttachment } from './generated/api-clients/attachment'
+import { deleteAttachment } from '../generated/api-clients/attachment'
 
 const q = new Queries()
 
