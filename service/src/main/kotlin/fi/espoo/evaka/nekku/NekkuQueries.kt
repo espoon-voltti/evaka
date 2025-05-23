@@ -653,25 +653,24 @@ fun Database.Read.getDaycareGroupIds(daycareId: DaycareId): List<GroupId> =
     createQuery { sql("SELECT id FROM daycare_group WHERE daycare_id = ${bind(daycareId)}") }
         .toList()
 
-fun Database.Read.getDaycareOperationInfo(groupId: GroupId): NekkuDaycareOperationInfo? {
-    return createQuery {
+fun Database.Read.getDaycareOperationInfo(groupId: GroupId): NekkuDaycareOperationInfo? =
+    createQuery {
             sql(
                 """
             SELECT ARRAY(
                 SELECT DISTINCT unnest(
-                COALESCE(d.operation_days, '{}')::int[] || 
-                COALESCE(d.shift_care_operation_days, '{}')::int[]
-                )
+                    COALESCE(d.operation_days, '{}')::int[] || 
+                    COALESCE(d.shift_care_operation_days, '{}')::int[]
+                    )
                 ) AS combined_days,
                 d.shift_care_open_on_holidays
-                FROM daycare_group dcg
+            FROM daycare_group dcg
                 JOIN daycare d ON d.id = dcg.daycare_id
             WHERE dcg.id = ${bind(groupId)}
             """
             )
         }
         .exactlyOneOrNull<NekkuDaycareOperationInfo>()
-}
 
 data class NekkuDaycareOperationInfo(
     val combinedDays: List<Int>,
