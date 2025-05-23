@@ -6,8 +6,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import styled, { css } from 'styled-components'
-import { Link } from 'wouter'
 
+import NavLink from 'lib-components/atoms/NavLink'
 import { fontWeights } from 'lib-components/typography'
 import useCloseOnOutsideClick from 'lib-components/utils/useCloseOnOutsideClick'
 import { defaultMargins } from 'lib-components/white-space'
@@ -69,8 +69,7 @@ export const DropDownButton = styled.button<{ $alignRight?: boolean }>`
   ${dropDownButtonStyles}
 `
 
-// TODO: NavLink
-export const DropDownLink = styled(Link)<{ $alignRight?: boolean }>`
+export const DropDownLink = styled(NavLink)<{ $alignRight?: boolean }>`
   ${dropDownButtonStyles}
   ${(p) => p.$alignRight && 'justify-content: flex-end;'}
 `

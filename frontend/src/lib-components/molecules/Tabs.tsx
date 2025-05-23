@@ -4,10 +4,10 @@
 
 import React from 'react'
 import styled, { css } from 'styled-components'
-import { Link } from 'wouter'
 
 import type { Uri } from 'lib-common/uri'
 
+import NavLink from '../atoms/NavLink'
 import { desktopMin } from '../breakpoints'
 import Container from '../layout/Container'
 import { fontWeights, NavLinkText } from '../typography'
@@ -192,8 +192,7 @@ const Tab = styled.div<{
   ${tabStyles}
 `
 
-// TODO: NavLink
-const TabLink = styled(Link)<{
+const TabLink = styled(NavLink)<{
   $maxWidth?: string
   $mobile?: boolean
 }>`

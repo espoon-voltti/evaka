@@ -11,6 +11,7 @@ import { Link, useLocation } from 'wouter'
 
 import { combine } from 'lib-common/api'
 import { EvakaLogo } from 'lib-components/atoms/EvakaLogo'
+import NavLink from 'lib-components/atoms/NavLink'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { desktopMin } from 'lib-components/breakpoints'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
@@ -104,8 +105,7 @@ const NavLinkWrapper = styled.div`
   padding: 10px 0;
 `
 
-// TODO: NavLink
-const NavbarLink = styled(Link)`
+const NavbarLink = styled(NavLink)`
   flex: 0 0 auto;
   display: flex;
   align-items: center;
