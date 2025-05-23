@@ -4,8 +4,8 @@
 
 import orderBy from 'lodash/orderBy'
 import React, { useContext, useRef, useState } from 'react'
-import { useNavigate } from 'react-router'
 import styled from 'styled-components'
+import { useLocation } from 'wouter'
 
 import { wrapResult } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
@@ -70,7 +70,7 @@ export default React.memo(function AssistanceNeedDecisionSection({
     [id]
   )
 
-  const navigate = useNavigate()
+  const [, navigate] = useLocation()
 
   const [isCreatingDecision, setIsCreatingDecision] = useState(false)
 

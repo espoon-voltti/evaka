@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useMemo } from 'react'
-import { useNavigate } from 'react-router'
+import { useLocation } from 'wouter'
 
 import type { Result } from 'lib-common/api'
 import { combine, Failure, Success } from 'lib-common/api'
@@ -18,13 +18,13 @@ import PreschoolTermForm from './PreschoolTermForm'
 import { preschoolTermsQuery } from './queries'
 
 export default React.memo(function PreschoolTermPeriodEditor() {
-  const navigate = useNavigate()
+  const [, navigate] = useLocation()
   const { termId } = useRouteParams(['termId'])
 
   const preschoolTerms = useQueryResult(preschoolTermsQuery())
 
   const navigateToList = useCallback(
-    () => void navigate('/holiday-periods'),
+    () => navigate('/holiday-periods'),
     [navigate]
   )
 

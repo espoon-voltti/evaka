@@ -3,8 +3,9 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { createBrowserRouter, Navigate } from 'react-router'
+import { Redirect, Route, Router, Switch } from 'wouter'
 
+import type { Translations } from 'lib-customizations/employee'
 import { featureFlags } from 'lib-customizations/employee'
 
 import { App, CloseAfterLogin, RedirectToMainPage } from './App'
@@ -113,903 +114,481 @@ import UnitFeaturesPage from './components/unit-features/UnitFeaturesPage'
 import VoucherValueDecisionPage from './components/voucher-value-decision/VoucherValueDecisionPage'
 import VoucherValueDecisionsPage from './components/voucher-value-decisions/VoucherValueDecisionsPage'
 
-export const router = createBrowserRouter(
-  [
-    {
-      path: '/',
-      element: <App />,
-      children: [
-        {
-          path: '/login',
-          element: (
-            <EmployeeRoute requireAuth={false} title="login">
-              <LoginPage />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/settings',
-          element: (
-            <EmployeeRoute title="settings">
-              <SettingsPage />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/system-notifications',
-          element: (
-            <EmployeeRoute title="systemNotifications">
-              <SystemNotificationsPage />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/unit-features',
-          element: (
-            <EmployeeRoute title="unitFeatures">
-              <UnitFeaturesPage />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/units',
-          element: (
-            <EmployeeRoute title="units">
-              <Units />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/units/new',
-          element: (
-            <EmployeeRoute title="createUnit">
-              <CreateUnitPage />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/units/:id/details',
-          element: (
-            <EmployeeRoute>
-              <UnitDetailsPage />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/units/:unitId/family-contacts',
-          element: (
-            <EmployeeRoute>
-              <ReportFamilyContacts />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/units/:unitId/groups/:groupId/caretakers',
-          element: (
-            <EmployeeRoute title="groupCaretakers">
-              <GroupCaretakers />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/units/:unitId/groups/:groupId/discussion-reservation-surveys',
-          element: featureFlags.discussionReservations ? (
-            <EmployeeRoute>
-              <DiscussionReservationSurveysPage />
-            </EmployeeRoute>
-          ) : null
-        },
-        {
-          path: '/units/:unitId/groups/:groupId/discussion-reservation-surveys/:eventId',
-          element: featureFlags.discussionReservations ? (
-            <EmployeeRoute>
-              <DiscussionReservationSurveyWrapper mode="VIEW" />
-            </EmployeeRoute>
-          ) : null
-        },
-        {
-          path: '/units/:unitId/groups/:groupId/discussion-reservation-surveys/:eventId/edit',
-          element: featureFlags.discussionReservations ? (
-            <EmployeeRoute>
-              <DiscussionReservationSurveyWrapper mode="EDIT" />
-            </EmployeeRoute>
-          ) : null
-        },
-        {
-          path: '/units/:id/*',
-          element: (
-            <EmployeeRoute>
-              <UnitPage />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/search',
-          element: (
-            <EmployeeRoute title="customers">
-              <Search />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/profile/:id',
-          element: (
-            <EmployeeRoute title="personProfile">
-              <PersonProfile />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/profile/:personId/timeline',
-          element: (
-            <EmployeeRoute title="personTimeline">
-              <TimelinePage />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/profile/:personId/income-statement/:incomeStatementId',
-          element: (
-            <EmployeeRoute title="incomeStatement">
-              <IncomeStatementPage />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/child-information/:id',
-          element: (
-            <EmployeeRoute title="childInformation">
-              <ChildInformation />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/child-information/:childId/assistance-need-decision/:id',
-          element: (
-            <EmployeeRoute
-              title="assistanceNeedDecision"
-              hideDefaultTitle={true}
-            >
-              <AssistanceNeedDecisionPage />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/child-information/:childId/assistance-need-decision/:id/edit',
-          element: (
-            <EmployeeRoute
-              title="assistanceNeedDecision"
-              hideDefaultTitle={true}
-            >
-              <AssistanceNeedDecisionEditPage />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/child-information/:childId/assistance-need-preschool-decisions/:decisionId',
-          element: (
-            <EmployeeRoute
-              title="assistanceNeedPreschoolDecision"
-              hideDefaultTitle={true}
-            >
-              <AssistanceNeedPreschoolDecisionReadPage />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/child-information/:childId/assistance-need-preschool-decisions/:decisionId/edit',
-          element: (
-            <EmployeeRoute
-              title="assistanceNeedPreschoolDecision"
-              hideDefaultTitle={true}
-            >
-              <AssistanceNeedPreschoolDecisionEditPage />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/applications',
-          element: (
-            <EmployeeRoute title="applications">
-              <ApplicationsPage />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/applications/:id',
-          element: (
-            <EmployeeRoute title="applications">
-              <ApplicationPage />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/applications/:id/placement',
-          element: (
-            <EmployeeRoute title="placementDraft">
-              <PlacementDraftPage />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/applications/:id/decisions',
-          element: (
-            <EmployeeRoute title="decision">
-              <DecisionPage />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/finance/basics',
-          element: (
-            <EmployeeRoute title="financeBasics">
-              <FinanceBasicsPage />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/finance/fee-decisions/:id',
-          element: (
-            <EmployeeRoute>
-              <FeeDecisionDetailsPage />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/finance/value-decisions/:id',
-          element: (
-            <EmployeeRoute>
-              <VoucherValueDecisionPage />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/finance/invoices/:id',
-          element: (
-            <EmployeeRoute>
-              <InvoicePage />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/finance/*',
-          element: (
-            <EmployeeRoute>
-              <FinancePage />
-            </EmployeeRoute>
-          ),
-          children: [
-            {
-              path: 'fee-decisions',
-              element: (
-                <EmployeeRoute title="feeDecisions">
-                  <FeeDecisionsPage />
-                </EmployeeRoute>
-              )
-            },
-            {
-              path: 'value-decisions',
-              element: (
-                <EmployeeRoute title="valueDecisions">
-                  <VoucherValueDecisionsPage />
-                </EmployeeRoute>
-              )
-            },
-            {
-              path: 'invoices',
-              element: (
-                <EmployeeRoute title="invoices">
-                  <InvoicesPage />
-                </EmployeeRoute>
-              )
-            },
-            {
-              path: 'payments',
-              element: featureFlags.voucherUnitPayments ? (
-                <EmployeeRoute title="payments">
-                  <PaymentsPage />
-                </EmployeeRoute>
-              ) : (
-                <Navigate replace to="/finance/fee-decisions" />
-              )
-            },
-            {
-              path: 'income-statements',
-              element: (
-                <EmployeeRoute title="incomeStatements">
-                  <IncomeStatementsPage />
-                </EmployeeRoute>
-              )
-            },
-            {
-              path: '*',
-              element: <Navigate replace to="/finance/fee-decisions" />
-            },
-            {
-              index: true,
-              element: <Navigate replace to="/finance/fee-decisions" />
-            }
-          ]
-        },
-        {
-          path: '/reports',
-          element: (
-            <EmployeeRoute title="reports">
-              <Reports />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/family-conflicts',
-          element: (
-            <EmployeeRoute title="reports">
-              <ReportFamilyConflicts />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/missing-head-of-family',
-          element: (
-            <EmployeeRoute title="reports">
-              <ReportMissingHeadOfFamily />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/missing-service-need',
-          element: (
-            <EmployeeRoute title="reports">
-              <ReportMissingServiceNeed />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/non-ssn-children',
-          element: (
-            <EmployeeRoute title="reports">
-              <ReportNonSsnChildren />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/applications',
-          element: (
-            <EmployeeRoute title="reports">
-              <ReportApplications />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/decisions',
-          element: (
-            <EmployeeRoute title="reports">
-              <ReportDecisions />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/partners-in-different-address',
-          element: (
-            <EmployeeRoute title="reports">
-              <ReportPartnersInDifferentAddress />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/children-in-different-address',
-          element: (
-            <EmployeeRoute title="reports">
-              <ReportChildrenInDifferentAddress />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/child-age-language',
-          element: (
-            <EmployeeRoute title="reports">
-              <ReportChildAgeLanguage />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/child-document-decisions',
-          element: (
-            <EmployeeRoute title="reports">
-              <ReportChildDocumentDecisions />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/child-documents',
-          element: (
-            <EmployeeRoute title="reports">
-              <ReportChildDocuments />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/assistance-needs-and-actions',
-          element: (
-            <EmployeeRoute title="reports">
-              <ReportAssistanceNeedsAndActions />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/occupancies',
-          element: (
-            <EmployeeRoute title="reports">
-              <ReportOccupancies />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/invoices',
-          element: (
-            <EmployeeRoute title="reports">
-              <ReportInvoices />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/customer-fees',
-          element: (
-            <EmployeeRoute title="reports">
-              <ReportCustomerFees />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/starting-placements',
-          element: (
-            <EmployeeRoute title="reports">
-              <ReportStartingPlacements />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/ended-placements',
-          element: (
-            <EmployeeRoute title="reports">
-              <ReportEndedPlacements />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/exceeded-service-needs',
-          element: (
-            <EmployeeRoute title="reports">
-              <ReportExceededServiceNeeds />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/duplicate-people',
-          element: (
-            <EmployeeRoute title="reports">
-              <ReportDuplicatePeople />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/presences',
-          element: (
-            <EmployeeRoute title="reports">
-              <ReportPresences />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/service-needs',
-          element: (
-            <EmployeeRoute title="reports">
-              <ReportServiceNeeds />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/sextet',
-          element: (
-            <EmployeeRoute title="reports">
-              <ReportSextet />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/voucher-service-providers',
-          element: (
-            <EmployeeRoute title="reports">
-              <VoucherServiceProviders />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/voucher-service-providers/:unitId',
-          element: (
-            <EmployeeRoute title="reports">
-              <VoucherServiceProviderUnit />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/attendance-reservation',
-          element: (
-            <EmployeeRoute title="reports">
-              <AttendanceReservation />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/attendance-reservation-by-child',
-          element: (
-            <EmployeeRoute title="reports">
-              <AttendanceReservationByChild />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/varda-child-errors',
-          element: (
-            <EmployeeRoute title="reports">
-              <VardaChildErrors />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/varda-unit-errors',
-          element: (
-            <EmployeeRoute title="reports">
-              <VardaUnitErrors />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/placement-count',
-          element: (
-            <EmployeeRoute title="reports">
-              <PlacementCount />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/placement-sketching',
-          element: (
-            <EmployeeRoute title="reports">
-              <PlacementSketching />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/raw',
-          element: (
-            <EmployeeRoute title="reports">
-              <ReportRaw />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/assistance-need-decisions/:id',
-          element: (
-            <EmployeeRoute title="reports">
-              <AssistanceNeedDecisionsReportDecision />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/assistance-need-preschool-decisions/:decisionId',
-          element: (
-            <EmployeeRoute title="reports">
-              <AssistanceNeedDecisionsReportPreschoolDecision />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/assistance-need-decisions',
-          element: (
-            <EmployeeRoute title="reports">
-              <AssistanceNeedDecisionsReport />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/manual-duplication',
-          element: (
-            <EmployeeRoute title="reports">
-              <ManualDuplicationReport />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/family-daycare-meal-count',
-          element: (
-            <EmployeeRoute title="reports">
-              <FamilyDaycareMealCount />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/preschool-absence',
-          element: (
-            <EmployeeRoute title="reports">
-              <PreschoolAbsenceReport />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/preschool-application',
-          element: (
-            <EmployeeRoute title="reports">
-              <PreschoolApplicationReport />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/future-preschoolers',
-          element: (
-            <EmployeeRoute title="reports">
-              <FuturePreschoolersReport />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/placement-guarantee',
-          element: (
-            <EmployeeRoute title="reports">
-              <PlacementGuarantee />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/units',
-          element: (
-            <EmployeeRoute title="reports">
-              <ReportUnits />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/meals',
-          element: (
-            <EmployeeRoute title="reports">
-              <MealReport />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/nekkuorders',
-          element: (
-            <EmployeeRoute title="reports">
-              <NekkuOrders />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/child-attendance/:childId',
-          element: (
-            <EmployeeRoute title="reports">
-              <ChildAttendanceReport />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/holiday-period-attendance',
-          element: (
-            <EmployeeRoute title="reports">
-              <HolidayPeriodAttendanceReport />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/titania-errors',
-          element: (
-            <EmployeeRoute title="reports">
-              <TitaniaErrors />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/incomplete-income',
-          element: (
-            <EmployeeRoute title="reports">
-              <IncompleteIncomes />
-            </EmployeeRoute>
-          )
-        },
+interface EmployeeRoute {
+  path: string
+  component: React.FunctionComponent
+  title?: keyof Translations['titles']
+  auth?: boolean
+  hideDefaultTitle?: boolean
+  disabled?: boolean
+}
 
-        {
-          path: '/reports/tampere-regional-survey',
-          element: (
-            <EmployeeRoute title="reports">
-              <TampereRegionalSurvey />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/reports/citizen-document-response',
-          element: (
-            <EmployeeRoute title="reports">
-              <CitizenDocumentResponseReport />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/messages',
-          element: (
-            <EmployeeRoute title="messages">
-              <MessagesPage />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/messages/send',
-          element: (
-            <EmployeeRoute title="messages">
-              <MessagesPage showEditor />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/personal-mobile-devices',
-          element: (
-            <EmployeeRoute title="personalMobileDevices">
-              <PersonalMobileDevicesPage />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/pin-code',
-          element: (
-            <EmployeeRoute title="employeePinCode">
-              <EmployeePinCodePage />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/preferred-first-name',
-          element: (
-            <EmployeeRoute title="preferredFirstName">
-              <EmployeePreferredFirstNamePage />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/employees',
-          element: (
-            <EmployeeRoute title="employees">
-              <EmployeesPage />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/employees/:id',
-          element: (
-            <EmployeeRoute title="employees">
-              <EmployeePage />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/welcome',
-          element: (
-            <EmployeeRoute title="welcomePage">
-              <WelcomePage />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/document-templates',
-          element: (
-            <EmployeeRoute title="documentTemplates">
-              <DocumentTemplatesPage />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/document-templates/:templateId',
-          element: (
-            <EmployeeRoute title="documentTemplates">
-              <TemplateEditorPage />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/child-documents/:documentId',
-          element: (
-            <EmployeeRoute>
-              <ChildDocumentReadView />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/child-documents/:documentId/edit',
-          element: (
-            <EmployeeRoute>
-              <ChildDocumentEditView />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/holiday-periods',
-          element: (
-            <EmployeeRoute title="holidayAndTermPeriods">
-              <HolidayAndTermPeriodsPage />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/holiday-periods/:id',
-          element: (
-            <EmployeeRoute title="holidayAndTermPeriods">
-              <HolidayPeriodEditor />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/holiday-periods/questionnaire/:id',
-          element: (
-            <EmployeeRoute title="holidayQuestionnaire">
-              <QuestionnaireEditor />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/holiday-periods/club-term/:termId',
-          element: (
-            <EmployeeRoute title="clubTerm">
-              <ClubTermPeriodEditor />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/holiday-periods/preschool-term/:termId',
-          element: (
-            <EmployeeRoute title="preschoolTerm">
-              <PreschoolTermPeriodEditor />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/placement-tool',
-          element: (
-            <EmployeeRoute title="placementTool">
-              <PlacementToolPage />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/out-of-office',
-          element: (
-            <EmployeeRoute title="outOfOffice">
-              <OutOfOfficePage />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/close-after-login',
-          element: (
-            <EmployeeRoute title="login" requireAuth={false}>
-              <CloseAfterLogin />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/*',
-          element: (
-            <EmployeeRoute requireAuth={false}>
-              <RedirectToMainPage />
-            </EmployeeRoute>
-          )
-        },
-        {
-          index: true,
-          element: (
-            <EmployeeRoute requireAuth={false}>
-              <RedirectToMainPage />
-            </EmployeeRoute>
-          )
-        }
-      ]
-    }
-  ],
-  { basename: '/employee' }
-)
+const routes: EmployeeRoute[] = [
+  { path: '/login', component: LoginPage, auth: false, title: 'login' },
+  { path: '/settings', component: SettingsPage, title: 'settings' },
+  {
+    path: '/system-notifications',
+    component: SystemNotificationsPage,
+    title: 'systemNotifications'
+  },
+  {
+    path: '/unit-features',
+    component: UnitFeaturesPage,
+    title: 'unitFeatures'
+  },
+  { path: '/units', component: Units, title: 'units' },
+  { path: '/units/new', component: CreateUnitPage, title: 'createUnit' },
+  { path: '/units/:id/details', component: UnitDetailsPage },
+  { path: '/units/:unitId/family-contacts', component: ReportFamilyContacts },
+  {
+    path: '/units/:unitId/groups/:groupId/caretakers',
+    component: GroupCaretakers,
+    title: 'groupCaretakers'
+  },
+  {
+    path: '/units/:unitId/groups/:groupId/discussion-reservation-surveys',
+    component: DiscussionReservationSurveysPage,
+    disabled: !featureFlags.discussionReservations
+  },
+  {
+    path: '/units/:unitId/groups/:groupId/discussion-reservation-surveys/:eventId',
+    component: () => <DiscussionReservationSurveyWrapper mode="VIEW" />,
+    disabled: !featureFlags.discussionReservations
+  },
+  {
+    path: '/units/:unitId/groups/:groupId/discussion-reservation-surveys/:eventId/edit',
+    component: () => <DiscussionReservationSurveyWrapper mode="EDIT" />,
+    disabled: !featureFlags.discussionReservations
+  },
+  { path: '/units/:id/*?', component: UnitPage },
+  { path: '/search', component: Search, title: 'customers' },
+  { path: '/profile/:id', component: PersonProfile, title: 'personProfile' },
+  {
+    path: '/profile/:personId/timeline',
+    component: TimelinePage,
+    title: 'personTimeline'
+  },
+  {
+    path: '/profile/:personId/income-statement/:incomeStatementId',
+    component: IncomeStatementPage,
+    title: 'incomeStatement'
+  },
+  {
+    path: '/child-information/:id',
+    component: ChildInformation,
+    title: 'childInformation'
+  },
+  {
+    path: '/child-information/:childId/assistance-need-decision/:id',
+    component: AssistanceNeedDecisionPage,
+    title: 'assistanceNeedDecision',
+    hideDefaultTitle: true
+  },
+  {
+    path: '/child-information/:childId/assistance-need-decision/:id/edit',
+    component: AssistanceNeedDecisionEditPage,
+    title: 'assistanceNeedDecision',
+    hideDefaultTitle: true
+  },
+  {
+    path: '/child-information/:childId/assistance-need-preschool-decisions/:decisionId',
+    component: AssistanceNeedPreschoolDecisionReadPage,
+    title: 'assistanceNeedPreschoolDecision',
+    hideDefaultTitle: true
+  },
+  {
+    path: '/child-information/:childId/assistance-need-preschool-decisions/:decisionId/edit',
+    component: AssistanceNeedPreschoolDecisionEditPage,
+    title: 'assistanceNeedPreschoolDecision',
+    hideDefaultTitle: true
+  },
+  { path: '/applications', component: ApplicationsPage, title: 'applications' },
+  {
+    path: '/applications/:id',
+    component: ApplicationPage,
+    title: 'applications'
+  },
+  {
+    path: '/applications/:id/placement',
+    component: PlacementDraftPage,
+    title: 'placementDraft'
+  },
+  {
+    path: '/applications/:id/decisions',
+    component: DecisionPage,
+    title: 'decision'
+  },
+  {
+    path: '/finance/basics',
+    component: FinanceBasicsPage,
+    title: 'financeBasics'
+  },
+  { path: '/finance/fee-decisions/:id', component: FeeDecisionDetailsPage },
+  { path: '/finance/value-decisions/:id', component: VoucherValueDecisionPage },
+  { path: '/finance/invoices/:id', component: InvoicePage },
+  { path: '/reports', component: Reports, title: 'reports' },
+  {
+    path: '/reports/family-conflicts',
+    component: ReportFamilyConflicts,
+    title: 'reports'
+  },
+  {
+    path: '/reports/missing-head-of-family',
+    component: ReportMissingHeadOfFamily,
+    title: 'reports'
+  },
+  {
+    path: '/reports/missing-service-need',
+    component: ReportMissingServiceNeed,
+    title: 'reports'
+  },
+  {
+    path: '/reports/non-ssn-children',
+    component: ReportNonSsnChildren,
+    title: 'reports'
+  },
+  {
+    path: '/reports/applications',
+    component: ReportApplications,
+    title: 'reports'
+  },
+  { path: '/reports/decisions', component: ReportDecisions, title: 'reports' },
+  {
+    path: '/reports/partners-in-different-address',
+    component: ReportPartnersInDifferentAddress,
+    title: 'reports'
+  },
+  {
+    path: '/reports/children-in-different-address',
+    component: ReportChildrenInDifferentAddress,
+    title: 'reports'
+  },
+  {
+    path: '/reports/child-age-language',
+    component: ReportChildAgeLanguage,
+    title: 'reports'
+  },
+  {
+    path: '/reports/child-document-decisions',
+    component: ReportChildDocumentDecisions,
+    title: 'reports'
+  },
+  {
+    path: '/reports/child-documents',
+    component: ReportChildDocuments,
+    title: 'reports'
+  },
+  {
+    path: '/reports/assistance-needs-and-actions',
+    component: ReportAssistanceNeedsAndActions,
+    title: 'reports'
+  },
+  {
+    path: '/reports/occupancies',
+    component: ReportOccupancies,
+    title: 'reports'
+  },
+  { path: '/reports/invoices', component: ReportInvoices, title: 'reports' },
+  {
+    path: '/reports/customer-fees',
+    component: ReportCustomerFees,
+    title: 'reports'
+  },
+  {
+    path: '/reports/starting-placements',
+    component: ReportStartingPlacements,
+    title: 'reports'
+  },
+  {
+    path: '/reports/ended-placements',
+    component: ReportEndedPlacements,
+    title: 'reports'
+  },
+  {
+    path: '/reports/exceeded-service-needs',
+    component: ReportExceededServiceNeeds,
+    title: 'reports'
+  },
+  {
+    path: '/reports/duplicate-people',
+    component: ReportDuplicatePeople,
+    title: 'reports'
+  },
+  { path: '/reports/presences', component: ReportPresences, title: 'reports' },
+  {
+    path: '/reports/service-needs',
+    component: ReportServiceNeeds,
+    title: 'reports'
+  },
+  { path: '/reports/sextet', component: ReportSextet, title: 'reports' },
+  {
+    path: '/reports/voucher-service-providers',
+    component: VoucherServiceProviders,
+    title: 'reports'
+  },
+  {
+    path: '/reports/voucher-service-providers/:unitId',
+    component: VoucherServiceProviderUnit,
+    title: 'reports'
+  },
+  {
+    path: '/reports/attendance-reservation',
+    component: AttendanceReservation,
+    title: 'reports'
+  },
+  {
+    path: '/reports/attendance-reservation-by-child',
+    component: AttendanceReservationByChild,
+    title: 'reports'
+  },
+  {
+    path: '/reports/varda-child-errors',
+    component: VardaChildErrors,
+    title: 'reports'
+  },
+  {
+    path: '/reports/varda-unit-errors',
+    component: VardaUnitErrors,
+    title: 'reports'
+  },
+  {
+    path: '/reports/placement-count',
+    component: PlacementCount,
+    title: 'reports'
+  },
+  {
+    path: '/reports/placement-sketching',
+    component: PlacementSketching,
+    title: 'reports'
+  },
+  { path: '/reports/raw', component: ReportRaw, title: 'reports' },
+  {
+    path: '/reports/assistance-need-decisions/:id',
+    component: AssistanceNeedDecisionsReportDecision,
+    title: 'reports'
+  },
+  {
+    path: '/reports/assistance-need-preschool-decisions/:decisionId',
+    component: AssistanceNeedDecisionsReportPreschoolDecision,
+    title: 'reports'
+  },
+  {
+    path: '/reports/assistance-need-decisions',
+    component: AssistanceNeedDecisionsReport,
+    title: 'reports'
+  },
+  {
+    path: '/reports/manual-duplication',
+    component: ManualDuplicationReport,
+    title: 'reports'
+  },
+  {
+    path: '/reports/family-daycare-meal-count',
+    component: FamilyDaycareMealCount,
+    title: 'reports'
+  },
+  {
+    path: '/reports/preschool-absence',
+    component: PreschoolAbsenceReport,
+    title: 'reports'
+  },
+  {
+    path: '/reports/preschool-application',
+    component: PreschoolApplicationReport,
+    title: 'reports'
+  },
+  {
+    path: '/reports/future-preschoolers',
+    component: FuturePreschoolersReport,
+    title: 'reports'
+  },
+  {
+    path: '/reports/placement-guarantee',
+    component: PlacementGuarantee,
+    title: 'reports'
+  },
+  { path: '/reports/units', component: ReportUnits, title: 'reports' },
+  { path: '/reports/meals', component: MealReport, title: 'reports' },
+  { path: '/reports/nekkuorders', component: NekkuOrders, title: 'reports' },
+  {
+    path: '/reports/child-attendance/:childId',
+    component: ChildAttendanceReport,
+    title: 'reports'
+  },
+  {
+    path: '/reports/holiday-period-attendance',
+    component: HolidayPeriodAttendanceReport,
+    title: 'reports'
+  },
+  {
+    path: '/reports/titania-errors',
+    component: TitaniaErrors,
+    title: 'reports'
+  },
+  {
+    path: '/reports/incomplete-income',
+    component: IncompleteIncomes,
+    title: 'reports'
+  },
+  {
+    path: '/reports/tampere-regional-survey',
+    component: TampereRegionalSurvey,
+    title: 'reports'
+  },
+  {
+    path: '/reports/citizen-document-response',
+    component: CitizenDocumentResponseReport,
+    title: 'reports'
+  },
+  { path: '/messages', component: MessagesPage, title: 'messages' },
+  {
+    path: '/messages/send',
+    component: () => <MessagesPage showEditor />,
+    title: 'messages'
+  },
+  {
+    path: '/personal-mobile-devices',
+    component: PersonalMobileDevicesPage,
+    title: 'personalMobileDevices'
+  },
+  {
+    path: '/pin-code',
+    component: EmployeePinCodePage,
+    title: 'employeePinCode'
+  },
+  {
+    path: '/preferred-first-name',
+    component: EmployeePreferredFirstNamePage,
+    title: 'preferredFirstName'
+  },
+  { path: '/employees', component: EmployeesPage, title: 'employees' },
+  { path: '/employees/:id', component: EmployeePage, title: 'employees' },
+  { path: '/welcome', component: WelcomePage, title: 'welcomePage' },
+  {
+    path: '/document-templates',
+    component: DocumentTemplatesPage,
+    title: 'documentTemplates'
+  },
+  {
+    path: '/document-templates/:templateId',
+    component: TemplateEditorPage,
+    title: 'documentTemplates'
+  },
+  { path: '/child-documents/:documentId', component: ChildDocumentReadView },
+  {
+    path: '/child-documents/:documentId/edit',
+    component: ChildDocumentEditView
+  },
+  {
+    path: '/holiday-periods',
+    component: HolidayAndTermPeriodsPage,
+    title: 'holidayAndTermPeriods'
+  },
+  {
+    path: '/holiday-periods/:id',
+    component: HolidayPeriodEditor,
+    title: 'holidayAndTermPeriods'
+  },
+  {
+    path: '/holiday-periods/questionnaire/:id',
+    component: QuestionnaireEditor,
+    title: 'holidayQuestionnaire'
+  },
+  {
+    path: '/holiday-periods/club-term/:termId',
+    component: ClubTermPeriodEditor,
+    title: 'clubTerm'
+  },
+  {
+    path: '/holiday-periods/preschool-term/:termId',
+    component: PreschoolTermPeriodEditor,
+    title: 'preschoolTerm'
+  },
+  {
+    path: '/placement-tool',
+    component: PlacementToolPage,
+    title: 'placementTool'
+  },
+  { path: '/out-of-office', component: OutOfOfficePage, title: 'outOfOffice' },
+  {
+    path: '/close-after-login',
+    component: CloseAfterLogin,
+    auth: false,
+    title: 'login'
+  }
+]
+
+const financeRoutes: EmployeeRoute[] = [
+  {
+    path: '/finance/fee-decisions',
+    component: FeeDecisionsPage,
+    title: 'feeDecisions'
+  },
+  {
+    path: '/finance/value-decisions',
+    component: VoucherValueDecisionsPage,
+    title: 'valueDecisions'
+  },
+  {
+    path: '/finance/invoices',
+    component: InvoicesPage,
+    title: 'invoices'
+  },
+  {
+    path: '/finance/payments',
+    component: PaymentsPage,
+    title: 'payments',
+    disabled: !featureFlags.voucherUnitPayments
+  },
+  {
+    path: '/finance/income-statements',
+    component: IncomeStatementsPage,
+    title: 'incomeStatements'
+  }
+]
+
+function renderRoute({
+  path,
+  component: Component,
+  title,
+  auth = true,
+  hideDefaultTitle,
+  disabled
+}: EmployeeRoute) {
+  if (disabled) return null
+  return (
+    <Route key={path} path={path}>
+      <EmployeeRoute
+        title={title}
+        requireAuth={auth}
+        hideDefaultTitle={hideDefaultTitle}
+      >
+        <Component />
+      </EmployeeRoute>
+    </Route>
+  )
+}
+
+export function Root() {
+  return (
+    <Router base="/employee">
+      <App>
+        <Switch>
+          {routes.map(renderRoute)}
+          <Route path="/finance/*?">
+            <FinancePage />
+            <Switch>
+              {financeRoutes.map(renderRoute)}
+              <Route>
+                <Redirect replace to="/finance/fee-decisions" />
+              </Route>
+            </Switch>
+          </Route>
+          <Route>
+            <RedirectToMainPage />
+          </Route>
+        </Switch>
+      </App>
+    </Router>
+  )
+}

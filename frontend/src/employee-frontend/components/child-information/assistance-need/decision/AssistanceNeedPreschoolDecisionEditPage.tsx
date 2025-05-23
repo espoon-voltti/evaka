@@ -5,8 +5,8 @@
 import { useQueryClient } from '@tanstack/react-query'
 import isEqual from 'lodash/isEqual'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router'
 import styled from 'styled-components'
+import { useLocation } from 'wouter'
 
 import { combine } from 'lib-common/api'
 import { boolean, localDate, string } from 'lib-common/form/fields'
@@ -241,7 +241,7 @@ const DecisionEditor = React.memo(function DecisionEditor({
   employees: Employee[]
 }) {
   const { i18n, lang: uiLang } = useTranslation()
-  const navigate = useNavigate()
+  const [, navigate] = useLocation()
   const [displayValidation, setDisplayValidation] = useState(false)
   const [formLanguage, setFormLanguage] = useState(decision.form.language)
   const t = pageTranslations[formLanguage]
@@ -251,7 +251,7 @@ const DecisionEditor = React.memo(function DecisionEditor({
       decision.status === 'NEEDS_WORK' ||
       (decision.status === 'DRAFT' && !decision.sentForDecision)
     if (!editable)
-      void navigate(
+      navigate(
         `/child-information/${decision.child.id}/assistance-need-preschool-decisions/${decision.id}`
       )
   }, [decision, navigate])
@@ -986,7 +986,7 @@ const DecisionEditor = React.memo(function DecisionEditor({
             disabled={!saved || (displayValidation && !isValid)}
             onClick={() => {
               if (isValid) {
-                void navigate(
+                navigate(
                   `/child-information/${decision.child.id}/assistance-need-preschool-decisions/${decision.id}`
                 )
               } else {

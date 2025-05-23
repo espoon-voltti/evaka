@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useMemo, useState } from 'react'
-import { Link } from 'react-router'
 import styled from 'styled-components'
+import { Link } from 'wouter'
 
 import type { ChildAgeLanguageReportRow } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'

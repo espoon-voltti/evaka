@@ -4,8 +4,8 @@
 
 import sortBy from 'lodash/sortBy'
 import React from 'react'
-import { Link } from 'react-router'
 import styled from 'styled-components'
+import { Link } from 'wouter'
 
 import { useQueryResult } from 'lib-common/query'
 import Title from 'lib-components/atoms/Title'

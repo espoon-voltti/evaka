@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useEffect } from 'react'
-import { Navigate } from 'react-router'
+import { Redirect } from 'wouter'
 
 import type { Translations } from 'lib-customizations/employee'
 
@@ -15,14 +15,14 @@ import { UserContext } from '../state/user'
 interface Props {
   title?: keyof Translations['titles']
   hideDefaultTitle?: boolean
-  requireAuth?: boolean
+  requireAuth: boolean
   children?: React.ReactNode
 }
 
 export default React.memo(function EmployeeRoute({
   title,
   hideDefaultTitle,
-  requireAuth = true,
+  requireAuth,
   children
 }: Props) {
   const { i18n } = useTranslation()
@@ -45,6 +45,6 @@ const RequireAuth = React.memo(function EnsureAuthenticated({
   return loggedIn || unauthorizedApiCallDetected ? (
     <>{element}</>
   ) : (
-    <Navigate replace to="/" />
+    <Redirect replace to="~/employee" />
   )
 })

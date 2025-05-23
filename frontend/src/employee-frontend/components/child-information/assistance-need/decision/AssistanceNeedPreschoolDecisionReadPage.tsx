@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { useNavigate } from 'react-router'
+import { useLocation } from 'wouter'
 
 import type { AssistanceNeedPreschoolDecisionResponse } from 'lib-common/generated/api-types/assistanceneed'
 import type { AssistanceNeedPreschoolDecisionId } from 'lib-common/generated/api-types/shared'
@@ -52,7 +52,7 @@ const DecisionReadView = React.memo(function DecisionReadView({
   decision: AssistanceNeedPreschoolDecisionResponse
 }) {
   const { i18n } = useTranslation()
-  const navigate = useNavigate()
+  const [, navigate] = useLocation()
 
   const { mutateAsync: sendForDecision } = useMutationResult(
     sendAssistanceNeedPreschoolDecisionMutation

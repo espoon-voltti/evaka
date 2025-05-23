@@ -11,8 +11,8 @@ import React, {
   useRef,
   useState
 } from 'react'
-import { useNavigate } from 'react-router'
 import styled from 'styled-components'
+import { useLocation } from 'wouter'
 
 import { combine } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
@@ -200,14 +200,14 @@ export default React.memo(function DiscussionReservationSurveyView({
   eventData: CalendarEvent
 }) {
   const { i18n } = useTranslation()
-  const navigate = useNavigate()
+  const [, navigate] = useLocation()
   const { mutateAsync: deleteCalendarEvent } = useMutation(
     deleteCalendarEventMutation
   )
 
   const { setErrorMessage } = useContext(UIContext)
   const onEdit = useCallback(() => {
-    void navigate(
+    navigate(
       `/units/${unitId}/groups/${groupId}/discussion-reservation-surveys/${eventData.id}/edit`,
       { replace: true }
     )
@@ -328,7 +328,7 @@ export default React.memo(function DiscussionReservationSurveyView({
                 })
                 .finally(() => {
                   setDeleteConfirmModalVisible(false)
-                  void navigate(
+                  navigate(
                     `/units/${unitId}/groups/${groupId}/discussion-reservation-surveys`,
                     { replace: true }
                   )

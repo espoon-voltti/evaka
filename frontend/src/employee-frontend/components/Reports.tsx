@@ -5,8 +5,8 @@
 import sortBy from 'lodash/sortBy'
 import type { ReactNode } from 'react'
 import React, { Fragment, useContext, useMemo } from 'react'
-import { Link } from 'react-router'
 import styled from 'styled-components'
+import { Link } from 'wouter'
 
 import { useQueryResult } from 'lib-common/query'
 import RoundIcon from 'lib-components/atoms/RoundIcon'

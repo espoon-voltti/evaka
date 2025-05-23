@@ -5,8 +5,8 @@
 import sortBy from 'lodash/sortBy'
 import type { Dispatch, SetStateAction } from 'react'
 import React, { useContext, useState } from 'react'
-import { Link } from 'react-router'
 import styled from 'styled-components'
+import { Link } from 'wouter'
 
 import type { Action } from 'lib-common/generated/action'
 import type { UnitBackupCare } from 'lib-common/generated/api-types/backupcare'

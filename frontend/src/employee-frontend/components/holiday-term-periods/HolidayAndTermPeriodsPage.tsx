@@ -4,7 +4,7 @@
 
 import orderBy from 'lodash/orderBy'
 import React, { useCallback, useState } from 'react'
-import { useNavigate } from 'react-router'
+import { useLocation } from 'wouter'
 
 import type {
   HolidayPeriodId,
@@ -35,7 +35,7 @@ import {
 
 export default React.memo(function HolidayAndTermPeriodsPage() {
   const { i18n } = useTranslation()
-  const navigate = useNavigate()
+  const [, navigate] = useLocation()
 
   const holidayPeriods = useQueryResult(holidayPeriodsQuery())
   const questionnaires = useQueryResult(questionnairesQuery())
@@ -52,7 +52,7 @@ export default React.memo(function HolidayAndTermPeriodsPage() {
     [deleteHolidayPeriod, periodToDelete]
   )
   const navigateToNewHolidayPeriod = useCallback(() => {
-    void navigate('/holiday-periods/new')
+    navigate('/holiday-periods/new')
   }, [navigate])
 
   const [questionnaireToDelete, setQuestionnaireToDelete] =
@@ -68,7 +68,7 @@ export default React.memo(function HolidayAndTermPeriodsPage() {
     [deleteQuestionnaire, questionnaireToDelete]
   )
   const navigateToNewQuestionnaire = useCallback(() => {
-    void navigate('/holiday-periods/questionnaire/new')
+    navigate('/holiday-periods/questionnaire/new')
   }, [navigate])
 
   return (

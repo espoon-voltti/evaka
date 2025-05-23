@@ -11,9 +11,8 @@ import React, {
   useMemo,
   useState
 } from 'react'
-import type { NavigateFunction } from 'react-router'
-import { useNavigate } from 'react-router'
 import styled from 'styled-components'
+import { useLocation } from 'wouter'
 
 import type { Result } from 'lib-common/api'
 import { Loading, wrapResult } from 'lib-common/api'
@@ -152,14 +151,14 @@ const decisionTypesRequiringPreschoolDecisionName: DecisionType[] = [
   'PRESCHOOL_CLUB'
 ]
 
-function redirectToMainPage(navigate: NavigateFunction) {
-  void navigate('/applications')
+function redirectToMainPage(navigate: (location: string) => void) {
+  navigate('/applications')
 }
 
 export default React.memo(function Decision() {
   const applicationId = useIdRouteParam<ApplicationId>('id')
   const { i18n } = useTranslation()
-  const navigate = useNavigate()
+  const [, navigate] = useLocation()
   const [decisionDraftGroup, setDecisionDraftGroup] = useState<
     Result<DecisionDraftGroup>
   >(Loading.of())

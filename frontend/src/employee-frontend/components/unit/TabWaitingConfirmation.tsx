@@ -5,8 +5,8 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import sortBy from 'lodash/sortBy'
 import React, { useMemo, useState } from 'react'
-import { Link } from 'react-router'
 import styled from 'styled-components'
+import { Link } from 'wouter'
 
 import type { PlacementPlanDetails } from 'lib-common/generated/api-types/placement'
 import PlacementCircle from 'lib-components/atoms/PlacementCircle'

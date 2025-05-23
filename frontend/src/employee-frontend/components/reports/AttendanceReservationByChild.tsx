@@ -6,8 +6,8 @@ import { groupBy } from 'lodash/fp'
 import sortBy from 'lodash/sortBy'
 import unzip from 'lodash/unzip'
 import React, { useContext, useMemo, useState } from 'react'
-import { Link } from 'react-router'
 import { useTheme } from 'styled-components'
+import { Link } from 'wouter'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
 import type {

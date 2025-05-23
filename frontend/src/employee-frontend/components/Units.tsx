@@ -4,8 +4,8 @@
 
 import orderBy from 'lodash/orderBy'
 import React, { useCallback, useContext } from 'react'
-import { Link, Navigate, useNavigate } from 'react-router'
 import styled from 'styled-components'
+import { Link, Redirect, useLocation } from 'wouter'
 
 import type { Daycare } from 'lib-common/generated/api-types/daycare'
 import { careTypes } from 'lib-common/generated/api-types/daycare'
@@ -60,7 +60,7 @@ export default React.memo(function Units() {
     includeClosed,
     setIncludeClosed
   } = useContext<UnitsState>(UnitsContext)
-  const navigate = useNavigate()
+  const [, navigate] = useLocation()
   const units = useQueryResult(daycaresQuery({ includeClosed }))
 
   const sortBy = (column: SearchColumn) => {
@@ -91,7 +91,7 @@ export default React.memo(function Units() {
     units.value.length === 1 &&
     !user?.accessibleFeatures.createUnits
   ) {
-    return <Navigate to={`/units/${units.value[0].id}`} replace={true} />
+    return <Redirect to={`/units/${units.value[0].id}`} replace={true} />
   }
 
   return (
@@ -147,7 +147,7 @@ export default React.memo(function Units() {
               <LegacyButton
                 data-qa="create-new-unit"
                 className="units-wrapper-create"
-                onClick={() => void navigate('/units/new')}
+                onClick={() => navigate('/units/new')}
                 text={i18n.unit.create}
               />
             </div>

@@ -9,16 +9,10 @@ import React, {
   useMemo,
   useState
 } from 'react'
-import {
-  Navigate,
-  Route,
-  Routes,
-  useNavigate,
-  useSearchParams
-} from 'react-router'
 import styled from 'styled-components'
+import { Redirect, Route, Switch, useSearchParams, useLocation } from 'wouter'
 
-import type { DaycareResponse } from 'lib-common/generated/api-types/daycare'
+import type { Action } from 'lib-common/generated/action'
 import type { DaycareId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
@@ -41,10 +35,10 @@ import TabUnitInformation from './unit/TabUnitInformation'
 import UnitServiceWorkerNote from './unit/UnitServiceWorkerNote'
 import { unitNotificationsQuery, daycareQuery } from './unit/queries'
 
-const defaultTab = (unit: DaycareResponse) => {
-  if (unit.permittedActions.includes('READ_ATTENDANCES')) return 'calendar'
-  if (unit.permittedActions.includes('READ_OCCUPANCIES')) return 'calendar'
-  if (unit.permittedActions.includes('READ_GROUP_DETAILS')) return 'groups'
+const defaultTab = (permittedActions: Action.Unit[]) => {
+  if (permittedActions.includes('READ_ATTENDANCES')) return 'calendar'
+  if (permittedActions.includes('READ_OCCUPANCIES')) return 'calendar'
+  if (permittedActions.includes('READ_GROUP_DETAILS')) return 'groups'
   return 'unit-info'
 }
 
@@ -76,7 +70,7 @@ export default React.memo(function UnitPage() {
 
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({})
 
-  const navigate = useNavigate()
+  const [, navigate] = useLocation()
   const queryParams = useCallback(
     () => new URLSearchParams(location.search),
     []
@@ -211,45 +205,39 @@ export default React.memo(function UnitPage() {
       <TabLinks tabs={tabs} />
       <Gap size="s" />
       <Container>
-        <Routes>
-          <Route
-            path="unit-info"
-            element={<TabUnitInformation unitInformation={unitInformation} />}
-          />
-          <Route
-            path="groups"
-            element={
-              <TabGroups
-                unitInformation={unitInformation}
-                openGroups={openGroups}
-                setOpenGroups={setOpenGroups}
-              />
-            }
-          />
-          <Route
-            path="calendar"
-            element={<TabCalendar unitInformation={unitInformation} />}
-          />
-          <Route
-            path="calendar/events/:calendarEventId"
-            element={<TabCalendar unitInformation={unitInformation} />}
-          />
+        <Switch>
+          <Route path="/units/:id/unit-info">
+            <TabUnitInformation unitInformation={unitInformation} />
+          </Route>
+          <Route path="/units/:id/groups">
+            <TabGroups
+              unitInformation={unitInformation}
+              openGroups={openGroups}
+              setOpenGroups={setOpenGroups}
+            />
+          </Route>
+          <Route path="/units/:id/calendar">
+            <TabCalendar unitInformation={unitInformation} />
+          </Route>
+          <Route path="/units/:id/calendar/events/:calendarEventId">
+            <TabCalendar unitInformation={unitInformation} />
+          </Route>
           <Route
             // redirect from old attendances page to the renamed calendar page
-            path="attendances"
-            element={<Navigate to="../calendar" replace />}
-          />
-          <Route
-            path="application-process"
-            element={
-              <TabApplicationProcess unitInformation={unitInformation} />
-            }
-          />
-          <Route
-            index
-            element={<Navigate replace to={defaultTab(unitInformation)} />}
-          />
-        </Routes>
+            path="/units/:id/attendances"
+          >
+            <Redirect to={`/units/${id}/calendar`} replace />
+          </Route>
+          <Route path="/units/:id/application-process">
+            <TabApplicationProcess unitInformation={unitInformation} />
+          </Route>
+          <Route>
+            <Redirect
+              replace
+              to={`/units/${id}/${defaultTab(unitInformation.permittedActions)}`}
+            />
+          </Route>
+        </Switch>
       </Container>
     </>
   ))

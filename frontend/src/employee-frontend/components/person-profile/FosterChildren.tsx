@@ -4,7 +4,7 @@
 
 import orderBy from 'lodash/orderBy'
 import React, { useCallback, useContext, useState } from 'react'
-import { Link } from 'react-router'
+import { Link } from 'wouter'
 
 import DateRange from 'lib-common/date-range'
 import type {

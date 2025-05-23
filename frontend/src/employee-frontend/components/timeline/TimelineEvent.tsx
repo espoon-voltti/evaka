@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useState } from 'react'
-import { Link } from 'react-router'
 import styled from 'styled-components'
+import { Link } from 'wouter'
 
 import type FiniteDateRange from 'lib-common/finite-date-range'
 import { TooltipWithoutAnchor } from 'lib-components/atoms/Tooltip'

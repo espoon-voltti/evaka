@@ -6,8 +6,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import range from 'lodash/range'
 import sortBy from 'lodash/sortBy'
 import React, { useMemo, useState } from 'react'
-import { Link, useLocation } from 'react-router'
 import styled from 'styled-components'
+import { Link, useSearchParams } from 'wouter'
 
 import type {
   VoucherReportRowType,
@@ -123,7 +123,7 @@ const maxYear = now.year
 const yearOptions = range(maxYear, minYear - 1, -1)
 
 export default React.memo(function VoucherServiceProviderUnit() {
-  const location = useLocation()
+  const [queryParams] = useSearchParams()
   const { i18n } = useTranslation()
   const unitId = useIdRouteParam<DaycareId>('unitId')
   const [sort, setSort] = useState<'child' | 'group'>('child')
@@ -136,8 +136,6 @@ export default React.memo(function VoucherServiceProviderUnit() {
 
   const [filters, setFilters] = useState<VoucherServiceProviderUnitFilters>(
     () => {
-      const { search } = location
-      const queryParams = new URLSearchParams(search)
       const year = Number(queryParams.get('year'))
       const month = Number(queryParams.get('month'))
       const now = HelsinkiDateTime.now()

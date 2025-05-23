@@ -12,8 +12,8 @@ import React, {
   useMemo,
   useState
 } from 'react'
-import { useNavigate, useSearchParams } from 'react-router'
 import styled from 'styled-components'
+import { useSearchParams, useLocation } from 'wouter'
 
 import { combine } from 'lib-common/api'
 import { useForm } from 'lib-common/form/hooks'
@@ -126,7 +126,7 @@ const ConcurrentEditWarning = React.memo(function ConcurrentEditWarning({
   childIdFromUrl: UUID | null
 }) {
   const { i18n } = useTranslation()
-  const navigate = useNavigate()
+  const [, navigate] = useLocation()
 
   const errorText = currentLock
     ? i18n.childInformation.childDocuments.editor.lockedErrorDetailed(
@@ -168,7 +168,7 @@ const ChildDocumentEditViewInner = React.memo(
     childIdFromUrl: UUID | null
   }) {
     const { i18n } = useTranslation()
-    const navigate = useNavigate()
+    const [, navigate] = useLocation()
     const { setTitle } = useContext<TitleState>(TitleContext)
     useEffect(
       () => setTitle(document.template.name, true),

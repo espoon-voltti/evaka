@@ -5,8 +5,8 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import type { Dispatch, SetStateAction } from 'react'
 import React, { useCallback, useMemo } from 'react'
-import { Link } from 'react-router'
 import styled from 'styled-components'
+import { Link } from 'wouter'
 
 import type { Result } from 'lib-common/api'
 import { isLoading } from 'lib-common/api'

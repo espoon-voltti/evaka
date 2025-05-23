@@ -5,8 +5,8 @@
 import isPropValid from '@emotion/is-prop-valid'
 import { ErrorBoundary } from '@sentry/react'
 import React, { useContext } from 'react'
-import { Navigate, Outlet, useLocation } from 'react-router'
 import { StyleSheetManager, ThemeProvider } from 'styled-components'
+import { Redirect, useLocation } from 'wouter'
 
 import { Notifications } from 'lib-components/Notifications'
 import { EnvironmentLabel } from 'lib-components/atoms/EnvironmentLabel'
@@ -30,7 +30,11 @@ import { UIContext } from './state/ui'
 import { UserContext, UserContextProvider } from './state/user'
 import { hasRole } from './utils/roles'
 
-export function App() {
+export function Navigate(props: { replace?: boolean; to: string }) {
+  return <Redirect to={props.to} replace={props.replace} />
+}
+
+export function App({ children }: { children?: React.ReactNode }) {
   const { i18n } = useTranslation()
 
   return (
@@ -45,7 +49,7 @@ export function App() {
             >
               <UserContextProvider>
                 <StateProvider>
-                  <Content />
+                  <Content>{children}</Content>
                   <div id="datepicker-container" />
                 </StateProvider>
               </UserContextProvider>
@@ -57,7 +61,7 @@ export function App() {
   )
 }
 
-const Content = React.memo(function Content() {
+function Content({ children }: { children?: React.ReactNode }) {
   const { apiVersion, loaded } = useContext(UserContext)
 
   const {
@@ -69,7 +73,7 @@ const Content = React.memo(function Content() {
   const { sessionExpirationDetected, dismissSessionExpiredDetection } =
     useKeepSessionAlive(sessionKeepalive, loggedIn)
 
-  const location = useLocation()
+  const [path] = useLocation()
 
   const handleLoginClick = () => {
     window.open('/employee/close-after-login', '_blank')
@@ -87,10 +91,9 @@ const Content = React.memo(function Content() {
       <Header />
       <Notifications apiVersion={apiVersion} />
 
-      {/* the matched route element will be inserted at <Outlet /> */}
-      <Outlet />
+      {children}
 
-      {!location.pathname.startsWith('/messages') && <Footer />}
+      {!path.startsWith('/messages') && <Footer />}
       {!!featureFlags.environmentLabel && (
         <EnvironmentLabel>{featureFlags.environmentLabel}</EnvironmentLabel>
       )}
@@ -108,7 +111,7 @@ const Content = React.memo(function Content() {
       )}
     </>
   )
-})
+}
 
 // This implements the default behavior from styled-components v5
 // TODO: Prefix all custom props with $, then remove this
@@ -133,24 +136,24 @@ export function RedirectToMainPage() {
   const { loggedIn, roles } = useContext(UserContext)
 
   if (!loggedIn) {
-    return <Navigate replace to="/login" />
+    return <Navigate replace to="~/employee/login" />
   }
 
   if (
     hasRole(roles, 'SERVICE_WORKER') ||
     hasRole(roles, 'SPECIAL_EDUCATION_TEACHER')
   ) {
-    return <Navigate replace to="/applications" />
+    return <Navigate replace to="~/employee/applications" />
   } else if (hasRole(roles, 'UNIT_SUPERVISOR') || hasRole(roles, 'STAFF')) {
-    return <Navigate replace to="/units" />
+    return <Navigate replace to="~/employee/units" />
   } else if (hasRole(roles, 'DIRECTOR') || hasRole(roles, 'REPORT_VIEWER')) {
-    return <Navigate replace to="/reports" />
+    return <Navigate replace to="~/employee/reports" />
   } else if (hasRole(roles, 'MESSAGING')) {
-    return <Navigate replace to="/messages" />
+    return <Navigate replace to="~/employee/messages" />
   } else if (roles.length === 0) {
-    return <Navigate replace to="/welcome" />
+    return <Navigate replace to="~/employee/welcome" />
   } else {
-    return <Navigate replace to="/search" />
+    return <Navigate replace to="~/employee/search" />
   }
 }
 

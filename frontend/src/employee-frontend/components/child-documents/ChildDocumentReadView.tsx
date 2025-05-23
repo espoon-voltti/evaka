@@ -5,7 +5,7 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import isEqual from 'lodash/isEqual'
 import React, { useContext, useEffect, useMemo, useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router'
+import { useSearchParams, useLocation } from 'wouter'
 
 import { combine } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
@@ -129,7 +129,7 @@ const ChildDocumentReadViewInner = React.memo(
   }) {
     const { data: document, permittedActions } = documentAndPermissions
     const { i18n } = useTranslation()
-    const navigate = useNavigate()
+    const [, navigate] = useLocation()
     const { setTitle } = useContext<TitleState>(TitleContext)
     useEffect(
       () => setTitle(document.template.name, true),

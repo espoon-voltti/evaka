@@ -5,8 +5,8 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import sortBy from 'lodash/sortBy'
 import React, { useCallback, useMemo, useState } from 'react'
-import { Link } from 'react-router'
 import styled from 'styled-components'
+import { Link } from 'wouter'
 
 import type { Result } from 'lib-common/api'
 import type { PlacementType } from 'lib-common/generated/api-types/placement'

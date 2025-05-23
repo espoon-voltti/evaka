@@ -4,8 +4,8 @@
 
 import orderBy from 'lodash/orderBy'
 import React, { useContext, useMemo, useState } from 'react'
-import { Link } from 'react-router'
 import styled from 'styled-components'
+import { Link } from 'wouter'
 
 import type { PersonJSON } from 'lib-common/generated/api-types/pis'
 import type {

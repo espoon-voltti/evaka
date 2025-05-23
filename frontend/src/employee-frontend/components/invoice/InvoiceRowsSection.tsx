@@ -6,8 +6,8 @@ import groupBy from 'lodash/groupBy'
 import sumBy from 'lodash/sumBy'
 import uniq from 'lodash/uniq'
 import React, { Fragment, useContext, useMemo, useState } from 'react'
-import { Link } from 'react-router'
 import styled from 'styled-components'
+import { Link } from 'wouter'
 
 import type {
   InvoiceCodes,

@@ -7,8 +7,8 @@ import max from 'lodash/max'
 import range from 'lodash/range'
 import sortBy from 'lodash/sortBy'
 import React, { useMemo } from 'react'
-import { Link } from 'react-router'
 import styled from 'styled-components'
+import { Link } from 'wouter'
 
 import type {
   Child,

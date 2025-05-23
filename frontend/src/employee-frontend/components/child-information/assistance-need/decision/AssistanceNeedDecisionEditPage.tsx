@@ -6,8 +6,8 @@ import concat from 'lodash/concat'
 import isEmpty from 'lodash/isEmpty'
 import omit from 'lodash/omit'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router'
 import styled from 'styled-components'
+import { useLocation } from 'wouter'
 
 import type { Result } from 'lib-common/api'
 import { Failure, wrapResult } from 'lib-common/api'
@@ -106,7 +106,7 @@ export default React.memo(function AssistanceNeedDecisionEditPage() {
   const { decisionMakerOptions, formState, setFormState, status, forceSave } =
     useAssistanceNeedDecision(id)
 
-  const navigate = useNavigate()
+  const [, navigate] = useLocation()
 
   const languageOptions = useMemo<SelectOption<OfficialLanguage>[]>(
     () => [
@@ -146,12 +146,9 @@ export default React.memo(function AssistanceNeedDecisionEditPage() {
       formState.status !== 'NEEDS_WORK' &&
       (formState.status !== 'DRAFT' || formState.sentForDecision !== null)
     ) {
-      void navigate(
-        `/child-information/${childId}/assistance-need-decision/${id}`,
-        {
-          replace: true
-        }
-      )
+      navigate(`/child-information/${childId}/assistance-need-decision/${id}`, {
+        replace: true
+      })
     }
   }, [formState, childId, id, navigate])
 
