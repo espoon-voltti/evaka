@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { NavLink } from 'react-router'
 import styled, { css } from 'styled-components'
+import { Link } from 'wouter'
 
 import type { Uri } from 'lib-common/uri'
 
@@ -192,7 +192,8 @@ const Tab = styled.div<{
   ${tabStyles}
 `
 
-const TabLink = styled(NavLink)<{
+// TODO: NavLink
+const TabLink = styled(Link)<{
   $maxWidth?: string
   $mobile?: boolean
 }>`

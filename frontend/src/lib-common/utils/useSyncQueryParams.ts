@@ -5,7 +5,7 @@
 import isEqual from 'lodash/isEqual'
 import partition from 'lodash/partition'
 import { useEffect } from 'react'
-import { useSearchParams } from 'react-router'
+import { useSearchParams } from 'wouter'
 
 /**
  * Keeps current URL's query params up to date with the queryParams object

@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useState } from 'react'
-import { useSearchParams } from 'react-router'
 import styled from 'styled-components'
+import { useSearchParams } from 'wouter'
 
 import { P } from 'lib-components/typography'
 import { faTimes } from 'lib-icons'

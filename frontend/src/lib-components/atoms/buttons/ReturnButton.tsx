@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback } from 'react'
-import { useNavigate } from 'react-router'
 import styled, { useTheme } from 'styled-components'
 
 import { faAngleLeft } from 'lib-icons'
@@ -46,8 +45,7 @@ export default React.memo(function ReturnButton({
   margin
 }: Props & WrapperProps) {
   const { colors } = useTheme()
-  const navigate = useNavigate()
-  const defaultBehaviour = useCallback(() => navigate(-1), [navigate])
+  const defaultBehaviour = useCallback(() => history.go(-1), [])
   return onClick || history.length > 1 ? (
     <ReturnButtonWrapper margin={margin}>
       <LegacyInlineButton

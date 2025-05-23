@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import * as Sentry from '@sentry/browser'
-import { useParams } from 'react-router'
+import { useParams } from 'wouter'
 
 import type { Id } from './id-type'
 import { fromUuid } from './id-type'
