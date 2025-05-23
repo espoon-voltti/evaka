@@ -40,7 +40,7 @@
     "pino-http": "10.4.0",
     "pino-pretty": "13.0.0",
     "pump": "3.0.2",
-    "query-string": "9.1.2",
+    "query-string": "9.2.0",
     "redis": "5.0.1",
     "split2": "4.2.0",
     "through2": "4.0.2",
