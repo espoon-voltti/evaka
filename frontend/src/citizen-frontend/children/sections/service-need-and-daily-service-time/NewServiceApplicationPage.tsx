@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useEffect } from 'react'
-import { useNavigate } from 'react-router'
+import { useLocation } from 'wouter'
 
 import { localDate } from 'lib-common/form/fields'
 import {
@@ -64,7 +64,7 @@ const form = transformed(
 export default React.memo(function NewServiceApplicationPage() {
   const childId = useIdRouteParam<ChildId>('childId')
   const i18n = useTranslation()
-  const navigate = useNavigate()
+  const [, navigate] = useLocation()
   const [lang] = useLang()
   const boundForm = useForm(
     form,

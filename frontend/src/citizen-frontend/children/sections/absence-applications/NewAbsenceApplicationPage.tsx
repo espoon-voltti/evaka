@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { useNavigate } from 'react-router'
+import { useLocation } from 'wouter'
 
 import { boolean, localDateRange, string } from 'lib-common/form/fields'
 import {
@@ -72,7 +72,7 @@ export const NewAbsenceApplicationPage = () => {
     i18n.validationErrors
   )
   const { range, description, confirmation } = useFormFields(form)
-  const navigate = useNavigate()
+  const [, navigate] = useLocation()
 
   return (
     <>

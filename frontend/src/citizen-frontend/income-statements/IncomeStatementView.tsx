@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useMemo, useState } from 'react'
-import { useNavigate } from 'react-router'
 import styled from 'styled-components'
+import { useLocation } from 'wouter'
 
 import type {
   Accountant,
@@ -99,7 +99,7 @@ const IncomeInfo = React.memo(function IncomeInfo({
   incomeStatement: IncomeStatement.Income
 }) {
   const t = useTranslation()
-  const navigate = useNavigate()
+  const [, navigate] = useLocation()
 
   const requiredAttachments = useMemo(
     () => computeRequiredAttachments(fromIncomeStatement(incomeStatement)),

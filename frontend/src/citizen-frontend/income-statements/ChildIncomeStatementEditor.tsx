@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useMemo, useRef, useState } from 'react'
-import { useNavigate } from 'react-router'
+import { useLocation } from 'wouter'
 
 import type { Result } from 'lib-common/api'
 import { combine, Loading } from 'lib-common/api'
@@ -74,7 +74,7 @@ function useInitialEditorState(
 export default React.memo(function ChildIncomeStatementEditor() {
   const params = useRouteParams(['incomeStatementId'])
   const childId = useIdRouteParam<ChildId>('childId')
-  const navigate = useNavigate()
+  const [, navigate] = useLocation()
   const incomeStatementId =
     params.incomeStatementId === 'new'
       ? undefined
@@ -93,7 +93,7 @@ export default React.memo(function ChildIncomeStatementEditor() {
   const [showFormErrors, setShowFormErrors] = useState(false)
 
   const navigateToList = useCallback(() => {
-    void navigate('/income')
+    navigate('/income')
   }, [navigate])
 
   const form = useRef<IncomeStatementFormAPI | null>(null)

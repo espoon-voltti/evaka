@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { createBrowserRouter } from 'react-router'
+import { Route, Router, Switch } from 'wouter'
 
 import { featureFlags } from 'lib-customizations/citizen'
 
@@ -35,265 +35,183 @@ import MapPage from './map/MapPage'
 import MessagesPage from './messages/MessagesPage'
 import PersonalDetails from './personal-details/PersonalDetails'
 
-export const router = createBrowserRouter([
-  {
-    path: '/',
-    element: <App />,
-    children: [
-      {
-        path: '/login/form',
-        element: (
-          <ScrollToTop>
-            <LoginFormPage />
-          </ScrollToTop>
-        )
-      },
-      {
-        path: '/login',
-        element: (
-          <ScrollToTop>
-            <LoginPage />
-          </ScrollToTop>
-        )
-      },
-      {
-        path: '/map',
-        element: (
-          <ScrollToTop>
-            <MapPage />
-          </ScrollToTop>
-        )
-      },
-      {
-        path: '/accessibility',
-        element: (
-          <ScrollToTop>
-            <AccessibilityStatement />
-          </ScrollToTop>
-        )
-      },
-      {
-        path: '/applications',
-        element: (
-          <RequireAuth>
+export default function Root() {
+  return (
+    <Router>
+      <App>
+        <Switch>
+          <Route path="/login/form">
             <ScrollToTop>
-              <Applications />
+              <LoginFormPage />
             </ScrollToTop>
-          </RequireAuth>
-        )
-      },
-      {
-        path: '/applications/new/:childId',
-        element: (
-          <RequireAuth>
+          </Route>
+          <Route path="/login">
             <ScrollToTop>
-              <ApplicationCreation />
+              <LoginPage />
             </ScrollToTop>
-          </RequireAuth>
-        )
-      },
-      {
-        path: '/applications/:applicationId',
-        element: (
-          <RequireAuth>
+          </Route>
+          <Route path="/map">
             <ScrollToTop>
-              <ApplicationReadView />
+              <MapPage />
             </ScrollToTop>
-          </RequireAuth>
-        )
-      },
-      {
-        path: '/applications/:applicationId/edit',
-        element: (
-          <RequireAuth>
+          </Route>
+          <Route path="/accessibility">
             <ScrollToTop>
-              <ApplicationEditor />
+              <AccessibilityStatement />
             </ScrollToTop>
-          </RequireAuth>
-        )
-      },
-      {
-        path: '/personal-details',
-        element: (
-          <RequireAuth strength="WEAK">
-            <ScrollToTop>
-              <PersonalDetails />
-            </ScrollToTop>
-          </RequireAuth>
-        )
-      },
-      {
-        path: '/income',
-        element: (
-          <RequireAuth>
-            <ScrollToTop>
-              <IncomeStatements />
-            </ScrollToTop>
-          </RequireAuth>
-        )
-      },
-      {
-        path: '/income/:incomeStatementId/edit',
-        element: (
-          <RequireAuth>
-            <ScrollToTop>
-              <IncomeStatementEditor />
-            </ScrollToTop>
-          </RequireAuth>
-        )
-      },
-      {
-        path: '/income/:incomeStatementId',
-        element: (
-          <RequireAuth>
-            <ScrollToTop>
-              <IncomeStatementView />
-            </ScrollToTop>
-          </RequireAuth>
-        )
-      },
-      {
-        path: '/child-income/:childId/:incomeStatementId/edit',
-        element: (
-          <RequireAuth>
-            <ScrollToTop>
-              <ChildIncomeStatementEditor />
-            </ScrollToTop>
-          </RequireAuth>
-        )
-      },
-      {
-        path: '/child-income/:childId/:incomeStatementId',
-        element: (
-          <RequireAuth>
-            <ScrollToTop>
-              <ChildIncomeStatementView />
-            </ScrollToTop>
-          </RequireAuth>
-        )
-      },
-      {
-        path: '/children/:childId',
-        element: (
-          <RequireAuth strength="WEAK">
-            <ScrollToTop>
-              <ChildPage />
-            </ScrollToTop>
-          </RequireAuth>
-        )
-      },
-      ...(featureFlags.serviceApplications
-        ? [
-            {
-              path: '/children/:childId/service-application',
-              element: (
-                <RequireAuth strength="STRONG">
-                  <ScrollToTop>
-                    <NewServiceApplicationPage />
-                  </ScrollToTop>
-                </RequireAuth>
-              )
-            }
-          ]
-        : []),
-      ...(featureFlags.absenceApplications
-        ? [
-            {
-              path: '/children/:childId/absence-application',
-              element: (
+          </Route>
+          <Route path="/applications">
+            <RequireAuth>
+              <ScrollToTop>
+                <Applications />
+              </ScrollToTop>
+            </RequireAuth>
+          </Route>
+          <Route path="/applications/new/:childId">
+            <RequireAuth>
+              <ScrollToTop>
+                <ApplicationCreation />
+              </ScrollToTop>
+            </RequireAuth>
+          </Route>
+          <Route path="/applications/:applicationId">
+            <RequireAuth>
+              <ScrollToTop>
+                <ApplicationReadView />
+              </ScrollToTop>
+            </RequireAuth>
+          </Route>
+          <Route path="/applications/:applicationId/edit">
+            <RequireAuth>
+              <ScrollToTop>
+                <ApplicationEditor />
+              </ScrollToTop>
+            </RequireAuth>
+          </Route>
+          <Route path="/personal-details">
+            <RequireAuth strength="WEAK">
+              <ScrollToTop>
+                <PersonalDetails />
+              </ScrollToTop>
+            </RequireAuth>
+          </Route>
+          <Route path="/income">
+            <RequireAuth>
+              <ScrollToTop>
+                <IncomeStatements />
+              </ScrollToTop>
+            </RequireAuth>
+          </Route>
+          <Route path="/income/:incomeStatementId/edit">
+            <RequireAuth>
+              <ScrollToTop>
+                <IncomeStatementEditor />
+              </ScrollToTop>
+            </RequireAuth>
+          </Route>
+          <Route path="/income/:incomeStatementId">
+            <RequireAuth>
+              <ScrollToTop>
+                <IncomeStatementView />
+              </ScrollToTop>
+            </RequireAuth>
+          </Route>
+          <Route path="/child-income/:childId/:incomeStatementId/edit">
+            <RequireAuth>
+              <ScrollToTop>
+                <ChildIncomeStatementEditor />
+              </ScrollToTop>
+            </RequireAuth>
+          </Route>
+          <Route path="/child-income/:childId/:incomeStatementId">
+            <RequireAuth>
+              <ScrollToTop>
+                <ChildIncomeStatementView />
+              </ScrollToTop>
+            </RequireAuth>
+          </Route>
+          <Route path="/children/:childId">
+            <RequireAuth strength="WEAK">
+              <ScrollToTop>
+                <ChildPage />
+              </ScrollToTop>
+            </RequireAuth>
+          </Route>
+          {featureFlags.serviceApplications ? (
+            <Route path="/children/:childId/service-application">
+              <RequireAuth strength="STRONG">
                 <ScrollToTop>
-                  <NewAbsenceApplicationPage />
+                  <NewServiceApplicationPage />
                 </ScrollToTop>
-              )
-            }
-          ]
-        : []),
-      {
-        path: '/child-documents/:id',
-        element: (
-          <RequireAuth>
-            <ScrollToTop>
-              <ChildDocumentPage />
-            </ScrollToTop>
-          </RequireAuth>
-        )
-      },
-      {
-        path: '/decisions',
-        element: (
-          <RequireAuth>
-            <ScrollToTop>
-              <Decisions />
-            </ScrollToTop>
-          </RequireAuth>
-        )
-      },
-      {
-        path: '/decisions/by-application/:applicationId',
-        element: (
-          <RequireAuth>
-            <ScrollToTop>
-              <DecisionResponseList />
-            </ScrollToTop>
-          </RequireAuth>
-        )
-      },
-      {
-        path: '/decisions/assistance/:id',
-        element: (
-          <RequireAuth>
-            <ScrollToTop>
-              <AssistanceDecisionPage />
-            </ScrollToTop>
-          </RequireAuth>
-        )
-      },
-      {
-        path: '/decisions/assistance-preschool/:id',
-        element: (
-          <RequireAuth>
-            <ScrollToTop>
-              <AssistancePreschoolDecisionPage />
-            </ScrollToTop>
-          </RequireAuth>
-        )
-      },
-      {
-        path: '/messages/:threadId',
-        element: (
-          <RequireAuth strength="WEAK">
-            <MessagesPage />
-          </RequireAuth>
-        )
-      },
-      {
-        path: '/messages',
-        element: (
-          <RequireAuth strength="WEAK">
-            <ScrollToTop>
+              </RequireAuth>
+            </Route>
+          ) : null}
+          {featureFlags.absenceApplications ? (
+            <Route path="/children/:childId/absence-application">
+              <ScrollToTop>
+                <NewAbsenceApplicationPage />
+              </ScrollToTop>
+            </Route>
+          ) : null}
+          <Route path="/child-documents/:id">
+            <RequireAuth>
+              <ScrollToTop>
+                <ChildDocumentPage />
+              </ScrollToTop>
+            </RequireAuth>
+          </Route>
+          <Route path="/decisions">
+            <RequireAuth>
+              <ScrollToTop>
+                <Decisions />
+              </ScrollToTop>
+            </RequireAuth>
+          </Route>
+          <Route path="/decisions/by-application/:applicationId">
+            <RequireAuth>
+              <ScrollToTop>
+                <DecisionResponseList />
+              </ScrollToTop>
+            </RequireAuth>
+          </Route>
+          <Route path="/decisions/assistance/:id">
+            <RequireAuth>
+              <ScrollToTop>
+                <AssistanceDecisionPage />
+              </ScrollToTop>
+            </RequireAuth>
+          </Route>
+          <Route path="/decisions/assistance-preschool/:id">
+            <RequireAuth>
+              <ScrollToTop>
+                <AssistancePreschoolDecisionPage />
+              </ScrollToTop>
+            </RequireAuth>
+          </Route>
+          <Route path="/messages/:threadId">
+            <RequireAuth strength="WEAK">
               <MessagesPage />
-            </ScrollToTop>
-          </RequireAuth>
-        )
-      },
-      {
-        path: '/calendar',
-        element: (
-          <RequireAuth strength="WEAK">
-            <ScrollToTop>
-              <CalendarPage />
-            </ScrollToTop>
-          </RequireAuth>
-        )
-      },
-      {
-        path: '/*',
-        element: <HandleRedirection />
-      },
-      {
-        index: true,
-        element: <HandleRedirection />
-      }
-    ]
-  }
-])
+            </RequireAuth>
+          </Route>
+          <Route path="/messages">
+            <RequireAuth strength="WEAK">
+              <ScrollToTop>
+                <MessagesPage />
+              </ScrollToTop>
+            </RequireAuth>
+          </Route>
+          <Route path="/calendar">
+            <RequireAuth strength="WEAK">
+              <ScrollToTop>
+                <CalendarPage />
+              </ScrollToTop>
+            </RequireAuth>
+          </Route>
+          <Route>
+            <HandleRedirection />
+          </Route>
+        </Switch>
+      </App>
+    </Router>
+  )
+}

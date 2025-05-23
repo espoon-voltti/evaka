@@ -6,8 +6,8 @@ import { useQueryClient } from '@tanstack/react-query'
 import groupBy from 'lodash/groupBy'
 import orderBy from 'lodash/orderBy'
 import React, { useCallback, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router'
 import styled from 'styled-components'
+import { useLocation } from 'wouter'
 
 import type { Failure } from 'lib-common/api'
 import { mapped, object, required, value } from 'lib-common/form/form'
@@ -133,7 +133,7 @@ export default React.memo(function DiscussionReservationModal({
     i18n.validationErrors
   )
   const { eventTimeId } = useFormFields(form)
-  const navigate = useNavigate()
+  const [, navigate] = useLocation()
 
   const [timeAlreadyReserved, setTimeAlreadyReserved] = useState(false)
 
@@ -150,7 +150,7 @@ export default React.memo(function DiscussionReservationModal({
 
   const returnToSurveyModal = useCallback(() => {
     close()
-    void navigate(`/calendar?modal=discussions`)
+    navigate(`/calendar?modal=discussions`)
   }, [navigate, close])
 
   return (
