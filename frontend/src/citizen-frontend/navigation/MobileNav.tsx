@@ -6,11 +6,12 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
 import React, { useCallback, useContext, useState } from 'react'
 import styled, { css } from 'styled-components'
-import { Link, useLocation } from 'wouter'
+import { useLocation } from 'wouter'
 
 import { formatFirstName } from 'lib-common/names'
 import { useQuery } from 'lib-common/query'
 import { SelectionChip } from 'lib-components/atoms/Chip'
+import NavLink from 'lib-components/atoms/NavLink'
 import { desktopMin } from 'lib-components/breakpoints'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { fontWeights } from 'lib-components/typography'
@@ -230,8 +231,7 @@ const bottomNavClickableStyles = css`
   }
 `
 
-// TODO: NavLink
-const StyledLink = styled(Link)`
+const StyledLink = styled(NavLink)`
   ${bottomNavClickableStyles}
 `
 

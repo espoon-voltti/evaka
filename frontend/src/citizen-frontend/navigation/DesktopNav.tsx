@@ -15,6 +15,7 @@ import styled from 'styled-components'
 import { Link, useLocation } from 'wouter'
 
 import { formatFirstName } from 'lib-common/names'
+import NavLink from 'lib-components/atoms/NavLink'
 import { desktopMin, desktopSmall } from 'lib-components/breakpoints'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { fontWeights } from 'lib-components/typography'
@@ -143,8 +144,7 @@ const Nav = styled.nav`
   margin-left: ${defaultMargins.X3L};
 `
 
-// TODO: NavLink
-const StyledNavLink = styled(Link)`
+const StyledNavLink = styled(NavLink)`
   color: inherit;
   text-decoration: none;
   display: flex;
