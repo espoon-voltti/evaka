@@ -3453,10 +3453,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@sentry/babel-plugin-component-annotate@npm:3.4.0":
-  version: 3.4.0
-  resolution: "@sentry/babel-plugin-component-annotate@npm:3.4.0"
-  checksum: 10/7b8122fd49ac9dbb28a31be1e96a3e4f80910ce7d192360041beeea0f992382aaa80d499f87041178af28e834a66a1881cd83fb1324d88212b45929d66b16711
+"@sentry/babel-plugin-component-annotate@npm:3.5.0":
+  version: 3.5.0
+  resolution: "@sentry/babel-plugin-component-annotate@npm:3.5.0"
+  checksum: 10/da8b356a00445b6dd711b59fbfa5b9e2f808dcf1e364d6a37b1d4931ce53e87734b1178cee14af59f9e36ffa1e9a6eb8081caa455c4e803800f10aad80b5bb58
   languageName: node
   linkType: hard
 
@@ -3473,19 +3473,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@sentry/bundler-plugin-core@npm:3.4.0":
-  version: 3.4.0
-  resolution: "@sentry/bundler-plugin-core@npm:3.4.0"
+"@sentry/bundler-plugin-core@npm:3.5.0":
+  version: 3.5.0
+  resolution: "@sentry/bundler-plugin-core@npm:3.5.0"
   dependencies:
     "@babel/core": "npm:^7.18.5"
-    "@sentry/babel-plugin-component-annotate": "npm:3.4.0"
+    "@sentry/babel-plugin-component-annotate": "npm:3.5.0"
     "@sentry/cli": "npm:2.42.2"
     dotenv: "npm:^16.3.1"
     find-up: "npm:^5.0.0"
     glob: "npm:^9.3.2"
     magic-string: "npm:0.30.8"
     unplugin: "npm:1.0.1"
-  checksum: 10/e3d9b33dc734c8869b56937fb999e2e17a1549ccba8f00cd1e3b33d55a22ea712b1b13cd777593f78ec762267a7f78cb21e7b2751bfc2e0b985c2ba00ae04aa5
+  checksum: 10/335715545a311d84d5c7adfa12d7204b7472d42d80af7e7f1fab6e3ca33bcf9169433cae3ee7bb2e6e55e0222c71d77393c30cd05b9265bb5135518bd870607e
   languageName: node
   linkType: hard
 
@@ -3595,16 +3595,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@sentry/webpack-plugin@npm:3.4.0":
-  version: 3.4.0
-  resolution: "@sentry/webpack-plugin@npm:3.4.0"
+"@sentry/webpack-plugin@npm:3.5.0":
+  version: 3.5.0
+  resolution: "@sentry/webpack-plugin@npm:3.5.0"
   dependencies:
-    "@sentry/bundler-plugin-core": "npm:3.4.0"
+    "@sentry/bundler-plugin-core": "npm:3.5.0"
     unplugin: "npm:1.0.1"
     uuid: "npm:^9.0.0"
   peerDependencies:
     webpack: ">=4.40.0"
-  checksum: 10/e4114d6d633f191bb02b10d42ee95e452965525c1c629cd52a26a0771747f9599371db882d5962d2356a4c9ec5cad933f8c1523f692b595f7afd3b308bc66b9e
+  checksum: 10/adde407b5ba5215e33fcf58bcf62b3df79f1e55345579ed0b846b4a3a24134d347a35b099d1f1a8b2f6e1ad1af3cfdb674c3a132ee345aa95b5c9ff26fa56826
   languageName: node
   linkType: hard
 
@@ -6846,7 +6846,7 @@ __metadata:
     "@react-spring/web": "npm:10.0.1"
     "@sentry/browser": "npm:9.19.0"
     "@sentry/react": "npm:9.19.0"
-    "@sentry/webpack-plugin": "npm:3.4.0"
+    "@sentry/webpack-plugin": "npm:3.5.0"
     "@tanstack/react-query": "npm:5.76.1"
     "@testing-library/dom": "npm:10.4.0"
     "@testing-library/jest-dom": "npm:6.6.3"
