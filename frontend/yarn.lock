@@ -3220,14 +3220,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-spring/rafz@npm:10.0.0":
-  version: 10.0.0
-  resolution: "@react-spring/rafz@npm:10.0.0"
-  checksum: 10/d8961c853aef489fce4956084d368d994a3dcb5f9f8b848d5ccd32e7f7fb86247fae502e369e0134f97dd9dc515853b30df8ec76c8c2a39b2009db2ddc936376
-  languageName: node
-  linkType: hard
-
-"@react-spring/rafz@npm:~10.0.1":
+"@react-spring/rafz@npm:10.0.1, @react-spring/rafz@npm:~10.0.1":
   version: 10.0.1
   resolution: "@react-spring/rafz@npm:10.0.1"
   checksum: 10/0af8f88e80612391fcf11f293e94a0c1d6031587bdffecc1a01bd842cc350d2e44c3ba2efae5dcd56bcfbff15e511564b5fa06f054fd394f7a8eed63c89236ea
@@ -6842,7 +6835,7 @@ __metadata:
     "@fortawesome/free-solid-svg-icons": "npm:6.7.2"
     "@fortawesome/react-fontawesome": "patch:@fortawesome/react-fontawesome@npm%3A0.2.2#~/.yarn/patches/@fortawesome-react-fontawesome-npm-0.2.2-e1863961b2.patch"
     "@playwright/test": "npm:1.52.0"
-    "@react-spring/rafz": "npm:10.0.0"
+    "@react-spring/rafz": "npm:10.0.1"
     "@react-spring/web": "npm:10.0.1"
     "@sentry/browser": "npm:9.19.0"
     "@sentry/react": "npm:9.19.0"
