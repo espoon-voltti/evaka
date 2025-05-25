@@ -22,6 +22,8 @@ import { faArrowDownToLine } from 'lib-icons'
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 import LabelValueList from '../common/LabelValueList'
+import orderBy from 'lodash/orderBy'
+import UnorderedList from '../../../lib-components/atoms/UnorderedList'
 
 const DocumentMetadata = React.memo(function DocumentMetadata({
   document
@@ -73,11 +75,27 @@ const DocumentMetadata = React.memo(function DocumentMetadata({
           },
           ...(document.receivedBy
             ? [
-                {
-                  label: i18n.metadata.receivedBy.label,
-                  value: i18n.metadata.receivedBy[document.receivedBy]
-                }
-              ]
+              {
+                label: i18n.metadata.receivedBy.label,
+                value: i18n.metadata.receivedBy[document.receivedBy]
+              }
+            ]
+            : []),
+          ...(document.sfiDeliveries.length > 0
+            ? [
+              {
+                label: i18n.metadata.sfiDelivery.label,
+                value: (
+                  <UnorderedList>
+                    {orderBy(document.sfiDeliveries, d => d.recipientName).map((delivery, i) => (
+                      <li key={i}>
+                        {delivery.recipientName} - {i18n.metadata.sfiDelivery.method[delivery.method]} ({delivery.time.format()})
+                      </li>
+                    ))}
+                  </UnorderedList>
+                )
+              }
+            ]
             : []),
           {
             label: i18n.metadata.confidentiality,
