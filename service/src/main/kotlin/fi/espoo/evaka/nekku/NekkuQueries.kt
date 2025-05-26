@@ -652,28 +652,26 @@ fun Database.Read.getDaycareGroupIds(daycareId: DaycareId): List<GroupId> =
     createQuery { sql("SELECT id FROM daycare_group WHERE daycare_id = ${bind(daycareId)}") }
         .toList()
 
-fun Database.Read.getDaycareOperationDays(groupId: GroupId): List<Int> =
+fun Database.Read.getDaycareOperationInfo(groupId: GroupId): NekkuDaycareOperationInfo? =
     createQuery {
             sql(
-                "SELECT ARRAY(SELECT unnest(d.operation_days) UNION SELECT unnest(d.shift_care_operation_days)) AS combined_days FROM daycare_group dcg JOIN daycare d ON d.id = dcg.daycare_id WHERE dcg.id = ${bind(groupId)}"
+                """
+            SELECT ARRAY(
+                SELECT DISTINCT unnest(
+                    COALESCE(d.operation_days, '{}')::int[] || 
+                    COALESCE(d.shift_care_operation_days, '{}')::int[]
+                    )
+                ) AS combined_days,
+                d.shift_care_open_on_holidays
+            FROM daycare_group dcg
+                JOIN daycare d ON d.id = dcg.daycare_id
+            WHERE dcg.id = ${bind(groupId)}
+            """
             )
         }
-        .exactlyOne<List<Int>>()
+        .exactlyOneOrNull<NekkuDaycareOperationInfo>()
 
-fun daycareOpenNextTime(date: LocalDate, operationDays: List<Int>): LocalDate {
-
-    var nextDay = date.plusDays(1).dayOfWeek.value
-
-    var daysUntilNextOperationDay = 1
-
-    while (nextDay !in operationDays) {
-        if (nextDay == 7) {
-            nextDay = 1
-        } else {
-            nextDay++
-        }
-        daysUntilNextOperationDay++
-    }
-
-    return date.plusDays(daysUntilNextOperationDay.toLong())
-}
+data class NekkuDaycareOperationInfo(
+    val combinedDays: List<Int>,
+    val shiftCareOpenOnHolidays: Boolean,
+)
