@@ -4196,7 +4196,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vitejs/plugin-react@npm:^4.4.1":
+"@vitejs/plugin-react@npm:4.4.1":
   version: 4.4.1
   resolution: "@vitejs/plugin-react@npm:4.4.1"
   dependencies:
@@ -6854,7 +6854,7 @@ __metadata:
     "@types/punycode": "npm:2.1.4"
     "@types/react": "npm:19.1.5"
     "@types/react-dom": "npm:19.1.5"
-    "@vitejs/plugin-react": "npm:^4.4.1"
+    "@vitejs/plugin-react": "npm:4.4.1"
     autosize: "npm:6.0.1"
     axios: "npm:1.9.0"
     babel-loader: "npm:10.0.0"
@@ -6927,7 +6927,7 @@ __metadata:
     typescript: "npm:5.8.3"
     typescript-eslint: "npm:8.32.1"
     uuid: "npm:11.1.0"
-    vite: "npm:^6.3.5"
+    vite: "npm:6.3.5"
     webpack: "npm:5.99.9"
     webpack-cli: "npm:6.0.1"
     webpack-pwa-manifest: "npm:4.3.0"
@@ -12931,7 +12931,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite@npm:^6.3.5":
+"vite@npm:6.3.5":
   version: 6.3.5
   resolution: "vite@npm:6.3.5"
   dependencies:
