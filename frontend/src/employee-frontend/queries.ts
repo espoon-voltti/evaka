@@ -5,6 +5,7 @@
 import { Queries } from 'lib-common/query'
 
 import { getAssistanceActionOptions } from './generated/api-clients/assistance'
+import { deleteAttachment } from './generated/api-clients/attachment'
 import { getAreas, getUnits } from './generated/api-clients/daycare'
 import {
   getEmployees,
@@ -46,3 +47,5 @@ export const financeDecisionHandlersQuery = q.query(getFinanceDecisionHandlers)
 export const childDocumentDecisionsReportNotificationCountQuery = q.query(
   getChildDocumentDecisionsReportNotificationCount
 )
+
+export const deleteAttachmentMutation = q.mutation(deleteAttachment, [])

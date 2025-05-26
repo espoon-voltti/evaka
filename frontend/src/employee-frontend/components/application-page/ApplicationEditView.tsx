@@ -27,6 +27,7 @@ import type { ServiceNeedOptionPublicInfo } from 'lib-common/generated/api-types
 import type { AttachmentId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
+import { useMutationResult } from 'lib-common/query'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
@@ -58,6 +59,7 @@ import {
 } from 'lib-icons'
 
 import { getAttachmentUrl, applicationAttachment } from '../../api/attachments'
+import { deleteAttachmentMutation } from '../../queries'
 import type { Translations } from '../../state/i18n'
 import { useTranslation } from '../../state/i18n'
 import { formatName } from '../../utils'
@@ -107,6 +109,9 @@ export default React.memo(function ApplicationEditView({
   const [placementType, setPlacementType] = useState<PlacementType | null>(
     application.form.preferences.serviceNeed?.serviceNeedOption
       ?.validPlacementType ?? null
+  )
+  const { mutateAsync: deleteAttachment } = useMutationResult(
+    deleteAttachmentMutation
   )
 
   const {
@@ -296,7 +301,8 @@ export default React.memo(function ApplicationEditView({
                   <FileUpload
                     uploadHandler={applicationAttachment(
                       application.id,
-                      'URGENCY'
+                      'URGENCY',
+                      deleteAttachment
                     )}
                     onUploaded={onAttachmentUploaded('URGENCY')}
                     onDeleted={handleAttachmentDeleted}
@@ -597,7 +603,8 @@ export default React.memo(function ApplicationEditView({
                   <FileUpload
                     uploadHandler={applicationAttachment(
                       application.id,
-                      'EXTENDED_CARE'
+                      'EXTENDED_CARE',
+                      deleteAttachment
                     )}
                     onUploaded={onAttachmentUploaded('EXTENDED_CARE')}
                     onDeleted={handleAttachmentDeleted}
@@ -1328,7 +1335,8 @@ export default React.memo(function ApplicationEditView({
             <FileUpload
               uploadHandler={applicationAttachment(
                 application.id,
-                'SERVICE_WORKER_ATTACHMENT'
+                'SERVICE_WORKER_ATTACHMENT',
+                deleteAttachment
               )}
               onUploaded={onAttachmentUploaded('SERVICE_WORKER_ATTACHMENT')}
               onDeleted={handleAttachmentDeleted}

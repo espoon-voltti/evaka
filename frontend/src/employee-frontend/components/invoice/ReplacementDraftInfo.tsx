@@ -14,6 +14,7 @@ import type {
   InvoiceReplacementReason
 } from 'lib-common/generated/api-types/invoicing'
 import { invoiceReplacementReasons } from 'lib-common/generated/api-types/invoicing'
+import { useMutationResult } from 'lib-common/query'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import { SelectF } from 'lib-components/atoms/dropdowns/Select'
 import { TextAreaF } from 'lib-components/atoms/form/TextArea'
@@ -27,6 +28,7 @@ import { InfoBox } from 'lib-components/molecules/MessageBoxes'
 import { H3, Label, P } from 'lib-components/typography'
 
 import { getAttachmentUrl, invoiceAttachment } from '../../api/attachments'
+import { deleteAttachmentMutation } from '../../queries'
 import { useTranslation } from '../../state/i18n'
 import { markReplacementDraftSentMutation } from '../invoices/queries'
 
@@ -49,6 +51,9 @@ export function ReplacementDraftForm({
   invoiceResponse: InvoiceDetailedResponse
 }) {
   const { i18n } = useTranslation()
+  const { mutateAsync: deleteAttachment } = useMutationResult(
+    deleteAttachmentMutation
+  )
 
   const form = useForm(
     replacementDraftForm,
@@ -92,7 +97,10 @@ export function ReplacementDraftForm({
         <FixedSpaceColumn>
           <FileUpload
             files={invoiceResponse.invoice.attachments}
-            uploadHandler={invoiceAttachment(invoiceResponse.invoice.id)}
+            uploadHandler={invoiceAttachment(
+              invoiceResponse.invoice.id,
+              deleteAttachment
+            )}
             getDownloadUrl={getAttachmentUrl}
             data-qa="attachments"
           />

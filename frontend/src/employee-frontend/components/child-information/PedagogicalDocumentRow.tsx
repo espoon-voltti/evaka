@@ -14,6 +14,7 @@ import type {
 } from 'lib-common/generated/api-types/shared'
 import type { EvakaUser } from 'lib-common/generated/api-types/user'
 import type HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import { useMutationResult } from 'lib-common/query'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
@@ -29,6 +30,7 @@ import {
   getAttachmentUrl,
   pedagogicalDocumentAttachment
 } from '../../api/attachments'
+import { deleteAttachmentMutation } from '../../queries'
 import { useTranslation } from '../../state/i18n'
 
 import {
@@ -80,6 +82,9 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
     })
 
   const queryClient = useQueryClient()
+  const { mutateAsync: deleteAttachment } = useMutationResult(
+    deleteAttachmentMutation
+  )
 
   return (
     <Tr key={pedagogicalDocument.id} data-qa="table-pedagogical-document-row">
@@ -118,7 +123,7 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
             data-qa="upload-pedagogical-document-attachment-new"
             files={attachments}
             getDownloadUrl={getAttachmentUrl}
-            uploadHandler={pedagogicalDocumentAttachment(id)}
+            uploadHandler={pedagogicalDocumentAttachment(id, deleteAttachment)}
             onUploaded={() => {
               void queryClient.invalidateQueries({
                 queryKey: childPedagogicalDocumentsQuery({ childId }).queryKey,

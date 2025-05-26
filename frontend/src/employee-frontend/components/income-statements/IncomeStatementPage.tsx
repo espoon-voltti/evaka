@@ -31,7 +31,7 @@ import {
   computeRequiredAttachments,
   fromIncomeStatement
 } from 'lib-common/income-statements/form'
-import { useQueryResult } from 'lib-common/query'
+import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
@@ -52,7 +52,7 @@ import {
   getAttachmentUrl,
   incomeStatementAttachment
 } from '../../api/attachments'
-import { personIdentityQuery } from '../../queries'
+import { deleteAttachmentMutation, personIdentityQuery } from '../../queries'
 import type { Translations } from '../../state/i18n'
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
@@ -505,6 +505,9 @@ function EmployeeAttachments({
   attachments: Attachment[]
 }) {
   const { i18n } = useTranslation()
+  const { mutateAsync: deleteAttachment } = useMutationResult(
+    deleteAttachmentMutation
+  )
 
   return (
     <>
@@ -512,7 +515,11 @@ function EmployeeAttachments({
       <P>{i18n.incomeStatement.employeeAttachments.description}</P>
       <FileUpload
         files={attachments}
-        uploadHandler={incomeStatementAttachment(incomeStatementId, 'OTHER')}
+        uploadHandler={incomeStatementAttachment(
+          incomeStatementId,
+          'OTHER',
+          deleteAttachment
+        )}
         getDownloadUrl={getAttachmentUrl}
       />
     </>

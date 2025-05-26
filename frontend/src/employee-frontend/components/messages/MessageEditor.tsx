@@ -28,7 +28,7 @@ import type {
   MessageThreadFolderId
 } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
-import { useQueryResult } from 'lib-common/query'
+import { useMutationResult, useQueryResult } from 'lib-common/query'
 import type { UUID } from 'lib-common/types'
 import { useDebounce } from 'lib-common/utils/useDebounce'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
@@ -83,6 +83,8 @@ import {
   faUpRightAndDownLeftFromCenter
 } from 'lib-icons'
 
+import type { DeleteAttachmentResult } from '../../api/attachments'
+import { deleteAttachmentMutation } from '../../queries'
 import { useTranslation } from '../../state/i18n'
 
 import { createMessagePreflightCheckQuery } from './queries'
@@ -203,7 +205,10 @@ interface Props {
     msg: PostMessageBody,
     initialFolder: MessageThreadFolderId | null
   ) => void
-  saveMessageAttachment: (draftId: MessageDraftId) => UploadHandler
+  saveMessageAttachment: (
+    draftId: MessageDraftId,
+    deleteAttachmentResult: DeleteAttachmentResult
+  ) => UploadHandler
   sending: boolean
   defaultTitle?: string
 }
@@ -259,6 +264,9 @@ export default React.memo(function MessageEditor({
   const [uploadStatus, setUploadStatus] =
     useState<UploadStatus>(initialUploadStatus)
   const [filters, setFilters] = useState<Filters>(() => getEmptyFilters())
+  const { mutateAsync: deleteAttachment } = useMutationResult(
+    deleteAttachmentMutation
+  )
   const {
     draftId,
     setDraft,
@@ -867,7 +875,7 @@ export default React.memo(function MessageEditor({
                 data-qa="upload-message-attachment"
                 files={message.attachments}
                 getDownloadUrl={getAttachmentUrl}
-                uploadHandler={saveMessageAttachment(draftId)}
+                uploadHandler={saveMessageAttachment(draftId, deleteAttachment)}
                 onUploaded={(attachment) =>
                   updateMessage({
                     attachments: [...message.attachments, attachment]

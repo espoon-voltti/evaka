@@ -22,6 +22,7 @@ import type {
 import type { IncomeId, PersonId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { parseCents } from 'lib-common/money'
+import { useMutationResult } from 'lib-common/query'
 import type { UUID } from 'lib-common/types'
 import Title from 'lib-components/atoms/Title'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
@@ -40,6 +41,7 @@ import { H1, Label, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
 import { getAttachmentUrl, incomeAttachment } from '../../../api/attachments'
+import { deleteAttachmentMutation } from '../../../queries'
 import { useTranslation } from '../../../state/i18n'
 import type { IncomeFields } from '../../../types/income'
 import RetroactiveConfirmation, {
@@ -440,6 +442,9 @@ function IncomeAttachments({
   onDeleted: (id: UUID) => void
 }) {
   const { i18n } = useTranslation()
+  const { mutateAsync: deleteAttachment } = useMutationResult(
+    deleteAttachmentMutation
+  )
 
   return (
     <>
@@ -448,7 +453,7 @@ function IncomeAttachments({
       <FileUpload
         data-qa="income-attachment-upload"
         files={attachments}
-        uploadHandler={incomeAttachment(incomeId)}
+        uploadHandler={incomeAttachment(incomeId, deleteAttachment)}
         onUploaded={onUploaded}
         onDeleted={onDeleted}
         getDownloadUrl={getAttachmentUrl}

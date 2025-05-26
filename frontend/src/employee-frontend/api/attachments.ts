@@ -4,7 +4,8 @@
 
 import type { AxiosProgressEvent } from 'axios'
 
-import { Failure, Success, wrapResult } from 'lib-common/api'
+import type { Result } from 'lib-common/api'
+import { Failure, Success } from 'lib-common/api'
 import type { ApplicationAttachmentType } from 'lib-common/generated/api-types/application'
 import type { IncomeStatementAttachmentType } from 'lib-common/generated/api-types/incomestatement'
 import type {
@@ -20,7 +21,6 @@ import type {
 import type { UploadHandler } from 'lib-components/molecules/FileUpload'
 
 import {
-  deleteAttachment,
   getAttachment,
   uploadApplicationAttachmentEmployee,
   uploadFeeAlterationAttachment,
@@ -33,11 +33,16 @@ import {
   uploadPedagogicalDocumentAttachment
 } from '../generated/api-clients/attachment'
 
+export type DeleteAttachmentResult = (request: {
+  attachmentId: AttachmentId
+}) => Promise<Result<void>>
+
 function uploadHandler(
   upload: (
     file: File,
     onUploadProgress: (event: AxiosProgressEvent) => void
-  ) => Promise<AttachmentId>
+  ) => Promise<AttachmentId>,
+  deleteAttachmentResult: DeleteAttachmentResult
 ): UploadHandler {
   return {
     upload: async (file, onUploadProgress) => {
@@ -58,73 +63,101 @@ function uploadHandler(
   }
 }
 
-const deleteAttachmentResult = wrapResult(deleteAttachment)
-
 export function applicationAttachment(
   applicationId: ApplicationId,
-  type: ApplicationAttachmentType
+  type: ApplicationAttachmentType,
+  deleteAttachmentResult: DeleteAttachmentResult
 ): UploadHandler {
-  return uploadHandler((file, onUploadProgress) =>
-    uploadApplicationAttachmentEmployee(
-      { file, applicationId, type },
-      { onUploadProgress }
-    )
+  return uploadHandler(
+    (file, onUploadProgress) =>
+      uploadApplicationAttachmentEmployee(
+        { file, applicationId, type },
+        { onUploadProgress }
+      ),
+    deleteAttachmentResult
   )
 }
 
 export function incomeStatementAttachment(
   incomeStatementId: IncomeStatementId,
-  attachmentType: IncomeStatementAttachmentType
+  attachmentType: IncomeStatementAttachmentType,
+  deleteAttachmentResult: DeleteAttachmentResult
 ): UploadHandler {
-  return uploadHandler((file, onUploadProgress) =>
-    uploadIncomeStatementAttachmentEmployee(
-      { file, incomeStatementId, attachmentType },
-      { onUploadProgress }
-    )
+  return uploadHandler(
+    (file, onUploadProgress) =>
+      uploadIncomeStatementAttachmentEmployee(
+        { file, incomeStatementId, attachmentType },
+        { onUploadProgress }
+      ),
+    deleteAttachmentResult
   )
 }
 
-export function incomeAttachment(incomeId: IncomeId | null): UploadHandler {
-  return uploadHandler((file, onUploadProgress) =>
-    incomeId
-      ? uploadIncomeAttachment({ file, incomeId }, { onUploadProgress })
-      : uploadOrphanIncomeAttachment({ file }, { onUploadProgress })
+export function incomeAttachment(
+  incomeId: IncomeId | null,
+  deleteAttachmentResult: DeleteAttachmentResult
+): UploadHandler {
+  return uploadHandler(
+    (file, onUploadProgress) =>
+      incomeId
+        ? uploadIncomeAttachment({ file, incomeId }, { onUploadProgress })
+        : uploadOrphanIncomeAttachment({ file }, { onUploadProgress }),
+    deleteAttachmentResult
   )
 }
 
-export function invoiceAttachment(invoiceId: InvoiceId): UploadHandler {
-  return uploadHandler((file, onUploadProgress) =>
-    uploadInvoiceAttachmentEmployee({ file, invoiceId }, { onUploadProgress })
+export function invoiceAttachment(
+  invoiceId: InvoiceId,
+  deleteAttachmentResult: DeleteAttachmentResult
+): UploadHandler {
+  return uploadHandler(
+    (file, onUploadProgress) =>
+      uploadInvoiceAttachmentEmployee(
+        { file, invoiceId },
+        { onUploadProgress }
+      ),
+    deleteAttachmentResult
   )
 }
 
 export function feeAlterationAttachment(
-  feeAlterationId: FeeAlterationId | null
+  feeAlterationId: FeeAlterationId | null,
+  deleteAttachmentResult: DeleteAttachmentResult
 ): UploadHandler {
-  return uploadHandler((file, onUploadProgress) =>
-    feeAlterationId
-      ? uploadFeeAlterationAttachment(
-          { file, feeAlterationId },
-          { onUploadProgress }
-        )
-      : uploadOrphanFeeAlterationAttachment({ file }, { onUploadProgress })
+  return uploadHandler(
+    (file, onUploadProgress) =>
+      feeAlterationId
+        ? uploadFeeAlterationAttachment(
+            { file, feeAlterationId },
+            { onUploadProgress }
+          )
+        : uploadOrphanFeeAlterationAttachment({ file }, { onUploadProgress }),
+    deleteAttachmentResult
   )
 }
 
-export function messageAttachment(draftId: MessageDraftId): UploadHandler {
-  return uploadHandler((file, onUploadProgress) =>
-    uploadMessageAttachment({ file, draftId }, { onUploadProgress })
+export function messageAttachment(
+  draftId: MessageDraftId,
+  deleteAttachmentResult: DeleteAttachmentResult
+): UploadHandler {
+  return uploadHandler(
+    (file, onUploadProgress) =>
+      uploadMessageAttachment({ file, draftId }, { onUploadProgress }),
+    deleteAttachmentResult
   )
 }
 
 export function pedagogicalDocumentAttachment(
-  documentId: PedagogicalDocumentId
+  documentId: PedagogicalDocumentId,
+  deleteAttachmentResult: DeleteAttachmentResult
 ): UploadHandler {
-  return uploadHandler((file, onUploadProgress) =>
-    uploadPedagogicalDocumentAttachment(
-      { file, documentId },
-      { onUploadProgress }
-    )
+  return uploadHandler(
+    (file, onUploadProgress) =>
+      uploadPedagogicalDocumentAttachment(
+        { file, documentId },
+        { onUploadProgress }
+      ),
+    deleteAttachmentResult
   )
 }
 
