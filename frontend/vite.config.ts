@@ -60,7 +60,7 @@ function serveIndexHtml(): Plugin {
   return {
     name: 'serve-index-html',
     configureServer(server) {
-      server.middlewares.use((req, _res, next) => {
+      server.middlewares.use((req, res, next) => {
         // Skip api, source code and vite internal paths
         if (
           req.originalUrl?.startsWith('/api/') ||
@@ -83,16 +83,20 @@ function serveIndexHtml(): Plugin {
           // Ignore errors
         }
 
-        // Rewrite the url to serve the correct index.html file
+        // Add trailing slash
         if (
-          req.originalUrl === '/employee/mobile' ||
-          req.originalUrl?.startsWith('/employee/mobile/')
-        ) {
-          req.url = '/src/employee-mobile-frontend/index-vite.html'
-        } else if (
           req.originalUrl === '/employee' ||
-          req.originalUrl?.startsWith('/employee/')
+          req.originalUrl === '/employee/mobile'
         ) {
+          res.statusCode = 301
+          res.setHeader('Location', req.originalUrl + '/')
+          return res.end()
+        }
+
+        // Serve the correct index.html file
+        if (req.originalUrl?.startsWith('/employee/mobile/')) {
+          req.url = '/src/employee-mobile-frontend/index-vite.html'
+        } else if (req.originalUrl?.startsWith('/employee/')) {
           req.url = '/src/employee-frontend/index-vite.html'
         } else {
           req.url = '/src/citizen-frontend/index-vite.html'
@@ -112,7 +116,7 @@ function serviceWorker(): Plugin {
       server.middlewares.use(urlPath, async (_req, res, next) => {
         try {
           const code = await server.transformRequest(sourcePath)
-          res.setHeader('Content-Type', 'application/javascript')
+          res.setHeader('Content-Type', 'text/javascript')
           res.end(code?.code ?? '')
         } catch (err) {
           next(err)
