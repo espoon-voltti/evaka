@@ -653,15 +653,17 @@ enum class ChildAudit(
     fun log(
         // This is a hack to force passing all real parameters by name
         @Suppress("UNUSED_PARAMETER") vararg forceNamed: Array<out UseNamedArguments>,
-        targetId: AuditId? = null,
         childId: AuditId,
+        targetId: AuditId? = null,
+        objectId: AuditId? = null,
         meta: Map<String, Any?> = emptyMap(),
     ) {
+        val combinedObjectIds = objectId?.let { childId + it } ?: childId
         logger.audit(
             mapOf(
                 "eventCode" to eventCode,
                 "targetId" to targetId?.value,
-                "objectId" to childId.value,
+                "objectId" to combinedObjectIds.value,
                 "securityLevel" to securityLevel,
                 "securityEvent" to securityEvent,
             ) + if (meta.isNotEmpty()) mapOf("meta" to meta) else emptyMap()
