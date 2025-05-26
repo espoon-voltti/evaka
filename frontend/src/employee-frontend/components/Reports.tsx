@@ -677,6 +677,20 @@ export default React.memo(function Reports() {
                   )
                 }
               : null,
+            reports.has('HOLIDAY_QUESTIONNAIRE')
+              ? {
+                  name: i18n.reports.holidayQuestionnaire.title,
+                  item: (
+                    <Report
+                      path="/reports/holiday-questionnaire"
+                      color={colors.main.m2}
+                      icon={faChild}
+                      i18n={i18n.reports.holidayQuestionnaire}
+                      data-qa="report-holiday-questionnaire"
+                    />
+                  )
+                }
+              : null,
             reports.has('TITANIA_ERRORS')
               ? {
                   name: i18n.reports.titaniaErrors.title,

@@ -31,6 +31,7 @@ enum class Report {
     FAMILY_CONTACT,
     FAMILY_DAYCARE_MEAL_REPORT,
     HOLIDAY_PERIOD_ATTENDANCE,
+    HOLIDAY_QUESTIONNAIRE,
     INVOICE,
     INCOMPLETE_INCOMES,
     MANUAL_DUPLICATION,
@@ -256,6 +257,11 @@ class ReportPermissions(private val accessControl: AccessControl) {
                     Report.HOLIDAY_PERIOD_ATTENDANCE.takeIf {
                         permittedActionsForSomeUnit.contains(
                             Action.Unit.READ_HOLIDAY_PERIOD_ATTENDANCE_REPORT
+                        )
+                    },
+                    Report.HOLIDAY_QUESTIONNAIRE.takeIf {
+                        permittedActionsForSomeUnit.contains(
+                            Action.Unit.READ_HOLIDAY_QUESTIONNAIRE_REPORT
                         )
                     },
                     Report.NEKKU_ORDERS.takeIf {
