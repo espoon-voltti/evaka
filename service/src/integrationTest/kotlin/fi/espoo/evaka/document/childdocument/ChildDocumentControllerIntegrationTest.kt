@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.document.childdocument
 
-import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.document.CheckboxGroupQuestionOption
@@ -19,9 +18,10 @@ import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.process.ArchivedProcessState
 import fi.espoo.evaka.process.DocumentConfidentiality
 import fi.espoo.evaka.process.ProcessMetadataController
-import fi.espoo.evaka.process.getArchiveProcessByChildDocumentId
+import fi.espoo.evaka.process.SfiMethod
 import fi.espoo.evaka.process.getProcess
 import fi.espoo.evaka.sficlient.MockSfiMessagesClient
+import fi.espoo.evaka.sficlient.rest.EventType
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.DocumentTemplateId
@@ -37,6 +37,7 @@ import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
+import fi.espoo.evaka.shared.dev.DevSfiMessageEvent
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
@@ -71,7 +72,6 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
     @Autowired lateinit var controller: ChildDocumentController
     @Autowired lateinit var templateController: DocumentTemplateController
     @Autowired lateinit var metadataController: ProcessMetadataController
-    @Autowired lateinit var evakaProps: EvakaEnv
 
     lateinit var areaId: AreaId
     val employeeUser = DevEmployee(roles = setOf(UserRole.ADMIN))
@@ -804,19 +804,38 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
             assertEquals(ChildDocumentDecisionStatus.ANNULLED, doc.decision?.status)
         }
 
-        db.read { tx ->
-            assertThat(tx.getArchiveProcessByChildDocumentId(documentId)!!.history)
-                .extracting({ it.state }, { it.enteredBy.id })
-                .containsExactly(
-                    Tuple(ArchivedProcessState.INITIAL, employeeUser.id),
-                    Tuple(ArchivedProcessState.PREPARATION, employeeUser.id),
-                    Tuple(ArchivedProcessState.DECIDING, unitSupervisorUser.id),
-                    Tuple(
-                        ArchivedProcessState.COMPLETED,
-                        AuthenticatedUser.SystemInternalUser.evakaUserId,
-                    ),
+        val metadata = getChildDocumentMetadata(documentId).data!!
+        assertThat(metadata.process.history)
+            .extracting({ it.state }, { it.enteredBy.id })
+            .containsExactly(
+                Tuple(ArchivedProcessState.INITIAL, employeeUser.id),
+                Tuple(ArchivedProcessState.PREPARATION, employeeUser.id),
+                Tuple(ArchivedProcessState.DECIDING, unitSupervisorUser.id),
+                Tuple(
+                    ArchivedProcessState.COMPLETED,
+                    AuthenticatedUser.SystemInternalUser.evakaUserId,
+                ),
+            )
+
+        assertThat(metadata.primaryDocument.sfiDeliveries)
+            .extracting({ it.recipientName }, { it.method })
+            .containsExactly(
+                Tuple("${testAdult_1.lastName} ${testAdult_1.firstName}", SfiMethod.PENDING)
+            )
+        // mock sfi event
+        db.transaction { tx ->
+            tx.insert(
+                DevSfiMessageEvent(
+                    messageId = MockSfiMessagesClient.getMessages().first().messageId,
+                    eventType = EventType.ELECTRONIC_MESSAGE_CREATED,
                 )
+            )
         }
+        assertThat(getChildDocumentMetadata(documentId).data!!.primaryDocument.sfiDeliveries)
+            .extracting({ it.recipientName }, { it.method })
+            .containsExactly(
+                Tuple("${testAdult_1.lastName} ${testAdult_1.firstName}", SfiMethod.ELECTRONIC)
+            )
     }
 
     @Test

@@ -135,6 +135,7 @@ import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.serviceneed.application.ServiceApplicationDecisionStatus
 import fi.espoo.evaka.sficlient.MockSfiMessagesClient
 import fi.espoo.evaka.sficlient.SfiMessage
+import fi.espoo.evaka.sficlient.rest.EventType
 import fi.espoo.evaka.shared.*
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.*
@@ -2644,4 +2645,12 @@ data class DevVoucherValueDecision(
     val childIncome: DecisionIncome? = null,
     val difference: List<VoucherValueDecisionDifference> = emptyList(),
     val serviceNeedMissing: Boolean = false,
+)
+
+data class DevSfiMessageEvent(
+    val id: SfiMessageEventId = SfiMessageEventId(UUID.randomUUID()),
+    val messageId: SfiMessageId,
+    val eventType: EventType,
+    val createdAt: HelsinkiDateTime = HelsinkiDateTime.now(),
+    val updatedAt: HelsinkiDateTime = HelsinkiDateTime.now(),
 )
