@@ -157,6 +157,9 @@ export default React.memo(function UnitPage() {
       ) ||
         unitInformation.value.permittedActions.includes(
           'READ_SERVICE_APPLICATIONS'
+        ) ||
+        unitInformation.value.permittedActions.includes(
+          'READ_ABSENCE_APPLICATIONS'
         ))
         ? [
             {
