@@ -1,16 +1,20 @@
+// SPDX-FileCopyrightText: 2017-2025 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
 import orderBy from 'lodash/orderBy'
 import React, { useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
 import { useBoolean } from 'lib-common/form/hooks'
-import { Daycare } from 'lib-common/generated/api-types/daycare'
-import { HolidayQuestionnaire } from 'lib-common/generated/api-types/holidayperiod'
-import {
+import type { Daycare } from 'lib-common/generated/api-types/daycare'
+import type { HolidayQuestionnaire } from 'lib-common/generated/api-types/holidayperiod'
+import type {
   HolidayReportRow,
   ChildWithName
 } from 'lib-common/generated/api-types/reports'
-import {
+import type {
   DaycareId,
   GroupId,
   HolidayQuestionnaireId
