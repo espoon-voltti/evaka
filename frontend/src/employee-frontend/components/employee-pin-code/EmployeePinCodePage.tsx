@@ -55,8 +55,6 @@ export default React.memo(function EmployeePinCodePage() {
   }
 
   useWarnOnUnsavedChanges(dirty, i18n.pinCode.unsavedDataWarning)
-  // TODO: hard to achieve with wouter
-  // usePrompt({ message: i18n.pinCode.unsavedDataWarning, when: dirty })
 
   return (
     <Container>
