@@ -151,6 +151,36 @@ fun Database.Transaction.publishTemplate(id: DocumentTemplateId) {
 
 // not for production use
 fun Database.Transaction.forceUnpublishTemplate(id: DocumentTemplateId) {
+    // Check if template has archive_externally=true AND has child documents
+    val shouldToggleArchiveFlag =
+        createQuery {
+                sql(
+                    """
+            SELECT dt.archive_externally 
+            FROM document_template dt 
+            WHERE dt.id = ${bind(id)} 
+            AND dt.archive_externally = true 
+            AND EXISTS(SELECT 1 FROM child_document cd WHERE cd.template_id = dt.id)
+        """
+                )
+            }
+            .exactlyOneOrNull<Boolean>() ?: false
+
+    // Temporarily set archive_externally to false to bypass the deletion child_document delete
+    // trigger that prevent's deletion
+    if (shouldToggleArchiveFlag) {
+        createUpdate {
+                sql(
+                    """
+                UPDATE document_template
+                SET archive_externally = false
+                WHERE id = ${bind(id)}
+                """
+                )
+            }
+            .updateExactlyOne()
+    }
+
     execute {
         sql(
             """
@@ -169,6 +199,20 @@ fun Database.Transaction.forceUnpublishTemplate(id: DocumentTemplateId) {
         WHERE id = ${bind(id)}
     """
         )
+    }
+
+    // Finally, restore the archive_externally flag if we changed it
+    if (shouldToggleArchiveFlag) {
+        createUpdate {
+                sql(
+                    """
+                UPDATE document_template
+                SET archive_externally = true
+                WHERE id = ${bind(id)}
+                """
+                )
+            }
+            .updateExactlyOne()
     }
 }
 
