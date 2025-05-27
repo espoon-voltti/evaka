@@ -8,6 +8,12 @@ import { getAssistanceActionOptions } from './generated/api-clients/assistance'
 import { deleteAttachment } from './generated/api-clients/attachment'
 import { getAreas, getUnits } from './generated/api-clients/daycare'
 import {
+  getPairingStatus,
+  postPairing,
+  postPairingResponse,
+  putMobileDeviceName
+} from './generated/api-clients/pairing'
+import {
   getEmployees,
   getFinanceDecisionHandlers,
   getOrCreatePersonBySsn,
@@ -49,3 +55,11 @@ export const childDocumentDecisionsReportNotificationCountQuery = q.query(
 )
 
 export const deleteAttachmentMutation = q.mutation(deleteAttachment, [])
+
+export const pairingStatusQuery = q.query(getPairingStatus)
+
+export const postPairingMutation = q.mutation(postPairing, [])
+
+export const postPairingResponseMutation = q.mutation(postPairingResponse, [])
+
+export const putMobileDeviceNameMutation = q.mutation(putMobileDeviceName, [])

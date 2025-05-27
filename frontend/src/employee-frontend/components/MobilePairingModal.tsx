@@ -5,13 +5,12 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import type { Result } from 'lib-common/api'
-import { Loading, wrapResult } from 'lib-common/api'
 import type { Pairing } from 'lib-common/generated/api-types/pairing'
 import type {
   DaycareId,
   EmployeeId
 } from 'lib-common/generated/api-types/shared'
+import { pendingQuery, useMutationResult, useQuery } from 'lib-common/query'
 import InputField from 'lib-components/atoms/form/InputField'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { Bold, fontWeights, P } from 'lib-components/typography'
@@ -19,19 +18,12 @@ import colors from 'lib-customizations/common'
 import { faPlus } from 'lib-icons'
 
 import {
-  getPairingStatus,
-  postPairing,
-  postPairingResponse,
-  putMobileDeviceName
-} from '../generated/api-clients/pairing'
+  pairingStatusQuery,
+  postPairingMutation,
+  postPairingResponseMutation,
+  putMobileDeviceNameMutation
+} from '../queries'
 import { useTranslation } from '../state/i18n'
-
-import { renderResult } from './async-rendering'
-
-const getPairingStatusResult = wrapResult(getPairingStatus)
-const postPairingResult = wrapResult(postPairing)
-const postPairingResponseResult = wrapResult(postPairingResponse)
-const putMobileDeviceNameResult = wrapResult(putMobileDeviceName)
 
 type IdProps = { unitId: DaycareId } | { employeeId: EmployeeId }
 
@@ -63,31 +55,52 @@ export default React.memo(function MobilePairingModal({
   const [phase, setPhase] = useState<1 | 2 | 3>(1)
   const [responseKey, setResponseKey] = useState<string>('')
   const [deviceName, setDeviceName] = useState<string>('')
-  const [pairingResponse, setPairingResponse] = useState<Result<Pairing>>(
-    Loading.of()
+  const [pairingResponse, setPairingResponse] = useState<Pairing>()
+
+  const { mutateAsync: postPairingResult } = useMutationResult(
+    postPairingMutation,
+    { onSuccess: (res) => setPairingResponse(res) }
+  )
+  const { mutateAsync: postPairingResponseResult } = useMutationResult(
+    postPairingResponseMutation,
+    {
+      onSuccess: (res) => {
+        setPairingResponse(res)
+        if (res.status === 'READY') {
+          setPhase(3)
+        }
+      }
+    }
+  )
+  const { refetch: getPairingStatus } = useQuery(
+    pairingResponse !== undefined
+      ? pairingStatusQuery({ id: pairingResponse.id })
+      : pendingQuery<Pairing>(),
+    {
+      enabled: false
+    }
+  )
+  const { mutateAsync: putMobileDeviceNameResult } = useMutationResult(
+    putMobileDeviceNameMutation,
+    {
+      onSuccess: closeModal
+    }
   )
 
   useEffect(() => {
     if (phase === 1) {
-      void postPairingResult({ body: idProps }).then(setPairingResponse)
+      void postPairingResult({ body: idProps })
     }
   }, [phase]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (responseKey.length === 6) {
-      if (pairingResponse.isSuccess) {
+      if (pairingResponse !== undefined) {
         void postPairingResponseResult({
-          id: pairingResponse.value.id,
+          id: pairingResponse.id,
           body: {
-            challengeKey: pairingResponse.value.challengeKey,
+            challengeKey: pairingResponse.challengeKey,
             responseKey
-          }
-        }).then((res) => {
-          if (res.isSuccess) {
-            setPairingResponse(res)
-            if (res.value.status === 'READY') {
-              setPhase(3)
-            }
           }
         })
       }
@@ -96,23 +109,21 @@ export default React.memo(function MobilePairingModal({
 
   useEffect(() => {
     const polling = setInterval(() => {
-      if (pairingResponse.isSuccess) {
-        if (pairingResponse.value.status === 'WAITING_CHALLENGE') {
-          void getPairingStatusResult({ id: pairingResponse.value.id }).then(
-            (status) => {
-              if (status.isSuccess) {
-                if (status.value.status === 'WAITING_RESPONSE') {
-                  clearInterval(polling)
-                  setPhase(2)
-                }
+      if (pairingResponse !== undefined) {
+        if (pairingResponse.status === 'WAITING_CHALLENGE') {
+          void getPairingStatus().then((status) => {
+            if (status.isSuccess) {
+              if (status.data.status === 'WAITING_RESPONSE') {
+                clearInterval(polling)
+                setPhase(2)
               }
             }
-          )
+          })
         }
       }
     }, 1000)
     return () => clearInterval(polling)
-  }, [pairingResponse])
+  }, [getPairingStatus, pairingResponse])
 
   const actions = useMemo(() => {
     if (phase !== 3) {
@@ -120,13 +131,13 @@ export default React.memo(function MobilePairingModal({
     }
 
     const saveDeviceName = () => {
-      if (pairingResponse.isSuccess && pairingResponse.value.mobileDeviceId) {
+      if (pairingResponse !== undefined && pairingResponse.mobileDeviceId) {
         void putMobileDeviceNameResult({
-          id: pairingResponse.value.mobileDeviceId,
+          id: pairingResponse.mobileDeviceId,
           body: {
             name: deviceName
           }
-        }).then(closeModal)
+        })
       }
     }
 
@@ -134,7 +145,14 @@ export default React.memo(function MobilePairingModal({
       reject: { action: closeModal, label: i18n.common.cancel },
       resolve: { action: saveDeviceName, label: i18n.common.ready }
     }
-  }, [i18n, phase, closeModal, pairingResponse, deviceName])
+  }, [
+    phase,
+    closeModal,
+    i18n,
+    pairingResponse,
+    putMobileDeviceNameResult,
+    deviceName
+  ])
 
   return (
     <InfoModal
@@ -157,18 +175,18 @@ export default React.memo(function MobilePairingModal({
             <br />
             {i18n.mobilePairingModal.modalText2}
           </P>
-          {renderResult(pairingResponse, (pairingResponse) => (
+          {pairingResponse && (
             <ResponseKey data-qa="challenge-key">
               {pairingResponse.challengeKey}
             </ResponseKey>
-          ))}
+          )}
         </>
       )}
 
       {phase === 2 && (
         <>
           <P centered>{i18n.mobilePairingModal.modalText3}</P>
-          {renderResult(pairingResponse, () => (
+          {pairingResponse && (
             <Flex>
               <InputField
                 value={responseKey}
@@ -178,14 +196,14 @@ export default React.memo(function MobilePairingModal({
                 data-qa="response-key-input"
               />
             </Flex>
-          ))}
+          )}
         </>
       )}
 
       {phase === 3 && (
         <>
           <P centered>{i18n.mobilePairingModal.modalText4}</P>
-          {renderResult(pairingResponse, (pairingResponse) => (
+          {pairingResponse && (
             <Flex>
               {pairingResponse.mobileDeviceId ? (
                 <InputField
@@ -200,7 +218,7 @@ export default React.memo(function MobilePairingModal({
                 <div>{i18n.common.loadingFailed}</div>
               )}
             </Flex>
-          ))}
+          )}
         </>
       )}
     </InfoModal>
