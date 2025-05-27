@@ -53,8 +53,9 @@ fun LocalDate.toXMLGregorianCalendar(): XMLGregorianCalendar {
  * Calculates the next July 31 date from the given date. If the date is before or on July 31 of the
  * current year, returns July 31 of the current year. Otherwise, returns July 31 of the next year.
  */
-private fun calculateNextJuly31(date: LocalDate): LocalDate {
-    val year = if (date.monthValue <= 7 && date.dayOfMonth <= 31) date.year else date.year + 1
+fun calculateNextJuly31(date: LocalDate): LocalDate {
+    val currentYearJuly31 = LocalDate.of(date.year, 7, 31)
+    val year = if (date.isAfter(currentYearJuly31)) date.year + 1 else date.year
     return LocalDate.of(year, 7, 31)
 }
 

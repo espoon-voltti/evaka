@@ -424,4 +424,21 @@ class DocumentMetadataUtilsTest {
         val timeSpan = disclosurePolicy.policyConfiguration.rules.rule.timeSpan
         assertEquals(0.toShort(), timeSpan)
     }
+
+    @Test
+    fun `calculateNextJuly31 returns correct date`() {
+        // Test with various dates before July 31
+        val testCases =
+            listOf(
+                LocalDate.of(2023, 1, 1) to LocalDate.of(2023, 7, 31),
+                LocalDate.of(2023, 7, 31) to LocalDate.of(2023, 7, 31),
+                LocalDate.of(2023, 8, 1) to LocalDate.of(2024, 7, 31),
+                LocalDate.of(2023, 12, 31) to LocalDate.of(2024, 7, 31),
+            )
+
+        testCases.forEach { (input, expected) ->
+            val result = calculateNextJuly31(input)
+            assertEquals(expected, result, "Failed for input date: $input")
+        }
+    }
 }
