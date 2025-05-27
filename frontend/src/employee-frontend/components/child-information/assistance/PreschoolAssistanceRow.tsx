@@ -36,8 +36,8 @@ export const PreschoolAssistanceRow = React.memo(
     )
     return (
       <Tr data-qa="preschool-assistance-row">
-        <Td data-qa="level">{t.types.preschoolAssistanceLevel[data.level]}</Td>
         <Td data-qa="valid-during">{data.validDuring.format()}</Td>
+        <Td data-qa="level">{t.types.preschoolAssistanceLevel[data.level]}</Td>
         <Td>
           <StatusLabel
             status={getStatusLabelByDateRange({
