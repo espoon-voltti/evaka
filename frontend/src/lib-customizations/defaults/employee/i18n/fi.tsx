@@ -4306,7 +4306,8 @@ export const fi = {
         VEGAN: 'Vegaani',
         VEGETABLE: 'Kasvis'
       },
-      specialDiets: 'Erikoisruokavaliot'
+      specialDiets: 'Erikoisruokavaliot',
+      nekkuOrderInfo: 'Tilausinfo'
     },
     startingPlacements: {
       title: 'Varhaiskasvatuksessa aloittavat lapset',

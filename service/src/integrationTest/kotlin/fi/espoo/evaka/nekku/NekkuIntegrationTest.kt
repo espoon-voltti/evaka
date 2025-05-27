@@ -2150,6 +2150,235 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
     }
 
     @Test
+    fun `Add Nekku order info to Nekku report`() {
+        val monday = LocalDate.of(2025, 4, 14)
+        val tuesday = LocalDate.of(2025, 4, 15)
+
+        // First create all of the basic backgrounds like
+        // Customer numbers
+        val client =
+            TestNekkuClient(
+                customers =
+                    listOf(
+                        NekkuApiCustomer(
+                            "2501K6089",
+                            "Ahvenojan päiväkoti",
+                            "Varhaiskasvatus",
+                            listOf(
+                                CustomerApiType(
+                                    listOf(
+                                        NekkuCustomerApiWeekday.MONDAY,
+                                        NekkuCustomerApiWeekday.TUESDAY,
+                                        NekkuCustomerApiWeekday.WEDNESDAY,
+                                        NekkuCustomerApiWeekday.THURSDAY,
+                                        NekkuCustomerApiWeekday.FRIDAY,
+                                        NekkuCustomerApiWeekday.SATURDAY,
+                                        NekkuCustomerApiWeekday.SUNDAY,
+                                        NekkuCustomerApiWeekday.WEEKDAYHOLIDAY,
+                                    ),
+                                    "100-lasta",
+                                )
+                            ),
+                        )
+                    ),
+                nekkuProducts = nekkuProductsForOrder,
+                specialDiets = listOf(getNekkuSpecialDiet()),
+            )
+        fetchAndUpdateNekkuCustomers(client, db, asyncJobRunner, now)
+        // products
+        fetchAndUpdateNekkuProducts(client, db)
+        fetchAndUpdateNekkuSpecialDiets(client, db)
+        // Daycare with groups
+        val area = DevCareArea()
+        val daycare =
+            DevDaycare(
+                areaId = area.id,
+                mealtimeBreakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
+                mealtimeLunch = TimeRange(LocalTime.of(11, 15), LocalTime.of(11, 45)),
+                mealtimeSnack = TimeRange(LocalTime.of(13, 30), LocalTime.of(13, 50)),
+            )
+        val group = DevDaycareGroup(daycareId = daycare.id, nekkuCustomerNumber = "2501K6089")
+        val employee = DevEmployee()
+
+        // Children with placements in the group and they are not absent
+        val child = DevPerson()
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(group)
+            tx.insert(employee)
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(
+                    DevPlacement(
+                        childId = child.id,
+                        unitId = daycare.id,
+                        startDate = monday,
+                        endDate = tuesday,
+                    )
+                )
+                .also { placementId ->
+                    tx.insert(
+                        DevDaycareGroupPlacement(
+                            daycarePlacementId = placementId,
+                            daycareGroupId = group.id,
+                            startDate = monday,
+                            endDate = tuesday,
+                        )
+                    )
+                }
+            listOf(
+                    // Two meals on Monday
+                    DevReservation(
+                        childId = child.id,
+                        date = monday,
+                        startTime = LocalTime.of(8, 0),
+                        endTime = LocalTime.of(16, 0),
+                        createdBy = employee.evakaUserId,
+                    )
+                )
+                .forEach { tx.insert(it) }
+        }
+
+        createAndSendNekkuOrder(client, db, group.id, monday, 0.9)
+
+        db.transaction { tx ->
+            val nekkuOrderReportResult = tx.getNekkuOrderReport(daycare.id, group.id, monday)
+
+            assertEquals(
+                setOf(
+                    NekkuOrdersReport(
+                        monday,
+                        daycare.id,
+                        group.id,
+                        "31000010",
+                        1,
+                        listOf(NekkuProductMealTime.BREAKFAST),
+                        null,
+                        null,
+                        "Luotu: [12345], Peruttu: [65432]",
+                    ),
+                    NekkuOrdersReport(
+                        monday,
+                        daycare.id,
+                        group.id,
+                        "31000011",
+                        1,
+                        listOf(NekkuProductMealTime.LUNCH),
+                        null,
+                        null,
+                        "Luotu: [12345], Peruttu: [65432]",
+                    ),
+                    NekkuOrdersReport(
+                        monday,
+                        daycare.id,
+                        group.id,
+                        "31000012",
+                        1,
+                        listOf(NekkuProductMealTime.SNACK),
+                        null,
+                        null,
+                        "Luotu: [12345], Peruttu: [65432]",
+                    ),
+                ),
+                nekkuOrderReportResult.toSet(),
+            )
+        }
+    }
+
+    @Test
+    fun `Add Nekku order info to Nekku report if there is an error in the order`() {
+        val monday = LocalDate.of(2025, 4, 14)
+        val tuesday = LocalDate.of(2025, 4, 15)
+
+        // First create all of the basic backgrounds like
+        // Customer numbers
+        val client =
+            TestNekkuClient(
+                nekkuProducts = nekkuProductsForOrder,
+                specialDiets = listOf(getNekkuSpecialDiet()),
+            )
+        //        fetchAndUpdateNekkuCustomers(client, db, asyncJobRunner, now)
+        // products
+        fetchAndUpdateNekkuProducts(client, db)
+        fetchAndUpdateNekkuSpecialDiets(client, db)
+        // Daycare with groups
+        val area = DevCareArea()
+        val daycare =
+            DevDaycare(
+                areaId = area.id,
+                mealtimeBreakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
+                mealtimeLunch = TimeRange(LocalTime.of(11, 15), LocalTime.of(11, 45)),
+                mealtimeSnack = TimeRange(LocalTime.of(13, 30), LocalTime.of(13, 50)),
+            )
+        val group = DevDaycareGroup(daycareId = daycare.id)
+        val employee = DevEmployee()
+
+        // Children with placements in the group and they are not absent
+        val child = DevPerson()
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(group)
+            tx.insert(employee)
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(
+                    DevPlacement(
+                        childId = child.id,
+                        unitId = daycare.id,
+                        startDate = monday,
+                        endDate = tuesday,
+                    )
+                )
+                .also { placementId ->
+                    tx.insert(
+                        DevDaycareGroupPlacement(
+                            daycarePlacementId = placementId,
+                            daycareGroupId = group.id,
+                            startDate = monday,
+                            endDate = tuesday,
+                        )
+                    )
+                }
+            listOf(
+                    // Two meals on Monday
+                    DevReservation(
+                        childId = child.id,
+                        date = monday,
+                        startTime = LocalTime.of(8, 0),
+                        endTime = LocalTime.of(16, 0),
+                        createdBy = employee.evakaUserId,
+                    )
+                )
+                .forEach { tx.insert(it) }
+        }
+
+        createAndSendNekkuOrder(client, db, group.id, monday, 0.9)
+
+        db.transaction { tx ->
+            val nekkuOrderReportResult = tx.getNekkuOrderReport(daycare.id, group.id, monday)
+
+            assertEquals(
+                setOf(
+                    NekkuOrdersReport(
+                        monday,
+                        daycare.id,
+                        group.id,
+                        "",
+                        0,
+                        null,
+                        null,
+                        null,
+                        "Nekkutilaukselle ei löytynyt yhtään riviä asiakastunnuksella 2501K6089.",
+                    )
+                ),
+                nekkuOrderReportResult.toSet(),
+            )
+        }
+    }
+
+    @Test
     fun `Send Nekku orders with known reservations and remove 10prcent of normal orders`() {
         val monday = LocalDate.of(2025, 4, 14)
         val tuesday = LocalDate.of(2025, 4, 15)
@@ -4419,6 +4648,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
                         listOf(NekkuProductMealTime.BREAKFAST),
                         null,
                         listOf("Alle 1-vuotiaan ruokavalio"),
+                        "Luotu: [12345], Peruttu: [65432]",
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4429,6 +4659,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
                         listOf(NekkuProductMealTime.LUNCH),
                         null,
                         listOf("Alle 1-vuotiaan ruokavalio"),
+                        "Luotu: [12345], Peruttu: [65432]",
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4439,6 +4670,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
                         listOf(NekkuProductMealTime.SNACK),
                         null,
                         listOf("Alle 1-vuotiaan ruokavalio"),
+                        "Luotu: [12345], Peruttu: [65432]",
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4449,6 +4681,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
                         listOf(NekkuProductMealTime.BREAKFAST),
                         null,
                         listOf("Laktoositon ruokavalio", "Alle 1-vuotiaan ruokavalio"),
+                        "Luotu: [12345], Peruttu: [65432]",
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4459,6 +4692,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
                         listOf(NekkuProductMealTime.LUNCH),
                         null,
                         listOf("Laktoositon ruokavalio", "Alle 1-vuotiaan ruokavalio"),
+                        "Luotu: [12345], Peruttu: [65432]",
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4469,6 +4703,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
                         listOf(NekkuProductMealTime.SNACK),
                         null,
                         listOf("Laktoositon ruokavalio", "Alle 1-vuotiaan ruokavalio"),
+                        "Luotu: [12345], Peruttu: [65432]",
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4479,6 +4714,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
                         listOf(NekkuProductMealTime.BREAKFAST),
                         null,
                         listOf("Pähkinätön, Alle 1-vuotiaan ruokavalio"),
+                        "Luotu: [12345], Peruttu: [65432]",
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4489,6 +4725,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
                         listOf(NekkuProductMealTime.LUNCH),
                         null,
                         listOf("Pähkinätön, Alle 1-vuotiaan ruokavalio"),
+                        "Luotu: [12345], Peruttu: [65432]",
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4499,6 +4736,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
                         listOf(NekkuProductMealTime.SNACK),
                         null,
                         listOf("Pähkinätön, Alle 1-vuotiaan ruokavalio"),
+                        "Luotu: [12345], Peruttu: [65432]",
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4509,6 +4747,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
                         listOf(NekkuProductMealTime.BREAKFAST),
                         null,
                         listOf("Laktoositon ruokavalio", "Pähkinätön, Alle 1-vuotiaan ruokavalio"),
+                        "Luotu: [12345], Peruttu: [65432]",
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4519,6 +4758,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
                         listOf(NekkuProductMealTime.LUNCH),
                         null,
                         listOf("Laktoositon ruokavalio", "Pähkinätön, Alle 1-vuotiaan ruokavalio"),
+                        "Luotu: [12345], Peruttu: [65432]",
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4529,6 +4769,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
                         listOf(NekkuProductMealTime.SNACK),
                         null,
                         listOf("Laktoositon ruokavalio", "Pähkinätön, Alle 1-vuotiaan ruokavalio"),
+                        "Luotu: [12345], Peruttu: [65432]",
                     ),
                 ),
                 nekkuOrderReportResult.toSet(),
@@ -4680,6 +4921,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
                         listOf(NekkuProductMealTime.BREAKFAST),
                         null,
                         listOf("Alle 1-vuotiaan ruokavalio"),
+                        "Luotu: [12345], Peruttu: [65432]",
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4690,6 +4932,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
                         listOf(NekkuProductMealTime.LUNCH),
                         null,
                         listOf("Alle 1-vuotiaan ruokavalio"),
+                        "Luotu: [12345], Peruttu: [65432]",
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4700,6 +4943,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
                         listOf(NekkuProductMealTime.SNACK),
                         null,
                         listOf("Alle 1-vuotiaan ruokavalio"),
+                        "Luotu: [12345], Peruttu: [65432]",
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4710,6 +4954,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
                         listOf(NekkuProductMealTime.BREAKFAST),
                         null,
                         listOf("Laktoositon ruokavalio", "Alle 1-vuotiaan ruokavalio"),
+                        "Luotu: [12345], Peruttu: [65432]",
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4720,6 +4965,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
                         listOf(NekkuProductMealTime.LUNCH),
                         null,
                         listOf("Laktoositon ruokavalio", "Alle 1-vuotiaan ruokavalio"),
+                        "Luotu: [12345], Peruttu: [65432]",
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4730,6 +4976,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
                         listOf(NekkuProductMealTime.SNACK),
                         null,
                         listOf("Laktoositon ruokavalio", "Alle 1-vuotiaan ruokavalio"),
+                        "Luotu: [12345], Peruttu: [65432]",
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4740,6 +4987,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
                         listOf(NekkuProductMealTime.BREAKFAST),
                         null,
                         listOf("Pähkinätön, Alle 1-vuotiaan ruokavalio"),
+                        "Luotu: [12345], Peruttu: [65432]",
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4750,6 +4998,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
                         listOf(NekkuProductMealTime.LUNCH),
                         null,
                         listOf("Pähkinätön, Alle 1-vuotiaan ruokavalio"),
+                        "Luotu: [12345], Peruttu: [65432]",
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4760,6 +5009,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
                         listOf(NekkuProductMealTime.SNACK),
                         null,
                         listOf("Pähkinätön, Alle 1-vuotiaan ruokavalio"),
+                        "Luotu: [12345], Peruttu: [65432]",
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4770,6 +5020,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
                         listOf(NekkuProductMealTime.BREAKFAST),
                         null,
                         listOf("Laktoositon ruokavalio", "Pähkinätön, Alle 1-vuotiaan ruokavalio"),
+                        "Luotu: [12345], Peruttu: [65432]",
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4780,6 +5031,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
                         listOf(NekkuProductMealTime.LUNCH),
                         null,
                         listOf("Laktoositon ruokavalio", "Pähkinätön, Alle 1-vuotiaan ruokavalio"),
+                        "Luotu: [12345], Peruttu: [65432]",
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4790,6 +5042,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
                         listOf(NekkuProductMealTime.SNACK),
                         null,
                         listOf("Laktoositon ruokavalio", "Pähkinätön, Alle 1-vuotiaan ruokavalio"),
+                        "Luotu: [12345], Peruttu: [65432]",
                     ),
                 ),
                 nekkuOrderReportResult.toSet(),
@@ -4851,6 +5104,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
                         listOf(NekkuProductMealTime.BREAKFAST),
                         null,
                         listOf("Alle 1-vuotiaan ruokavalio"),
+                        "Luotu: [12345], Peruttu: [65432]",
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4861,6 +5115,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
                         listOf(NekkuProductMealTime.LUNCH),
                         null,
                         listOf("Alle 1-vuotiaan ruokavalio"),
+                        "Luotu: [12345], Peruttu: [65432]",
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4871,6 +5126,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
                         listOf(NekkuProductMealTime.SNACK),
                         null,
                         listOf("Alle 1-vuotiaan ruokavalio"),
+                        "Luotu: [12345], Peruttu: [65432]",
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4881,6 +5137,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
                         listOf(NekkuProductMealTime.BREAKFAST),
                         null,
                         listOf("Laktoositon ruokavalio", "Alle 1-vuotiaan ruokavalio"),
+                        "Luotu: [12345], Peruttu: [65432]",
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4891,6 +5148,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
                         listOf(NekkuProductMealTime.LUNCH),
                         null,
                         listOf("Laktoositon ruokavalio", "Alle 1-vuotiaan ruokavalio"),
+                        "Luotu: [12345], Peruttu: [65432]",
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4901,6 +5159,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
                         listOf(NekkuProductMealTime.SNACK),
                         null,
                         listOf("Laktoositon ruokavalio", "Alle 1-vuotiaan ruokavalio"),
+                        "Luotu: [12345], Peruttu: [65432]",
                     ),
                 ),
                 nekkuOrderReportResult.toSet(),
@@ -4948,9 +5207,9 @@ class TestNekkuClient(
         orders.add(nekkuOrders)
 
         return NekkuOrderResult(
-            message = "Input ok, 5 orders would be created.",
-            created = listOf("12345", "65432"),
-            cancelled = emptyList(),
+            message = "Input ok, 1 orders would be created.",
+            created = listOf("12345"),
+            cancelled = listOf("65432"),
         )
     }
 }
