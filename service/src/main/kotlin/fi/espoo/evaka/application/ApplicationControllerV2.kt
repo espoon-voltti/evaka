@@ -6,6 +6,7 @@ package fi.espoo.evaka.application
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
+import fi.espoo.evaka.ChildAudit
 import fi.espoo.evaka.ConstList
 import fi.espoo.evaka.decision.Decision
 import fi.espoo.evaka.decision.DecisionDraft
@@ -224,7 +225,13 @@ class ApplicationControllerV2(
                     it.fetchApplicationSummariesForGuardian(guardianId)
                 }
             }
-            .also { Audit.ApplicationRead.log(targetId = AuditId(guardianId)) }
+            .also { it ->
+                val childIds = it.map { application -> application.childId }.toSet()
+                ChildAudit.ApplicationRead.log(
+                    targetId = AuditId(guardianId),
+                    childId = AuditId(childIds),
+                )
+            }
     }
 
     @GetMapping("/by-child/{childId}")
@@ -253,7 +260,13 @@ class ApplicationControllerV2(
                     it.fetchApplicationSummariesForChild(childId, filter)
                 }
             }
-            .also { Audit.ApplicationRead.log(targetId = AuditId(childId)) }
+            .also { it ->
+                val applicationIds = it.map { application -> application.applicationId }.toSet()
+                ChildAudit.ApplicationRead.log(
+                    targetId = AuditId(applicationIds),
+                    childId = AuditId(childId),
+                )
+            }
     }
 
     @GetMapping("/{applicationId}")
@@ -324,9 +337,9 @@ class ApplicationControllerV2(
                 }
             }
             .also {
-                Audit.ApplicationRead.log(
+                ChildAudit.ApplicationRead.log(
                     targetId = AuditId(applicationId),
-                    objectId = AuditId(it.application.childId),
+                    childId = AuditId(it.application.childId),
                 )
                 Audit.DecisionReadByApplication.log(
                     targetId = AuditId(applicationId),
