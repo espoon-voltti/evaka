@@ -4,6 +4,7 @@
 
 import FiniteDateRange from 'lib-common/finite-date-range'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import LocalDate from 'lib-common/local-date'
 
 import config from '../../config'
 import { Fixture } from '../../dev-api/fixtures'
@@ -24,6 +25,14 @@ describe('Absence application', () => {
   const child = Fixture.person()
 
   test('absence modal shows link to absence application page for child in preschool', async () => {
+    const mockedDate = mockedTime.toLocalDate()
+    const termRange = new FiniteDateRange(mockedDate, mockedDate.addYears(1))
+    await Fixture.preschoolTerm({
+      extendedTerm: termRange,
+      finnishPreschool: termRange,
+      swedishPreschool: termRange,
+      applicationPeriod: termRange.withStart(mockedDate.subMonths(2))
+    }).save()
     const area = await Fixture.careArea().save()
     const unit = await Fixture.daycare({
       areaId: area.id,
@@ -34,8 +43,8 @@ describe('Absence application', () => {
       type: 'PRESCHOOL',
       childId: child.id,
       unitId: unit.id,
-      startDate: mockedTime.toLocalDate(),
-      endDate: mockedTime.toLocalDate().addYears(1)
+      startDate: termRange.start,
+      endDate: termRange.end
     }).save()
 
     const citizenPage = await Page.open({
@@ -47,7 +56,7 @@ describe('Absence application', () => {
     await citizenHeader.selectTab('calendar')
     const citizenCalendarPage = new CitizenCalendarPage(citizenPage, 'desktop')
     const absenceModal = await citizenCalendarPage.openAbsencesModal()
-    const startDate = mockedTime.toLocalDate().addMonths(1)
+    const startDate = termRange.start.addMonths(1)
     await absenceModal.selectDates(
       new FiniteDateRange(startDate, startDate.addWeeks(1))
     )
@@ -69,7 +78,17 @@ describe('Absence application', () => {
     await absenceModal.modalSendButton.assertDisabled(false)
   })
 
-  test("absence modal doesn't show link to absence application page for child in daycare", async () => {
+  test('absence modal shows link to absence application page handling preschool term break', async () => {
+    const mockedDate = mockedTime.toLocalDate()
+    const termRange = new FiniteDateRange(mockedDate, mockedDate.addYears(1))
+    const startDate = termRange.start.addMonths(1)
+    await Fixture.preschoolTerm({
+      extendedTerm: termRange,
+      finnishPreschool: termRange,
+      swedishPreschool: termRange,
+      applicationPeriod: termRange.withStart(mockedDate.subMonths(2)),
+      termBreaks: [new FiniteDateRange(startDate, startDate)]
+    }).save()
     const area = await Fixture.careArea().save()
     const unit = await Fixture.daycare({
       areaId: area.id,
@@ -77,11 +96,11 @@ describe('Absence application', () => {
     }).save()
     await Fixture.family({ guardian: adult, children: [child] }).save()
     await Fixture.placement({
-      type: 'DAYCARE',
+      type: 'PRESCHOOL',
       childId: child.id,
       unitId: unit.id,
-      startDate: mockedTime.toLocalDate(),
-      endDate: mockedTime.toLocalDate().addYears(1)
+      startDate: termRange.start,
+      endDate: termRange.end
     }).save()
 
     const citizenPage = await Page.open({
@@ -93,7 +112,108 @@ describe('Absence application', () => {
     await citizenHeader.selectTab('calendar')
     const citizenCalendarPage = new CitizenCalendarPage(citizenPage, 'desktop')
     const absenceModal = await citizenCalendarPage.openAbsencesModal()
-    const startDate = mockedTime.toLocalDate().addMonths(1)
+    await absenceModal.selectDates(
+      new FiniteDateRange(startDate, startDate.addWeeks(1).subDays(1))
+    )
+    await absenceModal.selectAbsenceType('OTHER_ABSENCE')
+    await absenceModal.tooManyAbsencesError(child.id).waitUntilHidden()
+    await absenceModal.modalSendButton.assertDisabled(false)
+    await absenceModal.selectDates(
+      new FiniteDateRange(startDate, startDate.addWeeks(1))
+    )
+    await absenceModal.tooManyAbsencesError(child.id).waitUntilHidden()
+    await absenceModal.modalSendButton.assertDisabled(false)
+    await absenceModal.selectDates(
+      new FiniteDateRange(startDate, startDate.addWeeks(1).addDays(1))
+    )
+    await absenceModal.tooManyAbsencesError(child.id).waitUntilVisible()
+    await absenceModal.modalSendButton.assertDisabled(true)
+  })
+
+  test('absence modal shows link to absence application page handling holiday', async () => {
+    const mockedDate = mockedTime.toLocalDate()
+    const termRange = new FiniteDateRange(mockedDate, mockedDate.addYears(1))
+    const startDate = LocalDate.of(2025, 5, 29) // ascension day
+    await Fixture.preschoolTerm({
+      extendedTerm: termRange,
+      finnishPreschool: termRange,
+      swedishPreschool: termRange,
+      applicationPeriod: termRange.withStart(mockedDate.subMonths(2))
+    }).save()
+    const area = await Fixture.careArea().save()
+    const unit = await Fixture.daycare({
+      areaId: area.id,
+      enabledPilotFeatures: ['RESERVATIONS']
+    }).save()
+    await Fixture.family({ guardian: adult, children: [child] }).save()
+    await Fixture.placement({
+      type: 'PRESCHOOL',
+      childId: child.id,
+      unitId: unit.id,
+      startDate: termRange.start,
+      endDate: termRange.end
+    }).save()
+
+    const citizenPage = await Page.open({
+      mockedTime,
+      citizenCustomizations: { featureFlags: { absenceApplications: true } }
+    })
+    await enduserLogin(citizenPage, adult)
+    const citizenHeader = new CitizenHeader(citizenPage)
+    await citizenHeader.selectTab('calendar')
+    const citizenCalendarPage = new CitizenCalendarPage(citizenPage, 'desktop')
+    const absenceModal = await citizenCalendarPage.openAbsencesModal()
+    await absenceModal.selectDates(
+      new FiniteDateRange(startDate, startDate.addWeeks(1).subDays(1))
+    )
+    await absenceModal.selectAbsenceType('OTHER_ABSENCE')
+    await absenceModal.tooManyAbsencesError(child.id).waitUntilHidden()
+    await absenceModal.modalSendButton.assertDisabled(false)
+    await absenceModal.selectDates(
+      new FiniteDateRange(startDate, startDate.addWeeks(1))
+    )
+    await absenceModal.tooManyAbsencesError(child.id).waitUntilHidden()
+    await absenceModal.modalSendButton.assertDisabled(false)
+    await absenceModal.selectDates(
+      new FiniteDateRange(startDate, startDate.addWeeks(1).addDays(1))
+    )
+    await absenceModal.tooManyAbsencesError(child.id).waitUntilVisible()
+    await absenceModal.modalSendButton.assertDisabled(true)
+  })
+
+  test("absence modal doesn't show link to absence application page for child in daycare", async () => {
+    const mockedDate = mockedTime.toLocalDate()
+    const termRange = new FiniteDateRange(mockedDate, mockedDate.addYears(1))
+    await Fixture.preschoolTerm({
+      extendedTerm: termRange,
+      finnishPreschool: termRange,
+      swedishPreschool: termRange,
+      applicationPeriod: termRange.withStart(mockedDate.subMonths(2))
+    }).save()
+    const area = await Fixture.careArea().save()
+    const unit = await Fixture.daycare({
+      areaId: area.id,
+      enabledPilotFeatures: ['RESERVATIONS']
+    }).save()
+    await Fixture.family({ guardian: adult, children: [child] }).save()
+    await Fixture.placement({
+      type: 'DAYCARE',
+      childId: child.id,
+      unitId: unit.id,
+      startDate: termRange.start,
+      endDate: termRange.end
+    }).save()
+
+    const citizenPage = await Page.open({
+      mockedTime,
+      citizenCustomizations: { featureFlags: { absenceApplications: true } }
+    })
+    await enduserLogin(citizenPage, adult)
+    const citizenHeader = new CitizenHeader(citizenPage)
+    await citizenHeader.selectTab('calendar')
+    const citizenCalendarPage = new CitizenCalendarPage(citizenPage, 'desktop')
+    const absenceModal = await citizenCalendarPage.openAbsencesModal()
+    const startDate = termRange.start.addMonths(1)
     await absenceModal.selectDates(
       new FiniteDateRange(startDate, startDate.addWeeks(1))
     )

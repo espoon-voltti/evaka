@@ -170,6 +170,7 @@ enum class PlacementType : DatabaseEnum {
             entries.filter { it.absenceCategories().contains(AbsenceCategory.BILLABLE) }
         val withNonbillableAbsences =
             entries.filter { it.absenceCategories().contains(AbsenceCategory.NONBILLABLE) }
+        val preschool = entries.filter { it.isRelevantToKoski() }
 
         fun fromMessagingCategories(categories: List<MessagingCategory>): List<PlacementType> {
             return PlacementType.entries.filter { categories.contains(it.messagingCategory()) }
