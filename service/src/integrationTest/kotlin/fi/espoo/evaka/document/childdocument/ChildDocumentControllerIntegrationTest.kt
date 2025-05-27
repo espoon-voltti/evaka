@@ -429,14 +429,6 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
             )
         assertNotNull(getChildDocumentMetadata(documentId).data)
 
-        controller.nextDocumentStatus(
-            dbInstance(),
-            employeeUser.user,
-            clock,
-            documentId,
-            ChildDocumentController.StatusChangeRequest(DocumentStatus.PREPARED),
-        )
-
         templateController.forceUnpublishTemplate(
             dbInstance(),
             employeeUser.user,
