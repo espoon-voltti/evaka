@@ -107,15 +107,15 @@ export const DaycareAssistanceForm = React.memo(function DaycareAssistanceForm(
   return (
     <Tr data-qa="daycare-assistance-form">
       <Td>
-        <SelectF data-qa="level" bind={level} />
-      </Td>
-      <Td>
         <DateRangePickerF
           bind={validDuring}
           locale={lang}
           data-qa="valid-during"
           info={form.inputInfo()}
         />
+      </Td>
+      <Td>
+        <SelectF data-qa="level" bind={level} />
       </Td>
       <Td>
         {validDuring.isValid() ? (

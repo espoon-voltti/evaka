@@ -53,6 +53,7 @@ import { areasQuery } from '../../queries'
 import { useTranslation } from '../../state/i18n'
 import { reducePropertySum } from '../../utils'
 import { renderResult } from '../async-rendering'
+import { levelConfigs } from '../child-information/assistance/PreschoolAssistanceForm'
 import { daycaresQuery } from '../unit/queries'
 
 import ReportDownload from './ReportDownload'
@@ -83,10 +84,6 @@ type GroupingType = 'NO_GROUPING' | 'AREA' | 'UNIT'
 
 const daycareColumns = [
   ...daycareAssistanceLevels,
-  ...otherAssistanceMeasureTypes
-]
-const preschoolColumns = [
-  ...preschoolAssistanceLevels,
   ...otherAssistanceMeasureTypes
 ]
 
@@ -194,7 +191,10 @@ const emptyGroupingDataByGroup = (
     INTENSIFIED_SUPPORT: 0,
     SPECIAL_SUPPORT: 0,
     SPECIAL_SUPPORT_WITH_DECISION_LEVEL_1: 0,
-    SPECIAL_SUPPORT_WITH_DECISION_LEVEL_2: 0
+    SPECIAL_SUPPORT_WITH_DECISION_LEVEL_2: 0,
+    CHILD_SUPPORT: 0,
+    CHILD_SUPPORT_AND_EXTENDED_COMPULSORY_EDUCATION: 0,
+    GROUP_SUPPORT: 0
   },
   otherAssistanceMeasureCounts: {
     ACCULTURATION_SUPPORT: 0,
@@ -241,7 +241,10 @@ const emptyGroupingDataByChild = (name: string): GroupingDataByChild => ({
     INTENSIFIED_SUPPORT: 0,
     SPECIAL_SUPPORT: 0,
     SPECIAL_SUPPORT_WITH_DECISION_LEVEL_1: 0,
-    SPECIAL_SUPPORT_WITH_DECISION_LEVEL_2: 0
+    SPECIAL_SUPPORT_WITH_DECISION_LEVEL_2: 0,
+    CHILD_SUPPORT: 0,
+    CHILD_SUPPORT_AND_EXTENDED_COMPULSORY_EDUCATION: 0,
+    GROUP_SUPPORT: 0
   },
   otherAssistanceMeasureCounts: {
     ACCULTURATION_SUPPORT: 0,
@@ -302,6 +305,26 @@ export default React.memo(function AssistanceNeedsAndActions() {
       otherAssistanceMeasureTypes: [],
       placementTypes: []
     })
+
+  const preschoolAssistanceLevelsOnDate = useMemo(
+    () =>
+      preschoolAssistanceLevels.filter((level) => {
+        const minDate = levelConfigs[level]?.minStartDate
+        const maxDate = levelConfigs[level]?.maxEndDate
+        if (minDate && filters.date && filters.date.isBefore(minDate))
+          return false
+        if (maxDate && filters.date && filters.date.isAfter(maxDate))
+          return false
+        return true
+      }),
+    [filters.date]
+  )
+
+  const preschoolColumns = useMemo(
+    () => [...preschoolAssistanceLevelsOnDate, ...otherAssistanceMeasureTypes],
+    [preschoolAssistanceLevelsOnDate]
+  )
+
   const areasResult = useQueryResult(areasQuery())
   const sortedAreas = useMemo(
     () => areasResult.map((areas) => sortBy(areas, (area) => area.name)),
@@ -338,12 +361,13 @@ export default React.memo(function AssistanceNeedsAndActions() {
       columnFilters.type === 'PRESCHOOL'
         ? filters.preschoolAssistanceLevels.length === 0 &&
           filters.otherAssistanceMeasureTypes.length === 0
-          ? preschoolAssistanceLevels
-          : preschoolAssistanceLevels.filter((level) =>
+          ? preschoolAssistanceLevelsOnDate
+          : preschoolAssistanceLevelsOnDate.filter((level) =>
               filters.preschoolAssistanceLevels.includes(level)
             )
         : [],
     [
+      preschoolAssistanceLevelsOnDate,
       columnFilters.type,
       filters.preschoolAssistanceLevels,
       filters.otherAssistanceMeasureTypes.length
