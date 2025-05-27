@@ -11,9 +11,11 @@ import fi.espoo.evaka.shared.DaycareAssistanceId
 import fi.espoo.evaka.shared.OtherAssistanceMeasureId
 import fi.espoo.evaka.shared.PreschoolAssistanceId
 import fi.espoo.evaka.shared.db.DatabaseEnum
+import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.user.EvakaUser
+import java.time.LocalDate
 import org.jdbi.v3.core.mapper.Nested
 
 data class AssistanceFactor(
@@ -52,11 +54,21 @@ data class DaycareAssistanceUpdate(
 )
 
 @ConstList("preschoolAssistanceLevels")
-enum class PreschoolAssistanceLevel : DatabaseEnum {
-    INTENSIFIED_SUPPORT,
-    SPECIAL_SUPPORT,
-    SPECIAL_SUPPORT_WITH_DECISION_LEVEL_1,
-    SPECIAL_SUPPORT_WITH_DECISION_LEVEL_2;
+enum class PreschoolAssistanceLevel(
+    val minStartDate: LocalDate? = null,
+    val maxEndDate: LocalDate? = null,
+) : DatabaseEnum {
+    // deprecated
+    INTENSIFIED_SUPPORT(maxEndDate = LocalDate.of(2025, 7, 31)),
+    // deprecated
+    SPECIAL_SUPPORT(maxEndDate = LocalDate.of(2025, 7, 31)),
+    // deprecated
+    SPECIAL_SUPPORT_WITH_DECISION_LEVEL_1(maxEndDate = LocalDate.of(2026, 7, 31)),
+    // deprecated
+    SPECIAL_SUPPORT_WITH_DECISION_LEVEL_2(maxEndDate = LocalDate.of(2026, 7, 31)),
+    CHILD_SUPPORT(minStartDate = LocalDate.of(2025, 8, 1)),
+    CHILD_SUPPORT_AND_EXTENDED_COMPULSORY_EDUCATION(minStartDate = LocalDate.of(2026, 8, 1)),
+    GROUP_SUPPORT(minStartDate = LocalDate.of(2025, 8, 1));
 
     override val sqlType: String = "preschool_assistance_level"
 }
@@ -73,7 +85,18 @@ data class PreschoolAssistance(
 data class PreschoolAssistanceUpdate(
     val validDuring: FiniteDateRange,
     val level: PreschoolAssistanceLevel,
-)
+) {
+    fun validate() {
+        if (level.minStartDate != null && validDuring.start < level.minStartDate)
+            throw BadRequest(
+                "Preschool assistance level $level cannot start before ${level.minStartDate}"
+            )
+        if (level.maxEndDate != null && validDuring.end > level.maxEndDate)
+            throw BadRequest(
+                "Preschool assistance level $level cannot end after ${level.maxEndDate}"
+            )
+    }
+}
 
 @ConstList("otherAssistanceMeasureTypes")
 enum class OtherAssistanceMeasureType : DatabaseEnum {

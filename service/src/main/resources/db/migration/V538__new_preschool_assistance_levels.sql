@@ -1,0 +1,3 @@
+ALTER TYPE preschool_assistance_level ADD VALUE 'CHILD_SUPPORT';
+ALTER TYPE preschool_assistance_level ADD VALUE 'CHILD_SUPPORT_AND_EXTENDED_COMPULSORY_EDUCATION';
+ALTER TYPE preschool_assistance_level ADD VALUE 'GROUP_SUPPORT';

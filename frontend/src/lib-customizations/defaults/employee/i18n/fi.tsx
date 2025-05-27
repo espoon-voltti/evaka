@@ -746,7 +746,11 @@ export const fi = {
       },
       validationErrors: {
         overlap:
-          'Tälle ajanjaksolle on jo päällekkäinen merkintä. Muokkaa tarvittaessa edellistä ajanjaksoa'
+          'Tälle ajanjaksolle on jo päällekkäinen merkintä. Muokkaa tarvittaessa edellistä ajanjaksoa',
+        startBeforeMinDate: (date: LocalDate) =>
+          `Tämä tuki voi alkaa aikaisintaan ${date.format()}`,
+        endAfterMaxDate: (date: LocalDate) =>
+          `Tämän tuen voi myöntää korkeintaan ${date.format()} saakka`
       },
       types: {
         daycareAssistanceLevel: {
@@ -762,7 +766,12 @@ export const fi = {
           SPECIAL_SUPPORT_WITH_DECISION_LEVEL_1:
             'Erityinen tuki ja pidennetty oppivelvollisuus - muu (Koskeen)',
           SPECIAL_SUPPORT_WITH_DECISION_LEVEL_2:
-            'Erityinen tuki ja pidennetty oppivelvollisuus - kehitysvamma 2 (Koskeen)'
+            'Erityinen tuki ja pidennetty oppivelvollisuus - kehitysvamma 2 (Koskeen)',
+          CHILD_SUPPORT:
+            'Lapsikohtainen tuki ilman varhennettua oppivelvollisuutta (Koskeen, käytössä 1.8.2025 alkaen)',
+          CHILD_SUPPORT_AND_EXTENDED_COMPULSORY_EDUCATION:
+            'Lapsikohtainen tuki ja varhennettu oppivelvollisuus (Koskeen, käytössä 1.10.2025 alkaen)',
+          GROUP_SUPPORT: 'Ryhmäkohtaiset tukimuodot (käytössä 1.8.2025 alkaen)'
         },
         otherAssistanceMeasureType: {
           TRANSPORT_BENEFIT: 'Kuljetusetu (esioppilailla Koski-tieto)',
