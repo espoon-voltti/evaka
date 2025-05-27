@@ -1091,7 +1091,10 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                 särmäEnabled = true,
             )
         }
+    }
 
+    @Test
+    fun `non-closed document archival fails`() {
         // Create document with a template marked for external archiving (HOJKS template)
         val documentId2 =
             controller.createDocument(
@@ -1101,7 +1104,44 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                 ChildDocumentCreateRequest(childId = testChild_1.id, templateId = templateIdHojks),
             )
 
-        // This should not throw an exception
+        assertThrows<BadRequest> {
+            controller.planArchiveChildDocument(
+                dbInstance(),
+                employeeUser.user,
+                clock,
+                documentId2,
+                särmäEnabled = true,
+            )
+        }
+    }
+
+    @Test
+    fun `closed document archival works`() {
+        // Create document with a template marked for external archiving (HOJKS template)
+        val documentId2 =
+            controller.createDocument(
+                dbInstance(),
+                employeeUser.user,
+                clock,
+                ChildDocumentCreateRequest(childId = testChild_1.id, templateId = templateIdHojks),
+            )
+
+        controller.nextDocumentStatus(
+            dbInstance(),
+            employeeUser.user,
+            clock,
+            documentId2,
+            ChildDocumentController.StatusChangeRequest(DocumentStatus.PREPARED),
+        )
+
+        controller.nextDocumentStatus(
+            dbInstance(),
+            employeeUser.user,
+            clock,
+            documentId2,
+            ChildDocumentController.StatusChangeRequest(DocumentStatus.COMPLETED),
+        )
+
         controller.planArchiveChildDocument(
             dbInstance(),
             employeeUser.user,
