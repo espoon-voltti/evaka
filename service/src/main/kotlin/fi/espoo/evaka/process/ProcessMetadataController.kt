@@ -42,6 +42,18 @@ enum class DocumentOrigin {
     PAPER,
 }
 
+enum class SfiMethod {
+    ELECTRONIC,
+    PAPER_MAIL,
+    PENDING,
+}
+
+data class SfiDelivery(
+    val time: HelsinkiDateTime,
+    val method: SfiMethod,
+    val recipientName: String,
+)
+
 data class DocumentConfidentiality(val durationYears: Int, @PropagateNull val basis: String)
 
 data class DocumentMetadata(
@@ -53,6 +65,7 @@ data class DocumentMetadata(
     @Nested("confidentiality") val confidentiality: DocumentConfidentiality?,
     val downloadPath: String?,
     val receivedBy: DocumentOrigin?,
+    val sfiDeliveries: List<SfiDelivery>,
 )
 
 data class ProcessMetadata(
@@ -427,6 +440,7 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                             "/employee/assistance-need-decision/$decisionId/pdf"
                         },
                     receivedBy = null,
+                    sfiDeliveries = emptyList(),
                 )
             }
             .exactlyOne()
@@ -471,6 +485,7 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                             "/employee/assistance-need-preschool-decisions/$decisionId/pdf"
                         },
                     receivedBy = null,
+                    sfiDeliveries = emptyList(),
                 )
             }
             .exactlyOne()
@@ -532,6 +547,7 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                                 ApplicationOrigin.PAPER -> DocumentOrigin.PAPER
                             }
                         },
+                    sfiDeliveries = emptyList(),
                 )
             }
             .exactlyOne()
@@ -564,7 +580,11 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
             e.id AS created_by_id,
             e.name AS created_by_name,
             e.type AS created_by_type,
-            d.document_key
+            d.document_key,
+            (
+                $sfiDeliverySelect
+                WHERE sm.decision_id = d.id
+            ) AS sfi_deliveries
         FROM decision d
         LEFT JOIN evaka_user e ON e.id = d.created_by
         WHERE d.id = ${bind(decisionId)}
@@ -606,6 +626,7 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                             "/employee/decisions/$decisionId/download"
                         },
                     receivedBy = null,
+                    sfiDeliveries = jsonColumn("sfi_deliveries"),
                 )
             }
             .exactlyOne()
@@ -622,7 +643,11 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
             e.id AS created_by_id,
             e.name AS created_by_name,
             e.type AS created_by_type,
-            d.document_key
+            d.document_key,
+            (
+                $sfiDeliverySelect
+                WHERE sm.fee_decision_id = d.id
+            ) AS sfi_deliveries
         FROM fee_decision d
         LEFT JOIN evaka_user e ON e.employee_id = d.approved_by_id
         WHERE d.id = ${bind(decisionId)}
@@ -648,6 +673,7 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                     downloadPath =
                         column<String?>("document_key")?.let { "/employee/fee-decisions/pdf/$it" },
                     receivedBy = null,
+                    sfiDeliveries = jsonColumn("sfi_deliveries"),
                 )
             }
             .exactlyOne()
@@ -664,7 +690,11 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
             e.id AS created_by_id,
             e.name AS created_by_name,
             e.type AS created_by_type,
-            d.document_key
+            d.document_key,
+            (
+                $sfiDeliverySelect
+                WHERE sm.voucher_value_decision_id = d.id
+            ) AS sfi_deliveries
         FROM voucher_value_decision d
         LEFT JOIN evaka_user e ON e.employee_id = d.approved_by
         WHERE d.id = ${bind(voucherValueDecisionId)}
@@ -692,6 +722,7 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                             "/employee/value-decisions/pdf/$it"
                         },
                     receivedBy = null,
+                    sfiDeliveries = jsonColumn("sfi_deliveries"),
                 )
             }
             .exactlyOne()

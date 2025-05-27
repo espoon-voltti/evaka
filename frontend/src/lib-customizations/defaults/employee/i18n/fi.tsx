@@ -5433,6 +5433,14 @@ export const fi = {
       PAPER: 'Paperilla',
       ELECTRONIC: 'Sähköisesti'
     },
+    sfiDelivery: {
+      label: 'Suomi.fi -toimitukset',
+      method: {
+        ELECTRONIC: 'Sähköisesti',
+        PAPER_MAIL: 'Postitse',
+        PENDING: 'Odottaa toimitusta'
+      }
+    },
     history: 'Prosessin historia',
     downloadPdf: 'Lataa PDF',
     states: {
