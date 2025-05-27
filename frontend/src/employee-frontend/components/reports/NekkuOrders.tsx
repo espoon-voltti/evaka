@@ -185,6 +185,7 @@ export default React.memo(function NekkuOrders() {
                   <Th>{i18n.reports.nekkuOrders.mealTime}</Th>
                   <Th>{i18n.reports.nekkuOrders.mealType}</Th>
                   <Th>{i18n.reports.nekkuOrders.specialDiets}</Th>
+                  <Th>{i18n.reports.nekkuOrders.nekkuOrderInfo}</Th>
                 </Tr>
               </Thead>
               <Tbody>
@@ -211,6 +212,7 @@ export default React.memo(function NekkuOrders() {
                       }
                     </Td>
                     <Td>{row.specialDiets}</Td>
+                    <Td>{row.nekkuOrderInfo}</Td>
                   </Tr>
                 ))}
               </Tbody>

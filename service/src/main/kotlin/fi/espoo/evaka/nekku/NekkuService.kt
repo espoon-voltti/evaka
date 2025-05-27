@@ -430,7 +430,7 @@ fun createAndSendNekkuOrder(
     val nekkuWeekday = getNekkuWeekday(date)
 
     val nekkuDaycareCustomerMapping =
-        dbc.read { tx -> tx.getNekkuDaycareCustomerMapping(groupId, nekkuWeekday) }
+        dbc.read { tx -> tx.getNekkuGroupCustomerMapping(groupId, nekkuWeekday) }
 
     val nekkuProducts = dbc.read { tx -> tx.getNekkuProducts() }
 
@@ -462,7 +462,17 @@ fun createAndSendNekkuOrder(
             logger.info {
                 "Sent Nekku order for date $date for customerNumber=${nekkuDaycareCustomerMapping.customerNumber} groupId=$groupId and Nekku orders created: ${nekkuOrderResult.created}"
             }
-            dbc.transaction { tx -> tx.setNekkuReportOrderReport(order, groupId, nekkuProducts) }
+
+            val parts =
+                listOfNotNull(
+                    nekkuOrderResult.created?.let { "Luotu: $it" },
+                    nekkuOrderResult.cancelled?.let { "Peruttu: $it" },
+                )
+            val orderString = parts.joinToString(", ")
+
+            dbc.transaction { tx ->
+                tx.setNekkuReportOrderReport(order, groupId, nekkuProducts, orderString)
+            }
         } else {
             logger.info {
                 "Skipped Nekku order with no rows for date $date for customerNumber=${nekkuDaycareCustomerMapping.customerNumber} groupId=$groupId"
@@ -967,4 +977,5 @@ data class NekkuOrdersReport(
     val mealTime: List<NekkuProductMealTime>?,
     val mealType: NekkuProductMealType?,
     val mealsBySpecialDiet: List<String>?,
+    val nekkuOrderInfo: String,
 )

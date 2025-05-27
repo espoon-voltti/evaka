@@ -650,6 +650,7 @@ export interface NekkuOrderRow {
   groupName: string
   mealTime: string[]
   mealType: string | null
+  nekkuOrderInfo: string | null
   quantity: number
   sku: string
   specialDiets: string | null
