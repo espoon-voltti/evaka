@@ -1030,6 +1030,9 @@ const en: Translations = {
           },
           clubTerm: 'Club term',
           clubTerms: 'Club terms',
+          preschoolTerm: 'Preschool term',
+          preschoolTerms: 'Preschool terms',
+
           label: {
             DAYCARE: 'Desired start date',
             PRESCHOOL: 'Start date in August',

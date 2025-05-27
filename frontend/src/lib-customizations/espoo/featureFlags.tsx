@@ -50,7 +50,8 @@ const features: Features = {
     archiveIntegrationEnabled: true,
     aromiIntegration: true,
     citizenChildDocumentTypes: true,
-    decisionChildDocumentTypes: true
+    decisionChildDocumentTypes: true,
+    showCitizenApplicationPreschoolTerms: true
   },
   staging: {
     environmentLabel: 'Staging',
@@ -90,7 +91,8 @@ const features: Features = {
     archiveIntegrationEnabled: true,
     aromiIntegration: false,
     citizenChildDocumentTypes: true,
-    decisionChildDocumentTypes: true
+    decisionChildDocumentTypes: true,
+    showCitizenApplicationPreschoolTerms: true
   },
   prod: {
     environmentLabel: null,
@@ -127,7 +129,8 @@ const features: Features = {
     multiSelectDeparture: true,
     archiveIntegrationEnabled: false,
     aromiIntegration: false,
-    decisionChildDocumentTypes: false
+    decisionChildDocumentTypes: false,
+    showCitizenApplicationPreschoolTerms: false
   }
 }
 

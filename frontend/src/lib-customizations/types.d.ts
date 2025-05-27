@@ -309,6 +309,11 @@ interface BaseFeatureFlags {
    * Enable support for decision child document types
    */
   decisionChildDocumentTypes?: boolean
+
+  /**
+   * Enable showing preschool extended term data for citizen preschool application
+   */
+  showCitizenApplicationPreschoolTerms?: boolean
 }
 
 export type FeatureFlags = DeepReadonly<BaseFeatureFlags>
