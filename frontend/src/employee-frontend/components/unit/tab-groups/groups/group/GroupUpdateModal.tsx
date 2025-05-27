@@ -66,7 +66,12 @@ export default React.memo(function GroupUpdateModal({
               body: {
                 ...data,
                 startDate: data.startDate,
-                name: data.name.trim()
+                name: data.name.trim(),
+                aromiCustomerId:
+                  data.aromiCustomerId !== null &&
+                  data.aromiCustomerId.trim().length > 0
+                    ? data.aromiCustomerId.trim()
+                    : null
               }
             }
           : cancelMutation
@@ -148,7 +153,8 @@ export default React.memo(function GroupUpdateModal({
                   }))
                 }}
               />
-              {data.aromiCustomerId === null && (
+              {(data.aromiCustomerId === null ||
+                data.aromiCustomerId.trim().length === 0) && (
                 <>
                   <Gap size="s" />
                   <MessageBox

@@ -94,8 +94,8 @@ export default React.memo(function GroupModal({ unitId }: Props) {
                 initialCaretakers: form.initialCaretakers,
                 aromiCustomerId:
                   form.aromiCustomerId !== null &&
-                  form.aromiCustomerId.length > 0
-                    ? form.aromiCustomerId
+                  form.aromiCustomerId.trim().length > 0
+                    ? form.aromiCustomerId.trim()
                     : null
               }
             }
@@ -162,7 +162,8 @@ export default React.memo(function GroupModal({ unitId }: Props) {
               }
               data-qa="new-group-aromi-id-input"
             />
-            {form.aromiCustomerId === null && (
+            {(form.aromiCustomerId === null ||
+              form.aromiCustomerId.trim().length === 0) && (
               <>
                 <Gap size="s" />
                 <MessageBox
