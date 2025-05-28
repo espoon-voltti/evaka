@@ -2514,7 +2514,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
             tx.insert(employee)
             tx.insert(child, DevPersonType.CHILD)
             tx.insert(
-                DevChild(id = child.id, eatsBreakfast = false)
+                DevChild(id = child.id, participatesInBreakfast = false)
             ) // child does not eat breakfast
             tx.insert(
                     DevPlacement(
@@ -2638,7 +2638,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
             tx.insert(employee)
             tx.insert(child, DevPersonType.CHILD)
             tx.insert(
-                DevChild(id = child.id, eatsBreakfast = false)
+                DevChild(id = child.id, participatesInBreakfast = false)
             ) // child does not eat breakfast
             tx.insert(
                     DevPlacement(
