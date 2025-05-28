@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useMemo } from 'react'
-import { useNavigate } from 'react-router'
+import { useLocation } from 'wouter'
 
 import { combine } from 'lib-common/api'
 import type { DaycareId } from 'lib-common/generated/api-types/shared'
@@ -11,6 +11,7 @@ import { useQueryResult } from 'lib-common/query'
 import { ContentArea } from 'lib-components/layout/Container'
 import { H1 } from 'lib-components/typography'
 
+import { routes } from '../App'
 import { renderResult } from '../async-rendering'
 import { UserContext } from '../auth/state'
 import BottomNavbar from '../common/BottomNavbar'
@@ -28,7 +29,7 @@ export const SettingsPage = React.memo(function SettingsPage({
 }: {
   unitId: DaycareId
 }) {
-  const navigate = useNavigate()
+  const [, navigate] = useLocation()
   const { i18n } = useTranslation()
   const { groupId } = useContext(RememberContext)
   const unitOrGroup = useMemo(
@@ -50,7 +51,7 @@ export const SettingsPage = React.memo(function SettingsPage({
                 unitId={unitId}
                 onBack={
                   user && user.unitIds.length > 1
-                    ? () => void navigate('/units')
+                    ? () => navigate(routes.unitList().value)
                     : undefined
                 }
               />

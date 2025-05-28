@@ -10,8 +10,8 @@ import React, {
   useMemo,
   useState
 } from 'react'
-import { useNavigate } from 'react-router'
 import styled from 'styled-components'
+import { Link, useLocation } from 'wouter'
 
 import type { UpdateStateFn } from 'lib-common/form-state'
 import type { Action } from 'lib-common/generated/action'
@@ -106,7 +106,7 @@ export default React.memo(function PersonDetails({
   permittedActions
 }: Props) {
   const { i18n } = useTranslation()
-  const navigate = useNavigate()
+  const [, navigate] = useLocation()
   const { uiMode, toggleUiMode, clearUiMode } = useContext<UiState>(UIContext)
   const editing = uiMode === 'person-details-editing'
   const [form, setForm] = useState<Form>({
@@ -201,7 +201,7 @@ export default React.memo(function PersonDetails({
               mutation={duplicatePersonMutation}
               onClick={() => ({ personId: person.id })}
               onSuccess={(personId) => {
-                void navigate(`/child-information/${personId}`)
+                navigate(`/child-information/${personId}`)
               }}
               text={i18n.personProfile.duplicate}
             />
@@ -211,14 +211,14 @@ export default React.memo(function PersonDetails({
         permittedActions.has('READ_ATTENDANCE_REPORT') &&
         uiMode !== 'person-details-editing' ? (
           <ButtonSpacer>
-            <a href={`/employee/reports/child-attendance/${person.id}`}>
+            <Link to={`/reports/child-attendance/${person.id}`}>
               <Button
                 appearance="inline"
                 icon={faCalendar}
                 onClick={() => undefined}
                 text={i18n.childInformation.personDetails.attendanceReport}
               />
-            </a>
+            </Link>
           </ButtonSpacer>
         ) : null}
         {permittedActions.has('UPDATE_FROM_VTJ') &&

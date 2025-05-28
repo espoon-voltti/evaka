@@ -4,7 +4,7 @@
 
 import orderBy from 'lodash/orderBy'
 import React, { useContext, useRef, useState } from 'react'
-import { useNavigate } from 'react-router'
+import { useLocation } from 'wouter'
 
 import type {
   AssistanceNeedPreschoolDecisionId,
@@ -45,7 +45,7 @@ export default React.memo(function AssistanceNeedPreschoolDecisionSection({
   const { mutateAsync: createDecision, isPending: creatingDecision } =
     useMutationResult(createAssistanceNeedPreschoolDecisionMutation)
 
-  const navigate = useNavigate()
+  const [, navigate] = useLocation()
 
   const assistanceNeedDecisions = useQueryResult(
     assistanceNeedPreschoolDecisionBasicsQuery({ childId })
@@ -77,7 +77,7 @@ export default React.memo(function AssistanceNeedPreschoolDecisionSection({
             onClick={async () => {
               const res = await createDecision({ childId })
               if (res.isSuccess) {
-                void navigate(
+                navigate(
                   `/child-information/${childId}/assistance-need-preschool-decisions/${res.value.id}/edit`
                 )
               }

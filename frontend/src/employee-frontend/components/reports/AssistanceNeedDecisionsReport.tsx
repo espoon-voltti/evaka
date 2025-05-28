@@ -4,8 +4,8 @@
 
 import orderBy from 'lodash/orderBy'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router'
 import styled from 'styled-components'
+import { useLocation, useSearchParams } from 'wouter'
 
 import type { AssistanceNeedDecisionStatus } from 'lib-common/generated/api-types/assistanceneed'
 import { assistanceNeedDecisionStatuses } from 'lib-common/generated/api-types/assistanceneed'
@@ -115,7 +115,7 @@ export default React.memo(function AssistanceNeedDecisionsReport() {
     ]
   )
 
-  const navigate = useNavigate()
+  const [, navigate] = useLocation()
 
   const changeCareArea = useCallback(
     (option: { value: string; label: string } | null) => {

@@ -4,7 +4,7 @@
 
 import orderBy from 'lodash/orderBy'
 import React, { useState } from 'react'
-import { useNavigate } from 'react-router'
+import { useLocation } from 'wouter'
 
 import type { DecisionWithValidStartDatePeriod } from 'lib-common/generated/api-types/application'
 import type { ApplicationId } from 'lib-common/generated/api-types/shared'
@@ -31,7 +31,7 @@ import DecisionResponse from './DecisionResponse'
 export default React.memo(function DecisionResponseList() {
   const applicationId = useIdRouteParam<ApplicationId>('applicationId')
   const t = useTranslation()
-  const navigate = useNavigate()
+  const [, navigate] = useLocation()
 
   const decisionsRequest = useQueryResult(
     decisionsOfApplicationQuery({ applicationId })
@@ -61,7 +61,7 @@ export default React.memo(function DecisionResponseList() {
     if (warnAboutMissingResponse) {
       setDisplayDecisionWithNoResponseWarning(true)
     } else {
-      void navigate('/decisions')
+      navigate('/decisions')
     }
   }
 
@@ -128,7 +128,7 @@ export default React.memo(function DecisionResponseList() {
                   t.decisions.applicationDecisions.warnings
                     .decisionWithNoResponseWarning.resolveLabel,
                 action: () => {
-                  void navigate('/decisions')
+                  navigate('/decisions')
                 }
               }}
               reject={{

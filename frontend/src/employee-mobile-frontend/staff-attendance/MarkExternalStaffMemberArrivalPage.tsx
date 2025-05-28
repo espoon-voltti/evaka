@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useState } from 'react'
-import { useNavigate } from 'react-router'
 
 import { isValidTime } from 'lib-common/date'
 import type { GroupInfo } from 'lib-common/generated/api-types/attendance'
@@ -48,7 +47,6 @@ export default function MarkExternalStaffMemberArrivalPage({
 }: {
   unitOrGroup: UnitOrGroup
 }) {
-  const navigate = useNavigate()
   const { i18n } = useTranslation()
   const unitId = unitOrGroup.unitId
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
@@ -79,7 +77,7 @@ export default function MarkExternalStaffMemberArrivalPage({
     >
       <div>
         <BackButtonInline
-          onClick={() => navigate(-1)}
+          onClick={() => history.go(-1)}
           icon={faArrowLeft}
           text={i18n.attendances.staff.markExternalPerson}
         />
@@ -143,7 +141,7 @@ export default function MarkExternalStaffMemberArrivalPage({
               <FixedSpaceRow fullWidth>
                 <LegacyButton
                   text={i18n.common.cancel}
-                  onClick={() => navigate(-1)}
+                  onClick={() => history.go(-1)}
                 />
                 <MutateButton
                   primary

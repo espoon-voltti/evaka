@@ -4,8 +4,8 @@
 
 import sortBy from 'lodash/sortBy'
 import React, { useCallback, useState } from 'react'
-import { useNavigate } from 'react-router'
 import styled from 'styled-components'
+import { useLocation } from 'wouter'
 
 import type { Failure } from 'lib-common/api'
 import {
@@ -81,7 +81,7 @@ export default React.memo(function EmployeesPage() {
     })
   )
 
-  const navigate = useNavigate()
+  const [, navigate] = useLocation()
 
   return (
     <Container>

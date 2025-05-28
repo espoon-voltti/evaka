@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router'
+import { useLocation } from 'wouter'
 
 import type { Result } from 'lib-common/api'
 import { combine, Loading } from 'lib-common/api'
@@ -65,7 +65,7 @@ export type ErrorDisplayType = 'NONE' | 'DRAFT' | 'SAVE'
 
 export default React.memo(function IncomeStatementEditor() {
   const params = useRouteParams(['incomeStatementId'])
-  const navigate = useNavigate()
+  const [, navigate] = useLocation()
   const incomeStatementId =
     params.incomeStatementId === 'new'
       ? undefined
@@ -85,7 +85,7 @@ export default React.memo(function IncomeStatementEditor() {
   const [shouldScrollToError, setShouldScrollToError] = useState(false)
 
   const navigateToList = useCallback(() => {
-    void navigate('/income')
+    navigate('/income')
   }, [navigate])
 
   const updateFormData = useCallback(

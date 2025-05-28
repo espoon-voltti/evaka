@@ -4,8 +4,8 @@
 
 import orderBy from 'lodash/orderBy'
 import React, { useCallback, useContext, useState } from 'react'
-import { Link } from 'react-router'
 import styled from 'styled-components'
+import { Link } from 'wouter'
 
 import type { PersonId } from 'lib-common/generated/api-types/shared'
 import type LocalDate from 'lib-common/local-date'

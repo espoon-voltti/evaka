@@ -16,7 +16,6 @@ import {
 import annotationPlugin from 'chartjs-plugin-annotation'
 import React from 'react'
 import { createRoot } from 'react-dom/client'
-import { RouterProvider } from 'react-router/dom'
 import { polyfill as smoothScrollPolyfill } from 'seamless-scroll-polyfill'
 
 import { sentryEventFilter } from 'lib-common/sentry'
@@ -24,7 +23,7 @@ import { getEnvironment } from 'lib-common/utils/helpers'
 import colors from 'lib-customizations/common'
 import { appConfig } from 'lib-customizations/employee'
 
-import { router } from './router'
+import { Root } from './router'
 import 'chartjs-adapter-date-fns'
 import './index.css'
 
@@ -57,7 +56,7 @@ Chart.defaults.font = {
 Chart.defaults.color = colors.grayscale.g100
 
 const root = createRoot(document.getElementById('app')!)
-root.render(<RouterProvider router={router} />)
+root.render(<Root />)
 
 // Let the HTML template inline script know we have loaded successfully
 if (!window.evaka) {

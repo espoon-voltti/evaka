@@ -4,7 +4,6 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useState } from 'react'
-import { unstable_usePrompt as usePrompt } from 'react-router'
 
 import { useQueryResult } from 'lib-common/query'
 import Title from 'lib-components/atoms/Title'
@@ -56,7 +55,6 @@ export default React.memo(function EmployeePinCodePage() {
   }
 
   useWarnOnUnsavedChanges(dirty, i18n.pinCode.unsavedDataWarning)
-  usePrompt({ message: i18n.pinCode.unsavedDataWarning, when: dirty })
 
   return (
     <Container>

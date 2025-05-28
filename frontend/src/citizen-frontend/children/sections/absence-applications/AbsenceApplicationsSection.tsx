@@ -4,7 +4,7 @@
 
 import orderBy from 'lodash/orderBy'
 import React, { useMemo } from 'react'
-import { useNavigate } from 'react-router'
+import { useLocation } from 'wouter'
 
 import { useBoolean } from 'lib-common/form/hooks'
 import type { ChildId } from 'lib-common/generated/api-types/shared'
@@ -39,7 +39,7 @@ interface Props {
 export const AbsenceApplicationsSection = (props: Props) => {
   const i18n = useTranslation()
   const [open, { toggle: toggleOpen }] = useBoolean(false)
-  const navigate = useNavigate()
+  const [, navigate] = useLocation()
 
   return (
     <ResponsiveWholePageCollapsible

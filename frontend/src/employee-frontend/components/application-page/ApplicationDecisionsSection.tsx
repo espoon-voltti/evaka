@@ -4,7 +4,7 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React from 'react'
-import { Link } from 'react-router'
+import { Link } from 'wouter'
 
 import type { ApplicationStatus } from 'lib-common/generated/api-types/application'
 import type { Decision } from 'lib-common/generated/api-types/decision'

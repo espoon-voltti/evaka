@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useEffect, useMemo } from 'react'
-import { useNavigate } from 'react-router'
+import { useLocation } from 'wouter'
 
 import { isLoading } from 'lib-common/api'
 import type FiniteDateRange from 'lib-common/finite-date-range'
@@ -46,7 +46,7 @@ export default React.memo(function CalendarNotifications({
   calendarDays,
   events
 }: Props) {
-  const navigate = useNavigate()
+  const [, navigate] = useLocation()
 
   const { addNotification, removeNotification } =
     useContext(NotificationsContext)
@@ -95,7 +95,7 @@ export default React.memo(function CalendarNotifications({
             incomeExpirationDate.format()
           ),
           onClick: () => {
-            void navigate('/income')
+            navigate('/income')
             removeNotification('expiring-income-cta')
           },
           dataQa: 'expiring-income-cta'
@@ -234,10 +234,7 @@ export default React.memo(function CalendarNotifications({
           icon: faInfo,
           iconColor: colors.status.info,
           onClick(close) {
-            void navigate({
-              pathname: `/child-documents/${childDocument.id}`,
-              search: '?returnTo=calendar'
-            })
+            navigate(`/child-documents/${childDocument.id}?returnTo=calendar`)
             close()
           },
           children: i18n.ctaToast.unansweredChildDocumentCta(

@@ -5,8 +5,8 @@
 import orderBy from 'lodash/orderBy'
 import uniqBy from 'lodash/uniqBy'
 import React, { useContext, useMemo, useState } from 'react'
-import { Link } from 'react-router'
 import styled from 'styled-components'
+import { Link } from 'wouter'
 
 import { combine } from 'lib-common/api'
 import { localDate, localDateRange } from 'lib-common/form/fields'

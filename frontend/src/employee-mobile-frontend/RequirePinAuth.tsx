@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext } from 'react'
-import { Navigate } from 'react-router'
+import { Redirect } from 'wouter'
 
 import type { DaycareId } from 'lib-common/generated/api-types/shared'
 
@@ -22,7 +22,7 @@ export const RequirePinAuth = React.memo(function RequirePinAuth({
   const { user } = useContext(UserContext)
 
   if (!user.isSuccess || !user.value) {
-    return <Navigate replace to="/" />
+    return <Redirect replace to="/" />
   }
   if (!user.value.pinLoginActive) {
     return <PinLogin unitId={unitId} />

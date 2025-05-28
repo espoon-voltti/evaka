@@ -4,8 +4,8 @@
 
 import noop from 'lodash/noop'
 import React, { Fragment, useCallback, useContext, useState } from 'react'
-import { Link, useNavigate } from 'react-router'
 import styled from 'styled-components'
+import { Link, useLocation } from 'wouter'
 
 import type {
   ChildBasicInfo,
@@ -348,7 +348,7 @@ export default React.memo(function ChildrenIncomeStatements({
   childInfo
 }: ChildrenIncomeStatementsProps) {
   const t = useTranslation()
-  const navigate = useNavigate()
+  const [, navigate] = useLocation()
 
   return (
     <>

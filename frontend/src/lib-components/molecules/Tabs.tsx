@@ -3,11 +3,11 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { NavLink } from 'react-router'
 import styled, { css } from 'styled-components'
 
 import type { Uri } from 'lib-common/uri'
 
+import NavLink from '../atoms/NavLink'
 import { desktopMin } from '../breakpoints'
 import Container from '../layout/Container'
 import { fontWeights, NavLinkText } from '../typography'

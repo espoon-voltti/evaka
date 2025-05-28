@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useMemo, useState } from 'react'
-import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
 import type {
@@ -91,7 +90,6 @@ export default React.memo(function ChildNotes({
   childId: ChildId
 }) {
   const { i18n } = useTranslation()
-  const navigate = useNavigate()
 
   const child = useChild(useQueryResult(childrenQuery(unitId)), childId)
 
@@ -176,7 +174,7 @@ export default React.memo(function ChildNotes({
       paddingVertical="zero"
     >
       <TopRow>
-        <ChildNameBackButton child={child} onClick={() => navigate(-1)} />
+        <ChildNameBackButton child={child} onClick={() => history.go(-1)} />
       </TopRow>
       <FixedSpaceColumn>
         <TitleArea shadow opaque paddingHorizontal="s" paddingVertical="6px">

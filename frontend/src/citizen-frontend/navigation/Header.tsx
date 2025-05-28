@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { useLocation } from 'react-router'
 import styled from 'styled-components'
+import { useLocation } from 'wouter'
 
 import { useQuery } from 'lib-common/query'
 import { desktopMin, desktopMinPx } from 'lib-components/breakpoints'
@@ -29,8 +29,8 @@ export default React.memo(function Header(props: { ariaHidden: boolean }) {
 
   const unreadDecisions = useUnreadDecisions()
 
-  const location = useLocation()
-  const isLoginPage = location.pathname === '/login'
+  const [path] = useLocation()
+  const isLoginPage = path === '/login'
 
   return (
     <>

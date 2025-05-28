@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useState } from 'react'
-import { useNavigate } from 'react-router'
 import styled from 'styled-components'
+import { useLocation } from 'wouter'
 
 import type { ClubTerm } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
@@ -31,7 +31,7 @@ const Ul = styled.ul`
 
 export default React.memo(function ClubTermsSection() {
   const { i18n } = useTranslation()
-  const navigate = useNavigate()
+  const [, navigate] = useLocation()
 
   const [termToEdit, setTermToEdit] = useState<UUID>()
 
@@ -42,7 +42,7 @@ export default React.memo(function ClubTermsSection() {
       if (clubTerm.term.start.isBefore(LocalDate.todayInSystemTz())) {
         setTermToEdit(clubTerm.id)
       } else {
-        void navigate(`/holiday-periods/club-term/${clubTerm.id}`)
+        navigate(`/holiday-periods/club-term/${clubTerm.id}`)
       }
     },
     [setTermToEdit, navigate]
@@ -53,12 +53,12 @@ export default React.memo(function ClubTermsSection() {
   }, [setTermToEdit])
 
   const navigateToNewTerm = useCallback(() => {
-    void navigate('/holiday-periods/club-term/new')
+    navigate('/holiday-periods/club-term/new')
   }, [navigate])
 
   const closeModalAndNavigateToEditTerm = useCallback(() => {
     if (termToEdit) {
-      void navigate(`/holiday-periods/club-term/${termToEdit}`)
+      navigate(`/holiday-periods/club-term/${termToEdit}`)
     }
   }, [navigate, termToEdit])
 

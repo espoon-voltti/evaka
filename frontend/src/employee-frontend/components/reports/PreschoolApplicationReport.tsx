@@ -4,8 +4,8 @@
 
 import orderBy from 'lodash/orderBy'
 import React, { useCallback, useMemo, useState } from 'react'
-import { Link } from 'react-router'
 import styled from 'styled-components'
+import { Link } from 'wouter'
 
 import type { PreschoolApplicationReportRow } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'

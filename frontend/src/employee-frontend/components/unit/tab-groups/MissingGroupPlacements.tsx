@@ -4,7 +4,7 @@
 
 import sortBy from 'lodash/sortBy'
 import React, { useContext, useMemo, useState } from 'react'
-import { Link } from 'react-router'
+import { Link } from 'wouter'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
 import type { Action } from 'lib-common/generated/action'

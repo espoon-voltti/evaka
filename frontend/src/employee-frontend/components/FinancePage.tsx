@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useMemo } from 'react'
-import { Outlet } from 'react-router'
 
 import { TabLinks } from 'lib-components/molecules/Tabs'
 import { Gap } from 'lib-components/white-space'
@@ -66,7 +65,6 @@ export default React.memo(function FinancePage() {
     <>
       <TabLinks tabs={tabs} />
       <Gap size="s" />
-      <Outlet />
     </>
   )
 })

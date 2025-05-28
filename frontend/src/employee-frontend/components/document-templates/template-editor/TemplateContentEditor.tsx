@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router'
 import styled from 'styled-components'
+import { useLocation } from 'wouter'
 
 import { swapElements } from 'lib-common/array'
 import { openEndedLocalDateRange } from 'lib-common/form/fields'
@@ -75,7 +75,7 @@ export default React.memo(function TemplateContentEditor({
   readOnly
 }: Props) {
   const { i18n } = useTranslation()
-  const navigate = useNavigate()
+  const [, navigate] = useLocation()
 
   const [creatingSection, setCreatingSection] = useState(false)
   const [readyToPublish, setReadyToPublish] = useState(false)
@@ -157,7 +157,7 @@ export default React.memo(function TemplateContentEditor({
         <FixedSpaceRow justifyContent="space-between" alignItems="center">
           <LegacyButton
             text={i18n.common.goBack}
-            onClick={() => void navigate('/document-templates')}
+            onClick={() => navigate('/document-templates')}
           />
 
           {featureFlags.forceUnpublishDocumentTemplate &&
@@ -202,7 +202,7 @@ export default React.memo(function TemplateContentEditor({
                       : res
                   )
                 }
-                onSuccess={() => void navigate('/document-templates')}
+                onSuccess={() => navigate('/document-templates')}
               />
             </FixedSpaceRow>
           )}

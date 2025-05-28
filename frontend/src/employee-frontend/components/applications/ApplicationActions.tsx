@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useMemo, useState } from 'react'
-import { useNavigate } from 'react-router'
 import styled from 'styled-components'
+import { useLocation } from 'wouter'
 
 import type {
   ApplicationSummary,
@@ -61,7 +61,7 @@ export default React.memo(function ApplicationActions({
   onActionStarted,
   onActionEnded
 }: Props) {
-  const navigate = useNavigate()
+  const [, navigate] = useLocation()
   const { i18n } = useTranslation()
   const [confirmingApplicationCancel, setConfirmingApplicationCancel] =
     useState(false)
@@ -125,7 +125,7 @@ export default React.memo(function ApplicationActions({
             id: 'edit-decisions',
             label: i18n.applications.actions.editDecisions,
             onClick: () => {
-              void navigate(`/applications/${application.id}/decisions`)
+              navigate(`/applications/${application.id}/decisions`)
             },
             primary: true
           },

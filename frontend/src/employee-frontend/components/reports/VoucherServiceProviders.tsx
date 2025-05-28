@@ -5,8 +5,8 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import range from 'lodash/range'
 import React, { useContext, useMemo, useState } from 'react'
-import { Link, useLocation } from 'react-router'
 import styled from 'styled-components'
+import { Link, useSearchParams } from 'wouter'
 
 import { combine } from 'lib-common/api'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
@@ -72,7 +72,7 @@ function getFilename(year: number, month: number, areaName: string) {
 }
 
 export default React.memo(function VoucherServiceProviders() {
-  const location = useLocation()
+  const [queryParams] = useSearchParams()
   const { i18n } = useTranslation()
   const { roles } = useContext(UserContext)
   const areas = useQueryResult(areasQuery())
@@ -92,8 +92,6 @@ export default React.memo(function VoucherServiceProviders() {
     [allAreasOption, areas]
   )
   const [filters, setFilters] = useState<VoucherServiceProvidersFilters>(() => {
-    const { search } = location
-    const queryParams = new URLSearchParams(search)
     const year = Number(queryParams.get('year'))
     const month = Number(queryParams.get('month'))
     // intentionally converts empty string into undefined
@@ -108,8 +106,6 @@ export default React.memo(function VoucherServiceProviders() {
     }
   })
   const [unitFilter, setUnitFilter] = useState<string>(() => {
-    const { search } = location
-    const queryParams = new URLSearchParams(search)
     return queryParams.get('unit') ?? ''
   })
 

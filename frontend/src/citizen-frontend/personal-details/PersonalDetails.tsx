@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useEffect, useRef } from 'react'
-import { Navigate } from 'react-router'
+import { Redirect } from 'wouter'
 
 import { combine } from 'lib-common/api'
 import { useQueryResult } from 'lib-common/query'
@@ -66,7 +66,7 @@ export default React.memo(function PersonalDetails() {
                   />
                 </>
               ) : (
-                <Navigate replace to="/" />
+                <Redirect replace to="/" />
               )
           )}
           {renderResult(
@@ -83,7 +83,7 @@ export default React.memo(function PersonalDetails() {
                   />
                 </>
               ) : (
-                <Navigate replace to="/" />
+                <Redirect replace to="/" />
               )
           )}
           {renderResult(notificationSettings, (notificationSettings) => (

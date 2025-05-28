@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useMemo, useState } from 'react'
-import { Navigate, useNavigate } from 'react-router'
 import styled from 'styled-components'
+import { Redirect, useLocation } from 'wouter'
 
 import type { ApplicationType } from 'lib-common/generated/api-types/application'
 import type { ChildId } from 'lib-common/generated/api-types/shared'
@@ -40,7 +40,7 @@ import {
 } from './queries'
 
 export default React.memo(function ApplicationCreation() {
-  const navigate = useNavigate()
+  const [, navigate] = useLocation()
   const childId = useIdRouteParam<ChildId>('childId')
   const t = useTranslation()
   useTitle(t, t.applications.creation.title)
@@ -73,7 +73,7 @@ export default React.memo(function ApplicationCreation() {
     transferApplicationTypes[selectedType]
 
   if (!childName.isLoading && childName.getOrElse(undefined) === undefined) {
-    return <Navigate replace to="/applications" />
+    return <Redirect replace to="/applications" />
   }
 
   return (
@@ -178,7 +178,7 @@ export default React.memo(function ApplicationCreation() {
               />
               <LegacyButton
                 text={t.common.cancel}
-                onClick={() => void navigate('/applications')}
+                onClick={() => navigate('/applications')}
               />
             </ButtonContainer>
           </ContentArea>

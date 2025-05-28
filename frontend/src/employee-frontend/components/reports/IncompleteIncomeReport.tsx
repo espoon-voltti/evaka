@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { Link } from 'react-router'
+import { Link } from 'wouter'
 
 import type { IncompleteIncomeDbRow } from 'lib-common/generated/api-types/reports'
 import { useQueryResult } from 'lib-common/query'

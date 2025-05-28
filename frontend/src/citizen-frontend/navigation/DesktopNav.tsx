@@ -11,10 +11,11 @@ import React, {
   useRef,
   useState
 } from 'react'
-import { Link, NavLink, useLocation } from 'react-router'
 import styled from 'styled-components'
+import { Link, useLocation } from 'wouter'
 
 import { formatFirstName } from 'lib-common/names'
+import NavLink from 'lib-components/atoms/NavLink'
 import { desktopMin, desktopSmall } from 'lib-components/breakpoints'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { fontWeights } from 'lib-components/typography'
@@ -209,7 +210,7 @@ const Icon = styled(FontAwesomeIcon)`
 
 const ChildrenMenu = React.memo(function ChildrenMenu() {
   const t = useTranslation()
-  const location = useLocation()
+  const [path] = useLocation()
   const childrenWithOwnPage = useChildrenWithOwnPage()
   const { unreadChildNotifications, totalUnreadChildNotifications } =
     useUnreadChildNotifications()
@@ -252,7 +253,7 @@ const ChildrenMenu = React.memo(function ChildrenMenu() {
     <DropDownContainer ref={dropDownContainerRef}>
       <DropDownButton
         className={classNames({
-          active: location.pathname.startsWith('/children')
+          active: path.startsWith('/children')
         })}
         onClick={toggleOpen}
         aria-label={`${t.header.nav.children}${

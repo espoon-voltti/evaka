@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { useNavigate } from 'react-router'
+import { useLocation } from 'wouter'
 
 import { combine } from 'lib-common/api'
 import type {
@@ -41,7 +41,7 @@ export default React.memo(function StaffPreviousAttendancesPage({
 }) {
   const employeeId = useIdRouteParam<EmployeeId>('employeeId')
   const { i18n } = useTranslation()
-  const navigate = useNavigate()
+  const [, navigate] = useLocation()
 
   const unitId = unitOrGroup.unitId
 

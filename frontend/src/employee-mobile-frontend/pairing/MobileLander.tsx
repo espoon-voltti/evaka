@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext } from 'react'
-import { Navigate } from 'react-router'
 import styled from 'styled-components'
+import { Redirect } from 'wouter'
 
 import { P } from 'lib-components/typography'
 
@@ -33,14 +33,14 @@ export default React.memo(function MobileLander() {
     if (u !== null) {
       if (u.unitIds.length === 1) {
         return (
-          <Navigate
+          <Redirect
             replace
             to={routes.childAttendances(toUnitOrGroup(u.unitIds[0])).value}
           />
         )
       }
 
-      return <Navigate replace to="/units" />
+      return <Redirect replace to="/units" />
     }
 
     return (

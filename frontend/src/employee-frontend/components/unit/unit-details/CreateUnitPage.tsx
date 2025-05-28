@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router'
+import { useLocation } from 'wouter'
 
 import type { Result } from 'lib-common/api'
 import { combine, Loading } from 'lib-common/api'
@@ -25,7 +25,7 @@ import UnitEditor from './UnitEditor'
 
 export default React.memo(function CreateUnitPage() {
   const { i18n } = useTranslation()
-  const navigate = useNavigate()
+  const [, navigate] = useLocation()
   const areas = useQueryResult(areasQuery())
   const [financeDecisionHandlerOptions, setFinanceDecisionHandlerOptions] =
     useState<Result<FinanceDecisionHandlerOption[]>>(Loading.of())
@@ -61,7 +61,7 @@ export default React.memo(function CreateUnitPage() {
               {(getFormData, isValid) => (
                 <>
                   <LegacyButton
-                    onClick={() => navigate(-1)}
+                    onClick={() => history.go(-1)}
                     text={i18n.common.cancel}
                   />
                   <MutateButton

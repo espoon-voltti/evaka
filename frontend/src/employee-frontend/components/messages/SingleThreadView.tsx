@@ -11,8 +11,8 @@ import React, {
   useRef,
   useState
 } from 'react'
-import { useNavigate, useSearchParams } from 'react-router'
 import styled from 'styled-components'
+import { useLocation, useSearchParams } from 'wouter'
 
 import { wrapResult } from 'lib-common/api'
 import type {
@@ -196,7 +196,7 @@ export function SingleThreadView({
   onArchived
 }: Props) {
   const { i18n } = useTranslation()
-  const navigate = useNavigate()
+  const [, navigate] = useLocation()
   const { getReplyContent, onReplySent, setReplyContent, refreshUnreadCounts } =
     useContext(MessageContext)
   const [searchParams] = useSearchParams()
@@ -332,7 +332,7 @@ export function SingleThreadView({
                 mutation={markLastReceivedMessageInThreadUnreadMutation}
                 onClick={() => ({ accountId, threadId })}
                 onSuccess={() => {
-                  void navigate('/messages')
+                  navigate('/messages')
                   refreshUnreadCounts()
                 }}
               />
