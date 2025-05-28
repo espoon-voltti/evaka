@@ -12,25 +12,19 @@ import React, {
 import styled from 'styled-components'
 
 import type { Result } from 'lib-common/api'
-import { wrapResult } from 'lib-common/api'
 import { useBoolean } from 'lib-common/form/hooks'
 import type { AbsenceCategory } from 'lib-common/generated/api-types/absence'
 import type { GroupMonthCalendar } from 'lib-common/generated/api-types/absence'
 import type { ChildId, GroupId } from 'lib-common/generated/api-types/shared'
 import type LocalDate from 'lib-common/local-date'
-import { useApiState } from 'lib-common/utils/useRestApi'
+import type { MutateAsyncFn } from 'lib-common/query'
+import { useMutationResult, useQueryResult } from 'lib-common/query'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { H3 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
-import {
-  addPresences,
-  deleteHolidayReservations,
-  groupMonthCalendar,
-  upsertAbsences
-} from '../../generated/api-clients/absence'
 import { useTranslation } from '../../state/i18n'
 import type { TitleState } from '../../state/title'
 import { TitleContext } from '../../state/title'
@@ -40,11 +34,12 @@ import { renderResult } from '../async-rendering'
 import { AbsenceLegend } from './AbsenceLegend'
 import AbsenceModal from './AbsenceModal'
 import MonthCalendarTable from './MonthCalendarTable'
-
-const groupMonthCalendarResult = wrapResult(groupMonthCalendar)
-const upsertAbsencesResult = wrapResult(upsertAbsences)
-const addPresencesResult = wrapResult(addPresences)
-const deleteHolidayReservationsResult = wrapResult(deleteHolidayReservations)
+import {
+  addPresencesMutation,
+  deleteHolidayReservationsMutation,
+  groupMonthCalendarQuery,
+  upsertAbsencesMutation
+} from './queries'
 
 interface Props {
   groupId: GroupId
@@ -61,15 +56,12 @@ export default React.memo(function GroupMonthCalendarWrapper({
 }: Props) {
   const selectedYear = selectedDate.getYear()
   const selectedMonth = selectedDate.getMonth()
-
-  const [groupMonthCalendar, loadGroupMonthCalendar] = useApiState(
-    () =>
-      groupMonthCalendarResult({
-        groupId,
-        year: selectedYear,
-        month: selectedMonth
-      }),
-    [groupId, selectedYear, selectedMonth]
+  const groupMonthCalendar = useQueryResult(
+    groupMonthCalendarQuery({
+      groupId,
+      year: selectedYear,
+      month: selectedMonth
+    })
   )
 
   return (
@@ -81,7 +73,6 @@ export default React.memo(function GroupMonthCalendarWrapper({
           selectedDate={selectedDate}
           reservationEnabled={reservationEnabled}
           staffAttendanceEnabled={staffAttendanceEnabled}
-          reloadData={loadGroupMonthCalendar}
         />
       ))}
     </div>
@@ -94,7 +85,6 @@ interface AbsenceCalendarProps {
   selectedDate: LocalDate
   reservationEnabled: boolean
   staffAttendanceEnabled: boolean
-  reloadData: () => void
 }
 
 export interface SelectedCell {
@@ -108,13 +98,19 @@ const GroupMonthCalendar = React.memo(function GroupMonthCalendar({
   groupMonthCalendar,
   selectedDate,
   reservationEnabled,
-  staffAttendanceEnabled,
-  reloadData
+  staffAttendanceEnabled
 }: AbsenceCalendarProps) {
   const { i18n } = useTranslation()
   const { setTitle } = useContext<TitleState>(TitleContext)
   const [modalVisible, useModalVisible] = useBoolean(false)
   const [selectedCells, setSelectedCells] = useState<SelectedCell[]>([])
+  const { mutateAsync: upsertAbsences } = useMutationResult(
+    upsertAbsencesMutation
+  )
+  const { mutateAsync: addPresences } = useMutationResult(addPresencesMutation)
+  const { mutateAsync: deleteHolidayReservations } = useMutationResult(
+    deleteHolidayReservationsMutation
+  )
 
   const closeModal = useCallback(() => {
     useModalVisible.off()
@@ -157,8 +153,21 @@ const GroupMonthCalendar = React.memo(function GroupMonthCalendar({
 
   const updateAbsences = useCallback(
     (update: AbsenceUpdate) =>
-      sendAbsenceUpdates(groupId, selectedCells, update),
-    [groupId, selectedCells]
+      sendAbsenceUpdates(
+        groupId,
+        selectedCells,
+        update,
+        upsertAbsences,
+        addPresences,
+        deleteHolidayReservations
+      ),
+    [
+      addPresences,
+      deleteHolidayReservations,
+      groupId,
+      selectedCells,
+      upsertAbsences
+    ]
   )
 
   return (
@@ -168,10 +177,7 @@ const GroupMonthCalendar = React.memo(function GroupMonthCalendar({
           showCategorySelection={showCategorySelection}
           showMissingHolidayReservation={showMissingHolidayReservation}
           onSave={updateAbsences}
-          onSuccess={() => {
-            reloadData()
-            closeModal()
-          }}
+          onSuccess={closeModal}
           onClose={closeModal}
         />
       )}
@@ -205,11 +211,16 @@ const GroupMonthCalendar = React.memo(function GroupMonthCalendar({
 function sendAbsenceUpdates(
   groupId: GroupId,
   selectedCells: SelectedCell[],
-  update: AbsenceUpdate
+  update: AbsenceUpdate,
+  upsertAbsences: MutateAsyncFn<typeof upsertAbsencesMutation>,
+  addPresences: MutateAsyncFn<typeof addPresencesMutation>,
+  deleteHolidayReservations: MutateAsyncFn<
+    typeof deleteHolidayReservationsMutation
+  >
 ): Promise<Result<void>> {
   switch (update.type) {
     case 'absence':
-      return upsertAbsencesResult({
+      return upsertAbsences({
         groupId,
         body: selectedCells.flatMap((cell) => {
           const categoriesToUpdate =
@@ -228,7 +239,7 @@ function sendAbsenceUpdates(
         })
       })
     case 'noAbsence':
-      return addPresencesResult({
+      return addPresences({
         groupId,
         body: selectedCells.flatMap((cell) => {
           const categoriesToUpdate =
@@ -246,7 +257,7 @@ function sendAbsenceUpdates(
         })
       })
     case 'missingHolidayReservation':
-      return deleteHolidayReservationsResult({
+      return deleteHolidayReservations({
         groupId,
         body: selectedCells.map((cell) => ({
           childId: cell.childId,
