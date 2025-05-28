@@ -172,6 +172,11 @@ class NekkuService(
             logger.warn(e) {
                 "Failed to send meal order to Nekku: date=${job.date}, groupId=${job.customerGroupId},error=${e.localizedMessage}"
             }
+
+            dbc.transaction { tx ->
+                tx.setNekkuReportOrderErrorReport(job.customerGroupId, job.date, e.localizedMessage)
+            }
+
             throw e
         }
     }
@@ -194,6 +199,11 @@ class NekkuService(
             logger.warn(e) {
                 "Failed to send meal order to Nekku: date=${job.date}, groupId=${job.customerGroupId},error=${e.localizedMessage}"
             }
+
+            dbc.transaction { tx ->
+                tx.setNekkuReportOrderErrorReport(job.customerGroupId, job.date, e.localizedMessage)
+            }
+
             throw e
         }
     }
@@ -482,6 +492,7 @@ fun createAndSendNekkuOrder(
         logger.info {
             "Could not find any customer with given date: ${date.dayOfWeek} groupId=$groupId"
         }
+        error("Could not find any customer with given date: ${date.dayOfWeek} groupId=$groupId")
     }
 }
 
