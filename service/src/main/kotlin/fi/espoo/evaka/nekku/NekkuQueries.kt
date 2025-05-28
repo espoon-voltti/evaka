@@ -651,6 +651,59 @@ ${bind {it.nekkuOrderInfo}}
     }
 }
 
+fun Database.Transaction.setNekkuReportOrderErrorReport(
+    groupId: GroupId,
+    date: LocalDate,
+    nekkuOrderError: String,
+) {
+
+    val daycareId = getDaycareIdByGroup(groupId)
+
+    val reportRow =
+        NekkuOrdersReport(date, daycareId, groupId, "", 0, null, null, null, nekkuOrderError)
+
+    val deletedNekkuOrders = execute {
+        sql(
+            "DELETE FROM nekku_orders_report WHERE daycare_id = ${bind(daycareId)} AND group_id = ${bind(groupId)} AND delivery_date = ${bind(date)}"
+        )
+    }
+
+    if (deletedNekkuOrders > 0) {
+        logger.info {
+            "Removed $deletedNekkuOrders orders for date:${date} daycareId=$daycareId groupId=$groupId before creating an error order"
+        }
+    }
+
+    execute {
+        sql(
+            """
+        INSERT INTO nekku_orders_report (
+            delivery_date,
+            daycare_id,
+            group_id,
+            meal_sku,
+            total_quantity,
+            meal_time,
+            meal_type,
+            meals_by_special_diet,
+            nekku_order_info)
+        VALUES (
+            ${bind {reportRow.deliveryDate}},
+            ${bind {reportRow.daycareId}},
+            ${bind {reportRow.groupId}},
+            ${bind {reportRow.mealSku}},
+            ${bind {reportRow.totalQuantity}},
+            ${bind {reportRow.mealTime}},
+            ${bind {reportRow.mealType}},
+            ${bind {reportRow.mealsBySpecialDiet}},
+            ${bind {reportRow.nekkuOrderInfo}}
+        )
+            """
+                .trimIndent()
+        )
+    }
+}
+
 fun Database.Read.getDaycareGroupIds(daycareId: DaycareId): List<GroupId> =
     createQuery { sql("SELECT id FROM daycare_group WHERE daycare_id = ${bind(daycareId)}") }
         .toList()

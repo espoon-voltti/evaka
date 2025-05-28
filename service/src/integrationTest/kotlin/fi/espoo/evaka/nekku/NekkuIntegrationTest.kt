@@ -29,6 +29,7 @@ import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.DevReservation
 import fi.espoo.evaka.shared.dev.insert
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.TimeRange
@@ -44,7 +45,7 @@ import org.springframework.beans.factory.annotation.Autowired
 
 class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
-
+    @Autowired private lateinit var nekkuService: NekkuService
     @Autowired private lateinit var nekkuController: NekkuController
 
     private val now = HelsinkiDateTime.of(LocalDate.of(2025, 5, 12), LocalTime.of(9, 50))
@@ -2295,10 +2296,31 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
         // Customer numbers
         val client =
             TestNekkuClient(
-                nekkuProducts = nekkuProductsForOrder,
+                customers =
+                    listOf(
+                        NekkuApiCustomer(
+                            "2501K6089",
+                            "Ahvenojan päiväkoti",
+                            "Varhaiskasvatus",
+                            listOf(
+                                CustomerApiType(
+                                    listOf(
+                                        NekkuCustomerApiWeekday.WEDNESDAY,
+                                        NekkuCustomerApiWeekday.THURSDAY,
+                                        NekkuCustomerApiWeekday.FRIDAY,
+                                        NekkuCustomerApiWeekday.SATURDAY,
+                                        NekkuCustomerApiWeekday.SUNDAY,
+                                        NekkuCustomerApiWeekday.WEEKDAYHOLIDAY,
+                                    ),
+                                    "100-lasta",
+                                )
+                            ),
+                        )
+                    ),
+                nekkuProducts = nekkuProductsForErrorOrder,
                 specialDiets = listOf(getNekkuSpecialDiet()),
             )
-        //        fetchAndUpdateNekkuCustomers(client, db, asyncJobRunner, now)
+        fetchAndUpdateNekkuCustomers(client, db, asyncJobRunner, now)
         // products
         fetchAndUpdateNekkuProducts(client, db)
         fetchAndUpdateNekkuSpecialDiets(client, db)
@@ -2311,7 +2333,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
                 mealtimeLunch = TimeRange(LocalTime.of(11, 15), LocalTime.of(11, 45)),
                 mealtimeSnack = TimeRange(LocalTime.of(13, 30), LocalTime.of(13, 50)),
             )
-        val group = DevDaycareGroup(daycareId = daycare.id)
+        val group = DevDaycareGroup(daycareId = daycare.id, nekkuCustomerNumber = "2501K6089")
         val employee = DevEmployee()
 
         // Children with placements in the group and they are not absent
@@ -2354,7 +2376,9 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
                 .forEach { tx.insert(it) }
         }
 
-        createAndSendNekkuOrder(client, db, group.id, monday, 0.9)
+        val nekkuAsyncJob = AsyncJob.SendNekkuOrder(group.id, monday)
+
+        nekkuService.sendNekkuOrder(db, EvakaClock, nekkuAsyncJob)
 
         db.transaction { tx ->
             val nekkuOrderReportResult = tx.getNekkuOrderReport(daycare.id, group.id, monday)
@@ -2377,6 +2401,50 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
             )
         }
     }
+
+    val nekkuProductsForErrorOrder =
+        listOf(
+            NekkuApiProduct(
+                "Ateriapalvelu 1 aamupala",
+                "31000010",
+                "",
+                listOf("100-lasta"),
+                listOf(NekkuProductMealTime.BREAKFAST),
+                null,
+            ),
+            NekkuApiProduct(
+                "Ateriapalvelu 1 lounas",
+                "31000011",
+                "",
+                listOf("100-lasta"),
+                listOf(NekkuProductMealTime.LUNCH),
+                null,
+            ),
+            NekkuApiProduct(
+                "Ateriapalvelu 1 välipala",
+                "31000012",
+                "",
+                listOf("100-lasta"),
+                listOf(NekkuProductMealTime.SNACK),
+                null,
+            ),
+            NekkuApiProduct(
+                "Ateriapalvelu 1 iltapala",
+                "31000013",
+                "",
+                listOf("100-lasta"),
+                listOf(NekkuProductMealTime.SUPPER),
+                null,
+            ),
+            NekkuApiProduct(
+                "Ateriapalvelu 1 aamupala",
+                "31000010",
+                "",
+                listOf("100-lasta"),
+                listOf(NekkuProductMealTime.BREAKFAST),
+                null,
+            ),
+        )
 
     @Test
     fun `Send Nekku orders with known reservations and remove 10prcent of normal orders`() {
