@@ -24,6 +24,7 @@ import fi.espoo.evaka.sficlient.MockSfiMessagesClient
 import fi.espoo.evaka.sficlient.rest.EventType
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.ChildDocumentId
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DocumentTemplateId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.async.AsyncJob
@@ -594,11 +595,12 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
 
     @Test
     fun `updating content with partial but valid answers is ok`() {
+        val createTime = clock.now().minusHours(1)
         val documentId =
             controller.createDocument(
                 dbInstance(),
                 employeeUser.user,
-                clock,
+                MockEvakaClock(createTime),
                 ChildDocumentCreateRequest(testChild_1.id, templateIdPed),
             )
         val content = DocumentContent(answers = listOf(AnsweredQuestion.TextAnswer("q1", "hello")))
@@ -607,6 +609,26 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
             content,
             controller.getDocument(dbInstance(), employeeUser.user, clock, documentId).data.content,
         )
+        assertEquals(clock.now(), getDocuments(testChild_1.id).first().data.modifiedAt)
+    }
+
+    @Test
+    fun `updating with equal content does not change modified time`() {
+        val createTime = clock.now().minusHours(1)
+        val documentId =
+            controller.createDocument(
+                dbInstance(),
+                employeeUser.user,
+                MockEvakaClock(createTime),
+                ChildDocumentCreateRequest(testChild_1.id, templateIdPed),
+            )
+        val content = getDocument(documentId).content
+        updateDocumentContent(documentId, content)
+        assertEquals(
+            content,
+            controller.getDocument(dbInstance(), employeeUser.user, clock, documentId).data.content,
+        )
+        assertEquals(createTime, getDocuments(testChild_1.id).first().data.modifiedAt)
     }
 
     @Test
@@ -1110,6 +1132,9 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
             särmäEnabled = true,
         )
     }
+
+    private fun getDocuments(childId: ChildId) =
+        controller.getDocuments(dbInstance(), employeeUser.user, clock, childId)
 
     private fun getDocument(id: ChildDocumentId) =
         controller.getDocument(dbInstance(), employeeUser.user, clock, id).data
