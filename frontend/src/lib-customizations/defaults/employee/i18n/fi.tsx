@@ -902,6 +902,9 @@ export const fi = {
         archive: 'Arkistoi',
         alreadyArchived: (archivedAt: HelsinkiDateTime) =>
           `Asiakirja on arkistoitu ${archivedAt.toLocalDate().format()}`,
+        archiveDisabledNotExternallyArchived:
+          'Asiakirjaa ei ole määritetty siirrettäväksi ulkoiseen arkistoon',
+        archiveDisabledNotCompleted: 'Asiakirja ei ole valmis-tilassa',
         goToNextStatus: {
           DRAFT: 'Julkaise luonnos-tilassa',
           PREPARED: 'Julkaise laadittu-tilassa',
