@@ -8,7 +8,6 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.assistance.getAssistanceFactorsForChildrenOverRange
 import fi.espoo.evaka.attendance.occupancyCoefficientSeven
 import fi.espoo.evaka.daycare.getDaycare
-import fi.espoo.evaka.daycare.getPreschoolTerms
 import fi.espoo.evaka.holidayperiod.HolidayQuestionnaire
 import fi.espoo.evaka.holidayperiod.QuestionnaireType
 import fi.espoo.evaka.holidayperiod.getFixedPeriodQuestionnaire
@@ -73,20 +72,14 @@ class HolidayQuestionnaireReport(
                                 tx.getOpenRangesQuestionnaire(questionnaireId)
                         } ?: throw NotFound()
                     val period =
-                        when (questionnaire.type) {
-                            QuestionnaireType.FIXED_PERIOD -> {
-                                val options =
-                                    (questionnaire as HolidayQuestionnaire.FixedPeriodQuestionnaire)
-                                        .periodOptions
+                        when (questionnaire) {
+                            is HolidayQuestionnaire.FixedPeriodQuestionnaire -> {
+                                val options = questionnaire.periodOptions
                                 FiniteDateRange(options.first().start, options.last().end)
                             }
-                            QuestionnaireType.OPEN_RANGES ->
-                                (questionnaire as HolidayQuestionnaire.OpenRangesQuestionnaire)
-                                    .period
+                            is HolidayQuestionnaire.OpenRangesQuestionnaire -> questionnaire.period
                         }
                     val holidays = getHolidays(period)
-
-                    val preschoolTerms = tx.getPreschoolTerms()
 
                     // report result days
                     val questionnaireDays =
@@ -94,10 +87,13 @@ class HolidayQuestionnaireReport(
                             .dates()
                             .map { HolidayReportDay(it, holidays.contains(it)) }
                             .filter { day ->
-                                questionnaire.type == QuestionnaireType.FIXED_PERIOD &&
-                                    (questionnaire as HolidayQuestionnaire.FixedPeriodQuestionnaire)
-                                        .periodOptions
-                                        .any { range -> range.includes(day.date) }
+                                (questionnaire is HolidayQuestionnaire.FixedPeriodQuestionnaire &&
+                                    questionnaire.periodOptions.any { range ->
+                                        range.includes(day.date)
+                                    }) ||
+                                    (questionnaire is
+                                        HolidayQuestionnaire.OpenRangesQuestionnaire &&
+                                        questionnaire.period.includes(day.date))
                             }
                             .filter {
                                 unitOperationalDays.contains(it.date.dayOfWeek.value) &&
