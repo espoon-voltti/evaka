@@ -18,6 +18,8 @@ import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.daycare.getDaycaresById
 import fi.espoo.evaka.daycare.getPreschoolTerms
 import fi.espoo.evaka.holidayperiod.getHolidayPeriodsInRange
+import fi.espoo.evaka.holidayperiod.getHolidayQuestionnaires
+import fi.espoo.evaka.holidayperiod.getQuestionnaireAnswers
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.ScheduleType
 import fi.espoo.evaka.placement.getPlacementsForChildDuring
@@ -184,6 +186,7 @@ fun getGroupMonthCalendar(
     groupId: GroupId,
     year: Int,
     month: Int,
+    featureConfig: FeatureConfig,
 ): GroupMonthCalendar {
     val range = FiniteDateRange.ofMonth(year, Month.of(month))
 
@@ -207,6 +210,12 @@ fun getGroupMonthCalendar(
 
     val holidays = getHolidays(range)
     val holidayPeriods = tx.getHolidayPeriodsInRange(range)
+    val questionnaires =
+        tx.getHolidayQuestionnaires(featureConfig.holidayQuestionnaireType).filter {
+            it.getPeriods().any { dateRange -> dateRange.overlaps(range) }
+        }
+    val answers =
+        tx.getQuestionnaireAnswers(questionnaires.map { it.id }, placementList.keys.map { it.id })
 
     val childIdsWithHourBasedServiceNeed =
         actualServiceNeeds
@@ -227,6 +236,10 @@ fun getGroupMonthCalendar(
                         date.dayOfWeek.value
                     ) && (daycare.shiftCareOpenOnHolidays || !holidays.contains(date))
                 val isHolidayPeriodDate = holidayPeriods.any { it.period.includes(date) }
+                val isQuestionnaireDate =
+                    questionnaires.any {
+                        it.getPeriods().any { dateRange -> dateRange.includes(date) }
+                    }
                 GroupMonthCalendarDay(
                     date = date,
                     isOperationDay = isOperationDay || isShiftCareOperationDay,
@@ -242,6 +255,12 @@ fun getGroupMonthCalendar(
                                 val childAttendances = attendances[child.id to date] ?: emptyList()
                                 val childReservations =
                                     reservations[child.id to date] ?: emptyList()
+                                val childAnswers =
+                                    answers.filter {
+                                        it.childId == child.id &&
+                                            (it.fixedPeriod?.includes(date) == true ||
+                                                it.openRanges.any { range -> range.includes(date) })
+                                    }
                                 val scheduleType =
                                     placement.type.scheduleType(date, clubTerms, preschoolTerms)
 
@@ -310,6 +329,9 @@ fun getGroupMonthCalendar(
                                             isHolidayPeriodDate &&
                                             childReservations.isEmpty() &&
                                             childAbsences.isEmpty(),
+                                    missingHolidayQuestionnaireAnswer =
+                                            isQuestionnaireDate &&
+                                            childAnswers.isEmpty(),
                                     absences =
                                         childAbsences.map { AbsenceWithModifierInfo.from(it) },
                                     reservations = childReservations,
@@ -675,6 +697,7 @@ data class GroupMonthCalendarDayChild(
     val absenceCategories: Set<AbsenceCategory>,
     val backupCare: Boolean,
     val missingHolidayReservation: Boolean,
+    val missingHolidayQuestionnaireAnswer: Boolean,
     val absences: List<AbsenceWithModifierInfo>,
     val reservations: List<ChildReservation>,
     val dailyServiceTimes: ServiceTimesPresenceStatus,
