@@ -211,5 +211,5 @@ private fun Database.Read.calculateGroupOccupancyReport(
                 occupancies = occupancies,
             )
         }
-        .sortedWith(compareBy({ it.areaName }, { it.unitName }))
+        .sortedWith(compareBy({ it.areaName }, { it.unitName }, { it.groupName }))
 }
