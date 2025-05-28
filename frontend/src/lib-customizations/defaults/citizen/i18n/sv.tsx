@@ -1014,6 +1014,8 @@ const sv: Translations = {
           },
           clubTerm: 'Klubbens verksamhetsperiod',
           clubTerms: 'Klubbens verksamhetsperioder',
+          preschoolTerm: 'Förskoleperiod',
+          preschoolTerms: 'Förskoleperioder',
           label: {
             DAYCARE: 'Önskat inledningsdatum',
             PRESCHOOL: 'Inledningsdatum i augusti',

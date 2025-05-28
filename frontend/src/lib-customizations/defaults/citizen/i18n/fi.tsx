@@ -994,6 +994,8 @@ export default {
           },
           clubTerm: 'Kerhon toimintakausi',
           clubTerms: 'Kerhon toimintakaudet',
+          preschoolTerm: 'Esiopetuskausi',
+          preschoolTerms: 'Esiopetuskaudet',
           label: {
             DAYCARE: 'Toivottu aloituspäivä',
             PRESCHOOL: 'Toivottu aloituspäivä',

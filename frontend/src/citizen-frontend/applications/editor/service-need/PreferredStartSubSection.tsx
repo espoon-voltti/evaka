@@ -25,6 +25,7 @@ import { useLang, useTranslation } from '../../../localization'
 import { isValidPreferredStartDate } from '../validations'
 
 import { ClubTermsInfo } from './ClubTermsInfo'
+import { PreschoolTermsInfoSection } from './PreschoolTermInfoSection'
 import type { ServiceNeedSectionProps } from './ServiceNeedSection'
 
 export default React.memo(function PreferredStartSubSection({
@@ -62,6 +63,9 @@ export default React.memo(function PreferredStartSubSection({
         ))}
 
         {type === 'CLUB' && <ClubTermsInfo clubTerms={terms ?? []} />}
+        {type === 'PRESCHOOL' &&
+          featureFlags.showCitizenApplicationPreschoolTerms &&
+          terms && <PreschoolTermsInfoSection preschoolTerms={terms} />}
 
         <ExpandingInfo
           data-qa="startdate-instructions"
