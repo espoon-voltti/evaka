@@ -214,6 +214,8 @@ const ChildSearch = React.memo(function Search({
           items={searchResults}
           multiselectChildren={null}
           setMultiselectChildren={() => undefined}
+          selectedSortType="CHILD_FIRST_NAME"
+          setSelectedSortType={() => undefined}
         />
       </ContentArea>
     </SearchContainer>

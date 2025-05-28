@@ -2,26 +2,28 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { useCallback } from 'react'
 import styled from 'styled-components'
 import { useLocation } from 'wouter'
 
+import { useBoolean } from 'lib-common/form/hooks'
 import type {
   AttendanceChild,
   AttendanceStatus
 } from 'lib-common/generated/api-types/attendance'
 import type { UUID } from 'lib-common/types'
 import { Button } from 'lib-components/atoms/buttons/Button'
+import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import type { SpacingSize } from 'lib-components/white-space'
-import { defaultMargins, isSpacingSize } from 'lib-components/white-space'
+import { defaultMargins, Gap, isSpacingSize } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { featureFlags } from 'lib-customizations/employeeMobile'
-import { faTimes } from 'lib-icons'
+import { faBarsSort, faCheck, faTimes } from 'lib-icons'
 
 import { routes } from '../App'
 import { useTranslation } from '../common/i18n'
@@ -33,12 +35,19 @@ export interface ListItem extends AttendanceChild {
   status: AttendanceStatus
 }
 
+export type SortType =
+  | 'CHILD_FIRST_NAME'
+  | 'RESERVATION_START_TIME'
+  | 'RESERVATION_END_TIME'
+
 interface Props {
   unitOrGroup: UnitOrGroup
   items: ListItem[]
   type?: AttendanceStatus
   multiselectChildren: UUID[] | null
   setMultiselectChildren: (selected: UUID[] | null) => void
+  selectedSortType: SortType
+  setSelectedSortType: (sortType: SortType) => void
 }
 
 const NoChildrenOnList = styled.div`
@@ -51,11 +60,15 @@ export default React.memo(function ChildList({
   items,
   type,
   multiselectChildren,
-  setMultiselectChildren
+  setMultiselectChildren,
+  selectedSortType,
+  setSelectedSortType
 }: Props) {
   const { i18n } = useTranslation()
   const [, navigate] = useLocation()
   const unitId = unitOrGroup.unitId
+  const [sortTypeOptionsVisible, { toggle: sortTypeOptionsToggle }] =
+    useBoolean(false)
 
   return (
     <>
@@ -63,20 +76,65 @@ export default React.memo(function ChildList({
         <OrderedList spacing="zero">
           {items.length > 0 ? (
             <>
-              {(type === 'COMING' ||
-                (type === 'PRESENT' && featureFlags.multiSelectDeparture)) && (
+              {(type === 'COMING' || type === 'PRESENT') && (
                 <Li>
                   <MultiselectToggleBox>
-                    <Checkbox
-                      checked={multiselectChildren !== null}
-                      onChange={(checked) =>
-                        checked
-                          ? setMultiselectChildren([])
-                          : setMultiselectChildren(null)
-                      }
-                      label={i18n.attendances.actions.multiselect.toggle}
-                      data-qa="multiselect-toggle"
-                    />
+                    <FixedSpaceRow
+                      fullWidth
+                      alignItems="baseline"
+                      justifyContent="space-between"
+                    >
+                      {type === 'COMING' ||
+                      featureFlags.multiSelectDeparture ? (
+                        <Checkbox
+                          checked={multiselectChildren !== null}
+                          onChange={(checked) =>
+                            checked
+                              ? setMultiselectChildren([])
+                              : setMultiselectChildren(null)
+                          }
+                          label={i18n.attendances.actions.multiselect.toggle}
+                          data-qa="multiselect-toggle"
+                        />
+                      ) : (
+                        <div />
+                      )}
+                      <FixedSpaceColumn
+                        alignItems="end"
+                        justifyContent="space-between"
+                      >
+                        <IconOnlyButton
+                          icon={faBarsSort}
+                          aria-label={i18n.common.sort}
+                          onClick={sortTypeOptionsToggle}
+                          data-qa="sort-type-options-toggle"
+                        />
+                        {sortTypeOptionsVisible && (
+                          <>
+                            <Gap size="xxs" />
+                            <SortTypeButton
+                              sortType="CHILD_FIRST_NAME"
+                              selectedSortType={selectedSortType}
+                              setSelectedSortType={setSelectedSortType}
+                            />
+                            {type === 'COMING' && (
+                              <SortTypeButton
+                                sortType="RESERVATION_START_TIME"
+                                selectedSortType={selectedSortType}
+                                setSelectedSortType={setSelectedSortType}
+                              />
+                            )}
+                            {type === 'PRESENT' && (
+                              <SortTypeButton
+                                sortType="RESERVATION_END_TIME"
+                                selectedSortType={selectedSortType}
+                                setSelectedSortType={setSelectedSortType}
+                              />
+                            )}
+                          </>
+                        )}
+                      </FixedSpaceColumn>
+                    </FixedSpaceRow>
                   </MultiselectToggleBox>
                 </Li>
               )}
@@ -222,3 +280,29 @@ const FloatingActionButton = styled(Button)`
   max-width: 240px;
   white-space: break-spaces;
 `
+
+const SortTypeButton = ({
+  sortType,
+  selectedSortType,
+  setSelectedSortType
+}: {
+  sortType: SortType
+  selectedSortType: SortType
+  setSelectedSortType: (sortType: SortType) => void
+}) => {
+  const { i18n } = useTranslation()
+  const onClick = useCallback(
+    () => setSelectedSortType(sortType),
+    [setSelectedSortType, sortType]
+  )
+
+  return (
+    <Button
+      appearance="inline"
+      icon={sortType === selectedSortType ? faCheck : undefined}
+      text={i18n.attendances.actions.sortType[sortType]}
+      onClick={onClick}
+      data-qa={`sort-type-${sortType}`}
+    />
+  )
+}

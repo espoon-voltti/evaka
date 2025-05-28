@@ -18,6 +18,8 @@ export default class MobileListPage {
   multiselectToggle: Checkbox
   markMultipleArrivedButton: Element
   markMultipleDepartedutton: Element
+  sortTypeOptionsToggle: Element
+
   constructor(private readonly page: Page) {
     this.unreadMessagesIndicator = page.findByDataQa(
       'unread-messages-indicator'
@@ -33,6 +35,7 @@ export default class MobileListPage {
     )
     this.markMultipleArrivedButton = page.findByDataQa('mark-multiple-arrived')
     this.markMultipleDepartedutton = page.findByDataQa('mark-multiple-departed')
+    this.sortTypeOptionsToggle = page.findByDataQa('sort-type-options-toggle')
   }
 
   childRow = (childId: UUID) => this.page.findByDataQa(`child-${childId}`)
@@ -86,5 +89,14 @@ export default class MobileListPage {
     await this.groupSelectorButton.click()
     await this.groupChipElement(id).click()
     await this.selectedGroupElement(id).waitUntilVisible()
+  }
+
+  async selectSortType(sortType: string) {
+    await this.page.findByDataQa(`sort-type-${sortType}`).click()
+  }
+
+  async assertChildNames(expected: string[]) {
+    const rows = this.page.findAllByDataQa('child-name')
+    await rows.assertTextsEqual(expected)
   }
 }
