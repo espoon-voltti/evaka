@@ -139,6 +139,7 @@ class DocumentMetadataUtilsTest {
             organization = "Espoon kaupungin esiopetus ja varhaiskasvatus",
             archiveDurationMonths = 1320,
             history = completeHistory,
+            migrated = false,
         )
     }
 

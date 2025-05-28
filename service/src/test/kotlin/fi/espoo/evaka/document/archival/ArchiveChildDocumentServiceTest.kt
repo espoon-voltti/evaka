@@ -188,6 +188,7 @@ class ArchiveChildDocumentServiceTest {
                 number = 1,
                 organization = "Espoon kaupungin esiopetus ja varhaiskasvatus",
                 archiveDurationMonths = 1320,
+                migrated = false,
                 history =
                     listOf(
                         ArchivedProcessHistoryRow(
