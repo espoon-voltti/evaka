@@ -5365,7 +5365,7 @@ export const fi = {
       'Kyselyyn voi vastata jos lapsella yhtäjaksoinen sijoitus',
     period: 'Poissaolokausi',
     absenceTypeThreshold: 'Yhtenäisen poissaolon minimipituus',
-    days: 'päivää',
+    days: 'päivää'
   },
   terms: {
     term: 'Lukukausi',

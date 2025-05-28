@@ -330,8 +330,7 @@ fun getGroupMonthCalendar(
                                             childReservations.isEmpty() &&
                                             childAbsences.isEmpty(),
                                     missingHolidayQuestionnaireAnswer =
-                                            isQuestionnaireDate &&
-                                            childAnswers.isEmpty(),
+                                        isQuestionnaireDate && childAnswers.isEmpty(),
                                     absences =
                                         childAbsences.map { AbsenceWithModifierInfo.from(it) },
                                     reservations = childReservations,
