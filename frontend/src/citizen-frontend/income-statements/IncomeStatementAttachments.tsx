@@ -15,6 +15,7 @@ import type {
 } from 'lib-common/generated/api-types/shared'
 import type { IncomeStatementAttachments } from 'lib-common/income-statements/attachments'
 import { numAttachments } from 'lib-common/income-statements/attachments'
+import { useMutationResult } from 'lib-common/query'
 import UnorderedList from 'lib-components/atoms/UnorderedList'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { ContentArea } from 'lib-components/layout/Container'
@@ -28,7 +29,11 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faCheck } from 'lib-icons'
 
-import { getAttachmentUrl, incomeStatementAttachment } from '../attachments'
+import {
+  getAttachmentUrl,
+  incomeStatementAttachment
+} from '../attachments/attachments'
+import { deleteAttachmentMutation } from '../attachments/queries'
 import { useTranslation } from '../localization'
 
 import { LabelWithError, Row } from './IncomeStatementComponents'
@@ -145,6 +150,9 @@ export const IncomeStatementUntypedAttachments = React.memo(
     attachments: IncomeStatementAttachments
     onChange: SetStateCallback<IncomeStatementAttachments>
   }) {
+    const { mutateAsync: deleteAttachment } = useMutationResult(
+      deleteAttachmentMutation
+    )
     const onUploaded = useCallback(
       (attachment: Attachment) =>
         onChange((prev) =>
@@ -178,7 +186,11 @@ export const IncomeStatementUntypedAttachments = React.memo(
     return (
       <FileUpload
         files={attachments.untypedAttachments}
-        uploadHandler={incomeStatementAttachment(incomeStatementId, null)}
+        uploadHandler={incomeStatementAttachment(
+          incomeStatementId,
+          null,
+          deleteAttachment
+        )}
         onUploaded={onUploaded}
         onDeleted={onDeleted}
         getDownloadUrl={getAttachmentUrl}

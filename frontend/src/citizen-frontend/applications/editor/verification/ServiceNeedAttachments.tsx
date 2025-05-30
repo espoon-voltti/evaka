@@ -10,7 +10,7 @@ import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
 import { Label } from 'lib-components/typography'
 import { featureFlags } from 'lib-customizations/citizen'
 
-import { getAttachmentUrl } from '../../../attachments'
+import { getAttachmentUrl } from '../../../attachments/attachments'
 import { useTranslation } from '../../../localization'
 
 type Props = {

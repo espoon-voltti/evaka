@@ -7,6 +7,10 @@ import { Queries } from 'lib-common/query'
 
 import { getChildren } from '../generated/api-clients/children'
 import {
+  getPlacements,
+  postPlacementTermination
+} from '../generated/api-clients/placement'
+import {
   createServiceApplication,
   deleteServiceApplication,
   getChildServiceApplications,
@@ -32,4 +36,10 @@ export const deleteServiceApplicationsMutation = q.parametricMutation<{
   childId: ChildId
 }>()(deleteServiceApplication, [
   ({ childId }) => childServiceApplicationsQuery({ childId })
+])
+
+export const getPlacementsQuery = q.query(getPlacements)
+
+export const terminatePlacementMutation = q.mutation(postPlacementTermination, [
+  getPlacementsQuery
 ])

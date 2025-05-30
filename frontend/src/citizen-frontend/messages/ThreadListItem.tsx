@@ -27,7 +27,7 @@ import {
 import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
 import { faTrash } from 'lib-icons'
 
-import { getAttachmentUrl } from '../attachments'
+import { getAttachmentUrl } from '../attachments/attachments'
 import { useTranslation } from '../localization'
 
 import { isRegularThread } from './utils'

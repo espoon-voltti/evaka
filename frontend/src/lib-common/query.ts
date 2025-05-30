@@ -49,6 +49,13 @@ export interface PagedInfiniteQueriesQuery<Args extends unknown[], Data, Id> {
   [isQuery]: true
 }
 
+export type MutationOf<T> =
+  T extends MutationDescription<infer Arg, unknown> ? Arg : never
+
+export type MutateAsyncFn<M> = ReturnType<
+  typeof useMutationResult<MutationOf<M>, void>
+>['mutateAsync']
+
 export class Queries {
   commonPrefix: string
   queryNames: Set<string>

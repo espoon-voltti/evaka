@@ -4,6 +4,7 @@
 
 import { Queries } from 'lib-common/query'
 
+import { authWeakLogin } from '../auth/api'
 import { getCurrentSystemNotificationCitizen } from '../generated/api-clients/systemnotifications'
 
 const q = new Queries()
@@ -11,3 +12,5 @@ const q = new Queries()
 export const systemNotificationsQuery = q.query(
   getCurrentSystemNotificationCitizen
 )
+
+export const authWeakLoginMutation = q.mutation(authWeakLogin, [])

@@ -13,6 +13,7 @@ import type {
   PersonId
 } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
+import { useMutationResult } from 'lib-common/query'
 import type { UUID } from 'lib-common/types'
 import Title from 'lib-components/atoms/Title'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
@@ -28,6 +29,7 @@ import {
   getAttachmentUrl,
   feeAlterationAttachment
 } from '../../../api/attachments'
+import { deleteAttachmentMutation } from '../../../queries'
 import { useTranslation } from '../../../state/i18n'
 import type {
   FeeAlterationForm,
@@ -212,6 +214,9 @@ function FeeAlterationAttachments({
   onDeleted: (id: UUID) => void
 }) {
   const { i18n } = useTranslation()
+  const { mutateAsync: deleteAttachment } = useMutationResult(
+    deleteAttachmentMutation
+  )
 
   return (
     <>
@@ -224,7 +229,10 @@ function FeeAlterationAttachments({
       <FileUpload
         data-qa="fee-alteration-attachment-upload"
         files={attachments}
-        uploadHandler={feeAlterationAttachment(feeAlterationId)}
+        uploadHandler={feeAlterationAttachment(
+          feeAlterationId,
+          deleteAttachment
+        )}
         onUploaded={onUploaded}
         onDeleted={onDeleted}
         getDownloadUrl={getAttachmentUrl}
