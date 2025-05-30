@@ -41,7 +41,6 @@ import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
-import fi.espoo.evaka.shared.dev.insertTestAssistanceNeedDecision
 import fi.espoo.evaka.shared.dev.insertTestAssistanceNeedPreschoolDecision
 import fi.espoo.evaka.shared.dev.insertTestPartnership
 import fi.espoo.evaka.shared.domain.DateRange
@@ -419,8 +418,7 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
             tx.insert(testAdult_1, DevPersonType.RAW_ROW)
             tx.insert(testChild_1, DevPersonType.CHILD)
             tx.insert(DevGuardian(guardianId = testAdult_1.id, childId = testChild_1.id))
-            tx.insertTestAssistanceNeedDecision(
-                childId = testChild_1.id,
+            tx.insert(
                 DevAssistanceNeedDecision(
                     decisionNumber = 999,
                     childId = testChild_1.id,
@@ -451,7 +449,7 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
                     unreadGuardianIds = null,
                     annulmentReason = "",
                     endDateNotKnown = false,
-                ),
+                )
             )
         }
 

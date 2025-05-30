@@ -1250,11 +1250,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
         @RequestBody assistanceNeedDecisions: List<DevAssistanceNeedDecision>,
     ) {
         db.connect { dbc ->
-            dbc.transaction { tx ->
-                assistanceNeedDecisions.forEach {
-                    tx.insertTestAssistanceNeedDecision(it.childId, it)
-                }
-            }
+            dbc.transaction { tx -> assistanceNeedDecisions.forEach { tx.insert(it) } }
         }
     }
 
@@ -1964,35 +1960,37 @@ data class DevDaycareGroupPlacement(
 
 data class DevAssistanceNeedDecision(
     val id: AssistanceNeedDecisionId = AssistanceNeedDecisionId(UUID.randomUUID()),
-    val decisionNumber: Long?,
+    val decisionNumber: Long? = null,
     val childId: ChildId,
     val validityPeriod: DateRange,
-    val endDateNotKnown: Boolean,
-    val status: AssistanceNeedDecisionStatus,
-    val language: OfficialLanguage,
-    val decisionMade: LocalDate?,
-    val sentForDecision: LocalDate?,
-    @Nested("selected_unit") val selectedUnit: DaycareId?,
-    @Nested("preparer_1") val preparedBy1: AssistanceNeedDecisionEmployee?,
-    @Nested("preparer_2") val preparedBy2: AssistanceNeedDecisionEmployee?,
-    @Nested("decision_maker") val decisionMaker: AssistanceNeedDecisionEmployee?,
-    val pedagogicalMotivation: String?,
+    val endDateNotKnown: Boolean = false,
+    val status: AssistanceNeedDecisionStatus = AssistanceNeedDecisionStatus.DRAFT,
+    val language: OfficialLanguage = OfficialLanguage.FI,
+    val decisionMade: LocalDate? = null,
+    val sentForDecision: LocalDate? = null,
+    @Nested("selected_unit") val selectedUnit: DaycareId? = null,
+    @Nested("preparer_1") val preparedBy1: AssistanceNeedDecisionEmployee? = null,
+    @Nested("preparer_2") val preparedBy2: AssistanceNeedDecisionEmployee? = null,
+    @Nested("decision_maker") val decisionMaker: AssistanceNeedDecisionEmployee? = null,
+    val pedagogicalMotivation: String? = null,
     @Nested("structural_motivation_opt")
-    val structuralMotivationOptions: StructuralMotivationOptions,
-    val structuralMotivationDescription: String?,
-    val careMotivation: String?,
-    @Nested("service_opt") val serviceOptions: ServiceOptions,
-    val servicesMotivation: String?,
-    val expertResponsibilities: String?,
-    val guardiansHeardOn: LocalDate?,
-    @Json val guardianInfo: Set<AssistanceNeedDecisionGuardian>,
-    val viewOfGuardians: String?,
-    val otherRepresentativeHeard: Boolean,
-    val otherRepresentativeDetails: String?,
-    val assistanceLevels: Set<AssistanceLevel>,
-    val motivationForDecision: String?,
-    val unreadGuardianIds: List<PersonId>?,
-    val annulmentReason: String,
+    val structuralMotivationOptions: StructuralMotivationOptions =
+        StructuralMotivationOptions(false, false, false, false, false, false),
+    val structuralMotivationDescription: String? = null,
+    val careMotivation: String? = null,
+    @Nested("service_opt")
+    val serviceOptions: ServiceOptions = ServiceOptions(false, false, false, false, false),
+    val servicesMotivation: String? = null,
+    val expertResponsibilities: String? = null,
+    val guardiansHeardOn: LocalDate? = null,
+    @Json val guardianInfo: Set<AssistanceNeedDecisionGuardian> = emptySet(),
+    val viewOfGuardians: String? = null,
+    val otherRepresentativeHeard: Boolean = false,
+    val otherRepresentativeDetails: String? = null,
+    val assistanceLevels: Set<AssistanceLevel> = emptySet(),
+    val motivationForDecision: String? = null,
+    val unreadGuardianIds: List<PersonId>? = null,
+    val annulmentReason: String = "",
 )
 
 data class DevAssistanceNeedPreschoolDecision(
