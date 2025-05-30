@@ -131,6 +131,7 @@ export class AbsenceCell extends Element {
   }
 
   missingHolidayReservation = this.findByDataQa('missing-holiday-reservation')
+  missingQuestionnaireAnswer = this.findByDataQa('missing-questionnaire-answer')
 
   async select() {
     await this.locator.click()

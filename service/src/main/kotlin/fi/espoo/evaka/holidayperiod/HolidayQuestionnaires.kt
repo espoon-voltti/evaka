@@ -39,6 +39,8 @@ sealed class HolidayQuestionnaire(val type: QuestionnaireType) {
      */
     abstract val conditions: QuestionnaireConditions
 
+    abstract fun getPeriods(): List<FiniteDateRange>
+
     @JsonTypeName("FIXED_PERIOD")
     data class FixedPeriodQuestionnaire(
         override val id: HolidayQuestionnaireId,
@@ -51,7 +53,9 @@ sealed class HolidayQuestionnaire(val type: QuestionnaireType) {
         @Nested("condition") override val conditions: QuestionnaireConditions,
         val periodOptions: List<FiniteDateRange>,
         @Json val periodOptionLabel: Translatable,
-    ) : HolidayQuestionnaire(QuestionnaireType.FIXED_PERIOD)
+    ) : HolidayQuestionnaire(QuestionnaireType.FIXED_PERIOD) {
+        override fun getPeriods(): List<FiniteDateRange> = periodOptions
+    }
 
     @JsonTypeName("OPEN_RANGES")
     data class OpenRangesQuestionnaire(
@@ -65,7 +69,9 @@ sealed class HolidayQuestionnaire(val type: QuestionnaireType) {
         @Nested("condition") override val conditions: QuestionnaireConditions,
         val period: FiniteDateRange,
         val absenceTypeThreshold: Int,
-    ) : HolidayQuestionnaire(QuestionnaireType.OPEN_RANGES)
+    ) : HolidayQuestionnaire(QuestionnaireType.OPEN_RANGES) {
+        override fun getPeriods(): List<FiniteDateRange> = listOf(period)
+    }
 }
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")

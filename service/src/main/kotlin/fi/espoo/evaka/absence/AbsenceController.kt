@@ -50,7 +50,7 @@ class AbsenceController(
                         Action.Group.READ_ABSENCES,
                         groupId,
                     )
-                    getGroupMonthCalendar(it, clock.today(), groupId, year, month)
+                    getGroupMonthCalendar(it, clock.today(), groupId, year, month, featureConfig)
                 }
             }
             .also {

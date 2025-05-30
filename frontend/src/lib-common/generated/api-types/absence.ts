@@ -202,6 +202,7 @@ export interface GroupMonthCalendarDayChild {
   backupCare: boolean
   childId: PersonId
   dailyServiceTimes: ServiceTimesPresenceStatus
+  missingHolidayQuestionnaireAnswer: boolean
   missingHolidayReservation: boolean
   reservations: ChildReservation[]
   scheduleType: ScheduleType

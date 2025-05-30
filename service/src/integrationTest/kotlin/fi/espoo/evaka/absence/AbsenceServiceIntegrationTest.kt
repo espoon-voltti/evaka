@@ -23,6 +23,7 @@ import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
+import fi.espoo.evaka.shared.config.testFeatureConfig
 import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.dev.DevAbsence
 import fi.espoo.evaka.shared.dev.DevBackupCare
@@ -95,6 +96,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             scheduleType = ScheduleType.RESERVATION_REQUIRED,
             shiftCare = ShiftCareType.NONE,
             missingHolidayReservation = false,
+            missingHolidayQuestionnaireAnswer = false,
             absences = listOf(),
             reservations = listOf(),
             dailyServiceTimes = ServiceTimesPresenceStatus.Unknown,
@@ -128,7 +130,14 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         val today = now.toLocalDate()
         val result =
             db.read {
-                getGroupMonthCalendar(it, today, testDaycareGroup.id, today.year, today.monthValue)
+                getGroupMonthCalendar(
+                    it,
+                    today,
+                    testDaycareGroup.id,
+                    today.year,
+                    today.monthValue,
+                    testFeatureConfig,
+                )
             }
 
         assertEquals(
@@ -177,6 +186,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     testDaycareGroup.id,
                     placementStart.year,
                     placementStart.monthValue,
+                    testFeatureConfig,
                 )
             }
 
@@ -281,6 +291,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     testDaycareGroup.id,
                     firstOfMonth.year,
                     firstOfMonth.monthValue,
+                    testFeatureConfig,
                 )
             }
 
@@ -339,6 +350,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     roundTheClockGroupId,
                     placementDate.year,
                     placementDate.monthValue,
+                    testFeatureConfig,
                 )
             }
 
@@ -438,6 +450,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     testDaycareGroup.id,
                     placementStart.year,
                     placementStart.monthValue,
+                    testFeatureConfig,
                 )
             }
 
@@ -505,6 +518,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     testDaycareGroup.id,
                     placementStart.year,
                     placementStart.monthValue,
+                    testFeatureConfig,
                 )
             }
 
@@ -600,6 +614,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     testDaycareGroup.id,
                     placementStart.year,
                     placementStart.monthValue,
+                    testFeatureConfig,
                 )
             }
 
@@ -763,6 +778,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     testDaycareGroup.id,
                     placementStart.year,
                     placementStart.monthValue,
+                    testFeatureConfig,
                 )
             }
 
@@ -814,6 +830,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     testDaycareGroup.id,
                     placementStart.year,
                     placementStart.monthValue,
+                    testFeatureConfig,
                 )
             }
 
@@ -876,6 +893,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     testDaycareGroup.id,
                     placementStart.year,
                     placementStart.monthValue,
+                    testFeatureConfig,
                 )
             }
 
@@ -949,6 +967,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     testDaycareGroup.id,
                     absenceDate.year,
                     absenceDate.monthValue,
+                    testFeatureConfig,
                 )
             }
         val child =
@@ -1000,6 +1019,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     testDaycareGroup.id,
                     absenceDate.year,
                     absenceDate.monthValue,
+                    testFeatureConfig,
                 )
             }
 
@@ -1035,6 +1055,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     testDaycareGroup.id,
                     absenceDate.year,
                     absenceDate.monthValue,
+                    testFeatureConfig,
                 )
             }
 
@@ -1063,6 +1084,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     testDaycareGroup.id,
                     absenceDate.year,
                     absenceDate.monthValue,
+                    testFeatureConfig,
                 )
             }
 
@@ -1187,6 +1209,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     testDaycareGroup.id,
                     firstOfJanuary2020.year,
                     firstOfJanuary2020.monthValue,
+                    testFeatureConfig,
                 )
             }
 
@@ -1208,6 +1231,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     testDaycareGroup.id,
                     firstOfJanuary2020.year,
                     firstOfJanuary2020.monthValue,
+                    testFeatureConfig,
                 )
             }
 
@@ -1230,7 +1254,14 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
         val result =
             db.read {
-                getGroupMonthCalendar(it, LocalDate.of(2019, 8, 1), testDaycareGroup.id, 2019, 8)
+                getGroupMonthCalendar(
+                    it,
+                    LocalDate.of(2019, 8, 1),
+                    testDaycareGroup.id,
+                    2019,
+                    8,
+                    testFeatureConfig,
+                )
             }
         assertEquals(listOf(40), result.children.map { it.reservationTotalHours })
     }
@@ -1257,7 +1288,14 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
         val result =
             db.read {
-                getGroupMonthCalendar(it, LocalDate.of(2019, 8, 1), testDaycareGroup.id, 2019, 8)
+                getGroupMonthCalendar(
+                    it,
+                    LocalDate.of(2019, 8, 1),
+                    testDaycareGroup.id,
+                    2019,
+                    8,
+                    testFeatureConfig,
+                )
             }
         assertEquals(listOf(60), result.children.map { it.reservationTotalHours })
     }
@@ -1276,7 +1314,14 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
         val result =
             db.read {
-                getGroupMonthCalendar(it, LocalDate.of(2019, 8, 1), testDaycareGroup.id, 2019, 8)
+                getGroupMonthCalendar(
+                    it,
+                    LocalDate.of(2019, 8, 1),
+                    testDaycareGroup.id,
+                    2019,
+                    8,
+                    testFeatureConfig,
+                )
             }
         assertEquals(listOf(12), result.children.map { it.reservationTotalHours })
     }
@@ -1295,7 +1340,14 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
         val result =
             db.read {
-                getGroupMonthCalendar(it, LocalDate.of(2019, 8, 1), testDaycareGroup.id, 2019, 8)
+                getGroupMonthCalendar(
+                    it,
+                    LocalDate.of(2019, 8, 1),
+                    testDaycareGroup.id,
+                    2019,
+                    8,
+                    testFeatureConfig,
+                )
             }
         assertEquals(listOf(12), result.children.map { it.reservationTotalHours })
     }
@@ -1317,7 +1369,14 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
         val result =
             db.read {
-                getGroupMonthCalendar(it, LocalDate.of(2019, 8, 1), testDaycareGroup.id, 2019, 8)
+                getGroupMonthCalendar(
+                    it,
+                    LocalDate.of(2019, 8, 1),
+                    testDaycareGroup.id,
+                    2019,
+                    8,
+                    testFeatureConfig,
+                )
             }
         assertEquals(listOf(12), result.children.map { it.reservationTotalHours })
     }
@@ -1339,7 +1398,14 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
         val result =
             db.read {
-                getGroupMonthCalendar(it, LocalDate.of(2019, 8, 1), testDaycareGroup.id, 2019, 8)
+                getGroupMonthCalendar(
+                    it,
+                    LocalDate.of(2019, 8, 1),
+                    testDaycareGroup.id,
+                    2019,
+                    8,
+                    testFeatureConfig,
+                )
             }
         assertEquals(listOf(12), result.children.map { it.reservationTotalHours })
     }
@@ -1362,7 +1428,14 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
         val result =
             db.read {
-                getGroupMonthCalendar(it, LocalDate.of(2019, 8, 1), testDaycareGroup.id, 2019, 8)
+                getGroupMonthCalendar(
+                    it,
+                    LocalDate.of(2019, 8, 1),
+                    testDaycareGroup.id,
+                    2019,
+                    8,
+                    testFeatureConfig,
+                )
             }
         assertEquals(listOf(40), result.children.map { it.reservationTotalHours })
     }
@@ -1384,7 +1457,16 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         insertBackupPlacement(testChild_1.id, backupUnit, backupGroup, backupPeriod)
 
         val result =
-            db.read { getGroupMonthCalendar(it, LocalDate.of(2019, 8, 1), backupGroup, 2019, 8) }
+            db.read {
+                getGroupMonthCalendar(
+                    it,
+                    LocalDate.of(2019, 8, 1),
+                    backupGroup,
+                    2019,
+                    8,
+                    testFeatureConfig,
+                )
+            }
         assertEquals(listOf(16), result.children.map { it.reservationTotalHours })
     }
 
@@ -1414,7 +1496,14 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
         val result =
             db.read {
-                getGroupMonthCalendar(it, LocalDate.of(2019, 8, 1), testDaycareGroup.id, 2019, 8)
+                getGroupMonthCalendar(
+                    it,
+                    LocalDate.of(2019, 8, 1),
+                    testDaycareGroup.id,
+                    2019,
+                    8,
+                    testFeatureConfig,
+                )
             }
 
         // 1 operational day * 0 h + 1 operational day * 8 h
@@ -1446,7 +1535,14 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
         val result =
             db.read {
-                getGroupMonthCalendar(it, LocalDate.of(2019, 8, 1), testDaycareGroup.id, 2019, 8)
+                getGroupMonthCalendar(
+                    it,
+                    LocalDate.of(2019, 8, 1),
+                    testDaycareGroup.id,
+                    2019,
+                    8,
+                    testFeatureConfig,
+                )
             }
         // 22 operational days * 8h
         assertEquals(listOf(176), result.children.map { it.reservationTotalHours })
@@ -1473,7 +1569,14 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
         val result =
             db.read {
-                getGroupMonthCalendar(it, LocalDate.of(2019, 8, 1), testDaycareGroup.id, 2019, 8)
+                getGroupMonthCalendar(
+                    it,
+                    LocalDate.of(2019, 8, 1),
+                    testDaycareGroup.id,
+                    2019,
+                    8,
+                    testFeatureConfig,
+                )
             }
         // 8-16 + 8-14 (saturday is not included because the unit is not operational on saturdays)
         assertEquals(listOf(14), result.children.map { it.reservationTotalHours })
@@ -1501,7 +1604,14 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
         val result =
             db.read {
-                getGroupMonthCalendar(it, LocalDate.of(2019, 8, 1), testDaycareGroup.id, 2019, 8)
+                getGroupMonthCalendar(
+                    it,
+                    LocalDate.of(2019, 8, 1),
+                    testDaycareGroup.id,
+                    2019,
+                    8,
+                    testFeatureConfig,
+                )
             }
         // 21 operational days * 8h + 12h
         assertEquals(listOf(180), result.children.map { it.reservationTotalHours })
@@ -1526,7 +1636,14 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
         val result =
             db.read {
-                getGroupMonthCalendar(it, LocalDate.of(2019, 8, 1), testDaycareGroup.id, 2019, 8)
+                getGroupMonthCalendar(
+                    it,
+                    LocalDate.of(2019, 8, 1),
+                    testDaycareGroup.id,
+                    2019,
+                    8,
+                    testFeatureConfig,
+                )
             }
         // 21-9 + 9-15 (overlapping 2 hours are left out)
         assertEquals(listOf(18), result.children.map { it.reservationTotalHours })
@@ -1558,7 +1675,14 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
         val result =
             db.read {
-                getGroupMonthCalendar(it, LocalDate.of(2019, 8, 1), testDaycareGroup.id, 2019, 8)
+                getGroupMonthCalendar(
+                    it,
+                    LocalDate.of(2019, 8, 1),
+                    testDaycareGroup.id,
+                    2019,
+                    8,
+                    testFeatureConfig,
+                )
             }
         // the start and end of absence date overlaps with two reservations but only one reservation
         // is left out
@@ -1583,7 +1707,14 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
         val result =
             db.read {
-                getGroupMonthCalendar(it, LocalDate.of(2019, 8, 1), testDaycareGroup.id, 2019, 8)
+                getGroupMonthCalendar(
+                    it,
+                    LocalDate.of(2019, 8, 1),
+                    testDaycareGroup.id,
+                    2019,
+                    8,
+                    testFeatureConfig,
+                )
             }
         assertEquals(listOf(21 + 20 * 8), result.children.map { it.reservationTotalHours })
     }
@@ -1630,7 +1761,14 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
         val result =
             db.read {
-                getGroupMonthCalendar(it, LocalDate.of(2019, 8, 1), testDaycareGroup.id, 2019, 8)
+                getGroupMonthCalendar(
+                    it,
+                    LocalDate.of(2019, 8, 1),
+                    testDaycareGroup.id,
+                    2019,
+                    8,
+                    testFeatureConfig,
+                )
             }
         assertEquals(
             listOf(
@@ -1664,7 +1802,14 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
         val result =
             db.read {
-                getGroupMonthCalendar(it, LocalDate.of(2019, 8, 1), testDaycareGroup.id, 2019, 8)
+                getGroupMonthCalendar(
+                    it,
+                    LocalDate.of(2019, 8, 1),
+                    testDaycareGroup.id,
+                    2019,
+                    8,
+                    testFeatureConfig,
+                )
             }
         assertEquals(listOf(40), result.children.map { it.attendanceTotalHours })
     }
@@ -1691,7 +1836,14 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
         val result =
             db.read {
-                getGroupMonthCalendar(it, LocalDate.of(2019, 8, 1), testDaycareGroup.id, 2019, 8)
+                getGroupMonthCalendar(
+                    it,
+                    LocalDate.of(2019, 8, 1),
+                    testDaycareGroup.id,
+                    2019,
+                    8,
+                    testFeatureConfig,
+                )
             }
         assertEquals(listOf(60), result.children.map { it.attendanceTotalHours })
     }
@@ -1711,7 +1863,14 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
         val result =
             db.read {
-                getGroupMonthCalendar(it, LocalDate.of(2019, 8, 1), testDaycareGroup.id, 2019, 8)
+                getGroupMonthCalendar(
+                    it,
+                    LocalDate.of(2019, 8, 1),
+                    testDaycareGroup.id,
+                    2019,
+                    8,
+                    testFeatureConfig,
+                )
             }
         assertEquals(listOf(12), result.children.map { it.attendanceTotalHours })
     }
@@ -1731,7 +1890,14 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
         val result =
             db.read {
-                getGroupMonthCalendar(it, LocalDate.of(2019, 8, 1), testDaycareGroup.id, 2019, 8)
+                getGroupMonthCalendar(
+                    it,
+                    LocalDate.of(2019, 8, 1),
+                    testDaycareGroup.id,
+                    2019,
+                    8,
+                    testFeatureConfig,
+                )
             }
         assertEquals(listOf(12), result.children.map { it.attendanceTotalHours })
     }
@@ -1754,7 +1920,14 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
         val result =
             db.read {
-                getGroupMonthCalendar(it, LocalDate.of(2019, 8, 1), testDaycareGroup.id, 2019, 8)
+                getGroupMonthCalendar(
+                    it,
+                    LocalDate.of(2019, 8, 1),
+                    testDaycareGroup.id,
+                    2019,
+                    8,
+                    testFeatureConfig,
+                )
             }
         assertEquals(listOf(24), result.children.map { it.attendanceTotalHours })
     }
@@ -1777,7 +1950,14 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
         val result =
             db.read {
-                getGroupMonthCalendar(it, LocalDate.of(2019, 8, 1), testDaycareGroup.id, 2019, 8)
+                getGroupMonthCalendar(
+                    it,
+                    LocalDate.of(2019, 8, 1),
+                    testDaycareGroup.id,
+                    2019,
+                    8,
+                    testFeatureConfig,
+                )
             }
         assertEquals(listOf(40), result.children.map { it.attendanceTotalHours })
     }
@@ -1799,7 +1979,16 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         insertAttendances(testChild_1.id, backupUnit, attendances)
 
         val result =
-            db.read { getGroupMonthCalendar(it, LocalDate.of(2019, 8, 1), backupGroup, 2019, 8) }
+            db.read {
+                getGroupMonthCalendar(
+                    it,
+                    LocalDate.of(2019, 8, 1),
+                    backupGroup,
+                    2019,
+                    8,
+                    testFeatureConfig,
+                )
+            }
         assertEquals(listOf(16), result.children.map { it.attendanceTotalHours })
     }
 
@@ -1811,7 +2000,14 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
         val result =
             db.read {
-                getGroupMonthCalendar(it, LocalDate.of(2019, 8, 1), testDaycareGroup.id, 2019, 8)
+                getGroupMonthCalendar(
+                    it,
+                    LocalDate.of(2019, 8, 1),
+                    testDaycareGroup.id,
+                    2019,
+                    8,
+                    testFeatureConfig,
+                )
             }
         assertEquals(listOf(0), result.children.map { it.attendanceTotalHours })
     }
@@ -1840,7 +2036,14 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
         val result =
             db.read {
-                getGroupMonthCalendar(it, LocalDate.of(2019, 8, 1), testDaycareGroup.id, 2019, 8)
+                getGroupMonthCalendar(
+                    it,
+                    LocalDate.of(2019, 8, 1),
+                    testDaycareGroup.id,
+                    2019,
+                    8,
+                    testFeatureConfig,
+                )
             }
         assertEquals(listOf(6), result.children.map { it.attendanceTotalHours })
     }
@@ -1873,7 +2076,14 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
         val result =
             db.read {
-                getGroupMonthCalendar(it, LocalDate.of(2019, 8, 31), testDaycareGroup.id, 2019, 8)
+                getGroupMonthCalendar(
+                    it,
+                    LocalDate.of(2019, 8, 31),
+                    testDaycareGroup.id,
+                    2019,
+                    8,
+                    testFeatureConfig,
+                )
             }
         assertEquals(1, result.children.size)
         assertEquals(
@@ -1930,6 +2140,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     testDaycareGroup.id,
                     placementDate.year,
                     placementDate.monthValue,
+                    testFeatureConfig,
                 )
             }
 

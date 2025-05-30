@@ -50,7 +50,10 @@ beforeEach(async () => {
     .save()
 
   page = await Page.open({
-    mockedTime: today.toHelsinkiDateTime(LocalTime.of(8, 0))
+    mockedTime: today.toHelsinkiDateTime(LocalTime.of(8, 0)),
+    employeeCustomizations: {
+      featureFlags: { missingHolidayReservationMarkerEnabled: true }
+    }
   })
   await employeeLogin(page, unitSupervisor)
   unitPage = new UnitPage(page)
@@ -333,6 +336,38 @@ describe('Employee - Unit month calendar', () => {
       await monthCalendarPage
         .absenceCell(testChild2.id, holidayStart)
         .missingHolidayReservation.waitUntilHidden()
+    })
+
+    test('Missing holiday questionnaire answers are shown for questionnaire dates that have no answer', async () => {
+      await Fixture.holidayQuestionnaire({
+        active: new FiniteDateRange(today, today.addWeeks(2)),
+        periodOptions: [holidayRange]
+      }).save()
+
+      await unitPage.navigateToUnit(testDaycare.id)
+      const groupsPage = await unitPage.openGroupsPage()
+      const groupSection = await groupsPage.openGroupCollapsible(
+        testDaycareGroup.id
+      )
+      const monthCalendarPage = await groupSection.openMonthCalendar()
+
+      // Today is not in a holiday period
+      await monthCalendarPage
+        .absenceCell(testChild2.id, today)
+        .waitUntilVisible()
+      await monthCalendarPage
+        .absenceCell(testChild2.id, today)
+        .missingQuestionnaireAnswer.waitUntilHidden()
+
+      // Missing holiday reservation is shown for holiday period dates
+      await monthCalendarPage.nextWeekButton.click()
+      let date = holidayStart
+      while (date <= holidayEnd) {
+        await monthCalendarPage
+          .absenceCell(testChild2.id, date)
+          .missingQuestionnaireAnswer.waitUntilVisible()
+        date = date.addDays(1)
+      }
     })
   })
 

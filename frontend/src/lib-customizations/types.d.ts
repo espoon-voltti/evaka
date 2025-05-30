@@ -314,6 +314,11 @@ interface BaseFeatureFlags {
    * Enable showing preschool extended term data for citizen preschool application
    */
   showCitizenApplicationPreschoolTerms?: boolean
+
+  /**
+   * Enable missing holiday questionnaire answer indicator
+   */
+  missingHolidayReservationMarkerEnabled?: boolean
 }
 
 export type FeatureFlags = DeepReadonly<BaseFeatureFlags>

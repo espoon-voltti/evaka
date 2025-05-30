@@ -3566,6 +3566,8 @@ export const fi = {
       NO_ABSENCE: 'Ei poissaoloa'
     },
     missingHolidayReservation: 'Huoltaja ei ole vahvistanut loma-ajan varausta',
+    missingHolidayQuestionnaireAnswer:
+      'Huoltaja ei ole vastannut poissaolokyselyyn',
     shiftCare: 'Ilta-/vuorohoito',
     requiresBackupCare: 'Odottaa varasijoitusta',
     additionalLegendItems: {

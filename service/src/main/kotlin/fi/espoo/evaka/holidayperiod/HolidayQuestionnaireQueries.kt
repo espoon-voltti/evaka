@@ -303,3 +303,18 @@ WHERE questionnaire_id = ${bind(id)} AND child_id = ANY(${bind(childIds)})
             )
         }
         .toList<HolidayQuestionnaireAnswer>()
+
+fun Database.Read.getQuestionnaireAnswers(
+    ids: List<HolidayQuestionnaireId>,
+    childIds: List<ChildId>,
+): List<HolidayQuestionnaireAnswer> =
+    createQuery {
+            sql(
+                """
+SELECT questionnaire_id, child_id, fixed_period, open_ranges
+FROM holiday_questionnaire_answer
+WHERE questionnaire_id = ANY(${bind(ids)}) AND child_id = ANY(${bind(childIds)})
+            """
+            )
+        }
+        .toList<HolidayQuestionnaireAnswer>()

@@ -18,6 +18,7 @@ import type { UUID } from 'lib-common/types'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import { absenceColors } from 'lib-customizations/common'
 import colors from 'lib-customizations/common'
+import { featureFlags } from 'lib-customizations/employee'
 
 import type { SelectedCell } from './GroupMonthCalendar'
 import UnitCalendarDayCellTooltip from './UnitCalendarDayCellTooltip'
@@ -130,6 +131,7 @@ interface AbsenceCellPartsProps {
   requiresBackupCare: boolean
   isSelected: boolean
   isMissingHolidayReservation: boolean
+  isMissingQuestionnaireAnswer: boolean
   intermittentShiftCare: boolean
   toggle: (parts: CellPart[]) => void
 }
@@ -144,6 +146,7 @@ const AbsenceCellParts = React.memo(function AbsenceCellParts({
   requiresBackupCare,
   isSelected,
   isMissingHolidayReservation,
+  isMissingQuestionnaireAnswer,
   intermittentShiftCare,
   toggle
 }: AbsenceCellPartsProps) {
@@ -182,7 +185,11 @@ const AbsenceCellParts = React.memo(function AbsenceCellParts({
         />
       ))}
       {!isSelected && isMissingHolidayReservation ? (
-        <MissingHolidayReservationMarker data-qa="missing-holiday-reservation" />
+        <MissingHolidayInfoMarker data-qa="missing-holiday-reservation" />
+      ) : featureFlags.missingHolidayReservationMarkerEnabled === true &&
+        !isSelected &&
+        isMissingQuestionnaireAnswer ? (
+        <MissingHolidayInfoMarker data-qa="missing-questionnaire-answer" />
       ) : null}
     </AbsenceCellDiv>
   )
@@ -203,7 +210,7 @@ export const AbsenceCellDiv = styled(DisabledCell)<{ $isSelected: boolean }>`
     `};
 `
 
-const MissingHolidayReservationMarker = styled.div`
+const MissingHolidayInfoMarker = styled.div`
   position: absolute;
   height: ${cellSize}px;
   width: ${cellSize}px;
@@ -300,6 +307,7 @@ export default React.memo(function MonthCalendarCell({
             reservations={day.reservations}
             backupCare={day.backupCare}
             isMissingHolidayReservation={day.missingHolidayReservation}
+            isMissingQuestionnaireAnswer={day.missingHolidayQuestionnaireAnswer}
             requiresBackupCare={requiresBackupCare}
           />
         ) : undefined
@@ -319,6 +327,7 @@ export default React.memo(function MonthCalendarCell({
         requiresBackupCare={requiresBackupCare}
         isSelected={isSelected}
         isMissingHolidayReservation={day.missingHolidayReservation}
+        isMissingQuestionnaireAnswer={day.missingHolidayQuestionnaireAnswer}
         intermittentShiftCare={intermittentShiftCare}
         toggle={toggle}
       />
