@@ -27,6 +27,7 @@ import type { CustomerFeesReportRow } from 'lib-common/generated/api-types/repor
 import type { DaycareAssistanceLevel } from 'lib-common/generated/api-types/assistance'
 import type { DaycareGroup } from 'lib-common/generated/api-types/daycare'
 import type { DaycareId } from 'lib-common/generated/api-types/shared'
+import type { DecisionReportColumnType } from 'lib-common/generated/api-types/reports'
 import type { DecisionsReportRow } from 'lib-common/generated/api-types/reports'
 import type { DocumentTemplateId } from 'lib-common/generated/api-types/shared'
 import type { DuplicatePeopleReportRow } from 'lib-common/generated/api-types/reports'
@@ -485,12 +486,14 @@ export async function getCustomerFeesReport(
 export async function getDecisionsReport(
   request: {
     from: LocalDate,
-    to: LocalDate
+    to: LocalDate,
+    columns?: DecisionReportColumnType[] | null
   }
 ): Promise<DecisionsReportRow[]> {
   const params = createUrlSearchParams(
     ['from', request.from.formatIso()],
-    ['to', request.to.formatIso()]
+    ['to', request.to.formatIso()],
+    ...(request.columns?.map((e): [string, string | null | undefined] => ['columns', e.toString()]) ?? [])
   )
   const { data: json } = await client.request<JsonOf<DecisionsReportRow[]>>({
     url: uri`/employee/reports/decisions`.toString(),

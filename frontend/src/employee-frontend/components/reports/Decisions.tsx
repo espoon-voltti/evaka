@@ -6,12 +6,17 @@ import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 import { Link } from 'wouter'
 
-import type { DecisionsReportRow } from 'lib-common/generated/api-types/reports'
+import type {
+  DecisionReportColumnType,
+  DecisionsReportRow
+} from 'lib-common/generated/api-types/reports'
+import { decisionReportColumnTypes } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
 import { constantQuery, useQueryResult } from 'lib-common/query'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
+import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { InfoBox } from 'lib-components/molecules/MessageBoxes'
@@ -29,6 +34,10 @@ import ReportDownload from './ReportDownload'
 import { FilterLabel, FilterRow, TableFooter, TableScrollable } from './common'
 import { decisionReportQuery } from './queries'
 
+interface Filters extends PeriodFilters {
+  columns: DecisionReportColumnType[]
+}
+
 interface DisplayFilters {
   careArea: string
 }
@@ -43,10 +52,16 @@ const Wrapper = styled.div`
 
 export default React.memo(function Decisions() {
   const { i18n } = useTranslation()
-  const [filters, setFilters] = useState<PeriodFilters>({
+  const [filters, setFilters] = useState<Filters>({
     from: LocalDate.todayInSystemTz(),
-    to: LocalDate.todayInSystemTz().addMonths(4)
+    to: LocalDate.todayInSystemTz().addMonths(4),
+    columns: []
   })
+  const includedColumns = useMemo(
+    () =>
+      filters.columns.length > 0 ? filters.columns : decisionReportColumnTypes,
+    [filters.columns]
+  )
 
   const [displayFilters, setDisplayFilters] =
     useState<DisplayFilters>(emptyDisplayFilters)
@@ -60,7 +75,11 @@ export default React.memo(function Decisions() {
 
   const rows = useQueryResult(
     filters.from && filters.to
-      ? decisionReportQuery({ from: filters.from, to: filters.to })
+      ? decisionReportQuery({
+          from: filters.from,
+          to: filters.to,
+          columns: filters.columns.length > 0 ? filters.columns : undefined
+        })
       : constantQuery([])
   )
 
@@ -134,6 +153,20 @@ export default React.memo(function Decisions() {
           </Wrapper>
         </FilterRow>
 
+        <FilterRow>
+          <FilterLabel>{i18n.application.decisions.type}</FilterLabel>
+          <Wrapper>
+            <MultiSelect
+              value={filters.columns}
+              options={decisionReportColumnTypes}
+              getOptionId={(option) => option}
+              getOptionLabel={(option) => i18n.reports.decisions[option]}
+              onChange={(columns) => setFilters({ ...filters, columns })}
+              placeholder={i18n.common.all}
+            />
+          </Wrapper>
+        </FilterRow>
+
         <Gap />
         <InfoBox message={i18n.reports.decisions.ageInfo} thin />
 
@@ -156,34 +189,42 @@ export default React.memo(function Decisions() {
                     i18n.reports.common.unitProviderTypes[row.providerType]
                 },
                 {
+                  exclude: !includedColumns.includes('daycareUnder3'),
                   label: i18n.reports.decisions.daycareUnder3,
                   value: (row) => row.daycareUnder3
                 },
                 {
+                  exclude: !includedColumns.includes('daycareOver3'),
                   label: i18n.reports.decisions.daycareOver3,
                   value: (row) => row.daycareOver3
                 },
                 {
+                  exclude: !includedColumns.includes('preschool'),
                   label: i18n.reports.decisions.preschool,
                   value: (row) => row.preschool
                 },
                 {
+                  exclude: !includedColumns.includes('preschoolDaycare'),
                   label: i18n.reports.decisions.preschoolDaycare,
                   value: (row) => row.preschoolDaycare
                 },
                 {
+                  exclude: !includedColumns.includes('connectedDaycareOnly'),
                   label: i18n.reports.decisions.connectedDaycareOnly,
                   value: (row) => row.connectedDaycareOnly
                 },
                 {
+                  exclude: !includedColumns.includes('preparatory'),
                   label: i18n.reports.decisions.preparatory,
                   value: (row) => row.preparatory
                 },
                 {
+                  exclude: !includedColumns.includes('preparatoryDaycare'),
                   label: i18n.reports.decisions.preparatoryDaycare,
                   value: (row) => row.preparatoryDaycare
                 },
                 {
+                  exclude: !includedColumns.includes('club'),
                   label: i18n.reports.decisions.club,
                   value: (row) => row.club
                 },
@@ -218,14 +259,30 @@ export default React.memo(function Decisions() {
                   <Th>{i18n.reports.common.careAreaName}</Th>
                   <Th>{i18n.reports.common.unitName}</Th>
                   <Th>{i18n.reports.common.unitProviderType}</Th>
-                  <Th>{i18n.reports.decisions.daycareUnder3}</Th>
-                  <Th>{i18n.reports.decisions.daycareOver3}</Th>
-                  <Th>{i18n.reports.decisions.preschool}</Th>
-                  <Th>{i18n.reports.decisions.preschoolDaycare}</Th>
-                  <Th>{i18n.reports.decisions.connectedDaycareOnly}</Th>
-                  <Th>{i18n.reports.decisions.preparatory}</Th>
-                  <Th>{i18n.reports.decisions.preparatoryDaycare}</Th>
-                  <Th>{i18n.reports.decisions.club}</Th>
+                  {includedColumns.includes('daycareUnder3') && (
+                    <Th>{i18n.reports.decisions.daycareUnder3}</Th>
+                  )}
+                  {includedColumns.includes('daycareOver3') && (
+                    <Th>{i18n.reports.decisions.daycareOver3}</Th>
+                  )}
+                  {includedColumns.includes('preschool') && (
+                    <Th>{i18n.reports.decisions.preschool}</Th>
+                  )}
+                  {includedColumns.includes('preschoolDaycare') && (
+                    <Th>{i18n.reports.decisions.preschoolDaycare}</Th>
+                  )}
+                  {includedColumns.includes('connectedDaycareOnly') && (
+                    <Th>{i18n.reports.decisions.connectedDaycareOnly}</Th>
+                  )}
+                  {includedColumns.includes('preparatory') && (
+                    <Th>{i18n.reports.decisions.preparatory}</Th>
+                  )}
+                  {includedColumns.includes('preparatoryDaycare') && (
+                    <Th>{i18n.reports.decisions.preparatoryDaycare}</Th>
+                  )}
+                  {includedColumns.includes('club') && (
+                    <Th>{i18n.reports.decisions.club}</Th>
+                  )}
                   <Th>{i18n.reports.decisions.preference1}</Th>
                   <Th>{i18n.reports.decisions.preference2}</Th>
                   <Th>{i18n.reports.decisions.preference3}</Th>
@@ -243,14 +300,28 @@ export default React.memo(function Decisions() {
                     <Td data-qa="unit-provider-type">
                       {i18n.reports.common.unitProviderTypes[row.providerType]}
                     </Td>
-                    <Td>{row.daycareUnder3}</Td>
-                    <Td>{row.daycareOver3}</Td>
-                    <Td>{row.preschool}</Td>
-                    <Td>{row.preschoolDaycare}</Td>
-                    <Td>{row.connectedDaycareOnly}</Td>
-                    <Td>{row.preparatory}</Td>
-                    <Td>{row.preparatoryDaycare}</Td>
-                    <Td>{row.club}</Td>
+                    {includedColumns.includes('daycareUnder3') && (
+                      <Td>{row.daycareUnder3}</Td>
+                    )}
+                    {includedColumns.includes('daycareOver3') && (
+                      <Td>{row.daycareOver3}</Td>
+                    )}
+                    {includedColumns.includes('preschool') && (
+                      <Td>{row.preschool}</Td>
+                    )}
+                    {includedColumns.includes('preschoolDaycare') && (
+                      <Td>{row.preschoolDaycare}</Td>
+                    )}
+                    {includedColumns.includes('connectedDaycareOnly') && (
+                      <Td>{row.connectedDaycareOnly}</Td>
+                    )}
+                    {includedColumns.includes('preparatory') && (
+                      <Td>{row.preparatory}</Td>
+                    )}
+                    {includedColumns.includes('preparatoryDaycare') && (
+                      <Td>{row.preparatoryDaycare}</Td>
+                    )}
+                    {includedColumns.includes('club') && <Td>{row.club}</Td>}
                     <Td>{row.preference1}</Td>
                     <Td>{row.preference2}</Td>
                     <Td>{row.preference3}</Td>
@@ -264,32 +335,53 @@ export default React.memo(function Decisions() {
                   <Td className="bold">{i18n.reports.common.total}</Td>
                   <Td />
                   <Td />
-                  <Td>
-                    {reducePropertySum(filteredRows, (r) => r.daycareUnder3)}
-                  </Td>
-                  <Td>
-                    {reducePropertySum(filteredRows, (r) => r.daycareOver3)}
-                  </Td>
-                  <Td>{reducePropertySum(filteredRows, (r) => r.preschool)}</Td>
-                  <Td>
-                    {reducePropertySum(filteredRows, (r) => r.preschoolDaycare)}
-                  </Td>
-                  <Td>
-                    {reducePropertySum(
-                      filteredRows,
-                      (r) => r.connectedDaycareOnly
-                    )}
-                  </Td>
-                  <Td>
-                    {reducePropertySum(filteredRows, (r) => r.preparatory)}
-                  </Td>
-                  <Td>
-                    {reducePropertySum(
-                      filteredRows,
-                      (r) => r.preparatoryDaycare
-                    )}
-                  </Td>
-                  <Td>{reducePropertySum(filteredRows, (r) => r.club)}</Td>
+                  {includedColumns.includes('daycareUnder3') && (
+                    <Td>
+                      {reducePropertySum(filteredRows, (r) => r.daycareUnder3)}
+                    </Td>
+                  )}
+                  {includedColumns.includes('daycareOver3') && (
+                    <Td>
+                      {reducePropertySum(filteredRows, (r) => r.daycareOver3)}
+                    </Td>
+                  )}
+                  {includedColumns.includes('preschool') && (
+                    <Td>
+                      {reducePropertySum(filteredRows, (r) => r.preschool)}
+                    </Td>
+                  )}
+                  {includedColumns.includes('preschoolDaycare') && (
+                    <Td>
+                      {reducePropertySum(
+                        filteredRows,
+                        (r) => r.preschoolDaycare
+                      )}
+                    </Td>
+                  )}
+                  {includedColumns.includes('connectedDaycareOnly') && (
+                    <Td>
+                      {reducePropertySum(
+                        filteredRows,
+                        (r) => r.connectedDaycareOnly
+                      )}
+                    </Td>
+                  )}
+                  {includedColumns.includes('preparatory') && (
+                    <Td>
+                      {reducePropertySum(filteredRows, (r) => r.preparatory)}
+                    </Td>
+                  )}
+                  {includedColumns.includes('preparatoryDaycare') && (
+                    <Td>
+                      {reducePropertySum(
+                        filteredRows,
+                        (r) => r.preparatoryDaycare
+                      )}
+                    </Td>
+                  )}
+                  {includedColumns.includes('club') && (
+                    <Td>{reducePropertySum(filteredRows, (r) => r.club)}</Td>
+                  )}
                   <Td>
                     {reducePropertySum(filteredRows, (r) => r.preference1)}
                   </Td>

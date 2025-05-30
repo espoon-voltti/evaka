@@ -5,6 +5,7 @@
 package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.ConstList
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.decision.DecisionType
 import fi.espoo.evaka.shared.ApplicationId
@@ -12,6 +13,7 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.Predicate
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -32,6 +34,7 @@ class DecisionsReportController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate,
+        @RequestParam columns: Set<DecisionReportColumnType>?,
     ): List<DecisionsReportRow> {
         if (to.isBefore(from)) throw BadRequest("Inverted time range")
 
@@ -44,7 +47,7 @@ class DecisionsReportController(private val accessControl: AccessControl) {
                         Action.Global.READ_DECISIONS_REPORT,
                     )
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
-                    it.getDecisionsRows(FiniteDateRange(from, to))
+                    it.getDecisionsRows(FiniteDateRange(from, to), columns)
                 }
             }
             .also {
@@ -55,7 +58,19 @@ class DecisionsReportController(private val accessControl: AccessControl) {
     }
 }
 
-private fun Database.Read.getDecisionsRows(range: FiniteDateRange): List<DecisionsReportRow> {
+private fun Database.Read.getDecisionsRows(
+    range: FiniteDateRange,
+    columns: Set<DecisionReportColumnType>?,
+): List<DecisionsReportRow> {
+    val decisionTypes = columns?.flatMap { it.decisionTypes }?.toSet()
+    val decisionPredicates =
+        Predicate.allNotNull(
+            Predicate { where("$it.sent_date IS NOT NULL") },
+            Predicate {
+                where("$it.sent_date BETWEEN ${bind(range.start)} AND ${bind(range.end)}")
+            },
+            decisionTypes?.let { Predicate { table -> where("$table.type = ANY (${bind(it)})") } },
+        )
     val queryResult =
         createQuery {
                 sql(
@@ -78,7 +93,7 @@ JOIN decision de ON de.application_id = a.id
 JOIN daycare u ON u.id = de.unit_id
 JOIN care_area ca ON ca.id = u.care_area_id
 JOIN person ch ON ch.id = a.child_id
-WHERE de.sent_date IS NOT NULL AND de.sent_date BETWEEN ${bind(range.start)} AND ${bind(range.end)}
+WHERE ${predicate(decisionPredicates.forTable("de"))}
 """
                 )
             }
@@ -93,43 +108,41 @@ WHERE de.sent_date IS NOT NULL AND de.sent_date BETWEEN ${bind(range.start)} AND
             val daycareUnder3 =
                 rows.filter {
                     it.age < 3 &&
-                        it.decisionType in
-                            setOf(DecisionType.DAYCARE, DecisionType.DAYCARE_PART_TIME)
+                        it.decisionType in DecisionReportColumnType.daycareUnder3.decisionTypes
                 }
             val daycareOver3 =
                 rows.filter {
                     it.age >= 3 &&
-                        it.decisionType in
-                            setOf(DecisionType.DAYCARE, DecisionType.DAYCARE_PART_TIME)
+                        it.decisionType in DecisionReportColumnType.daycareOver3.decisionTypes
                 }
             val preschool =
                 rows.filter {
-                    it.decisionType == DecisionType.PRESCHOOL &&
+                    it.decisionType in DecisionReportColumnType.preschool.decisionTypes &&
                         applicationDecisionCount.getValue(it.applicationId) == 1
                 }
             val preschoolDaycare =
                 rows.filter {
-                    it.decisionType == DecisionType.PRESCHOOL &&
+                    it.decisionType in DecisionReportColumnType.preschoolDaycare.decisionTypes &&
                         applicationDecisionCount.getValue(it.applicationId) == 2
                 }
             val preparatory =
                 rows.filter {
-                    it.decisionType == DecisionType.PREPARATORY_EDUCATION &&
+                    it.decisionType in DecisionReportColumnType.preparatory.decisionTypes &&
                         applicationDecisionCount.getValue(it.applicationId) == 1
                 }
             val preparatoryDaycare =
                 rows.filter {
-                    it.decisionType == DecisionType.PREPARATORY_EDUCATION &&
+                    it.decisionType in DecisionReportColumnType.preparatoryDaycare.decisionTypes &&
                         applicationDecisionCount.getValue(it.applicationId) == 2
                 }
             val connectedDaycareOnly =
                 rows.filter {
-                    // PRESCHOOL_DAYCARE is used for connected daycare for both preschool and
-                    // preparatory
-                    it.decisionType == DecisionType.PRESCHOOL_DAYCARE &&
+                    it.decisionType in
+                        DecisionReportColumnType.connectedDaycareOnly.decisionTypes &&
                         applicationDecisionCount.getValue(it.applicationId) == 1
                 }
-            val club = rows.filter { it.decisionType == DecisionType.CLUB }
+            val club =
+                rows.filter { it.decisionType in DecisionReportColumnType.club.decisionTypes }
 
             // Number of applications (not decisions) that have Nth preference for this unit
             val preference1 =
@@ -200,3 +213,16 @@ data class DecisionsReportRow(
     val preferenceNone: Int,
     val total: Int,
 )
+
+@ConstList("decisionReportColumnTypes")
+enum class DecisionReportColumnType(val decisionTypes: Set<DecisionType>) {
+    daycareUnder3(setOf(DecisionType.DAYCARE, DecisionType.DAYCARE_PART_TIME)),
+    daycareOver3(setOf(DecisionType.DAYCARE, DecisionType.DAYCARE_PART_TIME)),
+    preschool(setOf(DecisionType.PRESCHOOL)),
+    preschoolDaycare(setOf(DecisionType.PRESCHOOL)),
+    preparatory(setOf(DecisionType.PREPARATORY_EDUCATION)),
+    preparatoryDaycare(setOf(DecisionType.PREPARATORY_EDUCATION)),
+    // PRESCHOOL_DAYCARE is used for connected daycare for both preschool and preparatory
+    connectedDaycareOnly(setOf(DecisionType.PRESCHOOL_DAYCARE)),
+    club(setOf(DecisionType.CLUB)),
+}

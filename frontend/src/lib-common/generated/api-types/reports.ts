@@ -335,6 +335,22 @@ export interface CustomerFeesReportRow {
 }
 
 /**
+* Generated from fi.espoo.evaka.reports.DecisionReportColumnType
+*/
+export const decisionReportColumnTypes = [
+  'daycareUnder3',
+  'daycareOver3',
+  'preschool',
+  'preschoolDaycare',
+  'preparatory',
+  'preparatoryDaycare',
+  'connectedDaycareOnly',
+  'club'
+] as const
+
+export type DecisionReportColumnType = typeof decisionReportColumnTypes[number]
+
+/**
 * Generated from fi.espoo.evaka.reports.DecisionsReportRow
 */
 export interface DecisionsReportRow {
