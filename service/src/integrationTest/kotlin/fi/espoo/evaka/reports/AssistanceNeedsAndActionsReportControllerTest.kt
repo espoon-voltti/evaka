@@ -31,7 +31,6 @@ import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
-import fi.espoo.evaka.shared.dev.insertTestAssistanceNeedDecision
 import fi.espoo.evaka.shared.dev.insertTestAssistanceNeedPreschoolDecision
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -393,8 +392,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
         val children = insertAssistanceData(unit = unit, groups = groups, date = date)
 
         db.transaction { tx ->
-            tx.insertTestAssistanceNeedDecision(
-                childId = children[0].id,
+            tx.insert(
                 DevAssistanceNeedDecision(
                     decisionNumber = 10000,
                     childId = children[0].id,
@@ -451,10 +449,9 @@ class AssistanceNeedsAndActionsReportControllerTest :
                     unreadGuardianIds = null,
                     annulmentReason = "",
                     endDateNotKnown = false,
-                ),
+                )
             )
-            tx.insertTestAssistanceNeedDecision(
-                childId = children[1].id,
+            tx.insert(
                 DevAssistanceNeedDecision(
                     decisionNumber = 10000,
                     childId = children[1].id,
@@ -511,7 +508,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
                     unreadGuardianIds = null,
                     annulmentReason = "",
                     endDateNotKnown = false,
-                ),
+                )
             )
             tx.insertTestAssistanceNeedPreschoolDecision(
                 DevAssistanceNeedPreschoolDecision(

@@ -17,6 +17,7 @@ export interface ArchivedProcess {
   archiveDurationMonths: number
   history: ArchivedProcessHistoryRow[]
   id: ArchivedProcessId
+  migrated: boolean
   number: number
   organization: string
   processDefinitionNumber: string
