@@ -2,28 +2,27 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useCallback } from 'react'
 import styled from 'styled-components'
 import { useLocation } from 'wouter'
 
-import { useBoolean } from 'lib-common/form/hooks'
 import type {
   AttendanceChild,
   AttendanceStatus
 } from 'lib-common/generated/api-types/attendance'
 import type { UUID } from 'lib-common/types'
 import { Button } from 'lib-components/atoms/buttons/Button'
-import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import type { SpacingSize } from 'lib-components/white-space'
-import { defaultMargins, Gap, isSpacingSize } from 'lib-components/white-space'
+import { defaultMargins, isSpacingSize } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { featureFlags } from 'lib-customizations/employeeMobile'
-import { faBarsSort, faCheck, faTimes } from 'lib-icons'
+import { faBarsSort, faTimes } from 'lib-icons'
 
 import { routes } from '../App'
 import { useTranslation } from '../common/i18n'
@@ -67,8 +66,31 @@ export default React.memo(function ChildList({
   const { i18n } = useTranslation()
   const [, navigate] = useLocation()
   const unitId = unitOrGroup.unitId
-  const [sortTypeOptionsVisible, { toggle: sortTypeOptionsToggle }] =
-    useBoolean(false)
+
+  const getSortOptions = useCallback(() => {
+    const baseOptions = [
+      {
+        value: 'CHILD_FIRST_NAME' as SortType,
+        label: i18n.attendances.actions.sortType.CHILD_FIRST_NAME
+      }
+    ]
+
+    if (type === 'COMING') {
+      baseOptions.push({
+        value: 'RESERVATION_START_TIME' as SortType,
+        label: i18n.attendances.actions.sortType.RESERVATION_START_TIME
+      })
+    }
+
+    if (type === 'PRESENT') {
+      baseOptions.push({
+        value: 'RESERVATION_END_TIME' as SortType,
+        label: i18n.attendances.actions.sortType.RESERVATION_END_TIME
+      })
+    }
+
+    return baseOptions
+  }, [type, i18n])
 
   return (
     <>
@@ -99,41 +121,25 @@ export default React.memo(function ChildList({
                       ) : (
                         <div />
                       )}
-                      <FixedSpaceColumn
-                        alignItems="end"
-                        justifyContent="space-between"
-                      >
-                        <IconOnlyButton
-                          icon={faBarsSort}
+                      <SortSelectWrapper>
+                        <SortSelect
+                          value={selectedSortType}
+                          onChange={(e) =>
+                            setSelectedSortType(e.target.value as SortType)
+                          }
+                          data-qa="sort-type-select"
                           aria-label={i18n.common.sort}
-                          onClick={sortTypeOptionsToggle}
-                          data-qa="sort-type-options-toggle"
-                        />
-                        {sortTypeOptionsVisible && (
-                          <>
-                            <Gap size="xxs" />
-                            <SortTypeButton
-                              sortType="CHILD_FIRST_NAME"
-                              selectedSortType={selectedSortType}
-                              setSelectedSortType={setSelectedSortType}
-                            />
-                            {type === 'COMING' && (
-                              <SortTypeButton
-                                sortType="RESERVATION_START_TIME"
-                                selectedSortType={selectedSortType}
-                                setSelectedSortType={setSelectedSortType}
-                              />
-                            )}
-                            {type === 'PRESENT' && (
-                              <SortTypeButton
-                                sortType="RESERVATION_END_TIME"
-                                selectedSortType={selectedSortType}
-                                setSelectedSortType={setSelectedSortType}
-                              />
-                            )}
-                          </>
-                        )}
-                      </FixedSpaceColumn>
+                        >
+                          {getSortOptions().map((option) => (
+                            <option key={option.value} value={option.value}>
+                              {option.label}
+                            </option>
+                          ))}
+                        </SortSelect>
+                        <SortIcon>
+                          <FontAwesomeIcon icon={faBarsSort} />
+                        </SortIcon>
+                      </SortSelectWrapper>
                     </FixedSpaceRow>
                   </MultiselectToggleBox>
                 </Li>
@@ -281,28 +287,40 @@ const FloatingActionButton = styled(Button)`
   white-space: break-spaces;
 `
 
-const SortTypeButton = ({
-  sortType,
-  selectedSortType,
-  setSelectedSortType
-}: {
-  sortType: SortType
-  selectedSortType: SortType
-  setSelectedSortType: (sortType: SortType) => void
-}) => {
-  const { i18n } = useTranslation()
-  const onClick = useCallback(
-    () => setSelectedSortType(sortType),
-    [setSelectedSortType, sortType]
-  )
+const SortSelectWrapper = styled.div`
+  position: relative;
+  display: inline-block;
+`
 
-  return (
-    <Button
-      appearance="inline"
-      icon={sortType === selectedSortType ? faCheck : undefined}
-      text={i18n.attendances.actions.sortType[sortType]}
-      onClick={onClick}
-      data-qa={`sort-type-${sortType}`}
-    />
-  )
-}
+const SortSelect = styled.select`
+  appearance: none;
+  background: transparent;
+  border: none;
+  color: transparent;
+  cursor: pointer;
+  font-size: 0;
+  height: 40px;
+  width: 40px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 2;
+
+  &:focus {
+    outline: 2px solid ${colors.main.m2};
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+`
+
+const SortIcon = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  color: ${colors.grayscale.g70};
+  pointer-events: none;
+  position: relative;
+  z-index: 1;
+`

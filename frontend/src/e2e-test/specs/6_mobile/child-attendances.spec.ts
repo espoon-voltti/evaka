@@ -352,7 +352,6 @@ describe('Child mobile attendance list', () => {
       `${testChild2.firstName} ${testChild2.lastName}`,
       `${testChildRestricted.firstName} ${testChildRestricted.lastName}`
     ])
-    await listPage.sortTypeOptionsToggle.click()
     await listPage.selectSortType('RESERVATION_START_TIME')
     await listPage.assertChildNames([
       `${testChild2.firstName} ${testChild2.lastName}`,
@@ -397,7 +396,6 @@ describe('Child mobile attendance list', () => {
 
     await openPage({ mockedTime: now })
     await page.goto(mobileSignupUrl)
-    await listPage.sortTypeOptionsToggle.click()
     await listPage.selectSortType('RESERVATION_START_TIME')
     await listPage.assertChildNames([
       `${testChild2.firstName} ${testChild2.lastName}`,
@@ -406,7 +404,6 @@ describe('Child mobile attendance list', () => {
 
     await openPage({ mockedTime: now.subHours(5) })
     await page.goto(mobileSignupUrl)
-    await listPage.sortTypeOptionsToggle.click()
     await listPage.selectSortType('RESERVATION_START_TIME')
     await listPage.assertChildNames([
       `${testChild.firstName} ${testChild.lastName} (${testChild.preferredName})`,
@@ -455,7 +452,6 @@ describe('Child mobile attendance list', () => {
       `${testChild2.firstName} ${testChild2.lastName}`,
       `${testChildRestricted.firstName} ${testChildRestricted.lastName}`
     ])
-    await listPage.sortTypeOptionsToggle.click()
     await listPage.selectSortType('RESERVATION_START_TIME')
     await listPage.assertChildNames([
       `${testChild2.firstName} ${testChild2.lastName}`,
@@ -514,7 +510,6 @@ describe('Child mobile attendance list', () => {
       `${testChild2.firstName} ${testChild2.lastName}`,
       `${testChildRestricted.firstName} ${testChildRestricted.lastName}`
     ])
-    await listPage.sortTypeOptionsToggle.click()
     await listPage.selectSortType('RESERVATION_START_TIME')
     await listPage.assertChildNames([
       `${testChild2.firstName} ${testChild2.lastName}`,
@@ -581,7 +576,6 @@ describe('Child mobile attendance list', () => {
       `${testChild2.firstName} ${testChild2.lastName}`,
       `${testChildRestricted.firstName} ${testChildRestricted.lastName}`
     ])
-    await listPage.sortTypeOptionsToggle.click()
     await listPage.selectSortType('RESERVATION_END_TIME')
     await listPage.assertChildNames([
       `${testChild2.firstName} ${testChild2.lastName}`,
@@ -634,7 +628,6 @@ describe('Child mobile attendance list', () => {
     await childAttendancePage.setTime(now.toLocalTime().format())
     await childAttendancePage.selectMarkPresent()
     await listPage.presentChildrenTab.click()
-    await listPage.sortTypeOptionsToggle.click()
     await listPage.selectSortType('RESERVATION_END_TIME')
     await listPage.assertChildNames([
       `${testChild.firstName} ${testChild.lastName} (${testChild.preferredName})`,
@@ -644,7 +637,6 @@ describe('Child mobile attendance list', () => {
     await openPage({ mockedTime: now.addHours(5) })
     await page.goto(mobileSignupUrl)
     await listPage.presentChildrenTab.click()
-    await listPage.sortTypeOptionsToggle.click()
     await listPage.selectSortType('RESERVATION_END_TIME')
     await listPage.assertChildNames([
       `${testChild2.firstName} ${testChild2.lastName}`,
@@ -701,7 +693,6 @@ describe('Child mobile attendance list', () => {
       `${testChild2.firstName} ${testChild2.lastName}`,
       `${testChildRestricted.firstName} ${testChildRestricted.lastName}`
     ])
-    await listPage.sortTypeOptionsToggle.click()
     await listPage.selectSortType('RESERVATION_END_TIME')
     await listPage.assertChildNames([
       `${testChild2.firstName} ${testChild2.lastName}`,
@@ -768,7 +759,6 @@ describe('Child mobile attendance list', () => {
       `${testChild2.firstName} ${testChild2.lastName}`,
       `${testChildRestricted.firstName} ${testChildRestricted.lastName}`
     ])
-    await listPage.sortTypeOptionsToggle.click()
     await listPage.selectSortType('RESERVATION_END_TIME')
     await listPage.assertChildNames([
       `${testChild2.firstName} ${testChild2.lastName}`,
