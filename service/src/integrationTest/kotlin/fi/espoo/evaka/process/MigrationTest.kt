@@ -15,12 +15,14 @@ import fi.espoo.evaka.application.SimpleApplicationAction
 import fi.espoo.evaka.application.persistence.daycare.Apply
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.decision.getDecisionsByApplication
+import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevFeeDecision
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
@@ -255,6 +257,133 @@ class MigrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         process.history.last().also {
             assertEquals(ArchivedProcessState.COMPLETED, it.state)
             assertEquals(clock.now(), it.enteredAt)
+            assertEquals(AuthenticatedUser.SystemInternalUser.evakaUserId, it.enteredBy.id)
+        }
+    }
+
+    @Test
+    fun `draft fee decision is not migrated`() {
+        val today = LocalDate.of(2023, 1, 1)
+        val now = HelsinkiDateTime.of(today, LocalTime.of(10, 0))
+        val clock = MockEvakaClock(now)
+
+        val adult = DevPerson()
+        val feeDecision =
+            DevFeeDecision(
+                status = FeeDecisionStatus.DRAFT,
+                validDuring = FiniteDateRange(today, today.plusMonths(1)),
+                headOfFamilyId = adult.id,
+            )
+
+        db.transaction { tx ->
+            tx.insert(adult, DevPersonType.ADULT)
+            tx.insert(feeDecision)
+        }
+
+        migrateProcessMetadata(db, clock, featureConfig)
+
+        val process = db.read { it.getArchiveProcessByFeeDecisionId(feeDecision.id) }
+        assertNull(process)
+    }
+
+    @Test
+    fun `approved fee decision is migrated to DECIDING`() {
+        val today = LocalDate.of(2023, 1, 1)
+        val now = HelsinkiDateTime.of(today, LocalTime.of(10, 0))
+        val clock = MockEvakaClock(now)
+
+        val created = HelsinkiDateTime.of(today, LocalTime.of(9, 0))
+        val approved = HelsinkiDateTime.of(today, LocalTime.of(9, 30))
+
+        val adult = DevPerson()
+        val feeDecision =
+            DevFeeDecision(
+                status = FeeDecisionStatus.WAITING_FOR_MANUAL_SENDING,
+                approvedAt = approved,
+                validDuring = FiniteDateRange(today, today.plusMonths(1)),
+                headOfFamilyId = adult.id,
+            )
+
+        db.transaction { tx ->
+            tx.insert(adult, DevPersonType.ADULT)
+            tx.insert(feeDecision)
+            tx.execute { sql("UPDATE fee_decision SET created = ${bind(created)}") }
+        }
+
+        migrateProcessMetadata(db, clock, featureConfig)
+
+        val process = db.read { it.getArchiveProcessByFeeDecisionId(feeDecision.id) }!!
+        assertEquals("123.789.a", process.processDefinitionNumber)
+        assertEquals(created.year, process.year)
+        assertEquals(1, process.number)
+        assertEquals(featureConfig.archiveMetadataOrganization, process.organization)
+        assertEquals(120, process.archiveDurationMonths)
+        assertTrue(process.migrated)
+        assertEquals(2, process.history.size)
+        process.history.first().also {
+            assertEquals(ArchivedProcessState.INITIAL, it.state)
+            assertEquals(created, it.enteredAt)
+            assertEquals(AuthenticatedUser.SystemInternalUser.evakaUserId, it.enteredBy.id)
+        }
+        process.history.last().also {
+            assertEquals(ArchivedProcessState.DECIDING, it.state)
+            assertEquals(approved, it.enteredAt)
+            assertEquals(AuthenticatedUser.SystemInternalUser.evakaUserId, it.enteredBy.id)
+        }
+    }
+
+    @Test
+    fun `sent fee decision is migrated to COMPLETED`() {
+        val today = LocalDate.of(2023, 1, 1)
+        val now = HelsinkiDateTime.of(today, LocalTime.of(10, 0))
+        val clock = MockEvakaClock(now)
+
+        val created = HelsinkiDateTime.of(today, LocalTime.of(9, 0))
+        val approved = HelsinkiDateTime.of(today, LocalTime.of(9, 30))
+        val approvedBy = DevEmployee()
+        val sent = HelsinkiDateTime.of(today, LocalTime.of(10, 0))
+
+        val adult = DevPerson()
+        val feeDecision =
+            DevFeeDecision(
+                status = FeeDecisionStatus.SENT,
+                approvedAt = approved,
+                approvedById = approvedBy.evakaUserId,
+                sentAt = sent,
+                validDuring = FiniteDateRange(today, today.plusMonths(1)),
+                headOfFamilyId = adult.id,
+            )
+
+        db.transaction { tx ->
+            tx.insert(approvedBy)
+            tx.insert(adult, DevPersonType.ADULT)
+            tx.insert(feeDecision)
+            tx.execute { sql("UPDATE fee_decision SET created = ${bind(created)}") }
+        }
+
+        migrateProcessMetadata(db, clock, featureConfig)
+
+        val process = db.read { it.getArchiveProcessByFeeDecisionId(feeDecision.id) }!!
+        assertEquals("123.789.a", process.processDefinitionNumber)
+        assertEquals(created.year, process.year)
+        assertEquals(1, process.number)
+        assertEquals(featureConfig.archiveMetadataOrganization, process.organization)
+        assertEquals(120, process.archiveDurationMonths)
+        assertTrue(process.migrated)
+        assertEquals(3, process.history.size)
+        process.history[0].also {
+            assertEquals(ArchivedProcessState.INITIAL, it.state)
+            assertEquals(created, it.enteredAt)
+            assertEquals(AuthenticatedUser.SystemInternalUser.evakaUserId, it.enteredBy.id)
+        }
+        process.history[1].also {
+            assertEquals(ArchivedProcessState.DECIDING, it.state)
+            assertEquals(approved, it.enteredAt)
+            assertEquals(approvedBy.evakaUserId, it.enteredBy.id)
+        }
+        process.history[2].also {
+            assertEquals(ArchivedProcessState.COMPLETED, it.state)
+            assertEquals(sent, it.enteredAt)
             assertEquals(AuthenticatedUser.SystemInternalUser.evakaUserId, it.enteredBy.id)
         }
     }
