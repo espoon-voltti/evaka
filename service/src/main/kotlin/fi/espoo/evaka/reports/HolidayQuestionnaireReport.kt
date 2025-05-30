@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2024 City of Espoo
+// SPDX-FileCopyrightText: 2017-2025 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -8,19 +8,24 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.assistance.getAssistanceFactorsForChildrenOverRange
 import fi.espoo.evaka.attendance.occupancyCoefficientSeven
 import fi.espoo.evaka.daycare.getDaycare
-import fi.espoo.evaka.daycare.getPreschoolTerms
-import fi.espoo.evaka.holidayperiod.getHolidayPeriod
-import fi.espoo.evaka.placement.ScheduleType
+import fi.espoo.evaka.holidayperiod.HolidayQuestionnaire
+import fi.espoo.evaka.holidayperiod.QuestionnaireType
+import fi.espoo.evaka.holidayperiod.getFixedPeriodQuestionnaire
+import fi.espoo.evaka.holidayperiod.getOpenRangesQuestionnaire
+import fi.espoo.evaka.holidayperiod.getQuestionnaireAnswers
 import fi.espoo.evaka.reservations.getReservationBackupPlacements
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.GroupId
-import fi.espoo.evaka.shared.HolidayPeriodId
+import fi.espoo.evaka.shared.HolidayQuestionnaireId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.data.DateMap
 import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.domain.getHolidays
 import fi.espoo.evaka.shared.domain.getOperationalDatesForChildren
 import fi.espoo.evaka.shared.security.AccessControl
@@ -32,15 +37,18 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class HolidayPeriodAttendanceReport(private val accessControl: AccessControl) {
-    @GetMapping("/employee/reports/holiday-period-attendance")
-    fun getHolidayPeriodAttendanceReport(
+class HolidayQuestionnaireReport(
+    private val accessControl: AccessControl,
+    private val featureConfig: FeatureConfig,
+) {
+    @GetMapping("/employee/reports/holiday-questionnaire")
+    fun getHolidayQuestionnaireReport(
         db: Database,
         clock: EvakaClock,
         user: AuthenticatedUser.Employee,
         @RequestParam(required = false) groupIds: Set<GroupId> = emptySet(),
         @RequestParam unitId: DaycareId,
-        @RequestParam periodId: HolidayPeriodId,
+        @RequestParam questionnaireId: HolidayQuestionnaireId,
     ): List<HolidayReportRow> {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -48,27 +56,47 @@ class HolidayPeriodAttendanceReport(private val accessControl: AccessControl) {
                         tx,
                         user,
                         clock,
-                        Action.Unit.READ_HOLIDAY_PERIOD_ATTENDANCE_REPORT,
+                        Action.Unit.READ_HOLIDAY_QUESTIONNAIRE_REPORT,
                         unitId,
                     )
                     tx.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
 
-                    val unit = tx.getDaycare(unitId) ?: throw BadRequest("No such unit")
-                    val unitOperationDays = unit.shiftCareOperationDays ?: unit.operationDays
+                    val unit = tx.getDaycare(unitId) ?: throw BadRequest("No such unit $unitId")
+                    val unitOperationalDays = unit.shiftCareOperationDays ?: unit.operationDays
 
-                    val holidayPeriod =
-                        tx.getHolidayPeriod(periodId) ?: throw BadRequest("No such holiday period")
-                    val holidays = getHolidays(holidayPeriod.period)
-
-                    val preschoolTerms = tx.getPreschoolTerms()
+                    val questionnaire =
+                        when (featureConfig.holidayQuestionnaireType) {
+                            QuestionnaireType.FIXED_PERIOD ->
+                                tx.getFixedPeriodQuestionnaire(questionnaireId)
+                            QuestionnaireType.OPEN_RANGES ->
+                                tx.getOpenRangesQuestionnaire(questionnaireId)
+                        } ?: throw NotFound()
+                    val period =
+                        when (questionnaire) {
+                            is HolidayQuestionnaire.FixedPeriodQuestionnaire -> {
+                                val options = questionnaire.periodOptions
+                                FiniteDateRange(options.first().start, options.last().end)
+                            }
+                            is HolidayQuestionnaire.OpenRangesQuestionnaire -> questionnaire.period
+                        }
+                    val holidays = getHolidays(period)
 
                     // report result days
-                    val periodDays =
-                        holidayPeriod.period
+                    val questionnaireDays =
+                        period
                             .dates()
                             .map { HolidayReportDay(it, holidays.contains(it)) }
+                            .filter { day ->
+                                (questionnaire is HolidayQuestionnaire.FixedPeriodQuestionnaire &&
+                                    questionnaire.periodOptions.any { range ->
+                                        range.includes(day.date)
+                                    }) ||
+                                    (questionnaire is
+                                        HolidayQuestionnaire.OpenRangesQuestionnaire &&
+                                        questionnaire.period.includes(day.date))
+                            }
                             .filter {
-                                unitOperationDays.contains(it.date.dayOfWeek.value) &&
+                                unitOperationalDays.contains(it.date.dayOfWeek.value) &&
                                     (unit.shiftCareOpenOnHolidays || !it.isHoliday)
                             }
                             .toList()
@@ -78,7 +106,7 @@ class HolidayPeriodAttendanceReport(private val accessControl: AccessControl) {
                         tx.getIncomingBackupCaresOverPeriodForGroupsInUnit(
                                 unitId = unitId,
                                 groupIds = groupIds,
-                                period = holidayPeriod.period,
+                                period = period,
                             )
                             .groupBy { it.childId }
                             .mapValues { entry ->
@@ -90,14 +118,14 @@ class HolidayPeriodAttendanceReport(private val accessControl: AccessControl) {
                     val backupChildDataByChild =
                         tx.getServiceNeedOccupancyInfoOverRangeForChildren(
                                 backupChildrenInUnit,
-                                holidayPeriod.period,
+                                period,
                             )
                             .groupBy { it.child.id }
 
                     // directly placed children
                     val directlyPlacedChildData =
                         tx.getServiceNeedOccupancyInfoOverRangeForGroups(
-                            range = holidayPeriod.period,
+                            range = period,
                             groupIds = groupIds,
                             unitId = unitId,
                         )
@@ -106,30 +134,21 @@ class HolidayPeriodAttendanceReport(private val accessControl: AccessControl) {
 
                     // outgoing backup children
                     val backupCareOutgoingDataByChild =
-                        tx.getReservationBackupPlacements(
-                            directlyPlacedChildren,
-                            holidayPeriod.period,
-                        )
+                        tx.getReservationBackupPlacements(directlyPlacedChildren, period)
 
-                    // all period absence data
-                    val fullAbsenceDataByDate =
-                        tx.getAbsencesForChildrenOverRange(
-                            directlyPlacedChildren + backupChildrenInUnit,
-                            holidayPeriod.period,
+                    // all questionnaire answers
+                    val questionnaireAnswers =
+                        tx.getQuestionnaireAnswers(
+                            questionnaireId,
+                            (directlyPlacedChildren + backupChildrenInUnit).toList(),
                         )
-
-                    // all period reservation data
-                    val fullReservationDataByDateAndChild =
-                        tx.getReservationsForChildrenOverRange(
-                            directlyPlacedChildren + backupChildrenInUnit,
-                            holidayPeriod.period,
-                        )
+                    val questionnaireAnswersByChild = questionnaireAnswers.groupBy { it.childId }
 
                     // all period assistance factor data
                     val assistanceFactorsByChild =
                         tx.getAssistanceFactorsForChildrenOverRange(
                                 directlyPlacedChildren + backupChildrenInUnit,
-                                holidayPeriod.period,
+                                period,
                             )
                             .groupBy { it.childId }
                             .mapValues { entry ->
@@ -139,19 +158,18 @@ class HolidayPeriodAttendanceReport(private val accessControl: AccessControl) {
                     val assistanceRangesByChild =
                         tx.getAssistanceRanges(
                                 directlyPlacedChildren + backupChildrenInUnit,
-                                holidayPeriod.period,
+                                period,
                             )
                             .groupBy { it.childId }
                             .mapValues { entry -> DateSet.of(entry.value.map { it.validDuring }) }
 
                     val operationDaysByChild =
                         tx.getOperationalDatesForChildren(
-                            holidayPeriod.period,
+                            period,
                             directlyPlacedChildren + backupChildrenInUnit,
                         )
 
-                    // collect daily report values
-                    periodDays.map { (date) ->
+                    questionnaireDays.map { (date) ->
                         val dailyDirectlyPlacedData =
                             directlyPlacedChildData.filter { sn ->
                                 sn.validity.includes(date) &&
@@ -165,50 +183,28 @@ class HolidayPeriodAttendanceReport(private val accessControl: AccessControl) {
                                     ?.firstOrNull { sn -> sn.validity.includes(date) }
                                     ?.copy(groupId = bc.groupId)
                             }
-                        // splits placed children's service need info into two groups based on
-                        // placement type
-                        // - children that require reservations to inform holiday period attendance
-                        // (RESERVATION_REQUIRED)
-                        // - children that do not reserve attendance and won't have service on
-                        // holiday periods (FIXED_SCHEDULE, TERM_BREAK)
-                        val (dailyPlacedData, fixedScheduleServiceNeeds) =
-                            (dailyDirectlyPlacedData + dailyBackupPlacedData).partition { sni ->
-                                sni.placementType.scheduleType(
-                                    date = date,
-                                    clubTerms = emptyList(),
-                                    preschoolTerms = preschoolTerms,
-                                ) == ScheduleType.RESERVATION_REQUIRED
+
+                        val dailyPlacedData = dailyDirectlyPlacedData + dailyBackupPlacedData
+
+                        val dailyQuestionnaireAnswersByChild =
+                            questionnaireAnswers
+                                .filter { answer ->
+                                    answer.fixedPeriod?.includes(date) == true ||
+                                        answer.openRanges.any { it.includes(date) }
+                                }
+                                .groupBy { it.childId }
+
+                        val (answered, noResponse) =
+                            dailyPlacedData.partition {
+                                questionnaireAnswersByChild.containsKey(it.child.id)
                             }
-                        val fixedSchedulePlacedChildren =
-                            fixedScheduleServiceNeeds.map { it.child.id }.toSet()
-                        val dailyPlacedDataByChild = dailyPlacedData.groupBy { it.child.id }
-
-                        val dailyAbsencesByChild =
-                            fullAbsenceDataByDate[date]
-                                ?.groupBy { it.childId }
-                                ?.filter { (key, childDailyAbsenceData) ->
-                                    val childDailyPlacementData =
-                                        dailyPlacedDataByChild[key]?.firstOrNull {
-                                            it.validity.includes(date)
-                                        } ?: return@filter false
-                                    childDailyAbsenceData.map { a -> a.category }.toSet() ==
-                                        childDailyPlacementData.placementType.absenceCategories()
-                                } ?: emptyMap()
-
-                        val dailyExpectedAtUnitData =
-                            dailyPlacedData.filter { sn ->
-                                !dailyAbsencesByChild.containsKey(sn.child.id)
-                            }
-
-                        val (confirmedPresent, noResponses) =
-                            dailyExpectedAtUnitData.partition {
-                                fullReservationDataByDateAndChild.containsKey(
-                                    Pair(date, it.child.id)
-                                )
+                        val present =
+                            answered.filter {
+                                !dailyQuestionnaireAnswersByChild.containsKey(it.child.id)
                             }
 
                         val dailyOccupancyCoefficient =
-                            confirmedPresent.sumOf {
+                            present.sumOf {
                                 val ageAtDate = Period.between(it.child.dateOfBirth, date).years
                                 val assistanceFactor =
                                     assistanceFactorsByChild[it.child.id]?.getValue(date) ?: 1.0
@@ -226,7 +222,7 @@ class HolidayPeriodAttendanceReport(private val accessControl: AccessControl) {
                         HolidayReportRow(
                             date = date,
                             presentChildren =
-                                confirmedPresent.map { (child) ->
+                                present.map { (child) ->
                                     ChildWithName(
                                         id = child.id,
                                         firstName = child.firstName,
@@ -234,7 +230,7 @@ class HolidayPeriodAttendanceReport(private val accessControl: AccessControl) {
                                     )
                                 },
                             assistanceChildren =
-                                confirmedPresent
+                                present
                                     .filter {
                                         assistanceRangesByChild[it.child.id]?.includes(date) == true
                                     }
@@ -246,11 +242,10 @@ class HolidayPeriodAttendanceReport(private val accessControl: AccessControl) {
                                         )
                                     },
                             presentOccupancyCoefficient = dailyOccupancyCoefficient,
-                            absentCount =
-                                dailyAbsencesByChild.size + fixedSchedulePlacedChildren.size,
                             requiredStaff = staffNeedAtDate,
+                            absentCount = answered.size - present.size,
                             noResponseChildren =
-                                noResponses
+                                noResponse
                                     .filter {
                                         operationDaysByChild[it.child.id]?.contains(date) == true
                                     }
@@ -266,8 +261,8 @@ class HolidayPeriodAttendanceReport(private val accessControl: AccessControl) {
                 }
             }
             .also {
-                Audit.HolidayPeriodAttendanceReport.log(
-                    meta = mapOf("unitId" to unitId, "periodId" to periodId)
+                Audit.HolidayQuestionnaireReport.log(
+                    meta = mapOf("unitId" to unitId, "questionnaireId" to questionnaireId)
                 )
             }
     }

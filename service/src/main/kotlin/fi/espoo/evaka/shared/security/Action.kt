@@ -2334,6 +2334,10 @@ sealed interface Action {
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR).withUnitFeatures(PilotFeature.RESERVATIONS).inUnit(),
         ),
+        READ_HOLIDAY_QUESTIONNAIRE_REPORT(
+            HasGlobalRole(ADMIN),
+            HasUnitRole(UNIT_SUPERVISOR).withUnitFeatures(PilotFeature.RESERVATIONS).inUnit(),
+        ),
         READ_STARTING_PLACEMENTS_REPORT(
             HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN),
             HasUnitRole(UNIT_SUPERVISOR).inUnit(),

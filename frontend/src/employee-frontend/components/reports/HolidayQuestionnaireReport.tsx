@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2024 City of Espoo
+// SPDX-FileCopyrightText: 2017-2025 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -9,15 +9,15 @@ import styled from 'styled-components'
 import { combine } from 'lib-common/api'
 import { useBoolean } from 'lib-common/form/hooks'
 import type { Daycare } from 'lib-common/generated/api-types/daycare'
-import type { HolidayPeriod } from 'lib-common/generated/api-types/holidayperiod'
+import type { HolidayQuestionnaire } from 'lib-common/generated/api-types/holidayperiod'
 import type {
-  ChildWithName,
-  HolidayReportRow
+  HolidayReportRow,
+  ChildWithName
 } from 'lib-common/generated/api-types/reports'
 import type {
   DaycareId,
   GroupId,
-  HolidayPeriodId
+  HolidayQuestionnaireId
 } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { formatFirstName } from 'lib-common/names'
@@ -29,7 +29,7 @@ import { Button } from 'lib-components/atoms/buttons/Button'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
-import Container, { ContentArea } from 'lib-components/layout/Container'
+import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import {
   ExpandingInfoBox,
@@ -37,43 +37,53 @@ import {
 } from 'lib-components/molecules/ExpandingInfo'
 import { P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
-import { faChevronRight, faChevronDown } from 'lib-icons'
+import { faChevronDown, faChevronRight } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
-import { holidayPeriodsQuery } from '../holiday-term-periods/queries'
-import { unitGroupsQuery, daycaresQuery } from '../unit/queries'
+import { questionnairesQuery } from '../holiday-term-periods/queries'
+import { daycaresQuery, unitGroupsQuery } from '../unit/queries'
 
 import { FilterLabel, FilterRow, TableScrollable } from './common'
-import { holidayPeriodAttendanceReportQuery } from './queries'
+import { holidayQuestionnaireReportQuery } from './queries'
 
 interface ReportQueryParams {
   unitId: DaycareId
-  periodId: HolidayPeriodId
+  questionnaireId: HolidayQuestionnaireId
   groupIds: GroupId[] | null
 }
 
-export default React.memo(function HolidayPeriodAttendanceReport() {
-  const { i18n } = useTranslation()
-
+export default React.memo(function HolidayQuestionnaireReport() {
+  const { i18n, lang } = useTranslation()
   const [selectedUnit, setSelectedUnit] = useState<Daycare | null>(null)
-  const [selectedPeriod, setSelectedPeriod] = useState<HolidayPeriod | null>(
-    null
-  )
+  const [selectedQuestionnaire, setSelectedQuestionnaire] =
+    useState<HolidayQuestionnaire | null>(null)
   const [selectedGroups, setSelectedGroups] = useState<GroupId[] | null>(null)
 
   const units = useQueryResult(daycaresQuery({ includeClosed: false }))
-  const periods = useQueryResult(holidayPeriodsQuery())
+  const questionnaires = useQueryResult(questionnairesQuery())
 
-  const periodOptions = useMemo(
+  const firstPeriod = (questionnaire: HolidayQuestionnaire) => {
+    return questionnaire.type === 'FIXED_PERIOD'
+      ? questionnaire.periodOptions.at(0)!
+      : questionnaire.period
+  }
+
+  const lastPeriod = (questionnaire: HolidayQuestionnaire) => {
+    return questionnaire.type === 'FIXED_PERIOD'
+      ? questionnaire.periodOptions.at(-1)!
+      : questionnaire.period
+  }
+
+  const questionnaireOptions = useMemo(
     () =>
-      periods.map((g) =>
+      questionnaires.map((g) =>
         orderBy(
-          g.filter((p) => p.period.end >= LocalDate.todayInHelsinkiTz()),
-          (item) => item.period
+          g.filter((q) => lastPeriod(q).end >= LocalDate.todayInHelsinkiTz()),
+          (item) => lastPeriod(item).end
         )
       ),
-    [periods]
+    [questionnaires]
   )
 
   const daycareOptions = useMemo(
@@ -88,11 +98,11 @@ export default React.memo(function HolidayPeriodAttendanceReport() {
   )
 
   const groupsResult = useQueryResult(
-    selectedUnit && selectedPeriod
+    selectedUnit && selectedQuestionnaire
       ? unitGroupsQuery({
           daycareId: selectedUnit.id,
-          from: selectedPeriod.period.start,
-          to: selectedPeriod.period.end
+          from: firstPeriod(selectedQuestionnaire).start,
+          to: lastPeriod(selectedQuestionnaire).end
         })
       : constantQuery([])
   )
@@ -111,16 +121,16 @@ export default React.memo(function HolidayPeriodAttendanceReport() {
 
   const reportResult = useQueryResult(
     activeParams
-      ? holidayPeriodAttendanceReportQuery(activeParams)
+      ? holidayQuestionnaireReportQuery(activeParams)
       : constantQuery([])
   )
 
   const fetchResults = () => {
-    if (selectedUnit && selectedPeriod) {
+    if (selectedUnit && selectedQuestionnaire) {
       setActiveParams({
         unitId: selectedUnit.id,
         groupIds: selectedGroups,
-        periodId: selectedPeriod.id
+        questionnaireId: selectedQuestionnaire.id
       })
     }
   }
@@ -129,14 +139,14 @@ export default React.memo(function HolidayPeriodAttendanceReport() {
     <Container>
       <ReturnButton label={i18n.common.goBack} />
       <ContentArea opaque>
-        <Title size={1}>{i18n.reports.holidayPeriodAttendance.title}</Title>
+        <Title size={1}>{i18n.reports.holidayQuestionnaire.title}</Title>
         {renderResult(
-          combine(daycareOptions, periodOptions),
-          ([unitResult, periodResult]) => (
+          combine(daycareOptions, questionnaireOptions),
+          ([unitResult, questionnaireResult]) => (
             <>
               <FilterRow>
                 <FilterLabel>
-                  {i18n.reports.holidayPeriodAttendance.unitFilter}
+                  {i18n.reports.holidayQuestionnaire.unitFilter}
                 </FilterLabel>
 
                 <Combobox
@@ -155,20 +165,21 @@ export default React.memo(function HolidayPeriodAttendanceReport() {
               </FilterRow>
               <FilterRow>
                 <FilterLabel>
-                  {i18n.reports.holidayPeriodAttendance.periodFilter}
+                  {i18n.reports.holidayQuestionnaire.questionnaireFilter}
                 </FilterLabel>
 
                 <Combobox
                   fullWidth
-                  items={periodResult}
+                  items={questionnaireResult}
                   onChange={(item) => {
                     setSelectedGroups([])
-                    setSelectedPeriod(item)
+                    setSelectedQuestionnaire(item)
                   }}
-                  selectedItem={selectedPeriod}
-                  getItemLabel={(item) => item.period.format()}
+                  selectedItem={selectedQuestionnaire}
+                  getItemLabel={(item) => item.title[lang]}
                   placeholder={
-                    i18n.reports.holidayPeriodAttendance.periodFilterPlaceholder
+                    i18n.reports.holidayQuestionnaire
+                      .questionnaireFilterPlaceholder
                   }
                   data-qa="period-select"
                   getItemDataQa={({ id }) => `term-${id}`}
@@ -181,7 +192,7 @@ export default React.memo(function HolidayPeriodAttendanceReport() {
         {renderResult(groupOptions, (groups) => (
           <FilterRow>
             <FilterLabel>
-              {i18n.reports.holidayPeriodAttendance.groupFilter}
+              {i18n.reports.holidayQuestionnaire.groupFilter}
             </FilterLabel>
             <div style={{ width: '100%' }}>
               <MultiSelect
@@ -190,7 +201,7 @@ export default React.memo(function HolidayPeriodAttendanceReport() {
                 getOptionId={(item) => item.id}
                 getOptionLabel={(item) => item.name}
                 placeholder={
-                  i18n.reports.holidayPeriodAttendance.groupFilterPlaceholder
+                  i18n.reports.holidayQuestionnaire.groupFilterPlaceholder
                 }
                 onChange={(item) => setSelectedGroups(item.map((i) => i.id))}
                 value={groups.filter(
@@ -205,7 +216,7 @@ export default React.memo(function HolidayPeriodAttendanceReport() {
         <FilterRow>
           <Button
             primary
-            disabled={!(selectedUnit && selectedPeriod)}
+            disabled={!(selectedUnit && selectedQuestionnaire)}
             text={i18n.common.search}
             onClick={fetchResults}
             data-qa="send-button"
@@ -213,7 +224,7 @@ export default React.memo(function HolidayPeriodAttendanceReport() {
         </FilterRow>
         <Gap />
         {renderResult(reportResult, (report) => (
-          <HolidayPeriodAttendanceReportGrid reportResult={report} />
+          <HolidayQuestionnaireReportGrid reportResult={report} />
         ))}
       </ContentArea>
     </Container>
@@ -230,8 +241,8 @@ type ReportDisplayRow = {
   noResponseChildren: ChildWithName[]
 }
 
-const HolidayPeriodAttendanceReportGrid = React.memo(
-  function HolidayPeriodAttendanceReportGrid({
+const HolidayQuestionnaireReportGrid = React.memo(
+  function HolidayQuestionnaireReportGrid({
     reportResult
   }: {
     reportResult: HolidayReportRow[]
@@ -244,11 +255,11 @@ const HolidayPeriodAttendanceReportGrid = React.memo(
       const displayRows: ReportDisplayRow[] = reportResult.map((row) => ({
         date: row.date,
         presentChildren: orderChildren(row.presentChildren),
-        assistanceChildren: orderChildren(row.assistanceChildren),
+        assistanceChildren: row.assistanceChildren,
         coefficientSum: row.presentOccupancyCoefficient,
         requiredStaffCount: row.requiredStaff,
         absentCount: row.absentCount,
-        noResponseChildren: orderChildren(row.noResponseChildren)
+        noResponseChildren: row.noResponseChildren
       }))
       return orderBy(displayRows, [(r) => r.date], ['asc'])
     }, [reportResult])
@@ -256,7 +267,7 @@ const HolidayPeriodAttendanceReportGrid = React.memo(
       <>
         {expandingInfo && (
           <ExpandingInfoBox
-            info={i18n.reports.holidayPeriodAttendance.occupancyColumnInfo}
+            info={i18n.reports.holidayQuestionnaire.occupancyColumnInfo}
             close={() => infoExpansion.off()}
           />
         )}
@@ -264,34 +275,27 @@ const HolidayPeriodAttendanceReportGrid = React.memo(
           <Thead>
             <Tr>
               <TinyTh />
+              <ShortTh>{i18n.reports.holidayQuestionnaire.dateColumn}</ShortTh>
+              <Th>{i18n.reports.holidayQuestionnaire.presentColumn}</Th>
+              <Th>{i18n.reports.holidayQuestionnaire.assistanceColumn}</Th>
               <ShortTh>
-                {i18n.reports.holidayPeriodAttendance.dateColumn}
-              </ShortTh>
-              <Th>{i18n.reports.holidayPeriodAttendance.presentColumn}</Th>
-              <Th>{i18n.reports.holidayPeriodAttendance.assistanceColumn}</Th>
-              <ShortTh>
-                {i18n.reports.holidayPeriodAttendance.occupancyColumn}
+                {i18n.reports.holidayQuestionnaire.occupancyColumn}
                 <InfoButton
                   onClick={() => infoExpansion.on()}
                   aria-label={i18n.common.openExpandingInfo}
                 />
               </ShortTh>
+              <ShortTh>{i18n.reports.holidayQuestionnaire.staffColumn}</ShortTh>
               <ShortTh>
-                {i18n.reports.holidayPeriodAttendance.staffColumn}
+                {i18n.reports.holidayQuestionnaire.absentColumn}
               </ShortTh>
-              <ShortTh>
-                {i18n.reports.holidayPeriodAttendance.absentColumn}
-              </ShortTh>
-              <Th>{i18n.reports.holidayPeriodAttendance.noResponseColumn}</Th>
+              <Th>{i18n.reports.holidayQuestionnaire.noResponseColumn}</Th>
             </Tr>
           </Thead>
           <Tbody>
             {sortedReportResult.length > 0 ? (
               sortedReportResult.map((row) => (
-                <DailyPeriodAttendanceRow
-                  row={row}
-                  key={row.date.formatIso()}
-                />
+                <DailyQuestionnaireRow key={row.date.formatIso()} row={row} />
               ))
             ) : (
               <Tr>
@@ -319,18 +323,18 @@ const TooltippedChildListItem = React.memo(function TooltippedChildListItem(
 })
 
 type StatRowProps = { row: ReportDisplayRow }
-const DailyPeriodAttendanceRow = React.memo(function DailyPeriodAttendanceRow(
+const DailyQuestionnaireRow = React.memo(function DailyQuestionnaireRow(
   props: StatRowProps
 ) {
   const [isExpanded, expansion] = useBoolean(false)
-  const { lang, i18n } = useTranslation()
+  const { i18n, lang } = useTranslation()
   const { row } = props
   return (
-    <Tr data-qa="holiday-period-attendance-row">
+    <Tr data-qa="holiday-questionnaire-row">
       <TinyTd data-qa="resize-column">
         <Button
           text=""
-          aria-label={i18n.reports.holidayPeriodAttendance.showMoreButton}
+          aria-label={i18n.reports.holidayQuestionnaire.showMoreButton}
           onClick={() => expansion.toggle()}
           icon={isExpanded ? faChevronDown : faChevronRight}
           appearance="link"
@@ -384,7 +388,7 @@ const ChildList = React.memo(function ChildList({
       {!showFull && extraCount > 0 && (
         <P
           noMargin
-        >{`+${extraCount} ${i18n.reports.holidayPeriodAttendance.moreText}`}</P>
+        >{`+${extraCount} ${i18n.reports.holidayQuestionnaire.moreText}`}</P>
       )}
     </CellWrapper>
   )

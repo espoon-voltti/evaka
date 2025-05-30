@@ -67,6 +67,8 @@ import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.finance.notes.createFinanceNote
 import fi.espoo.evaka.holidayperiod.HolidayPeriodCreate
 import fi.espoo.evaka.holidayperiod.QuestionnaireBody
+import fi.espoo.evaka.holidayperiod.QuestionnaireConditions
+import fi.espoo.evaka.holidayperiod.QuestionnaireType
 import fi.espoo.evaka.holidayperiod.createFixedPeriodQuestionnaire
 import fi.espoo.evaka.holidayperiod.createOpenRangesQuestionnaire
 import fi.espoo.evaka.holidayperiod.insertHolidayPeriod
@@ -150,6 +152,7 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.domain.OfficialLanguage
 import fi.espoo.evaka.shared.domain.TimeRange
+import fi.espoo.evaka.shared.domain.Translatable
 import fi.espoo.evaka.shared.domain.UiLanguage
 import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
@@ -2653,4 +2656,30 @@ data class DevSfiMessageEvent(
     val eventType: EventType,
     val createdAt: HelsinkiDateTime = HelsinkiDateTime.now(),
     val updatedAt: HelsinkiDateTime = HelsinkiDateTime.now(),
+)
+
+data class DevHolidayQuestionnaire(
+    val id: HolidayQuestionnaireId = HolidayQuestionnaireId(UUID.randomUUID()),
+    val type: QuestionnaireType,
+    val absenceType: AbsenceType = AbsenceType.FREE_ABSENCE,
+    val requiresStrongAuth: Boolean = true,
+    val active: FiniteDateRange =
+        FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 3)),
+    val title: Translatable = Translatable("", "", ""),
+    val description: Translatable = Translatable("", "", ""),
+    val descriptionLink: Translatable = Translatable("", "", ""),
+    val conditions: QuestionnaireConditions = QuestionnaireConditions(),
+    val periodOptions: List<FiniteDateRange>?,
+    val periodOptionLabel: Translatable?,
+    val period: FiniteDateRange?,
+    val absenceTypeThreshold: Int?,
+)
+
+data class DevHolidayQuestionnaireAnswer(
+    val id: HolidayQuestionnaireAnswerId = HolidayQuestionnaireAnswerId(UUID.randomUUID()),
+    val modifiedBy: EvakaUserId,
+    val questionnaireId: HolidayQuestionnaireId,
+    val childId: ChildId,
+    val fixedPeriod: FiniteDateRange?,
+    val openRanges: List<FiniteDateRange> = listOf(),
 )

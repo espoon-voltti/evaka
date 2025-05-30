@@ -39,8 +39,9 @@ import type { FamilyDaycareMealReportResult } from 'lib-common/generated/api-typ
 import type { FinanceDecisionType } from 'lib-common/generated/api-types/invoicing'
 import type { FuturePreschoolersReportRow } from 'lib-common/generated/api-types/reports'
 import type { GroupId } from 'lib-common/generated/api-types/shared'
-import type { HolidayPeriodAttendanceReportRow } from 'lib-common/generated/api-types/reports'
 import type { HolidayPeriodId } from 'lib-common/generated/api-types/shared'
+import type { HolidayQuestionnaireId } from 'lib-common/generated/api-types/shared'
+import type { HolidayReportRow } from 'lib-common/generated/api-types/reports'
 import type { IncompleteIncomeDbRow } from 'lib-common/generated/api-types/reports'
 import type { InvoiceReport } from 'lib-common/generated/api-types/reports'
 import type { JsonCompatible } from 'lib-common/json'
@@ -99,7 +100,7 @@ import { deserializeJsonDaycareGroup } from 'lib-common/generated/api-types/dayc
 import { deserializeJsonDuplicatePeopleReportRow } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonEndedPlacementsReportRow } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonFuturePreschoolersReportRow } from 'lib-common/generated/api-types/reports'
-import { deserializeJsonHolidayPeriodAttendanceReportRow } from 'lib-common/generated/api-types/reports'
+import { deserializeJsonHolidayReportRow } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonIncompleteIncomeDbRow } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonManualDuplicationReportRow } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonMealReportData } from 'lib-common/generated/api-types/reports'
@@ -680,18 +681,42 @@ export async function getHolidayPeriodAttendanceReport(
     unitId: DaycareId,
     periodId: HolidayPeriodId
   }
-): Promise<HolidayPeriodAttendanceReportRow[]> {
+): Promise<HolidayReportRow[]> {
   const params = createUrlSearchParams(
     ...(request.groupIds?.map((e): [string, string | null | undefined] => ['groupIds', e]) ?? []),
     ['unitId', request.unitId],
     ['periodId', request.periodId]
   )
-  const { data: json } = await client.request<JsonOf<HolidayPeriodAttendanceReportRow[]>>({
+  const { data: json } = await client.request<JsonOf<HolidayReportRow[]>>({
     url: uri`/employee/reports/holiday-period-attendance`.toString(),
     method: 'GET',
     params
   })
-  return json.map(e => deserializeJsonHolidayPeriodAttendanceReportRow(e))
+  return json.map(e => deserializeJsonHolidayReportRow(e))
+}
+
+
+/**
+* Generated from fi.espoo.evaka.reports.HolidayQuestionnaireReport.getHolidayQuestionnaireReport
+*/
+export async function getHolidayQuestionnaireReport(
+  request: {
+    groupIds?: GroupId[] | null,
+    unitId: DaycareId,
+    questionnaireId: HolidayQuestionnaireId
+  }
+): Promise<HolidayReportRow[]> {
+  const params = createUrlSearchParams(
+    ...(request.groupIds?.map((e): [string, string | null | undefined] => ['groupIds', e]) ?? []),
+    ['unitId', request.unitId],
+    ['questionnaireId', request.questionnaireId]
+  )
+  const { data: json } = await client.request<JsonOf<HolidayReportRow[]>>({
+    url: uri`/employee/reports/holiday-questionnaire`.toString(),
+    method: 'GET',
+    params
+  })
+  return json.map(e => deserializeJsonHolidayReportRow(e))
 }
 
 

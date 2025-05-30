@@ -1948,3 +1948,25 @@ VALUES (${bind(row.id)}, ${bind(row.createdAt)}, ${bind(row.updatedAt)}, ${bind(
         )
     }
 }
+
+fun Database.Transaction.insert(hq: DevHolidayQuestionnaire) {
+    execute {
+        sql(
+            """
+INSERT INTO holiday_period_questionnaire (id, type, absence_type, requires_strong_auth, active, title, description, description_link, condition_continuous_placement, period_options, period_option_label, period, absence_type_threshold)
+VALUES (${bind(hq.id)}, ${bind(hq.type)}, ${bind(hq.absenceType)}, ${bind(hq.requiresStrongAuth)}, ${bind(hq.active)}, ${bindJson(hq.title)}, ${bindJson(hq.description)}, ${bindJson(hq.descriptionLink)}, ${bind(hq.conditions.continuousPlacement)}, ${bind(hq.periodOptions)}, ${bindJson(hq.periodOptionLabel)}, ${bind(hq.period)}, ${bind(hq.absenceTypeThreshold)})
+"""
+        )
+    }
+}
+
+fun Database.Transaction.insert(hqa: DevHolidayQuestionnaireAnswer) {
+    execute {
+        sql(
+            """
+INSERT INTO holiday_questionnaire_answer (id, modified_by, questionnaire_id, child_id, fixed_period, open_ranges)
+VALUES (${bind(hqa.id)}, ${bind(hqa.modifiedBy)}, ${bind(hqa.questionnaireId)}, ${bind(hqa.childId)}, ${bind(hqa.fixedPeriod)}, ${bind(hqa.openRanges)} )
+"""
+        )
+    }
+}
