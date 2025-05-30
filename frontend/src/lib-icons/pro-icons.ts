@@ -34,6 +34,7 @@ export { faArrowRotateLeft } from '@fortawesome/pro-light-svg-icons/faArrowRotat
 export { faArrowsRotate } from '@fortawesome/pro-light-svg-icons/faArrowsRotate'
 export { faBabyCarriage } from '@fortawesome/pro-light-svg-icons/faBabyCarriage'
 export { faBars } from '@fortawesome/pro-light-svg-icons/faBars'
+export { faBarsSort } from '@fortawesome/pro-solid-svg-icons/faBarsSort'
 export { faBoxArchive } from '@fortawesome/pro-solid-svg-icons/faBoxArchive'
 export { faCalendar } from '@fortawesome/pro-light-svg-icons/faCalendar'
 export { faCalendarAlt } from '@fortawesome/pro-light-svg-icons/faCalendarAlt'

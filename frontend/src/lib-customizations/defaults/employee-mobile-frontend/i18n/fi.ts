@@ -13,6 +13,7 @@ export const fi = {
     add: 'Lisää',
     cancel: 'Peruuta',
     confirm: 'Vahvista',
+    sort: 'Järjestä',
     all: 'Kaikki',
     statuses: {
       active: 'Aktiivinen',
@@ -180,6 +181,11 @@ export const fi = {
           }`,
         select: 'Valitse',
         selected: 'Valittu'
+      },
+      sortType: {
+        CHILD_FIRST_NAME: 'Aakkosjärjestys',
+        RESERVATION_START_TIME: 'Saapumisjärjestys',
+        RESERVATION_END_TIME: 'Lähtöjärjestys'
       },
       markAbsent: 'Merkitse poissaolevaksi',
       cancelAbsence: 'Peruuta poissaolo',

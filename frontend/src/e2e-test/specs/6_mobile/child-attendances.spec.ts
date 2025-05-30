@@ -4,11 +4,13 @@
 
 import type { BrowserContextOptions } from 'playwright'
 
+import DateRange from 'lib-common/date-range'
 import type { PlacementType } from 'lib-common/generated/api-types/placement'
 import type { PersonId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { evakaUserId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
+import TimeRange from 'lib-common/time-range'
 
 import type { EvakaBrowserContextOptions } from '../../browser'
 import { mobileViewport } from '../../browser'
@@ -304,6 +306,471 @@ describe('Child mobile attendance list', () => {
     await listPage.departedChildrenTab.click()
     await listPage.assertChildExists(testChild.id)
     await listPage.assertChildExists(testChild2.id)
+  })
+
+  test('Coming tab sorting works', async () => {
+    await createPlacements(testChild.id)
+    await createPlacements(testChild2.id, group2.id)
+    await createPlacements(testChildRestricted.id)
+    await Fixture.attendanceReservation({
+      type: 'RESERVATIONS',
+      childId: testChild.id,
+      date: now.toLocalDate(),
+      reservation: new TimeRange(
+        now.subHours(3).toLocalTime(),
+        now.addHours(3).toLocalTime()
+      ),
+      secondReservation: null
+    }).save()
+    await Fixture.attendanceReservation({
+      type: 'RESERVATIONS',
+      childId: testChild2.id,
+      date: now.toLocalDate(),
+      reservation: new TimeRange(
+        now.subHours(5).toLocalTime(),
+        now.addHours(3).toLocalTime()
+      ),
+      secondReservation: null
+    }).save()
+    await Fixture.attendanceReservation({
+      type: 'RESERVATIONS',
+      childId: testChildRestricted.id,
+      date: now.toLocalDate(),
+      reservation: new TimeRange(
+        now.subHours(4).toLocalTime(),
+        now.addHours(3).toLocalTime()
+      ),
+      secondReservation: null
+    }).save()
+    const mobileSignupUrl = await pairMobileDevice(testDaycare.id)
+
+    await openPage()
+    await page.goto(mobileSignupUrl)
+    await listPage.comingChildrenTab.click()
+    await listPage.assertChildNames([
+      `${testChild.firstName} ${testChild.lastName} (${testChild.preferredName})`,
+      `${testChild2.firstName} ${testChild2.lastName}`,
+      `${testChildRestricted.firstName} ${testChildRestricted.lastName}`
+    ])
+    await listPage.selectSortType('RESERVATION_START_TIME')
+    await listPage.assertChildNames([
+      `${testChild2.firstName} ${testChild2.lastName}`,
+      `${testChildRestricted.firstName} ${testChildRestricted.lastName}`,
+      `${testChild.firstName} ${testChild.lastName} (${testChild.preferredName})`
+    ])
+    await listPage.selectSortType('CHILD_FIRST_NAME')
+    await listPage.assertChildNames([
+      `${testChild.firstName} ${testChild.lastName} (${testChild.preferredName})`,
+      `${testChild2.firstName} ${testChild2.lastName}`,
+      `${testChildRestricted.firstName} ${testChildRestricted.lastName}`
+    ])
+  })
+
+  test('Coming tab sorting works with two reservations', async () => {
+    await createPlacements(testChild.id)
+    await createPlacements(testChild2.id, group2.id)
+    await Fixture.attendanceReservation({
+      type: 'RESERVATIONS',
+      childId: testChild.id,
+      date: now.toLocalDate(),
+      reservation: new TimeRange(
+        now.subHours(9).toLocalTime(),
+        now.subHours(1).toLocalTime()
+      ),
+      secondReservation: new TimeRange(
+        now.addHours(1).toLocalTime(),
+        now.addHours(9).toLocalTime()
+      )
+    }).save()
+    await Fixture.attendanceReservation({
+      type: 'RESERVATIONS',
+      childId: testChild2.id,
+      date: now.toLocalDate(),
+      reservation: new TimeRange(
+        now.subHours(1).toLocalTime(),
+        now.addHours(9).toLocalTime()
+      ),
+      secondReservation: null
+    }).save()
+    const mobileSignupUrl = await pairMobileDevice(testDaycare.id)
+
+    await openPage({ mockedTime: now })
+    await page.goto(mobileSignupUrl)
+    await listPage.selectSortType('RESERVATION_START_TIME')
+    await listPage.assertChildNames([
+      `${testChild2.firstName} ${testChild2.lastName}`,
+      `${testChild.firstName} ${testChild.lastName} (${testChild.preferredName})`
+    ])
+
+    await openPage({ mockedTime: now.subHours(5) })
+    await page.goto(mobileSignupUrl)
+    await listPage.selectSortType('RESERVATION_START_TIME')
+    await listPage.assertChildNames([
+      `${testChild.firstName} ${testChild.lastName} (${testChild.preferredName})`,
+      `${testChild2.firstName} ${testChild2.lastName}`
+    ])
+  })
+
+  test('Coming tab sorting works with regular daily service time', async () => {
+    await createPlacements(testChild.id)
+    await createPlacements(testChild2.id, group2.id)
+    await createPlacements(testChildRestricted.id)
+    await Fixture.dailyServiceTime({
+      childId: testChild.id,
+      validityPeriod: new DateRange(now.toLocalDate(), now.toLocalDate()),
+      type: 'REGULAR',
+      regularTimes: new TimeRange(
+        now.subHours(3).toLocalTime(),
+        now.addHours(3).toLocalTime()
+      )
+    }).save()
+    await Fixture.dailyServiceTime({
+      childId: testChild2.id,
+      validityPeriod: new DateRange(now.toLocalDate(), now.toLocalDate()),
+      type: 'REGULAR',
+      regularTimes: new TimeRange(
+        now.subHours(5).toLocalTime(),
+        now.addHours(3).toLocalTime()
+      )
+    }).save()
+    await Fixture.dailyServiceTime({
+      childId: testChildRestricted.id,
+      validityPeriod: new DateRange(now.toLocalDate(), now.toLocalDate()),
+      type: 'REGULAR',
+      regularTimes: new TimeRange(
+        now.subHours(4).toLocalTime(),
+        now.addHours(3).toLocalTime()
+      )
+    }).save()
+    const mobileSignupUrl = await pairMobileDevice(testDaycare.id)
+
+    await openPage()
+    await page.goto(mobileSignupUrl)
+    await listPage.comingChildrenTab.click()
+    await listPage.assertChildNames([
+      `${testChild.firstName} ${testChild.lastName} (${testChild.preferredName})`,
+      `${testChild2.firstName} ${testChild2.lastName}`,
+      `${testChildRestricted.firstName} ${testChildRestricted.lastName}`
+    ])
+    await listPage.selectSortType('RESERVATION_START_TIME')
+    await listPage.assertChildNames([
+      `${testChild2.firstName} ${testChild2.lastName}`,
+      `${testChildRestricted.firstName} ${testChildRestricted.lastName}`,
+      `${testChild.firstName} ${testChild.lastName} (${testChild.preferredName})`
+    ])
+    await listPage.selectSortType('CHILD_FIRST_NAME')
+    await listPage.assertChildNames([
+      `${testChild.firstName} ${testChild.lastName} (${testChild.preferredName})`,
+      `${testChild2.firstName} ${testChild2.lastName}`,
+      `${testChildRestricted.firstName} ${testChildRestricted.lastName}`
+    ])
+  })
+
+  test('Coming tab sorting works with irregular daily service time', async () => {
+    await createPlacements(testChild.id)
+    await createPlacements(testChild2.id, group2.id)
+    await createPlacements(testChildRestricted.id)
+    await Fixture.dailyServiceTime({
+      childId: testChild.id,
+      validityPeriod: new DateRange(now.toLocalDate(), now.toLocalDate()),
+      type: 'IRREGULAR',
+      regularTimes: null,
+      fridayTimes: new TimeRange(
+        now.subHours(3).toLocalTime(),
+        now.addHours(3).toLocalTime()
+      )
+    }).save()
+    await Fixture.dailyServiceTime({
+      childId: testChild2.id,
+      validityPeriod: new DateRange(now.toLocalDate(), now.toLocalDate()),
+      type: 'IRREGULAR',
+      regularTimes: null,
+      fridayTimes: new TimeRange(
+        now.subHours(5).toLocalTime(),
+        now.addHours(3).toLocalTime()
+      )
+    }).save()
+    await Fixture.dailyServiceTime({
+      childId: testChildRestricted.id,
+      validityPeriod: new DateRange(now.toLocalDate(), now.toLocalDate()),
+      type: 'IRREGULAR',
+      regularTimes: null,
+      fridayTimes: new TimeRange(
+        now.subHours(4).toLocalTime(),
+        now.addHours(3).toLocalTime()
+      )
+    }).save()
+    const mobileSignupUrl = await pairMobileDevice(testDaycare.id)
+
+    await openPage()
+    await page.goto(mobileSignupUrl)
+    await listPage.comingChildrenTab.click()
+    await listPage.assertChildNames([
+      `${testChild.firstName} ${testChild.lastName} (${testChild.preferredName})`,
+      `${testChild2.firstName} ${testChild2.lastName}`,
+      `${testChildRestricted.firstName} ${testChildRestricted.lastName}`
+    ])
+    await listPage.selectSortType('RESERVATION_START_TIME')
+    await listPage.assertChildNames([
+      `${testChild2.firstName} ${testChild2.lastName}`,
+      `${testChildRestricted.firstName} ${testChildRestricted.lastName}`,
+      `${testChild.firstName} ${testChild.lastName} (${testChild.preferredName})`
+    ])
+    await listPage.selectSortType('CHILD_FIRST_NAME')
+    await listPage.assertChildNames([
+      `${testChild.firstName} ${testChild.lastName} (${testChild.preferredName})`,
+      `${testChild2.firstName} ${testChild2.lastName}`,
+      `${testChildRestricted.firstName} ${testChildRestricted.lastName}`
+    ])
+  })
+
+  test('Present tab sorting works', async () => {
+    await createPlacements(testChild.id)
+    await createPlacements(testChild2.id, group2.id)
+    await createPlacements(testChildRestricted.id)
+    await Fixture.attendanceReservation({
+      type: 'RESERVATIONS',
+      childId: testChild.id,
+      date: now.toLocalDate(),
+      reservation: new TimeRange(
+        now.subHours(3).toLocalTime(),
+        now.addHours(3).toLocalTime()
+      ),
+      secondReservation: null
+    }).save()
+    await Fixture.attendanceReservation({
+      type: 'RESERVATIONS',
+      childId: testChild2.id,
+      date: now.toLocalDate(),
+      reservation: new TimeRange(
+        now.subHours(3).toLocalTime(),
+        now.addHours(1).toLocalTime()
+      ),
+      secondReservation: null
+    }).save()
+    await Fixture.attendanceReservation({
+      type: 'RESERVATIONS',
+      childId: testChildRestricted.id,
+      date: now.toLocalDate(),
+      reservation: new TimeRange(
+        now.subHours(3).toLocalTime(),
+        now.addHours(2).toLocalTime()
+      ),
+      secondReservation: null
+    }).save()
+    const mobileSignupUrl = await pairMobileDevice(testDaycare.id)
+
+    await openPage()
+    await page.goto(mobileSignupUrl)
+    await listPage.comingChildrenTab.click()
+    await listPage.multiselectToggle.check()
+    await listPage.selectChild(testChild.id)
+    await listPage.selectChild(testChild2.id)
+    await listPage.selectChild(testChildRestricted.id)
+    await listPage.markMultipleArrivedButton.click()
+    await childAttendancePage.setTime(now.subHours(3).toLocalTime().format())
+    await childAttendancePage.selectMarkPresent()
+    await listPage.presentChildrenTab.click()
+    await listPage.assertChildNames([
+      `${testChild.firstName} ${testChild.lastName} (${testChild.preferredName})`,
+      `${testChild2.firstName} ${testChild2.lastName}`,
+      `${testChildRestricted.firstName} ${testChildRestricted.lastName}`
+    ])
+    await listPage.selectSortType('RESERVATION_END_TIME')
+    await listPage.assertChildNames([
+      `${testChild2.firstName} ${testChild2.lastName}`,
+      `${testChildRestricted.firstName} ${testChildRestricted.lastName}`,
+      `${testChild.firstName} ${testChild.lastName} (${testChild.preferredName})`
+    ])
+    await listPage.selectSortType('CHILD_FIRST_NAME')
+    await listPage.assertChildNames([
+      `${testChild.firstName} ${testChild.lastName} (${testChild.preferredName})`,
+      `${testChild2.firstName} ${testChild2.lastName}`,
+      `${testChildRestricted.firstName} ${testChildRestricted.lastName}`
+    ])
+  })
+
+  test('Present tab sorting works with two reservations', async () => {
+    await createPlacements(testChild.id)
+    await createPlacements(testChild2.id, group2.id)
+    await Fixture.attendanceReservation({
+      type: 'RESERVATIONS',
+      childId: testChild.id,
+      date: now.toLocalDate(),
+      reservation: new TimeRange(
+        now.subHours(9).toLocalTime(),
+        now.subHours(1).toLocalTime()
+      ),
+      secondReservation: new TimeRange(
+        now.addHours(1).toLocalTime(),
+        now.addHours(9).toLocalTime()
+      )
+    }).save()
+    await Fixture.attendanceReservation({
+      type: 'RESERVATIONS',
+      childId: testChild2.id,
+      date: now.toLocalDate(),
+      reservation: new TimeRange(
+        now.addHours(1).toLocalTime(),
+        now.addHours(8).toLocalTime()
+      ),
+      secondReservation: null
+    }).save()
+    const mobileSignupUrl = await pairMobileDevice(testDaycare.id)
+
+    await openPage({ mockedTime: now })
+    await page.goto(mobileSignupUrl)
+    await listPage.comingChildrenTab.click()
+    await listPage.multiselectToggle.check()
+    await listPage.selectChild(testChild.id)
+    await listPage.selectChild(testChild2.id)
+    await listPage.markMultipleArrivedButton.click()
+    await childAttendancePage.setTime(now.toLocalTime().format())
+    await childAttendancePage.selectMarkPresent()
+    await listPage.presentChildrenTab.click()
+    await listPage.selectSortType('RESERVATION_END_TIME')
+    await listPage.assertChildNames([
+      `${testChild.firstName} ${testChild.lastName} (${testChild.preferredName})`,
+      `${testChild2.firstName} ${testChild2.lastName}`
+    ])
+
+    await openPage({ mockedTime: now.addHours(5) })
+    await page.goto(mobileSignupUrl)
+    await listPage.presentChildrenTab.click()
+    await listPage.selectSortType('RESERVATION_END_TIME')
+    await listPage.assertChildNames([
+      `${testChild2.firstName} ${testChild2.lastName}`,
+      `${testChild.firstName} ${testChild.lastName} (${testChild.preferredName})`
+    ])
+  })
+
+  test('Present tab sorting works with regular daily service time', async () => {
+    await createPlacements(testChild.id)
+    await createPlacements(testChild2.id, group2.id)
+    await createPlacements(testChildRestricted.id)
+    await Fixture.dailyServiceTime({
+      childId: testChild.id,
+      validityPeriod: new DateRange(now.toLocalDate(), now.toLocalDate()),
+      type: 'REGULAR',
+      regularTimes: new TimeRange(
+        now.subHours(3).toLocalTime(),
+        now.addHours(3).toLocalTime()
+      )
+    }).save()
+    await Fixture.dailyServiceTime({
+      childId: testChild2.id,
+      validityPeriod: new DateRange(now.toLocalDate(), now.toLocalDate()),
+      type: 'REGULAR',
+      regularTimes: new TimeRange(
+        now.subHours(3).toLocalTime(),
+        now.addHours(1).toLocalTime()
+      )
+    }).save()
+    await Fixture.dailyServiceTime({
+      childId: testChildRestricted.id,
+      validityPeriod: new DateRange(now.toLocalDate(), now.toLocalDate()),
+      type: 'REGULAR',
+      regularTimes: new TimeRange(
+        now.subHours(3).toLocalTime(),
+        now.addHours(2).toLocalTime()
+      )
+    }).save()
+    const mobileSignupUrl = await pairMobileDevice(testDaycare.id)
+
+    await openPage()
+    await page.goto(mobileSignupUrl)
+    await listPage.comingChildrenTab.click()
+    await listPage.multiselectToggle.check()
+    await listPage.selectChild(testChild.id)
+    await listPage.selectChild(testChild2.id)
+    await listPage.selectChild(testChildRestricted.id)
+    await listPage.markMultipleArrivedButton.click()
+    await childAttendancePage.setTime(now.subHours(3).toLocalTime().format())
+    await childAttendancePage.selectMarkPresent()
+    await listPage.presentChildrenTab.click()
+    await listPage.assertChildNames([
+      `${testChild.firstName} ${testChild.lastName} (${testChild.preferredName})`,
+      `${testChild2.firstName} ${testChild2.lastName}`,
+      `${testChildRestricted.firstName} ${testChildRestricted.lastName}`
+    ])
+    await listPage.selectSortType('RESERVATION_END_TIME')
+    await listPage.assertChildNames([
+      `${testChild2.firstName} ${testChild2.lastName}`,
+      `${testChildRestricted.firstName} ${testChildRestricted.lastName}`,
+      `${testChild.firstName} ${testChild.lastName} (${testChild.preferredName})`
+    ])
+    await listPage.selectSortType('CHILD_FIRST_NAME')
+    await listPage.assertChildNames([
+      `${testChild.firstName} ${testChild.lastName} (${testChild.preferredName})`,
+      `${testChild2.firstName} ${testChild2.lastName}`,
+      `${testChildRestricted.firstName} ${testChildRestricted.lastName}`
+    ])
+  })
+
+  test('Present tab sorting works with irregular daily service time', async () => {
+    await createPlacements(testChild.id)
+    await createPlacements(testChild2.id, group2.id)
+    await createPlacements(testChildRestricted.id)
+    await Fixture.dailyServiceTime({
+      childId: testChild.id,
+      validityPeriod: new DateRange(now.toLocalDate(), now.toLocalDate()),
+      type: 'IRREGULAR',
+      regularTimes: null,
+      fridayTimes: new TimeRange(
+        now.subHours(3).toLocalTime(),
+        now.addHours(3).toLocalTime()
+      )
+    }).save()
+    await Fixture.dailyServiceTime({
+      childId: testChild2.id,
+      validityPeriod: new DateRange(now.toLocalDate(), now.toLocalDate()),
+      type: 'IRREGULAR',
+      regularTimes: null,
+      fridayTimes: new TimeRange(
+        now.subHours(3).toLocalTime(),
+        now.addHours(1).toLocalTime()
+      )
+    }).save()
+    await Fixture.dailyServiceTime({
+      childId: testChildRestricted.id,
+      validityPeriod: new DateRange(now.toLocalDate(), now.toLocalDate()),
+      type: 'IRREGULAR',
+      regularTimes: null,
+      fridayTimes: new TimeRange(
+        now.subHours(3).toLocalTime(),
+        now.addHours(2).toLocalTime()
+      )
+    }).save()
+    const mobileSignupUrl = await pairMobileDevice(testDaycare.id)
+
+    await openPage()
+    await page.goto(mobileSignupUrl)
+    await listPage.comingChildrenTab.click()
+    await listPage.multiselectToggle.check()
+    await listPage.selectChild(testChild.id)
+    await listPage.selectChild(testChild2.id)
+    await listPage.selectChild(testChildRestricted.id)
+    await listPage.markMultipleArrivedButton.click()
+    await childAttendancePage.setTime(now.subHours(3).toLocalTime().format())
+    await childAttendancePage.selectMarkPresent()
+    await listPage.presentChildrenTab.click()
+    await listPage.assertChildNames([
+      `${testChild.firstName} ${testChild.lastName} (${testChild.preferredName})`,
+      `${testChild2.firstName} ${testChild2.lastName}`,
+      `${testChildRestricted.firstName} ${testChildRestricted.lastName}`
+    ])
+    await listPage.selectSortType('RESERVATION_END_TIME')
+    await listPage.assertChildNames([
+      `${testChild2.firstName} ${testChild2.lastName}`,
+      `${testChildRestricted.firstName} ${testChildRestricted.lastName}`,
+      `${testChild.firstName} ${testChild.lastName} (${testChild.preferredName})`
+    ])
+    await listPage.selectSortType('CHILD_FIRST_NAME')
+    await listPage.assertChildNames([
+      `${testChild.firstName} ${testChild.lastName} (${testChild.preferredName})`,
+      `${testChild2.firstName} ${testChild2.lastName}`,
+      `${testChildRestricted.firstName} ${testChildRestricted.lastName}`
+    ])
   })
 
   test('Child can be marked as absent for the whole day', async () => {
