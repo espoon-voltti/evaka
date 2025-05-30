@@ -657,7 +657,11 @@ abstract class SqlBuilder {
 
     fun bind(binding: ValueBinding<*>): Binding {
         addBinding(binding)
-        return Binding
+        return PositionalBinding
+    }
+
+    fun insertDefault(): Binding {
+        return DefaultValue
     }
 
     fun subquery(f: QuerySql.Builder.() -> QuerySql): QuerySqlString = subquery(QuerySql { f() })
@@ -676,8 +680,14 @@ abstract class SqlBuilder {
     }
 
     /** A marker type used for bound parameters that can be used in a template string */
-    object Binding {
+    sealed interface Binding
+
+    object PositionalBinding : Binding {
         override fun toString(): String = "?"
+    }
+
+    object DefaultValue : Binding {
+        override fun toString(): String = "DEFAULT"
     }
 }
 
@@ -753,7 +763,7 @@ data class BatchSql<R>(val sql: QuerySqlString, val bindings: List<BatchBinding<
 
         fun bind(binding: LazyBinding<R, *>): Binding {
             this.bindings += binding
-            return Binding
+            return PositionalBinding
         }
 
         inline fun <reified T> bind(noinline getValue: (row: R) -> T): Binding =
