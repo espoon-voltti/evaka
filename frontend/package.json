@@ -92,7 +92,7 @@
     "@types/punycode": "2.1.4",
     "@types/react": "19.1.6",
     "@types/react-dom": "19.1.5",
-    "@vitejs/plugin-react": "4.4.1",
+    "@vitejs/plugin-react": "4.5.0",
     "babel-loader": "10.0.0",
     "babel-plugin-styled-components": "2.1.4",
     "concurrently": "9.1.2",
