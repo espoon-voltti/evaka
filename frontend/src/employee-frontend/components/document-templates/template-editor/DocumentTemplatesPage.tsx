@@ -14,9 +14,9 @@ import { array, object, oneOf, required, value } from 'lib-common/form/form'
 import { useBoolean, useForm, useFormFields } from 'lib-common/form/hooks'
 import type {
   DocumentTemplateSummary,
-  DocumentType
+  ChildDocumentType
 } from 'lib-common/generated/api-types/document'
-import { documentTypes } from 'lib-common/generated/api-types/document'
+import { childDocumentTypes } from 'lib-common/generated/api-types/document'
 import type {
   DocumentTemplateId,
   UiLanguage
@@ -197,7 +197,7 @@ const filtersForm = object({
   draft: required(value<boolean>()),
   future: required(value<boolean>()),
   past: required(value<boolean>()),
-  type: oneOf<DocumentType>(),
+  type: oneOf<ChildDocumentType>(),
   language: array(value<UiLanguage>())
 })
 
@@ -224,7 +224,7 @@ export default React.memo(function DocumentTemplatesPage() {
       past: false,
       type: {
         domValue: '',
-        options: documentTypes.map((t) => ({
+        options: childDocumentTypes.map((t) => ({
           value: t,
           domValue: t,
           label: i18n.documentTemplates.documentTypes[t]

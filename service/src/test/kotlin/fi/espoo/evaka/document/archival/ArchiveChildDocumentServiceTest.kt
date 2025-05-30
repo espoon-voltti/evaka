@@ -127,7 +127,7 @@ class ArchiveChildDocumentServiceTest {
                     DocumentTemplate(
                         id = DocumentTemplateId(templateId),
                         name = "VASU 2022-2023",
-                        type = DocumentType.VASU,
+                        type = ChildDocumentType.VASU,
                         placementTypes = setOf(PlacementType.PRESCHOOL),
                         language = UiLanguage.FI,
                         confidentiality =

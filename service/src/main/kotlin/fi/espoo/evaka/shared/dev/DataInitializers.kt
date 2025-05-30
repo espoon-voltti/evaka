@@ -15,7 +15,7 @@ import fi.espoo.evaka.attendance.StaffAttendanceType
 import fi.espoo.evaka.daycare.ClubTerm
 import fi.espoo.evaka.decision.DecisionStatus
 import fi.espoo.evaka.decision.DecisionType
-import fi.espoo.evaka.document.DocumentType
+import fi.espoo.evaka.document.ChildDocumentType
 import fi.espoo.evaka.identity.ExternalId
 import fi.espoo.evaka.incomestatement.IncomeStatementBody
 import fi.espoo.evaka.incomestatement.IncomeStatementStatus
@@ -1503,7 +1503,7 @@ VALUES (${bind(row.id)}, ${bind(row.name)}, ${bind(row.type)}, ${bind(row.placem
 fun Database.Transaction.insert(row: DevChildDocument): ChildDocumentId {
     val type =
         createQuery { sql("SELECT type FROM document_template WHERE id = ${bind(row.templateId)}") }
-            .exactlyOne<DocumentType>()
+            .exactlyOne<ChildDocumentType>()
 
     val decisionId = row.decision?.let { insert(it) }
 

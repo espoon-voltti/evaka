@@ -13,9 +13,9 @@ import fi.espoo.evaka.decision.DecisionType
 import fi.espoo.evaka.decision.DecisionUnit
 import fi.espoo.evaka.decision.createDecisionPdf
 import fi.espoo.evaka.document.CheckboxGroupQuestionOption
+import fi.espoo.evaka.document.ChildDocumentType
 import fi.espoo.evaka.document.DocumentTemplate
 import fi.espoo.evaka.document.DocumentTemplateContent
-import fi.espoo.evaka.document.DocumentType
 import fi.espoo.evaka.document.Question
 import fi.espoo.evaka.document.RadioButtonGroupQuestionOption
 import fi.espoo.evaka.document.Section
@@ -279,7 +279,7 @@ class PdfGeneratorTest {
                 template =
                     DocumentTemplate(
                         id = DocumentTemplateId(UUID.randomUUID()),
-                        type = DocumentType.HOJKS,
+                        type = ChildDocumentType.HOJKS,
                         placementTypes = PlacementType.entries.toSet(),
                         name = "Varhaiskasvatussuunnitelma 2023-2024",
                         language = UiLanguage.FI,

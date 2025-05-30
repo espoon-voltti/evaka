@@ -27,7 +27,7 @@ import { nonBlank } from 'lib-common/form/validators'
 import type {
   DocumentTemplateBasicsRequest,
   DocumentTemplateContent,
-  DocumentType,
+  ChildDocumentType,
   Question,
   QuestionType
 } from 'lib-common/generated/api-types/document'
@@ -44,7 +44,7 @@ import TextQuestionDescriptor from 'lib-components/document-templates/question-d
 export const documentTemplateForm = transformed(
   object({
     name: validated(string(), nonBlank),
-    type: required(oneOf<DocumentType>()),
+    type: required(oneOf<ChildDocumentType>()),
     placementTypes: validated(array(value<PlacementType>()), (arr) =>
       arr.length === 0 ? 'required' : undefined
     ),

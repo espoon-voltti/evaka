@@ -10,6 +10,7 @@ import type { ApplicationStatus } from './application'
 import type { AreaId } from './shared'
 import type { AssistanceActionOption } from './assistanceaction'
 import type { AssistanceNeedDecisionStatus } from './assistanceneed'
+import type { ChildDocumentType } from './document'
 import type { DaycareAssistanceLevel } from './assistance'
 import type { DaycareId } from './shared'
 import type { DecisionType } from './decision'
@@ -17,7 +18,6 @@ import type { DocumentContent } from './document'
 import type { DocumentStatus } from './document'
 import type { DocumentTemplateContent } from './document'
 import type { DocumentTemplateId } from './shared'
-import type { DocumentType } from './document'
 import FiniteDateRange from '../../finite-date-range'
 import type { GroupId } from './shared'
 import HelsinkiDateTime from '../../helsinki-date-time'
@@ -254,7 +254,7 @@ export interface ChildAttendanceReportRow {
 export interface ChildDocumentsReportTemplate {
   id: DocumentTemplateId
   name: string
-  type: DocumentType
+  type: ChildDocumentType
 }
 
 /**

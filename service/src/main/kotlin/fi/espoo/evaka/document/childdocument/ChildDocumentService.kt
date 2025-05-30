@@ -7,7 +7,7 @@ package fi.espoo.evaka.document.childdocument
 import fi.espoo.evaka.EmailEnv
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.decision.getSendAddress
-import fi.espoo.evaka.document.DocumentType
+import fi.espoo.evaka.document.ChildDocumentType
 import fi.espoo.evaka.emailclient.Email
 import fi.espoo.evaka.emailclient.EmailClient
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
@@ -215,7 +215,7 @@ class ChildDocumentService(
                 JOIN document_template dt on dt.id = cd.template_id
                 WHERE dt.validity << ${bind(now.toLocalDate().toFiniteDateRange())} 
                     AND dt.type = ANY (${bind(
-                        DocumentType.entries.filter { it.autoCompleteAtEndOfValidity }
+                        ChildDocumentType.entries.filter { it.autoCompleteAtEndOfValidity }
                     )})
                     AND cd.status <> 'COMPLETED'
             """

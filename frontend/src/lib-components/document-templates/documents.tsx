@@ -13,7 +13,7 @@ import type {
   AnsweredQuestion,
   DocumentContent,
   DocumentTemplateContent,
-  DocumentType,
+  ChildDocumentType,
   Question
 } from 'lib-common/generated/api-types/document'
 
@@ -203,7 +203,7 @@ export const getDocumentFormInitialState = (
 export type ChildDocumentCategory = 'internal' | 'decision' | 'external'
 
 export const getDocumentCategory = (
-  type: DocumentType
+  type: ChildDocumentType
 ): ChildDocumentCategory => {
   switch (type) {
     case 'PEDAGOGICAL_REPORT':

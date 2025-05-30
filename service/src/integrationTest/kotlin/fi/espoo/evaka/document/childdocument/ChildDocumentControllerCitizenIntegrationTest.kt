@@ -6,8 +6,8 @@ package fi.espoo.evaka.document.childdocument
 
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.daycare.domain.Language
+import fi.espoo.evaka.document.ChildDocumentType
 import fi.espoo.evaka.document.DocumentTemplateContent
-import fi.espoo.evaka.document.DocumentType
 import fi.espoo.evaka.document.Question
 import fi.espoo.evaka.document.Section
 import fi.espoo.evaka.document.getTemplate
@@ -101,7 +101,7 @@ class ChildDocumentControllerCitizenIntegrationTest :
             tx.insert(
                 DevDocumentTemplate(
                     id = templateId,
-                    type = DocumentType.PEDAGOGICAL_ASSESSMENT,
+                    type = ChildDocumentType.PEDAGOGICAL_ASSESSMENT,
                     name = "Pedagoginen arvio 2023",
                     validity = DateRange(clock.today(), clock.today()),
                     content = templateContent,
@@ -149,7 +149,7 @@ class ChildDocumentControllerCitizenIntegrationTest :
             listOf(
                 ChildDocumentCitizenSummary(
                     id = documentId,
-                    type = DocumentType.PEDAGOGICAL_ASSESSMENT,
+                    type = ChildDocumentType.PEDAGOGICAL_ASSESSMENT,
                     publishedAt = clock.now(),
                     templateName = "Pedagoginen arvio 2023",
                     status = DocumentStatus.DRAFT,
@@ -221,7 +221,7 @@ class ChildDocumentControllerCitizenIntegrationTest :
     fun `updateChildDocument updates status and content`() {
         val template =
             DevDocumentTemplate(
-                type = DocumentType.CITIZEN_BASIC,
+                type = ChildDocumentType.CITIZEN_BASIC,
                 name = "Medialupa",
                 validity = DateRange(clock.today(), clock.today()),
                 content = templateContent,
@@ -305,7 +305,7 @@ class ChildDocumentControllerCitizenIntegrationTest :
                     answeredBy = testAdult_1.toEvakaUser(EvakaUserType.CITIZEN),
                 )
             ),
-            documents.filter { it.type == DocumentType.CITIZEN_BASIC },
+            documents.filter { it.type == ChildDocumentType.CITIZEN_BASIC },
         )
         val document = getDocument(documentId)
         assertEquals(
@@ -335,7 +335,7 @@ class ChildDocumentControllerCitizenIntegrationTest :
         asyncJobRunner.runPendingJobsSync(clock)
         val template =
             DevDocumentTemplate(
-                    type = DocumentType.CITIZEN_BASIC,
+                    type = ChildDocumentType.CITIZEN_BASIC,
                     name = "Medialupa",
                     validity = DateRange(clock.today(), clock.today()),
                     content = templateContent,
@@ -384,7 +384,7 @@ class ChildDocumentControllerCitizenIntegrationTest :
         val summary11 =
             ChildDocumentCitizenSummary(
                 id = documentId,
-                type = DocumentType.PEDAGOGICAL_ASSESSMENT,
+                type = ChildDocumentType.PEDAGOGICAL_ASSESSMENT,
                 publishedAt = clock.now(),
                 templateName = "Pedagoginen arvio 2023",
                 status = DocumentStatus.DRAFT,
@@ -453,7 +453,7 @@ class ChildDocumentControllerCitizenIntegrationTest :
     fun `answered by employee user name is not exposed`() {
         val template =
             DevDocumentTemplate(
-                    type = DocumentType.CITIZEN_BASIC,
+                    type = ChildDocumentType.CITIZEN_BASIC,
                     name = "Medialupa",
                     validity = DateRange(clock.today(), clock.today()),
                     content = templateContent,

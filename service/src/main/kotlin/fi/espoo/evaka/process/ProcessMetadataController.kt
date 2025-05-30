@@ -10,7 +10,7 @@ import fi.espoo.evaka.application.ApplicationOrigin
 import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.application.fetchApplicationDetails
 import fi.espoo.evaka.decision.DecisionType
-import fi.espoo.evaka.document.DocumentType
+import fi.espoo.evaka.document.ChildDocumentType
 import fi.espoo.evaka.document.childdocument.getChildDocument
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
@@ -109,17 +109,17 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                             process = process,
                             processName =
                                 when (type) {
-                                    DocumentType.VASU,
-                                    DocumentType.MIGRATED_VASU ->
+                                    ChildDocumentType.VASU,
+                                    ChildDocumentType.MIGRATED_VASU ->
                                         "Lapsen varhaiskasvatussuunnitelma"
-                                    DocumentType.LEOPS,
-                                    DocumentType.MIGRATED_LEOPS ->
+                                    ChildDocumentType.LEOPS,
+                                    ChildDocumentType.MIGRATED_LEOPS ->
                                         "Lapsen esiopetuksen oppimissuunnitelma"
-                                    DocumentType.HOJKS ->
+                                    ChildDocumentType.HOJKS ->
                                         "Henkilökohtainen opetuksen järjestämistä koskeva suunnitelma"
-                                    DocumentType.PEDAGOGICAL_ASSESSMENT ->
+                                    ChildDocumentType.PEDAGOGICAL_ASSESSMENT ->
                                         "Esiopetuksen pedagoginen arvio"
-                                    DocumentType.PEDAGOGICAL_REPORT ->
+                                    ChildDocumentType.PEDAGOGICAL_REPORT ->
                                         "Esiopetuksen pedagoginen selvitys"
                                     else -> null
                                 },

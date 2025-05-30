@@ -50,9 +50,9 @@ import fi.espoo.evaka.decision.DecisionStatus
 import fi.espoo.evaka.decision.DecisionType
 import fi.espoo.evaka.decision.getDecision
 import fi.espoo.evaka.decision.getDecisionsByApplication
+import fi.espoo.evaka.document.ChildDocumentType
 import fi.espoo.evaka.document.DocumentTemplate
 import fi.espoo.evaka.document.DocumentTemplateContent
-import fi.espoo.evaka.document.DocumentType
 import fi.espoo.evaka.document.childdocument.ChildDocumentDecisionStatus
 import fi.espoo.evaka.document.childdocument.DocumentContent
 import fi.espoo.evaka.document.childdocument.DocumentStatus
@@ -2378,7 +2378,7 @@ data class DevDaycareCaretaker(
 data class DevDocumentTemplate(
     val id: DocumentTemplateId = DocumentTemplateId(UUID.randomUUID()),
     val name: String = "Pedagoginen arvio 2023",
-    val type: DocumentType = DocumentType.PEDAGOGICAL_ASSESSMENT,
+    val type: ChildDocumentType = ChildDocumentType.PEDAGOGICAL_ASSESSMENT,
     val placementTypes: Set<PlacementType> = PlacementType.entries.toSet(),
     val language: UiLanguage = UiLanguage.FI,
     val confidentiality: DocumentConfidentiality? = null,

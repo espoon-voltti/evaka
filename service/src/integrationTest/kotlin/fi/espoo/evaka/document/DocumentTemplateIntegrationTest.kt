@@ -63,7 +63,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     val testCreationRequest =
         DocumentTemplateBasicsRequest.Regular(
             name = "test",
-            type = DocumentType.PEDAGOGICAL_ASSESSMENT,
+            type = ChildDocumentType.PEDAGOGICAL_ASSESSMENT,
             placementTypes = PlacementType.entries.toSet(),
             language = UiLanguage.FI,
             confidentiality = DocumentConfidentiality(100, "Laki § 100"),
@@ -134,7 +134,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             testCreationRequest.copy(
                 name = "name2",
                 language = UiLanguage.SV,
-                type = DocumentType.PEDAGOGICAL_REPORT,
+                type = ChildDocumentType.PEDAGOGICAL_REPORT,
                 confidentiality = null,
                 legalBasis = "$42b",
                 processDefinitionNumber = "123.456.789b",
@@ -157,7 +157,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             created.copy(
                 name = "name2",
                 language = UiLanguage.SV,
-                type = DocumentType.PEDAGOGICAL_REPORT,
+                type = ChildDocumentType.PEDAGOGICAL_REPORT,
                 confidentiality = null,
                 legalBasis = "$42b",
                 content = testContent,
@@ -280,7 +280,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 created.id,
                 DocumentTemplateBasicsRequest.Regular(
                     name = "another",
-                    type = DocumentType.PEDAGOGICAL_REPORT,
+                    type = ChildDocumentType.PEDAGOGICAL_REPORT,
                     placementTypes = PlacementType.entries.toSet(),
                     language = UiLanguage.SV,
                     DocumentConfidentiality(100, "Laki § 100"),
@@ -293,7 +293,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
         assertNotEquals(created.id, copy.id)
         assertEquals("another", copy.name)
-        assertEquals(DocumentType.PEDAGOGICAL_REPORT, copy.type)
+        assertEquals(ChildDocumentType.PEDAGOGICAL_REPORT, copy.type)
         assertEquals(UiLanguage.SV, copy.language)
         assertEquals(DocumentConfidentiality(100, "Laki § 100"), copy.confidentiality)
         assertEquals("", copy.legalBasis)

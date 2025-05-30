@@ -147,7 +147,7 @@ class DocumentTemplateController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestParam groupId: GroupId,
-        @RequestParam(required = false) types: Set<DocumentType> = emptySet(),
+        @RequestParam(required = false) types: Set<ChildDocumentType> = emptySet(),
     ): List<DocumentTemplateSummary> {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -419,8 +419,8 @@ class DocumentTemplateController(
     }
 }
 
-private fun validateLanguage(lang: UiLanguage, type: DocumentType) {
-    if (type != DocumentType.CITIZEN_BASIC && lang == UiLanguage.EN) {
+private fun validateLanguage(lang: UiLanguage, type: ChildDocumentType) {
+    if (type != ChildDocumentType.CITIZEN_BASIC && lang == UiLanguage.EN) {
         throw BadRequest("English is not supported for this document type")
     }
 }

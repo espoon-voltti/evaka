@@ -5,7 +5,7 @@
 package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.document.DocumentType
+import fi.espoo.evaka.document.ChildDocumentType
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DocumentTemplateId
 import fi.espoo.evaka.shared.GroupId
@@ -80,7 +80,7 @@ class ChildDocumentsReport(private val accessControl: AccessControl) {
     data class ChildDocumentsReportTemplate(
         val id: DocumentTemplateId,
         val name: String,
-        val type: DocumentType,
+        val type: ChildDocumentType,
     )
 
     @GetMapping("/employee/reports/child-documents/template-options")

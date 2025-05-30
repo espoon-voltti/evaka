@@ -9,9 +9,9 @@ import { openEndedLocalDateRange } from 'lib-common/form/fields'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
 import type {
   ExportedDocumentTemplate,
-  DocumentType
+  ChildDocumentType
 } from 'lib-common/generated/api-types/document'
-import { documentTypes } from 'lib-common/generated/api-types/document'
+import { childDocumentTypes } from 'lib-common/generated/api-types/document'
 import type { DocumentTemplateId } from 'lib-common/generated/api-types/shared'
 import { uiLanguages } from 'lib-common/generated/api-types/shared'
 import type { JsonOf } from 'lib-common/json'
@@ -65,7 +65,7 @@ export default React.memo(function TemplateModal({ onClose, mode }: Props) {
 
   const typeOptions = useMemo(
     () =>
-      documentTypes
+      childDocumentTypes
         .filter(
           (type) =>
             !type.startsWith('MIGRATED_') &&
@@ -83,7 +83,7 @@ export default React.memo(function TemplateModal({ onClose, mode }: Props) {
   )
 
   const getLanguageOptions = useCallback(
-    (type: DocumentType) =>
+    (type: ChildDocumentType) =>
       uiLanguages
         .filter((option) => type === 'CITIZEN_BASIC' || option !== 'EN')
         .map((option) => ({

@@ -5,8 +5,8 @@
 package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.document.ChildDocumentType
 import fi.espoo.evaka.document.DocumentTemplateContent
-import fi.espoo.evaka.document.DocumentType
 import fi.espoo.evaka.document.Question
 import fi.espoo.evaka.document.Section
 import fi.espoo.evaka.document.childdocument.AnsweredQuestion
@@ -53,7 +53,7 @@ class ChildDocumentDecisionsReportTest : FullApplicationTest(resetDbBeforeEach =
     val child2 = DevPerson()
     val template =
         DevDocumentTemplate(
-            type = DocumentType.OTHER_DECISION,
+            type = ChildDocumentType.OTHER_DECISION,
             name = "Tuen päätös",
             validity = DateRange(clock.today(), null),
             content =

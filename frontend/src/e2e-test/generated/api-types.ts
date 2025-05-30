@@ -32,6 +32,7 @@ import type { CareType } from 'lib-common/generated/api-types/daycare'
 import type { ChildDocumentDecisionId } from 'lib-common/generated/api-types/shared'
 import type { ChildDocumentDecisionStatus } from 'lib-common/generated/api-types/document'
 import type { ChildDocumentId } from 'lib-common/generated/api-types/shared'
+import type { ChildDocumentType } from 'lib-common/generated/api-types/document'
 import type { ChildWithDateOfBirth } from 'lib-common/generated/api-types/invoicing'
 import type { ClubTermId } from 'lib-common/generated/api-types/shared'
 import type { Coordinate } from 'lib-common/generated/api-types/shared'
@@ -52,7 +53,6 @@ import type { DocumentContent } from 'lib-common/generated/api-types/document'
 import type { DocumentStatus } from 'lib-common/generated/api-types/document'
 import type { DocumentTemplateContent } from 'lib-common/generated/api-types/document'
 import type { DocumentTemplateId } from 'lib-common/generated/api-types/shared'
-import type { DocumentType } from 'lib-common/generated/api-types/document'
 import type { EmailMessageType } from 'lib-common/generated/api-types/pis'
 import type { EmployeeId } from 'lib-common/generated/api-types/shared'
 import type { EvakaUser } from 'lib-common/generated/api-types/user'
@@ -599,7 +599,7 @@ export interface DevDocumentTemplate {
   placementTypes: PlacementType[]
   processDefinitionNumber: string | null
   published: boolean
-  type: DocumentType
+  type: ChildDocumentType
   validity: DateRange
 }
 

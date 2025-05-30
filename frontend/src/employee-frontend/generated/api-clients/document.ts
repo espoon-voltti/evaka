@@ -8,6 +8,7 @@ import type { AcceptChildDocumentDecisionRequest } from 'lib-common/generated/ap
 import type { ChildDocumentCreateRequest } from 'lib-common/generated/api-types/document'
 import type { ChildDocumentId } from 'lib-common/generated/api-types/shared'
 import type { ChildDocumentSummaryWithPermittedActions } from 'lib-common/generated/api-types/document'
+import type { ChildDocumentType } from 'lib-common/generated/api-types/document'
 import type { ChildDocumentWithPermittedActions } from 'lib-common/generated/api-types/document'
 import type { ChildDocumentsCreateRequest } from 'lib-common/generated/api-types/document'
 import DateRange from 'lib-common/date-range'
@@ -18,7 +19,6 @@ import type { DocumentTemplateBasicsRequest } from 'lib-common/generated/api-typ
 import type { DocumentTemplateContent } from 'lib-common/generated/api-types/document'
 import type { DocumentTemplateId } from 'lib-common/generated/api-types/shared'
 import type { DocumentTemplateSummary } from 'lib-common/generated/api-types/document'
-import type { DocumentType } from 'lib-common/generated/api-types/document'
 import type { Employee } from 'lib-common/generated/api-types/pis'
 import type { ExportedDocumentTemplate } from 'lib-common/generated/api-types/document'
 import type { GroupId } from 'lib-common/generated/api-types/shared'
@@ -146,7 +146,7 @@ export async function getActiveTemplates(
 export async function getActiveTemplatesByGroupId(
   request: {
     groupId: GroupId,
-    types?: DocumentType[] | null
+    types?: ChildDocumentType[] | null
   }
 ): Promise<DocumentTemplateSummary[]> {
   const params = createUrlSearchParams(

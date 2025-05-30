@@ -5,11 +5,11 @@
 import type {
   ChildDocumentDecisionStatus,
   DocumentStatus,
-  DocumentType
+  ChildDocumentType
 } from 'lib-common/generated/api-types/document'
 import { getDocumentCategory } from 'lib-components/document-templates/documents'
 
-const statusesByType: Record<DocumentType, DocumentStatus[]> = {
+const statusesByType: Record<ChildDocumentType, DocumentStatus[]> = {
   PEDAGOGICAL_ASSESSMENT: ['DRAFT', 'COMPLETED'],
   PEDAGOGICAL_REPORT: ['DRAFT', 'COMPLETED'],
   HOJKS: ['DRAFT', 'PREPARED', 'COMPLETED'],
@@ -23,7 +23,7 @@ const statusesByType: Record<DocumentType, DocumentStatus[]> = {
 }
 
 export const getNextDocumentStatus = (
-  type: DocumentType,
+  type: ChildDocumentType,
   current: DocumentStatus
 ): DocumentStatus | null => {
   const statuses = statusesByType[type]
@@ -44,7 +44,7 @@ export const getNextDocumentStatus = (
 }
 
 export const getPrevDocumentStatus = (
-  type: DocumentType,
+  type: ChildDocumentType,
   current: DocumentStatus
 ): DocumentStatus | null => {
   const statuses = statusesByType[type]
@@ -74,7 +74,7 @@ export const isChildDocumentEditable = (status: DocumentStatus) => {
 }
 
 export const isChildDocumentPublishable = (
-  type: DocumentType,
+  type: ChildDocumentType,
   status: DocumentStatus
 ) =>
   status !== 'COMPLETED' &&
@@ -82,7 +82,7 @@ export const isChildDocumentPublishable = (
   type !== 'OTHER_DECISION'
 
 export const isChildDocumentDecidable = (
-  type: DocumentType,
+  type: ChildDocumentType,
   status: DocumentStatus
 ) => {
   return (
@@ -91,7 +91,7 @@ export const isChildDocumentDecidable = (
 }
 
 export const isChildDocumentAnnullable = (
-  type: DocumentType,
+  type: ChildDocumentType,
   status: DocumentStatus,
   decisionStatus: ChildDocumentDecisionStatus | null
 ) => {
