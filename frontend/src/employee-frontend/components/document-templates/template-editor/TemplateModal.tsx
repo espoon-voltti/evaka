@@ -9,7 +9,7 @@ import { openEndedLocalDateRange } from 'lib-common/form/fields'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
 import type {
   ExportedDocumentTemplate,
-  DocumentType
+  ChildDocumentType
 } from 'lib-common/generated/api-types/document'
 import { documentTypes } from 'lib-common/generated/api-types/document'
 import type { DocumentTemplateId } from 'lib-common/generated/api-types/shared'
@@ -83,7 +83,7 @@ export default React.memo(function TemplateModal({ onClose, mode }: Props) {
   )
 
   const getLanguageOptions = useCallback(
-    (type: DocumentType) =>
+    (type: ChildDocumentType) =>
       uiLanguages
         .filter((option) => type === 'CITIZEN_BASIC' || option !== 'EN')
         .map((option) => ({

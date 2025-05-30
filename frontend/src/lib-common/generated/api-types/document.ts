@@ -152,7 +152,7 @@ export interface ChildDocumentCitizenSummary {
   publishedAt: HelsinkiDateTime
   status: DocumentStatus
   templateName: string
-  type: DocumentType
+  type: ChildDocumentType
   unread: boolean
 }
 
@@ -229,7 +229,7 @@ export interface ChildDocumentSummary {
   status: DocumentStatus
   templateId: DocumentTemplateId
   templateName: string
-  type: DocumentType
+  type: ChildDocumentType
 }
 
 /**
@@ -239,6 +239,24 @@ export interface ChildDocumentSummaryWithPermittedActions {
   data: ChildDocumentSummary
   permittedActions: Action.ChildDocument[]
 }
+
+/**
+* Generated from fi.espoo.evaka.document.ChildDocumentType
+*/
+export const documentTypes = [
+  'PEDAGOGICAL_REPORT',
+  'PEDAGOGICAL_ASSESSMENT',
+  'HOJKS',
+  'MIGRATED_VASU',
+  'MIGRATED_LEOPS',
+  'VASU',
+  'LEOPS',
+  'CITIZEN_BASIC',
+  'OTHER_DECISION',
+  'OTHER'
+] as const
+
+export type ChildDocumentType = typeof documentTypes[number]
 
 /**
 * Generated from fi.espoo.evaka.document.childdocument.ChildDocumentWithPermittedActions
@@ -296,7 +314,7 @@ export interface DocumentTemplate {
   placementTypes: PlacementType[]
   processDefinitionNumber: string | null
   published: boolean
-  type: DocumentType
+  type: ChildDocumentType
   validity: DateRange
 }
 
@@ -315,7 +333,7 @@ export namespace DocumentTemplateBasicsRequest {
     name: string
     placementTypes: PlacementType[]
     processDefinitionNumber: string
-    type: DocumentType
+    type: ChildDocumentType
     validity: DateRange
   }
 
@@ -332,7 +350,7 @@ export namespace DocumentTemplateBasicsRequest {
     name: string
     placementTypes: PlacementType[]
     processDefinitionNumber: string | null
-    type: DocumentType
+    type: ChildDocumentType
     validity: DateRange
   }
 }
@@ -360,27 +378,9 @@ export interface DocumentTemplateSummary {
   name: string
   placementTypes: PlacementType[]
   published: boolean
-  type: DocumentType
+  type: ChildDocumentType
   validity: DateRange
 }
-
-/**
-* Generated from fi.espoo.evaka.document.DocumentType
-*/
-export const documentTypes = [
-  'PEDAGOGICAL_REPORT',
-  'PEDAGOGICAL_ASSESSMENT',
-  'HOJKS',
-  'MIGRATED_VASU',
-  'MIGRATED_LEOPS',
-  'VASU',
-  'LEOPS',
-  'CITIZEN_BASIC',
-  'OTHER_DECISION',
-  'OTHER'
-] as const
-
-export type DocumentType = typeof documentTypes[number]
 
 /**
 * Generated from fi.espoo.evaka.document.childdocument.DocumentWriteLock
@@ -404,7 +404,7 @@ export interface ExportedDocumentTemplate {
   name: string
   placementTypes: PlacementType[]
   processDefinitionNumber: string | null
-  type: DocumentType
+  type: ChildDocumentType
   validity: DateRange
 }
 

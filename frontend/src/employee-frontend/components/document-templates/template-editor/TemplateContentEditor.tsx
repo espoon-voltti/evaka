@@ -16,7 +16,7 @@ import {
 } from 'lib-common/form/hooks'
 import type {
   DocumentTemplate,
-  DocumentType
+  ChildDocumentType
 } from 'lib-common/generated/api-types/document'
 import { documentTypes } from 'lib-common/generated/api-types/document'
 import { uiLanguages } from 'lib-common/generated/api-types/shared'
@@ -315,7 +315,7 @@ const BasicsEditor = React.memo(function BasicsEditor({
   )
 
   const getLanguageOptions = useCallback(
-    (type: DocumentType) =>
+    (type: ChildDocumentType) =>
       uiLanguages
         .filter((option) => type === 'CITIZEN_BASIC' || option !== 'EN')
         .map((option) => ({

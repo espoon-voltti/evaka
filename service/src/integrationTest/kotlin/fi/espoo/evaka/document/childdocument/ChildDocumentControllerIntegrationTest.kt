@@ -7,10 +7,10 @@ package fi.espoo.evaka.document.childdocument
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.document.CheckboxGroupQuestionOption
+import fi.espoo.evaka.document.ChildDocumentType
 import fi.espoo.evaka.document.DocumentTemplate
 import fi.espoo.evaka.document.DocumentTemplateContent
 import fi.espoo.evaka.document.DocumentTemplateController
-import fi.espoo.evaka.document.DocumentType
 import fi.espoo.evaka.document.Question
 import fi.espoo.evaka.document.RadioButtonGroupQuestionOption
 import fi.espoo.evaka.document.Section
@@ -141,7 +141,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
     val devTemplatePed =
         DevDocumentTemplate(
             id = templateIdPed,
-            type = DocumentType.PEDAGOGICAL_ASSESSMENT,
+            type = ChildDocumentType.PEDAGOGICAL_ASSESSMENT,
             name = "Pedagoginen arvio 2023",
             validity = DateRange(clock.today(), clock.today()),
             content = templateContent,
@@ -150,7 +150,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
     val devTemplatePedagogicalReport =
         DevDocumentTemplate(
             id = templateIdPedagogicalReport,
-            type = DocumentType.PEDAGOGICAL_REPORT,
+            type = ChildDocumentType.PEDAGOGICAL_REPORT,
             name = "Pedagoginen selvitys 2023",
             validity = DateRange(clock.today(), clock.today()),
             content = templateContent,
@@ -159,7 +159,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
     val devTemplateHojks =
         DevDocumentTemplate(
             id = templateIdHojks,
-            type = DocumentType.HOJKS,
+            type = ChildDocumentType.HOJKS,
             name = "HOJKS",
             validity = DateRange(clock.today(), clock.today()),
             content = templateContent,
@@ -172,7 +172,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
     val devTemplateAssistanceDecision =
         DevDocumentTemplate(
             id = templateIdAssistanceDecision,
-            type = DocumentType.OTHER_DECISION,
+            type = ChildDocumentType.OTHER_DECISION,
             name = "Tuenpäätös",
             validity = DateRange(clock.today(), clock.today()),
             content = templateContent,

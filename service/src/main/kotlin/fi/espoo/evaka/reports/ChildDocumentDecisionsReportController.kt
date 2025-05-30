@@ -5,7 +5,7 @@
 package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.document.DocumentType
+import fi.espoo.evaka.document.ChildDocumentType
 import fi.espoo.evaka.document.childdocument.ChildDocumentOrDecisionStatus
 import fi.espoo.evaka.document.childdocument.ChildDocumentSummary
 import fi.espoo.evaka.document.childdocument.DocumentStatus
@@ -102,7 +102,7 @@ private fun Database.Read.getReportRows(
     includeEnded: Boolean,
 ): List<ChildDocumentSummary> {
     val documentPredicate =
-        Predicate { where("$it.type = ${bind(DocumentType.OTHER_DECISION)}") }
+        Predicate { where("$it.type = ${bind(ChildDocumentType.OTHER_DECISION)}") }
             .and(aclFilter.toPredicate())
 
     val documentDecisionPredicate =

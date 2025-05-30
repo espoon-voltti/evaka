@@ -4,7 +4,7 @@
 
 package fi.espoo.evaka.document.archival
 
-import fi.espoo.evaka.document.DocumentType
+import fi.espoo.evaka.document.ChildDocumentType
 import fi.espoo.evaka.document.childdocument.ChildDocumentDetails
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.process.ArchivedProcess
@@ -231,24 +231,24 @@ private fun createDocumentDescription(
         title = documentMetadata.name
         documentType =
             when (document.template.type) {
-                DocumentType.VASU,
-                DocumentType.MIGRATED_VASU,
-                DocumentType.LEOPS,
-                DocumentType.MIGRATED_LEOPS,
-                DocumentType.HOJKS -> "Suunnitelma"
-                DocumentType.PEDAGOGICAL_ASSESSMENT -> "Arvio"
-                DocumentType.PEDAGOGICAL_REPORT -> "Selvitys"
+                ChildDocumentType.VASU,
+                ChildDocumentType.MIGRATED_VASU,
+                ChildDocumentType.LEOPS,
+                ChildDocumentType.MIGRATED_LEOPS,
+                ChildDocumentType.HOJKS -> "Suunnitelma"
+                ChildDocumentType.PEDAGOGICAL_ASSESSMENT -> "Arvio"
+                ChildDocumentType.PEDAGOGICAL_REPORT -> "Selvitys"
                 else -> null
             }
         documentTypeSpecifier =
             when (document.template.type) {
-                DocumentType.VASU,
-                DocumentType.MIGRATED_VASU -> "Varhaiskasvatussuunnitelma"
-                DocumentType.LEOPS,
-                DocumentType.MIGRATED_LEOPS -> "Lapsen esiopetuksen oppimissuunnitelma LEOPS"
-                DocumentType.PEDAGOGICAL_ASSESSMENT -> "Pedagoginen arvio"
-                DocumentType.PEDAGOGICAL_REPORT -> "Pedagoginen selvitys"
-                DocumentType.HOJKS ->
+                ChildDocumentType.VASU,
+                ChildDocumentType.MIGRATED_VASU -> "Varhaiskasvatussuunnitelma"
+                ChildDocumentType.LEOPS,
+                ChildDocumentType.MIGRATED_LEOPS -> "Lapsen esiopetuksen oppimissuunnitelma LEOPS"
+                ChildDocumentType.PEDAGOGICAL_ASSESSMENT -> "Pedagoginen arvio"
+                ChildDocumentType.PEDAGOGICAL_REPORT -> "Pedagoginen selvitys"
+                ChildDocumentType.HOJKS ->
                     "Henkilökohtaisen opetuksen järjestämistä koskeva suunnitelma HOJKS"
                 else -> null
             }

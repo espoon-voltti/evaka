@@ -6,9 +6,9 @@ package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.daycare.CareType
+import fi.espoo.evaka.document.ChildDocumentType
 import fi.espoo.evaka.document.DocumentTemplate
 import fi.espoo.evaka.document.DocumentTemplateContent
-import fi.espoo.evaka.document.DocumentType
 import fi.espoo.evaka.document.Question
 import fi.espoo.evaka.document.RadioButtonGroupQuestionOption
 import fi.espoo.evaka.document.Section
@@ -200,7 +200,7 @@ class CitizenDocumentReportTest : FullApplicationTest(resetDbBeforeEach = true) 
         val citizenDocumentTemplate =
             DevDocumentTemplate(
                 name = "CitizenDocument",
-                type = DocumentType.CITIZEN_BASIC,
+                type = ChildDocumentType.CITIZEN_BASIC,
                 language = UiLanguage.FI,
                 validity = DateRange(startDate, startDate.plusYears(1)),
                 content =

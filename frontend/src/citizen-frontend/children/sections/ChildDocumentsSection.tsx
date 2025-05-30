@@ -8,7 +8,7 @@ import { Link } from 'wouter'
 
 import type {
   ChildDocumentCitizenSummary,
-  DocumentType
+  ChildDocumentType
 } from 'lib-common/generated/api-types/document'
 import { documentTypes } from 'lib-common/generated/api-types/document'
 import type { ChildId } from 'lib-common/generated/api-types/shared'
@@ -197,7 +197,7 @@ const ChildDocumentsList = React.memo(function ChildDocumentsList({
   types
 }: {
   childId: ChildId
-  types: DocumentType[]
+  types: ChildDocumentType[]
 }) {
   const i18n = useTranslation()
 
