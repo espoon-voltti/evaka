@@ -16,6 +16,7 @@ import fi.espoo.evaka.application.persistence.daycare.Apply
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.decision.getDecisionsByApplication
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
+import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
@@ -25,6 +26,7 @@ import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevFeeDecision
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
+import fi.espoo.evaka.shared.dev.DevVoucherValueDecision
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -365,6 +367,163 @@ class MigrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         val process = db.read { it.getArchiveProcessByFeeDecisionId(feeDecision.id) }!!
         assertEquals("123.789.a", process.processDefinitionNumber)
+        assertEquals(created.year, process.year)
+        assertEquals(1, process.number)
+        assertEquals(featureConfig.archiveMetadataOrganization, process.organization)
+        assertEquals(120, process.archiveDurationMonths)
+        assertTrue(process.migrated)
+        assertEquals(3, process.history.size)
+        process.history[0].also {
+            assertEquals(ArchivedProcessState.INITIAL, it.state)
+            assertEquals(created, it.enteredAt)
+            assertEquals(AuthenticatedUser.SystemInternalUser.evakaUserId, it.enteredBy.id)
+        }
+        process.history[1].also {
+            assertEquals(ArchivedProcessState.DECIDING, it.state)
+            assertEquals(approved, it.enteredAt)
+            assertEquals(approvedBy.evakaUserId, it.enteredBy.id)
+        }
+        process.history[2].also {
+            assertEquals(ArchivedProcessState.COMPLETED, it.state)
+            assertEquals(sent, it.enteredAt)
+            assertEquals(AuthenticatedUser.SystemInternalUser.evakaUserId, it.enteredBy.id)
+        }
+    }
+
+    @Test
+    fun `draft voucher value decision is not migrated`() {
+        val today = LocalDate.of(2023, 1, 1)
+        val now = HelsinkiDateTime.of(today, LocalTime.of(10, 0))
+        val clock = MockEvakaClock(now)
+
+        val area = DevCareArea()
+        val daycare = DevDaycare(areaId = area.id)
+        val adult = DevPerson()
+        val child = DevPerson()
+        val voucherValueDecision =
+            DevVoucherValueDecision(
+                status = VoucherValueDecisionStatus.DRAFT,
+                validFrom = today,
+                validTo = today.plusMonths(1),
+                headOfFamilyId = adult.id,
+                childId = child.id,
+                placementUnitId = daycare.id,
+            )
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(adult, DevPersonType.ADULT)
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(voucherValueDecision)
+        }
+
+        migrateProcessMetadata(db, clock, featureConfig)
+
+        val process =
+            db.read { it.getArchiveProcessByVoucherValueDecisionId(voucherValueDecision.id) }
+        assertNull(process)
+    }
+
+    @Test
+    fun `approved voucher value decision decision is migrated to DECIDING`() {
+        val today = LocalDate.of(2023, 1, 1)
+        val now = HelsinkiDateTime.of(today, LocalTime.of(10, 0))
+        val clock = MockEvakaClock(now)
+
+        val created = HelsinkiDateTime.of(today, LocalTime.of(9, 0))
+        val approved = HelsinkiDateTime.of(today, LocalTime.of(9, 30))
+
+        val area = DevCareArea()
+        val daycare = DevDaycare(areaId = area.id)
+        val adult = DevPerson()
+        val child = DevPerson()
+        val voucherValueDecision =
+            DevVoucherValueDecision(
+                status = VoucherValueDecisionStatus.WAITING_FOR_MANUAL_SENDING,
+                approvedAt = approved,
+                validFrom = today,
+                validTo = today.plusMonths(1),
+                headOfFamilyId = adult.id,
+                childId = child.id,
+                placementUnitId = daycare.id,
+            )
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(adult, DevPersonType.ADULT)
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(voucherValueDecision)
+            tx.execute { sql("UPDATE voucher_value_decision SET created = ${bind(created)}") }
+        }
+
+        migrateProcessMetadata(db, clock, featureConfig)
+
+        val process =
+            db.read { it.getArchiveProcessByVoucherValueDecisionId(voucherValueDecision.id) }!!
+        assertEquals("123.789.b", process.processDefinitionNumber)
+        assertEquals(created.year, process.year)
+        assertEquals(1, process.number)
+        assertEquals(featureConfig.archiveMetadataOrganization, process.organization)
+        assertEquals(120, process.archiveDurationMonths)
+        assertTrue(process.migrated)
+        assertEquals(2, process.history.size)
+        process.history.first().also {
+            assertEquals(ArchivedProcessState.INITIAL, it.state)
+            assertEquals(created, it.enteredAt)
+            assertEquals(AuthenticatedUser.SystemInternalUser.evakaUserId, it.enteredBy.id)
+        }
+        process.history.last().also {
+            assertEquals(ArchivedProcessState.DECIDING, it.state)
+            assertEquals(approved, it.enteredAt)
+            assertEquals(AuthenticatedUser.SystemInternalUser.evakaUserId, it.enteredBy.id)
+        }
+    }
+
+    @Test
+    fun `sent voucher value decision is migrated to COMPLETED`() {
+        val today = LocalDate.of(2023, 1, 1)
+        val now = HelsinkiDateTime.of(today, LocalTime.of(10, 0))
+        val clock = MockEvakaClock(now)
+
+        val created = HelsinkiDateTime.of(today, LocalTime.of(9, 0))
+        val approved = HelsinkiDateTime.of(today, LocalTime.of(9, 30))
+        val approvedBy = DevEmployee()
+        val sent = HelsinkiDateTime.of(today, LocalTime.of(10, 0))
+
+        val area = DevCareArea()
+        val daycare = DevDaycare(areaId = area.id)
+        val adult = DevPerson()
+        val child = DevPerson()
+        val voucherValueDecision =
+            DevVoucherValueDecision(
+                status = VoucherValueDecisionStatus.SENT,
+                approvedAt = approved,
+                approvedBy = approvedBy.evakaUserId,
+                sentAt = sent,
+                validFrom = today,
+                validTo = today.plusMonths(1),
+                headOfFamilyId = adult.id,
+                childId = child.id,
+                placementUnitId = daycare.id,
+            )
+
+        db.transaction { tx ->
+            tx.insert(approvedBy)
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(adult, DevPersonType.ADULT)
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(voucherValueDecision)
+            tx.execute { sql("UPDATE voucher_value_decision SET created = ${bind(created)}") }
+        }
+
+        migrateProcessMetadata(db, clock, featureConfig)
+
+        val process =
+            db.read { it.getArchiveProcessByVoucherValueDecisionId(voucherValueDecision.id) }!!
+        assertEquals("123.789.b", process.processDefinitionNumber)
         assertEquals(created.year, process.year)
         assertEquals(1, process.number)
         assertEquals(featureConfig.archiveMetadataOrganization, process.organization)

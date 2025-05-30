@@ -8,12 +8,14 @@ import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.application.setApplicationProcessId
 import fi.espoo.evaka.invoicing.data.setFeeDecisionProcessId
+import fi.espoo.evaka.invoicing.data.setVoucherValueDecisionProcessId
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ArchiveProcessConfig
 import fi.espoo.evaka.shared.ArchiveProcessType
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.FeeDecisionId
+import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
@@ -42,6 +44,18 @@ fun migrateProcessMetadata(
             dbc,
             featureConfig.archiveMetadataOrganization,
             feeDecisionConfig,
+        )
+    } else {
+        logger.warn { "Missing metadata config for FEE_DECISION" }
+    }
+
+    val voucherValueDecisionConfig =
+        featureConfig.archiveMetadataConfigs[ArchiveProcessType.VOUCHER_VALUE_DECISION]
+    if (voucherValueDecisionConfig != null) {
+        migrateVoucherValueDecisionMetadata(
+            dbc,
+            featureConfig.archiveMetadataOrganization,
+            voucherValueDecisionConfig,
         )
     } else {
         logger.warn { "Missing metadata config for FEE_DECISION" }
@@ -158,6 +172,69 @@ private fun migrateFeeDecisionMetadata(
                     )
                     .id
             tx.setFeeDecisionProcessId(decision.id, processId)
+            tx.insertProcessHistoryRow(
+                processId = processId,
+                state = ArchivedProcessState.INITIAL,
+                now = decision.created,
+                userId = systemInternalUser,
+            )
+            tx.insertProcessHistoryRow(
+                processId = processId,
+                state = ArchivedProcessState.DECIDING,
+                now = decision.approvedAt,
+                userId = decision.approvedBy ?: systemInternalUser,
+            )
+            if (decision.sentAt != null) {
+                tx.insertProcessHistoryRow(
+                    processId = processId,
+                    state = ArchivedProcessState.COMPLETED,
+                    now = decision.sentAt,
+                    userId = systemInternalUser,
+                )
+            }
+        }
+    }
+}
+
+private data class VoucherValueDecisionMigrationData(
+    val id: VoucherValueDecisionId,
+    val created: HelsinkiDateTime,
+    val approvedAt: HelsinkiDateTime,
+    val approvedBy: EvakaUserId?,
+    val sentAt: HelsinkiDateTime?,
+)
+
+private fun migrateVoucherValueDecisionMetadata(
+    dbc: Database.Connection,
+    archiveMetadataOrganization: String,
+    config: ArchiveProcessConfig,
+) {
+    val systemInternalUser = AuthenticatedUser.SystemInternalUser.evakaUserId
+    dbc.transaction { tx ->
+        val voucherValueDecisions =
+            tx.createQuery {
+                    sql(
+                        """
+                        SELECT id, created, approved_at, approved_by, sent_at
+                        FROM voucher_value_decision
+                        WHERE process_id IS NULL AND approved_at IS NOT NULL
+                        ORDER BY created
+                        """
+                    )
+                }
+                .toList<VoucherValueDecisionMigrationData>()
+
+        voucherValueDecisions.forEach { decision ->
+            val processId =
+                tx.insertProcess(
+                        processDefinitionNumber = config.processDefinitionNumber,
+                        year = decision.created.year,
+                        organization = archiveMetadataOrganization,
+                        archiveDurationMonths = config.archiveDurationMonths,
+                        migrated = true,
+                    )
+                    .id
+            tx.setVoucherValueDecisionProcessId(decision.id, processId)
             tx.insertProcessHistoryRow(
                 processId = processId,
                 state = ArchivedProcessState.INITIAL,
