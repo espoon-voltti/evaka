@@ -337,7 +337,7 @@ data class Section(
  * autoCompleteAtEndOfValidity: if the document is automatically completed and published when the
  * template validity ends
  */
-@ConstList("documentTypes")
+@ConstList("childDocumentTypes")
 enum class ChildDocumentType(
     val statuses: List<DocumentStatus>,
     val manuallyPublishable: Boolean,

@@ -243,7 +243,7 @@ export interface ChildDocumentSummaryWithPermittedActions {
 /**
 * Generated from fi.espoo.evaka.document.ChildDocumentType
 */
-export const documentTypes = [
+export const childDocumentTypes = [
   'PEDAGOGICAL_REPORT',
   'PEDAGOGICAL_ASSESSMENT',
   'HOJKS',
@@ -256,7 +256,7 @@ export const documentTypes = [
   'OTHER'
 ] as const
 
-export type ChildDocumentType = typeof documentTypes[number]
+export type ChildDocumentType = typeof childDocumentTypes[number]
 
 /**
 * Generated from fi.espoo.evaka.document.childdocument.ChildDocumentWithPermittedActions

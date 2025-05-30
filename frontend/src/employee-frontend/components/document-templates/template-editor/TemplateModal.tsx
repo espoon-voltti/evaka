@@ -11,7 +11,7 @@ import type {
   ExportedDocumentTemplate,
   ChildDocumentType
 } from 'lib-common/generated/api-types/document'
-import { documentTypes } from 'lib-common/generated/api-types/document'
+import { childDocumentTypes } from 'lib-common/generated/api-types/document'
 import type { DocumentTemplateId } from 'lib-common/generated/api-types/shared'
 import { uiLanguages } from 'lib-common/generated/api-types/shared'
 import type { JsonOf } from 'lib-common/json'
@@ -65,7 +65,7 @@ export default React.memo(function TemplateModal({ onClose, mode }: Props) {
 
   const typeOptions = useMemo(
     () =>
-      documentTypes
+      childDocumentTypes
         .filter(
           (type) =>
             !type.startsWith('MIGRATED_') &&

@@ -18,7 +18,7 @@ import type {
   DocumentTemplate,
   ChildDocumentType
 } from 'lib-common/generated/api-types/document'
-import { documentTypes } from 'lib-common/generated/api-types/document'
+import { childDocumentTypes } from 'lib-common/generated/api-types/document'
 import { uiLanguages } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useMutationResult } from 'lib-common/query'
@@ -304,7 +304,7 @@ const BasicsEditor = React.memo(function BasicsEditor({
 
   const typeOptions = useMemo(
     () =>
-      documentTypes
+      childDocumentTypes
         .filter((type) => !type.startsWith('MIGRATED_'))
         .map((option) => ({
           domValue: option,

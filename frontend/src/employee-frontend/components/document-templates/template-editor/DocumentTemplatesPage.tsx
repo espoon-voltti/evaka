@@ -16,7 +16,7 @@ import type {
   DocumentTemplateSummary,
   ChildDocumentType
 } from 'lib-common/generated/api-types/document'
-import { documentTypes } from 'lib-common/generated/api-types/document'
+import { childDocumentTypes } from 'lib-common/generated/api-types/document'
 import type {
   DocumentTemplateId,
   UiLanguage
@@ -224,7 +224,7 @@ export default React.memo(function DocumentTemplatesPage() {
       past: false,
       type: {
         domValue: '',
-        options: documentTypes.map((t) => ({
+        options: childDocumentTypes.map((t) => ({
           value: t,
           domValue: t,
           label: i18n.documentTemplates.documentTypes[t]
