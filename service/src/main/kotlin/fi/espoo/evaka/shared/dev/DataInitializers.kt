@@ -811,10 +811,7 @@ VALUES (${bind(guardian.id)}, ${bind(decision.id)}, ${bind(guardian.personId)}, 
     return decision.id
 }
 
-fun Database.Transaction.insertTestAssistanceNeedDecision(
-    childId: ChildId,
-    data: DevAssistanceNeedDecision,
-): AssistanceNeedDecisionId {
+fun Database.Transaction.insert(data: DevAssistanceNeedDecision): AssistanceNeedDecisionId {
     val id =
         createQuery {
                 sql(
@@ -833,7 +830,7 @@ INSERT INTO assistance_need_decision (
   preparer_1_phone_number, preparer_2_phone_number, unread_guardian_ids, annulment_reason
 )
 VALUES (
-    ${bind(data.id)}, ${bind(data.decisionNumber)}, ${bind(childId)}, ${bind(data.validityPeriod)}, ${bind(data.endDateNotKnown)}, ${bind(data.status)},
+    ${bind(data.id)}, ${bind(data.decisionNumber)}, ${bind(data.childId)}, ${bind(data.validityPeriod)}, ${bind(data.endDateNotKnown)}, ${bind(data.status)},
     ${bind(data.language)}, ${bind(data.decisionMade)}, ${bind(data.sentForDecision)}, ${bind(data.selectedUnit)}, ${bind(data.pedagogicalMotivation)},
     ${bind(data.structuralMotivationOptions.smallerGroup)}, ${bind(data.structuralMotivationOptions.specialGroup)}, ${bind(data.structuralMotivationOptions.smallGroup)},
     ${bind(data.structuralMotivationOptions.groupAssistant)}, ${bind(data.structuralMotivationOptions.childAssistant)}, ${bind(data.structuralMotivationOptions.additionalStaff)},

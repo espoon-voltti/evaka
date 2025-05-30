@@ -76,7 +76,6 @@ import fi.espoo.evaka.shared.dev.TestDecision
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertServiceNeedOption
 import fi.espoo.evaka.shared.dev.insertTestApplication
-import fi.espoo.evaka.shared.dev.insertTestAssistanceNeedDecision
 import fi.espoo.evaka.shared.dev.insertTestAssistanceNeedPreschoolDecision
 import fi.espoo.evaka.shared.dev.insertTestDecision
 import fi.espoo.evaka.shared.domain.DateRange
@@ -304,8 +303,7 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
         val id =
             db.transaction {
                 val child = it.insertTestChild()
-                it.insertTestAssistanceNeedDecision(
-                    childId = child,
+                it.insert(
                     DevAssistanceNeedDecision(
                         decisionNumber = 999,
                         childId = child,
@@ -336,7 +334,7 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
                         unreadGuardianIds = null,
                         annulmentReason = "",
                         endDateNotKnown = false,
-                    ),
+                    )
                 )
             }
         assertSingleRowContainingId(EspooBi.getAssistanceNeedDaycareDecisions, id)
