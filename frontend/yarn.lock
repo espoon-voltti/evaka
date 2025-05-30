@@ -6923,7 +6923,7 @@ __metadata:
     webpack: "npm:5.99.9"
     webpack-cli: "npm:6.0.1"
     webpack-pwa-manifest: "npm:4.3.0"
-    wouter: "npm:3.7.0"
+    wouter: "npm:3.7.1"
     yargs: "npm:17.7.2"
   peerDependencies:
     "@fortawesome/pro-light-svg-icons": ^6.4.0
@@ -13255,16 +13255,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"wouter@npm:3.7.0":
-  version: 3.7.0
-  resolution: "wouter@npm:3.7.0"
+"wouter@npm:3.7.1":
+  version: 3.7.1
+  resolution: "wouter@npm:3.7.1"
   dependencies:
     mitt: "npm:^3.0.1"
     regexparam: "npm:^3.0.0"
     use-sync-external-store: "npm:^1.0.0"
   peerDependencies:
     react: ">=16.8.0"
-  checksum: 10/ebfa36623ba11d400a54f3c234e9cd93685fb75fe13c69397ce190cfa260f799208db871848b51e617cd3e90b5f864d14435b77bcad3d889e22f5f6ff18c61f1
+  checksum: 10/81fb7add951a3f73fce1e60f0bcdb89563517bf05b0349de6129208cd2a4ba828cb720cc9cd6f7c5f9bf3d43d51818501e8863705ac1ca92775d7e227d848a56
   languageName: node
   linkType: hard
 
