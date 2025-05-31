@@ -132,7 +132,7 @@
     "webpack": "5.99.9",
     "webpack-cli": "6.0.1",
     "webpack-pwa-manifest": "4.3.0",
-    "yargs": "17.7.2"
+    "yargs": "18.0.0"
   },
   "peerDependencies": {
     "@fortawesome/pro-light-svg-icons": "^6.4.0",
