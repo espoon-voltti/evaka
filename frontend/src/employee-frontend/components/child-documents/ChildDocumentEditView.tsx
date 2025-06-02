@@ -5,13 +5,7 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { useQueryClient } from '@tanstack/react-query'
 import isEqual from 'lodash/isEqual'
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState
-} from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
 import { useSearchParams, useLocation } from 'wouter'
 
@@ -48,8 +42,7 @@ import colors from 'lib-customizations/common'
 import { faExclamationTriangle } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
-import type { TitleState } from '../../state/title'
-import { TitleContext } from '../../state/title'
+import { useTitle } from '../../utils/useTitle'
 import { renderResult } from '../async-rendering'
 import {
   childDocumentQuery,
@@ -169,11 +162,7 @@ const ChildDocumentEditViewInner = React.memo(
   }) {
     const { i18n } = useTranslation()
     const [, navigate] = useLocation()
-    const { setTitle } = useContext<TitleState>(TitleContext)
-    useEffect(
-      () => setTitle(document.template.name, true),
-      [document.template.name, setTitle]
-    )
+    useTitle(document.template.name, { hideDefault: true })
 
     const bind = useForm(
       documentForm,

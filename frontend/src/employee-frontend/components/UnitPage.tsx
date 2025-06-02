@@ -23,9 +23,8 @@ import { fontWeights, H1, H3 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 
 import { useTranslation } from '../state/i18n'
-import type { TitleState } from '../state/title'
-import { TitleContext } from '../state/title'
 import { UnitContext } from '../state/unit'
+import { useTitle } from '../utils/useTitle'
 
 import { renderResult } from './async-rendering'
 import TabApplicationProcess from './unit/TabApplicationProcess'
@@ -45,7 +44,6 @@ const defaultTab = (permittedActions: Action.Unit[]) => {
 export default React.memo(function UnitPage() {
   const id = useIdRouteParam<DaycareId>('id')
   const { i18n } = useTranslation()
-  const { setTitle } = useContext<TitleState>(TitleContext)
   const { filters, setFilters } = useContext(UnitContext)
 
   const unitInformation = useQueryResult(daycareQuery({ daycareId: id }))
@@ -62,11 +60,12 @@ export default React.memo(function UnitPage() {
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  useEffect(() => {
-    if (unitInformation.isSuccess) {
-      setTitle(unitInformation.value.daycare.name)
+  useTitle(
+    unitInformation.isSuccess ? unitInformation.value.daycare.name : undefined,
+    {
+      preventUpdate: !unitInformation.isSuccess
     }
-  }, [setTitle, unitInformation])
+  )
 
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({})
 

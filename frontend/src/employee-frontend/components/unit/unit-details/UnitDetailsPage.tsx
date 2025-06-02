@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 
 import type { Result } from 'lib-common/api'
 import { combine, Loading } from 'lib-common/api'
@@ -21,8 +21,7 @@ import { Gap } from 'lib-components/white-space'
 import { areasQuery, getEmployeesQuery } from '../../../queries'
 import { useTranslation } from '../../../state/i18n'
 import type { FinanceDecisionHandlerOption } from '../../../state/invoicing-ui'
-import type { TitleState } from '../../../state/title'
-import { TitleContext } from '../../../state/title'
+import { useTitle } from '../../../utils/useTitle'
 import { renderResult } from '../../async-rendering'
 import { daycareQuery, updateUnitMutation } from '../queries'
 
@@ -31,17 +30,15 @@ import UnitEditor from './UnitEditor'
 export default React.memo(function UnitDetailsPage() {
   const id = useIdRouteParam<DaycareId>('id')
   const { i18n } = useTranslation()
-  const { setTitle } = useContext<TitleState>(TitleContext)
   const unit = useQueryResult(daycareQuery({ daycareId: id }))
   const areas = useQueryResult(areasQuery())
   const [financeDecisionHandlerOptions, setFinanceDecisionHandlerOptions] =
     useState<Result<FinanceDecisionHandlerOption[]>>(Loading.of())
   const [editable, useEditable] = useBoolean(false)
-  useEffect(() => {
-    if (unit.isSuccess) {
-      setTitle(unit.value.daycare.name)
-    }
-  }, [setTitle, unit])
+
+  useTitle(unit.isSuccess ? unit.value.daycare.name : undefined, {
+    preventUpdate: !unit.isSuccess
+  })
 
   const employeesResponse = useQueryResult(getEmployeesQuery())
 

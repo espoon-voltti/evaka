@@ -4,7 +4,7 @@
 
 import { faCircle } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, { useContext, useEffect, useMemo, useState } from 'react'
+import React, { useContext, useMemo, useState } from 'react'
 import styled from 'styled-components'
 import { Link, useLocation } from 'wouter'
 
@@ -26,6 +26,7 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
+import { usePersonName } from 'lib-components/molecules/PersonNames'
 import { fontWeights, H2 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/employee'
@@ -33,9 +34,8 @@ import { faUsers } from 'lib-icons'
 
 import type { Translations } from '../../state/i18n'
 import { useTranslation } from '../../state/i18n'
-import type { TitleState } from '../../state/title'
-import { TitleContext } from '../../state/title'
 import { UserContext } from '../../state/user'
+import { useTitle } from '../../utils/useTitle'
 import CircularLabel from '../common/CircularLabel'
 import WarningLabel from '../common/WarningLabel'
 import type { Layouts } from '../layouts'
@@ -379,17 +379,13 @@ const ChildInformation = React.memo(function ChildInformation({
   const { roles } = useContext(UserContext)
   const { person } = useContext<ChildState>(ChildContext)
 
-  const { setTitle, formatTitleName } = useContext<TitleState>(TitleContext)
-
-  useEffect(() => {
-    if (person.isSuccess) {
-      const name = formatTitleName(
-        person.value.firstName,
-        person.value.lastName
-      )
-      setTitle(`${name} | ${i18n.titles.customers}`)
-    }
-  }, [formatTitleName, i18n.titles.customers, person, setTitle])
+  useTitle(
+    `${usePersonName(
+      person.isSuccess ? person.value : undefined,
+      'Last First'
+    )}  | ${i18n.titles.customers}`,
+    { preventUpdate: !person.isSuccess }
+  )
 
   const layout = useMemo(() => getLayout(layouts, roles), [roles])
 

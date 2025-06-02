@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useContext, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import styled from 'styled-components'
 import { useSearchParams } from 'wouter'
 
@@ -29,6 +29,7 @@ import AddButton from 'lib-components/atoms/buttons/AddButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import { usePersonName } from 'lib-components/molecules/PersonNames'
 import { Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/employee'
 import { faEnvelope } from 'lib-icons'
@@ -36,9 +37,8 @@ import { faEnvelope } from 'lib-icons'
 import { getEmployeeUrlPrefix } from '../../constants'
 import type { Translations } from '../../state/i18n'
 import { useTranslation } from '../../state/i18n'
-import type { TitleState } from '../../state/title'
-import { TitleContext } from '../../state/title'
 import { asUnitType } from '../../types/daycare'
+import { useTitle } from '../../utils/useTitle'
 import { isSsnValid, isTimeValid } from '../../utils/validation/validations'
 import { serviceNeedPublicInfosQuery } from '../applications/queries'
 import MetadataSection from '../archive-metadata/MetadataSection'
@@ -94,10 +94,7 @@ const ApplicationMetadataSection = React.memo(
 
 export default React.memo(function ApplicationPage() {
   const applicationId = useIdRouteParam<ApplicationId>('id')
-
   const { i18n } = useTranslation()
-  const { setTitle, formatTitleName } = useContext<TitleState>(TitleContext)
-
   const [searchParams] = useSearchParams()
   const creatingNew = searchParams.get('create') === 'true'
   const [editing, setEditing] = useState(creatingNew)
@@ -112,22 +109,21 @@ export default React.memo(function ApplicationPage() {
   const editedApplicationInitialized = editedApplication !== undefined
   useEffect(() => {
     if (application.isSuccess) {
-      const { firstName, lastName } =
-        application.value.application.form.child.person
-      setTitle(
-        `${i18n.application.tabTitle} - ${formatTitleName(firstName, lastName)}`
-      )
       if (!editedApplicationInitialized) {
         setEditedApplication(application.value.application)
       }
     }
-  }, [
-    application,
-    formatTitleName,
-    i18n.application.tabTitle,
-    setTitle,
-    editedApplicationInitialized
-  ])
+  }, [application, i18n, editedApplicationInitialized])
+
+  useTitle(
+    `${i18n.application.tabTitle} - ${usePersonName(
+      application.isSuccess
+        ? application.value.application.form.child.person
+        : undefined,
+      'Last First'
+    )}`,
+    { preventUpdate: !application.isSuccess }
+  )
 
   const messageThread = useQueryResult(
     threadByApplicationIdQuery({ applicationId })

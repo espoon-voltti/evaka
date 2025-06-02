@@ -4,7 +4,7 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import isEqual from 'lodash/isEqual'
-import React, { useContext, useEffect, useMemo, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { useSearchParams, useLocation } from 'wouter'
 
 import { combine } from 'lib-common/api'
@@ -60,8 +60,7 @@ import {
 
 import { downloadChildDocument } from '../../generated/api-clients/document'
 import { useTranslation } from '../../state/i18n'
-import { TitleContext } from '../../state/title'
-import type { TitleState } from '../../state/title'
+import { useTitle } from '../../utils/useTitle'
 import MetadataSection from '../archive-metadata/MetadataSection'
 import { renderResult } from '../async-rendering'
 import {
@@ -130,11 +129,7 @@ const ChildDocumentReadViewInner = React.memo(
     const { data: document, permittedActions } = documentAndPermissions
     const { i18n } = useTranslation()
     const [, navigate] = useLocation()
-    const { setTitle } = useContext<TitleState>(TitleContext)
-    useEffect(
-      () => setTitle(document.template.name, true),
-      [document.template.name, setTitle]
-    )
+    useTitle(document.template.name, { hideDefault: true })
 
     const bind = useForm(
       documentForm,

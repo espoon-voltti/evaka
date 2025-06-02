@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import styled from 'styled-components'
 
 import type { CaretakerAmount } from 'lib-common/generated/api-types/daycare'
@@ -21,9 +21,8 @@ import { ConfirmedMutation } from 'lib-components/molecules/ConfirmedMutation'
 import { faPen, faTrash } from 'lib-icons'
 
 import { useTranslation } from '../../../state/i18n'
-import type { TitleState } from '../../../state/title'
-import { TitleContext } from '../../../state/title'
 import { getStatusLabelByDateRange } from '../../../utils/date'
+import { useTitle } from '../../../utils/useTitle'
 import { renderResult } from '../../async-rendering'
 import StatusLabel from '../../common/StatusLabel'
 
@@ -63,18 +62,15 @@ export default React.memo(function GroupCaretakers() {
   const unitId = useIdRouteParam<DaycareId>('unitId')
   const groupId = useIdRouteParam<GroupId>('groupId')
   const { i18n } = useTranslation()
-  const { setTitle } = useContext<TitleState>(TitleContext)
   const caretakers = useQueryResult(
     caretakersQuery({ daycareId: unitId, groupId })
   )
   const [modalOpen, setModalOpen] = useState<boolean>(false)
   const [rowToEdit, setRowToEdit] = useState<CaretakerAmount | null>(null)
 
-  useEffect(() => {
-    if (caretakers.isSuccess) {
-      setTitle(caretakers.value.groupName)
-    }
-  }, [caretakers, setTitle])
+  useTitle(caretakers.isSuccess ? caretakers.value.groupName : undefined, {
+    preventUpdate: !caretakers.isSuccess
+  })
 
   return (
     <Container>

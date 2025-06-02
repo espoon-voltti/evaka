@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useEffect } from 'react'
+import React from 'react'
 import { Link } from 'wouter'
 
 import { combine } from 'lib-common/api'
@@ -14,10 +14,10 @@ import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
+import { usePersonName } from 'lib-components/molecules/PersonNames'
 
 import { useTranslation } from '../../state/i18n'
-import type { TitleState } from '../../state/title'
-import { TitleContext } from '../../state/title'
+import { useTitle } from '../../utils/useTitle'
 import { renderResult } from '../async-rendering'
 import { invoiceCodesQuery, invoiceDetailsQuery } from '../invoices/queries'
 
@@ -34,18 +34,20 @@ export default React.memo(function InvoiceDetailsPage() {
   const { i18n } = useTranslation()
   const invoiceCodes = useQueryResult(invoiceCodesQuery())
   const response = useQueryResult(invoiceDetailsQuery({ id }))
-  const { setTitle } = useContext<TitleState>(TitleContext)
 
-  useEffect(() => {
-    if (response.isSuccess) {
-      const name = `${response.value.invoice.headOfFamily.firstName} ${response.value.invoice.headOfFamily.lastName}`
-      if (response.value.invoice.status === 'DRAFT') {
-        setTitle(`${name} | ${i18n.titles.invoiceDraft}`)
-      } else {
-        setTitle(`${name} | ${i18n.titles.invoice}`)
-      }
-    }
-  }, [i18n, response, setTitle])
+  useTitle(
+    `${usePersonName(
+      response.isSuccess ? response.value.invoice.headOfFamily : undefined,
+      'First Last'
+    )} | ${
+      response.isSuccess
+        ? response.value.invoice.status === 'DRAFT'
+          ? i18n.titles.invoiceDraft
+          : i18n.titles.invoice
+        : ''
+    }`,
+    { preventUpdate: !response.isSuccess }
+  )
 
   return (
     <div className="invoice-details-page" data-qa="invoice-details-page">

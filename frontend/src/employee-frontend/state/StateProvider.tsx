@@ -13,7 +13,6 @@ import { ReportNotificationContextProvider } from '../components/reports/ReportN
 
 import { ApplicationUIContextProvider } from './application-ui'
 import { InvoicingUIContextProvider } from './invoicing-ui'
-import { TitleContextProvider } from './title'
 import { UIContextProvider } from './ui'
 import { UnitContextProvider } from './unit'
 import { UnitsContextProvider } from './units'
@@ -31,13 +30,11 @@ const StateProvider = React.memo(function StateProvider({
             <CustomersContextProvider>
               <InvoicingUIContextProvider>
                 <MessageContextProvider>
-                  <TitleContextProvider>
-                    <ApplicationUIContextProvider>
-                      <ReportNotificationContextProvider>
-                        {children}
-                      </ReportNotificationContextProvider>
-                    </ApplicationUIContextProvider>
-                  </TitleContextProvider>
+                  <ApplicationUIContextProvider>
+                    <ReportNotificationContextProvider>
+                      {children}
+                    </ReportNotificationContextProvider>
+                  </ApplicationUIContextProvider>
                 </MessageContextProvider>
               </InvoicingUIContextProvider>
             </CustomersContextProvider>
