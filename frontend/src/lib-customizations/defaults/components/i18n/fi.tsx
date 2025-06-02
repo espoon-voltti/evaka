@@ -18,6 +18,8 @@ const components: Translations = {
     confirm: 'Vahvista',
     no: 'Ei',
     noResults: 'Ei hakutuloksia',
+    noFirstName: 'Etunimi puuttuu',
+    noLastName: 'Sukunimi puuttuu',
     open: 'Avaa',
     remove: 'Poista',
     saving: 'Tallennetaan',

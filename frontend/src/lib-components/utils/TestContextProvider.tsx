@@ -29,6 +29,8 @@ export const testTranslations: Translations = {
     confirm: '',
     no: '',
     noResults: '',
+    noFirstName: '',
+    noLastName: '',
     open: '',
     remove: '',
     saved: '',

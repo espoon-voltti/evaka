@@ -34,6 +34,7 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { Bold, H1, Italic, Light } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
@@ -52,7 +53,6 @@ import { ApplicationUIContext } from '../../state/application-ui'
 import { useTranslation } from '../../state/i18n'
 import { UserContext } from '../../state/user'
 import type { SearchOrder } from '../../types'
-import { formatName } from '../../utils'
 import { isPartDayPlacement } from '../../utils/placements'
 import { hasRole, RequireRole } from '../../utils/roles'
 import { AgeIndicatorChip } from '../common/AgeIndicatorChip'
@@ -330,12 +330,7 @@ const ApplicationsList = React.memo(function Applications({
               }
             >
               <Bold>
-                {formatName(
-                  application.firstName,
-                  application.lastName,
-                  i18n,
-                  true
-                )}
+                <PersonName person={application} format="Last First" />
               </Bold>
             </Tooltip>
             {dateOfBirthInfo(application)}
