@@ -4,9 +4,9 @@
 
 package fi.espoo.evaka.document.archival
 
+import fi.espoo.evaka.document.ChildDocumentType
 import fi.espoo.evaka.document.DocumentTemplate
 import fi.espoo.evaka.document.DocumentTemplateContent
-import fi.espoo.evaka.document.DocumentType
 import fi.espoo.evaka.document.childdocument.ChildBasics
 import fi.espoo.evaka.document.childdocument.ChildDocumentDetails
 import fi.espoo.evaka.document.childdocument.DocumentContent
@@ -40,7 +40,7 @@ class DocumentMetadataUtilsTest {
     private val userId = UUID.fromString("d71daacc-18e1-4605-8847-677469203e27")
 
     private fun createTestDocument(
-        documentType: DocumentType = DocumentType.VASU
+        documentType: ChildDocumentType = ChildDocumentType.VASU
     ): ChildDocumentDetails {
         return ChildDocumentDetails(
             id = documentId,
@@ -144,7 +144,7 @@ class DocumentMetadataUtilsTest {
 
     @Test
     fun `createDocumentDescription sets correct document type and specifier for VASU`() {
-        val document = createTestDocument(DocumentType.VASU)
+        val document = createTestDocument(ChildDocumentType.VASU)
         val documentMetadata = createTestDocumentMetadata()
         val childIdentifier = ExternalIdentifier.SSN.getInstance("160616A978U")
         val childBirthDate = LocalDate.parse("2016-06-06")
@@ -170,7 +170,7 @@ class DocumentMetadataUtilsTest {
 
     @Test
     fun `createDocumentDescription sets correct document type and specifier for LEOPS`() {
-        val document = createTestDocument(DocumentType.LEOPS)
+        val document = createTestDocument(ChildDocumentType.LEOPS)
         val documentMetadata = createTestDocumentMetadata()
         val childIdentifier = ExternalIdentifier.SSN.getInstance("160616A978U")
         val childBirthDate = LocalDate.parse("2016-06-06")
@@ -190,7 +190,7 @@ class DocumentMetadataUtilsTest {
 
     @Test
     fun `createDocumentDescription sets correct document type and specifier for PEDAGOGICAL_ASSESSMENT`() {
-        val document = createTestDocument(DocumentType.PEDAGOGICAL_ASSESSMENT)
+        val document = createTestDocument(ChildDocumentType.PEDAGOGICAL_ASSESSMENT)
         val documentMetadata = createTestDocumentMetadata()
         val childIdentifier = ExternalIdentifier.SSN.getInstance("160616A978U")
         val childBirthDate = LocalDate.parse("2016-06-06")
