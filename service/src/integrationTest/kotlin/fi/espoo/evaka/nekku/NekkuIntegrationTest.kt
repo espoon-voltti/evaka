@@ -2378,7 +2378,14 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
 
         val nekkuAsyncJob = AsyncJob.SendNekkuOrder(group.id, monday)
 
-        nekkuService.sendNekkuOrder(db, EvakaClock, nekkuAsyncJob)
+        val clock = MockEvakaClock(
+            HelsinkiDateTime.of(
+                LocalDate.of(2025, 4, 14),
+                LocalTime.of(12, 0)
+            )
+        )
+
+        nekkuService.sendNekkuOrder(db, clock, nekkuAsyncJob)
 
         db.transaction { tx ->
             val nekkuOrderReportResult = tx.getNekkuOrderReport(daycare.id, group.id, monday)
