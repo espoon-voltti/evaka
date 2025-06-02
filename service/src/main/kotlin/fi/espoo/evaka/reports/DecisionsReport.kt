@@ -5,6 +5,7 @@
 package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.decision.DecisionType
 import fi.espoo.evaka.shared.ApplicationId
@@ -12,6 +13,7 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.Predicate
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -32,6 +34,7 @@ class DecisionsReportController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate,
+        @RequestParam applicationType: ApplicationType?,
     ): List<DecisionsReportRow> {
         if (to.isBefore(from)) throw BadRequest("Inverted time range")
 
@@ -44,7 +47,7 @@ class DecisionsReportController(private val accessControl: AccessControl) {
                         Action.Global.READ_DECISIONS_REPORT,
                     )
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
-                    it.getDecisionsRows(FiniteDateRange(from, to))
+                    it.getDecisionsRows(FiniteDateRange(from, to), applicationType)
                 }
             }
             .also {
@@ -55,7 +58,14 @@ class DecisionsReportController(private val accessControl: AccessControl) {
     }
 }
 
-private fun Database.Read.getDecisionsRows(range: FiniteDateRange): List<DecisionsReportRow> {
+private fun Database.Read.getDecisionsRows(
+    range: FiniteDateRange,
+    applicationType: ApplicationType?,
+): List<DecisionsReportRow> {
+    val applicationPredicates =
+        Predicate.allNotNull(
+            applicationType?.let { Predicate { table -> where("$table.type = ${bind(it)}") } }
+        )
     val queryResult =
         createQuery {
                 sql(
@@ -79,6 +89,7 @@ JOIN daycare u ON u.id = de.unit_id
 JOIN care_area ca ON ca.id = u.care_area_id
 JOIN person ch ON ch.id = a.child_id
 WHERE de.sent_date IS NOT NULL AND de.sent_date BETWEEN ${bind(range.start)} AND ${bind(range.end)}
+  AND ${predicate(applicationPredicates.forTable("a"))}
 """
                 )
             }

@@ -84,6 +84,13 @@ class ReportSmokeTests : FullApplicationTest(resetDbBeforeEach = false) {
                 listOf("from" to "2020-05-01", "to" to "2020-08-01"),
             )
         )
+
+        assertOkResponse(
+            http.get(
+                "/employee/reports/decisions",
+                listOf("from" to "2020-05-01", "to" to "2020-08-01", "applicationType" to "DAYCARE"),
+            )
+        )
     }
 
     @Test

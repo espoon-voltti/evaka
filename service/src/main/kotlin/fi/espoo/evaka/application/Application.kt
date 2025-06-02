@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.application
 
+import fi.espoo.evaka.ConstList
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.pis.createPerson
 import fi.espoo.evaka.pis.getPersonById
@@ -164,6 +165,7 @@ data class ApplicationAttachment(
     val uploadedByPerson: PersonId?,
 )
 
+@ConstList("applicationTypes")
 enum class ApplicationType : DatabaseEnum {
     CLUB,
     DAYCARE,
