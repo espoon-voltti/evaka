@@ -277,6 +277,8 @@ data class KoskiActivePreschoolDataRaw(
     val specialSupportWithDecisionLevel1: DateSet,
     val specialSupportWithDecisionLevel2: DateSet,
     val transportBenefit: DateSet,
+    val childSupport: DateSet,
+    val childSupportAndExtendedCompulsoryEducation: DateSet,
 ) : KoskiActiveDataRaw(OpiskeluoikeudenTyyppiKoodi.PRESCHOOL) {
     override fun getHolidayDates(): DateSet = DateSet.of()
 
@@ -308,14 +310,21 @@ data class KoskiActivePreschoolDataRaw(
         // range, and when sending for unit B, the second "half".
         val placementSpan = placements.spanningRange() ?: return null
 
+        // these are deprecated after about 1.8.2026
         val level1 = specialSupportWithDecisionLevel1.intersection(listOf(placementSpan))
         val level2 = specialSupportWithDecisionLevel2.intersection(listOf(placementSpan))
         val specialSupportWithEce = level1.addAll(level2)
         val allSpecialSupport =
             specialSupport.intersection(listOf(placementSpan)).addAll(specialSupportWithEce)
-
-        // Koski only accepts one range
+        // Koski only accepts one range of old pidennetty oppivelvollisuus
         val longestEce = specialSupportWithEce.ranges().maxByOrNull { it.durationInDays() }
+
+        // these replacements are introduced around 1.8.2026
+        val childSupportWithoutEce = childSupport.intersection(listOf(placementSpan))
+        val childSupportWithEce =
+            childSupportAndExtendedCompulsoryEducation.intersection(listOf(placementSpan))
+        val allChildSupport = childSupportWithoutEce.addAll(childSupportWithEce)
+
         // Koski only accepts one range
         val longestTransportBenefit =
             transportBenefit.intersectRanges(placementSpan).maxByOrNull { it.durationInDays() }
@@ -326,20 +335,34 @@ data class KoskiActivePreschoolDataRaw(
                 vaikeastiVammainen =
                     level2.ranges().map { Aikajakso.from(it) }.toList().takeIf { it.isNotEmpty() },
                 pidennettyOppivelvollisuus = longestEce?.let { Aikajakso.from(it) },
+                varhennetunOppivelvollisuudenJaksot =
+                    childSupportWithEce
+                        .ranges()
+                        .toList()
+                        .map { Aikajakso.from(it) }
+                        .takeIf { it.isNotEmpty() },
                 kuljetusetu = longestTransportBenefit?.let { Aikajakso.from(it) },
                 erityisenTuenPäätökset =
-                    (allSpecialSupport
+                    allSpecialSupport
                         .ranges()
                         .map { ErityisenTuenPäätös.from(it) }
                         .toList()
-                        .takeIf { it.isNotEmpty() }),
+                        .takeIf { it.isNotEmpty() },
+                tuenPäätöksenJaksot =
+                    allChildSupport
+                        .ranges()
+                        .map { Tukijakso.from(it) }
+                        .toList()
+                        .takeIf { it.isNotEmpty() },
             )
             .takeIf {
                 it.vammainen != null ||
                     it.vaikeastiVammainen != null ||
                     it.pidennettyOppivelvollisuus != null ||
+                    it.varhennetunOppivelvollisuudenJaksot != null ||
                     it.kuljetusetu != null ||
-                    it.erityisenTuenPäätökset != null
+                    it.erityisenTuenPäätökset != null ||
+                    it.tuenPäätöksenJaksot != null
             }
     }
 }

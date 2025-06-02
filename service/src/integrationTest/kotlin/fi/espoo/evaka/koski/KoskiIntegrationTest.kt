@@ -416,6 +416,7 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 vammainen = listOf(Aikajakso.from(level1.period)),
                 vaikeastiVammainen = listOf(Aikajakso.from(level2.period)),
                 pidennettyOppivelvollisuus = Aikajakso.from(level1.period.merge(level2.period)),
+                varhennetunOppivelvollisuudenJaksot = null,
                 kuljetusetu = null,
                 erityisenTuenPäätökset =
                     listOf(
@@ -423,6 +424,7 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                             level1.period.merge(level2.period).merge(specialSupport.period)
                         )
                     ),
+                tuenPäätöksenJaksot = null,
             ),
             koskiEndpoint.getStudyRights().values.single().opiskeluoikeus.lisätiedot,
         )
@@ -457,8 +459,10 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 vammainen = null,
                 vaikeastiVammainen = null,
                 pidennettyOppivelvollisuus = null,
+                varhennetunOppivelvollisuudenJaksot = null,
                 kuljetusetu = Aikajakso.from(testPeriod(1L to 4L)),
                 erityisenTuenPäätökset = null,
+                tuenPäätöksenJaksot = null,
             ),
             koskiEndpoint.getStudyRights().values.single().opiskeluoikeus.lisätiedot,
         )
