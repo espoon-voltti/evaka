@@ -35,6 +35,7 @@ import {
   getFuturePreschoolersSourceUnitsReport,
   getFuturePreschoolersUnitsReport,
   getHolidayPeriodAttendanceReport,
+  getHolidayQuestionnaireReport,
   getIncompleteIncomeReport,
   getInvoiceReport,
   getManualDuplicationReport,
@@ -164,6 +165,10 @@ export const preschoolApplicationReportQuery = q.query(
 
 export const holidayPeriodAttendanceReportQuery = q.query(
   getHolidayPeriodAttendanceReport
+)
+
+export const holidayQuestionnaireReportQuery = q.query(
+  getHolidayQuestionnaireReport
 )
 
 export const sendJamixOrdersMutation = q.mutation(sendJamixOrders)

@@ -361,6 +361,7 @@ enum class Audit(
     HolidayQuestionnaireUpdate,
     HolidayQuestionnaireDelete,
     HolidayPeriodAttendanceReport,
+    HolidayQuestionnaireReport,
     HolidayAbsenceCreate,
     IncomeExpirationDatesRead,
     IncomeStatementCreate,

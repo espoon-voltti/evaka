@@ -221,7 +221,7 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
                 .associateBy { it.date }
 
         val expectedMonday =
-            HolidayPeriodAttendanceReportRow(
+            HolidayReportRow(
                 absentCount = 2,
                 requiredStaff = 0,
                 presentChildren = emptyList(),
@@ -235,7 +235,7 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
             )
 
         val expectedTuesday =
-            HolidayPeriodAttendanceReportRow(
+            HolidayReportRow(
                 absentCount = 0,
                 requiredStaff = 2,
                 presentChildren =
@@ -252,7 +252,7 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
             )
 
         val expectedWednesday =
-            HolidayPeriodAttendanceReportRow(
+            HolidayReportRow(
                 absentCount = 2,
                 requiredStaff = 1,
                 presentChildren =
@@ -269,7 +269,7 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
             )
 
         val expectedThursday =
-            HolidayPeriodAttendanceReportRow(
+            HolidayReportRow(
                 absentCount = 0,
                 requiredStaff = 1,
                 presentChildren =
@@ -312,7 +312,7 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
                 .associateBy { it.date }
 
         val expectedMonday =
-            HolidayPeriodAttendanceReportRow(
+            HolidayReportRow(
                 absentCount = 2,
                 requiredStaff = 0,
                 presentChildren = emptyList(),
@@ -326,7 +326,7 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
             )
 
         val expectedTuesday =
-            HolidayPeriodAttendanceReportRow(
+            HolidayReportRow(
                 absentCount = 0,
                 requiredStaff = 2,
                 presentChildren =
@@ -343,7 +343,7 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
             )
 
         val expectedWednesday =
-            HolidayPeriodAttendanceReportRow(
+            HolidayReportRow(
                 absentCount = 2,
                 requiredStaff = 1,
                 presentChildren =
@@ -360,7 +360,7 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
             )
 
         val expectedThursday =
-            HolidayPeriodAttendanceReportRow(
+            HolidayReportRow(
                 absentCount = 0,
                 requiredStaff = 1,
                 presentChildren =
@@ -373,7 +373,7 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
                 presentOccupancyCoefficient = 3.75,
             )
         val expectedFriday =
-            HolidayPeriodAttendanceReportRow(
+            HolidayReportRow(
                 absentCount = 0,
                 requiredStaff = 1,
                 presentChildren =
@@ -387,7 +387,7 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
             )
 
         val expectedSaturday =
-            HolidayPeriodAttendanceReportRow(
+            HolidayReportRow(
                 absentCount = 0,
                 requiredStaff = 1,
                 presentChildren =
@@ -401,7 +401,7 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
             )
 
         val expectedSunday =
-            HolidayPeriodAttendanceReportRow(
+            HolidayReportRow(
                 absentCount = 0,
                 requiredStaff = 0,
                 presentChildren = emptyList(),
@@ -471,7 +471,7 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
                 .associateBy { it.date }
 
         val expectedMonday =
-            HolidayPeriodAttendanceReportRow(
+            HolidayReportRow(
                 absentCount = 3,
                 requiredStaff = 0,
                 presentChildren = emptyList(),
@@ -485,7 +485,7 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
             )
 
         val expectedTuesday =
-            HolidayPeriodAttendanceReportRow(
+            HolidayReportRow(
                 absentCount = 0,
                 requiredStaff = 2,
                 presentChildren =
@@ -502,7 +502,7 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
             )
 
         val expectedWednesday =
-            HolidayPeriodAttendanceReportRow(
+            HolidayReportRow(
                 absentCount = 2,
                 requiredStaff = 1,
                 presentChildren =
@@ -519,7 +519,7 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
             )
 
         val expectedThursday =
-            HolidayPeriodAttendanceReportRow(
+            HolidayReportRow(
                 absentCount = 0,
                 requiredStaff = 1,
                 presentChildren =
@@ -605,7 +605,7 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
                 .associateBy { it.date }
 
         val expectedMonday =
-            HolidayPeriodAttendanceReportRow(
+            HolidayReportRow(
                 absentCount = 3,
                 requiredStaff = 0,
                 presentChildren = emptyList(),
@@ -619,7 +619,7 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
             )
 
         val expectedTuesday =
-            HolidayPeriodAttendanceReportRow(
+            HolidayReportRow(
                 absentCount = 1,
                 requiredStaff = 2,
                 presentChildren =
@@ -636,7 +636,7 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
             )
 
         val expectedWednesday =
-            HolidayPeriodAttendanceReportRow(
+            HolidayReportRow(
                 absentCount = 3,
                 requiredStaff = 1,
                 presentChildren =
@@ -653,7 +653,7 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
             )
 
         val expectedThursday =
-            HolidayPeriodAttendanceReportRow(
+            HolidayReportRow(
                 absentCount = 1,
                 requiredStaff = 1,
                 presentChildren =
@@ -740,7 +740,7 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
                 .associateBy { it.date }
 
         val expectedMonday =
-            HolidayPeriodAttendanceReportRow(
+            HolidayReportRow(
                 absentCount = 3,
                 requiredStaff = 0,
                 presentChildren = emptyList(),
@@ -754,7 +754,7 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
             )
 
         val expectedTuesday =
-            HolidayPeriodAttendanceReportRow(
+            HolidayReportRow(
                 absentCount = 1,
                 requiredStaff = 2,
                 presentChildren =
@@ -771,7 +771,7 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
             )
 
         val expectedWednesday =
-            HolidayPeriodAttendanceReportRow(
+            HolidayReportRow(
                 absentCount = 3,
                 requiredStaff = 1,
                 presentChildren =
@@ -788,7 +788,7 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
             )
 
         val expectedThursday =
-            HolidayPeriodAttendanceReportRow(
+            HolidayReportRow(
                 absentCount = 1,
                 requiredStaff = 1,
                 presentChildren =
@@ -802,7 +802,7 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
             )
 
         val expectedFriday =
-            HolidayPeriodAttendanceReportRow(
+            HolidayReportRow(
                 absentCount = 1,
                 requiredStaff = 1,
                 presentChildren =
@@ -816,7 +816,7 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
             )
 
         val expectedSaturday =
-            HolidayPeriodAttendanceReportRow(
+            HolidayReportRow(
                 absentCount = 1,
                 requiredStaff = 1,
                 presentChildren =
@@ -830,7 +830,7 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
             )
 
         val expectedSunday =
-            HolidayPeriodAttendanceReportRow(
+            HolidayReportRow(
                 absentCount = 1,
                 requiredStaff = 0,
                 presentChildren = emptyList(),
@@ -878,7 +878,7 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
         db.transaction { tx -> tx.insert(placementG) }
 
         val expectedMonday =
-            HolidayPeriodAttendanceReportRow(
+            HolidayReportRow(
                 absentCount = 3,
                 requiredStaff = 0,
                 presentChildren = emptyList(),
@@ -892,7 +892,7 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
             )
 
         val expectedTuesday =
-            HolidayPeriodAttendanceReportRow(
+            HolidayReportRow(
                 absentCount = 0,
                 requiredStaff = 2,
                 presentChildren =
@@ -909,7 +909,7 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
             )
 
         val expectedWednesday =
-            HolidayPeriodAttendanceReportRow(
+            HolidayReportRow(
                 absentCount = 2,
                 requiredStaff = 1,
                 presentChildren =
@@ -929,7 +929,7 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
             )
 
         val expectedThursday =
-            HolidayPeriodAttendanceReportRow(
+            HolidayReportRow(
                 absentCount = 0,
                 requiredStaff = 1,
                 presentChildren =
@@ -1089,7 +1089,7 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
                 .associateBy { it.date }
 
         val expectedMonday =
-            HolidayPeriodAttendanceReportRow(
+            HolidayReportRow(
                 absentCount = 1,
                 requiredStaff = 0,
                 presentChildren = emptyList(),
@@ -1100,7 +1100,7 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
             )
 
         val expectedTuesday =
-            HolidayPeriodAttendanceReportRow(
+            HolidayReportRow(
                 absentCount = 0,
                 requiredStaff = 1,
                 presentChildren =
@@ -1114,7 +1114,7 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
             )
 
         val expectedWednesday =
-            HolidayPeriodAttendanceReportRow(
+            HolidayReportRow(
                 absentCount = 2,
                 requiredStaff = 0,
                 presentChildren = emptyList(),
@@ -1125,7 +1125,7 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
             )
 
         val expectedThursday =
-            HolidayPeriodAttendanceReportRow(
+            HolidayReportRow(
                 absentCount = 0,
                 requiredStaff = 1,
                 presentChildren =
@@ -1582,10 +1582,7 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
             )
         )
 
-    private fun assertReportDay(
-        expected: HolidayPeriodAttendanceReportRow,
-        actual: HolidayPeriodAttendanceReportRow,
-    ) {
+    private fun assertReportDay(expected: HolidayReportRow, actual: HolidayReportRow) {
         assertEquals(expected.date, actual.date)
         assertEquals(expected.absentCount, actual.absentCount, "${actual.date}: absentCount")
         assertThat(actual.presentChildren)
