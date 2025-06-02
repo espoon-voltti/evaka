@@ -47,6 +47,7 @@ import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.Test
@@ -791,6 +792,75 @@ class MigrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             assertEquals(HelsinkiDateTime.of(decisionMade, LocalTime.MIDNIGHT), it.enteredAt)
             assertEquals(AuthenticatedUser.SystemInternalUser.evakaUserId, it.enteredBy.id)
         }
+    }
+
+    @Test
+    fun `migration works in batches`() {
+        val today = LocalDate.of(2023, 1, 1)
+        val now = HelsinkiDateTime.of(today, LocalTime.of(10, 0))
+        val clock = MockEvakaClock(now)
+
+        val approved = HelsinkiDateTime.of(today, LocalTime.of(9, 30))
+        val area = DevCareArea()
+        val daycare = DevDaycare(areaId = area.id)
+        val adult = DevPerson()
+        val child1 = DevPerson()
+        val child2 = DevPerson()
+        val child3 = DevPerson()
+        val voucherValueDecision1 =
+            DevVoucherValueDecision(
+                status = VoucherValueDecisionStatus.WAITING_FOR_MANUAL_SENDING,
+                approvedAt = approved,
+                validFrom = today,
+                validTo = today.plusMonths(1),
+                headOfFamilyId = adult.id,
+                childId = child1.id,
+                placementUnitId = daycare.id,
+            )
+        val voucherValueDecision2 =
+            DevVoucherValueDecision(
+                status = VoucherValueDecisionStatus.WAITING_FOR_MANUAL_SENDING,
+                approvedAt = approved,
+                validFrom = today,
+                validTo = today.plusMonths(1),
+                headOfFamilyId = adult.id,
+                childId = child2.id,
+                placementUnitId = daycare.id,
+            )
+        val voucherValueDecision3 =
+            DevVoucherValueDecision(
+                status = VoucherValueDecisionStatus.WAITING_FOR_MANUAL_SENDING,
+                approvedAt = approved,
+                validFrom = today,
+                validTo = today.plusMonths(1),
+                headOfFamilyId = adult.id,
+                childId = child3.id,
+                placementUnitId = daycare.id,
+            )
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(adult, DevPersonType.ADULT)
+            tx.insert(child1, DevPersonType.CHILD)
+            tx.insert(child2, DevPersonType.CHILD)
+            tx.insert(child3, DevPersonType.CHILD)
+            tx.insert(voucherValueDecision1)
+            tx.insert(voucherValueDecision2)
+            tx.insert(voucherValueDecision3)
+        }
+
+        migrateProcessMetadata(db, clock, featureConfig, batchSize = 2)
+
+        assertNotNull(
+            db.read { it.getArchiveProcessByVoucherValueDecisionId(voucherValueDecision1.id) }
+        )
+        assertNotNull(
+            db.read { it.getArchiveProcessByVoucherValueDecisionId(voucherValueDecision2.id) }
+        )
+        assertNotNull(
+            db.read { it.getArchiveProcessByVoucherValueDecisionId(voucherValueDecision3.id) }
+        )
     }
 
     private fun clearApplicationMetadata() {

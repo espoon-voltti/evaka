@@ -34,21 +34,28 @@ fun migrateProcessMetadata(
     dbc: Database.Connection,
     clock: EvakaClock,
     featureConfig: FeatureConfig,
+    batchSize: Int = 1000,
 ) {
-    migrateApplicationMetadata(
-        dbc,
-        clock,
-        featureConfig.archiveMetadataOrganization,
-        featureConfig.archiveMetadataConfigs,
-    )
+    runBatches(batchSize) {
+        migrateApplicationMetadata(
+            dbc,
+            batchSize,
+            clock,
+            featureConfig.archiveMetadataOrganization,
+            featureConfig.archiveMetadataConfigs,
+        )
+    }
 
     val feeDecisionConfig = featureConfig.archiveMetadataConfigs[ArchiveProcessType.FEE_DECISION]
     if (feeDecisionConfig != null) {
-        migrateFeeDecisionMetadata(
-            dbc,
-            featureConfig.archiveMetadataOrganization,
-            feeDecisionConfig,
-        )
+        runBatches(batchSize) {
+            migrateFeeDecisionMetadata(
+                dbc,
+                batchSize,
+                featureConfig.archiveMetadataOrganization,
+                feeDecisionConfig,
+            )
+        }
     } else {
         logger.warn { "Missing metadata config for FEE_DECISION" }
     }
@@ -56,11 +63,14 @@ fun migrateProcessMetadata(
     val voucherValueDecisionConfig =
         featureConfig.archiveMetadataConfigs[ArchiveProcessType.VOUCHER_VALUE_DECISION]
     if (voucherValueDecisionConfig != null) {
-        migrateVoucherValueDecisionMetadata(
-            dbc,
-            featureConfig.archiveMetadataOrganization,
-            voucherValueDecisionConfig,
-        )
+        runBatches(batchSize) {
+            migrateVoucherValueDecisionMetadata(
+                dbc,
+                batchSize,
+                featureConfig.archiveMetadataOrganization,
+                voucherValueDecisionConfig,
+            )
+        }
     } else {
         logger.warn { "Missing metadata config for FEE_DECISION" }
     }
@@ -68,11 +78,14 @@ fun migrateProcessMetadata(
     val assistanceNeedDecisionDaycareConfig =
         featureConfig.archiveMetadataConfigs[ArchiveProcessType.ASSISTANCE_NEED_DECISION_DAYCARE]
     if (assistanceNeedDecisionDaycareConfig != null) {
-        migrateAssistanceNeedDecisionDaycare(
-            dbc,
-            featureConfig.archiveMetadataOrganization,
-            assistanceNeedDecisionDaycareConfig,
-        )
+        runBatches(batchSize) {
+            migrateAssistanceNeedDecisionDaycare(
+                dbc,
+                batchSize,
+                featureConfig.archiveMetadataOrganization,
+                assistanceNeedDecisionDaycareConfig,
+            )
+        }
     } else {
         logger.warn { "Missing metadata config for ASSISTANCE_NEED_DECISION_DAYCARE" }
     }
@@ -80,14 +93,30 @@ fun migrateProcessMetadata(
     val assistanceNeedDecisionPreschoolConfig =
         featureConfig.archiveMetadataConfigs[ArchiveProcessType.ASSISTANCE_NEED_DECISION_PRESCHOOL]
     if (assistanceNeedDecisionPreschoolConfig != null) {
-        migrateAssistanceNeedDecisionPreschool(
-            dbc,
-            featureConfig.archiveMetadataOrganization,
-            assistanceNeedDecisionPreschoolConfig,
-        )
+        runBatches(batchSize) {
+            migrateAssistanceNeedDecisionPreschool(
+                dbc,
+                batchSize,
+                featureConfig.archiveMetadataOrganization,
+                assistanceNeedDecisionPreschoolConfig,
+            )
+        }
     } else {
         logger.warn { "Missing metadata config for ASSISTANCE_NEED_DECISION_PRESCHOOL" }
     }
+}
+
+private fun runBatches(batchSize: Int, migrate: () -> Int): Int {
+    var totalMigrated = 0
+    var migrated: Int
+    do {
+        migrated = migrate()
+        totalMigrated += migrated
+        if (migrated > 0) {
+            logger.info { "Migrated $migrated records in this batch, total $totalMigrated" }
+        }
+    } while (migrated == batchSize)
+    return totalMigrated
 }
 
 private data class ApplicationMigrationData(
@@ -100,12 +129,13 @@ private data class ApplicationMigrationData(
 
 private fun migrateApplicationMetadata(
     dbc: Database.Connection,
+    batchSize: Int,
     clock: EvakaClock,
     archiveMetadataOrganization: String,
     metadataConfigs: Map<ArchiveProcessType, ArchiveProcessConfig>,
-) {
+): Int {
     val systemInternalUser = AuthenticatedUser.SystemInternalUser.evakaUserId
-    dbc.transaction { tx ->
+    return dbc.transaction { tx ->
         val applications =
             tx.createQuery {
                     sql(
@@ -114,6 +144,7 @@ private fun migrateApplicationMetadata(
                         FROM application
                         WHERE process_id IS NULL AND sentdate IS NOT NULL
                         ORDER BY sentdate
+                        LIMIT ${bind(batchSize)}
                         """
                     )
                 }
@@ -158,6 +189,7 @@ private fun migrateApplicationMetadata(
                 )
             }
         }
+        applications.size
     }
 }
 
@@ -171,11 +203,12 @@ private data class FeeDecisionMigrationData(
 
 private fun migrateFeeDecisionMetadata(
     dbc: Database.Connection,
+    batchSize: Int,
     archiveMetadataOrganization: String,
     config: ArchiveProcessConfig,
-) {
+): Int {
     val systemInternalUser = AuthenticatedUser.SystemInternalUser.evakaUserId
-    dbc.transaction { tx ->
+    return dbc.transaction { tx ->
         val feeDecisions =
             tx.createQuery {
                     sql(
@@ -184,6 +217,7 @@ private fun migrateFeeDecisionMetadata(
                         FROM fee_decision
                         WHERE process_id IS NULL AND approved_at IS NOT NULL
                         ORDER BY created
+                        LIMIT ${bind(batchSize)}
                         """
                     )
                 }
@@ -221,6 +255,7 @@ private fun migrateFeeDecisionMetadata(
                 )
             }
         }
+        feeDecisions.size
     }
 }
 
@@ -234,11 +269,12 @@ private data class VoucherValueDecisionMigrationData(
 
 private fun migrateVoucherValueDecisionMetadata(
     dbc: Database.Connection,
+    batchSize: Int,
     archiveMetadataOrganization: String,
     config: ArchiveProcessConfig,
-) {
+): Int {
     val systemInternalUser = AuthenticatedUser.SystemInternalUser.evakaUserId
-    dbc.transaction { tx ->
+    return dbc.transaction { tx ->
         val voucherValueDecisions =
             tx.createQuery {
                     sql(
@@ -247,6 +283,7 @@ private fun migrateVoucherValueDecisionMetadata(
                         FROM voucher_value_decision
                         WHERE process_id IS NULL AND approved_at IS NOT NULL
                         ORDER BY created
+                        LIMIT ${bind(batchSize)}
                         """
                     )
                 }
@@ -284,6 +321,7 @@ private fun migrateVoucherValueDecisionMetadata(
                 )
             }
         }
+        voucherValueDecisions.size
     }
 }
 
@@ -300,11 +338,12 @@ private data class AssistaceNeedDaycareDecisionData(
 
 private fun migrateAssistanceNeedDecisionDaycare(
     dbc: Database.Connection,
+    batchSize: Int,
     archiveMetadataOrganization: String,
     config: ArchiveProcessConfig,
-) {
+): Int {
     val systemInternalUser = AuthenticatedUser.SystemInternalUser.evakaUserId
-    dbc.transaction { tx ->
+    return dbc.transaction { tx ->
         val assistanceNeedDecisions =
             tx.createQuery {
                     sql(
@@ -321,6 +360,7 @@ private fun migrateAssistanceNeedDecisionDaycare(
                         FROM assistance_need_decision
                         WHERE process_id IS NULL
                         ORDER BY created_at
+                        LIMIT ${bind(batchSize)}
                         """
                     )
                 }
@@ -376,6 +416,7 @@ private fun migrateAssistanceNeedDecisionDaycare(
                 userId = systemInternalUser,
             )
         }
+        assistanceNeedDecisions.size
     }
 }
 
@@ -392,11 +433,12 @@ private data class AssistanceNeedPreschoolDecisionData(
 
 private fun migrateAssistanceNeedDecisionPreschool(
     dbc: Database.Connection,
+    batchSize: Int,
     archiveMetadataOrganization: String,
     config: ArchiveProcessConfig,
-) {
+): Int {
     val systemInternalUser = AuthenticatedUser.SystemInternalUser.evakaUserId
-    dbc.transaction { tx ->
+    return dbc.transaction { tx ->
         val assistanceNeedPreschoolDecisions =
             tx.createQuery {
                     sql(
@@ -413,6 +455,7 @@ private fun migrateAssistanceNeedDecisionPreschool(
                         FROM assistance_need_preschool_decision
                         WHERE process_id IS NULL
                         ORDER BY created_at
+                        LIMIT ${bind(batchSize)}
                         """
                     )
                 }
@@ -468,5 +511,6 @@ private fun migrateAssistanceNeedDecisionPreschool(
                 userId = systemInternalUser,
             )
         }
+        assistanceNeedPreschoolDecisions.size
     }
 }
