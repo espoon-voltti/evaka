@@ -14,6 +14,7 @@ import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ArchiveProcessConfig
 import fi.espoo.evaka.shared.ArchiveProcessType
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
+import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.FeatureConfig
@@ -74,6 +75,18 @@ fun migrateProcessMetadata(
         )
     } else {
         logger.warn { "Missing metadata config for ASSISTANCE_NEED_DECISION_DAYCARE" }
+    }
+
+    val assistanceNeedDecisionPreschoolConfig =
+        featureConfig.archiveMetadataConfigs[ArchiveProcessType.ASSISTANCE_NEED_DECISION_PRESCHOOL]
+    if (assistanceNeedDecisionPreschoolConfig != null) {
+        migrateAssistanceNeedDecisionPreschool(
+            dbc,
+            featureConfig.archiveMetadataOrganization,
+            assistanceNeedDecisionPreschoolConfig,
+        )
+    } else {
+        logger.warn { "Missing metadata config for ASSISTANCE_NEED_DECISION_PRESCHOOL" }
     }
 }
 
@@ -326,6 +339,98 @@ private fun migrateAssistanceNeedDecisionDaycare(
             tx.execute {
                 sql(
                     "UPDATE assistance_need_decision SET process_id = ${bind(processId)} WHERE id = ${bind(decision.id)}"
+                )
+            }
+            tx.insertProcessHistoryRow(
+                processId = processId,
+                state = ArchivedProcessState.INITIAL,
+                now = decision.createdAt,
+                userId = decision.createdBy ?: systemInternalUser,
+            )
+
+            if (decision.sentForDecision == null) return@forEach
+            tx.insertProcessHistoryRow(
+                processId = processId,
+                state = ArchivedProcessState.PREPARATION,
+                now = HelsinkiDateTime.of(decision.sentForDecision, LocalTime.MIDNIGHT),
+                userId = systemInternalUser,
+            )
+
+            if (decision.decisionMade == null) return@forEach
+            tx.insertProcessHistoryRow(
+                processId = processId,
+                state = ArchivedProcessState.DECIDING,
+                now = HelsinkiDateTime.of(decision.decisionMade, LocalTime.MIDNIGHT),
+                userId =
+                    decision.decisionMakerEmployeeId?.let { EvakaUserId(it.raw) }
+                        ?: systemInternalUser,
+            )
+
+            if (!decision.status.isDecided() || decision.documentKey.isNullOrEmpty()) {
+                return@forEach
+            }
+            tx.insertProcessHistoryRow(
+                processId = processId,
+                state = ArchivedProcessState.COMPLETED,
+                now = HelsinkiDateTime.of(decision.decisionMade, LocalTime.MIDNIGHT),
+                userId = systemInternalUser,
+            )
+        }
+    }
+}
+
+private data class AssistanceNeedPreschoolDecisionData(
+    val id: AssistanceNeedPreschoolDecisionId,
+    val createdAt: HelsinkiDateTime,
+    val createdBy: EvakaUserId?,
+    val sentForDecision: LocalDate?,
+    val decisionMakerEmployeeId: EmployeeId?,
+    val decisionMade: LocalDate?,
+    val status: AssistanceNeedDecisionStatus,
+    val documentKey: String?,
+)
+
+private fun migrateAssistanceNeedDecisionPreschool(
+    dbc: Database.Connection,
+    archiveMetadataOrganization: String,
+    config: ArchiveProcessConfig,
+) {
+    val systemInternalUser = AuthenticatedUser.SystemInternalUser.evakaUserId
+    dbc.transaction { tx ->
+        val assistanceNeedPreschoolDecisions =
+            tx.createQuery {
+                    sql(
+                        """
+                        SELECT
+                            id,
+                            created_at,
+                            created_by,
+                            sent_for_decision,
+                            decision_made,
+                            decision_maker_employee_id,
+                            status,
+                            document_key
+                        FROM assistance_need_preschool_decision
+                        WHERE process_id IS NULL
+                        ORDER BY created_at
+                        """
+                    )
+                }
+                .toList<AssistanceNeedPreschoolDecisionData>()
+
+        assistanceNeedPreschoolDecisions.forEach { decision ->
+            val processId =
+                tx.insertProcess(
+                        processDefinitionNumber = config.processDefinitionNumber,
+                        year = decision.createdAt.year,
+                        organization = archiveMetadataOrganization,
+                        archiveDurationMonths = config.archiveDurationMonths,
+                        migrated = true,
+                    )
+                    .id
+            tx.execute {
+                sql(
+                    "UPDATE assistance_need_preschool_decision SET process_id = ${bind(processId)} WHERE id = ${bind(decision.id)}"
                 )
             }
             tx.insertProcessHistoryRow(
