@@ -8,9 +8,9 @@ import { Link } from 'wouter'
 
 import type {
   ChildDocumentCitizenSummary,
-  DocumentType
+  ChildDocumentType
 } from 'lib-common/generated/api-types/document'
-import { documentTypes } from 'lib-common/generated/api-types/document'
+import { childDocumentTypes } from 'lib-common/generated/api-types/document'
 import type { ChildId } from 'lib-common/generated/api-types/shared'
 import { useQuery, useQueryResult } from 'lib-common/query'
 import { tabletMin } from 'lib-components/breakpoints'
@@ -174,7 +174,7 @@ export default React.memo(function ChildDocumentsSection({
             <H3>{i18n.children.childDocuments.otherDocumentsTitle}</H3>
             <ChildDocumentsList
               childId={childId}
-              types={documentTypes.filter(
+              types={childDocumentTypes.filter(
                 (type) =>
                   ![
                     'VASU',
@@ -197,7 +197,7 @@ const ChildDocumentsList = React.memo(function ChildDocumentsList({
   types
 }: {
   childId: ChildId
-  types: DocumentType[]
+  types: ChildDocumentType[]
 }) {
   const i18n = useTranslation()
 

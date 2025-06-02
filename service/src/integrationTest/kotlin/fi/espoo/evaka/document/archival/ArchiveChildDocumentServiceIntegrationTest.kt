@@ -9,8 +9,8 @@ import ch.qos.logback.classic.Logger
 import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.core.AppenderBase
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.document.ChildDocumentType
 import fi.espoo.evaka.document.DocumentTemplateContent
-import fi.espoo.evaka.document.DocumentType
 import fi.espoo.evaka.document.childdocument.*
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.process.DocumentConfidentiality
@@ -167,7 +167,7 @@ class ArchiveChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBe
                 DevDocumentTemplate(
                     id = templateId,
                     name = "VASU 2023-2024",
-                    type = DocumentType.VASU,
+                    type = ChildDocumentType.VASU,
                     placementTypes = setOf(PlacementType.PRESCHOOL),
                     language = UiLanguage.FI,
                     confidentiality = DocumentConfidentiality(10, "JulkL 24 § 1 mom. 32 k"),

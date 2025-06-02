@@ -337,8 +337,8 @@ data class Section(
  * autoCompleteAtEndOfValidity: if the document is automatically completed and published when the
  * template validity ends
  */
-@ConstList("documentTypes")
-enum class DocumentType(
+@ConstList("childDocumentTypes")
+enum class ChildDocumentType(
     val statuses: List<DocumentStatus>,
     val manuallyPublishable: Boolean,
     val decision: Boolean,
@@ -417,7 +417,7 @@ enum class DocumentType(
 data class DocumentTemplate(
     val id: DocumentTemplateId,
     val name: String,
-    val type: DocumentType,
+    val type: ChildDocumentType,
     val placementTypes: Set<PlacementType>,
     val language: UiLanguage,
     @Nested("confidentiality") val confidentiality: DocumentConfidentiality?,
@@ -432,7 +432,7 @@ data class DocumentTemplate(
 
 data class ExportedDocumentTemplate(
     val name: String,
-    val type: DocumentType,
+    val type: ChildDocumentType,
     val placementTypes: Set<PlacementType>,
     val language: UiLanguage,
     val confidentiality: DocumentConfidentiality?,
@@ -449,7 +449,7 @@ sealed interface DocumentTemplateBasicsRequest {
     val archiveDurationMonths: Int?
     val processDefinitionNumber: String?
     val name: String
-    val type: DocumentType
+    val type: ChildDocumentType
     val placementTypes: Set<PlacementType>
     val language: UiLanguage
     val confidentiality: DocumentConfidentiality?
@@ -460,7 +460,7 @@ sealed interface DocumentTemplateBasicsRequest {
     @JsonTypeName("REGULAR")
     data class Regular(
         override val name: String,
-        override val type: DocumentType,
+        override val type: ChildDocumentType,
         override val placementTypes: Set<PlacementType>,
         override val language: UiLanguage,
         override val confidentiality: DocumentConfidentiality?,
@@ -475,7 +475,7 @@ sealed interface DocumentTemplateBasicsRequest {
     @JsonTypeName("ARCHIVED_EXTERNALLY")
     data class ArchivedExternally(
         override val name: String,
-        override val type: DocumentType,
+        override val type: ChildDocumentType,
         override val placementTypes: Set<PlacementType>,
         override val language: UiLanguage,
         override val confidentiality: DocumentConfidentiality?,
@@ -491,7 +491,7 @@ sealed interface DocumentTemplateBasicsRequest {
 data class DocumentTemplateSummary(
     val id: DocumentTemplateId,
     val name: String,
-    val type: DocumentType,
+    val type: ChildDocumentType,
     val placementTypes: Set<PlacementType>,
     val language: UiLanguage,
     val validity: DateRange,

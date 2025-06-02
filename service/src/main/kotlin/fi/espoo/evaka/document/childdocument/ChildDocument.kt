@@ -6,8 +6,8 @@ package fi.espoo.evaka.document.childdocument
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonTypeName
+import fi.espoo.evaka.document.ChildDocumentType
 import fi.espoo.evaka.document.DocumentTemplate
-import fi.espoo.evaka.document.DocumentType
 import fi.espoo.evaka.document.Question
 import fi.espoo.evaka.document.QuestionType
 import fi.espoo.evaka.shared.ChildDocumentDecisionId
@@ -182,7 +182,7 @@ data class ChildDocumentDecision(
 data class ChildDocumentSummary(
     val id: ChildDocumentId,
     val status: DocumentStatus,
-    val type: DocumentType,
+    val type: ChildDocumentType,
     val templateId: DocumentTemplateId,
     val templateName: String,
     val childFirstName: String,

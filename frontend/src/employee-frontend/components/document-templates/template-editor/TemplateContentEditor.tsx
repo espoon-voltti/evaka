@@ -16,9 +16,9 @@ import {
 } from 'lib-common/form/hooks'
 import type {
   DocumentTemplate,
-  DocumentType
+  ChildDocumentType
 } from 'lib-common/generated/api-types/document'
-import { documentTypes } from 'lib-common/generated/api-types/document'
+import { childDocumentTypes } from 'lib-common/generated/api-types/document'
 import { uiLanguages } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useMutationResult } from 'lib-common/query'
@@ -304,7 +304,7 @@ const BasicsEditor = React.memo(function BasicsEditor({
 
   const typeOptions = useMemo(
     () =>
-      documentTypes
+      childDocumentTypes
         .filter((type) => !type.startsWith('MIGRATED_'))
         .map((option) => ({
           domValue: option,
@@ -315,7 +315,7 @@ const BasicsEditor = React.memo(function BasicsEditor({
   )
 
   const getLanguageOptions = useCallback(
-    (type: DocumentType) =>
+    (type: ChildDocumentType) =>
       uiLanguages
         .filter((option) => type === 'CITIZEN_BASIC' || option !== 'EN')
         .map((option) => ({

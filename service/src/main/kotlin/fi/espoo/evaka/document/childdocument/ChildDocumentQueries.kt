@@ -4,7 +4,7 @@
 
 package fi.espoo.evaka.document.childdocument
 
-import fi.espoo.evaka.document.DocumentType
+import fi.espoo.evaka.document.ChildDocumentType
 import fi.espoo.evaka.pis.Employee
 import fi.espoo.evaka.shared.ArchivedProcessId
 import fi.espoo.evaka.shared.ChildDocumentDecisionId
@@ -35,7 +35,7 @@ fun Database.Transaction.insertChildDocument(
 ): ChildDocumentId {
     val type =
         createQuery { sql("SELECT type FROM document_template WHERE id = ${bind(templateId)}") }
-            .exactlyOne<DocumentType>()
+            .exactlyOne<ChildDocumentType>()
 
     return createQuery {
             sql(

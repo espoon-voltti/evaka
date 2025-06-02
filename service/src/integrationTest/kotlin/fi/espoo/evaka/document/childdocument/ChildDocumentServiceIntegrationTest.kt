@@ -6,8 +6,8 @@ package fi.espoo.evaka.document.childdocument
 
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.daycare.domain.Language
+import fi.espoo.evaka.document.ChildDocumentType
 import fi.espoo.evaka.document.DocumentTemplateContent
-import fi.espoo.evaka.document.DocumentType
 import fi.espoo.evaka.document.Question
 import fi.espoo.evaka.document.Section
 import fi.espoo.evaka.emailclient.MockEmailClient
@@ -91,7 +91,7 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             tx.insert(
                 DevDocumentTemplate(
                     id = activeHojksTemplateId,
-                    type = DocumentType.HOJKS,
+                    type = ChildDocumentType.HOJKS,
                     name = "HOJKS uusi",
                     validity = DateRange(clock.today().minusYears(1), clock.today()),
                     content = templateContent,
@@ -100,7 +100,7 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             tx.insert(
                 DevDocumentTemplate(
                     id = expiredHojksTemplateId,
-                    type = DocumentType.HOJKS,
+                    type = ChildDocumentType.HOJKS,
                     name = "HOJKS",
                     validity = DateRange(clock.today().minusYears(1), clock.today().minusDays(1)),
                     content = templateContent,
@@ -109,7 +109,7 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             tx.insert(
                 DevDocumentTemplate(
                     id = expiredDecisionTemplateId,
-                    type = DocumentType.OTHER_DECISION,
+                    type = ChildDocumentType.OTHER_DECISION,
                     name = "Tuen päätös",
                     validity = DateRange(clock.today().minusYears(1), clock.today().minusDays(1)),
                     content = templateContent,
