@@ -29,7 +29,6 @@ import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.DevReservation
 import fi.espoo.evaka.shared.dev.insert
-import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.TimeRange
@@ -2378,12 +2377,8 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
 
         val nekkuAsyncJob = AsyncJob.SendNekkuOrder(group.id, monday)
 
-        val clock = MockEvakaClock(
-            HelsinkiDateTime.of(
-                LocalDate.of(2025, 4, 14),
-                LocalTime.of(12, 0)
-            )
-        )
+        val clock =
+            MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2025, 4, 14), LocalTime.of(12, 0)))
 
         nekkuService.sendNekkuOrder(db, clock, nekkuAsyncJob)
 
