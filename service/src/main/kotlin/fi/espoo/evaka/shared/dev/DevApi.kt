@@ -29,6 +29,7 @@ import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionStatus
 import fi.espoo.evaka.assistanceneed.decision.ServiceOptions
 import fi.espoo.evaka.assistanceneed.decision.StructuralMotivationOptions
 import fi.espoo.evaka.assistanceneed.preschooldecision.AssistanceNeedPreschoolDecisionForm
+import fi.espoo.evaka.assistanceneed.preschooldecision.AssistanceNeedPreschoolDecisionType
 import fi.espoo.evaka.attachment.AttachmentParent
 import fi.espoo.evaka.attachment.insertAttachment
 import fi.espoo.evaka.attendance.StaffAttendanceType
@@ -1260,9 +1261,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
         @RequestBody assistanceNeedDecisions: List<DevAssistanceNeedPreschoolDecision>,
     ) {
         db.connect { dbc ->
-            dbc.transaction { tx ->
-                assistanceNeedDecisions.forEach { tx.insertTestAssistanceNeedPreschoolDecision(it) }
-            }
+            dbc.transaction { tx -> assistanceNeedDecisions.forEach { tx.insert(it) } }
         }
     }
 
@@ -1996,15 +1995,56 @@ data class DevAssistanceNeedDecision(
 data class DevAssistanceNeedPreschoolDecision(
     val id: AssistanceNeedPreschoolDecisionId =
         AssistanceNeedPreschoolDecisionId(UUID.randomUUID()),
-    val decisionNumber: Long,
+    val decisionNumber: Long = 999,
     val childId: ChildId,
     val form: AssistanceNeedPreschoolDecisionForm,
-    val status: AssistanceNeedDecisionStatus,
-    val annulmentReason: String,
-    val sentForDecision: LocalDate?,
-    val decisionMade: LocalDate?,
-    val unreadGuardianIds: Set<PersonId>?,
+    val status: AssistanceNeedDecisionStatus = AssistanceNeedDecisionStatus.DRAFT,
+    val annulmentReason: String = "",
+    val sentForDecision: LocalDate? = null,
+    val decisionMade: LocalDate? = null,
+    val unreadGuardianIds: Set<PersonId>? = null,
 )
+
+val emptyAssistanceNeedPreschoolDecisionForm =
+    AssistanceNeedPreschoolDecisionForm(
+        language = OfficialLanguage.FI,
+        type = AssistanceNeedPreschoolDecisionType.NEW,
+        validFrom = LocalDate.of(2019, 1, 1),
+        validTo = null,
+        extendedCompulsoryEducation = false,
+        extendedCompulsoryEducationInfo = "",
+        grantedAssistanceService = false,
+        grantedInterpretationService = false,
+        grantedAssistiveDevices = false,
+        grantedServicesBasis = "",
+        selectedUnit = null,
+        primaryGroup = "",
+        decisionBasis = "",
+        basisDocumentPedagogicalReport = false,
+        basisDocumentPsychologistStatement = false,
+        basisDocumentSocialReport = false,
+        basisDocumentDoctorStatement = false,
+        basisDocumentPedagogicalReportDate = null,
+        basisDocumentPsychologistStatementDate = null,
+        basisDocumentSocialReportDate = null,
+        basisDocumentDoctorStatementDate = null,
+        basisDocumentOtherOrMissing = false,
+        basisDocumentOtherOrMissingInfo = "",
+        basisDocumentsInfo = "",
+        guardiansHeardOn = null,
+        guardianInfo = emptySet(),
+        otherRepresentativeHeard = false,
+        otherRepresentativeDetails = "",
+        viewOfGuardians = "",
+        preparer1EmployeeId = null,
+        preparer1Title = "",
+        preparer1PhoneNumber = "",
+        preparer2EmployeeId = null,
+        preparer2Title = "",
+        preparer2PhoneNumber = "",
+        decisionMakerEmployeeId = null,
+        decisionMakerTitle = "",
+    )
 
 data class DevChildAttendance(
     val childId: ChildId,

@@ -16,8 +16,6 @@ import fi.espoo.evaka.assistance.OtherAssistanceMeasureType
 import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionStatus
 import fi.espoo.evaka.assistanceneed.decision.ServiceOptions
 import fi.espoo.evaka.assistanceneed.decision.StructuralMotivationOptions
-import fi.espoo.evaka.assistanceneed.preschooldecision.AssistanceNeedPreschoolDecisionForm
-import fi.espoo.evaka.assistanceneed.preschooldecision.AssistanceNeedPreschoolDecisionType
 import fi.espoo.evaka.assistanceneed.vouchercoefficient.AssistanceNeedVoucherCoefficientRequest
 import fi.espoo.evaka.assistanceneed.vouchercoefficient.insertAssistanceNeedVoucherCoefficient
 import fi.espoo.evaka.decision.DecisionStatus
@@ -73,10 +71,10 @@ import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.DevPreschoolAssistance
 import fi.espoo.evaka.shared.dev.DevServiceNeed
 import fi.espoo.evaka.shared.dev.TestDecision
+import fi.espoo.evaka.shared.dev.emptyAssistanceNeedPreschoolDecisionForm
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertServiceNeedOption
 import fi.espoo.evaka.shared.dev.insertTestApplication
-import fi.espoo.evaka.shared.dev.insertTestAssistanceNeedPreschoolDecision
 import fi.espoo.evaka.shared.dev.insertTestDecision
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -345,53 +343,16 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
         val id =
             db.transaction {
                 val child = it.insertTestChild()
-                it.insertTestAssistanceNeedPreschoolDecision(
+                it.insert(
                     DevAssistanceNeedPreschoolDecision(
-                        decisionNumber = 999,
                         childId = child,
                         form =
-                            AssistanceNeedPreschoolDecisionForm(
-                                language = OfficialLanguage.FI,
-                                type = AssistanceNeedPreschoolDecisionType.NEW,
-                                validFrom = LocalDate.of(2019, 1, 1),
-                                validTo = null,
-                                extendedCompulsoryEducation = false,
-                                extendedCompulsoryEducationInfo = "",
-                                grantedAssistanceService = false,
-                                grantedInterpretationService = false,
-                                grantedAssistiveDevices = false,
-                                grantedServicesBasis = "",
+                            emptyAssistanceNeedPreschoolDecisionForm.copy(
                                 selectedUnit = it.insertTestDaycare(),
-                                primaryGroup = "",
-                                decisionBasis = "",
-                                basisDocumentPedagogicalReport = false,
-                                basisDocumentPsychologistStatement = false,
-                                basisDocumentSocialReport = false,
-                                basisDocumentDoctorStatement = false,
-                                basisDocumentPedagogicalReportDate = null,
-                                basisDocumentPsychologistStatementDate = null,
-                                basisDocumentSocialReportDate = null,
-                                basisDocumentDoctorStatementDate = null,
-                                basisDocumentOtherOrMissing = false,
-                                basisDocumentOtherOrMissingInfo = "",
-                                basisDocumentsInfo = "",
-                                guardiansHeardOn = null,
-                                guardianInfo = emptySet(),
-                                otherRepresentativeHeard = false,
-                                otherRepresentativeDetails = "",
-                                viewOfGuardians = "",
                                 preparer1EmployeeId = it.insert(DevEmployee()),
-                                preparer1Title = "",
-                                preparer1PhoneNumber = "",
-                                preparer2EmployeeId = null,
-                                preparer2Title = "",
-                                preparer2PhoneNumber = "",
                                 decisionMakerEmployeeId = it.insert(DevEmployee()),
-                                decisionMakerTitle = "",
                             ),
                         status = AssistanceNeedDecisionStatus.ACCEPTED,
-                        annulmentReason = "",
-                        sentForDecision = null,
                         decisionMade = LocalDate.of(2019, 5, 1),
                         unreadGuardianIds = emptySet(),
                     )

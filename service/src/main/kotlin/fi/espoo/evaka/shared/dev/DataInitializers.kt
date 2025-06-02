@@ -759,7 +759,7 @@ RETURNING id
             assert(counts.size == row.actions.size)
         }
 
-fun Database.Transaction.insertTestAssistanceNeedPreschoolDecision(
+fun Database.Transaction.insert(
     decision: DevAssistanceNeedPreschoolDecision
 ): AssistanceNeedPreschoolDecisionId {
     createUpdate {
