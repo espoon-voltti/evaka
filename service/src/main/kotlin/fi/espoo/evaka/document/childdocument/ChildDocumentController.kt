@@ -508,6 +508,12 @@ class ChildDocumentController(
                         tx.getChildDocument(documentId)
                             ?: throw NotFound("Document $documentId not found")
 
+                    if (document.template.validity.end?.isBefore(clock.today()) == true) {
+                        throw BadRequest(
+                            "Cannot change status of document as template validity period has ended"
+                        )
+                    }
+
                     val statusTransition =
                         validateStatusTransition(
                             document = document,
@@ -592,6 +598,9 @@ class ChildDocumentController(
 
                     if (!document.template.archiveExternally) {
                         throw BadRequest("Document template is not marked for external archiving")
+                    }
+                    if (document.status != DocumentStatus.COMPLETED) {
+                        throw BadRequest("Document must be in COMPLETED status to be archived")
                     }
 
                     asyncJobRunner.plan(

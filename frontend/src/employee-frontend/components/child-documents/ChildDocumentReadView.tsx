@@ -232,7 +232,13 @@ const ChildDocumentReadViewInner = React.memo(
                             ? i18n.childInformation.childDocuments.editor.alreadyArchived(
                                 document.archivedAt
                               )
-                            : undefined
+                            : !document.template.archiveExternally
+                              ? i18n.childInformation.childDocuments.editor
+                                  .archiveDisabledNotExternallyArchived
+                              : document.status !== 'COMPLETED'
+                                ? i18n.childInformation.childDocuments.editor
+                                    .archiveDisabledNotCompleted
+                                : undefined
                         }
                         data-qa="archive-tooltip"
                       >
@@ -245,8 +251,11 @@ const ChildDocumentReadViewInner = React.memo(
                           onClick={() => ({ documentId: document.id })}
                           data-qa="archive-button"
                           disabled={
-                            !document.template.archiveExternally ||
-                            document.archivedAt !== null
+                            !(
+                              document.template.archiveExternally &&
+                              document.archivedAt == null &&
+                              document.status === 'COMPLETED'
+                            )
                           }
                         />
                       </Tooltip>
