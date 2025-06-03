@@ -18,7 +18,6 @@ import type { DaycareId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
-import { formatPreferredName } from 'lib-common/names'
 import {
   constantQuery,
   useMutationResult,
@@ -34,6 +33,7 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import { fontWeights, H4 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/employee'
@@ -276,9 +276,9 @@ const MarkDepartedInner = React.memo(function MarkDepartedWithChild({
 
                   return (
                     <FixedSpaceColumn key={childId}>
-                      <H4
-                        noMargin
-                      >{`${formatPreferredName({ firstName: child.firstName, preferredName: child.preferredName })} ${child.lastName}`}</H4>
+                      <H4 noMargin>
+                        <PersonName person={child} format="Preferred Last" />
+                      </H4>
                       <FixedSpaceColumn>
                         {categories.includes('NONBILLABLE') && (
                           <FixedSpaceColumn

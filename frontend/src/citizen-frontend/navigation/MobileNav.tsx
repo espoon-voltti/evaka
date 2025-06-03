@@ -8,12 +8,12 @@ import React, { useCallback, useContext, useState } from 'react'
 import styled, { css } from 'styled-components'
 import { useLocation } from 'wouter'
 
-import { formatFirstName } from 'lib-common/names'
 import { useQuery } from 'lib-common/query'
 import { SelectionChip } from 'lib-components/atoms/Chip'
 import NavLink from 'lib-components/atoms/NavLink'
 import { desktopMin } from 'lib-components/breakpoints'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import { fontWeights } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
@@ -314,7 +314,7 @@ const ChildrenMenu = React.memo(function ChildrenMenu({
             $alignRight
             translate="no"
           >
-            {formatFirstName(child)} {child.lastName}
+            <PersonName person={child} format="FirstFirst Last" />
             {unreadChildNotifications[child.id] ? (
               <CircledChar
                 aria-label={`${unreadChildNotifications[child.id]} ${

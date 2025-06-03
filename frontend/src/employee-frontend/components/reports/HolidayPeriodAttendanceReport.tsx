@@ -20,7 +20,7 @@ import type {
   HolidayPeriodId
 } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
-import { formatFirstName } from 'lib-common/names'
+import { formatPersonName } from 'lib-common/names'
 import { constantQuery, useQueryResult } from 'lib-common/query'
 import { capitalizeFirstLetter } from 'lib-common/string'
 import Title from 'lib-components/atoms/Title'
@@ -378,7 +378,7 @@ const ChildList = React.memo(function ChildList({
       {visibleList.map((c, i) => (
         <TooltippedChildListItem
           key={c.id}
-          fullText={`${i + 1}. ${c.lastName} ${formatFirstName(c)}`}
+          fullText={`${i + 1}. ${formatPersonName(c, 'Last FirstFirst')}`}
         />
       ))}
       {!showFull && extraCount > 0 && (

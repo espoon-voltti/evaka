@@ -120,7 +120,7 @@ const MonthCalendarRow = React.memo(function MonthCalendarRow({
                 to={`/child-information/${child.id}`}
                 data-qa="absence-child-link"
               >
-                <PersonName person={child} format="Last, Preferred" />
+                <PersonName person={child} format="Last, FirstFirst" />
               </Link>
             </FixedSpaceRow>
           </Tooltip>

@@ -22,7 +22,7 @@ import type {
 } from 'lib-common/generated/api-types/reservations'
 import type { PersonId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
-import { formatFirstName } from 'lib-common/names'
+import { formatPersonName } from 'lib-common/names'
 import { constantQuery, useQueryResult } from 'lib-common/query'
 import { scrollIntoViewSoftKeyboard } from 'lib-common/utils/scrolling'
 import { SelectionChip } from 'lib-components/atoms/Chip'
@@ -277,7 +277,7 @@ export default React.memo(function AbsenceModal({
                     {errors.map((child) => (
                       <AlertBox
                         key={child.id}
-                        title={`${formatFirstName(child)} ${child.lastName}`}
+                        title={formatPersonName(child, 'FirstFirst Last')}
                         message={
                           <>
                             {

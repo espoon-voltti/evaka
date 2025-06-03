@@ -44,7 +44,6 @@ import type {
 } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
-import { formatFirstName } from 'lib-common/names'
 import { reservationHasTimes } from 'lib-common/reservations'
 import type TimeInterval from 'lib-common/time-interval'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
@@ -73,6 +72,7 @@ import {
 } from 'lib-components/molecules/ExpandingInfo'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { AlertBox, InfoBox } from 'lib-components/molecules/MessageBoxes'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import {
   ModalCloseButton,
   ModalHeader,
@@ -513,8 +513,8 @@ const DayModal = React.memo(function DayModal({
                           spacing="zero"
                           justifyContent="center"
                         >
-                          <H2 noMargin data-qa="child-name" translate="no">
-                            {`${formatFirstName(row)} ${row.lastName}`}
+                          <H2 noMargin data-qa="child-name">
+                            <PersonName person={row} format="FirstFirst Last" />
                           </H2>
                           {row.duplicateInfo !== undefined && (
                             <H3 noMargin> {row.duplicateInfo} </H3>

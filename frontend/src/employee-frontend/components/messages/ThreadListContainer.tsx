@@ -17,7 +17,7 @@ import type {
   MessageThreadId
 } from 'lib-common/generated/api-types/shared'
 import { fromUuid } from 'lib-common/id-type'
-import { formatPreferredName } from 'lib-common/names'
+import { formatPersonName } from 'lib-common/names'
 import Pagination from 'lib-components/Pagination'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import { ContentArea } from 'lib-components/layout/Container'
@@ -47,7 +47,7 @@ const getUniqueParticipants = (t: MessageThread): string[] => {
   const childStr =
     t.children.length > 0
       ? ` (${t.children
-          .map((ch) => `${ch.lastName} ${formatPreferredName(ch)}`)
+          .map((ch) => formatPersonName(ch, 'Last Preferred'))
           .join(', ')})`
       : ''
   return Object.values(

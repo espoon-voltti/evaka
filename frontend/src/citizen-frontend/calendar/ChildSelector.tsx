@@ -8,7 +8,7 @@ import styled, { useTheme } from 'styled-components'
 import type { BoundFormState } from 'lib-common/form/hooks'
 import { useBoolean } from 'lib-common/form/hooks'
 import type { ReservationChild } from 'lib-common/generated/api-types/reservations'
-import { formatFirstName } from 'lib-common/names'
+import { formatPersonName } from 'lib-common/names'
 import { SelectionChip } from 'lib-components/atoms/Chip'
 import { StatusIcon } from 'lib-components/atoms/StatusIcon'
 import {
@@ -47,7 +47,7 @@ export default React.memo(function ChildSelector({
           <div key={child.id} data-qa="relevant-child">
             <SelectionChip
               key={child.id}
-              text={`${formatFirstName(child)}${
+              text={`${formatPersonName(child, 'FirstFirst')}${
                 duplicateChildInfo[child.id] !== undefined
                   ? ` ${duplicateChildInfo[child.id]}`
                   : ''

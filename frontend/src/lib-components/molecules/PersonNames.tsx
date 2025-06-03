@@ -4,13 +4,9 @@
 
 import React from 'react'
 
-import { useTranslations, type Translations } from '../i18n'
+import type { NamedPerson, PersonNameFormat } from 'lib-common/names'
 
-export type PersonNameFormat =
-  | 'Last, First'
-  | 'Last, Preferred'
-  | 'Last First'
-  | 'First Last'
+import { useTranslations, type Translations } from '../i18n'
 
 function formatFirstName(
   firstName: string | undefined,
@@ -26,6 +22,16 @@ function formatLastName(
   return lastName || i18n.common.noLastName
 }
 
+function formatFirstFirstName(
+  firstName: string | undefined,
+  i18n: Translations
+): string {
+  if (!firstName) return i18n.common.noFirstName
+
+  const firstNames = firstName.split(/\s/)
+  return firstNames.length > 0 ? firstNames[0] : i18n.common.noFirstName
+}
+
 function formatNickName(
   preferredName: string | undefined,
   firstName: string | undefined,
@@ -38,17 +44,6 @@ function formatNickName(
   return firstNames.length > 0 ? firstNames[0] : i18n.common.noFirstName
 }
 
-interface NamedPerson {
-  firstName: string
-  lastName: string
-  preferredName?: string
-}
-
-interface PersonNameProps {
-  person: NamedPerson
-  format: PersonNameFormat
-}
-
 export function usePersonName(
   person: NamedPerson | undefined,
   format: PersonNameFormat
@@ -57,19 +52,32 @@ export function usePersonName(
   const { firstName, lastName, preferredName } = person ?? {}
 
   switch (format) {
-    case 'Last, First':
-      return `${formatLastName(lastName, i18n)}, ${formatFirstName(firstName, i18n)}`
-    case 'Last, Preferred':
-      return `${formatLastName(lastName, i18n)}, ${formatNickName(
-        preferredName,
-        firstName,
-        i18n
-      )}`
     case 'First Last':
       return `${formatFirstName(firstName, i18n)} ${formatLastName(lastName, i18n)}`
+    case 'FirstFirst Last':
+      return `${formatFirstFirstName(firstName, i18n)} ${formatLastName(lastName, i18n)}`
+    case 'FirstFirst':
+      return formatFirstFirstName(firstName, i18n)
     case 'Last First':
       return `${formatLastName(lastName, i18n)} ${formatFirstName(firstName, i18n)}`
+    case 'Last FirstFirst':
+      return `${formatLastName(lastName, i18n)} ${formatFirstFirstName(firstName, i18n)}`
+    case 'Last Preferred':
+      return `${formatLastName(lastName, i18n)} ${formatNickName(preferredName, firstName, i18n)}`
+    case 'Last, First':
+      return `${formatLastName(lastName, i18n)}, ${formatFirstName(firstName, i18n)}`
+    case 'Last, FirstFirst':
+      return `${formatLastName(lastName, i18n)}, ${formatFirstFirstName(firstName, i18n)}`
+    case 'Preferred Last':
+      return `${formatNickName(preferredName, firstName, i18n)} ${formatLastName(lastName, i18n)}`
+    case 'Preferred':
+      return formatNickName(preferredName, firstName, i18n)
   }
+}
+
+interface PersonNameProps {
+  person: NamedPerson
+  format: PersonNameFormat
 }
 
 export function PersonName(props: PersonNameProps) {

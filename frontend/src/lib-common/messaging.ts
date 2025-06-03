@@ -10,8 +10,7 @@ import type {
 } from 'lib-common/generated/api-types/messaging'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import type { JsonOf } from 'lib-common/json'
-
-import { formatFirstName } from './names'
+import { formatPersonName } from 'lib-common/names'
 
 export const deserializeDraftContent = ({
   createdAt,
@@ -36,7 +35,9 @@ export function formatAccountNames(
 ): { senderName: string; recipientNames: string[] } {
   const childNames =
     children.length > 0
-      ? children.map((child) => formatFirstName(child)).join(', ')
+      ? children
+          .map((child) => formatPersonName(child, 'FirstFirst'))
+          .join(', ')
       : undefined
   const childSuffix = childNames ? ` (${childNames})` : ''
 

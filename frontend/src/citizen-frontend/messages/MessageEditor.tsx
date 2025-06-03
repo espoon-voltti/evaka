@@ -20,7 +20,7 @@ import type {
   MessageAccountId,
   PersonId
 } from 'lib-common/generated/api-types/shared'
-import { formatFirstName } from 'lib-common/names'
+import { formatPersonName } from 'lib-common/names'
 import { useMutationResult } from 'lib-common/query'
 import { SelectionChip } from 'lib-components/atoms/Chip'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
@@ -235,7 +235,7 @@ export default React.memo(function MessageEditor({
                           <div key={child.id} data-qa="relevant-child">
                             <SelectionChip
                               key={child.id}
-                              text={`${formatFirstName(child)}${
+                              text={`${formatPersonName(child, 'FirstFirst')}${
                                 duplicateChildInfo[child.id] !== undefined
                                   ? ` ${duplicateChildInfo[child.id]}`
                                   : ''

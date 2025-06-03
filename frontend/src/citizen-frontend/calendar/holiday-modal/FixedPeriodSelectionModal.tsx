@@ -13,9 +13,9 @@ import type {
 } from 'lib-common/generated/api-types/holidayperiod'
 import type { ReservationChild } from 'lib-common/generated/api-types/reservations'
 import type { ChildId } from 'lib-common/generated/api-types/shared'
-import { formatFirstName } from 'lib-common/names'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { H2 } from 'lib-components/typography'
 
@@ -102,7 +102,7 @@ export default React.memo(function FixedPeriodSelectionModal({
               data-qa={`holiday-section-${child.id}`}
             >
               <H2 translate="no">
-                {formatFirstName(child)}
+                <PersonName person={child} format="FirstFirst" />
                 {duplicateChildInfo[child.id] !== undefined
                   ? ` ${duplicateChildInfo[child.id]}`
                   : ''}
