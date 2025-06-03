@@ -51,6 +51,7 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.titania.cleanTitaniaErrors
 import fi.espoo.evaka.varda.VardaUpdateService
 import io.github.oshai.kotlinlogging.KotlinLogging
+import io.opentelemetry.api.trace.Tracer
 import java.nio.file.Path
 import java.time.LocalTime
 import org.springframework.stereotype.Component
@@ -307,6 +308,7 @@ class ScheduledJobs(
     private val sfiAsyncJobs: SfiAsyncJobs,
     private val passwordBlacklist: PasswordBlacklist,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
+    private val tracer: Tracer,
     env: ScheduledJobsEnv<ScheduledJob>,
 ) : JobSchedule {
     override val jobs: List<ScheduledJobDefinition> =
@@ -602,6 +604,6 @@ WHERE id IN (SELECT id FROM attendances_to_end)
     }
 
     fun migrateMetadata(db: Database.Connection, clock: EvakaClock) {
-        migrateProcessMetadata(db, clock, featureConfig)
+        migrateProcessMetadata(db, clock, featureConfig, tracer)
     }
 }

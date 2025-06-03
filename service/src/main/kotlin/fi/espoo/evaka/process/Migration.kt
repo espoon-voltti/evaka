@@ -26,7 +26,10 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.noopTracer
+import fi.espoo.evaka.shared.withSpan
 import io.github.oshai.kotlinlogging.KotlinLogging
+import io.opentelemetry.api.trace.Tracer
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -36,9 +39,10 @@ fun migrateProcessMetadata(
     dbc: Database.Connection,
     clock: EvakaClock,
     featureConfig: FeatureConfig,
+    tracer: Tracer = noopTracer(),
     batchSize: Int = 1000,
 ) {
-    runBatches(batchSize) {
+    runBatches("application", tracer, batchSize) {
         migrateApplicationMetadata(
             dbc,
             batchSize,
@@ -50,7 +54,7 @@ fun migrateProcessMetadata(
 
     val feeDecisionConfig = featureConfig.archiveMetadataConfigs[ArchiveProcessType.FEE_DECISION]
     if (feeDecisionConfig != null) {
-        runBatches(batchSize) {
+        runBatches("fee decision", tracer, batchSize) {
             migrateFeeDecisionMetadata(
                 dbc,
                 batchSize,
@@ -65,7 +69,7 @@ fun migrateProcessMetadata(
     val voucherValueDecisionConfig =
         featureConfig.archiveMetadataConfigs[ArchiveProcessType.VOUCHER_VALUE_DECISION]
     if (voucherValueDecisionConfig != null) {
-        runBatches(batchSize) {
+        runBatches("voucher value decision", tracer, batchSize) {
             migrateVoucherValueDecisionMetadata(
                 dbc,
                 batchSize,
@@ -80,7 +84,7 @@ fun migrateProcessMetadata(
     val assistanceNeedDecisionDaycareConfig =
         featureConfig.archiveMetadataConfigs[ArchiveProcessType.ASSISTANCE_NEED_DECISION_DAYCARE]
     if (assistanceNeedDecisionDaycareConfig != null) {
-        runBatches(batchSize) {
+        runBatches("assistance need daycare decision", tracer, batchSize) {
             migrateAssistanceNeedDecisionDaycare(
                 dbc,
                 batchSize,
@@ -95,7 +99,7 @@ fun migrateProcessMetadata(
     val assistanceNeedDecisionPreschoolConfig =
         featureConfig.archiveMetadataConfigs[ArchiveProcessType.ASSISTANCE_NEED_DECISION_PRESCHOOL]
     if (assistanceNeedDecisionPreschoolConfig != null) {
-        runBatches(batchSize) {
+        runBatches("assistance need preschool decision", tracer, batchSize) {
             migrateAssistanceNeedDecisionPreschool(
                 dbc,
                 batchSize,
@@ -107,22 +111,22 @@ fun migrateProcessMetadata(
         logger.warn { "Missing metadata config for ASSISTANCE_NEED_DECISION_PRESCHOOL" }
     }
 
-    runBatches(batchSize) {
+    runBatches("child document", tracer, batchSize) {
         migrateDocuments(dbc, batchSize, featureConfig.archiveMetadataOrganization)
     }
 }
 
-private fun runBatches(batchSize: Int, migrate: () -> Int): Int {
+private fun runBatches(dataName: String, tracer: Tracer, batchSize: Int, migrate: () -> Int) {
     var totalMigrated = 0
-    var migrated: Int
+    logger.info { "Starting metadata migration of $dataName" }
     do {
-        migrated = migrate()
+        val migrated = tracer.withSpan("migrate $dataName metadata") { migrate() }
         totalMigrated += migrated
         if (migrated > 0) {
-            logger.info { "Migrated $migrated records in this batch, total $totalMigrated" }
+            logger.info { "Migrating $dataName: Migrated $migrated records, total $totalMigrated" }
         }
     } while (migrated == batchSize)
-    return totalMigrated
+    logger.info { "Completed metadata migration of $dataName" }
 }
 
 private data class ApplicationMigrationData(
