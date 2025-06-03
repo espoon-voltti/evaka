@@ -458,6 +458,16 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                             )
                         )
                     tx.insert(
+                        DevServiceNeed(
+                            placementId = placementId,
+                            startDate = dateOfBirthElina,
+                            endDate = placementEnd,
+                            shiftCare = ShiftCareType.FULL,
+                            optionId = snDefaultDaycare.id,
+                            confirmedBy = admin.evakaUserId,
+                        )
+                    )
+                    tx.insert(
                         DevDaycareGroupPlacement(
                             daycarePlacementId = placementId,
                             daycareGroupId = groupEO.id,
