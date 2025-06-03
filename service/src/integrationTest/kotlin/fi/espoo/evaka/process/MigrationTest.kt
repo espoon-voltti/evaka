@@ -17,6 +17,9 @@ import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionEmployee
 import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionStatus
 import fi.espoo.evaka.decision.getDecisionsByApplication
+import fi.espoo.evaka.document.DocumentTemplateContent
+import fi.espoo.evaka.document.childdocument.DocumentContent
+import fi.espoo.evaka.document.childdocument.DocumentStatus
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.shared.async.AsyncJob
@@ -27,7 +30,9 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevAssistanceNeedDecision
 import fi.espoo.evaka.shared.dev.DevAssistanceNeedPreschoolDecision
 import fi.espoo.evaka.shared.dev.DevCareArea
+import fi.espoo.evaka.shared.dev.DevChildDocument
 import fi.espoo.evaka.shared.dev.DevDaycare
+import fi.espoo.evaka.shared.dev.DevDocumentTemplate
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevFeeDecision
 import fi.espoo.evaka.shared.dev.DevPerson
@@ -790,6 +795,129 @@ class MigrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         process.history[3].also {
             assertEquals(ArchivedProcessState.COMPLETED, it.state)
             assertEquals(HelsinkiDateTime.of(decisionMade, LocalTime.MIDNIGHT), it.enteredAt)
+            assertEquals(AuthenticatedUser.SystemInternalUser.evakaUserId, it.enteredBy.id)
+        }
+    }
+
+    @Test
+    fun `child document is migrated to INITIAL`() {
+        val today = LocalDate.of(2023, 1, 1)
+        val now = HelsinkiDateTime.of(today, LocalTime.of(10, 0))
+        val clock = MockEvakaClock(now)
+
+        val created = HelsinkiDateTime.of(today, LocalTime.of(9, 0))
+        val employee = DevEmployee()
+        val child = DevPerson()
+
+        val template =
+            DevDocumentTemplate(
+                processDefinitionNumber = "123.456.999",
+                archiveDurationMonths = 120,
+                validity = DateRange(today, today),
+                content = DocumentTemplateContent(emptyList()),
+                published = true,
+            )
+
+        val document =
+            DevChildDocument(
+                childId = child.id,
+                created = created,
+                createdBy = employee.evakaUserId,
+                templateId = template.id,
+                status = DocumentStatus.DRAFT,
+                content = DocumentContent(emptyList()),
+                publishedContent = null,
+                modifiedAt = created,
+                contentModifiedAt = created,
+                contentModifiedBy = employee.id,
+                publishedAt = null,
+            )
+
+        db.transaction { tx ->
+            tx.insert(employee)
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(template)
+            tx.insert(document)
+        }
+
+        migrateProcessMetadata(db, clock, featureConfig)
+
+        val process = db.read { it.getArchiveProcessByChildDocumentId(document.id) }!!
+        assertEquals("123.456.999", process.processDefinitionNumber)
+        assertEquals(created.year, process.year)
+        assertEquals(1, process.number)
+        assertEquals(featureConfig.archiveMetadataOrganization, process.organization)
+        assertEquals(120, process.archiveDurationMonths)
+        assertTrue(process.migrated)
+        assertEquals(1, process.history.size)
+        process.history.first().also {
+            assertEquals(ArchivedProcessState.INITIAL, it.state)
+            assertEquals(created, it.enteredAt)
+            assertEquals(employee.evakaUserId, it.enteredBy.id)
+        }
+    }
+
+    @Test
+    fun `completed child document is migrated to COMPLETED`() {
+        val today = LocalDate.of(2023, 1, 1)
+        val now = HelsinkiDateTime.of(today, LocalTime.of(10, 0))
+        val clock = MockEvakaClock(now)
+
+        val created = HelsinkiDateTime.of(today, LocalTime.of(9, 0))
+        val modified = HelsinkiDateTime.of(today, LocalTime.of(9, 30))
+        val employee = DevEmployee()
+        val child = DevPerson()
+
+        val template =
+            DevDocumentTemplate(
+                processDefinitionNumber = "123.456.999",
+                archiveDurationMonths = 120,
+                validity = DateRange(today, today),
+                content = DocumentTemplateContent(emptyList()),
+                published = true,
+            )
+
+        val document =
+            DevChildDocument(
+                childId = child.id,
+                created = created,
+                createdBy = employee.evakaUserId,
+                templateId = template.id,
+                status = DocumentStatus.COMPLETED,
+                content = DocumentContent(emptyList()),
+                publishedContent = DocumentContent(emptyList()),
+                modifiedAt = modified,
+                contentModifiedAt = modified,
+                contentModifiedBy = employee.id,
+                publishedAt = modified,
+                documentKey = "foobar123",
+            )
+
+        db.transaction { tx ->
+            tx.insert(employee)
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(template)
+            tx.insert(document)
+        }
+
+        migrateProcessMetadata(db, clock, featureConfig)
+
+        val process = db.read { it.getArchiveProcessByChildDocumentId(document.id) }!!
+        assertEquals("123.456.999", process.processDefinitionNumber)
+        assertEquals(created.year, process.year)
+        assertEquals(1, process.number)
+        assertEquals(featureConfig.archiveMetadataOrganization, process.organization)
+        assertEquals(120, process.archiveDurationMonths)
+        assertTrue(process.migrated)
+        assertEquals(2, process.history.size)
+        process.history[0].also {
+            assertEquals(ArchivedProcessState.INITIAL, it.state)
+            assertEquals(created, it.enteredAt)
+            assertEquals(employee.evakaUserId, it.enteredBy.id)
+        }
+        process.history[1].also {
+            assertEquals(ArchivedProcessState.COMPLETED, it.state)
+            assertEquals(modified, it.enteredAt)
             assertEquals(AuthenticatedUser.SystemInternalUser.evakaUserId, it.enteredBy.id)
         }
     }

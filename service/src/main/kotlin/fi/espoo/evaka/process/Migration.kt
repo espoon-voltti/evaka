@@ -8,6 +8,7 @@ import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.application.setApplicationProcessId
 import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionStatus
+import fi.espoo.evaka.document.childdocument.DocumentStatus
 import fi.espoo.evaka.invoicing.data.setFeeDecisionProcessId
 import fi.espoo.evaka.invoicing.data.setVoucherValueDecisionProcessId
 import fi.espoo.evaka.shared.ApplicationId
@@ -15,6 +16,7 @@ import fi.espoo.evaka.shared.ArchiveProcessConfig
 import fi.espoo.evaka.shared.ArchiveProcessType
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
+import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.FeatureConfig
@@ -103,6 +105,10 @@ fun migrateProcessMetadata(
         }
     } else {
         logger.warn { "Missing metadata config for ASSISTANCE_NEED_DECISION_PRESCHOOL" }
+    }
+
+    runBatches(batchSize) {
+        migrateDocuments(dbc, batchSize, featureConfig.archiveMetadataOrganization)
     }
 }
 
@@ -512,5 +518,85 @@ private fun migrateAssistanceNeedDecisionPreschool(
             )
         }
         assistanceNeedPreschoolDecisions.size
+    }
+}
+
+private data class DocumentData(
+    val id: ChildDocumentId,
+    val created: HelsinkiDateTime,
+    val createdBy: EvakaUserId?,
+    val modifiedAt: HelsinkiDateTime,
+    val status: DocumentStatus,
+    val documentKey: String?,
+    val processDefinitionNumber: String,
+    val archiveDurationMonths: Int,
+)
+
+private fun migrateDocuments(
+    dbc: Database.Connection,
+    batchSize: Int,
+    archiveMetadataOrganization: String,
+): Int {
+    val systemInternalUser = AuthenticatedUser.SystemInternalUser.evakaUserId
+    return dbc.transaction { tx ->
+        val documents =
+            tx.createQuery {
+                    sql(
+                        """
+                    SELECT
+                        d.id,
+                        d.created,
+                        d.created_by,
+                        d.modified_at,
+                        d.status,
+                        d.document_key,
+                        t.process_definition_number,
+                        t.archive_duration_months
+                    FROM child_document d
+                    JOIN document_template t ON t.id = d.template_id
+                    WHERE
+                        d.process_id IS NULL AND
+                        t.process_definition_number IS NOT NULL AND
+                        t.archive_duration_months IS NOT NULL
+                    ORDER BY d.created
+                    LIMIT ${bind(batchSize)}
+                    """
+                    )
+                }
+                .toList<DocumentData>()
+
+        documents.forEach { document ->
+            val processId =
+                tx.insertProcess(
+                        processDefinitionNumber = document.processDefinitionNumber,
+                        year = document.created.year,
+                        organization = archiveMetadataOrganization,
+                        archiveDurationMonths = document.archiveDurationMonths,
+                        migrated = true,
+                    )
+                    .id
+            tx.execute {
+                sql(
+                    "UPDATE child_document SET process_id = ${bind(processId)} WHERE id = ${bind(document.id)}"
+                )
+            }
+            tx.insertProcessHistoryRow(
+                processId = processId,
+                state = ArchivedProcessState.INITIAL,
+                now = document.created,
+                userId = document.createdBy ?: systemInternalUser,
+            )
+            if (
+                document.status == DocumentStatus.COMPLETED && !document.documentKey.isNullOrEmpty()
+            ) {
+                tx.insertProcessHistoryRow(
+                    processId = processId,
+                    state = ArchivedProcessState.COMPLETED,
+                    now = document.modifiedAt,
+                    userId = systemInternalUser,
+                )
+            }
+        }
+        documents.size
     }
 }
