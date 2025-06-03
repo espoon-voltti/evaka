@@ -75,6 +75,7 @@ import ReportFamilyContacts from './components/reports/FamilyContacts'
 import FamilyDaycareMealCount from './components/reports/FamilyDaycareMealCount'
 import FuturePreschoolersReport from './components/reports/FuturePreschoolersReport'
 import HolidayPeriodAttendanceReport from './components/reports/HolidayPeriodAttendanceReport'
+import HolidayQuestionnaireReport from './components/reports/HolidayQuestionnaireReport'
 import IncompleteIncomes from './components/reports/IncompleteIncomeReport'
 import ReportInvoices from './components/reports/Invoices'
 import ManualDuplicationReport from './components/reports/ManualDuplicationReport'
@@ -418,6 +419,11 @@ const routes: EmployeeRoute[] = [
   {
     path: '/reports/holiday-period-attendance',
     component: HolidayPeriodAttendanceReport,
+    title: 'reports'
+  },
+  {
+    path: '/reports/holiday-questionnaire',
+    component: HolidayQuestionnaireReport,
     title: 'reports'
   },
   {
