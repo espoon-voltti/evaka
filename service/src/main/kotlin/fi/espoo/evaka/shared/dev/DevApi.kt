@@ -29,6 +29,7 @@ import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionStatus
 import fi.espoo.evaka.assistanceneed.decision.ServiceOptions
 import fi.espoo.evaka.assistanceneed.decision.StructuralMotivationOptions
 import fi.espoo.evaka.assistanceneed.preschooldecision.AssistanceNeedPreschoolDecisionForm
+import fi.espoo.evaka.assistanceneed.preschooldecision.AssistanceNeedPreschoolDecisionType
 import fi.espoo.evaka.attachment.AttachmentParent
 import fi.espoo.evaka.attachment.insertAttachment
 import fi.espoo.evaka.attendance.StaffAttendanceType
@@ -1250,11 +1251,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
         @RequestBody assistanceNeedDecisions: List<DevAssistanceNeedDecision>,
     ) {
         db.connect { dbc ->
-            dbc.transaction { tx ->
-                assistanceNeedDecisions.forEach {
-                    tx.insertTestAssistanceNeedDecision(it.childId, it)
-                }
-            }
+            dbc.transaction { tx -> assistanceNeedDecisions.forEach { tx.insert(it) } }
         }
     }
 
@@ -1264,9 +1261,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
         @RequestBody assistanceNeedDecisions: List<DevAssistanceNeedPreschoolDecision>,
     ) {
         db.connect { dbc ->
-            dbc.transaction { tx ->
-                assistanceNeedDecisions.forEach { tx.insertTestAssistanceNeedPreschoolDecision(it) }
-            }
+            dbc.transaction { tx -> assistanceNeedDecisions.forEach { tx.insert(it) } }
         }
     }
 
@@ -1964,49 +1959,92 @@ data class DevDaycareGroupPlacement(
 
 data class DevAssistanceNeedDecision(
     val id: AssistanceNeedDecisionId = AssistanceNeedDecisionId(UUID.randomUUID()),
-    val decisionNumber: Long?,
+    val decisionNumber: Long? = null,
     val childId: ChildId,
     val validityPeriod: DateRange,
-    val endDateNotKnown: Boolean,
-    val status: AssistanceNeedDecisionStatus,
-    val language: OfficialLanguage,
-    val decisionMade: LocalDate?,
-    val sentForDecision: LocalDate?,
-    @Nested("selected_unit") val selectedUnit: DaycareId?,
-    @Nested("preparer_1") val preparedBy1: AssistanceNeedDecisionEmployee?,
-    @Nested("preparer_2") val preparedBy2: AssistanceNeedDecisionEmployee?,
-    @Nested("decision_maker") val decisionMaker: AssistanceNeedDecisionEmployee?,
-    val pedagogicalMotivation: String?,
+    val endDateNotKnown: Boolean = false,
+    val status: AssistanceNeedDecisionStatus = AssistanceNeedDecisionStatus.DRAFT,
+    val language: OfficialLanguage = OfficialLanguage.FI,
+    val decisionMade: LocalDate? = null,
+    val sentForDecision: LocalDate? = null,
+    @Nested("selected_unit") val selectedUnit: DaycareId? = null,
+    @Nested("preparer_1") val preparedBy1: AssistanceNeedDecisionEmployee? = null,
+    @Nested("preparer_2") val preparedBy2: AssistanceNeedDecisionEmployee? = null,
+    @Nested("decision_maker") val decisionMaker: AssistanceNeedDecisionEmployee? = null,
+    val pedagogicalMotivation: String? = null,
     @Nested("structural_motivation_opt")
-    val structuralMotivationOptions: StructuralMotivationOptions,
-    val structuralMotivationDescription: String?,
-    val careMotivation: String?,
-    @Nested("service_opt") val serviceOptions: ServiceOptions,
-    val servicesMotivation: String?,
-    val expertResponsibilities: String?,
-    val guardiansHeardOn: LocalDate?,
-    @Json val guardianInfo: Set<AssistanceNeedDecisionGuardian>,
-    val viewOfGuardians: String?,
-    val otherRepresentativeHeard: Boolean,
-    val otherRepresentativeDetails: String?,
-    val assistanceLevels: Set<AssistanceLevel>,
-    val motivationForDecision: String?,
-    val unreadGuardianIds: List<PersonId>?,
-    val annulmentReason: String,
+    val structuralMotivationOptions: StructuralMotivationOptions =
+        StructuralMotivationOptions(false, false, false, false, false, false),
+    val structuralMotivationDescription: String? = null,
+    val careMotivation: String? = null,
+    @Nested("service_opt")
+    val serviceOptions: ServiceOptions = ServiceOptions(false, false, false, false, false),
+    val servicesMotivation: String? = null,
+    val expertResponsibilities: String? = null,
+    val guardiansHeardOn: LocalDate? = null,
+    @Json val guardianInfo: Set<AssistanceNeedDecisionGuardian> = emptySet(),
+    val viewOfGuardians: String? = null,
+    val otherRepresentativeHeard: Boolean = false,
+    val otherRepresentativeDetails: String? = null,
+    val assistanceLevels: Set<AssistanceLevel> = emptySet(),
+    val motivationForDecision: String? = null,
+    val unreadGuardianIds: List<PersonId>? = null,
+    val annulmentReason: String = "",
 )
 
 data class DevAssistanceNeedPreschoolDecision(
     val id: AssistanceNeedPreschoolDecisionId =
         AssistanceNeedPreschoolDecisionId(UUID.randomUUID()),
-    val decisionNumber: Long,
+    val decisionNumber: Long = 999,
     val childId: ChildId,
     val form: AssistanceNeedPreschoolDecisionForm,
-    val status: AssistanceNeedDecisionStatus,
-    val annulmentReason: String,
-    val sentForDecision: LocalDate?,
-    val decisionMade: LocalDate?,
-    val unreadGuardianIds: Set<PersonId>?,
+    val status: AssistanceNeedDecisionStatus = AssistanceNeedDecisionStatus.DRAFT,
+    val annulmentReason: String = "",
+    val sentForDecision: LocalDate? = null,
+    val decisionMade: LocalDate? = null,
+    val unreadGuardianIds: Set<PersonId>? = null,
 )
+
+val emptyAssistanceNeedPreschoolDecisionForm =
+    AssistanceNeedPreschoolDecisionForm(
+        language = OfficialLanguage.FI,
+        type = AssistanceNeedPreschoolDecisionType.NEW,
+        validFrom = LocalDate.of(2019, 1, 1),
+        validTo = null,
+        extendedCompulsoryEducation = false,
+        extendedCompulsoryEducationInfo = "",
+        grantedAssistanceService = false,
+        grantedInterpretationService = false,
+        grantedAssistiveDevices = false,
+        grantedServicesBasis = "",
+        selectedUnit = null,
+        primaryGroup = "",
+        decisionBasis = "",
+        basisDocumentPedagogicalReport = false,
+        basisDocumentPsychologistStatement = false,
+        basisDocumentSocialReport = false,
+        basisDocumentDoctorStatement = false,
+        basisDocumentPedagogicalReportDate = null,
+        basisDocumentPsychologistStatementDate = null,
+        basisDocumentSocialReportDate = null,
+        basisDocumentDoctorStatementDate = null,
+        basisDocumentOtherOrMissing = false,
+        basisDocumentOtherOrMissingInfo = "",
+        basisDocumentsInfo = "",
+        guardiansHeardOn = null,
+        guardianInfo = emptySet(),
+        otherRepresentativeHeard = false,
+        otherRepresentativeDetails = "",
+        viewOfGuardians = "",
+        preparer1EmployeeId = null,
+        preparer1Title = "",
+        preparer1PhoneNumber = "",
+        preparer2EmployeeId = null,
+        preparer2Title = "",
+        preparer2PhoneNumber = "",
+        decisionMakerEmployeeId = null,
+        decisionMakerTitle = "",
+    )
 
 data class DevChildAttendance(
     val childId: ChildId,
@@ -2413,6 +2451,8 @@ data class DevDocumentTemplate(
 
 data class DevChildDocument(
     val id: ChildDocumentId = ChildDocumentId(UUID.randomUUID()),
+    val created: HelsinkiDateTime? = null,
+    val createdBy: EvakaUserId = AuthenticatedUser.SystemInternalUser.evakaUserId,
     val status: DocumentStatus,
     val childId: ChildId,
     val templateId: DocumentTemplateId,
@@ -2421,6 +2461,7 @@ data class DevChildDocument(
     val modifiedAt: HelsinkiDateTime,
     val contentModifiedAt: HelsinkiDateTime,
     val contentModifiedBy: EmployeeId?,
+    val documentKey: String? = null,
     val publishedAt: HelsinkiDateTime?,
     val answeredAt: HelsinkiDateTime? = null,
     val answeredBy: EvakaUserId? = null,

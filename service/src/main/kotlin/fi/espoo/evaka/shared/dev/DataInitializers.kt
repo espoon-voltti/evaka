@@ -759,7 +759,7 @@ RETURNING id
             assert(counts.size == row.actions.size)
         }
 
-fun Database.Transaction.insertTestAssistanceNeedPreschoolDecision(
+fun Database.Transaction.insert(
     decision: DevAssistanceNeedPreschoolDecision
 ): AssistanceNeedPreschoolDecisionId {
     createUpdate {
@@ -811,10 +811,7 @@ VALUES (${bind(guardian.id)}, ${bind(decision.id)}, ${bind(guardian.personId)}, 
     return decision.id
 }
 
-fun Database.Transaction.insertTestAssistanceNeedDecision(
-    childId: ChildId,
-    data: DevAssistanceNeedDecision,
-): AssistanceNeedDecisionId {
+fun Database.Transaction.insert(data: DevAssistanceNeedDecision): AssistanceNeedDecisionId {
     val id =
         createQuery {
                 sql(
@@ -833,7 +830,7 @@ INSERT INTO assistance_need_decision (
   preparer_1_phone_number, preparer_2_phone_number, unread_guardian_ids, annulment_reason
 )
 VALUES (
-    ${bind(data.id)}, ${bind(data.decisionNumber)}, ${bind(childId)}, ${bind(data.validityPeriod)}, ${bind(data.endDateNotKnown)}, ${bind(data.status)},
+    ${bind(data.id)}, ${if (data.decisionNumber == null) insertDefault() else bind(data.decisionNumber)}, ${bind(data.childId)}, ${bind(data.validityPeriod)}, ${bind(data.endDateNotKnown)}, ${bind(data.status)},
     ${bind(data.language)}, ${bind(data.decisionMade)}, ${bind(data.sentForDecision)}, ${bind(data.selectedUnit)}, ${bind(data.pedagogicalMotivation)},
     ${bind(data.structuralMotivationOptions.smallerGroup)}, ${bind(data.structuralMotivationOptions.specialGroup)}, ${bind(data.structuralMotivationOptions.smallGroup)},
     ${bind(data.structuralMotivationOptions.groupAssistant)}, ${bind(data.structuralMotivationOptions.childAssistant)}, ${bind(data.structuralMotivationOptions.additionalStaff)},
@@ -1510,8 +1507,8 @@ fun Database.Transaction.insert(row: DevChildDocument): ChildDocumentId {
     return createUpdate {
             sql(
                 """
-INSERT INTO child_document (id, type, status, child_id, template_id, content, published_content, modified_at, content_modified_at, content_modified_by, published_at, answered_at, answered_by, process_id, decision_maker, decision_id)
-VALUES (${bind(row.id)}, ${bind(type)}, ${bind(row.status)}, ${bind(row.childId)}, ${bind(row.templateId)}, ${bind(row.content)}, ${bind(row.publishedContent)}, ${bind(row.modifiedAt)}, ${bind(row.contentModifiedAt)}, ${bind(row.contentModifiedBy)}, ${bind(row.publishedAt)}, ${bind(row.answeredAt)}, ${bind(row.answeredBy)}, ${bind(row.processId)}, ${bind(row.decisionMaker)}, ${bind(decisionId)})
+INSERT INTO child_document (id, created, created_by, type, status, child_id, template_id, content, published_content, modified_at, content_modified_at, content_modified_by, document_key, published_at, answered_at, answered_by, process_id, decision_maker, decision_id)
+VALUES (${bind(row.id)}, ${if (row.created != null) bind(row.created) else insertDefault()}, ${bind(row.createdBy)}, ${bind(type)}, ${bind(row.status)}, ${bind(row.childId)}, ${bind(row.templateId)}, ${bind(row.content)}, ${bind(row.publishedContent)}, ${bind(row.modifiedAt)}, ${bind(row.contentModifiedAt)}, ${bind(row.contentModifiedBy)}, ${bind(row.documentKey)}, ${bind(row.publishedAt)}, ${bind(row.answeredAt)}, ${bind(row.answeredBy)}, ${bind(row.processId)}, ${bind(row.decisionMaker)}, ${bind(decisionId)})
 """
             )
         }

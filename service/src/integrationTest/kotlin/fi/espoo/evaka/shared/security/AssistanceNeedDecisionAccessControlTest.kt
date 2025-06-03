@@ -17,7 +17,6 @@ import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
-import fi.espoo.evaka.shared.dev.insertTestAssistanceNeedDecision
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
@@ -42,8 +41,7 @@ class AssistanceNeedDecisionAccessControlTest : AccessControlTest() {
         assistanceNeedDecisionId =
             db.transaction { tx ->
                 childId = tx.insert(DevPerson(), DevPersonType.CHILD)
-                tx.insertTestAssistanceNeedDecision(
-                    childId,
+                tx.insert(
                     DevAssistanceNeedDecision(
                         id = AssistanceNeedDecisionId(UUID.randomUUID()),
                         decisionNumber = 10000,
@@ -89,7 +87,7 @@ class AssistanceNeedDecisionAccessControlTest : AccessControlTest() {
                         unreadGuardianIds = null,
                         annulmentReason = "",
                         endDateNotKnown = false,
-                    ),
+                    )
                 )
             }
     }
@@ -98,8 +96,7 @@ class AssistanceNeedDecisionAccessControlTest : AccessControlTest() {
     fun `HasUnitRole inPlacementUnitOfChildOfAssistanceNeedDecision`() {
         val closedAssistanceNeedDecisionId =
             db.transaction { tx ->
-                tx.insertTestAssistanceNeedDecision(
-                    childId,
+                tx.insert(
                     DevAssistanceNeedDecision(
                         id = AssistanceNeedDecisionId(UUID.randomUUID()),
                         decisionNumber = 10000,
@@ -146,7 +143,7 @@ class AssistanceNeedDecisionAccessControlTest : AccessControlTest() {
                         unreadGuardianIds = null,
                         annulmentReason = "",
                         endDateNotKnown = false,
-                    ),
+                    )
                 )
             }
 

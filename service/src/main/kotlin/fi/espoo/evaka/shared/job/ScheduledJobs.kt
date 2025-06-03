@@ -31,11 +31,13 @@ import fi.espoo.evaka.nekku.NekkuService
 import fi.espoo.evaka.note.child.daily.deleteExpiredNotes
 import fi.espoo.evaka.pis.cleanUpInactivePeople
 import fi.espoo.evaka.pis.deactivateInactiveEmployees
+import fi.espoo.evaka.process.migrateProcessMetadata
 import fi.espoo.evaka.reports.freezeVoucherValueReportRows
 import fi.espoo.evaka.reservations.MissingHolidayReservationsReminders
 import fi.espoo.evaka.reservations.MissingReservationsReminders
 import fi.espoo.evaka.sficlient.SfiAsyncJobs
 import fi.espoo.evaka.sficlient.SfiMessagesClient
+import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.removeOldAsyncJobs
@@ -49,6 +51,7 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.titania.cleanTitaniaErrors
 import fi.espoo.evaka.varda.VardaUpdateService
 import io.github.oshai.kotlinlogging.KotlinLogging
+import io.opentelemetry.api.trace.Tracer
 import java.nio.file.Path
 import java.time.LocalTime
 import org.springframework.stereotype.Component
@@ -273,6 +276,10 @@ enum class ScheduledJob(
         ScheduledJobs::syncAclRows,
         ScheduledJobSettings(enabled = true, schedule = JobSchedule.nightly()),
     ),
+    MigrateMetadata(
+        ScheduledJobs::migrateMetadata,
+        ScheduledJobSettings(enabled = false, schedule = JobSchedule.nightly()),
+    ),
 }
 
 private val logger = KotlinLogging.logger {}
@@ -281,6 +288,7 @@ private val logger = KotlinLogging.logger {}
 class ScheduledJobs(
     private val vardaUpdateService: VardaUpdateService,
     private val evakaEnv: EvakaEnv,
+    private val featureConfig: FeatureConfig,
     private val dvvModificationsBatchRefreshService: DvvModificationsBatchRefreshService,
     private val pendingDecisionEmailService: PendingDecisionEmailService,
     private val invoiceGenerator: InvoiceGenerator,
@@ -300,6 +308,7 @@ class ScheduledJobs(
     private val sfiAsyncJobs: SfiAsyncJobs,
     private val passwordBlacklist: PasswordBlacklist,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
+    private val tracer: Tracer,
     env: ScheduledJobsEnv<ScheduledJob>,
 ) : JobSchedule {
     override val jobs: List<ScheduledJobDefinition> =
@@ -592,5 +601,9 @@ WHERE id IN (SELECT id FROM attendances_to_end)
 
     fun getSfiEvents(db: Database.Connection, clock: EvakaClock) {
         sfiAsyncJobs.getEvents(db, clock)
+    }
+
+    fun migrateMetadata(db: Database.Connection, clock: EvakaClock) {
+        migrateProcessMetadata(db, clock, featureConfig, tracer)
     }
 }

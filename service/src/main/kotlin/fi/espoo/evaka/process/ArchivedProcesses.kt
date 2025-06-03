@@ -28,6 +28,7 @@ data class ArchivedProcess(
     val number: Int,
     val organization: String,
     val archiveDurationMonths: Int,
+    val migrated: Boolean,
     @Json val history: List<ArchivedProcessHistoryRow>,
 ) {
     val processNumber: String
@@ -55,11 +56,12 @@ fun Database.Transaction.insertProcess(
     year: Int,
     organization: String,
     archiveDurationMonths: Int,
+    migrated: Boolean = false,
 ): ArchivedProcess =
     createQuery {
             sql(
                 """
-    INSERT INTO archived_process (process_definition_number, year, number, organization, archive_duration_months)
+    INSERT INTO archived_process (process_definition_number, year, number, organization, archive_duration_months, migrated)
     VALUES (
         ${bind(processDefinitionNumber)}, 
         ${bind(year)},
@@ -69,9 +71,10 @@ fun Database.Transaction.insertProcess(
             WHERE process_definition_number = ${bind(processDefinitionNumber)} AND year = ${bind(year)}
         ), 0) + 1,
         ${bind(organization)},
-        ${bind(archiveDurationMonths)}
+        ${bind(archiveDurationMonths)},
+        ${bind(migrated)}
     )
-    RETURNING id, process_definition_number, year, number, organization, archive_duration_months, '[]'::jsonb AS history
+    RETURNING id, process_definition_number, year, number, organization, archive_duration_months, migrated, '[]'::jsonb AS history
 """
             )
         }
@@ -81,7 +84,14 @@ fun Database.Read.getProcess(id: ArchivedProcessId): ArchivedProcess? =
     createQuery {
             sql(
                 """
-    SELECT ap.id, ap.process_definition_number, ap.year, ap.number, ap.organization, ap.archive_duration_months,
+    SELECT
+        ap.id,
+        ap.process_definition_number,
+        ap.year,
+        ap.number,
+        ap.organization,
+        ap.archive_duration_months,
+        ap.migrated,
     (
         SELECT coalesce(
             jsonb_agg(jsonb_build_object(

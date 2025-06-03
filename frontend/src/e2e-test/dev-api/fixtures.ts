@@ -1773,10 +1773,13 @@ export class Fixture {
   ) {
     const value: DevChildDocument = {
       id: randomId(),
+      created: null,
+      createdBy: systemInternalUser.id,
       status: 'DRAFT',
       modifiedAt: HelsinkiDateTime.now(),
       contentModifiedAt: HelsinkiDateTime.now(),
       contentModifiedBy: null,
+      documentKey: null,
       publishedAt: null,
       content: {
         answers: [

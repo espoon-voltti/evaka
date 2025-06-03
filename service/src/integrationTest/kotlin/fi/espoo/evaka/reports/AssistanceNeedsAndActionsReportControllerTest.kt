@@ -10,8 +10,6 @@ import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionEmployee
 import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionStatus
 import fi.espoo.evaka.assistanceneed.decision.ServiceOptions
 import fi.espoo.evaka.assistanceneed.decision.StructuralMotivationOptions
-import fi.espoo.evaka.assistanceneed.preschooldecision.AssistanceNeedPreschoolDecisionForm
-import fi.espoo.evaka.assistanceneed.preschooldecision.AssistanceNeedPreschoolDecisionType
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.insertAssistanceActionOptions
 import fi.espoo.evaka.placement.PlacementType
@@ -30,9 +28,8 @@ import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
+import fi.espoo.evaka.shared.dev.emptyAssistanceNeedPreschoolDecisionForm
 import fi.espoo.evaka.shared.dev.insert
-import fi.espoo.evaka.shared.dev.insertTestAssistanceNeedDecision
-import fi.espoo.evaka.shared.dev.insertTestAssistanceNeedPreschoolDecision
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -393,8 +390,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
         val children = insertAssistanceData(unit = unit, groups = groups, date = date)
 
         db.transaction { tx ->
-            tx.insertTestAssistanceNeedDecision(
-                childId = children[0].id,
+            tx.insert(
                 DevAssistanceNeedDecision(
                     decisionNumber = 10000,
                     childId = children[0].id,
@@ -451,10 +447,9 @@ class AssistanceNeedsAndActionsReportControllerTest :
                     unreadGuardianIds = null,
                     annulmentReason = "",
                     endDateNotKnown = false,
-                ),
+                )
             )
-            tx.insertTestAssistanceNeedDecision(
-                childId = children[1].id,
+            tx.insert(
                 DevAssistanceNeedDecision(
                     decisionNumber = 10000,
                     childId = children[1].id,
@@ -511,9 +506,9 @@ class AssistanceNeedsAndActionsReportControllerTest :
                     unreadGuardianIds = null,
                     annulmentReason = "",
                     endDateNotKnown = false,
-                ),
+                )
             )
-            tx.insertTestAssistanceNeedPreschoolDecision(
+            tx.insert(
                 DevAssistanceNeedPreschoolDecision(
                     decisionNumber = 10001,
                     childId = children[1].id,
@@ -523,44 +518,12 @@ class AssistanceNeedsAndActionsReportControllerTest :
                     unreadGuardianIds = emptySet(),
                     annulmentReason = "",
                     form =
-                        AssistanceNeedPreschoolDecisionForm(
+                        emptyAssistanceNeedPreschoolDecisionForm.copy(
                             validFrom = date.minusYears(1),
                             validTo = null,
-                            type = AssistanceNeedPreschoolDecisionType.NEW,
-                            language = OfficialLanguage.FI,
-                            extendedCompulsoryEducation = false,
-                            extendedCompulsoryEducationInfo = "",
-                            grantedAssistanceService = false,
-                            grantedInterpretationService = false,
-                            grantedAssistiveDevices = false,
-                            grantedServicesBasis = "",
                             selectedUnit = unit.id,
-                            primaryGroup = "",
-                            decisionBasis = "",
-                            basisDocumentPedagogicalReport = false,
-                            basisDocumentPsychologistStatement = false,
-                            basisDocumentSocialReport = false,
-                            basisDocumentDoctorStatement = false,
-                            basisDocumentPedagogicalReportDate = null,
-                            basisDocumentPsychologistStatementDate = null,
-                            basisDocumentSocialReportDate = null,
-                            basisDocumentDoctorStatementDate = null,
-                            basisDocumentOtherOrMissing = false,
-                            basisDocumentOtherOrMissingInfo = "",
-                            basisDocumentsInfo = "",
-                            guardiansHeardOn = null,
-                            guardianInfo = emptySet(),
-                            otherRepresentativeHeard = false,
-                            otherRepresentativeDetails = "",
-                            viewOfGuardians = "",
                             preparer1EmployeeId = admin.id,
-                            preparer1Title = "",
-                            preparer1PhoneNumber = "",
-                            preparer2EmployeeId = null,
-                            preparer2Title = "",
-                            preparer2PhoneNumber = "",
                             decisionMakerEmployeeId = admin.id,
-                            decisionMakerTitle = "",
                         ),
                 )
             )
