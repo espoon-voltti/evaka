@@ -27,7 +27,7 @@ import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { AlertBox, InfoBox } from 'lib-components/molecules/MessageBoxes'
-import { usePersonName } from 'lib-components/molecules/PersonNames'
+import { PersonName, usePersonName } from 'lib-components/molecules/PersonNames'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { DatePickerSpacer } from 'lib-components/molecules/date-picker/DateRangePicker'
 import { fontWeights } from 'lib-components/typography'
@@ -42,7 +42,6 @@ import {
 import { getDecisionUnits } from '../../generated/api-clients/decision'
 import type { Translations } from '../../state/i18n'
 import { useTranslation } from '../../state/i18n'
-import { formatName } from '../../utils'
 import { useTitle } from '../../utils/useTitle'
 import { renderResult } from '../async-rendering'
 import LabelValueList from '../common/LabelValueList'
@@ -265,12 +264,10 @@ export default React.memo(function Decision() {
         {renderResult(decisionDraftGroup, (decisionDraftGroup) => (
           <Fragment>
             <Title size={3}>
-              {formatName(
-                decisionDraftGroup.child.firstName,
-                decisionDraftGroup.child.lastName,
-                i18n,
-                true
-              )}
+              <PersonName
+                person={decisionDraftGroup.child}
+                format="Last First"
+              />
             </Title>
             <LabelValueList
               spacing="large"

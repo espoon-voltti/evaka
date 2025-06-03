@@ -7,6 +7,7 @@ import React from 'react'
 import type { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
 import type { ApplicationDetails as ApplicationDetailsGen } from 'lib-common/generated/api-types/application'
 import ListGrid from 'lib-components/layout/ListGrid'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import { H2, Label } from 'lib-components/typography'
 
 import { useTranslation } from '../../../localization'
@@ -29,9 +30,14 @@ export default React.memo(function BasicsSection({
 
   return (
     <div>
-      <H2 translate="no">
-        {formData.contactInfo.childFirstName}{' '}
-        {formData.contactInfo.childLastName}
+      <H2>
+        <PersonName
+          person={{
+            firstName: formData.contactInfo.childFirstName,
+            lastName: formData.contactInfo.childLastName
+          }}
+          format="First Last"
+        />
       </H2>
 
       <ListGrid

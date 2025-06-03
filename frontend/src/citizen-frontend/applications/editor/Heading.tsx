@@ -9,6 +9,7 @@ import type { ApplicationType } from 'lib-common/generated/api-types/application
 import { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import { H1, H2 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
@@ -26,10 +27,9 @@ type HeadingProps = {
 }
 export default React.memo(function Heading({
   type,
-  firstName,
-  lastName,
   errors,
-  transferApplication
+  transferApplication,
+  ...name
 }: HeadingProps) {
   const t = useTranslation()
 
@@ -40,8 +40,8 @@ export default React.memo(function Heading({
         {transferApplication && ` (${t.applicationsList.transferApplication})`}
       </H1>
 
-      <H2 data-qa="application-child-name-title" translate="no">
-        {firstName} {lastName}
+      <H2 data-qa="application-child-name-title">
+        <PersonName person={name} format="First Last" />
       </H2>
 
       {t.applications.editor.heading.info[type]}
