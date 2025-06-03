@@ -380,7 +380,7 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     }
 
     @Test
-    fun `preschool assistance info is converted to Koski extra information`() {
+    fun `pre-2026 preschool assistance info is converted to Koski extra information`() {
         data class TestCase(val period: FiniteDateRange, val level: PreschoolAssistanceLevel)
         insertPlacement(testChild_1)
         val intensifiedSupport =
@@ -425,6 +425,61 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         )
                     ),
                 tuenPäätöksenJaksot = null,
+            ),
+            koskiEndpoint.getStudyRights().values.single().opiskeluoikeus.lisätiedot,
+        )
+    }
+
+    @Test
+    fun `post-2026 preschool assistance info is converted to Koski extra information`() {
+        data class TestCase(val period: FiniteDateRange, val level: PreschoolAssistanceLevel)
+        insertPlacement(testChild_1, period = preschoolTerm2027)
+        val childSupport =
+            TestCase(testPeriod2027(0L to 1L), PreschoolAssistanceLevel.CHILD_SUPPORT)
+        val childSupportWithEce =
+            TestCase(
+                testPeriod2027(2L to 3L),
+                PreschoolAssistanceLevel.CHILD_SUPPORT_AND_EXTENDED_COMPULSORY_EDUCATION,
+            )
+        val groupSupport =
+            TestCase(testPeriod2027(4L to 5L), PreschoolAssistanceLevel.GROUP_SUPPORT)
+        val childSupportWithEce2 =
+            TestCase(
+                testPeriod2027(6L to 7L),
+                PreschoolAssistanceLevel.CHILD_SUPPORT_AND_EXTENDED_COMPULSORY_EDUCATION,
+            )
+
+        db.transaction { tx ->
+            listOf(childSupport, childSupportWithEce, groupSupport, childSupportWithEce2).forEach {
+                tx.insert(
+                    DevPreschoolAssistance(
+                        modifiedBy = testDecisionMaker_1.toEvakaUser(),
+                        childId = testChild_1.id,
+                        validDuring = it.period,
+                        level = it.level,
+                    )
+                )
+            }
+        }
+
+        koskiTester.triggerUploads(today = preschoolTerm2027.end.plusDays(1))
+        assertEquals(
+            Lisätiedot(
+                vammainen = null,
+                vaikeastiVammainen = null,
+                pidennettyOppivelvollisuus = null,
+                varhennetunOppivelvollisuudenJaksot =
+                    listOf(
+                        Aikajakso.from(childSupportWithEce.period),
+                        Aikajakso.from(childSupportWithEce2.period),
+                    ),
+                kuljetusetu = null,
+                erityisenTuenPäätökset = null,
+                tuenPäätöksenJaksot =
+                    listOf(
+                        Tukijakso.from(childSupport.period.merge(childSupportWithEce.period)),
+                        Tukijakso.from(childSupportWithEce2.period),
+                    ),
             ),
             koskiEndpoint.getStudyRights().values.single().opiskeluoikeus.lisätiedot,
         )
@@ -1074,9 +1129,16 @@ private fun Database.Transaction.clearKoskiInputCache() = execute {
 
 private val preschoolTerm2019 = FiniteDateRange(LocalDate.of(2019, 8, 8), LocalDate.of(2020, 5, 29))
 private val preschoolTerm2020 = FiniteDateRange(LocalDate.of(2020, 8, 13), LocalDate.of(2021, 6, 4))
+private val preschoolTerm2027 = FiniteDateRange(LocalDate.of(2027, 8, 9), LocalDate.of(2028, 6, 2))
 
 private fun testPeriod(offsets: Pair<Long, Long?>) =
     FiniteDateRange(
         preschoolTerm2019.start.plusDays(offsets.first),
         offsets.second?.let { preschoolTerm2019.start.plusDays(it) } ?: preschoolTerm2019.end,
+    )
+
+private fun testPeriod2027(offsets: Pair<Long, Long?>) =
+    FiniteDateRange(
+        preschoolTerm2027.start.plusDays(offsets.first),
+        offsets.second?.let { preschoolTerm2027.start.plusDays(it) } ?: preschoolTerm2027.end,
     )
