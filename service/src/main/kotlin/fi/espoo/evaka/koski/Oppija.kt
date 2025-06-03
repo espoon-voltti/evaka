@@ -225,13 +225,14 @@ data class MyöntäjäHenkilö(
 data class MyöntäjäHenkilönTitteli(val fi: String)
 
 data class Lisätiedot(
-    val vammainen: List<Aikajakso>?, // deprecated 1.9.2026 -
-    val vaikeastiVammainen: List<Aikajakso>?, // deprecated 1.9.2026 -
-    val pidennettyOppivelvollisuus: Aikajakso?, // deprecated 1.9.2026 -
-    val varhennetunOppivelvollisuudenJaksot: List<Aikajakso>?, // starts 1.8.2026 -
+    val vammainen: List<Aikajakso>?, // deprecated
+    val vaikeastiVammainen: List<Aikajakso>?, // deprecated
+    val pidennettyOppivelvollisuus: Aikajakso?, // deprecated
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    val varhennetunOppivelvollisuudenJaksot: List<Aikajakso>?,
     val kuljetusetu: Aikajakso?,
-    val erityisenTuenPäätökset: List<ErityisenTuenPäätös>?, // deprecated 1.8.2026 -
-    val tuenPäätöksenJaksot: List<Tukijakso>?, // starts 1.8.2026 -
+    val erityisenTuenPäätökset: List<ErityisenTuenPäätös>?, // deprecated
+    @JsonInclude(JsonInclude.Include.NON_NULL) val tuenPäätöksenJaksot: List<Tukijakso>?,
 )
 
 data class ErityisenTuenPäätös(
