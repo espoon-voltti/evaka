@@ -688,15 +688,15 @@ fun Database.Transaction.setNekkuReportOrderErrorReport(
             meals_by_special_diet,
             nekku_order_info)
         VALUES (
-            ${bind {reportRow.deliveryDate}},
-            ${bind {reportRow.daycareId}},
-            ${bind {reportRow.groupId}},
-            ${bind {reportRow.mealSku}},
-            ${bind {reportRow.totalQuantity}},
-            ${bind {reportRow.mealTime}},
-            ${bind {reportRow.mealType}},
-            ${bind {reportRow.mealsBySpecialDiet}},
-            ${bind {reportRow.nekkuOrderInfo}}
+            ${bind (reportRow.deliveryDate)},
+            ${bind (reportRow.daycareId)},
+            ${bind (reportRow.groupId)},
+            ${bind (reportRow.mealSku)},
+            ${bind (reportRow.totalQuantity)},
+            ${bind (reportRow.mealTime)},
+            ${bind (reportRow.mealType)},
+            ${bind (reportRow.mealsBySpecialDiet)},
+            ${bind (reportRow.nekkuOrderInfo)}
         )
             """
                 .trimIndent()

@@ -2375,12 +2375,8 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
                 .forEach { tx.insert(it) }
         }
 
-        val nekkuAsyncJob = AsyncJob.SendNekkuOrder(group.id, monday)
 
-        val clock =
-            MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2025, 4, 14), LocalTime.of(12, 0)))
-
-        nekkuService.sendNekkuOrder(db, clock, nekkuAsyncJob)
+        createAndSendNekkuOrder(client, db, group.id, monday, 0.9)
 
         db.transaction { tx ->
             val nekkuOrderReportResult = tx.getNekkuOrderReport(daycare.id, group.id, monday)
@@ -2396,7 +2392,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
                         null,
                         null,
                         null,
-                        "Nekkutilaukselle ei löytynyt yhtään riviä asiakastunnuksella 2501K6089.",
+                        "Could not find any customer with given date: MONDAY groupId=${group.id}",
                     )
                 ),
                 nekkuOrderReportResult.toSet(),
