@@ -308,7 +308,7 @@ sealed interface Action {
         DELETE_HOLIDAY_PERIOD(HasGlobalRole(ADMIN)),
         UPDATE_HOLIDAY_PERIOD(HasGlobalRole(ADMIN)),
         READ_HOLIDAY_QUESTIONNAIRE(HasGlobalRole(ADMIN)),
-        READ_HOLIDAY_QUESTIONNAIRES(HasGlobalRole(ADMIN)),
+        READ_HOLIDAY_QUESTIONNAIRES(HasGlobalRole(ADMIN), HasUnitRole(UNIT_SUPERVISOR).inAnyUnit()),
         READ_ACTIVE_HOLIDAY_QUESTIONNAIRES(IsCitizen(allowWeakLogin = true).any()),
         CREATE_HOLIDAY_QUESTIONNAIRE(HasGlobalRole(ADMIN)),
         DELETE_HOLIDAY_QUESTIONNAIRE(HasGlobalRole(ADMIN)),
@@ -2336,7 +2336,7 @@ sealed interface Action {
         ),
         READ_HOLIDAY_QUESTIONNAIRE_REPORT(
             HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR).withUnitFeatures(PilotFeature.RESERVATIONS).inUnit(),
+            HasUnitRole(UNIT_SUPERVISOR).inUnit(),
         ),
         READ_STARTING_PLACEMENTS_REPORT(
             HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN),
