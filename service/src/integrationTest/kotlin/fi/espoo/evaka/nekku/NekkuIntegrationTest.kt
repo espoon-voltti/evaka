@@ -44,7 +44,6 @@ import org.springframework.beans.factory.annotation.Autowired
 
 class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
-    @Autowired private lateinit var nekkuService: NekkuService
     @Autowired private lateinit var nekkuController: NekkuController
 
     private val now = HelsinkiDateTime.of(LocalDate.of(2025, 5, 12), LocalTime.of(9, 50))

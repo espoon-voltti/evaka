@@ -474,7 +474,7 @@ fun createAndSendNekkuOrder(
         }
     } catch (e: Exception) {
         logger.warn(e) {
-            "Failed to send meal order to Nekku: date=${date}, groupId=${groupId},error=${e.localizedMessage}"
+            "Failed to send meal order to Nekku: date=$date, groupId=$groupId,error=${e.localizedMessage}"
         }
 
         dbc.transaction { tx ->
