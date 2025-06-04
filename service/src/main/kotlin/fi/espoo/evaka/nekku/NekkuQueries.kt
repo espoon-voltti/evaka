@@ -670,7 +670,7 @@ fun Database.Transaction.setNekkuReportOrderErrorReport(
 
     if (deletedNekkuOrders > 0) {
         logger.info {
-            "Removed $deletedNekkuOrders orders for date:${date} daycareId=$daycareId groupId=$groupId before creating an error order"
+            "Removed $deletedNekkuOrders orders for date:$date daycareId=$daycareId groupId=$groupId before creating an error order"
         }
     }
 
