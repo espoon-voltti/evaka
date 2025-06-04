@@ -156,7 +156,7 @@ INSERT INTO nekku_customer_type (
     }
 }
 
-fun Database.Read.getNekkuDaycareCustomerMapping(
+fun Database.Read.getNekkuGroupCustomerMapping(
     groupId: GroupId,
     weekday: NekkuCustomerWeekday,
 ): NekkuDaycareCustomerMapping? =
@@ -168,7 +168,6 @@ fun Database.Read.getNekkuDaycareCustomerMapping(
                     dg.name as groupName, 
                     nct.type as customerType
                 FROM daycare_group dg 
-                    JOIN daycare d ON d.id = dg.daycare_id
                     JOIN nekku_customer nc ON nc.number = dg.nekku_customer_number
                     LEFT JOIN nekku_customer_type nct ON nc.number = nct.customer_number
                 WHERE dg.id = ${bind(groupId)}
@@ -580,7 +579,7 @@ fun Database.Read.getNekkuOrderReport(
 ): List<NekkuOrdersReport> =
     createQuery {
             sql(
-                "SELECT delivery_date, daycare_id, group_id, meal_sku, total_quantity, meal_time, meal_type, meals_by_special_diet FROM nekku_orders_report WHERE daycare_id = ${bind(daycareId)} AND group_id = (${bind(groupId)}) AND delivery_date = ${bind(date)} "
+                "SELECT delivery_date, daycare_id, group_id, meal_sku, total_quantity, meal_time, meal_type, meals_by_special_diet, nekku_order_info FROM nekku_orders_report WHERE daycare_id = ${bind(daycareId)} AND group_id = (${bind(groupId)}) AND delivery_date = ${bind(date)} "
             )
         }
         .toList<NekkuOrdersReport>()
@@ -589,6 +588,7 @@ fun Database.Transaction.setNekkuReportOrderReport(
     nekkuOrders: NekkuClient.NekkuOrders,
     groupId: GroupId,
     nekkuProducts: List<NekkuProduct>,
+    nekkuOrderInfo: String,
 ) {
 
     val daycareId = getDaycareIdByGroup(groupId)
@@ -605,6 +605,7 @@ fun Database.Transaction.setNekkuReportOrderReport(
                 product.mealTime,
                 product.mealType,
                 item.productOptions?.map { it.value },
+                nekkuOrderInfo,
             )
         }
 
@@ -631,7 +632,8 @@ meal_sku,
 total_quantity,
 meal_time,
 meal_type,
-meals_by_special_diet)
+meals_by_special_diet,
+nekku_order_info)
 VALUES (
 ${bind {it.deliveryDate}},
 ${bind {it.daycareId}},
@@ -640,8 +642,62 @@ ${bind {it.mealSku}},
 ${bind {it.totalQuantity}},
 ${bind {it.mealTime}},
 ${bind {it.mealType}},
-${bind {it.mealsBySpecialDiet}}
+${bind {it.mealsBySpecialDiet}},
+${bind {it.nekkuOrderInfo}}
 )
+            """
+                .trimIndent()
+        )
+    }
+}
+
+fun Database.Transaction.setNekkuReportOrderErrorReport(
+    groupId: GroupId,
+    date: LocalDate,
+    nekkuOrderError: String,
+) {
+
+    val daycareId = getDaycareIdByGroup(groupId)
+
+    val reportRow =
+        NekkuOrdersReport(date, daycareId, groupId, "", 0, null, null, null, nekkuOrderError)
+
+    val deletedNekkuOrders = execute {
+        sql(
+            "DELETE FROM nekku_orders_report WHERE daycare_id = ${bind(daycareId)} AND group_id = ${bind(groupId)} AND delivery_date = ${bind(date)}"
+        )
+    }
+
+    if (deletedNekkuOrders > 0) {
+        logger.info {
+            "Removed $deletedNekkuOrders orders for date:$date daycareId=$daycareId groupId=$groupId before creating an error order"
+        }
+    }
+
+    execute {
+        sql(
+            """
+        INSERT INTO nekku_orders_report (
+            delivery_date,
+            daycare_id,
+            group_id,
+            meal_sku,
+            total_quantity,
+            meal_time,
+            meal_type,
+            meals_by_special_diet,
+            nekku_order_info)
+        VALUES (
+            ${bind (reportRow.deliveryDate)},
+            ${bind (reportRow.daycareId)},
+            ${bind (reportRow.groupId)},
+            ${bind (reportRow.mealSku)},
+            ${bind (reportRow.totalQuantity)},
+            ${bind (reportRow.mealTime)},
+            ${bind (reportRow.mealType)},
+            ${bind (reportRow.mealsBySpecialDiet)},
+            ${bind (reportRow.nekkuOrderInfo)}
+        )
             """
                 .trimIndent()
         )

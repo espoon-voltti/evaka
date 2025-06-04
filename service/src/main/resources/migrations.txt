@@ -534,3 +534,4 @@ V535__schema_convention_fixes.sql
 V536__rename_nekku_breakfast_column.sql
 V537__child_document_archive_deletion_constraint.sql
 V538__archived_process_migrated.sql
+V539__add_info_column_to_nekku_order.sql
