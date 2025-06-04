@@ -35,6 +35,7 @@ import org.springframework.stereotype.Service
 
 private val logger = KotlinLogging.logger {}
 private val breakfastRefusalStartTime = LocalTime.of(10, 0)
+private val nonShiftCareDefaultEndTime = LocalTime.of(17, 0)
 
 @Service
 class AromiService(private val aromiEnv: AromiEnv?) {
@@ -228,6 +229,7 @@ data class AromiOrderDailyChildInfo(
     val dailyPreschoolTime: TimeRange?,
     val dailyPreparatoryTime: TimeRange?,
     val eatsBreakfast: Boolean,
+    val hasShiftCare: Boolean,
 )
 
 data class AromiDailyChildData(
@@ -278,7 +280,9 @@ JOIN daycare_group dg ON dg.id = rp.group_id
 JOIN person p ON p.id = rp.child_id
 JOIN daycare d ON rp.unit_id = d.id
 JOIN child ch ON p.id = ch.id
-LEFT JOIN service_need sn ON sn.placement_id = rp.placement_id AND daterange(sn.start_date, sn.end_date, '[]') @> ${bind(date)}
+LEFT JOIN service_need sn
+    ON sn.placement_id = rp.placement_id
+    AND daterange(sn.start_date, sn.end_date, '[]') @> ${bind(date)}
 WHERE dg.aromi_customer_id IS NOT NULL 
 AND daterange(dg.start_date, dg.end_date, '[]') @> ${bind(date)}
 AND daterange(d.opening_date, d.closing_date, '[]') @> ${bind(date)}
@@ -322,6 +326,7 @@ private fun Database.Read.getAromiChildInfos(
             childId = child.childId,
             dateOfBirth = child.dateOfBirth,
             eatsBreakfast = child.eatsBreakfast,
+            hasShiftCare = child.hasShiftCare,
         )
     }
 }
@@ -410,7 +415,13 @@ private fun getAttendancePredictionRows(
                             } else {
                                 // full day for any non-reserved and non-absent with schedule type
                                 // RESERVATION_REQUIRED
-                                listOf(entry(null))
+                                if (!childInfo.hasShiftCare)
+                                    listOf(
+                                        // non-shift care children should never be expected to
+                                        // receive late meals
+                                        entry(TimeRange(LocalTime.MIN, nonShiftCareDefaultEndTime))
+                                    )
+                                else listOf(entry(null))
                             }
                         } else {
                             breakfastCorrectedTimes.map { entry(it) }
