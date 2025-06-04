@@ -4,6 +4,7 @@
 
 export type PersonNameFormat =
   | 'First Last'
+  | 'First'
   | 'FirstFirst Last'
   | 'FirstFirst'
   | 'Last First'
@@ -11,6 +12,7 @@ export type PersonNameFormat =
   | 'Last Preferred'
   | 'Last, First'
   | 'Last, FirstFirst'
+  | 'Last'
   | 'Preferred Last'
   | 'Preferred'
 
@@ -28,6 +30,8 @@ export function formatPersonName(
   switch (format) {
     case 'First Last':
       return `${firstName} ${lastName}`
+    case 'First':
+      return firstName
     case 'FirstFirst Last': {
       const firstFirstName = firstName.split(/\s/)[0]
       return `${firstFirstName} ${lastName}`
@@ -40,16 +44,22 @@ export function formatPersonName(
       const firstFirstName = firstName.split(/\s/)[0]
       return `${lastName} ${firstFirstName}`
     }
-    case 'Last Preferred':
-      return `${lastName} ${preferredName || firstName}`
+    case 'Last Preferred': {
+      const firstFirstName = firstName.split(/\s/)[0]
+      return `${lastName} ${preferredName || firstFirstName}`
+    }
     case 'Last, First':
       return `${lastName}, ${firstName}`
     case 'Last, FirstFirst': {
       const firstFirstName = firstName.split(/\s/)[0]
       return `${lastName}, ${firstFirstName}`
     }
-    case 'Preferred Last':
-      return `${preferredName || firstName} ${lastName}`
+    case 'Last':
+      return lastName
+    case 'Preferred Last': {
+      const firstFirstName = firstName.split(/\s/)[0]
+      return `${preferredName || firstFirstName} ${lastName}`
+    }
     case 'Preferred': {
       const firstFirstName = firstName.split(/\s/)[0]
       return preferredName || firstFirstName

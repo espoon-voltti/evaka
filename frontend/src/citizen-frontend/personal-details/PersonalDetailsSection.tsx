@@ -44,6 +44,7 @@ import {
   InlineInfoButton
 } from 'lib-components/molecules/ExpandingInfo'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import { H2, Label, LabelLike } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
@@ -166,8 +167,6 @@ export default React.memo(function PersonalDetailsSection({
   }
 
   const {
-    firstName,
-    lastName,
     preferredName,
     streetAddress,
     postalCode,
@@ -211,8 +210,8 @@ export default React.memo(function PersonalDetailsSection({
             <H2 noMargin>{t.personalDetails.detailsSection.title}</H2>
             <div />
             <Label>{t.personalDetails.detailsSection.name}</Label>
-            <div translate="no">
-              {firstName} {lastName}
+            <div>
+              <PersonName person={user} format="First Last" />
             </div>
             <Label>{t.personalDetails.detailsSection.preferredName}</Label>
             {editing ? (

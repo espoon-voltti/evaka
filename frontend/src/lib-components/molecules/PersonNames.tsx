@@ -54,6 +54,8 @@ export function usePersonName(
   switch (format) {
     case 'First Last':
       return `${formatFirstName(firstName, i18n)} ${formatLastName(lastName, i18n)}`
+    case 'First':
+      return formatFirstName(firstName, i18n)
     case 'FirstFirst Last':
       return `${formatFirstFirstName(firstName, i18n)} ${formatLastName(lastName, i18n)}`
     case 'FirstFirst':
@@ -68,6 +70,8 @@ export function usePersonName(
       return `${formatLastName(lastName, i18n)}, ${formatFirstName(firstName, i18n)}`
     case 'Last, FirstFirst':
       return `${formatLastName(lastName, i18n)}, ${formatFirstFirstName(firstName, i18n)}`
+    case 'Last':
+      return formatLastName(lastName, i18n)
     case 'Preferred Last':
       return `${formatNickName(preferredName, firstName, i18n)} ${formatLastName(lastName, i18n)}`
     case 'Preferred':

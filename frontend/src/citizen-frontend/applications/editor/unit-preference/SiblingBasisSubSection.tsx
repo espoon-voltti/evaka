@@ -4,6 +4,7 @@
 
 import React from 'react'
 
+import { formatPersonName } from 'lib-common/names'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
 import Radio from 'lib-components/atoms/form/Radio'
@@ -61,7 +62,7 @@ export default React.memo(function SiblingBasisSubSection({
                   <Radio
                     key={sibling.socialSecurityNumber}
                     checked={sibling.selected}
-                    label={`${sibling.firstName} ${sibling.lastName}, ${sibling.socialSecurityNumber}`}
+                    label={`${formatPersonName(sibling, 'First Last')}, ${sibling.socialSecurityNumber}`}
                     translate="no"
                     onChange={() =>
                       updateFormData((prev) => ({

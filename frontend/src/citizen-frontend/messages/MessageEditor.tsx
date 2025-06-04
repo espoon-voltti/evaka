@@ -40,6 +40,7 @@ import FileUpload, {
   initialUploadStatus
 } from 'lib-components/molecules/FileUpload'
 import { InfoBox } from 'lib-components/molecules/MessageBoxes'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import { Bold, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
@@ -213,10 +214,9 @@ export default React.memo(function MessageEditor({
               <>
                 <Bold>{i18n.messages.sender}</Bold>
                 <Gap size="xs" />
-                <P
-                  noMargin
-                  translate="no"
-                >{`${user.firstName} ${user.lastName}`}</P>
+                <P noMargin>
+                  <PersonName person={user} format="First Last" />
+                </P>
               </>
             )}
             <Gap size="s" />
