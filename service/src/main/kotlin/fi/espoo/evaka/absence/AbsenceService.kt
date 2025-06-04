@@ -13,6 +13,7 @@ import fi.espoo.evaka.attendance.childrenHaveAttendanceInRange
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue
 import fi.espoo.evaka.dailyservicetimes.ServiceTimesPresenceStatus
 import fi.espoo.evaka.dailyservicetimes.getChildDailyServiceTimes
+import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.daycare.getClubTerms
 import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.daycare.getDaycaresById
@@ -255,11 +256,10 @@ fun getGroupMonthCalendar(
                                 val childAttendances = attendances[child.id to date] ?: emptyList()
                                 val childReservations =
                                     reservations[child.id to date] ?: emptyList()
-                                val childAnswers =
-                                    answers.filter {
+                                val noAnswersForChild =
+                                    answers.none {
                                         it.childId == child.id &&
-                                            (it.fixedPeriod?.includes(date) == true ||
-                                                it.openRanges.any { range -> range.includes(date) })
+                                            (it.fixedPeriod != null || it.openRanges.isNotEmpty())
                                     }
                                 val scheduleType =
                                     placement.type.scheduleType(date, clubTerms, preschoolTerms)
@@ -330,7 +330,10 @@ fun getGroupMonthCalendar(
                                             childReservations.isEmpty() &&
                                             childAbsences.isEmpty(),
                                     missingHolidayQuestionnaireAnswer =
-                                        isQuestionnaireDate && childAnswers.isEmpty(),
+                                        daycare.providerType !=
+                                            ProviderType.PRIVATE_SERVICE_VOUCHER &&
+                                            isQuestionnaireDate &&
+                                            noAnswersForChild,
                                     absences =
                                         childAbsences.map { AbsenceWithModifierInfo.from(it) },
                                     reservations = childReservations,
