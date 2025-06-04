@@ -358,10 +358,18 @@ describe('Child mobile attendance list', () => {
       `${testChildRestricted.firstName} ${testChildRestricted.lastName}`,
       `${testChild.firstName} ${testChild.lastName} (${testChild.preferredName})`
     ])
+    await listPage.multiselectToggle.check()
+    await listPage.selectChild(testChild2.id)
+    await listPage.markMultipleArrivedButton.click()
+    await childAttendancePage.setTime(now.subHours(5).toLocalTime().format())
+    await childAttendancePage.selectMarkPresent()
+    await listPage.assertChildNames([
+      `${testChildRestricted.firstName} ${testChildRestricted.lastName}`,
+      `${testChild.firstName} ${testChild.lastName} (${testChild.preferredName})`
+    ])
     await listPage.selectSortType('CHILD_FIRST_NAME')
     await listPage.assertChildNames([
       `${testChild.firstName} ${testChild.lastName} (${testChild.preferredName})`,
-      `${testChild2.firstName} ${testChild2.lastName}`,
       `${testChildRestricted.firstName} ${testChildRestricted.lastName}`
     ])
   })
@@ -582,10 +590,18 @@ describe('Child mobile attendance list', () => {
       `${testChildRestricted.firstName} ${testChildRestricted.lastName}`,
       `${testChild.firstName} ${testChild.lastName} (${testChild.preferredName})`
     ])
+    await listPage.multiselectToggle.check()
+    await listPage.selectChild(testChild2.id)
+    await listPage.markMultipleDepartedutton.click()
+    await childAttendancePage.setTime(now.addHours(1).toLocalTime().format())
+    await childAttendancePage.markDepartedButton.click()
+    await listPage.assertChildNames([
+      `${testChildRestricted.firstName} ${testChildRestricted.lastName}`,
+      `${testChild.firstName} ${testChild.lastName} (${testChild.preferredName})`
+    ])
     await listPage.selectSortType('CHILD_FIRST_NAME')
     await listPage.assertChildNames([
       `${testChild.firstName} ${testChild.lastName} (${testChild.preferredName})`,
-      `${testChild2.firstName} ${testChild2.lastName}`,
       `${testChildRestricted.firstName} ${testChildRestricted.lastName}`
     ])
   })
