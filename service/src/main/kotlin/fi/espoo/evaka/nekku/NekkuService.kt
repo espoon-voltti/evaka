@@ -160,13 +160,13 @@ class NekkuService(
     fun sendNekkuOrder(dbc: Database.Connection, clock: EvakaClock, job: AsyncJob.SendNekkuOrder) {
         if (client == null) error("Cannot send Nekku order: NekkuEnv is not configured")
 
-            createAndSendNekkuOrder(
-                client,
-                dbc,
-                groupId = job.customerGroupId,
-                date = job.date,
-                featureConfig.nekkuMealDeductionFactor,
-            )
+        createAndSendNekkuOrder(
+            client,
+            dbc,
+            groupId = job.customerGroupId,
+            date = job.date,
+            featureConfig.nekkuMealDeductionFactor,
+        )
     }
 
     fun sendNekkuDailyOrder(

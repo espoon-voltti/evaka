@@ -2375,7 +2375,6 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
                 .forEach { tx.insert(it) }
         }
 
-
         createAndSendNekkuOrder(client, db, group.id, monday, 0.9)
 
         db.transaction { tx ->
