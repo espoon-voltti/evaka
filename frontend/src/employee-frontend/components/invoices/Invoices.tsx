@@ -318,7 +318,7 @@ const InvoiceTableBody = React.memo(function InvoiceTableBody({
             data-qa="table-invoice-row"
           >
             <Td>
-              <NameWithSsn {...item.headOfFamily} i18n={i18n} />
+              <NameWithSsn {...item.headOfFamily} />
             </Td>
             <Td>
               <ChildrenCell people={item.children} />

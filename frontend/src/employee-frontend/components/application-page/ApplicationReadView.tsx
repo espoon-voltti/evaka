@@ -9,8 +9,7 @@ import { Link } from 'wouter'
 import type {
   Address,
   ApplicationAttachment,
-  ApplicationResponse,
-  PersonBasics
+  ApplicationResponse
 } from 'lib-common/generated/api-types/application'
 import type LocalDate from 'lib-common/local-date'
 import { maxOf } from 'lib-common/ordered'
@@ -18,6 +17,7 @@ import { Button } from 'lib-components/atoms/buttons/Button'
 import ListGrid from 'lib-components/layout/ListGrid'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import { Dimmed, H4, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/employee'
@@ -32,7 +32,6 @@ import {
 } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
-import { formatName } from '../../utils'
 import { formatParagraphs } from '../../utils/html-utils'
 import Attachment from '../common/Attachment'
 
@@ -121,8 +120,6 @@ export default React.memo(function ApplicationReadView({
   const connectedDaycare = type === 'PRESCHOOL' && serviceNeed !== null
   const paid = type === 'DAYCARE' || connectedDaycare
 
-  const formatPersonName = (person: PersonBasics) =>
-    formatName(person.firstName, person.lastName, i18n, true)
   const formatAddress = (a: Address) =>
     `${a.street}, ${a.postalCode} ${a.postOffice}`
 
@@ -384,7 +381,7 @@ export default React.memo(function ApplicationReadView({
         <ListGrid>
           <Label>{i18n.application.person.name}</Label>
           <Link to={`/child-information/${childId}`}>
-            {formatPersonName(child.person)}
+            <PersonName person={child.person} format="Last First" />
           </Link>
 
           <Label>{i18n.application.person.ssn}</Label>
@@ -434,7 +431,7 @@ export default React.memo(function ApplicationReadView({
             <ListGrid>
               <Label>{i18n.application.person.name}</Label>
               <Link to={`/profile/${guardianId}`} data-qa="guardian-name">
-                {formatPersonName(guardian.person)}
+                <PersonName person={guardian.person} format="Last First" />
               </Link>
               <Label>{i18n.application.person.ssn}</Label>
               <span>{guardian.person.socialSecurityNumber}</span>
@@ -528,7 +525,7 @@ export default React.memo(function ApplicationReadView({
                     {otherPartner && (
                       <>
                         <Label>{i18n.application.person.name}</Label>
-                        <span>{formatPersonName(otherPartner)}</span>
+                        <PersonName person={otherPartner} format="Last First" />
                         <Label>{i18n.application.person.ssn}</Label>
                         <span>{otherPartner.socialSecurityNumber}</span>
                       </>
@@ -548,7 +545,7 @@ export default React.memo(function ApplicationReadView({
                         }`}
                       >
                         <Label>{i18n.application.person.name}</Label>
-                        <span>{formatPersonName(otherChild)}</span>
+                        <PersonName person={otherChild} format="Last First" />
                         <Label>{i18n.application.person.ssn}</Label>
                         <span>{otherChild.socialSecurityNumber}</span>
                       </ListGrid>

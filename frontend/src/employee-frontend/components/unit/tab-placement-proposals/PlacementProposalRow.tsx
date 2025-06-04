@@ -16,11 +16,11 @@ import CrossIconButton from 'lib-components/atoms/buttons/CrossIconButton'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { Td, Tr } from 'lib-components/layout/Table'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import { faFileAlt } from 'lib-icons'
 
 import { getEmployeeUrlPrefix } from '../../../constants'
 import { useTranslation } from '../../../state/i18n'
-import { formatName } from '../../../utils'
 import { isPartDayPlacement } from '../../../utils/placements'
 import { CareTypeChip } from '../../common/CareTypeLabel'
 
@@ -56,13 +56,6 @@ export default React.memo(function PlacementProposalRow({
 }: Props) {
   const { i18n } = useTranslation()
 
-  const childName = formatName(
-    placementPlan.child.firstName,
-    placementPlan.child.lastName,
-    i18n,
-    true
-  )
-
   return (
     <>
       <CenteredRow
@@ -70,7 +63,7 @@ export default React.memo(function PlacementProposalRow({
       >
         <Td data-qa="child-name">
           <Link to={`/child-information/${placementPlan.child.id}`}>
-            {childName}
+            <PersonName person={placementPlan.child} format="Last First" />
           </Link>
         </Td>
         <Td data-qa="child-dob">{placementPlan.child.dateOfBirth.format()}</Td>

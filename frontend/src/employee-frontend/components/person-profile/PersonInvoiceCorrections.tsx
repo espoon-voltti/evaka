@@ -48,6 +48,7 @@ import {
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import { ConfirmedMutation } from 'lib-components/molecules/ConfirmedMutation'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import { DateRangePickerF } from 'lib-components/molecules/date-picker/DateRangePicker'
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { H4, Label, P } from 'lib-components/typography'
@@ -55,7 +56,6 @@ import { Gap } from 'lib-components/white-space'
 import { faCommentAlt, fasCommentAltLines, faTrash } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
-import { formatPersonName } from '../../utils'
 import { renderResult } from '../async-rendering'
 import { invoiceCodesQuery } from '../invoices/queries'
 
@@ -209,7 +209,9 @@ const ChildSection = React.memo(function ChildSection({
     <FixedSpaceColumn spacing="s">
       <FixedSpaceRow justifyContent="space-between" alignItems="center">
         <ChildNameLink to={`/child-information/${child.id}`}>
-          <H4 noMargin>{formatPersonName(child, i18n)}</H4>
+          <H4 noMargin>
+            <PersonName person={child} format="First Last" />
+          </H4>
         </ChildNameLink>
 
         {permittedPersonActions.has('CREATE_INVOICE_CORRECTION') && (

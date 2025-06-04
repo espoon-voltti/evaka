@@ -31,6 +31,7 @@ import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import TimeInput from 'lib-components/atoms/form/TimeInput'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Th, Thead, Tr } from 'lib-components/layout/Table'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import DateRangePicker from 'lib-components/molecules/date-picker/DateRangePicker'
 import { featureFlags } from 'lib-customizations/employee'
 
@@ -38,7 +39,6 @@ import { getMealOrders } from '../../generated/api-clients/aromi'
 import type { Translations } from '../../state/i18n'
 import { useTranslation } from '../../state/i18n'
 import { UserContext } from '../../state/user'
-import { formatName } from '../../utils'
 import { renderResult } from '../async-rendering'
 import { FlexRow } from '../common/styled/containers'
 import { unitGroupsQuery, daycaresQuery } from '../unit/queries'
@@ -518,12 +518,13 @@ const Row = React.memo(function Row({
                 to={`/child-information/${item.childId}`}
                 data-qa="child-name"
               >
-                {formatName(
-                  item.childFirstName,
-                  item.childLastName,
-                  i18n,
-                  true
-                )}
+                <PersonName
+                  person={{
+                    firstName: item.childFirstName,
+                    lastName: item.childLastName
+                  }}
+                  format="Last First"
+                />
               </Link>
             </AttendanceReservationReportTd>
             {item.fullDayAbsence ? (

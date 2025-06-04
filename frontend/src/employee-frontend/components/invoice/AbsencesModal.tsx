@@ -16,6 +16,7 @@ import type LocalDate from 'lib-common/local-date'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Title from 'lib-components/atoms/Title'
 import Tooltip from 'lib-components/atoms/Tooltip'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { fontWeights } from 'lib-components/typography'
 import { absenceTypes } from 'lib-customizations/employee'
@@ -25,7 +26,6 @@ import { getAbsencesOfChild } from '../../generated/api-clients/absence'
 import type { Lang, Translations } from '../../state/i18n'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
-import { formatName } from '../../utils'
 import PeriodPicker from '../absences/PeriodPicker'
 import { renderResult } from '../async-rendering'
 import ColorInfoItem from '../common/ColorInfoItem'
@@ -92,7 +92,7 @@ export default React.memo(function AbsencesModal({ child, date }: Props) {
       {renderResult(absences, (absences) => (
         <Section>
           <CustomTitle size={4}>
-            {formatName(child.firstName, child.lastName, i18n)}
+            <PersonName person={child} format="First Last" />
           </CustomTitle>
 
           <PeriodPicker onChange={setSelectedDate} date={selectedDate} />

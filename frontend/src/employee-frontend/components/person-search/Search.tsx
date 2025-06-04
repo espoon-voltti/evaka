@@ -20,13 +20,13 @@ import {
   Tbody,
   SortableTh
 } from 'lib-components/layout/Table'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import { Gap } from 'lib-components/white-space'
 import { faSearch } from 'lib-icons'
 
 import { PROFILE_AGE_THRESHOLD_DEFAULT } from '../../constants'
 import { searchPersonQuery } from '../../queries'
 import { useTranslation } from '../../state/i18n'
-import { formatName } from '../../utils'
 import { RequireRole } from '../../utils/roles'
 
 import AddVTJPersonModal from './AddVTJPersonModal'
@@ -159,12 +159,7 @@ export default React.memo(function Search() {
                               : `/child-information/${person.id}`
                           }
                         >
-                          {formatName(
-                            person.firstName,
-                            person.lastName,
-                            i18n,
-                            true
-                          )}
+                          <PersonName person={person} format="Last First" />
                         </Link>
                       </Td>
                       <Td align="left">{getAge(person.dateOfBirth)}</Td>

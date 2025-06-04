@@ -20,6 +20,7 @@ import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { H3, Label, P } from 'lib-components/typography'
@@ -29,7 +30,6 @@ import { faPen } from 'lib-icons'
 
 import { ChildContext } from '../../state'
 import { useTranslation } from '../../state/i18n'
-import { formatName } from '../../utils'
 import { renderResult } from '../async-rendering'
 import { NameTd } from '../person-profile/common'
 
@@ -106,12 +106,7 @@ export default React.memo(function Guardians() {
               >
                 <NameTd data-qa="guardian-name">
                   <Link to={`/profile/${guardian.id}`}>
-                    {formatName(
-                      guardian.firstName,
-                      guardian.lastName,
-                      i18n,
-                      true
-                    )}
+                    <PersonName person={guardian} format="Last First" />
                   </Link>
                 </NameTd>
                 <Td data-qa="guardian-ssn">{guardian.socialSecurityNumber}</Td>

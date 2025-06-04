@@ -8,6 +8,7 @@ import styled from 'styled-components'
 import type { PersonSummary } from 'lib-common/generated/api-types/pis'
 import type { PersonId } from 'lib-common/generated/api-types/shared'
 import { tryFromUuid } from 'lib-common/id-type'
+import { formatPersonName } from 'lib-common/names'
 import { constantQuery, useQueryResult } from 'lib-common/query'
 import { getAge } from 'lib-common/utils/local-date'
 import { useDebounce } from 'lib-common/utils/useDebounce'
@@ -20,7 +21,6 @@ import {
   searchPersonQuery
 } from '../../queries'
 import { useTranslation } from '../../state/i18n'
-import { formatName } from '../../utils'
 import { isSsnValid } from '../../utils/validation/validations'
 
 const Container = styled.div`
@@ -125,9 +125,8 @@ function PersonSearch({
   )
 
   const formatItemLabel = useCallback(
-    ({ firstName, lastName }: PersonSummary) =>
-      formatName(firstName, lastName, i18n),
-    [i18n]
+    (person: PersonSummary) => formatPersonName(person, 'First Last'),
+    []
   )
 
   const formatMenuItemLabel = useCallback(
@@ -137,10 +136,10 @@ function PersonSearch({
       lastName,
       streetAddress
     }: PersonSummary): string =>
-      `${formatName(firstName, lastName, i18n)} (${dateOfBirth.format()})${
+      `${formatPersonName({ firstName, lastName }, 'First Last')} (${dateOfBirth.format()})${
         streetAddress ? `\n${streetAddress}` : ''
       }`,
-    [i18n]
+    []
   )
 
   const onChange = useCallback(

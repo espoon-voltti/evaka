@@ -6,12 +6,12 @@ import React from 'react'
 import styled from 'styled-components'
 
 import type { ApplicationDetails } from 'lib-common/generated/api-types/application'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import { H1, H2 } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import { colors } from 'lib-customizations/common'
 
 import { useTranslation } from '../../state/i18n'
-import { formatName } from '../../utils'
 import CircularLabel from '../common/CircularLabel'
 
 type Props = {
@@ -48,12 +48,10 @@ export default React.memo(function ApplicationTitle({ application }: Props) {
         ) : null}
       </TitleRow>
       <H2>
-        {formatName(
-          application.form.child.person.firstName,
-          application.form.child.person.lastName,
-          i18n,
-          true
-        )}
+        <PersonName
+          person={application.form.child.person}
+          format="Last First"
+        />
       </H2>
     </div>
   )

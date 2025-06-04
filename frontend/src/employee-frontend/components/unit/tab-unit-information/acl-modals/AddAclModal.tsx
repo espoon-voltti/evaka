@@ -13,6 +13,7 @@ import type {
   ScheduledDaycareAclRow
 } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
+import { formatPersonName } from 'lib-common/names'
 import { cancelMutation } from 'lib-components/atoms/buttons/MutateButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
@@ -24,7 +25,6 @@ import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { Label } from 'lib-components/typography'
 
 import { useTranslation } from '../../../../state/i18n'
-import { formatName } from '../../../../utils'
 import { addFullAclForRoleMutation } from '../../queries'
 import type { DaycareAclRole } from '../UnitAccessControl'
 
@@ -97,13 +97,13 @@ export default React.memo(function AddAclModal({
   const employeeOptions: EmployeeOption[] = useMemo(
     () =>
       employees.map(({ id, email, firstName, lastName }) => {
-        const name = formatName(firstName, lastName, i18n)
+        const name = formatPersonName({ firstName, lastName }, 'First Last')
         return {
           label: email ? `${email} (${name})` : name,
           value: id
         }
       }),
-    [i18n, employees]
+    [employees]
   )
 
   const groupOptions = useGroupOptions(groups)

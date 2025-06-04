@@ -22,6 +22,7 @@ import type {
   MessageAccountId,
   PersonId
 } from 'lib-common/generated/api-types/shared'
+import { formatPersonName } from 'lib-common/names'
 import {
   constantQuery,
   invalidateDependencies,
@@ -58,7 +59,6 @@ import {
 import { getAttachmentUrl, messageAttachment } from '../../api/attachments'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
-import { formatPersonName } from '../../utils'
 import { formatParagraphs } from '../../utils/html-utils'
 import { renderResult } from '../async-rendering'
 import { FlexRow } from '../common/styled/containers'
@@ -137,9 +137,9 @@ export default React.memo(function PersonFinanceNotesAndMessages({
       person
         .map<
           [string | undefined, boolean]
-        >((p) => [formatPersonName(p, i18n, true), !!p.socialSecurityNumber])
+        >((p) => [formatPersonName(p, 'Last First'), !!p.socialSecurityNumber])
         .getOrElse([undefined, false]),
-    [person, i18n]
+    [person]
   )
 
   const draftContent = useMemo((): DraftContent | undefined => {

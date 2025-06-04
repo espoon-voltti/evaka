@@ -11,12 +11,13 @@ import type {
   VoucherValueDecisionDetailed
 } from 'lib-common/generated/api-types/invoicing'
 import { formatCents } from 'lib-common/money'
+import { formatPersonName } from 'lib-common/names'
 import { useQueryResult } from 'lib-common/query'
 import { H3, H4 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
 import { useTranslation } from '../../state/i18n'
-import { formatName, formatPercent } from '../../utils'
+import { formatPercent } from '../../utils'
 import { renderResult } from '../async-rendering'
 import LabelValueList from '../common/LabelValueList'
 import { incomeTypeOptionsQuery } from '../person-profile/queries'
@@ -108,22 +109,14 @@ export default React.memo(function VoucherValueDecisionIncomeSection({
               i18n.valueDecision.summary.income.effect[decision.incomeEffect]
           },
           {
-            label: formatName(
-              decision.headOfFamily.firstName,
-              decision.headOfFamily.lastName,
-              i18n
-            ),
+            label: formatPersonName(decision.headOfFamily, 'First Last'),
             value: personIncome(incomeTypes, decision.headOfFamilyIncome),
             valueWidth: '100%'
           },
           ...(decision.partner
             ? [
                 {
-                  label: formatName(
-                    decision.partner.firstName,
-                    decision.partner.lastName,
-                    i18n
-                  ),
+                  label: formatPersonName(decision.partner, 'First Last'),
                   value: personIncome(incomeTypes, decision.partnerIncome),
                   valueWidth: '100%'
                 }
@@ -132,11 +125,7 @@ export default React.memo(function VoucherValueDecisionIncomeSection({
           ...(decision.childIncome && decision.childIncome.totalIncome > 0
             ? [
                 {
-                  label: formatName(
-                    decision.child.firstName,
-                    decision.child.lastName,
-                    i18n
-                  ),
+                  label: formatPersonName(decision.child, 'First Last'),
                   value: personIncome(incomeTypes, decision.childIncome),
                   valueWidth: '100%',
                   dataQa: 'child-income'

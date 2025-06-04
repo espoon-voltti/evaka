@@ -7,11 +7,11 @@ import styled from 'styled-components'
 
 import type { FeeDecisionDetailed } from 'lib-common/generated/api-types/invoicing'
 import { formatCents } from 'lib-common/money'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import { H3, H4 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
 import { useTranslation } from '../../state/i18n'
-import { formatName } from '../../utils'
 
 interface Props {
   decision: FeeDecisionDetailed
@@ -47,7 +47,7 @@ export default React.memo(function ChildrenSection({ decision }: Props) {
           return (
             <Part key={child.id}>
               <H4 noMargin>
-                {formatName(child.firstName, child.lastName, i18n)}
+                <PersonName person={child} format="First Last" />
               </H4>
               <Gap size="xs" />
               <PartRow>

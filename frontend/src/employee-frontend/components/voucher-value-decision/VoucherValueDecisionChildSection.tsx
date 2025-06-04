@@ -10,11 +10,12 @@ import type {
   VoucherValueDecisionPlacementDetailed,
   VoucherValueDecisionServiceNeed
 } from 'lib-common/generated/api-types/invoicing'
+import { formatPersonName } from 'lib-common/names'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import { faUserFriends } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
-import { formatName } from '../../utils'
 import LabelValueList from '../common/LabelValueList'
 
 interface Props {
@@ -32,7 +33,7 @@ export default React.memo(function ChildSection({
 
   return (
     <CollapsibleSection
-      title={formatName(child.firstName, child.lastName, i18n)}
+      title={formatPersonName(child, 'First Last')}
       icon={faUserFriends}
       startCollapsed={false}
     >
@@ -43,7 +44,7 @@ export default React.memo(function ChildSection({
             label: i18n.valueDecision.child.name,
             value: (
               <Link to={`/child-information/${child.id}`} data-qa="child-name">
-                {formatName(child.firstName, child.lastName, i18n)}
+                <PersonName person={child} format="First Last" />
               </Link>
             )
           },

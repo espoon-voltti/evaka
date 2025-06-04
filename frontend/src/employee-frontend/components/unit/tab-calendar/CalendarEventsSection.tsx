@@ -53,6 +53,7 @@ import {
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import DateRangePicker from 'lib-components/molecules/date-picker/DateRangePicker'
 import BaseModal from 'lib-components/molecules/modals/BaseModal'
 import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
@@ -69,7 +70,6 @@ import {
 } from '../../../generated/api-clients/calendarevent'
 import { useTranslation } from '../../../state/i18n'
 import type { DayOfWeek } from '../../../types'
-import { formatPersonName } from '../../../utils'
 import { renderResult } from '../../async-rendering'
 import { unitGroupDetailsQuery, daycareQuery } from '../queries'
 
@@ -1067,9 +1067,13 @@ const SurveySummaryModal = React.memo(function SurveySummaryModal({
                     data-qa={`times-${t.id}`}
                   >{`${t.startTime.format()} - ${t.endTime.format()}`}</span>
                   {t.childId ? (
-                    <Bold
-                      data-qa={`reservee-${t.id}`}
-                    >{`${child ? formatPersonName(child, i18n) : tr.reservationModal.reserved}`}</Bold>
+                    <Bold data-qa={`reservee-${t.id}`}>
+                      {child ? (
+                        <PersonName person={child} format="First Last" />
+                      ) : (
+                        tr.reservationModal.reserved
+                      )}
+                    </Bold>
                   ) : (
                     <span data-qa={`reservee-${t.id}`}>
                       {tr.reservationModal.unreserved}

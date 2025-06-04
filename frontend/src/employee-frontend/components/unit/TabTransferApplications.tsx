@@ -10,9 +10,9 @@ import type { TransferApplicationUnitSummary } from 'lib-common/generated/api-ty
 import Title from 'lib-components/atoms/Title'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 
 import { useTranslation } from '../../state/i18n'
-import { formatName } from '../../utils'
 
 interface Props {
   transferApplications: TransferApplicationUnitSummary[]
@@ -58,7 +58,7 @@ export default React.memo(function TabTransferApplications({
               <Tr key={row.applicationId} data-qa="transfer-application-row">
                 <Td>
                   <div>
-                    {formatName(row.firstName, row.lastName, i18n, true)}
+                    <PersonName person={row} format="Last First" />
                   </div>
                   <div>{row.dateOfBirth.format()}</div>
                 </Td>

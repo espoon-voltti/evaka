@@ -5,9 +5,9 @@
 import React from 'react'
 
 import type LocalDate from 'lib-common/local-date'
+import { formatPersonName } from 'lib-common/names'
 
 import { useTranslation } from '../../state/i18n'
-import { formatName } from '../../utils'
 
 import NameWithSsn from './NameWithSsn'
 
@@ -31,13 +31,13 @@ function ChildrenCell({ people }: Props) {
     people.length > 1 ? (
       i18n.common.multipleChildren
     ) : (
-      <NameWithSsn {...people[0]} i18n={i18n} />
+      <NameWithSsn {...people[0]} />
     )
 
   const htmlTitle = people
     .map(
       ({ firstName, lastName, dateOfBirth, ssn }) =>
-        `${formatName(firstName, lastName, i18n, true)} (${
+        `${formatPersonName({ firstName, lastName }, 'Last First')} (${
           ssn || dateOfBirth.format()
         })`
     )

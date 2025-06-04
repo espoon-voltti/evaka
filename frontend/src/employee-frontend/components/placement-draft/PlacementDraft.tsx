@@ -28,7 +28,7 @@ import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import ListGrid from 'lib-components/layout/ListGrid'
-import { usePersonName } from 'lib-components/molecules/PersonNames'
+import { PersonName, usePersonName } from 'lib-components/molecules/PersonNames'
 import { Bold, H1, H2, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { faLink } from 'lib-icons'
@@ -40,7 +40,6 @@ import {
 import { getApplicationUnits } from '../../generated/api-clients/daycare'
 import { useTranslation } from '../../state/i18n'
 import { asUnitType } from '../../types/daycare'
-import { formatName } from '../../utils'
 import { useTitle } from '../../utils/useTitle'
 import { renderResult } from '../async-rendering'
 import WarningLabel from '../common/WarningLabel'
@@ -331,11 +330,7 @@ export default React.memo(function PlacementDraft() {
               <H1 noMargin>{i18n.placementDraft.createPlacementDraft}</H1>
               <Gap size="xs" />
               <H2 noMargin>
-                {formatName(
-                  placementDraft.child.firstName,
-                  placementDraft.child.lastName,
-                  i18n
-                )}
+                <PersonName person={placementDraft.child} format="First Last" />
               </H2>
               <Gap size="L" />
               <ListGrid>

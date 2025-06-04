@@ -11,10 +11,10 @@ import type { PersonId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
 import { getAge } from 'lib-common/utils/local-date'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 
 import { personDependantsQuery } from '../../queries'
 import { useTranslation } from '../../state/i18n'
-import { formatName } from '../../utils'
 import { renderResult } from '../async-rendering'
 
 import { NameTd } from './common'
@@ -46,12 +46,7 @@ export default React.memo(function PersonDependants({ id }: Props) {
             >
               <NameTd data-qa="dependant-name">
                 <Link to={`/child-information/${dependant.id}`}>
-                  {formatName(
-                    dependant.firstName,
-                    dependant.lastName,
-                    i18n,
-                    true
-                  )}
+                  <PersonName person={dependant} format="Last First" />
                 </Link>
               </NameTd>
               <Td data-qa="dependant-ssn">{dependant.socialSecurityNumber}</Td>

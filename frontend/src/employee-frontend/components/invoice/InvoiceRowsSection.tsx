@@ -19,11 +19,11 @@ import Title from 'lib-components/atoms/Title'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { Table, Tbody, Th, Thead, Tr } from 'lib-components/layout/Table'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import { faAbacus, faCoins } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
-import { formatName } from '../../utils'
 import { totalPrice } from '../../utils/pricing'
 
 import AbsencesModal from './AbsencesModal'
@@ -145,12 +145,7 @@ export default React.memo(function InvoiceRowsSection({
                 <Title size={4}>
                   <Link to={`/child-information/${childId}`}>
                     <span data-qa="child-name">
-                      {formatName(
-                        firstRow.child.firstName,
-                        firstRow.child.lastName,
-                        i18n,
-                        true
-                      )}
+                      <PersonName person={firstRow.child} format="Last First" />
                     </span>{' '}
                     <span data-qa="child-ssn">{firstRow.child.ssn}</span>
                   </Link>

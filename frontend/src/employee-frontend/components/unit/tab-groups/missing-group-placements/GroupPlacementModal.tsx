@@ -14,6 +14,7 @@ import { first, second, useSelectMutation } from 'lib-common/query'
 import { cancelMutation } from 'lib-components/atoms/buttons/MutateButton'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { Bold } from 'lib-components/typography'
@@ -22,7 +23,6 @@ import { faChild } from 'lib-icons'
 import { EVAKA_START } from '../../../../constants'
 import { useTranslation } from '../../../../state/i18n'
 import { UIContext } from '../../../../state/ui'
-import { formatName } from '../../../../utils'
 import { updateBackupCareMutation } from '../../../child-information/queries'
 import { createGroupPlacementMutation } from '../../queries'
 import type { MissingPlacement } from '../types'
@@ -178,7 +178,7 @@ export default React.memo(function GroupPlacementModal({
       <FixedSpaceColumn>
         <FieldWrapper>
           <Bold>{i18n.unit.placements.modal.child}</Bold>
-          <span>{formatName(firstName, lastName, i18n)}</span>
+          <PersonName person={{ firstName, lastName }} format="First Last" />
         </FieldWrapper>
         <FieldWrapper>
           <Bold>{i18n.unit.placements.modal.group}</Bold>

@@ -37,6 +37,7 @@ import {
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import { ConfirmedMutation } from 'lib-components/molecules/ConfirmedMutation'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import { H2, H3 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { faPen, faTrash } from 'lib-icons'
@@ -45,7 +46,6 @@ import { faUndo } from 'lib-icons'
 import { getEmployeesQuery } from '../../../queries'
 import { useTranslation } from '../../../state/i18n'
 import { UserContext } from '../../../state/user'
-import { formatName } from '../../../utils'
 import { renderResult } from '../../async-rendering'
 import {
   deleteEarlyChildhoodEducationSecretaryMutation,
@@ -188,7 +188,7 @@ function AclRow({
       <Td>
         <FixedSpaceColumn spacing="zero">
           <span data-qa="name">
-            {formatName(row.employee.firstName, row.employee.lastName, i18n)}
+            <PersonName person={row.employee} format="First Last" />
           </span>
           <EmailSpan data-qa="email">{row.employee.email}</EmailSpan>
         </FixedSpaceColumn>
@@ -383,7 +383,7 @@ function ScheduledAclTable({
               <Td>
                 <FixedSpaceColumn spacing="zero">
                   <span data-qa="name">
-                    {formatName(row.firstName, row.lastName, i18n)}
+                    <PersonName person={row} format="First Last" />
                   </span>
                   <EmailSpan data-qa="email">{row.email}</EmailSpan>
                 </FixedSpaceColumn>
@@ -460,11 +460,7 @@ function TemporaryEmployeesTable({
             <Td>
               <FixedSpaceRow>
                 <span data-qa="name">
-                  {formatName(
-                    row.employee.firstName,
-                    row.employee.lastName,
-                    i18n
-                  )}
+                  <PersonName person={row.employee} format="First Last" />
                 </span>
                 <span
                   data-qa={
@@ -563,7 +559,7 @@ function PreviousTemporaryEmployeesTable({
             data-qa={`previous-temporary-employee-row-${row.id}`}
           >
             <Td data-qa="name">
-              {formatName(row.firstName, row.lastName, i18n)}
+              <PersonName person={row} format="First Last" />
             </Td>
             <StyledTd $width="400px">
               <FixedSpaceRow justifyContent="flex-end">

@@ -9,12 +9,12 @@ import type { DaycareGroup } from 'lib-common/generated/api-types/daycare'
 import type { DaycareId } from 'lib-common/generated/api-types/shared'
 import { cancelMutation } from 'lib-components/atoms/buttons/MutateButton'
 import Select from 'lib-components/atoms/dropdowns/Select'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { faChild, faExchange } from 'lib-icons'
 
 import { useTranslation } from '../../../../state/i18n'
 import { UIContext } from '../../../../state/ui'
-import { formatName } from '../../../../utils'
 import { updateBackupCareMutation } from '../../../child-information/queries'
 
 interface Props {
@@ -75,7 +75,7 @@ export default React.memo(function BackupCareGroupModal({
     >
       <section>
         <div className="bold">{i18n.unit.placements.modal.child}</div>
-        <span>{formatName(child.firstName, child.lastName, i18n)}</span>
+        <PersonName person={child} format="First Last" />
       </section>
       <section>
         <div className="bold">{i18n.unit.placements.modal.group}</div>

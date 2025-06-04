@@ -16,12 +16,12 @@ import { useMutationResult, useQueryResult } from 'lib-common/query'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { faQuestion } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
-import { formatName } from '../../utils'
 import { renderResult } from '../async-rendering'
 import Toolbar from '../common/Toolbar'
 
@@ -161,12 +161,7 @@ const PersonFridgePartner = React.memo(function PersonFridgePartner({
                     >
                       <NameTd>
                         <Link to={`/profile/${partner.id}`}>
-                          {formatName(
-                            partner.firstName,
-                            partner.lastName,
-                            i18n,
-                            true
-                          )}
+                          <PersonName person={partner} format="Last First" />
                         </Link>
                       </NameTd>
                       <Td>{partner.socialSecurityNumber}</Td>

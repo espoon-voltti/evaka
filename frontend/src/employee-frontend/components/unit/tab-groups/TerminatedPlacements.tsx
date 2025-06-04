@@ -10,9 +10,9 @@ import type { TerminatedPlacement } from 'lib-common/generated/api-types/placeme
 import Title from 'lib-components/atoms/Title'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 
 import { useTranslation } from '../../../state/i18n'
-import { formatName } from '../../../utils'
 import { CareTypeChip } from '../../common/CareTypeLabel'
 
 function TerminatedPlacementRow({
@@ -20,17 +20,11 @@ function TerminatedPlacementRow({
 }: {
   placement: TerminatedPlacement
 }) {
-  const { i18n } = useTranslation()
   return (
     <Tr key="$placement.child.id}" data-qa="terminated-placement-row">
       <Td data-qa="child-name">
         <Link to={`/child-information/${placement.child.id}`}>
-          {formatName(
-            placement.child.firstName,
-            placement.child.lastName,
-            i18n,
-            true
-          )}
+          <PersonName person={placement.child} format="Last First" />
         </Link>
       </Td>
       <Td data-qa="child-dob">{placement.child.dateOfBirth.format()}</Td>
