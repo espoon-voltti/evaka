@@ -22,6 +22,7 @@ import type {
 import type { UnitGroupDetails } from 'lib-common/generated/api-types/daycare'
 import type { GroupId, PersonId } from 'lib-common/generated/api-types/shared'
 import type LocalDate from 'lib-common/local-date'
+import { formatPersonName } from 'lib-common/names'
 import type { UUID } from 'lib-common/types'
 
 import { getCombinedChildPlacementsForGroup } from '../utils'
@@ -112,7 +113,7 @@ export const filterAttendees = (
       ({ child }) => child.id
     ]).map(({ child: c }) => ({
       key: c.id,
-      text: `${c.lastName} ${c.firstName}`,
+      text: formatPersonName(c, 'Last First'),
       checked:
         individualChildrenOfSelectedGroup.length === 0 ||
         isChildSelected(c.id, individualChildrenOfSelectedGroup),

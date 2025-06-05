@@ -3,8 +3,10 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 export type PersonNameFormat =
+  | 'First Last (Preferred)'
   | 'First Last'
   | 'First'
+  | 'FirstFirst Last (Preferred)'
   | 'FirstFirst Last'
   | 'FirstFirst'
   | 'Last First'
@@ -28,11 +30,19 @@ export function formatPersonName(
   format: PersonNameFormat
 ): string {
   const { firstName, lastName, preferredName, preferredFirstName } = person
+  const preferred = preferredName || preferredFirstName
   switch (format) {
+    case 'First Last (Preferred)': {
+      return `${firstName} ${lastName}${preferred ? ` (${preferred})` : ''}`
+    }
     case 'First Last':
       return `${firstName} ${lastName}`
     case 'First':
       return firstName
+    case 'FirstFirst Last (Preferred)': {
+      const firstFirstName = firstName.split(/\s/)[0]
+      return `${firstFirstName} ${lastName}${preferred ? ` (${preferred})` : ''}`
+    }
     case 'FirstFirst Last': {
       const firstFirstName = firstName.split(/\s/)[0]
       return `${firstFirstName} ${lastName}`
@@ -46,7 +56,7 @@ export function formatPersonName(
       return `${lastName} ${firstFirstName}`
     }
     case 'Last Preferred': {
-      return `${lastName} ${preferredName || preferredFirstName || firstName.split(/\s/)[0]}`
+      return `${lastName} ${preferred || firstName.split(/\s/)[0]}`
     }
     case 'Last, First':
       return `${lastName}, ${firstName}`
@@ -57,10 +67,10 @@ export function formatPersonName(
     case 'Last':
       return lastName
     case 'Preferred Last': {
-      return `${preferredName || preferredFirstName || firstName.split(/\s/)[0]} ${lastName}`
+      return `${preferred || firstName.split(/\s/)[0]} ${lastName}`
     }
     case 'Preferred': {
-      return preferredName || preferredFirstName || firstName.split(/\s/)[0]
+      return preferred || firstName.split(/\s/)[0]
     }
   }
 }

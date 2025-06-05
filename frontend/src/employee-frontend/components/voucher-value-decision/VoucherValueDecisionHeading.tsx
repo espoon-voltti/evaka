@@ -10,6 +10,7 @@ import type {
   VoucherValueDecisionDetailed,
   VoucherValueDecisionType
 } from 'lib-common/generated/api-types/invoicing'
+import { formatPersonName } from 'lib-common/names'
 import { PersonName } from 'lib-components/molecules/PersonNames'
 import { H1 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
@@ -141,7 +142,13 @@ export default React.memo(function VoucherValueDecisionHeading({
                 {
                   dataQa: 'decision-handler',
                   label: i18n.valueDecision.decisionHandlerName,
-                  value: `${financeDecisionHandlerFirstName} ${financeDecisionHandlerLastName}`
+                  value: formatPersonName(
+                    {
+                      firstName: financeDecisionHandlerFirstName,
+                      lastName: financeDecisionHandlerLastName
+                    },
+                    'First Last'
+                  )
                 }
               ]
             : [])

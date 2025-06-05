@@ -33,13 +33,11 @@ function formatFirstFirstName(
 }
 
 function formatNickName(
-  preferredName: string | undefined,
-  preferredFirstName: string | null | undefined,
+  preferred: string | null | undefined,
   firstName: string | undefined,
   i18n: Translations
 ): string {
-  if (preferredName) return preferredName
-  if (preferredFirstName) return preferredFirstName
+  if (preferred) return preferred
   if (!firstName) return i18n.common.noFirstName
 
   const firstNames = firstName.split(/\s/)
@@ -53,12 +51,16 @@ export function usePersonName(
   const i18n = useTranslations()
   const { firstName, lastName, preferredName, preferredFirstName } =
     person ?? {}
-
+  const preferred = preferredName || preferredFirstName
   switch (format) {
+    case 'First Last (Preferred)':
+      return `${formatFirstName(firstName, i18n)} ${formatLastName(lastName, i18n)}${preferred ? ` (${preferred})` : ''}`
     case 'First Last':
       return `${formatFirstName(firstName, i18n)} ${formatLastName(lastName, i18n)}`
     case 'First':
       return formatFirstName(firstName, i18n)
+    case 'FirstFirst Last (Preferred)':
+      return `${formatFirstFirstName(firstName, i18n)} ${formatLastName(lastName, i18n)}${preferred ? ` (${preferred})` : ''}`
     case 'FirstFirst Last':
       return `${formatFirstFirstName(firstName, i18n)} ${formatLastName(lastName, i18n)}`
     case 'FirstFirst':
@@ -68,7 +70,7 @@ export function usePersonName(
     case 'Last FirstFirst':
       return `${formatLastName(lastName, i18n)} ${formatFirstFirstName(firstName, i18n)}`
     case 'Last Preferred':
-      return `${formatLastName(lastName, i18n)} ${formatNickName(preferredName, preferredFirstName, firstName, i18n)}`
+      return `${formatLastName(lastName, i18n)} ${formatNickName(preferred, firstName, i18n)}`
     case 'Last, First':
       return `${formatLastName(lastName, i18n)}, ${formatFirstName(firstName, i18n)}`
     case 'Last, FirstFirst':
@@ -76,9 +78,9 @@ export function usePersonName(
     case 'Last':
       return formatLastName(lastName, i18n)
     case 'Preferred Last':
-      return `${formatNickName(preferredName, preferredFirstName, firstName, i18n)} ${formatLastName(lastName, i18n)}`
+      return `${formatNickName(preferred, firstName, i18n)} ${formatLastName(lastName, i18n)}`
     case 'Preferred':
-      return formatNickName(preferredName, preferredFirstName, firstName, i18n)
+      return formatNickName(preferred, firstName, i18n)
   }
 }
 

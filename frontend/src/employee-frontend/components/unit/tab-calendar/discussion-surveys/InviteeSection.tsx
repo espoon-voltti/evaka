@@ -20,6 +20,7 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { fontWeights } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
@@ -75,7 +76,9 @@ const ChildNameList = React.memo(function ChildNameList({
           data-qa="clear-reservations-confirmation-modal"
         >
           <CenteringDiv>
-            <h3 data-qa="child-name">{`${selectedInvitee.child.firstName} ${selectedInvitee.child.lastName}`}</h3>
+            <h3 data-qa="child-name">
+              <PersonName person={selectedInvitee.child} format="First Last" />
+            </h3>
             {selectedInvitee.reservations.map((r, i) => (
               <p
                 key={r.id}
@@ -92,7 +95,7 @@ const ChildNameList = React.memo(function ChildNameList({
               to={getChildUrl(item.child)}
               data-qa={`attendee-${item.child.id}`}
             >
-              {`${item.child.firstName.split(' ')[0]} ${item.child.lastName}`}
+              <PersonName person={item.child} format="FirstFirst Last" />
             </Link>
           </div>
           {item.reservations.length > 0 ? (

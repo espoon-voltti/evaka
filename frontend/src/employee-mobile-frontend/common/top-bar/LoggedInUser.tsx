@@ -8,6 +8,7 @@ import styled from 'styled-components'
 import { combine } from 'lib-common/api'
 import type { Staff } from 'lib-common/generated/api-types/attendance'
 import type { DaycareId } from 'lib-common/generated/api-types/shared'
+import { formatPersonName } from 'lib-common/names'
 import { constantQuery, useQueryResult } from 'lib-common/query'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
@@ -35,7 +36,7 @@ const getUserName = (u: Staff | undefined) => {
   const names = [u?.firstName, u?.lastName].filter(Boolean)
   return {
     initials: names.map((s) => s?.substring(0, 1)).join(''),
-    name: names.join(' ')
+    name: u ? formatPersonName(u, 'First Last') : ''
   }
 }
 

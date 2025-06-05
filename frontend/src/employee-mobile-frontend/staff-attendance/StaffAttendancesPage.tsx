@@ -25,6 +25,7 @@ import {
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import { InfoBox } from 'lib-components/molecules/MessageBoxes'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import { TabLinks } from 'lib-components/molecules/Tabs'
 import { fontWeights } from 'lib-components/typography'
 import { fasExclamationTriangle } from 'lib-icons'
@@ -384,7 +385,9 @@ const StaffAttendancesPlanned = React.memo(function StaffAttendancesPlanned({
                         />
                       )}
                     </IconWrapper>
-                    <StaffName>{`${s.firstName} ${s.lastName}`}</StaffName>
+                    <StaffName>
+                      <PersonName person={s} format="First Last" />
+                    </StaffName>
                   </FixedSpaceRow>
 
                   {s.confidence !== 'full' && (
@@ -437,7 +440,9 @@ const StaffAttendancesPlanned = React.memo(function StaffAttendancesPlanned({
                           />
                         )}
                       </IconWrapper>
-                      <StaffName>{`${s.firstName} ${s.lastName}`}</StaffName>
+                      <StaffName>
+                        <PersonName person={s} format="First Last" />
+                      </StaffName>
                     </FixedSpaceRow>
                     <DetailsRow>{i18n.attendances.staff.noPlan}</DetailsRow>
                   </FixedSpaceColumn>

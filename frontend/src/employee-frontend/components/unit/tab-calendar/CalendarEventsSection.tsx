@@ -34,6 +34,7 @@ import type {
   GroupId
 } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
+import { formatPersonName } from 'lib-common/names'
 import { useQueryResult } from 'lib-common/query'
 import type { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -604,7 +605,7 @@ const CreateEventModal = React.memo(function CreateEventModal({
                 ),
               (child) => child.id
             ).map<AttendeeTreeNode>((child) => ({
-              text: `${child.firstName ?? ''} ${child.lastName ?? ''}`,
+              text: formatPersonName(child, 'First Last'),
               key: child.id,
               checked: useDefault
                 ? groupId === group.id || groupId === null
@@ -682,9 +683,7 @@ const CreateEventModal = React.memo(function CreateEventModal({
 
             return {
               childId,
-              childName: child
-                ? `${child.firstName ?? ''} ${child.lastName ?? ''}`
-                : '',
+              childName: child ? formatPersonName(child, 'First Last') : '',
               missingPlacementDates: [...form.period.dates()].filter(
                 (date) =>
                   !childsGroupPlacements.some(
@@ -847,7 +846,7 @@ const getLongAttendees = (
     .flatMap(
       ({ name, id }) =>
         childGroupIds[id]?.map(
-          (child) => `${name}/${child.lastName} ${child.firstName}`
+          (child) => `${name}/${formatPersonName(child, 'Last First')}`
         ) ?? [name]
     )
     .join(', ')

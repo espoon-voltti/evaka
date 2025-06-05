@@ -12,6 +12,7 @@ import type { EmployeeId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
+import { formatPersonName } from 'lib-common/names'
 import { useQueryResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import Title from 'lib-components/atoms/Title'
@@ -120,7 +121,7 @@ export default React.memo(function StaffMarkDepartedPage({
       memberAttendance
         .map(({ staffMember }) =>
           staffMember
-            ? `${staffMember.firstName} ${staffMember.lastName}`
+            ? formatPersonName(staffMember, 'First Last')
             : i18n.common.back
         )
         .getOrElse(i18n.common.back),

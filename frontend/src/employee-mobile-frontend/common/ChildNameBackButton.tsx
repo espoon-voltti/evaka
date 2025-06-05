@@ -5,6 +5,7 @@
 import React from 'react'
 
 import type { AttendanceChild } from 'lib-common/generated/api-types/attendance'
+import { formatPersonName } from 'lib-common/names'
 import { faArrowLeft } from 'lib-icons'
 
 import { BackButtonInline } from './components'
@@ -18,9 +19,7 @@ export default React.memo(function ChildNameBackButton({
   child,
   onClick
 }: Props) {
-  const text =
-    `${child.firstName} ${child.lastName}` +
-    (child.preferredName ? ` (${child.preferredName})` : '')
+  const text = formatPersonName(child, 'First Last (Preferred)')
 
   return (
     <BackButtonInline

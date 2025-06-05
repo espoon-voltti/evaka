@@ -15,6 +15,7 @@ import type {
 } from 'lib-common/generated/api-types/calendarevent'
 import type { ChildBasics } from 'lib-common/generated/api-types/placement'
 import type { ChildId } from 'lib-common/generated/api-types/shared'
+import { formatPersonName } from 'lib-common/names'
 import { useMutation } from 'lib-common/query'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
@@ -23,6 +24,7 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import BaseModal from 'lib-components/molecules/modals/BaseModal'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { H2, H3, Label, fontWeights } from 'lib-components/typography'
@@ -84,7 +86,7 @@ export default React.memo(function CalendarEventTimeReservation({
         order="text-icon"
         text={
           reservationChild
-            ? `${reservationChild.firstName} ${reservationChild.lastName}`
+            ? formatPersonName(reservationChild, 'First Last')
             : i18n.unit.calendar.events.discussionReservation.reserveButton
         }
         icon={faPen}
@@ -235,7 +237,7 @@ export const DiscussionReservationModal = React.memo(
                 }
                 getItemValue={(i: ChildBasics) => (i ? i.id : '')}
                 getItemLabel={(i: ChildBasics) =>
-                  i ? `${i.lastName} ${i.firstName}` : ''
+                  i ? formatPersonName(i, 'Last First') : ''
                 }
                 placeholder={t.reservationModal.selectPlaceholder}
                 data-qa="reservee-select"
@@ -255,9 +257,9 @@ export const DiscussionReservationModal = React.memo(
           {viewMode === 'reserved' && (
             <FixedSpaceRow alignItems="center">
               <span>
-                {savedChild
-                  ? `${savedChild.firstName} ${savedChild.lastName}`
-                  : ''}
+                {savedChild && (
+                  <PersonName person={savedChild} format="First Last" />
+                )}
               </span>
               <Button
                 appearance="inline"

@@ -15,6 +15,7 @@ import { object, required } from 'lib-common/form/form'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
 import type { StartingPlacementsRow } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
+import { formatPersonName } from 'lib-common/names'
 import { useQueryResult } from 'lib-common/query'
 import type { Arg0 } from 'lib-common/types'
 import Title from 'lib-components/atoms/Title'
@@ -181,7 +182,7 @@ const StartingPlacements = React.memo(function StartingPlacements({
         orderBy(
           rawResult.map((row) => ({
             ...row,
-            childName: `${row.lastName} ${row.firstName}`
+            childName: formatPersonName(row, 'Last First')
           })),
           sort.columns,
           [sort.direction === 'ASC' ? 'asc' : 'desc']

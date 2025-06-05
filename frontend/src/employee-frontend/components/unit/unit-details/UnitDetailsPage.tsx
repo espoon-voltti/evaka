@@ -8,6 +8,7 @@ import type { Result } from 'lib-common/api'
 import { combine, Loading } from 'lib-common/api'
 import { useBoolean } from 'lib-common/form/hooks'
 import type { DaycareId } from 'lib-common/generated/api-types/shared'
+import { formatPersonName } from 'lib-common/names'
 import { useQueryResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
@@ -47,7 +48,7 @@ export default React.memo(function UnitDetailsPage() {
       employeesResponse.map((employees) =>
         employees.map((employee) => ({
           value: employee.id,
-          label: `${employee.firstName ?? ''} ${employee.lastName ?? ''}${
+          label: `${formatPersonName(employee, 'First Last')}${
             employee.email ? ` (${employee.email})` : ''
           }`
         }))

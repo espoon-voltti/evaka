@@ -15,6 +15,7 @@ import LocalDate from 'lib-common/local-date'
 import { constantQuery, useQuery, useQueryResult } from 'lib-common/query'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import { Bold, InformationText } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import colors, { attendanceColors } from 'lib-customizations/common'
@@ -195,8 +196,7 @@ export default React.memo(function ChildListItem({
           <MainInfoColumn>
             <NameRow>
               <Bold data-qa="child-name">
-                {child.firstName} {child.lastName}
-                {child.preferredName ? ` (${child.preferredName})` : null}
+                <PersonName person={child} format="First Last (Preferred)" />
               </Bold>
             </NameRow>
             <FixedSpaceRow spacing="xs">
@@ -256,8 +256,7 @@ export default React.memo(function ChildListItem({
           <MainInfoColumn>
             <NameRow>
               <Bold data-qa="child-name">
-                {child.firstName} {child.lastName}
-                {child.preferredName ? ` (${child.preferredName})` : null}
+                <PersonName person={child} format="First Last (Preferred)" />
               </Bold>
             </NameRow>
             <DetailsText>

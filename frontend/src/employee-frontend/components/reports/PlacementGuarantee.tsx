@@ -17,6 +17,7 @@ import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { SortableTh, Tbody, Td, Thead, Tr } from 'lib-components/layout/Table'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 
 import { useTranslation } from '../../state/i18n'
@@ -228,7 +229,13 @@ const PlacementGuaranteeTable = ({
                 <Td data-qa="area-name">{row.areaName}</Td>
                 <Td data-qa="unit-name">{row.unitName}</Td>
                 <Td data-qa="child-name">
-                  {row.childLastName}, {row.childFirstName}
+                  <PersonName
+                    person={{
+                      lastName: row.childLastName,
+                      firstName: row.childFirstName
+                    }}
+                    format="Last First"
+                  />
                 </Td>
                 <Td data-qa="placement-period">
                   {new FiniteDateRange(
