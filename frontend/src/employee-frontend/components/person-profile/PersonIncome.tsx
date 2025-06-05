@@ -15,6 +15,7 @@ import { useMutationResult, useQueryResult } from 'lib-common/query'
 import Pagination from 'lib-components/Pagination'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import { H3 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
@@ -69,7 +70,9 @@ export default React.memo(function PersonIncome({ id }: Props) {
           {children.map((child) => (
             <ChildIncomeStatementsContainer key={child.id}>
               <Gap size="m" />
-              <span data-qa="child-income-statement-title">{`${child.firstName} ${child.lastName}`}</span>
+              <span data-qa="child-income-statement-title">
+                <PersonName person={child} format="First Last" />
+              </span>
               <IncomeStatements personId={child.id} />
             </ChildIncomeStatementsContainer>
           ))}

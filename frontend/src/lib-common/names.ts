@@ -20,13 +20,14 @@ export interface NamedPerson {
   firstName: string
   lastName: string
   preferredName?: string
+  preferredFirstName?: string | null
 }
 
 export function formatPersonName(
   person: NamedPerson,
   format: PersonNameFormat
 ): string {
-  const { firstName, lastName, preferredName } = person
+  const { firstName, lastName, preferredName, preferredFirstName } = person
   switch (format) {
     case 'First Last':
       return `${firstName} ${lastName}`
@@ -45,8 +46,7 @@ export function formatPersonName(
       return `${lastName} ${firstFirstName}`
     }
     case 'Last Preferred': {
-      const firstFirstName = firstName.split(/\s/)[0]
-      return `${lastName} ${preferredName || firstFirstName}`
+      return `${lastName} ${preferredName || preferredFirstName || firstName.split(/\s/)[0]}`
     }
     case 'Last, First':
       return `${lastName}, ${firstName}`
@@ -57,12 +57,10 @@ export function formatPersonName(
     case 'Last':
       return lastName
     case 'Preferred Last': {
-      const firstFirstName = firstName.split(/\s/)[0]
-      return `${preferredName || firstFirstName} ${lastName}`
+      return `${preferredName || preferredFirstName || firstName.split(/\s/)[0]} ${lastName}`
     }
     case 'Preferred': {
-      const firstFirstName = firstName.split(/\s/)[0]
-      return preferredName || firstFirstName
+      return preferredName || preferredFirstName || firstName.split(/\s/)[0]
     }
   }
 }

@@ -14,6 +14,7 @@ import { cancelMutation, useQueryResult } from 'lib-common/query'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { Label } from 'lib-components/typography'
@@ -89,7 +90,7 @@ export default React.memo(function PersonVoucherValueDecisions({ id }: Props) {
                   data-qa="table-voucher-value-decision-row"
                 >
                   <Td>
-                    {decision.child.lastName} {decision.child.firstName}
+                    <PersonName person={decision.child} format="Last First" />
                     <br />
                     {decision.annullingDecision ? (
                       <span>

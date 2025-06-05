@@ -18,6 +18,7 @@ import type {
 import type { DaycareId, GroupId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
+import { formatPersonName } from 'lib-common/names'
 import { constantQuery, useQueryResult } from 'lib-common/query'
 import TimeRange from 'lib-common/time-range'
 import { useUniqueId } from 'lib-common/utils/useUniqueId'
@@ -276,7 +277,13 @@ export default React.memo(function AttendanceReservationByChild() {
                       item
                         ? {
                             ...(groupName !== null ? { groupName } : {}),
-                            childName: `${item.childLastName} ${item.childFirstName}`,
+                            childName: formatPersonName(
+                              {
+                                lastName: item.childLastName,
+                                firstName: item.childFirstName
+                              },
+                              'Last First'
+                            ),
                             date: item.date.format(),
                             fullDayAbsence: item.fullDayAbsence ? 'Poissa' : '',
                             reservationStartTime: item.fullDayAbsence

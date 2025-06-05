@@ -16,6 +16,7 @@ import type { SortDirection } from 'lib-common/generated/api-types/invoicing'
 import type { ChildDocumentId } from 'lib-common/generated/api-types/shared'
 import type HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { evakaUserId } from 'lib-common/id-type'
+import { formatPersonName } from 'lib-common/names'
 import { useQueryResult } from 'lib-common/query'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
@@ -141,7 +142,10 @@ export default React.memo(function ChildDocumentDecisionsReport() {
             row.decisionMaker.id === evakaUserId(user.id) &&
             row.status === 'DECISION_PROPOSAL',
           templateName: row.templateName,
-          childName: `${row.childLastName} ${row.childFirstName}`,
+          childName: formatPersonName(
+            { lastName: row.childLastName, firstName: row.childFirstName },
+            'Last First'
+          ),
           modifiedAt: row.modifiedAt,
           decisionMaker: row.decisionMaker?.name ?? '',
           decisionMade: row.decision?.createdAt ?? null,

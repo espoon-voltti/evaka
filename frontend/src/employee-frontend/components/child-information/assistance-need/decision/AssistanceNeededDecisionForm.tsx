@@ -13,6 +13,7 @@ import type {
 } from 'lib-common/generated/api-types/assistanceneed'
 import type { Employee } from 'lib-common/generated/api-types/pis'
 import LocalDate from 'lib-common/local-date'
+import { formatPersonName } from 'lib-common/names'
 import { useQueryResult } from 'lib-common/query'
 import { ParagraphDiv } from 'lib-components/assistance-need-decision/AssistanceNeedDecisionReadOnly'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
@@ -126,9 +127,7 @@ const EmployeeSelectWithTitle = React.memo(function EmployeeSelectWithTitle({
         <Combobox
           items={employees}
           getItemLabel={(employee: Employee) =>
-            `${employee.lastName ?? ''} ${
-              employee.preferredFirstName ?? employee.firstName ?? ''
-            } (${employee.email ?? ''})`
+            `${formatPersonName(employee, 'Last Preferred')} (${employee.email ?? ''})`
           }
           filterItems={(inputValue: string, items: readonly Employee[]) =>
             items.filter(

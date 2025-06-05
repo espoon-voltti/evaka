@@ -10,6 +10,7 @@ import { Loading, wrapResult } from 'lib-common/api'
 import type { PersonJSON } from 'lib-common/generated/api-types/pis'
 import InputField from 'lib-components/atoms/form/InputField'
 import Spinner from 'lib-components/atoms/state/Spinner'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import FormModal from 'lib-components/molecules/modals/FormModal'
 import { Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
@@ -91,9 +92,9 @@ export default React.memo(function VTJModal({
         <SsnResultContainer>
           {person?.isSuccess ? (
             <>
-              <div>{`${person.value.lastName ?? ''} ${
-                person.value.firstName ?? ''
-              }`}</div>
+              <div>
+                <PersonName person={person.value} format="Last First" />
+              </div>
               <div>
                 {person.value.restrictedDetailsEnabled
                   ? i18n.personSearch.addPersonFromVTJ.restrictedDetails

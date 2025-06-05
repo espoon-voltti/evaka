@@ -39,6 +39,7 @@ import type {
 } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
+import { formatPersonName } from 'lib-common/names'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import { useDebounce } from 'lib-common/utils/useDebounce'
@@ -218,9 +219,7 @@ const pageTranslations = {
 }
 
 const formatEmployeeName = (employee: Employee) =>
-  `${employee.lastName ?? ''} ${
-    employee.preferredFirstName ?? employee.firstName ?? ''
-  } (${employee.email ?? ''})`
+  `${formatPersonName(employee, 'Last Preferred')} (${employee.email ?? ''})`
 
 const filterEmployees = (inputValue: string, items: readonly Employee[]) =>
   items.filter(

@@ -32,6 +32,7 @@ import {
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import type { SelectOption } from 'lib-components/molecules/Select'
 import Select from 'lib-components/molecules/Select'
 import { H1, H2, Label, P } from 'lib-components/typography'
@@ -432,7 +433,7 @@ const DecisionContents = React.memo(function DecisionContents({
             {i18n.childInformation.assistanceNeedDecision.pageTitle}
           </H1>
           <H2 noMargin>
-            {child.firstName} {child.lastName}
+            <PersonName person={child} format="First Last" />
           </H2>
         </FixedSpaceColumn>
         <AssistanceNeedDecisionInfoHeader

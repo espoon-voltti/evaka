@@ -17,6 +17,7 @@ import type { PublicUnit } from 'lib-common/generated/api-types/daycare'
 import type { PlacementType } from 'lib-common/generated/api-types/placement'
 import type { ApplicationId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
+import { formatPersonName } from 'lib-common/names'
 import {
   constantQuery,
   pendingQuery,
@@ -78,7 +79,10 @@ const getMessageSubject = (
 ) =>
   i18n.application.messageSubject(
     applicationData.application.sentDate?.format() ?? '',
-    `${applicationData.application.form.child.person.firstName} ${applicationData.application.form.child.person.lastName}`
+    formatPersonName(
+      applicationData.application.form.child.person,
+      'First Last'
+    )
   )
 
 const ApplicationMetadataSection = React.memo(

@@ -12,6 +12,7 @@ import { ExpandableList } from 'lib-components/atoms/ExpandableList'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { ConfirmedMutation } from 'lib-components/molecules/ConfirmedMutation'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import { fontWeights } from 'lib-components/typography'
 import colors from 'lib-customizations/common'
 
@@ -72,7 +73,7 @@ export function EmployeeList({ employees }: Props) {
       <LinkTr key={id} onClick={() => navigate(`/employees/${id}`)}>
         <Td>
           <Name data-qa="employee-name">
-            {lastName} {firstName}
+            <PersonName person={{ firstName, lastName }} format="Last First" />
           </Name>
           <Email>{email}</Email>
           {!!externalId && <Details>{externalId}</Details>}

@@ -21,6 +21,7 @@ import type {
   CitizenDocumentResponseReportTemplate
 } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
+import { formatPersonName } from 'lib-common/names'
 import { constantQuery, useQueryResult } from 'lib-common/query'
 import Title from 'lib-components/atoms/Title'
 import { Button } from 'lib-components/atoms/buttons/Button'
@@ -30,6 +31,7 @@ import Checkbox from 'lib-components/atoms/form/Checkbox'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import { Strong } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
@@ -347,7 +349,7 @@ const CitizenDocumentResponseReportTable = React.memo(
             columns={[
               {
                 label: i18n.reports.citizenDocumentResponseReport.headers.name,
-                value: (row) => `${row.lastName} ${row.firstName}`
+                value: (row) => formatPersonName(row, 'Last First')
               },
               {
                 label:
@@ -384,7 +386,9 @@ const CitizenDocumentResponseReportTable = React.memo(
                 <React.Fragment key={row.childId}>
                   <Tr data-qa={`child-row-${row.childId}`}>
                     <Td data-qa="name">
-                      <Strong>{`${row.lastName} ${row.firstName}`}</Strong>
+                      <Strong>
+                        <PersonName person={row} format="Last First" />
+                      </Strong>
                     </Td>
                     <Td data-qa="answered-at">{getAnsweredAtString(row)}</Td>
                     {questions.map((qc) => {

@@ -19,6 +19,7 @@ import type {
 import type { Employee } from 'lib-common/generated/api-types/pis'
 import type { ChildDocumentId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
+import { formatPersonName } from 'lib-common/names'
 import {
   constantQuery,
   useChainedQuery,
@@ -90,9 +91,7 @@ import {
 } from './statuses'
 
 const formatEmployeeName = (employee: Employee) =>
-  `${employee.lastName ?? ''} ${
-    employee.preferredFirstName ?? employee.firstName ?? ''
-  } (${employee.email ?? ''})`
+  `${formatPersonName(employee, 'Last Preferred')} (${employee.email ?? ''})`
 
 const filterEmployees = (inputValue: string, items: readonly Employee[]) =>
   items.filter(

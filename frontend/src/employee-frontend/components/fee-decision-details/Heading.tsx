@@ -14,6 +14,7 @@ import type {
 } from 'lib-common/generated/api-types/invoicing'
 import type { FeeDecisionId } from 'lib-common/generated/api-types/shared'
 import type HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import { formatPersonName } from 'lib-common/names'
 import { PersonName } from 'lib-components/molecules/PersonNames'
 import { H1 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
@@ -178,7 +179,13 @@ export default React.memo(function Heading({
             {
               dataQa: 'decision-handler',
               label: i18n.feeDecision.decisionHandler,
-              value: `${financeDecisionHandlerFirstName} ${financeDecisionHandlerLastName}`
+              value: formatPersonName(
+                {
+                  firstName: financeDecisionHandlerFirstName,
+                  lastName: financeDecisionHandlerLastName
+                },
+                'First Last'
+              )
             }
           ]
         : []

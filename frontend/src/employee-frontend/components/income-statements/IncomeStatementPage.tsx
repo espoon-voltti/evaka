@@ -45,6 +45,7 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
 import FileUpload, { fileIcon } from 'lib-components/molecules/FileUpload'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import { H1, H2, H3, Label, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 
@@ -93,7 +94,7 @@ export default React.memo(function IncomeStatementPage() {
             <ContentArea opaque>
               <H1>{i18n.titles.incomeStatement}</H1>
               <H2>
-                {person.firstName} {person.lastName}
+                <PersonName person={person} format="First Last" />
               </H2>
               <Row
                 label={i18n.incomeStatement.startDate}

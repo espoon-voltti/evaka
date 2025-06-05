@@ -35,6 +35,7 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { H1, H2 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
@@ -77,8 +78,8 @@ export const DocumentBasics = React.memo(function DocumentBasics({
       <FixedSpaceColumn>
         <H1 noMargin>{document.template.name}</H1>
         <H2 noMargin>
-          {document.child.firstName} {document.child.lastName} (
-          {document.child.dateOfBirth?.format()})
+          <PersonName person={document.child} format="First Last" />{' '}
+          {document.child.dateOfBirth?.format()}
         </H2>
       </FixedSpaceColumn>
       <FixedSpaceColumn

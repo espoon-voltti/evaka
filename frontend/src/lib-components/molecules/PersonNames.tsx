@@ -34,10 +34,12 @@ function formatFirstFirstName(
 
 function formatNickName(
   preferredName: string | undefined,
+  preferredFirstName: string | null | undefined,
   firstName: string | undefined,
   i18n: Translations
 ): string {
   if (preferredName) return preferredName
+  if (preferredFirstName) return preferredFirstName
   if (!firstName) return i18n.common.noFirstName
 
   const firstNames = firstName.split(/\s/)
@@ -49,7 +51,8 @@ export function usePersonName(
   format: PersonNameFormat
 ): string {
   const i18n = useTranslations()
-  const { firstName, lastName, preferredName } = person ?? {}
+  const { firstName, lastName, preferredName, preferredFirstName } =
+    person ?? {}
 
   switch (format) {
     case 'First Last':
@@ -65,7 +68,7 @@ export function usePersonName(
     case 'Last FirstFirst':
       return `${formatLastName(lastName, i18n)} ${formatFirstFirstName(firstName, i18n)}`
     case 'Last Preferred':
-      return `${formatLastName(lastName, i18n)} ${formatNickName(preferredName, firstName, i18n)}`
+      return `${formatLastName(lastName, i18n)} ${formatNickName(preferredName, preferredFirstName, firstName, i18n)}`
     case 'Last, First':
       return `${formatLastName(lastName, i18n)}, ${formatFirstName(firstName, i18n)}`
     case 'Last, FirstFirst':
@@ -73,9 +76,9 @@ export function usePersonName(
     case 'Last':
       return formatLastName(lastName, i18n)
     case 'Preferred Last':
-      return `${formatNickName(preferredName, firstName, i18n)} ${formatLastName(lastName, i18n)}`
+      return `${formatNickName(preferredName, preferredFirstName, firstName, i18n)} ${formatLastName(lastName, i18n)}`
     case 'Preferred':
-      return formatNickName(preferredName, firstName, i18n)
+      return formatNickName(preferredName, preferredFirstName, firstName, i18n)
   }
 }
 

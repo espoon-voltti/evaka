@@ -9,6 +9,7 @@ import { Link } from 'wouter'
 import type { ParentshipWithPermittedActions } from 'lib-common/generated/api-types/pis'
 import { constantQuery, useQueryResult } from 'lib-common/query'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import { H3 } from 'lib-components/typography'
 
 import { useTranslation } from '../../state/i18n'
@@ -51,8 +52,10 @@ const FridgeParents = React.memo(function FridgeParents() {
                   <Tr key={parentship.id}>
                     <NameTd>
                       <Link to={`/profile/${parentship.headOfChildId}`}>
-                        {parentship.headOfChild.lastName}{' '}
-                        {parentship.headOfChild.firstName}
+                        <PersonName
+                          person={parentship.headOfChild}
+                          format="Last First"
+                        />
                       </Link>
                     </NameTd>
                     <Td>{parentship.headOfChild.socialSecurityNumber}</Td>
