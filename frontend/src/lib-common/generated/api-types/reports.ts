@@ -363,10 +363,10 @@ export interface DecisionsReportRow {
 export interface DuplicatePeopleReportRow {
   dateOfBirth: LocalDate
   duplicateNumber: number
-  firstName: string | null
+  firstName: string
   groupIndex: number
   id: PersonId
-  lastName: string | null
+  lastName: string
   referenceCounts: ReferenceCount[]
   socialSecurityNumber: string | null
   streetAddress: string | null
