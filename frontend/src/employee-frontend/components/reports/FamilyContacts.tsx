@@ -10,12 +10,14 @@ import { object, required } from 'lib-common/form/form'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
 import type { DaycareId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
+import { formatPersonName } from 'lib-common/names'
 import { constantQuery, useQueryResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Th, Tr, Td, Thead, Tbody } from 'lib-components/layout/Table'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import { DatePickerF } from 'lib-components/molecules/date-picker/DatePicker'
 
 import { useTranslation } from '../../state/i18n'
@@ -68,24 +70,24 @@ export default React.memo(function FamilyContacts() {
           <>
             <ReportDownload
               data={rows.map((row) => ({
-                name: `${row.lastName} ${row.firstName}`,
+                name: formatPersonName(row, 'Last First'),
                 ssn: row.ssn,
                 groupName: row.groupName,
                 address: `${row.streetAddress}, ${row.postalCode} ${row.postOffice}`,
                 headOfChildName: row.headOfChild
-                  ? `${row.headOfChild.lastName} ${row.headOfChild.firstName}`
+                  ? formatPersonName(row.headOfChild, 'Last First')
                   : '',
                 headOfChildPhone: row.headOfChild?.phone ?? '',
                 headOfChildEmail: row.headOfChild?.email ?? '',
 
                 guardian1Name: row.guardian1
-                  ? `${row.guardian1.lastName} ${row.guardian1.firstName}`
+                  ? formatPersonName(row.guardian1, 'Last First')
                   : '',
                 guardian1Phone: row.guardian1?.phone ?? '',
                 guardian1Email: row.guardian1?.email ?? '',
 
                 guardian2Name: row.guardian2
-                  ? `${row.guardian2.lastName} ${row.guardian2.firstName}`
+                  ? formatPersonName(row.guardian2, 'Last First')
                   : '',
                 guardian2Phone: row.guardian2?.phone ?? '',
                 guardian2Email: row.guardian2?.email ?? ''
@@ -162,9 +164,9 @@ export default React.memo(function FamilyContacts() {
                 {rows.map((row) => (
                   <Tr key={row.id}>
                     <Td>
-                      <Link
-                        to={`/child-information/${row.id}`}
-                      >{`${row.lastName} ${row.firstName}`}</Link>
+                      <Link to={`/child-information/${row.id}`}>
+                        <PersonName person={row} format="Last First" />
+                      </Link>
                     </Td>
                     <Td>{row.ssn}</Td>
                     <Td>{row.groupName}</Td>
@@ -174,7 +176,12 @@ export default React.memo(function FamilyContacts() {
                     <Td>
                       {row.headOfChild && (
                         <>
-                          <div>{`${row.headOfChild.lastName} ${row.headOfChild.firstName}`}</div>
+                          <div>
+                            <PersonName
+                              person={row.headOfChild}
+                              format="Last First"
+                            />
+                          </div>
                           <div>{row.headOfChild.phone}</div>
                           <div>{row.headOfChild.email}</div>
                         </>
@@ -183,7 +190,12 @@ export default React.memo(function FamilyContacts() {
                     <Td>
                       {row.guardian1 && (
                         <>
-                          <div>{`${row.guardian1.lastName} ${row.guardian1.firstName}`}</div>
+                          <div>
+                            <PersonName
+                              person={row.guardian1}
+                              format="Last First"
+                            />
+                          </div>
                           <div>{row.guardian1.phone}</div>
                           <div>{row.guardian1.email}</div>
                         </>
@@ -192,7 +204,12 @@ export default React.memo(function FamilyContacts() {
                     <Td>
                       {row.guardian2 && (
                         <>
-                          <div>{`${row.guardian2.lastName} ${row.guardian2.firstName}`}</div>
+                          <div>
+                            <PersonName
+                              person={row.guardian2}
+                              format="Last First"
+                            />
+                          </div>
                           <div>{row.guardian2.phone}</div>
                           <div>{row.guardian2.email}</div>
                         </>
