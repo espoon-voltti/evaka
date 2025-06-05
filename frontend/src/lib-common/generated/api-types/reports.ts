@@ -699,10 +699,10 @@ export interface PartnersInDifferentAddressReportRow {
   address1: string
   address2: string
   careAreaName: string
-  firstName1: string | null
-  firstName2: string | null
-  lastName1: string | null
-  lastName2: string | null
+  firstName1: string
+  firstName2: string
+  lastName1: string
+  lastName2: string
   personId1: PersonId
   personId2: PersonId
   unitId: DaycareId

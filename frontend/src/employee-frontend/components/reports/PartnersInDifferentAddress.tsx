@@ -13,6 +13,7 @@ import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 
 import { useTranslation } from '../../state/i18n'
 import { distinct } from '../../utils'
@@ -137,13 +138,25 @@ export default React.memo(function PartnersInDifferentAddress() {
                       </Td>
                       <Td>
                         <Link to={`/profile/${row.personId1}`}>
-                          {row.lastName1} {row.firstName1}
+                          <PersonName
+                            person={{
+                              lastName: row.lastName1,
+                              firstName: row.firstName1
+                            }}
+                            format="Last First"
+                          />
                         </Link>
                       </Td>
                       <Td>{row.address1}</Td>
                       <Td>
                         <Link to={`/profile/${row.personId2}`}>
-                          {row.lastName2} {row.firstName2}
+                          <PersonName
+                            person={{
+                              lastName: row.lastName2,
+                              firstName: row.firstName2
+                            }}
+                            format="Last First"
+                          />
                         </Link>
                       </Td>
                       <Td>{row.address2}</Td>
