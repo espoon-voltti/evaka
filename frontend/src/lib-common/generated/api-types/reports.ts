@@ -416,9 +416,9 @@ export interface ExceededServiceNeedReportUnit {
 export interface FamilyConflictReportRow {
   careAreaName: string
   childConflictCount: number
-  firstName: string | null
+  firstName: string
   id: PersonId
-  lastName: string | null
+  lastName: string
   partnerConflictCount: number
   socialSecurityNumber: string | null
   unitId: DaycareId
