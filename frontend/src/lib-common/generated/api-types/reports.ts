@@ -379,8 +379,8 @@ export interface EndedPlacementsReportRow {
   areaName: string
   childId: PersonId
   dateOfBirth: LocalDate | null
-  firstName: string | null
-  lastName: string | null
+  firstName: string
+  lastName: string
   nextPlacementStart: LocalDate | null
   nextPlacementUnitName: string | null
   placementEnd: LocalDate
