@@ -941,6 +941,8 @@ export const fi = {
             'Haluatko varmasti palauttaa päätöksen päätösesitykseksi?', // not applicable,
           COMPLETED: 'Haluatko varmasti palauttaa asiakirjan valmiiksi?' // not applicable,
         },
+        goBackToDraftConfirmText:
+          'Luonnosvaiheessa voit muokata lomakkeen tietoja.',
         deleteDraft: 'Poista luonnos',
         deleteDraftConfirmTitle: 'Haluatko varmasti poistaa luonnoksen?',
         fullyPublished: 'Asiakirjan viimeisin versio on julkaistu',

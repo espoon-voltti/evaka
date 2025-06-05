@@ -334,6 +334,12 @@ const ChildDocumentReadViewInner = React.memo(
                           i18n.childInformation.childDocuments.editor
                             .goToPrevStatusConfirmTitle[prevStatus]
                         }
+                        confirmationText={
+                          prevStatus === 'DRAFT'
+                            ? i18n.childInformation.childDocuments.editor
+                                .goBackToDraftConfirmText
+                            : undefined
+                        }
                       />
                     )}
                 </FixedSpaceRow>
