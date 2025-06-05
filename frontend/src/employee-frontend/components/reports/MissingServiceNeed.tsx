@@ -14,6 +14,7 @@ import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { Gap } from 'lib-components/white-space'
 
@@ -175,7 +176,7 @@ export default React.memo(function MissingServiceNeed() {
                       </Td>
                       <Td>
                         <Link to={`/child-information/${row.childId}`}>
-                          {row.lastName} {row.firstName}
+                          <PersonName person={row} format="Last First" />
                         </Link>
                       </Td>
                       <Td>{row.daysWithoutServiceNeed}</Td>

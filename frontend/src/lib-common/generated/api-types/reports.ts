@@ -636,8 +636,8 @@ export interface MissingServiceNeedReportRow {
   careAreaName: string
   childId: PersonId
   daysWithoutServiceNeed: number
-  firstName: string | null
-  lastName: string | null
+  firstName: string
+  lastName: string
   unitId: DaycareId
   unitName: string
 }

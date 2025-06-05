@@ -118,7 +118,7 @@ data class MissingServiceNeedReportRow(
     val unitId: DaycareId,
     val unitName: String,
     val childId: ChildId,
-    val firstName: String?,
-    val lastName: String?,
+    val firstName: String,
+    val lastName: String,
     val daysWithoutServiceNeed: Int,
 )
