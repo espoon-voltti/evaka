@@ -7,9 +7,10 @@ ARG CACHE_BUST
 
 WORKDIR /project
 
-ENV LC_ALL C.UTF-8
-ENV LANG C.UTF-8
-ENV LANGUAGE C.UTF-8
+ENV LC_ALL=C.UTF-8
+ENV LANG=C.UTF-8
+ENV LANGUAGE=C.UTF-8
+
 RUN apt-get update \
  && apt-get -y dist-upgrade \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
@@ -46,7 +47,7 @@ RUN yarn test-ci
 
 FROM base
 
-ENV NODE_ENV production
+ENV NODE_ENV=production
 
 RUN adduser evaka --gecos "" -q --home /home/evaka --disabled-password
 
@@ -60,8 +61,8 @@ USER evaka
 ARG build=none
 ARG commit=none
 
-ENV APP_BUILD "$build"
-ENV APP_COMMIT "$commit"
+ENV APP_BUILD="$build"
+ENV APP_COMMIT="$commit"
 
 LABEL fi.espoo.build="$build" \
       fi.espoo.commit="$commit"

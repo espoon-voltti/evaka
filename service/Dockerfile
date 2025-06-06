@@ -5,9 +5,9 @@
 FROM azul/zulu-openjdk:21-latest AS builder
 ARG CACHE_BUST
 
-ENV LC_ALL C.UTF-8
-ENV LANG C.UTF-8
-ENV LANGUAGE C.UTF-8
+ENV LC_ALL=C.UTF-8
+ENV LANG=C.UTF-8
+ENV LANGUAGE=C.UTF-8
 RUN apt-get update \
  && apt-get -y dist-upgrade \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
@@ -47,9 +47,9 @@ ARG CACHE_BUST
 
 LABEL maintainer="https://github.com/espoon-voltti/evaka"
 
-ENV LC_ALL C.UTF-8
-ENV LANG C.UTF-8
-ENV LANGUAGE C.UTF-8
+ENV LC_ALL=C.UTF-8
+ENV LANG=C.UTF-8
+ENV LANGUAGE=C.UTF-8
 RUN apt-get update \
  && apt-get -y dist-upgrade \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
@@ -72,9 +72,9 @@ COPY ./service/dd-jmxfetch/ /etc/jmxfetch/
 COPY ./service/entrypoint.sh entrypoint.sh
 ENTRYPOINT ["./entrypoint.sh"]
 
-ENV USERNAME evaka
-ENV HOME_DIR /home/${USERNAME}
-ENV USER_ID 1000
+ENV USERNAME=evaka
+ENV HOME_DIR=/home/${USERNAME}
+ENV USER_ID=1000
 
 RUN adduser ${USERNAME} --gecos "" -q --home ${HOME_DIR} --uid ${USER_ID} --disabled-password
 
@@ -84,7 +84,7 @@ USER ${USERNAME}
 
 ARG build=none
 ARG commit=none
-ENV APP_BUILD "$build"
-ENV APP_COMMIT "$commit"
+ENV APP_BUILD="$build"
+ENV APP_COMMIT="$commit"
 LABEL fi.espoo.build="$build" \
       fi.espoo.commit="$commit"
