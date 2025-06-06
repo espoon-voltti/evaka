@@ -2414,6 +2414,7 @@ sealed interface Action {
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
                 .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
                 .inPlacementUnitOfChildOfChildDocument(canGoToPrevStatus = true),
+            HasGroupRole(STAFF).inPlacementGroupOfChildOfChildDocument(canGoToPrevStatus = true),
             IsEmployee.andIsDecisionMakerForChildDocumentDecision(),
         ),
         DELETE(

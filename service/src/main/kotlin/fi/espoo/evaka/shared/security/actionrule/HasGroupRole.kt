@@ -172,6 +172,7 @@ ${if (maxLengthInDays != null) "AND absence_application.end_date - absence_appli
         editable: Boolean = false,
         deletable: Boolean = false,
         publishable: Boolean = false,
+        canGoToPrevStatus: Boolean = false,
     ) =
         rule<ChildDocumentId> { user, now ->
             sql(
@@ -184,6 +185,7 @@ WHERE employee_id = ${bind(user.id)}
 ${if (editable) "AND status = ANY(${bind(DocumentStatus.entries.filter { it.employeeEditable })}::child_document_status[])" else ""}
 ${if (deletable) "AND status = 'DRAFT' AND published_at IS NULL" else ""}
 ${if (publishable) "AND status <> 'COMPLETED'" else ""}
+${if (canGoToPrevStatus) "AND child_document.type = 'CITIZEN_BASIC' AND child_document.content -> 'answers' = '[]'::jsonb AND child_document.status <> 'COMPLETED'" else ""}
             """
                     .trimIndent()
             )

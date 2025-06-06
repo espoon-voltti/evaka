@@ -744,7 +744,7 @@ WHERE TRUE
 ${if (editable) "AND status = ANY(${bind(DocumentStatus.entries.filter { it.employeeEditable })}::child_document_status[])" else ""}
 ${if (deletable) "AND status = 'DRAFT' AND published_at IS NULL" else ""}
 ${if (publishable) "AND status <> 'COMPLETED'" else ""}
-${if (canGoToPrevStatus) "AND type = 'OTHER_DECISION' AND status <> 'COMPLETED'" else ""}
+${if (canGoToPrevStatus) "AND ((type = 'OTHER_DECISION') OR (type = 'CITIZEN_BASIC' AND child_document.content -> 'answers' = '[]'::jsonb)) AND status <> 'COMPLETED'" else ""}
             """
             )
         }

@@ -26,6 +26,7 @@ export class ChildDocumentPage {
   archiveTooltip: Element
   acceptDecisionButton: Element
   sendingConfirmationModal: Modal
+
   constructor(private readonly page: Page) {
     this.status = page.findByDataQa('document-state-chip')
     this.savingIndicator = page.findByDataQa('saving-spinner')
@@ -76,6 +77,11 @@ export class ChildDocumentPage {
 
   async goToNextStatus() {
     await this.page.findByDataQa('next-status-button').click()
+    await this.page.findByDataQa('modal-okBtn').click()
+  }
+
+  async goToPrevStatus() {
+    await this.page.findByDataQa('prev-status-button').click()
     await this.page.findByDataQa('modal-okBtn').click()
   }
 
