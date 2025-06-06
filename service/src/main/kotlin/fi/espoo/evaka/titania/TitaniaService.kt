@@ -219,17 +219,19 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter) {
                                         .mapNotNull { attendance ->
                                             val (arrived, arrivedPlan) =
                                                 calculateFromPlans(
-                                                    employeePlans,
-                                                    attendance.arrived,
-                                                )
+                                                        employeePlans,
+                                                        attendance.arrived,
+                                                    )
+                                                    .minBy { it.first }
                                             if (!period.includes(arrived.toLocalDate())) {
                                                 return@mapNotNull null
                                             }
                                             val (departed, departedPlan) =
                                                 calculateFromPlan(
-                                                    employeePlans,
-                                                    attendance.departed,
-                                                ) ?: Pair(null, null)
+                                                        employeePlans,
+                                                        attendance.departed,
+                                                    )
+                                                    ?.maxBy { it.first } ?: Pair(null, null)
                                             TitaniaStampedWorkingTimeEvent(
                                                 date = attendance.arrived.toLocalDate(),
                                                 beginTime =
@@ -327,26 +329,33 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter) {
     private fun calculateFromPlan(
         plans: List<StaffAttendancePlan>?,
         event: HelsinkiDateTime?,
-    ): Pair<HelsinkiDateTime?, StaffAttendancePlan?>? = event?.let { calculateFromPlans(plans, it) }
+    ): List<Pair<HelsinkiDateTime, StaffAttendancePlan?>>? =
+        event?.let { calculateFromPlans(plans, it) }
 
     private fun calculateFromPlans(
         plans: List<StaffAttendancePlan>?,
         event: HelsinkiDateTime,
-    ): Pair<HelsinkiDateTime, StaffAttendancePlan?> {
-        return plans?.firstNotNullOfOrNull { plan ->
-            when {
-                event.durationSince(plan.startTime).abs() <= MAX_DRIFT -> Pair(plan.startTime, plan)
-                event.durationSince(plan.endTime).abs() <= MAX_DRIFT -> Pair(plan.endTime, plan)
-                else -> null
+    ): List<Pair<HelsinkiDateTime, StaffAttendancePlan?>> {
+        return (plans ?: emptyList())
+            .flatMap { plan ->
+                listOfNotNull(
+                    plan
+                        .takeIf { event.durationSince(it.startTime).abs() <= MAX_DRIFT }
+                        ?.let { it.startTime to it },
+                    plan
+                        .takeIf { event.durationSince(it.endTime).abs() <= MAX_DRIFT }
+                        ?.let { it.endTime to it },
+                )
             }
-        }
-            ?: Pair(
-                event,
-                plans?.find { plan ->
-                    HelsinkiDateTimeRange(plan.startTime, plan.endTime)
-                        .contains(HelsinkiDateTimeRange(event, event))
-                },
-            )
+            .ifEmpty {
+                listOf(
+                    event to
+                        plans?.find { plan ->
+                            HelsinkiDateTimeRange(plan.startTime, plan.endTime)
+                                .contains(HelsinkiDateTimeRange(event, event))
+                        }
+                )
+            }
     }
 
     private fun isNotFirstInPlan(
