@@ -106,6 +106,7 @@ export type Global =
 
 export type AbsenceApplication =
   | 'DECIDE'
+  | 'DECIDE_MAX_WEEK'
   | 'READ'
 
 export type Application =

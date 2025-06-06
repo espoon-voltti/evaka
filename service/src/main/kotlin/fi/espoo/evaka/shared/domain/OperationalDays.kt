@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.shared.domain
 
+import fi.espoo.evaka.daycare.PreschoolTerm
 import fi.espoo.evaka.daycare.getPreschoolTerms
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.getPlacementsForChildDuring
@@ -147,8 +148,15 @@ fun Database.Read.getOperationalDatesForChild(
 fun Database.Read.getPreschoolOperationalDatesForChildren(
     range: FiniteDateRange,
     children: Set<ChildId>,
+): Map<ChildId, Set<LocalDate>> =
+    getPreschoolOperationalDatesForChildren(range, children, getPreschoolTerms())
+
+fun Database.Read.getPreschoolOperationalDatesForChildren(
+    range: FiniteDateRange,
+    children: Set<ChildId>,
+    allTerms: List<PreschoolTerm>,
 ): Map<ChildId, Set<LocalDate>> {
-    val terms = getPreschoolTerms().filter { it.extendedTerm.overlaps(range) }
+    val terms = allTerms.filter { it.extendedTerm.overlaps(range) }
     val operationalDates = DateSet.of(terms.map { it.extendedTerm }).intersection(listOf(range))
     if (operationalDates.isEmpty()) return children.associateWith { emptySet() }
 
@@ -175,3 +183,10 @@ fun Database.Read.getPreschoolOperationalDatesForChildren(
             .toSet()
     }
 }
+
+fun Database.Read.getPreschoolOperationalDatesForChild(
+    range: FiniteDateRange,
+    childId: ChildId,
+    terms: List<PreschoolTerm>,
+): Set<LocalDate> =
+    getPreschoolOperationalDatesForChildren(range, setOf(childId), terms)[childId] ?: emptySet()
