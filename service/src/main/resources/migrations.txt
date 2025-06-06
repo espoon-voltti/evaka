@@ -535,3 +535,4 @@ V536__rename_nekku_breakfast_column.sql
 V537__child_document_archive_deletion_constraint.sql
 V538__archived_process_migrated.sql
 V539__add_info_column_to_nekku_order.sql
+V540__new_preschool_assistance_levels.sql
