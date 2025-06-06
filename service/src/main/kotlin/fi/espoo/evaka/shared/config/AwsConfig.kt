@@ -5,6 +5,7 @@
 package fi.espoo.evaka.shared.config
 
 import fi.espoo.evaka.BucketEnv
+import fi.espoo.evaka.EmailEnv
 import fi.espoo.evaka.EvakaEnv
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -94,8 +95,15 @@ class AwsConfig {
 
     @Lazy
     @Bean
-    fun amazonSES(env: EvakaEnv, awsCredentialsProvider: AwsCredentialsProvider?): SesClient =
-        SesClient.builder().credentialsProvider(awsCredentialsProvider).build()
+    fun amazonSES(
+        env: EvakaEnv,
+        emailEnv: EmailEnv,
+        awsCredentialsProvider: AwsCredentialsProvider?,
+    ): SesClient =
+        SesClient.builder()
+            .credentialsProvider(awsCredentialsProvider)
+            .run { if (emailEnv.awsRegion != null) region(Region.of(emailEnv.awsRegion)) else this }
+            .build()
 
     @Lazy
     @Bean

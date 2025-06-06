@@ -155,6 +155,7 @@ data class DatabaseEnv(
 data class EmailEnv(
     val enabled: Boolean,
     val whitelist: List<Regex>?,
+    val awsRegion: String?,
     val senderAddress: String,
     val senderAddressArn: String?,
     val senderNameFi: String,
@@ -199,6 +200,7 @@ data class EmailEnv(
             EmailEnv(
                 enabled = env.lookup("evaka.email.enabled") ?: false,
                 whitelist = env.lookup<List<String>?>("evaka.email.whitelist")?.map(::Regex),
+                awsRegion = env.lookup("evaka.email.region"),
                 senderAddress = env.lookup("evaka.email.sender_address"),
                 senderAddressArn = env.lookup("evaka.email.sender_address_arn"),
                 senderNameFi = env.lookup("evaka.email.sender_name.fi"),
