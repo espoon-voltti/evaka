@@ -479,7 +479,7 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
         )
         assertEquals(
             "Test email sender fi <testemail_fi@test.com>",
-            getEmailFor(testAdult_2).fromAddress,
+            getEmailFor(testAdult_2).fromAddress.address,
         )
     }
 

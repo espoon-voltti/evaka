@@ -1006,7 +1006,7 @@ export interface DevUpsertStaffOccupancyCoefficient {
 */
 export interface Email {
   content: EmailContent
-  fromAddress: string
+  fromAddress: FromAddress
   toAddress: string
   traceId: string
 }
@@ -1036,6 +1036,14 @@ export interface FeatureProperties {
   locality: string | null
   name: string
   postalcode: string | null
+}
+
+/**
+* Generated from fi.espoo.evaka.emailclient.FromAddress
+*/
+export interface FromAddress {
+  address: string
+  arn: string | null
 }
 
 /**

@@ -904,7 +904,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
         )
         assertEquals(
             "Test email sender fi <testemail_fi@test.com>",
-            getEmailFor(testAdult_4).fromAddress,
+            getEmailFor(testAdult_4).fromAddress.address,
         )
     }
 

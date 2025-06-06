@@ -142,11 +142,11 @@ class MessageNotificationEmailServiceIntegrationTest :
         )
         assertEquals(
             "Esbo småbarnspedagogik <no-reply.evaka@espoo.fi>",
-            getEmailFor(testPersonSv).fromAddress,
+            getEmailFor(testPersonSv).fromAddress.address,
         )
         assertEquals(
             "Espoon Varhaiskasvatus <no-reply.evaka@espoo.fi>",
-            getEmailFor(testPersonEn).fromAddress,
+            getEmailFor(testPersonEn).fromAddress.address,
         )
     }
 
@@ -187,11 +187,11 @@ class MessageNotificationEmailServiceIntegrationTest :
 
         assertEquals(
             "Esbo småbarnspedagogik <no-reply.evaka@espoo.fi>",
-            getEmailFor(testPersonSv).fromAddress,
+            getEmailFor(testPersonSv).fromAddress.address,
         )
         assertEquals(
             "Espoon Varhaiskasvatus <no-reply.evaka@espoo.fi>",
-            getEmailFor(testPersonEn).fromAddress,
+            getEmailFor(testPersonEn).fromAddress.address,
         )
     }
 

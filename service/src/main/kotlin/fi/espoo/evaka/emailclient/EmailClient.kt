@@ -15,10 +15,12 @@ private val EMAIL_PATTERN = "^([\\w.%+-]+)@([\\w-]+\\.)+([\\w]{2,})\$".toRegex()
 
 private val logger = KotlinLogging.logger {}
 
+data class FromAddress(val address: String, val arn: String?)
+
 class Email
 private constructor(
     val toAddress: String,
-    val fromAddress: String,
+    val fromAddress: FromAddress,
     val content: EmailContent,
     val traceId: String,
 ) {
@@ -27,7 +29,7 @@ private constructor(
             dbc: Database.Connection,
             personId: PersonId,
             emailType: EmailMessageType,
-            fromAddress: String,
+            fromAddress: FromAddress,
             content: EmailContent,
             traceId: String,
         ): Email? {
@@ -60,7 +62,7 @@ private constructor(
 
         fun createForAddress(
             toAddress: String,
-            fromAddress: String,
+            fromAddress: FromAddress,
             content: EmailContent,
             traceId: String,
         ): Email? {
@@ -79,7 +81,7 @@ private constructor(
             employeeId: EmployeeId,
             content: EmailContent,
             traceId: String,
-            fromAddress: String,
+            fromAddress: FromAddress,
         ): Email? {
             val employee = dbc.read { it.getEmployee(employeeId) } ?: return null
 

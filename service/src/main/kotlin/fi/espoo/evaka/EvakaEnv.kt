@@ -6,6 +6,7 @@ package fi.espoo.evaka
 
 import com.fasterxml.jackson.annotation.JsonValue
 import fi.espoo.evaka.daycare.domain.Language
+import fi.espoo.evaka.emailclient.FromAddress
 import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.domain.Rectangle
 import fi.espoo.evaka.shared.job.JobSchedule
@@ -155,24 +156,35 @@ data class EmailEnv(
     val enabled: Boolean,
     val whitelist: List<Regex>?,
     val senderAddress: String,
+    val senderAddressArn: String?,
     val senderNameFi: String,
     val senderNameSv: String,
     val subjectPostfix: String?,
     val applicationReceivedSenderAddressFi: String,
     val applicationReceivedSenderAddressSv: String,
+    val applicationReceivedSenderAddressArnFi: String?,
+    val applicationReceivedSenderAddressArnSv: String?,
     val applicationReceivedSenderNameFi: String,
     val applicationReceivedSenderNameSv: String,
 ) {
-    fun sender(language: Language): String =
+    fun sender(language: Language): FromAddress =
         when (language) {
-            Language.sv -> "$senderNameSv <$senderAddress>"
-            else -> "$senderNameFi <$senderAddress>"
+            Language.sv -> FromAddress("$senderNameSv <$senderAddress>", senderAddressArn)
+            else -> FromAddress("$senderNameFi <$senderAddress>", senderAddressArn)
         }
 
-    fun applicationReceivedSender(language: Language): String =
+    fun applicationReceivedSender(language: Language): FromAddress =
         when (language) {
-            Language.sv -> "$applicationReceivedSenderNameSv <$applicationReceivedSenderAddressSv>"
-            else -> "$applicationReceivedSenderNameFi <$applicationReceivedSenderAddressFi>"
+            Language.sv ->
+                FromAddress(
+                    "$applicationReceivedSenderNameSv <$applicationReceivedSenderAddressSv>",
+                    applicationReceivedSenderAddressArnSv,
+                )
+            else ->
+                FromAddress(
+                    "$applicationReceivedSenderNameFi <$applicationReceivedSenderAddressFi>",
+                    applicationReceivedSenderAddressArnFi,
+                )
         }
 
     companion object {
@@ -188,6 +200,7 @@ data class EmailEnv(
                 enabled = env.lookup("evaka.email.enabled") ?: false,
                 whitelist = env.lookup<List<String>?>("evaka.email.whitelist")?.map(::Regex),
                 senderAddress = env.lookup("evaka.email.sender_address"),
+                senderAddressArn = env.lookup("evaka.email.sender_address_arn"),
                 senderNameFi = env.lookup("evaka.email.sender_name.fi"),
                 senderNameSv = env.lookup("evaka.email.sender_name.sv"),
                 subjectPostfix = env.lookup("evaka.email.subject_postfix") ?: getLegacyPostfix(),
@@ -195,6 +208,10 @@ data class EmailEnv(
                     env.lookup("evaka.email.application_received.sender_address.fi") ?: "",
                 applicationReceivedSenderAddressSv =
                     env.lookup("evaka.email.application_received.sender_address.sv") ?: "",
+                applicationReceivedSenderAddressArnFi =
+                    env.lookup("evaka.email.application_received.sender_address_arn.fi"),
+                applicationReceivedSenderAddressArnSv =
+                    env.lookup("evaka.email.application_received.sender_address_arn.sv"),
                 applicationReceivedSenderNameFi =
                     env.lookup("evaka.email.application_received.sender_name.fi") ?: "",
                 applicationReceivedSenderNameSv =

@@ -65,6 +65,7 @@ class EmailTest : PureJdbiTest(resetDbBeforeEach = true) {
         emailType: EmailMessageType = EmailMessageType.TRANSACTIONAL,
         toAddress: String = "test@example.com",
     ): Email? {
+        val fromAddress = FromAddress("Foo <foo@example.com>", null)
         db.transaction { tx ->
             tx.createUpdate {
                     sql(
@@ -73,7 +74,7 @@ class EmailTest : PureJdbiTest(resetDbBeforeEach = true) {
                 }
                 .execute()
         }
-        return Email.create(db, testAdult_1.id, emailType, toAddress, testContent, "traceid")
+        return Email.create(db, testAdult_1.id, emailType, fromAddress, testContent, "traceid")
     }
 }
 
