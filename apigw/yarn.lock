@@ -1156,48 +1156,48 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@redis/bloom@npm:5.1.1":
-  version: 5.1.1
-  resolution: "@redis/bloom@npm:5.1.1"
+"@redis/bloom@npm:5.5.5":
+  version: 5.5.5
+  resolution: "@redis/bloom@npm:5.5.5"
   peerDependencies:
-    "@redis/client": ^5.1.1
-  checksum: 10/4e04bdd613cd13fe10c644d345aa8bb06a1b9941102f5d8484498fdf76037de87d45395b97ff70b02c7d08f92efee5e4bc6cf8b15ec867665edf1a5563cbb1d8
+    "@redis/client": ^5.5.5
+  checksum: 10/de70733edef3cde55c426a7044d7392e5ccadf1a6dbd41488e2e93421d54acea270928554dc1f7d9e57b6009294a416fd971db8be28d3998b0a6709ce720a487
   languageName: node
   linkType: hard
 
-"@redis/client@npm:5.1.1":
-  version: 5.1.1
-  resolution: "@redis/client@npm:5.1.1"
+"@redis/client@npm:5.5.5":
+  version: 5.5.5
+  resolution: "@redis/client@npm:5.5.5"
   dependencies:
     cluster-key-slot: "npm:1.1.2"
-  checksum: 10/c518ceecd4f94fb7226e59a9a6dd37a61cddb2cb3fd760e4d09eccdc52642a31e763e28d26ac1f2c35bf5cd498d44c065e94401372d9b96c1f68ad667b411c37
+  checksum: 10/b779b9351a4dc2bc4d8e6cc0ff9d3151e920ceb7a2a74b493493470bcf35c257d5d2338f57175f10ba6463de842e17a4aea2618a528adc5ebb680a536087eb73
   languageName: node
   linkType: hard
 
-"@redis/json@npm:5.1.1":
-  version: 5.1.1
-  resolution: "@redis/json@npm:5.1.1"
+"@redis/json@npm:5.5.5":
+  version: 5.5.5
+  resolution: "@redis/json@npm:5.5.5"
   peerDependencies:
-    "@redis/client": ^5.1.1
-  checksum: 10/3b2a4d3c608459fc585204f06514ba5faade9e2829d36f4fc751979f408e878c43d9907cc16acab349ee0597e3954b93e69ddf68ef6ad5c67c6cabb5f36f9a8b
+    "@redis/client": ^5.5.5
+  checksum: 10/92c7d11a0837223aa17fce7d6da02ab9d904c9089220ad59f3bb58112885c9b5045f33dd0867fa805ef50de85aef41f1c5b836067393493cb5c5a4806ce2a36d
   languageName: node
   linkType: hard
 
-"@redis/search@npm:5.1.1":
-  version: 5.1.1
-  resolution: "@redis/search@npm:5.1.1"
+"@redis/search@npm:5.5.5":
+  version: 5.5.5
+  resolution: "@redis/search@npm:5.5.5"
   peerDependencies:
-    "@redis/client": ^5.1.1
-  checksum: 10/5fc17d1a8479d3a5526a83c5a3e1b9ee3f3ec138e0dd07e96780f2199a480a4da53b106b9d3e5e0461bdd9a2308069d0580bbee87d115e3c8441eec4e3a70e9f
+    "@redis/client": ^5.5.5
+  checksum: 10/948eac5b456e84c2af1f789da6533662587292f6d9714bfb7e73abd674900d1fe29f59f52feee39632368aa3508d2c8debb0cc6333e41d51ac2be97286a4de79
   languageName: node
   linkType: hard
 
-"@redis/time-series@npm:5.1.1":
-  version: 5.1.1
-  resolution: "@redis/time-series@npm:5.1.1"
+"@redis/time-series@npm:5.5.5":
+  version: 5.5.5
+  resolution: "@redis/time-series@npm:5.5.5"
   peerDependencies:
-    "@redis/client": ^5.1.1
-  checksum: 10/58ab3b81c5d50ddf0e9916b22b5b4067c512b4bea5cc2356f19c14a3cfee2403b6e7caa3ce7499f26fa1efe343906a7c9b61ccc1a34652f1553b6edc35620f60
+    "@redis/client": ^5.5.5
+  checksum: 10/89e1ba28426746274138121e56020ee045f60003b693317161c07800a1d2e036a44b04207dbf24f57d71ba5351f4239daecb76b0e0a10801a5b1818c382536f5
   languageName: node
   linkType: hard
 
@@ -3412,7 +3412,7 @@ __metadata:
     prettier: "npm:3.5.3"
     pump: "npm:3.0.2"
     query-string: "npm:9.2.0"
-    redis: "npm:5.1.1"
+    redis: "npm:5.5.5"
     split2: "npm:4.2.0"
     through2: "npm:4.0.2"
     tough-cookie: "npm:5.1.2"
@@ -6453,16 +6453,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"redis@npm:5.1.1":
-  version: 5.1.1
-  resolution: "redis@npm:5.1.1"
+"redis@npm:5.5.5":
+  version: 5.5.5
+  resolution: "redis@npm:5.5.5"
   dependencies:
-    "@redis/bloom": "npm:5.1.1"
-    "@redis/client": "npm:5.1.1"
-    "@redis/json": "npm:5.1.1"
-    "@redis/search": "npm:5.1.1"
-    "@redis/time-series": "npm:5.1.1"
-  checksum: 10/5c4cd5620ffac6eb2a4210b8786da59cff19e5c03d5fd08f1b320dee93578bf55c1185bbd213a31d14ba50e8c587c5152803a5fe4dbb01c36ee61dca258dc58f
+    "@redis/bloom": "npm:5.5.5"
+    "@redis/client": "npm:5.5.5"
+    "@redis/json": "npm:5.5.5"
+    "@redis/search": "npm:5.5.5"
+    "@redis/time-series": "npm:5.5.5"
+  checksum: 10/acda8efb93e27b42cfaed416f11406f327c7f8c24825d774f34bc865173cb2f32ddb760086302b90c68f120ff3c16da0cf7ed0f059bcd3961aaa8247824c8e2b
   languageName: node
   linkType: hard
 
