@@ -26,6 +26,7 @@ import {
   Tbody,
   SortableTh
 } from 'lib-components/layout/Table'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import { Gap } from 'lib-components/white-space'
 
 import type { getManualDuplicationReport } from '../../generated/api-clients/reports'
@@ -175,7 +176,13 @@ export default React.memo(function ManualDuplicationReport() {
                       href={`/child-information/${row.childId}`}
                       rel="noreferrer"
                     >
-                      {`${row.childLastName}, ${row.childFirstName}`}
+                      <PersonName
+                        person={{
+                          lastName: row.childLastName,
+                          firstName: row.childFirstName
+                        }}
+                        format="Last, First"
+                      />
                     </a>
                   </WrappableTd>
                   <WrappableTd>{row.dateOfBirth.format()}</WrappableTd>

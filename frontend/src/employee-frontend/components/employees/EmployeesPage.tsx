@@ -23,6 +23,7 @@ import type {
   UserRole
 } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import { formatPersonName } from 'lib-common/names'
 import { useQueryResult } from 'lib-common/query'
 import { uri } from 'lib-common/uri'
 import { useDebounce } from 'lib-common/utils/useDebounce'
@@ -197,7 +198,7 @@ export default React.memo(function EmployeesPage() {
                   columns={[
                     {
                       label: i18n.employees.name,
-                      value: (row) => `${row.lastName} ${row.firstName}`
+                      value: (row) => formatPersonName(row, 'Last First')
                     },
                     { label: i18n.employees.email, value: (row) => row.email },
                     {

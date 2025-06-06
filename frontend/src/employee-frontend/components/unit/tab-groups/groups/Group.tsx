@@ -30,6 +30,7 @@ import type {
   GroupId,
   PersonId
 } from 'lib-common/generated/api-types/shared'
+import { formatPersonName } from 'lib-common/names'
 import { first, second, useSelectMutation } from 'lib-common/query'
 import { capitalizeFirstLetter } from 'lib-common/string'
 import type { UUID } from 'lib-common/types'
@@ -49,6 +50,7 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import { H3, Label, Light } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
@@ -78,7 +80,6 @@ import type {
   DaycareGroupWithPlacements,
   UnitChildrenCapacityFactors
 } from '../../../../types/unit'
-import { formatPersonName } from '../../../../utils'
 import type { UnitFilters } from '../../../../utils/UnitFilters'
 import { rangesOverlap } from '../../../../utils/date'
 import { isPartDayPlacement } from '../../../../utils/placements'
@@ -634,7 +635,7 @@ const GroupPlacementRow = React.memo(function GroupPlacementRow({
       )}
       <Td data-qa="child-name">
         <Link to={`/child-information/${placement.child.id}`}>
-          {formatPersonName(placement.child, i18n, true)}
+          <PersonName person={placement.child} format="Last First" />
         </Link>
       </Td>
       <Td>
@@ -833,7 +834,7 @@ const DailyNote = React.memo(function DaycareDailyNote({
           onClick={() =>
             onOpen({
               id: placement.child.id,
-              name: formatPersonName(placement.child, i18n)
+              name: formatPersonName(placement.child, 'First Last')
             })
           }
         />

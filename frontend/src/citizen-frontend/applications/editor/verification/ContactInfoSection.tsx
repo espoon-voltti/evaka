@@ -7,6 +7,7 @@ import React from 'react'
 import type { ContactInfoFormData } from 'lib-common/api-types/application/ApplicationFormData'
 import type { ApplicationType } from 'lib-common/generated/api-types/application'
 import ListGrid from 'lib-components/layout/ListGrid'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import { H2, H3, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
@@ -53,9 +54,13 @@ export default React.memo(function ContactInfoSection({
         columnGap="L"
       >
         <Label>{tLocal.child.name}</Label>
-        <span translate="no">
-          {formData.childFirstName} {formData.childLastName}
-        </span>
+        <PersonName
+          person={{
+            firstName: formData.childFirstName,
+            lastName: formData.childLastName
+          }}
+          format="First Last"
+        />
 
         <Label>{tLocal.child.ssn}</Label>
         <span>{formData.childSSN}</span>
@@ -93,9 +98,13 @@ export default React.memo(function ContactInfoSection({
         columnGap="L"
       >
         <Label>{tLocal.guardian.name}</Label>
-        <span translate="no">
-          {formData.guardianFirstName} {formData.guardianLastName}
-        </span>
+        <PersonName
+          person={{
+            firstName: formData.guardianFirstName,
+            lastName: formData.guardianLastName
+          }}
+          format="First Last"
+        />
         <Label>{tLocal.guardian.tel}</Label>
         <span>{formData.guardianPhone}</span>
         <Label>{tLocal.guardian.email}</Label>
@@ -144,10 +153,13 @@ export default React.memo(function ContactInfoSection({
                   columnGap="L"
                 >
                   <Label>{tLocal.fridgePartner.name}</Label>
-                  <span translate="no">
-                    {formData.otherPartnerFirstName}{' '}
-                    {formData.otherPartnerLastName}
-                  </span>
+                  <PersonName
+                    person={{
+                      firstName: formData.otherPartnerFirstName,
+                      lastName: formData.otherPartnerLastName
+                    }}
+                    format="First Last"
+                  />
 
                   <Label>{tLocal.fridgePartner.ssn}</Label>
                   <span>{formData.otherPartnerSSN}</span>
@@ -159,25 +171,21 @@ export default React.memo(function ContactInfoSection({
               <Gap size="m" />
               <H3>{tLocal.fridgeChildren.title}</H3>
               {otherChildren.length > 0 ? (
-                otherChildren.map(
-                  ({ firstName, lastName, socialSecurityNumber }) => (
-                    <ListGrid
-                      key={socialSecurityNumber}
-                      labelWidth={ApplicationDataGridLabelWidth}
-                      rowGap="s"
-                      columnGap="L"
-                    >
-                      <Label>{tLocal.fridgeChildren.name}</Label>
-                      <span translate="no">
-                        {firstName} {lastName}
-                      </span>
+                otherChildren.map(({ socialSecurityNumber, ...name }) => (
+                  <ListGrid
+                    key={socialSecurityNumber}
+                    labelWidth={ApplicationDataGridLabelWidth}
+                    rowGap="s"
+                    columnGap="L"
+                  >
+                    <Label>{tLocal.fridgeChildren.name}</Label>
+                    <PersonName person={name} format="First Last" />
 
-                      <Label>{tLocal.fridgeChildren.ssn}</Label>
-                      <span>{socialSecurityNumber}</span>
-                      <Gap size="m" />
-                    </ListGrid>
-                  )
-                )
+                    <Label>{tLocal.fridgeChildren.ssn}</Label>
+                    <span>{socialSecurityNumber}</span>
+                    <Gap size="m" />
+                  </ListGrid>
+                ))
               ) : (
                 <span>{tLocal.fridgeChildren.noOtherChildren}</span>
               )}

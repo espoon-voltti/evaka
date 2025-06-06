@@ -14,12 +14,12 @@ import LocalDate from 'lib-common/local-date'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { Label } from 'lib-components/typography'
 
 import { useTranslation } from '../../../../state/i18n'
-import { formatName } from '../../../../utils'
 import { updateGroupAclWithOccupancyCoefficientMutation } from '../../queries'
 
 import { useGroupOptions } from './common'
@@ -84,7 +84,7 @@ export default React.memo(function EditAclModal({
         <FixedSpaceColumn spacing="xs">
           <Label>{i18n.unit.accessControl.name}</Label>
           <div>
-            {formatName(row.employee.firstName, row.employee.lastName, i18n)}
+            <PersonName person={row.employee} format="First Last" />
           </div>
         </FixedSpaceColumn>
         <FixedSpaceColumn spacing="xs">

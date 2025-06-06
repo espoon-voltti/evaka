@@ -8,6 +8,7 @@ import styled from 'styled-components'
 import type { ChildAndPermittedActions } from 'lib-common/generated/api-types/children'
 import { RoundImage } from 'lib-components/atoms/RoundImage'
 import { desktopMin } from 'lib-components/breakpoints'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import { H1, Title } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
@@ -50,8 +51,8 @@ export default React.memo(function ChildHeader({
         alt={t.children.childPicture}
       />
       <div>
-        <H1 noMargin data-qa="child-name" translate="no">
-          {`${firstName} ${lastName}`}
+        <H1 noMargin data-qa="child-name">
+          <PersonName person={{ firstName, lastName }} format="First Last" />
         </H1>
         {group && <Title>{group.name}</Title>}
         <br />

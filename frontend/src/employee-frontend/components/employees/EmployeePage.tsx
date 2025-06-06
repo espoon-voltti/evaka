@@ -31,6 +31,7 @@ import {
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import { ConfirmedMutation } from 'lib-components/molecules/ConfirmedMutation'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import { Gap } from 'lib-components/white-space'
 import { faPlus, faTimes, faTrash } from 'lib-icons'
 
@@ -135,7 +136,7 @@ const EmployeePage = React.memo(function EmployeePage({
         />
       )}
       <Title size={2}>
-        {employee.firstName} {employee.lastName}
+        <PersonName person={employee} format="First Last" />
       </Title>
       <span>{employee.email}</span>
 

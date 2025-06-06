@@ -14,10 +14,10 @@ import React, {
 import styled from 'styled-components'
 import { Link, useLocation } from 'wouter'
 
-import { formatFirstName } from 'lib-common/names'
 import NavLink from 'lib-components/atoms/NavLink'
 import { desktopMin, desktopSmall } from 'lib-components/breakpoints'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import { fontWeights } from 'lib-components/typography'
 import useCloseOnOutsideClick from 'lib-components/utils/useCloseOnOutsideClick'
 import { defaultMargins, Gap } from 'lib-components/white-space'
@@ -292,9 +292,7 @@ const ChildrenMenu = React.memo(function ChildrenMenu() {
               }}
               data-qa={`children-menu-${child.id}`}
             >
-              <span translate="no">
-                {formatFirstName(child)} {child.lastName}
-              </span>
+              <PersonName person={child} format="FirstFirst Last" />
               {unreadChildNotifications[child.id] ? (
                 <CircledChar
                   aria-label={`${unreadChildNotifications[child.id]} ${

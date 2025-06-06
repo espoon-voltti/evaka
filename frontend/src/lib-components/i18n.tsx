@@ -25,6 +25,8 @@ export interface Translations {
     confirm: string
     no: string
     noResults: string
+    noFirstName: string
+    noLastName: string
     open: string
     remove: string
     saving: string

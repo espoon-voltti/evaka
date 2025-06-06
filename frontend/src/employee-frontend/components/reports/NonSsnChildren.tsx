@@ -15,6 +15,7 @@ import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { SortableTh, Tbody, Td, Thead, Tr } from 'lib-components/layout/Table'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
@@ -167,7 +168,7 @@ export default React.memo(function NonSsnChildren() {
                   <Tr data-qa="non-ssn-child-row" key={row.childId}>
                     <Td data-qa="child-name">
                       <Link to={`/child-information/${row.childId}`}>
-                        {row.lastName} {row.firstName}
+                        <PersonName person={row} format="Last First" />
                       </Link>
                     </Td>
                     <Td data-qa="date-of-birth">{row.dateOfBirth.format()}</Td>

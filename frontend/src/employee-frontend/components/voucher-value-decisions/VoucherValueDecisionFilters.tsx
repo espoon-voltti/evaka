@@ -16,6 +16,7 @@ import type {
   EmployeeId
 } from 'lib-common/generated/api-types/shared'
 import type LocalDate from 'lib-common/local-date'
+import { formatPersonName } from 'lib-common/names'
 import { useQueryResult } from 'lib-common/query'
 import { Gap } from 'lib-components/white-space'
 
@@ -51,7 +52,7 @@ export default React.memo(function VoucherValueDecisionFilters() {
     useQueryResult(financeDecisionHandlersQuery()).map((employees) =>
       employees.map((e) => ({
         value: e.id,
-        label: [e.firstName, e.lastName].join(' ')
+        label: formatPersonName(e, 'First Last')
       }))
     )
 

@@ -24,6 +24,7 @@ import type {
   MessageThreadFolderId
 } from 'lib-common/generated/api-types/shared'
 import { fromUuid } from 'lib-common/id-type'
+import { formatPersonName } from 'lib-common/names'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Container from 'lib-components/layout/Container'
 import { defaultMargins } from 'lib-components/white-space'
@@ -36,7 +37,6 @@ import {
 import { getPersonIdentity } from '../../generated/api-clients/pis'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
-import { formatPersonName } from '../../utils'
 import { headerHeight } from '../Header'
 
 import { MessageContext } from './MessageContext'
@@ -217,7 +217,7 @@ export default React.memo(function MessagesPage({
             receivers: [
               {
                 id: prefilledRecipient,
-                name: formatPersonName(person, i18n, true),
+                name: formatPersonName(person, 'Last First'),
                 type: 'CITIZEN'
               }
             ]
@@ -227,7 +227,6 @@ export default React.memo(function MessagesPage({
     }
     return recipients
   }, [
-    i18n,
     prefilledRecipient,
     prefilledRecipientPerson,
     recipients,

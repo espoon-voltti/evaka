@@ -9,6 +9,7 @@ import { Link } from 'wouter'
 import type { ChildId } from 'lib-common/generated/api-types/shared'
 import { constantQuery, useQueryResult } from 'lib-common/query'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import { H3 } from 'lib-components/typography'
 
 import { useTranslation } from '../../state/i18n'
@@ -63,7 +64,7 @@ export default React.memo(function FosterParents({ childId }: Props) {
                 >
                   <NameTd>
                     <Link to={`/profile/${parent.id}`}>
-                      {parent.lastName} {parent.firstName}
+                      <PersonName person={parent} format="Last First" />
                     </Link>
                   </NameTd>
                   <Td>{parent.socialSecurityNumber}</Td>

@@ -21,6 +21,7 @@ import type {
 } from 'lib-common/generated/api-types/document'
 import type { ChildId, GroupId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
+import { formatPersonName } from 'lib-common/names'
 import { constantQuery, useQueryResult } from 'lib-common/query'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
@@ -30,7 +31,6 @@ import { Label } from 'lib-components/typography'
 
 import { useTranslation } from '../../../../state/i18n'
 import type { DaycareGroupPlacementDetailed } from '../../../../types/unit'
-import { formatPersonName } from '../../../../utils'
 import { renderResult } from '../../../async-rendering'
 
 import {
@@ -197,7 +197,7 @@ const PlacementsSelect = (props: {
         value={props.placementsFormField.state}
         onChange={props.placementsFormField.set}
         getOptionId={({ child }) => child.id}
-        getOptionLabel={({ child }) => formatPersonName(child, i18n, true)}
+        getOptionLabel={({ child }) => formatPersonName(child, 'Last First')}
         placeholder={i18n.common.select}
         data-qa="create-child-documents-modal-select-children"
       />

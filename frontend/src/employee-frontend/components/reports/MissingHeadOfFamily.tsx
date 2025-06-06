@@ -16,6 +16,7 @@ import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { CheckboxF } from 'lib-components/atoms/form/Checkbox'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import { DateRangePickerF } from 'lib-components/molecules/date-picker/DateRangePicker'
 import { featureFlags } from 'lib-customizations/employee'
 
@@ -128,7 +129,7 @@ export default React.memo(function MissingHeadOfFamily() {
                   <Tr data-qa="missing-head-of-family-row" key={row.childId}>
                     <Td data-qa="child-name">
                       <Link to={`/child-information/${row.childId}`}>
-                        {row.lastName} {row.firstName}
+                        <PersonName person={row} format="Last First" />
                       </Link>
                     </Td>
                     <Td data-qa="ranges-without-head">

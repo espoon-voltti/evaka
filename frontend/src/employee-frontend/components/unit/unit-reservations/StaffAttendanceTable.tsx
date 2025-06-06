@@ -38,6 +38,7 @@ import type { EvakaUser } from 'lib-common/generated/api-types/user'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
+import { formatPersonName } from 'lib-common/names'
 import { presentInGroup } from 'lib-common/staff-attendance'
 import type { UUID } from 'lib-common/types'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
@@ -56,9 +57,7 @@ import {
   upsertDailyExternalRealtimeAttendances,
   upsertDailyStaffRealtimeAttendances
 } from '../../../generated/api-clients/attendance'
-import type { Translations } from '../../../state/i18n'
 import { useTranslation } from '../../../state/i18n'
-import { formatName } from '../../../utils'
 
 import type {
   EditedAttendance,
@@ -134,8 +133,8 @@ export default React.memo(function StaffAttendanceTable({
   )
 
   const staffRows: StaffRow[] = useMemo(
-    () => getStaffRows(staffAttendances, groupFilter, i18n),
-    [staffAttendances, groupFilter, i18n]
+    () => getStaffRows(staffAttendances, groupFilter),
+    [staffAttendances, groupFilter]
   )
 
   const externalRowsGroupedByName = useMemo(
@@ -386,20 +385,14 @@ interface StaffRow {
 
 function getStaffRows(
   staffAttendances: EmployeeAttendance[],
-  groupFilter: GroupFilter | null,
-  i18n: Translations
+  groupFilter: GroupFilter | null
 ): StaffRow[] {
   return sortBy(
     staffAttendances
       .map(
         (entry): StaffRow => ({
           employeeId: entry.employeeId,
-          name: formatName(
-            entry.firstName.split(/\s/)[0],
-            entry.lastName,
-            i18n,
-            true
-          ),
+          name: formatPersonName(entry, 'Last FirstFirst'),
           attendances: sortBy(
             entry.attendances.filter(
               (a) => !groupFilter || (a.groupId && groupFilter([a.groupId]))

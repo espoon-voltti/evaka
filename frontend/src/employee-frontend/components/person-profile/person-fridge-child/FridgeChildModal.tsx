@@ -14,6 +14,7 @@ import type {
 import type { PersonId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useMutationResult } from 'lib-common/query'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import FormModal from 'lib-components/molecules/modals/FormModal'
 import { Gap } from 'lib-components/white-space'
@@ -21,7 +22,6 @@ import { faChild } from 'lib-icons'
 
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
-import { formatName } from '../../../utils'
 import { DbPersonSearch as PersonSearch } from '../../common/PersonSearch'
 import RetroactiveConfirmation, {
   isChangeRetroactive
@@ -189,12 +189,7 @@ function FridgeChildModal({ headPersonId, parentship }: Props) {
       <section>
         {parentship ? (
           <div>
-            {formatName(
-              parentship.child.firstName,
-              parentship.child.lastName,
-              i18n,
-              true
-            )}
+            <PersonName person={parentship.child} format="Last First" />
           </div>
         ) : (
           <>

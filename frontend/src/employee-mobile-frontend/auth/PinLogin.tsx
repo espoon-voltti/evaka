@@ -7,6 +7,7 @@ import type { FormEventHandler } from 'react'
 import React, { useCallback, useContext, useMemo, useState } from 'react'
 
 import type { DaycareId } from 'lib-common/generated/api-types/shared'
+import { formatPersonName } from 'lib-common/names'
 import { useQueryResult } from 'lib-common/query'
 import type { UUID } from 'lib-common/types'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
@@ -51,7 +52,7 @@ const PinLoginForm = React.memo(function PinLoginForm({
             ({ lastName }) => lastName,
             ({ firstName }) => firstName
           ).map((staff) => ({
-            name: `${staff.lastName} ${staff.firstName}`,
+            name: formatPersonName(staff, 'Last First'),
             id: staff.id
           }))
         : [],
@@ -163,7 +164,7 @@ export const PinLogin = React.memo(function PinLogin({
   const title = childId
     ? unitChildren
         .map((children) => children.find((c) => c.id === childId))
-        .map((c) => (c ? `${c.firstName} ${c.lastName}` : ''))
+        .map((c) => (c ? formatPersonName(c, 'First Last') : ''))
         .getOrElse('')
     : unitInfoResponse.map((u) => u.name).getOrElse('')
 

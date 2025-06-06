@@ -7,6 +7,7 @@ import { useLocation } from 'wouter'
 
 import type { Result } from 'lib-common/api'
 import { combine, Loading } from 'lib-common/api'
+import { formatPersonName } from 'lib-common/names'
 import { useQueryResult } from 'lib-common/query'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import {
@@ -37,7 +38,7 @@ export default React.memo(function CreateUnitPage() {
       employeesResponse.map((employees) =>
         employees.map((employee) => ({
           value: employee.id,
-          label: `${employee.firstName ?? ''} ${employee.lastName ?? ''}${
+          label: `${formatPersonName(employee, 'First Last')}${
             employee.email ? ` (${employee.email})` : ''
           }`
         }))

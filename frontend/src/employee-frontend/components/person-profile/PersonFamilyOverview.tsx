@@ -15,13 +15,12 @@ import type {
 } from 'lib-common/generated/api-types/pis'
 import type { PersonId } from 'lib-common/generated/api-types/shared'
 import { formatCents } from 'lib-common/money'
+import { formatPersonName } from 'lib-common/names'
 import { useQueryResult } from 'lib-common/query'
 import { getAge } from 'lib-common/utils/local-date'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 
-import type { Translations } from '../../state/i18n'
 import { useTranslation } from '../../state/i18n'
-import { formatName } from '../../utils'
 import { renderResult } from '../async-rendering'
 import LabelValueList from '../common/LabelValueList'
 
@@ -59,13 +58,12 @@ function mapPersonToRow(
     postalCode,
     postOffice
   }: FamilyOverviewPerson,
-  role: FamilyOverviewPersonRole,
-  i18n: Translations
+  role: FamilyOverviewPersonRole
 ): FamilyOverviewRow {
   const age = getAge(dateOfBirth)
   return {
     personId,
-    name: formatName(firstName, lastName, i18n, true),
+    name: formatPersonName({ firstName, lastName }, 'Last First'),
     role,
     age,
     restrictedDetailsEnabled,
@@ -74,15 +72,12 @@ function mapPersonToRow(
   }
 }
 
-function getMembers(
-  family: FamilyOverview,
-  i18n: Translations
-): FamilyOverviewRow[] {
+function getMembers(family: FamilyOverview): FamilyOverviewRow[] {
   const { headOfFamily, partner, children } = family
   return [
-    mapPersonToRow(headOfFamily, 'HEAD', i18n),
-    partner && mapPersonToRow(partner, 'PARTNER', i18n),
-    ...children.map((item) => mapPersonToRow(item, 'CHILD', i18n))
+    mapPersonToRow(headOfFamily, 'HEAD'),
+    partner && mapPersonToRow(partner, 'PARTNER'),
+    ...children.map((item) => mapPersonToRow(item, 'CHILD'))
   ].filter((row): row is FamilyOverviewRow => row !== null)
 }
 
@@ -162,7 +157,7 @@ export default React.memo(function FamilyOverview({ id }: Props) {
                 </Tr>
               </Thead>
               <Tbody>
-                {getMembers(family, i18n)?.map(
+                {getMembers(family)?.map(
                   ({
                     personId,
                     name,

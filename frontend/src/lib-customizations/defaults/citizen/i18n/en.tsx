@@ -8,7 +8,7 @@ import React from 'react'
 import type FiniteDateRange from 'lib-common/finite-date-range'
 import type { EmailVerification } from 'lib-common/generated/api-types/pis'
 import type LocalDate from 'lib-common/local-date'
-import { formatFirstName } from 'lib-common/names'
+import { formatPersonName } from 'lib-common/names'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
 import UnorderedList from 'lib-components/atoms/UnorderedList'
 import { Button } from 'lib-components/atoms/buttons/Button'
@@ -268,9 +268,7 @@ const en: Translations = {
       <div>
         Henkilökunta on pyytänyt sinua vastaamaan lomakkeeseen, joka koskee
         lastasi:{' '}
-        <span translate="no">
-          {formatFirstName(child)} {child.lastName}
-        </span>
+        <span translate="no">{formatPersonName(child, 'FirstFirst Last')}</span>
         <br />
         <br />
         <span style={{ color: colors.status.info }}>

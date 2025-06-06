@@ -14,13 +14,14 @@ import type {
 } from 'lib-common/generated/api-types/invoicing'
 import type { FeeDecisionId } from 'lib-common/generated/api-types/shared'
 import type HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import { formatPersonName } from 'lib-common/names'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import { H1 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
 import { getFeeDecisionPdf } from '../../generated/api-clients/invoicing'
 import { useTranslation } from '../../state/i18n'
-import { formatName } from '../../utils'
 import LabelValueList from '../common/LabelValueList'
 import WarningLabel from '../common/WarningLabel'
 
@@ -130,7 +131,7 @@ export default React.memo(function Heading({
               label: i18n.feeDecision.partner,
               value: (
                 <Link to={`/profile/${partner.id}`} data-qa="partner">
-                  {formatName(partner.firstName, partner.lastName, i18n)}
+                  <PersonName person={partner} format="First Last" />
                 </Link>
               )
             }
@@ -147,7 +148,7 @@ export default React.memo(function Heading({
         label: i18n.feeDecision.headOfFamily,
         value: (
           <Link to={`/profile/${headOfFamily.id}`} data-qa="head-of-family">
-            {formatName(headOfFamily.firstName, headOfFamily.lastName, i18n)}
+            <PersonName person={headOfFamily} format="First Last" />
           </Link>
         )
       }
@@ -178,7 +179,13 @@ export default React.memo(function Heading({
             {
               dataQa: 'decision-handler',
               label: i18n.feeDecision.decisionHandler,
-              value: `${financeDecisionHandlerFirstName} ${financeDecisionHandlerLastName}`
+              value: formatPersonName(
+                {
+                  firstName: financeDecisionHandlerFirstName,
+                  lastName: financeDecisionHandlerLastName
+                },
+                'First Last'
+              )
             }
           ]
         : []

@@ -6,6 +6,7 @@ import React, { useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import type { ChildId, DaycareId } from 'lib-common/generated/api-types/shared'
+import { formatPersonName } from 'lib-common/names'
 import { useQueryResult } from 'lib-common/query'
 import Title from 'lib-components/atoms/Title'
 import { Button } from 'lib-components/atoms/buttons/Button'
@@ -35,7 +36,7 @@ export default React.memo(function ChildInfoPage({
   const childName = useMemo(
     () =>
       childBasicInfo
-        .map((c) => (c ? `${c.firstName} ${c.lastName}` : null))
+        .map((c) => (c ? formatPersonName(c, 'First Last') : null))
         .getOrElse(null),
     [childBasicInfo]
   )

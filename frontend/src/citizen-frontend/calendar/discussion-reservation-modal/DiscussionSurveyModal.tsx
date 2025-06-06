@@ -18,7 +18,6 @@ import type {
 } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
-import { formatFirstName } from 'lib-common/names'
 import { StaticChip } from 'lib-components/atoms/Chip'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { cancelMutation } from 'lib-components/atoms/buttons/MutateButton'
@@ -31,6 +30,7 @@ import {
   InfoButton
 } from 'lib-components/molecules/ExpandingInfo'
 import { InfoBox } from 'lib-components/molecules/MessageBoxes'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import { PlainModal } from 'lib-components/molecules/modals/BaseModal'
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { Bold, H1, H2, H3, Light, P, Strong } from 'lib-components/typography'
@@ -258,8 +258,11 @@ const DiscussionChildElement = React.memo(function DiscussionChildElement({
 }: DiscussionChildElementProps) {
   return (
     <div data-qa={`discussion-child-${childWithSurveys.childId}`}>
-      <StaticChip color={colors.main.m1} translate="no">
-        {formatFirstName(childWithSurveys)}
+      <StaticChip color={colors.main.m1}>
+        <PersonName
+          person={{ firstName: childWithSurveys.firstName, lastName: '' }}
+          format="FirstFirst"
+        />
       </StaticChip>
       {childWithSurveys.surveys.map((s) => {
         const reservations = s.timesByChild[childWithSurveys.childId]?.filter(

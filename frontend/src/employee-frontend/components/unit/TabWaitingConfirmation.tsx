@@ -14,13 +14,13 @@ import Title from 'lib-components/atoms/Title'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import { P } from 'lib-components/typography'
 import colors from 'lib-customizations/common'
 import { faFileAlt, faTimes } from 'lib-icons'
 
 import { getEmployeeUrlPrefix } from '../../constants'
 import { useTranslation } from '../../state/i18n'
-import { formatName } from '../../utils'
 import { isPartDayPlacement } from '../../utils/placements'
 import { CircleIconSmallOrange } from '../applications/CircleIcon'
 import { CareTypeChip } from '../common/CareTypeLabel'
@@ -106,21 +106,11 @@ export default React.memo(function TabWaitingConfirmation({
                 <Td data-qa="child-name">
                   {!p.rejectedByCitizen ? (
                     <Link to={`/child-information/${p.child.id}`}>
-                      {formatName(
-                        p.child.firstName,
-                        p.child.lastName,
-                        i18n,
-                        true
-                      )}
+                      <PersonName person={p.child} format="Last First" />
                     </Link>
                   ) : (
                     <P noMargin color={colors.grayscale.g35}>
-                      {formatName(
-                        p.child.firstName,
-                        p.child.lastName,
-                        i18n,
-                        true
-                      )}
+                      <PersonName person={p.child} format="Last First" />
                     </P>
                   )}
                 </Td>

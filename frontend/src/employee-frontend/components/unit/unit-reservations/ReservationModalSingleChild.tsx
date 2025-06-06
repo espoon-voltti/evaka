@@ -43,6 +43,7 @@ import { CheckboxF } from 'lib-components/atoms/form/Checkbox'
 import { InputFieldUnderRow } from 'lib-components/atoms/form/InputField'
 import { TimeInputF } from 'lib-components/atoms/form/TimeInput'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import { DateRangePickerF } from 'lib-components/molecules/date-picker/DateRangePicker'
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { fontWeights, H2, Label, Light } from 'lib-components/typography'
@@ -362,7 +363,7 @@ export default React.memo(function ReservationModalSingleChild({
         {i18n.unit.attendanceReservations.reservationModal.selectedChildren}
       </H2>
       <div>
-        {child.lastName} {child.firstName}
+        <PersonName person={child} format="Last First" />
       </div>
 
       <H2>{i18n.unit.attendanceReservations.reservationModal.repetition}</H2>

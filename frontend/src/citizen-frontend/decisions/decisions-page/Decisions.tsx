@@ -15,11 +15,13 @@ import type {
 } from 'lib-common/generated/api-types/assistanceneed'
 import type { ApplicationId } from 'lib-common/generated/api-types/shared'
 import type LocalDate from 'lib-common/local-date'
+import { formatPersonName } from 'lib-common/names'
 import { useQueryResult } from 'lib-common/query'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import { H1, H2 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
@@ -69,7 +71,7 @@ export default React.memo(function Decisions() {
         child.decidableApplications.includes(decision.applicationId)
     ).length
     return (
-      `${child.firstName} ${child.lastName}` +
+      formatPersonName(child, 'First Last') +
       (unconfirmedDecisionsCount > 0
         ? ' - ' + t.decisions.unconfirmedDecisions(unconfirmedDecisionsCount)
         : ' - ' + t.decisions.noUnconfirmedDecisions)
@@ -214,12 +216,8 @@ export default React.memo(function Decisions() {
                   paddingVertical="L"
                   data-qa={`child-decisions-${child.id}`}
                 >
-                  <H2
-                    noMargin
-                    aria-label={getAriaLabelForChild(child)}
-                    translate="no"
-                  >
-                    {child.firstName} {child.lastName}
+                  <H2 noMargin aria-label={getAriaLabelForChild(child)}>
+                    <PersonName person={child} format="First Last" />
                   </H2>
                   {child.decisions.map((decision) => (
                     <Fragment key={decision.id}>

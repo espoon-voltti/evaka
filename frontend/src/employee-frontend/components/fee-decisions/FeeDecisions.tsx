@@ -117,7 +117,7 @@ const FeeDecisions = React.memo(function FeeDecisions({
       data-qa="table-fee-decision-row"
     >
       <Td>
-        <NameWithSsn {...item.headOfFamily} i18n={i18n} />
+        <NameWithSsn {...item.headOfFamily} />
       </Td>
       <Td>
         <ChildrenCell people={item.children} />

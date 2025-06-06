@@ -16,8 +16,7 @@ import type {
   Address,
   ApplicationAttachmentType,
   ApplicationDetails,
-  FutureAddress,
-  PersonBasics
+  FutureAddress
 } from 'lib-common/generated/api-types/application'
 import type { Attachment } from 'lib-common/generated/api-types/attachment'
 import type { PublicUnit } from 'lib-common/generated/api-types/daycare'
@@ -40,6 +39,7 @@ import ListGrid from 'lib-components/layout/ListGrid'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 import FileUpload from 'lib-components/molecules/FileUpload'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { H4, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
@@ -62,7 +62,6 @@ import { getAttachmentUrl, applicationAttachment } from '../../api/attachments'
 import { deleteAttachmentMutation } from '../../queries'
 import type { Translations } from '../../state/i18n'
 import { useTranslation } from '../../state/i18n'
-import { formatName } from '../../utils'
 import { InputWarning } from '../common/InputWarning'
 
 import ApplicationStatusSection from './ApplicationStatusSection'
@@ -188,8 +187,6 @@ export default React.memo(function ApplicationEditView({
 
   const otherGuardian = guardians.find((guardian) => guardian.id !== guardianId)
 
-  const formatPersonName = (person: PersonBasics) =>
-    formatName(person.firstName, person.lastName, i18n, true)
   const formatAddress = (a: Address) =>
     `${a.street}, ${a.postalCode} ${a.postOffice}`
 
@@ -854,7 +851,7 @@ export default React.memo(function ApplicationEditView({
           <Label>{i18n.application.person.name}</Label>
           <Link to={`/child-information/${childId}`}>
             <span data-qa="link-child-name">
-              {formatPersonName(child.person)}
+              <PersonName person={child.person} format="Last First" />
             </span>
           </Link>
 
@@ -944,7 +941,7 @@ export default React.memo(function ApplicationEditView({
               <Label>{i18n.application.person.name}</Label>
               <Link to={`/profile/${guardianId}`}>
                 <span data-qa="guardian-name">
-                  {formatPersonName(guardian.person)}
+                  <PersonName person={guardian.person} format="Last First" />
                 </span>
               </Link>
               <Label>{i18n.application.person.ssn}</Label>

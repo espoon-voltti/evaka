@@ -20,13 +20,13 @@ import type TimeRange from 'lib-common/time-range'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import { Td, Thead } from 'lib-components/layout/Table'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import { fontWeights } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import colors, { absenceColors } from 'lib-customizations/common'
 import { featureFlags } from 'lib-customizations/employee'
 import { fasExclamationTriangle } from 'lib-icons'
 
-import type { Translations } from '../../state/i18n'
 import { useTranslation } from '../../state/i18n'
 import { AgeIndicatorChip } from '../common/AgeIndicatorChip'
 import { ContractDaysIndicatorChip } from '../common/ContractDaysIndicatorChip'
@@ -64,7 +64,6 @@ const MonthCalendarRow = React.memo(function MonthCalendarRow({
   reservationEnabled
 }: MonthCalendarRow) {
   const theme = useTheme()
-  const { i18n } = useTranslation()
   const contractDayServiceNeeds = child.actualServiceNeeds.filter(
     (c) => c.hasContractDays
   )
@@ -107,7 +106,7 @@ const MonthCalendarRow = React.memo(function MonthCalendarRow({
             tooltip={
               <div>
                 <p>
-                  {child.lastName}, {child.firstName}
+                  <PersonName person={child} format="Last, First" />
                 </p>
                 {child.actualServiceNeeds.map((need, i) => (
                   <p key={`service-need-option-${i}`}>{need.optionName}</p>
@@ -121,7 +120,7 @@ const MonthCalendarRow = React.memo(function MonthCalendarRow({
                 to={`/child-information/${child.id}`}
                 data-qa="absence-child-link"
               >
-                {shortChildName(child.firstName, child.lastName, i18n)}
+                <PersonName person={child} format="Last, FirstFirst" />
               </Link>
             </FixedSpaceRow>
           </Tooltip>
@@ -247,17 +246,6 @@ function getHourInfo(child: GroupMonthCalendarChild): {
       showUsedHoursWarning: attendanceTotalHours > reservationTotalHours
     }
   }
-}
-
-const shortChildName = (
-  firstName: string,
-  lastName: string,
-  i18n: Translations
-) => {
-  const firstNames = firstName.split(/\s/)
-  return lastName && firstName
-    ? `${lastName}, ${firstNames[0]}`
-    : i18n.common.noName
 }
 
 const NumbersColumn = styled.div<{ $warning?: boolean }>`

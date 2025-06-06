@@ -21,8 +21,10 @@ import type {
 } from 'lib-common/generated/api-types/timeline'
 import type HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { formatCents } from 'lib-common/money'
+import { formatPersonName } from 'lib-common/names'
 import { maxOf, minOf } from 'lib-common/ordered'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import { Gap } from 'lib-components/white-space'
 
 import { useTranslation } from '../../state/i18n'
@@ -242,14 +244,12 @@ export const partnerRenderer: EventRenderer<TimelinePartnerDetailed> = {
   linkProvider: (elem) => `/employee/profile/${elem.partnerId}`,
   Summary: ({ elem }) => {
     const { i18n } = useTranslation()
-    return `${i18n.timeline.partner} ${elem.firstName} ${elem.lastName}`
+    return `${i18n.timeline.partner} ${formatPersonName(elem, 'First Last')}`
   },
   Tooltip: ({ elem: partnerDetails }) => (
     <FixedSpaceColumn spacing="xxs">
       <span>{partnerDetails.range.format()}</span>
-      <span>
-        {partnerDetails.firstName} {partnerDetails.lastName}
-      </span>
+      <PersonName person={partnerDetails} format="First Last" />
     </FixedSpaceColumn>
   ),
   Metadata: ({ elem: partnerDetails }) => (
@@ -380,14 +380,12 @@ export const childRenderer: EventRenderer<TimelineChildDetailed> = {
   linkProvider: (elem) => `/employee/child-information/${elem.childId}`,
   Summary: ({ elem }) => {
     const { i18n } = useTranslation()
-    return `${i18n.timeline.child} ${elem.firstName} ${elem.lastName}`
+    return `${i18n.timeline.child} ${formatPersonName(elem, 'First Last')}`
   },
   Tooltip: ({ elem }) => (
     <FixedSpaceColumn spacing="xxs">
       <span>{elem.range.format()}</span>
-      <span>
-        {elem.firstName} {elem.lastName}
-      </span>
+      <PersonName person={elem} format="First Last" />
       <span>s. {elem.dateOfBirth.format()}</span>
     </FixedSpaceColumn>
   ),

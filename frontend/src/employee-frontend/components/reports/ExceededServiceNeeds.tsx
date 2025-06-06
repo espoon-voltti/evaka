@@ -11,15 +11,16 @@ import { useForm, useFormFields } from 'lib-common/form/hooks'
 import type { ExceededServiceNeedReportUnit } from 'lib-common/generated/api-types/reports'
 import type { DaycareId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
+import { formatPersonName } from 'lib-common/names'
 import { constantQuery, useQueryResult } from 'lib-common/query'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { SelectF } from 'lib-components/atoms/dropdowns/Select'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 
 import { useTranslation } from '../../state/i18n'
-import { formatName } from '../../utils'
 import { renderResult } from '../async-rendering'
 
 import ReportDownload from './ReportDownload'
@@ -126,11 +127,12 @@ const Report = React.memo(function Report({
             <>
               <ReportDownload
                 data={rows.map((row) => ({
-                  childName: formatName(
-                    row.childFirstName,
-                    row.childLastName,
-                    i18n,
-                    true
+                  childName: formatPersonName(
+                    {
+                      firstName: row.childFirstName,
+                      lastName: row.childLastName
+                    },
+                    'Last First'
                   ),
                   ...row
                 }))}
@@ -174,12 +176,13 @@ const Report = React.memo(function Report({
                       <Tr key={row.childId}>
                         <Td>
                           <Link to={`/child-information/${row.childId}`}>
-                            {formatName(
-                              row.childFirstName,
-                              row.childLastName,
-                              i18n,
-                              true
-                            )}
+                            <PersonName
+                              person={{
+                                firstName: row.childFirstName,
+                                lastName: row.childLastName
+                              }}
+                              format="Last First"
+                            />
                           </Link>
                         </Td>
                         <Td>

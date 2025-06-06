@@ -19,12 +19,12 @@ import type {
 import type LocalDate from 'lib-common/local-date'
 import type { UUID } from 'lib-common/types'
 import { Table, Tbody, Td, Tr } from 'lib-components/layout/Table'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
 import type { Translations } from '../../../state/i18n'
 import { useTranslation } from '../../../state/i18n'
-import { formatName } from '../../../utils'
 import { AgeIndicatorChip } from '../../common/AgeIndicatorChip'
 import { ContractDaysIndicatorChip } from '../../common/ContractDaysIndicatorChip'
 import EllipsisMenu from '../../common/EllipsisMenu'
@@ -267,12 +267,7 @@ const ChildRowGroup = React.memo(function ChildRowGroup({
                   )}
                 </ChipWrapper>
                 <Link to={`/child-information/${childId}`}>
-                  {formatName(
-                    childBasics.firstName.split(/\s/)[0],
-                    childBasics.lastName,
-                    i18n,
-                    true
-                  )}
+                  <PersonName person={childBasics} format="Last First" />
                   {childBasics.preferredName
                     ? ` (${childBasics.preferredName})`
                     : ''}

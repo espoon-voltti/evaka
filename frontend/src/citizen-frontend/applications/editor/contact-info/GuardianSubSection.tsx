@@ -15,6 +15,7 @@ import {
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { H3, Label, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
@@ -57,11 +58,23 @@ export default React.memo(function GuardianSubSection({
       <AdaptiveFlex breakpoint="1060px" horizontalSpacing="XL">
         <FixedSpaceColumn spacing="xs">
           <Label>{t.applications.editor.contactInfo.guardianFirstName}</Label>
-          <span translate="no">{formData.guardianFirstName}</span>
+          <PersonName
+            person={{
+              firstName: formData.guardianFirstName,
+              lastName: formData.guardianLastName
+            }}
+            format="First"
+          />
         </FixedSpaceColumn>
         <FixedSpaceColumn spacing="xs">
           <Label>{t.applications.editor.contactInfo.guardianLastName}</Label>
-          <span translate="no">{formData.guardianLastName}</span>
+          <PersonName
+            person={{
+              firstName: formData.guardianFirstName,
+              lastName: formData.guardianLastName
+            }}
+            format="Last"
+          />
         </FixedSpaceColumn>
         <FixedSpaceColumn spacing="xs">
           <Label>{t.applications.editor.contactInfo.guardianSSN}</Label>

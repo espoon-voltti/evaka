@@ -2,13 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState
-} from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import type { Result } from 'lib-common/api'
@@ -26,9 +20,8 @@ import { H3 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
 import { useTranslation } from '../../state/i18n'
-import type { TitleState } from '../../state/title'
-import { TitleContext } from '../../state/title'
 import type { AbsenceUpdate } from '../../types/absence'
+import { useTitle } from '../../utils/useTitle'
 import { renderResult } from '../async-rendering'
 
 import { AbsenceLegend } from './AbsenceLegend'
@@ -101,7 +94,6 @@ const GroupMonthCalendar = React.memo(function GroupMonthCalendar({
   staffAttendanceEnabled
 }: AbsenceCalendarProps) {
   const { i18n } = useTranslation()
-  const { setTitle } = useContext<TitleState>(TitleContext)
   const [modalVisible, useModalVisible] = useBoolean(false)
   const [selectedCells, setSelectedCells] = useState<SelectedCell[]>([])
   const { mutateAsync: upsertAbsences } = useMutationResult(
@@ -145,11 +137,9 @@ const GroupMonthCalendar = React.memo(function GroupMonthCalendar({
     })
   }, [])
 
-  useEffect(() => {
-    setTitle(
-      `${groupMonthCalendar.groupName} | ${groupMonthCalendar.daycareName}`
-    )
-  }, [groupMonthCalendar.groupName, groupMonthCalendar.daycareName, setTitle])
+  useTitle(
+    `${groupMonthCalendar.groupName} | ${groupMonthCalendar.daycareName}`
+  )
 
   const updateAbsences = useCallback(
     (update: AbsenceUpdate) =>

@@ -13,7 +13,7 @@ import type {
   ReservationChild
 } from 'lib-common/generated/api-types/reservations'
 import type LocalDate from 'lib-common/local-date'
-import { formatFirstName, formatPreferredName } from 'lib-common/names'
+import { formatPersonName } from 'lib-common/names'
 import { featureFlags, type Translations } from 'lib-customizations/citizen'
 
 import type { User } from '../auth/state'
@@ -85,7 +85,7 @@ export function getSummaryForMonth(
   year: number,
   month: number
 ): MonthlyTimeSummary[] {
-  return childData.flatMap(({ monthSummaries, firstName, preferredName }) => {
+  return childData.flatMap(({ monthSummaries, ...rest }) => {
     const summaryForMonth = monthSummaries?.find(
       (monthSummary) =>
         monthSummary.year === year && monthSummary.month === month
@@ -94,10 +94,7 @@ export function getSummaryForMonth(
       return []
     }
     return {
-      name: formatPreferredName({
-        firstName,
-        preferredName
-      }),
+      name: formatPersonName(rest, 'Preferred'),
       ...summaryForMonth
     }
   })
@@ -109,7 +106,7 @@ export const getChildImages = (
   childData.map((child, index) => ({
     childId: child.id,
     imageId: child.imageId,
-    initialLetter: (formatFirstName(child) || '?')[0],
+    initialLetter: (formatPersonName(child, 'FirstFirst') || '?')[0],
     colorIndex: index,
     childName: child.firstName
   }))

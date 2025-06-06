@@ -7,6 +7,7 @@ import React, { useCallback, useState } from 'react'
 import type { FinanceDecisionCitizenInfo } from 'lib-common/generated/api-types/application'
 import type { FinanceDecisionType } from 'lib-common/generated/api-types/invoicing'
 import { fromUuid } from 'lib-common/id-type'
+import { formatPersonName } from 'lib-common/names'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import ListGrid from 'lib-components/layout/ListGrid'
@@ -87,7 +88,7 @@ export default React.memo(function FinanceDecision({
         <Label>{t.decisions.financeDecisions.liableCitizens}</Label>
         <span data-qa="finance-decision-co-debtors" translate="no">
           {decisionData.coDebtors
-            .map((citizen) => `${citizen.firstName} ${citizen.lastName}`)
+            .map((citizen) => formatPersonName(citizen, 'First Last'))
             .join(', ')}
         </span>
         {decisionData.decisionChildren.length > 0 && (
@@ -95,7 +96,7 @@ export default React.memo(function FinanceDecision({
             <Label>{t.decisions.financeDecisions.voucherValueChild}</Label>
             <span data-qa="finance-decision-children" translate="no">
               {decisionData.decisionChildren
-                .map((child) => `${child.firstName} ${child.lastName}`)
+                .map((child) => formatPersonName(child, 'First Last'))
                 .join(', ')}
             </span>
           </>

@@ -11,6 +11,7 @@ import type LocalDate from 'lib-common/local-date'
 import { cancelMutation } from 'lib-components/atoms/buttons/MutateButton'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { faExchange } from 'lib-icons'
@@ -18,7 +19,6 @@ import { faExchange } from 'lib-icons'
 import { useTranslation } from '../../../../../state/i18n'
 import { UIContext } from '../../../../../state/ui'
 import type { DaycareGroupPlacementDetailed } from '../../../../../types/unit'
-import { formatName } from '../../../../../utils'
 import { transferGroupMutation } from '../../../queries'
 
 interface Props {
@@ -117,7 +117,7 @@ export default React.memo(function GroupTransferModal({
       <FixedSpaceColumn>
         <section>
           <div className="bold">{i18n.unit.placements.modal.child}</div>
-          <span>{formatName(child.firstName, child.lastName, i18n)}</span>
+          <PersonName person={child} format="First Last" />
         </section>
         <section>
           <div className="bold">{i18n.unit.placements.modal.group}</div>

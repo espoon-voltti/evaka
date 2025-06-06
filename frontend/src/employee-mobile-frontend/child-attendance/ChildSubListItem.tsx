@@ -9,6 +9,7 @@ import styled from 'styled-components'
 import type LocalDate from 'lib-common/local-date'
 import { reservationHasTimes } from 'lib-common/reservations'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import { Bold } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
@@ -158,11 +159,10 @@ export default React.memo(function ChildSubListItem({
           className={reservationData.sortCategory > 3 ? 'absent' : 'present'}
         >
           <Name data-qa="child-name">
-            {reservationData.firstName.split(/\s/)[0]}{' '}
-            {reservationData.lastName}{' '}
-            {reservationData.preferredName
-              ? ` (${reservationData.preferredName})`
-              : null}
+            <PersonName
+              person={reservationData}
+              format="FirstFirst Last (Preferred)"
+            />
           </Name>
           <Placeholder />
         </NameRow>

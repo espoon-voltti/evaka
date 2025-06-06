@@ -4,13 +4,7 @@
 
 import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, {
-  Fragment,
-  useContext,
-  useEffect,
-  useMemo,
-  useState
-} from 'react'
+import React, { Fragment, useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
 import { useLocation } from 'wouter'
 
@@ -24,6 +18,7 @@ import type {
   DecisionUnit
 } from 'lib-common/generated/api-types/decision'
 import type { ApplicationId } from 'lib-common/generated/api-types/shared'
+import { formatPersonName } from 'lib-common/names'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import Title from 'lib-components/atoms/Title'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
@@ -33,6 +28,7 @@ import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { AlertBox, InfoBox } from 'lib-components/molecules/MessageBoxes'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { DatePickerSpacer } from 'lib-components/molecules/date-picker/DateRangePicker'
 import { fontWeights } from 'lib-components/typography'
@@ -47,9 +43,7 @@ import {
 import { getDecisionUnits } from '../../generated/api-clients/decision'
 import type { Translations } from '../../state/i18n'
 import { useTranslation } from '../../state/i18n'
-import type { TitleState } from '../../state/title'
-import { TitleContext } from '../../state/title'
-import { formatName } from '../../utils'
+import { useTitle } from '../../utils/useTitle'
 import { renderResult } from '../async-rendering'
 import LabelValueList from '../common/LabelValueList'
 
@@ -162,7 +156,6 @@ export default React.memo(function Decision() {
   const [decisionDraftGroup, setDecisionDraftGroup] = useState<
     Result<DecisionDraftGroup>
   >(Loading.of())
-  const { setTitle, formatTitleName } = useContext<TitleState>(TitleContext)
   const [decisions, setDecisions] = useState<DecisionDraft[]>([])
   const [units, setUnits] = useState<Result<DecisionUnit[]>>(Loading.of())
 
@@ -183,15 +176,12 @@ export default React.memo(function Decision() {
     )
   }, [applicationId, navigate])
 
-  useEffect(() => {
-    if (decisionDraftGroup.isSuccess) {
-      const name = formatTitleName(
-        decisionDraftGroup.value.child.firstName,
-        decisionDraftGroup.value.child.lastName
-      )
-      setTitle(`${name} | ${i18n.titles.decision}`)
-    }
-  }, [decisionDraftGroup, formatTitleName, i18n.titles.decision, setTitle])
+  useTitle(
+    decisionDraftGroup.map(
+      (value) =>
+        `${formatPersonName(value.child, 'Last First')} | ${i18n.titles.decision}`
+    )
+  )
 
   useEffect(() => {
     void getDecisionUnitsResult().then(setUnits)
@@ -272,12 +262,10 @@ export default React.memo(function Decision() {
         {renderResult(decisionDraftGroup, (decisionDraftGroup) => (
           <Fragment>
             <Title size={3}>
-              {formatName(
-                decisionDraftGroup.child.firstName,
-                decisionDraftGroup.child.lastName,
-                i18n,
-                true
-              )}
+              <PersonName
+                person={decisionDraftGroup.child}
+                format="Last First"
+              />
             </Title>
             <LabelValueList
               spacing="large"

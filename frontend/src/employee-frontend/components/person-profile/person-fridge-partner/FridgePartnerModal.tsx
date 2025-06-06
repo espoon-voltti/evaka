@@ -13,6 +13,7 @@ import type {
 import type { PersonId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useMutationResult } from 'lib-common/query'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import FormModal from 'lib-components/molecules/modals/FormModal'
 import { Gap } from 'lib-components/white-space'
@@ -20,7 +21,6 @@ import { faPen, faUser } from 'lib-icons'
 
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
-import { formatName } from '../../../utils'
 import { DbPersonSearch as PersonSearch } from '../../common/PersonSearch'
 import RetroactiveConfirmation, {
   isChangeRetroactive
@@ -197,14 +197,14 @@ function FridgePartnerModal({ partnership, headPersonId }: Props) {
       <section>
         {partnership ? (
           <div>
-            {form.partner
-              ? `${formatName(
-                  form.partner.firstName,
-                  form.partner.lastName,
-                  i18n,
-                  true
-                )} (${form.partner.socialSecurityNumber ?? ''})`
-              : ''}
+            {form.partner ? (
+              <span>
+                <PersonName person={form.partner} format="Last First" />{' '}
+                <span>{form.partner.socialSecurityNumber ?? ''}</span>
+              </span>
+            ) : (
+              ''
+            )}
           </div>
         ) : (
           <>

@@ -18,6 +18,7 @@ import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Td, Tfoot, Th, Thead, Tr } from 'lib-components/layout/Table'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { faChevronDown, faChevronUp } from 'lib-icons'
 
@@ -445,7 +446,10 @@ export default React.memo(function FamilyDaycareMealCount() {
                                   <Link
                                     to={`/child-information/${childResult.childId}`}
                                   >
-                                    {`${childResult.lastName} ${childResult.firstName}`}
+                                    <PersonName
+                                      person={childResult}
+                                      format="Last First"
+                                    />
                                   </Link>
                                 </StyledSubTableTd>
                                 <SubTableTd>

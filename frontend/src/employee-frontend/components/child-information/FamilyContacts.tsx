@@ -18,12 +18,12 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import { H3 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
 import { ChildContext } from '../../state'
 import { useTranslation } from '../../state/i18n'
-import { formatName } from '../../utils'
 import { renderResult } from '../async-rendering'
 
 import BackupPickup from './BackupPickup'
@@ -145,7 +145,9 @@ const FamilyContactRow = React.memo(function FamilyContactRow({
         contact.firstName || ''
       }`}
     >
-      <Td>{formatName(contact.firstName, contact.lastName, i18n, true)}</Td>
+      <Td>
+        <PersonName person={contact} format="Last First" />
+      </Td>
       <Td>{i18n.childInformation.familyContacts.roles[contact.role]}</Td>
       <Td>
         {editing ? (

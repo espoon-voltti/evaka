@@ -15,10 +15,12 @@ import type { CreatePersonBody } from 'lib-common/generated/api-types/pis'
 import type { PersonJSON } from 'lib-common/generated/api-types/pis'
 import type { PersonId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
+import { formatPersonName } from 'lib-common/names'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import Radio from 'lib-components/atoms/form/Radio'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import FormModal from 'lib-components/molecules/modals/FormModal'
 import { Label } from 'lib-components/typography'
@@ -27,10 +29,8 @@ import { faFileAlt } from 'lib-icons'
 
 import { getEmployeeUrlPrefix } from '../../constants'
 import { createPaperApplication } from '../../generated/api-clients/application'
-import type { Translations } from '../../state/i18n'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
-import { formatName } from '../../utils'
 import { errorToInputInfo } from '../../utils/validation/input-info-helper'
 import CreatePersonInput from '../common/CreatePersonInput'
 import {
@@ -42,12 +42,9 @@ const createPaperApplicationResult = wrapResult(createPaperApplication)
 
 type PersonType = 'GUARDIAN' | 'DB_SEARCH' | 'VTJ' | 'NEW_NO_SSN'
 
-const personToSelectOption = (
-  { firstName, id, lastName }: PersonJSON,
-  i18n: Translations
-) => ({
-  name: formatName(firstName, lastName, i18n),
-  id: id
+const personToSelectOption = (person: PersonJSON) => ({
+  name: formatPersonName(person, 'First Last'),
+  id: person.id
 })
 
 const hasContent = (s: string | undefined): s is string =>
@@ -75,9 +72,7 @@ function CreateApplicationModal({
     sortedGuardians.length > 0 ? 'GUARDIAN' : 'DB_SEARCH'
   )
   const [guardian, setGuardian] = useState(
-    sortedGuardians.length > 0
-      ? personToSelectOption(sortedGuardians[0], i18n)
-      : null
+    sortedGuardians.length > 0 ? personToSelectOption(sortedGuardians[0]) : null
   )
   const [personId, setPersonId] = useState<PersonId | undefined>(undefined)
   const [newVtjPersonSsn, setNewVtjPersonSsn] = useState<string | undefined>(
@@ -223,7 +218,7 @@ function CreateApplicationModal({
       <FixedSpaceColumn spacing="L">
         <div>
           <Label>
-            {formatName(child.firstName, child.lastName, i18n, true)}
+            <PersonName person={child} format="Last First" />
           </Label>
           <div>{child.socialSecurityNumber || child.dateOfBirth.format()}</div>
           <div>{`${child.streetAddress ?? ''}, ${child.postalCode ?? ''} ${
@@ -245,9 +240,7 @@ function CreateApplicationModal({
                 />
                 <div>
                   <Select
-                    items={sortedGuardians.map((g) =>
-                      personToSelectOption(g, i18n)
-                    )}
+                    items={sortedGuardians.map(personToSelectOption)}
                     onChange={setGuardian}
                     selectedItem={guardian}
                     onFocus={() => setPersonType('GUARDIAN')}

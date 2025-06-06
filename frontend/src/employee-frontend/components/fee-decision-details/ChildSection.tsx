@@ -10,11 +10,12 @@ import type {
   UnitData
 } from 'lib-common/generated/api-types/invoicing'
 import type { PlacementType } from 'lib-common/generated/api-types/placement'
+import { formatPersonName } from 'lib-common/names'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import { faUserFriends } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
-import { formatName } from '../../utils'
 import LabelValueList from '../common/LabelValueList'
 
 interface Props {
@@ -34,7 +35,7 @@ const ChildSection = React.memo(function ChildSection({
 
   return (
     <CollapsibleSection
-      title={formatName(child.firstName, child.lastName, i18n)}
+      title={formatPersonName(child, 'First Last')}
       icon={faUserFriends}
       startCollapsed={false}
     >
@@ -45,7 +46,7 @@ const ChildSection = React.memo(function ChildSection({
             label: i18n.feeDecision.form.child.name,
             value: (
               <Link to={`/child-information/${child.id}`} data-qa="child-name">
-                {formatName(child.firstName, child.lastName, i18n)}
+                <PersonName person={child} format="First Last" />
               </Link>
             )
           },

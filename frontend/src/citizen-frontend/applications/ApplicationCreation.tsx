@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useMemo, useState } from 'react'
+import React, { Fragment, useMemo, useState } from 'react'
 import styled from 'styled-components'
 import { Redirect, useLocation } from 'wouter'
 
@@ -24,11 +24,13 @@ import ExpandingInfo, {
   ExpandingInfoButtonSlot
 } from 'lib-components/molecules/ExpandingInfo'
 import { AlertBox, InfoBox } from 'lib-components/molecules/MessageBoxes'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import { fontWeights, H1, H2 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/citizen'
 
 import Footer from '../Footer'
+import { renderResult } from '../async-rendering'
 import { useTranslation } from '../localization'
 import useTitle from '../useTitle'
 
@@ -45,14 +47,10 @@ export default React.memo(function ApplicationCreation() {
   const t = useTranslation()
   useTitle(t, t.applications.creation.title)
   const children = useQueryResult(applicationChildrenQuery())
-  const childName = useMemo(
+  const childResult = useMemo(
     () =>
       children.map((children) => {
-        const child = children.find(({ id }) => id === childId)
-        if (child === undefined) {
-          return undefined
-        }
-        return `${child.firstName} ${child.lastName}`
+        return children.find(({ id }) => id === childId)
       }),
     [childId, children]
   )
@@ -72,116 +70,122 @@ export default React.memo(function ApplicationCreation() {
     transferApplicationTypes !== undefined &&
     transferApplicationTypes[selectedType]
 
-  if (!childName.isLoading && childName.getOrElse(undefined) === undefined) {
-    return <Redirect replace to="/applications" />
-  }
-
   return (
     <>
       <Container>
         <ReturnButton label={t.common.return} />
         <Main>
-          <ContentArea
-            opaque
-            paddingVertical="L"
-            data-qa="application-options-area"
-          >
-            <H1 noMargin>{t.applications.creation.title}</H1>
-            <Gap size="m" />
-            <H2 noMargin translate="no">
-              {childName.getOrElse('')}
-            </H2>
-            <Gap size="XL" />
-            <ExpandingInfo
-              data-qa="daycare-expanding-info"
-              info={t.applications.creation.daycareInfo}
-            >
-              <Radio
-                checked={selectedType === 'DAYCARE'}
-                onChange={() => setSelectedType('DAYCARE')}
-                label={t.applications.creation.daycareLabel}
-                data-qa="type-radio-DAYCARE"
-              />
-            </ExpandingInfo>
-            <Gap size="s" />
-            {featureFlags.preschool && (
-              <>
-                <Radio
-                  checked={selectedType === 'PRESCHOOL'}
-                  onChange={() => setSelectedType('PRESCHOOL')}
-                  label={t.applications.creation.preschoolLabel}
-                  data-qa="type-radio-PRESCHOOL"
-                />
-                <ExpandingInfo info={t.applications.creation.preschoolInfo}>
-                  <PreschoolDaycareInfo>
-                    {t.applications.creation.preschoolDaycareInfo}
-                    <ExpandingInfoButtonSlot />
-                  </PreschoolDaycareInfo>
-                </ExpandingInfo>
-                <Gap size="s" />
-              </>
-            )}
-            {!featureFlags.hideClubApplication && (
-              <ExpandingInfo
-                data-qa="club-expanding-info"
-                info={t.applications.creation.clubInfo}
-              >
-                <Radio
-                  checked={selectedType === 'CLUB'}
-                  onChange={() => setSelectedType('CLUB')}
-                  label={t.applications.creation.clubLabel}
-                  data-qa="type-radio-CLUB"
-                />
-              </ExpandingInfo>
-            )}
-            <Gap size="m" />
-            {duplicateExists ? (
-              <>
-                <AlertBox
-                  data-qa="duplicate-application-notification"
-                  message={t.applications.creation.duplicateWarning}
-                  noMargin
-                />
-                <Gap size="m" />
-              </>
-            ) : null}
-            {!duplicateExists && shouldUseTransferApplication && (
-              <>
-                <InfoBox
-                  thin
-                  data-qa="transfer-application-notification"
-                  message={
-                    t.applications.creation.transferApplicationInfo[
-                      selectedType === 'DAYCARE' ? 'DAYCARE' : 'PRESCHOOL'
-                    ]
-                  }
-                />
-                <Gap size="m" />
-              </>
-            )}
-            {t.applications.creation.applicationInfo}
-          </ContentArea>
-          <ContentArea opaque={false} paddingVertical="L">
-            <ButtonContainer justify="center">
-              <MutateButton
-                primary
-                text={t.applications.creation.create}
-                disabled={selectedType === undefined || duplicateExists}
-                mutation={createApplicationMutation}
-                onClick={() =>
-                  selectedType !== undefined
-                    ? { body: { childId, type: selectedType } }
-                    : cancelMutation
-                }
-                onSuccess={(id) => navigate(`/applications/${id}/edit`)}
-                data-qa="submit"
-              />
-              <LegacyButton
-                text={t.common.cancel}
-                onClick={() => navigate('/applications')}
-              />
-            </ButtonContainer>
-          </ContentArea>
+          {renderResult(childResult, (child) => {
+            return child === undefined ? (
+              <Redirect replace to="/applications" />
+            ) : (
+              <Fragment>
+                <ContentArea
+                  opaque
+                  paddingVertical="L"
+                  data-qa="application-options-area"
+                >
+                  <H1 noMargin>{t.applications.creation.title}</H1>
+                  <Gap size="m" />
+                  <H2 noMargin>
+                    <PersonName person={child} format="First Last" />
+                  </H2>
+                  <Gap size="XL" />
+                  <ExpandingInfo
+                    data-qa="daycare-expanding-info"
+                    info={t.applications.creation.daycareInfo}
+                  >
+                    <Radio
+                      checked={selectedType === 'DAYCARE'}
+                      onChange={() => setSelectedType('DAYCARE')}
+                      label={t.applications.creation.daycareLabel}
+                      data-qa="type-radio-DAYCARE"
+                    />
+                  </ExpandingInfo>
+                  <Gap size="s" />
+                  {featureFlags.preschool && (
+                    <>
+                      <Radio
+                        checked={selectedType === 'PRESCHOOL'}
+                        onChange={() => setSelectedType('PRESCHOOL')}
+                        label={t.applications.creation.preschoolLabel}
+                        data-qa="type-radio-PRESCHOOL"
+                      />
+                      <ExpandingInfo
+                        info={t.applications.creation.preschoolInfo}
+                      >
+                        <PreschoolDaycareInfo>
+                          {t.applications.creation.preschoolDaycareInfo}
+                          <ExpandingInfoButtonSlot />
+                        </PreschoolDaycareInfo>
+                      </ExpandingInfo>
+                      <Gap size="s" />
+                    </>
+                  )}
+                  {!featureFlags.hideClubApplication && (
+                    <ExpandingInfo
+                      data-qa="club-expanding-info"
+                      info={t.applications.creation.clubInfo}
+                    >
+                      <Radio
+                        checked={selectedType === 'CLUB'}
+                        onChange={() => setSelectedType('CLUB')}
+                        label={t.applications.creation.clubLabel}
+                        data-qa="type-radio-CLUB"
+                      />
+                    </ExpandingInfo>
+                  )}
+                  <Gap size="m" />
+                  {duplicateExists ? (
+                    <>
+                      <AlertBox
+                        data-qa="duplicate-application-notification"
+                        message={t.applications.creation.duplicateWarning}
+                        noMargin
+                      />
+                      <Gap size="m" />
+                    </>
+                  ) : null}
+                  {!duplicateExists && shouldUseTransferApplication && (
+                    <>
+                      <InfoBox
+                        thin
+                        data-qa="transfer-application-notification"
+                        message={
+                          t.applications.creation.transferApplicationInfo[
+                            selectedType === 'DAYCARE' ? 'DAYCARE' : 'PRESCHOOL'
+                          ]
+                        }
+                      />
+                      <Gap size="m" />
+                    </>
+                  )}
+                  {t.applications.creation.applicationInfo}
+                </ContentArea>
+                <ContentArea opaque={false} paddingVertical="L">
+                  <ButtonContainer justify="center">
+                    <MutateButton
+                      primary
+                      text={t.applications.creation.create}
+                      disabled={selectedType === undefined || duplicateExists}
+                      mutation={createApplicationMutation}
+                      onClick={() =>
+                        selectedType !== undefined
+                          ? { body: { childId, type: selectedType } }
+                          : cancelMutation
+                      }
+                      onSuccess={(id) => navigate(`/applications/${id}/edit`)}
+                      data-qa="submit"
+                    />
+                    <LegacyButton
+                      text={t.common.cancel}
+                      onClick={() => navigate('/applications')}
+                    />
+                  </ButtonContainer>
+                </ContentArea>
+              </Fragment>
+            )
+          })}
         </Main>
       </Container>
       <Footer />

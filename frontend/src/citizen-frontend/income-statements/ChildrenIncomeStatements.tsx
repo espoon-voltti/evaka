@@ -32,6 +32,7 @@ import {
   TabletAndDesktop
 } from 'lib-components/layout/responsive-layout'
 import { InfoBox } from 'lib-components/molecules/MessageBoxes'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { Dimmed, H1, H3 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
@@ -369,7 +370,7 @@ export default React.memo(function ChildrenIncomeStatements({
               <Gap size="s" />
               <HeadingContainer>
                 <H3 data-qa="child-name" translate="no">
-                  {child.firstName} {child.lastName}
+                  <PersonName person={child} format="First Last" />
                 </H3>
                 <ResponsiveAddButton
                   onClick={() => navigate(`/child-income/${child.id}/new/edit`)}

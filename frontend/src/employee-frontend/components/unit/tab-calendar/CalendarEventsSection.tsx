@@ -34,6 +34,7 @@ import type {
   GroupId
 } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
+import { formatPersonName } from 'lib-common/names'
 import { useQueryResult } from 'lib-common/query'
 import type { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -53,6 +54,7 @@ import {
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import DateRangePicker from 'lib-components/molecules/date-picker/DateRangePicker'
 import BaseModal from 'lib-components/molecules/modals/BaseModal'
 import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
@@ -69,7 +71,6 @@ import {
 } from '../../../generated/api-clients/calendarevent'
 import { useTranslation } from '../../../state/i18n'
 import type { DayOfWeek } from '../../../types'
-import { formatPersonName } from '../../../utils'
 import { renderResult } from '../../async-rendering'
 import { unitGroupDetailsQuery, daycareQuery } from '../queries'
 
@@ -604,7 +605,7 @@ const CreateEventModal = React.memo(function CreateEventModal({
                 ),
               (child) => child.id
             ).map<AttendeeTreeNode>((child) => ({
-              text: `${child.firstName ?? ''} ${child.lastName ?? ''}`,
+              text: formatPersonName(child, 'First Last'),
               key: child.id,
               checked: useDefault
                 ? groupId === group.id || groupId === null
@@ -682,9 +683,7 @@ const CreateEventModal = React.memo(function CreateEventModal({
 
             return {
               childId,
-              childName: child
-                ? `${child.firstName ?? ''} ${child.lastName ?? ''}`
-                : '',
+              childName: child ? formatPersonName(child, 'First Last') : '',
               missingPlacementDates: [...form.period.dates()].filter(
                 (date) =>
                   !childsGroupPlacements.some(
@@ -847,7 +846,7 @@ const getLongAttendees = (
     .flatMap(
       ({ name, id }) =>
         childGroupIds[id]?.map(
-          (child) => `${name}/${child.lastName} ${child.firstName}`
+          (child) => `${name}/${formatPersonName(child, 'Last First')}`
         ) ?? [name]
     )
     .join(', ')
@@ -1067,9 +1066,13 @@ const SurveySummaryModal = React.memo(function SurveySummaryModal({
                     data-qa={`times-${t.id}`}
                   >{`${t.startTime.format()} - ${t.endTime.format()}`}</span>
                   {t.childId ? (
-                    <Bold
-                      data-qa={`reservee-${t.id}`}
-                    >{`${child ? formatPersonName(child, i18n) : tr.reservationModal.reserved}`}</Bold>
+                    <Bold data-qa={`reservee-${t.id}`}>
+                      {child ? (
+                        <PersonName person={child} format="First Last" />
+                      ) : (
+                        tr.reservationModal.reserved
+                      )}
+                    </Bold>
                   ) : (
                     <span data-qa={`reservee-${t.id}`}>
                       {tr.reservationModal.unreserved}

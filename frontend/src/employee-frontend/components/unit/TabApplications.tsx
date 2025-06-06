@@ -9,9 +9,9 @@ import PlacementCircle from 'lib-components/atoms/PlacementCircle'
 import Title from 'lib-components/atoms/Title'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 
 import { useTranslation } from '../../state/i18n'
-import { formatName } from '../../utils'
 import { isPartDayPlacement } from '../../utils/placements'
 import { CareTypeChip } from '../common/CareTypeLabel'
 
@@ -52,18 +52,19 @@ export default React.memo(function TabApplications({ applications }: Props) {
               <Tr key={row.applicationId} data-qa="application-row">
                 <Td>
                   <div data-qa="child-name">
-                    {formatName(row.firstName, row.lastName, i18n, true)}
+                    <PersonName person={row} format="Last First" />
                   </div>
                   <div data-qa="child-dob">{row.dateOfBirth.format()}</div>
                 </Td>
                 <Td>
                   <div data-qa="guardian-name">
-                    {formatName(
-                      row.guardianFirstName,
-                      row.guardianLastName,
-                      i18n,
-                      true
-                    )}
+                    <PersonName
+                      person={{
+                        firstName: row.guardianFirstName,
+                        lastName: row.guardianLastName
+                      }}
+                      format="Last First"
+                    />
                   </div>
                   <div data-qa="guardian-phone">{row.guardianPhone}</div>
                   <div data-qa="guardian-email">{row.guardianEmail}</div>

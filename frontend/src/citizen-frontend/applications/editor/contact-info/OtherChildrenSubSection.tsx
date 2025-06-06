@@ -4,6 +4,7 @@
 
 import React from 'react'
 
+import { formatPersonName } from 'lib-common/names'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
@@ -39,7 +40,7 @@ export default React.memo(function OtherChildrenSubSection({
         <React.Fragment key={`known-other-child-${index}`}>
           <Gap size="s" />
           <Checkbox
-            label={`${child.firstName || ''} ${child.lastName || ''}, ${
+            label={`${formatPersonName(child, 'First Last')}, ${
               child.socialSecurityNumber || ''
             }`}
             translate="no"

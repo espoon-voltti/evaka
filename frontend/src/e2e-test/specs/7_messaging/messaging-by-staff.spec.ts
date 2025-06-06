@@ -6,7 +6,7 @@ import type { PersonId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
-import { formatFirstName } from 'lib-common/names'
+import { formatPersonName } from 'lib-common/names'
 
 import config from '../../config'
 import { runPendingAsyncJobs } from '../../dev-api'
@@ -369,7 +369,10 @@ describe('Sending and receiving messages', () => {
     await citizenMessagesPage.assertThreadContent({
       title: 'Aloittavalle otsikko',
       content: 'Sisältö',
-      childNames: [formatFirstName(testChild), formatFirstName(testChild2)]
+      childNames: [
+        formatPersonName(testChild, 'FirstFirst'),
+        formatPersonName(testChild2, 'FirstFirst')
+      ]
     })
 
     // Reply to the message

@@ -12,6 +12,7 @@ import { combine } from 'lib-common/api'
 import type { ApplicationStatus } from 'lib-common/generated/api-types/application'
 import type { PlacementSketchingReportRow } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
+import { formatPersonName } from 'lib-common/names'
 import { constantQuery, useQueryResult } from 'lib-common/query'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
@@ -19,6 +20,7 @@ import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { faFileAlt } from 'lib-icons'
 
@@ -264,7 +266,13 @@ export default React.memo(function PlacementSketching() {
                 <ReportDownload
                   data={filteredRows.map((row) => ({
                     ...row,
-                    childName: `${row.childLastName} ${row.childFirstName}`,
+                    childName: formatPersonName(
+                      {
+                        lastName: row.childLastName,
+                        firstName: row.childFirstName
+                      },
+                      'Last First'
+                    ),
                     contact: `${
                       row.guardianPhoneNumber ? row.guardianPhoneNumber : ''
                     } / ${row.guardianEmail ? row.guardianEmail : ''}`,
@@ -448,7 +456,13 @@ export default React.memo(function PlacementSketching() {
                         </Td>
                         <Td data-qa="child-name">
                           <Link to={`/child-information/${row.childId}`}>
-                            {row.childLastName} {row.childFirstName}
+                            <PersonName
+                              person={{
+                                lastName: row.childLastName,
+                                firstName: row.childFirstName
+                              }}
+                              format="Last First"
+                            />
                           </Link>
                         </Td>
                         <Td>{row.childDob.format()}</Td>

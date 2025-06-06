@@ -20,6 +20,7 @@ import { StaticChip } from 'lib-components/atoms/Chip'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { fontWeights } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
@@ -173,7 +174,7 @@ export default React.memo(function AttendanceChildPage({
 
                         <Gap size="s" />
                         <CustomTitle data-qa="child-name">
-                          {child.firstName} {child.lastName}
+                          <PersonName person={child} format="First Last" />
                         </CustomTitle>
 
                         {!!child.preferredName && (

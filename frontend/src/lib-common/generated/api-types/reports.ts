@@ -363,10 +363,10 @@ export interface DecisionsReportRow {
 export interface DuplicatePeopleReportRow {
   dateOfBirth: LocalDate
   duplicateNumber: number
-  firstName: string | null
+  firstName: string
   groupIndex: number
   id: PersonId
-  lastName: string | null
+  lastName: string
   referenceCounts: ReferenceCount[]
   socialSecurityNumber: string | null
   streetAddress: string | null
@@ -379,8 +379,8 @@ export interface EndedPlacementsReportRow {
   areaName: string
   childId: PersonId
   dateOfBirth: LocalDate | null
-  firstName: string | null
-  lastName: string | null
+  firstName: string
+  lastName: string
   nextPlacementStart: LocalDate | null
   nextPlacementUnitName: string | null
   placementEnd: LocalDate
@@ -416,9 +416,9 @@ export interface ExceededServiceNeedReportUnit {
 export interface FamilyConflictReportRow {
   careAreaName: string
   childConflictCount: number
-  firstName: string | null
+  firstName: string
   id: PersonId
-  lastName: string | null
+  lastName: string
   partnerConflictCount: number
   socialSecurityNumber: string | null
   unitId: DaycareId
@@ -636,8 +636,8 @@ export interface MissingServiceNeedReportRow {
   careAreaName: string
   childId: PersonId
   daysWithoutServiceNeed: number
-  firstName: string | null
-  lastName: string | null
+  firstName: string
+  lastName: string
   unitId: DaycareId
   unitName: string
 }
@@ -699,10 +699,10 @@ export interface PartnersInDifferentAddressReportRow {
   address1: string
   address2: string
   careAreaName: string
-  firstName1: string | null
-  firstName2: string | null
-  lastName1: string | null
-  lastName2: string | null
+  firstName1: string
+  firstName2: string
+  lastName1: string
+  lastName2: string
   personId1: PersonId
   personId2: PersonId
   unitId: DaycareId

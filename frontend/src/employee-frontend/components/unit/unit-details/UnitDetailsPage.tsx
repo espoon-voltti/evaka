@@ -2,12 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 
 import type { Result } from 'lib-common/api'
 import { combine, Loading } from 'lib-common/api'
 import { useBoolean } from 'lib-common/form/hooks'
 import type { DaycareId } from 'lib-common/generated/api-types/shared'
+import { formatPersonName } from 'lib-common/names'
 import { useQueryResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
@@ -21,8 +22,7 @@ import { Gap } from 'lib-components/white-space'
 import { areasQuery, getEmployeesQuery } from '../../../queries'
 import { useTranslation } from '../../../state/i18n'
 import type { FinanceDecisionHandlerOption } from '../../../state/invoicing-ui'
-import type { TitleState } from '../../../state/title'
-import { TitleContext } from '../../../state/title'
+import { useTitle } from '../../../utils/useTitle'
 import { renderResult } from '../../async-rendering'
 import { daycareQuery, updateUnitMutation } from '../queries'
 
@@ -31,17 +31,13 @@ import UnitEditor from './UnitEditor'
 export default React.memo(function UnitDetailsPage() {
   const id = useIdRouteParam<DaycareId>('id')
   const { i18n } = useTranslation()
-  const { setTitle } = useContext<TitleState>(TitleContext)
   const unit = useQueryResult(daycareQuery({ daycareId: id }))
   const areas = useQueryResult(areasQuery())
   const [financeDecisionHandlerOptions, setFinanceDecisionHandlerOptions] =
     useState<Result<FinanceDecisionHandlerOption[]>>(Loading.of())
   const [editable, useEditable] = useBoolean(false)
-  useEffect(() => {
-    if (unit.isSuccess) {
-      setTitle(unit.value.daycare.name)
-    }
-  }, [setTitle, unit])
+
+  useTitle(unit.map((value) => value.daycare.name))
 
   const employeesResponse = useQueryResult(getEmployeesQuery())
 
@@ -50,7 +46,7 @@ export default React.memo(function UnitDetailsPage() {
       employeesResponse.map((employees) =>
         employees.map((employee) => ({
           value: employee.id,
-          label: `${employee.firstName ?? ''} ${employee.lastName ?? ''}${
+          label: `${formatPersonName(employee, 'First Last')}${
             employee.email ? ` (${employee.email})` : ''
           }`
         }))

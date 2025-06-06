@@ -17,6 +17,7 @@ import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Th, Tr, Td, Thead, Tbody } from 'lib-components/layout/Table'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { colors } from 'lib-customizations/common'
 import { featureFlags } from 'lib-customizations/employee'
@@ -133,7 +134,7 @@ export default React.memo(function DuplicatePeople() {
                             : `/profile/${row.id}`
                         }
                       >
-                        {row.lastName} {row.firstName}
+                        <PersonName person={row} format="Last First" />
                       </Link>
                     </NoWrapTd>
                     <NoWrapTd>{row.socialSecurityNumber}</NoWrapTd>

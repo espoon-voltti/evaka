@@ -18,6 +18,8 @@ const components: Translations = {
     confirm: 'Bekräfta',
     no: 'Nej',
     noResults: 'Inga sökresultat',
+    noFirstName: 'Inget förnamn',
+    noLastName: 'Inget efternamn',
     open: 'Öppna',
     remove: 'Ta bort',
     saving: 'Sparar',

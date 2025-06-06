@@ -18,6 +18,7 @@ import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 
 import type { getEndedPlacementsReport } from '../../generated/api-clients/reports'
 import { useTranslation } from '../../state/i18n'
@@ -214,7 +215,9 @@ export default React.memo(function EndedPlacements() {
                       <Link
                         to={`/child-information/${row.childId}`}
                         data-qa="child-name"
-                      >{`${row.lastName ?? ''} ${row.firstName ?? ''}`}</Link>
+                      >
+                        <PersonName person={row} format="Last First" />
+                      </Link>
                     </Td>
                     <Td data-qa="child-date-of-birth">
                       {row.dateOfBirth?.format()}

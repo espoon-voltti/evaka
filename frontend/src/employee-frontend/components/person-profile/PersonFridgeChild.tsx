@@ -16,12 +16,12 @@ import { getAge } from 'lib-common/utils/local-date'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { faQuestion } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
-import { formatName } from '../../utils'
 import { renderResult } from '../async-rendering'
 import Toolbar from '../common/Toolbar'
 
@@ -144,12 +144,10 @@ export default React.memo(function PersonFridgeChild({ id }: Props) {
                   >
                     <NameTd>
                       <Link to={`/child-information/${fridgeChild.child.id}`}>
-                        {formatName(
-                          fridgeChild.child.firstName,
-                          fridgeChild.child.lastName,
-                          i18n,
-                          true
-                        )}
+                        <PersonName
+                          person={fridgeChild.child}
+                          format="First Last"
+                        />
                       </Link>
                     </NameTd>
                     <Td>

@@ -18,6 +18,8 @@ const components: Translations = {
     confirm: 'Confirm',
     no: 'No',
     noResults: 'No results',
+    noFirstName: 'No first name',
+    noLastName: 'No last name',
     open: 'Open',
     remove: 'Remove',
     saving: 'Saving',

@@ -24,7 +24,6 @@ import type {
   MessageAccountWithPresence
 } from 'lib-common/generated/api-types/messaging'
 import type { MessageAccountId } from 'lib-common/generated/api-types/shared'
-import { formatFirstName } from 'lib-common/names'
 import { scrollRefIntoView } from 'lib-common/utils/scrolling'
 import { NotificationsContext } from 'lib-components/Notifications'
 import { StaticChip } from 'lib-components/atoms/Chip'
@@ -47,6 +46,7 @@ import { MessageCharacteristics } from 'lib-components/messages/MessageCharacter
 import MessageReplyEditor from 'lib-components/messages/MessageReplyEditor'
 import { ThreadContainer } from 'lib-components/messages/ThreadListItem'
 import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import { ScreenReaderButton } from 'lib-components/molecules/ScreenReaderButton'
 import { fontWeights, H2, InformationText } from 'lib-components/typography'
 import { useRecipients } from 'lib-components/utils/useReplyRecipients'
@@ -334,9 +334,8 @@ export default React.memo(
                     data-qa="thread-child"
                     key={child.childId}
                     color={theme.colors.main.m2}
-                    translate="no"
                   >
-                    {formatFirstName(child) || ''}
+                    <PersonName person={child} format="FirstFirst" />
                   </StaticChip>
                 ))}
               </>

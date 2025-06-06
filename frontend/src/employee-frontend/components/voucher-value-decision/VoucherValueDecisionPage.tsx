@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useContext, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { Redirect } from 'wouter'
 
 import type { Result } from 'lib-common/api'
@@ -12,6 +12,7 @@ import type {
   VoucherValueDecisionType
 } from 'lib-common/generated/api-types/invoicing'
 import type { VoucherValueDecisionId } from 'lib-common/generated/api-types/shared'
+import { formatPersonName } from 'lib-common/names'
 import { useQueryResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
@@ -23,8 +24,7 @@ import {
   sendVoucherValueDecisionDrafts
 } from '../../generated/api-clients/invoicing'
 import { useTranslation } from '../../state/i18n'
-import type { TitleState } from '../../state/title'
-import { TitleContext } from '../../state/title'
+import { useTitle } from '../../utils/useTitle'
 import MetadataSection from '../archive-metadata/MetadataSection'
 import { renderResult } from '../async-rendering'
 import FinanceDecisionHandlerSelectModal from '../finance-decisions/FinanceDecisionHandlerSelectModal'
@@ -57,7 +57,6 @@ export default React.memo(function VoucherValueDecisionPage() {
   const [showHandlerSelectModal, setShowHandlerSelectModal] = useState(false)
   const id = useIdRouteParam<VoucherValueDecisionId>('id')
   const { i18n } = useTranslation()
-  const { setTitle, formatTitleName } = useContext<TitleState>(TitleContext)
   const [decisionResponse, setDecisionResponse] = useState<
     Result<VoucherValueDecisionResponse>
   >(Loading.of())
@@ -74,18 +73,16 @@ export default React.memo(function VoucherValueDecisionPage() {
   useEffect(() => {
     if (decisionResponse.isSuccess) {
       const decision = decisionResponse.value.data
-      const name = formatTitleName(
-        decision.headOfFamily.firstName,
-        decision.headOfFamily.lastName
-      )
-      if (decision.status === 'DRAFT') {
-        setTitle(`${name} | ${i18n.titles.valueDecisionDraft}`)
-      } else {
-        setTitle(`${name} | ${i18n.titles.valueDecision}`)
-      }
       setNewDecisionType(decision.decisionType)
     }
-  }, [decisionResponse, formatTitleName, setTitle, i18n])
+  }, [decisionResponse, i18n])
+
+  useTitle(
+    decisionResponse.map(
+      (value) =>
+        `${formatPersonName(value.data.headOfFamily, 'Last First')} | ${value.data.status === 'DRAFT' ? i18n.titles.valueDecisionDraft : i18n.titles.valueDecision}`
+    )
+  )
 
   const decisionType = decisionResponse.map(({ data }) => data.decisionType)
   const changeDecisionType = useCallback(

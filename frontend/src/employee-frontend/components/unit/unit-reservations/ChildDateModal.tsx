@@ -47,6 +47,7 @@ import {
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { H3, H4 } from 'lib-components/typography'
 import colors from 'lib-customizations/common'
@@ -282,7 +283,7 @@ export default React.memo(function ChildDateModal({
       rejectLabel={i18n.common.cancel}
     >
       <H3>
-        {child.preferredName || child.firstName} {child.lastName}
+        <PersonName person={child} format="Preferred Last" />
       </H3>
 
       {childDayRecord.scheduleType === 'RESERVATION_REQUIRED' && (

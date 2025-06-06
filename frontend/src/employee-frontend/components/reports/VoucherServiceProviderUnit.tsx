@@ -38,6 +38,7 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import { H2, H3 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
@@ -46,7 +47,6 @@ import { faHome, faLockAlt } from 'lib-icons'
 
 import type { getServiceVoucherReportForUnit } from '../../generated/api-clients/reports'
 import { useTranslation } from '../../state/i18n'
-import { formatName } from '../../utils'
 import { renderResult } from '../async-rendering'
 import { AgeIndicatorChip } from '../common/AgeIndicatorChip'
 
@@ -452,12 +452,13 @@ export default React.memo(function VoucherServiceProviderUnit() {
                             data-qa="child-name"
                             to={`/child-information/${row.childId}`}
                           >
-                            {formatName(
-                              row.childFirstName,
-                              row.childLastName,
-                              i18n,
-                              true
-                            )}
+                            <PersonName
+                              person={{
+                                firstName: row.childFirstName,
+                                lastName: row.childLastName
+                              }}
+                              format="Last First"
+                            />
                           </Link>
                           <FixedSpaceRow spacing="xs" alignItems="center">
                             <AgeIndicatorChip

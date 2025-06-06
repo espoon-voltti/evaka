@@ -12,6 +12,7 @@ import Title from 'lib-components/atoms/Title'
 import { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import { fontWeights } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { faPhone } from 'lib-icons'
@@ -74,7 +75,9 @@ export default React.memo(function ChildBasicInfo({ child }: Props) {
           <FixedSpaceColumn>
             <KeyValue>
               <Key>{i18n.childInfo.childName}</Key>
-              <span data-qa="child-info-name">{`${child.firstName} ${child.lastName}`}</span>
+              <span data-qa="child-info-name">
+                <PersonName person={child} format="First Last" />
+              </span>
             </KeyValue>
 
             {renderKeyValue(
@@ -115,9 +118,9 @@ export default React.memo(function ChildBasicInfo({ child }: Props) {
                 <FixedSpaceColumn>
                   <KeyValue>
                     <Key>{i18n.childInfo.name}</Key>
-                    <span data-qa={`child-info-contact${index + 1}-name`}>{`${
-                      contact.firstName || ''
-                    } ${contact.lastName || ''}`}</span>
+                    <span data-qa={`child-info-contact${index + 1}-name`}>
+                      <PersonName person={contact} format="First Last" />
+                    </span>
                   </KeyValue>
 
                   {renderKeyValue(

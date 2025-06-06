@@ -4,7 +4,7 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import isEqual from 'lodash/isEqual'
-import React, { useContext, useEffect, useMemo, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { useSearchParams, useLocation } from 'wouter'
 
 import { combine } from 'lib-common/api'
@@ -19,6 +19,7 @@ import type {
 import type { Employee } from 'lib-common/generated/api-types/pis'
 import type { ChildDocumentId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
+import { formatPersonName } from 'lib-common/names'
 import {
   constantQuery,
   useChainedQuery,
@@ -60,8 +61,7 @@ import {
 
 import { downloadChildDocument } from '../../generated/api-clients/document'
 import { useTranslation } from '../../state/i18n'
-import { TitleContext } from '../../state/title'
-import type { TitleState } from '../../state/title'
+import { useTitle } from '../../utils/useTitle'
 import MetadataSection from '../archive-metadata/MetadataSection'
 import { renderResult } from '../async-rendering'
 import {
@@ -91,9 +91,7 @@ import {
 } from './statuses'
 
 const formatEmployeeName = (employee: Employee) =>
-  `${employee.lastName ?? ''} ${
-    employee.preferredFirstName ?? employee.firstName ?? ''
-  } (${employee.email ?? ''})`
+  `${formatPersonName(employee, 'Last Preferred')} (${employee.email ?? ''})`
 
 const filterEmployees = (inputValue: string, items: readonly Employee[]) =>
   items.filter(
@@ -130,11 +128,7 @@ const ChildDocumentReadViewInner = React.memo(
     const { data: document, permittedActions } = documentAndPermissions
     const { i18n } = useTranslation()
     const [, navigate] = useLocation()
-    const { setTitle } = useContext<TitleState>(TitleContext)
-    useEffect(
-      () => setTitle(document.template.name, true),
-      [document.template.name, setTitle]
-    )
+    useTitle(document.template.name, { hideDefault: true })
 
     const bind = useForm(
       documentForm,

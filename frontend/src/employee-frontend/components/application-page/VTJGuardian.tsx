@@ -10,11 +10,11 @@ import type { PersonJSON } from 'lib-common/generated/api-types/pis'
 import type { PersonId } from 'lib-common/generated/api-types/shared'
 import { pendingQuery, useQueryResult } from 'lib-common/query'
 import ListGrid from 'lib-components/layout/ListGrid'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import { Dimmed, H4, Label } from 'lib-components/typography'
 
 import { personIdentityQuery } from '../../queries'
 import { useTranslation } from '../../state/i18n'
-import { formatName } from '../../utils'
 import { renderResult } from '../async-rendering'
 
 interface VTJGuardianProps {
@@ -45,7 +45,7 @@ export default React.memo(function VTJGuardian({
             <Label>{i18n.application.person.name}</Label>
             <Link to={`/profile/${guardian.id}`} data-qa="vtj-guardian-name">
               <span data-qa="link-vtj-guardian-name">
-                {formatName(guardian.firstName, guardian.lastName, i18n, true)}
+                <PersonName person={guardian} format="Last First" />
               </span>
             </Link>
             <Label>{i18n.application.person.ssn}</Label>

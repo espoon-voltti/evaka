@@ -12,6 +12,7 @@ import {
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { H3, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
@@ -42,11 +43,23 @@ export default React.memo(function ChildSubSection({
         <AdaptiveFlex breakpoint="1060px">
           <FixedSpaceColumn spacing="xs">
             <Label>{t.applications.editor.contactInfo.childFirstName}</Label>
-            <span translate="no">{formData.childFirstName}</span>
+            <PersonName
+              person={{
+                firstName: formData.childFirstName,
+                lastName: formData.childLastName
+              }}
+              format="First"
+            />
           </FixedSpaceColumn>
           <FixedSpaceColumn spacing="xs">
             <Label>{t.applications.editor.contactInfo.childLastName}</Label>
-            <span translate="no">{formData.childLastName}</span>
+            <PersonName
+              person={{
+                firstName: formData.childFirstName,
+                lastName: formData.childLastName
+              }}
+              format="Last"
+            />
           </FixedSpaceColumn>
           <FixedSpaceColumn spacing="xs">
             <Label>{t.applications.editor.contactInfo.childSSN}</Label>

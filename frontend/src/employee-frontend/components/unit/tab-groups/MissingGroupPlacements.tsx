@@ -25,13 +25,13 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import { Light } from 'lib-components/typography'
 import type { Translations } from 'lib-customizations/employee'
 import { faArrowRight } from 'lib-icons'
 
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
-import { formatName } from '../../../utils'
 import { isPartDayPlacement } from '../../../utils/placements'
 import { NotificationCounter } from '../../UnitPage'
 import { AgeIndicatorChip } from '../../common/AgeIndicatorChip'
@@ -65,7 +65,7 @@ function renderMissingGroupPlacementRow(
     >
       <Td data-qa="child-name">
         <Link to={`/child-information/${childId}`}>
-          {formatName(firstName, lastName, i18n, true)}
+          <PersonName person={{ firstName, lastName }} format="Last First" />
         </Link>
       </Td>
       <Td>

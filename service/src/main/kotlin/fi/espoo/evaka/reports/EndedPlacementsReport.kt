@@ -100,8 +100,8 @@ ORDER BY last_name, first_name, ep.child_id
 
 data class EndedPlacementsReportRow(
     val childId: ChildId,
-    val firstName: String?,
-    val lastName: String?,
+    val firstName: String,
+    val lastName: String,
     val dateOfBirth: LocalDate?,
     val placementEnd: LocalDate,
     val unitName: String,

@@ -17,6 +17,7 @@ import { cancelMutation, useQueryResult } from 'lib-common/query'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import DateRangePicker from 'lib-components/molecules/date-picker/DateRangePicker'
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { Label, P } from 'lib-components/typography'
@@ -139,7 +140,7 @@ export default React.memo(function FosterChildren({ id }: Props) {
                 >
                   <NameTd data-qa="name">
                     <Link to={`/child-information/${child.id}`}>
-                      {child.firstName} {child.lastName}
+                      <PersonName person={child} format="First Last" />
                     </Link>
                   </NameTd>
                   <Td>{child.socialSecurityNumber}</Td>

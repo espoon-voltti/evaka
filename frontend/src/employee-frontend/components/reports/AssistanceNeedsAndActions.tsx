@@ -37,6 +37,7 @@ import Checkbox from 'lib-components/atoms/form/Checkbox'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import {
   daycareAssistanceLevels,
@@ -1448,7 +1449,13 @@ const ReportByChildTable = ({
                         row.careAreaName
                       ) : (
                         <Link to={`/child-information/${row.childId}`}>
-                          {row.childFirstName} {row.childLastName}
+                          <PersonName
+                            person={{
+                              firstName: row.childFirstName,
+                              lastName: row.childLastName
+                            }}
+                            format="First Last"
+                          />
                         </Link>
                       )}
                     </Td>

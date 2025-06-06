@@ -15,6 +15,7 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import { H3, Label } from 'lib-components/typography'
 import colors from 'lib-customizations/common'
 import { fasExclamation, farStickyNote, farUsers } from 'lib-icons'
@@ -74,8 +75,7 @@ const ChildNotesSummaryInner = React.memo(function ChildNotesSummaryInner({
           <ChildImage child={child} />
           <ChildName>
             <H3 primary noMargin>
-              {child.firstName} {child.lastName}
-              {child.preferredName ? ` (${child.preferredName})` : null}
+              <PersonName person={child} format="First Last (Preferred)" />
             </H3>
           </ChildName>
         </FixedSpaceRow>

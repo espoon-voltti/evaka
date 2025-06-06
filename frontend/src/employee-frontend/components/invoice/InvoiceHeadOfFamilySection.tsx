@@ -7,10 +7,10 @@ import { Link } from 'wouter'
 
 import type { InvoiceDetailed } from 'lib-common/generated/api-types/invoicing'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import { faUserFriends } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
-import { formatName } from '../../utils'
 import LabelValueList from '../common/LabelValueList'
 
 interface Props {
@@ -41,11 +41,7 @@ export default React.memo(function InvoiceHeadOfFamilySection({
                 to={`/profile/${headOfFamily.id}`}
                 data-qa="invoice-details-head-of-family"
               >
-                {formatName(
-                  headOfFamily.firstName,
-                  headOfFamily.lastName,
-                  i18n
-                )}
+                <PersonName person={headOfFamily} format="First Last" />
               </Link>
             ),
             dataQa: 'head-of-family-name'
@@ -61,7 +57,7 @@ export default React.memo(function InvoiceHeadOfFamilySection({
                   label: i18n.invoice.form.headOfFamily.codebtorName,
                   value: (
                     <Link to={`/profile/${codebtor.id}`}>
-                      {formatName(codebtor.firstName, codebtor.lastName, i18n)}
+                      <PersonName person={codebtor} format="First Last" />
                     </Link>
                   ),
                   dataQa: 'codebtor-name'

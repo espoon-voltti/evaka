@@ -13,9 +13,9 @@ import { useQueryResult } from 'lib-common/query'
 import Title from 'lib-components/atoms/Title'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 
 import { useTranslation } from '../../state/i18n'
-import { formatPersonName } from '../../utils'
 import { NotificationCounter } from '../UnitPage'
 import { renderResult } from '../async-rendering'
 import { getAbsenceApplicationsQuery } from '../child-information/queries'
@@ -82,7 +82,10 @@ const AbsenceApplicationTable = (props: {
           <Tr key={application.data.id} data-qa="absence-application-row">
             <Td data-qa="child-name">
               <Link to={`/child-information/${application.data.child.id}`}>
-                {formatPersonName(application.data.child, i18n, true)}
+                <PersonName
+                  person={application.data.child}
+                  format="Last First"
+                />
               </Link>
             </Td>
             <Td data-qa="range">

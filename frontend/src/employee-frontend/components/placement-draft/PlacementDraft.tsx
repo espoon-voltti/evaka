@@ -4,13 +4,7 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import type { Dispatch, SetStateAction } from 'react'
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState
-} from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
 import { useLocation } from 'wouter'
 
@@ -28,12 +22,14 @@ import type {
   DaycareId
 } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
+import { formatPersonName } from 'lib-common/names'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import ListGrid from 'lib-components/layout/ListGrid'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import { Bold, H1, H2, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { faLink } from 'lib-icons'
@@ -44,10 +40,8 @@ import {
 } from '../../generated/api-clients/application'
 import { getApplicationUnits } from '../../generated/api-clients/daycare'
 import { useTranslation } from '../../state/i18n'
-import type { TitleState } from '../../state/title'
-import { TitleContext } from '../../state/title'
 import { asUnitType } from '../../types/daycare'
-import { formatName } from '../../utils'
+import { useTitle } from '../../utils/useTitle'
 import { renderResult } from '../async-rendering'
 import WarningLabel from '../common/WarningLabel'
 
@@ -139,8 +133,6 @@ export default React.memo(function PlacementDraft() {
     hasPreschoolDaycarePeriod: false
   })
 
-  const { setTitle, formatTitleName } = useContext<TitleState>(TitleContext)
-
   const [additionalUnits, setAdditionalUnits] = useState<PublicUnit[]>([])
   const [selectedUnitIsGhostUnit, setSelectedUnitIsGhostUnit] =
     useState<boolean>(false)
@@ -215,15 +207,12 @@ export default React.memo(function PlacementDraft() {
     }
   }, [placementDraft, formState.period?.start])
 
-  useEffect(() => {
-    if (placementDraft.isSuccess) {
-      const name = formatTitleName(
-        placementDraft.value.child.firstName,
-        placementDraft.value.child.lastName
-      )
-      setTitle(`${name} | ${i18n.titles.placementDraft}`)
-    }
-  }, [formatTitleName, i18n.titles.placementDraft, placementDraft, setTitle])
+  useTitle(
+    placementDraft.map(
+      (value) =>
+        `${formatPersonName(value.child, 'Last First')} | ${i18n.titles.placementDraft}`
+    )
+  )
 
   function fixNullLengthPeriods(
     periodType: 'period' | 'preschoolDaycarePeriod',
@@ -339,11 +328,7 @@ export default React.memo(function PlacementDraft() {
               <H1 noMargin>{i18n.placementDraft.createPlacementDraft}</H1>
               <Gap size="xs" />
               <H2 noMargin>
-                {formatName(
-                  placementDraft.child.firstName,
-                  placementDraft.child.lastName,
-                  i18n
-                )}
+                <PersonName person={placementDraft.child} format="First Last" />
               </H2>
               <Gap size="L" />
               <ListGrid>

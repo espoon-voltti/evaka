@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useContext, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import styled from 'styled-components'
 import { useSearchParams } from 'wouter'
 
@@ -17,6 +17,7 @@ import type { PublicUnit } from 'lib-common/generated/api-types/daycare'
 import type { PlacementType } from 'lib-common/generated/api-types/placement'
 import type { ApplicationId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
+import { formatPersonName } from 'lib-common/names'
 import {
   constantQuery,
   pendingQuery,
@@ -36,9 +37,8 @@ import { faEnvelope } from 'lib-icons'
 import { getEmployeeUrlPrefix } from '../../constants'
 import type { Translations } from '../../state/i18n'
 import { useTranslation } from '../../state/i18n'
-import type { TitleState } from '../../state/title'
-import { TitleContext } from '../../state/title'
 import { asUnitType } from '../../types/daycare'
+import { useTitle } from '../../utils/useTitle'
 import { isSsnValid, isTimeValid } from '../../utils/validation/validations'
 import { serviceNeedPublicInfosQuery } from '../applications/queries'
 import MetadataSection from '../archive-metadata/MetadataSection'
@@ -78,7 +78,10 @@ const getMessageSubject = (
 ) =>
   i18n.application.messageSubject(
     applicationData.application.sentDate?.format() ?? '',
-    `${applicationData.application.form.child.person.firstName} ${applicationData.application.form.child.person.lastName}`
+    formatPersonName(
+      applicationData.application.form.child.person,
+      'First Last'
+    )
   )
 
 const ApplicationMetadataSection = React.memo(
@@ -94,10 +97,7 @@ const ApplicationMetadataSection = React.memo(
 
 export default React.memo(function ApplicationPage() {
   const applicationId = useIdRouteParam<ApplicationId>('id')
-
   const { i18n } = useTranslation()
-  const { setTitle, formatTitleName } = useContext<TitleState>(TitleContext)
-
   const [searchParams] = useSearchParams()
   const creatingNew = searchParams.get('create') === 'true'
   const [editing, setEditing] = useState(creatingNew)
@@ -112,22 +112,18 @@ export default React.memo(function ApplicationPage() {
   const editedApplicationInitialized = editedApplication !== undefined
   useEffect(() => {
     if (application.isSuccess) {
-      const { firstName, lastName } =
-        application.value.application.form.child.person
-      setTitle(
-        `${i18n.application.tabTitle} - ${formatTitleName(firstName, lastName)}`
-      )
       if (!editedApplicationInitialized) {
         setEditedApplication(application.value.application)
       }
     }
-  }, [
-    application,
-    formatTitleName,
-    i18n.application.tabTitle,
-    setTitle,
-    editedApplicationInitialized
-  ])
+  }, [application, i18n, editedApplicationInitialized])
+
+  useTitle(
+    application.map(
+      (value) =>
+        `${i18n.application.tabTitle} - ${formatPersonName(value.application.form.child.person, 'Last First')}`
+    )
+  )
 
   const messageThread = useQueryResult(
     threadByApplicationIdQuery({ applicationId })

@@ -25,7 +25,6 @@ import type {
   ChildId
 } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
-import { formatFirstName } from 'lib-common/names'
 import { capitalizeFirstLetter } from 'lib-common/string'
 import { StaticChip } from 'lib-components/atoms/Chip'
 import { Button } from 'lib-components/atoms/buttons/Button'
@@ -43,6 +42,7 @@ import {
   InfoButton
 } from 'lib-components/molecules/ExpandingInfo'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import { PlainModal } from 'lib-components/molecules/modals/BaseModal'
 import { H1, H2, H3, Label, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
@@ -186,8 +186,12 @@ export default React.memo(function DiscussionReservationModal({
                   <H2>{eventData?.title}</H2>
                   <p>{eventData?.description}</p>
                   <H3>{t.reservationChildTitle}</H3>
-                  <StaticChip color={colors.main.m1} translate="no">
-                    {childData ? formatFirstName(childData) : ''}
+                  <StaticChip color={colors.main.m1}>
+                    {childData ? (
+                      <PersonName person={childData} format="FirstFirst" />
+                    ) : (
+                      ''
+                    )}
                   </StaticChip>
                 </WordBreakContainer>
               </CalendarModalSection>

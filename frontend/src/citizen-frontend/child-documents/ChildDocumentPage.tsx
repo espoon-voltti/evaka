@@ -33,6 +33,7 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import { ConfirmedMutation } from 'lib-components/molecules/ConfirmedMutation'
 import { InfoBox } from 'lib-components/molecules/MessageBoxes'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import { H1, H2, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
@@ -159,8 +160,8 @@ const ChildDocumentView = React.memo(function ChildDocumentView({
           <FixedSpaceRow justifyContent="space-between">
             <FixedSpaceColumn>
               <H1 noMargin>{document.template.name}</H1>
-              <H2 noMargin translate="no">
-                {document.child.firstName} {document.child.lastName}
+              <H2 noMargin>
+                <PersonName person={document.child} format="First Last" />
                 {document.child.dateOfBirth
                   ? ` (${document.child.dateOfBirth.format()})`
                   : ''}

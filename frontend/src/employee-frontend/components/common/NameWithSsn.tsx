@@ -5,28 +5,26 @@
 import React from 'react'
 
 import type LocalDate from 'lib-common/local-date'
-
-import type { Translations } from '../../state/i18n'
-import { formatName } from '../../utils'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 
 interface Props {
   firstName: string
   lastName: string
   dateOfBirth: LocalDate
   ssn: string | null
-  i18n: Translations
 }
 
 export default function NameWithSsn({
   firstName,
   lastName,
   dateOfBirth,
-  ssn,
-  i18n
+  ssn
 }: Props) {
   return (
     <>
-      <div>{formatName(firstName, lastName, i18n, true)}</div>
+      <div>
+        <PersonName person={{ firstName, lastName }} format="Last First" />
+      </div>
       <div>{ssn || dateOfBirth.format()}</div>
     </>
   )

@@ -16,6 +16,7 @@ import { useIdRouteParam } from 'lib-common/useRouteParams'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import PageWrapper from 'lib-components/layout/PageWrapper'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import { H1, H2 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { faMagnifyingGlassMinus, faMagnifyingGlassPlus } from 'lib-icons'
@@ -98,7 +99,7 @@ const TimelineView = React.memo(function TimelineView({
     <div>
       <H1>{i18n.timeline.title}</H1>
       <H2>
-        {timeline.firstName} {timeline.lastName}
+        <PersonName person={timeline} format="First Last" />
       </H2>
       <Gap size="s" />
       <FixedSpaceRow>

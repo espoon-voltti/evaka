@@ -2,11 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { useMemo } from 'react'
 import styled from 'styled-components'
 
 import type { UnitPreferenceFormData } from 'lib-common/api-types/application/ApplicationFormData'
 import ListGrid from 'lib-components/layout/ListGrid'
+import { usePersonName } from 'lib-components/molecules/PersonNames'
 import { H2, H3, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
@@ -28,14 +29,15 @@ export default React.memo(function UnitPreferenceSection({
 }: UnitPreferenceSectionProps) {
   const t = useTranslation()
   const tLocal = t.applications.editor.verification.unitPreference
+  const vtjSibling = formData.vtjSiblings.find((s) => s.selected)
+  const vtjSiblingName = usePersonName(vtjSibling, 'First Last')
 
-  const sibling = (() => {
+  const sibling = useMemo(() => {
     if (!formData.siblingBasis) return null
 
-    const vtjSibling = formData.vtjSiblings.find((s) => s.selected)
     return vtjSibling
       ? {
-          name: `${vtjSibling.firstName} ${vtjSibling.lastName}`,
+          name: vtjSiblingName,
           ssn: vtjSibling.socialSecurityNumber,
           unit: formData.siblingUnit
         }
@@ -44,7 +46,14 @@ export default React.memo(function UnitPreferenceSection({
           ssn: formData.siblingSsn,
           unit: formData.siblingUnit
         }
-  })()
+  }, [
+    formData.siblingBasis,
+    formData.siblingName,
+    formData.siblingSsn,
+    formData.siblingUnit,
+    vtjSibling,
+    vtjSiblingName
+  ])
 
   return (
     <div data-qa="unit-preference-section">

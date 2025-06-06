@@ -4,7 +4,7 @@
 
 import { faCircle } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, { useContext, useEffect, useMemo, useState } from 'react'
+import React, { useContext, useMemo, useState } from 'react'
 import styled from 'styled-components'
 import { Link, useLocation } from 'wouter'
 
@@ -12,6 +12,7 @@ import type { Action } from 'lib-common/generated/action'
 import type { ParentshipWithPermittedActions } from 'lib-common/generated/api-types/pis'
 import type { ChildId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
+import { formatPersonName } from 'lib-common/names'
 import { useQueryResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import { getAge } from 'lib-common/utils/local-date'
@@ -33,9 +34,8 @@ import { faUsers } from 'lib-icons'
 
 import type { Translations } from '../../state/i18n'
 import { useTranslation } from '../../state/i18n'
-import type { TitleState } from '../../state/title'
-import { TitleContext } from '../../state/title'
 import { UserContext } from '../../state/user'
+import { useTitle } from '../../utils/useTitle'
 import CircularLabel from '../common/CircularLabel'
 import WarningLabel from '../common/WarningLabel'
 import type { Layouts } from '../layouts'
@@ -379,17 +379,12 @@ const ChildInformation = React.memo(function ChildInformation({
   const { roles } = useContext(UserContext)
   const { person } = useContext<ChildState>(ChildContext)
 
-  const { setTitle, formatTitleName } = useContext<TitleState>(TitleContext)
-
-  useEffect(() => {
-    if (person.isSuccess) {
-      const name = formatTitleName(
-        person.value.firstName,
-        person.value.lastName
-      )
-      setTitle(`${name} | ${i18n.titles.customers}`)
-    }
-  }, [formatTitleName, i18n.titles.customers, person, setTitle])
+  useTitle(
+    person.map(
+      (value) =>
+        `${formatPersonName(value, 'Last First')}  | ${i18n.titles.customers}`
+    )
+  )
 
   const layout = useMemo(() => getLayout(layouts, roles), [roles])
 

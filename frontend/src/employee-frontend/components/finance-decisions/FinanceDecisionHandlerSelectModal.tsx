@@ -8,6 +8,7 @@ import styled from 'styled-components'
 import type { Result } from 'lib-common/api'
 import { wrapResult } from 'lib-common/api'
 import type { EmployeeId } from 'lib-common/generated/api-types/shared'
+import { formatPersonName } from 'lib-common/names'
 import type { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Select from 'lib-components/atoms/dropdowns/Select'
@@ -85,7 +86,7 @@ export default React.memo(function FinanceDecisionHandlerSelectModal(
             ...financeDecisionHandlers
               .map((handler) => ({
                 value: handler.id,
-                label: `${handler.firstName} ${handler.lastName}`
+                label: formatPersonName(handler, 'First Last')
               }))
               .sort((a, b) => a.label.localeCompare(b.label, lang))
           ]
