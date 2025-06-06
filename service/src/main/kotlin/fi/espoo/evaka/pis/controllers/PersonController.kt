@@ -42,6 +42,7 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import fi.espoo.evaka.shared.utils.EMAIL_PATTERN
 import java.time.LocalDate
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.http.ContentDisposition
@@ -308,6 +309,10 @@ class PersonController(
         @PathVariable personId: PersonId,
         @RequestBody data: PersonPatch,
     ): PersonJSON {
+        if (data.email == null || !EMAIL_PATTERN.matches(data.email)) {
+            throw BadRequest("Invalid email")
+        }
+
         return db.connect { dbc ->
                 val userEditablePersonData =
                     dbc.read { tx ->

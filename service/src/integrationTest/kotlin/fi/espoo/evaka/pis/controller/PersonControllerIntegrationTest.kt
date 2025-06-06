@@ -13,7 +13,9 @@ import fi.espoo.evaka.pis.getFosterChildren
 import fi.espoo.evaka.pis.getFosterParents
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.service.PersonDTO
+import fi.espoo.evaka.pis.service.PersonPatch
 import fi.espoo.evaka.pis.service.blockGuardian
+import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -395,6 +397,19 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         controller.getPersonGuardians(dbInstance(), admin, clock, childId).let { response ->
             assertEquals(1, response.guardians.size)
             assertEquals(1, response.blockedGuardians?.size)
+        }
+    }
+
+    @Test
+    fun `Update person rejects invalid email`() {
+        val person = createPerson(testPerson.copy(id = PersonId(UUID.randomUUID())))
+
+        val personPatch = PersonPatch(
+            email = "test@example.com "
+        )
+
+        assertThrows<BadRequest> {
+            controller.updatePersonDetails(dbInstance(), admin, clock, person.id, personPatch )
         }
     }
 
