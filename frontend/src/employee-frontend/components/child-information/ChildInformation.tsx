@@ -12,6 +12,7 @@ import type { Action } from 'lib-common/generated/action'
 import type { ParentshipWithPermittedActions } from 'lib-common/generated/api-types/pis'
 import type { ChildId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
+import { formatPersonName } from 'lib-common/names'
 import { useQueryResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import { getAge } from 'lib-common/utils/local-date'
@@ -26,7 +27,6 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import { usePersonName } from 'lib-components/molecules/PersonNames'
 import { fontWeights, H2 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/employee'
@@ -380,11 +380,10 @@ const ChildInformation = React.memo(function ChildInformation({
   const { person } = useContext<ChildState>(ChildContext)
 
   useTitle(
-    `${usePersonName(
-      person.isSuccess ? person.value : undefined,
-      'Last First'
-    )}  | ${i18n.titles.customers}`,
-    { preventUpdate: !person.isSuccess }
+    person.map(
+      (value) =>
+        `${formatPersonName(value, 'Last First')}  | ${i18n.titles.customers}`
+    )
   )
 
   const layout = useMemo(() => getLayout(layouts, roles), [roles])

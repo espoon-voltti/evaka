@@ -18,6 +18,7 @@ import type {
   DecisionUnit
 } from 'lib-common/generated/api-types/decision'
 import type { ApplicationId } from 'lib-common/generated/api-types/shared'
+import { formatPersonName } from 'lib-common/names'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import Title from 'lib-components/atoms/Title'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
@@ -27,7 +28,7 @@ import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { AlertBox, InfoBox } from 'lib-components/molecules/MessageBoxes'
-import { PersonName, usePersonName } from 'lib-components/molecules/PersonNames'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { DatePickerSpacer } from 'lib-components/molecules/date-picker/DateRangePicker'
 import { fontWeights } from 'lib-components/typography'
@@ -176,13 +177,10 @@ export default React.memo(function Decision() {
   }, [applicationId, navigate])
 
   useTitle(
-    `${usePersonName(
-      decisionDraftGroup.isSuccess ? decisionDraftGroup.value.child : undefined,
-      'Last First'
-    )} | ${i18n.titles.decision}`,
-    {
-      preventUpdate: !decisionDraftGroup.isSuccess
-    }
+    decisionDraftGroup.map(
+      (value) =>
+        `${formatPersonName(value.child, 'Last First')} | ${i18n.titles.decision}`
+    )
   )
 
   useEffect(() => {

@@ -68,9 +68,7 @@ export default React.memo(function GroupCaretakers() {
   const [modalOpen, setModalOpen] = useState<boolean>(false)
   const [rowToEdit, setRowToEdit] = useState<CaretakerAmount | null>(null)
 
-  useTitle(caretakers.isSuccess ? caretakers.value.groupName : undefined, {
-    preventUpdate: !caretakers.isSuccess
-  })
+  useTitle(caretakers.map((value) => value.groupName))
 
   return (
     <Container>

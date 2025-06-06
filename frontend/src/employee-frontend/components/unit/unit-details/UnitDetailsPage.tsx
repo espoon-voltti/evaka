@@ -37,9 +37,7 @@ export default React.memo(function UnitDetailsPage() {
     useState<Result<FinanceDecisionHandlerOption[]>>(Loading.of())
   const [editable, useEditable] = useBoolean(false)
 
-  useTitle(unit.isSuccess ? unit.value.daycare.name : undefined, {
-    preventUpdate: !unit.isSuccess
-  })
+  useTitle(unit.map((value) => value.daycare.name))
 
   const employeesResponse = useQueryResult(getEmployeesQuery())
 

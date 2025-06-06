@@ -8,13 +8,13 @@ import { Link } from 'wouter'
 import { combine } from 'lib-common/api'
 import type { InvoiceDetailed } from 'lib-common/generated/api-types/invoicing'
 import type { InvoiceId } from 'lib-common/generated/api-types/shared'
+import { formatPersonName } from 'lib-common/names'
 import { useQueryResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
-import { usePersonName } from 'lib-components/molecules/PersonNames'
 
 import { useTranslation } from '../../state/i18n'
 import { useTitle } from '../../utils/useTitle'
@@ -36,17 +36,10 @@ export default React.memo(function InvoiceDetailsPage() {
   const response = useQueryResult(invoiceDetailsQuery({ id }))
 
   useTitle(
-    `${usePersonName(
-      response.isSuccess ? response.value.invoice.headOfFamily : undefined,
-      'First Last'
-    )} | ${
-      response.isSuccess
-        ? response.value.invoice.status === 'DRAFT'
-          ? i18n.titles.invoiceDraft
-          : i18n.titles.invoice
-        : ''
-    }`,
-    { preventUpdate: !response.isSuccess }
+    response.map(
+      (value) =>
+        `${formatPersonName(value.invoice.headOfFamily, 'First Last')} | ${value.invoice.status === 'DRAFT' ? i18n.titles.invoiceDraft : i18n.titles.invoice}`
+    )
   )
 
   return (

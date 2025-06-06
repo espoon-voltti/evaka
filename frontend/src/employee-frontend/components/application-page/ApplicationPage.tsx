@@ -30,7 +30,6 @@ import AddButton from 'lib-components/atoms/buttons/AddButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import { usePersonName } from 'lib-components/molecules/PersonNames'
 import { Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/employee'
 import { faEnvelope } from 'lib-icons'
@@ -120,13 +119,10 @@ export default React.memo(function ApplicationPage() {
   }, [application, i18n, editedApplicationInitialized])
 
   useTitle(
-    `${i18n.application.tabTitle} - ${usePersonName(
-      application.isSuccess
-        ? application.value.application.form.child.person
-        : undefined,
-      'Last First'
-    )}`,
-    { preventUpdate: !application.isSuccess }
+    application.map(
+      (value) =>
+        `${i18n.application.tabTitle} - ${formatPersonName(value.application.form.child.person, 'Last First')}`
+    )
   )
 
   const messageThread = useQueryResult(

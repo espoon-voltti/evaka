@@ -22,13 +22,14 @@ import type {
   DaycareId
 } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
+import { formatPersonName } from 'lib-common/names'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import ListGrid from 'lib-components/layout/ListGrid'
-import { PersonName, usePersonName } from 'lib-components/molecules/PersonNames'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import { Bold, H1, H2, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { faLink } from 'lib-icons'
@@ -207,13 +208,10 @@ export default React.memo(function PlacementDraft() {
   }, [placementDraft, formState.period?.start])
 
   useTitle(
-    `${usePersonName(
-      placementDraft.isSuccess ? placementDraft.value.child : undefined,
-      'Last First'
-    )} | ${i18n.titles.placementDraft}`,
-    {
-      preventUpdate: !placementDraft.isSuccess
-    }
+    placementDraft.map(
+      (value) =>
+        `${formatPersonName(value.child, 'Last First')} | ${i18n.titles.placementDraft}`
+    )
   )
 
   function fixNullLengthPeriods(

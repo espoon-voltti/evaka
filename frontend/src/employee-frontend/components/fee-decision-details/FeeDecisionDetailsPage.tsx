@@ -12,11 +12,11 @@ import type {
   FeeDecisionType
 } from 'lib-common/generated/api-types/invoicing'
 import type { FeeDecisionId } from 'lib-common/generated/api-types/shared'
+import { formatPersonName } from 'lib-common/names'
 import { useQueryResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
-import { usePersonName } from 'lib-components/molecules/PersonNames'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { Gap } from 'lib-components/white-space'
 import { faQuestion } from 'lib-icons'
@@ -77,19 +77,10 @@ export default React.memo(function FeeDecisionDetailsPage() {
   }, [decisionResponse])
 
   useTitle(
-    `${usePersonName(
-      decisionResponse.isSuccess
-        ? decisionResponse.value.data.headOfFamily
-        : undefined,
-      'Last First'
-    )} | ${
-      decisionResponse.isSuccess
-        ? decisionResponse.value.data.status === 'DRAFT'
-          ? i18n.titles.feeDecisionDraft
-          : i18n.titles.feeDecision
-        : ''
-    }`,
-    { preventUpdate: !decisionResponse.isSuccess }
+    decisionResponse.map(
+      (value) =>
+        `${formatPersonName(value.data.headOfFamily, 'Last First')} | ${value.data.status === 'DRAFT' ? i18n.titles.feeDecisionDraft : i18n.titles.feeDecision}`
+    )
   )
 
   const decisionType = decisionResponse.map(({ data }) => data.decisionType)

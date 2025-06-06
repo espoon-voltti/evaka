@@ -60,12 +60,7 @@ export default React.memo(function UnitPage() {
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  useTitle(
-    unitInformation.isSuccess ? unitInformation.value.daycare.name : undefined,
-    {
-      preventUpdate: !unitInformation.isSuccess
-    }
-  )
+  useTitle(unitInformation.map((value) => value.daycare.name))
 
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({})
 

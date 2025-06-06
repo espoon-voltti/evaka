@@ -5,8 +5,8 @@
 import React, { useContext, useState } from 'react'
 
 import { isLoading } from 'lib-common/api'
+import { formatPersonName } from 'lib-common/names'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
-import { usePersonName } from 'lib-components/molecules/PersonNames'
 import { H2 } from 'lib-components/typography'
 
 import { useTranslation } from '../../state/i18n'
@@ -23,11 +23,10 @@ export default React.memo(function PersonFridgeHead() {
   const [open, setOpen] = useState(true)
 
   useTitle(
-    `${usePersonName(
-      person.isSuccess ? person.value : undefined,
-      'Last First'
-    )} | ${i18n.titles.customers}`,
-    { preventUpdate: !person.isSuccess }
+    person.map(
+      (value) =>
+        `${formatPersonName(value, 'Last First')} | ${i18n.titles.customers}`
+    )
   )
 
   return (

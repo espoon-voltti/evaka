@@ -12,11 +12,11 @@ import type {
   VoucherValueDecisionType
 } from 'lib-common/generated/api-types/invoicing'
 import type { VoucherValueDecisionId } from 'lib-common/generated/api-types/shared'
+import { formatPersonName } from 'lib-common/names'
 import { useQueryResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
-import { usePersonName } from 'lib-components/molecules/PersonNames'
 import { Gap } from 'lib-components/white-space'
 
 import {
@@ -78,21 +78,10 @@ export default React.memo(function VoucherValueDecisionPage() {
   }, [decisionResponse, i18n])
 
   useTitle(
-    `${usePersonName(
-      decisionResponse.isSuccess
-        ? decisionResponse.value.data.headOfFamily
-        : undefined,
-      'Last First'
-    )} | ${
-      decisionResponse.isSuccess
-        ? decisionResponse.value.data.status === 'DRAFT'
-          ? i18n.titles.valueDecisionDraft
-          : i18n.titles.valueDecision
-        : ''
-    }`,
-    {
-      preventUpdate: !decisionResponse.isSuccess
-    }
+    decisionResponse.map(
+      (value) =>
+        `${formatPersonName(value.data.headOfFamily, 'Last First')} | ${value.data.status === 'DRAFT' ? i18n.titles.valueDecisionDraft : i18n.titles.valueDecision}`
+    )
   )
 
   const decisionType = decisionResponse.map(({ data }) => data.decisionType)
