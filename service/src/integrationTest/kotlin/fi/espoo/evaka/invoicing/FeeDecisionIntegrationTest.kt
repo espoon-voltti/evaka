@@ -2351,7 +2351,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         assertEquals(emailContent.subject, getEmailFor(optInAdult).content.subject)
         assertEquals(
             "${emailEnv.senderNameFi} <${emailEnv.senderAddress}>",
-            getEmailFor(optInAdult).fromAddress,
+            getEmailFor(optInAdult).fromAddress.address,
         )
     }
 
@@ -2399,7 +2399,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         assertEquals(emailContent.subject, getEmailFor(testAdult_3).content.subject)
         assertEquals(
             "${emailEnv.senderNameFi} <${emailEnv.senderAddress}>",
-            getEmailFor(testAdult_3).fromAddress,
+            getEmailFor(testAdult_3).fromAddress.address,
         )
     }
 

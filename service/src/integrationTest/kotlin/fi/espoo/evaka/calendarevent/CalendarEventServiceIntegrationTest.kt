@@ -2511,7 +2511,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         assertEquals(cancellationEmailContent.subject, getEmailFor(testAdult_2).content.subject)
         assertEquals(
             "${emailEnv.senderNameFi} <${emailEnv.senderAddress}>",
-            getEmailFor(testAdult_2).fromAddress,
+            getEmailFor(testAdult_2).fromAddress.address,
         )
     }
 
@@ -3403,7 +3403,7 @@ private fun assertAllEmailsFor(
     expectedFromAddress: String,
 ) {
     val recipientEmails = MockEmailClient.emails.filter { e -> e.toAddress == recipient.email }
-    recipientEmails.forEach { e -> assertEquals(expectedFromAddress, e.fromAddress) }
+    recipientEmails.forEach { e -> assertEquals(expectedFromAddress, e.fromAddress.address) }
     assertThat(recipientEmails.map { e -> e.content })
         .containsExactlyInAnyOrderElementsOf(expectedContents)
 }
@@ -3420,6 +3420,6 @@ private fun assertEmails(
     recipients.forEach {
         val mail = getEmailFor(it)
         assertEquals(expectedContent.subject, mail.content.subject)
-        assertEquals(expectedFromAddress, mail.fromAddress)
+        assertEquals(expectedFromAddress, mail.fromAddress.address)
     }
 }

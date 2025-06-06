@@ -132,7 +132,7 @@ class PedagogicalDocumentNotificationServiceIntegrationTest :
         )
         assertEquals(
             "Esbo småbarnspedagogik <no-reply.evaka@espoo.fi>",
-            getEmailFor(testGuardianSv).fromAddress,
+            getEmailFor(testGuardianSv).fromAddress.address,
         )
     }
 
@@ -218,7 +218,7 @@ class PedagogicalDocumentNotificationServiceIntegrationTest :
         )
         assertEquals(
             "Esbo småbarnspedagogik <no-reply.evaka@espoo.fi>",
-            getEmailFor(testGuardianSv).fromAddress,
+            getEmailFor(testGuardianSv).fromAddress.address,
         )
     }
 

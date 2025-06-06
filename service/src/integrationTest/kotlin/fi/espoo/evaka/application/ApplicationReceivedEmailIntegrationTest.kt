@@ -172,7 +172,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
         assertEquals(1, sentMails.size)
 
         val sentMail = sentMails[0]
-        assertEquals("Test email sender sv <testemail_sv@test.com>", sentMail.fromAddress)
+        assertEquals("Test email sender sv <testemail_sv@test.com>", sentMail.fromAddress.address)
         assertEquals(guardian.email, sentMail.toAddress)
         assertEquals(guardian.id.toString(), sentMail.traceId)
         assertEquals(
@@ -454,7 +454,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
     ) {
         assertNotNull(email)
         assertEquals(expectedToAddress, email.toAddress)
-        assertEquals(expectedFromAddress, email.fromAddress)
+        assertEquals(expectedFromAddress, email.fromAddress.address)
         assertEquals(expectedSubject, email.content.subject)
         assert(email.content.html.contains(expectedHtmlPart, true))
         assert(email.content.text.contains(expectedTextPart, true))

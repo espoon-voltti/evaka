@@ -593,7 +593,7 @@ describe('Employee - Child documents', () => {
     const emails = await getSentEmails()
     expect(
       emails.map((email) => ({
-        from: email.fromAddress,
+        from: email.fromAddress.address,
         to: email.toAddress,
         subject: email.content.subject
       }))
@@ -742,7 +742,7 @@ describe('Employee - Child documents', () => {
     const emails = await getSentEmails()
     expect(
       emails.map((email) => ({
-        from: email.fromAddress,
+        from: email.fromAddress.address,
         to: email.toAddress,
         subject: email.content.subject
       }))
@@ -1009,7 +1009,7 @@ describe('Employee - Child documents - unit groups page', () => {
     const emails1 = await getSentEmails()
     expect(
       emails1.map((email) => ({
-        from: email.fromAddress,
+        from: email.fromAddress.address,
         to: email.toAddress,
         subject: email.content.subject
       }))
@@ -1065,7 +1065,7 @@ describe('Employee - Child documents - unit groups page', () => {
     const emails1 = await getSentEmails()
     expect(
       emails1.map((email) => ({
-        from: email.fromAddress,
+        from: email.fromAddress.address,
         to: email.toAddress,
         subject: email.content.subject
       }))

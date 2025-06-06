@@ -55,6 +55,7 @@ ${content.html}
         try {
             val request =
                 SendEmailRequest.builder()
+                    .run { if (fromAddress.arn != null) sourceArn(fromAddress.arn) else this }
                     .destination(Destination.builder().toAddresses(toAddress).build())
                     .message(
                         Message.builder()
@@ -83,7 +84,7 @@ ${content.html}
                             )
                             .build()
                     )
-                    .source(fromAddress)
+                    .source(fromAddress.address)
                     .build()
 
             client.sendEmail(request)
