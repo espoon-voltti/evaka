@@ -340,6 +340,7 @@ const ChildDocumentReadViewInner = React.memo(
                                 .goBackToDraftConfirmText
                             : undefined
                         }
+                        data-qa="prev-status-button"
                       />
                     )}
                 </FixedSpaceRow>
