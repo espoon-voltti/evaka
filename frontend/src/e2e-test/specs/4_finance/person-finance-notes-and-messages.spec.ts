@@ -14,6 +14,7 @@ import {
 } from '../../generated/api-clients'
 import type { DevEmployee } from '../../generated/api-types'
 import GuardianInformationPage from '../../pages/employee/guardian-information'
+import MessagesPage from '../../pages/employee/messages/messages-page'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
@@ -167,5 +168,31 @@ describe('person finance messages', () => {
     )
 
     await financeSection.newMessageButton.assertDisabled(true)
+  })
+
+  test('message can be assigned to a folder', async () => {
+    const mockedTime = HelsinkiDateTime.of(2025, 3, 1, 10, 0, 0, 0)
+    page = await Page.open({ mockedTime })
+    await employeeLogin(page, financeAdmin)
+    await page.goto(config.employeeUrl)
+    guardianPage = new GuardianInformationPage(page)
+    await guardianPage.navigateToGuardian(testAdult.id)
+
+    const notesAndMessages = await guardianPage.openCollapsible(
+      'financeNotesAndMessages'
+    )
+    const messageEditor = await notesAndMessages.openNewMessageEditor()
+    await messageEditor.folderSelection.selectOption('Talouskansio 1')
+    await messageEditor.sendNewMessage({
+      title: 'New message',
+      content: 'new message'
+    })
+
+    await page.goto(`${config.employeeUrl}/messages`)
+    const messagesPage = new MessagesPage(page)
+    let folderPage = await messagesPage.openFolder('Talouskansio 1')
+    await folderPage.messages.assertCount(1)
+    folderPage = await messagesPage.openFolder('Talouskansio 2')
+    await folderPage.messages.assertCount(0)
   })
 })

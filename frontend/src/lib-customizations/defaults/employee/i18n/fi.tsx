@@ -4907,6 +4907,7 @@ export const fi = {
       serviceWorkerMessages: 'Palveluohjauksen viestit',
       serviceWorkerFolders: 'Palveluohjauksen kansiot',
       financeMessages: 'Taloushallinnon viestit',
+      financeFolders: 'Taloushallinnon kansiot',
       ownMessages: 'Omat viestit',
       groupsMessages: 'Ryhmien viestit',
       noAccountAccess:

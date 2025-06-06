@@ -1854,6 +1854,91 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         }
     }
 
+    @Test
+    fun `finance can move a thread to a folder`() {
+        val folder1 = DevMessageThreadFolder(owner = financeAccount, name = "Eteläinen")
+        val folder2 = DevMessageThreadFolder(owner = financeAccount, name = "Pohjoinen")
+        val folderOther =
+            DevMessageThreadFolder(owner = messagerAccount, name = "Toisen käyttäjän kansio")
+        db.transaction { tx ->
+            tx.insert(folder1)
+            tx.insert(folder2)
+            tx.insert(folderOther)
+        }
+
+        assertEquals(
+            setOf(
+                MessageController.MessageThreadFolder(
+                    id = folder1.id,
+                    ownerId = folder1.owner,
+                    name = folder1.name,
+                ),
+                MessageController.MessageThreadFolder(
+                    id = folder2.id,
+                    ownerId = folder2.owner,
+                    name = folder2.name,
+                ),
+            ),
+            getFolders(financeAdmin).toSet(),
+        )
+
+        postNewThread(
+            title = "Vastaa heti",
+            message = "Tähän viestiin pitäisi pystyä vastaamaan",
+            messageType = MessageType.MESSAGE,
+            sender = financeAccount,
+            recipients = listOf(MessageRecipient.Citizen(testAdult_1.id)),
+            user = financeAdmin,
+            initialFolder = folder1.id,
+        )
+
+        assertEquals(1, getMessagesInFolder(financeAccount, folder1.id, financeAdmin).data.size)
+        val threadId = getMessagesInFolder(financeAccount, folder1.id, financeAdmin).data.first().id
+        assertEquals(0, getMessagesInFolder(financeAccount, folder2.id, financeAdmin).data.size)
+
+        val thread = getRegularMessageThreads(person1)[0]
+        replyToMessage(
+            messageId = thread.messages.first().id,
+            content = "Vastaus",
+            recipientAccountIds = setOf(financeAccount),
+            user = person1,
+            now = clock.now(),
+        )
+
+        assertEquals(
+            UnreadCountByAccount(
+                accountId = financeAccount,
+                unreadCount = 0,
+                unreadCopyCount = 0,
+                unreadCountByFolder = mapOf(folder1.id to 1),
+            ),
+            unreadMessagesCounts(financeAccount, financeAdmin),
+        )
+        assertEquals(1, getMessagesInFolder(financeAccount, folder1.id, financeAdmin).data.size)
+        assertEquals(
+            2,
+            getMessagesInFolder(financeAccount, folder1.id, financeAdmin).data.first().messages.size,
+        )
+
+        moveThreadToFolder(financeAccount, threadId, folder2.id, financeAdmin)
+
+        assertEquals(
+            UnreadCountByAccount(
+                accountId = financeAccount,
+                unreadCount = 0,
+                unreadCopyCount = 0,
+                unreadCountByFolder = mapOf(folder2.id to 1),
+            ),
+            unreadMessagesCounts(financeAccount, financeAdmin),
+        )
+        assertEquals(0, getMessagesInFolder(financeAccount, folder1.id, financeAdmin).data.size)
+        assertEquals(1, getMessagesInFolder(financeAccount, folder2.id, financeAdmin).data.size)
+
+        assertThrows<NotFound> {
+            moveThreadToFolder(financeAccount, threadId, folderOther.id, financeAdmin)
+        }
+    }
+
     private fun prepareGroupAccountAccessTest(
         userRole: UserRole,
         now: HelsinkiDateTime,

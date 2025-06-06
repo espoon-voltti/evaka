@@ -223,6 +223,27 @@ function Accounts({ setRecipients }: AccountsProps) {
               selectAccount={selectAccount}
             />
           ))}
+          {folders.isSuccess &&
+            folders.value.filter((f) => f.ownerId === financeAccount.account.id)
+              .length > 0 && (
+              <>
+                <FoldersHeader>
+                  {i18n.messages.sidePanel.financeFolders}
+                </FoldersHeader>
+                {folders.value
+                  .filter((f) => f.ownerId === financeAccount.account.id)
+                  .map((folder) => (
+                    <MessageBox
+                      key={folder.id}
+                      view={folder}
+                      account={financeAccount.account}
+                      unitId={null}
+                      activeView={selectedAccount}
+                      selectAccount={selectAccount}
+                    />
+                  ))}
+              </>
+            )}
         </AccountSection>
       )}
 

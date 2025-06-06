@@ -12,6 +12,7 @@ import {
   deleteDraftMessage,
   getDraftMessages,
   getFinanceMessagesWithPerson,
+  getFolders,
   initDraftMessage,
   markLastReceivedMessageInThreadUnread,
   markThreadRead,
@@ -38,6 +39,8 @@ export const saveDraftMutation = q.mutation(updateDraftMessage, [draftsQuery])
 export const deleteDraftMutation = q.mutation(deleteDraftMessage, [draftsQuery])
 
 export const financeThreadsQuery = q.query(getFinanceMessagesWithPerson)
+
+export const financeFoldersQuery = q.query(getFolders)
 
 export const createFinanceThreadMutation = q.parametricMutation<{
   id: PersonId

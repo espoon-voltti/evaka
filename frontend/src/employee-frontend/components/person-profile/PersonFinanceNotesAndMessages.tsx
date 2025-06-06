@@ -20,6 +20,7 @@ import type {
 } from 'lib-common/generated/api-types/messaging'
 import type {
   MessageAccountId,
+  MessageThreadFolderId,
   PersonId
 } from 'lib-common/generated/api-types/shared'
 import {
@@ -69,6 +70,7 @@ import {
   deleteDraftMutation,
   archiveFinanceThreadMutation,
   draftsQuery,
+  financeFoldersQuery,
   financeThreadsQuery,
   markThreadReadMutation,
   replyToFinanceThreadMutation
@@ -99,6 +101,7 @@ export default React.memo(function PersonFinanceNotesAndMessages({
   const financeMessages = useQueryResult(
     financeAccount ? financeThreadsQuery({ personId: id }) : constantQuery([])
   )
+  const messageFolders = useQueryResult(financeFoldersQuery())
   const [sending, setSending] = useState(false)
   const [thread, setThread] = useState<MessageThread>()
   const messageDrafts = useQueryResult(
@@ -161,12 +164,17 @@ export default React.memo(function PersonFinanceNotesAndMessages({
   })
 
   const onSend = useCallback(
-    async (accountId: MessageAccountId, messageBody: PostMessageBody) => {
+    async (
+      accountId: MessageAccountId,
+      messageBody: PostMessageBody,
+      initialFolder: MessageThreadFolderId | null
+    ) => {
       setSending(true)
 
       const arg = {
         id,
         accountId,
+        initialFolder,
         body: {
           ...messageBody,
           sensitive: true
@@ -217,7 +225,8 @@ export default React.memo(function PersonFinanceNotesAndMessages({
     <>
       {uiMode === 'new-finance-message-editor' &&
         financeAccount &&
-        personName !== undefined && (
+        personName !== undefined &&
+        renderResult(messageFolders, (messageFolders) => (
           <MessageEditor
             selectableRecipients={[
               {
@@ -238,7 +247,7 @@ export default React.memo(function PersonFinanceNotesAndMessages({
             draftContent={draftContent}
             getAttachmentUrl={getAttachmentUrl}
             accounts={[financeAccount]}
-            folders={[]}
+            folders={messageFolders}
             onClose={() => clearUiMode()}
             onDiscard={(accountId, draftId) => {
               clearUiMode()
@@ -251,7 +260,7 @@ export default React.memo(function PersonFinanceNotesAndMessages({
             sending={sending}
             defaultTitle={thread ? thread.title : ''}
           />
-        )}
+        ))}
 
       <BorderedContentArea
         opaque
