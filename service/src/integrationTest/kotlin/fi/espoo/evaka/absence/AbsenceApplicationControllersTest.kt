@@ -25,6 +25,7 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
@@ -33,6 +34,7 @@ import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
+import fi.espoo.evaka.shared.dev.DevPreschoolTerm
 import fi.espoo.evaka.shared.dev.DevServiceNeed
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertServiceNeedOption
@@ -542,6 +544,16 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
         @BeforeEach
         fun setup() {
             db.transaction { tx ->
+                val termRange = FiniteDateRange(clock.today(), clock.today().plusYears(1))
+                tx.insert(
+                    DevPreschoolTerm(
+                        finnishPreschool = termRange,
+                        swedishPreschool = termRange,
+                        extendedTerm = termRange,
+                        applicationPeriod = termRange.copy(start = clock.today().minusMonths(2)),
+                        termBreaks = DateSet.empty(),
+                    )
+                )
                 tx.insert(area)
                 tx.insert(unit1)
                 tx.insert(unit2)
@@ -550,10 +562,11 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
                 tx.insert(child11, DevPersonType.CHILD)
                 val placement1 =
                     DevPlacement(
+                        type = PlacementType.PRESCHOOL,
                         childId = child11.id,
                         unitId = unit1.id,
-                        startDate = clock.today(),
-                        endDate = clock.today(),
+                        startDate = termRange.start,
+                        endDate = termRange.end,
                     )
                 tx.insert(placement1)
                 tx.insert(
@@ -567,10 +580,11 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
                 tx.insert(child12, DevPersonType.CHILD)
                 val placement2 =
                     DevPlacement(
+                        type = PlacementType.PRESCHOOL,
                         childId = child12.id,
                         unitId = unit1.id,
-                        startDate = clock.today(),
-                        endDate = clock.today(),
+                        startDate = termRange.start,
+                        endDate = termRange.end,
                     )
                 tx.insert(placement2)
                 tx.insert(
@@ -584,10 +598,11 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
                 tx.insert(child2, DevPersonType.CHILD)
                 tx.insert(
                     DevPlacement(
+                        type = PlacementType.PRESCHOOL,
                         childId = child2.id,
                         unitId = unit2.id,
-                        startDate = clock.today(),
-                        endDate = clock.today(),
+                        startDate = termRange.start,
+                        endDate = termRange.end,
                     )
                 )
             }
@@ -711,38 +726,50 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
                     unitRoles = mapOf(unit1.id to UserRole.STAFF),
                     groupAcl = mapOf(unit1.id to listOf(group11.id)),
                 )
-                val base =
-                    AbsenceApplication(
-                        id = AbsenceApplicationId(UUID.randomUUID()),
-                        createdAt = clock.now(),
-                        createdBy = staff.evakaUserId,
-                        modifiedAt = clock.now(),
-                        modifiedBy = staff.evakaUserId,
-                        childId = child11.id,
-                        startDate = clock.today(),
-                        endDate = clock.today(),
-                        description = "test",
-                        status = AbsenceApplicationStatus.WAITING_DECISION,
-                        decidedAt = null,
-                        decidedBy = null,
-                        rejectedReason = null,
-                    )
-                tx.insert(
-                    base.copy(
-                        id = AbsenceApplicationId(UUID.randomUUID()),
-                        endDate = clock.today().plusWeeks(1).minusDays(1),
-                    )
-                )
-                tx.insert(
-                    base.copy(
-                        id = AbsenceApplicationId(UUID.randomUUID()),
-                        endDate = clock.today().plusWeeks(1),
-                    )
-                )
-                tx.insert(
-                    base.copy(id = AbsenceApplicationId(UUID.randomUUID()), childId = child12.id)
-                )
             }
+            val base =
+                AbsenceApplication(
+                    id = AbsenceApplicationId(UUID.randomUUID()),
+                    createdAt = clock.now(),
+                    createdBy = staff.evakaUserId,
+                    modifiedAt = clock.now(),
+                    modifiedBy = staff.evakaUserId,
+                    childId = child11.id,
+                    startDate = clock.today(),
+                    endDate = clock.today(),
+                    description = "test",
+                    status = AbsenceApplicationStatus.WAITING_DECISION,
+                    decidedAt = null,
+                    decidedBy = null,
+                    rejectedReason = null,
+                )
+            val application1 =
+                db.transaction { tx ->
+                    tx.insert(
+                        base.copy(
+                            id = AbsenceApplicationId(UUID.randomUUID()),
+                            endDate = clock.today().plusWeeks(1).minusDays(1),
+                        )
+                    )
+                }
+            val application2 =
+                db.transaction { tx ->
+                    tx.insert(
+                        base.copy(
+                            id = AbsenceApplicationId(UUID.randomUUID()),
+                            endDate = clock.today().plusWeeks(1),
+                        )
+                    )
+                }
+            val application3 =
+                db.transaction { tx ->
+                    tx.insert(
+                        base.copy(
+                            id = AbsenceApplicationId(UUID.randomUUID()),
+                            childId = child12.id,
+                        )
+                    )
+                }
 
             assertThat(getAbsenceApplications(staff.user, unitId = unit1.id))
                 .extracting({ it.data.child.id }, { it.data.endDate })
@@ -755,10 +782,16 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
                 .containsExactlyInAnyOrder(
                     Tuple(
                         clock.today().plusWeeks(1).minusDays(1),
-                        setOf(Action.AbsenceApplication.READ, Action.AbsenceApplication.DECIDE),
+                        setOf(
+                            Action.AbsenceApplication.READ,
+                            Action.AbsenceApplication.DECIDE_MAX_WEEK,
+                        ),
                     ),
                     Tuple(clock.today().plusWeeks(1), setOf(Action.AbsenceApplication.READ)),
                 )
+            acceptAbsenceApplication(staff.user, application1)
+            assertThrows<Forbidden> { acceptAbsenceApplication(staff.user, application2) }
+            assertThrows<Forbidden> { acceptAbsenceApplication(staff.user, application3) }
             assertThrows<Forbidden> { getAbsenceApplications(staff.user, unitId = unit2.id) }
             assertThrows<Forbidden> { getAbsenceApplications(staff.user, childId = child2.id) }
         }

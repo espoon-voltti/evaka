@@ -8,6 +8,8 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.absence.AbsenceService
 import fi.espoo.evaka.absence.AbsenceType
+import fi.espoo.evaka.daycare.PreschoolTerm
+import fi.espoo.evaka.daycare.getPreschoolTerms
 import fi.espoo.evaka.reservations.AbsenceRequest
 import fi.espoo.evaka.shared.AbsenceApplicationId
 import fi.espoo.evaka.shared.ChildId
@@ -21,9 +23,11 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.domain.getPreschoolOperationalDatesForChild
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.utils.mapOfNotNullValues
+import java.time.LocalDate
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -89,10 +93,20 @@ class AbsenceApplicationControllerEmployee(
                             clock,
                             applications.map { it.id },
                         )
+                    val terms = tx.getPreschoolTerms()
                     applications.mapNotNull { application ->
                         actions[application.id]
                             ?.takeIf { it.contains(Action.AbsenceApplication.READ) }
-                            ?.let { AbsenceApplicationSummaryEmployee(application, it) }
+                            ?.let {
+                                AbsenceApplicationSummaryEmployee(
+                                    application,
+                                    it.filter { action ->
+                                            action != Action.AbsenceApplication.DECIDE_MAX_WEEK ||
+                                                isMaxWeek(tx, application, terms)
+                                        }
+                                        .toSet(),
+                                )
+                            }
                     }
                 }
             }
@@ -116,20 +130,7 @@ class AbsenceApplicationControllerEmployee(
     ) {
         db.connect { dbc ->
                 dbc.transaction { tx ->
-                    accessControl.requirePermissionFor(
-                        tx,
-                        user,
-                        clock,
-                        Action.AbsenceApplication.DECIDE,
-                        id,
-                    )
-                    val application =
-                        tx.selectAbsenceApplication(id, forUpdate = true) ?: throw NotFound()
-                    if (application.status != AbsenceApplicationStatus.WAITING_DECISION) {
-                        throw BadRequest(
-                            "Absence application ${application.id} is not waiting decision"
-                        )
-                    }
+                    val application = getApplicationForDecision(tx, user, clock, id)
                     tx.decideAbsenceApplication(
                         application.id,
                         AbsenceApplicationStatus.ACCEPTED,
@@ -173,20 +174,7 @@ class AbsenceApplicationControllerEmployee(
     ) {
         db.connect { dbc ->
                 dbc.transaction { tx ->
-                    accessControl.requirePermissionFor(
-                        tx,
-                        user,
-                        clock,
-                        Action.AbsenceApplication.DECIDE,
-                        id,
-                    )
-                    val application =
-                        tx.selectAbsenceApplication(id, forUpdate = true) ?: throw NotFound()
-                    if (application.status != AbsenceApplicationStatus.WAITING_DECISION) {
-                        throw BadRequest(
-                            "Absence application ${application.id} is not waiting decision"
-                        )
-                    }
+                    val application = getApplicationForDecision(tx, user, clock, id)
                     tx.decideAbsenceApplication(
                         application.id,
                         AbsenceApplicationStatus.REJECTED,
@@ -208,6 +196,35 @@ class AbsenceApplicationControllerEmployee(
                     objectId = AuditId(it.childId),
                 )
             }
+    }
+
+    private fun getApplicationForDecision(
+        tx: Database.Read,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        id: AbsenceApplicationId,
+    ): AbsenceApplication {
+        val application = tx.selectAbsenceApplication(id, forUpdate = true) ?: throw NotFound()
+        if (
+            !(accessControl.hasPermissionFor(
+                tx,
+                user,
+                clock,
+                Action.AbsenceApplication.DECIDE,
+                application.id,
+            ) ||
+                (accessControl.hasPermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.AbsenceApplication.DECIDE_MAX_WEEK,
+                    application.id,
+                ) && isMaxWeek(tx, application)))
+        )
+            throw Forbidden()
+        if (application.status != AbsenceApplicationStatus.WAITING_DECISION)
+            throw BadRequest("Absence application ${application.id} is not waiting decision")
+        return application
     }
 }
 
@@ -318,3 +335,28 @@ class AbsenceApplicationControllerCitizen(private val accessControl: AccessContr
             }
     }
 }
+
+private fun isMaxWeek(
+    tx: Database.Read,
+    application: AbsenceApplicationSummary,
+    terms: List<PreschoolTerm>,
+) = isMaxWeek(tx, application.child.id, application.startDate, application.endDate, terms)
+
+private fun isMaxWeek(tx: Database.Read, application: AbsenceApplication) =
+    isMaxWeek(
+        tx,
+        application.childId,
+        application.startDate,
+        application.endDate,
+        tx.getPreschoolTerms(),
+    )
+
+private fun isMaxWeek(
+    tx: Database.Read,
+    childId: ChildId,
+    startDate: LocalDate,
+    endDate: LocalDate,
+    terms: List<PreschoolTerm>,
+) =
+    tx.getPreschoolOperationalDatesForChild(FiniteDateRange(startDate, endDate), childId, terms)
+        .size <= 5

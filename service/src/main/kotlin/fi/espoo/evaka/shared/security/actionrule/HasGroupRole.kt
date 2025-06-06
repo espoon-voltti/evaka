@@ -153,7 +153,7 @@ WHERE employee_id = ${bind(user.id)}
             )
         }
 
-    fun inPlacementGroupOfChildOfAbsenceApplication(maxLengthInDays: Int? = null) =
+    fun inPlacementGroupOfChildOfAbsenceApplication() =
         rule<AbsenceApplicationId> { user, now ->
             sql(
                 """
@@ -162,7 +162,6 @@ FROM absence_application
 JOIN employee_child_group_acl(${bind(now.toLocalDate())}) acl USING (child_id)
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = ${bind(user.id)}
-${if (maxLengthInDays != null) "AND absence_application.end_date - absence_application.start_date < ${bind(maxLengthInDays)}" else ""}
             """
                     .trimIndent()
             )
