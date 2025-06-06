@@ -309,7 +309,7 @@ class PersonController(
         @PathVariable personId: PersonId,
         @RequestBody data: PersonPatch,
     ): PersonJSON {
-        if (data.email == null || !EMAIL_PATTERN.matches(data.email)) {
+        if (!data.email.isNullOrEmpty() && !EMAIL_PATTERN.matches(data.email)) {
             throw BadRequest("Invalid email")
         }
 
