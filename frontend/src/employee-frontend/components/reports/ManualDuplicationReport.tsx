@@ -181,7 +181,7 @@ export default React.memo(function ManualDuplicationReport() {
                           lastName: row.childLastName,
                           firstName: row.childFirstName
                         }}
-                        format="Last First"
+                        format="Last, First"
                       />
                     </a>
                   </WrappableTd>

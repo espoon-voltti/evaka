@@ -635,7 +635,7 @@ const GroupPlacementRow = React.memo(function GroupPlacementRow({
       )}
       <Td data-qa="child-name">
         <Link to={`/child-information/${placement.child.id}`}>
-          <PersonName person={placement.child} format="First Last" />
+          <PersonName person={placement.child} format="Last First" />
         </Link>
       </Td>
       <Td>

@@ -234,7 +234,7 @@ const PlacementGuaranteeTable = ({
                       lastName: row.childLastName,
                       firstName: row.childFirstName
                     }}
-                    format="Last First"
+                    format="Last, First"
                   />
                 </Td>
                 <Td data-qa="placement-period">
