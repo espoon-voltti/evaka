@@ -1,0 +1,19 @@
+diff --git a/dist/index.d.ts b/dist/index.d.ts
+index b19d2e120c6d50c4fb0e2c24591606229ea38880..37b22167e883fc9089a895d8925ec6a28885922f 100644
+--- a/dist/index.d.ts
++++ b/dist/index.d.ts
+@@ -1,4 +1,4 @@
+-import { SourceMapInput, EmittedAsset, AcornNode, Plugin, PluginContextMeta } from 'rollup';
++import { SourceMapInput, EmittedAsset, Plugin, PluginContextMeta } from 'rollup';
+ export { Plugin as RollupPlugin } from 'rollup';
+ import { Compiler, WebpackPluginInstance } from 'webpack';
+ export { Compiler as WebpackCompiler } from 'webpack';
+@@ -21,7 +21,7 @@ interface UnpluginBuildContext {
+     addWatchFile: (id: string) => void;
+     emitFile: (emittedFile: EmittedAsset) => void;
+     getWatchFiles: () => string[];
+-    parse: (input: string, options?: any) => AcornNode;
++    parse: (input: string, options?: any) => any;
+ }
+ interface UnpluginOptions {
+     name: string;
