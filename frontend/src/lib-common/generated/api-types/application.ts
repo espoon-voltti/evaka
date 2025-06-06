@@ -333,10 +333,13 @@ export interface ApplicationSummary {
 /**
 * Generated from fi.espoo.evaka.application.ApplicationType
 */
-export type ApplicationType =
-  | 'CLUB'
-  | 'DAYCARE'
-  | 'PRESCHOOL'
+export const applicationTypes = [
+  'CLUB',
+  'DAYCARE',
+  'PRESCHOOL'
+] as const
+
+export type ApplicationType = typeof applicationTypes[number]
 
 /**
 * Generated from fi.espoo.evaka.application.ApplicationTypeToggle

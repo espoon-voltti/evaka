@@ -5,6 +5,7 @@
 // GENERATED FILE: no manual modifications
 
 import type { ApplicationStatus } from 'lib-common/generated/api-types/application'
+import type { ApplicationType } from 'lib-common/generated/api-types/application'
 import type { ApplicationsReportRow } from 'lib-common/generated/api-types/reports'
 import type { AreaId } from 'lib-common/generated/api-types/shared'
 import type { AssistanceNeedDecisionsReportRow } from 'lib-common/generated/api-types/reports'
@@ -486,12 +487,14 @@ export async function getCustomerFeesReport(
 export async function getDecisionsReport(
   request: {
     from: LocalDate,
-    to: LocalDate
+    to: LocalDate,
+    applicationType?: ApplicationType | null
   }
 ): Promise<DecisionsReportRow[]> {
   const params = createUrlSearchParams(
     ['from', request.from.formatIso()],
-    ['to', request.to.formatIso()]
+    ['to', request.to.formatIso()],
+    ['applicationType', request.applicationType?.toString()]
   )
   const { data: json } = await client.request<JsonOf<DecisionsReportRow[]>>({
     url: uri`/employee/reports/decisions`.toString(),
