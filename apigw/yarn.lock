@@ -425,10 +425,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@datadog/libdatadog@npm:^0.5.1":
-  version: 0.5.1
-  resolution: "@datadog/libdatadog@npm:0.5.1"
-  checksum: 10/fb8e6d595455f8eafc94ef596f73261f1b5340c2425e49620bc831728a9711298ef4e1b2e68c77ffb9801ab57ac067154330309d5ca6c7003bd3d4b36f28988c
+"@datadog/libdatadog@npm:^0.6.0":
+  version: 0.6.0
+  resolution: "@datadog/libdatadog@npm:0.6.0"
+  checksum: 10/6b96afd895e5e2ae1ba41d225370669b32e708ae0ebd64f33b2bd1c047df4b1a23925e0d8e226c0ca87c992f6e327301ef13b47cfa7abea9afcda4b22ab432b7
   languageName: node
   linkType: hard
 
@@ -477,10 +477,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@datadog/sketches-js@npm:^2.1.0":
-  version: 2.1.0
-  resolution: "@datadog/sketches-js@npm:2.1.0"
-  checksum: 10/15dd9014a7bfb605631d38ee39b06155bd926687a1e7087ed776349f316abc4dca48d0781d0bca353816dd8ba6c6558bf6c106f1966dd876ab6e94b7a05c7556
+"@datadog/sketches-js@npm:^2.1.1":
+  version: 2.1.1
+  resolution: "@datadog/sketches-js@npm:2.1.1"
+  checksum: 10/879388813502eec8e234b391dab63b87a0587957416db28f71b48856801ca29e2e185e863ddc813635701fdcdb0f0c435ea24dca63f466135254d7aa1ef4b63a
   languageName: node
   linkType: hard
 
@@ -2691,51 +2691,51 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dc-polyfill@npm:0.1.8":
-  version: 0.1.8
-  resolution: "dc-polyfill@npm:0.1.8"
-  checksum: 10/8d692043454ff96b71ad5a0564d0ae575f6ee40574fe077225349206c1eba00aa2a8667e6aafaae7a5969cf9707127d922d656a8c5358201c0ec5dd112757f05
+"dc-polyfill@npm:0.1.9":
+  version: 0.1.9
+  resolution: "dc-polyfill@npm:0.1.9"
+  checksum: 10/fc7d524519a397fdb7f96e10048b7994ec123a628996d6324d4ab645df57236ae3b9156bc7022f1e44295e1421e6a2245a49f3c13aaa5311073f2335a0601fc2
   languageName: node
   linkType: hard
 
-"dd-trace@npm:5.53.0":
-  version: 5.53.0
-  resolution: "dd-trace@npm:5.53.0"
+"dd-trace@npm:5.54.0":
+  version: 5.54.0
+  resolution: "dd-trace@npm:5.54.0"
   dependencies:
-    "@datadog/libdatadog": "npm:^0.5.1"
+    "@datadog/libdatadog": "npm:^0.6.0"
     "@datadog/native-appsec": "npm:8.5.2"
     "@datadog/native-iast-taint-tracking": "npm:4.0.0"
     "@datadog/native-metrics": "npm:^3.1.1"
     "@datadog/pprof": "npm:5.8.0"
-    "@datadog/sketches-js": "npm:^2.1.0"
+    "@datadog/sketches-js": "npm:^2.1.1"
     "@datadog/wasm-js-rewriter": "npm:4.0.1"
     "@isaacs/ttlcache": "npm:^1.4.1"
     "@opentelemetry/api": "npm:>=1.0.0 <1.9.0"
     "@opentelemetry/core": "npm:^1.14.0"
     crypto-randomuuid: "npm:^1.0.0"
-    dc-polyfill: "npm:0.1.8"
+    dc-polyfill: "npm:0.1.9"
     ignore: "npm:^5.2.4"
-    import-in-the-middle: "npm:1.13.1"
-    istanbul-lib-coverage: "npm:3.2.0"
+    import-in-the-middle: "npm:1.14.0"
+    istanbul-lib-coverage: "npm:3.2.2"
     jest-docblock: "npm:^29.7.0"
     koalas: "npm:^1.0.2"
     limiter: "npm:1.1.5"
     lodash.sortby: "npm:^4.7.0"
-    lru-cache: "npm:^7.14.0"
-    module-details-from-path: "npm:^1.0.3"
+    lru-cache: "npm:^7.18.3"
+    module-details-from-path: "npm:^1.0.4"
     mutexify: "npm:^1.4.0"
     opentracing: "npm:>=0.12.1"
     path-to-regexp: "npm:^0.1.12"
     pprof-format: "npm:^2.1.0"
-    protobufjs: "npm:^7.2.5"
+    protobufjs: "npm:^7.5.3"
     retry: "npm:^0.13.1"
-    rfdc: "npm:^1.3.1"
+    rfdc: "npm:^1.4.1"
     semifies: "npm:^1.0.0"
-    shell-quote: "npm:^1.8.1"
+    shell-quote: "npm:^1.8.2"
     source-map: "npm:^0.7.4"
     tlhunter-sorted-set: "npm:^0.1.0"
     ttl-set: "npm:^1.0.0"
-  checksum: 10/12da9eb143763e534fca4f84f6a4f94e8b7791824fb1e14d880f85e5a1e0628ce5c178909fb92078bddcb2cdabeeb768bae9225d676b21c393af17f68864f920
+  checksum: 10/8439968744249fc9e554c4d39c66e4d5845414b151d91e29e089a1c6cc0c1953414c8b7b209db8fbc280aa11f00534a41eeba9a21bb2c767d8ec0dd1ffcfe028
   languageName: node
   linkType: hard
 
@@ -3388,7 +3388,7 @@ __metadata:
     connect-redis: "npm:8.1.0"
     cookie-parser: "npm:1.4.7"
     date-fns: "npm:4.1.0"
-    dd-trace: "npm:5.53.0"
+    dd-trace: "npm:5.54.0"
     eslint: "npm:9.28.0"
     eslint-config-prettier: "npm:10.1.5"
     eslint-plugin-import: "npm:2.31.0"
@@ -4183,15 +4183,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"import-in-the-middle@npm:1.13.1":
-  version: 1.13.1
-  resolution: "import-in-the-middle@npm:1.13.1"
+"import-in-the-middle@npm:1.14.0":
+  version: 1.14.0
+  resolution: "import-in-the-middle@npm:1.14.0"
   dependencies:
     acorn: "npm:^8.14.0"
     acorn-import-attributes: "npm:^1.9.5"
     cjs-module-lexer: "npm:^1.2.2"
     module-details-from-path: "npm:^1.0.3"
-  checksum: 10/fea083fb2d6a9607702e3f4d675b19c52f3ebc271c9050f2a041966910bfd04047b100b13112f10109415c87c312206a8591d4a883fdedeb1f27e6637a96c852
+  checksum: 10/c0b73a5637c0c7ec0ab19d5687a571dc864d90e0603dd45e28939624707def244a5dae402d7dccc1f5fc5b54ffcf18313a071d13048c390a495696d6b9f290fc
   languageName: node
   linkType: hard
 
@@ -4499,10 +4499,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"istanbul-lib-coverage@npm:3.2.0, istanbul-lib-coverage@npm:^3.0.0, istanbul-lib-coverage@npm:^3.2.0":
-  version: 3.2.0
-  resolution: "istanbul-lib-coverage@npm:3.2.0"
-  checksum: 10/31621b84ad29339242b63d454243f558a7958ee0b5177749bacf1f74be7d95d3fd93853738ef7eebcddfaf3eab014716e51392a8dbd5aa1bdc1b15c2ebc53c24
+"istanbul-lib-coverage@npm:3.2.2, istanbul-lib-coverage@npm:^3.0.0, istanbul-lib-coverage@npm:^3.2.0":
+  version: 3.2.2
+  resolution: "istanbul-lib-coverage@npm:3.2.2"
+  checksum: 10/40bbdd1e937dfd8c830fa286d0f665e81b7a78bdabcd4565f6d5667c99828bda3db7fb7ac6b96a3e2e8a2461ddbc5452d9f8bc7d00cb00075fa6a3e99f5b6a81
   languageName: node
   linkType: hard
 
@@ -5343,10 +5343,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lru-cache@npm:^7.14.0":
-  version: 7.16.0
-  resolution: "lru-cache@npm:7.16.0"
-  checksum: 10/ba0198229206e2d8f1b21b2688728b75c23c2026455c322a43f7ae595a1245d319289b0b79398dc593028ae31ece9de942e5c959a9ecde56357294a968398bcd
+"lru-cache@npm:^7.14.0, lru-cache@npm:^7.18.3":
+  version: 7.18.3
+  resolution: "lru-cache@npm:7.18.3"
+  checksum: 10/6029ca5aba3aacb554e919d7ef804fffd4adfc4c83db00fac8248c7c78811fb6d4b6f70f7fd9d55032b3823446546a007edaa66ad1f2377ae833bd983fac5d98
   languageName: node
   linkType: hard
 
@@ -5612,10 +5612,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"module-details-from-path@npm:^1.0.3":
-  version: 1.0.3
-  resolution: "module-details-from-path@npm:1.0.3"
-  checksum: 10/f93226e9154fc8cb91f4609b639167ec7ad9155b30be4924d9717656648a3ae5f181d4e2338434d4c5afc7b5f4c10dd3b64109e5b89a4be70b20a25ba3573d54
+"module-details-from-path@npm:^1.0.3, module-details-from-path@npm:^1.0.4":
+  version: 1.0.4
+  resolution: "module-details-from-path@npm:1.0.4"
+  checksum: 10/2ebfada5358492f6ab496b70f70a1042f2ee7a4c79d29467f59ed6704f741fb4461d7cecb5082144ed39a05fec4d19e9ff38b731c76228151be97227240a05b2
   languageName: node
   linkType: hard
 
@@ -6274,9 +6274,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"protobufjs@npm:^7.2.5":
-  version: 7.2.5
-  resolution: "protobufjs@npm:7.2.5"
+"protobufjs@npm:^7.5.3":
+  version: 7.5.3
+  resolution: "protobufjs@npm:7.5.3"
   dependencies:
     "@protobufjs/aspromise": "npm:^1.1.2"
     "@protobufjs/base64": "npm:^1.1.2"
@@ -6290,7 +6290,7 @@ __metadata:
     "@protobufjs/utf8": "npm:^1.1.0"
     "@types/node": "npm:>=13.7.0"
     long: "npm:^5.0.0"
-  checksum: 10/6c5aa62b61dff843f585f3acd9cb7a82d566de2dbf167a300b39afee91b04298c4b4aec61354b7c00308b40596f5f3f4b07d6246cfb4ee0abeaea25101033315
+  checksum: 10/3e412d2e2f799875dcdac1b43508f465a499dd3ffd9d24073669702589ef016529905617a12a967b1a8cfbe803a638b494cc3ed8db035605c7570d1a7fc094c9
   languageName: node
   linkType: hard
 
@@ -6564,7 +6564,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rfdc@npm:^1.3.1":
+"rfdc@npm:^1.4.1":
   version: 1.4.1
   resolution: "rfdc@npm:1.4.1"
   checksum: 10/2f3d11d3d8929b4bfeefc9acb03aae90f971401de0add5ae6c5e38fec14f0405e6a4aad8fdb76344bfdd20c5193110e3750cbbd28ba86d73729d222b6cf4a729
@@ -6790,10 +6790,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"shell-quote@npm:^1.8.1":
-  version: 1.8.1
-  resolution: "shell-quote@npm:1.8.1"
-  checksum: 10/af19ab5a1ec30cb4b2f91fd6df49a7442d5c4825a2e269b3712eded10eedd7f9efeaab96d57829880733fc55bcdd8e9b1d8589b4befb06667c731d08145e274d
+"shell-quote@npm:^1.8.1, shell-quote@npm:^1.8.2":
+  version: 1.8.3
+  resolution: "shell-quote@npm:1.8.3"
+  checksum: 10/5473e354637c2bd698911224129c9a8961697486cff1fb221f234d71c153fc377674029b0223d1d3c953a68d451d79366abfe53d1a0b46ee1f28eb9ade928f4c
   languageName: node
   linkType: hard
 
