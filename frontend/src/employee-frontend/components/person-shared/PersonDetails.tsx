@@ -13,6 +13,7 @@ import React, {
 import styled from 'styled-components'
 import { Link, useLocation } from 'wouter'
 
+import type { InputInfo } from 'lib-common/form/hooks'
 import type { UpdateStateFn } from 'lib-common/form-state'
 import type { Action } from 'lib-common/generated/action'
 import type { PersonJSON } from 'lib-common/generated/api-types/pis'
@@ -127,6 +128,8 @@ export default React.memo(function PersonDetails({
     forceManualFeeDecisions: false,
     ophPersonOid: ''
   })
+  const [emailInfo, setEmailInfo] = useState<InputInfo | undefined>(undefined)
+  const [emailIsValid, setEmailIsValid] = useState<boolean>(true)
   const { mutate: disableSsnAdding, isPending: disablingSsn } =
     useMutation(disableSsnMutation)
 
@@ -599,7 +602,21 @@ export default React.memo(function PersonDetails({
                   value: editing ? (
                     <InputField
                       value={form.email}
-                      onChange={(value) => updateForm({ email: value })}
+                      onChange={(value) => {
+                        if (value !== value.trim()) {
+                          setEmailIsValid(false)
+                          setEmailInfo({
+                            text: i18n.validationErrors.email,
+                            status: 'warning'
+                          })
+                        } else {
+                          setEmailIsValid(true)
+                          setEmailInfo(undefined)
+                        }
+                        updateForm({ email: value })
+                      }}
+                      info={emailInfo}
+                      data-qa="person-email-input"
                     />
                   ) : (
                     person.email
@@ -640,7 +657,7 @@ export default React.memo(function PersonDetails({
             />
             <MutateButton
               primary
-              disabled={false}
+              disabled={!emailIsValid}
               mutation={updatePersonDetailsMutation}
               onClick={() => ({ personId: person.id, body: form })}
               onSuccess={clearUiMode}
