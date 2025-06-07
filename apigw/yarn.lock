@@ -3425,7 +3425,7 @@ __metadata:
     uuid: "npm:11.1.0"
     xml-crypto: "npm:6.1.2"
     xml2js: "npm:0.6.2"
-    zod: "npm:3.25.50"
+    zod: "npm:3.25.51"
   languageName: unknown
   linkType: soft
 
@@ -7854,9 +7854,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zod@npm:3.25.50":
-  version: 3.25.50
-  resolution: "zod@npm:3.25.50"
-  checksum: 10/5cb0be230ceb0ece19d765d2c78aa27c43df47189f4461e0435c975bd0a397a83379a2b1cdd65af809ce07a4df0487846977518396841e186a299954d7234619
+"zod@npm:3.25.51":
+  version: 3.25.51
+  resolution: "zod@npm:3.25.51"
+  checksum: 10/88172dae4c14194bba23c006ae63dd64b96a0e885d9bdb00f8495d1191a4bfd6ed545ab9c60de579b1979589d52253f1bbca6637813fb6890124784c877baf01
   languageName: node
   linkType: hard
