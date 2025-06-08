@@ -292,7 +292,7 @@ fun Database.Transaction.updateChildDocumentContent(
                     content_modified_by IS NULL OR 
                     content_modified_by = ${bind(userId)} OR 
                     content_modified_at < ${bind(now.minusMinutes(lockMinutes.toLong()))}
-                )
+                ) AND content <> ${bind(content)}
                 """
             )
         }
