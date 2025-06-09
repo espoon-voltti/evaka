@@ -258,7 +258,7 @@ export function SingleThreadView({
 
   return (
     <ThreadContainer>
-      <ContentArea opaque>
+      <ContentArea opaque paddingVertical={defaultMargins.xs}>
         <LegacyInlineButton
           icon={faAngleLeft}
           text={i18n.common.goBack}
