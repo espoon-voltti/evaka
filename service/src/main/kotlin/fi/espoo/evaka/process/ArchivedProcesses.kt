@@ -7,11 +7,13 @@ package fi.espoo.evaka.process
 import fi.espoo.evaka.document.childdocument.ChildDocumentDetails
 import fi.espoo.evaka.document.childdocument.DocumentStatus
 import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.ArchiveProcessType
 import fi.espoo.evaka.shared.ArchivedProcessId
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.EvakaUserId
+import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -20,6 +22,25 @@ import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.user.EvakaUser
 import org.jdbi.v3.json.Json
+
+class MetadataService(private val featureConfig: FeatureConfig) {
+    fun getProcess(processType: ArchiveProcessType, year: Int): Process? {
+        val config = featureConfig.archiveMetadataConfigs(processType, year) ?: return null
+        return Process(
+            organization = featureConfig.archiveMetadataOrganization,
+            processDefinitionNumber = config.processDefinitionNumber,
+            archiveDurationMonths = config.archiveDurationMonths,
+            year = year,
+        )
+    }
+}
+
+data class Process(
+    val organization: String,
+    val processDefinitionNumber: String,
+    val archiveDurationMonths: Int,
+    val year: Int,
+)
 
 data class ArchivedProcess(
     val id: ArchivedProcessId,
@@ -50,6 +71,18 @@ enum class ArchivedProcessState : DatabaseEnum {
 
     override val sqlType: String = "archived_process_state"
 }
+
+fun Database.Transaction.insertProcess(
+    metadata: Process,
+    migrated: Boolean = false,
+): ArchivedProcess =
+    insertProcess(
+        processDefinitionNumber = metadata.processDefinitionNumber,
+        year = metadata.year,
+        organization = metadata.organization,
+        archiveDurationMonths = metadata.archiveDurationMonths,
+        migrated = migrated,
+    )
 
 fun Database.Transaction.insertProcess(
     processDefinitionNumber: String,

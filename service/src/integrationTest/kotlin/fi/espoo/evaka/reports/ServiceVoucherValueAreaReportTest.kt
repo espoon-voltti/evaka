@@ -12,6 +12,7 @@ import fi.espoo.evaka.invoicing.data.upsertValueDecisions
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.process.MetadataService
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.PersonId
@@ -242,7 +243,7 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest(resetDbBeforeEach 
                     asyncJobRunner = asyncJobRunner,
                     user = financeUser,
                     evakaEnv = evakaEnv,
-                    featureConfig = featureConfig,
+                    metadata = MetadataService(featureConfig),
                     now = approvedAt,
                     ids = listOf(decision.id),
                     decisionHandlerId = null,

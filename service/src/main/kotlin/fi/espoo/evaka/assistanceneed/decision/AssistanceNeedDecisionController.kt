@@ -8,6 +8,7 @@ import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.pis.Employee
 import fi.espoo.evaka.pis.service.getChildGuardians
 import fi.espoo.evaka.process.ArchivedProcessState
+import fi.espoo.evaka.process.MetadataService
 import fi.espoo.evaka.process.deleteProcessByAssistanceNeedDecisionId
 import fi.espoo.evaka.process.getArchiveProcessByAssistanceNeedDecisionId
 import fi.espoo.evaka.process.insertProcess
@@ -45,6 +46,8 @@ class AssistanceNeedDecisionController(
     private val accessControl: AccessControl,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
 ) {
+    private val metadata = MetadataService(featureConfig)
+
     @PostMapping("/employee/children/{childId}/assistance-needs/decision")
     fun createAssistanceNeedDecision(
         db: Database,
@@ -87,24 +90,20 @@ class AssistanceNeedDecisionController(
 
                     val now = clock.now()
                     val processId =
-                        featureConfig.archiveMetadataConfigs[
-                                ArchiveProcessType.ASSISTANCE_NEED_DECISION_DAYCARE]
-                            ?.let { config ->
-                                tx.insertProcess(
-                                        processDefinitionNumber = config.processDefinitionNumber,
-                                        year = now.year,
-                                        organization = featureConfig.archiveMetadataOrganization,
-                                        archiveDurationMonths = config.archiveDurationMonths,
-                                    )
-                                    .id
-                                    .also { processId ->
-                                        tx.insertProcessHistoryRow(
-                                            processId = processId,
-                                            state = ArchivedProcessState.INITIAL,
-                                            now = now,
-                                            userId = user.evakaUserId,
-                                        )
-                                    }
+                        metadata
+                            .getProcess(
+                                ArchiveProcessType.ASSISTANCE_NEED_DECISION_DAYCARE,
+                                now.year,
+                            )
+                            ?.let { process ->
+                                val processId = tx.insertProcess(process).id
+                                tx.insertProcessHistoryRow(
+                                    processId = processId,
+                                    state = ArchivedProcessState.INITIAL,
+                                    now = now,
+                                    userId = user.evakaUserId,
+                                )
+                                processId
                             }
 
                     tx.insertAssistanceNeedDecision(

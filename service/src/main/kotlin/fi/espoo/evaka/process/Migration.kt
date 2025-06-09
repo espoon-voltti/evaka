@@ -12,7 +12,6 @@ import fi.espoo.evaka.document.childdocument.DocumentStatus
 import fi.espoo.evaka.invoicing.data.setFeeDecisionProcessId
 import fi.espoo.evaka.invoicing.data.setVoucherValueDecisionProcessId
 import fi.espoo.evaka.shared.ApplicationId
-import fi.espoo.evaka.shared.ArchiveProcessConfig
 import fi.espoo.evaka.shared.ArchiveProcessType
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
@@ -42,73 +41,26 @@ fun migrateProcessMetadata(
     tracer: Tracer = noopTracer(),
     batchSize: Int = 1000,
 ) {
+    val metadata = MetadataService(featureConfig)
+
     runBatches("application", tracer, batchSize) {
-        migrateApplicationMetadata(
-            dbc,
-            batchSize,
-            clock,
-            featureConfig.archiveMetadataOrganization,
-            featureConfig.archiveMetadataConfigs,
-        )
+        migrateApplicationMetadata(dbc, batchSize, clock, metadata)
     }
 
-    val feeDecisionConfig = featureConfig.archiveMetadataConfigs[ArchiveProcessType.FEE_DECISION]
-    if (feeDecisionConfig != null) {
-        runBatches("fee decision", tracer, batchSize) {
-            migrateFeeDecisionMetadata(
-                dbc,
-                batchSize,
-                featureConfig.archiveMetadataOrganization,
-                feeDecisionConfig,
-            )
-        }
-    } else {
-        logger.warn { "Missing metadata config for FEE_DECISION" }
+    runBatches("fee decision", tracer, batchSize) {
+        migrateFeeDecisionMetadata(dbc, batchSize, metadata)
     }
 
-    val voucherValueDecisionConfig =
-        featureConfig.archiveMetadataConfigs[ArchiveProcessType.VOUCHER_VALUE_DECISION]
-    if (voucherValueDecisionConfig != null) {
-        runBatches("voucher value decision", tracer, batchSize) {
-            migrateVoucherValueDecisionMetadata(
-                dbc,
-                batchSize,
-                featureConfig.archiveMetadataOrganization,
-                voucherValueDecisionConfig,
-            )
-        }
-    } else {
-        logger.warn { "Missing metadata config for FEE_DECISION" }
+    runBatches("voucher value decision", tracer, batchSize) {
+        migrateVoucherValueDecisionMetadata(dbc, batchSize, metadata)
     }
 
-    val assistanceNeedDecisionDaycareConfig =
-        featureConfig.archiveMetadataConfigs[ArchiveProcessType.ASSISTANCE_NEED_DECISION_DAYCARE]
-    if (assistanceNeedDecisionDaycareConfig != null) {
-        runBatches("assistance need daycare decision", tracer, batchSize) {
-            migrateAssistanceNeedDecisionDaycare(
-                dbc,
-                batchSize,
-                featureConfig.archiveMetadataOrganization,
-                assistanceNeedDecisionDaycareConfig,
-            )
-        }
-    } else {
-        logger.warn { "Missing metadata config for ASSISTANCE_NEED_DECISION_DAYCARE" }
+    runBatches("assistance need daycare decision", tracer, batchSize) {
+        migrateAssistanceNeedDecisionDaycare(dbc, batchSize, metadata)
     }
 
-    val assistanceNeedDecisionPreschoolConfig =
-        featureConfig.archiveMetadataConfigs[ArchiveProcessType.ASSISTANCE_NEED_DECISION_PRESCHOOL]
-    if (assistanceNeedDecisionPreschoolConfig != null) {
-        runBatches("assistance need preschool decision", tracer, batchSize) {
-            migrateAssistanceNeedDecisionPreschool(
-                dbc,
-                batchSize,
-                featureConfig.archiveMetadataOrganization,
-                assistanceNeedDecisionPreschoolConfig,
-            )
-        }
-    } else {
-        logger.warn { "Missing metadata config for ASSISTANCE_NEED_DECISION_PRESCHOOL" }
+    runBatches("assistance need preschool decision", tracer, batchSize) {
+        migrateAssistanceNeedDecisionPreschool(dbc, batchSize, metadata)
     }
 
     runBatches("child document", tracer, batchSize) {
@@ -141,8 +93,7 @@ private fun migrateApplicationMetadata(
     dbc: Database.Connection,
     batchSize: Int,
     clock: EvakaClock,
-    archiveMetadataOrganization: String,
-    metadataConfigs: Map<ArchiveProcessType, ArchiveProcessConfig>,
+    metadata: MetadataService,
 ): Int {
     val systemInternalUser = AuthenticatedUser.SystemInternalUser.evakaUserId
     return dbc.transaction { tx ->
@@ -161,22 +112,17 @@ private fun migrateApplicationMetadata(
                 .toList<ApplicationMigrationData>()
 
         applications.forEach { application ->
-            val config = metadataConfigs[ArchiveProcessType.fromApplicationType(application.type)]
-
-            if (config == null) {
+            val process =
+                metadata.getProcess(
+                    ArchiveProcessType.fromApplicationType(application.type),
+                    application.sentDate.year,
+                )
+            if (process == null) {
                 logger.warn { "Missing metadata config for application type ${application.type}" }
                 return@forEach
             }
 
-            val processId =
-                tx.insertProcess(
-                        processDefinitionNumber = config.processDefinitionNumber,
-                        year = application.sentDate.year,
-                        organization = archiveMetadataOrganization,
-                        archiveDurationMonths = config.archiveDurationMonths,
-                        migrated = true,
-                    )
-                    .id
+            val processId = tx.insertProcess(process, migrated = true).id
             tx.setApplicationProcessId(application.id, processId, clock.now(), systemInternalUser)
             tx.insertProcessHistoryRow(
                 processId = processId,
@@ -214,8 +160,7 @@ private data class FeeDecisionMigrationData(
 private fun migrateFeeDecisionMetadata(
     dbc: Database.Connection,
     batchSize: Int,
-    archiveMetadataOrganization: String,
-    config: ArchiveProcessConfig,
+    metadata: MetadataService,
 ): Int {
     val systemInternalUser = AuthenticatedUser.SystemInternalUser.evakaUserId
     return dbc.transaction { tx ->
@@ -234,15 +179,13 @@ private fun migrateFeeDecisionMetadata(
                 .toList<FeeDecisionMigrationData>()
 
         feeDecisions.forEach { decision ->
-            val processId =
-                tx.insertProcess(
-                        processDefinitionNumber = config.processDefinitionNumber,
-                        year = decision.created.year,
-                        organization = archiveMetadataOrganization,
-                        archiveDurationMonths = config.archiveDurationMonths,
-                        migrated = true,
-                    )
-                    .id
+            val process =
+                metadata.getProcess(ArchiveProcessType.FEE_DECISION, decision.created.year)
+            if (process == null) {
+                logger.warn { "Missing metadata config for FEE_DECISION" }
+                return@forEach
+            }
+            val processId = tx.insertProcess(process, migrated = true).id
             tx.setFeeDecisionProcessId(decision.id, processId)
             tx.insertProcessHistoryRow(
                 processId = processId,
@@ -280,8 +223,7 @@ private data class VoucherValueDecisionMigrationData(
 private fun migrateVoucherValueDecisionMetadata(
     dbc: Database.Connection,
     batchSize: Int,
-    archiveMetadataOrganization: String,
-    config: ArchiveProcessConfig,
+    metadata: MetadataService,
 ): Int {
     val systemInternalUser = AuthenticatedUser.SystemInternalUser.evakaUserId
     return dbc.transaction { tx ->
@@ -300,15 +242,16 @@ private fun migrateVoucherValueDecisionMetadata(
                 .toList<VoucherValueDecisionMigrationData>()
 
         voucherValueDecisions.forEach { decision ->
-            val processId =
-                tx.insertProcess(
-                        processDefinitionNumber = config.processDefinitionNumber,
-                        year = decision.created.year,
-                        organization = archiveMetadataOrganization,
-                        archiveDurationMonths = config.archiveDurationMonths,
-                        migrated = true,
-                    )
-                    .id
+            val process =
+                metadata.getProcess(
+                    ArchiveProcessType.VOUCHER_VALUE_DECISION,
+                    decision.created.year,
+                )
+            if (process == null) {
+                logger.warn { "Missing metadata config for VOUCHER_VALUE_DECISION" }
+                return@forEach
+            }
+            val processId = tx.insertProcess(process, migrated = true).id
             tx.setVoucherValueDecisionProcessId(decision.id, processId)
             tx.insertProcessHistoryRow(
                 processId = processId,
@@ -349,8 +292,7 @@ private data class AssistaceNeedDaycareDecisionData(
 private fun migrateAssistanceNeedDecisionDaycare(
     dbc: Database.Connection,
     batchSize: Int,
-    archiveMetadataOrganization: String,
-    config: ArchiveProcessConfig,
+    metadata: MetadataService,
 ): Int {
     val systemInternalUser = AuthenticatedUser.SystemInternalUser.evakaUserId
     return dbc.transaction { tx ->
@@ -377,15 +319,16 @@ private fun migrateAssistanceNeedDecisionDaycare(
                 .toList<AssistaceNeedDaycareDecisionData>()
 
         assistanceNeedDecisions.forEach { decision ->
-            val processId =
-                tx.insertProcess(
-                        processDefinitionNumber = config.processDefinitionNumber,
-                        year = decision.createdAt.year,
-                        organization = archiveMetadataOrganization,
-                        archiveDurationMonths = config.archiveDurationMonths,
-                        migrated = true,
-                    )
-                    .id
+            val process =
+                metadata.getProcess(
+                    ArchiveProcessType.ASSISTANCE_NEED_DECISION_DAYCARE,
+                    decision.createdAt.year,
+                )
+            if (process == null) {
+                logger.warn { "Missing metadata config for ASSISTANCE_NEED_DECISION_DAYCARE" }
+                return@forEach
+            }
+            val processId = tx.insertProcess(process, migrated = true).id
             tx.execute {
                 sql(
                     "UPDATE assistance_need_decision SET process_id = ${bind(processId)} WHERE id = ${bind(decision.id)}"
@@ -444,8 +387,7 @@ private data class AssistanceNeedPreschoolDecisionData(
 private fun migrateAssistanceNeedDecisionPreschool(
     dbc: Database.Connection,
     batchSize: Int,
-    archiveMetadataOrganization: String,
-    config: ArchiveProcessConfig,
+    metadata: MetadataService,
 ): Int {
     val systemInternalUser = AuthenticatedUser.SystemInternalUser.evakaUserId
     return dbc.transaction { tx ->
@@ -472,15 +414,16 @@ private fun migrateAssistanceNeedDecisionPreschool(
                 .toList<AssistanceNeedPreschoolDecisionData>()
 
         assistanceNeedPreschoolDecisions.forEach { decision ->
-            val processId =
-                tx.insertProcess(
-                        processDefinitionNumber = config.processDefinitionNumber,
-                        year = decision.createdAt.year,
-                        organization = archiveMetadataOrganization,
-                        archiveDurationMonths = config.archiveDurationMonths,
-                        migrated = true,
-                    )
-                    .id
+            val process =
+                metadata.getProcess(
+                    ArchiveProcessType.ASSISTANCE_NEED_DECISION_PRESCHOOL,
+                    decision.createdAt.year,
+                )
+            if (process == null) {
+                logger.warn { "Missing metadata config for ASSISTANCE_NEED_DECISION_PRESCHOOL" }
+                return@forEach
+            }
+            val processId = tx.insertProcess(process, migrated = true).id
             tx.execute {
                 sql(
                     "UPDATE assistance_need_preschool_decision SET process_id = ${bind(processId)} WHERE id = ${bind(decision.id)}"

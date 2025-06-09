@@ -139,7 +139,7 @@ data class FeatureConfig(
     val archiveMetadataOrganization: String,
 
     /** Configs for enabled archive metadata processes */
-    val archiveMetadataConfigs: Map<ArchiveProcessType, ArchiveProcessConfig>,
+    val archiveMetadataConfigs: (type: ArchiveProcessType, year: Int) -> ArchiveProcessConfig?,
 
     /**
      * Whether July is free of charge if daycare started latest on last year's September (normally

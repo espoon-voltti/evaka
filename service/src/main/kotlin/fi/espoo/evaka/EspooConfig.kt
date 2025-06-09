@@ -207,44 +207,45 @@ class EspooConfig {
             fiveYearsOldDaycareEnabled = true,
             freeJulyStartOnSeptember = true,
             archiveMetadataOrganization = "Espoon kaupungin esiopetus ja varhaiskasvatus",
-            archiveMetadataConfigs =
-                mapOf(
-                    ArchiveProcessType.APPLICATION_DAYCARE to
+            archiveMetadataConfigs = { type: ArchiveProcessType, year: Int ->
+                when (type) {
+                    ArchiveProcessType.APPLICATION_DAYCARE ->
                         ArchiveProcessConfig(
                             processDefinitionNumber = "12.06.01",
                             archiveDurationMonths = 10 * 12,
-                        ),
-                    ArchiveProcessType.APPLICATION_PRESCHOOL to
+                        )
+                    ArchiveProcessType.APPLICATION_PRESCHOOL ->
+                        ArchiveProcessConfig(
+                            processDefinitionNumber = if (year >= 2026) "12.06.02" else "12.06.01",
+                            archiveDurationMonths = 10 * 12,
+                        )
+                    ArchiveProcessType.APPLICATION_CLUB ->
                         ArchiveProcessConfig(
                             processDefinitionNumber = "12.06.01",
                             archiveDurationMonths = 10 * 12,
-                        ),
-                    ArchiveProcessType.APPLICATION_CLUB to
-                        ArchiveProcessConfig(
-                            processDefinitionNumber = "12.06.01",
-                            archiveDurationMonths = 10 * 12,
-                        ),
-                    ArchiveProcessType.ASSISTANCE_NEED_DECISION_DAYCARE to
+                        )
+                    ArchiveProcessType.ASSISTANCE_NEED_DECISION_DAYCARE ->
                         ArchiveProcessConfig(
                             processDefinitionNumber = "12.06.03",
                             archiveDurationMonths = 120 * 12,
-                        ),
-                    ArchiveProcessType.ASSISTANCE_NEED_DECISION_PRESCHOOL to
+                        )
+                    ArchiveProcessType.ASSISTANCE_NEED_DECISION_PRESCHOOL ->
                         ArchiveProcessConfig(
                             processDefinitionNumber = "12.06.04",
                             archiveDurationMonths = 120 * 12,
-                        ),
-                    ArchiveProcessType.FEE_DECISION to
+                        )
+                    ArchiveProcessType.FEE_DECISION ->
                         ArchiveProcessConfig(
-                            processDefinitionNumber = "12.06.07",
+                            processDefinitionNumber = if (year >= 2026) "02.09.01" else "12.06.07",
                             archiveDurationMonths = 10 * 12,
-                        ),
-                    ArchiveProcessType.VOUCHER_VALUE_DECISION to
+                        )
+                    ArchiveProcessType.VOUCHER_VALUE_DECISION ->
                         ArchiveProcessConfig(
-                            processDefinitionNumber = "12.06.08",
+                            processDefinitionNumber = if (year >= 2026) "02.09.01" else "12.06.08",
                             archiveDurationMonths = 10 * 12,
-                        ),
-                ),
+                        )
+                }
+            },
             holidayQuestionnaireType = QuestionnaireType.FIXED_PERIOD,
         )
 
