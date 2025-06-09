@@ -198,60 +198,67 @@ class PlacementController(
     ) {
         val now = clock.now()
         db.connect { dbc ->
-            dbc.transaction { tx ->
-                accessControl.requirePermissionFor(
-                    tx,
-                    user,
-                    clock,
-                    Action.Placement.UPDATE,
-                    placementId,
-                )
-                val authorizedDaycares =
-                    tx.getDaycares(
-                            clock,
-                            accessControl.requireAuthorizationFilter(
-                                tx,
-                                user,
-                                clock,
-                                Action.Unit.READ,
-                            ),
-                        )
-                        .asSequence()
-                        .map { it.id }
-                        .toSet()
-                val aclAuth = AclAuthorization.Subset(ids = authorizedDaycares)
-                val oldPlacement =
-                    tx.updatePlacement(
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Placement.UPDATE,
                         placementId,
-                        body.startDate,
-                        body.endDate,
-                        aclAuth,
-                        useFiveYearsOldDaycare,
-                        clock.now(),
-                        user.evakaUserId,
                     )
-
-                tx.deleteFutureReservationsAndAbsencesOutsideValidPlacements(
-                    oldPlacement.childId,
-                    now.toLocalDate(),
-                )
-                generateAbsencesFromIrregularDailyServiceTimes(tx, now, oldPlacement.childId)
-                asyncJobRunner.plan(
-                    tx,
-                    listOf(
-                        AsyncJob.GenerateFinanceDecisions.forChild(
-                            oldPlacement.childId,
-                            DateRange(
-                                minOf(body.startDate, oldPlacement.startDate),
-                                maxOf(body.endDate, oldPlacement.endDate),
-                            ),
+                    val authorizedDaycares =
+                        tx.getDaycares(
+                                clock,
+                                accessControl.requireAuthorizationFilter(
+                                    tx,
+                                    user,
+                                    clock,
+                                    Action.Unit.READ,
+                                ),
+                            )
+                            .asSequence()
+                            .map { it.id }
+                            .toSet()
+                    val aclAuth = AclAuthorization.Subset(ids = authorizedDaycares)
+                    val oldPlacement =
+                        tx.updatePlacement(
+                            placementId,
+                            body.startDate,
+                            body.endDate,
+                            aclAuth,
+                            useFiveYearsOldDaycare,
+                            clock.now(),
+                            user.evakaUserId,
                         )
-                    ),
-                    runAt = now,
+
+                    tx.deleteFutureReservationsAndAbsencesOutsideValidPlacements(
+                        oldPlacement.childId,
+                        now.toLocalDate(),
+                    )
+                    generateAbsencesFromIrregularDailyServiceTimes(tx, now, oldPlacement.childId)
+                    asyncJobRunner.plan(
+                        tx,
+                        listOf(
+                            AsyncJob.GenerateFinanceDecisions.forChild(
+                                oldPlacement.childId,
+                                DateRange(
+                                    minOf(body.startDate, oldPlacement.startDate),
+                                    maxOf(body.endDate, oldPlacement.endDate),
+                                ),
+                            )
+                        ),
+                        runAt = now,
+                    )
+                    oldPlacement
+                }
+            }
+            .also {
+                Audit.PlacementUpdate.log(
+                    targetId = AuditId(placementId),
+                    objectId = AuditId(listOf(it.childId, it.unitId)),
+                    meta = mapOf("startDate" to body.startDate, "endDate" to body.endDate),
                 )
             }
-        }
-        Audit.PlacementUpdate.log(targetId = AuditId(placementId))
     }
 
     @DeleteMapping("/employee/placements/{placementId}")
