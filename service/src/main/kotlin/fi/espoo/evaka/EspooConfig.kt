@@ -216,7 +216,7 @@ class EspooConfig {
                         )
                     ArchiveProcessType.APPLICATION_PRESCHOOL ->
                         ArchiveProcessConfig(
-                            processDefinitionNumber = "12.06.01",
+                            processDefinitionNumber = if (year >= 2026) "12.06.02" else "12.06.01",
                             archiveDurationMonths = 10 * 12,
                         )
                     ArchiveProcessType.APPLICATION_CLUB ->
@@ -236,12 +236,12 @@ class EspooConfig {
                         )
                     ArchiveProcessType.FEE_DECISION ->
                         ArchiveProcessConfig(
-                            processDefinitionNumber = "12.06.07",
+                            processDefinitionNumber = if (year >= 2026) "02.09.01" else "12.06.07",
                             archiveDurationMonths = 10 * 12,
                         )
                     ArchiveProcessType.VOUCHER_VALUE_DECISION ->
                         ArchiveProcessConfig(
-                            processDefinitionNumber = "12.06.08",
+                            processDefinitionNumber = if (year >= 2026) "02.09.01" else "12.06.08",
                             archiveDurationMonths = 10 * 12,
                         )
                 }
