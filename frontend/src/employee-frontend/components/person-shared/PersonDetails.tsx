@@ -41,6 +41,7 @@ import { getAddressPagePdf } from '../../generated/api-clients/pis'
 import { useTranslation } from '../../state/i18n'
 import type { UiState } from '../../state/ui'
 import { UIContext } from '../../state/ui'
+import { isEmailValid } from '../../utils/validation/validations'
 import LabelValueList from '../common/LabelValueList'
 import {
   disableSsnMutation,
@@ -127,6 +128,10 @@ export default React.memo(function PersonDetails({
     forceManualFeeDecisions: false,
     ophPersonOid: ''
   })
+  const emailIsValid = useMemo<boolean>(
+    () => form.email === '' || isEmailValid(form.email),
+    [form.email]
+  )
   const { mutate: disableSsnAdding, isPending: disablingSsn } =
     useMutation(disableSsnMutation)
 
@@ -599,7 +604,18 @@ export default React.memo(function PersonDetails({
                   value: editing ? (
                     <InputField
                       value={form.email}
-                      onChange={(value) => updateForm({ email: value })}
+                      onChange={(value) => {
+                        updateForm({ email: value.trim() })
+                      }}
+                      info={
+                        emailIsValid
+                          ? undefined
+                          : {
+                              text: i18n.validationErrors.email,
+                              status: 'warning'
+                            }
+                      }
+                      data-qa="person-email-input"
                     />
                   ) : (
                     person.email
@@ -640,7 +656,7 @@ export default React.memo(function PersonDetails({
             />
             <MutateButton
               primary
-              disabled={false}
+              disabled={!emailIsValid}
               mutation={updatePersonDetailsMutation}
               onClick={() => ({ personId: person.id, body: form })}
               onSuccess={clearUiMode}
