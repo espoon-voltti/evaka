@@ -1071,4 +1071,94 @@ describe('Employee - Child documents - unit groups page', () => {
       }))
     ).toEqual([expectedEmail])
   })
+
+  test('Unit supervisor can return a sent unanswered document to draft state', async () => {
+    // create child document, send to citizen and return to draft
+    const unitSupervisor = await Fixture.employee()
+      .unitSupervisor(unit1.id)
+      .save()
+
+    const page = await Page.open({
+      mockedTime: now,
+      employeeCustomizations: {
+        featureFlags: { citizenChildDocumentTypes: true }
+      }
+    })
+    await employeeLogin(page, unitSupervisor)
+    await page.goto(
+      `${config.employeeUrl}/child-information/${child1InGroup1.id}`
+    )
+    await assertReturningToDraftForUser(page, unitSupervisor)
+  })
+
+  test('Staff member can return a sent unanswered document to draft state', async () => {
+    // create child document, send to citizen and return to draft
+    const staffMember = await Fixture.employee()
+      .staff(unit1.id)
+      .groupAcl(group1.id)
+      .save()
+
+    const page = await Page.open({
+      mockedTime: now,
+      employeeCustomizations: {
+        featureFlags: { citizenChildDocumentTypes: true }
+      }
+    })
+    await employeeLogin(page, staffMember)
+    await page.goto(
+      `${config.employeeUrl}/child-information/${child1InGroup1.id}`
+    )
+    await assertReturningToDraftForUser(page, staffMember)
+  })
+
+  async function assertReturningToDraftForUser(page: Page, user: DevEmployee) {
+    const childInformationPage = new ChildInformationPage(page)
+    const childDocumentsSection =
+      await childInformationPage.openCollapsible('childDocuments')
+    await childDocumentsSection.createExternalDocumentButton.click()
+    await childDocumentsSection.createModalTemplateSelect.assertTextEquals(
+      template.name
+    )
+    await childDocumentsSection.modalOk.click()
+    const childDocument = new ChildDocumentPage(page)
+    await childDocument.status.assertTextEquals('Luonnos')
+
+    await childDocument.goToNextStatus()
+    await childDocument.status.assertTextEquals('Täytettävänä huoltajalla')
+
+    //return to draft
+    await childDocument.goToPrevStatus()
+    await childDocument.status.assertTextEquals('Luonnos')
+
+    //fill on behalf of citizen
+    await childDocument.editButton.click()
+    const answer = 'Jonkin sortin vastaus'
+    const question = childDocument.getTextQuestion(
+      template.content.sections[0].label,
+      template.content.sections[0].questions[0].label
+    )
+    await question.fill(answer)
+    await childDocument.savingIndicator.waitUntilHidden()
+    await childDocument.previewButton.click()
+
+    //resend to citizen
+    await childDocument.goToNextStatus()
+
+    //assert returning to draft no longer possible
+    await page.findByDataQa('prev-status-button').waitUntilHidden()
+
+    //publish as ready
+    await childDocument.goToCompletedStatus()
+    await childDocument.status.assertTextEquals('Valmis')
+
+    await childDocument.returnButton.click()
+    await childInformationPage.openCollapsible('childDocuments')
+    await waitUntilEqual(childDocumentsSection.internalChildDocumentsCount, 0)
+    await waitUntilEqual(childDocumentsSection.externalChildDocumentsCount, 1)
+    const row = childDocumentsSection.externalChildDocuments(0)
+    await row.sent.assertTextEquals(now.toLocalDate().format())
+    await row.answered.assertTextEquals(
+      `${now.toLocalDate().format()}, ${user.lastName} ${user.firstName}`
+    )
+  }
 })
