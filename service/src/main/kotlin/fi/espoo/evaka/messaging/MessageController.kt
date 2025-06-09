@@ -448,19 +448,31 @@ class MessageController(
                 requireMessageAccountAccess(dbc, user, clock, accountId)
                 val threads =
                     dbc.read {
-                            val personAccountId = it.getCitizenMessageAccount(personId)
-                            it.getThreads(
-                                accountId,
-                                pageSize = 200,
-                                page = 1,
-                                featureConfig.municipalMessageAccountName,
-                                featureConfig.serviceWorkerMessageAccountName,
-                                featureConfig.financeMessageAccountName,
-                                personAccountId = personAccountId,
-                                messagesSortDirection = SortDirection.DESC,
+                        val personAccountId = it.getCitizenMessageAccount(personId)
+                        val filter =
+                            accessControl.requireAuthorizationFilter(
+                                it,
+                                user,
+                                clock,
+                                Action.MessageAccount.ACCESS,
                             )
+                        val folderIds =
+                            listOf(null) + it.getFolders(filter).map { folder -> folder.id }
+                        folderIds.flatMap { folderId ->
+                            it.getThreads(
+                                    accountId,
+                                    pageSize = 200,
+                                    page = 1,
+                                    featureConfig.municipalMessageAccountName,
+                                    featureConfig.serviceWorkerMessageAccountName,
+                                    featureConfig.financeMessageAccountName,
+                                    personAccountId = personAccountId,
+                                    messagesSortDirection = SortDirection.DESC,
+                                    folderId = folderId,
+                                )
+                                .data
                         }
-                        .data
+                    }
                 accountId to threads
             }
             .let { (accountId, threads) ->
