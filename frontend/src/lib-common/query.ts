@@ -289,7 +289,6 @@ type PagedInfiniteQueryDescription<Data, Id> = UseInfiniteQueryOptions<
   Paged<Data>,
   unknown,
   InfiniteData<Paged<Data>>,
-  Paged<Data>,
   QueryKey,
   number
 > & { id: (data: Data) => Id }
