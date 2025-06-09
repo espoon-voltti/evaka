@@ -646,7 +646,11 @@ sealed interface Action {
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfAbsenceApplication(),
         ),
-        DECIDE_MAX_WEEK(HasGroupRole(STAFF).inPlacementGroupOfChildOfAbsenceApplication());
+        DECIDE_MAX_WEEK(
+            HasGlobalRole(ADMIN),
+            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfAbsenceApplication(),
+            HasGroupRole(STAFF).inPlacementGroupOfChildOfAbsenceApplication(),
+        );
 
         override fun toString(): String = "${javaClass.name}.$name"
     }

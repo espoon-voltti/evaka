@@ -205,23 +205,14 @@ class AbsenceApplicationControllerEmployee(
         id: AbsenceApplicationId,
     ): AbsenceApplication {
         val application = tx.selectAbsenceApplication(id, forUpdate = true) ?: throw NotFound()
-        if (
-            !(accessControl.hasPermissionFor(
-                tx,
-                user,
-                clock,
-                Action.AbsenceApplication.DECIDE,
-                application.id,
-            ) ||
-                (accessControl.hasPermissionFor(
-                    tx,
-                    user,
-                    clock,
-                    Action.AbsenceApplication.DECIDE_MAX_WEEK,
-                    application.id,
-                ) && isMaxWeek(tx, application)))
+        accessControl.requirePermissionFor(
+            tx,
+            user,
+            clock,
+            if (isMaxWeek(tx, application)) Action.AbsenceApplication.DECIDE_MAX_WEEK
+            else Action.AbsenceApplication.DECIDE,
+            application.id,
         )
-            throw Forbidden()
         if (application.status != AbsenceApplicationStatus.WAITING_DECISION)
             throw BadRequest("Absence application ${application.id} is not waiting decision")
         return application
