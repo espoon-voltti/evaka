@@ -128,7 +128,7 @@ class EspooConfig {
     @Bean
     fun espooScheduledJobEnv(env: Environment): ScheduledJobsEnv<EspooScheduledJob> =
         ScheduledJobsEnv.fromEnvironment(
-            EspooScheduledJob.values().associateWith { it.defaultSettings },
+            EspooScheduledJob.entries.associateWith { it.defaultSettings },
             "espoo.job",
             env,
         )

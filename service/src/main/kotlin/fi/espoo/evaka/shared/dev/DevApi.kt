@@ -1560,7 +1560,7 @@ VALUES (${bind(body.id)}, ${bind(body.guardianId)})
                 "<div style=\"font-family: monospace; white-space: pre-wrap\">${emailContent.text}</div>"
 
         val options =
-            EmailMessageFilter.values().joinToString("") {
+            EmailMessageFilter.entries.joinToString("") {
                 "<option value=\"$it\" ${if (it == message) "selected" else ""}>$it</option>"
             }
         val form =

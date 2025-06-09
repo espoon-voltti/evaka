@@ -30,9 +30,9 @@ class EmailTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `receiver's enabled email notification types are respected`() {
         // Not set -> all messages are sent
-        EmailMessageType.values()
+        EmailMessageType.entries
             .mapNotNull { type -> createEmail(emailType = type) }
-            .also { emails -> assertEquals(EmailMessageType.values().size, emails.size) }
+            .also { emails -> assertEquals(EmailMessageType.entries.size, emails.size) }
 
         // Only some notification types are enabled
         db.transaction { tx ->

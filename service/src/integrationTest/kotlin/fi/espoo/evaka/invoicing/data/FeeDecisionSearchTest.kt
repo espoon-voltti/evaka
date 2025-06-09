@@ -382,7 +382,7 @@ class FeeDecisionSearchTest : PureJdbiTest(resetDbBeforeEach = true) {
             tx.updateTimestamps(decisions[1].id, created = newTimestamp, sentAt = newTimestamp)
         }
         val testCases =
-            FeeDecisionSortParam.values().flatMap {
+            FeeDecisionSortParam.entries.flatMap {
                 listOf(it to SortDirection.ASC, it to SortDirection.DESC)
             }
         for ((sortBy, direction) in testCases) {
