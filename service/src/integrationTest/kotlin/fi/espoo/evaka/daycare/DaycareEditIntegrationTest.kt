@@ -154,6 +154,19 @@ class DaycareEditIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     }
 
     @Test
+    fun `updateDaycare with location null`() {
+        val fieldsWithLocationNull = fields.copy(location = null)
+        daycareController.updateDaycare(
+            dbInstance(),
+            admin,
+            RealEvakaClock(),
+            testDaycare.id,
+            fieldsWithLocationNull,
+        )
+        getAndAssertDaycareFields(testDaycare.id, fieldsWithLocationNull)
+    }
+
+    @Test
     fun testUpdatePreschool() {
         val preschoolFields =
             fields.copy(
