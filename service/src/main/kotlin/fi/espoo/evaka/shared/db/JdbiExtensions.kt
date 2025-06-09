@@ -96,6 +96,8 @@ val coordinateArgumentFactory =
             if (it != null) {
                 y = it.lat
                 x = it.lon
+            } else {
+                isNull = true
             }
         }
     }
