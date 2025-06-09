@@ -112,7 +112,10 @@ export const AbsenceApplicationsSection = (props: Props) => {
                   <div>{application.data.description}</div>
                 </div>
                 {application.data.status === 'WAITING_DECISION' &&
-                  application.actions.includes('DECIDE') && (
+                  application.actions.some(
+                    (action) =>
+                      action === 'DECIDE' || action === 'DECIDE_MAX_WEEK'
+                  ) && (
                     <>
                       <AlertBox
                         message={
