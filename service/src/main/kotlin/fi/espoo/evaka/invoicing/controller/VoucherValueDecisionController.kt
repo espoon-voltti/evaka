@@ -38,6 +38,7 @@ import fi.espoo.evaka.invoicing.service.VoucherValueDecisionService
 import fi.espoo.evaka.invoicing.validateFinanceDecisionHandler
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.process.ArchivedProcessState
+import fi.espoo.evaka.process.MetadataService
 import fi.espoo.evaka.process.getArchiveProcessByVoucherValueDecisionId
 import fi.espoo.evaka.process.insertProcess
 import fi.espoo.evaka.process.insertProcessHistoryRow
@@ -197,7 +198,7 @@ class VoucherValueDecisionController(
                     asyncJobRunner = asyncJobRunner,
                     user = user,
                     evakaEnv = evakaEnv,
-                    featureConfig = featureConfig,
+                    metadata = MetadataService(featureConfig),
                     now = clock.now(),
                     ids = decisionIds,
                     decisionHandlerId = decisionHandlerId,
@@ -404,7 +405,7 @@ fun sendVoucherValueDecisions(
     asyncJobRunner: AsyncJobRunner<AsyncJob>,
     user: AuthenticatedUser.Employee,
     evakaEnv: EvakaEnv,
-    featureConfig: FeatureConfig,
+    metadata: MetadataService,
     now: HelsinkiDateTime,
     ids: List<VoucherValueDecisionId>,
     decisionHandlerId: EmployeeId?,
@@ -471,32 +472,24 @@ fun sendVoucherValueDecisions(
         alwaysUseDaycareFinanceDecisionHandler,
     )
 
-    val processConfig =
-        featureConfig.archiveMetadataConfigs[ArchiveProcessType.VOUCHER_VALUE_DECISION]
-    if (processConfig != null) {
+    val process = metadata.getProcess(ArchiveProcessType.VOUCHER_VALUE_DECISION, today.year)
+    if (process != null) {
         // TODO: Could be heavy. Does this need to be moved into async jobs?
         validDecisions.forEach { decision ->
-            tx.insertProcess(
-                    processDefinitionNumber = processConfig.processDefinitionNumber,
-                    year = today.year,
-                    organization = featureConfig.archiveMetadataOrganization,
-                    archiveDurationMonths = processConfig.archiveDurationMonths,
-                )
-                .also { process ->
-                    tx.insertProcessHistoryRow(
-                        processId = process.id,
-                        state = ArchivedProcessState.INITIAL,
-                        now = decision.created, // retroactive initial state
-                        userId = AuthenticatedUser.SystemInternalUser.evakaUserId,
-                    )
-                    tx.insertProcessHistoryRow(
-                        processId = process.id,
-                        state = ArchivedProcessState.DECIDING,
-                        now = now,
-                        userId = user.evakaUserId,
-                    )
-                    tx.setVoucherValueDecisionProcessId(decision.id, process.id)
-                }
+            val processId = tx.insertProcess(process).id
+            tx.insertProcessHistoryRow(
+                processId = processId,
+                state = ArchivedProcessState.INITIAL,
+                now = decision.created, // retroactive initial state
+                userId = AuthenticatedUser.SystemInternalUser.evakaUserId,
+            )
+            tx.insertProcessHistoryRow(
+                processId = processId,
+                state = ArchivedProcessState.DECIDING,
+                now = now,
+                userId = user.evakaUserId,
+            )
+            tx.setVoucherValueDecisionProcessId(decision.id, processId)
         }
     }
 

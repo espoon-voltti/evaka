@@ -42,6 +42,7 @@ import fi.espoo.evaka.invoicing.validateFinanceDecisionHandler
 import fi.espoo.evaka.pdfgen.PdfGenerator
 import fi.espoo.evaka.pis.EmailMessageType
 import fi.espoo.evaka.process.ArchivedProcessState
+import fi.espoo.evaka.process.MetadataService
 import fi.espoo.evaka.process.getArchiveProcessByFeeDecisionId
 import fi.espoo.evaka.process.insertProcess
 import fi.espoo.evaka.process.insertProcessHistoryRow
@@ -85,8 +86,10 @@ class FeeDecisionService(
     private val emailEnv: EmailEnv,
     private val emailMessageProvider: IEmailMessageProvider,
     private val emailClient: EmailClient,
-    private val featureConfig: FeatureConfig,
+    featureConfig: FeatureConfig,
 ) {
+    private val metadata = MetadataService(featureConfig)
+
     init {
         asyncJobRunner.registerHandler(::runSendNewFeeDecisionEmail)
     }
@@ -191,31 +194,24 @@ class FeeDecisionService(
             alwaysUseDaycareFinanceDecisionHandler = alwaysUseDaycareFinanceDecisionHandler,
         )
 
-        val processConfig = featureConfig.archiveMetadataConfigs[ArchiveProcessType.FEE_DECISION]
-        if (processConfig != null) {
+        val process = metadata.getProcess(ArchiveProcessType.FEE_DECISION, today.year)
+        if (process != null) {
             // TODO: Could be heavy. Does this need to be moved into async jobs?
             validDecisions.forEach { decision ->
-                tx.insertProcess(
-                        processDefinitionNumber = processConfig.processDefinitionNumber,
-                        year = today.year,
-                        organization = featureConfig.archiveMetadataOrganization,
-                        archiveDurationMonths = processConfig.archiveDurationMonths,
-                    )
-                    .also { process ->
-                        tx.insertProcessHistoryRow(
-                            processId = process.id,
-                            state = ArchivedProcessState.INITIAL,
-                            now = decision.created, // retroactive initial state
-                            userId = AuthenticatedUser.SystemInternalUser.evakaUserId,
-                        )
-                        tx.insertProcessHistoryRow(
-                            processId = process.id,
-                            state = ArchivedProcessState.DECIDING,
-                            now = confirmDateTime,
-                            userId = user.evakaUserId,
-                        )
-                        tx.setFeeDecisionProcessId(decision.id, process.id)
-                    }
+                val processId = tx.insertProcess(process).id
+                tx.insertProcessHistoryRow(
+                    processId = processId,
+                    state = ArchivedProcessState.INITIAL,
+                    now = decision.created, // retroactive initial state
+                    userId = AuthenticatedUser.SystemInternalUser.evakaUserId,
+                )
+                tx.insertProcessHistoryRow(
+                    processId = processId,
+                    state = ArchivedProcessState.DECIDING,
+                    now = confirmDateTime,
+                    userId = user.evakaUserId,
+                )
+                tx.setFeeDecisionProcessId(decision.id, processId)
             }
         }
 

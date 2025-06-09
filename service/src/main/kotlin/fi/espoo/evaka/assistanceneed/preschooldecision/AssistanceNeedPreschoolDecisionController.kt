@@ -11,6 +11,7 @@ import fi.espoo.evaka.pis.getEmployees
 import fi.espoo.evaka.pis.getEmployeesByRoles
 import fi.espoo.evaka.pis.service.getChildGuardians
 import fi.espoo.evaka.process.ArchivedProcessState
+import fi.espoo.evaka.process.MetadataService
 import fi.espoo.evaka.process.deleteProcessByAssistanceNeedPreschoolDecisionId
 import fi.espoo.evaka.process.getArchiveProcessByAssistanceNeedPreschoolDecisionId
 import fi.espoo.evaka.process.insertProcess
@@ -44,6 +45,8 @@ class AssistanceNeedPreschoolDecisionController(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val assistanceNeedPreschoolDecisionService: AssistanceNeedPreschoolDecisionService,
 ) {
+    private val metadata = MetadataService(featureConfig)
+
     @PostMapping("/employee/children/{childId}/assistance-need-preschool-decisions")
     fun createAssistanceNeedPreschoolDecision(
         db: Database,
@@ -63,24 +66,20 @@ class AssistanceNeedPreschoolDecisionController(
 
                     val now = clock.now()
                     val processId =
-                        featureConfig.archiveMetadataConfigs[
-                                ArchiveProcessType.ASSISTANCE_NEED_DECISION_PRESCHOOL]
-                            ?.let { config ->
-                                tx.insertProcess(
-                                        processDefinitionNumber = config.processDefinitionNumber,
-                                        year = now.year,
-                                        organization = featureConfig.archiveMetadataOrganization,
-                                        archiveDurationMonths = config.archiveDurationMonths,
-                                    )
-                                    .id
-                                    .also { processId ->
-                                        tx.insertProcessHistoryRow(
-                                            processId = processId,
-                                            state = ArchivedProcessState.INITIAL,
-                                            now = now,
-                                            userId = user.evakaUserId,
-                                        )
-                                    }
+                        metadata
+                            .getProcess(
+                                ArchiveProcessType.ASSISTANCE_NEED_DECISION_PRESCHOOL,
+                                now.year,
+                            )
+                            ?.let { process ->
+                                val processId = tx.insertProcess(process).id
+                                tx.insertProcessHistoryRow(
+                                    processId = processId,
+                                    state = ArchivedProcessState.INITIAL,
+                                    now = now,
+                                    userId = user.evakaUserId,
+                                )
+                                processId
                             }
 
                     tx.insertEmptyAssistanceNeedPreschoolDecisionDraft(childId, processId, user)

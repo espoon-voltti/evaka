@@ -61,6 +61,7 @@ import fi.espoo.evaka.placement.deletePlacementPlans
 import fi.espoo.evaka.placement.getPlacementPlan
 import fi.espoo.evaka.placement.updatePlacementPlanUnitConfirmation
 import fi.espoo.evaka.process.ArchivedProcessState
+import fi.espoo.evaka.process.MetadataService
 import fi.espoo.evaka.process.cancelLastProcessHistoryRow
 import fi.espoo.evaka.process.getArchiveProcessByApplicationId
 import fi.espoo.evaka.process.insertProcess
@@ -114,6 +115,8 @@ class ApplicationStateService(
     private val messageProvider: IMessageProvider,
     private val messageService: MessageService,
 ) {
+    private val metadata = MetadataService(featureConfig)
+
     fun doSimpleAction(
         tx: Database.Transaction,
         user: AuthenticatedUser,
@@ -354,17 +357,11 @@ class ApplicationStateService(
         tx.syncApplicationOtherGuardians(application.id, clock.today())
         tx.updateApplicationStatus(application.id, SENT, user.evakaUserId, clock.now())
 
-        featureConfig.archiveMetadataConfigs[
-                ArchiveProcessType.fromApplicationType(application.type)]
-            ?.also { config ->
-                val processId =
-                    tx.insertProcess(
-                            processDefinitionNumber = config.processDefinitionNumber,
-                            year = clock.now().year,
-                            organization = featureConfig.archiveMetadataOrganization,
-                            archiveDurationMonths = config.archiveDurationMonths,
-                        )
-                        .id
+        val now = clock.now()
+        metadata
+            .getProcess(ArchiveProcessType.fromApplicationType(application.type), now.year)
+            ?.also { process ->
+                val processId = tx.insertProcess(process).id
                 tx.insertProcessHistoryRow(
                     processId = processId,
                     state = ArchivedProcessState.INITIAL,

@@ -20,6 +20,7 @@ import fi.espoo.evaka.invoicing.domain.FeeAlterationWithEffect
 import fi.espoo.evaka.invoicing.domain.PaymentStatus
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.process.MetadataService
 import fi.espoo.evaka.reports.freezeVoucherValueReportRows
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
@@ -536,7 +537,7 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 asyncJobRunner = asyncJobRunner,
                 user = financeUser,
                 evakaEnv = evakaEnv,
-                featureConfig = featureConfig,
+                metadata = MetadataService(featureConfig),
                 now = approvedAt,
                 ids = listOf(decision.id),
                 decisionHandlerId = null,

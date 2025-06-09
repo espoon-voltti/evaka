@@ -257,44 +257,45 @@ val testFeatureConfig =
         preferredStartRelativeApplicationDueDate = false,
         fiveYearsOldDaycareEnabled = true,
         archiveMetadataOrganization = "Espoon kaupungin esiopetus ja varhaiskasvatus",
-        archiveMetadataConfigs =
-            mapOf(
-                ArchiveProcessType.APPLICATION_DAYCARE to
+        archiveMetadataConfigs = { type: ArchiveProcessType, _: Int ->
+            when (type) {
+                ArchiveProcessType.APPLICATION_DAYCARE ->
                     ArchiveProcessConfig(
                         processDefinitionNumber = "123.123.a",
                         archiveDurationMonths = 10 * 12,
-                    ),
-                ArchiveProcessType.APPLICATION_PRESCHOOL to
+                    )
+                ArchiveProcessType.APPLICATION_PRESCHOOL ->
                     ArchiveProcessConfig(
                         processDefinitionNumber = "123.123.b",
                         archiveDurationMonths = 10 * 12,
-                    ),
-                ArchiveProcessType.APPLICATION_CLUB to
+                    )
+                ArchiveProcessType.APPLICATION_CLUB ->
                     ArchiveProcessConfig(
                         processDefinitionNumber = "123.123.c",
                         archiveDurationMonths = 10 * 12,
-                    ),
-                ArchiveProcessType.ASSISTANCE_NEED_DECISION_DAYCARE to
+                    )
+                ArchiveProcessType.ASSISTANCE_NEED_DECISION_DAYCARE ->
                     ArchiveProcessConfig(
                         processDefinitionNumber = "123.456.a",
                         archiveDurationMonths = 120 * 12,
-                    ),
-                ArchiveProcessType.ASSISTANCE_NEED_DECISION_PRESCHOOL to
+                    )
+                ArchiveProcessType.ASSISTANCE_NEED_DECISION_PRESCHOOL ->
                     ArchiveProcessConfig(
                         processDefinitionNumber = "123.456.b",
                         archiveDurationMonths = 120 * 12,
-                    ),
-                ArchiveProcessType.FEE_DECISION to
+                    )
+                ArchiveProcessType.FEE_DECISION ->
                     ArchiveProcessConfig(
                         processDefinitionNumber = "123.789.a",
                         archiveDurationMonths = 10 * 12,
-                    ),
-                ArchiveProcessType.VOUCHER_VALUE_DECISION to
+                    )
+                ArchiveProcessType.VOUCHER_VALUE_DECISION ->
                     ArchiveProcessConfig(
                         processDefinitionNumber = "123.789.b",
                         archiveDurationMonths = 10 * 12,
-                    ),
-            ),
+                    )
+            }
+        },
     )
 
 private class TestActionRuleMapping : ActionRuleMapping {
