@@ -172,7 +172,7 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         fun getPreschoolApplications(vararg preschoolTypes: ApplicationPreschoolTypeToggle) =
             getApplicationSummaries(
                     type = ApplicationTypeToggle.PRESCHOOL,
-                    status = ApplicationStatusOption.values().toSet(),
+                    status = ApplicationStatusOption.entries.toSet(),
                     preschoolType = preschoolTypes.toSet(),
                 )
                 .data
@@ -199,7 +199,8 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     preparatoryAdditionalDaycare,
                 )
                 .sorted(),
-            getPreschoolApplications(*ApplicationPreschoolTypeToggle.values()).sorted(),
+            getPreschoolApplications(*ApplicationPreschoolTypeToggle.entries.toTypedArray())
+                .sorted(),
         )
     }
 

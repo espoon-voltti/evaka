@@ -300,7 +300,7 @@ class ApplicationControllerCitizen(
                         Action.Citizen.Child.READ_DUPLICATE_APPLICATIONS,
                         childId,
                     )
-                    ApplicationType.values()
+                    ApplicationType.entries
                         .map { type ->
                             type to
                                 (type != ApplicationType.CLUB &&
@@ -337,7 +337,7 @@ class ApplicationControllerCitizen(
                         Action.Citizen.Child.READ_PLACEMENT_STATUS_BY_APPLICATION_TYPE,
                         childId,
                     )
-                    ApplicationType.values()
+                    ApplicationType.entries
                         .map { type ->
                             type to
                                 tx.activePlacementExists(

@@ -45,7 +45,7 @@ class AttachmentsIntegrationTest {
         licenseFile.openStream().use { file ->
             val exception =
                 assertThrows<BadRequest> {
-                    checkFileContentType(file, ContentTypePattern.values().toSet())
+                    checkFileContentType(file, ContentTypePattern.entries.toSet())
                 }
             assertEquals("Invalid content type text/plain", exception.message)
         }

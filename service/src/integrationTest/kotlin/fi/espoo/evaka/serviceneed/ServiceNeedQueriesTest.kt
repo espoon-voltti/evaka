@@ -16,11 +16,7 @@ import org.junit.jupiter.api.Test
 class ServiceNeedQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun getServiceNeedOptionPublicInfos() {
-        assertThat(
-                db.read { tx ->
-                    tx.getServiceNeedOptionPublicInfos(PlacementType.values().toList())
-                }
-            )
+        assertThat(db.read { tx -> tx.getServiceNeedOptionPublicInfos(PlacementType.entries) })
             .isEmpty()
     }
 
@@ -29,7 +25,7 @@ class ServiceNeedQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.transaction { tx -> tx.insertServiceNeedOptions() }
         db.transaction { tx -> tx.updateShowForCitizen() }
         val queriedOptions =
-            db.read { tx -> tx.getServiceNeedOptionPublicInfos(PlacementType.values().toList()) }
+            db.read { tx -> tx.getServiceNeedOptionPublicInfos(PlacementType.entries) }
         // I couln't get any of the fancy asssertj list assertions to work in Kotlin, so test the
         // stupid way
         queriedOptions.forEach {

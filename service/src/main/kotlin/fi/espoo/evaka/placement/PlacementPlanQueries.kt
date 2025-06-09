@@ -126,7 +126,7 @@ fun Database.Read.getPlacementPlans(
     unitId: DaycareId,
     from: LocalDate?,
     to: LocalDate?,
-    statuses: List<ApplicationStatus> = ApplicationStatus.values().asList(),
+    statuses: List<ApplicationStatus> = ApplicationStatus.entries,
 ): List<PlacementPlanDetails> {
     data class QueryResult(
         val id: PlacementPlanId,
