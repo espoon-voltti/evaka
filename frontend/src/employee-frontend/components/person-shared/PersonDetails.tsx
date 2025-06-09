@@ -129,7 +129,7 @@ export default React.memo(function PersonDetails({
     ophPersonOid: ''
   })
   const emailIsValid = useMemo<boolean>(
-    () => isEmailValid(form.email),
+    () => form.email === '' || isEmailValid(form.email),
     [form.email]
   )
   const { mutate: disableSsnAdding, isPending: disablingSsn } =
