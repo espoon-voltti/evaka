@@ -13,7 +13,6 @@ import React, {
 import styled from 'styled-components'
 import { Link, useLocation } from 'wouter'
 
-import type { InputInfo } from 'lib-common/form/hooks'
 import type { UpdateStateFn } from 'lib-common/form-state'
 import type { Action } from 'lib-common/generated/action'
 import type { PersonJSON } from 'lib-common/generated/api-types/pis'
@@ -42,6 +41,7 @@ import { getAddressPagePdf } from '../../generated/api-clients/pis'
 import { useTranslation } from '../../state/i18n'
 import type { UiState } from '../../state/ui'
 import { UIContext } from '../../state/ui'
+import { isEmailValid } from '../../utils/validation/validations'
 import LabelValueList from '../common/LabelValueList'
 import {
   disableSsnMutation,
@@ -128,8 +128,10 @@ export default React.memo(function PersonDetails({
     forceManualFeeDecisions: false,
     ophPersonOid: ''
   })
-  const [emailInfo, setEmailInfo] = useState<InputInfo | undefined>(undefined)
-  const [emailIsValid, setEmailIsValid] = useState<boolean>(true)
+  const emailIsValid = useMemo<boolean>(
+    () => isEmailValid(form.email),
+    [form.email]
+  )
   const { mutate: disableSsnAdding, isPending: disablingSsn } =
     useMutation(disableSsnMutation)
 
@@ -603,19 +605,16 @@ export default React.memo(function PersonDetails({
                     <InputField
                       value={form.email}
                       onChange={(value) => {
-                        if (value !== value.trim()) {
-                          setEmailIsValid(false)
-                          setEmailInfo({
-                            text: i18n.validationErrors.email,
-                            status: 'warning'
-                          })
-                        } else {
-                          setEmailIsValid(true)
-                          setEmailInfo(undefined)
-                        }
-                        updateForm({ email: value })
+                        updateForm({ email: value.trim() })
                       }}
-                      info={emailInfo}
+                      info={
+                        emailIsValid
+                          ? undefined
+                          : {
+                              text: i18n.validationErrors.email,
+                              status: 'warning'
+                            }
+                      }
                       data-qa="person-email-input"
                     />
                   ) : (
