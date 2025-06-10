@@ -488,6 +488,11 @@ export default {
       infoMessage:
         'Loma-ajalle merkittävät poissaolot voi perua vain olemalla yhteydessä henkilökuntaan.'
     },
+    incompletelyAnsweredHolidayPeriods: {
+      title: (periods: FiniteDateRange[]) =>
+        `Loma-aika: ${periods.map((p) => p.format()).join(', ')}`,
+      infoMessage: 'HUOM! Et ole vastannut kyselyyn kaikkien päivien osalta!'
+    },
     absenceModal: {
       title: 'Ilmoita poissaoloja',
       selectedChildren: 'Valitse lapset, jotka ovat poissa',
