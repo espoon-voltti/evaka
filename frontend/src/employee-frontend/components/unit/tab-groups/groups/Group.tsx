@@ -69,6 +69,7 @@ import {
   faTrash,
   faUndo
 } from 'lib-icons'
+import { faUtensils } from 'lib-icons'
 
 import { getNotesByGroup } from '../../../../generated/api-clients/note'
 import type { Translations } from '../../../../state/i18n'
@@ -98,6 +99,7 @@ import { CreateChildDocumentsModal } from '../child-documents/CreateChildDocumen
 import NotesModal from '../notes/NotesModal'
 
 import GroupUpdateModal from './group/GroupUpdateModal'
+import NekkuOrderModal from './group/NekkuOrderModal'
 
 const getNotesByGroupResult = wrapResult(getNotesByGroup)
 
@@ -264,6 +266,9 @@ export default React.memo(function Group({
       {uiMode === `update-group-${group.id}` && (
         <GroupUpdateModal group={group} nekkuUnits={nekkuUnits} />
       )}
+      {uiMode === `nekku-order-${group.id}` && (
+        <NekkuOrderModal groupId={group.id} groupName={group.name} />
+      )}
       {notesModal && (
         <NotesModal
           {...notesModal}
@@ -346,16 +351,33 @@ export default React.memo(function Group({
             </>
           )}
           {permittedActions.includes('READ_ABSENCES') && (
-            <Link to={`/units/${unit.id}/calendar?group=${group.id}`}>
-              <Button
-                appearance="inline"
-                icon={faCalendarAlt}
-                text={i18n.unit.groups.diaryButton}
-                onClick={() => undefined}
-                data-qa="open-month-calendar-button"
-              />
-            </Link>
+            <>
+              <Link to={`/units/${unit.id}/calendar?group=${group.id}`}>
+                <Button
+                  appearance="inline"
+                  icon={faCalendarAlt}
+                  text={i18n.unit.groups.diaryButton}
+                  onClick={() => undefined}
+                  data-qa="open-month-calendar-button"
+                />
+              </Link>
+              <Gap size="s" horizontal />
+            </>
           )}
+          {featureFlags.nekkuIntegration &&
+            permittedActions.includes('NEKKU_MANUAL_ORDER') &&
+            group.nekkuCustomerNumber !== null && (
+              <>
+                <Button
+                  appearance="inline"
+                  icon={faUtensils}
+                  text={i18n.unit.groups.nekkuOrder}
+                  onClick={() => toggleUiMode(`nekku-order-${group.id}`)}
+                  data-qa="btn-nekku-order"
+                />
+                <Gap size="s" horizontal />
+              </>
+            )}
         </Toolbar>
       </TitleBar>
       {open ? (

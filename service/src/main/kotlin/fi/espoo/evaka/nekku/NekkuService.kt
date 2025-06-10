@@ -32,6 +32,7 @@ import fi.espoo.evaka.shared.async.AsyncJobType
 import fi.espoo.evaka.shared.async.removeUnclaimedJobs
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.DatabaseEnum
+import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -404,6 +405,52 @@ fun planNekkuDailyOrderJobs(
         )
     }
 }
+
+fun haveDaycareTimesBeenLockedForDate(today: LocalDate, date: LocalDate): Boolean =
+    // daycare times have been locked for this week and the following week
+    date.isOnOrBefore(today.nextWeeksSunday())
+
+fun planNekkuManualOrderJob(
+    tx: Database.Transaction,
+    asyncJobRunner: AsyncJobRunner<AsyncJob>,
+    now: HelsinkiDateTime,
+    groupId: GroupId,
+    date: LocalDate,
+) {
+    val today = now.toLocalDate()
+    if (date.isOnOrBefore(today))
+        throw BadRequest("Can only make a manual order beginning tomorrow")
+    // this week we have made the orders for up to the week after next
+    if (date.isAfter(today.nextWeeksSunday().plusDays(7)))
+        throw BadRequest(
+            "Can only make a manual order if an automatic order has been made for the day"
+        )
+
+    val daycareOperationInfo = tx.getDaycareOperationInfo(groupId)
+    if (daycareOperationInfo == null)
+        throw BadRequest("Daycare operation info not found for group $groupId")
+    if (!isDaycareOpenOnDate(date, daycareOperationInfo))
+        throw BadRequest("Group $groupId is not open on $date")
+
+    if (tx.getNekkuDaycareGroupId(date.daySpan()).filter { it == groupId }.isEmpty())
+        throw BadRequest("No customer number for group $groupId or group or unit is not open")
+
+    asyncJobRunner.plan(
+        tx,
+        if (haveDaycareTimesBeenLockedForDate(now.toLocalDate(), date))
+            listOf(AsyncJob.SendNekkuDailyOrder(groupId, date))
+        else listOf(AsyncJob.SendNekkuOrder(groupId, date)),
+        runAt = now,
+        retryInterval = Duration.ofHours(1),
+        retryCount = 3,
+    )
+}
+
+private fun LocalDate.thisWeeksSunday() = this.plusDays((7 - this.dayOfWeek.value).toLong())
+
+private fun LocalDate.nextWeeksSunday() = this.thisWeeksSunday().plusDays(7)
+
+private fun LocalDate.isOnOrBefore(other: LocalDate): Boolean = this.isBefore(other.plusDays(1))
 
 private fun LocalDate.startOfWeekAfterNextWeek(): LocalDate {
     val daysUntilNextWeekAfterMonday = (8 - this.dayOfWeek.value)

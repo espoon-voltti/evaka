@@ -151,6 +151,14 @@ export interface Caretaker {
 }
 
 /**
+* Generated from fi.espoo.evaka.nekku.CustomerType
+*/
+export interface CustomerType {
+  type: string
+  weekdays: NekkuCustomerWeekday[]
+}
+
+/**
 * Generated from fi.espoo.evaka.shared.dev.DaycareAclInsert
 */
 export interface DaycareAclInsert {
@@ -1076,6 +1084,32 @@ export interface MockVtjPerson {
   restrictedDetails: RestrictedDetails | null
   socialSecurityNumber: string
 }
+
+/**
+* Generated from fi.espoo.evaka.nekku.NekkuCustomer
+*/
+export interface NekkuCustomer {
+  customerType: CustomerType[]
+  group: string
+  name: string
+  number: string
+}
+
+/**
+* Generated from fi.espoo.evaka.nekku.NekkuCustomerWeekday
+*/
+export const nekku_customer_weekday = [
+  'MONDAY',
+  'TUESDAY',
+  'WEDNESDAY',
+  'THURSDAY',
+  'FRIDAY',
+  'SATURDAY',
+  'SUNDAY',
+  'WEEKDAYHOLIDAY'
+] as const
+
+export type NekkuCustomerWeekday = typeof nekku_customer_weekday[number]
 
 /**
 * Generated from fi.espoo.evaka.nekku.NekkuSpecialDiet

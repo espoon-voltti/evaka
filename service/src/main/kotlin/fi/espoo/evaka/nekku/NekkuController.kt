@@ -5,17 +5,27 @@
 package fi.espoo.evaka.nekku
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId.Companion.invoke
+import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.async.AsyncJob
+import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import java.time.LocalDate
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class NekkuController(private val accessControl: AccessControl) {
+class NekkuController(
+    private val accessControl: AccessControl,
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
+) {
 
     @GetMapping("/employee/nekku/unit-numbers")
     fun getNekkuUnitNumbers(
@@ -131,5 +141,33 @@ class NekkuController(private val accessControl: AccessControl) {
                 }
             }
             .also { Audit.NekkuSpecialDietFieldOptionsRead.log() }
+    }
+
+    @PostMapping("/employee/nekku/manual-order")
+    fun nekkuManualOrder(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @RequestParam groupId: GroupId,
+        @RequestParam date: LocalDate,
+    ) {
+        db.connect { dbc ->
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Group.NEKKU_MANUAL_ORDER,
+                        groupId,
+                    )
+                    planNekkuManualOrderJob(tx, asyncJobRunner, clock.now(), groupId, date)
+                }
+            }
+            .also {
+                Audit.NekkuManualOrder.log(
+                    targetId = fi.espoo.evaka.AuditId(groupId),
+                    meta = mapOf("date" to date),
+                )
+            }
     }
 }
