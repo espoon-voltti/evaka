@@ -353,7 +353,8 @@ const InputField = React.memo(function InputField({
 
 export default InputField
 
-interface InputFieldFProps extends Omit<InputProps, 'value' | 'onChange'> {
+export interface InputFieldFProps
+  extends Omit<InputProps, 'value' | 'onChange'> {
   bind: BoundFormState<string>
 }
 

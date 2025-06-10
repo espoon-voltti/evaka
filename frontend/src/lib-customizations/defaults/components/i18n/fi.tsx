@@ -26,7 +26,9 @@ const components: Translations = {
     saved: 'Tallennettu',
     search: 'Hae',
     yes: 'Kyllä',
-    openExpandingInfo: 'Avaa lisätietokenttä'
+    openExpandingInfo: 'Avaa lisätietokenttä',
+    showPassword: 'Näytä salasana',
+    hidePassword: 'Piilota salasana'
   },
   datePicker: {
     placeholder: 'pp.kk.vvvv',
