@@ -10,6 +10,7 @@ import type {
 } from 'lib-common/generated/api-types/absence'
 import type { ServiceTimesPresenceStatus } from 'lib-common/generated/api-types/dailyservicetimes'
 import type LocalDate from 'lib-common/local-date'
+import { featureFlags } from 'lib-customizations/employee'
 
 import { useTranslation } from '../../state/i18n'
 
@@ -140,7 +141,8 @@ export default React.memo(function UnitCalendarMonthlyDayCellTooltip({
         absencesTooltip
       ) : isMissingHolidayReservation ? (
         missingHolidayReservationTooltip
-      ) : isMissingQuestionnaireAnswer ? (
+      ) : featureFlags.missingQuestionnaireAnswerMarkerEnabled &&
+        isMissingQuestionnaireAnswer ? (
         missingQuestionnaireAnswerTooltip
       ) : requiresBackupCare ? (
         requiresBackupCareTooltip

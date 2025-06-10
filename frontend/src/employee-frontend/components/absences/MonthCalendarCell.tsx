@@ -186,7 +186,7 @@ const AbsenceCellParts = React.memo(function AbsenceCellParts({
       ))}
       {!isSelected && isMissingHolidayReservation ? (
         <MissingHolidayInfoMarker data-qa="missing-holiday-reservation" />
-      ) : featureFlags.missingHolidayReservationMarkerEnabled === true &&
+      ) : featureFlags.missingQuestionnaireAnswerMarkerEnabled &&
         !isSelected &&
         isMissingQuestionnaireAnswer ? (
         <MissingHolidayInfoMarker data-qa="missing-questionnaire-answer" />
