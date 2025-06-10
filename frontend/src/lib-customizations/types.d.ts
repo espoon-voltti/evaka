@@ -318,7 +318,7 @@ interface BaseFeatureFlags {
   /**
    * Enable missing holiday questionnaire answer indicator
    */
-  missingHolidayReservationMarkerEnabled?: boolean
+  missingQuestionnaireAnswerMarkerEnabled?: boolean
 }
 
 export type FeatureFlags = DeepReadonly<BaseFeatureFlags>

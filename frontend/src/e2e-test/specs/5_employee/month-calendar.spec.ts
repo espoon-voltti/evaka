@@ -52,7 +52,7 @@ beforeEach(async () => {
   page = await Page.open({
     mockedTime: today.toHelsinkiDateTime(LocalTime.of(8, 0)),
     employeeCustomizations: {
-      featureFlags: { missingHolidayReservationMarkerEnabled: true }
+      featureFlags: { missingQuestionnaireAnswerMarkerEnabled: true }
     }
   })
   await employeeLogin(page, unitSupervisor)
