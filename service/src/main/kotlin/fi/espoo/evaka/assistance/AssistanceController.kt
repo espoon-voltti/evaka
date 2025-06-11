@@ -477,6 +477,7 @@ class AssistanceController(
                         Action.Child.CREATE_PRESCHOOL_ASSISTANCE,
                         child,
                     )
+                    body.validate()
                     tx.insertPreschoolAssistance(user, clock.now(), child, body)
                 }
             }
@@ -504,6 +505,7 @@ class AssistanceController(
                         Action.PreschoolAssistance.UPDATE,
                         id,
                     )
+                    body.validate()
                     tx.updatePreschoolAssistance(user, clock.now(), id, body)
                 }
             }

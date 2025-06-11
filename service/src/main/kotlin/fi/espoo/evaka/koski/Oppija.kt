@@ -225,11 +225,14 @@ data class MyöntäjäHenkilö(
 data class MyöntäjäHenkilönTitteli(val fi: String)
 
 data class Lisätiedot(
-    val vammainen: List<Aikajakso>?,
-    val vaikeastiVammainen: List<Aikajakso>?,
-    val pidennettyOppivelvollisuus: Aikajakso?,
+    val vammainen: List<Aikajakso>?, // deprecated
+    val vaikeastiVammainen: List<Aikajakso>?, // deprecated
+    val pidennettyOppivelvollisuus: Aikajakso?, // deprecated
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    val varhennetunOppivelvollisuudenJaksot: List<Aikajakso>?,
     val kuljetusetu: Aikajakso?,
-    val erityisenTuenPäätökset: List<ErityisenTuenPäätös>?,
+    val erityisenTuenPäätökset: List<ErityisenTuenPäätös>?, // deprecated
+    @JsonInclude(JsonInclude.Include.NON_NULL) val tuenPäätöksenJaksot: List<Tukijakso>?,
 )
 
 data class ErityisenTuenPäätös(
@@ -250,6 +253,12 @@ data class ErityisenTuenPäätös(
 data class Aikajakso(val alku: LocalDate, val loppu: LocalDate?) {
     companion object {
         fun from(aikajakso: FiniteDateRange) = Aikajakso(aikajakso.start, aikajakso.end)
+    }
+}
+
+data class Tukijakso(val alku: LocalDate, val loppu: LocalDate?) {
+    companion object {
+        fun from(tukijakso: FiniteDateRange) = Tukijakso(tukijakso.start, tukijakso.end)
     }
 }
 
