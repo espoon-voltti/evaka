@@ -72,7 +72,11 @@
 								<xs:appinfo>uiwidget=textarea;rows=6;cols=60;</xs:appinfo>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="keywords" type="xs:string" minOccurs="0">
+						<xs:element name="firstName" type="xs:string" minOccurs="0"/>
+						<xs:element name="lastName" type="xs:string" minOccurs="0"/>
+						<xs:element name="socialSecurityNumber" type="xs:string" minOccurs="0"/>
+						<xs:element name="birthDate" type="xs:date" minOccurs="0"/>
+                        <xs:element name="keywords" type="xs:string" minOccurs="0">
 							<xs:annotation>
 								<xs:appinfo>uiwidget=textarea;rows=6;cols=60;</xs:appinfo>
 							</xs:annotation>
@@ -93,10 +97,6 @@
 						<xs:element name="signer" type="xs:string" minOccurs="0"/>
 						<xs:element name="SignatureDescription" type="xs:string" minOccurs="0"/>						
 						<xs:element name="accessRight" type="xa:accessRightType" minOccurs="0"/>
-						<xs:element name="firstName" type="xs:string" minOccurs="0"/>
-						<xs:element name="lastName" type="xs:string" minOccurs="0"/>
-						<xs:element name="socialSecurityNumber" type="xs:string" minOccurs="0"/>
-						<xs:element name="birthDate" type="xs:date" minOccurs="0" />
 						<xs:element name="Agents" minOccurs="0">
 					    <xs:complexType>
 							<xs:sequence>
@@ -171,6 +171,11 @@
 								<xs:appinfo>readonly=yes;</xs:appinfo>
 							</xs:annotation>
 						</xs:element>
+                                                <xs:element name="publicityDate" type="xs:date" minOccurs="0">
+                                                        <xs:annotation>
+                                                                <xs:appinfo>readonly=yes;</xs:appinfo>
+                                                        </xs:annotation>
+                                                </xs:element>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
