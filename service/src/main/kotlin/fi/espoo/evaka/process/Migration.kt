@@ -87,7 +87,9 @@ private data class ApplicationMigrationData(
     val type: ApplicationType,
     val sentDate: LocalDate,
     val status: ApplicationStatus,
+    val modifiedAt: HelsinkiDateTime,
     val statusModifiedAt: HelsinkiDateTime?,
+    val decisionResolved: HelsinkiDateTime?,
 )
 
 private fun migrateApplicationMetadata(
@@ -102,8 +104,16 @@ private fun migrateApplicationMetadata(
             tx.createQuery {
                     sql(
                         """
-                        SELECT id, type, sentdate, status, status_modified_at
-                        FROM application
+                        SELECT
+                            a.id,
+                            a.type,
+                            a.sentdate,
+                            a.status,
+                            a.modified_at,
+                            a.status_modified_at,
+                            d.resolved AS decision_resolved
+                        FROM application a
+                        LEFT JOIN decision d ON d.application_id = a.id
                         WHERE process_id IS NULL AND sentdate IS NOT NULL
                         ORDER BY sentdate
                         LIMIT ${bind(batchSize)}
@@ -133,15 +143,23 @@ private fun migrateApplicationMetadata(
             )
 
             if (
-                (application.status == ApplicationStatus.ACTIVE ||
-                    application.status == ApplicationStatus.REJECTED ||
-                    application.status == ApplicationStatus.CANCELLED) &&
-                    application.statusModifiedAt != null
+                application.status == ApplicationStatus.ACTIVE ||
+                    application.status == ApplicationStatus.REJECTED
             ) {
                 tx.insertProcessHistoryRow(
                     processId = processId,
                     state = ArchivedProcessState.COMPLETED,
-                    now = application.statusModifiedAt,
+                    now =
+                        application.decisionResolved
+                            ?: application.statusModifiedAt
+                            ?: application.modifiedAt,
+                    userId = systemInternalUser,
+                )
+            } else if (application.status == ApplicationStatus.CANCELLED) {
+                tx.insertProcessHistoryRow(
+                    processId = processId,
+                    state = ArchivedProcessState.COMPLETED,
+                    now = application.statusModifiedAt ?: application.modifiedAt,
                     userId = systemInternalUser,
                 )
             }
