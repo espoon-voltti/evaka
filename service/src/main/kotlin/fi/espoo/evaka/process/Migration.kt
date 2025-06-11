@@ -90,6 +90,7 @@ private data class ApplicationMigrationData(
     val modifiedAt: HelsinkiDateTime,
     val statusModifiedAt: HelsinkiDateTime?,
     val decisionResolved: HelsinkiDateTime?,
+    val decisionResolvedBy: EvakaUserId?,
 )
 
 private fun migrateApplicationMetadata(
@@ -111,7 +112,8 @@ private fun migrateApplicationMetadata(
                             a.status,
                             a.modified_at,
                             a.status_modified_at,
-                            d.resolved AS decision_resolved
+                            d.resolved AS decision_resolved,
+                            d.resolved_by AS decision_resolved_by
                         FROM application a
                         LEFT JOIN decision d ON d.application_id = a.id
                         WHERE process_id IS NULL AND sentdate IS NOT NULL
@@ -153,7 +155,7 @@ private fun migrateApplicationMetadata(
                         application.decisionResolved
                             ?: application.statusModifiedAt
                             ?: application.modifiedAt,
-                    userId = systemInternalUser,
+                    userId = application.decisionResolvedBy ?: systemInternalUser,
                 )
             } else if (application.status == ApplicationStatus.CANCELLED) {
                 tx.insertProcessHistoryRow(
