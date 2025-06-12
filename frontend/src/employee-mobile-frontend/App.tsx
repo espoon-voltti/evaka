@@ -242,9 +242,6 @@ function ChildAttendanceRouter({ unitOrGroup }: { unitOrGroup: UnitOrGroup }) {
         <Route path="/daylist">
           <ConfimedReservationDaysWrapper unitOrGroup={unitOrGroup} />
         </Route>
-        <Route path="/list">
-          <Redirect replace to="/" />
-        </Route>
         <Route>
           <Redirect replace to="/list/coming" />
         </Route>
