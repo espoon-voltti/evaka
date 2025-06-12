@@ -56,29 +56,29 @@ class TermsControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
     fun `get preschool terms`() {
         val terms = termsController.getPreschoolTerms(dbInstance())
 
-        assertEquals(5, terms.size)
+        assertEquals(6, terms.size)
     }
 
     @Test
     fun `create preschool term`() {
-        assertEquals(5, termsController.getPreschoolTerms(dbInstance()).size)
+        assertEquals(6, termsController.getPreschoolTerms(dbInstance()).size)
 
         val preschoolTerm2025 =
             TermsController.PreschoolTermRequest(
-                FiniteDateRange(LocalDate.of(2025, 8, 8), LocalDate.of(2026, 5, 30)),
-                FiniteDateRange(LocalDate.of(2025, 8, 8), LocalDate.of(2026, 5, 30)),
-                FiniteDateRange(LocalDate.of(2025, 8, 1), LocalDate.of(2026, 5, 30)),
-                FiniteDateRange(LocalDate.of(2025, 1, 9), LocalDate.of(2025, 1, 19)),
+                FiniteDateRange(LocalDate.of(2026, 8, 8), LocalDate.of(2027, 5, 30)),
+                FiniteDateRange(LocalDate.of(2026, 8, 8), LocalDate.of(2027, 5, 30)),
+                FiniteDateRange(LocalDate.of(2026, 8, 1), LocalDate.of(2027, 5, 30)),
+                FiniteDateRange(LocalDate.of(2026, 1, 9), LocalDate.of(2026, 1, 19)),
                 DateSet.of(
-                    FiniteDateRange(LocalDate.of(2025, 10, 14), LocalDate.of(2025, 10, 18)),
-                    FiniteDateRange(LocalDate.of(2025, 12, 21), LocalDate.of(2026, 1, 6)),
-                    FiniteDateRange(LocalDate.of(2026, 2, 17), LocalDate.of(2026, 2, 21)),
+                    FiniteDateRange(LocalDate.of(2026, 10, 14), LocalDate.of(2026, 10, 18)),
+                    FiniteDateRange(LocalDate.of(2026, 12, 21), LocalDate.of(2027, 1, 6)),
+                    FiniteDateRange(LocalDate.of(2027, 2, 17), LocalDate.of(2027, 2, 21)),
                 ),
             )
         termsController.createPreschoolTerm(dbInstance(), adminUser, clock, preschoolTerm2025)
         val terms = termsController.getPreschoolTerms(dbInstance())
 
-        assertEquals(6, terms.size)
+        assertEquals(7, terms.size)
 
         val createdTerm =
             terms.find { term -> term.finnishPreschool == preschoolTerm2025.finnishPreschool }!!
@@ -88,7 +88,7 @@ class TermsControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
 
     @Test
     fun `should not create preschool term if user is not admin`() {
-        assertEquals(5, termsController.getPreschoolTerms(dbInstance()).size)
+        assertEquals(6, termsController.getPreschoolTerms(dbInstance()).size)
 
         val preschoolTerm2025 =
             TermsController.PreschoolTermRequest(
@@ -112,7 +112,7 @@ class TermsControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
         }
 
         val terms = termsController.getPreschoolTerms(dbInstance())
-        assertEquals(5, terms.size)
+        assertEquals(6, terms.size)
         assertNull(
             terms.find { preschoolTerm ->
                 preschoolTerm.finnishPreschool == preschoolTerm2025.finnishPreschool
@@ -122,7 +122,7 @@ class TermsControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
 
     @Test
     fun `should not create preschool term with overlapping finnish term period`() {
-        assertEquals(5, termsController.getPreschoolTerms(dbInstance()).size)
+        assertEquals(6, termsController.getPreschoolTerms(dbInstance()).size)
 
         // Finnish and swedish term period overlaps with preschoolTerm2024 from general test
         // fixtures
@@ -143,7 +143,7 @@ class TermsControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
         }
 
         val terms = termsController.getPreschoolTerms(dbInstance())
-        assertEquals(5, terms.size)
+        assertEquals(6, terms.size)
         assertNull(
             terms.find { preschoolTerm ->
                 preschoolTerm.finnishPreschool == preschoolTerm2025.finnishPreschool
@@ -153,7 +153,7 @@ class TermsControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
 
     @Test
     fun `should not create preschool term with overlapping extended term period`() {
-        assertEquals(5, termsController.getPreschoolTerms(dbInstance()).size)
+        assertEquals(6, termsController.getPreschoolTerms(dbInstance()).size)
 
         // Extended term period overlaps with preschoolTerm2024 from general test fixtures
         val preschoolTerm2025 =
@@ -173,7 +173,7 @@ class TermsControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
         }
 
         val terms = termsController.getPreschoolTerms(dbInstance())
-        assertEquals(5, terms.size)
+        assertEquals(6, terms.size)
         assertNull(
             terms.find { preschoolTerm ->
                 preschoolTerm.extendedTerm == preschoolTerm2025.extendedTerm
@@ -183,7 +183,7 @@ class TermsControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
 
     @Test
     fun `should not create preschool term with extended term that does not include the finnish or swedish term period`() {
-        assertEquals(5, termsController.getPreschoolTerms(dbInstance()).size)
+        assertEquals(6, termsController.getPreschoolTerms(dbInstance()).size)
 
         // Extended term period does not include the whole finnish term period
         val firstPreschoolTerm2025 =
@@ -230,7 +230,7 @@ class TermsControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
         }
 
         val terms = termsController.getPreschoolTerms(dbInstance())
-        assertEquals(5, terms.size)
+        assertEquals(6, terms.size)
         assertNull(
             terms.find { preschoolTerm ->
                 preschoolTerm.finnishPreschool == firstPreschoolTerm2025.finnishPreschool ||
@@ -242,7 +242,7 @@ class TermsControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
     @Test
     fun `update preschool term`() {
         val allTerms = termsController.getPreschoolTerms(dbInstance())
-        assertEquals(5, allTerms.size)
+        assertEquals(6, allTerms.size)
 
         val existingTerm = allTerms.find { term -> term.id == preschoolTerm2024.id }!!
         assertEquals(preschoolTerm2024.swedishPreschool, existingTerm.swedishPreschool)
@@ -252,9 +252,9 @@ class TermsControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
 
         val preschoolTermUpdate =
             TermsController.PreschoolTermRequest(
-                FiniteDateRange(LocalDate.of(2024, 8, 8), LocalDate.of(2025, 8, 30)),
-                FiniteDateRange(LocalDate.of(2024, 8, 8), LocalDate.of(2025, 8, 30)),
-                FiniteDateRange(LocalDate.of(2024, 8, 1), LocalDate.of(2025, 8, 30)),
+                FiniteDateRange(LocalDate.of(2024, 8, 8), LocalDate.of(2025, 6, 30)),
+                FiniteDateRange(LocalDate.of(2024, 8, 8), LocalDate.of(2025, 6, 30)),
+                FiniteDateRange(LocalDate.of(2024, 8, 1), LocalDate.of(2025, 6, 30)),
                 FiniteDateRange(LocalDate.of(2024, 3, 9), LocalDate.of(2024, 3, 25)),
                 DateSet.of(
                     FiniteDateRange(LocalDate.of(2025, 1, 14), LocalDate.of(2025, 1, 18)),
@@ -277,7 +277,7 @@ class TermsControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
 
         assertPreschoolTermFromRequest(preschoolTermUpdate, preschoolTerm2024.id)
 
-        assertEquals(5, termsController.getPreschoolTerms(dbInstance()).size)
+        assertEquals(6, termsController.getPreschoolTerms(dbInstance()).size)
     }
 
     @Test
@@ -416,18 +416,18 @@ class TermsControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
 
     @Test
     fun `delete preschool term`() {
-        assertEquals(5, termsController.getPreschoolTerms(dbInstance()).size)
+        assertEquals(6, termsController.getPreschoolTerms(dbInstance()).size)
 
         termsController.deletePreschoolTerm(dbInstance(), adminUser, clock, preschoolTerm2024.id)
         val termsFinal = termsController.getPreschoolTerms(dbInstance())
 
-        assertEquals(4, termsFinal.size)
+        assertEquals(5, termsFinal.size)
         assertNull(termsFinal.find { preschoolTerm -> preschoolTerm.id == preschoolTerm2024.id })
     }
 
     @Test
     fun `should not delete preschool term that has started`() {
-        assertEquals(5, termsController.getPreschoolTerms(dbInstance()).size)
+        assertEquals(6, termsController.getPreschoolTerms(dbInstance()).size)
 
         assertThrows<BadRequest> {
             termsController.deletePreschoolTerm(
@@ -438,7 +438,7 @@ class TermsControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
             )
         }
 
-        assertEquals(5, termsController.getPreschoolTerms(dbInstance()).size)
+        assertEquals(6, termsController.getPreschoolTerms(dbInstance()).size)
     }
 
     private fun assertPreschoolTerm(expected: DevPreschoolTerm, targetId: PreschoolTermId) {
