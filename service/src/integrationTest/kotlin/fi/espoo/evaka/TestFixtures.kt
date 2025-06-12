@@ -476,6 +476,20 @@ val preschoolTerm2024 =
         ),
     )
 
+val preschoolTerm2025 =
+    DevPreschoolTerm(
+        PreschoolTermId(UUID.randomUUID()),
+        FiniteDateRange(LocalDate.of(2025, 8, 7), LocalDate.of(2026, 5, 29)),
+        FiniteDateRange(LocalDate.of(2025, 8, 7), LocalDate.of(2026, 5, 29)),
+        FiniteDateRange(LocalDate.of(2025, 8, 1), LocalDate.of(2026, 5, 29)),
+        FiniteDateRange(LocalDate.of(2025, 1, 8), LocalDate.of(2026, 5, 29)),
+        DateSet.of(
+            FiniteDateRange(LocalDate.of(2025, 10, 13), LocalDate.of(2025, 10, 17)),
+            FiniteDateRange(LocalDate.of(2025, 12, 22), LocalDate.of(2026, 1, 6)),
+            FiniteDateRange(LocalDate.of(2026, 2, 16), LocalDate.of(2026, 2, 20)),
+        ),
+    )
+
 val preschoolTerms =
     listOf(
         preschoolTerm2020,
@@ -483,6 +497,7 @@ val preschoolTerms =
         preschoolTerm2022,
         preschoolTerm2023,
         preschoolTerm2024,
+        preschoolTerm2025,
     )
 
 val clubTerm2020 =
@@ -533,7 +548,20 @@ val clubTerm2024 =
         ),
     )
 
-val clubTerms = listOf(clubTerm2020, clubTerm2021, clubTerm2022, clubTerm2023, clubTerm2024)
+val clubTerm2025 =
+    ClubTerm(
+        ClubTermId(UUID.randomUUID()),
+        FiniteDateRange(LocalDate.of(2025, 8, 7), LocalDate.of(2026, 5, 29)),
+        FiniteDateRange(LocalDate.of(2025, 3, 1), LocalDate.of(2026, 5, 29)),
+        DateSet.of(
+            FiniteDateRange(LocalDate.of(2025, 10, 13), LocalDate.of(2025, 10, 17)),
+            FiniteDateRange(LocalDate.of(2025, 12, 22), LocalDate.of(2026, 1, 6)),
+            FiniteDateRange(LocalDate.of(2026, 2, 16), LocalDate.of(2026, 2, 20)),
+        ),
+    )
+
+val clubTerms =
+    listOf(clubTerm2020, clubTerm2021, clubTerm2022, clubTerm2023, clubTerm2024, clubTerm2025)
 
 fun Database.Transaction.insertServiceNeedOptions() {
     executeBatch(serviceNeedTestFixtures) {
