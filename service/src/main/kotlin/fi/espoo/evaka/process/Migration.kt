@@ -11,6 +11,8 @@ import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionStatus
 import fi.espoo.evaka.document.childdocument.DocumentStatus
 import fi.espoo.evaka.invoicing.data.setFeeDecisionProcessId
 import fi.espoo.evaka.invoicing.data.setVoucherValueDecisionProcessId
+import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
+import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ArchiveProcessType
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
@@ -26,6 +28,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.noopTracer
+import fi.espoo.evaka.shared.security.upsertEmployeeUser
 import fi.espoo.evaka.shared.withSpan
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.opentelemetry.api.trace.Tracer
@@ -86,7 +89,10 @@ private data class ApplicationMigrationData(
     val type: ApplicationType,
     val sentDate: LocalDate,
     val status: ApplicationStatus,
+    val modifiedAt: HelsinkiDateTime,
     val statusModifiedAt: HelsinkiDateTime?,
+    val decisionResolved: HelsinkiDateTime?,
+    val decisionResolvedBy: EvakaUserId?,
 )
 
 private fun migrateApplicationMetadata(
@@ -101,8 +107,17 @@ private fun migrateApplicationMetadata(
             tx.createQuery {
                     sql(
                         """
-                        SELECT id, type, sentdate, status, status_modified_at
-                        FROM application
+                        SELECT
+                            a.id,
+                            a.type,
+                            a.sentdate,
+                            a.status,
+                            a.modified_at,
+                            a.status_modified_at,
+                            d.resolved AS decision_resolved,
+                            d.resolved_by AS decision_resolved_by
+                        FROM application a
+                        LEFT JOIN decision d ON d.application_id = a.id
                         WHERE process_id IS NULL AND sentdate IS NOT NULL
                         ORDER BY sentdate
                         LIMIT ${bind(batchSize)}
@@ -132,15 +147,23 @@ private fun migrateApplicationMetadata(
             )
 
             if (
-                (application.status == ApplicationStatus.ACTIVE ||
-                    application.status == ApplicationStatus.REJECTED ||
-                    application.status == ApplicationStatus.CANCELLED) &&
-                    application.statusModifiedAt != null
+                application.status == ApplicationStatus.ACTIVE ||
+                    application.status == ApplicationStatus.REJECTED
             ) {
                 tx.insertProcessHistoryRow(
                     processId = processId,
                     state = ArchivedProcessState.COMPLETED,
-                    now = application.statusModifiedAt,
+                    now =
+                        application.decisionResolved
+                            ?: application.statusModifiedAt
+                            ?: application.modifiedAt,
+                    userId = application.decisionResolvedBy ?: systemInternalUser,
+                )
+            } else if (application.status == ApplicationStatus.CANCELLED) {
+                tx.insertProcessHistoryRow(
+                    processId = processId,
+                    state = ArchivedProcessState.COMPLETED,
+                    now = application.statusModifiedAt ?: application.modifiedAt,
                     userId = systemInternalUser,
                 )
             }
@@ -152,8 +175,9 @@ private fun migrateApplicationMetadata(
 private data class FeeDecisionMigrationData(
     val id: FeeDecisionId,
     val created: HelsinkiDateTime,
+    val status: FeeDecisionStatus,
     val approvedAt: HelsinkiDateTime,
-    val approvedBy: EvakaUserId?,
+    val approvedBy: EmployeeId?,
     val sentAt: HelsinkiDateTime?,
 )
 
@@ -168,7 +192,7 @@ private fun migrateFeeDecisionMetadata(
             tx.createQuery {
                     sql(
                         """
-                        SELECT id, created, approved_at, approved_by_id AS approved_by, sent_at
+                        SELECT id, created, status, approved_at, approved_by_id AS approved_by, sent_at
                         FROM fee_decision
                         WHERE process_id IS NULL AND approved_at IS NOT NULL
                         ORDER BY created
@@ -193,17 +217,27 @@ private fun migrateFeeDecisionMetadata(
                 now = decision.created,
                 userId = systemInternalUser,
             )
+            val approvedBy =
+                if (decision.approvedBy != null) {
+                    tx.upsertEmployeeUser(decision.approvedBy)
+                    EvakaUserId(decision.approvedBy.raw)
+                } else {
+                    systemInternalUser
+                }
             tx.insertProcessHistoryRow(
                 processId = processId,
                 state = ArchivedProcessState.DECIDING,
                 now = decision.approvedAt,
-                userId = decision.approvedBy ?: systemInternalUser,
+                userId = approvedBy,
             )
-            if (decision.sentAt != null) {
+            if (
+                decision.status == FeeDecisionStatus.SENT ||
+                    decision.status == FeeDecisionStatus.ANNULLED
+            ) {
                 tx.insertProcessHistoryRow(
                     processId = processId,
                     state = ArchivedProcessState.COMPLETED,
-                    now = decision.sentAt,
+                    now = decision.sentAt ?: decision.approvedAt,
                     userId = systemInternalUser,
                 )
             }
@@ -215,8 +249,9 @@ private fun migrateFeeDecisionMetadata(
 private data class VoucherValueDecisionMigrationData(
     val id: VoucherValueDecisionId,
     val created: HelsinkiDateTime,
+    val status: VoucherValueDecisionStatus,
     val approvedAt: HelsinkiDateTime,
-    val approvedBy: EvakaUserId?,
+    val approvedBy: EmployeeId?,
     val sentAt: HelsinkiDateTime?,
 )
 
@@ -231,7 +266,7 @@ private fun migrateVoucherValueDecisionMetadata(
             tx.createQuery {
                     sql(
                         """
-                        SELECT id, created, approved_at, approved_by, sent_at
+                        SELECT id, created, status, approved_at, approved_by, sent_at
                         FROM voucher_value_decision
                         WHERE process_id IS NULL AND approved_at IS NOT NULL
                         ORDER BY created
@@ -259,17 +294,27 @@ private fun migrateVoucherValueDecisionMetadata(
                 now = decision.created,
                 userId = systemInternalUser,
             )
+            val approvedBy =
+                if (decision.approvedBy != null) {
+                    tx.upsertEmployeeUser(decision.approvedBy)
+                    EvakaUserId(decision.approvedBy.raw)
+                } else {
+                    systemInternalUser
+                }
             tx.insertProcessHistoryRow(
                 processId = processId,
                 state = ArchivedProcessState.DECIDING,
                 now = decision.approvedAt,
-                userId = decision.approvedBy ?: systemInternalUser,
+                userId = approvedBy,
             )
-            if (decision.sentAt != null) {
+            if (
+                decision.status == VoucherValueDecisionStatus.SENT ||
+                    decision.status == VoucherValueDecisionStatus.ANNULLED
+            ) {
                 tx.insertProcessHistoryRow(
                     processId = processId,
                     state = ArchivedProcessState.COMPLETED,
-                    now = decision.sentAt,
+                    now = decision.sentAt ?: decision.approvedAt,
                     userId = systemInternalUser,
                 )
             }
@@ -281,7 +326,7 @@ private fun migrateVoucherValueDecisionMetadata(
 private data class AssistaceNeedDaycareDecisionData(
     val id: AssistanceNeedDecisionId,
     val createdAt: HelsinkiDateTime,
-    val createdBy: EvakaUserId?,
+    val createdBy: EmployeeId?,
     val sentForDecision: LocalDate?,
     val decisionMakerEmployeeId: EmployeeId?,
     val decisionMade: LocalDate?,
@@ -334,11 +379,18 @@ private fun migrateAssistanceNeedDecisionDaycare(
                     "UPDATE assistance_need_decision SET process_id = ${bind(processId)} WHERE id = ${bind(decision.id)}"
                 )
             }
+            val createdBy =
+                if (decision.createdBy != null) {
+                    tx.upsertEmployeeUser(decision.createdBy)
+                    EvakaUserId(decision.createdBy.raw)
+                } else {
+                    systemInternalUser
+                }
             tx.insertProcessHistoryRow(
                 processId = processId,
                 state = ArchivedProcessState.INITIAL,
                 now = decision.createdAt,
-                userId = decision.createdBy ?: systemInternalUser,
+                userId = createdBy,
             )
 
             if (decision.sentForDecision == null) return@forEach
@@ -350,13 +402,18 @@ private fun migrateAssistanceNeedDecisionDaycare(
             )
 
             if (decision.decisionMade == null) return@forEach
+            val decisionMaker =
+                if (decision.decisionMakerEmployeeId != null) {
+                    tx.upsertEmployeeUser(decision.decisionMakerEmployeeId)
+                    EvakaUserId(decision.decisionMakerEmployeeId.raw)
+                } else {
+                    systemInternalUser
+                }
             tx.insertProcessHistoryRow(
                 processId = processId,
                 state = ArchivedProcessState.DECIDING,
                 now = HelsinkiDateTime.of(decision.decisionMade, LocalTime.MIDNIGHT),
-                userId =
-                    decision.decisionMakerEmployeeId?.let { EvakaUserId(it.raw) }
-                        ?: systemInternalUser,
+                userId = decisionMaker,
             )
 
             if (!decision.status.isDecided() || decision.documentKey.isNullOrEmpty()) {
@@ -376,7 +433,7 @@ private fun migrateAssistanceNeedDecisionDaycare(
 private data class AssistanceNeedPreschoolDecisionData(
     val id: AssistanceNeedPreschoolDecisionId,
     val createdAt: HelsinkiDateTime,
-    val createdBy: EvakaUserId?,
+    val createdBy: EmployeeId?,
     val sentForDecision: LocalDate?,
     val decisionMakerEmployeeId: EmployeeId?,
     val decisionMade: LocalDate?,
@@ -429,11 +486,18 @@ private fun migrateAssistanceNeedDecisionPreschool(
                     "UPDATE assistance_need_preschool_decision SET process_id = ${bind(processId)} WHERE id = ${bind(decision.id)}"
                 )
             }
+            val createdBy =
+                if (decision.createdBy != null) {
+                    tx.upsertEmployeeUser(decision.createdBy)
+                    EvakaUserId(decision.createdBy.raw)
+                } else {
+                    systemInternalUser
+                }
             tx.insertProcessHistoryRow(
                 processId = processId,
                 state = ArchivedProcessState.INITIAL,
                 now = decision.createdAt,
-                userId = decision.createdBy ?: systemInternalUser,
+                userId = createdBy,
             )
 
             if (decision.sentForDecision == null) return@forEach
@@ -445,13 +509,18 @@ private fun migrateAssistanceNeedDecisionPreschool(
             )
 
             if (decision.decisionMade == null) return@forEach
+            val decisionMaker =
+                if (decision.decisionMakerEmployeeId != null) {
+                    tx.upsertEmployeeUser(decision.decisionMakerEmployeeId)
+                    EvakaUserId(decision.decisionMakerEmployeeId.raw)
+                } else {
+                    systemInternalUser
+                }
             tx.insertProcessHistoryRow(
                 processId = processId,
                 state = ArchivedProcessState.DECIDING,
                 now = HelsinkiDateTime.of(decision.decisionMade, LocalTime.MIDNIGHT),
-                userId =
-                    decision.decisionMakerEmployeeId?.let { EvakaUserId(it.raw) }
-                        ?: systemInternalUser,
+                userId = decisionMaker,
             )
 
             if (!decision.status.isDecided() || decision.documentKey.isNullOrEmpty()) {

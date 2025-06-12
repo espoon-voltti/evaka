@@ -273,7 +273,7 @@ class MigrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         process.history.last().also {
             assertEquals(ArchivedProcessState.COMPLETED, it.state)
             assertEquals(clock.now(), it.enteredAt)
-            assertEquals(AuthenticatedUser.SystemInternalUser.evakaUserId, it.enteredBy.id)
+            assertEquals(adult.evakaUserId(), it.enteredBy.id)
         }
     }
 
