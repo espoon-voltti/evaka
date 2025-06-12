@@ -7,6 +7,10 @@ package fi.espoo.evaka.invoicing.service
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.emailclient.Email
 import fi.espoo.evaka.emailclient.MockEmailClient
+import fi.espoo.evaka.incomestatement.Gross
+import fi.espoo.evaka.incomestatement.IncomeSource
+import fi.espoo.evaka.incomestatement.IncomeStatementBody
+import fi.espoo.evaka.incomestatement.IncomeStatementStatus
 import fi.espoo.evaka.insertServiceNeedOptions
 import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.serviceneed.insertServiceNeed
@@ -14,16 +18,20 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.EvakaUserId
+import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.PartnershipId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevFridgeChild
 import fi.espoo.evaka.shared.dev.DevFridgePartner
+import fi.espoo.evaka.shared.dev.DevIncome
+import fi.espoo.evaka.shared.dev.DevIncomeStatement
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
@@ -351,6 +359,144 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
         assertEquals(0, getEmails().size)
     }
 
+    @Test
+    fun `Notifications are not sent if there is a new unhandled income statement`() {
+        val incomeExpirationDate = clock.today().plusWeeks(4)
+
+        db.transaction {
+            it.insert(
+                DevIncomeStatement(
+                    id = IncomeStatementId(UUID.randomUUID()),
+                    personId = fridgeHeadOfChildId,
+                    data = createGrossIncome(incomeExpirationDate.plusDays(1)),
+                    status = IncomeStatementStatus.SENT,
+                    handlerId = null,
+                )
+            )
+        }
+
+        assertEquals(0, getEmails().size)
+    }
+
+    @Test
+    fun `Notifications are sent if there is a handled income statement`() {
+        val employee = DevEmployee()
+
+        db.transaction {
+            it.insert(employee)
+
+            it.insert(
+                DevIncomeStatement(
+                    id = IncomeStatementId(UUID.randomUUID()),
+                    personId = fridgeHeadOfChildId,
+                    data = createGrossIncome(clock.today()),
+                    status = IncomeStatementStatus.HANDLED,
+                    handlerId = employee.id,
+                    handledAt = clock.now(),
+                )
+            )
+        }
+
+        assertEquals(1, getEmails().size)
+    }
+
+    @Test
+    fun `Expiring income is notified 4 weeks beforehand`() {
+        val incomeExpirationDate = clock.today().plusWeeks(4)
+
+        db.transaction {
+            it.insert(
+                DevIncome(
+                    personId = fridgeHeadOfChildId,
+                    modifiedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
+                    validFrom = incomeExpirationDate.minusWeeks(4),
+                    validTo = incomeExpirationDate,
+                )
+            )
+        }
+
+        assertEquals(1, getEmails().size)
+        assertEquals(1, getIncomeNotifications(fridgeHeadOfChildId).size)
+    }
+
+    @Test
+    fun `Notifications are not sent if there is a valid income`() {
+        val incomeExpirationDate = clock.today().plusWeeks(4).plusDays(1)
+
+        db.transaction {
+            it.insert(
+                DevIncome(
+                    personId = fridgeHeadOfChildId,
+                    modifiedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
+                    validFrom = incomeExpirationDate.minusWeeks(4),
+                    validTo = incomeExpirationDate,
+                )
+            )
+        }
+
+        assertEquals(0, getEmails().size)
+    }
+
+    @Test
+    fun `Expiring income is not notified if there is a new unhandled income statement`() {
+        val incomeExpirationDate = clock.today().plusWeeks(4)
+
+        db.transaction {
+            it.insert(
+                DevIncome(
+                    personId = fridgeHeadOfChildId,
+                    modifiedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
+                    validFrom = incomeExpirationDate.minusWeeks(4),
+                    validTo = incomeExpirationDate,
+                )
+            )
+
+            it.insert(
+                DevIncomeStatement(
+                    id = IncomeStatementId(UUID.randomUUID()),
+                    personId = fridgeHeadOfChildId,
+                    data = createGrossIncome(clock.today()),
+                    status = IncomeStatementStatus.SENT,
+                    handlerId = null,
+                )
+            )
+        }
+
+        assertEquals(0, getEmails().size)
+    }
+
+    @Test
+    fun `Expiring income is notified if there is a handled income statement`() {
+        val incomeExpirationDate = clock.today().plusWeeks(4)
+        val employee = DevEmployee()
+
+        db.transaction {
+            it.insert(employee)
+
+            it.insert(
+                DevIncome(
+                    personId = fridgeHeadOfChildId,
+                    modifiedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
+                    validFrom = incomeExpirationDate.minusWeeks(4),
+                    validTo = incomeExpirationDate,
+                )
+            )
+
+            it.insert(
+                DevIncomeStatement(
+                    id = IncomeStatementId(UUID.randomUUID()),
+                    personId = fridgeHeadOfChildId,
+                    data = createGrossIncome(clock.today()),
+                    status = IncomeStatementStatus.HANDLED,
+                    handlerId = employee.id,
+                    handledAt = clock.now(),
+                )
+            )
+        }
+
+        assertEquals(1, getEmails().size)
+    }
+
     private fun getEmails(): List<Email> {
         scheduledJobs.sendNewCustomerIncomeNotifications(db, clock)
         asyncJobRunner.runPendingJobsSync(clock)
@@ -360,4 +506,22 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
 
     private fun getIncomeNotifications(receiverId: PersonId): List<IncomeNotification> =
         db.read { it.getIncomeNotifications(receiverId) }
+
+    private fun createGrossIncome(startDate: LocalDate) =
+        IncomeStatementBody.Income(
+            startDate = startDate,
+            endDate = null,
+            gross =
+                Gross.Income(
+                    incomeSource = IncomeSource.INCOMES_REGISTER,
+                    estimatedMonthlyIncome = 42,
+                    otherIncome = emptySet(),
+                    otherIncomeInfo = "",
+                ),
+            entrepreneur = null,
+            student = false,
+            alimonyPayer = false,
+            otherInfo = "",
+            attachmentIds = emptyList(),
+        )
 }

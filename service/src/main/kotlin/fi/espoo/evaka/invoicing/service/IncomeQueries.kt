@@ -125,7 +125,7 @@ WITH fridge_parents AS (
         fp_spouse.partnership_id = fp.partnership_id AND
         fp_spouse.person_id <> fp.person_id AND
         daterange(fp_spouse.start_date, fp_spouse.end_date, '[]') @> ${bind(today)} AND fp_spouse.conflict = false
-    ) 
+    )
     WHERE pl.start_date BETWEEN ${bind(currentMonth.start)} AND ${bind(currentMonth.end)}
     AND NOT EXISTS(
         SELECT 1
@@ -138,8 +138,14 @@ WITH fridge_parents AS (
             AND child_id != pl.child_id
         )
     )
+    AND NOT EXISTS(
+        SELECT 1
+        FROM income i
+        WHERE (i.person_id = fc_head.head_of_child OR i.person_id = fp_spouse.person_id)
+        AND (i.valid_to >= pl.end_date OR ( i.valid_to < pl.end_date AND i.valid_to > (${bind(today)} + INTERVAL '4 weeks')))
+    )
     ${if (guardianId != null) "AND (fc_head.head_of_child = ${bind(guardianId)} OR fp_spouse.person_id = ${bind(guardianId)})" else ""}
-) 
+)
 SELECT DISTINCT person_id FROM (
     SELECT parent_id AS person_id 
     FROM fridge_parents
@@ -148,6 +154,12 @@ SELECT DISTINCT person_id FROM (
     FROM fridge_parents
     WHERE spouse_id IS NOT NULL
 ) AS parent
+WHERE NOT EXISTS (
+    SELECT 1 FROM income_statement
+    WHERE person_id = parent.person_id
+      AND status = 'SENT'::income_statement_status
+      AND sent_at > ${bind(today)} - INTERVAL '12 months'
+)
 """
             )
         }
