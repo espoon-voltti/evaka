@@ -14,6 +14,7 @@ import type { Page, ElementCollection } from '../../utils/page'
 import {
   Checkbox,
   Element,
+  Radio,
   Select,
   TextInput,
   DatePicker
@@ -94,6 +95,10 @@ export default class CitizenCalendarPage {
       await this.page.findByDataQa('open-reservations-modal').click()
     }
     return new ReservationModal(this.page.findByDataQa('reservation-modal'))
+  }
+
+  getReservationModal() {
+    return new ReservationModal(this.reservationModal)
   }
 
   async openAbsencesModal() {
@@ -409,6 +414,10 @@ class ReservationModal extends Element {
   #weeklyStartTimeInputs: TextInput[]
   #weeklyEndTimeInputs: TextInput[]
   #weeklyAbsentButtons: Element[]
+  #dailyPresentRadio: Radio
+  #dailyAbsentRadio: Radio
+  #weeklyPresentRadios: Radio[]
+  #weeklyAbsentRadios: Radio[]
 
   constructor(el: Element) {
     super(el)
@@ -432,6 +441,16 @@ class ReservationModal extends Element {
       (index) =>
         new TextInput(this.findByDataQa(`weekly-${index}-absent-button`))
     )
+    this.#dailyPresentRadio = new Radio(
+      this.findByDataQa('daily-present-radio')
+    )
+    this.#dailyAbsentRadio = new Radio(this.findByDataQa('daily-absent-radio'))
+    this.#weeklyPresentRadios = [0, 1, 2, 3, 4, 5, 6].map(
+      (index) => new Radio(this.findByDataQa(`weekly-${index}-present-radio`))
+    )
+    this.#weeklyAbsentRadios = [0, 1, 2, 3, 4, 5, 6].map(
+      (index) => new Radio(this.findByDataQa(`weekly-${index}-absent-radio`))
+    )
     this.#modalSendButton = this.findByDataQa('modal-okBtn')
   }
 
@@ -442,6 +461,12 @@ class ReservationModal extends Element {
 
   irregularEndTimeInput = (date: LocalDate) =>
     new TextInput(this.findByDataQa(`irregular-${date.formatIso()}-time-0-end`))
+
+  irregularPresentRadio = (date: LocalDate) =>
+    new Radio(this.findByDataQa(`irregular-${date.formatIso()}-present-radio`))
+
+  irregularAbsentRadio = (date: LocalDate) =>
+    new Radio(this.findByDataQa(`irregular-${date.formatIso()}-absent-radio`))
 
   #childCheckbox = (childId: string) =>
     new Checkbox(this.findByDataQa(`child-${childId}`))
@@ -579,6 +604,57 @@ class ReservationModal extends Element {
     await this.save()
   }
 
+  async fillDailyHolidayPeriodReservationInfo(
+    dateRange: FiniteDateRange,
+    dailyPresence: boolean
+  ) {
+    await this.startDate.fill(dateRange.start.format())
+    await this.endDate.fill(dateRange.end.format())
+    await this.selectRepetition('DAILY')
+
+    if (dailyPresence) {
+      await this.#dailyPresentRadio.click()
+    } else {
+      await this.#dailyAbsentRadio.click()
+    }
+  }
+
+  async fillWeeklyHolidayPeriodReservationInfo(
+    dateRange: FiniteDateRange,
+    weeklyPresences: boolean[]
+  ) {
+    await this.startDate.fill(dateRange.start.format())
+    await this.endDate.fill(dateRange.end.format())
+    await this.selectRepetition('WEEKLY')
+
+    await weeklyPresences.reduce(async (promise, presence, index) => {
+      await promise
+      if (presence) {
+        await this.#weeklyPresentRadios[index].click()
+      } else {
+        await this.#weeklyAbsentRadios[index].click()
+      }
+    }, Promise.resolve())
+  }
+
+  async fillIrregularHolidayPeriodReservationInfo(
+    dateRange: FiniteDateRange,
+    irregularPresences: { date: LocalDate; present: boolean }[]
+  ) {
+    await this.startDate.fill(dateRange.start.format())
+    await this.endDate.fill(dateRange.end.format())
+    await this.selectRepetition('IRREGULAR')
+
+    await irregularPresences.reduce(async (promise, presence) => {
+      await promise
+      if (presence.present) {
+        await this.irregularPresentRadio(presence.date).click()
+      } else {
+        await this.irregularAbsentRadio(presence.date).click()
+      }
+    }, Promise.resolve())
+  }
+
   async assertReadOnlyWeeklyDay(dayIndex: number, state: ReadOnlyDayState) {
     await this.findByDataQa(`weekly-${dayIndex}-${state}`).waitUntilVisible()
   }
@@ -628,6 +704,22 @@ class ReservationModal extends Element {
     }
 
     await this.findAllByDataQa('relevant-child').assertCount(childIds.length)
+  }
+
+  async assertHolidayPeriodInfoContent(content: string) {
+    await this.findByDataQa('holiday-period-info').assertTextEquals(content)
+  }
+
+  async assertIncompletelyAnsweredPeriodsInfoVisible() {
+    await this.findByDataQa(
+      'incompletely-answered-periods-info'
+    ).waitUntilVisible()
+  }
+
+  async assertIncompletelyAnsweredPeriodsInfoNotVisible() {
+    await this.findByDataQa(
+      'incompletely-answered-periods-info'
+    ).waitUntilHidden()
   }
 }
 

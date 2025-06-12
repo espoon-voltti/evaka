@@ -329,6 +329,7 @@ export default React.memo(function ReservationModal({
                       i18n.calendar.incompletelyAnsweredHolidayPeriods
                         .infoMessage
                     }
+                    data-qa="incompletely-answered-periods-info"
                   />
                 )}
               </CalendarModalSection>
@@ -409,6 +410,7 @@ const HolidayPeriodInfoBox = React.memo(function HolidayPeriodInfoBox({
       message={i18n.calendar.reservationModal.holidayPeriod(
         openHolidayPeriod.period
       )}
+      data-qa="holiday-period-info"
     />
   ) : null
 })
