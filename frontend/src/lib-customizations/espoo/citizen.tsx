@@ -9,7 +9,7 @@ import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { P } from 'lib-components/typography'
 import type { CitizenCustomizations } from 'lib-customizations/types'
 
-import { citizenConfig } from './appConfigs'
+import { appConfig } from './appConfigs'
 import EspooLogo from './assets/EspooLogoPrimary.svg'
 import featureFlags from './featureFlags'
 import mapConfig from './mapConfig'
@@ -21,7 +21,7 @@ const MultiLineCheckboxLabel = styled(FixedSpaceColumn).attrs({
 `
 
 const customizations: CitizenCustomizations = {
-  appConfig: citizenConfig,
+  appConfig,
   langs: ['fi', 'sv', 'en'],
   translations: {
     fi: {

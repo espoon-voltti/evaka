@@ -13,7 +13,7 @@
     "lint:fix": "yarn lint --fix",
     "type-check": "tsc --build --force .",
     "type-check:watch": "yarn type-check --watch --preserveWatchOutput",
-    "build": "webpack --mode production",
+    "build": "vite build",
     "build:dev": "node build.js --dev",
     "build:serve": "node build.js --dev --watch --serve",
     "test": "NODE_OPTIONS=--experimental-vm-modules jest src/*-frontend src/lib-* eslint-plugin",
@@ -78,6 +78,7 @@
     "@eslint/js": "9.28.0",
     "@evaka/eslint-plugin": "link:eslint-plugin",
     "@playwright/test": "1.52.0",
+    "@sentry/vite-plugin": "3.4.0",
     "@sentry/webpack-plugin": "3.5.0",
     "@testing-library/dom": "10.4.0",
     "@testing-library/jest-dom": "6.6.3",
@@ -92,6 +93,7 @@
     "@types/punycode": "2.1.4",
     "@types/react": "19.1.6",
     "@types/react-dom": "19.1.6",
+    "@vitejs/plugin-legacy": "6.1.1",
     "@vitejs/plugin-react": "4.5.1",
     "babel-loader": "10.0.0",
     "babel-plugin-styled-components": "2.1.4",
@@ -151,7 +153,8 @@
     }
   },
   "resolutions": {
-    "@react-leaflet/core@npm:^3.0.0": "patch:@react-leaflet/core@npm%3A3.0.0#~/.yarn/patches/@react-leaflet-core-npm-3.0.0-4e3f2d62b5.patch"
+    "@react-leaflet/core@npm:^3.0.0": "patch:@react-leaflet/core@npm%3A3.0.0#~/.yarn/patches/@react-leaflet-core-npm-3.0.0-4e3f2d62b5.patch",
+    "unplugin@npm:1.0.1": "patch:unplugin@npm%3A1.0.1#~/.yarn/patches/unplugin-npm-1.0.1-70bc9bb0e2.patch"
   },
   "engines": {
     "node": ">= 22.12.0"
