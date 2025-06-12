@@ -613,9 +613,9 @@ class ReservationModal extends Element {
     await this.selectRepetition('DAILY')
 
     if (dailyPresence) {
-      await this.#dailyPresentRadio.click()
+      await this.#dailyPresentRadio.check()
     } else {
-      await this.#dailyAbsentRadio.click()
+      await this.#dailyAbsentRadio.check()
     }
   }
 
@@ -630,9 +630,9 @@ class ReservationModal extends Element {
     await weeklyPresences.reduce(async (promise, presence, index) => {
       await promise
       if (presence) {
-        await this.#weeklyPresentRadios[index].click()
+        await this.#weeklyPresentRadios[index].check()
       } else {
-        await this.#weeklyAbsentRadios[index].click()
+        await this.#weeklyAbsentRadios[index].check()
       }
     }, Promise.resolve())
   }
@@ -648,9 +648,9 @@ class ReservationModal extends Element {
     await irregularPresences.reduce(async (promise, presence) => {
       await promise
       if (presence.present) {
-        await this.irregularPresentRadio(presence.date).click()
+        await this.irregularPresentRadio(presence.date).check()
       } else {
-        await this.irregularAbsentRadio(presence.date).click()
+        await this.irregularAbsentRadio(presence.date).check()
       }
     }, Promise.resolve())
   }

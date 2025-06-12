@@ -565,11 +565,11 @@ describe('Holiday periods and questionnaires', () => {
 
       await reservationModal.assertIncompletelyAnsweredPeriodsInfoVisible()
       await reservationModal.fillWeeklyHolidayPeriodReservationInfo(period, [
+        false,
         true,
+        false,
         true,
-        true,
-        true,
-        true
+        false
       ])
       await reservationModal.assertIncompletelyAnsweredPeriodsInfoNotVisible()
     })
@@ -602,11 +602,11 @@ describe('Holiday periods and questionnaires', () => {
         { date: LocalDate.of(2035, 12, 27), present: true },
         { date: LocalDate.of(2035, 12, 28), present: true },
         { date: LocalDate.of(2035, 12, 31), present: true },
-        { date: LocalDate.of(2036, 1, 2), present: true },
-        { date: LocalDate.of(2036, 1, 3), present: true },
-        { date: LocalDate.of(2036, 1, 4), present: true },
-        { date: LocalDate.of(2036, 1, 7), present: true },
-        { date: LocalDate.of(2036, 1, 8), present: true }
+        { date: LocalDate.of(2036, 1, 2), present: false },
+        { date: LocalDate.of(2036, 1, 3), present: false },
+        { date: LocalDate.of(2036, 1, 4), present: false },
+        { date: LocalDate.of(2036, 1, 7), present: false },
+        { date: LocalDate.of(2036, 1, 8), present: false }
       ])
       await reservationModal.assertIncompletelyAnsweredPeriodsInfoNotVisible()
     })
