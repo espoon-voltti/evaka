@@ -15,10 +15,10 @@ import type {
 } from 'lib-common/generated/api-types/pis'
 import type { PersonId } from 'lib-common/generated/api-types/shared'
 import { formatCents } from 'lib-common/money'
-import { formatPersonName } from 'lib-common/names'
 import { useQueryResult } from 'lib-common/query'
 import { getAge } from 'lib-common/utils/local-date'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
@@ -30,7 +30,8 @@ type FamilyOverviewPersonRole = 'HEAD' | 'PARTNER' | 'CHILD'
 
 interface FamilyOverviewRow {
   personId: string
-  name: string
+  firstName: string
+  lastName: string
   role: FamilyOverviewPersonRole
   age: number
   restrictedDetailsEnabled: boolean
@@ -63,7 +64,8 @@ function mapPersonToRow(
   const age = getAge(dateOfBirth)
   return {
     personId,
-    name: formatPersonName({ firstName, lastName }, 'Last First'),
+    firstName,
+    lastName,
     role,
     age,
     restrictedDetailsEnabled,
@@ -160,7 +162,8 @@ export default React.memo(function FamilyOverview({ id }: Props) {
                 {getMembers(family)?.map(
                   ({
                     personId,
-                    name,
+                    firstName,
+                    lastName,
                     role,
                     age,
                     restrictedDetailsEnabled,
@@ -174,10 +177,18 @@ export default React.memo(function FamilyOverview({ id }: Props) {
                       <Td>
                         {role === 'CHILD' ? (
                           <Link to={`/child-information/${personId}`}>
-                            {name}
+                            <PersonName
+                              person={{ firstName, lastName }}
+                              format="Last First"
+                            />
                           </Link>
                         ) : (
-                          <Link to={`/profile/${personId}`}>{name}</Link>
+                          <Link to={`/profile/${personId}`}>
+                            <PersonName
+                              person={{ firstName, lastName }}
+                              format="Last First"
+                            />
+                          </Link>
                         )}
                       </Td>
                       <Td>{i18n.personProfile.familyOverview.role[role]}</Td>
