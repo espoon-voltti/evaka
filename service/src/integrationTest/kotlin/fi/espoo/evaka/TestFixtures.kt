@@ -589,16 +589,22 @@ fun Database.Transaction.insertAssistanceActionOptions() {
     execute {
         sql(
             """
-INSERT INTO assistance_action_option (value, name_fi, display_order) VALUES
-    ('ASSISTANCE_SERVICE_CHILD', 'Avustamispalvelut yhdelle lapselle', 10),
-    ('ASSISTANCE_SERVICE_UNIT', 'Avustamispalvelut yksikköön', 20),
-    ('SMALLER_GROUP', 'Pedagogisesti vahvistettu ryhmä', 30),
-    ('SPECIAL_GROUP', 'Erityisryhmä', 40),
-    ('PERVASIVE_VEO_SUPPORT', 'Laaja-alaisen veon tuki', 50),
-    ('PART_TIME_SPECIAL_EDUCATION', 'Osa-aikainen erityisopetus esiopetuksessa', 55),
-    ('RESOURCE_PERSON', 'Resurssihenkilö', 60),
-    ('RATIO_DECREASE', 'Suhdeluvun väljennys', 70),
-    ('PERIODICAL_VEO_SUPPORT', 'Lisäresurssi hankerahoituksella', 80);
+INSERT INTO assistance_action_option (value, name_fi, display_order, category, valid_from, valid_to) VALUES
+    ('ASSISTANCE_SERVICE_CHILD', 'Avustamispalvelut yhdelle lapselle', 10, 'DAYCARE', NULL, NULL),
+    ('ASSISTANCE_SERVICE_UNIT', 'Avustamispalvelut yksikköön', 20, 'DAYCARE', NULL, NULL),
+    ('SMALLER_GROUP', 'Pedagogisesti vahvistettu ryhmä', 30, 'DAYCARE', NULL, NULL),
+    ('SPECIAL_GROUP', 'Erityisryhmä', 40, 'DAYCARE', NULL, NULL),
+    ('PERVASIVE_VEO_SUPPORT', 'Laaja-alaisen veon tuki', 50, 'DAYCARE', NULL, NULL),
+    ('RESOURCE_PERSON', 'Resurssihenkilö', 60, 'DAYCARE', NULL, NULL),
+    ('RATIO_DECREASE', 'Suhdeluvun väljennys', 70, 'DAYCARE', NULL, NULL),
+    ('PERIODICAL_VEO_SUPPORT', 'Lisäresurssi hankerahoituksella', 80, 'DAYCARE', NULL, NULL),
+
+    ('PART_TIME_SPECIAL_EDUCATION', 'Osa-aikainen erityisopetus esiopetuksessa', 0, 'PRESCHOOL', NULL, '2025-07-31'::date),
+    ('FULL_VEO_SUPPORT_IN_SMALLER_GROUP', 'Kokoaikainen erityisopettajan antama opetus pienryhmässä', 10, 'PRESCHOOL', '2025-08-01'::date, NULL),
+    ('REGULAR_VEO_SUPPORT_PARTIALLY_IN_SMALLER_GROUP', 'Säännöllinen erityisopettajan antama opetus osittain pienryhmässä ja muun opetuksen yhteydessä', 20, 'PRESCHOOL', '2025-08-01'::date, NULL),
+    ('PERSONAL_ASSISTANT', 'Lapsikohtainen avustaja', 30, 'PRESCHOOL', '2025-08-01'::date, NULL),
+    ('ASSISTIVE_DEVICES', 'Apuvälineet', 40, 'PRESCHOOL', '2025-08-01'::date, NULL),
+    ('INTERPRETATION_SERVICES', 'Tulkitsemispalvelut', 50, 'PRESCHOOL', '2025-08-01'::date, NULL);
 """
         )
     }

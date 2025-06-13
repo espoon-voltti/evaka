@@ -1759,6 +1759,10 @@ export class Fixture {
       descriptionFi: 'a description',
       nameFi: 'a test assistance action option',
       value: 'TEST_ASSISTANCE_ACTION_OPTION',
+      category: 'DAYCARE',
+      displayOrder: null,
+      validFrom: null,
+      validTo: null,
       ...initial
     }
     return {

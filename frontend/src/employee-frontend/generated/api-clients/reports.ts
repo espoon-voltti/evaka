@@ -92,6 +92,8 @@ import YearMonth from 'lib-common/year-month'
 import { client } from '../../api/client'
 import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonAssistanceNeedDecisionsReportRow } from 'lib-common/generated/api-types/reports'
+import { deserializeJsonAssistanceNeedsAndActionsReport } from 'lib-common/generated/api-types/reports'
+import { deserializeJsonAssistanceNeedsAndActionsReportByChild } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonAttendanceReservationReportByChildGroup } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonAttendanceReservationReportRow } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonChildAttendanceReportRow } from 'lib-common/generated/api-types/reports'
@@ -192,7 +194,7 @@ export async function getAssistanceNeedsAndActionsReport(
     method: 'GET',
     params
   })
-  return json
+  return deserializeJsonAssistanceNeedsAndActionsReport(json)
 }
 
 
@@ -220,7 +222,7 @@ export async function getAssistanceNeedsAndActionsReportByChild(
     method: 'GET',
     params
   })
-  return json
+  return deserializeJsonAssistanceNeedsAndActionsReportByChild(json)
 }
 
 

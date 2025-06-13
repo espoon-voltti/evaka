@@ -38,6 +38,7 @@ import TimeRange from '../../time-range'
 import type { TitaniaErrorsId } from './shared'
 import type { UUID } from '../../types'
 import type { VoucherValueDecisionId } from './shared'
+import { deserializeJsonAssistanceActionOption } from './assistanceaction'
 import { deserializeJsonDocumentContent } from './document'
 
 /**
@@ -1255,6 +1256,22 @@ export function deserializeJsonAssistanceNeedDecisionsReportRow(json: JsonOf<Ass
     ...json,
     decisionMade: (json.decisionMade != null) ? LocalDate.parseIso(json.decisionMade) : null,
     sentForDecision: LocalDate.parseIso(json.sentForDecision)
+  }
+}
+
+
+export function deserializeJsonAssistanceNeedsAndActionsReport(json: JsonOf<AssistanceNeedsAndActionsReport>): AssistanceNeedsAndActionsReport {
+  return {
+    ...json,
+    actions: json.actions.map(e => deserializeJsonAssistanceActionOption(e))
+  }
+}
+
+
+export function deserializeJsonAssistanceNeedsAndActionsReportByChild(json: JsonOf<AssistanceNeedsAndActionsReportByChild>): AssistanceNeedsAndActionsReportByChild {
+  return {
+    ...json,
+    actions: json.actions.map(e => deserializeJsonAssistanceActionOption(e))
   }
 }
 

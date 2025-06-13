@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import sortBy from 'lodash/sortBy'
 import type { FormEvent } from 'react'
 import React, { useContext, useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
@@ -10,15 +11,20 @@ import type { UpdateStateFn } from 'lib-common/form-state'
 import type {
   AssistanceAction,
   AssistanceActionOption,
+  AssistanceActionOptionCategory,
   AssistanceActionRequest,
   AssistanceActionResponse
 } from 'lib-common/generated/api-types/assistanceaction'
+import { assistanceActionOptionCategories } from 'lib-common/generated/api-types/assistanceaction'
 import type { ChildId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useMutationResult } from 'lib-common/query'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
-import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import {
+  FixedSpaceColumn,
+  FixedSpaceRow
+} from 'lib-components/layout/flex-helpers'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
@@ -38,11 +44,7 @@ import {
   updateAssistanceActionMutation
 } from '../queries'
 
-const CheckboxRow = styled.div`
-  display: flex;
-  align-items: baseline;
-  margin: 4px 0;
-`
+const CheckboxList = styled(FixedSpaceColumn).attrs({ spacing: 'xxs' })``
 
 interface FormState {
   startDate: LocalDate | null
@@ -214,10 +216,28 @@ export default React.memo(function AssistanceActionForm(props: Props) {
     })
   }
 
+  const options = useMemo(
+    () =>
+      assistanceActionOptionCategories.reduce(
+        (acc, category) => ({
+          ...acc,
+          [category]: sortBy(
+            props.assistanceActionOptions.filter(
+              (o) => o.category === category
+            ),
+            [(o) => o.displayOrder, (o) => o.nameFi]
+          )
+        }),
+        {} as Record<AssistanceActionOptionCategory, AssistanceActionOption[]>
+      ),
+    [props.assistanceActionOptions]
+  )
+
   return (
     <form onSubmit={submitForm}>
       <LabelValueList
         spacing="large"
+        alignItems="flex-start"
         contents={[
           {
             label: i18n.childInformation.assistanceAction.fields.dateRange,
@@ -258,48 +278,42 @@ export default React.memo(function AssistanceActionForm(props: Props) {
               </>
             )
           },
-          {
-            label: i18n.childInformation.assistanceAction.fields.actions,
+          ...assistanceActionOptionCategories.map((category) => ({
+            label:
+              i18n.childInformation.assistanceAction.fields.actionsByCategory[
+                category
+              ],
             value: (
-              <div>
-                {props.assistanceActionOptions.map((option) =>
-                  option.descriptionFi ? (
-                    <ExpandingInfo
-                      key={option.value}
-                      info={option.descriptionFi}
-                      width="full"
-                    >
-                      <CheckboxRow>
-                        <Checkbox
-                          label={option.nameFi}
-                          checked={form.actions.includes(option.value)}
-                          onChange={(value) => {
-                            const actions = new Set([...form.actions])
-                            if (value) actions.add(option.value)
-                            else actions.delete(option.value)
-                            updateFormState({ actions: Array.from(actions) })
-                          }}
-                        />
-                      </CheckboxRow>
-                    </ExpandingInfo>
-                  ) : (
-                    <CheckboxRow key={option.value}>
-                      <Checkbox
-                        label={option.nameFi}
-                        checked={form.actions.includes(option.value)}
-                        onChange={(value) => {
-                          const actions = new Set([...form.actions])
-                          if (value) actions.add(option.value)
-                          else actions.delete(option.value)
-                          updateFormState({ actions: Array.from(actions) })
-                        }}
-                      />
-                    </CheckboxRow>
-                  )
-                )}
-                {featureFlags.assistanceActionOther ? (
-                  <>
-                    <CheckboxRow>
+              <CheckboxList>
+                {options[category].map((option) => (
+                  <ExpandingInfo
+                    key={option.value}
+                    info={option.descriptionFi}
+                    width="full"
+                  >
+                    <Checkbox
+                      label={option.nameFi}
+                      checked={form.actions.includes(option.value)}
+                      onChange={(value) => {
+                        const actions = new Set([...form.actions])
+                        if (value) actions.add(option.value)
+                        else actions.delete(option.value)
+                        updateFormState({ actions: Array.from(actions) })
+                      }}
+                    />
+                  </ExpandingInfo>
+                ))}
+              </CheckboxList>
+            )
+          })),
+          ...(featureFlags.assistanceActionOther
+            ? [
+                {
+                  label:
+                    i18n.childInformation.assistanceAction.fields
+                      .actionsByCategory.OTHER,
+                  value: (
+                    <div>
                       <Checkbox
                         label={
                           i18n.childInformation.assistanceAction.fields
@@ -313,25 +327,25 @@ export default React.memo(function AssistanceActionForm(props: Props) {
                           })
                         }}
                       />
-                    </CheckboxRow>
-                    {form.otherSelected && (
-                      <InputField
-                        value={form.otherAction}
-                        onChange={(value) =>
-                          updateFormState({ otherAction: value })
-                        }
-                        placeholder={
-                          i18n.childInformation.assistanceAction.fields
-                            .otherActionPlaceholder
-                        }
-                      />
-                    )}
-                  </>
-                ) : null}
-              </div>
-            ),
-            valueWidth: '100%'
-          }
+
+                      {form.otherSelected && (
+                        <InputField
+                          value={form.otherAction}
+                          onChange={(value) =>
+                            updateFormState({ otherAction: value })
+                          }
+                          placeholder={
+                            i18n.childInformation.assistanceAction.fields
+                              .otherActionPlaceholder
+                          }
+                        />
+                      )}
+                    </div>
+                  ),
+                  valueWidth: '100%'
+                }
+              ]
+            : [])
         ]}
       />
 

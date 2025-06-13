@@ -838,6 +838,11 @@ export const fi = {
       fields: {
         dateRange: 'Tukitoimien voimassaoloaika',
         actions: 'Tukitoimet',
+        actionsByCategory: {
+          DAYCARE: 'Varhaiskasvatuksen tukitoimet',
+          PRESCHOOL: 'Esiopetuksen tukitoimet',
+          OTHER: 'Muut tukitoimet'
+        },
         actionTypes: {
           OTHER: 'Muu tukitoimi'
         },

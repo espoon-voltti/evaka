@@ -22,6 +22,7 @@ import type { PreschoolAssistanceId } from 'lib-common/generated/api-types/share
 import type { PreschoolAssistanceUpdate } from 'lib-common/generated/api-types/assistance'
 import { client } from '../../api/client'
 import { deserializeJsonAssistanceAction } from 'lib-common/generated/api-types/assistanceaction'
+import { deserializeJsonAssistanceActionOption } from 'lib-common/generated/api-types/assistanceaction'
 import { deserializeJsonAssistanceResponse } from 'lib-common/generated/api-types/assistance'
 import { uri } from 'lib-common/uri'
 
@@ -204,7 +205,7 @@ export async function getAssistanceActionOptions(): Promise<AssistanceActionOpti
     url: uri`/employee/assistance-action-options`.toString(),
     method: 'GET'
   })
-  return json
+  return json.map(e => deserializeJsonAssistanceActionOption(e))
 }
 
 

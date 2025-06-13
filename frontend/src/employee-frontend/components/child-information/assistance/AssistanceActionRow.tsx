@@ -2,7 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import sortBy from 'lodash/sortBy'
 import type { MutableRefObject } from 'react'
+import { useMemo } from 'react'
 import React, { useContext, useRef, useState } from 'react'
 
 import DateRange from 'lib-common/date-range'
@@ -53,6 +55,16 @@ export default React.memo(function AssistanceActionRow({
 
   const { mutateAsync: deleteAssistanceAction } = useMutationResult(
     deleteAssistanceActionMutation
+  )
+
+  const sortedOptions = useMemo(
+    () =>
+      sortBy(assistanceActionOptions, [
+        (o) => (o.category === 'DAYCARE' ? 1 : 2),
+        (o) => o.displayOrder,
+        (o) => o.nameFi
+      ]),
+    [assistanceActionOptions]
   )
 
   return (
@@ -119,7 +131,7 @@ export default React.memo(function AssistanceActionRow({
                 label: i18n.childInformation.assistanceAction.fields.actions,
                 value: (
                   <ul>
-                    {assistanceActionOptions.map(
+                    {sortedOptions.map(
                       (option) =>
                         assistanceAction.actions.includes(option.value) && (
                           <li key={option.value}>{option.nameFi}</li>

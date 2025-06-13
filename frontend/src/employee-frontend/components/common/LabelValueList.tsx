@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import type { Property } from 'csstype'
 import type { ReactNode } from 'react'
 import React, { Fragment } from 'react'
 import styled, { css } from 'styled-components'
@@ -23,18 +24,21 @@ type Props = {
   horizontalSpacing?: Spacing
   labelWidth?: LabelWidth
   contents: (Content | false)[]
+  alignItems?: Property.AlignItems
 }
 
 const LabelValueList = React.memo(function LabelValueList({
   spacing,
   horizontalSpacing,
   contents,
+  alignItems,
   labelWidth = '25%'
 }: Props) {
   return (
     <GridContainer
       spacing={spacing}
       horizontalSpacing={horizontalSpacing}
+      alignItems={alignItems}
       labelWidth={labelWidth}
       size={contents.length}
     >
@@ -63,6 +67,7 @@ const GridContainer = styled.div<{
   horizontalSpacing?: Spacing
   size: number
   labelWidth: LabelWidth
+  alignItems?: Property.AlignItems
 }>`
   display: grid;
   grid-template-columns: ${(p) => p.labelWidth} auto;
@@ -72,7 +77,7 @@ const GridContainer = styled.div<{
       ${horizontalSpacing === 'small' ? '1em' : '4em'};
   `};
   justify-items: start;
-  align-items: baseline;
+  align-items: ${(p) => p.alignItems ?? 'baseline'};
 `
 
 const GridLabel = styled(LabelLike)<{ index: number }>`
