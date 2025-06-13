@@ -380,11 +380,6 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
         val permittedViolations =
             setOf(
                 Column(ColumnRef("fridge_partner", "modified_by"), "uuid", nullable = true),
-                Column(
-                    ColumnRef("holiday_questionnaire_answer", "modified_by"),
-                    "uuid",
-                    nullable = true,
-                ),
                 Column(ColumnRef("placement", "modified_by"), "uuid", nullable = true),
             )
         val violations =
