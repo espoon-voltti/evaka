@@ -23,6 +23,7 @@ import { FixedSpaceFlexWrap } from 'lib-components/layout/flex-helpers'
 import { Metadatas } from 'lib-components/molecules/Metadatas'
 import { H2, H3, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
+import { featureFlags } from 'lib-customizations/citizen'
 import colors from 'lib-customizations/common'
 import {
   faArrowRight,
@@ -365,9 +366,12 @@ export default React.memo(function ChildApplicationsBlock({
                     />
                   )}
               </FixedSpaceFlexWrap>
-
-              <Gap size="s" />
-              <ApplicationMetadataSection applicationId={applicationId} />
+              {featureFlags.showMetadataToCitizen && (
+                <>
+                  <Gap size="s" />
+                  <ApplicationMetadataSection applicationId={applicationId} />
+                </>
+              )}
               {index !== applicationSummaries.length - 1 && <LineBreak />}
             </React.Fragment>
           )
