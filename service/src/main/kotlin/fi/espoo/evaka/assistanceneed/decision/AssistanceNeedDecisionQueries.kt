@@ -409,10 +409,20 @@ WITH daycare_assistance_decision_with_new_end_date AS (
     SELECT daycare_assistance_decision.id, max(placement.end_date) AS new_end_date
     FROM assistance_need_decision daycare_assistance_decision
     JOIN placement ON daycare_assistance_decision.child_id = placement.child_id
-     AND daycare_assistance_decision.selected_unit = placement.unit_id
-     AND daycare_assistance_decision.validity_period @> placement.end_date
+        AND daycare_assistance_decision.validity_period @> placement.end_date
+    JOIN daycare daycare_pl ON placement.unit_id = daycare_pl.id
+    JOIN daycare daycare_ad ON daycare_assistance_decision.selected_unit = daycare_ad.id
     WHERE daycare_assistance_decision.status = 'ACCEPTED'
       AND upper_inf(daycare_assistance_decision.validity_period)
+      AND (daycare_assistance_decision.selected_unit = placement.unit_id OR daycare_pl.name = daycare_ad.name)
+      AND NOT EXISTS (
+          SELECT
+          FROM placement pl
+          JOIN daycare d ON pl.unit_id = d.id
+          WHERE pl.child_id = daycare_assistance_decision.child_id
+          AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(date)}
+          AND d.name = daycare_ad.name
+      )
       AND placement.type IN (
         'DAYCARE',
         'DAYCARE_PART_TIME',

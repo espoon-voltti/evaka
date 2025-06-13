@@ -5,6 +5,8 @@
 package fi.espoo.evaka.assistanceneed.decision
 
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.daycare.CareType
+import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.emailclient.Email
 import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.pis.Employee
@@ -15,11 +17,15 @@ import fi.espoo.evaka.process.ProcessMetadataController
 import fi.espoo.evaka.sficlient.MockSfiMessagesClient
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
+import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.dev.DevCareArea
+import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
@@ -32,6 +38,7 @@ import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.domain.OfficialLanguage
+import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_4
 import fi.espoo.evaka.testArea
@@ -1413,19 +1420,192 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
         )
     }
 
+    @Test
+    fun `assistance decision ending is skipped for same name unit placement and ended normally after placement end`() {
+        val startDate = LocalDate.of(2023, 1, 1)
+        val endDate = LocalDate.of(2023, 12, 31)
+        val today = LocalDate.of(2024, 1, 1)
+
+        val area = DevCareArea(shortName = "testcarearea")
+        val unit1 =
+            DevDaycare(
+                name = "Unitname",
+                areaId = area.id,
+                enabledPilotFeatures =
+                    setOf(
+                        PilotFeature.MESSAGING,
+                        PilotFeature.MOBILE,
+                        PilotFeature.RESERVATIONS,
+                        PilotFeature.PLACEMENT_TERMINATION,
+                    ),
+                type = setOf(CareType.CENTRE),
+                providerType = ProviderType.MUNICIPAL,
+            )
+        val child = DevPerson()
+        val unit2 = unit1.copy(id = DaycareId(UUID.randomUUID()))
+        db.transaction { tx ->
+            tx.insert(area)
+
+            tx.insert(unit1)
+            tx.insert(unit2)
+
+            tx.insert(child, DevPersonType.CHILD)
+
+            val placement =
+                DevPlacement(
+                    type = PlacementType.DAYCARE,
+                    childId = child.id,
+                    unitId = unit1.id,
+                    startDate = startDate,
+                    endDate = endDate,
+                )
+            tx.insert(placement)
+            tx.insert(
+                placement.copy(
+                    id = PlacementId(UUID.randomUUID()),
+                    unitId = unit2.id,
+                    startDate = endDate.plusDays(1),
+                    endDate = endDate.plusYears(1),
+                )
+            )
+        }
+        val decision =
+            createAssistanceNeedDecision(
+                AssistanceNeedDecisionRequest(
+                    testDecision.copy(
+                        validityPeriod = DateRange(startDate, null),
+                        selectedUnit = UnitIdInfo(unit1.id),
+                    )
+                ),
+                child.id,
+            )
+        sendAssistanceNeedDecision(decision.id)
+        decideAssistanceNeedDecision(
+            decision.id,
+            AssistanceNeedDecisionController.DecideAssistanceNeedDecisionRequest(
+                status = AssistanceNeedDecisionStatus.ACCEPTED
+            ),
+            decisionMaker,
+        )
+
+        // expect skip
+        db.transaction { tx -> tx.endActiveDaycareAssistanceDecisions(today) }
+        assertEquals(null, getAssistanceNeedDecision(decision.id).validityPeriod.end)
+
+        // expect end
+        db.transaction { tx -> tx.endActiveDaycareAssistanceDecisions(today.plusYears(1)) }
+        assertEquals(
+            LocalDate.of(2024, 12, 31),
+            getAssistanceNeedDecision(decision.id).validityPeriod.end,
+        )
+    }
+
+    @Test
+    fun `assistance decision is ended correctly after one skip when placed to differently named unit`() {
+        val startDate = LocalDate.of(2023, 1, 1)
+        val endDate = LocalDate.of(2023, 12, 31)
+        val today = LocalDate.of(2024, 1, 1)
+
+        val area = DevCareArea(shortName = "testcarearea")
+        val unit1 =
+            DevDaycare(
+                name = "Unitname",
+                areaId = area.id,
+                enabledPilotFeatures =
+                    setOf(
+                        PilotFeature.MESSAGING,
+                        PilotFeature.MOBILE,
+                        PilotFeature.RESERVATIONS,
+                        PilotFeature.PLACEMENT_TERMINATION,
+                    ),
+                type = setOf(CareType.CENTRE),
+                providerType = ProviderType.MUNICIPAL,
+            )
+        val child = DevPerson()
+        val unit2 = unit1.copy(id = DaycareId(UUID.randomUUID()))
+        val unit3 = unit1.copy(id = DaycareId(UUID.randomUUID()), name = "Other unit")
+        db.transaction { tx ->
+            tx.insert(area)
+
+            tx.insert(unit1)
+            tx.insert(unit2)
+            tx.insert(unit3)
+
+            tx.insert(child, DevPersonType.CHILD)
+
+            val placement =
+                DevPlacement(
+                    type = PlacementType.DAYCARE,
+                    childId = child.id,
+                    unitId = unit1.id,
+                    startDate = startDate,
+                    endDate = endDate,
+                )
+            tx.insert(placement)
+            tx.insert(
+                placement.copy(
+                    id = PlacementId(UUID.randomUUID()),
+                    unitId = unit2.id,
+                    startDate = endDate.plusDays(1),
+                    endDate = endDate.plusYears(1),
+                )
+            )
+            tx.insert(
+                placement.copy(
+                    id = PlacementId(UUID.randomUUID()),
+                    unitId = unit3.id,
+                    startDate = endDate.plusYears(1).plusDays(1),
+                    endDate = endDate.plusYears(2),
+                )
+            )
+        }
+        val decision =
+            createAssistanceNeedDecision(
+                AssistanceNeedDecisionRequest(
+                    testDecision.copy(
+                        validityPeriod = DateRange(startDate, null),
+                        selectedUnit = UnitIdInfo(unit1.id),
+                    )
+                ),
+                child.id,
+            )
+        sendAssistanceNeedDecision(decision.id)
+        decideAssistanceNeedDecision(
+            decision.id,
+            AssistanceNeedDecisionController.DecideAssistanceNeedDecisionRequest(
+                status = AssistanceNeedDecisionStatus.ACCEPTED
+            ),
+            decisionMaker,
+        )
+
+        // expect skip
+        db.transaction { tx -> tx.endActiveDaycareAssistanceDecisions(today) }
+
+        assertEquals(null, getAssistanceNeedDecision(decision.id).validityPeriod.end)
+
+        // expect end
+        db.transaction { tx -> tx.endActiveDaycareAssistanceDecisions(today.plusYears(1)) }
+
+        assertEquals(
+            LocalDate.of(2024, 12, 31),
+            getAssistanceNeedDecision(decision.id).validityPeriod.end,
+        )
+    }
+
     private fun getEmailFor(person: DevPerson): Email {
         val address = person.email ?: throw Error("$person has no email")
         return MockEmailClient.getEmail(address) ?: throw Error("No emails sent to $address")
     }
 
     private fun createAssistanceNeedDecision(
-        request: AssistanceNeedDecisionRequest
+        request: AssistanceNeedDecisionRequest,
+        childId: ChildId = testChild_1.id,
     ): AssistanceNeedDecision {
         return assistanceNeedDecisionController.createAssistanceNeedDecision(
             dbInstance(),
             assistanceWorker,
             clock,
-            testChild_1.id,
+            childId,
             request,
         )
     }
