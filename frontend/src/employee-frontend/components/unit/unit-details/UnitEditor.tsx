@@ -1005,6 +1005,9 @@ export default function UnitEditor(props: Props) {
     if (props.onClickEdit) props.onClickEdit()
   }
 
+  const showRequiredIf = (condition: boolean, label: string) =>
+    condition ? showRequired(label) : label
+
   const showRequired = props.editable
     ? (label: string) => `${label}*`
     : (label: string) => label
@@ -1167,7 +1170,9 @@ export default function UnitEditor(props: Props) {
               {form.careTypes.PRESCHOOL && (
                 <IndentCheckboxLabel>
                   <FixedSpaceRow alignItems="center">
-                    <span>Opetusaika:</span>
+                    <span>
+                      {showRequired(i18n.unitEditor.label.dailyPreschoolTime)}
+                    </span>
                     {props.editable ? (
                       <TimeRangeInput
                         value={form.dailyPreschoolTime}
@@ -1201,7 +1206,9 @@ export default function UnitEditor(props: Props) {
               {form.careTypes.PREPARATORY_EDUCATION && (
                 <IndentCheckboxLabel>
                   <FixedSpaceRow alignItems="center">
-                    <span>Opetusaika:</span>
+                    <span>
+                      {showRequired(i18n.unitEditor.label.dailyPreparatoryTime)}
+                    </span>
                     {props.editable ? (
                       <TimeRangeInput
                         value={form.dailyPreparatoryTime}
@@ -1237,7 +1244,7 @@ export default function UnitEditor(props: Props) {
         </FixedSpaceColumn>
       </FormPart>
       <FormPart>
-        <div>{showRequired(i18n.unitEditor.label.canApply)}</div>
+        <div>{i18n.unitEditor.label.canApply}</div>
         <FixedSpaceColumn>
           {canApplyTypes.map(({ type, checkboxI18n, field, period }) => (
             <div key={type}>
@@ -1333,7 +1340,7 @@ export default function UnitEditor(props: Props) {
                   form.providerType === value && (
                     <IndentedTable>
                       <label htmlFor="private-service-voucher-business-id">
-                        {i18n.unitEditor.label.businessId}
+                        {showRequired(i18n.unitEditor.label.businessId)}
                       </label>
                       <div>
                         <InputField
@@ -1346,7 +1353,7 @@ export default function UnitEditor(props: Props) {
                         />
                       </div>
                       <label htmlFor="private-service-voucher-iban">
-                        {i18n.unitEditor.label.iban}
+                        {showRequired(i18n.unitEditor.label.iban)}
                       </label>
                       <div>
                         <InputField
@@ -1357,7 +1364,7 @@ export default function UnitEditor(props: Props) {
                         />
                       </div>
                       <label htmlFor="private-service-voucher-provider-id">
-                        {i18n.unitEditor.label.providerId}
+                        {showRequired(i18n.unitEditor.label.providerId)}
                       </label>
                       <div>
                         <InputField
@@ -1415,7 +1422,7 @@ export default function UnitEditor(props: Props) {
         )}
 
       <FormPart>
-        <div>{showRequired(i18n.unitEditor.label.operationDays)}</div>
+        <div>{i18n.unitEditor.label.operationDays}</div>
         <FixedSpaceColumn spacing="xs">
           {form.operationTimes.map((timesToday, index) => {
             const dayOfWeek = (index + 1) as DayOfWeek
@@ -1482,9 +1489,7 @@ export default function UnitEditor(props: Props) {
 
       {form.providesShiftCare && (
         <FormPart>
-          <div>
-            {showRequired(i18n.unitEditor.label.shiftCareOperationDays)}
-          </div>
+          <div>{i18n.unitEditor.label.shiftCareOperationDays}</div>
           <FixedSpaceColumn spacing="xs">
             {form.shiftCareOperationTimes.map((timesToday, index) => {
               const dayOfWeek = (index + 1) as DayOfWeek
@@ -1610,7 +1615,7 @@ export default function UnitEditor(props: Props) {
         />
       </FormPart>
       <FormPart>
-        <div>{showRequired(i18n.unitEditor.label.integrations)}</div>
+        <div>{i18n.unitEditor.label.integrations}</div>
         <FixedSpaceColumn>
           <AlertBoxContainer>
             <Checkbox
@@ -1650,7 +1655,7 @@ export default function UnitEditor(props: Props) {
         </FixedSpaceColumn>
       </FormPart>
       <FormPart>
-        <div>{showRequired(i18n.unitEditor.label.invoicedByMunicipality)}</div>
+        <div>{i18n.unitEditor.label.invoicedByMunicipality}</div>
         <Checkbox
           disabled={!props.editable}
           label={i18n.unitEditor.field.invoicingByEvaka}
@@ -1663,12 +1668,15 @@ export default function UnitEditor(props: Props) {
       </FormPart>
       <FormPart>
         <label htmlFor="unit-cost-center">
-          {i18n.unitEditor.label.costCenter}
+          {showRequiredIf(
+            form.invoicedByMunicipality,
+            i18n.unitEditor.label.costCenter
+          )}
         </label>
         {props.editable ? (
           <InputField
             id="unit-cost-center"
-            placeholder={showRequired(i18n.unitEditor.placeholder.costCenter)}
+            placeholder={i18n.unitEditor.placeholder.costCenter}
             value={form.costCenter}
             onChange={(value) => updateForm({ costCenter: value })}
           />
@@ -1698,11 +1706,11 @@ export default function UnitEditor(props: Props) {
       </FormPart>
 
       <FormPart>
-        <div>{showRequired(i18n.unitEditor.label.ophUnitOid)}</div>
+        <div>{i18n.unitEditor.label.ophUnitOid}</div>
         {props.editable ? (
           <InputField
             id="oph-unit-oid"
-            placeholder={showRequired(i18n.unitEditor.label.ophUnitOid)}
+            placeholder={i18n.unitEditor.label.ophUnitOid}
             value={form.ophUnitOid}
             onChange={(value) => updateForm({ ophUnitOid: value.trim() })}
             width="L"
@@ -1712,11 +1720,11 @@ export default function UnitEditor(props: Props) {
         )}
       </FormPart>
       <FormPart>
-        <div>{showRequired(i18n.unitEditor.label.ophOrganizerOid)}</div>
+        <div>{i18n.unitEditor.label.ophOrganizerOid}</div>
         {props.editable ? (
           <InputField
             id="oph-organizer-oid"
-            placeholder={showRequired(i18n.unitEditor.label.ophOrganizerOid)}
+            placeholder={i18n.unitEditor.label.ophOrganizerOid}
             value={form.ophOrganizerOid}
             onChange={(value) => updateForm({ ophOrganizerOid: value.trim() })}
             width="L"

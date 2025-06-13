@@ -4736,6 +4736,8 @@ export const fi = {
       closingDate: 'päättymispäivä',
       area: 'Alue',
       careTypes: 'Toimintamuodot',
+      dailyPreschoolTime: 'Opetusaika',
+      dailyPreparatoryTime: 'Opetusaika',
       canApply: 'Näytä yksikkö',
       providerType: 'Järjestämismuoto',
       operationDays: 'Toimintapäivät',
