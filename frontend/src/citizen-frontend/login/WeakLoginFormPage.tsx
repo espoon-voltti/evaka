@@ -23,6 +23,7 @@ import {
 } from 'lib-components/layout/responsive-layout'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
+import PasswordInputF from 'lib-components/molecules/PasswordInputF'
 import { H1, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
@@ -120,12 +121,11 @@ const WeakLoginForm = React.memo(function WeakLogin({
         </FixedSpaceColumn>
         <FixedSpaceColumn spacing="zero">
           <Label htmlFor="password">{t.password}</Label>
-          <InputFieldF
+          <PasswordInputF
             id="password"
             data-qa="password"
             autoComplete="current-password"
             bind={password}
-            type="password"
             placeholder={t.password}
             width="L"
             hideErrorsBeforeTouched={true}

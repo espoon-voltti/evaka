@@ -37,7 +37,9 @@ export const testTranslations: Translations = {
     saving: '',
     search: '',
     yes: '',
-    openExpandingInfo: ''
+    openExpandingInfo: '',
+    showPassword: '',
+    hidePassword: ''
   },
   datePicker: {
     placeholder: '',
