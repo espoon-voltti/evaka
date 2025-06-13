@@ -12,7 +12,7 @@ type AppConfigs = {
 } & Record<Env, BaseAppConfig>
 
 const sentryDsn =
-  'https://7f01c64aa4c21cdb5edfdf50ce1f4395@o4507111645052928.ingest.de.sentry.io/4507412540883024'
+  'https://598dec1de405bd7ae255f5ee81edceb0@o4507111645052928.ingest.de.sentry.io/4509354693623888'
 
 const appConfigs: AppConfigs = {
   default: {
