@@ -93,6 +93,7 @@ import {
   createIncomeNotification,
   createIncomeStatement,
   createInvoices,
+  createNekkuCustomer,
   createNekkuSpecialDiets,
   createOtherAssistanceMeasures,
   createParentships,
@@ -153,6 +154,7 @@ import type {
   DevStaffAttendance,
   DevStaffAttendancePlan,
   DevUpsertStaffOccupancyCoefficient,
+  NekkuCustomer,
   NekkuSpecialDiet,
   PlacementPlan,
   ReservationInsert,
@@ -1945,6 +1947,18 @@ export class Fixture {
       ...value,
       async save() {
         await createNekkuSpecialDiets({ body: value })
+        return value
+      }
+    }
+  }
+
+  static nekkuCustomer(initial: NekkuCustomer) {
+    const value: NekkuCustomer = initial
+
+    return {
+      ...value,
+      async save() {
+        await createNekkuCustomer({ body: value })
         return value
       }
     }

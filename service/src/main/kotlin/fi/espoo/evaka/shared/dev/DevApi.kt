@@ -101,10 +101,13 @@ import fi.espoo.evaka.invoicing.service.InvoiceGenerator
 import fi.espoo.evaka.invoicing.service.createIncomeNotification
 import fi.espoo.evaka.messaging.AccountType
 import fi.espoo.evaka.messaging.MessageType
+import fi.espoo.evaka.nekku.NekkuCustomer
 import fi.espoo.evaka.nekku.NekkuProductMealType
 import fi.espoo.evaka.nekku.NekkuSpecialDiet
 import fi.espoo.evaka.nekku.NekkuSpecialDietChoices
 import fi.espoo.evaka.nekku.getNekkuSpecialDietChoices
+import fi.espoo.evaka.nekku.setCustomerNumbers
+import fi.espoo.evaka.nekku.setNekkuCustomerTypes
 import fi.espoo.evaka.nekku.updateNekkuSpecialDiets
 import fi.espoo.evaka.note.child.daily.ChildDailyNoteBody
 import fi.espoo.evaka.note.child.daily.createChildDailyNote
@@ -1689,6 +1692,16 @@ UPDATE person SET email=${bind(body.email)} WHERE id=${bind(body.personId)}
         @RequestBody specialDiets: List<NekkuSpecialDiet>,
     ) {
         db.connect { dbc -> updateNekkuSpecialDiets(specialDiets, dbc, null, clock.now()) }
+    }
+
+    @PostMapping("/nekku-customer")
+    fun createNekkuCustomer(db: Database, clock: EvakaClock, @RequestBody customer: NekkuCustomer) {
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                tx.setCustomerNumbers(listOf(customer))
+                tx.setNekkuCustomerTypes(listOf(customer))
+            }
+        }
     }
 
     @GetMapping("/nekku-special-diet-choices/{childId}")

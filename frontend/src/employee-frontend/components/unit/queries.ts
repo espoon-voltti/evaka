@@ -42,7 +42,10 @@ import {
   updateTemporaryEmployee,
   updateUnitClosingDate
 } from '../../generated/api-clients/daycare'
-import { getNekkuUnitNumbers } from '../../generated/api-clients/nekku'
+import {
+  getNekkuUnitNumbers,
+  nekkuManualOrder
+} from '../../generated/api-clients/nekku'
 import {
   getOccupancyPeriodsSpeculated,
   getUnitOccupancies,
@@ -249,3 +252,5 @@ export const respondToPlacementProposalMutation = q.parametricMutation<{
 ])
 
 export const openAttendanceQuery = q.query(getOpenGroupAttendance)
+
+export const nekkuManualOrderMutation = q.mutation(nekkuManualOrder)

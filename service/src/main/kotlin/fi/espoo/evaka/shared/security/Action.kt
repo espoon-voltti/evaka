@@ -339,7 +339,8 @@ sealed interface Action {
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR).withUnitFeatures(PilotFeature.MESSAGING).inAnyUnit(),
         ),
-        READ_AROMI_ORDERS(HasGlobalRole(ADMIN));
+        READ_AROMI_ORDERS(HasGlobalRole(ADMIN)),
+        SEND_NEKKU_ORDER(HasGlobalRole(ADMIN));
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
@@ -1644,6 +1645,10 @@ sealed interface Action {
                 .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
                 .inUnitOfGroup(),
             HasGroupRole(STAFF).withUnitFeatures(PilotFeature.VASU_AND_PEDADOC).inGroup(),
+        ),
+        NEKKU_MANUAL_ORDER(
+            HasGlobalRole(ADMIN),
+            HasUnitRole(UNIT_SUPERVISOR, STAFF).inUnitOfGroup(),
         );
 
         override fun toString(): String = "${javaClass.name}.$name"

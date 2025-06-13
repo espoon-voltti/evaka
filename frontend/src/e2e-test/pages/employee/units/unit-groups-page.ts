@@ -90,6 +90,27 @@ export class UnitGroupsPage {
       .waitUntilVisible()
   }
 
+  async assertGroupCollapsibleHasNekkuOrderButton(groupId: string) {
+    await this.#groupCollapsible(groupId)
+      .findByDataQa(`btn-nekku-order`)
+      .waitUntilVisible()
+  }
+
+  async assertGroupCollapsibleNotHasNekkuOrderButton(groupId: string) {
+    await this.#groupCollapsible(groupId)
+      .findByDataQa(`btn-nekku-order`)
+      .waitUntilHidden()
+  }
+
+  async openNekkuOrderModal(groupId: string) {
+    await this.#groupCollapsible(groupId)
+      .findByDataQa(`btn-nekku-order`)
+      .click()
+
+    await this.page.findByDataQa('nekku-order-modal').waitUntilVisible()
+    return new NekkuOrderModal(this.page.findByDataQa('nekku-order-modal'))
+  }
+
   async waitUntilVisible() {
     await this.page.findByDataQa('groups-title-bar').waitUntilVisible()
   }
@@ -391,4 +412,9 @@ export class ChildDailyNoteModal extends Modal {
   async assertNoGroupNote() {
     await this.#groupNoteInput.waitUntilVisible()
   }
+}
+
+export class NekkuOrderModal extends Modal {
+  datePicker = new DatePicker(this.findByDataQa('input-order-date'))
+  okButton = this.findByDataQa('modal-okBtn')
 }

@@ -2687,6 +2687,9 @@ export const fi = {
         nekkuUnitTitle: 'Nekku-ruokatilausten yksikkö',
         nekkuCustomerNumberTitle: 'Nekku-ruokatilausten asiakasnumero'
       },
+      nekkuOrderModal: {
+        title: 'Nekku-ruokatilaus'
+      },
       startDate: 'Perustettu',
       endDate: 'Viimeinen toimintapäivä',
       caretakers: 'Henkilökuntaa',
@@ -2715,6 +2718,7 @@ export const fi = {
       diaryButton: 'Avaa päiväkirja',
       deleteGroup: 'Poista ryhmä',
       update: 'Muokkaa tietoja',
+      nekkuOrder: 'Nekku-tilaus',
       daycareDailyNote: {
         dailyNote: 'Päivän muistiinpanot',
         header: 'Tänään koettua ja opittua',

@@ -430,6 +430,7 @@ enum class Audit(
     NekkuSpecialDietFieldsRead,
     NekkuSpecialDietFieldOptionsRead,
     NekkuOrdersReportRead,
+    NekkuManualOrder,
     NonSsnChildrenReport,
     NoteCreate,
     NoteDelete,
