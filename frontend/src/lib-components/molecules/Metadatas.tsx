@@ -12,7 +12,7 @@ import { FixedSpaceColumn, FixedSpaceRow } from '../layout/flex-helpers'
 import { H3 } from '../typography'
 import { Gap } from '../white-space'
 
-import LabelValueList from './LabelValueListCommon'
+import LabelValueList from './LabelValueList'
 
 const DocumentMetadata = React.memo(function DocumentMetadata({
   document

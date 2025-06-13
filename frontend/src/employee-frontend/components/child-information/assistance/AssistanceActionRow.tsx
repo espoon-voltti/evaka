@@ -14,12 +14,12 @@ import type {
 } from 'lib-common/generated/api-types/assistanceaction'
 import { useMutationResult } from 'lib-common/query'
 import { scrollToRef } from 'lib-common/utils/scrolling'
+import LabelValueList from 'lib-components/molecules/LabelValueList'
 import { featureFlags } from 'lib-customizations/employee'
 
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
 import { isActiveDateRange } from '../../../utils/date'
-import LabelValueList from '../../common/LabelValueList'
 import Toolbar from '../../common/Toolbar'
 import ToolbarAccordion from '../../common/ToolbarAccordion'
 import { deleteAssistanceActionMutation } from '../queries'
