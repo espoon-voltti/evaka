@@ -38,6 +38,7 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import { ConfirmedMutation } from 'lib-components/molecules/ConfirmedMutation'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
+import LabelValueList from 'lib-components/molecules/LabelValueList'
 import { InfoBox } from 'lib-components/molecules/MessageBoxes'
 import { DateRangePickerF } from 'lib-components/molecules/date-picker/DateRangePicker'
 import { H1, H2, Label } from 'lib-components/typography'
@@ -49,7 +50,6 @@ import {
 import { faPen } from 'lib-icons'
 
 import { useTranslation } from '../../../state/i18n'
-import LabelValueList from '../../common/LabelValueList'
 import {
   documentTemplateForm,
   getTemplateFormInitialState,
