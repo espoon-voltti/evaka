@@ -1673,8 +1673,8 @@ fun Database.Transaction.insert(row: DevAssistanceActionOption): AssistanceActio
     createUpdate {
             sql(
                 """
-INSERT INTO assistance_action_option(id, value, name_fi, description_fi)
-VALUES (${bind(row.id)}, ${bind(row.value)}, ${bind(row.nameFi)}, ${bind(row.descriptionFi)})        
+INSERT INTO assistance_action_option(id, value, name_fi, description_fi, category, display_order, valid_from, valid_to)
+VALUES (${bind(row.id)}, ${bind(row.value)}, ${bind(row.nameFi)}, ${bind(row.descriptionFi)}, ${bind(row.category)}, ${bind(row.displayOrder)}, ${bind(row.validFrom)}, ${bind(row.validTo)})        
 """
             )
         }
