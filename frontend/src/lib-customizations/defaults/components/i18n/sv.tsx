@@ -28,7 +28,15 @@ const components: Translations = {
     yes: 'Ja',
     openExpandingInfo: 'Öppna detaljer',
     showPassword: 'Visa lösenord',
-    hidePassword: 'Dölj lösenord'
+    hidePassword: 'Dölj lösenord',
+    userTypes: {
+      // TODO
+      SYSTEM: 'järjestelmä',
+      CITIZEN: 'kuntalainen',
+      EMPLOYEE: 'työntekijä',
+      MOBILE_DEVICE: 'mobiililaite',
+      UNKNOWN: 'tuntematon'
+    }
   },
   datePicker: {
     placeholder: 'dd.mm.åååå',
@@ -176,6 +184,54 @@ const components: Translations = {
     unselectableDate: 'Ogiltigt datum',
     openAttendance: 'Öppen närvaro',
     generic: 'Kolla'
+  },
+  metadata: {
+    // TODO
+    title: 'Arkistoitava metadata',
+    notFound: 'Asiakirjalle ei ole arkistoitavaa metadataa',
+    processNumber: 'Asianumero',
+    processName: 'Asiaprosessi',
+    organization: 'Organisaatio',
+    archiveDurationMonths: 'Arkistointiaika',
+    primaryDocument: 'Ensisijainen asiakirja',
+    secondaryDocuments: 'Muut asiakirjat',
+    documentId: 'Asiakirjan tunniste',
+    name: 'Asiakirjan nimi',
+    createdAt: 'Laatimisajankohta',
+    createdBy: 'Laatija',
+    monthsUnit: 'kuukautta',
+    confidentiality: 'Julkisuus',
+    confidential: 'Salassapidettävä',
+    public: 'Julkinen',
+    notSet: 'Asettamatta',
+    confidentialityDuration: 'Salassapitoaika',
+    confidentialityBasis: 'Salassapitoperuste',
+    years: 'vuotta',
+    receivedBy: {
+      label: 'Saapumistapa',
+      PAPER: 'Paperilla',
+      ELECTRONIC: 'Sähköisesti'
+    },
+    sfiDelivery: {
+      label: 'Suomi.fi -toimitukset',
+      method: {
+        ELECTRONIC: 'Sähköisesti',
+        PAPER_MAIL: 'Postitse',
+        PENDING: 'Odottaa toimitusta'
+      }
+    },
+    history: 'Prosessin historia',
+    downloadPdf: 'Lataa PDF',
+    states: {
+      INITIAL: 'Asian vireillepano / -tulo',
+      PREPARATION: 'Asian valmistelu',
+      DECIDING: 'Päätöksenteko',
+      COMPLETED: 'Toimeenpano / Päättäminen / Sulkeminen'
+    },
+    section: {
+      show: 'Näytä lisätiedot',
+      hide: 'Piilota lisätiedot'
+    }
   }
 }
 

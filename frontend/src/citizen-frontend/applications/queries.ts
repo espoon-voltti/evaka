@@ -21,6 +21,7 @@ import {
   getClubTerms,
   getPreschoolTerms
 } from '../generated/api-clients/daycare'
+import { getApplicationMetadata } from '../generated/api-clients/process'
 import { getServiceNeedOptionPublicInfos } from '../generated/api-clients/serviceneed'
 
 const q = new Queries()
@@ -65,3 +66,5 @@ export const removeUnprocessableApplicationMutation = q.mutation(
 export const sendApplicationMutation = q.mutation(sendApplication, [
   (applicationId) => applicationQuery(applicationId)
 ])
+
+export const applicationMetadataQuery = q.query(getApplicationMetadata)

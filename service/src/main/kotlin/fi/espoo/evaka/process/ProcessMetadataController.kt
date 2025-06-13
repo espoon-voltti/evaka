@@ -6,17 +6,12 @@ package fi.espoo.evaka.process
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
-import fi.espoo.evaka.application.ApplicationOrigin
-import fi.espoo.evaka.application.ApplicationType
-import fi.espoo.evaka.application.fetchApplicationDetails
-import fi.espoo.evaka.decision.DecisionType
 import fi.espoo.evaka.document.ChildDocumentType
 import fi.espoo.evaka.document.childdocument.getChildDocument
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
 import fi.espoo.evaka.shared.ChildDocumentId
-import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
@@ -28,7 +23,6 @@ import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.user.EvakaUser
-import java.time.LocalDate
 import java.util.UUID
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.core.mapper.PropagateNull
@@ -73,14 +67,29 @@ data class ProcessMetadata(
     val processName: String?,
     val primaryDocument: DocumentMetadata,
     val secondaryDocuments: List<DocumentMetadata>,
-)
+) {
+    fun toCitizen() =
+        this.copy(
+            process = this.process.copy(history = emptyList(), archiveDurationMonths = null),
+            primaryDocument =
+                this.primaryDocument.copy(createdBy = null, sfiDeliveries = emptyList()),
+            secondaryDocuments =
+                this.secondaryDocuments.map {
+                    it.copy(createdBy = null, sfiDeliveries = emptyList())
+                },
+        )
+}
+
+// wrapper that is needed because currently returning null
+// from an endpoint is not serialized correctly
+data class ProcessMetadataResponse(val data: ProcessMetadata?)
 
 @RestController
 @RequestMapping("/employee/process-metadata")
-class ProcessMetadataController(private val accessControl: AccessControl) {
-    // wrapper that is needed because currently returning null
-    // from an endpoint is not serialized correctly
-    data class ProcessMetadataResponse(val data: ProcessMetadata?)
+class ProcessMetadataController(
+    private val accessControl: AccessControl,
+    private val processMetadataService: ProcessMetadataService,
+) {
 
     @GetMapping("/child-documents/{childDocumentId}")
     fun getChildDocumentMetadata(
@@ -271,42 +280,16 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                     val process =
                         tx.getArchiveProcessByApplicationId(applicationId)
                             ?: return@read ProcessMetadataResponse(null)
-                    val application = tx.fetchApplicationDetails(applicationId) ?: throw NotFound()
-                    val applicationDocument = tx.getApplicationDocumentMetadata(applicationId)
-                    val decisionDocuments =
-                        tx.getSentDecisionIdsByApplication(applicationId).map {
-                            it to tx.getApplicationDecisionDocumentMetadata(it)
-                        }
-
-                    ProcessMetadataResponse(
-                        ProcessMetadata(
-                            process = process,
-                            processName =
-                                when (application.type) {
-                                    ApplicationType.CLUB -> "Kerhohakemus"
-                                    ApplicationType.DAYCARE ->
-                                        "Varhaiskasvatushakemus / palvelusetelihakemus varhaiskasvatukseen"
-                                    ApplicationType.PRESCHOOL ->
-                                        "Esiopetushakemus / hakemus esiopetuksessa järjestettävään perusopetukseen valmistavaan opetukseen"
-                                },
-                            primaryDocument = applicationDocument,
-                            secondaryDocuments =
-                                decisionDocuments.map { (decisionId, doc) ->
-                                    doc.copy(
-                                        downloadPath =
-                                            doc.downloadPath?.takeIf {
-                                                accessControl.hasPermissionFor(
-                                                    tx,
-                                                    user,
-                                                    clock,
-                                                    Action.Decision.DOWNLOAD_PDF,
-                                                    decisionId,
-                                                )
-                                            }
-                                    )
-                                },
+                    val processMetadata =
+                        processMetadataService.getApplicationProcessMetadata(
+                            tx,
+                            user,
+                            clock,
+                            applicationId,
+                            process,
+                            isCitizen = false,
                         )
-                    )
+                    ProcessMetadataResponse(processMetadata)
                 }
             }
             .also { response ->
@@ -486,147 +469,6 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                         },
                     receivedBy = null,
                     sfiDeliveries = emptyList(),
-                )
-            }
-            .exactlyOne()
-
-    private fun Database.Read.getApplicationDocumentMetadata(
-        applicationId: ApplicationId
-    ): DocumentMetadata =
-        createQuery {
-                sql(
-                    """
-        SELECT 
-            a.id,
-            a.type,
-            a.sentdate,
-            e.id AS created_by_id,
-            e.name AS created_by_name,
-            e.type AS created_by_type,
-            a.confidential AS confidential,
-            a.origin
-        FROM application a
-        LEFT JOIN evaka_user e ON e.id = a.created_by
-        WHERE a.id = ${bind(applicationId)}
-    """
-                )
-            }
-            .map {
-                DocumentMetadata(
-                    documentId = column("id"),
-                    name =
-                        column<ApplicationType>("type").let { type ->
-                            when (type) {
-                                ApplicationType.DAYCARE ->
-                                    "Varhaiskasvatus- ja palvelusetelihakemus"
-                                ApplicationType.PRESCHOOL ->
-                                    "Ilmoittautuminen esiopetukseen ja / tai valmistavaan opetukseen"
-                                ApplicationType.CLUB -> "Kerhohakemus"
-                            }
-                        },
-                    createdAt =
-                        column<LocalDate>("sentdate").let { HelsinkiDateTime.atStartOfDay(it) },
-                    createdBy =
-                        column<EvakaUserId?>("created_by_id")?.let {
-                            EvakaUser(
-                                id = it,
-                                name = column("created_by_name"),
-                                type = column("created_by_type"),
-                            )
-                        },
-                    confidential = column("confidential"),
-                    confidentiality =
-                        if (column<Boolean?>("confidential") == true) {
-                            DocumentConfidentiality(durationYears = 100, basis = "JulkL 24.1 §")
-                        } else null,
-                    downloadPath = null,
-                    receivedBy =
-                        column<ApplicationOrigin>("origin").let {
-                            when (it) {
-                                ApplicationOrigin.ELECTRONIC -> DocumentOrigin.ELECTRONIC
-                                ApplicationOrigin.PAPER -> DocumentOrigin.PAPER
-                            }
-                        },
-                    sfiDeliveries = emptyList(),
-                )
-            }
-            .exactlyOne()
-
-    private fun Database.Read.getSentDecisionIdsByApplication(
-        applicationId: ApplicationId
-    ): List<DecisionId> =
-        createQuery {
-                sql(
-                    """
-        SELECT d.id
-        FROM application a
-        JOIN decision d ON a.id = d.application_id
-        WHERE a.id = ${bind(applicationId)} AND d.sent_date IS NOT NULL   
-    """
-                )
-            }
-            .toList()
-
-    private fun Database.Read.getApplicationDecisionDocumentMetadata(
-        decisionId: DecisionId
-    ): DocumentMetadata =
-        createQuery {
-                sql(
-                    """
-        SELECT 
-            d.id,
-            d.type,
-            d.sent_date,
-            e.id AS created_by_id,
-            e.name AS created_by_name,
-            e.type AS created_by_type,
-            d.document_key,
-            (
-                $sfiDeliverySelect
-                WHERE sm.decision_id = d.id
-            ) AS sfi_deliveries
-        FROM decision d
-        LEFT JOIN evaka_user e ON e.id = d.created_by
-        WHERE d.id = ${bind(decisionId)}
-    """
-                )
-            }
-            .map {
-                DocumentMetadata(
-                    documentId = column("id"),
-                    name =
-                        column<DecisionType>("type").let {
-                            when (it) {
-                                DecisionType.DAYCARE -> "Päätös varhaiskasvatuksesta"
-                                DecisionType.DAYCARE_PART_TIME ->
-                                    "Päätös osa-aikaisesta varhaiskasvatuksesta"
-                                DecisionType.PRESCHOOL -> "Päätös esiopetuksesta"
-                                DecisionType.PREPARATORY_EDUCATION ->
-                                    "Päätös valmistavasta opetuksesta"
-                                DecisionType.PRESCHOOL_DAYCARE ->
-                                    "Päätös liittyvästä varhaiskasvatuksesta"
-                                DecisionType.CLUB -> "Päätös kerhosta"
-                                DecisionType.PRESCHOOL_CLUB -> "Päätös esiopetuksen kerhosta"
-                            }
-                        },
-                    createdAt =
-                        column<LocalDate>("sent_date").let { HelsinkiDateTime.atStartOfDay(it) },
-                    createdBy =
-                        column<EvakaUserId?>("created_by_id")?.let {
-                            EvakaUser(
-                                id = it,
-                                name = column("created_by_name"),
-                                type = column("created_by_type"),
-                            )
-                        },
-                    confidential = false,
-                    confidentiality = null,
-                    downloadPath =
-                        column<String?>("document_key")?.let {
-                            "/employee/decisions/$decisionId/download"
-                        },
-                    receivedBy = null,
-                    sfiDeliveries = jsonColumn("sfi_deliveries"),
                 )
             }
             .exactlyOne()
