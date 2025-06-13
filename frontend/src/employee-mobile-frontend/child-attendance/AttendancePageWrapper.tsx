@@ -14,6 +14,7 @@ import type {
 } from 'lib-common/generated/api-types/attendance'
 import { useQueryResult } from 'lib-common/query'
 import { ContentArea } from 'lib-components/layout/Container'
+import type { TabLink } from 'lib-components/molecules/Tabs'
 import { TabLinks } from 'lib-components/molecules/Tabs'
 import colors from 'lib-customizations/common'
 
@@ -67,19 +68,20 @@ export default React.memo(function AttendancePageWrapper({
     [navigate, unitId]
   )
   const tabs = useMemo(
-    () => [
+    (): TabLink[] => [
       {
         id: 'today',
-        link: routes.childAttendanceList(unitOrGroup),
+        link: '/list',
+        hasSubPages: true,
         label: i18n.attendances.views.TODAY
       },
       {
         id: 'confirmed-days',
-        link: routes.childAttendanceDaylist(unitOrGroup),
+        link: '/daylist',
         label: i18n.attendances.views.NEXT_DAYS
       }
     ],
-    [i18n, unitOrGroup]
+    [i18n]
   )
 
   const toggleSearch = useCallback(() => setShowSearch((show) => !show), [])

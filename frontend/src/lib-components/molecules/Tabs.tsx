@@ -4,10 +4,10 @@
 
 import React from 'react'
 import styled, { css } from 'styled-components'
+import { Link, useRoute } from 'wouter'
 
 import type { Uri } from 'lib-common/uri'
 
-import NavLink from '../atoms/NavLink'
 import { desktopMin } from '../breakpoints'
 import Container from '../layout/Container'
 import { fontWeights, NavLinkText } from '../typography'
@@ -57,15 +57,15 @@ export const Tabs = React.memo(function Tabs({
   )
 })
 
-interface TabLink {
+export interface TabLink {
   id: string
   link: Uri | string
   label: string | React.JSX.Element
+  hasSubPages?: boolean
   counter?: number
-  isTabActive?: () => boolean
 }
 
-interface TabLinksProps extends BaseProps {
+export interface TabLinksProps extends BaseProps {
   mobile?: boolean
   tabs: TabLink[]
   id?: string
@@ -88,13 +88,14 @@ export const TabLinks = React.memo(function TabLinks({
       $topOffset={topOffset}
     >
       <TabsContainer data-qa={dataQa} shadow={mobile} id={id}>
-        {tabs.map(({ id, link, label, counter }) => (
+        {tabs.map(({ id, link, hasSubPages, label, counter }) => (
           <TabLink
             key={id}
             to={typeof link === 'string' ? link : link.value}
+            hasSubPages={hasSubPages ?? false}
             data-qa={`${id}-tab`}
-            $maxWidth={maxWidth}
-            $mobile={mobile}
+            maxWidth={maxWidth}
+            mobile={mobile}
           >
             <NavLinkText>{label}</NavLinkText>
             {counter ? <TabCounter>{counter}</TabCounter> : null}
@@ -192,12 +193,42 @@ const Tab = styled.div<{
   ${tabStyles}
 `
 
-const TabLink = styled(NavLink)<{
+const TabLinkInner = styled(Link)<{
   $maxWidth?: string
   $mobile?: boolean
 }>`
   ${tabStyles}
 `
+
+function TabLink({
+  to,
+  maxWidth,
+  mobile,
+  hasSubPages,
+  'data-qa': dataQa,
+  children
+}: {
+  to: string
+  maxWidth: string | undefined
+  mobile: boolean | undefined
+  hasSubPages: boolean
+  'data-qa': string | undefined
+  children?: React.ReactNode
+}) {
+  const pattern = hasSubPages ? `${to}/*` : to
+  const [isActive] = useRoute(pattern)
+  return (
+    <TabLinkInner
+      to={to}
+      data-qa={dataQa}
+      className={isActive ? 'active' : undefined}
+      $maxWidth={maxWidth}
+      $mobile={mobile}
+    >
+      {children}
+    </TabLinkInner>
+  )
+}
 
 const TabCounter = styled.div`
   width: 1.5em;

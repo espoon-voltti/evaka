@@ -20,9 +20,9 @@ import LocalTime from 'lib-common/local-time'
 import TimeRangeEndpoint from 'lib-common/time-range-endpoint'
 import type { UUID } from 'lib-common/types'
 import { ContentArea } from 'lib-components/layout/Container'
+import type { TabLink } from 'lib-components/molecules/Tabs'
 import { TabLinks } from 'lib-components/molecules/Tabs'
 
-import { routes } from '../App'
 import { getServiceTimeRangeOrNullForDate } from '../common/dailyServiceTimes'
 import { useTranslation } from '../common/i18n'
 import type { UnitOrGroup } from '../common/unit-or-group'
@@ -86,7 +86,7 @@ export default React.memo(function AttendanceList({
     [childrenWithStatus, groupChildren.length]
   )
 
-  const tabs = useMemo(() => {
+  const tabs = useMemo((): TabLink[] => {
     const getLabel = (title: string, count: number) => (
       <>
         {title}
@@ -99,27 +99,26 @@ export default React.memo(function AttendanceList({
     return [
       {
         id: 'coming',
-        link: routes.childAttendanceListState(unitOrGroup, 'coming'),
+        link: '/list/coming',
         label: getLabel(i18n.attendances.types.COMING, totalComing)
       },
       {
         id: 'present',
-        link: routes.childAttendanceListState(unitOrGroup, 'present'),
+        link: '/list/present',
         label: getLabel(i18n.attendances.types.PRESENT, totalPresent)
       },
       {
         id: 'departed',
-        link: routes.childAttendanceListState(unitOrGroup, 'departed'),
+        link: '/list/departed',
         label: getLabel(i18n.attendances.types.DEPARTED, totalDeparted)
       },
       {
         id: 'absent',
-        link: routes.childAttendanceListState(unitOrGroup, 'absent'),
+        link: '/list/absent',
         label: getLabel(i18n.attendances.types.ABSENT, totalAbsent)
       }
     ]
   }, [
-    unitOrGroup,
     i18n,
     totalComing,
     totalAttendances,
