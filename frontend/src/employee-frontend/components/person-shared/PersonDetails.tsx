@@ -33,6 +33,7 @@ import {
   ExpandingInfoBox,
   InfoButton
 } from 'lib-components/molecules/ExpandingInfo'
+import LabelValueList from 'lib-components/molecules/LabelValueList'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { featureFlags } from 'lib-customizations/employee'
 import { faCalendar, faCopy, faFileAlt, faPen, faSync } from 'lib-icons'
@@ -42,7 +43,6 @@ import { useTranslation } from '../../state/i18n'
 import type { UiState } from '../../state/ui'
 import { UIContext } from '../../state/ui'
 import { isEmailValid } from '../../utils/validation/validations'
-import LabelValueList from '../common/LabelValueList'
 import {
   disableSsnMutation,
   duplicatePersonMutation,

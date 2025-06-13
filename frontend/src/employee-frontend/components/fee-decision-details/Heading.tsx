@@ -15,6 +15,7 @@ import type {
 import type { FeeDecisionId } from 'lib-common/generated/api-types/shared'
 import type HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { formatPersonName } from 'lib-common/names'
+import LabelValueList from 'lib-components/molecules/LabelValueList'
 import { PersonName } from 'lib-components/molecules/PersonNames'
 import { H1 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
@@ -22,7 +23,6 @@ import colors from 'lib-customizations/common'
 
 import { getFeeDecisionPdf } from '../../generated/api-clients/invoicing'
 import { useTranslation } from '../../state/i18n'
-import LabelValueList from '../common/LabelValueList'
 import WarningLabel from '../common/WarningLabel'
 
 import { TypeSelect } from './TypeSelect'

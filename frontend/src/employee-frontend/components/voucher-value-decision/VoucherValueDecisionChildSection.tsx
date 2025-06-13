@@ -12,11 +12,11 @@ import type {
 } from 'lib-common/generated/api-types/invoicing'
 import { formatPersonName } from 'lib-common/names'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
+import LabelValueList from 'lib-components/molecules/LabelValueList'
 import { PersonName } from 'lib-components/molecules/PersonNames'
 import { faUserFriends } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
-import LabelValueList from '../common/LabelValueList'
 
 interface Props {
   child: PersonDetailed

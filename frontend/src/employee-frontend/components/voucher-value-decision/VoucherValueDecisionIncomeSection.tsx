@@ -13,13 +13,13 @@ import type {
 import { formatCents } from 'lib-common/money'
 import { formatPersonName } from 'lib-common/names'
 import { useQueryResult } from 'lib-common/query'
+import LabelValueList from 'lib-components/molecules/LabelValueList'
 import { H3, H4 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
 import { useTranslation } from '../../state/i18n'
 import { formatPercent } from '../../utils'
 import { renderResult } from '../async-rendering'
-import LabelValueList from '../common/LabelValueList'
 import { incomeTypeOptionsQuery } from '../person-profile/queries'
 
 type Props = {

@@ -19,6 +19,7 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
+import LabelValueList from 'lib-components/molecules/LabelValueList'
 import { fontWeights, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
@@ -29,7 +30,6 @@ import { getRealtimeStaffAttendances } from '../../../generated/api-clients/atte
 import { useTranslation } from '../../../state/i18n'
 import { AbsenceLegend } from '../../absences/AbsenceLegend'
 import { renderResult } from '../../async-rendering'
-import LabelValueList from '../../common/LabelValueList'
 import type { AttendanceGroupFilter } from '../TabCalendar'
 import { unitAttendanceReservationsQuery } from '../queries'
 

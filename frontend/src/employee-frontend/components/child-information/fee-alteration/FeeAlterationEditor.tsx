@@ -21,6 +21,7 @@ import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import TextArea from 'lib-components/atoms/form/TextArea'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import FileUpload from 'lib-components/molecules/FileUpload'
+import LabelValueList from 'lib-components/molecules/LabelValueList'
 import DateRangePicker from 'lib-components/molecules/date-picker/DateRangePicker'
 import { P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
@@ -35,7 +36,6 @@ import type {
   FeeAlterationForm,
   PartialFeeAlteration
 } from '../../../types/fee-alteration'
-import LabelValueList from '../../common/LabelValueList'
 
 import FeeAlterationRowInput from './FeeAlterationRowInput'
 

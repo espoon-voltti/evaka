@@ -23,6 +23,7 @@ import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import InputField from 'lib-components/atoms/form/InputField'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
+import LabelValueList from 'lib-components/molecules/LabelValueList'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import DateRangePicker from 'lib-components/molecules/date-picker/DateRangePicker'
 import { LabelLike } from 'lib-components/typography'
@@ -30,7 +31,6 @@ import { Gap } from 'lib-components/white-space'
 
 import { useTranslation } from '../../../../state/i18n'
 import { UIContext } from '../../../../state/ui'
-import LabelValueList from '../../../common/LabelValueList'
 import {
   createAssistanceNeedVoucherCoefficientMutation,
   updateAssistanceNeedVoucherCoefficientMutation

@@ -27,6 +27,7 @@ import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import LabelValueList from 'lib-components/molecules/LabelValueList'
 import { AlertBox, InfoBox } from 'lib-components/molecules/MessageBoxes'
 import { PersonName } from 'lib-components/molecules/PersonNames'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
@@ -45,7 +46,6 @@ import type { Translations } from '../../state/i18n'
 import { useTranslation } from '../../state/i18n'
 import { useTitle } from '../../utils/useTitle'
 import { renderResult } from '../async-rendering'
-import LabelValueList from '../common/LabelValueList'
 
 const getDecisionUnitsResult = wrapResult(getDecisionUnits)
 const updateDecisionDraftsResult = wrapResult(updateDecisionDrafts)
