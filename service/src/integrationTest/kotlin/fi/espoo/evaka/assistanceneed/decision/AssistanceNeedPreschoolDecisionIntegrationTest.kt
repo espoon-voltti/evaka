@@ -13,6 +13,8 @@ import fi.espoo.evaka.assistanceneed.preschooldecision.AssistanceNeedPreschoolDe
 import fi.espoo.evaka.assistanceneed.preschooldecision.AssistanceNeedPreschoolDecisionService
 import fi.espoo.evaka.assistanceneed.preschooldecision.AssistanceNeedPreschoolDecisionType
 import fi.espoo.evaka.assistanceneed.preschooldecision.endActivePreschoolAssistanceDecisions
+import fi.espoo.evaka.daycare.CareType
+import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.emailclient.Email
 import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.pis.Employee
@@ -25,11 +27,16 @@ import fi.espoo.evaka.sficlient.MockSfiMessagesClient
 import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionGuardianId
 import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.dev.DevCareArea
+import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevGuardian
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
@@ -40,6 +47,7 @@ import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.domain.OfficialLanguage
+import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
@@ -805,19 +813,172 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
         )
     }
 
+    @Test
+    fun `assistance decision ending is skipped for same name unit placement and ended normally after placement end`() {
+        val startDate = LocalDate.of(2023, 1, 1)
+        val endDate = LocalDate.of(2023, 12, 31)
+        val today = LocalDate.of(2024, 1, 1)
+
+        val area = DevCareArea(shortName = "testcarearea")
+        val unit1 =
+            DevDaycare(
+                name = "Unitname",
+                areaId = area.id,
+                enabledPilotFeatures =
+                    setOf(
+                        PilotFeature.MESSAGING,
+                        PilotFeature.MOBILE,
+                        PilotFeature.RESERVATIONS,
+                        PilotFeature.PLACEMENT_TERMINATION,
+                    ),
+                type = setOf(CareType.PRESCHOOL),
+                providerType = ProviderType.MUNICIPAL,
+            )
+        val child = DevPerson()
+        val guardian = DevPerson()
+        val unit2 = unit1.copy(id = DaycareId(UUID.randomUUID()))
+        db.transaction { tx ->
+            tx.insert(area)
+
+            tx.insert(unit1)
+            tx.insert(unit2)
+
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(guardian, DevPersonType.ADULT)
+            tx.insert(DevGuardian(guardian.id, child.id))
+
+            val placement =
+                DevPlacement(
+                    type = PlacementType.PRESCHOOL,
+                    childId = child.id,
+                    unitId = unit1.id,
+                    startDate = startDate,
+                    endDate = endDate,
+                )
+            tx.insert(placement)
+            tx.insert(
+                placement.copy(
+                    id = PlacementId(UUID.randomUUID()),
+                    unitId = unit2.id,
+                    startDate = endDate.plusDays(1),
+                    endDate = endDate.plusYears(1),
+                )
+            )
+        }
+        val decision =
+            createAndFillDecision(
+                    testForm.copy(validFrom = startDate, validTo = null, selectedUnit = unit1.id),
+                    childId = child.id,
+                )
+                .also { sendAssistanceNeedDecision(it.id) }
+                .also {
+                    decideDecision(it.id, AssistanceNeedDecisionStatus.ACCEPTED, decisionMaker)
+                }
+
+        // expect skip
+        db.transaction { tx -> tx.endActivePreschoolAssistanceDecisions(today) }
+        assertEquals(null, getDecision(decision.id).form.validTo)
+
+        // expect end
+        db.transaction { tx -> tx.endActivePreschoolAssistanceDecisions(today.plusYears(1)) }
+        assertEquals(LocalDate.of(2024, 12, 31), getDecision(decision.id).form.validTo)
+    }
+
+    @Test
+    fun `assistance decision is ended correctly after one skip when placed to differently named unit`() {
+        val startDate = LocalDate.of(2023, 1, 1)
+        val endDate = LocalDate.of(2023, 12, 31)
+        val today = LocalDate.of(2024, 1, 1)
+
+        val area = DevCareArea(shortName = "testcarearea")
+        val unit1 =
+            DevDaycare(
+                name = "Unitname",
+                areaId = area.id,
+                enabledPilotFeatures =
+                    setOf(
+                        PilotFeature.MESSAGING,
+                        PilotFeature.MOBILE,
+                        PilotFeature.RESERVATIONS,
+                        PilotFeature.PLACEMENT_TERMINATION,
+                    ),
+                type = setOf(CareType.PRESCHOOL),
+                providerType = ProviderType.MUNICIPAL,
+            )
+        val child = DevPerson()
+        val guardian = DevPerson()
+        val unit2 = unit1.copy(id = DaycareId(UUID.randomUUID()))
+        val unit3 = unit1.copy(id = DaycareId(UUID.randomUUID()), name = "Other unit")
+        db.transaction { tx ->
+            tx.insert(area)
+
+            tx.insert(unit1)
+            tx.insert(unit2)
+            tx.insert(unit3)
+
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(guardian, DevPersonType.ADULT)
+            tx.insert(DevGuardian(guardian.id, child.id))
+
+            val placement =
+                DevPlacement(
+                    type = PlacementType.PRESCHOOL,
+                    childId = child.id,
+                    unitId = unit1.id,
+                    startDate = startDate,
+                    endDate = endDate,
+                )
+            tx.insert(placement)
+            tx.insert(
+                placement.copy(
+                    id = PlacementId(UUID.randomUUID()),
+                    unitId = unit2.id,
+                    startDate = endDate.plusDays(1),
+                    endDate = endDate.plusYears(1),
+                )
+            )
+            tx.insert(
+                placement.copy(
+                    id = PlacementId(UUID.randomUUID()),
+                    unitId = unit3.id,
+                    startDate = endDate.plusYears(1).plusDays(1),
+                    endDate = endDate.plusYears(2),
+                )
+            )
+        }
+        val decision =
+            createAndFillDecision(
+                    testForm.copy(validFrom = startDate, validTo = null, selectedUnit = unit1.id),
+                    childId = child.id,
+                )
+                .also { sendAssistanceNeedDecision(it.id) }
+                .also {
+                    decideDecision(it.id, AssistanceNeedDecisionStatus.ACCEPTED, decisionMaker)
+                }
+
+        // expect skip
+        db.transaction { tx -> tx.endActivePreschoolAssistanceDecisions(today) }
+        assertEquals(null, getDecision(decision.id).form.validTo)
+
+        // expect end
+        db.transaction { tx -> tx.endActivePreschoolAssistanceDecisions(today.plusYears(1)) }
+        assertEquals(LocalDate.of(2024, 12, 31), getDecision(decision.id).form.validTo)
+    }
+
     private fun getEmailFor(person: DevPerson): Email {
         val address = person.email ?: throw Error("$person has no email")
         return MockEmailClient.getEmail(address) ?: throw Error("No emails sent to $address")
     }
 
     private fun createEmptyDraft(
-        user: AuthenticatedUser.Employee = assistanceWorker
+        user: AuthenticatedUser.Employee = assistanceWorker,
+        childId: ChildId = testChild_1.id,
     ): AssistanceNeedPreschoolDecision {
         return assistanceNeedDecisionController.createAssistanceNeedPreschoolDecision(
             dbInstance(),
             user,
             clock,
-            testChild_1.id,
+            childId,
         )
     }
 
@@ -858,8 +1019,9 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
     private fun createAndFillDecision(
         form: AssistanceNeedPreschoolDecisionForm,
         user: AuthenticatedUser.Employee = assistanceWorker,
+        childId: ChildId = testChild_1.id,
     ): AssistanceNeedPreschoolDecision {
-        return createEmptyDraft(user)
+        return createEmptyDraft(user, childId)
             .also { updateDecision(form, it, user) }
             .let { getDecision(it.id, user) }
     }
