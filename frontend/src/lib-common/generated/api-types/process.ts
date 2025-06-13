@@ -14,7 +14,7 @@ import type { UUID } from '../../types'
 * Generated from fi.espoo.evaka.process.ArchivedProcess
 */
 export interface ArchivedProcess {
-  archiveDurationMonths: number
+  archiveDurationMonths: number | null
   history: ArchivedProcessHistoryRow[]
   id: ArchivedProcessId
   migrated: boolean
@@ -85,7 +85,7 @@ export interface ProcessMetadata {
 }
 
 /**
-* Generated from fi.espoo.evaka.process.ProcessMetadataController.ProcessMetadataResponse
+* Generated from fi.espoo.evaka.process.ProcessMetadataResponse
 */
 export interface ProcessMetadataResponse {
   data: ProcessMetadata | null

@@ -34,6 +34,13 @@ export interface Translations {
     search: string
     yes: string
     openExpandingInfo: string
+    userTypes: {
+      SYSTEM: string
+      CITIZEN: string
+      EMPLOYEE: string
+      MOBILE_DEVICE: string
+      UNKNOWN: string
+    }
   }
   datePicker: {
     placeholder: string
@@ -147,6 +154,53 @@ export interface Translations {
     unselectableDate: string
     openAttendance: string
     generic: string
+  }
+  metadata: {
+    title: string
+    notFound: string
+    processNumber: string
+    processName: string
+    organization: string
+    archiveDurationMonths: string
+    primaryDocument: string
+    secondaryDocuments: string
+    documentId: string
+    name: string
+    createdAt: string
+    createdBy: string
+    monthsUnit: string
+    confidentiality: string
+    confidential: string
+    public: string
+    notSet: string
+    confidentialityDuration: string
+    confidentialityBasis: string
+    years: string
+    receivedBy: {
+      label: string
+      PAPER: string
+      ELECTRONIC: string
+    }
+    sfiDelivery: {
+      label: string
+      method: {
+        ELECTRONIC: string
+        PAPER_MAIL: string
+        PENDING: string
+      }
+    }
+    history: string
+    downloadPdf: string
+    states: {
+      INITIAL: string
+      PREPARATION: string
+      DECIDING: string
+      COMPLETED: string
+    }
+    section: {
+      show: string
+      hide: string
+    }
   }
 }
 
