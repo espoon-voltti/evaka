@@ -3089,14 +3089,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@jridgewell/sourcemap-codec@npm:^1.4.10, @jridgewell/sourcemap-codec@npm:^1.4.14, @jridgewell/sourcemap-codec@npm:^1.4.15":
-  version: 1.4.15
-  resolution: "@jridgewell/sourcemap-codec@npm:1.4.15"
-  checksum: 10/89960ac087781b961ad918978975bcdf2051cd1741880469783c42de64239703eab9db5230d776d8e6a09d73bb5e4cb964e07d93ee6e2e7aea5a7d726e865c09
-  languageName: node
-  linkType: hard
-
-"@jridgewell/sourcemap-codec@npm:^1.5.0":
+"@jridgewell/sourcemap-codec@npm:^1.4.10, @jridgewell/sourcemap-codec@npm:^1.4.14, @jridgewell/sourcemap-codec@npm:^1.4.15, @jridgewell/sourcemap-codec@npm:^1.5.0":
   version: 1.5.0
   resolution: "@jridgewell/sourcemap-codec@npm:1.5.0"
   checksum: 10/4ed6123217569a1484419ac53f6ea0d9f3b57e5b57ab30d7c267bdb27792a27eb0e4b08e84a2680aa55cc2f2b411ffd6ec3db01c44fdc6dc43aca4b55f8374fd
@@ -3475,13 +3468,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@sentry/babel-plugin-component-annotate@npm:3.4.0":
-  version: 3.4.0
-  resolution: "@sentry/babel-plugin-component-annotate@npm:3.4.0"
-  checksum: 10/7b8122fd49ac9dbb28a31be1e96a3e4f80910ce7d192360041beeea0f992382aaa80d499f87041178af28e834a66a1881cd83fb1324d88212b45929d66b16711
-  languageName: node
-  linkType: hard
-
 "@sentry/babel-plugin-component-annotate@npm:3.5.0":
   version: 3.5.0
   resolution: "@sentry/babel-plugin-component-annotate@npm:3.5.0"
@@ -3499,22 +3485,6 @@ __metadata:
     "@sentry-internal/replay-canvas": "npm:9.27.0"
     "@sentry/core": "npm:9.27.0"
   checksum: 10/ceb8392b45f25acb0de0b208d477ed649709dd2e180546255e83cfb5d00a36b770f22a18a65f6360a857569d2648ebb6af166c1f0f9b7580dbe051b653e0af83
-  languageName: node
-  linkType: hard
-
-"@sentry/bundler-plugin-core@npm:3.4.0":
-  version: 3.4.0
-  resolution: "@sentry/bundler-plugin-core@npm:3.4.0"
-  dependencies:
-    "@babel/core": "npm:^7.18.5"
-    "@sentry/babel-plugin-component-annotate": "npm:3.4.0"
-    "@sentry/cli": "npm:2.42.2"
-    dotenv: "npm:^16.3.1"
-    find-up: "npm:^5.0.0"
-    glob: "npm:^9.3.2"
-    magic-string: "npm:0.30.8"
-    unplugin: "npm:1.0.1"
-  checksum: 10/e3d9b33dc734c8869b56937fb999e2e17a1549ccba8f00cd1e3b33d55a22ea712b1b13cd777593f78ec762267a7f78cb21e7b2751bfc2e0b985c2ba00ae04aa5
   languageName: node
   linkType: hard
 
@@ -3640,13 +3610,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@sentry/vite-plugin@npm:3.4.0":
-  version: 3.4.0
-  resolution: "@sentry/vite-plugin@npm:3.4.0"
+"@sentry/vite-plugin@npm:3.5.0":
+  version: 3.5.0
+  resolution: "@sentry/vite-plugin@npm:3.5.0"
   dependencies:
-    "@sentry/bundler-plugin-core": "npm:3.4.0"
+    "@sentry/bundler-plugin-core": "npm:3.5.0"
     unplugin: "npm:1.0.1"
-  checksum: 10/be70dbb44b49c252dfd1ede55a08818d71f131dbfd84fb676b50ec0f640ae69602bf127d0e1488e9bd8db0bf1b6d8f5a5c51dd427856b70e9eef5c466258de65
+  checksum: 10/365aea1e92815a044b6e41da23080d5d2ae53223f07ff1dfb9f0e6de46ee7c58ef83e9e80da95175766ffd98cffb1151dd9b557988be43fee57c31247cafe0c2
   languageName: node
   linkType: hard
 
@@ -6990,7 +6960,7 @@ __metadata:
     "@react-spring/web": "npm:10.0.1"
     "@sentry/browser": "npm:9.27.0"
     "@sentry/react": "npm:9.27.0"
-    "@sentry/vite-plugin": "npm:3.4.0"
+    "@sentry/vite-plugin": "npm:3.5.0"
     "@sentry/webpack-plugin": "npm:3.5.0"
     "@tanstack/react-query": "npm:5.80.6"
     "@testing-library/dom": "npm:10.4.0"
@@ -11438,14 +11408,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"regenerator-runtime@npm:^0.14.0":
-  version: 0.14.0
-  resolution: "regenerator-runtime@npm:0.14.0"
-  checksum: 10/6c19495baefcf5fbb18a281b56a97f0197b5f219f42e571e80877f095320afac0bdb31dab8f8186858e6126950068c3f17a1226437881e3e70446ea66751897c
-  languageName: node
-  linkType: hard
-
-"regenerator-runtime@npm:^0.14.1":
+"regenerator-runtime@npm:^0.14.0, regenerator-runtime@npm:^0.14.1":
   version: 0.14.1
   resolution: "regenerator-runtime@npm:0.14.1"
   checksum: 10/5db3161abb311eef8c45bcf6565f4f378f785900ed3945acf740a9888c792f75b98ecb77f0775f3bf95502ff423529d23e94f41d80c8256e8fa05ed4b07cf471
