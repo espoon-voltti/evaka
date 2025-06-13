@@ -26,6 +26,7 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import { InfoBox } from 'lib-components/molecules/MessageBoxes'
 import { PersonName } from 'lib-components/molecules/PersonNames'
+import type { TabLink } from 'lib-components/molecules/Tabs'
 import { TabLinks } from 'lib-components/molecules/Tabs'
 import { fontWeights } from 'lib-components/typography'
 import { fasExclamationTriangle } from 'lib-icons'
@@ -101,19 +102,20 @@ export default React.memo(function StaffAttendancesPage(props: Props) {
   )
 
   const tabs = useMemo(
-    () => [
+    (): TabLink[] => [
       {
         id: 'today',
-        link: routes.staffAttendancesToday(unitOrGroup, 'absent'),
+        link: '/today',
+        hasSubPages: true,
         label: i18n.attendances.views.TODAY
       },
       {
         id: 'planned',
-        link: routes.staffAttendancesPlanned(unitOrGroup),
+        link: '/planned',
         label: i18n.attendances.views.NEXT_DAYS
       }
     ],
-    [unitOrGroup, i18n]
+    [i18n]
   )
 
   return (
@@ -172,15 +174,15 @@ const StaffAttendancesToday = React.memo(function StaffAttendancesToday({
   )
 
   const tabs = useMemo(
-    () => [
+    (): TabLink[] => [
       {
         id: 'absent',
-        link: routes.staffAttendancesToday(unitOrGroup, 'absent'),
+        link: '/today/absent',
         label: i18n.attendances.types.ABSENT
       },
       {
         id: 'present',
-        link: routes.staffAttendancesToday(unitOrGroup, 'present'),
+        link: '/today/present',
         label: (
           <>
             {i18n.attendances.types.PRESENT}
@@ -189,7 +191,7 @@ const StaffAttendancesToday = React.memo(function StaffAttendancesToday({
         )
       }
     ],
-    [unitOrGroup, i18n, presentStaffCounts]
+    [i18n, presentStaffCounts]
   )
 
   const filteredStaff = useMemo(
