@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import orderBy from 'lodash/orderBy'
 import React, { useMemo, useState } from 'react'
 import styled from 'styled-components'
@@ -24,8 +25,8 @@ import {
   useQueryResult
 } from 'lib-common/query'
 import type { UUID } from 'lib-common/types'
+import DisableableLink from 'lib-components/atoms/DisableableLink'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
-import { Button } from 'lib-components/atoms/buttons/Button'
 import { SelectF } from 'lib-components/atoms/dropdowns/Select'
 import { ChildDocumentStateChip } from 'lib-components/document-templates/ChildDocumentStateChip'
 import type { ChildDocumentCategory } from 'lib-components/document-templates/documents'
@@ -37,6 +38,7 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
 import { H3, Label } from 'lib-components/typography'
+import { Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/employee'
 import { faFile } from 'lib-icons'
 
@@ -63,7 +65,6 @@ const InternalChildDocuments = React.memo(function InternalChildDocuments({
   documents: ChildDocumentSummaryWithPermittedActions[]
 }) {
   const { i18n } = useTranslation()
-  const [, navigate] = useLocation()
 
   return (
     <div>
@@ -84,19 +85,16 @@ const InternalChildDocuments = React.memo(function InternalChildDocuments({
           ).map(({ data: document, permittedActions }) => (
             <Tr key={document.id} data-qa="child-document-row">
               <WiderTd data-qa={`child-document-${document.id}`}>
-                <Button
-                  appearance="inline"
+                <DisableableLink
+                  to={`/child-documents/${document.id}?childId=${childId}`}
                   aria-label={i18n.childInformation.childDocuments.table.open}
-                  text={document.templateName}
-                  icon={faFile}
                   disabled={!permittedActions.includes('READ')}
-                  onClick={() =>
-                    navigate(
-                      `/child-documents/${document.id}?childId=${childId}`
-                    )
-                  }
                   data-qa="open-document"
-                />
+                >
+                  <FontAwesomeIcon icon={faFile} />
+                  <Gap size="xs" horizontal />
+                  <span>{document.templateName}</span>
+                </DisableableLink>
               </WiderTd>
               <Td>{document.modifiedAt.format()}</Td>
               <Td data-qa="document-published-at">
@@ -123,7 +121,6 @@ const DecisionChildDocuments = React.memo(function DecisionChildDocuments({
   documents: ChildDocumentSummaryWithPermittedActions[]
 }) {
   const { i18n } = useTranslation()
-  const [, navigate] = useLocation()
 
   return (
     <div>
@@ -144,19 +141,16 @@ const DecisionChildDocuments = React.memo(function DecisionChildDocuments({
           ).map(({ data: document, permittedActions }) => (
             <Tr key={document.id} data-qa="child-document-row">
               <WiderTd data-qa={`child-document-${document.id}`}>
-                <Button
-                  appearance="inline"
+                <DisableableLink
+                  to={`/child-documents/${document.id}?childId=${childId}`}
                   aria-label={i18n.childInformation.childDocuments.table.open}
-                  text={document.templateName}
-                  icon={faFile}
                   disabled={!permittedActions.includes('READ')}
-                  onClick={() =>
-                    navigate(
-                      `/child-documents/${document.id}?childId=${childId}`
-                    )
-                  }
                   data-qa="open-document"
-                />
+                >
+                  <FontAwesomeIcon icon={faFile} />
+                  <Gap size="xs" horizontal />
+                  <span>{document.templateName}</span>
+                </DisableableLink>
               </WiderTd>
               <Td>{document.modifiedAt.format()}</Td>
               <Td>
@@ -185,7 +179,6 @@ const ExternalChildDocuments = React.memo(function ExternalChildDocuments({
   documents: ChildDocumentSummaryWithPermittedActions[]
 }) {
   const { i18n } = useTranslation()
-  const [, navigate] = useLocation()
 
   return (
     <div>
@@ -206,19 +199,16 @@ const ExternalChildDocuments = React.memo(function ExternalChildDocuments({
           ).map(({ data: document, permittedActions }) => (
             <Tr key={document.id} data-qa="child-document-row">
               <WiderTd data-qa={`child-document-${document.id}`}>
-                <Button
-                  appearance="inline"
+                <DisableableLink
+                  to={`/child-documents/${document.id}?childId=${childId}`}
                   aria-label={i18n.childInformation.childDocuments.table.open}
-                  text={document.templateName}
-                  icon={faFile}
                   disabled={!permittedActions.includes('READ')}
-                  onClick={() =>
-                    navigate(
-                      `/child-documents/${document.id}?childId=${childId}`
-                    )
-                  }
                   data-qa="open-document"
-                />
+                >
+                  <FontAwesomeIcon icon={faFile} />
+                  <Gap size="xs" horizontal />
+                  <span>{document.templateName}</span>
+                </DisableableLink>
               </WiderTd>
               <Td data-qa="document-sent-at">
                 {document.publishedAt !== null ? (
