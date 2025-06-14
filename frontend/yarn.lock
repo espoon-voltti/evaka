@@ -1533,7 +1533,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@csstools/postcss-is-pseudo-class@npm:^5.0.2":
+"@csstools/postcss-is-pseudo-class@npm:^5.0.3":
   version: 5.0.3
   resolution: "@csstools/postcss-is-pseudo-class@npm:5.0.3"
   dependencies:
@@ -7027,7 +7027,7 @@ __metadata:
     polished: "npm:4.3.1"
     postcss: "npm:8.5.4"
     postcss-loader: "npm:8.1.1"
-    postcss-preset-env: "npm:10.2.2"
+    postcss-preset-env: "npm:10.2.3"
     prettier: "npm:3.5.3"
     punycode: "npm:2.3.1"
     react: "npm:19.1.0"
@@ -10731,9 +10731,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"postcss-preset-env@npm:10.2.2":
-  version: 10.2.2
-  resolution: "postcss-preset-env@npm:10.2.2"
+"postcss-preset-env@npm:10.2.3":
+  version: 10.2.3
+  resolution: "postcss-preset-env@npm:10.2.3"
   dependencies:
     "@csstools/postcss-cascade-layers": "npm:^5.0.1"
     "@csstools/postcss-color-function": "npm:^4.0.10"
@@ -10747,7 +10747,7 @@ __metadata:
     "@csstools/postcss-hwb-function": "npm:^4.0.10"
     "@csstools/postcss-ic-unit": "npm:^4.0.2"
     "@csstools/postcss-initial": "npm:^2.0.1"
-    "@csstools/postcss-is-pseudo-class": "npm:^5.0.2"
+    "@csstools/postcss-is-pseudo-class": "npm:^5.0.3"
     "@csstools/postcss-light-dark-function": "npm:^2.0.9"
     "@csstools/postcss-logical-float-and-clear": "npm:^3.0.0"
     "@csstools/postcss-logical-overflow": "npm:^2.0.0"
@@ -10801,7 +10801,7 @@ __metadata:
     postcss-selector-not: "npm:^8.0.1"
   peerDependencies:
     postcss: ^8.4
-  checksum: 10/e818b6a74c716ce394a36c245ef7fb800f3a9d9ab1d906ead53f6bd532f08c825e9709973d74b791cef1f3ec298a7e7a6bc48832743555138194750548583aa9
+  checksum: 10/c95ef93000eec70f5b4042eced3f318110207abeb468303d4b4fd3abdbeab72964b7e967f48a2577a129b39fe1a5e1fafa36850f51489cf3419be371d2580200
   languageName: node
   linkType: hard
 
