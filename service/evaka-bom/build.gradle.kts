@@ -19,7 +19,7 @@ dependencies {
         api("com.github.kagkarlsson:db-scheduler:15.6.0")
         api(libs.fuel)
         api(libs.fuel.jackson)
-        api("com.github.mwiede:jsch:2.27.0")
+        api("com.github.mwiede:jsch:2.27.2")
         api("com.google.guava:guava:33.4.8-jre")
         api("com.networknt:json-schema-validator:1.5.7")
         api("com.zaxxer:HikariCP:6.3.0")
