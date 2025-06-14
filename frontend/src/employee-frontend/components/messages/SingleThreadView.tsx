@@ -258,7 +258,7 @@ export function SingleThreadView({
 
   return (
     <ThreadContainer>
-      <ContentArea opaque>
+      <ContentArea opaque paddingVertical={defaultMargins.xs}>
         <LegacyInlineButton
           icon={faAngleLeft}
           text={i18n.common.goBack}
@@ -268,91 +268,93 @@ export function SingleThreadView({
       </ContentArea>
       <Gap size="xs" />
       <ScrollContainer>
-        <StickyTitleRow ref={stickyTitleRowRef}>
-          <H2 noMargin>
-            {title}
-            {sensitive && ` (${i18n.messages.sensitive})`}
-          </H2>
-          <MessageCharacteristics type={type} urgent={urgent} />
-        </StickyTitleRow>
-        {messages.map((message, idx) => (
-          <React.Fragment key={`${message.id}-fragment`}>
-            {!replyEditorVisible && idx === messages.length - 1 && (
-              <div style={{ position: 'relative' }}>
-                <AutoScrollPositionSpan
-                  top={`-${stickyTitleRowHeight}px`}
-                  ref={autoScrollRef}
+        <div>
+          <StickyTitleRow ref={stickyTitleRowRef}>
+            <H2 noMargin>
+              {title}
+              {sensitive && ` (${i18n.messages.sensitive})`}
+            </H2>
+            <MessageCharacteristics type={type} urgent={urgent} />
+          </StickyTitleRow>
+          {messages.map((message, idx) => (
+            <React.Fragment key={`${message.id}-fragment`}>
+              {!replyEditorVisible && idx === messages.length - 1 && (
+                <div style={{ position: 'relative' }}>
+                  <AutoScrollPositionSpan
+                    top={`-${stickyTitleRowHeight}px`}
+                    ref={autoScrollRef}
+                  />
+                </div>
+              )}
+              <SingleMessage
+                key={message.id}
+                view={view}
+                message={message}
+                messageChildren={children}
+                index={idx}
+              />
+            </React.Fragment>
+          ))}
+        </div>
+        {canReply &&
+          (isFolderView(view) ||
+            (isStandardView(view) && ['received', 'thread'].includes(view))) &&
+          (replyEditorVisible ? (
+            <MessageContainer>
+              <MessageReplyEditor
+                mutation={replyToThreadMutation}
+                onSubmit={onSubmitReply}
+                onSuccess={handleReplySent}
+                onDiscard={onDiscard}
+                onUpdateContent={onUpdateContent}
+                recipients={recipients}
+                onToggleRecipient={onToggleRecipient}
+                replyContent={replyContent}
+                sendEnabled={sendEnabled}
+              />
+            </MessageContainer>
+          ) : (
+            <>
+              <Gap size="s" />
+              <ActionRow justifyContent="space-between">
+                <Button
+                  appearance="inline"
+                  icon={faReply}
+                  onClick={() => setReplyEditorVisible(true)}
+                  data-qa="message-reply-editor-btn"
+                  text={i18n.messages.replyToThread}
                 />
-              </div>
-            )}
-            <SingleMessage
-              key={message.id}
-              view={view}
-              message={message}
-              messageChildren={children}
-              index={idx}
-            />
-          </React.Fragment>
-        ))}
+                <MutateButton
+                  appearance="inline"
+                  icon={faEnvelope}
+                  text={i18n.messages.markUnread}
+                  data-qa="mark-unread-btn"
+                  mutation={markLastReceivedMessageInThreadUnreadMutation}
+                  onClick={() => ({ accountId, threadId })}
+                  onSuccess={() => {
+                    navigate('/messages')
+                    refreshUnreadCounts()
+                  }}
+                />
+                {onArchived && (
+                  <AsyncButton
+                    appearance="inline"
+                    icon={faBoxArchive}
+                    aria-label={i18n.common.archive}
+                    data-qa="delete-thread-btn"
+                    className="delete-btn"
+                    onClick={() => archiveThreadResult({ accountId, threadId })}
+                    onSuccess={onArchived}
+                    text={i18n.messages.archiveThread}
+                    stopPropagation
+                  />
+                )}
+              </ActionRow>
+              <Gap size="m" />
+            </>
+          ))}
         {replyEditorVisible && <span ref={autoScrollRef} />}
       </ScrollContainer>
-      {canReply &&
-        (isFolderView(view) ||
-          (isStandardView(view) && ['received', 'thread'].includes(view))) &&
-        (replyEditorVisible ? (
-          <MessageContainer>
-            <MessageReplyEditor
-              mutation={replyToThreadMutation}
-              onSubmit={onSubmitReply}
-              onSuccess={handleReplySent}
-              onDiscard={onDiscard}
-              onUpdateContent={onUpdateContent}
-              recipients={recipients}
-              onToggleRecipient={onToggleRecipient}
-              replyContent={replyContent}
-              sendEnabled={sendEnabled}
-            />
-          </MessageContainer>
-        ) : (
-          <>
-            <Gap size="s" />
-            <ActionRow justifyContent="space-between">
-              <Button
-                appearance="inline"
-                icon={faReply}
-                onClick={() => setReplyEditorVisible(true)}
-                data-qa="message-reply-editor-btn"
-                text={i18n.messages.replyToThread}
-              />
-              <MutateButton
-                appearance="inline"
-                icon={faEnvelope}
-                text={i18n.messages.markUnread}
-                data-qa="mark-unread-btn"
-                mutation={markLastReceivedMessageInThreadUnreadMutation}
-                onClick={() => ({ accountId, threadId })}
-                onSuccess={() => {
-                  navigate('/messages')
-                  refreshUnreadCounts()
-                }}
-              />
-              {onArchived && (
-                <AsyncButton
-                  appearance="inline"
-                  icon={faBoxArchive}
-                  aria-label={i18n.common.archive}
-                  data-qa="delete-thread-btn"
-                  className="delete-btn"
-                  onClick={() => archiveThreadResult({ accountId, threadId })}
-                  onSuccess={onArchived}
-                  text={i18n.messages.archiveThread}
-                  stopPropagation
-                />
-              )}
-            </ActionRow>
-            <Gap size="m" />
-          </>
-        ))}
     </ThreadContainer>
   )
 }
