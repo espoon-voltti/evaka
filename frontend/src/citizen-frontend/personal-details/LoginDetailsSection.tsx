@@ -12,7 +12,6 @@ import type { EmailVerificationStatusResponse } from 'lib-common/generated/api-t
 import type { PasswordConstraints } from 'lib-common/generated/api-types/shared'
 import { isPasswordStructureValid } from 'lib-common/password'
 import { Button } from 'lib-components/atoms/buttons/Button'
-import { InputFieldF } from 'lib-components/atoms/form/InputField'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import {
   ExpandingInfoBox,
@@ -20,6 +19,7 @@ import {
   InlineInfoButton
 } from 'lib-components/molecules/ExpandingInfo'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
+import PasswordInputF from 'lib-components/molecules/PasswordInputF'
 import BaseModal, {
   ModalButtons
 } from 'lib-components/molecules/modals/BaseModal'
@@ -303,26 +303,24 @@ const WeakCredentialsFormModal = React.memo(function WeakCredentialsFormModal({
             value={username}
           />
           <Label htmlFor="password">{t.password}</Label>
-          <InputFieldF
+          <PasswordInputF
             data-qa="password"
             id="password"
             name="password"
             autoComplete="new-password"
             autoFocus={true}
             bind={password}
-            type="password"
             width="full"
             hideErrorsBeforeTouched={true}
             pattern={pattern}
           />
           <Label htmlFor="confirm-password">{t.confirmPassword}</Label>
-          <InputFieldF
+          <PasswordInputF
             data-qa="confirm-password"
             id="confirm-password"
             name="confirm-password"
             autoComplete="new-password"
             bind={confirmPassword}
-            type="password"
             width="full"
             hideErrorsBeforeTouched={true}
             pattern={pattern}

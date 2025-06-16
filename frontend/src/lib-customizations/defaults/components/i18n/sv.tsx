@@ -26,7 +26,9 @@ const components: Translations = {
     saved: 'Sparad',
     search: 'Sök',
     yes: 'Ja',
-    openExpandingInfo: 'Öppna detaljer'
+    openExpandingInfo: 'Öppna detaljer',
+    showPassword: 'Visa lösenord',
+    hidePassword: 'Dölj lösenord'
   },
   datePicker: {
     placeholder: 'dd.mm.åååå',

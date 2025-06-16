@@ -26,7 +26,9 @@ const components: Translations = {
     saved: 'Saved',
     search: 'Search',
     yes: 'Yes',
-    openExpandingInfo: 'Open the details'
+    openExpandingInfo: 'Open the details',
+    showPassword: 'Show password',
+    hidePassword: 'Hide password'
   },
   datePicker: {
     placeholder: 'dd.mm.yyyy',

@@ -34,6 +34,8 @@ export interface Translations {
     search: string
     yes: string
     openExpandingInfo: string
+    showPassword: string
+    hidePassword: string
   }
   datePicker: {
     placeholder: string
