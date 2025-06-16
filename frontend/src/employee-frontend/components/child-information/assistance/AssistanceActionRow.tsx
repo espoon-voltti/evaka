@@ -14,8 +14,15 @@ import type {
   AssistanceActionOption,
   AssistanceActionResponse
 } from 'lib-common/generated/api-types/assistanceaction'
+import {
+  assistanceActionOptionCategories,
+  type AssistanceActionOptionCategory
+} from 'lib-common/generated/api-types/assistanceaction'
 import { useMutationResult } from 'lib-common/query'
 import { scrollToRef } from 'lib-common/utils/scrolling'
+import UnorderedList from 'lib-components/atoms/UnorderedList'
+import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import { LabelLike } from 'lib-components/typography'
 import { featureFlags } from 'lib-customizations/employee'
 
 import { useTranslation } from '../../../state/i18n'
@@ -57,14 +64,23 @@ export default React.memo(function AssistanceActionRow({
     deleteAssistanceActionMutation
   )
 
-  const sortedOptions = useMemo(
+  const optionsByCategory = useMemo(
     () =>
-      sortBy(assistanceActionOptions, [
-        (o) => (o.category === 'DAYCARE' ? 1 : 2),
-        (o) => o.displayOrder,
-        (o) => o.nameFi
-      ]),
-    [assistanceActionOptions]
+      assistanceActionOptionCategories.reduce(
+        (acc, category) => ({
+          ...acc,
+          [category]: sortBy(
+            assistanceActionOptions.filter(
+              (o) =>
+                o.category === category &&
+                assistanceAction.actions.includes(o.value)
+            ),
+            [(o) => o.displayOrder, (o) => o.nameFi]
+          )
+        }),
+        {} as Record<AssistanceActionOptionCategory, AssistanceActionOption[]>
+      ),
+    [assistanceActionOptions, assistanceAction.actions]
   )
 
   return (
@@ -130,24 +146,46 @@ export default React.memo(function AssistanceActionRow({
               {
                 label: i18n.childInformation.assistanceAction.fields.actions,
                 value: (
-                  <ul>
-                    {sortedOptions.map(
-                      (option) =>
-                        assistanceAction.actions.includes(option.value) && (
-                          <li key={option.value}>{option.nameFi}</li>
-                        )
+                  <FixedSpaceColumn>
+                    {assistanceActionOptionCategories.map((category) =>
+                      optionsByCategory[category].length > 0 ? (
+                        <FixedSpaceColumn spacing="zero" key={category}>
+                          <LabelLike>
+                            {
+                              i18n.childInformation.assistanceAction.fields
+                                .actionsByCategory[category]
+                            }
+                          </LabelLike>
+                          <UnorderedList>
+                            {optionsByCategory[category].map((option) => (
+                              <li key={option.value}>{option.nameFi}</li>
+                            ))}
+                          </UnorderedList>
+                        </FixedSpaceColumn>
+                      ) : null
                     )}
+
                     {featureFlags.assistanceActionOther &&
-                    assistanceAction.otherAction !== '' ? (
-                      <li>
-                        {
-                          i18n.childInformation.assistanceAction.fields
-                            .actionTypes.OTHER
-                        }
-                        : {assistanceAction.otherAction}
-                      </li>
-                    ) : null}
-                  </ul>
+                      assistanceAction.otherAction !== '' && (
+                        <FixedSpaceColumn spacing="zero">
+                          <LabelLike>
+                            {
+                              i18n.childInformation.assistanceAction.fields
+                                .actionsByCategory.OTHER
+                            }
+                          </LabelLike>
+                          <UnorderedList>
+                            <li>
+                              {
+                                i18n.childInformation.assistanceAction.fields
+                                  .actionTypes.OTHER
+                              }
+                              : {assistanceAction.otherAction}
+                            </li>
+                          </UnorderedList>
+                        </FixedSpaceColumn>
+                      )}
+                  </FixedSpaceColumn>
                 )
               }
             ]}
