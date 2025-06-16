@@ -483,7 +483,7 @@ class EmployeeController(private val accessControl: AccessControl) {
                 tx.updateEmployeeEmail(id, body.email)
             }
         }
-        Audit.EmployeeEmailUpdate.log(targetId = AuditId(user.id))
+        Audit.EmployeeEmailUpdate.log(targetId = AuditId(id))
     }
 
     private fun possiblePreferredFirstNames(employee: Employee): List<String> {

@@ -191,14 +191,14 @@ const EmployeePage = React.memo(function EmployeePage({
             onCancel={() => setEditingEmail(false)}
           />
         ) : (
-          <>
+          <FixedSpaceColumn spacing="xs">
             <div>{employee.email}</div>
             <Button
               appearance="inline"
               onClick={() => setEditingEmail(true)}
               text={i18n.common.edit}
             />
-          </>
+          </FixedSpaceColumn>
         )
       ) : (
         <span>{employee.email}</span>
