@@ -965,6 +965,74 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
         assertEquals(LocalDate.of(2024, 12, 31), getDecision(decision.id).form.validTo)
     }
 
+    @Test
+    fun `assistance decision is ended if adjacent new placement to same named unit does not affect preschool`() {
+        val startDate = LocalDate.of(2023, 1, 1)
+        val endDate = LocalDate.of(2023, 12, 31)
+        val today = LocalDate.of(2024, 1, 1)
+
+        val area = DevCareArea(shortName = "testcarearea")
+        val unit1 =
+            DevDaycare(
+                name = "Unitname",
+                areaId = area.id,
+                enabledPilotFeatures =
+                    setOf(
+                        PilotFeature.MESSAGING,
+                        PilotFeature.MOBILE,
+                        PilotFeature.RESERVATIONS,
+                        PilotFeature.PLACEMENT_TERMINATION,
+                    ),
+                type = setOf(CareType.PRESCHOOL),
+                providerType = ProviderType.MUNICIPAL,
+            )
+        val child = DevPerson()
+        val guardian = DevPerson()
+        val unit2 = unit1.copy(id = DaycareId(UUID.randomUUID()))
+        db.transaction { tx ->
+            tx.insert(area)
+
+            tx.insert(unit1)
+            tx.insert(unit2)
+
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(guardian, DevPersonType.ADULT)
+            tx.insert(DevGuardian(guardian.id, child.id))
+
+            val placement =
+                DevPlacement(
+                    type = PlacementType.PRESCHOOL,
+                    childId = child.id,
+                    unitId = unit1.id,
+                    startDate = startDate,
+                    endDate = endDate,
+                )
+            tx.insert(placement)
+            tx.insert(
+                placement.copy(
+                    id = PlacementId(UUID.randomUUID()),
+                    type = PlacementType.DAYCARE,
+                    unitId = unit2.id,
+                    startDate = endDate.plusDays(1),
+                    endDate = endDate.plusYears(1),
+                )
+            )
+        }
+        val decision =
+            createAndFillDecision(
+                    testForm.copy(validFrom = startDate, validTo = null, selectedUnit = unit1.id),
+                    childId = child.id,
+                )
+                .also { sendAssistanceNeedDecision(it.id) }
+                .also {
+                    decideDecision(it.id, AssistanceNeedDecisionStatus.ACCEPTED, decisionMaker)
+                }
+
+        // expect end
+        db.transaction { tx -> tx.endActivePreschoolAssistanceDecisions(today) }
+        assertEquals(LocalDate.of(2023, 12, 31), getDecision(decision.id).form.validTo)
+    }
+
     private fun getEmailFor(person: DevPerson): Email {
         val address = person.email ?: throw Error("$person has no email")
         return MockEmailClient.getEmail(address) ?: throw Error("No emails sent to $address")

@@ -1592,6 +1592,83 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
         )
     }
 
+    @Test
+    fun `assistance decision is ended for same name unit placement that does not affect daycare`() {
+        val startDate = LocalDate.of(2023, 1, 1)
+        val endDate = LocalDate.of(2023, 12, 31)
+        val today = LocalDate.of(2024, 1, 1)
+
+        val area = DevCareArea(shortName = "testcarearea")
+        val unit1 =
+            DevDaycare(
+                name = "Unitname",
+                areaId = area.id,
+                enabledPilotFeatures =
+                    setOf(
+                        PilotFeature.MESSAGING,
+                        PilotFeature.MOBILE,
+                        PilotFeature.RESERVATIONS,
+                        PilotFeature.PLACEMENT_TERMINATION,
+                    ),
+                type = setOf(CareType.CENTRE),
+                providerType = ProviderType.MUNICIPAL,
+            )
+        val child = DevPerson()
+        val unit2 = unit1.copy(id = DaycareId(UUID.randomUUID()))
+        db.transaction { tx ->
+            tx.insert(area)
+
+            tx.insert(unit1)
+            tx.insert(unit2)
+
+            tx.insert(child, DevPersonType.CHILD)
+
+            val placement =
+                DevPlacement(
+                    type = PlacementType.DAYCARE,
+                    childId = child.id,
+                    unitId = unit1.id,
+                    startDate = startDate,
+                    endDate = endDate,
+                )
+            tx.insert(placement)
+            tx.insert(
+                placement.copy(
+                    id = PlacementId(UUID.randomUUID()),
+                    type = PlacementType.PRESCHOOL,
+                    unitId = unit2.id,
+                    startDate = endDate.plusDays(1),
+                    endDate = endDate.plusYears(1),
+                )
+            )
+        }
+        val decision =
+            createAssistanceNeedDecision(
+                AssistanceNeedDecisionRequest(
+                    testDecision.copy(
+                        validityPeriod = DateRange(startDate, null),
+                        selectedUnit = UnitIdInfo(unit1.id),
+                    )
+                ),
+                child.id,
+            )
+        sendAssistanceNeedDecision(decision.id)
+        decideAssistanceNeedDecision(
+            decision.id,
+            AssistanceNeedDecisionController.DecideAssistanceNeedDecisionRequest(
+                status = AssistanceNeedDecisionStatus.ACCEPTED
+            ),
+            decisionMaker,
+        )
+
+        // expect end
+        db.transaction { tx -> tx.endActiveDaycareAssistanceDecisions(today) }
+        assertEquals(
+            LocalDate.of(2023, 12, 31),
+            getAssistanceNeedDecision(decision.id).validityPeriod.end,
+        )
+    }
+
     private fun getEmailFor(person: DevPerson): Email {
         val address = person.email ?: throw Error("$person has no email")
         return MockEmailClient.getEmail(address) ?: throw Error("No emails sent to $address")

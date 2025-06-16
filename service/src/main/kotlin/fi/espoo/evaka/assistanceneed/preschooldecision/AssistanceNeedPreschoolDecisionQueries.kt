@@ -367,6 +367,12 @@ WITH preschool_assistance_decision_with_new_end_date AS (
           WHERE pl.child_id = preschool_assistance_decision.child_id
           AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(date)}
           AND d.name = daycare_ad.name
+          AND pl.type IN (
+            'PRESCHOOL',
+            'PRESCHOOL_DAYCARE',
+            'PRESCHOOL_CLUB',
+            'PREPARATORY',
+            'PREPARATORY_DAYCARE')
       )
       AND placement.type IN (
         'PRESCHOOL',
