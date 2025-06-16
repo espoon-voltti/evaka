@@ -18,6 +18,7 @@ export interface Props extends HTMLLinkAttributes {
   to: string
   children: React.ReactNode
   disabled?: boolean
+  'data-qa'?: string
 }
 
 const StyledLink = styled(Link)`
@@ -64,7 +65,7 @@ export default function DisableableLink({
   to,
   disabled,
   ...props
-}: Props & { 'data-qa'?: string; 'aria-label'?: string }): React.ReactNode {
+}: Props): React.ReactNode {
   if (disabled) {
     return (
       <StyledSpan className={className} {...props}>
