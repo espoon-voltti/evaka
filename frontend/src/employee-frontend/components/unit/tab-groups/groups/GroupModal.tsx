@@ -35,6 +35,7 @@ interface FormValidationResult {
   fields: {
     name: boolean
     startDate: boolean
+    aromiCustomerId: boolean
   }
 }
 
@@ -44,6 +45,8 @@ interface CreateGroupForm {
   initialCaretakers: number
   aromiCustomerId: string | null
 }
+
+export const AROMI_CUSTOMER_ID_MAX_LENGTH = 100
 
 export default React.memo(function GroupModal({ unitId }: Props) {
   const { i18n } = useTranslation()
@@ -61,14 +64,19 @@ export default React.memo(function GroupModal({ unitId }: Props) {
       valid: true,
       fields: {
         name: true,
-        startDate: true
+        startDate: true,
+        aromiCustomerId: true
       }
     })
 
   useEffect(() => {
     const fields = {
       name: form.name.length > 0,
-      startDate: form.startDate !== null
+      startDate: form.startDate !== null,
+      aromiCustomerId:
+        !featureFlags.aromiIntegration ||
+        form.aromiCustomerId === null ||
+        form.aromiCustomerId.trim().length <= AROMI_CUSTOMER_ID_MAX_LENGTH
     }
     setValidationResult({
       valid: allPropertiesTrue(fields),
@@ -159,6 +167,11 @@ export default React.memo(function GroupModal({ unitId }: Props) {
               value={form.aromiCustomerId ?? ''}
               onChange={(value) =>
                 assignForm({ aromiCustomerId: value.length > 0 ? value : null })
+              }
+              info={
+                !validationResult.fields.aromiCustomerId
+                  ? errorToInputInfo('format', i18n.validationErrors)
+                  : undefined
               }
               data-qa="new-group-aromi-id-input"
             />
