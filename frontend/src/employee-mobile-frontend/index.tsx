@@ -8,6 +8,7 @@ import React from 'react'
 import { createRoot } from 'react-dom/client'
 import { polyfill as smoothScrollPolyfill } from 'seamless-scroll-polyfill'
 
+import { appVersion } from 'lib-common/globals'
 import { sentryEventFilter } from 'lib-common/sentry'
 import { getEnvironment } from 'lib-common/utils/helpers'
 import { appConfig } from 'lib-customizations/employeeMobile'
@@ -19,6 +20,7 @@ import './index.css'
 Sentry.init({
   enabled: appConfig.sentry?.enabled === true,
   dsn: appConfig.sentry?.dsn,
+  release: appVersion,
   environment: getEnvironment()
 })
 Sentry.getGlobalScope().addEventProcessor(sentryEventFilter)
