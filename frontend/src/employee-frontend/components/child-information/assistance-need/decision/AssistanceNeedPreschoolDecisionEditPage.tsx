@@ -1010,7 +1010,6 @@ export default React.memo(function AssistanceNeedPreschoolDecisionEditPage() {
   const unitsResult = useQueryResult(
     unitsQuery({
       areaIds: null,
-      type: 'ALL',
       from: LocalDate.todayInHelsinkiTz()
     })
   ).map((units) =>

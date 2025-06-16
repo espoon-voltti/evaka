@@ -102,7 +102,7 @@ export default function BackupCareForm({
   const units = useQueryResult(
     unitsQuery({
       areaIds: null,
-      type: 'DAYCARE',
+      type: ['DAYCARE', 'PRESCHOOL'],
       from: LocalDate.todayInHelsinkiTz()
     })
   )

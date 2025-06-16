@@ -13,6 +13,7 @@ import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.Predicate
 import fi.espoo.evaka.shared.domain.Coordinate
 import fi.espoo.evaka.shared.domain.DateRange
 import java.time.LocalDate
@@ -49,7 +50,7 @@ class LocationController {
     fun getUnits(
         db: Database,
         user: AuthenticatedUser.Employee,
-        @RequestParam type: UnitTypeFilter,
+        @RequestParam type: Set<UnitTypeFilter>?,
         @RequestParam areaIds: List<AreaId>?,
         @RequestParam from: LocalDate?,
     ): List<UnitStub> {
@@ -87,19 +88,30 @@ data class PublicUnit(
 
 data class AreaJSON(val id: AreaId, val name: String, val shortName: String)
 
-enum class UnitTypeFilter {
-    ALL,
-    CLUB,
-    DAYCARE,
-    PRESCHOOL,
+enum class UnitTypeFilter(val careTypes: Set<CareType>) {
+    CLUB(setOf(CareType.CLUB)),
+    DAYCARE(setOf(CareType.CENTRE, CareType.FAMILY, CareType.GROUP_FAMILY)),
+    PRESCHOOL(setOf(CareType.PRESCHOOL, CareType.PREPARATORY_EDUCATION)),
 }
 
 private fun Database.Read.getUnits(
     areaIds: List<AreaId>?,
-    type: UnitTypeFilter,
+    types: Set<UnitTypeFilter>?,
     from: LocalDate?,
 ): List<UnitStub> {
     val areaIdsParam = areaIds?.takeIf { it.isNotEmpty() }
+    val careTypes = types?.flatMap { it.careTypes }
+    val unitPredicates =
+        Predicate.allNotNull(
+            careTypes?.let { Predicate { table -> where("$table.type && ${bind(it)}") } },
+            from?.let {
+                Predicate { table ->
+                    where(
+                        "daterange($table.opening_date, $table.closing_date, '[]') && daterange(${bind(it)}, NULL)"
+                    )
+                }
+            },
+        )
     return createQuery {
             sql(
                 """
@@ -107,12 +119,7 @@ SELECT unit.id, unit.name, unit.type as care_types
 FROM daycare unit
 JOIN care_area area ON unit.care_area_id = area.id
 WHERE (${bind(areaIdsParam)}::uuid[] IS NULL OR area.id = ANY(${bind(areaIdsParam)}))
-AND (${bind(type)} = 'ALL' OR
-    (${bind(type)} = 'CLUB' AND 'CLUB' = ANY(unit.type)) OR
-    (${bind(type)} = 'DAYCARE' AND '{CENTRE, FAMILY, GROUP_FAMILY}' && unit.type) OR
-    (${bind(type)} = 'PRESCHOOL' AND '{PRESCHOOL, PREPARATORY_EDUCATION}' && unit.type)
-)
-AND (${bind(from)}::date IS NULL OR daterange(unit.opening_date, unit.closing_date, '[]') && daterange(${bind(from)}, NULL))
+AND ${predicate(unitPredicates.forTable("unit"))}
     """
             )
         }

@@ -58,7 +58,7 @@ export default React.memo(function ApplicationFilters() {
   const allUnits = useQueryResult(
     unitsQuery({
       areaIds: searchFilters.area.length > 0 ? searchFilters.area : null,
-      type: searchFilters.type,
+      type: searchFilters.type !== 'ALL' ? [searchFilters.type] : null,
       from: null
     })
   )

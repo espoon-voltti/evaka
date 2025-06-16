@@ -502,13 +502,13 @@ export async function getAreas(): Promise<AreaJSON[]> {
 */
 export async function getUnits(
   request: {
-    type: UnitTypeFilter,
+    type?: UnitTypeFilter[] | null,
     areaIds?: AreaId[] | null,
     from?: LocalDate | null
   }
 ): Promise<UnitStub[]> {
   const params = createUrlSearchParams(
-    ['type', request.type.toString()],
+    ...(request.type?.map((e): [string, string | null | undefined] => ['type', e.toString()]) ?? []),
     ...(request.areaIds?.map((e): [string, string | null | undefined] => ['areaIds', e]) ?? []),
     ['from', request.from?.formatIso()]
   )
