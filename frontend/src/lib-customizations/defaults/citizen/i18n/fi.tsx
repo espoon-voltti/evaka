@@ -2065,7 +2065,30 @@ export default {
       'Päätökset-välilehdellä voit lukea päätöksen ja hyväksyä/hylätä tarjotun paikan',
     confirmationLink: 'Siirry vahvistamaan',
     newApplicationLink: 'Uusi hakemus',
-    namelessChild: 'Nimetön lapsi'
+    namelessChild: 'Nimetön lapsi',
+    noCustodians: 'Ei huollettavia lapsia',
+    noCustodiansInfo: (
+      <>
+        <P width="100%">
+          Digi- ja väestötietoviraston (DVV) tiedoissa sinulla ei näy
+          huollettavia lapsia.
+        </P>
+        <P width="100%">
+          Mikäli sinulla kuitenkin on huollettavia lapsia, voi tietojen
+          puuttuminen johtua siitä, että DVV:n tiedot yhdistyvät viiveellä.
+        </P>
+        <P width="100%">
+          Varmista DVV:ltä, että olet tehnyt kaikki heidän tarvitsemansa
+          huoltajuuteen liittyvät asiat.
+        </P>
+        <P width="100%">
+          Voit käyttää eVakaa vasta, kun huoltajuus on päivittynyt DVV:n
+          tietoihin. Sillä välin voit olla yhteydessä esimerkiksi haluamaasi
+          päiväkotiin soittamalla, tai laittamalla sähköpostia päiväkodin
+          johtajalle.
+        </P>
+      </>
+    )
   },
   fileDownload: {
     download: 'Lataa'

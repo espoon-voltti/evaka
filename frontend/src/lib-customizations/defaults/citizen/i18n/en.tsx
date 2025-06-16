@@ -1825,7 +1825,30 @@ const en: Translations = {
       'In the Decisions page you can read the decision and either accept or reject the proposed place',
     confirmationLink: 'Review and confirm the decision',
     newApplicationLink: 'New application',
-    namelessChild: 'Nameless child'
+    namelessChild: 'Nameless child',
+    noCustodians: 'No dependent children',
+    noCustodiansInfo: (
+      <>
+        <P width="100%">
+          No dependent children are listed in your information obtained from the
+          Digital and Population Data Services Agency (DVV).
+        </P>
+        <P width="100%">
+          If you do have dependent children, the lack of information may be due
+          to a delay in updating the information.
+        </P>
+        <P width="100%">
+          Please check with DVV that you have taken care of all custody-related
+          matters they require.
+        </P>
+        <P width="100%">
+          You cannot use eVaka until your custody information is updated in the
+          DVV register. Until then, you can contact your preferred day care
+          centre by phone or by sending an email to the day care centre’s
+          director.
+        </P>
+      </>
+    )
   },
   fileDownload: {
     download: 'Download'

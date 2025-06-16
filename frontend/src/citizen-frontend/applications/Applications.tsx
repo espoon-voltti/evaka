@@ -11,7 +11,7 @@ import { Link } from 'wouter'
 import { isLoading } from 'lib-common/api'
 import { useQueryResult } from 'lib-common/query'
 import Container, { ContentArea } from 'lib-components/layout/Container'
-import { fontWeights, H1, P } from 'lib-components/typography'
+import { fontWeights, H1, H2, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { farMap } from 'lib-icons'
 
@@ -57,6 +57,12 @@ export default React.memo(function Applications() {
                   <Gap size="s" />
                 </Fragment>
               )
+          )}
+          {guardianApplications.length === 0 && (
+            <ContentArea opaque paddingVertical="L">
+              <H2 noMargin>{t.applicationsList.noCustodians}</H2>
+              <div>{t.applicationsList.noCustodiansInfo}</div>
+            </ContentArea>
           )}
         </>
       ))}
