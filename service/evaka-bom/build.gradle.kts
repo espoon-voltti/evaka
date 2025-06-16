@@ -9,12 +9,6 @@ javaPlatform { allowDependencies() }
 dependencies {
     constraints {
         api("ch.qos.logback.access:logback-access-tomcat:2.0.6")
-
-        // These constraints are needed for CVE fixes
-        api("ch.qos.logback:logback-classic:1.5.18")
-        api("ch.qos.logback:logback-core:1.5.18")
-        api("org.postgresql:postgresql:42.7.7")
-
         api("com.auth0:java-jwt:4.5.0")
         api("com.github.kagkarlsson:db-scheduler:15.6.0")
         api(libs.fuel)
@@ -67,4 +61,7 @@ dependencies {
     api(platform("org.junit:junit-bom:5.13.1"))
     api(platform(libs.spring.boot.dependencies))
     api(platform("software.amazon.awssdk:bom:2.31.63"))
+
+    // These constraints are needed for CVE fixes
+    api(platform("org.springframework:spring-framework-bom:6.2.8"))
 }
