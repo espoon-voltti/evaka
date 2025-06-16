@@ -98,6 +98,7 @@ import type { JsonCompatible } from 'lib-common/json'
 import type { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import type { MockVtjDataset } from './api-types'
+import type { NekkuCustomer } from './api-types'
 import type { NekkuSpecialDiet } from './api-types'
 import type { NekkuSpecialDietChoices } from 'lib-common/generated/api-types/nekku'
 import type { Pairing } from 'lib-common/generated/api-types/pairing'
@@ -1241,6 +1242,29 @@ export async function createMessageAccounts(): Promise<void> {
     const { data: json } = await devClient.request<JsonOf<void>>({
       url: uri`/message-account/upsert-all`.toString(),
       method: 'POST'
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+
+/**
+* Generated from fi.espoo.evaka.shared.dev.DevApi.createNekkuCustomer
+*/
+export async function createNekkuCustomer(
+  request: {
+    body: NekkuCustomer
+  },
+  options?: { mockedTime?: HelsinkiDateTime }
+): Promise<void> {
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/nekku-customer`.toString(),
+      method: 'POST',
+      headers: { EvakaMockedTime: options?.mockedTime?.formatIso() },
+      data: request.body satisfies JsonCompatible<NekkuCustomer>
     })
     return json
   } catch (e) {

@@ -4,13 +4,16 @@
 
 // GENERATED FILE: no manual modifications
 
+import type { GroupId } from 'lib-common/generated/api-types/shared'
 import type { JsonOf } from 'lib-common/json'
+import LocalDate from 'lib-common/local-date'
 import type { NekkuMealType } from 'lib-common/generated/api-types/nekku'
 import type { NekkuSpecialDietOptionWithFieldId } from 'lib-common/generated/api-types/nekku'
 import type { NekkuSpecialDietWithoutFields } from 'lib-common/generated/api-types/nekku'
 import type { NekkuSpecialDietsFieldWithoutOptions } from 'lib-common/generated/api-types/nekku'
 import type { NekkuUnitNumber } from 'lib-common/generated/api-types/nekku'
 import { client } from '../../api/client'
+import { createUrlSearchParams } from 'lib-common/api'
 import { uri } from 'lib-common/uri'
 
 
@@ -69,6 +72,28 @@ export async function getNekkuUnitNumbers(): Promise<NekkuUnitNumber[]> {
   const { data: json } = await client.request<JsonOf<NekkuUnitNumber[]>>({
     url: uri`/employee/nekku/unit-numbers`.toString(),
     method: 'GET'
+  })
+  return json
+}
+
+
+/**
+* Generated from fi.espoo.evaka.nekku.NekkuController.nekkuManualOrder
+*/
+export async function nekkuManualOrder(
+  request: {
+    groupId: GroupId,
+    date: LocalDate
+  }
+): Promise<void> {
+  const params = createUrlSearchParams(
+    ['groupId', request.groupId],
+    ['date', request.date.formatIso()]
+  )
+  const { data: json } = await client.request<JsonOf<void>>({
+    url: uri`/employee/nekku/manual-order`.toString(),
+    method: 'POST',
+    params
   })
   return json
 }
