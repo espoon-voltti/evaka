@@ -79,7 +79,8 @@ class AwsConfig {
 
     @Bean
     @Profile("production")
-    fun credentialsProviderProd(): AwsCredentialsProvider = DefaultCredentialsProvider.create()
+    fun credentialsProviderProd(): AwsCredentialsProvider =
+        DefaultCredentialsProvider.builder().build()
 
     @Bean
     @Profile("production")
