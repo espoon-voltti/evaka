@@ -9,12 +9,6 @@ javaPlatform { allowDependencies() }
 dependencies {
     constraints {
         api("ch.qos.logback.access:logback-access-tomcat:2.0.6")
-
-        // These constraints are needed for CVE fixes
-        api("ch.qos.logback:logback-classic:1.5.18")
-        api("ch.qos.logback:logback-core:1.5.18")
-        api("org.postgresql:postgresql:42.7.7")
-
         api("com.auth0:java-jwt:4.5.0")
         api("com.github.kagkarlsson:db-scheduler:15.6.0")
         api(libs.fuel)
