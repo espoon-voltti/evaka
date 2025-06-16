@@ -11,7 +11,7 @@ import { Link } from 'wouter'
 import { isLoading } from 'lib-common/api'
 import { useQueryResult } from 'lib-common/query'
 import Container, { ContentArea } from 'lib-components/layout/Container'
-import { fontWeights, H1, P } from 'lib-components/typography'
+import { fontWeights, H1, H2, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { farMap } from 'lib-icons'
 
@@ -58,6 +58,12 @@ export default React.memo(function Applications() {
                 </Fragment>
               )
           )}
+          {guardianApplications.length === 0 && (
+            <ContentArea opaque paddingVertical="L">
+              <H2 noMargin>{t.applicationsList.noCustodians}</H2>
+              <StyledSpan>{t.applicationsList.noCustodiansInfo}</StyledSpan>
+            </ContentArea>
+          )}
         </>
       ))}
     </Container>
@@ -66,4 +72,11 @@ export default React.memo(function Applications() {
 
 const MapLink = styled(Link)`
   font-weight: ${fontWeights.semibold};
+`
+
+const StyledSpan = styled.span`
+  display: block;
+  max-width: 1215px;
+  line-height: 24px;
+  margin-block: 1.5em;
 `
