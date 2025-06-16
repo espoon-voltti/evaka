@@ -6,6 +6,7 @@ package fi.espoo.evaka.assistanceaction
 
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.assistance.AssistanceController
+import fi.espoo.evaka.insertAssistanceActionOptions
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.AssistanceActionId
 import fi.espoo.evaka.shared.ChildId
@@ -21,6 +22,7 @@ import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
+import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.MockEvakaClock
@@ -50,6 +52,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             daycare = tx.insert(DevDaycare(areaId = area))
             child = tx.insert(DevPerson(), DevPersonType.CHILD)
             tx.insert(admin)
+            tx.insertAssistanceActionOptions()
         }
     }
 
@@ -77,8 +80,14 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
     @Test
     fun `post first assistance action, with action types`() {
-        val allActionTypes =
-            db.transaction { it.getAssistanceActionOptions() }.map { it.value }.toSet()
+        val allValidActionTypes =
+            db.transaction { it.getAssistanceActionOptions() }
+                .filter {
+                    it.validFrom?.isAfter(testDate(10)) != true &&
+                        it.validTo?.isBefore(testDate(20)) != true
+                }
+                .map { it.value }
+                .toSet()
 
         val assistanceAction =
             createAssistanceAction(
@@ -87,7 +96,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 AssistanceActionRequest(
                     startDate = testDate(10),
                     endDate = testDate(20),
-                    actions = allActionTypes,
+                    actions = allValidActionTypes,
                     otherAction = "foo",
                 ),
             )
@@ -98,7 +107,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 childId = child,
                 startDate = testDate(10),
                 endDate = testDate(20),
-                actions = allActionTypes,
+                actions = allValidActionTypes,
                 otherAction = "foo",
             ),
             assistanceAction,
@@ -195,6 +204,60 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         )
         assertTrue(
             assistanceActions.any { it.startDate == testDate(11) && it.endDate == testDate(15) }
+        )
+    }
+
+    @Test
+    fun `post assistance action that has expired - responds 400`() {
+        assertThrows<BadRequest> {
+            createAssistanceAction(
+                admin.user,
+                child,
+                AssistanceActionRequest(
+                    startDate = LocalDate.of(2025, 1, 1),
+                    endDate = LocalDate.of(2025, 8, 15),
+                    actions = setOf("PART_TIME_SPECIAL_EDUCATION"),
+                    otherAction = "",
+                ),
+            )
+        }
+
+        createAssistanceAction(
+            admin.user,
+            child,
+            AssistanceActionRequest(
+                startDate = LocalDate.of(2025, 1, 1),
+                endDate = LocalDate.of(2025, 7, 15),
+                actions = setOf("PART_TIME_SPECIAL_EDUCATION"),
+                otherAction = "",
+            ),
+        )
+    }
+
+    @Test
+    fun `post assistance action that has not yet become available - responds 400`() {
+        assertThrows<BadRequest> {
+            createAssistanceAction(
+                admin.user,
+                child,
+                AssistanceActionRequest(
+                    startDate = LocalDate.of(2025, 5, 1),
+                    endDate = LocalDate.of(2025, 10, 15),
+                    actions = setOf("PERSONAL_ASSISTANT"),
+                    otherAction = "",
+                ),
+            )
+        }
+
+        createAssistanceAction(
+            admin.user,
+            child,
+            AssistanceActionRequest(
+                startDate = LocalDate.of(2025, 8, 5),
+                endDate = LocalDate.of(2025, 10, 15),
+                actions = setOf("PERSONAL_ASSISTANT"),
+                otherAction = "",
+            ),
         )
     }
 
