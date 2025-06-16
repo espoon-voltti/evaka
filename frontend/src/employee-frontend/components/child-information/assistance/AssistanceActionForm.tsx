@@ -30,6 +30,7 @@ import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { DatePickerSpacer } from 'lib-components/molecules/date-picker/DateRangePicker'
 import { Gap } from 'lib-components/white-space'
+import type { Translations } from 'lib-customizations/employee'
 import { featureFlags } from 'lib-customizations/employee'
 
 import { useTranslation } from '../../../state/i18n'
@@ -85,10 +86,12 @@ function isDuplicate(props: Props): props is DuplicateProps {
 
 interface AssistanceActionFormErrors {
   dateRange: 'required' | 'inverted' | 'conflict' | undefined
+  invalidOption: boolean
 }
 
 const noErrors: AssistanceActionFormErrors = {
-  dateRange: undefined
+  dateRange: undefined,
+  invalidOption: false
 }
 
 const getExistingAssistanceActionRanges = (props: Props): DateRange[] =>
@@ -114,6 +117,42 @@ function checkHardConflict(form: FormState, props: Props): boolean {
   return getExistingAssistanceActionRanges(props).some((existing) =>
     rangeContainsDate({ startDate, endDate }, existing.startDate)
   )
+}
+
+function validateOption(
+  i18n: Translations,
+  assistanceActionStart: LocalDate | null,
+  assistanceActionEnd: LocalDate | null,
+  optionValidityStart: LocalDate | null,
+  optionValidityEnd: LocalDate | null
+) {
+  // date range not selected or invalid, cannot validate yet
+  if (
+    !assistanceActionStart ||
+    !assistanceActionEnd ||
+    assistanceActionStart.isAfter(assistanceActionEnd)
+  )
+    return undefined
+
+  // hide option that is no longer valid during any part of the selected range
+  if (optionValidityEnd && assistanceActionStart.isAfter(optionValidityEnd))
+    return false
+
+  // fail validation if option is not valid for the action's entire duration
+  if (
+    optionValidityStart &&
+    assistanceActionStart.isBefore(optionValidityStart)
+  )
+    return i18n.childInformation.assistanceAction.errors.startBeforeMinDate(
+      optionValidityStart
+    )
+  if (optionValidityEnd && assistanceActionEnd.isAfter(optionValidityEnd))
+    return i18n.childInformation.assistanceAction.errors.endAfterMaxDate(
+      optionValidityEnd
+    )
+
+  // option is valid
+  return true
 }
 
 export default React.memo(function AssistanceActionForm(props: Props) {
@@ -155,6 +194,41 @@ export default React.memo(function AssistanceActionForm(props: Props) {
     updateAssistanceActionMutation
   )
 
+  const optionsWithValidation = useMemo(
+    () =>
+      props.assistanceActionOptions.map((o) => ({
+        ...o,
+        validation: validateOption(
+          i18n,
+          form.startDate,
+          form.endDate,
+          o.validFrom,
+          o.validTo
+        )
+      })),
+    [i18n, props.assistanceActionOptions, form.startDate, form.endDate]
+  )
+
+  const sortedOptions = useMemo(
+    () =>
+      assistanceActionOptionCategories.reduce(
+        (acc, category) => ({
+          ...acc,
+          [category]: sortBy(
+            optionsWithValidation.filter(
+              (o) => o.category === category && o.validation !== false
+            ),
+            [(o) => o.displayOrder, (o) => o.nameFi]
+          )
+        }),
+        {} as Record<
+          AssistanceActionOptionCategory,
+          typeof optionsWithValidation
+        >
+      ),
+    [optionsWithValidation]
+  )
+
   useEffect(() => {
     const isSoftConflict = checkSoftConflict(form, props)
     const isHardConflict = checkHardConflict(form, props)
@@ -172,11 +246,17 @@ export default React.memo(function AssistanceActionForm(props: Props) {
           ? 'inverted'
           : conflict
             ? 'conflict'
-            : undefined
+            : undefined,
+      invalidOption: !form.actions.every((action) =>
+        optionsWithValidation.some(
+          (option) =>
+            option.value === action && typeof option.validation !== 'string'
+        )
+      )
     })
 
     setAutoCutWarning(isCreate(props) && isSoftConflict && !isHardConflict)
-  }, [form, props])
+  }, [form, props, optionsWithValidation])
 
   const submitForm = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -188,7 +268,12 @@ export default React.memo(function AssistanceActionForm(props: Props) {
       ...form,
       startDate,
       endDate,
-      actions: [...form.actions]
+      actions: form.actions.filter((action) =>
+        // filter out hidden options that are still selected in the state
+        optionsWithValidation.some(
+          (option) => option.value === action && option.validation !== false
+        )
+      )
     }
 
     const apiCall = isCreate(props)
@@ -215,23 +300,6 @@ export default React.memo(function AssistanceActionForm(props: Props) {
       }
     })
   }
-
-  const options = useMemo(
-    () =>
-      assistanceActionOptionCategories.reduce(
-        (acc, category) => ({
-          ...acc,
-          [category]: sortBy(
-            props.assistanceActionOptions.filter(
-              (o) => o.category === category
-            ),
-            [(o) => o.displayOrder, (o) => o.nameFi]
-          )
-        }),
-        {} as Record<AssistanceActionOptionCategory, AssistanceActionOption[]>
-      ),
-    [props.assistanceActionOptions]
-  )
 
   return (
     <form onSubmit={submitForm}>
@@ -285,7 +353,7 @@ export default React.memo(function AssistanceActionForm(props: Props) {
               ],
             value: (
               <CheckboxList>
-                {options[category].map((option) => (
+                {sortedOptions[category].map((option) => (
                   <ExpandingInfo
                     key={option.value}
                     info={option.descriptionFi}
@@ -301,6 +369,14 @@ export default React.memo(function AssistanceActionForm(props: Props) {
                         updateFormState({ actions: Array.from(actions) })
                       }}
                     />
+                    {form.actions.includes(option.value) &&
+                      typeof option.validation === 'string' && (
+                        <>
+                          <Gap size="xs" />
+                          <AlertBox message={option.validation} thin noMargin />
+                          <Gap />
+                        </>
+                      )}
                   </ExpandingInfo>
                 ))}
               </CheckboxList>
@@ -373,5 +449,5 @@ export default React.memo(function AssistanceActionForm(props: Props) {
 })
 
 function formHasErrors(errors: AssistanceActionFormErrors) {
-  return errors.dateRange !== undefined
+  return errors.dateRange !== undefined || errors.invalidOption
 }
