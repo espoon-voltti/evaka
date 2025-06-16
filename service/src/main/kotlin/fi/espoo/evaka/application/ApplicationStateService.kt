@@ -429,6 +429,20 @@ class ApplicationStateService(
 
         tx.updateApplicationStatus(application.id, SENT, user.evakaUserId, clock.now())
 
+        val now = clock.now()
+        metadata
+            .getProcess(ArchiveProcessType.fromApplicationType(application.type), now.year)
+            ?.also { process ->
+                val processId = tx.insertProcess(process).id
+                tx.insertProcessHistoryRow(
+                    processId = processId,
+                    state = ArchivedProcessState.INITIAL,
+                    now = clock.now(),
+                    userId = user.evakaUserId,
+                )
+                tx.setApplicationProcessId(application.id, processId, clock.now(), user.evakaUserId)
+            }
+
         tx.resetCheckedByAdminAndConfidentiality(application.id, clock.now(), user.evakaUserId)
     }
 
