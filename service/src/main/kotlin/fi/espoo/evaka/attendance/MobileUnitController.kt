@@ -85,7 +85,13 @@ data class UnitInfo(
     val isOperationalDate: Boolean,
 )
 
-data class GroupInfo(val id: GroupId, val name: String, val utilization: Double)
+data class GroupInfo(
+    val id: GroupId,
+    val name: String,
+    val childCapacity: Double,
+    val staffCapacity: Double,
+    val utilization: Double,
+)
 
 data class Staff(
     val id: EmployeeId,
@@ -234,7 +240,10 @@ fun Database.Read.fetchUnitInfo(unitId: DaycareId, date: LocalDate): UnitInfo {
         } else {
             Double.POSITIVE_INFINITY
         }
-    val groups = tmpGroups.map { GroupInfo(it.id, it.name, it.utilization) }.sortedBy { it.name }
+    val groups =
+        tmpGroups
+            .map { GroupInfo(it.id, it.name, it.childCapacity, it.staffCapacity, it.utilization) }
+            .sortedBy { it.name }
 
     val staff =
         createQuery {
