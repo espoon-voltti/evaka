@@ -21,7 +21,7 @@ import fi.espoo.evaka.pis.getEmployeeWithRoles
 import fi.espoo.evaka.pis.getEmployees
 import fi.espoo.evaka.pis.getFinanceDecisionHandlers
 import fi.espoo.evaka.pis.isPinLocked
-import fi.espoo.evaka.pis.setEmployeeEmail
+import fi.espoo.evaka.pis.updateEmployeeEmail
 import fi.espoo.evaka.pis.setEmployeePreferredFirstName
 import fi.espoo.evaka.pis.updateEmployeeActive
 import fi.espoo.evaka.pis.updateEmployeeGlobalRoles
@@ -465,8 +465,8 @@ class EmployeeController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestBody body: EmployeeEmailRequest,
         @PathVariable id: EmployeeId,
+        @RequestBody body: EmployeeEmailRequest,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -477,7 +477,10 @@ class EmployeeController(private val accessControl: AccessControl) {
                     Action.Employee.UPDATE_EMAIL,
                     id,
                 )
-                tx.setEmployeeEmail(id, body.email)
+                tx.getEmployee(id)?.also {
+                    if (!it.hasSsn) throw BadRequest("Cannot update email of employee without SSN")
+                } ?: throw NotFound()
+                tx.updateEmployeeEmail(id, body.email)
             }
         }
         Audit.EmployeeEmailUpdate.log(targetId = AuditId(user.id))
