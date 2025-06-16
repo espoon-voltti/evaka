@@ -350,7 +350,13 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         employeeController.createSsnEmployee(dbInstance(), adminUser, clock, employee)
 
     fun updateEmployeeEmail(id: EmployeeId, email: String?) =
-        employeeController.updateEmployeeEmail(dbInstance(), adminUser, clock, id, EmployeeController.EmployeeEmailRequest(email))
+        employeeController.updateEmployeeEmail(
+            dbInstance(),
+            adminUser,
+            clock,
+            id,
+            EmployeeController.EmployeeEmailRequest(email),
+        )
 
     fun requestFromEmployee(employee: Employee) =
         NewEmployee(

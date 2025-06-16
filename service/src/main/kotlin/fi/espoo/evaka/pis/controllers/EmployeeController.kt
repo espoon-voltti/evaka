@@ -21,9 +21,9 @@ import fi.espoo.evaka.pis.getEmployeeWithRoles
 import fi.espoo.evaka.pis.getEmployees
 import fi.espoo.evaka.pis.getFinanceDecisionHandlers
 import fi.espoo.evaka.pis.isPinLocked
-import fi.espoo.evaka.pis.updateEmployeeEmail
 import fi.espoo.evaka.pis.setEmployeePreferredFirstName
 import fi.espoo.evaka.pis.updateEmployeeActive
+import fi.espoo.evaka.pis.updateEmployeeEmail
 import fi.espoo.evaka.pis.updateEmployeeGlobalRoles
 import fi.espoo.evaka.pis.upsertEmployeeDaycareRoles
 import fi.espoo.evaka.pis.upsertPinCode
