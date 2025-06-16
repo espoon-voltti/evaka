@@ -97,7 +97,7 @@ WHERE application.type = 'PRESCHOOL'
     ) {
         createApplication(
             db,
-            msg.user,
+            AuthenticatedUser.SystemInternalUser,
             clock,
             msg.data,
             msg.defaultServiceNeedOption,
