@@ -22,6 +22,7 @@ import { faPen, fasExclamation } from 'lib-icons'
 import { useTranslation } from '../../../../../state/i18n'
 import { UIContext } from '../../../../../state/ui'
 import { updateGroupMutation } from '../../../queries'
+import { AROMI_CUSTOMER_ID_MAX_LENGTH } from '../GroupModal'
 
 interface Props {
   group: DaycareGroup
@@ -80,7 +81,10 @@ export default React.memo(function GroupUpdateModal({
       resolveDisabled={
         data.name.trim().length === 0 ||
         data.startDate === null ||
-        data.endDate?.isBefore(data.startDate)
+        data.endDate?.isBefore(data.startDate) ||
+        (featureFlags.aromiIntegration &&
+          data.aromiCustomerId !== null &&
+          data.aromiCustomerId.trim().length > AROMI_CUSTOMER_ID_MAX_LENGTH)
       }
       onSuccess={clearUiMode}
       rejectAction={clearUiMode}
