@@ -559,7 +559,6 @@ export interface UnitStub {
 * Generated from fi.espoo.evaka.daycare.controllers.UnitTypeFilter
 */
 export type UnitTypeFilter =
-  | 'ALL'
   | 'CLUB'
   | 'DAYCARE'
   | 'PRESCHOOL'

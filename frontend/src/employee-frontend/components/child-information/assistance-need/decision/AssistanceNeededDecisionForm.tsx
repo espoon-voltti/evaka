@@ -217,7 +217,6 @@ export default React.memo(function AssistanceNeedDecisionForm({
   const units = useQueryResult(
     unitsQuery({
       areaIds: null,
-      type: 'ALL',
       from: LocalDate.todayInHelsinkiTz()
     })
   )
