@@ -32,7 +32,7 @@ const customizations: EmployeeCustomizations = {
         },
         pedagogicalDocument: {
           explanation:
-            'Pedagogisen dokumentoinnin ominaisuutta käytetään toiminnasta kertovien kuvien ja digitaalisten dokumenttien jakamiseen.',
+            'Pedagogisen dokumentoinnin ominaisuutta käytetään toiminnasta kertovien kuvien ja digitaalisten dokumenttien jakamiseen. Pedagogisiin dokumentteihin ei saa liittää lapsen terveystietoja tai lausuntoja.',
           explanationInfo:
             'Pedagogisen dokumentoinnin prosessi tapahtuu pääsääntöisesti ennen dokumentin jakamista huoltajille. Tarkastele dokumentteja yhdessä lasten ja kasvattajatiimin kanssa. Nosta yhteisistä havainnoista kehittämiskohteita käytännön pedagogiselle työlle, sen tavoitteille ja sisällöille, jotta pedagoginen toiminta vastaa mahdollisimman hyvin yksittäisen lapsen ja lapsiryhmän tarpeita, vahvuuksia ja mielenkiinnon kohteita. Erityistä huomiota kiinnitetään aikuisen toimintaan. Pedagoginen dokumentointi luo pohjan lapsilähtöisen pedagogiikan toteuttamiselle.',
           documentInfo:
