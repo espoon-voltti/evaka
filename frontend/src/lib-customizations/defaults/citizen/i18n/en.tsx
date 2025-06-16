@@ -1829,22 +1829,19 @@ const en: Translations = {
     noCustodians: 'No dependent children',
     noCustodiansInfo: (
       <>
-        <P noMargin width="100%">
+        <P width="100%">
           No dependent children are listed in your information obtained from the
           Digital and Population Data Services Agency (DVV).
         </P>
-        <Gap size="m" />
-        <P noMargin width="100%">
+        <P width="100%">
           If you do have dependent children, the lack of information may be due
           to a delay in updating the information.
         </P>
-        <Gap size="m" />
-        <P noMargin width="100%">
+        <P width="100%">
           Please check with DVV that you have taken care of all custody-related
           matters they require.
         </P>
-        <Gap size="m" />
-        <P noMargin width="100%">
+        <P width="100%">
           You cannot use eVaka until your custody information is updated in the
           DVV register. Until then, you can contact your preferred day care
           centre by phone or by sending an email to the day care centre’s

@@ -2068,22 +2068,19 @@ const sv: Translations = {
     noCustodians: 'Inga försörjningsskyldiga barn',
     noCustodiansInfo: (
       <>
-        <P noMargin width="100%">
+        <P width="100%">
           Enligt uppgifter från Myndigheten för digitalisering och
           befolkningsdata har du inte vårdnad om något barn.
         </P>
-        <Gap size="m" />
-        <P noMargin width="100%">
+        <P width="100%">
           Om du ändå har det, kan bristen bero på att myndighetens sammanför
           uppgifterna med fördröjning.
         </P>
-        <Gap size="m" />
-        <P noMargin width="100%">
+        <P width="100%">
           Kontrollera hos myndigheten att du har gjort allt de behöver för att
           registrera vårdnaden.
         </P>
-        <Gap size="m" />
-        <P noMargin width="100%">
+        <P width="100%">
           Du kan inte använda eVaka innan vårdnaden har uppdaterats i
           myndighetens register. Under tiden kan du till exempel ringa eller
           skicka e-post till daghemmets föreståndare.
