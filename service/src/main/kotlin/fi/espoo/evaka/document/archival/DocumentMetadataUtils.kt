@@ -327,6 +327,24 @@ private fun createPolicies(documentMetadata: DocumentMetadata): StandardMetadata
     }
 }
 
+private fun getCaseFinishDate(
+    documentMetadata: DocumentMetadata,
+    archivedProcess: ArchivedProcess?,
+    document: ChildDocumentDetails,
+): XMLGregorianCalendar? {
+    // Determine the case finished date with fallback logic
+    return archivedProcess
+        ?.history
+        ?.find { it.state == ArchivedProcessState.COMPLETED }
+        ?.enteredAt
+        ?.asXMLGregorianCalendar()
+        ?: document.template.validity.end?.toXMLGregorianCalendar()
+        ?: documentMetadata.createdAt?.let {
+            val createdDate = it.toLocalDateTime().toLocalDate()
+            calculateNextJuly31(createdDate).toXMLGregorianCalendar()
+        }
+}
+
 fun createCaseFile(
     documentMetadata: DocumentMetadata,
     archivedProcess: ArchivedProcess?,
@@ -335,18 +353,7 @@ fun createCaseFile(
     return CaseFileType().apply {
         caseCreated = documentMetadata.createdAt?.asXMLGregorianCalendar()
 
-        // Determine the case finished date with fallback logic
-        caseFinished =
-            archivedProcess
-                ?.history
-                ?.find { it.state == ArchivedProcessState.COMPLETED }
-                ?.enteredAt
-                ?.asXMLGregorianCalendar()
-                ?: document.template.validity.end?.toXMLGregorianCalendar()
-                ?: documentMetadata.createdAt?.let {
-                    val createdDate = it.toLocalDateTime().toLocalDate()
-                    calculateNextJuly31(createdDate).toXMLGregorianCalendar()
-                }
+        caseFinished = getCaseFinishDate(documentMetadata, archivedProcess, document)
     }
 }
 
@@ -385,6 +392,7 @@ fun createDocumentMetadata(
                 creation = createCreation(documentMetadata)
                 policies = createPolicies(documentMetadata)
                 caseFile = createCaseFile(documentMetadata, archivedProcess, document)
+                creation.created = getCaseFinishDate(documentMetadata, archivedProcess, document)
             }
     }
 }
