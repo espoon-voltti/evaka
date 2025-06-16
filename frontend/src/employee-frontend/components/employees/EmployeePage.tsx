@@ -8,8 +8,10 @@ import { Link } from 'wouter'
 
 import { combine } from 'lib-common/api'
 import { globalRoles } from 'lib-common/api-types/employee-auth'
-import { array, value } from 'lib-common/form/form'
-import { useForm } from 'lib-common/form/hooks'
+import { string } from 'lib-common/form/fields'
+import { array, object, validated, value } from 'lib-common/form/form'
+import { useForm, useFormField } from 'lib-common/form/hooks'
+import { optionalEmail } from 'lib-common/form/validators'
 import type { Daycare } from 'lib-common/generated/api-types/daycare'
 import type { EmployeeWithDaycareRoles } from 'lib-common/generated/api-types/pis'
 import type {
@@ -24,6 +26,7 @@ import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
+import { InputFieldF } from 'lib-components/atoms/form/InputField'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import {
@@ -47,8 +50,49 @@ import {
   deleteEmployeeMobileDeviceMutation,
   deleteEmployeeScheduledDaycareRoleMutation,
   employeeDetailsQuery,
+  updateEmployeeEmailMutation,
   updateEmployeeGlobalRolesMutation
 } from './queries'
+
+const emailForm = object({
+  email: validated(string(), optionalEmail)
+})
+
+const EmailForm = React.memo(function EmailForm({
+  employee,
+  onSuccess,
+  onCancel
+}: {
+  employee: EmployeeWithDaycareRoles
+  onSuccess: () => void
+  onCancel: () => void
+}) {
+  const { i18n } = useTranslation()
+  const form = useForm(
+    emailForm,
+    () => ({ email: employee.email || '' }),
+    i18n.validationErrors
+  )
+  const email = useFormField(form, 'email')
+
+  return (
+    <FixedSpaceColumn spacing="m">
+      <FixedSpaceColumn spacing="xs">
+        <InputFieldF bind={email} />
+      </FixedSpaceColumn>
+      <FixedSpaceRow>
+        <LegacyButton text={i18n.common.cancel} onClick={onCancel} />
+        <MutateButton
+          primary
+          text={i18n.common.save}
+          mutation={updateEmployeeEmailMutation}
+          onClick={() => ({ id: employee.id, body: form.value() })}
+          onSuccess={onSuccess}
+        />
+      </FixedSpaceRow>
+    </FixedSpaceColumn>
+  )
+})
 
 const globalRolesForm = array(value<UserRole>())
 
@@ -111,6 +155,7 @@ const EmployeePage = React.memo(function EmployeePage({
   units: Daycare[]
 }) {
   const { i18n } = useTranslation()
+  const [editingEmail, setEditingEmail] = useState(false)
   const [editingGlobalRoles, setEditingGlobalRoles] = useState(false)
   const [rolesModalOpen, setRolesModalOpen] = useState(false)
   const { user } = useContext(UserContext)
@@ -138,7 +183,26 @@ const EmployeePage = React.memo(function EmployeePage({
       <Title size={2}>
         <PersonName person={employee} format="First Last" />
       </Title>
-      <span>{employee.email}</span>
+      {employee.hasSsn ? (
+        editingEmail ? (
+          <EmailForm
+            employee={employee}
+            onSuccess={() => setEditingEmail(false)}
+            onCancel={() => setEditingEmail(false)}
+          />
+        ) : (
+          <>
+            <div>{employee.email}</div>
+            <Button
+              appearance="inline"
+              onClick={() => setEditingEmail(true)}
+              text={i18n.common.edit}
+            />
+          </>
+        )
+      ) : (
+        <span>{employee.email}</span>
+      )}
 
       <Gap />
 

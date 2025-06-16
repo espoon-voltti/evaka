@@ -678,3 +678,9 @@ fun Database.Read.getEmployeeIdsByNumbersMapById(
 ): Map<EmployeeId, String> {
     return employeeNumbersQuery(employeeNumbers).toMap { columnPair("id", "employee_number") }
 }
+
+fun Database.Transaction.setEmployeeEmail(employeeId: EmployeeId, email: String?) =
+    createUpdate {
+            sql("UPDATE employee SET email = ${bind(email)} WHERE id = ${bind(employeeId)}")
+        }
+        .execute()
