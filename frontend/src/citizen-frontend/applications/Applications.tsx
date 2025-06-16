@@ -61,7 +61,7 @@ export default React.memo(function Applications() {
           {guardianApplications.length === 0 && (
             <ContentArea opaque paddingVertical="L">
               <H2 noMargin>{t.applicationsList.noCustodians}</H2>
-              <StyledDiv>{t.applicationsList.noCustodiansInfo}</StyledDiv>
+              <div>{t.applicationsList.noCustodiansInfo}</div>
             </ContentArea>
           )}
         </>
@@ -72,9 +72,4 @@ export default React.memo(function Applications() {
 
 const MapLink = styled(Link)`
   font-weight: ${fontWeights.semibold};
-`
-
-const StyledDiv = styled.div`
-  max-width: 1215px;
-  line-height: 24px;
 `
