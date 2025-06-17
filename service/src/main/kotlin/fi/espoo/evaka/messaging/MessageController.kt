@@ -989,7 +989,7 @@ class MessageController(
     ) {
         db.connect { dbc ->
             requireMessageAccountAccess(dbc, user, clock, accountId)
-            dbc.transaction { it.markThreadRead(clock, accountId, threadId) }
+            dbc.transaction { it.markThreadRead(clock.now(), accountId, threadId) }
         }
         Audit.MessagingMarkMessagesReadWrite.log(targetId = AuditId(listOf(accountId, threadId)))
     }

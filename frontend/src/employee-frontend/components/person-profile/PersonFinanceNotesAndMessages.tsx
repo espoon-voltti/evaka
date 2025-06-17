@@ -72,7 +72,6 @@ import {
   draftsQuery,
   financeFoldersQuery,
   financeThreadsQuery,
-  markThreadReadMutation,
   replyToFinanceThreadMutation
 } from '../messages/queries'
 
@@ -98,7 +97,7 @@ export default React.memo(function PersonFinanceNotesAndMessages({
   const { refreshMessages, financeAccount } = useContext(MessageContext)
   const financeNotes = useQueryResult(financeNotesQuery({ personId: id }))
   const [text, setText] = useState<string>('')
-  const financeMessages = useQueryResult(
+  const financeThreads = useQueryResult(
     financeAccount ? financeThreadsQuery({ personId: id }) : constantQuery([])
   )
   const messageFolders = useQueryResult(financeFoldersQuery())
@@ -109,29 +108,6 @@ export default React.memo(function PersonFinanceNotesAndMessages({
       ? draftsQuery({ accountId: financeAccount?.account.id })
       : constantQuery([])
   )
-
-  const { mutateAsync: markThreadRead } = useMutationResult(
-    markThreadReadMutation
-  )
-
-  const financeThreads = useMemo(() => {
-    if (financeMessages.isSuccess && financeAccount) {
-      financeMessages.value.forEach((thread) => {
-        if (
-          thread.messages.some(
-            (m) => !m.readAt && m.sender.id !== financeAccount?.account.id
-          )
-        ) {
-          void markThreadRead({
-            accountId: financeAccount.account.id,
-            threadId: thread.id
-          })
-        }
-      })
-      refreshMessages(financeAccount.account.id)
-    }
-    return financeMessages
-  }, [financeAccount, financeMessages, markThreadRead, refreshMessages])
 
   const onSuccessTimeout = isAutomatedTest ? 10 : 800 // same as used in async-button-behaviour
 

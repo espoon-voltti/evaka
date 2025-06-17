@@ -100,7 +100,7 @@ class MessageControllerCitizen(
     ) {
         db.connect { dbc ->
                 val accountId = dbc.read { it.getCitizenMessageAccount(user.id) }
-                dbc.transaction { it.markThreadRead(clock, accountId, threadId) }
+                dbc.transaction { it.markThreadRead(clock.now(), accountId, threadId) }
                 accountId
             }
             .also { accountId ->
