@@ -60,7 +60,11 @@ export default function GroupSelector({
             data-qa="group--all"
             name={i18n.common.all}
             utilization={
-              realtimeStaffAttendanceEnabled ? unitInfo.utilization : undefined
+              realtimeStaffAttendanceEnabled
+                ? {
+                    percentage: unitInfo.utilization
+                  }
+                : undefined
             }
             count={
               countInfo
@@ -76,7 +80,13 @@ export default function GroupSelector({
             key={group.id}
             name={group.name}
             utilization={
-              realtimeStaffAttendanceEnabled ? group.utilization : undefined
+              realtimeStaffAttendanceEnabled
+                ? {
+                    childCapacity: group.childCapacity,
+                    staffCapacity: group.staffCapacity,
+                    percentage: group.utilization
+                  }
+                : undefined
             }
             selected={selectedGroup ? selectedGroup.id === group.id : false}
             onClick={() => {
@@ -116,7 +126,11 @@ type GroupProps = {
   count: string
   'data-qa': string
   selected: boolean
-  utilization?: number
+  utilization?: {
+    childCapacity?: number
+    staffCapacity?: number
+    percentage: number
+  }
   onClick: () => void
 }
 
@@ -134,8 +148,19 @@ const Group = ({
     </SelectionIndicator>
     <GroupName>{name}</GroupName>
     {utilization !== undefined ? (
-      <Utilization warn={utilization >= 100}>
-        {utilization.toFixed ? utilization.toFixed(1) : '∞'}%
+      <Utilization warn={utilization.percentage >= 100}>
+        {utilization.percentage.toFixed
+          ? utilization.percentage.toFixed(1)
+          : '∞'}
+        %
+        <br />
+        {utilization.childCapacity !== undefined &&
+          utilization.staffCapacity !== undefined && (
+            <Capacity>
+              ({utilization.childCapacity.toFixed(2)} /{' '}
+              {utilization.staffCapacity})
+            </Capacity>
+          )}
       </Utilization>
     ) : (
       count
@@ -163,8 +188,13 @@ const GroupName = styled.span`
 `
 
 const Utilization = styled.span<{ warn: boolean }>`
-  align-self: right;
+  text-align: right;
   color: ${(p) => (p.warn ? colors.status.danger : 'inherit')};
+`
+
+const Capacity = styled.span`
+  font-size: 16px;
+  font-weight: ${fontWeights.normal};
 `
 
 const Wrapper = styled.div`

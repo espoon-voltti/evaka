@@ -163,6 +163,8 @@ export default function MessagesPage({
                     ? {
                         id: selectedAccount.daycareGroup.id,
                         name: selectedAccount.daycareGroup.name,
+                        childCapacity: 0,
+                        staffCapacity: 0,
                         utilization: 0
                       }
                     : undefined

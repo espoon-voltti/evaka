@@ -268,8 +268,10 @@ export interface FullDayAbsenceRequest {
 * Generated from fi.espoo.evaka.attendance.GroupInfo
 */
 export interface GroupInfo {
+  childCapacity: number
   id: GroupId
   name: string
+  staffCapacity: number
   utilization: number
 }
 
