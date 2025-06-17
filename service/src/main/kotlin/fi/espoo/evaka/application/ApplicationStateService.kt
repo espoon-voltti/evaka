@@ -125,8 +125,16 @@ class ApplicationStateService(
         applicationId: ApplicationId,
     ) {
         when (action) {
-            SimpleApplicationAction.MOVE_TO_WAITING_PLACEMENT ->
+            SimpleApplicationAction.MOVE_TO_WAITING_PLACEMENT -> {
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Application.MOVE_TO_WAITING_PLACEMENT,
+                    applicationId,
+                )
                 moveToWaitingPlacement(tx, user, clock, applicationId)
+            }
             SimpleApplicationAction.RETURN_TO_SENT -> returnToSent(tx, user, clock, applicationId)
             SimpleApplicationAction.CANCEL_PLACEMENT_PLAN ->
                 cancelPlacementPlan(tx, user, clock, applicationId)
@@ -421,6 +429,20 @@ class ApplicationStateService(
 
         tx.updateApplicationStatus(application.id, SENT, user.evakaUserId, clock.now())
 
+        val now = clock.now()
+        metadata
+            .getProcess(ArchiveProcessType.fromApplicationType(application.type), now.year)
+            ?.also { process ->
+                val processId = tx.insertProcess(process).id
+                tx.insertProcessHistoryRow(
+                    processId = processId,
+                    state = ArchivedProcessState.INITIAL,
+                    now = clock.now(),
+                    userId = user.evakaUserId,
+                )
+                tx.setApplicationProcessId(application.id, processId, clock.now(), user.evakaUserId)
+            }
+
         tx.resetCheckedByAdminAndConfidentiality(application.id, clock.now(), user.evakaUserId)
     }
 
@@ -430,14 +452,6 @@ class ApplicationStateService(
         clock: EvakaClock,
         applicationId: ApplicationId,
     ) {
-        accessControl.requirePermissionFor(
-            tx,
-            user,
-            clock,
-            Action.Application.MOVE_TO_WAITING_PLACEMENT,
-            applicationId,
-        )
-
         val application = getApplication(tx, applicationId)
         verifyStatus(application, SENT)
 
