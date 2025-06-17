@@ -7,11 +7,11 @@ import classNames from 'classnames'
 import partition from 'lodash/partition'
 import React, { useCallback, useContext, useMemo, useState } from 'react'
 import styled, { useTheme } from 'styled-components'
-import { Link, useLocation } from 'wouter'
+import { Link } from 'wouter'
 
 import { combine } from 'lib-common/api'
 import { EvakaLogo } from 'lib-components/atoms/EvakaLogo'
-import NavLink from 'lib-components/atoms/NavLink'
+import NavLink, { useIsRouteActive } from 'lib-components/atoms/NavLink'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { desktopMin } from 'lib-components/breakpoints'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
@@ -188,7 +188,6 @@ const UserPopup = styled.div`
 `
 
 export default React.memo(function Header() {
-  const [path] = useLocation()
   const { i18n } = useTranslation()
   const { user, loggedIn } = useContext(UserContext)
   const { accounts, unreadCountsByAccount } = useContext(MessageContext)
@@ -221,8 +220,7 @@ export default React.memo(function Header() {
     childDocumentDecisionNotificationCount
   } = useContext(ReportNotificationContext)
 
-  const atCustomerInfo =
-    path.includes('/profile') || path.includes('/child-information')
+  const profileIsActive = useIsRouteActive(['/profile', '/child-information'])
 
   const toggleUserPopup = useCallback(
     () => setPopupVisible((prev) => !prev),
@@ -265,7 +263,7 @@ export default React.memo(function Header() {
               <NavbarLink
                 onClick={closeUserPopup}
                 className={classNames('navbar-item is-tab', {
-                  active: atCustomerInfo
+                  active: profileIsActive
                 })}
                 to="/search"
                 data-qa="search-nav"

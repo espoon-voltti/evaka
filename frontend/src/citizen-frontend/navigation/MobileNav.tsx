@@ -6,11 +6,11 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
 import React, { useCallback, useContext, useState } from 'react'
 import styled, { css } from 'styled-components'
-import { useLocation } from 'wouter'
+import { Link } from 'wouter'
 
 import { useQuery } from 'lib-common/query'
 import { SelectionChip } from 'lib-components/atoms/Chip'
-import NavLink from 'lib-components/atoms/NavLink'
+import { useIsRouteActive } from 'lib-components/atoms/NavLink'
 import { desktopMin } from 'lib-components/breakpoints'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { PersonName } from 'lib-components/molecules/PersonNames'
@@ -187,10 +187,14 @@ const BottomBarLink = React.memo(function BottomBarLink({
   onClick?: (e: React.MouseEvent<HTMLAnchorElement>) => void
   'data-qa': string
 }) {
-  const [path] = useLocation()
-  const active = path.includes(to)
+  const active = useIsRouteActive(to)
   return (
-    <StyledLink to={to} onClick={onClick} data-qa={dataQa}>
+    <StyledLink
+      className={classNames({ active })}
+      to={to}
+      onClick={onClick}
+      data-qa={dataQa}
+    >
       <AttentionIndicator
         toggled={showNotification}
         position="top"
@@ -231,7 +235,7 @@ const bottomNavClickableStyles = css`
   }
 `
 
-const StyledLink = styled(NavLink)`
+const StyledLink = styled(Link)`
   ${bottomNavClickableStyles}
 `
 
@@ -247,10 +251,9 @@ const ChildrenLink = React.memo(function ChildrenLink({
   closeMenu: () => void
 }) {
   const t = useTranslation()
-  const [path] = useLocation()
+  const active = useIsRouteActive('/children')
   const childrenWithOwnPage = useChildrenWithOwnPage()
   const { totalUnreadChildNotifications } = useUnreadChildNotifications()
-  const active = path.startsWith('/children')
 
   if (childrenWithOwnPage.length === 0) {
     return null
@@ -388,6 +391,7 @@ const Menu = React.memo(function Menu({
         <DropDownLink
           data-qa="sub-nav-menu-income"
           to="/income"
+          matchRoutes={['/income', '/child-income']}
           onClick={closeMenu}
         >
           {t.header.nav.income} {lock}

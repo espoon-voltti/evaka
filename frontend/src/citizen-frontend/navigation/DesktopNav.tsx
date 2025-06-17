@@ -12,9 +12,9 @@ import React, {
   useState
 } from 'react'
 import styled from 'styled-components'
-import { Link, useLocation } from 'wouter'
+import { Link } from 'wouter'
 
-import NavLink from 'lib-components/atoms/NavLink'
+import NavLink, { useIsRouteActive } from 'lib-components/atoms/NavLink'
 import { desktopMin, desktopSmall } from 'lib-components/breakpoints'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { PersonName } from 'lib-components/molecules/PersonNames'
@@ -210,7 +210,7 @@ const Icon = styled(FontAwesomeIcon)`
 
 const ChildrenMenu = React.memo(function ChildrenMenu() {
   const t = useTranslation()
-  const [path] = useLocation()
+  const active = useIsRouteActive('/children')
   const childrenWithOwnPage = useChildrenWithOwnPage()
   const { unreadChildNotifications, totalUnreadChildNotifications } =
     useUnreadChildNotifications()
@@ -252,9 +252,7 @@ const ChildrenMenu = React.memo(function ChildrenMenu() {
   return (
     <DropDownContainer ref={dropDownContainerRef}>
       <DropDownButton
-        className={classNames({
-          active: path.startsWith('/children')
-        })}
+        className={classNames({ active })}
         onClick={toggleOpen}
         aria-label={`${t.header.nav.children}${
           totalUnreadChildNotifications && totalUnreadChildNotifications > 0
@@ -393,6 +391,7 @@ const SubNavigationMenu = React.memo(function SubNavigationMenu({
           <DropDownLink
             data-qa="sub-nav-menu-income"
             to="/income"
+            matchRoutes={['/income', '/child-income']}
             onClick={() => setOpen(false)}
             aria-label={
               t.header.nav.income +
