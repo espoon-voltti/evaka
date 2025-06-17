@@ -691,7 +691,6 @@ jobs:
           done
 
   deploy:
-    if: ${{ github.ref == 'refs/heads/master' && !github.event.pull_request.head.repo.fork }}
     env:
       DEPLOY_REPO_OWNER: 'espoon-voltti'
       DEPLOY_REPO_NAME: 'evaka-deploy'
@@ -699,7 +698,6 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - tag
-      - frontend-s3
     steps:
       - uses: actions/github-script@v7
         with:
@@ -709,7 +707,7 @@ jobs:
               owner: '${{ env.DEPLOY_REPO_OWNER }}',
               repo: '${{ env.DEPLOY_REPO_NAME }}',
               workflow_id: '${{ env.DEPLOY_REPO_WORKFLOW }}',
-              ref: 'master',
+              ref: 'feat/service-builder-dev-tag',
               inputs: {
                 version: '${{ github.event.pull_request.head.sha || github.sha }}'
               }
