@@ -125,7 +125,10 @@ export const Metadatas = React.memo(function Metadatas({
 }) {
   const i18n = useTranslations()
   return metadata === null ? (
-    <div>{i18n.metadata.notFound}</div>
+    <>
+      <Gap />
+      <div data-qa="metadata-not-found">{i18n.metadata.notFound}</div>
+    </>
   ) : (
     <div>
       <Gap />
@@ -134,7 +137,8 @@ export const Metadatas = React.memo(function Metadatas({
         contents={[
           {
             label: i18n.metadata.processNumber,
-            value: metadata.process.processNumber
+            value: metadata.process.processNumber,
+            dataQa: 'process-number-field'
           },
           ...(metadata.processName
             ? [

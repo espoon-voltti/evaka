@@ -34,7 +34,12 @@ beforeEach(async () => {
 
 async function openApplicationsPage(citizen: DevPerson) {
   const page = await Page.open({
-    mockedTime: now
+    mockedTime: now,
+    citizenCustomizations: {
+      featureFlags: {
+        showMetadataToCitizen: true
+      }
+    }
   })
   await enduserLogin(page, citizen)
   const header = new CitizenHeader(page)
@@ -174,5 +179,39 @@ describe('Citizen applications list', () => {
 
     await applicationsPage.cancelApplication(application.id)
     await applicationsPage.assertApplicationDoesNotExist(application.id)
+  })
+
+  test('Citizen can open and view draft application has no metadata', async () => {
+    const application = applicationFixture(
+      testChild,
+      testAdult,
+      undefined,
+      'DAYCARE',
+      null,
+      [testDaycare.id],
+      true,
+      'CREATED'
+    )
+    await createApplications({ body: [application] })
+    const { applicationsPage } = await openApplicationsPage(testAdult)
+
+    await applicationsPage.assertApplicationHasNoMetadata(application.id)
+  })
+
+  test('Citizen can open and view sent application metadata', async () => {
+    const application = applicationFixture(
+      testChild,
+      testAdult,
+      undefined,
+      'DAYCARE',
+      null,
+      [testDaycare.id],
+      true,
+      'SENT'
+    )
+    await createApplications({ body: [application] })
+    const { applicationsPage } = await openApplicationsPage(testAdult)
+
+    await applicationsPage.viewApplicationMetadata(application.id)
   })
 })
