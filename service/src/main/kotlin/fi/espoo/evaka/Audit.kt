@@ -296,6 +296,7 @@ enum class Audit(
     EmployeeDelete(securityEvent = true, securityLevel = "high"),
     EmployeeDeleteDaycareRoles(securityEvent = true, securityLevel = "high"),
     EmployeeDeleteScheduledDaycareRole(securityEvent = true, securityLevel = "high"),
+    EmployeeEmailUpdate,
     EmployeeLogin(securityEvent = true, securityLevel = "high"),
     EmployeeSfiLoginAttempt(securityEvent = true, securityLevel = "high"),
     EmployeeSfiLogin(securityEvent = true, securityLevel = "high"),

@@ -286,6 +286,30 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         assertTrue(employee.active)
     }
 
+    @Test
+    fun `admin can not update email of employee without SSN (AD user)`() {
+        val employee = db.transaction { it.createEmployee(requestFromEmployee(employee1)) }
+
+        assertThrows<BadRequest> { updateEmployeeEmail(employee.id, "test@example.com") }
+    }
+
+    @Test
+    fun `admin can update employee email`() {
+        val employee =
+            createSsnEmployee(
+                NewSsnEmployee(
+                    ssn = Sensitive("010107A9917"),
+                    firstName = "First",
+                    lastName = "Last",
+                    email = "test@example.com",
+                )
+            )
+
+        updateEmployeeEmail(employee.id, "updated@example.com")
+
+        assertEquals("updated@example.com", getEmployeeDetails(employee.id).email)
+    }
+
     val adminUser = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
 
     fun getEmployees() = employeeController.getEmployees(dbInstance(), adminUser, clock)
@@ -324,6 +348,15 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
 
     fun createSsnEmployee(employee: NewSsnEmployee) =
         employeeController.createSsnEmployee(dbInstance(), adminUser, clock, employee)
+
+    fun updateEmployeeEmail(id: EmployeeId, email: String?) =
+        employeeController.updateEmployeeEmail(
+            dbInstance(),
+            adminUser,
+            clock,
+            id,
+            EmployeeController.EmployeeEmailRequest(email),
+        )
 
     fun requestFromEmployee(employee: Employee) =
         NewEmployee(

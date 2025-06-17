@@ -210,6 +210,13 @@ export interface Employee {
 }
 
 /**
+* Generated from fi.espoo.evaka.pis.controllers.EmployeeController.EmployeeEmailRequest
+*/
+export interface EmployeeEmailRequest {
+  email: string | null
+}
+
+/**
 * Generated from fi.espoo.evaka.pis.controllers.EmployeeController.EmployeePreferredFirstName
 */
 export interface EmployeePreferredFirstName {

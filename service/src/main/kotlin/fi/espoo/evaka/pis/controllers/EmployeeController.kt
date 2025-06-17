@@ -23,6 +23,7 @@ import fi.espoo.evaka.pis.getFinanceDecisionHandlers
 import fi.espoo.evaka.pis.isPinLocked
 import fi.espoo.evaka.pis.setEmployeePreferredFirstName
 import fi.espoo.evaka.pis.updateEmployeeActive
+import fi.espoo.evaka.pis.updateEmployeeEmail
 import fi.espoo.evaka.pis.updateEmployeeGlobalRoles
 import fi.espoo.evaka.pis.upsertEmployeeDaycareRoles
 import fi.espoo.evaka.pis.upsertPinCode
@@ -456,6 +457,34 @@ class EmployeeController(private val accessControl: AccessControl) {
                 }
             }
             .also { Audit.EmployeeCreate.log(targetId = AuditId(it.id)) }
+
+    data class EmployeeEmailRequest(val email: String?)
+
+    @PostMapping("/{id}/update-email")
+    fun updateEmployeeEmail(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable id: EmployeeId,
+        @RequestBody body: EmployeeEmailRequest,
+    ) {
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Employee.UPDATE_EMAIL,
+                    id,
+                )
+                tx.getEmployee(id)?.also {
+                    if (!it.hasSsn) throw BadRequest("Cannot update email of employee without SSN")
+                } ?: throw NotFound()
+                tx.updateEmployeeEmail(id, body.email)
+            }
+        }
+        Audit.EmployeeEmailUpdate.log(targetId = AuditId(id))
+    }
 
     private fun possiblePreferredFirstNames(employee: Employee): List<String> {
         val fullFirstNames = employee.firstName.split("\\s+".toRegex())

@@ -12,6 +12,7 @@ import DateRange from 'lib-common/date-range'
 import type { DaycareId } from 'lib-common/generated/api-types/shared'
 import type { DisableSsnRequest } from 'lib-common/generated/api-types/pis'
 import type { Employee } from 'lib-common/generated/api-types/pis'
+import type { EmployeeEmailRequest } from 'lib-common/generated/api-types/pis'
 import type { EmployeeId } from 'lib-common/generated/api-types/shared'
 import type { EmployeePreferredFirstName } from 'lib-common/generated/api-types/pis'
 import type { EmployeeSetPreferredFirstNameUpdateRequest } from 'lib-common/generated/api-types/pis'
@@ -265,6 +266,24 @@ export async function setEmployeePreferredFirstName(
     url: uri`/employee/employees/preferred-first-name`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<EmployeeSetPreferredFirstNameUpdateRequest>
+  })
+  return json
+}
+
+
+/**
+* Generated from fi.espoo.evaka.pis.controllers.EmployeeController.updateEmployeeEmail
+*/
+export async function updateEmployeeEmail(
+  request: {
+    id: EmployeeId,
+    body: EmployeeEmailRequest
+  }
+): Promise<void> {
+  const { data: json } = await client.request<JsonOf<void>>({
+    url: uri`/employee/employees/${request.id}/update-email`.toString(),
+    method: 'POST',
+    data: request.body satisfies JsonCompatible<EmployeeEmailRequest>
   })
   return json
 }

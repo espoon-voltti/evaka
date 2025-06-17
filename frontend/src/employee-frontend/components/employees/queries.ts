@@ -15,6 +15,7 @@ import {
   deleteEmployeeScheduledDaycareRole,
   getEmployeeDetails,
   searchEmployees,
+  updateEmployeeEmail,
   updateEmployeeGlobalRoles,
   upsertEmployeeDaycareRoles
 } from '../../generated/api-clients/pis'
@@ -69,4 +70,9 @@ export const deleteEmployeeMutation = q.mutation(deleteEmployee, [
 
 export const createSsnEmployeeMutation = q.mutation(createSsnEmployee, [
   searchEmployeesQuery.prefix
+])
+
+export const updateEmployeeEmailMutation = q.mutation(updateEmployeeEmail, [
+  searchEmployeesQuery.prefix,
+  ({ id }) => employeeDetailsQuery({ id })
 ])
