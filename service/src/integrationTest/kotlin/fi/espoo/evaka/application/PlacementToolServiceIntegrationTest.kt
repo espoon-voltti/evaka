@@ -513,6 +513,7 @@ ${child.ssn!!};${unit.id}
                     .trimIndent()
                     .toByteArray(StandardCharsets.UTF_8),
             )
+        whenever(evakaEnv.placementToolServiceNeedOptionId).thenReturn(defaultServiceNeedOption.id)
 
         val validationPre =
             controller.validatePlacementToolApplications(dbInstance(), admin, clock, file)
