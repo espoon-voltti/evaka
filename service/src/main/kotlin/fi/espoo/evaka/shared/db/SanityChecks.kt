@@ -5,7 +5,15 @@
 package fi.espoo.evaka.shared.db
 
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
+import fi.espoo.evaka.shared.AttendanceReservationId
+import fi.espoo.evaka.shared.BackupCareId
+import fi.espoo.evaka.shared.ChildAttendanceId
+import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.GroupPlacementId
+import fi.espoo.evaka.shared.Id
+import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.voltti.logging.loggers.warn
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.LocalDate
 
@@ -36,60 +44,62 @@ fun runSanityChecks(tx: Database.Read, clock: EvakaClock) {
     )
 }
 
-private fun logResult(description: String, violations: Int) {
-    if (violations > 0) {
-        logger.warn { "Sanity check failed - $description: $violations instances" }
+private fun logResult(description: String, violations: List<Id<*>>) {
+    if (violations.isNotEmpty()) {
+        logger.warn(mapOf("violations" to violations)) {
+            "Sanity check failed - $description: $violations instances"
+        }
     } else {
         logger.info { "Sanity check passed - $description" }
     }
 }
 
-fun Database.Read.sanityCheckAttendancesInFuture(today: LocalDate): Int {
+fun Database.Read.sanityCheckAttendancesInFuture(today: LocalDate): List<ChildAttendanceId> {
     return createQuery {
             sql(
                 """
-        SELECT count(*)
+        SELECT id
         FROM child_attendance 
         WHERE date > ${bind(today)}
     """
             )
         }
-        .exactlyOne()
+        .toList()
 }
 
-fun Database.Read.sanityCheckServiceNeedOutsidePlacement(): Int {
+fun Database.Read.sanityCheckServiceNeedOutsidePlacement(): List<ServiceNeedId> {
     return createQuery {
             sql(
                 """
-        SELECT count(*)
+        SELECT sn.id
         FROM service_need sn
         JOIN placement pl on pl.id = sn.placement_id
         WHERE sn.start_date < pl.start_date OR sn.end_date > pl.end_date
     """
             )
         }
-        .exactlyOne()
+        .toList()
 }
 
-fun Database.Read.sanityCheckGroupPlacementOutsidePlacement(): Int {
+fun Database.Read.sanityCheckGroupPlacementOutsidePlacement(): List<GroupPlacementId> {
     return createQuery {
             sql(
                 """
-        SELECT count(*)
+        SELECT gpl.id
         FROM daycare_group_placement gpl
         JOIN placement pl on pl.id = gpl.daycare_placement_id
         WHERE gpl.start_date < pl.start_date OR gpl.end_date > pl.end_date
     """
             )
         }
-        .exactlyOne()
+        .toList()
 }
 
-fun Database.Read.sanityCheckBackupCareOutsidePlacement(): Int {
+fun Database.Read.sanityCheckBackupCareOutsidePlacement(): List<BackupCareId> {
     return createQuery {
             sql(
                 """
-        SELECT count(*)
+        SELECT bc.id
         FROM backup_care bc
         WHERE NOT isempty(
             datemultirange(daterange(bc.start_date, bc.end_date, '[]')) - (
@@ -101,30 +111,31 @@ fun Database.Read.sanityCheckBackupCareOutsidePlacement(): Int {
     """
             )
         }
-        .exactlyOne()
+        .toList()
 }
 
-fun Database.Read.sanityCheckReservationsDuringFixedSchedulePlacements(): Int {
+fun Database.Read.sanityCheckReservationsDuringFixedSchedulePlacements():
+    List<AttendanceReservationId> {
     return createQuery {
             sql(
                 """
-        SELECT count(*)
+        SELECT ar.id
         FROM attendance_reservation ar
         JOIN placement pl ON pl.child_id = ar.child_id AND daterange(pl.start_date, pl.end_date, '[]') @> ar.date
         WHERE pl.type IN ('PRESCHOOL', 'PREPARATORY')
     """
             )
         }
-        .exactlyOne()
+        .toList()
 }
 
 fun Database.Read.sanityCheckChildInOverlappingFeeDecisions(
     statuses: List<FeeDecisionStatus>
-): Int {
+): List<ChildId> {
     return createQuery {
             sql(
                 """
-        SELECT count(DISTINCT fdc.child_id)
+        SELECT DISTINCT fdc.child_id
         FROM fee_decision fd
         JOIN fee_decision_child fdc on fdc.fee_decision_id = fd.id
         WHERE
@@ -141,5 +152,5 @@ fun Database.Read.sanityCheckChildInOverlappingFeeDecisions(
     """
             )
         }
-        .exactlyOne()
+        .toList()
 }

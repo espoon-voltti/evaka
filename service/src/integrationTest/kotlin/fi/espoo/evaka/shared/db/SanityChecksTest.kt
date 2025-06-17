@@ -53,7 +53,7 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         }
         val violations = db.read { it.sanityCheckAttendancesInFuture(mockClock.today()) }
-        assertEquals(1, violations)
+        assertEquals(1, violations.size)
     }
 
     @Test
@@ -71,7 +71,7 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         }
         val violations = db.read { it.sanityCheckAttendancesInFuture(mockClock.today()) }
-        assertEquals(0, violations)
+        assertEquals(0, violations.size)
     }
 
     @Test
@@ -103,7 +103,7 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         }
         val violations = db.read { it.sanityCheckServiceNeedOutsidePlacement() }
-        assertEquals(2, violations)
+        assertEquals(2, violations.size)
     }
 
     @Test
@@ -135,7 +135,7 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         }
         val violations = db.read { it.sanityCheckServiceNeedOutsidePlacement() }
-        assertEquals(0, violations)
+        assertEquals(0, violations.size)
     }
 
     @Test
@@ -164,7 +164,7 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         }
         val violations = db.read { it.sanityCheckGroupPlacementOutsidePlacement() }
-        assertEquals(2, violations)
+        assertEquals(2, violations.size)
     }
 
     @Test
@@ -193,7 +193,7 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         }
         val violations = db.read { it.sanityCheckGroupPlacementOutsidePlacement() }
-        assertEquals(0, violations)
+        assertEquals(0, violations.size)
     }
 
     @Test
@@ -243,7 +243,7 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
         }
 
         val violations = db.read { it.sanityCheckBackupCareOutsidePlacement() }
-        assertEquals(2, violations)
+        assertEquals(2, violations.size)
     }
 
     @Test
@@ -275,7 +275,7 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
         }
 
         val violations = db.read { it.sanityCheckBackupCareOutsidePlacement() }
-        assertEquals(0, violations)
+        assertEquals(0, violations.size)
     }
 
     @Test
@@ -338,7 +338,7 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
                     listOf(FeeDecisionStatus.SENT, FeeDecisionStatus.WAITING_FOR_SENDING)
                 )
             }
-        assertEquals(1, violations)
+        assertEquals(1, violations.size)
     }
 
     @Test
@@ -401,7 +401,7 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
                     listOf(FeeDecisionStatus.SENT, FeeDecisionStatus.WAITING_FOR_SENDING)
                 )
             }
-        assertEquals(0, violations)
+        assertEquals(0, violations.size)
     }
 
     @Test
@@ -436,7 +436,7 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
         }
 
         val violations = db.read { it.sanityCheckReservationsDuringFixedSchedulePlacements() }
-        assertEquals(1, violations)
+        assertEquals(1, violations.size)
     }
 
     @Test
@@ -471,7 +471,7 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
         }
 
         val violations = db.read { it.sanityCheckReservationsDuringFixedSchedulePlacements() }
-        assertEquals(0, violations)
+        assertEquals(0, violations.size)
     }
 
     private data class ChildInDaycareFixture(
