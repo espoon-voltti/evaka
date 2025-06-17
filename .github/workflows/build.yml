@@ -684,7 +684,7 @@ jobs:
             docker push "${ghcr_image_base}:${DOCKER_METADATA_OUTPUT_VERSION}"
           done
 
-          for repository in evaka/frontend evaka/service evaka/api-gateway; do
+          for repository in evaka/frontend evaka/service evaka/service-builder evaka/api-gateway; do
             # ECR retag
             MANIFEST=$(aws ecr batch-get-image --repository-name "$repository" --image-ids imageTag="${{ github.event.pull_request.head.sha || github.sha }}" --output json | jq --raw-output --join-output '.images[0].imageManifest')
             aws ecr put-image --repository-name "$repository" --image-tag "${DOCKER_METADATA_OUTPUT_VERSION}" --image-manifest "$MANIFEST"
