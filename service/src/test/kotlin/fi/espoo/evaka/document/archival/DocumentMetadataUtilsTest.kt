@@ -451,7 +451,7 @@ class DocumentMetadataUtilsTest {
         assertEquals("RetentionPolicy", result.policyConfiguration.policyName)
         val rule = result.policyConfiguration.rules.rule
         assertEquals(28, rule.timeSpan)
-        assertEquals("syntymästä", rule.triggerEvent) // TODO
+        assertEquals("YearsFromCustomerBirthDate", rule.triggerEvent)
         assertEquals("AddTimeSpanToTarget", rule.action.actionType)
         assertEquals("Perusopetuslaki (628/1998) 16 a §", rule.action.actionAnnotation)
     }
@@ -463,7 +463,7 @@ class DocumentMetadataUtilsTest {
         assertEquals("RetentionPolicy", result.policyConfiguration.policyName)
         val rule = result.policyConfiguration.rules.rule
         assertEquals(28, rule.timeSpan)
-        assertEquals("syntymästä", rule.triggerEvent) // TODO
+        assertEquals("YearsFromCustomerBirthDate", rule.triggerEvent)
         assertEquals("AddTimeSpanToTarget", rule.action.actionType)
         assertEquals("Perusopetuslaki (628/1998) 16 a §", rule.action.actionAnnotation)
     }

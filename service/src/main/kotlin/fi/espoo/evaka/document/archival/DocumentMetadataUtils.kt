@@ -167,7 +167,7 @@ fun createRetentionPolicy(documentType: ChildDocumentType): RetentionPolicyType 
                                 ChildDocumentType.PEDAGOGICAL_REPORT ->
                                     PolicyConfiguration.Rules.Rule().apply {
                                         timeSpan = 28
-                                        triggerEvent = "syntymästä" // TODO
+                                        triggerEvent = "YearsFromCustomerBirthDate"
                                         action =
                                             PolicyConfiguration.Rules.Rule.Action().apply {
                                                 actionType = "AddTimeSpanToTarget"
