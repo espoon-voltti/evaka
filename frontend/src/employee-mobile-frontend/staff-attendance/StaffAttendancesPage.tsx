@@ -106,7 +106,6 @@ export default React.memo(function StaffAttendancesPage(props: Props) {
       {
         id: 'today',
         link: '/today',
-        hasSubPages: true,
         label: i18n.attendances.views.TODAY
       },
       {

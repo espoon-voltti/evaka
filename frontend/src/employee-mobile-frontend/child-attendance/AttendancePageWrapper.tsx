@@ -72,7 +72,6 @@ export default React.memo(function AttendancePageWrapper({
       {
         id: 'today',
         link: '/list',
-        hasSubPages: true,
         label: i18n.attendances.views.TODAY
       },
       {
