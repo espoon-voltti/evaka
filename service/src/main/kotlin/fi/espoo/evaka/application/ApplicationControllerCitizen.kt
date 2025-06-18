@@ -203,6 +203,9 @@ class ApplicationControllerCitizen(
                                         otherGuardianId,
                                     )
                                 },
+                            // hide modification info from citizen
+                            modifiedAt = null,
+                            modifiedBy = null,
                         )
                     }
                 }

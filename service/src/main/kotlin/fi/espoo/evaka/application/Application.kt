@@ -248,7 +248,6 @@ data class CitizenApplicationSummary(
     val sentDate: LocalDate?,
     val applicationStatus: ApplicationStatus,
     val createdDate: HelsinkiDateTime,
-    val modifiedDate: HelsinkiDateTime,
     val transferApplication: Boolean,
 )
 

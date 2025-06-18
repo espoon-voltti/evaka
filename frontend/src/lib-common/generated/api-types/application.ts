@@ -436,7 +436,6 @@ export interface CitizenApplicationSummary {
   childId: PersonId
   childName: string | null
   createdDate: HelsinkiDateTime
-  modifiedDate: HelsinkiDateTime
   preferredUnitName: string | null
   sentDate: LocalDate | null
   startDate: LocalDate | null
@@ -985,7 +984,6 @@ export function deserializeJsonCitizenApplicationSummary(json: JsonOf<CitizenApp
   return {
     ...json,
     createdDate: HelsinkiDateTime.parseIso(json.createdDate),
-    modifiedDate: HelsinkiDateTime.parseIso(json.modifiedDate),
     sentDate: (json.sentDate != null) ? LocalDate.parseIso(json.sentDate) : null,
     startDate: (json.startDate != null) ? LocalDate.parseIso(json.startDate) : null
   }

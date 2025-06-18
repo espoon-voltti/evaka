@@ -245,7 +245,6 @@ export default React.memo(function ChildApplicationsBlock({
               type,
               startDate,
               createdDate,
-              modifiedDate,
               applicationStatus,
               transferApplication
             },
@@ -273,15 +272,6 @@ export default React.memo(function ChildApplicationsBlock({
                 <span data-qa={`application-created-${applicationId}`}>
                   {createdDate.toLocalDate().format()}
                 </span>
-
-                {!modifiedDate.isEqual(createdDate) && (
-                  <>
-                    <Label>{t.applicationsList.modified}</Label>
-                    <span data-qa={`application-modified-${applicationId}`}>
-                      {modifiedDate.toLocalDate().format()}
-                    </span>
-                  </>
-                )}
 
                 <Label>{t.applicationsList.status.title}</Label>
                 <StatusContainer>
