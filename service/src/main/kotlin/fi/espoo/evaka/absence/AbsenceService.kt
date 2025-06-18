@@ -330,8 +330,9 @@ fun getGroupMonthCalendar(
                                             childReservations.isEmpty() &&
                                             childAbsences.isEmpty(),
                                     missingHolidayQuestionnaireAnswer =
-                                        daycare.providerType !=
-                                            ProviderType.PRIVATE_SERVICE_VOUCHER &&
+                                        placement.type.isInvoiced() &&
+                                            daycare.providerType !=
+                                                ProviderType.PRIVATE_SERVICE_VOUCHER &&
                                             isQuestionnaireDate &&
                                             noAnswersForChild,
                                     absences =
