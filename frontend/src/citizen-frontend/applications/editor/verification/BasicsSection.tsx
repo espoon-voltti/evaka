@@ -26,7 +26,6 @@ export default React.memo(function BasicsSection({
   const t = useTranslation()
 
   const created = application.createdAt?.toLocalDate()
-  const modified = application.modifiedAt?.toLocalDate()
 
   return (
     <div>
@@ -47,13 +46,6 @@ export default React.memo(function BasicsSection({
       >
         <Label>{t.applications.editor.verification.basics.created}</Label>
         <span>{created?.format() ?? ''}</span>
-
-        {created && modified && !created.isEqual(modified) && (
-          <>
-            <Label>{t.applications.editor.verification.basics.modified}</Label>
-            <span>{modified.format()}</span>
-          </>
-        )}
       </ListGrid>
     </div>
   )

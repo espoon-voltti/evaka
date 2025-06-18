@@ -720,7 +720,6 @@ SELECT
     a.sentDate,
     a.status AS application_status,
     a.created_at AS created_date,
-    a.modified_at AS modified_date,
     a.transferapplication
 FROM application a
 WHERE (a.guardian_id = ${bind(citizenId)} OR EXISTS (
