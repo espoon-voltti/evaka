@@ -52,7 +52,8 @@ const features: Features = {
     citizenChildDocumentTypes: true,
     decisionChildDocumentTypes: true,
     showCitizenApplicationPreschoolTerms: true,
-    missingQuestionnaireAnswerMarkerEnabled: false
+    missingQuestionnaireAnswerMarkerEnabled: false,
+    absenceApplications: true
   },
   staging: {
     environmentLabel: 'Staging',
@@ -94,7 +95,8 @@ const features: Features = {
     citizenChildDocumentTypes: true,
     decisionChildDocumentTypes: true,
     showCitizenApplicationPreschoolTerms: true,
-    missingQuestionnaireAnswerMarkerEnabled: false
+    missingQuestionnaireAnswerMarkerEnabled: false,
+    absenceApplications: true
   },
   prod: {
     environmentLabel: null,
@@ -133,7 +135,8 @@ const features: Features = {
     aromiIntegration: false,
     decisionChildDocumentTypes: false,
     showCitizenApplicationPreschoolTerms: false,
-    missingQuestionnaireAnswerMarkerEnabled: false
+    missingQuestionnaireAnswerMarkerEnabled: false,
+    absenceApplications: false
   }
 }
 
