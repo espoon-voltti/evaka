@@ -19,7 +19,6 @@ import fi.espoo.evaka.pis.service.FridgeFamilyService
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.pis.service.getBlockedGuardians
 import fi.espoo.evaka.pis.service.getChildGuardiansAndFosterParents
-import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.serviceneed.getServiceNeedOptions
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
@@ -120,13 +119,7 @@ WHERE application.type = 'PRESCHOOL'
                     ?: throw NotFound(
                         "No service need option found: ${evakaEnv.placementToolServiceNeedOptionId}"
                     )
-            } else {
-                serviceNeedOptions
-                    .firstOrNull {
-                        it.validPlacementType == PlacementType.PRESCHOOL_DAYCARE && it.defaultOption
-                    }
-                    ?.id ?: throw NotFound("No default service need option found")
-            }
+            } else null
         val nextPreschoolTermId =
             findNextPreschoolTerm(tx, clock.today())?.id
                 ?: throw NotFound("No next preschool term found")
@@ -275,7 +268,7 @@ WHERE application.type = 'PRESCHOOL'
                 application,
                 data,
                 guardianIds,
-                defaultServiceNeedOption!!,
+                defaultServiceNeedOption,
                 nextPreschoolTerm,
             )
 
@@ -316,7 +309,7 @@ WHERE application.type = 'PRESCHOOL'
         application: ApplicationDetails,
         data: PlacementToolData,
         guardianIds: List<PersonId>,
-        defaultServiceNeedOption: ServiceNeedOption,
+        defaultServiceNeedOption: ServiceNeedOption?,
         preschoolTerm: PreschoolTerm,
     ) {
         val preferredUnit = tx.getDaycare(data.preschoolId)!!
@@ -332,13 +325,15 @@ WHERE application.type = 'PRESCHOOL'
                                 preferredUnits =
                                     listOf(PreferredUnit(preferredUnit.id, preferredUnit.name)),
                                 serviceNeed =
-                                    ServiceNeed(
-                                        startTime = "",
-                                        endTime = "",
-                                        shiftCare = false,
-                                        partTime = false,
-                                        serviceNeedOption = defaultServiceNeedOption,
-                                    ),
+                                    defaultServiceNeedOption?.let {
+                                        ServiceNeed(
+                                            startTime = "",
+                                            endTime = "",
+                                            shiftCare = false,
+                                            partTime = false,
+                                            serviceNeedOption = defaultServiceNeedOption,
+                                        )
+                                    },
                                 urgent = false,
                             ),
                         secondGuardian =
