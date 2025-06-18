@@ -41,6 +41,13 @@ import RadioButtonGroupQuestionDescriptor from 'lib-components/document-template
 import StaticTextDisplayQuestionDescriptor from 'lib-components/document-templates/question-descriptors/StaticTextDisplayQuestionDescriptor'
 import TextQuestionDescriptor from 'lib-components/document-templates/question-descriptors/TextQuestionDescriptor'
 
+const caseManagementRequired: ChildDocumentType[] = [
+  'VASU',
+  'HOJKS',
+  'LEOPS',
+  'OTHER_DECISION'
+]
+
 export const documentTemplateForm = transformed(
   object({
     name: validated(string(), nonBlank),
@@ -59,12 +66,14 @@ export const documentTemplateForm = transformed(
     archiveExternally: boolean()
   }),
   (value) => {
-    const archived = value.processDefinitionNumber.trim().length > 0
-    if (archived) {
+    const caseManaged = value.processDefinitionNumber.trim().length > 0
+    if (caseManaged) {
       const archiveDurationMonths = parseInt(value.archiveDurationMonths)
       if (isNaN(archiveDurationMonths) || archiveDurationMonths < 1) {
         return ValidationError.field('archiveDurationMonths', 'integerFormat')
       }
+    } else if (caseManagementRequired.includes(value.type)) {
+      return ValidationError.field('processDefinitionNumber', 'required')
     }
 
     if (value.archiveExternally) {
@@ -118,10 +127,10 @@ export const documentTemplateForm = transformed(
           }
         : {
             templateType: 'REGULAR',
-            processDefinitionNumber: archived
+            processDefinitionNumber: caseManaged
               ? value.processDefinitionNumber.trim()
               : null,
-            archiveDurationMonths: archived
+            archiveDurationMonths: caseManaged
               ? parseInt(value.archiveDurationMonths)
               : null
           })
