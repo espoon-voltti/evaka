@@ -835,6 +835,7 @@ export const fi = {
     },
     assistanceAction: {
       title: 'Tukitoimet ja toimenpiteet',
+      modified: 'Muokattu viimeksi',
       fields: {
         dateRange: 'Tukitoimien voimassaoloaika',
         actions: 'Tukitoimet',
@@ -847,7 +848,8 @@ export const fi = {
           OTHER: 'Muu tukitoimi'
         },
         otherActionPlaceholder:
-          'Voit kirjoittaa tähän lisätietoa muista tukitoimista.'
+          'Voit kirjoittaa tähän lisätietoa muista tukitoimista.',
+        lastModifiedBy: (name: string) => `Muokkaaja ${name}.`
       },
       create: 'Luo uusi tukitoimien ajanjakso',
       removeConfirmation: 'Haluatko poistaa tukitoimien ajanjakson?',

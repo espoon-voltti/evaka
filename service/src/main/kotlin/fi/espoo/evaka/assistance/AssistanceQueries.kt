@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.assistance
 
-import fi.espoo.evaka.assistanceaction.AssistanceAction
 import fi.espoo.evaka.shared.*
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -367,22 +366,3 @@ WHERE id = ${bind(id)}
 
 fun Database.Transaction.deleteOtherAssistanceMeasure(id: OtherAssistanceMeasureId) =
     createUpdate { sql("DELETE FROM other_assistance_measure WHERE id = ${bind(id)}") }.execute()
-
-fun Database.Read.getAssistanceActionsByChildId(
-    childId: ChildId,
-    filter: AccessControlFilter<AssistanceActionId>,
-): List<AssistanceAction> =
-    createQuery {
-            sql(
-                """
-SELECT aa.id, child_id, start_date, end_date, array_remove(array_agg(value), null) AS actions, other_action
-FROM assistance_action aa
-LEFT JOIN assistance_action_option_ref aaor ON aaor.action_id = aa.id
-LEFT JOIN assistance_action_option aao ON aao.id = aaor.option_id
-WHERE aa.child_id = ${bind(childId)} AND ${predicate(filter.forTable("aa"))}
-GROUP BY aa.id, child_id, start_date, end_date, other_action
-ORDER BY start_date DESC     
-"""
-            )
-        }
-        .toList<AssistanceAction>()

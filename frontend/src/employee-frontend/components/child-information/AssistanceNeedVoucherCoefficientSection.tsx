@@ -119,11 +119,11 @@ export default React.memo(function AssistanceNeedVoucherCoefficientSection({
             <Table data-qa="table-of-assistance-need-voucher-coefficients">
               <Thead>
                 <Tr>
-                  <Th style={{ width: '20%' }}>{t.factor}</Th>
-                  <Th style={{ width: '30%' }}>{t.validityPeriod}</Th>
+                  <Th style={{ width: '20%' }}>{t.validityPeriod}</Th>
+                  <Th>{t.factor}</Th>
                   <Th style={{ width: '15%' }}>{t.lastModified}</Th>
-                  <Th style={{ width: '15%' }}>{t.actions}</Th>
-                  <Th style={{ width: '20%' }}>{t.status}</Th>
+                  <Th style={{ width: '10%' }}>{t.status}</Th>
+                  <Th style={{ width: '15%' }} />
                 </Tr>
               </Thead>
               <Tbody>

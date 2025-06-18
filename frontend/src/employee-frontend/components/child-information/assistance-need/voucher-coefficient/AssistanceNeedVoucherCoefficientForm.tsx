@@ -235,6 +235,19 @@ export default React.memo(function AssistanceNeedVoucherCoefficientForm(
         spacing="large"
         contents={[
           {
+            label: t.form.validityPeriod,
+            value: (
+              <DateRangePicker
+                start={form.start}
+                end={form.end}
+                onChange={(start, end) => updateFormState({ start, end })}
+                locale={lang}
+                hideErrorsBeforeTouched
+                data-qa="input-assistance-need-voucher-coefficient-validity-period"
+              />
+            )
+          },
+          {
             label: t.form.coefficient,
             value: (
               <>
@@ -263,19 +276,6 @@ export default React.memo(function AssistanceNeedVoucherCoefficientForm(
                   />
                 </CoefficientInputContainer>
               </>
-            )
-          },
-          {
-            label: t.form.validityPeriod,
-            value: (
-              <DateRangePicker
-                start={form.start}
-                end={form.end}
-                onChange={(start, end) => updateFormState({ start, end })}
-                locale={lang}
-                hideErrorsBeforeTouched
-                data-qa="input-assistance-need-voucher-coefficient-validity-period"
-              />
             )
           }
         ]}

@@ -62,10 +62,16 @@ export default React.memo(function AssistanceNeedVoucherCoefficientRow({
     <>
       <Tr key={id} data-qa="table-assistance-need-voucher-coefficient">
         <Td
-          minimalWidth
           topBorder
-          data-qa="assistance-need-voucher-coefficient-coefficient"
+          data-qa="assistance-need-voucher-coefficient-validity-period"
         >
+          {!isUpdating && (
+            <div>
+              {validityPeriod.start.format()} – {validityPeriod.end.format()}
+            </div>
+          )}
+        </Td>
+        <Td topBorder data-qa="assistance-need-voucher-coefficient-coefficient">
           {isUpdating ? (
             <ExpandingInfo info={<div>{t.form.titleInfo}</div>} width="full">
               <LabelLike>{t.form.editTitle}</LabelLike>
@@ -78,25 +84,10 @@ export default React.memo(function AssistanceNeedVoucherCoefficientRow({
             </LabelLike>
           )}
         </Td>
-        <Td
-          maximalWidth
-          topBorder
-          data-qa="assistance-need-voucher-coefficient-validity-period"
-        >
-          {!isUpdating && (
-            <div>
-              {validityPeriod.start.format()} – {validityPeriod.end.format()}
-            </div>
-          )}
-        </Td>
-        <Td
-          maximalWidth
-          topBorder
-          data-qa="assistance-need-voucher-coefficient-modified"
-        >
-          {!isUpdating && modifiedAt ? (
+        <Td topBorder data-qa="assistance-need-voucher-coefficient-modified">
+          {!isUpdating ? (
             <Tooltip
-              tooltip={modifiedBy ? t.lastModifiedBy(modifiedBy.name) : null}
+              tooltip={t.lastModifiedBy(modifiedBy.name)}
               position="left"
             >
               {modifiedAt.format()}
@@ -105,13 +96,24 @@ export default React.memo(function AssistanceNeedVoucherCoefficientRow({
             t.unknown
           )}
         </Td>
+        <Td topBorder>
+          <TimeBasedStatusChip
+            status={
+              validityPeriod.start.isAfter(LocalDate.todayInHelsinkiTz())
+                ? 'UPCOMING'
+                : validityPeriod.end.isBefore(LocalDate.todayInHelsinkiTz())
+                  ? 'ENDED'
+                  : 'ACTIVE'
+            }
+            data-qa="assistance-need-voucher-coefficient-status"
+          />
+        </Td>
         <Td
-          minimalWidth
           verticalAlign="middle"
           topBorder
           data-qa="assistance-need-voucher-coefficient-actions"
         >
-          <FixedSpaceRow spacing="s" alignItems="center">
+          <FixedSpaceRow spacing="s" justifyContent="flex-end">
             {permittedActions.includes('UPDATE') && (
               <IconOnlyButton
                 icon={faPen}
@@ -135,18 +137,6 @@ export default React.memo(function AssistanceNeedVoucherCoefficientRow({
               />
             )}
           </FixedSpaceRow>
-        </Td>
-        <Td minimalWidth topBorder>
-          <TimeBasedStatusChip
-            status={
-              validityPeriod.start.isAfter(LocalDate.todayInHelsinkiTz())
-                ? 'UPCOMING'
-                : validityPeriod.end.isBefore(LocalDate.todayInHelsinkiTz())
-                  ? 'ENDED'
-                  : 'ACTIVE'
-            }
-            data-qa="assistance-need-voucher-coefficient-status"
-          />
         </Td>
       </Tr>
       {isUpdating && (

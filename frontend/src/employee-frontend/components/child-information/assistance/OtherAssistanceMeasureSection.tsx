@@ -137,12 +137,11 @@ export const OtherAssistanceMeasureSection = React.memo(
           <Table>
             <Thead>
               <Tr>
-                <Th style={{ width: '30%' }}>
-                  {t.fields.otherAssistanceMeasureType}
-                </Th>
-                <Th style={{ width: '30%' }}>{t.fields.validDuring}</Th>
-                <Th style={{ width: '20%' }}>{t.fields.status}</Th>
-                <Th />
+                <Th style={{ width: '20%' }}>{t.fields.validDuring}</Th>
+                <Th>{t.fields.otherAssistanceMeasureType}</Th>
+                <Th style={{ width: '15%' }}>{t.fields.lastModified}</Th>
+                <Th style={{ width: '10%' }}>{t.fields.status}</Th>
+                <Th style={{ width: '15%' }} />
               </Tr>
             </Thead>
             <Tbody>

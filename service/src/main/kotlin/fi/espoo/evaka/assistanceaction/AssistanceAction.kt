@@ -8,8 +8,11 @@ import fi.espoo.evaka.ConstList
 import fi.espoo.evaka.shared.AssistanceActionId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.db.DatabaseEnum
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.Action
+import fi.espoo.evaka.user.EvakaUser
 import java.time.LocalDate
+import org.jdbi.v3.core.mapper.Nested
 
 data class AssistanceAction(
     val id: AssistanceActionId,
@@ -18,6 +21,8 @@ data class AssistanceAction(
     val endDate: LocalDate,
     val actions: Set<String>,
     val otherAction: String,
+    val modifiedAt: HelsinkiDateTime,
+    @Nested("modified_by") val modifiedBy: EvakaUser,
 )
 
 data class AssistanceActionRequest(

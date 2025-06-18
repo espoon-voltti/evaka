@@ -43,6 +43,14 @@ export const AssistanceFactorRow = React.memo(function AssistanceFactorRow({
     <Tr data-qa="assistance-factor-row">
       <Td data-qa="capacity-factor">{formatDecimal(capacityFactor)}</Td>
       <Td data-qa="valid-during">{validDuring.format()}</Td>
+      <Td data-qa="modified-by">
+        <Tooltip
+          tooltip={t.fields.lastModifiedBy(modifiedBy.name)}
+          position="left"
+        >
+          {modifiedAt.format()}
+        </Tooltip>
+      </Td>
       <Td>
         <StatusLabel
           status={getStatusLabelByDateRange({
@@ -50,20 +58,6 @@ export const AssistanceFactorRow = React.memo(function AssistanceFactorRow({
             endDate: validDuring.end
           })}
         />
-      </Td>
-      <Td data-qa="modified-by">
-        {modifiedAt ? (
-          <Tooltip
-            tooltip={
-              modifiedBy ? t.fields.lastModifiedBy(modifiedBy.name) : null
-            }
-            position="left"
-          >
-            {modifiedAt.format()}
-          </Tooltip>
-        ) : (
-          t.unknown
-        )}
       </Td>
       <Td>
         {uiMode === `remove-assistance-factor-${id}` && (
