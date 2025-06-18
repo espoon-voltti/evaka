@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import type DateRange from 'lib-common/date-range'
@@ -28,6 +28,7 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import TimeRange from 'lib-common/time-range'
 import TimeRangeEndpoint from 'lib-common/time-range-endpoint'
+import { StaticChip } from 'lib-components/atoms/Chip'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
@@ -989,6 +990,37 @@ export default function UnitEditor(props: Props) {
     { on: closingDateModalOn, off: closingDateModalOff }
   ] = useBoolean(false)
 
+  const vardaIcon = useCallback(
+    (uploadChildrenToVarda = false) =>
+      props.editable && (form.uploadToVarda || uploadChildrenToVarda) ? (
+        <>
+          {' '}
+          <StaticChip
+            color={colors.accents.a1greenDark}
+            title={i18n.unitEditor.info.varda}
+          >
+            V
+          </StaticChip>
+        </>
+      ) : null,
+    [form.uploadToVarda, i18n.unitEditor.info.varda, props.editable]
+  )
+  const koskiIcon = useCallback(
+    () =>
+      props.editable && form.uploadToKoski ? (
+        <>
+          {' '}
+          <StaticChip
+            color={colors.accents.a6turquoise}
+            title={i18n.unitEditor.info.koski}
+          >
+            K
+          </StaticChip>
+        </>
+      ) : null,
+    [form.uploadToKoski, i18n.unitEditor.info.koski, props.editable]
+  )
+
   const getFormData = () => {
     const [fields, errors] = validateForm(i18n, props.lastPlacementDate, form)
     setValidationErrors(errors)
@@ -1058,6 +1090,7 @@ export default function UnitEditor(props: Props) {
       <FormPart>
         <label htmlFor="unit-name">
           {showRequired(i18n.unitEditor.label.name)}
+          {vardaIcon()}
         </label>
         {props.editable ? (
           <InputField
@@ -1073,7 +1106,10 @@ export default function UnitEditor(props: Props) {
         )}
       </FormPart>
       <FormPart>
-        <div>{`${i18n.unitEditor.label.openingDate} / ${i18n.unitEditor.label.closingDate}`}</div>
+        <div>
+          {`${i18n.unitEditor.label.openingDate} / ${i18n.unitEditor.label.closingDate}`}
+          {vardaIcon()}
+        </div>
         <AlertBoxContainer>
           <FixedSpaceRow data-qa="opening-and-closing-dates">
             {props.editable ? (
@@ -1123,7 +1159,10 @@ export default function UnitEditor(props: Props) {
         )}
       </FormPart>
       <FormPart>
-        <div>{showRequired(i18n.unitEditor.label.careTypes)}</div>
+        <div>
+          {showRequired(i18n.unitEditor.label.careTypes)}
+          {vardaIcon()}
+        </div>
         <FixedSpaceColumn fullWidth={true}>
           <DaycareTypeSelectContainer>
             <Checkbox
@@ -1324,7 +1363,11 @@ export default function UnitEditor(props: Props) {
         </FixedSpaceColumn>
       </FormPart>
       <FormPart>
-        <div>{showRequired(i18n.unitEditor.label.providerType)}</div>
+        <div>
+          {showRequired(i18n.unitEditor.label.providerType)}
+          {vardaIcon()}
+          {koskiIcon()}
+        </div>
         {props.editable ? (
           <FixedSpaceColumn>
             {unitProviderTypes.map((value) => (
@@ -1560,7 +1603,10 @@ export default function UnitEditor(props: Props) {
       )}
 
       <FormPart>
-        <label htmlFor="unit-capacity">{i18n.unitEditor.label.capacity}</label>
+        <label htmlFor="unit-capacity">
+          {i18n.unitEditor.label.capacity}
+          {vardaIcon()}
+        </label>
         <CapacityInputContainer>
           {props.editable ? (
             <InputField
@@ -1580,7 +1626,11 @@ export default function UnitEditor(props: Props) {
         </CapacityInputContainer>
       </FormPart>
       <FormPart>
-        <div>{showRequired(i18n.unitEditor.label.language)}</div>
+        <div>
+          {showRequired(i18n.unitEditor.label.language)}
+          {vardaIcon()}
+          {koskiIcon()}
+        </div>
         {props.editable ? (
           <FixedSpaceColumn>
             {(['fi', 'sv'] as const).map((value) => (
@@ -1706,7 +1756,11 @@ export default function UnitEditor(props: Props) {
       </FormPart>
 
       <FormPart>
-        <div>{i18n.unitEditor.label.ophUnitOid}</div>
+        <div>
+          {i18n.unitEditor.label.ophUnitOid}
+          {vardaIcon(form.uploadChildrenToVarda)}
+          {koskiIcon()}
+        </div>
         {props.editable ? (
           <InputField
             id="oph-unit-oid"
@@ -1720,7 +1774,11 @@ export default function UnitEditor(props: Props) {
         )}
       </FormPart>
       <FormPart>
-        <div>{i18n.unitEditor.label.ophOrganizerOid}</div>
+        <div>
+          {i18n.unitEditor.label.ophOrganizerOid}
+          {vardaIcon(form.uploadChildrenToVarda)}
+          {koskiIcon()}
+        </div>
         {props.editable ? (
           <InputField
             id="oph-organizer-oid"
@@ -1807,7 +1865,10 @@ export default function UnitEditor(props: Props) {
         )}
       </FormPart>
       <FormPart>
-        <div>{showRequired(i18n.unitEditor.label.visitingAddress)}</div>
+        <div>
+          {showRequired(i18n.unitEditor.label.visitingAddress)}
+          {vardaIcon()}
+        </div>
         <AddressEditor
           editable={props.editable}
           address={form.visitingAddress}
@@ -1833,7 +1894,10 @@ export default function UnitEditor(props: Props) {
         )}
       </FormPart>
       <FormPart>
-        <div>{i18n.unitEditor.label.mailingAddress}</div>
+        <div>
+          {i18n.unitEditor.label.mailingAddress}
+          {vardaIcon()}
+        </div>
         <AddressEditor
           editable={props.editable}
           address={form.mailingAddress}
@@ -1845,6 +1909,7 @@ export default function UnitEditor(props: Props) {
       <FormPart>
         <label htmlFor="unit-manager-name">
           {showRequired(i18n.unitEditor.label.unitManager.name)}
+          {koskiIcon()}
         </label>
         {props.editable ? (
           <InputField
@@ -1862,6 +1927,7 @@ export default function UnitEditor(props: Props) {
       <FormPart>
         <label htmlFor="unit-manager-phone">
           {showRequired(i18n.unitEditor.label.unitManager.phone)}
+          {vardaIcon()}
         </label>
         {props.editable ? (
           <InputField
@@ -1878,6 +1944,7 @@ export default function UnitEditor(props: Props) {
       <FormPart>
         <label htmlFor="unit-manager-email">
           {showRequired(i18n.unitEditor.label.unitManager.email)}
+          {vardaIcon()}
         </label>
         {props.editable ? (
           <InputField

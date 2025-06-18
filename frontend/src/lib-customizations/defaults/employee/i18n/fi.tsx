@@ -4803,6 +4803,10 @@ export const fi = {
         eveningSnack: 'Iltapala'
       }
     },
+    info: {
+      varda: 'Käytetään Varda-integraatiossa',
+      koski: 'Käytetään Koski-integraatiossa'
+    },
     field: {
       applyPeriod: 'Kun toivottu alkamispäivä aikavälillä',
       canApplyDaycare: 'Varhaiskasvatushaussa',
