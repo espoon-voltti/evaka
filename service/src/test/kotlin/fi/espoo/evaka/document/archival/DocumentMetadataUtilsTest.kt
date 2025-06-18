@@ -443,4 +443,40 @@ class DocumentMetadataUtilsTest {
             assertEquals(expected, result, "Failed for input date: $input")
         }
     }
+
+    @Test
+    fun `createRetentionPolicy sets correct policy for pedagogical assessment`() {
+        val result = createRetentionPolicy(ChildDocumentType.PEDAGOGICAL_ASSESSMENT)
+
+        assertEquals("RetentionPolicy", result.policyConfiguration.policyName)
+        val rule = result.policyConfiguration.rules.rule
+        assertEquals(28, rule.timeSpan)
+        assertEquals("syntymästä", rule.triggerEvent) // TODO
+        assertEquals("AddTimeSpanToTarget", rule.action.actionType)
+        assertEquals("Perusopetuslaki (628/1998) 16 a §", rule.action.actionAnnotation)
+    }
+
+    @Test
+    fun `createRetentionPolicy sets correct policy for pedagogical report`() {
+        val result = createRetentionPolicy(ChildDocumentType.PEDAGOGICAL_REPORT)
+
+        assertEquals("RetentionPolicy", result.policyConfiguration.policyName)
+        val rule = result.policyConfiguration.rules.rule
+        assertEquals(28, rule.timeSpan)
+        assertEquals("syntymästä", rule.triggerEvent) // TODO
+        assertEquals("AddTimeSpanToTarget", rule.action.actionType)
+        assertEquals("Perusopetuslaki (628/1998) 16 a §", rule.action.actionAnnotation)
+    }
+
+    @Test
+    fun `createRetentionPolicy sets correct policy for VASU document type`() {
+        val result = createRetentionPolicy(ChildDocumentType.VASU)
+
+        assertEquals("RetentionPolicy", result.policyConfiguration.policyName)
+        val rule = result.policyConfiguration.rules.rule
+        assertEquals(0, rule.timeSpan)
+        assertEquals("InPerpetuity", rule.triggerEvent)
+        assertEquals("AddTimeSpanToTarget", rule.action.actionType)
+        assertEquals("KA/13089/07.01.01.03.01/2018", rule.action.actionAnnotation)
+    }
 }
