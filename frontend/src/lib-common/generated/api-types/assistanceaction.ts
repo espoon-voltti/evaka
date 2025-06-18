@@ -6,6 +6,8 @@
 
 import type { Action } from '../action'
 import type { AssistanceActionId } from './shared'
+import type { EvakaUser } from './user'
+import HelsinkiDateTime from '../../helsinki-date-time'
 import type { JsonOf } from '../../json'
 import LocalDate from '../../local-date'
 import type { PersonId } from './shared'
@@ -18,6 +20,8 @@ export interface AssistanceAction {
   childId: PersonId
   endDate: LocalDate
   id: AssistanceActionId
+  modifiedAt: HelsinkiDateTime
+  modifiedBy: EvakaUser
   otherAction: string
   startDate: LocalDate
 }
@@ -54,6 +58,7 @@ export function deserializeJsonAssistanceAction(json: JsonOf<AssistanceAction>):
   return {
     ...json,
     endDate: LocalDate.parseIso(json.endDate),
+    modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt),
     startDate: LocalDate.parseIso(json.startDate)
   }
 }

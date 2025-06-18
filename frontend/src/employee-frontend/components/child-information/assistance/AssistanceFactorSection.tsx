@@ -111,10 +111,10 @@ export const AssistanceFactorSection = React.memo(
             <Thead>
               <Tr>
                 <Th style={{ width: '20%' }}>{t.fields.capacityFactor}</Th>
-                <Th style={{ width: '30%' }}>{t.fields.validDuring}</Th>
-                <Th style={{ width: '20%' }}>{t.fields.status}</Th>
+                <Th>{t.fields.validDuring}</Th>
                 <Th style={{ width: '15%' }}>{t.fields.lastModified}</Th>
-                <Th />
+                <Th style={{ width: '10%' }}>{t.fields.status}</Th>
+                <Th style={{ width: '15%' }} />
               </Tr>
             </Thead>
             <Tbody>

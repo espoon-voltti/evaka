@@ -7,6 +7,7 @@ import React, { useContext } from 'react'
 import { Success } from 'lib-common/api'
 import type { DaycareAssistanceResponse } from 'lib-common/generated/api-types/assistance'
 import { useMutationResult } from 'lib-common/query'
+import Tooltip from 'lib-components/atoms/Tooltip'
 import { Td, Tr } from 'lib-components/layout/Table'
 
 import { useTranslation } from '../../../state/i18n'
@@ -24,7 +25,10 @@ interface Props {
 }
 
 export const DaycareAssistanceRow = React.memo(function DaycareAssistanceRow({
-  daycareAssistance: { data, permittedActions },
+  daycareAssistance: {
+    data: { id, childId, validDuring, level, modified, modifiedBy },
+    permittedActions
+  },
   onEdit
 }: Props) {
   const { i18n } = useTranslation()
@@ -35,25 +39,33 @@ export const DaycareAssistanceRow = React.memo(function DaycareAssistanceRow({
   )
   return (
     <Tr data-qa="daycare-assistance-row">
-      <Td data-qa="valid-during">{data.validDuring.format()}</Td>
-      <Td data-qa="level">{t.types.daycareAssistanceLevel[data.level]}</Td>
+      <Td data-qa="valid-during">{validDuring.format()}</Td>
+      <Td data-qa="level">{t.types.daycareAssistanceLevel[level]}</Td>
+      <Td data-qa="modified">
+        <Tooltip
+          tooltip={t.fields.lastModifiedBy(modifiedBy.name)}
+          position="left"
+        >
+          {modified.format()}
+        </Tooltip>
+      </Td>
       <Td>
         <StatusLabel
           status={getStatusLabelByDateRange({
-            startDate: data.validDuring.start,
-            endDate: data.validDuring.end
+            startDate: validDuring.start,
+            endDate: validDuring.end
           })}
         />
       </Td>
       <Td>
-        {uiMode === `remove-daycare-assistance-${data.id}` && (
+        {uiMode === `remove-daycare-assistance-${id}` && (
           <DeleteConfirmation
             title={t.daycareAssistance.removeConfirmation}
-            range={data.validDuring.asDateRange()}
+            range={validDuring.asDateRange()}
             onSubmit={() =>
               deleteDaycareAssistance({
-                id: data.id,
-                childId: data.childId
+                id: id,
+                childId: childId
               }).then(() => Success.of())
             }
           />
@@ -63,7 +75,7 @@ export const DaycareAssistanceRow = React.memo(function DaycareAssistanceRow({
           dataQaDelete="delete"
           onEdit={onEdit}
           editable={permittedActions.includes('UPDATE')}
-          onDelete={() => toggleUiMode(`remove-daycare-assistance-${data.id}`)}
+          onDelete={() => toggleUiMode(`remove-daycare-assistance-${id}`)}
           deletable={permittedActions.includes('DELETE')}
         />
       </Td>

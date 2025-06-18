@@ -109,9 +109,6 @@ export const OtherAssistanceMeasureForm = React.memo(
     return (
       <Tr data-qa="other-assistance-measure-form">
         <Td>
-          <SelectF data-qa="type" bind={type} />
-        </Td>
-        <Td>
           <DateRangePickerF
             bind={validDuring}
             locale={lang}
@@ -119,6 +116,10 @@ export const OtherAssistanceMeasureForm = React.memo(
             info={form.inputInfo()}
           />
         </Td>
+        <Td>
+          <SelectF data-qa="type" bind={type} />
+        </Td>
+        <Td />
         <Td>
           {validDuring.isValid() ? (
             <StatusLabel

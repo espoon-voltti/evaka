@@ -14,6 +14,7 @@ import type {
 } from 'lib-common/generated/api-types/assistanceaction'
 import { useMutationResult } from 'lib-common/query'
 import { scrollToRef } from 'lib-common/utils/scrolling'
+import Tooltip from 'lib-components/atoms/Tooltip'
 import { featureFlags } from 'lib-customizations/employee'
 
 import { useTranslation } from '../../../state/i18n'
@@ -114,6 +115,19 @@ export default React.memo(function AssistanceActionRow({
               {
                 label: i18n.childInformation.assistanceAction.fields.dateRange,
                 value: `${assistanceAction.startDate.format()} - ${assistanceAction.endDate.format()}`
+              },
+              {
+                label: i18n.childInformation.assistanceAction.modified,
+                value: (
+                  <Tooltip
+                    tooltip={i18n.childInformation.assistanceAction.fields.lastModifiedBy(
+                      assistanceAction.modifiedBy.name
+                    )}
+                    position="left"
+                  >
+                    {assistanceAction.modifiedAt.format()}
+                  </Tooltip>
+                )
               },
               {
                 label: i18n.childInformation.assistanceAction.fields.actions,
