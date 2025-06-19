@@ -23,8 +23,10 @@ import type { PlacementPlanId } from './shared'
 import type { ProviderType } from './daycare'
 import type { ServiceNeed } from './serviceneed'
 import type { ServiceNeedId } from './shared'
+import type { ServiceNeedOption } from './serviceneed'
 import type { Unit } from './children'
 import { deserializeJsonServiceNeed } from './serviceneed'
+import { deserializeJsonServiceNeedOption } from './serviceneed'
 
 /**
 * Generated from fi.espoo.evaka.placement.ChildBasics
@@ -90,7 +92,7 @@ export interface DaycareGroupPlacement {
 export interface DaycarePlacementWithDetails {
   child: ChildBasics
   daycare: DaycareBasics
-  defaultServiceNeedOptionNameFi: string | null
+  defaultServiceNeedOption: ServiceNeedOption | null
   endDate: LocalDate
   groupPlacements: DaycareGroupPlacement[]
   id: PlacementId
@@ -416,6 +418,7 @@ export function deserializeJsonDaycarePlacementWithDetails(json: JsonOf<DaycareP
   return {
     ...json,
     child: deserializeJsonChildBasics(json.child),
+    defaultServiceNeedOption: (json.defaultServiceNeedOption != null) ? deserializeJsonServiceNeedOption(json.defaultServiceNeedOption) : null,
     endDate: LocalDate.parseIso(json.endDate),
     groupPlacements: json.groupPlacements.map(e => deserializeJsonDaycareGroupPlacement(e)),
     modifiedAt: (json.modifiedAt != null) ? HelsinkiDateTime.parseIso(json.modifiedAt) : null,

@@ -7,6 +7,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React from 'react'
 import styled from 'styled-components'
 
+import type { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
 import type LocalDate from 'lib-common/local-date'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { Td, Tr } from 'lib-components/layout/Table'
@@ -21,13 +22,15 @@ interface MissingServiceNeedRowProps {
   endDate: LocalDate
   onEdit: () => void
   disabled?: boolean
+  defaultOption: ServiceNeedOption | null
 }
 function MissingServiceNeedRow({
   createAllowed,
   startDate,
   endDate,
   onEdit,
-  disabled
+  disabled,
+  defaultOption
 }: MissingServiceNeedRowProps) {
   const { i18n } = useTranslation()
   const t = i18n.childInformation.placements.serviceNeeds
@@ -37,15 +40,22 @@ function MissingServiceNeedRow({
         {startDate.format()} - {endDate.format()}
       </InfoTd>
       <InfoTd>
+        <div>{`${defaultOption ? `${defaultOption.nameFi} ${i18n.placement.defaultOptionText}` : i18n.placement.defaultOptionMissingText}`}</div>
         {t.missing}{' '}
         <FontAwesomeIcon
           icon={faExclamationTriangle}
           color={colors.status.warning}
         />
       </InfoTd>
-      <Td />
-      <Td />
-      <Td />
+      <Td>-</Td>
+      <InfoTd>
+        {defaultOption !== null
+          ? defaultOption.partWeek
+            ? i18n.common.yes
+            : i18n.common.no
+          : '-'}
+      </InfoTd>
+      <Td>-</Td>
       <Td align="right">
         {createAllowed && (
           <Button

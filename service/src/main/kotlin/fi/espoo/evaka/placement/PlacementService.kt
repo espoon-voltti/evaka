@@ -10,6 +10,7 @@ import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.daycare.getDaycareGroup
 import fi.espoo.evaka.occupancy.familyUnitPlacementCoefficient
 import fi.espoo.evaka.serviceneed.ServiceNeed
+import fi.espoo.evaka.serviceneed.ServiceNeedOption
 import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.serviceneed.clearServiceNeedsFromPeriod
 import fi.espoo.evaka.serviceneed.findServiceNeedOptionById
@@ -485,10 +486,8 @@ fun Database.Read.getDetailedDaycarePlacements(
             childId != null -> getServiceNeedsByChild(childId)
             else -> listOf()
         }
-    val defaultServiceNeedOptionNames =
-        getServiceNeedOptions()
-            .filter { it.defaultOption }
-            .associate { it.validPlacementType to it.nameFi }
+    val defaultServiceNeedOptions =
+        getServiceNeedOptions().filter { it.defaultOption }.associateBy { it.validPlacementType }
 
     return daycarePlacements
         .map { daycarePlacement ->
@@ -503,8 +502,7 @@ fun Database.Read.getDetailedDaycarePlacements(
                 groupPlacements =
                     groupPlacements.filter { it.daycarePlacementId == daycarePlacement.id },
                 serviceNeeds = serviceNeeds.filter { it.placementId == daycarePlacement.id },
-                defaultServiceNeedOptionNameFi =
-                    defaultServiceNeedOptionNames[daycarePlacement.type],
+                defaultServiceNeedOption = defaultServiceNeedOptions[daycarePlacement.type],
                 terminatedBy = daycarePlacement.terminatedBy,
                 terminationRequestedDate = daycarePlacement.terminationRequestedDate,
                 placeGuarantee = daycarePlacement.placeGuarantee,
@@ -672,7 +670,7 @@ data class DaycarePlacementWithDetails(
     val missingServiceNeedDays: Int,
     val groupPlacements: List<DaycareGroupPlacement>,
     val serviceNeeds: List<ServiceNeed>,
-    val defaultServiceNeedOptionNameFi: String?,
+    val defaultServiceNeedOption: ServiceNeedOption?,
     val isRestrictedFromUser: Boolean = false,
     val terminationRequestedDate: LocalDate?,
     val terminatedBy: EvakaUser?,

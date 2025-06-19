@@ -113,10 +113,9 @@ class ChildControllerCitizen(private val accessControl: AccessControl) {
         childId: ChildId,
         serviceNeeds: List<ServiceNeedSummary>,
     ): List<ServiceNeedSummary> {
+        val options = tx.getServiceNeedOptions()
         val defaultServiceNeedOptions =
-            tx.getServiceNeedOptions()
-                .filter { it.defaultOption }
-                .associateBy { it.validPlacementType }
+            options.filter { it.defaultOption }.associateBy { it.validPlacementType }
         val serviceNeedDateRanges = serviceNeeds.map { FiniteDateRange(it.startDate, it.endDate) }
         return tx.getPlacementSummary(childId).flatMap { placement ->
             val placementRange = FiniteDateRange(placement.startDate, placement.endDate)
@@ -129,6 +128,11 @@ class ChildControllerCitizen(private val accessControl: AccessControl) {
                     defaultServiceNeedOption?.contractDaysPerMonth,
                     placement.unit.name,
                     placement.reservationsEnabled,
+                    isDefault = true,
+                    hasNonDefaultOptions =
+                        options.any { opt ->
+                            !opt.defaultOption && opt.validPlacementType == placement.type
+                        },
                 )
             }
         }

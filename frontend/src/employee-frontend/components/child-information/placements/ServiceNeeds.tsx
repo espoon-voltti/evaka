@@ -166,6 +166,7 @@ export default React.memo(function ServiceNeeds({
                 endDate={sn.end}
                 onEdit={() => setCreatingNew(sn.start)}
                 disabled={creatingNew !== false || editingId !== null}
+                defaultOption={placement.defaultServiceNeedOption}
               />
             )
           )}
