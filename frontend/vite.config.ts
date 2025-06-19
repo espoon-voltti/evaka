@@ -97,11 +97,11 @@ function serveIndexHtml(): Plugin {
 
         // Serve the correct index.html file
         if (req.originalUrl?.startsWith('/employee/mobile/')) {
-          req.url = '/src/employee-mobile-frontend/index-vite.html'
+          req.url = '/src/employee-mobile-frontend/index.html'
         } else if (req.originalUrl?.startsWith('/employee/')) {
-          req.url = '/src/employee-frontend/index-vite.html'
+          req.url = '/src/employee-frontend/index.html'
         } else {
-          req.url = '/src/citizen-frontend/index-vite.html'
+          req.url = '/src/citizen-frontend/index.html'
         }
         next()
       })
@@ -202,17 +202,11 @@ export default defineConfig(async (): Promise<UserConfig> => {
       sourcemap: true, // required by sentry
       rollupOptions: {
         input: {
-          citizen: path.resolve(
-            __dirname,
-            'src/citizen-frontend/index-vite.html'
-          ),
-          employee: path.resolve(
-            __dirname,
-            'src/employee-frontend/index-vite.html'
-          ),
+          citizen: path.resolve(__dirname, 'src/citizen-frontend/index.html'),
+          employee: path.resolve(__dirname, 'src/employee-frontend/index.html'),
           employeeMobile: path.resolve(
             __dirname,
-            'src/employee-mobile-frontend/index-vite.html'
+            'src/employee-mobile-frontend/index.html'
           )
         }
       }
@@ -220,7 +214,7 @@ export default defineConfig(async (): Promise<UserConfig> => {
     server: {
       port: 9099,
       warmup: {
-        clientFiles: ['src/**/index-vite.html']
+        clientFiles: ['src/**/index.html']
       },
       proxy: {
         '/api': 'http://localhost:3000'

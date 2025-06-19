@@ -101,9 +101,9 @@ RUN mkdir /static
 COPY --from=builder /project/dist/bundle/favicon.ico /static
 COPY --from=builder /project/dist/bundle/assets /static/assets
 COPY --from=builder /project/dist/bundle/employee /static/employee
-COPY --from=builder /project/dist/bundle/src/citizen-frontend/index-vite.html /static/index.html
-COPY --from=builder /project/dist/bundle/src/employee-frontend/index-vite.html /static/employee/index.html
-COPY --from=builder /project/dist/bundle/src/employee-mobile-frontend/index-vite.html /static/employee/mobile/index.html
+COPY --from=builder /project/dist/bundle/src/citizen-frontend/index.html /static
+COPY --from=builder /project/dist/bundle/src/employee-frontend/index.html /static/employee
+COPY --from=builder /project/dist/bundle/src/employee-mobile-frontend/index.html /static/employee/mobile
 
 COPY --from=builder /project/src/maintenance-page-frontend /static/maintenance-page
 
