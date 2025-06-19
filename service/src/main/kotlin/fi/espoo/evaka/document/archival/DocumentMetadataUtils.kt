@@ -90,37 +90,6 @@ fun marshalMetadata(metadata: RecordMetadataInstance): String {
     }
 }
 
-private fun createPolicyRule(
-    timeSpan: Short,
-    triggerEvent: String,
-    action: PolicyConfiguration.Rules.Rule.Action,
-): PolicyConfiguration.Rules.Rule {
-    return PolicyConfiguration.Rules.Rule().apply {
-        this.timeSpan = timeSpan
-        this.triggerEvent = triggerEvent
-        this.action = action
-    }
-}
-
-private fun createPolicyAction(
-    actionType: String,
-    actionArgument: String? = null,
-    actionAnnotation: String? = null,
-): PolicyConfiguration.Rules.Rule.Action {
-    return PolicyConfiguration.Rules.Rule.Action().apply {
-        this.actionType = actionType
-        if (actionArgument != null) {
-            actionArguments =
-                PolicyConfiguration.Rules.Rule.Action.ActionArguments().apply {
-                    this.actionArgument = actionArgument
-                }
-        }
-        if (actionAnnotation != null) {
-            this.actionAnnotation = actionAnnotation
-        }
-    }
-}
-
 private fun createDisclosurePolicy(documentMetadata: DocumentMetadata): DisclosurePolicyType {
     return DisclosurePolicyType().apply {
         policyConfiguration =
@@ -131,7 +100,7 @@ private fun createDisclosurePolicy(documentMetadata: DocumentMetadata): Disclosu
                 rules =
                     PolicyConfiguration.Rules().apply {
                         rule =
-                            createPolicyRule(
+                            PolicyConfiguration.Rules.Rule().apply {
                                 // according to Särmä specs, this should be set to 0 for
                                 // public and permanently confidential documents. If not
                                 // defined in metadata, we default to 100 years.
@@ -139,18 +108,22 @@ private fun createDisclosurePolicy(documentMetadata: DocumentMetadata): Disclosu
                                     if (documentMetadata.confidential == true)
                                         documentMetadata.confidentiality?.durationYears?.toShort()
                                             ?: 100
-                                    else 0,
+                                    else 0
                                 // years from document creation (creation.created in xml)
-                                triggerEvent = "YearsFromRecordCreation",
-                                action =
-                                    createPolicyAction(
-                                        actionType = "SetTargetStateToArgument",
-                                        actionArgument = "public",
-                                        actionAnnotation =
-                                            documentMetadata.confidentiality?.basis
-                                                ?: "JulkL 24 § 1 mom. 32 k",
-                                    ),
-                            )
+                                triggerEvent = "YearsFromRecordCreation"
+                                action = run {
+                                    val actionAnnotation =
+                                        documentMetadata.confidentiality?.basis
+                                            ?: "JulkL 24 § 1 mom. 32 k"
+                                    PolicyConfiguration.Rules.Rule.Action().apply {
+                                        actionType = "SetTargetStateToArgument"
+                                        actionArguments =
+                                            PolicyConfiguration.Rules.Rule.Action.ActionArguments()
+                                                .apply { actionArgument = "public" }
+                                        this.actionAnnotation = actionAnnotation
+                                    }
+                                }
+                            }
                     }
             }
     }
@@ -165,21 +138,23 @@ private fun createInformationSecurityPolicy(): InformationSecurityPolicyType {
                 rules =
                     PolicyConfiguration.Rules().apply {
                         rule =
-                            createPolicyRule(
-                                timeSpan = 0,
-                                triggerEvent = "InPerpetuity",
+                            PolicyConfiguration.Rules.Rule().apply {
+                                timeSpan = 0
+                                triggerEvent = "InPerpetuity"
                                 action =
-                                    createPolicyAction(
-                                        actionType = "SetTargetStateToArgument",
-                                        actionArgument = "notSecurityClassified",
-                                    ),
-                            )
+                                    PolicyConfiguration.Rules.Rule.Action().apply {
+                                        actionType = "SetTargetStateToArgument"
+                                        actionArguments =
+                                            PolicyConfiguration.Rules.Rule.Action.ActionArguments()
+                                                .apply { actionArgument = "notSecurityClassified" }
+                                    }
+                            }
                     }
             }
     }
 }
 
-private fun createRetentionPolicy(): RetentionPolicyType {
+fun createRetentionPolicy(documentType: ChildDocumentType): RetentionPolicyType {
     return RetentionPolicyType().apply {
         policyConfiguration =
             PolicyConfiguration().apply {
@@ -187,15 +162,30 @@ private fun createRetentionPolicy(): RetentionPolicyType {
                 rules =
                     PolicyConfiguration.Rules().apply {
                         rule =
-                            createPolicyRule(
-                                timeSpan = 0,
-                                triggerEvent = "InPerpetuity",
-                                action =
-                                    createPolicyAction(
-                                        actionType = "AddTimeSpanToTarget",
-                                        actionAnnotation = "KA/13089/07.01.01.03.01/2018",
-                                    ),
-                            )
+                            when (documentType) {
+                                ChildDocumentType.PEDAGOGICAL_ASSESSMENT,
+                                ChildDocumentType.PEDAGOGICAL_REPORT ->
+                                    PolicyConfiguration.Rules.Rule().apply {
+                                        timeSpan = 28
+                                        triggerEvent = "YearsFromCustomerBirthDate"
+                                        action =
+                                            PolicyConfiguration.Rules.Rule.Action().apply {
+                                                actionType = "AddTimeSpanToTarget"
+                                                actionAnnotation =
+                                                    "Perusopetuslaki (628/1998) 16 a §"
+                                            }
+                                    }
+                                else ->
+                                    PolicyConfiguration.Rules.Rule().apply {
+                                        timeSpan = 0
+                                        triggerEvent = "InPerpetuity"
+                                        action =
+                                            PolicyConfiguration.Rules.Rule.Action().apply {
+                                                actionType = "AddTimeSpanToTarget"
+                                                actionAnnotation = "KA/13089/07.01.01.03.01/2018"
+                                            }
+                                    }
+                            }
                     }
             }
     }
@@ -210,15 +200,17 @@ private fun createProtectionPolicy(): ProtectionPolicyType {
                 rules =
                     PolicyConfiguration.Rules().apply {
                         rule =
-                            createPolicyRule(
-                                timeSpan = 0,
-                                triggerEvent = "InPerpetuity",
+                            PolicyConfiguration.Rules.Rule().apply {
+                                timeSpan = 0
+                                triggerEvent = "InPerpetuity"
                                 action =
-                                    createPolicyAction(
-                                        actionType = "SetTargetStateToArgument",
-                                        actionArgument = "3",
-                                    ),
-                            )
+                                    PolicyConfiguration.Rules.Rule.Action().apply {
+                                        actionType = "SetTargetStateToArgument"
+                                        actionArguments =
+                                            PolicyConfiguration.Rules.Rule.Action.ActionArguments()
+                                                .apply { actionArgument = "3" }
+                                    }
+                            }
                     }
             }
     }
@@ -314,14 +306,17 @@ private fun createCreation(documentMetadata: DocumentMetadata): StandardMetadata
     }
 }
 
-private fun createPolicies(documentMetadata: DocumentMetadata): StandardMetadataType.Policies {
+private fun createPolicies(
+    documentMetadata: DocumentMetadata,
+    documentType: ChildDocumentType,
+): StandardMetadataType.Policies {
     return StandardMetadataType.Policies().apply {
         // Salassapitosääntö
         disclosurePolicy = createDisclosurePolicy(documentMetadata)
         // Turvallisuussääntö
         informationSecurityPolicy = createInformationSecurityPolicy()
         // Säilytyssääntö
-        retentionPolicy = createRetentionPolicy()
+        retentionPolicy = createRetentionPolicy(documentType)
         // Suojeluluokkasääntö
         protectionPolicy = createProtectionPolicy()
     }
@@ -390,7 +385,7 @@ fun createDocumentMetadata(
                     )
                 format = createFormat(filename)
                 creation = createCreation(documentMetadata)
-                policies = createPolicies(documentMetadata)
+                policies = createPolicies(documentMetadata, document.template.type)
                 caseFile = createCaseFile(documentMetadata, archivedProcess, document)
                 creation.created = getCaseFinishDate(documentMetadata, archivedProcess, document)
             }
