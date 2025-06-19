@@ -14,6 +14,7 @@ import type { IncomeId, PersonId } from 'lib-common/generated/api-types/shared'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
 import Pagination from 'lib-components/Pagination'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
+import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { PersonName } from 'lib-components/molecules/PersonNames'
 import { H3 } from 'lib-components/typography'
@@ -49,17 +50,36 @@ export default React.memo(function PersonIncome({ id }: Props) {
   const { i18n } = useTranslation()
   const { permittedActions } = useContext(PersonContext)
 
+  const [open, setOpen] = useState(false)
+
   const children = useQueryResult(
     incomeStatementChildrenQuery({ guardianId: id })
   )
+
+  const StyledCollapsibleContentArea = styled(CollapsibleContentArea)`
+    width: 50%;
+  `
 
   return (
     <>
       <H3>{i18n.personProfile.incomeStatement.title}</H3>
       <IncomeStatements personId={id} />
       <Gap size="L" />
-      <H3>{i18n.personProfile.incomeStatement.notificationsTitle}</H3>
-      <IncomeNotifications personId={id} />
+      <StyledCollapsibleContentArea
+        data-qa="income-notifications-collapsible"
+        aria-label={i18n.common.showMore}
+        paddingHorizontal="zero"
+        opaque
+        open={open}
+        toggleOpen={() => setOpen(!open)}
+        title={
+          <H3 noMargin>
+            {i18n.personProfile.incomeStatement.notificationsTitle}
+          </H3>
+        }
+      >
+        <IncomeNotifications personId={id} />
+      </StyledCollapsibleContentArea>
       <Gap size="L" />
       {renderResult(children, (children) => (
         <>

@@ -8,8 +8,10 @@ import React, { useMemo } from 'react'
 import type { PersonId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
 import UnorderedList from 'lib-components/atoms/UnorderedList'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { Label } from 'lib-components/typography'
+import { Gap } from 'lib-components/white-space'
 
 import { useTranslation } from '../../../state/i18n'
 import { renderResult } from '../../async-rendering'
@@ -32,23 +34,45 @@ export const IncomeNotifications = React.memo(function IncomeNotifications({
     [incomeNotifications]
   )
 
+  const initialNotificationAmount = 10
+  const [notificationLimit, setNotificationLimit] = React.useState(
+    initialNotificationAmount
+  )
+
   return renderResult(sortedIncomeNotifications, (notifications) =>
     notifications.length > 0 ? (
       <FixedSpaceColumn spacing="xs">
         <Label>{i18n.personProfile.incomeStatement.notificationSent}</Label>
         <UnorderedList>
-          {notifications.map((n, i) => (
-            <li key={i} data-qa="income-notification-sent-info">
-              {n.created.format()} (
-              {
-                i18n.personProfile.incomeStatement.notificationTypes[
-                  n.notificationType
-                ]
-              }
-              )
-            </li>
-          ))}
+          {notifications
+            .filter((_, i) => i < notificationLimit)
+            .map((n, i) => (
+              <li key={i} data-qa="income-notification-sent-info">
+                {n.created.format()} (
+                {
+                  i18n.personProfile.incomeStatement.notificationTypes[
+                    n.notificationType
+                  ]
+                }
+                )
+              </li>
+            ))}
         </UnorderedList>
+        <Gap size="s" />
+        {notifications.length > notificationLimit && (
+          <Button
+            text={i18n.common.showMore}
+            appearance="inline"
+            onClick={() => setNotificationLimit(notificationLimit + 10)}
+          />
+        )}
+        {notificationLimit > initialNotificationAmount && (
+          <Button
+            text={i18n.common.showLess}
+            appearance="inline"
+            onClick={() => setNotificationLimit(notificationLimit - 10)}
+          />
+        )}
       </FixedSpaceColumn>
     ) : (
       <span>{i18n.personProfile.incomeStatement.noNotifications}</span>
