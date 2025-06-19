@@ -246,7 +246,9 @@ export const fi = {
       EMPLOYEE: 'työntekijä',
       MOBILE_DEVICE: 'mobiililaite',
       UNKNOWN: 'tuntematon'
-    }
+    },
+    showMore: 'Näytä lisää',
+    showLess: 'Piilota'
   },
   header: {
     applications: 'Hakemukset',
@@ -2571,7 +2573,6 @@ export const fi = {
         },
         discussionReservation: {
           calendar: {
-            addTimeButton: 'Näytä lisää',
             eventTooltipTitle: 'Muita tapahtumia:',
             otherEventSingular: 'muu tapahtuma',
             otherEventPlural: 'muuta tapahtumaa'
@@ -4605,8 +4606,7 @@ export const fi = {
       staffColumn: 'Hlö. kunnan tarve',
       absentColumn: 'Poissa',
       noResponseColumn: 'Ei vastannut',
-      moreText: 'lisää',
-      showMoreButton: 'Näytä lisää'
+      moreText: 'lisää'
     },
     holidayQuestionnaire: {
       title: 'Poissaolokyselyraportti',
@@ -4627,8 +4627,7 @@ export const fi = {
       staffColumn: 'Hlö. kunnan tarve',
       absentColumn: 'Poissa',
       noResponseColumn: 'Ei vastannut',
-      moreText: 'lisää',
-      showMoreButton: 'Näytä lisää'
+      moreText: 'lisää'
     },
     tampereRegionalSurvey: {
       title: 'Tampereen alueen seutuselvitys',

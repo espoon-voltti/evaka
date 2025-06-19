@@ -334,7 +334,7 @@ const DailyQuestionnaireRow = React.memo(function DailyQuestionnaireRow(
       <TinyTd data-qa="resize-column">
         <Button
           text=""
-          aria-label={i18n.reports.holidayQuestionnaire.showMoreButton}
+          aria-label={i18n.common.showMore}
           onClick={() => expansion.toggle()}
           icon={isExpanded ? faChevronDown : faChevronRight}
           appearance="link"
