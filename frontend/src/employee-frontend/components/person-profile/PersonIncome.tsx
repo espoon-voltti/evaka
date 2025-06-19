@@ -46,6 +46,10 @@ interface Props {
   id: PersonId
 }
 
+const StyledCollapsibleContentArea = styled(CollapsibleContentArea)`
+  width: 50%;
+`
+
 export default React.memo(function PersonIncome({ id }: Props) {
   const { i18n } = useTranslation()
   const { permittedActions } = useContext(PersonContext)
@@ -55,10 +59,6 @@ export default React.memo(function PersonIncome({ id }: Props) {
   const children = useQueryResult(
     incomeStatementChildrenQuery({ guardianId: id })
   )
-
-  const StyledCollapsibleContentArea = styled(CollapsibleContentArea)`
-    width: 50%;
-  `
 
   return (
     <>
