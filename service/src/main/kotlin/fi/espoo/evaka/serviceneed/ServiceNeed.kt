@@ -67,6 +67,8 @@ data class ServiceNeedSummary(
     val contractDaysPerMonth: Int?,
     val unitName: String,
     val reservationsEnabled: Boolean,
+    val isDefault: Boolean,
+    val hasNonDefaultOptions: Boolean,
 )
 
 data class ServiceNeedChildRange(val childId: ChildId, val dateRange: FiniteDateRange)

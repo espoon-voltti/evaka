@@ -3321,7 +3321,9 @@ export const fi = {
       MESSAGING_CLUB: 'Kerho',
       MESSAGING_DAYCARE: 'Varhaiskasvatus',
       MESSAGING_PRESCHOOL: 'Esiopetus'
-    }
+    },
+    defaultOptionText: '(Oletus)',
+    defaultOptionMissingText: 'Ei saatavilla oletuspalveluntarvetta'
   },
   feeAlteration: {
     DISCOUNT: 'Alennus',
@@ -4096,7 +4098,8 @@ export const fi = {
       title: 'Puuttuvat palveluntarpeet',
       description:
         'Raportti listaa lapset, joiden sijoituksen ajalta puuttuu palveluntarve.',
-      daysWithoutServiceNeed: 'Puutteellisia päiviä'
+      daysWithoutServiceNeed: 'Puutteellisia päiviä',
+      defaultOption: 'Käytetty oletuspalveluntarve'
     },
     invalidServiceNeed: {
       title: 'Virheelliset palveluntarpeet',

@@ -32,6 +32,7 @@ import type { PlacementId } from './shared'
 import type { PlacementType } from './placement'
 import type { PreschoolAssistanceLevel } from './assistance'
 import type { ProviderType } from './daycare'
+import type { ServiceNeedOption } from './serviceneed'
 import type { ServiceNeedOption } from './application'
 import TimeInterval from '../../time-interval'
 import TimeRange from '../../time-range'
@@ -39,6 +40,7 @@ import type { TitaniaErrorsId } from './shared'
 import type { UUID } from '../../types'
 import type { VoucherValueDecisionId } from './shared'
 import { deserializeJsonDocumentContent } from './document'
+import { deserializeJsonServiceNeedOption } from './serviceneed'
 
 /**
 * Generated from fi.espoo.evaka.reports.TampereRegionalSurvey.AgeStatisticsResult
@@ -630,12 +632,13 @@ export interface MissingHeadOfFamilyReportRow {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.MissingServiceNeedReportRow
+* Generated from fi.espoo.evaka.reports.MissingServiceNeedReportResultRow
 */
-export interface MissingServiceNeedReportRow {
+export interface MissingServiceNeedReportResultRow {
   careAreaName: string
   childId: PersonId
   daysWithoutServiceNeed: number
+  defaultOption: ServiceNeedOption | null
   firstName: string
   lastName: string
   unitId: DaycareId
@@ -1378,6 +1381,14 @@ export function deserializeJsonMissingHeadOfFamilyReportRow(json: JsonOf<Missing
   return {
     ...json,
     rangesWithoutHead: json.rangesWithoutHead.map(e => FiniteDateRange.parseJson(e))
+  }
+}
+
+
+export function deserializeJsonMissingServiceNeedReportResultRow(json: JsonOf<MissingServiceNeedReportResultRow>): MissingServiceNeedReportResultRow {
+  return {
+    ...json,
+    defaultOption: (json.defaultOption != null) ? deserializeJsonServiceNeedOption(json.defaultOption) : null
   }
 }
 

@@ -83,10 +83,14 @@ const ServiceNeedTableDesktop = ({ serviceNeeds }: ServiceNeedTableProps) => {
                   {dateRange.format()}
                 </Td>
                 <Td data-qa="service-need-description">
-                  {(lang === 'fi' && serviceNeed.option?.nameFi) ||
-                    (lang === 'sv' && serviceNeed.option?.nameSv) ||
-                    (lang === 'en' && serviceNeed.option?.nameEn) ||
-                    ''}
+                  {serviceNeed.isDefault && serviceNeed.hasNonDefaultOptions
+                    ? t.children.serviceNeed.empty
+                    : `${
+                        (lang === 'fi' && serviceNeed.option?.nameFi) ||
+                        (lang === 'sv' && serviceNeed.option?.nameSv) ||
+                        (lang === 'en' && serviceNeed.option?.nameEn) ||
+                        ''
+                      }`}
                 </Td>
                 <Td data-qa="service-need-unit">{serviceNeed.unitName}</Td>
                 <Td minimalWidth>

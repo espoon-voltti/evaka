@@ -40,7 +40,7 @@ export const flatMapGroupPlacements = (
         child: daycarePlacement.child,
         serviceNeeds: daycarePlacement.serviceNeeds,
         defaultServiceNeedOptionNameFi:
-          daycarePlacement.defaultServiceNeedOptionNameFi,
+          daycarePlacement.defaultServiceNeedOption?.nameFi ?? null,
         daycarePlacementStartDate: daycarePlacement.startDate,
         daycarePlacementEndDate: daycarePlacement.endDate,
         daycarePlacementId: daycarePlacement.id,
