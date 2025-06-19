@@ -330,7 +330,7 @@ const DailyPeriodAttendanceRow = React.memo(function DailyPeriodAttendanceRow(
       <TinyTd data-qa="resize-column">
         <Button
           text=""
-          aria-label={i18n.reports.holidayPeriodAttendance.showMoreButton}
+          aria-label={i18n.common.showMore}
           onClick={() => expansion.toggle()}
           icon={isExpanded ? faChevronDown : faChevronRight}
           appearance="link"

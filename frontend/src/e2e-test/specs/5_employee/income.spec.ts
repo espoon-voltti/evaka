@@ -324,6 +324,7 @@ describe('Income', () => {
     }).save()
 
     await page.reload()
+    await incomesSection.toggleNotificationsCollapsible()
     await waitUntilEqual(() => incomesSection.incomeNotificationRows.count(), 3)
     await incomesSection.incomeNotificationRows
       .nth(0)
