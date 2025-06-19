@@ -54,7 +54,7 @@ myfork/
     EVAKA_CUSTOMIZATIONS=mytown yarn dev
     ```
 
-    - Applies to all Webpack actions
+    - Applies to all Vite actions
 1. Customizations can freely be split into multiple files but everything must be
   reachable by following the import chain from the main files:
     - [`citizen.tsx`](./citizen.tsx)
@@ -68,7 +68,7 @@ Customizations generally consist of five basic parts:
 1. Type definitions in [`types.d.ts`](./types.d.ts)
 1. Import & export in one of the "root" modules,
   e.g. [`citizen.tsx`](./citizen.tsx), using the `@evaka/customizations/<module>`
-  style of import paths (replaced by Webpack dynamically at build time)
+  style of import paths (replaced by Vite dynamically at build time)
 1. Actual implementation and export in `<customization>/<module>`,
   e.g. `mytown/citizen.tsx`
 1. Default implementation in `espoo/<module>`, e.g. `espoo/citizen.tsx`
@@ -84,16 +84,3 @@ Customizations generally consist of five basic parts:
     ```
 
 **NOTE:** You might need to update `frontend/.gitignore` to add some new files.
-
-### Special cases
-
-#### Imports outside TypeScript modules
-
-By default, everything should be exposed in the root modules and imported
-by standard ES imports (`import ... from ...`) but when importing something
-handled **only** by Webpack (i.e. file loader, most commonly), use the
-dynamically replaced path:
-
-```html
-<link rel="shortcut icon" href="<%= require('@evaka/customizations/assets/favicon.ico') %>">
-```
