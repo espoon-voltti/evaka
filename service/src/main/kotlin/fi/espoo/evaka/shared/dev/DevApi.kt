@@ -22,6 +22,7 @@ import fi.espoo.evaka.application.fetchApplicationDetails
 import fi.espoo.evaka.assistance.DaycareAssistanceLevel
 import fi.espoo.evaka.assistance.OtherAssistanceMeasureType
 import fi.espoo.evaka.assistance.PreschoolAssistanceLevel
+import fi.espoo.evaka.assistanceaction.AssistanceActionOptionCategory
 import fi.espoo.evaka.assistanceneed.decision.AssistanceLevel
 import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionEmployee
 import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionGuardian
@@ -2599,7 +2600,11 @@ data class DevAssistanceActionOption(
     val id: AssistanceActionOptionId,
     val value: String = "TEST_ASSISTANCE_ACTION_OPTION",
     val nameFi: String = "testAssistanceActionOption",
-    val descriptionFi: String?,
+    val descriptionFi: String? = null,
+    val category: AssistanceActionOptionCategory = AssistanceActionOptionCategory.DAYCARE,
+    val displayOrder: Int? = null,
+    val validFrom: LocalDate? = null,
+    val validTo: LocalDate? = null,
 )
 
 val feeThresholds2020 =

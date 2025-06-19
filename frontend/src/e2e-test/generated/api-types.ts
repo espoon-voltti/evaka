@@ -14,6 +14,7 @@ import type { ApplicationType } from 'lib-common/generated/api-types/application
 import type { ArchivedProcessId } from 'lib-common/generated/api-types/shared'
 import type { AreaId } from 'lib-common/generated/api-types/shared'
 import type { AssistanceActionId } from 'lib-common/generated/api-types/shared'
+import type { AssistanceActionOptionCategory } from 'lib-common/generated/api-types/assistanceaction'
 import type { AssistanceFactorId } from 'lib-common/generated/api-types/shared'
 import type { AssistanceLevel } from 'lib-common/generated/api-types/assistanceneed'
 import type { AssistanceNeedDecisionEmployee } from 'lib-common/generated/api-types/assistanceneed'
@@ -238,9 +239,13 @@ export interface DevAssistanceAction {
 * Generated from fi.espoo.evaka.shared.dev.DevAssistanceActionOption
 */
 export interface DevAssistanceActionOption {
+  category: AssistanceActionOptionCategory
   descriptionFi: string | null
+  displayOrder: number | null
   id: AssistanceActionOptionId
   nameFi: string
+  validFrom: LocalDate | null
+  validTo: LocalDate | null
   value: string
 }
 
@@ -1306,6 +1311,15 @@ export function deserializeJsonDevAssistanceAction(json: JsonOf<DevAssistanceAct
     endDate: LocalDate.parseIso(json.endDate),
     modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt),
     startDate: LocalDate.parseIso(json.startDate)
+  }
+}
+
+
+export function deserializeJsonDevAssistanceActionOption(json: JsonOf<DevAssistanceActionOption>): DevAssistanceActionOption {
+  return {
+    ...json,
+    validFrom: (json.validFrom != null) ? LocalDate.parseIso(json.validFrom) : null,
+    validTo: (json.validTo != null) ? LocalDate.parseIso(json.validTo) : null
   }
 }
 

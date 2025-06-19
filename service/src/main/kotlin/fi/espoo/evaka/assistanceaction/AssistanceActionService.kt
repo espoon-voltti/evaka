@@ -25,7 +25,7 @@ class AssistanceActionService {
     ): AssistanceAction {
         try {
             return db.transaction { tx ->
-                validateActions(data, tx.getAssistanceActionOptions().map { it.value })
+                validateActions(data, tx.getAssistanceActionOptions())
                 tx.shortenOverlappingAssistanceAction(user, now, childId, data.startDate)
                 tx.insertAssistanceAction(user, now, childId, data)
             }
@@ -43,7 +43,7 @@ class AssistanceActionService {
     ): AssistanceAction {
         try {
             return db.transaction { tx ->
-                validateActions(data, tx.getAssistanceActionOptions().map { it.value })
+                validateActions(data, tx.getAssistanceActionOptions())
                 tx.updateAssistanceAction(user, now, id, data)
             }
         } catch (e: JdbiException) {
@@ -59,10 +59,22 @@ class AssistanceActionService {
         return db.transaction { it.getAssistanceActionOptions() }
     }
 
-    private fun validateActions(data: AssistanceActionRequest, options: List<String>) {
+    private fun validateActions(
+        data: AssistanceActionRequest,
+        options: List<AssistanceActionOption>,
+    ) {
         data.actions.forEach { action ->
-            if (!options.contains(action)) {
-                throw BadRequest("Action $action is not valid option, all options: $options")
+            val option =
+                options.find { it.value == action }
+                    ?: throw BadRequest(
+                        "Action $action is not a recognized option, all options: ${options.map { it.value }}"
+                    )
+
+            if (option.validFrom != null && data.startDate < option.validFrom) {
+                throw BadRequest("Action $action cannot be used before ${option.validFrom}")
+            }
+            if (option.validTo != null && data.endDate > option.validTo) {
+                throw BadRequest("Action $action cannot be used after ${option.validTo}")
             }
         }
     }

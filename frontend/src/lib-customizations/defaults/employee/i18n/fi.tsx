@@ -838,6 +838,11 @@ export const fi = {
       fields: {
         dateRange: 'Tukitoimien voimassaoloaika',
         actions: 'Tukitoimet',
+        actionsByCategory: {
+          DAYCARE: 'Varhaiskasvatuksen tukitoimet',
+          PRESCHOOL: 'Esiopetuksen tukitoimet',
+          OTHER: 'Muut tukitoimet'
+        },
         actionTypes: {
           OTHER: 'Muu tukitoimi'
         },
@@ -851,7 +856,11 @@ export const fi = {
         hardConflict:
           'Tukitoimet menevät päällekkäin toisen ajanjakson alkupäivämäärän kanssa.',
         autoCutWarning:
-          'Aiemmat päällekkäiset tukitoimet katkaistaan automaattisesti.'
+          'Aiemmat päällekkäiset tukitoimet katkaistaan automaattisesti.',
+        startBeforeMinDate: (date: LocalDate) =>
+          `Tämä tukitoimi voi alkaa aikaisintaan ${date.format()}`,
+        endAfterMaxDate: (date: LocalDate) =>
+          `Tämän tukitoimen voi myöntää korkeintaan ${date.format()} saakka`
       }
     },
     childDocuments: {

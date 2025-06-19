@@ -26,10 +26,24 @@ export interface AssistanceAction {
 * Generated from fi.espoo.evaka.assistanceaction.AssistanceActionOption
 */
 export interface AssistanceActionOption {
+  category: AssistanceActionOptionCategory
   descriptionFi: string | null
+  displayOrder: number | null
   nameFi: string
+  validFrom: LocalDate | null
+  validTo: LocalDate | null
   value: string
 }
+
+/**
+* Generated from fi.espoo.evaka.assistanceaction.AssistanceActionOptionCategory
+*/
+export const assistanceActionOptionCategories = [
+  'DAYCARE',
+  'PRESCHOOL'
+] as const
+
+export type AssistanceActionOptionCategory = typeof assistanceActionOptionCategories[number]
 
 /**
 * Generated from fi.espoo.evaka.assistanceaction.AssistanceActionRequest
@@ -55,6 +69,15 @@ export function deserializeJsonAssistanceAction(json: JsonOf<AssistanceAction>):
     ...json,
     endDate: LocalDate.parseIso(json.endDate),
     startDate: LocalDate.parseIso(json.startDate)
+  }
+}
+
+
+export function deserializeJsonAssistanceActionOption(json: JsonOf<AssistanceActionOption>): AssistanceActionOption {
+  return {
+    ...json,
+    validFrom: (json.validFrom != null) ? LocalDate.parseIso(json.validFrom) : null,
+    validTo: (json.validTo != null) ? LocalDate.parseIso(json.validTo) : null
   }
 }
 
