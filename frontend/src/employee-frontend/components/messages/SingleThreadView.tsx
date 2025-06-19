@@ -24,6 +24,7 @@ import type {
 } from 'lib-common/generated/api-types/messaging'
 import type { MessageAccountId } from 'lib-common/generated/api-types/shared'
 import { formatAccountNames } from 'lib-common/messaging'
+import { useMutationResult } from 'lib-common/query'
 import { scrollRefIntoView } from 'lib-common/utils/scrolling'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Linkify from 'lib-components/atoms/Linkify'
@@ -52,6 +53,7 @@ import { useTranslation } from '../../state/i18n'
 import { MessageContext } from './MessageContext'
 import {
   markLastReceivedMessageInThreadUnreadMutation,
+  markThreadReadMutation,
   replyToThreadMutation
 } from './queries'
 import type { View } from './types-view'
@@ -197,8 +199,13 @@ export function SingleThreadView({
 }: Props) {
   const { i18n } = useTranslation()
   const [, navigate] = useLocation()
-  const { getReplyContent, onReplySent, setReplyContent, refreshUnreadCounts } =
-    useContext(MessageContext)
+  const {
+    getReplyContent,
+    onReplySent,
+    setReplyContent,
+    refreshMessages,
+    refreshUnreadCounts
+  } = useContext(MessageContext)
   const [searchParams] = useSearchParams()
   const [replyEditorVisible, setReplyEditorVisible] = useState<boolean>(
     !!searchParams.get('reply')
@@ -255,6 +262,28 @@ export function SingleThreadView({
 
   const canReply = type === 'MESSAGE'
   const sendEnabled = !!replyContent && recipients.some((r) => r.selected)
+
+  const { mutateAsync: markThreadRead } = useMutationResult(
+    markThreadReadMutation
+  )
+  useEffect(() => {
+    const hasUnreadMessages = messages.some(
+      (m) => !m.readAt && m.sender.id !== accountId
+    )
+    if (hasUnreadMessages) {
+      void markThreadRead({ accountId, threadId }).then(() => {
+        refreshMessages(accountId)
+        void refreshUnreadCounts()
+      })
+    }
+  }, [
+    accountId,
+    markThreadRead,
+    messages,
+    refreshMessages,
+    refreshUnreadCounts,
+    threadId
+  ])
 
   return (
     <ThreadContainer>
