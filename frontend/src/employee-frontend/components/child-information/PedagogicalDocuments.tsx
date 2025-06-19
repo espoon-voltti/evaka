@@ -21,7 +21,6 @@ import {
 import { P } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 
-import { ChildContext } from '../../state'
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 
@@ -30,6 +29,7 @@ import {
   childPedagogicalDocumentsQuery,
   createPedagogicalDocumentMutation
 } from './queries'
+import { ChildContext } from './state'
 
 interface Props {
   childId: ChildId
@@ -78,7 +78,7 @@ export default React.memo(function PedagogicalDocuments({ childId }: Props) {
       )}
 
       {!!i18n.childInformation.pedagogicalDocument.explanation && (
-        <P noMargin>
+        <P>
           {i18n.childInformation.pedagogicalDocument.explanation}
           <InfoButtonWithMargin
             onClick={() =>
