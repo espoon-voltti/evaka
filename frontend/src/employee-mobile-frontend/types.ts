@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2025 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -6,7 +6,7 @@ import type { AbsenceCategory } from 'lib-common/generated/api-types/absence'
 import type { AttendanceStatus } from 'lib-common/generated/api-types/attendance'
 import type { PlacementType } from 'lib-common/generated/api-types/placement'
 
-import type { Translations } from '../common/i18n'
+import type { Translations } from './common/i18n'
 
 export type ChildAttendanceUIState =
   | 'coming'
