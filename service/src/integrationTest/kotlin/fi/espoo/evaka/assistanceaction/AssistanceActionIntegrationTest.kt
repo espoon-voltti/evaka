@@ -70,6 +70,8 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 endDate = testDate(20),
                 actions = emptySet(),
                 otherAction = "",
+                modifiedAt = clock.now(),
+                modifiedBy = admin.evakaUser,
             ),
             assistanceAction,
         )
@@ -100,6 +102,8 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 endDate = testDate(20),
                 actions = allActionTypes,
                 otherAction = "foo",
+                modifiedAt = clock.now(),
+                modifiedBy = admin.evakaUser,
             ),
             assistanceAction,
         )

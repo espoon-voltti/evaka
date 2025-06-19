@@ -7,6 +7,7 @@ import React, { useContext } from 'react'
 import { Success } from 'lib-common/api'
 import type { OtherAssistanceMeasureResponse } from 'lib-common/generated/api-types/assistance'
 import { useMutationResult } from 'lib-common/query'
+import Tooltip from 'lib-components/atoms/Tooltip'
 import { Td, Tr } from 'lib-components/layout/Table'
 
 import { useTranslation } from '../../../state/i18n'
@@ -25,7 +26,10 @@ interface Props {
 
 export const OtherAssistanceMeasureRow = React.memo(
   function OtherAssistanceMeasureRow({
-    otherAssistanceMeasure: { data, permittedActions },
+    otherAssistanceMeasure: {
+      data: { id, childId, validDuring, type, modifiedBy, modified },
+      permittedActions
+    },
     onEdit
   }: Props) {
     const { i18n } = useTranslation()
@@ -36,25 +40,33 @@ export const OtherAssistanceMeasureRow = React.memo(
     )
     return (
       <Tr data-qa="other-assistance-measure-row">
-        <Td data-qa="type">{t.types.otherAssistanceMeasureType[data.type]}</Td>
-        <Td data-qa="valid-during">{data.validDuring.format()}</Td>
+        <Td data-qa="valid-during">{validDuring.format()}</Td>
+        <Td data-qa="type">{t.types.otherAssistanceMeasureType[type]}</Td>
+        <Td data-qa="modified">
+          <Tooltip
+            tooltip={t.fields.lastModifiedBy(modifiedBy.name)}
+            position="left"
+          >
+            {modified.format()}
+          </Tooltip>
+        </Td>
         <Td>
           <StatusLabel
             status={getStatusLabelByDateRange({
-              startDate: data.validDuring.start,
-              endDate: data.validDuring.end
+              startDate: validDuring.start,
+              endDate: validDuring.end
             })}
           />
         </Td>
         <Td>
-          {uiMode === `remove-other-assistance-measure-${data.id}` && (
+          {uiMode === `remove-other-assistance-measure-${id}` && (
             <DeleteConfirmation
               title={t.otherAssistanceMeasure.removeConfirmation}
-              range={data.validDuring.asDateRange()}
+              range={validDuring.asDateRange()}
               onSubmit={() =>
                 deleteOtherAssistanceMeasure({
-                  id: data.id,
-                  childId: data.childId
+                  id: id,
+                  childId: childId
                 }).then(() => Success.of())
               }
             />
@@ -65,7 +77,7 @@ export const OtherAssistanceMeasureRow = React.memo(
             onEdit={onEdit}
             editable={permittedActions.includes('UPDATE')}
             onDelete={() =>
-              toggleUiMode(`remove-other-assistance-measure-${data.id}`)
+              toggleUiMode(`remove-other-assistance-measure-${id}`)
             }
             deletable={permittedActions.includes('DELETE')}
           />

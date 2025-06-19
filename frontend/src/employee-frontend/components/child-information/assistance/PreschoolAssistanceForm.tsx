@@ -202,6 +202,7 @@ export const PreschoolAssistanceForm = React.memo(
             )}
           </FixedSpaceColumn>
         </Td>
+        <Td />
         <Td>
           {validDuring.isValid() ? (
             <StatusLabel

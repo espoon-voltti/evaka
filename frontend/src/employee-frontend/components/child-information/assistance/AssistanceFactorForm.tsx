@@ -109,6 +109,7 @@ export const AssistanceFactorForm = React.memo(function AssistanceFactorForm(
           info={form.inputInfo()}
         />
       </Td>
+      <Td />
       <Td>
         {validDuring.isValid() ? (
           <StatusLabel

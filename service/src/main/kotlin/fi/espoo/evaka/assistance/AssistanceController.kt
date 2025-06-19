@@ -11,6 +11,7 @@ import fi.espoo.evaka.assistanceaction.AssistanceActionOption
 import fi.espoo.evaka.assistanceaction.AssistanceActionRequest
 import fi.espoo.evaka.assistanceaction.AssistanceActionResponse
 import fi.espoo.evaka.assistanceaction.AssistanceActionService
+import fi.espoo.evaka.assistanceaction.getAssistanceActionsByChild
 import fi.espoo.evaka.shared.AssistanceActionId
 import fi.espoo.evaka.shared.AssistanceFactorId
 import fi.espoo.evaka.shared.ChildId
@@ -91,7 +92,7 @@ class AssistanceController(
                         Action.AssistanceAction.READ,
                     )
                 val assistanceActions =
-                    tx.getAssistanceActionsByChildId(child, assistanceActionFilter).let { rows ->
+                    tx.getAssistanceActionsByChild(child, assistanceActionFilter).let { rows ->
                         val actions: Map<AssistanceActionId, Set<Action.AssistanceAction>> =
                             accessControl.getPermittedActions(tx, user, clock, rows.map { it.id })
                         rows.map { AssistanceActionResponse(it, actions[it.id] ?: emptySet()) }
