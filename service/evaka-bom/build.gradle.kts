@@ -51,7 +51,7 @@ dependencies {
         api(libs.ktlint.test)
 
         // These constraints are needed for CVE fixes
-        api("org.apache.tomcat.embed:tomcat-embed-core:10.1.42")
+        api("org.apache.tomcat.embed:tomcat-embed-core:11.0.8")
     }
 
     api(platform("com.fasterxml.jackson:jackson-bom:2.19.1"))
