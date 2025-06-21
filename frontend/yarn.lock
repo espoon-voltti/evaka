@@ -4411,14 +4411,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axios@npm:1.9.0":
-  version: 1.9.0
-  resolution: "axios@npm:1.9.0"
+"axios@npm:1.10.0":
+  version: 1.10.0
+  resolution: "axios@npm:1.10.0"
   dependencies:
     follow-redirects: "npm:^1.15.6"
     form-data: "npm:^4.0.0"
     proxy-from-env: "npm:^1.1.0"
-  checksum: 10/a2f90bba56820883879f32a237e2b9ff25c250365dcafd41cec41b3406a3df334a148f90010182dfdadb4b41dc59f6f0b3e8898ff41b666d1157b5f3f4523497
+  checksum: 10/d43c80316a45611fd395743e15d16ea69a95f2b7f7095f2bb12cb78f9ca0a905194a02e52a3bf4e0db9f85fd1186d6c690410644c10ecd8bb0a468e57c2040e4
   languageName: node
   linkType: hard
 
@@ -6098,7 +6098,7 @@ __metadata:
     "@vitejs/plugin-legacy": "npm:6.1.1"
     "@vitejs/plugin-react": "npm:4.5.2"
     autosize: "npm:6.0.1"
-    axios: "npm:1.9.0"
+    axios: "npm:1.10.0"
     chart.js: "npm:4.4.9"
     chartjs-adapter-date-fns: "npm:3.0.0"
     chartjs-plugin-annotation: "npm:3.1.0"
