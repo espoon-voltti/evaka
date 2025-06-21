@@ -54,7 +54,7 @@ dependencies {
         api("org.apache.tomcat.embed:tomcat-embed-core:10.1.42")
     }
 
-    api(platform("com.fasterxml.jackson:jackson-bom:2.19.0"))
+    api(platform("com.fasterxml.jackson:jackson-bom:2.19.1"))
     api(platform("com.squareup.okhttp3:okhttp-bom:4.12.0"))
     api(platform("io.opentelemetry:opentelemetry-bom:1.51.0"))
     api(platform("io.netty:netty-bom:4.2.2.Final"))
