@@ -349,10 +349,10 @@ $unsubscribeEn
 
     override fun childDocumentNotification(language: Language, childId: ChildId): EmailContent {
         return EmailContent.fromHtml(
-            subject = "Uusi dokumentti eVakassa / Nytt dokument i eVaka / New document in eVaka",
+            subject = "Uusi asiakirja eVakassa / Nytt dokument i eVaka / New document in eVaka",
             html =
                 """
-<p>Sinulle on saapunut uusi/päivitetty dokumentti eVakaan. Lue dokumentti täältä: ${childLink(Language.fi, childId)}</p>
+<p>Sinulle on saapunut uusi/päivitetty asiakirja eVakaan. Lue asiakirja täältä: ${childLink(Language.fi, childId)}</p>
 <p>Tämä on eVaka-järjestelmän automaattisesti lähettämä ilmoitus. Älä vastaa tähän viestiin.</p>
 $unsubscribeFi
 <hr>
