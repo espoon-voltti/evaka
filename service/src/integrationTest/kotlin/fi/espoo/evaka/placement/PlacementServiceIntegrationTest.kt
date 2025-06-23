@@ -34,6 +34,7 @@ import java.time.LocalDateTime
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -1010,53 +1011,56 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
         val placements = db.read { it.getDetailedDaycarePlacements(daycare2.id, null, null) }
 
-        assertEquals(
-            setOf(
-                DaycarePlacementWithDetails(
-                    id = daycarePlacementId,
-                    child =
-                        ChildBasics(
-                            id = testChild_2.id,
-                            dateOfBirth = testChild_2.dateOfBirth,
-                            socialSecurityNumber = testChild_2.ssn,
-                            firstName = testChild_2.firstName,
-                            lastName = testChild_2.lastName,
-                        ),
-                    daycare =
-                        DaycareBasics(
-                            daycare2.id,
-                            daycare2.name,
-                            area2.name,
-                            ProviderType.MUNICIPAL,
-                            daycare2.enabledPilotFeatures.toList(),
-                            Language.fi,
-                        ),
-                    startDate = daycarePlacementStartDate,
-                    endDate = daycarePlacementEndDate,
-                    type = daycarePlacementType,
-                    missingServiceNeedDays = 6,
-                    groupPlacements =
-                        listOf(
-                            DaycareGroupPlacement(
-                                id = null,
-                                groupId = null,
-                                groupName = null,
-                                daycarePlacementId = daycarePlacementId,
-                                startDate = daycarePlacementStartDate,
-                                endDate = daycarePlacementEndDate,
-                            )
-                        ),
-                    serviceNeeds = emptyList(),
-                    defaultServiceNeedOptionNameFi = "Kokopäiväinen",
-                    terminatedBy = null,
-                    terminationRequestedDate = null,
-                    placeGuarantee = false,
-                    modifiedAt = null,
-                    modifiedBy = null,
+        assertThat(placements)
+            .usingRecursiveFieldByFieldElementComparatorIgnoringFields(
+                "defaultServiceNeedOption.updated"
+            )
+            .isEqualTo(
+                setOf(
+                    DaycarePlacementWithDetails(
+                        id = daycarePlacementId,
+                        child =
+                            ChildBasics(
+                                id = testChild_2.id,
+                                dateOfBirth = testChild_2.dateOfBirth,
+                                socialSecurityNumber = testChild_2.ssn,
+                                firstName = testChild_2.firstName,
+                                lastName = testChild_2.lastName,
+                            ),
+                        daycare =
+                            DaycareBasics(
+                                daycare2.id,
+                                daycare2.name,
+                                area2.name,
+                                ProviderType.MUNICIPAL,
+                                daycare2.enabledPilotFeatures.toList(),
+                                Language.fi,
+                            ),
+                        startDate = daycarePlacementStartDate,
+                        endDate = daycarePlacementEndDate,
+                        type = daycarePlacementType,
+                        missingServiceNeedDays = 6,
+                        groupPlacements =
+                            listOf(
+                                DaycareGroupPlacement(
+                                    id = null,
+                                    groupId = null,
+                                    groupName = null,
+                                    daycarePlacementId = daycarePlacementId,
+                                    startDate = daycarePlacementStartDate,
+                                    endDate = daycarePlacementEndDate,
+                                )
+                            ),
+                        serviceNeeds = emptyList(),
+                        defaultServiceNeedOption = snDefaultDaycare,
+                        terminatedBy = null,
+                        terminationRequestedDate = null,
+                        placeGuarantee = false,
+                        modifiedAt = null,
+                        modifiedBy = null,
+                    )
                 )
-            ),
-            placements,
-        )
+            )
     }
 
     @Test
@@ -1112,117 +1116,120 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
         val placements = db.read { it.getDetailedDaycarePlacements(daycare2.id, null, null) }
 
-        assertEquals(
-            setOf(
-                DaycarePlacementWithDetails(
-                    id = daycarePlacementId,
-                    child =
-                        ChildBasics(
-                            id = testChild_2.id,
-                            dateOfBirth = testChild_2.dateOfBirth,
-                            socialSecurityNumber = testChild_2.ssn,
-                            firstName = testChild_2.firstName,
-                            lastName = testChild_2.lastName,
-                        ),
-                    daycare =
-                        DaycareBasics(
-                            daycare2.id,
-                            daycare2.name,
-                            area2.name,
-                            ProviderType.MUNICIPAL,
-                            daycare2.enabledPilotFeatures.toList(),
-                            Language.fi,
-                        ),
-                    startDate = daycarePlacementStartDate,
-                    endDate = daycarePlacementEndDate,
-                    type = daycarePlacementType,
-                    missingServiceNeedDays = 20,
-                    groupPlacements =
-                        listOf(
-                            DaycareGroupPlacement(
-                                id = null,
-                                groupId = null,
-                                groupName = null,
-                                daycarePlacementId = daycarePlacementId,
-                                startDate = date(1),
-                                endDate = date(2),
+        assertThat(placements)
+            .usingRecursiveFieldByFieldElementComparatorIgnoringFields(
+                "defaultServiceNeedOption.updated"
+            )
+            .isEqualTo(
+                setOf(
+                    DaycarePlacementWithDetails(
+                        id = daycarePlacementId,
+                        child =
+                            ChildBasics(
+                                id = testChild_2.id,
+                                dateOfBirth = testChild_2.dateOfBirth,
+                                socialSecurityNumber = testChild_2.ssn,
+                                firstName = testChild_2.firstName,
+                                lastName = testChild_2.lastName,
                             ),
-                            DaycareGroupPlacement(
-                                id = groupPlacementId1,
-                                groupId = groupId1,
-                                groupName = "group 1",
-                                daycarePlacementId = daycarePlacementId,
-                                startDate = date(3),
-                                endDate = date(5),
+                        daycare =
+                            DaycareBasics(
+                                daycare2.id,
+                                daycare2.name,
+                                area2.name,
+                                ProviderType.MUNICIPAL,
+                                daycare2.enabledPilotFeatures.toList(),
+                                Language.fi,
                             ),
-                            DaycareGroupPlacement(
-                                id = groupPlacementId2,
-                                groupId = groupId1,
-                                groupName = "group 1",
-                                daycarePlacementId = daycarePlacementId,
-                                startDate = date(6),
-                                endDate = date(9),
+                        startDate = daycarePlacementStartDate,
+                        endDate = daycarePlacementEndDate,
+                        type = daycarePlacementType,
+                        missingServiceNeedDays = 20,
+                        groupPlacements =
+                            listOf(
+                                DaycareGroupPlacement(
+                                    id = null,
+                                    groupId = null,
+                                    groupName = null,
+                                    daycarePlacementId = daycarePlacementId,
+                                    startDate = date(1),
+                                    endDate = date(2),
+                                ),
+                                DaycareGroupPlacement(
+                                    id = groupPlacementId1,
+                                    groupId = groupId1,
+                                    groupName = "group 1",
+                                    daycarePlacementId = daycarePlacementId,
+                                    startDate = date(3),
+                                    endDate = date(5),
+                                ),
+                                DaycareGroupPlacement(
+                                    id = groupPlacementId2,
+                                    groupId = groupId1,
+                                    groupName = "group 1",
+                                    daycarePlacementId = daycarePlacementId,
+                                    startDate = date(6),
+                                    endDate = date(9),
+                                ),
+                                DaycareGroupPlacement(
+                                    id = null,
+                                    groupId = null,
+                                    groupName = null,
+                                    daycarePlacementId = daycarePlacementId,
+                                    startDate = date(10),
+                                    endDate = date(11),
+                                ),
+                                DaycareGroupPlacement(
+                                    id = groupPlacementId3,
+                                    groupId = groupId1,
+                                    groupName = "group 1",
+                                    daycarePlacementId = daycarePlacementId,
+                                    startDate = date(12),
+                                    endDate = date(12),
+                                ),
+                                DaycareGroupPlacement(
+                                    id = null,
+                                    groupId = null,
+                                    groupName = null,
+                                    daycarePlacementId = daycarePlacementId,
+                                    startDate = date(13),
+                                    endDate = date(15),
+                                ),
+                                DaycareGroupPlacement(
+                                    id = groupPlacementId4,
+                                    groupId = groupId1,
+                                    groupName = "group 1",
+                                    daycarePlacementId = daycarePlacementId,
+                                    startDate = date(16),
+                                    endDate = date(17),
+                                ),
+                                DaycareGroupPlacement(
+                                    id = null,
+                                    groupId = null,
+                                    groupName = null,
+                                    daycarePlacementId = daycarePlacementId,
+                                    startDate = date(18),
+                                    endDate = date(18),
+                                ),
+                                DaycareGroupPlacement(
+                                    id = groupPlacementId5,
+                                    groupId = groupId1,
+                                    groupName = "group 1",
+                                    daycarePlacementId = daycarePlacementId,
+                                    startDate = date(19),
+                                    endDate = date(20),
+                                ),
                             ),
-                            DaycareGroupPlacement(
-                                id = null,
-                                groupId = null,
-                                groupName = null,
-                                daycarePlacementId = daycarePlacementId,
-                                startDate = date(10),
-                                endDate = date(11),
-                            ),
-                            DaycareGroupPlacement(
-                                id = groupPlacementId3,
-                                groupId = groupId1,
-                                groupName = "group 1",
-                                daycarePlacementId = daycarePlacementId,
-                                startDate = date(12),
-                                endDate = date(12),
-                            ),
-                            DaycareGroupPlacement(
-                                id = null,
-                                groupId = null,
-                                groupName = null,
-                                daycarePlacementId = daycarePlacementId,
-                                startDate = date(13),
-                                endDate = date(15),
-                            ),
-                            DaycareGroupPlacement(
-                                id = groupPlacementId4,
-                                groupId = groupId1,
-                                groupName = "group 1",
-                                daycarePlacementId = daycarePlacementId,
-                                startDate = date(16),
-                                endDate = date(17),
-                            ),
-                            DaycareGroupPlacement(
-                                id = null,
-                                groupId = null,
-                                groupName = null,
-                                daycarePlacementId = daycarePlacementId,
-                                startDate = date(18),
-                                endDate = date(18),
-                            ),
-                            DaycareGroupPlacement(
-                                id = groupPlacementId5,
-                                groupId = groupId1,
-                                groupName = "group 1",
-                                daycarePlacementId = daycarePlacementId,
-                                startDate = date(19),
-                                endDate = date(20),
-                            ),
-                        ),
-                    serviceNeeds = emptyList(),
-                    defaultServiceNeedOptionNameFi = "Kokopäiväinen",
-                    terminatedBy = null,
-                    terminationRequestedDate = null,
-                    placeGuarantee = false,
-                    modifiedAt = null,
-                    modifiedBy = null,
+                        serviceNeeds = emptyList(),
+                        defaultServiceNeedOption = snDefaultDaycare,
+                        terminatedBy = null,
+                        terminationRequestedDate = null,
+                        placeGuarantee = false,
+                        modifiedAt = null,
+                        modifiedBy = null,
+                    )
                 )
-            ),
-            placements,
-        )
+            )
     }
 
     @Test
