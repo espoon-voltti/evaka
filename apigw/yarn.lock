@@ -2516,12 +2516,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"connect-redis@npm:8.1.0":
-  version: 8.1.0
-  resolution: "connect-redis@npm:8.1.0"
+"connect-redis@npm:9.0.0":
+  version: 9.0.0
+  resolution: "connect-redis@npm:9.0.0"
   peerDependencies:
     express-session: ">=1"
-  checksum: 10/c51bc8beeb801b34d92e6fe7ade87f15d8317f78bdaf82260e49b5e0455dc5b81e2355601b799547a7b51b67d6d56158af9c126586ca7b456006c58581b73405
+    redis: ">=5"
+  checksum: 10/da5c6304a33c54128f105f5022f515fbe651ae0b28e194f2ba8b5d9def6cf59a690bb5f99715a6e69d4ef8f27273be4cd59608727cecf0e42d6cbb0fe9022d6a
   languageName: node
   linkType: hard
 
@@ -3385,7 +3386,7 @@ __metadata:
     "@types/xml2js": "npm:0.4.14"
     axios: "npm:1.10.0"
     concurrently: "npm:9.1.2"
-    connect-redis: "npm:8.1.0"
+    connect-redis: "npm:9.0.0"
     cookie-parser: "npm:1.4.7"
     date-fns: "npm:4.1.0"
     dd-trace: "npm:5.56.0"
