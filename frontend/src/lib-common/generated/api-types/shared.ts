@@ -100,6 +100,7 @@ export interface DaycareAclRow {
 export interface DaycareAclRowEmployee {
   active: boolean
   email: string | null
+  employeeNumber: string | null
   firstName: string
   hasStaffOccupancyEffect: boolean | null
   id: EmployeeId
@@ -274,6 +275,7 @@ export type PreschoolTermId = Id<'PreschoolTerm'>
 */
 export interface ScheduledDaycareAclRow {
   email: string | null
+  employeeNumber: string | null
   endDate: LocalDate | null
   firstName: string
   id: EmployeeId

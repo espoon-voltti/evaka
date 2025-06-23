@@ -120,6 +120,7 @@ function AclRow({
   isEditable,
   isDeletable,
   coefficientPermitted,
+  employeeNumberPermitted,
   onClickEdit,
   unitGroups
 }: {
@@ -129,6 +130,7 @@ function AclRow({
   isEditable: boolean
   isDeletable: boolean
   coefficientPermitted: boolean
+  employeeNumberPermitted: boolean
   onClickEdit: () => void
   unitGroups: Record<UUID, DaycareGroupResponse> | undefined
 }) {
@@ -190,7 +192,12 @@ function AclRow({
           <span data-qa="name">
             <PersonName person={row.employee} format="First Last" />
           </span>
-          <EmailSpan data-qa="email">{row.employee.email}</EmailSpan>
+          <ExtraSpan data-qa="email">{row.employee.email}</ExtraSpan>
+          {employeeNumberPermitted && !!row.employee.employeeNumber && (
+            <ExtraSpan data-qa="person-number">
+              {i18n.employees.employeeNumber}: {row.employee.employeeNumber}
+            </ExtraSpan>
+          )}
         </FixedSpaceColumn>
       </Td>
       {unitGroups && (
@@ -301,6 +308,10 @@ function AclTable({
     () => permittedActions.includes('READ_STAFF_OCCUPANCY_COEFFICIENTS'),
     [permittedActions]
   )
+  const employeeNumberPermitted = useMemo(
+    () => permittedActions.includes('READ_STAFF_EMPLOYEE_NUMBER'),
+    [permittedActions]
+  )
 
   return (
     <Table data-qa={dataQa}>
@@ -326,6 +337,7 @@ function AclTable({
             }
             isEditable={!!(editPermitted && unitGroups)}
             coefficientPermitted={coefficientPermitted}
+            employeeNumberPermitted={employeeNumberPermitted}
             onClickEdit={() => onClickEdit(row)}
           />
         ))}
@@ -385,7 +397,13 @@ function ScheduledAclTable({
                   <span data-qa="name">
                     <PersonName person={row} format="First Last" />
                   </span>
-                  <EmailSpan data-qa="email">{row.email}</EmailSpan>
+                  <ExtraSpan data-qa="email">{row.email}</ExtraSpan>
+                  {permittedActions.includes('READ_STAFF_EMPLOYEE_NUMBER') &&
+                    !!row.employeeNumber && (
+                      <ExtraSpan data-qa="employee-number">
+                        {i18n.employees.employeeNumber}: {row.employeeNumber}
+                      </ExtraSpan>
+                    )}
                 </FixedSpaceColumn>
               </Td>
               <Td>
@@ -834,7 +852,7 @@ export default React.memo(function UnitAccessControl({
   )
 })
 
-const EmailSpan = styled.span`
+const ExtraSpan = styled.span`
   font-size: 14px;
   color: ${(p) => p.theme.colors.grayscale.g70};
   font-weight: 600;
