@@ -49,9 +49,8 @@ class ProcessMetadataControllerCitizen(
                             clock,
                             applicationId,
                             process,
-                            isCitizen = true,
                         )
-                    ProcessMetadataResponse(processMetadata.toCitizen())
+                    ProcessMetadataResponse(processMetadata.redactForCitizen())
                 }
             }
             .also { response ->

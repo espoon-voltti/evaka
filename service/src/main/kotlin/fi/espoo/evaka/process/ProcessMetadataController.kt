@@ -68,7 +68,7 @@ data class ProcessMetadata(
     val primaryDocument: DocumentMetadata,
     val secondaryDocuments: List<DocumentMetadata>,
 ) {
-    fun toCitizen() =
+    fun redactForCitizen() =
         this.copy(
             process = this.process.copy(history = emptyList(), archiveDurationMonths = null),
             primaryDocument =
@@ -287,7 +287,6 @@ class ProcessMetadataController(
                             clock,
                             applicationId,
                             process,
-                            isCitizen = false,
                         )
                     ProcessMetadataResponse(processMetadata)
                 }

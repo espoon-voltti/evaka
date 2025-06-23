@@ -730,14 +730,13 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
                 applications.map { application ->
                     val id = tx.insertApplication(application)
                     if (application.status != ApplicationStatus.CREATED) {
-                        val process =
-                            tx.insertProcess(
-                                metadata.getProcess(
-                                    ArchiveProcessType.fromApplicationType(application.type),
-                                    clock.today().year,
-                                )!!
+                        metadata
+                            .getProcess(
+                                ArchiveProcessType.fromApplicationType(application.type),
+                                clock.today().year,
                             )
-                        tx.setApplicationProcessId(id, process.id, clock.now(), enteredBy)
+                            ?.let { tx.insertProcess(it) }
+                            ?.also { tx.setApplicationProcessId(id, it.id, clock.now(), enteredBy) }
                         tx.updateApplicationDates(
                             id,
                             sentDate = application.sentDate ?: application.createdAt.toLocalDate(),

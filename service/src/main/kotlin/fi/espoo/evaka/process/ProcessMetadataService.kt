@@ -24,8 +24,8 @@ class ProcessMetadataService(private val accessControl: AccessControl) {
         clock: EvakaClock,
         applicationId: ApplicationId,
         process: ArchivedProcess,
-        isCitizen: Boolean,
     ): ProcessMetadata {
+        val isCitizen = user is AuthenticatedUser.Citizen
         val application = tx.fetchApplicationDetails(applicationId) ?: throw NotFound()
         val applicationDocument = tx.getApplicationDocumentMetadata(applicationId)
         val decisionDocuments =
