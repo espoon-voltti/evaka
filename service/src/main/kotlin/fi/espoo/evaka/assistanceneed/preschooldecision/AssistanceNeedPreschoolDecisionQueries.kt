@@ -354,10 +354,26 @@ WITH preschool_assistance_decision_with_new_end_date AS (
     SELECT preschool_assistance_decision.id, max(placement.end_date) AS new_end_date
     FROM assistance_need_preschool_decision preschool_assistance_decision
     JOIN placement ON preschool_assistance_decision.child_id = placement.child_id
-     AND preschool_assistance_decision.selected_unit = placement.unit_id
-     AND daterange(preschool_assistance_decision.valid_from, preschool_assistance_decision.valid_to, '[]') @> placement.end_date
+      AND daterange(preschool_assistance_decision.valid_from, preschool_assistance_decision.valid_to, '[]') @> placement.end_date
+    JOIN daycare daycare_pl ON placement.unit_id = daycare_pl.id
+    JOIN daycare daycare_ad ON preschool_assistance_decision.selected_unit = daycare_ad.id
     WHERE preschool_assistance_decision.status = 'ACCEPTED'
       AND preschool_assistance_decision.valid_to IS NULL
+      AND (preschool_assistance_decision.selected_unit = placement.unit_id OR daycare_pl.name = daycare_ad.name)
+      AND NOT EXISTS (
+          SELECT
+          FROM placement pl
+          JOIN daycare d ON pl.unit_id = d.id
+          WHERE pl.child_id = preschool_assistance_decision.child_id
+          AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(date)}
+          AND d.name = daycare_ad.name
+          AND pl.type IN (
+            'PRESCHOOL',
+            'PRESCHOOL_DAYCARE',
+            'PRESCHOOL_CLUB',
+            'PREPARATORY',
+            'PREPARATORY_DAYCARE')
+      )
       AND placement.type IN (
         'PRESCHOOL',
         'PRESCHOOL_DAYCARE',
