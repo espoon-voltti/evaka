@@ -134,10 +134,14 @@ const ServiceNeedTableMobile = ({ serviceNeeds }: ServiceNeedTableProps) => {
                 </StaticChip>
               </FixedSpaceRow>
               <FixedSpaceRow data-qa="service-need-description">
-                {(lang === 'fi' && serviceNeed.option?.nameFi) ||
-                  (lang === 'sv' && serviceNeed.option?.nameSv) ||
-                  (lang === 'en' && serviceNeed.option?.nameEn) ||
-                  ''}
+                {serviceNeed.isDefault && serviceNeed.hasNonDefaultOptions
+                  ? t.children.serviceNeed.empty
+                  : `${
+                      (lang === 'fi' && serviceNeed.option?.nameFi) ||
+                      (lang === 'sv' && serviceNeed.option?.nameSv) ||
+                      (lang === 'en' && serviceNeed.option?.nameEn) ||
+                      ''
+                    }`}
               </FixedSpaceRow>
               <FixedSpaceRow data-qa="service-need-unit" translate="no">
                 {serviceNeed.unitName}

@@ -633,7 +633,7 @@ describe.each(envs)('Citizen children page with weak login (%s)', (env) => {
       },
       {
         dateRange: '01.01.2022 - 31.01.2022',
-        description: '',
+        description: 'Palveluntarvetta ei määritelty',
         unit: 'Alkuräjähdyksen päiväkoti'
       }
     ])
