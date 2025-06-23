@@ -49,9 +49,6 @@ dependencies {
         api(libs.ktlint.cli.ruleset.core)
         api(libs.ktlint.rule.engine.core)
         api(libs.ktlint.test)
-
-        // These constraints are needed for CVE fixes
-        api("org.apache.tomcat.embed:tomcat-embed-core:10.1.42")
     }
 
     api(platform("com.fasterxml.jackson:jackson-bom:2.19.1"))
@@ -64,7 +61,4 @@ dependencies {
     api(platform("org.junit:junit-bom:5.13.1"))
     api(platform(libs.spring.boot.dependencies))
     api(platform("software.amazon.awssdk:bom:2.31.67"))
-
-    // These constraints are needed for CVE fixes
-    api(platform("org.springframework:spring-framework-bom:6.2.8"))
 }
