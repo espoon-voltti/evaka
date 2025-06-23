@@ -46,8 +46,8 @@ export default React.memo(function SearchInput({
   const debouncedInputString = useDebounce(inputString, 500)
 
   const addressOptions = useQueryResult(
-    debouncedInputString.length > 0
-      ? addressOptionsQuery(debouncedInputString)
+    debouncedInputString.trim().length > 0
+      ? addressOptionsQuery(debouncedInputString.trim())
       : constantQuery([])
   )
 
