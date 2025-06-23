@@ -3596,7 +3596,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/webpack@npm:^5.28.5":
+"@types/webpack@npm:5.28.5":
   version: 5.28.5
   resolution: "@types/webpack@npm:5.28.5"
   dependencies:
@@ -6094,7 +6094,7 @@ __metadata:
     "@types/punycode": "npm:2.1.4"
     "@types/react": "npm:19.1.8"
     "@types/react-dom": "npm:19.1.6"
-    "@types/webpack": "npm:^5.28.5"
+    "@types/webpack": "npm:5.28.5"
     "@vitejs/plugin-legacy": "npm:6.1.1"
     "@vitejs/plugin-react": "npm:4.5.2"
     autosize: "npm:6.0.1"
@@ -6152,7 +6152,7 @@ __metadata:
     react-select: "npm:5.10.1"
     seamless-scroll-polyfill: "npm:2.3.4"
     styled-components: "npm:6.1.19"
-    terser: "npm:^5.43.0"
+    terser: "npm:5.43.0"
     ts-jest: "npm:29.4.0"
     ts-node: "npm:10.9.2"
     tslib: "npm:2.8.1"
@@ -10715,7 +10715,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"terser@npm:^5.31.1, terser@npm:^5.43.0":
+"terser@npm:5.43.0, terser@npm:^5.31.1":
   version: 5.43.0
   resolution: "terser@npm:5.43.0"
   dependencies:
