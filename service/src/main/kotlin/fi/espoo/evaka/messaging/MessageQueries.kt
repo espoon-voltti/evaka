@@ -14,7 +14,6 @@ import fi.espoo.evaka.shared.*
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.Predicate
 import fi.espoo.evaka.shared.db.PredicateSql
-import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
@@ -130,11 +129,10 @@ GROUP BY acc.id, acc.daycare_group_id
 }
 
 fun Database.Transaction.markThreadRead(
-    clock: EvakaClock,
+    now: HelsinkiDateTime,
     accountId: MessageAccountId,
     threadId: MessageThreadId,
 ): Int {
-    val now = clock.now()
     return createUpdate {
             sql(
                 """

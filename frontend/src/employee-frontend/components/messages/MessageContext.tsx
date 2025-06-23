@@ -64,7 +64,6 @@ import {
   getSentMessages,
   getThread,
   getUnreadMessages,
-  markThreadRead,
   getFolders
 } from '../../generated/api-clients/messaging'
 import { UserContext } from '../../state/user'
@@ -89,7 +88,6 @@ const getAccountsByUserResult = wrapResult(getAccountsByUser)
 const getReceivedMessagesResult = wrapResult(getReceivedMessages)
 const getSentMessagesResult = wrapResult(getSentMessages)
 const getUnreadMessagesResult = wrapResult(getUnreadMessages)
-const markThreadReadResult = wrapResult(markThreadRead)
 const getThreadResult = wrapResult(getThread)
 
 type RepliesByThread = Record<UUID, string>
@@ -637,22 +635,8 @@ export const MessageContextProvider = React.memo(
     const selectThread = useCallback(
       (thread: MessageThread | undefined) => {
         setSelectedThread(thread?.id)
-        if (!selectedAccount) throw new Error('Should never happen')
-
-        const accountId = selectedAccount.account.id
-        const hasUnreadMessages = thread?.messages.some(
-          (m) => !m.readAt && m.sender.id !== accountId
-        )
-        if (thread && hasUnreadMessages) {
-          void markThreadReadResult({ accountId, threadId: thread.id }).then(
-            () => {
-              refreshMessages(accountId)
-              void refreshUnreadCounts()
-            }
-          )
-        }
       },
-      [setSelectedThread, selectedAccount, refreshMessages, refreshUnreadCounts]
+      [setSelectedThread]
     )
     const selectedThread = useMemo(
       () =>

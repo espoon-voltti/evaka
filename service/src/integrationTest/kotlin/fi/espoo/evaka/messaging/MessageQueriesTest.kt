@@ -179,7 +179,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals("Newest thread", thread.title)
 
         // when the thread is marked read for person 1
-        db.transaction { it.markThreadRead(clock, accounts.person1.id, thread1Id) }
+        db.transaction { it.markThreadRead(clock.now(), accounts.person1.id, thread1Id) }
 
         // then the message has correct readAt
         val person1Threads =

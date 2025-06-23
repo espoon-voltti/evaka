@@ -329,6 +329,7 @@ class MessageService(
                     )
                 tx.insertRecipients(listOf(messageId to recipientAccountIds))
                 asyncJobRunner.scheduleMarkMessagesAsSent(tx, contentId, now)
+                tx.markThreadRead(now, senderAccount, threadId)
                 if (applicationId != null) {
                     tx.createApplicationNote(
                         now = now,

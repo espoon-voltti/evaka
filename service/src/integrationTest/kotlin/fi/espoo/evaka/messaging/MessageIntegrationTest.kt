@@ -319,17 +319,33 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         )
 
         // when
+        val replyTime = sendTime.plusSeconds(1)
         replyToMessage(
             person1,
             threadWithOneReply.messages[0].id,
             setOf(employee1Account, person2Account),
             "No niinpä näyttää tulevan",
-            now = sendTime.plusSeconds(1),
+            now = replyTime,
         )
 
         // then recipients see the same data
+        val person1Threads = getRegularMessageThreads(person1)
+        assertEquals(
+            listOf(replyTime, null),
+            person1Threads.flatMap { thread ->
+                thread.messages
+                    .sortedBy { message -> message.sentAt }
+                    .map { message -> message.readAt }
+            },
+        )
+        val person1ThreadsWithoutReadAt =
+            person1Threads.map { thread ->
+                thread.copy(
+                    messages = thread.messages.map { message -> message.copy(readAt = null) }
+                )
+            }
         val person2Threads = getRegularMessageThreads(person2)
-        assertEquals(getRegularMessageThreads(person1), person2Threads)
+        assertEquals(person1ThreadsWithoutReadAt, person2Threads)
         assertEquals(
             getEmployeeMessageThreads(employee1Account, employee1).map { messageThread ->
                 CitizenMessageThread.Regular(
@@ -604,11 +620,13 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         }
 
         // when person 1 replies to thread
+        val replyTime = sendTime.plusMinutes(5)
         replyToMessage(
             person1,
             person1Threads.first().messages.first().id,
             setOf(employee1Account, person2Account),
             "Hello",
+            replyTime,
         )
 
         // then only the participants should get the message
@@ -617,6 +635,21 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             listOf(Pair(employee1Account, content), Pair(person1Account, "Hello")),
             employeeThreads.map { it.toSenderContentPairs() }.flatten(),
         )
+        val person1ThreadsAfterReply = getRegularMessageThreads(person1)
+        assertEquals(
+            listOf(replyTime, null),
+            person1ThreadsAfterReply.flatMap { thread ->
+                thread.messages
+                    .sortedBy { message -> message.sentAt }
+                    .map { message -> message.readAt }
+            },
+        )
+        val person1ThreadsWithoutReadAt =
+            person1ThreadsAfterReply.map { thread ->
+                thread.copy(
+                    messages = thread.messages.map { message -> message.copy(readAt = null) }
+                )
+            }
         assertEquals(
             employeeThreads.map { messageThread ->
                 CitizenMessageThread.Regular(
@@ -631,7 +664,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     messageThread.messages,
                 )
             },
-            getRegularMessageThreads(person1),
+            person1ThreadsWithoutReadAt,
         )
         assertEquals(
             listOf(Pair(employee1Account, content), Pair(person1Account, "Hello")),
@@ -725,7 +758,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         // then
         assertEquals(1, getUnreadReceivedMessages(employee1Account, employee1).size)
-        assertEquals(1, getUnreadReceivedMessages(person1Account, person1).size)
+        assertEquals(0, getUnreadReceivedMessages(person1Account, person1).size)
         assertEquals(2, getUnreadReceivedMessages(person2Account, person2).size)
 
         // when a thread is marked read
@@ -733,7 +766,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         // then the thread is marked read
         assertEquals(1, getUnreadReceivedMessages(employee1Account, employee1).size)
-        assertEquals(1, getUnreadReceivedMessages(person1Account, person1).size)
+        assertEquals(0, getUnreadReceivedMessages(person1Account, person1).size)
         assertEquals(0, getUnreadReceivedMessages(person2Account, person2).size)
     }
 
@@ -1023,17 +1056,17 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         // Reply is still not visible to citizen if the async job hasn't run
         val readReplyTime = sendReplyTime.plusSeconds(30)
-        assertEquals(1, unreadMessagesCount(person1, now = readReplyTime))
+        assertEquals(0, unreadMessagesCount(person1, now = readReplyTime))
         assertEquals(
-            1,
+            0,
             getUnreadReceivedMessages(person1Account, person1, now = readReplyTime).size,
         )
 
         // Reply is visible to citizen after the async job has run
         asyncJobRunner.runPendingJobsSync(MockEvakaClock(readReplyTime))
-        assertEquals(2, unreadMessagesCount(person1, now = readReplyTime))
+        assertEquals(1, unreadMessagesCount(person1, now = readReplyTime))
         assertEquals(
-            2,
+            1,
             getUnreadReceivedMessages(person1Account, person1, now = readReplyTime).size,
         )
     }
