@@ -31,7 +31,7 @@
     "@tanstack/react-query": "5.80.10",
     "autosize": "6.0.1",
     "axios": "1.10.0",
-    "chart.js": "4.4.9",
+    "chart.js": "4.5.0",
     "chartjs-adapter-date-fns": "3.0.0",
     "chartjs-plugin-annotation": "3.1.0",
     "classnames": "2.5.1",
