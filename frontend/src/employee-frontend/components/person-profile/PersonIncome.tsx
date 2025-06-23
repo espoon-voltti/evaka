@@ -58,7 +58,6 @@ export default React.memo(function PersonIncome({ id }: Props) {
       <H3>{i18n.personProfile.incomeStatement.title}</H3>
       <IncomeStatements personId={id} />
       <Gap size="L" />
-      <H3>{i18n.personProfile.incomeStatement.notificationsTitle}</H3>
       <IncomeNotifications personId={id} />
       <Gap size="L" />
       {renderResult(children, (children) => (

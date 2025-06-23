@@ -342,7 +342,13 @@ export class IncomeSection extends Section {
   #childIncomeStatementsTitles = this.findAllByDataQa(
     'child-income-statement-title'
   )
+  async toggleNotificationsCollapsible() {
+    await this.incomeNotificationsHeader.click()
+  }
 
+  incomeNotificationsHeader = this.findByDataQa(
+    'income-notifications-collapsible-header'
+  )
   incomeNotificationRows = this.findAllByDataQa('income-notification-sent-info')
   incomeNotifications = this.findAllByDataQa('income-notifications')
   confirmRetroactive = new Checkbox(this.findByDataQa('confirm-retroactive'))

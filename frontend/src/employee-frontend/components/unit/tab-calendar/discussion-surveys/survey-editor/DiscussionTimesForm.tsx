@@ -174,10 +174,7 @@ export default React.memo(function DiscussionTimesForm({
                 >
                   <LegacyButton
                     onClick={extendHorizonAction}
-                    text={
-                      i18n.unit.calendar.events.discussionReservation.calendar
-                        .addTimeButton
-                    }
+                    text={i18n.common.showMore}
                   />
                 </FixedSpaceRow>
                 <Gap size="m" />

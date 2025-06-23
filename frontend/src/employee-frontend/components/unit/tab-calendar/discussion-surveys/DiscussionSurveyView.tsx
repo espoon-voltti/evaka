@@ -175,10 +175,7 @@ const ReservationCalendarSection = React.memo(
             >
               <ExpandHorizonButton
                 onClick={expandCalendarAction}
-                text={
-                  i18n.unit.calendar.events.discussionReservation.calendar
-                    .addTimeButton
-                }
+                text={i18n.common.showMore}
                 data-qa="expand-horizon-button"
               />
             </FixedSpaceRow>
