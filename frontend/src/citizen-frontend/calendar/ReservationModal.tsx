@@ -195,15 +195,23 @@ export default React.memo(function ReservationModal({
     return holidayPeriods
       .filter(
         (hp) =>
+          hp.period.overlaps(dateRange.value()) &&
           (!dateRange.value().contains(hp.period) ||
             (timesBranch === 'dailyTimes' &&
+              timesForm.state.day.branch === 'reservationNoTimes' &&
               timesForm.state.day.state === 'notSet') ||
             (timesBranch === 'weeklyTimes' &&
-              timesForm.state.some((row) => row.day.state === 'notSet')) ||
+              timesForm.state.some(
+                (row) =>
+                  row.day.branch === 'reservationNoTimes' &&
+                  row.day.state === 'notSet'
+              )) ||
             (timesBranch === 'irregularTimes' &&
               timesForm.state.some(
                 (row) =>
-                  hp.period.includes(row.date) && row.day.state === 'notSet'
+                  hp.period.includes(row.date) &&
+                  row.day.branch === 'reservationNoTimes' &&
+                  row.day.state === 'notSet'
               ))) &&
           hp.reservationsOpenOn.isEqualOrBefore(
             LocalDate.todayInHelsinkiTz()
