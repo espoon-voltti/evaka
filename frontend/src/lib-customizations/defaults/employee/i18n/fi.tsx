@@ -5220,16 +5220,19 @@ export const fi = {
       PEDAGOGICAL_ASSESSMENT: 'Pedagoginen arvio',
       HOJKS: 'HOJKS',
       MIGRATED_VASU: 'Varhaiskasvatussuunnitelma (siirretty)',
-      MIGRATED_LEOPS: 'Esiopetuksen oppimissuunnitelma (siirretty)',
+      MIGRATED_LEOPS: 'Esiopetuksen suunnitelma (siirretty)',
       VASU: 'Varhaiskasvatussuunnitelma',
-      LEOPS: 'Esiopetuksen oppimissuunnitelma',
-      CITIZEN_BASIC: 'Kuntalaisen lomake - perus',
-      OTHER_DECISION: 'Muu päätös',
-      OTHER: 'Muu lomake'
+      LEOPS: 'Esiopetuksen suunnitelma',
+      CITIZEN_BASIC: 'Huoltajan kanssa täytettävä asiakirja',
+      OTHER_DECISION: 'Päätösasiakirja',
+      OTHER: 'Muu lapsen asiakirja'
     },
     documentTypeInfos: {
       CITIZEN_BASIC:
-        'Tämä on lomake, jonka sekä kuntalainen, että henkilökunta voivat täyttää. Halutessaan henkilökunta voi vastata kysymyksiin ensin, minkä jälkeen lomakkeen voi lähettää kuntalaiselle täytettäväksi eVakaan.'
+        'Tämä on lomake, jonka sekä kuntalainen, että henkilökunta voivat täyttää. Halutessaan henkilökunta voi vastata kysymyksiin ensin, minkä jälkeen lomakkeen voi lähettää kuntalaiselle täytettäväksi eVakaan.',
+      OTHER_DECISION:
+        'Tällä tehdään kaikki päätöspohjat hakemuksiin liittyviä päätöksiä lukuunottamatta',
+      OTHER: 'Työntekijän täyttämä lapsen pedagoginen asiakirja tai suunnitelma'
     },
     languages: {
       FI: 'Suomenkielinen',
