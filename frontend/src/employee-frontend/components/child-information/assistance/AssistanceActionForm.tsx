@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import sortBy from 'lodash/sortBy'
 import type { FormEvent } from 'react'
 import React, { useContext, useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
@@ -10,20 +11,26 @@ import type { UpdateStateFn } from 'lib-common/form-state'
 import type {
   AssistanceAction,
   AssistanceActionOption,
+  AssistanceActionOptionCategory,
   AssistanceActionRequest,
   AssistanceActionResponse
 } from 'lib-common/generated/api-types/assistanceaction'
+import { assistanceActionOptionCategories } from 'lib-common/generated/api-types/assistanceaction'
 import type { ChildId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useMutationResult } from 'lib-common/query'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
-import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import {
+  FixedSpaceColumn,
+  FixedSpaceRow
+} from 'lib-components/layout/flex-helpers'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { DatePickerSpacer } from 'lib-components/molecules/date-picker/DateRangePicker'
 import { Gap } from 'lib-components/white-space'
+import type { Translations } from 'lib-customizations/employee'
 import { featureFlags } from 'lib-customizations/employee'
 
 import { useTranslation } from '../../../state/i18n'
@@ -38,11 +45,7 @@ import {
   updateAssistanceActionMutation
 } from '../queries'
 
-const CheckboxRow = styled.div`
-  display: flex;
-  align-items: baseline;
-  margin: 4px 0;
-`
+const CheckboxList = styled(FixedSpaceColumn).attrs({ spacing: 'xxs' })``
 
 interface FormState {
   startDate: LocalDate | null
@@ -83,10 +86,12 @@ function isDuplicate(props: Props): props is DuplicateProps {
 
 interface AssistanceActionFormErrors {
   dateRange: 'required' | 'inverted' | 'conflict' | undefined
+  invalidOption: boolean
 }
 
 const noErrors: AssistanceActionFormErrors = {
-  dateRange: undefined
+  dateRange: undefined,
+  invalidOption: false
 }
 
 const getExistingAssistanceActionRanges = (props: Props): DateRange[] =>
@@ -112,6 +117,42 @@ function checkHardConflict(form: FormState, props: Props): boolean {
   return getExistingAssistanceActionRanges(props).some((existing) =>
     rangeContainsDate({ startDate, endDate }, existing.startDate)
   )
+}
+
+function validateOption(
+  i18n: Translations,
+  assistanceActionStart: LocalDate | null,
+  assistanceActionEnd: LocalDate | null,
+  optionValidityStart: LocalDate | null,
+  optionValidityEnd: LocalDate | null
+) {
+  // date range not selected or invalid, cannot validate yet
+  if (
+    !assistanceActionStart ||
+    !assistanceActionEnd ||
+    assistanceActionStart.isAfter(assistanceActionEnd)
+  )
+    return undefined
+
+  // hide option that is no longer valid during any part of the selected range
+  if (optionValidityEnd && assistanceActionStart.isAfter(optionValidityEnd))
+    return false
+
+  // fail validation if option is not valid for the action's entire duration
+  if (
+    optionValidityStart &&
+    assistanceActionStart.isBefore(optionValidityStart)
+  )
+    return i18n.childInformation.assistanceAction.errors.startBeforeMinDate(
+      optionValidityStart
+    )
+  if (optionValidityEnd && assistanceActionEnd.isAfter(optionValidityEnd))
+    return i18n.childInformation.assistanceAction.errors.endAfterMaxDate(
+      optionValidityEnd
+    )
+
+  // option is valid
+  return true
 }
 
 export default React.memo(function AssistanceActionForm(props: Props) {
@@ -153,6 +194,41 @@ export default React.memo(function AssistanceActionForm(props: Props) {
     updateAssistanceActionMutation
   )
 
+  const optionsWithValidation = useMemo(
+    () =>
+      props.assistanceActionOptions.map((o) => ({
+        ...o,
+        validation: validateOption(
+          i18n,
+          form.startDate,
+          form.endDate,
+          o.validFrom,
+          o.validTo
+        )
+      })),
+    [i18n, props.assistanceActionOptions, form.startDate, form.endDate]
+  )
+
+  const sortedOptions = useMemo(
+    () =>
+      assistanceActionOptionCategories.reduce(
+        (acc, category) => ({
+          ...acc,
+          [category]: sortBy(
+            optionsWithValidation.filter(
+              (o) => o.category === category && o.validation !== false
+            ),
+            [(o) => o.displayOrder, (o) => o.nameFi]
+          )
+        }),
+        {} as Record<
+          AssistanceActionOptionCategory,
+          typeof optionsWithValidation
+        >
+      ),
+    [optionsWithValidation]
+  )
+
   useEffect(() => {
     const isSoftConflict = checkSoftConflict(form, props)
     const isHardConflict = checkHardConflict(form, props)
@@ -170,11 +246,17 @@ export default React.memo(function AssistanceActionForm(props: Props) {
           ? 'inverted'
           : conflict
             ? 'conflict'
-            : undefined
+            : undefined,
+      invalidOption: !form.actions.every((action) =>
+        optionsWithValidation.some(
+          (option) =>
+            option.value === action && typeof option.validation !== 'string'
+        )
+      )
     })
 
     setAutoCutWarning(isCreate(props) && isSoftConflict && !isHardConflict)
-  }, [form, props])
+  }, [form, props, optionsWithValidation])
 
   const submitForm = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -186,7 +268,12 @@ export default React.memo(function AssistanceActionForm(props: Props) {
       ...form,
       startDate,
       endDate,
-      actions: [...form.actions]
+      actions: form.actions.filter((action) =>
+        // filter out hidden options that are still selected in the state
+        optionsWithValidation.some(
+          (option) => option.value === action && option.validation !== false
+        )
+      )
     }
 
     const apiCall = isCreate(props)
@@ -218,6 +305,7 @@ export default React.memo(function AssistanceActionForm(props: Props) {
     <form onSubmit={submitForm}>
       <LabelValueList
         spacing="large"
+        alignItems="flex-start"
         contents={[
           {
             label: i18n.childInformation.assistanceAction.fields.dateRange,
@@ -258,48 +346,50 @@ export default React.memo(function AssistanceActionForm(props: Props) {
               </>
             )
           },
-          {
-            label: i18n.childInformation.assistanceAction.fields.actions,
+          ...assistanceActionOptionCategories.map((category) => ({
+            label:
+              i18n.childInformation.assistanceAction.fields.actionsByCategory[
+                category
+              ],
             value: (
-              <div>
-                {props.assistanceActionOptions.map((option) =>
-                  option.descriptionFi ? (
-                    <ExpandingInfo
-                      key={option.value}
-                      info={option.descriptionFi}
-                      width="full"
-                    >
-                      <CheckboxRow>
-                        <Checkbox
-                          label={option.nameFi}
-                          checked={form.actions.includes(option.value)}
-                          onChange={(value) => {
-                            const actions = new Set([...form.actions])
-                            if (value) actions.add(option.value)
-                            else actions.delete(option.value)
-                            updateFormState({ actions: Array.from(actions) })
-                          }}
-                        />
-                      </CheckboxRow>
-                    </ExpandingInfo>
-                  ) : (
-                    <CheckboxRow key={option.value}>
-                      <Checkbox
-                        label={option.nameFi}
-                        checked={form.actions.includes(option.value)}
-                        onChange={(value) => {
-                          const actions = new Set([...form.actions])
-                          if (value) actions.add(option.value)
-                          else actions.delete(option.value)
-                          updateFormState({ actions: Array.from(actions) })
-                        }}
-                      />
-                    </CheckboxRow>
-                  )
-                )}
-                {featureFlags.assistanceActionOther ? (
-                  <>
-                    <CheckboxRow>
+              <CheckboxList>
+                {sortedOptions[category].map((option) => (
+                  <ExpandingInfo
+                    key={option.value}
+                    info={option.descriptionFi}
+                    width="full"
+                  >
+                    <Checkbox
+                      label={option.nameFi}
+                      checked={form.actions.includes(option.value)}
+                      onChange={(value) => {
+                        const actions = new Set([...form.actions])
+                        if (value) actions.add(option.value)
+                        else actions.delete(option.value)
+                        updateFormState({ actions: Array.from(actions) })
+                      }}
+                    />
+                    {form.actions.includes(option.value) &&
+                      typeof option.validation === 'string' && (
+                        <>
+                          <Gap size="xs" />
+                          <AlertBox message={option.validation} thin noMargin />
+                          <Gap />
+                        </>
+                      )}
+                  </ExpandingInfo>
+                ))}
+              </CheckboxList>
+            )
+          })),
+          ...(featureFlags.assistanceActionOther
+            ? [
+                {
+                  label:
+                    i18n.childInformation.assistanceAction.fields
+                      .actionsByCategory.OTHER,
+                  value: (
+                    <div>
                       <Checkbox
                         label={
                           i18n.childInformation.assistanceAction.fields
@@ -313,25 +403,25 @@ export default React.memo(function AssistanceActionForm(props: Props) {
                           })
                         }}
                       />
-                    </CheckboxRow>
-                    {form.otherSelected && (
-                      <InputField
-                        value={form.otherAction}
-                        onChange={(value) =>
-                          updateFormState({ otherAction: value })
-                        }
-                        placeholder={
-                          i18n.childInformation.assistanceAction.fields
-                            .otherActionPlaceholder
-                        }
-                      />
-                    )}
-                  </>
-                ) : null}
-              </div>
-            ),
-            valueWidth: '100%'
-          }
+
+                      {form.otherSelected && (
+                        <InputField
+                          value={form.otherAction}
+                          onChange={(value) =>
+                            updateFormState({ otherAction: value })
+                          }
+                          placeholder={
+                            i18n.childInformation.assistanceAction.fields
+                              .otherActionPlaceholder
+                          }
+                        />
+                      )}
+                    </div>
+                  ),
+                  valueWidth: '100%'
+                }
+              ]
+            : [])
         ]}
       />
 
@@ -359,5 +449,5 @@ export default React.memo(function AssistanceActionForm(props: Props) {
 })
 
 function formHasErrors(errors: AssistanceActionFormErrors) {
-  return errors.dateRange !== undefined
+  return errors.dateRange !== undefined || errors.invalidOption
 }
