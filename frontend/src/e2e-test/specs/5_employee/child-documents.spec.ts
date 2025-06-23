@@ -1004,7 +1004,7 @@ describe('Employee - Child documents - unit groups page', () => {
       from: 'Espoon Varhaiskasvatus <no-reply.evaka@espoo.fi>',
       to: 'adult1@evaka.test',
       subject:
-        'Uusi dokumentti eVakassa / Nytt dokument i eVaka / New document in eVaka'
+        'Uusi asiakirja eVakassa / Nytt dokument i eVaka / New document in eVaka'
     }
     await runJobs({ mockedTime: now })
     const emails1 = await getSentEmails()
@@ -1060,7 +1060,7 @@ describe('Employee - Child documents - unit groups page', () => {
       from: 'Espoon Varhaiskasvatus <no-reply.evaka@espoo.fi>',
       to: 'adult1@evaka.test',
       subject:
-        'Uusi dokumentti eVakassa / Nytt dokument i eVaka / New document in eVaka'
+        'Uusi asiakirja eVakassa / Nytt dokument i eVaka / New document in eVaka'
     }
     await runJobs({ mockedTime: now })
     const emails1 = await getSentEmails()
