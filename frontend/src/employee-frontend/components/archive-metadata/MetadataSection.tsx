@@ -7,7 +7,7 @@ import styled from 'styled-components'
 
 import type { Result } from 'lib-common/api'
 import { useBoolean } from 'lib-common/form/hooks'
-import type { ProcessMetadataResponse } from 'lib-common/generated/api-types/process'
+import type { ProcessMetadataResponse } from 'lib-common/generated/api-types/caseprocess'
 import { CollapsibleContentArea as Collapsible } from 'lib-components/layout/Container'
 import { Metadatas } from 'lib-components/molecules/Metadatas'
 import { H2 } from 'lib-components/typography'

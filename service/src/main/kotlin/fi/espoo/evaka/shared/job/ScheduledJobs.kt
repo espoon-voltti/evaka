@@ -17,6 +17,7 @@ import fi.espoo.evaka.assistanceneed.vouchercoefficient.endOutdatedAssistanceNee
 import fi.espoo.evaka.attachment.AttachmentService
 import fi.espoo.evaka.attendance.addMissingStaffAttendanceDepartures
 import fi.espoo.evaka.calendarevent.CalendarEventNotificationService
+import fi.espoo.evaka.caseprocess.migrateProcessMetadata
 import fi.espoo.evaka.daycare.controllers.removeDaycareAclForRole
 import fi.espoo.evaka.document.childdocument.ChildDocumentService
 import fi.espoo.evaka.dvv.DvvModificationsBatchRefreshService
@@ -31,7 +32,6 @@ import fi.espoo.evaka.nekku.NekkuService
 import fi.espoo.evaka.note.child.daily.deleteExpiredNotes
 import fi.espoo.evaka.pis.cleanUpInactivePeople
 import fi.espoo.evaka.pis.deactivateInactiveEmployees
-import fi.espoo.evaka.process.migrateProcessMetadata
 import fi.espoo.evaka.reports.freezeVoucherValueReportRows
 import fi.espoo.evaka.reservations.MissingHolidayReservationsReminders
 import fi.espoo.evaka.reservations.MissingReservationsReminders

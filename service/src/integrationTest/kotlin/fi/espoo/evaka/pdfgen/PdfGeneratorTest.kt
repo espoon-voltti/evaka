@@ -5,6 +5,7 @@
 package fi.espoo.evaka.pdfgen
 
 import fi.espoo.evaka.application.ServiceNeed
+import fi.espoo.evaka.caseprocess.DocumentConfidentiality
 import fi.espoo.evaka.daycare.UnitManager
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.decision.Decision
@@ -30,7 +31,6 @@ import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.pis.service.createAddressPagePdf
 import fi.espoo.evaka.placement.PlacementType
-import fi.espoo.evaka.process.DocumentConfidentiality
 import fi.espoo.evaka.setting.SettingType
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ChildDocumentId

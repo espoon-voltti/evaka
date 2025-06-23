@@ -40,6 +40,9 @@ import fi.espoo.evaka.attendance.getRealtimeStaffAttendances
 import fi.espoo.evaka.attendance.occupancyCoefficientSeven
 import fi.espoo.evaka.calendarevent.CalendarEventTime
 import fi.espoo.evaka.calendarevent.CalendarEventType
+import fi.espoo.evaka.caseprocess.CaseProcessMetadataService
+import fi.espoo.evaka.caseprocess.DocumentConfidentiality
+import fi.espoo.evaka.caseprocess.insertCaseProcess
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesType
 import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.daycare.DaycareDecisionCustomization
@@ -132,9 +135,6 @@ import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.placement.PlacementPlanService
 import fi.espoo.evaka.placement.PlacementType
-import fi.espoo.evaka.process.DocumentConfidentiality
-import fi.espoo.evaka.process.MetadataService
-import fi.espoo.evaka.process.insertProcess
 import fi.espoo.evaka.reservations.DailyReservationRequest
 import fi.espoo.evaka.reservations.ReservationInsert
 import fi.espoo.evaka.reservations.createReservationsAndAbsences
@@ -724,18 +724,18 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
         @RequestBody applications: List<DevApplicationWithForm>,
     ): List<ApplicationId> =
         db.connect { dbc ->
-            val metadata = MetadataService(featureConfig)
+            val metadata = CaseProcessMetadataService(featureConfig)
             val enteredBy: EvakaUserId = AuthenticatedUser.SystemInternalUser.evakaUserId
             dbc.transaction { tx ->
                 applications.map { application ->
                     val id = tx.insertApplication(application)
                     if (application.status != ApplicationStatus.CREATED) {
                         metadata
-                            .getProcess(
+                            .getProcessParams(
                                 ArchiveProcessType.fromApplicationType(application.type),
                                 clock.today().year,
                             )
-                            ?.let { tx.insertProcess(it) }
+                            ?.let { tx.insertCaseProcess(it) }
                             ?.also { tx.setApplicationProcessId(id, it.id, clock.now(), enteredBy) }
                         tx.updateApplicationDates(
                             id,
@@ -2515,7 +2515,7 @@ data class DevChildDocument(
     val publishedAt: HelsinkiDateTime?,
     val answeredAt: HelsinkiDateTime? = null,
     val answeredBy: EvakaUserId? = null,
-    val processId: ArchivedProcessId? = null,
+    val processId: CaseProcessId? = null,
     val decisionMaker: EmployeeId? = null,
     val decision: DevChildDocumentDecision? = null,
 )

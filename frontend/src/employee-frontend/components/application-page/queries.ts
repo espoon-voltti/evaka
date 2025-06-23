@@ -18,13 +18,13 @@ import {
   updateApplication,
   updateNote
 } from '../../generated/api-clients/application'
+import { getApplicationMetadata } from '../../generated/api-clients/caseprocess'
 import {
   getApplicationUnits,
   getClubTerms,
   getPreschoolTerms
 } from '../../generated/api-clients/daycare'
 import { getThreadByApplicationId } from '../../generated/api-clients/messaging'
-import { getApplicationMetadata } from '../../generated/api-clients/process'
 
 const q = new Queries()
 

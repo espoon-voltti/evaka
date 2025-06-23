@@ -1240,7 +1240,7 @@ fun Database.Transaction.setApplicationConfidentiality(
 
 fun Database.Transaction.setApplicationProcessId(
     id: ApplicationId,
-    processId: ArchivedProcessId,
+    processId: CaseProcessId,
     now: HelsinkiDateTime,
     modifiedBy: EvakaUserId,
 ) {

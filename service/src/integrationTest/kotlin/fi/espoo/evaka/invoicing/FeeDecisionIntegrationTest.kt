@@ -6,6 +6,9 @@ package fi.espoo.evaka.invoicing
 
 import fi.espoo.evaka.EmailEnv
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.caseprocess.CaseProcessState
+import fi.espoo.evaka.caseprocess.ProcessMetadataController
+import fi.espoo.evaka.caseprocess.getCaseProcessByFeeDecisionId
 import fi.espoo.evaka.emailclient.Email
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
 import fi.espoo.evaka.emailclient.MockEmailClient
@@ -31,9 +34,6 @@ import fi.espoo.evaka.pis.EmailMessageType
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.insertPlacement
-import fi.espoo.evaka.process.ArchivedProcessState
-import fi.espoo.evaka.process.ProcessMetadataController
-import fi.espoo.evaka.process.getArchiveProcessByFeeDecisionId
 import fi.espoo.evaka.sficlient.MockSfiMessagesClient
 import fi.espoo.evaka.sficlient.SfiAsyncJobs
 import fi.espoo.evaka.sficlient.getSfiGetEventsContinuationTokens
@@ -1014,15 +1014,11 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         val result = getDecision(draft.id)
         assertEqualEnough(toDetailed(activated), result)
 
-        val process = db.read { tx -> tx.getArchiveProcessByFeeDecisionId(draft.id) }
+        val process = db.read { tx -> tx.getCaseProcessByFeeDecisionId(draft.id) }
         assertNotNull(process)
         assertEquals("1/123.789.a/${LocalDate.now().year}", process.processNumber)
         assertEquals(
-            listOf(
-                ArchivedProcessState.INITIAL,
-                ArchivedProcessState.DECIDING,
-                ArchivedProcessState.COMPLETED,
-            ),
+            listOf(CaseProcessState.INITIAL, CaseProcessState.DECIDING, CaseProcessState.COMPLETED),
             process.history.map { it.state },
         )
         assertEquals(

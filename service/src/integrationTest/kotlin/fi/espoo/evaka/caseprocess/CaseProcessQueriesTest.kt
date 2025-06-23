@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-package fi.espoo.evaka.process
+package fi.espoo.evaka.caseprocess
 
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -15,7 +15,7 @@ import java.time.LocalTime
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.Test
 
-class ArchivedProcessQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
+class CaseProcessQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `inserting process increments the number correctly`() {
         val definition1 = "123.456.789"
@@ -26,32 +26,32 @@ class ArchivedProcessQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         val archiveMonths = 120
         assertEquals(
             1,
-            db.transaction { it.insertProcess(definition1, year1, organization, archiveMonths) }
+            db.transaction { it.insertCaseProcess(definition1, year1, organization, archiveMonths) }
                 .number,
         )
         assertEquals(
             2,
-            db.transaction { it.insertProcess(definition1, year1, organization, archiveMonths) }
+            db.transaction { it.insertCaseProcess(definition1, year1, organization, archiveMonths) }
                 .number,
         )
         assertEquals(
             1,
-            db.transaction { it.insertProcess(definition2, year1, organization, archiveMonths) }
+            db.transaction { it.insertCaseProcess(definition2, year1, organization, archiveMonths) }
                 .number,
         )
         assertEquals(
             1,
-            db.transaction { it.insertProcess(definition1, year2, organization, archiveMonths) }
+            db.transaction { it.insertCaseProcess(definition1, year2, organization, archiveMonths) }
                 .number,
         )
         assertEquals(
             1,
-            db.transaction { it.insertProcess(definition2, year2, organization, archiveMonths) }
+            db.transaction { it.insertCaseProcess(definition2, year2, organization, archiveMonths) }
                 .number,
         )
         assertEquals(
             3,
-            db.transaction { it.insertProcess(definition1, year1, organization, archiveMonths) }
+            db.transaction { it.insertCaseProcess(definition1, year1, organization, archiveMonths) }
                 .number,
         )
     }
@@ -63,7 +63,7 @@ class ArchivedProcessQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         val processId =
             db.transaction {
-                    it.insertProcess(
+                    it.insertCaseProcess(
                         processDefinitionNumber = "123.456.789",
                         year = 2022,
                         organization = "Espoon kaupungin esiopetus ja varhaiskasvatus",
@@ -72,39 +72,39 @@ class ArchivedProcessQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 }
                 .id
 
-        val emptyHistory = db.read { it.getProcess(processId)!!.history }
+        val emptyHistory = db.read { it.getCaseProcess(processId)!!.history }
         assertEquals(emptyList(), emptyHistory)
 
         val now1 = HelsinkiDateTime.of(LocalDate.of(2022, 8, 1), LocalTime.of(14, 0))
         val now2 = HelsinkiDateTime.of(LocalDate.of(2023, 5, 31), LocalTime.of(23, 50))
         db.transaction {
-            it.insertProcessHistoryRow(
+            it.insertCaseProcessHistoryRow(
                 processId = processId,
-                state = ArchivedProcessState.INITIAL,
+                state = CaseProcessState.INITIAL,
                 now = now1,
                 userId = employee.evakaUserId,
             )
         }
         db.transaction {
-            it.insertProcessHistoryRow(
+            it.insertCaseProcessHistoryRow(
                 processId = processId,
-                state = ArchivedProcessState.COMPLETED,
+                state = CaseProcessState.COMPLETED,
                 now = now2,
                 userId = AuthenticatedUser.SystemInternalUser.evakaUserId,
             )
         }
 
-        val history = db.read { it.getProcess(processId)!!.history }
+        val history = db.read { it.getCaseProcess(processId)!!.history }
         assertEquals(2, history.size)
         history[0].also {
-            assertEquals(ArchivedProcessState.INITIAL, it.state)
+            assertEquals(CaseProcessState.INITIAL, it.state)
             assertEquals(1, it.rowIndex)
             assertEquals(now1, it.enteredAt)
             assertEquals(EvakaUserType.EMPLOYEE, it.enteredBy.type)
             assertEquals("Person Test", it.enteredBy.name)
         }
         history[1].also {
-            assertEquals(ArchivedProcessState.COMPLETED, it.state)
+            assertEquals(CaseProcessState.COMPLETED, it.state)
             assertEquals(2, it.rowIndex)
             assertEquals(now2, it.enteredAt)
             assertEquals(EvakaUserType.SYSTEM, it.enteredBy.type)

@@ -5,8 +5,8 @@
 import orderBy from 'lodash/orderBy'
 import React from 'react'
 
-import type { ProcessMetadata } from 'lib-common/generated/api-types/process'
-import type { DocumentMetadata } from 'lib-common/generated/api-types/process'
+import type { ProcessMetadata } from 'lib-common/generated/api-types/caseprocess'
+import type { DocumentMetadata } from 'lib-common/generated/api-types/caseprocess'
 import { faArrowDownToLine } from 'lib-icons'
 
 import UnorderedList from '../atoms/UnorderedList'

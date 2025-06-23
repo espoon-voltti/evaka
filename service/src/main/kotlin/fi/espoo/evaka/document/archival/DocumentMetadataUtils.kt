@@ -4,12 +4,12 @@
 
 package fi.espoo.evaka.document.archival
 
+import fi.espoo.evaka.caseprocess.CaseProcess
+import fi.espoo.evaka.caseprocess.CaseProcessState
+import fi.espoo.evaka.caseprocess.DocumentMetadata
 import fi.espoo.evaka.document.ChildDocumentType
 import fi.espoo.evaka.document.childdocument.ChildDocumentDetails
 import fi.espoo.evaka.identity.ExternalIdentifier
-import fi.espoo.evaka.process.ArchivedProcess
-import fi.espoo.evaka.process.ArchivedProcessState
-import fi.espoo.evaka.process.DocumentMetadata
 import fi.espoo.evaka.sarma.model.*
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import jakarta.xml.bind.JAXBContext
@@ -217,18 +217,18 @@ private fun createProtectionPolicy(): ProtectionPolicyType {
 }
 
 private fun createAgents(
-    archivedProcess: ArchivedProcess?
+    caseProcess: CaseProcess?
 ): StandardMetadataType.DocumentDescription.Agents {
     return StandardMetadataType.DocumentDescription.Agents().apply {
         // Get unique agents by their ID to avoid duplicates
-        archivedProcess
+        caseProcess
             ?.history
             ?.map { it.enteredBy }
             ?.distinctBy { it.id }
             ?.forEach { user ->
                 agent.add(
                     AgentType().apply {
-                        corporateName = archivedProcess.organization
+                        corporateName = caseProcess.organization
                         role = "Henkilökunta"
                         name = user.name
                     }
@@ -240,7 +240,7 @@ private fun createAgents(
 fun createDocumentDescription(
     document: ChildDocumentDetails,
     documentMetadata: DocumentMetadata,
-    archivedProcess: ArchivedProcess?,
+    caseProcess: CaseProcess?,
     childIdentifier: ExternalIdentifier,
     childBirthDate: java.time.LocalDate,
 ): StandardMetadataType.DocumentDescription {
@@ -286,7 +286,7 @@ fun createDocumentDescription(
         socialSecurityNumber =
             if (childIdentifier is ExternalIdentifier.SSN) childIdentifier.ssn else null
         birthDate = childBirthDate.toXMLGregorianCalendar()
-        agents = createAgents(archivedProcess)
+        agents = createAgents(caseProcess)
     }
 }
 
@@ -324,13 +324,13 @@ private fun createPolicies(
 
 private fun getCaseFinishDate(
     documentMetadata: DocumentMetadata,
-    archivedProcess: ArchivedProcess?,
+    caseProcess: CaseProcess?,
     document: ChildDocumentDetails,
 ): XMLGregorianCalendar? {
     // Determine the case finished date with fallback logic
-    return archivedProcess
+    return caseProcess
         ?.history
-        ?.find { it.state == ArchivedProcessState.COMPLETED }
+        ?.find { it.state == CaseProcessState.COMPLETED }
         ?.enteredAt
         ?.asXMLGregorianCalendar()
         ?: document.template.validity.end?.toXMLGregorianCalendar()
@@ -342,20 +342,20 @@ private fun getCaseFinishDate(
 
 fun createCaseFile(
     documentMetadata: DocumentMetadata,
-    archivedProcess: ArchivedProcess?,
+    caseProcess: CaseProcess?,
     document: ChildDocumentDetails,
 ): CaseFileType {
     return CaseFileType().apply {
         caseCreated = documentMetadata.createdAt?.asXMLGregorianCalendar()
 
-        caseFinished = getCaseFinishDate(documentMetadata, archivedProcess, document)
+        caseFinished = getCaseFinishDate(documentMetadata, caseProcess, document)
     }
 }
 
 fun createDocumentMetadata(
     document: ChildDocumentDetails,
     documentMetadata: DocumentMetadata,
-    archivedProcess: ArchivedProcess?,
+    caseProcess: CaseProcess?,
     filename: String,
     childIdentifier: ExternalIdentifier,
     birthDate: java.time.LocalDate,
@@ -372,22 +372,22 @@ fun createDocumentMetadata(
                 recordIdentifiers =
                     StandardMetadataType.RecordIdentifiers().apply {
                         recordIdentifier = document.id.toString()
-                        caseIdentifier = archivedProcess?.processNumber
+                        caseIdentifier = caseProcess?.processNumber
                     }
 
                 documentDescription =
                     createDocumentDescription(
                         document,
                         documentMetadata,
-                        archivedProcess,
+                        caseProcess,
                         childIdentifier,
                         birthDate,
                     )
                 format = createFormat(filename)
                 creation = createCreation(documentMetadata)
                 policies = createPolicies(documentMetadata, document.template.type)
-                caseFile = createCaseFile(documentMetadata, archivedProcess, document)
-                creation.created = getCaseFinishDate(documentMetadata, archivedProcess, document)
+                caseFile = createCaseFile(documentMetadata, caseProcess, document)
+                creation.created = getCaseFinishDate(documentMetadata, caseProcess, document)
             }
     }
 }

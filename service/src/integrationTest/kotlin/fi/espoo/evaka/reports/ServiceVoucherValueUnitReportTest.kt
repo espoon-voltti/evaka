@@ -5,6 +5,7 @@
 package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.caseprocess.CaseProcessMetadataService
 import fi.espoo.evaka.invoicing.controller.sendVoucherValueDecisions
 import fi.espoo.evaka.invoicing.createVoucherValueDecisionFixture
 import fi.espoo.evaka.invoicing.data.annulVoucherValueDecisions
@@ -16,7 +17,6 @@ import fi.espoo.evaka.invoicing.domain.FeeAlterationWithEffect
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.placement.PlacementType
-import fi.espoo.evaka.process.MetadataService
 import fi.espoo.evaka.reports.VoucherReportRowType.CORRECTION
 import fi.espoo.evaka.reports.VoucherReportRowType.ORIGINAL
 import fi.espoo.evaka.reports.VoucherReportRowType.REFUND
@@ -1506,7 +1506,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
                     asyncJobRunner = asyncJobRunner,
                     user = financeUser,
                     evakaEnv = evakaEnv,
-                    metadata = MetadataService(featureConfig),
+                    metadata = CaseProcessMetadataService(featureConfig),
                     now = approvedAt,
                     ids = listOf(decision.id),
                     decisionHandlerId = null,

@@ -8,6 +8,11 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.ConstList
 import fi.espoo.evaka.EvakaEnv
+import fi.espoo.evaka.caseprocess.CaseProcessMetadataService
+import fi.espoo.evaka.caseprocess.CaseProcessState
+import fi.espoo.evaka.caseprocess.getCaseProcessByVoucherValueDecisionId
+import fi.espoo.evaka.caseprocess.insertCaseProcess
+import fi.espoo.evaka.caseprocess.insertCaseProcessHistoryRow
 import fi.espoo.evaka.invoicing.data.PagedVoucherValueDecisionSummaries
 import fi.espoo.evaka.invoicing.data.annulVoucherValueDecisions
 import fi.espoo.evaka.invoicing.data.approveValueDecisionDraftsForSending
@@ -37,11 +42,6 @@ import fi.espoo.evaka.invoicing.service.FinanceDecisionGenerator
 import fi.espoo.evaka.invoicing.service.VoucherValueDecisionService
 import fi.espoo.evaka.invoicing.validateFinanceDecisionHandler
 import fi.espoo.evaka.pis.getPersonById
-import fi.espoo.evaka.process.ArchivedProcessState
-import fi.espoo.evaka.process.MetadataService
-import fi.espoo.evaka.process.getArchiveProcessByVoucherValueDecisionId
-import fi.espoo.evaka.process.insertProcess
-import fi.espoo.evaka.process.insertProcessHistoryRow
 import fi.espoo.evaka.shared.ArchiveProcessType
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
@@ -198,7 +198,7 @@ class VoucherValueDecisionController(
                     asyncJobRunner = asyncJobRunner,
                     user = user,
                     evakaEnv = evakaEnv,
-                    metadata = MetadataService(featureConfig),
+                    metadata = CaseProcessMetadataService(featureConfig),
                     now = clock.now(),
                     ids = decisionIds,
                     decisionHandlerId = decisionHandlerId,
@@ -234,10 +234,10 @@ class VoucherValueDecisionController(
                 tx.markVoucherValueDecisionsSent(ids, now)
 
                 ids.forEach { id ->
-                    tx.getArchiveProcessByVoucherValueDecisionId(id)?.let { process ->
-                        tx.insertProcessHistoryRow(
+                    tx.getCaseProcessByVoucherValueDecisionId(id)?.let { process ->
+                        tx.insertCaseProcessHistoryRow(
                             processId = process.id,
-                            state = ArchivedProcessState.COMPLETED,
+                            state = CaseProcessState.COMPLETED,
                             now = now,
                             userId = user.evakaUserId,
                         )
@@ -405,7 +405,7 @@ fun sendVoucherValueDecisions(
     asyncJobRunner: AsyncJobRunner<AsyncJob>,
     user: AuthenticatedUser.Employee,
     evakaEnv: EvakaEnv,
-    metadata: MetadataService,
+    metadata: CaseProcessMetadataService,
     now: HelsinkiDateTime,
     ids: List<VoucherValueDecisionId>,
     decisionHandlerId: EmployeeId?,
@@ -472,20 +472,20 @@ fun sendVoucherValueDecisions(
         alwaysUseDaycareFinanceDecisionHandler,
     )
 
-    val process = metadata.getProcess(ArchiveProcessType.VOUCHER_VALUE_DECISION, today.year)
+    val process = metadata.getProcessParams(ArchiveProcessType.VOUCHER_VALUE_DECISION, today.year)
     if (process != null) {
         // TODO: Could be heavy. Does this need to be moved into async jobs?
         validDecisions.forEach { decision ->
-            val processId = tx.insertProcess(process).id
-            tx.insertProcessHistoryRow(
+            val processId = tx.insertCaseProcess(process).id
+            tx.insertCaseProcessHistoryRow(
                 processId = processId,
-                state = ArchivedProcessState.INITIAL,
+                state = CaseProcessState.INITIAL,
                 now = decision.created, // retroactive initial state
                 userId = AuthenticatedUser.SystemInternalUser.evakaUserId,
             )
-            tx.insertProcessHistoryRow(
+            tx.insertCaseProcessHistoryRow(
                 processId = processId,
-                state = ArchivedProcessState.DECIDING,
+                state = CaseProcessState.DECIDING,
                 now = now,
                 userId = user.evakaUserId,
             )

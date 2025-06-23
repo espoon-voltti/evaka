@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-package fi.espoo.evaka.process
+package fi.espoo.evaka.caseprocess
 
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.application.AcceptDecisionRequest
@@ -104,7 +104,7 @@ class MigrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         migrateProcessMetadata(db, clock, featureConfig)
 
-        val process = db.read { it.getArchiveProcessByApplicationId(applicationId) }
+        val process = db.read { it.getCaseProcessByApplicationId(applicationId) }
         assertNull(process)
     }
 
@@ -152,7 +152,7 @@ class MigrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         migrateProcessMetadata(db, clock, featureConfig)
 
-        val process = db.read { it.getArchiveProcessByApplicationId(applicationId) }!!
+        val process = db.read { it.getCaseProcessByApplicationId(applicationId) }!!
         assertEquals("123.123.a", process.processDefinitionNumber)
         assertEquals(today.year, process.year)
         assertEquals(1, process.number)
@@ -162,7 +162,7 @@ class MigrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         assertEquals(1, process.history.size)
         process.history.first().also {
-            assertEquals(ArchivedProcessState.INITIAL, it.state)
+            assertEquals(CaseProcessState.INITIAL, it.state)
             assertEquals(HelsinkiDateTime.of(today, LocalTime.MIDNIGHT), it.enteredAt)
             assertEquals(AuthenticatedUser.SystemInternalUser.evakaUserId, it.enteredBy.id)
         }
@@ -256,7 +256,7 @@ class MigrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         migrateProcessMetadata(db, clock, featureConfig)
 
-        val process = db.read { it.getArchiveProcessByApplicationId(applicationId) }!!
+        val process = db.read { it.getCaseProcessByApplicationId(applicationId) }!!
         assertEquals("123.123.a", process.processDefinitionNumber)
         assertEquals(today.year, process.year)
         assertEquals(1, process.number)
@@ -266,12 +266,12 @@ class MigrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         assertEquals(2, process.history.size)
         process.history.first().also {
-            assertEquals(ArchivedProcessState.INITIAL, it.state)
+            assertEquals(CaseProcessState.INITIAL, it.state)
             assertEquals(HelsinkiDateTime.of(today, LocalTime.MIDNIGHT), it.enteredAt)
             assertEquals(AuthenticatedUser.SystemInternalUser.evakaUserId, it.enteredBy.id)
         }
         process.history.last().also {
-            assertEquals(ArchivedProcessState.COMPLETED, it.state)
+            assertEquals(CaseProcessState.COMPLETED, it.state)
             assertEquals(clock.now(), it.enteredAt)
             assertEquals(adult.evakaUserId(), it.enteredBy.id)
         }
@@ -298,7 +298,7 @@ class MigrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         migrateProcessMetadata(db, clock, featureConfig)
 
-        val process = db.read { it.getArchiveProcessByFeeDecisionId(feeDecision.id) }
+        val process = db.read { it.getCaseProcessByFeeDecisionId(feeDecision.id) }
         assertNull(process)
     }
 
@@ -328,7 +328,7 @@ class MigrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         migrateProcessMetadata(db, clock, featureConfig)
 
-        val process = db.read { it.getArchiveProcessByFeeDecisionId(feeDecision.id) }!!
+        val process = db.read { it.getCaseProcessByFeeDecisionId(feeDecision.id) }!!
         assertEquals("123.789.a", process.processDefinitionNumber)
         assertEquals(created.year, process.year)
         assertEquals(1, process.number)
@@ -337,12 +337,12 @@ class MigrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         assertTrue(process.migrated)
         assertEquals(2, process.history.size)
         process.history.first().also {
-            assertEquals(ArchivedProcessState.INITIAL, it.state)
+            assertEquals(CaseProcessState.INITIAL, it.state)
             assertEquals(created, it.enteredAt)
             assertEquals(AuthenticatedUser.SystemInternalUser.evakaUserId, it.enteredBy.id)
         }
         process.history.last().also {
-            assertEquals(ArchivedProcessState.DECIDING, it.state)
+            assertEquals(CaseProcessState.DECIDING, it.state)
             assertEquals(approved, it.enteredAt)
             assertEquals(AuthenticatedUser.SystemInternalUser.evakaUserId, it.enteredBy.id)
         }
@@ -379,7 +379,7 @@ class MigrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         migrateProcessMetadata(db, clock, featureConfig)
 
-        val process = db.read { it.getArchiveProcessByFeeDecisionId(feeDecision.id) }!!
+        val process = db.read { it.getCaseProcessByFeeDecisionId(feeDecision.id) }!!
         assertEquals("123.789.a", process.processDefinitionNumber)
         assertEquals(created.year, process.year)
         assertEquals(1, process.number)
@@ -388,17 +388,17 @@ class MigrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         assertTrue(process.migrated)
         assertEquals(3, process.history.size)
         process.history[0].also {
-            assertEquals(ArchivedProcessState.INITIAL, it.state)
+            assertEquals(CaseProcessState.INITIAL, it.state)
             assertEquals(created, it.enteredAt)
             assertEquals(AuthenticatedUser.SystemInternalUser.evakaUserId, it.enteredBy.id)
         }
         process.history[1].also {
-            assertEquals(ArchivedProcessState.DECIDING, it.state)
+            assertEquals(CaseProcessState.DECIDING, it.state)
             assertEquals(approved, it.enteredAt)
             assertEquals(approvedBy.evakaUserId, it.enteredBy.id)
         }
         process.history[2].also {
-            assertEquals(ArchivedProcessState.COMPLETED, it.state)
+            assertEquals(CaseProcessState.COMPLETED, it.state)
             assertEquals(sent, it.enteredAt)
             assertEquals(AuthenticatedUser.SystemInternalUser.evakaUserId, it.enteredBy.id)
         }
@@ -434,8 +434,7 @@ class MigrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         migrateProcessMetadata(db, clock, featureConfig)
 
-        val process =
-            db.read { it.getArchiveProcessByVoucherValueDecisionId(voucherValueDecision.id) }
+        val process = db.read { it.getCaseProcessByVoucherValueDecisionId(voucherValueDecision.id) }
         assertNull(process)
     }
 
@@ -475,7 +474,7 @@ class MigrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         migrateProcessMetadata(db, clock, featureConfig)
 
         val process =
-            db.read { it.getArchiveProcessByVoucherValueDecisionId(voucherValueDecision.id) }!!
+            db.read { it.getCaseProcessByVoucherValueDecisionId(voucherValueDecision.id) }!!
         assertEquals("123.789.b", process.processDefinitionNumber)
         assertEquals(created.year, process.year)
         assertEquals(1, process.number)
@@ -484,12 +483,12 @@ class MigrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         assertTrue(process.migrated)
         assertEquals(2, process.history.size)
         process.history.first().also {
-            assertEquals(ArchivedProcessState.INITIAL, it.state)
+            assertEquals(CaseProcessState.INITIAL, it.state)
             assertEquals(created, it.enteredAt)
             assertEquals(AuthenticatedUser.SystemInternalUser.evakaUserId, it.enteredBy.id)
         }
         process.history.last().also {
-            assertEquals(ArchivedProcessState.DECIDING, it.state)
+            assertEquals(CaseProcessState.DECIDING, it.state)
             assertEquals(approved, it.enteredAt)
             assertEquals(AuthenticatedUser.SystemInternalUser.evakaUserId, it.enteredBy.id)
         }
@@ -536,7 +535,7 @@ class MigrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         migrateProcessMetadata(db, clock, featureConfig)
 
         val process =
-            db.read { it.getArchiveProcessByVoucherValueDecisionId(voucherValueDecision.id) }!!
+            db.read { it.getCaseProcessByVoucherValueDecisionId(voucherValueDecision.id) }!!
         assertEquals("123.789.b", process.processDefinitionNumber)
         assertEquals(created.year, process.year)
         assertEquals(1, process.number)
@@ -545,17 +544,17 @@ class MigrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         assertTrue(process.migrated)
         assertEquals(3, process.history.size)
         process.history[0].also {
-            assertEquals(ArchivedProcessState.INITIAL, it.state)
+            assertEquals(CaseProcessState.INITIAL, it.state)
             assertEquals(created, it.enteredAt)
             assertEquals(AuthenticatedUser.SystemInternalUser.evakaUserId, it.enteredBy.id)
         }
         process.history[1].also {
-            assertEquals(ArchivedProcessState.DECIDING, it.state)
+            assertEquals(CaseProcessState.DECIDING, it.state)
             assertEquals(approved, it.enteredAt)
             assertEquals(approvedBy.evakaUserId, it.enteredBy.id)
         }
         process.history[2].also {
-            assertEquals(ArchivedProcessState.COMPLETED, it.state)
+            assertEquals(CaseProcessState.COMPLETED, it.state)
             assertEquals(sent, it.enteredAt)
             assertEquals(AuthenticatedUser.SystemInternalUser.evakaUserId, it.enteredBy.id)
         }
@@ -582,7 +581,7 @@ class MigrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         migrateProcessMetadata(db, clock, featureConfig)
 
         val process =
-            db.read { it.getArchiveProcessByAssistanceNeedDecisionId(assistanceNeedDecision.id) }!!
+            db.read { it.getCaseProcessByAssistanceNeedDecisionId(assistanceNeedDecision.id) }!!
         assertEquals("123.456.a", process.processDefinitionNumber)
         assertEquals(created.year, process.year)
         assertEquals(1, process.number)
@@ -591,7 +590,7 @@ class MigrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         assertTrue(process.migrated)
         assertEquals(1, process.history.size)
         process.history.first().also {
-            assertEquals(ArchivedProcessState.INITIAL, it.state)
+            assertEquals(CaseProcessState.INITIAL, it.state)
             assertEquals(created, it.enteredAt)
             assertEquals(AuthenticatedUser.SystemInternalUser.evakaUserId, it.enteredBy.id)
         }
@@ -636,7 +635,7 @@ class MigrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         migrateProcessMetadata(db, clock, featureConfig)
 
         val process =
-            db.read { it.getArchiveProcessByAssistanceNeedDecisionId(assistanceNeedDecision.id) }!!
+            db.read { it.getCaseProcessByAssistanceNeedDecisionId(assistanceNeedDecision.id) }!!
         assertEquals("123.456.a", process.processDefinitionNumber)
         assertEquals(created.year, process.year)
         assertEquals(1, process.number)
@@ -645,22 +644,22 @@ class MigrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         assertTrue(process.migrated)
         assertEquals(4, process.history.size)
         process.history[0].also {
-            assertEquals(ArchivedProcessState.INITIAL, it.state)
+            assertEquals(CaseProcessState.INITIAL, it.state)
             assertEquals(created, it.enteredAt)
             assertEquals(AuthenticatedUser.SystemInternalUser.evakaUserId, it.enteredBy.id)
         }
         process.history[1].also {
-            assertEquals(ArchivedProcessState.PREPARATION, it.state)
+            assertEquals(CaseProcessState.PREPARATION, it.state)
             assertEquals(HelsinkiDateTime.of(sentForDecision, LocalTime.MIDNIGHT), it.enteredAt)
             assertEquals(AuthenticatedUser.SystemInternalUser.evakaUserId, it.enteredBy.id)
         }
         process.history[2].also {
-            assertEquals(ArchivedProcessState.DECIDING, it.state)
+            assertEquals(CaseProcessState.DECIDING, it.state)
             assertEquals(HelsinkiDateTime.of(decisionMade, LocalTime.MIDNIGHT), it.enteredAt)
             assertEquals(employee.evakaUserId, it.enteredBy.id)
         }
         process.history[3].also {
-            assertEquals(ArchivedProcessState.COMPLETED, it.state)
+            assertEquals(CaseProcessState.COMPLETED, it.state)
             assertEquals(HelsinkiDateTime.of(decisionMade, LocalTime.MIDNIGHT), it.enteredAt)
             assertEquals(AuthenticatedUser.SystemInternalUser.evakaUserId, it.enteredBy.id)
         }
@@ -693,7 +692,7 @@ class MigrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         val process =
             db.read {
-                it.getArchiveProcessByAssistanceNeedPreschoolDecisionId(
+                it.getCaseProcessByAssistanceNeedPreschoolDecisionId(
                     assistanceNeedPreschoolDecision.id
                 )
             }!!
@@ -705,7 +704,7 @@ class MigrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         assertTrue(process.migrated)
         assertEquals(1, process.history.size)
         process.history.first().also {
-            assertEquals(ArchivedProcessState.INITIAL, it.state)
+            assertEquals(CaseProcessState.INITIAL, it.state)
             assertEquals(created, it.enteredAt)
             assertEquals(AuthenticatedUser.SystemInternalUser.evakaUserId, it.enteredBy.id)
         }
@@ -766,7 +765,7 @@ class MigrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         val process =
             db.read {
-                it.getArchiveProcessByAssistanceNeedPreschoolDecisionId(
+                it.getCaseProcessByAssistanceNeedPreschoolDecisionId(
                     assistanceNeedPreschoolDecision.id
                 )
             }!!
@@ -778,22 +777,22 @@ class MigrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         assertTrue(process.migrated)
         assertEquals(4, process.history.size)
         process.history[0].also {
-            assertEquals(ArchivedProcessState.INITIAL, it.state)
+            assertEquals(CaseProcessState.INITIAL, it.state)
             assertEquals(created, it.enteredAt)
             assertEquals(AuthenticatedUser.SystemInternalUser.evakaUserId, it.enteredBy.id)
         }
         process.history[1].also {
-            assertEquals(ArchivedProcessState.PREPARATION, it.state)
+            assertEquals(CaseProcessState.PREPARATION, it.state)
             assertEquals(HelsinkiDateTime.of(sentForDecision, LocalTime.MIDNIGHT), it.enteredAt)
             assertEquals(AuthenticatedUser.SystemInternalUser.evakaUserId, it.enteredBy.id)
         }
         process.history[2].also {
-            assertEquals(ArchivedProcessState.DECIDING, it.state)
+            assertEquals(CaseProcessState.DECIDING, it.state)
             assertEquals(HelsinkiDateTime.of(decisionMade, LocalTime.MIDNIGHT), it.enteredAt)
             assertEquals(employee.evakaUserId, it.enteredBy.id)
         }
         process.history[3].also {
-            assertEquals(ArchivedProcessState.COMPLETED, it.state)
+            assertEquals(CaseProcessState.COMPLETED, it.state)
             assertEquals(HelsinkiDateTime.of(decisionMade, LocalTime.MIDNIGHT), it.enteredAt)
             assertEquals(AuthenticatedUser.SystemInternalUser.evakaUserId, it.enteredBy.id)
         }
@@ -842,7 +841,7 @@ class MigrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         migrateProcessMetadata(db, clock, featureConfig)
 
-        val process = db.read { it.getArchiveProcessByChildDocumentId(document.id) }!!
+        val process = db.read { it.getCaseProcessByChildDocumentId(document.id) }!!
         assertEquals("123.456.999", process.processDefinitionNumber)
         assertEquals(created.year, process.year)
         assertEquals(1, process.number)
@@ -851,7 +850,7 @@ class MigrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         assertTrue(process.migrated)
         assertEquals(1, process.history.size)
         process.history.first().also {
-            assertEquals(ArchivedProcessState.INITIAL, it.state)
+            assertEquals(CaseProcessState.INITIAL, it.state)
             assertEquals(created, it.enteredAt)
             assertEquals(employee.evakaUserId, it.enteredBy.id)
         }
@@ -902,7 +901,7 @@ class MigrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         migrateProcessMetadata(db, clock, featureConfig)
 
-        val process = db.read { it.getArchiveProcessByChildDocumentId(document.id) }!!
+        val process = db.read { it.getCaseProcessByChildDocumentId(document.id) }!!
         assertEquals("123.456.999", process.processDefinitionNumber)
         assertEquals(created.year, process.year)
         assertEquals(1, process.number)
@@ -911,12 +910,12 @@ class MigrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         assertTrue(process.migrated)
         assertEquals(2, process.history.size)
         process.history[0].also {
-            assertEquals(ArchivedProcessState.INITIAL, it.state)
+            assertEquals(CaseProcessState.INITIAL, it.state)
             assertEquals(created, it.enteredAt)
             assertEquals(employee.evakaUserId, it.enteredBy.id)
         }
         process.history[1].also {
-            assertEquals(ArchivedProcessState.COMPLETED, it.state)
+            assertEquals(CaseProcessState.COMPLETED, it.state)
             assertEquals(modified, it.enteredAt)
             assertEquals(AuthenticatedUser.SystemInternalUser.evakaUserId, it.enteredBy.id)
         }
@@ -981,13 +980,13 @@ class MigrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         migrateProcessMetadata(db, clock, featureConfig, batchSize = 2)
 
         assertNotNull(
-            db.read { it.getArchiveProcessByVoucherValueDecisionId(voucherValueDecision1.id) }
+            db.read { it.getCaseProcessByVoucherValueDecisionId(voucherValueDecision1.id) }
         )
         assertNotNull(
-            db.read { it.getArchiveProcessByVoucherValueDecisionId(voucherValueDecision2.id) }
+            db.read { it.getCaseProcessByVoucherValueDecisionId(voucherValueDecision2.id) }
         )
         assertNotNull(
-            db.read { it.getArchiveProcessByVoucherValueDecisionId(voucherValueDecision3.id) }
+            db.read { it.getCaseProcessByVoucherValueDecisionId(voucherValueDecision3.id) }
         )
     }
 
@@ -995,8 +994,8 @@ class MigrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         // Test setup creates metadata, so we need to clear it before running the migration
         db.transaction { tx ->
             tx.execute { sql("UPDATE application SET process_id = NULL") }
-            tx.execute { sql("DELETE FROM archived_process_history") }
-            tx.execute { sql("DELETE FROM archived_process") }
+            tx.execute { sql("DELETE FROM case_process_history") }
+            tx.execute { sql("DELETE FROM case_process") }
         }
     }
 }

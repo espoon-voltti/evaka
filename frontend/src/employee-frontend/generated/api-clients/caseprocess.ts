@@ -10,15 +10,15 @@ import type { AssistanceNeedPreschoolDecisionId } from 'lib-common/generated/api
 import type { ChildDocumentId } from 'lib-common/generated/api-types/shared'
 import type { FeeDecisionId } from 'lib-common/generated/api-types/shared'
 import type { JsonOf } from 'lib-common/json'
-import type { ProcessMetadataResponse } from 'lib-common/generated/api-types/process'
+import type { ProcessMetadataResponse } from 'lib-common/generated/api-types/caseprocess'
 import type { VoucherValueDecisionId } from 'lib-common/generated/api-types/shared'
 import { client } from '../../api/client'
-import { deserializeJsonProcessMetadataResponse } from 'lib-common/generated/api-types/process'
+import { deserializeJsonProcessMetadataResponse } from 'lib-common/generated/api-types/caseprocess'
 import { uri } from 'lib-common/uri'
 
 
 /**
-* Generated from fi.espoo.evaka.process.ProcessMetadataController.getApplicationMetadata
+* Generated from fi.espoo.evaka.caseprocess.ProcessMetadataController.getApplicationMetadata
 */
 export async function getApplicationMetadata(
   request: {
@@ -34,7 +34,7 @@ export async function getApplicationMetadata(
 
 
 /**
-* Generated from fi.espoo.evaka.process.ProcessMetadataController.getAssistanceNeedDecisionMetadata
+* Generated from fi.espoo.evaka.caseprocess.ProcessMetadataController.getAssistanceNeedDecisionMetadata
 */
 export async function getAssistanceNeedDecisionMetadata(
   request: {
@@ -50,7 +50,7 @@ export async function getAssistanceNeedDecisionMetadata(
 
 
 /**
-* Generated from fi.espoo.evaka.process.ProcessMetadataController.getAssistanceNeedPreschoolDecisionMetadata
+* Generated from fi.espoo.evaka.caseprocess.ProcessMetadataController.getAssistanceNeedPreschoolDecisionMetadata
 */
 export async function getAssistanceNeedPreschoolDecisionMetadata(
   request: {
@@ -66,7 +66,7 @@ export async function getAssistanceNeedPreschoolDecisionMetadata(
 
 
 /**
-* Generated from fi.espoo.evaka.process.ProcessMetadataController.getChildDocumentMetadata
+* Generated from fi.espoo.evaka.caseprocess.ProcessMetadataController.getChildDocumentMetadata
 */
 export async function getChildDocumentMetadata(
   request: {
@@ -82,7 +82,7 @@ export async function getChildDocumentMetadata(
 
 
 /**
-* Generated from fi.espoo.evaka.process.ProcessMetadataController.getFeeDecisionMetadata
+* Generated from fi.espoo.evaka.caseprocess.ProcessMetadataController.getFeeDecisionMetadata
 */
 export async function getFeeDecisionMetadata(
   request: {
@@ -98,7 +98,7 @@ export async function getFeeDecisionMetadata(
 
 
 /**
-* Generated from fi.espoo.evaka.process.ProcessMetadataController.getVoucherValueDecisionMetadata
+* Generated from fi.espoo.evaka.caseprocess.ProcessMetadataController.getVoucherValueDecisionMetadata
 */
 export async function getVoucherValueDecisionMetadata(
   request: {

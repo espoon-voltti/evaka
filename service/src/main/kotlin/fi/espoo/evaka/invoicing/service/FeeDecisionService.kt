@@ -6,6 +6,11 @@ package fi.espoo.evaka.invoicing.service
 
 import fi.espoo.evaka.EmailEnv
 import fi.espoo.evaka.EvakaEnv
+import fi.espoo.evaka.caseprocess.CaseProcessMetadataService
+import fi.espoo.evaka.caseprocess.CaseProcessState
+import fi.espoo.evaka.caseprocess.getCaseProcessByFeeDecisionId
+import fi.espoo.evaka.caseprocess.insertCaseProcess
+import fi.espoo.evaka.caseprocess.insertCaseProcessHistoryRow
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.decision.DecisionSendAddress
 import fi.espoo.evaka.emailclient.Email
@@ -41,11 +46,6 @@ import fi.espoo.evaka.invoicing.domain.updateEndDatesOrAnnulConflictingDecisions
 import fi.espoo.evaka.invoicing.validateFinanceDecisionHandler
 import fi.espoo.evaka.pdfgen.PdfGenerator
 import fi.espoo.evaka.pis.EmailMessageType
-import fi.espoo.evaka.process.ArchivedProcessState
-import fi.espoo.evaka.process.MetadataService
-import fi.espoo.evaka.process.getArchiveProcessByFeeDecisionId
-import fi.espoo.evaka.process.insertProcess
-import fi.espoo.evaka.process.insertProcessHistoryRow
 import fi.espoo.evaka.s3.DocumentKey
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.setting.getSettings
@@ -88,7 +88,7 @@ class FeeDecisionService(
     private val emailClient: EmailClient,
     featureConfig: FeatureConfig,
 ) {
-    private val metadata = MetadataService(featureConfig)
+    private val metadata = CaseProcessMetadataService(featureConfig)
 
     init {
         asyncJobRunner.registerHandler(::runSendNewFeeDecisionEmail)
@@ -194,20 +194,20 @@ class FeeDecisionService(
             alwaysUseDaycareFinanceDecisionHandler = alwaysUseDaycareFinanceDecisionHandler,
         )
 
-        val process = metadata.getProcess(ArchiveProcessType.FEE_DECISION, today.year)
+        val process = metadata.getProcessParams(ArchiveProcessType.FEE_DECISION, today.year)
         if (process != null) {
             // TODO: Could be heavy. Does this need to be moved into async jobs?
             validDecisions.forEach { decision ->
-                val processId = tx.insertProcess(process).id
-                tx.insertProcessHistoryRow(
+                val processId = tx.insertCaseProcess(process).id
+                tx.insertCaseProcessHistoryRow(
                     processId = processId,
-                    state = ArchivedProcessState.INITIAL,
+                    state = CaseProcessState.INITIAL,
                     now = decision.created, // retroactive initial state
                     userId = AuthenticatedUser.SystemInternalUser.evakaUserId,
                 )
-                tx.insertProcessHistoryRow(
+                tx.insertCaseProcessHistoryRow(
                     processId = processId,
-                    state = ArchivedProcessState.DECIDING,
+                    state = CaseProcessState.DECIDING,
                     now = confirmDateTime,
                     userId = user.evakaUserId,
                 )
@@ -376,10 +376,10 @@ class FeeDecisionService(
         val now = clock.now()
         // here the number of ids is always small so no need to optimize currently
         ids.forEach { id ->
-            tx.getArchiveProcessByFeeDecisionId(id)?.let { process ->
-                tx.insertProcessHistoryRow(
+            tx.getCaseProcessByFeeDecisionId(id)?.let { process ->
+                tx.insertCaseProcessHistoryRow(
                     processId = process.id,
-                    state = ArchivedProcessState.COMPLETED,
+                    state = CaseProcessState.COMPLETED,
                     now = now,
                     userId = user.evakaUserId,
                 )

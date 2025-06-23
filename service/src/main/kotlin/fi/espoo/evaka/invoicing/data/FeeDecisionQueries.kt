@@ -15,7 +15,7 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.FeeDecisionSummary
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.partnerIsCodebtor
-import fi.espoo.evaka.shared.ArchivedProcessId
+import fi.espoo.evaka.shared.CaseProcessId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.FeeDecisionId
@@ -828,7 +828,7 @@ fun Database.Transaction.setFeeDecisionToIgnored(id: FeeDecisionId) {
         .updateExactlyOne()
 }
 
-fun Database.Transaction.setFeeDecisionProcessId(id: FeeDecisionId, processId: ArchivedProcessId) {
+fun Database.Transaction.setFeeDecisionProcessId(id: FeeDecisionId, processId: CaseProcessId) {
     createUpdate {
             sql(
                 "UPDATE fee_decision SET process_id = ${bind(processId)} WHERE id = ${bind(id)} AND process_id IS NULL"

@@ -8,6 +8,9 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.application.notes.getApplicationNotes
 import fi.espoo.evaka.application.notes.getServiceWorkerApplicationNote
 import fi.espoo.evaka.application.notes.updateServiceWorkerApplicationNote
+import fi.espoo.evaka.caseprocess.CaseProcessState
+import fi.espoo.evaka.caseprocess.ProcessMetadataController
+import fi.espoo.evaka.caseprocess.getCaseProcessByApplicationId
 import fi.espoo.evaka.daycare.getChild
 import fi.espoo.evaka.decision.Decision
 import fi.espoo.evaka.decision.DecisionDraft
@@ -31,9 +34,6 @@ import fi.espoo.evaka.placement.getPlacementPlan
 import fi.espoo.evaka.placement.getPlacementsForChild
 import fi.espoo.evaka.preschoolTerm2020
 import fi.espoo.evaka.preschoolTerm2021
-import fi.espoo.evaka.process.ArchivedProcessState
-import fi.espoo.evaka.process.ProcessMetadataController
-import fi.espoo.evaka.process.getArchiveProcessByApplicationId
 import fi.espoo.evaka.serviceneed.getServiceNeedsByChild
 import fi.espoo.evaka.sficlient.MockSfiMessagesClient
 import fi.espoo.evaka.shared.ApplicationId
@@ -742,9 +742,9 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             service.sendApplication(tx, serviceWorker, clock, applicationId)
             service.cancelApplication(tx, serviceWorker, clock, applicationId, null)
 
-            val process = tx.getArchiveProcessByApplicationId(applicationId)
+            val process = tx.getCaseProcessByApplicationId(applicationId)
             assertNotNull(process)
-            assertTrue(process.history.any { it.state == ArchivedProcessState.COMPLETED })
+            assertTrue(process.history.any { it.state == CaseProcessState.COMPLETED })
         }
 
         db.transaction { tx ->
@@ -756,9 +756,9 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             // then
             val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(ApplicationStatus.SENT, application.status)
-            val process = tx.getArchiveProcessByApplicationId(applicationId)
+            val process = tx.getCaseProcessByApplicationId(applicationId)
             assertNotNull(process)
-            assertFalse(process.history.any { it.state == ArchivedProcessState.COMPLETED })
+            assertFalse(process.history.any { it.state == CaseProcessState.COMPLETED })
         }
     }
 
@@ -2378,13 +2378,13 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
         assertEquals("1/123.123.a/2020", metadata.process.processNumber)
         assertEquals(120, metadata.process.archiveDurationMonths)
         assertEquals(4, metadata.process.history.size)
-        assertEquals(ArchivedProcessState.INITIAL, metadata.process.history[0].state)
+        assertEquals(CaseProcessState.INITIAL, metadata.process.history[0].state)
         assertEquals(guardian.evakaUserId(), metadata.process.history[0].enteredBy.id)
-        assertEquals(ArchivedProcessState.PREPARATION, metadata.process.history[1].state)
+        assertEquals(CaseProcessState.PREPARATION, metadata.process.history[1].state)
         assertEquals(serviceWorker.evakaUserId, metadata.process.history[1].enteredBy.id)
-        assertEquals(ArchivedProcessState.DECIDING, metadata.process.history[2].state)
+        assertEquals(CaseProcessState.DECIDING, metadata.process.history[2].state)
         assertEquals(serviceWorker.evakaUserId, metadata.process.history[2].enteredBy.id)
-        assertEquals(ArchivedProcessState.COMPLETED, metadata.process.history[3].state)
+        assertEquals(CaseProcessState.COMPLETED, metadata.process.history[3].state)
         assertEquals(guardian.evakaUserId(), metadata.process.history[3].enteredBy.id)
         assertEquals("Varhaiskasvatus- ja palvelusetelihakemus", metadata.primaryDocument.name)
         assertEquals(guardian.evakaUserId(), metadata.primaryDocument.createdBy?.id)

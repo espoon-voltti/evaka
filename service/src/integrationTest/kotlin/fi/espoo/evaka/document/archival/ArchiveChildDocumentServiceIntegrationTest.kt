@@ -9,12 +9,12 @@ import ch.qos.logback.classic.Logger
 import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.core.AppenderBase
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.caseprocess.DocumentConfidentiality
+import fi.espoo.evaka.caseprocess.insertCaseProcess
 import fi.espoo.evaka.document.ChildDocumentType
 import fi.espoo.evaka.document.DocumentTemplateContent
 import fi.espoo.evaka.document.childdocument.*
 import fi.espoo.evaka.placement.PlacementType
-import fi.espoo.evaka.process.DocumentConfidentiality
-import fi.espoo.evaka.process.insertProcess
 import fi.espoo.evaka.s3.Document
 import fi.espoo.evaka.s3.DocumentKey
 import fi.espoo.evaka.s3.DocumentLocation
@@ -182,7 +182,7 @@ class ArchiveChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBe
 
             // Create archived process
             val process =
-                tx.insertProcess(
+                tx.insertCaseProcess(
                     processDefinitionNumber = "12.06.01.SL1.RT34",
                     year = 2023,
                     organization = "Espoon kaupungin esiopetus ja varhaiskasvatus",

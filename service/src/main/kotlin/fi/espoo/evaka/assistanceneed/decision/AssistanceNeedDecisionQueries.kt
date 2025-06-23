@@ -4,8 +4,8 @@
 
 package fi.espoo.evaka.assistanceneed.decision
 
-import fi.espoo.evaka.shared.ArchivedProcessId
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
+import fi.espoo.evaka.shared.CaseProcessId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -18,7 +18,7 @@ import java.time.LocalDate
 fun Database.Transaction.insertAssistanceNeedDecision(
     childId: ChildId,
     data: AssistanceNeedDecisionForm,
-    processId: ArchivedProcessId?,
+    processId: CaseProcessId?,
     user: AuthenticatedUser.Employee,
 ): AssistanceNeedDecision {
     val id =

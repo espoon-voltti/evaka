@@ -20,7 +20,7 @@ sealed interface DatabaseTable {
 
     sealed class ApplicationNote : DatabaseTable
 
-    sealed class ArchivedProcess : DatabaseTable
+    sealed class CaseProcess : DatabaseTable
 
     sealed class Area : DatabaseTable
 
@@ -207,7 +207,7 @@ typealias ApplicationNoteId = Id<DatabaseTable.ApplicationNote>
 
 typealias AreaId = Id<DatabaseTable.Area>
 
-typealias ArchivedProcessId = Id<DatabaseTable.ArchivedProcess>
+typealias CaseProcessId = Id<DatabaseTable.CaseProcess>
 
 typealias AssistanceActionId = Id<DatabaseTable.AssistanceAction>
 

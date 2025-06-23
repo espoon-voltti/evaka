@@ -5,6 +5,10 @@
 package fi.espoo.evaka.document.childdocument
 
 import fi.espoo.evaka.EmailEnv
+import fi.espoo.evaka.caseprocess.CaseProcessState
+import fi.espoo.evaka.caseprocess.autoCompleteDocumentCaseProcessHistory
+import fi.espoo.evaka.caseprocess.getCaseProcessByChildDocumentId
+import fi.espoo.evaka.caseprocess.insertCaseProcessHistoryRow
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.decision.getSendAddress
 import fi.espoo.evaka.document.ChildDocumentType
@@ -16,10 +20,6 @@ import fi.espoo.evaka.pdfgen.PdfGenerator
 import fi.espoo.evaka.pis.EmailMessageType
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.service.getChildGuardiansAndFosterParents
-import fi.espoo.evaka.process.ArchivedProcessState
-import fi.espoo.evaka.process.autoCompleteDocumentProcessHistory
-import fi.espoo.evaka.process.getArchiveProcessByChildDocumentId
-import fi.espoo.evaka.process.insertProcessHistoryRow
 import fi.espoo.evaka.s3.DocumentKey
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.sficlient.SentSfiMessage
@@ -99,10 +99,10 @@ class ChildDocumentService(
                     runAt = clock.now(),
                 )
 
-                tx.getArchiveProcessByChildDocumentId(documentId)?.also {
-                    tx.insertProcessHistoryRow(
+                tx.getCaseProcessByChildDocumentId(documentId)?.also {
+                    tx.insertCaseProcessHistoryRow(
                         processId = it.id,
-                        state = ArchivedProcessState.COMPLETED,
+                        state = CaseProcessState.COMPLETED,
                         now = clock.now(),
                         userId = AuthenticatedUser.SystemInternalUser.evakaUserId,
                     )
@@ -234,7 +234,7 @@ class ChildDocumentService(
             tx.markCompletedAndPublish(documentIds, now)
 
             documentIds.forEach { documentId ->
-                autoCompleteDocumentProcessHistory(tx = tx, documentId = documentId, now = now)
+                autoCompleteDocumentCaseProcessHistory(tx = tx, documentId = documentId, now = now)
             }
         }
     }

@@ -9,6 +9,9 @@ import com.github.kittinunf.fuel.jackson.objectBody
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.EmailEnv
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.caseprocess.CaseProcessState
+import fi.espoo.evaka.caseprocess.ProcessMetadataController
+import fi.espoo.evaka.caseprocess.getCaseProcessByVoucherValueDecisionId
 import fi.espoo.evaka.emailclient.Email
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
 import fi.espoo.evaka.emailclient.MockEmailClient
@@ -28,9 +31,6 @@ import fi.espoo.evaka.placement.PlacementCreateRequestBody
 import fi.espoo.evaka.placement.PlacementResponse
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.PlacementUpdateRequestBody
-import fi.espoo.evaka.process.ArchivedProcessState
-import fi.espoo.evaka.process.ProcessMetadataController
-import fi.espoo.evaka.process.getArchiveProcessByVoucherValueDecisionId
 import fi.espoo.evaka.sficlient.MockSfiMessagesClient
 import fi.espoo.evaka.sficlient.SfiAsyncJobs
 import fi.espoo.evaka.sficlient.getSfiMessageEventsByMessageId
@@ -187,15 +187,14 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
         sendAllValueDecisions()
 
         getAllValueDecisions().first().let { decision ->
-            val process =
-                db.read { tx -> tx.getArchiveProcessByVoucherValueDecisionId(decision.id) }
+            val process = db.read { tx -> tx.getCaseProcessByVoucherValueDecisionId(decision.id) }
             assertNotNull(process)
             assertEquals("1/123.789.b/${now.toLocalDate().year}", process.processNumber)
             assertEquals(
                 listOf(
-                    ArchivedProcessState.INITIAL,
-                    ArchivedProcessState.DECIDING,
-                    ArchivedProcessState.COMPLETED,
+                    CaseProcessState.INITIAL,
+                    CaseProcessState.DECIDING,
+                    CaseProcessState.COMPLETED,
                 ),
                 process.history.map { it.state },
             )

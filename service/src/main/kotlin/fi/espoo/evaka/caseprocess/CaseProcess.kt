@@ -2,15 +2,15 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-package fi.espoo.evaka.process
+package fi.espoo.evaka.caseprocess
 
 import fi.espoo.evaka.document.childdocument.ChildDocumentDetails
 import fi.espoo.evaka.document.childdocument.DocumentStatus
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ArchiveProcessType
-import fi.espoo.evaka.shared.ArchivedProcessId
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
+import fi.espoo.evaka.shared.CaseProcessId
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.FeatureConfig
@@ -23,10 +23,17 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.user.EvakaUser
 import org.jdbi.v3.json.Json
 
-class MetadataService(private val featureConfig: FeatureConfig) {
-    fun getProcess(processType: ArchiveProcessType, year: Int): Process? {
+data class CaseProcessParams(
+    val organization: String,
+    val processDefinitionNumber: String,
+    val archiveDurationMonths: Int,
+    val year: Int,
+)
+
+class CaseProcessMetadataService(private val featureConfig: FeatureConfig) {
+    fun getProcessParams(processType: ArchiveProcessType, year: Int): CaseProcessParams? {
         val config = featureConfig.archiveMetadataConfigs(processType, year) ?: return null
-        return Process(
+        return CaseProcessParams(
             organization = featureConfig.archiveMetadataOrganization,
             processDefinitionNumber = config.processDefinitionNumber,
             archiveDurationMonths = config.archiveDurationMonths,
@@ -35,72 +42,66 @@ class MetadataService(private val featureConfig: FeatureConfig) {
     }
 }
 
-data class Process(
-    val organization: String,
-    val processDefinitionNumber: String,
-    val archiveDurationMonths: Int,
-    val year: Int,
-)
-
-data class ArchivedProcess(
-    val id: ArchivedProcessId,
+data class CaseProcess(
+    val id: CaseProcessId,
     val processDefinitionNumber: String,
     val year: Int,
     val number: Int,
     val organization: String,
     val archiveDurationMonths: Int?,
     val migrated: Boolean,
-    @Json val history: List<ArchivedProcessHistoryRow>,
+    @Json val history: List<CaseProcessHistoryRow>,
 ) {
     val processNumber: String
         get() = "$number/$processDefinitionNumber/$year"
 }
 
-data class ArchivedProcessHistoryRow(
+data class CaseProcessHistoryRow(
     val rowIndex: Int,
-    val state: ArchivedProcessState,
+    val state: CaseProcessState,
     val enteredAt: HelsinkiDateTime,
     val enteredBy: EvakaUser,
 )
 
-enum class ArchivedProcessState : DatabaseEnum {
+enum class CaseProcessState : DatabaseEnum {
     INITIAL,
     PREPARATION,
     DECIDING,
     COMPLETED;
 
+    // enum name is different from kotlin type because of legacy reasons
     override val sqlType: String = "archived_process_state"
 }
 
-fun Database.Transaction.insertProcess(
-    metadata: Process,
+fun Database.Transaction.insertCaseProcess(
+    params: CaseProcessParams,
     migrated: Boolean = false,
-): ArchivedProcess =
-    insertProcess(
-        processDefinitionNumber = metadata.processDefinitionNumber,
-        year = metadata.year,
-        organization = metadata.organization,
-        archiveDurationMonths = metadata.archiveDurationMonths,
+): CaseProcess =
+    insertCaseProcess(
+        processDefinitionNumber = params.processDefinitionNumber,
+        year = params.year,
+        organization = params.organization,
+        archiveDurationMonths = params.archiveDurationMonths,
         migrated = migrated,
     )
 
-fun Database.Transaction.insertProcess(
+fun Database.Transaction.insertCaseProcess(
     processDefinitionNumber: String,
     year: Int,
     organization: String,
     archiveDurationMonths: Int,
     migrated: Boolean = false,
-): ArchivedProcess =
+): CaseProcess =
     createQuery {
             sql(
                 """
-    INSERT INTO archived_process (process_definition_number, year, number, organization, archive_duration_months, migrated)
+    INSERT INTO case_process (process_definition_number, year, number, organization, archive_duration_months, migrated)
     VALUES (
         ${bind(processDefinitionNumber)}, 
         ${bind(year)},
         coalesce((
             SELECT max(number)
-            FROM archived_process
+            FROM case_process
             WHERE process_definition_number = ${bind(processDefinitionNumber)} AND year = ${bind(year)}
         ), 0) + 1,
         ${bind(organization)},
@@ -113,7 +114,7 @@ fun Database.Transaction.insertProcess(
         }
         .exactlyOne()
 
-fun Database.Read.getProcess(id: ArchivedProcessId): ArchivedProcess? =
+fun Database.Read.getCaseProcess(id: CaseProcessId): CaseProcess? =
     createQuery {
             sql(
                 """
@@ -137,84 +138,82 @@ fun Database.Read.getProcess(id: ArchivedProcessId): ArchivedProcess? =
             ) ORDER BY row_index),
             '[]'::jsonb
         )
-        FROM archived_process_history aph
+        FROM case_process_history aph
         JOIN public.evaka_user eu on eu.id = aph.entered_by
         WHERE aph.process_id = ap.id
     ) AS history
-    FROM archived_process ap
+    FROM case_process ap
     WHERE ap.id = ${bind(id)}
 """
             )
         }
         .exactlyOneOrNull()
 
-fun Database.Read.getArchiveProcessByChildDocumentId(
-    documentId: ChildDocumentId
-): ArchivedProcess? {
+fun Database.Read.getCaseProcessByChildDocumentId(documentId: ChildDocumentId): CaseProcess? {
     return createQuery {
             sql("SELECT process_id FROM child_document WHERE id = ${bind(documentId)}")
         }
-        .exactlyOneOrNull<ArchivedProcessId?>()
-        ?.let { processId -> getProcess(processId) }
+        .exactlyOneOrNull<CaseProcessId?>()
+        ?.let { processId -> getCaseProcess(processId) }
 }
 
-fun Database.Read.getArchiveProcessByAssistanceNeedDecisionId(
+fun Database.Read.getCaseProcessByAssistanceNeedDecisionId(
     decisionId: AssistanceNeedDecisionId
-): ArchivedProcess? {
+): CaseProcess? {
     return createQuery {
             sql("SELECT process_id FROM assistance_need_decision WHERE id = ${bind(decisionId)}")
         }
-        .exactlyOneOrNull<ArchivedProcessId?>()
-        ?.let { processId -> getProcess(processId) }
+        .exactlyOneOrNull<CaseProcessId?>()
+        ?.let { processId -> getCaseProcess(processId) }
 }
 
-fun Database.Read.getArchiveProcessByAssistanceNeedPreschoolDecisionId(
+fun Database.Read.getCaseProcessByAssistanceNeedPreschoolDecisionId(
     decisionId: AssistanceNeedPreschoolDecisionId
-): ArchivedProcess? {
+): CaseProcess? {
     return createQuery {
             sql(
                 "SELECT process_id FROM assistance_need_preschool_decision WHERE id = ${bind(decisionId)}"
             )
         }
-        .exactlyOneOrNull<ArchivedProcessId?>()
-        ?.let { processId -> getProcess(processId) }
+        .exactlyOneOrNull<CaseProcessId?>()
+        ?.let { processId -> getCaseProcess(processId) }
 }
 
-fun Database.Read.getArchiveProcessByApplicationId(applicationId: ApplicationId): ArchivedProcess? {
+fun Database.Read.getCaseProcessByApplicationId(applicationId: ApplicationId): CaseProcess? {
     return createQuery {
             sql("SELECT process_id FROM application WHERE id = ${bind(applicationId)}")
         }
-        .exactlyOneOrNull<ArchivedProcessId?>()
-        ?.let { processId -> getProcess(processId) }
+        .exactlyOneOrNull<CaseProcessId?>()
+        ?.let { processId -> getCaseProcess(processId) }
 }
 
-fun Database.Read.getArchiveProcessByFeeDecisionId(feeDecisionId: FeeDecisionId): ArchivedProcess? {
+fun Database.Read.getCaseProcessByFeeDecisionId(feeDecisionId: FeeDecisionId): CaseProcess? {
     return createQuery {
             sql("SELECT process_id FROM fee_decision WHERE id = ${bind(feeDecisionId)}")
         }
-        .exactlyOneOrNull<ArchivedProcessId?>()
-        ?.let { processId -> getProcess(processId) }
+        .exactlyOneOrNull<CaseProcessId?>()
+        ?.let { processId -> getCaseProcess(processId) }
 }
 
-fun Database.Read.getArchiveProcessByVoucherValueDecisionId(
+fun Database.Read.getCaseProcessByVoucherValueDecisionId(
     voucherValueDecisionId: VoucherValueDecisionId
-): ArchivedProcess? {
+): CaseProcess? {
     return createQuery {
             sql(
                 "SELECT process_id FROM voucher_value_decision WHERE id = ${bind(voucherValueDecisionId)}"
             )
         }
-        .exactlyOneOrNull<ArchivedProcessId?>()
-        ?.let { processId -> getProcess(processId) }
+        .exactlyOneOrNull<CaseProcessId?>()
+        ?.let { processId -> getCaseProcess(processId) }
 }
 
-fun Database.Transaction.deleteProcessById(processId: ArchivedProcessId) {
-    execute { sql("DELETE FROM archived_process WHERE id = ${bind(processId)}") }
+fun Database.Transaction.deleteProcessById(processId: CaseProcessId) {
+    execute { sql("DELETE FROM case_process WHERE id = ${bind(processId)}") }
 }
 
 fun deleteProcessByDocumentId(tx: Database.Transaction, documentId: ChildDocumentId) {
     tx.createQuery { sql("SELECT process_id FROM child_document WHERE id = ${bind(documentId)}") }
-        .exactlyOneOrNull<ArchivedProcessId?>()
+        .exactlyOneOrNull<CaseProcessId?>()
         ?.also { processId -> tx.deleteProcessById(processId) }
 }
 
@@ -225,11 +224,11 @@ fun deleteProcessByAssistanceNeedDecisionId(
     tx.createQuery {
             sql("SELECT process_id FROM assistance_need_decision WHERE id = ${bind(decisionId)}")
         }
-        .exactlyOneOrNull<ArchivedProcessId?>()
+        .exactlyOneOrNull<CaseProcessId?>()
         ?.also { processId -> tx.deleteProcessById(processId) }
 }
 
-fun deleteProcessByAssistanceNeedPreschoolDecisionId(
+fun deleteCaseProcessByAssistanceNeedPreschoolDecisionId(
     tx: Database.Transaction,
     decisionId: AssistanceNeedPreschoolDecisionId,
 ) {
@@ -238,24 +237,24 @@ fun deleteProcessByAssistanceNeedPreschoolDecisionId(
                 "SELECT process_id FROM assistance_need_preschool_decision WHERE id = ${bind(decisionId)}"
             )
         }
-        .exactlyOneOrNull<ArchivedProcessId?>()
+        .exactlyOneOrNull<CaseProcessId?>()
         ?.also { processId -> tx.deleteProcessById(processId) }
 }
 
-fun Database.Transaction.insertProcessHistoryRow(
-    processId: ArchivedProcessId,
-    state: ArchivedProcessState,
+fun Database.Transaction.insertCaseProcessHistoryRow(
+    processId: CaseProcessId,
+    state: CaseProcessState,
     now: HelsinkiDateTime,
     userId: EvakaUserId,
 ) {
     execute {
         sql(
             """
-    INSERT INTO archived_process_history (process_id, row_index, state, entered_at, entered_by) VALUES (
+    INSERT INTO case_process_history (process_id, row_index, state, entered_at, entered_by) VALUES (
         ${bind(processId)},
         coalesce((
             SELECT max(row_index)
-            FROM archived_process_history
+            FROM case_process_history
             WHERE process_id = ${bind(processId)}
         ), 0) + 1,
         ${bind(state)},
@@ -267,35 +266,35 @@ fun Database.Transaction.insertProcessHistoryRow(
     }
 }
 
-fun updateDocumentProcessHistory(
+fun updateDocumentCaseProcessHistory(
     tx: Database.Transaction,
     document: ChildDocumentDetails,
     newStatus: DocumentStatus,
     now: HelsinkiDateTime,
     userId: EvakaUserId,
 ) {
-    val process = tx.getArchiveProcessByChildDocumentId(document.id) ?: return
+    val process = tx.getCaseProcessByChildDocumentId(document.id) ?: return
 
     val currentProcessState = process.history.lastOrNull()?.state ?: return
-    val currentStateIndex = ArchivedProcessState.entries.indexOf(currentProcessState)
+    val currentStateIndex = CaseProcessState.entries.indexOf(currentProcessState)
 
     val newProcessState =
         when (newStatus) {
-            DocumentStatus.DRAFT -> ArchivedProcessState.INITIAL
-            DocumentStatus.PREPARED -> ArchivedProcessState.PREPARATION
-            DocumentStatus.CITIZEN_DRAFT -> ArchivedProcessState.INITIAL
-            DocumentStatus.DECISION_PROPOSAL -> ArchivedProcessState.PREPARATION
+            DocumentStatus.DRAFT -> CaseProcessState.INITIAL
+            DocumentStatus.PREPARED -> CaseProcessState.PREPARATION
+            DocumentStatus.CITIZEN_DRAFT -> CaseProcessState.INITIAL
+            DocumentStatus.DECISION_PROPOSAL -> CaseProcessState.PREPARATION
             DocumentStatus.COMPLETED ->
                 // decision documents are completed only once the SFI message is sent
-                if (document.template.type.decision) ArchivedProcessState.DECIDING
-                else ArchivedProcessState.COMPLETED
+                if (document.template.type.decision) CaseProcessState.DECIDING
+                else CaseProcessState.COMPLETED
         }
-    val newStateIndex = ArchivedProcessState.entries.indexOf(newProcessState)
+    val newStateIndex = CaseProcessState.entries.indexOf(newProcessState)
 
     when {
         newStateIndex > currentStateIndex ->
             // moving forwards
-            tx.insertProcessHistoryRow(
+            tx.insertCaseProcessHistoryRow(
                 processId = process.id,
                 state = newProcessState,
                 now = now,
@@ -303,43 +302,43 @@ fun updateDocumentProcessHistory(
             )
         newStateIndex < currentStateIndex ->
             // moving backwards
-            tx.cancelLastProcessHistoryRow(
+            tx.cancelLastCaseProcessHistoryRow(
                 processId = process.id,
                 stateToCancel = currentProcessState,
             )
     }
 }
 
-fun autoCompleteDocumentProcessHistory(
+fun autoCompleteDocumentCaseProcessHistory(
     tx: Database.Transaction,
     documentId: ChildDocumentId,
     now: HelsinkiDateTime,
 ) {
-    val process = tx.getArchiveProcessByChildDocumentId(documentId) ?: return
+    val process = tx.getCaseProcessByChildDocumentId(documentId) ?: return
     val currentProcessState = process.history.lastOrNull()?.state ?: return
 
-    if (currentProcessState != ArchivedProcessState.COMPLETED) {
-        tx.insertProcessHistoryRow(
+    if (currentProcessState != CaseProcessState.COMPLETED) {
+        tx.insertCaseProcessHistoryRow(
             processId = process.id,
-            state = ArchivedProcessState.COMPLETED,
+            state = CaseProcessState.COMPLETED,
             now = now,
             userId = AuthenticatedUser.SystemInternalUser.evakaUserId,
         )
     }
 }
 
-fun Database.Transaction.cancelLastProcessHistoryRow(
-    processId: ArchivedProcessId,
-    stateToCancel: ArchivedProcessState,
+fun Database.Transaction.cancelLastCaseProcessHistoryRow(
+    processId: CaseProcessId,
+    stateToCancel: CaseProcessState,
 ) {
     createUpdate {
             sql(
                 """
-    DELETE FROM archived_process_history aph
+    DELETE FROM case_process_history aph
     WHERE aph.process_id = ${bind(processId)} AND aph.state = ${bind(stateToCancel)} AND 
         aph.row_index = (
             SELECT max(row_index) 
-            FROM archived_process_history
+            FROM case_process_history
             WHERE process_id = ${bind(processId)}
         )
 """

@@ -62,6 +62,11 @@ import {
   updateBackupPickup
 } from '../../generated/api-clients/backuppickup'
 import {
+  getAssistanceNeedDecisionMetadata,
+  getAssistanceNeedPreschoolDecisionMetadata,
+  getChildDocumentMetadata
+} from '../../generated/api-clients/caseprocess'
+import {
   deleteDailyServiceTimes,
   getDailyServiceTimes,
   postDailyServiceTimes,
@@ -116,11 +121,6 @@ import {
   getChildPlacements,
   updatePlacementById
 } from '../../generated/api-clients/placement'
-import {
-  getAssistanceNeedDecisionMetadata,
-  getAssistanceNeedPreschoolDecisionMetadata,
-  getChildDocumentMetadata
-} from '../../generated/api-clients/process'
 import {
   acceptServiceApplication,
   deleteServiceNeed,
