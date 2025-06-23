@@ -106,7 +106,6 @@ import { deserializeJsonIncompleteIncomeDbRow } from 'lib-common/generated/api-t
 import { deserializeJsonManualDuplicationReportRow } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonMealReportData } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonMissingHeadOfFamilyReportRow } from 'lib-common/generated/api-types/reports'
-import { deserializeJsonMissingServiceNeedReportResultRow } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonNekkuOrderRow } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonNonSsnChildrenReportRow } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonPlacementGuaranteeReportRow } from 'lib-common/generated/api-types/reports'
@@ -839,7 +838,7 @@ export async function getMissingServiceNeedReport(
     method: 'GET',
     params
   })
-  return json.map(e => deserializeJsonMissingServiceNeedReportResultRow(e))
+  return json
 }
 
 

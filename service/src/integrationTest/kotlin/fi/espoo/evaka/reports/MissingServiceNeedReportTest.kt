@@ -5,6 +5,7 @@
 package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.application.ServiceNeedOption
 import fi.espoo.evaka.insertServiceNeedOptions
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.auth.UserRole
@@ -66,7 +67,7 @@ class MissingServiceNeedReportTest : FullApplicationTest(resetDbBeforeEach = tru
                         daysWithoutServiceNeed = 1,
                         firstName = testChild_1.firstName,
                         lastName = testChild_1.lastName,
-                        defaultOption = snDefaultDaycare,
+                        defaultOption = ServiceNeedOption.fromFullServiceNeed(snDefaultDaycare),
                     )
                 )
             )
@@ -95,7 +96,7 @@ class MissingServiceNeedReportTest : FullApplicationTest(resetDbBeforeEach = tru
                         daysWithoutServiceNeed = 1,
                         firstName = testChild_1.firstName,
                         lastName = testChild_1.lastName,
-                        defaultOption = snDefaultDaycare,
+                        defaultOption = ServiceNeedOption.fromFullServiceNeed(snDefaultDaycare),
                     )
                 )
             )

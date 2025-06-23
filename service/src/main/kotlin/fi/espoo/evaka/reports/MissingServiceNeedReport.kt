@@ -5,8 +5,8 @@
 package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.application.ServiceNeedOption
 import fi.espoo.evaka.placement.PlacementType
-import fi.espoo.evaka.serviceneed.ServiceNeedOption
 import fi.espoo.evaka.serviceneed.getServiceNeedOptions
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
@@ -51,6 +51,10 @@ class MissingServiceNeedReportController(private val accessControl: AccessContro
                         it.getServiceNeedOptions()
                             .filter { op -> op.defaultOption }
                             .associateBy { op -> op.validPlacementType }
+                            .mapValues { (_, value) ->
+                                ServiceNeedOption.fromFullServiceNeed(value)
+                            }
+
                     it.getMissingServiceNeedRows(from, to, filter).map { row ->
                         MissingServiceNeedReportResultRow(
                             careAreaName = row.careAreaName,
