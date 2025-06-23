@@ -27,7 +27,6 @@ import config from './config'
 import { setTestMode } from './generated/api-clients'
 
 declare global {
-  // eslint-disable-next-line no-var
   var evaka:
     | {
         captureScreenshots: (namePrefix: string) => Promise<void>
