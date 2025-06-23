@@ -4,7 +4,7 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import noop from 'lodash/noop'
-import React, { useContext, useState } from 'react'
+import React, { useContext } from 'react'
 import styled from 'styled-components'
 import { Link, useLocation } from 'wouter'
 
@@ -13,14 +13,13 @@ import type {
   ApplicationStatus
 } from 'lib-common/generated/api-types/application'
 import type { ApplicationId } from 'lib-common/generated/api-types/shared'
-import { useMutation, useQueryResult } from 'lib-common/query'
+import { useMutation } from 'lib-common/query'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { ContentArea } from 'lib-components/layout/Container'
 import ListGrid from 'lib-components/layout/ListGrid'
 import { FixedSpaceFlexWrap } from 'lib-components/layout/flex-helpers'
-import { Metadatas } from 'lib-components/molecules/Metadatas'
 import { H2, H3, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/citizen'
@@ -28,8 +27,6 @@ import colors from 'lib-customizations/common'
 import {
   faArrowRight,
   faCheck,
-  faChevronUp,
-  faChevronDown,
   faEnvelope,
   faExclamation,
   faFile,
@@ -41,9 +38,9 @@ import {
   faTrash
 } from 'lib-icons'
 
-import { renderResult } from '../async-rendering'
 import { Status } from '../decisions/shared'
 import { useTranslation } from '../localization'
+import { MetadataSection } from '../metadata/MetadataSection'
 import { OverlayContext } from '../overlay/state'
 
 import {
@@ -369,7 +366,10 @@ export default React.memo(function ChildApplicationsBlock({
               {featureFlags.showMetadataToCitizen && (
                 <>
                   <Gap size="s" />
-                  <ApplicationMetadataSection applicationId={applicationId} />
+                  <MetadataSection
+                    data-qa={applicationId}
+                    query={applicationMetadataQuery({ applicationId })}
+                  />
                 </>
               )}
               {index !== applicationSummaries.length - 1 && <LineBreak />}
@@ -377,50 +377,5 @@ export default React.memo(function ChildApplicationsBlock({
           )
         )}
     </ContentArea>
-  )
-})
-
-const ApplicationMetadataSection = React.memo(
-  function ApplicationMetadataSection({
-    applicationId
-  }: {
-    applicationId: ApplicationId
-  }) {
-    const [sectionOpen, setSectionOpen] = useState(false)
-    const i18n = useTranslation()
-    return (
-      <>
-        <Button
-          appearance="inline"
-          icon={sectionOpen ? faChevronUp : faChevronDown}
-          text={
-            sectionOpen
-              ? i18n.components.metadata.section.hide
-              : i18n.components.metadata.section.show
-          }
-          onClick={() => setSectionOpen(!sectionOpen)}
-          data-qa={`button-toggle-section-${applicationId}`}
-        />
-        {sectionOpen && <MetadataResultSection applicationId={applicationId} />}
-      </>
-    )
-  }
-)
-
-const MetadataResultSection = React.memo(function MetadataSection({
-  applicationId
-}: {
-  applicationId: ApplicationId
-}) {
-  const metadataResult = useQueryResult(
-    applicationMetadataQuery({ applicationId })
-  )
-
-  return (
-    <>
-      {renderResult(metadataResult, ({ data: metadata }) => {
-        return <Metadatas metadata={metadata} />
-      })}
-    </>
   )
 })

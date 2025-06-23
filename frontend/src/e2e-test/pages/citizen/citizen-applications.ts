@@ -49,8 +49,8 @@ export default class CitizenApplicationsPage {
     this.page.findByDataQa(`application-period-${id}`)
   #applicationStatus = (id: string) =>
     this.page.findByDataQa(`application-status-${id}`)
-  #applicationShowMetadataButton = (id: string) =>
-    this.page.findByDataQa(`button-toggle-section-${id}`)
+  #applicationToggleMetadataButton = (id: string) =>
+    this.page.findByDataQa(`metadata-toggle-${id}`)
 
   async createApplication(
     childId: string,
@@ -135,12 +135,12 @@ export default class CitizenApplicationsPage {
   }
 
   async assertApplicationHasNoMetadata(id: string) {
-    await this.#applicationShowMetadataButton(id).click()
+    await this.#applicationToggleMetadataButton(id).click()
     await this.page.findByDataQa('metadata-not-found').waitUntilVisible()
   }
 
   async viewApplicationMetadata(id: string) {
-    await this.#applicationShowMetadataButton(id).click()
+    await this.#applicationToggleMetadataButton(id).click()
     await this.page.findByDataQa('process-number-field').waitUntilVisible()
   }
 }
