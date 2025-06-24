@@ -117,6 +117,7 @@ export const DaycareAssistanceForm = React.memo(function DaycareAssistanceForm(
       <Td>
         <SelectF data-qa="level" bind={level} />
       </Td>
+      <Td />
       <Td>
         {validDuring.isValid() ? (
           <StatusLabel

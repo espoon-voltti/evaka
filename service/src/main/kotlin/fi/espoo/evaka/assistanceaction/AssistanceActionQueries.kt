@@ -10,6 +10,8 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
+import fi.espoo.evaka.shared.security.actionrule.forTable
 import java.time.LocalDate
 
 fun Database.Transaction.insertAssistanceAction(
@@ -69,27 +71,40 @@ fun Database.Read.getAssistanceActionById(id: AssistanceActionId): AssistanceAct
     createQuery {
             sql(
                 """
-SELECT aa.id, child_id, start_date, end_date, array_remove(array_agg(value), null) AS actions, other_action
+SELECT aa.id, child_id, start_date, end_date, array_remove(array_agg(value), null) AS actions, other_action,
+    aa.modified_at,
+    e.id AS modified_by_id,
+    e.name AS modified_by_name,
+    e.type AS modified_by_type
 FROM assistance_action aa
 LEFT JOIN assistance_action_option_ref aaor ON aaor.action_id = aa.id
 LEFT JOIN assistance_action_option aao ON aao.id = aaor.option_id
+LEFT JOIN evaka_user e ON aa.modified_by = e.id
 WHERE aa.id = ${bind(id)}
-GROUP BY aa.id, child_id, start_date, end_date, other_action
+GROUP BY aa.id, child_id, start_date, end_date, other_action, aa.modified_at, e.id, e.name, e.type
 """
             )
         }
         .exactlyOne()
 
-fun Database.Read.getAssistanceActionsByChild(childId: ChildId): List<AssistanceAction> =
+fun Database.Read.getAssistanceActionsByChild(
+    childId: ChildId,
+    filter: AccessControlFilter<AssistanceActionId> = AccessControlFilter.PermitAll,
+): List<AssistanceAction> =
     createQuery {
             sql(
                 """
-SELECT aa.id, child_id, start_date, end_date, array_remove(array_agg(value), null) AS actions, other_action
+SELECT aa.id, child_id, start_date, end_date, array_remove(array_agg(value), null) AS actions, other_action,
+    aa.modified_at,
+    e.id AS modified_by_id,
+    e.name AS modified_by_name,
+    e.type AS modified_by_type
 FROM assistance_action aa
 LEFT JOIN assistance_action_option_ref aaor ON aaor.action_id = aa.id
 LEFT JOIN assistance_action_option aao ON aao.id = aaor.option_id
-WHERE child_id = ${bind(childId)}
-GROUP BY aa.id, child_id, start_date, end_date, other_action
+LEFT JOIN evaka_user e ON aa.modified_by = e.id
+WHERE child_id = ${bind(childId)} AND ${predicate(filter.forTable("aa"))}
+GROUP BY aa.id, child_id, start_date, end_date, other_action, aa.modified_at, e.id, e.name, e.type
 ORDER BY start_date DESC
 """
             )

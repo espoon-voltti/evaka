@@ -7,6 +7,7 @@ import React, { useContext } from 'react'
 import { Success } from 'lib-common/api'
 import type { PreschoolAssistanceResponse } from 'lib-common/generated/api-types/assistance'
 import { useMutationResult } from 'lib-common/query'
+import Tooltip from 'lib-components/atoms/Tooltip'
 import { Td, Tr } from 'lib-components/layout/Table'
 
 import { useTranslation } from '../../../state/i18n'
@@ -25,7 +26,10 @@ interface Props {
 
 export const PreschoolAssistanceRow = React.memo(
   function PreschoolAssistanceRow({
-    preschoolAssistance: { data, permittedActions },
+    preschoolAssistance: {
+      data: { id, childId, validDuring, level, modified, modifiedBy },
+      permittedActions
+    },
     onEdit
   }: Props) {
     const { i18n } = useTranslation()
@@ -36,25 +40,33 @@ export const PreschoolAssistanceRow = React.memo(
     )
     return (
       <Tr data-qa="preschool-assistance-row">
-        <Td data-qa="valid-during">{data.validDuring.format()}</Td>
-        <Td data-qa="level">{t.types.preschoolAssistanceLevel[data.level]}</Td>
+        <Td data-qa="valid-during">{validDuring.format()}</Td>
+        <Td data-qa="level">{t.types.preschoolAssistanceLevel[level]}</Td>
+        <Td data-qa="modified">
+          <Tooltip
+            tooltip={t.fields.lastModifiedBy(modifiedBy.name)}
+            position="left"
+          >
+            {modified.format()}
+          </Tooltip>
+        </Td>
         <Td>
           <StatusLabel
             status={getStatusLabelByDateRange({
-              startDate: data.validDuring.start,
-              endDate: data.validDuring.end
+              startDate: validDuring.start,
+              endDate: validDuring.end
             })}
           />
         </Td>
         <Td>
-          {uiMode === `remove-preschool-assistance-${data.id}` && (
+          {uiMode === `remove-preschool-assistance-${id}` && (
             <DeleteConfirmation
               title={t.preschoolAssistance.removeConfirmation}
-              range={data.validDuring.asDateRange()}
+              range={validDuring.asDateRange()}
               onSubmit={() =>
                 deletePreschoolAssistance({
-                  id: data.id,
-                  childId: data.childId
+                  id: id,
+                  childId: childId
                 }).then(() => Success.of())
               }
             />
@@ -64,9 +76,7 @@ export const PreschoolAssistanceRow = React.memo(
             dataQaDelete="delete"
             onEdit={onEdit}
             editable={permittedActions.includes('UPDATE')}
-            onDelete={() =>
-              toggleUiMode(`remove-preschool-assistance-${data.id}`)
-            }
+            onDelete={() => toggleUiMode(`remove-preschool-assistance-${id}`)}
             deletable={permittedActions.includes('DELETE')}
           />
         </Td>
