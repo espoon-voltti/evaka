@@ -189,7 +189,7 @@ export default React.memo(function ReservationModal({
   )
 
   const incompletelyAnsweredHolidayPeriods = useMemo(() => {
-    if (!dateRange.isValid() || !times.isValid()) {
+    if (!dateRange.isValid()) {
       return []
     }
     return holidayPeriods
@@ -219,7 +219,7 @@ export default React.memo(function ReservationModal({
           hp.reservationDeadline.isAfter(LocalDate.todayInHelsinkiTz())
       )
       .map((hp) => hp.period)
-  }, [holidayPeriods, dateRange, times, timesBranch, timesForm])
+  }, [holidayPeriods, dateRange, timesBranch, timesForm])
 
   return (
     <ModalAccessibilityWrapper>
