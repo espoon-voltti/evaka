@@ -33,6 +33,7 @@ data class DaycareAclRowEmployee(
 fun Database.Read.getDaycareAclRows(
     daycareId: DaycareId,
     includeStaffOccupancy: Boolean,
+    includeStaffEmployeeNumber: Boolean,
     role: UserRole? = null,
 ): List<DaycareAclRow> =
     createQuery {
@@ -42,7 +43,10 @@ SELECT e.id,
        e.first_name,
        e.last_name,
        e.email,
-       e.employee_number,
+       CASE
+            WHEN (${bind(includeStaffEmployeeNumber)} IS TRUE) THEN
+                e.employee_number
+            ELSE NULL END as employee_number,
        role,
        active,
        coalesce(group_ids, array []::uuid[]) AS group_ids,

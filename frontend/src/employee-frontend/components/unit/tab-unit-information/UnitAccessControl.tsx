@@ -120,7 +120,6 @@ function AclRow({
   isEditable,
   isDeletable,
   coefficientPermitted,
-  employeeNumberPermitted,
   onClickEdit,
   unitGroups
 }: {
@@ -130,7 +129,6 @@ function AclRow({
   isEditable: boolean
   isDeletable: boolean
   coefficientPermitted: boolean
-  employeeNumberPermitted: boolean
   onClickEdit: () => void
   unitGroups: Record<UUID, DaycareGroupResponse> | undefined
 }) {
@@ -193,7 +191,7 @@ function AclRow({
             <PersonName person={row.employee} format="First Last" />
           </span>
           <ExtraSpan data-qa="email">{row.employee.email}</ExtraSpan>
-          {employeeNumberPermitted && !!row.employee.employeeNumber && (
+          {!!row.employee.employeeNumber && (
             <ExtraSpan data-qa="person-number">
               {i18n.employees.employeeNumber}: {row.employee.employeeNumber}
             </ExtraSpan>
@@ -308,10 +306,6 @@ function AclTable({
     () => permittedActions.includes('READ_STAFF_OCCUPANCY_COEFFICIENTS'),
     [permittedActions]
   )
-  const employeeNumberPermitted = useMemo(
-    () => permittedActions.includes('READ_STAFF_EMPLOYEE_NUMBER'),
-    [permittedActions]
-  )
 
   return (
     <Table data-qa={dataQa}>
@@ -337,7 +331,6 @@ function AclTable({
             }
             isEditable={!!(editPermitted && unitGroups)}
             coefficientPermitted={coefficientPermitted}
-            employeeNumberPermitted={employeeNumberPermitted}
             onClickEdit={() => onClickEdit(row)}
           />
         ))}
@@ -398,12 +391,11 @@ function ScheduledAclTable({
                     <PersonName person={row} format="First Last" />
                   </span>
                   <ExtraSpan data-qa="email">{row.email}</ExtraSpan>
-                  {permittedActions.includes('READ_STAFF_EMPLOYEE_NUMBER') &&
-                    !!row.employeeNumber && (
-                      <ExtraSpan data-qa="employee-number">
-                        {i18n.employees.employeeNumber}: {row.employeeNumber}
-                      </ExtraSpan>
-                    )}
+                  {!!row.employeeNumber && (
+                    <ExtraSpan data-qa="employee-number">
+                      {i18n.employees.employeeNumber}: {row.employeeNumber}
+                    </ExtraSpan>
+                  )}
                 </FixedSpaceColumn>
               </Td>
               <Td>

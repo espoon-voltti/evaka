@@ -57,9 +57,13 @@ fun fetchAndUpdateNekkuCustomers(
                 tx,
                 units.flatMap {
                     val supervisors =
-                        tx.getDaycareAclRows(it, false, UserRole.UNIT_SUPERVISOR).map {
-                            it.employee
-                        }
+                        tx.getDaycareAclRows(
+                                daycareId = it,
+                                includeStaffOccupancy = false,
+                                includeStaffEmployeeNumber = false,
+                                role = UserRole.UNIT_SUPERVISOR,
+                            )
+                            .map { it.employee }
                     supervisors.map { supervisor ->
                         AsyncJob.SendNekkuCustomerNumberNullificationWarningEmail(
                             it,
@@ -242,9 +246,13 @@ fun updateNekkuSpecialDiets(
                 tx,
                 groupedChildren.flatMap { unitEntry ->
                     val supervisors =
-                        tx.getDaycareAclRows(unitEntry.key, false, UserRole.UNIT_SUPERVISOR).map {
-                            it.employee
-                        }
+                        tx.getDaycareAclRows(
+                                daycareId = unitEntry.key,
+                                includeStaffOccupancy = false,
+                                includeStaffEmployeeNumber = false,
+                                role = UserRole.UNIT_SUPERVISOR,
+                            )
+                            .map { it.employee }
                     supervisors.map { supervisor ->
                         AsyncJob.SendNekkuSpecialDietRemovalWarningEmail(
                             unitEntry.key,
