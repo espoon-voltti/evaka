@@ -276,6 +276,7 @@ tasks {
         failBuildOnCVSS = 0.0f
         analyzers.apply {
             assemblyEnabled = false
+            centralEnabled = false
             nodeAuditEnabled = false
             nodeEnabled = false
             nuspecEnabled = false
