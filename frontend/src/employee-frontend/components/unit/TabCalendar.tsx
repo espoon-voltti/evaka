@@ -44,7 +44,7 @@ export type CalendarMode = 'week' | 'month'
 
 export type AttendanceGroupFilter =
   | { type: 'group'; id: GroupId }
-  | { type: 'all-children' | 'no-group' | 'staff' }
+  | { type: 'all-children' | 'shiftcare' | 'no-group' | 'staff' }
 
 const GroupSelectorWrapper = styled.div`
   min-width: 320px;
@@ -85,6 +85,7 @@ function getDefaultGroup(
   if (groupParam !== null) {
     if (groupParam === 'no-group') return { type: 'no-group' }
     if (groupParam === 'staff') return { type: 'staff' }
+    if (groupParam === 'shiftcare') return { type: 'shiftcare' }
     if (groupParam === 'all-children') return { type: 'all-children' }
 
     const groupId = tryFromUuid<GroupId>(groupParam)
@@ -200,6 +201,7 @@ const CalendarContent = React.memo(function CalendarContent({
     hasPermissionWeekCalendar
       ? selectedGroup.type === 'staff' ||
         selectedGroup.type === 'no-group' ||
+        selectedGroup.type === 'shiftcare' ||
         selectedGroup.type === 'all-children'
         ? ['week', ['week']]
         : [requestedMode, ['month', 'week']]

@@ -340,6 +340,39 @@ class AttendanceReservationsControllerIntegrationTest :
                 )
             )
         }
+        val child1ServiceNeedMonThu =
+            ChildServiceNeedInfo(
+                childId = testChild_1.id,
+                optionId = snDaycareContractDays15.id,
+                hasContractDays = true,
+                daycareHoursPerMonth = null,
+                optionName = snDaycareContractDays15.nameFi,
+                validDuring = FiniteDateRange(mon, thu),
+                shiftCare = ShiftCareType.NONE,
+                partWeek = false,
+            )
+        val child1ServiceNeedFri =
+            ChildServiceNeedInfo(
+                childId = testChild_1.id,
+                optionId = snDaycareFullDay35.id,
+                hasContractDays = false,
+                daycareHoursPerMonth = null,
+                optionName = snDaycareFullDay35.nameFi,
+                validDuring = FiniteDateRange(fri, fri),
+                shiftCare = ShiftCareType.NONE,
+                partWeek = false,
+            )
+        val child5ServiceNeed =
+            ChildServiceNeedInfo(
+                childId = testChild_5.id,
+                optionId = snDaycareContractDays15.id,
+                hasContractDays = true,
+                daycareHoursPerMonth = null,
+                optionName = snDaycareContractDays15.nameFi,
+                validDuring = FiniteDateRange(mon, fri),
+                shiftCare = ShiftCareType.NONE,
+                partWeek = false,
+            )
 
         val response = getAttendanceReservations()
         assertEquals(testDaycare.name, response.unit)
@@ -459,6 +492,7 @@ class AttendanceReservationsControllerIntegrationTest :
                             absenceBillable = null,
                             absenceNonbillable = null,
                             possibleAbsenceCategories = setOf(AbsenceCategory.BILLABLE),
+                            serviceNeed = child1ServiceNeedMonThu,
                             dailyServiceTimes = null,
                             groupId = testGroup1.id,
                             backupGroupId = null,
@@ -484,6 +518,7 @@ class AttendanceReservationsControllerIntegrationTest :
                             absenceBillable = AbsenceTypeResponse(AbsenceType.OTHER_ABSENCE, true),
                             absenceNonbillable = null,
                             possibleAbsenceCategories = setOf(AbsenceCategory.BILLABLE),
+                            serviceNeed = child1ServiceNeedMonThu,
                             dailyServiceTimes = null,
                             groupId = testGroup1.id,
                             backupGroupId = null,
@@ -510,6 +545,7 @@ class AttendanceReservationsControllerIntegrationTest :
                         absenceBillable = null,
                         absenceNonbillable = null,
                         possibleAbsenceCategories = setOf(AbsenceCategory.BILLABLE),
+                        serviceNeed = child1ServiceNeedMonThu,
                         dailyServiceTimes = null,
                         groupId = testGroup1.id,
                         backupGroupId = null,
@@ -527,6 +563,7 @@ class AttendanceReservationsControllerIntegrationTest :
                         absenceBillable = null,
                         absenceNonbillable = null,
                         possibleAbsenceCategories = setOf(AbsenceCategory.BILLABLE),
+                        serviceNeed = null,
                         dailyServiceTimes = null,
                         groupId = null,
                         backupGroupId = null,
@@ -544,6 +581,7 @@ class AttendanceReservationsControllerIntegrationTest :
                         absenceBillable = null,
                         absenceNonbillable = null,
                         possibleAbsenceCategories = setOf(AbsenceCategory.BILLABLE),
+                        serviceNeed = null,
                         dailyServiceTimes = null,
                         groupId = testGroup1.id,
                         backupGroupId = null,
@@ -568,6 +606,7 @@ class AttendanceReservationsControllerIntegrationTest :
                         absenceBillable = null,
                         absenceNonbillable = null,
                         possibleAbsenceCategories = setOf(AbsenceCategory.BILLABLE),
+                        serviceNeed = child1ServiceNeedMonThu,
                         dailyServiceTimes = null,
                         groupId = testGroup1.id,
                         backupGroupId = null,
@@ -585,6 +624,7 @@ class AttendanceReservationsControllerIntegrationTest :
                         absenceBillable = null,
                         absenceNonbillable = null,
                         possibleAbsenceCategories = setOf(AbsenceCategory.BILLABLE),
+                        serviceNeed = null,
                         dailyServiceTimes = null,
                         groupId = null,
                         backupGroupId = null,
@@ -610,6 +650,7 @@ class AttendanceReservationsControllerIntegrationTest :
                         absenceBillable = null,
                         absenceNonbillable = null,
                         possibleAbsenceCategories = setOf(AbsenceCategory.BILLABLE),
+                        serviceNeed = null,
                         dailyServiceTimes = null,
                         groupId = testGroup1.id,
                         backupGroupId = testGroup2.id,
@@ -634,6 +675,7 @@ class AttendanceReservationsControllerIntegrationTest :
                         absenceBillable = null,
                         absenceNonbillable = null,
                         possibleAbsenceCategories = setOf(AbsenceCategory.BILLABLE),
+                        serviceNeed = child1ServiceNeedFri,
                         dailyServiceTimes = null,
                         groupId = testGroup2.id,
                         backupGroupId = null,
@@ -651,6 +693,7 @@ class AttendanceReservationsControllerIntegrationTest :
                         absenceBillable = null,
                         absenceNonbillable = null,
                         possibleAbsenceCategories = setOf(AbsenceCategory.NONBILLABLE),
+                        serviceNeed = child5ServiceNeed,
                         dailyServiceTimes =
                             DailyServiceTimesValue.RegularTimes(
                                 validityPeriod = monFri.asDateRange(),
@@ -672,6 +715,7 @@ class AttendanceReservationsControllerIntegrationTest :
                         absenceBillable = null,
                         absenceNonbillable = null,
                         possibleAbsenceCategories = setOf(AbsenceCategory.BILLABLE),
+                        serviceNeed = null,
                         dailyServiceTimes = null,
                         groupId = testGroup1.id,
                         backupGroupId = null,
@@ -781,6 +825,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     absenceBillable = null,
                     absenceNonbillable = null,
                     possibleAbsenceCategories = setOf(AbsenceCategory.BILLABLE),
+                    serviceNeed = null,
                     dailyServiceTimes = null,
                     groupId = null,
                     backupGroupId = null,
@@ -829,6 +874,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     absenceBillable = null,
                     absenceNonbillable = null,
                     possibleAbsenceCategories = setOf(AbsenceCategory.BILLABLE),
+                    serviceNeed = null,
                     dailyServiceTimes = null,
                     groupId = null,
                     backupGroupId = null,
@@ -857,6 +903,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     absenceBillable = null,
                     absenceNonbillable = null,
                     possibleAbsenceCategories = setOf(AbsenceCategory.BILLABLE),
+                    serviceNeed = null,
                     dailyServiceTimes = null,
                     groupId = null,
                     backupGroupId = null,
@@ -1460,6 +1507,7 @@ class AttendanceReservationsControllerIntegrationTest :
                 absenceNonbillable = AbsenceTypeResponse(AbsenceType.OTHER_ABSENCE, true),
                 possibleAbsenceCategories =
                     setOf(AbsenceCategory.NONBILLABLE, AbsenceCategory.BILLABLE),
+                serviceNeed = null,
                 dailyServiceTimes = null,
                 groupId = null,
                 backupGroupId = null,
@@ -1523,6 +1571,7 @@ class AttendanceReservationsControllerIntegrationTest :
                 absenceNonbillable = AbsenceTypeResponse(AbsenceType.OTHER_ABSENCE, true),
                 possibleAbsenceCategories =
                     setOf(AbsenceCategory.NONBILLABLE, AbsenceCategory.BILLABLE),
+                serviceNeed = null,
                 dailyServiceTimes = null,
                 groupId = null,
                 backupGroupId = null,
@@ -1569,6 +1618,7 @@ class AttendanceReservationsControllerIntegrationTest :
                 absenceNonbillable = null,
                 possibleAbsenceCategories =
                     setOf(AbsenceCategory.NONBILLABLE, AbsenceCategory.BILLABLE),
+                serviceNeed = null,
                 dailyServiceTimes = null,
                 groupId = null,
                 backupGroupId = null,

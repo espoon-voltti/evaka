@@ -61,7 +61,9 @@ const childVisibleFilter = (
       child.backupGroupId === selectedGroup.id
     : selectedGroup.type === 'no-group'
       ? child.groupId === null
-      : selectedGroup.type === 'all-children'
+      : selectedGroup.type === 'shiftcare'
+        ? child.serviceNeed !== null && child.serviceNeed.shiftCare !== 'NONE'
+        : selectedGroup.type === 'all-children'
 
 const childPresentFilter = (
   child: ChildRecordOfDay,

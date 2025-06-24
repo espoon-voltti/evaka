@@ -109,6 +109,7 @@ export interface ChildRecordOfDay {
   possibleAbsenceCategories: AbsenceCategory[]
   reservations: ReservationResponse[]
   scheduleType: ScheduleType
+  serviceNeed: ChildServiceNeedInfo | null
 }
 
 /**
@@ -488,7 +489,8 @@ export function deserializeJsonChildRecordOfDay(json: JsonOf<ChildRecordOfDay>):
     ...json,
     attendances: json.attendances.map(e => deserializeJsonAttendanceTimesForDate(e)),
     dailyServiceTimes: (json.dailyServiceTimes != null) ? deserializeJsonDailyServiceTimesValue(json.dailyServiceTimes) : null,
-    reservations: json.reservations.map(e => deserializeJsonReservationResponse(e))
+    reservations: json.reservations.map(e => deserializeJsonReservationResponse(e)),
+    serviceNeed: (json.serviceNeed != null) ? deserializeJsonChildServiceNeedInfo(json.serviceNeed) : null
   }
 }
 
