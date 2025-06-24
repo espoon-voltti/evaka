@@ -146,7 +146,7 @@ describe('Unit group calendar', () => {
     await insertTestDataAndLogin({ childShiftCare: 'FULL' })
     const childReservations = (await openWeekCalendar()).childReservations
     const calendarPage = new UnitWeekCalendarPage(page)
-    await calendarPage.selectGroup('shiftcare')
+    await calendarPage.selectGroup('shift-care')
     await waitUntilEqual(
       () => childReservations.childReservationRows(child1Fixture.id).count(),
       1
@@ -157,7 +157,7 @@ describe('Unit group calendar', () => {
     await insertTestDataAndLogin({ childShiftCare: 'NONE' })
     const childReservations = (await openWeekCalendar()).childReservations
     const calendarPage = new UnitWeekCalendarPage(page)
-    await calendarPage.selectGroup('shiftcare')
+    await calendarPage.selectGroup('shift-care')
     await waitUntilEqual(
       () => childReservations.childReservationRows(child1Fixture.id).count(),
       0

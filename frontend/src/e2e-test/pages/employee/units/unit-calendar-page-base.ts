@@ -74,7 +74,7 @@ export class UnitCalendarPageBase {
 
   async selectGroup(
     // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-    groupId: UUID | 'shiftcare' | 'no-group' | 'staff'
+    groupId: UUID | 'shift-care' | 'no-group' | 'staff'
   ): Promise<void> {
     const select = new Select(
       this.page.findByDataQa('attendances-group-select')
