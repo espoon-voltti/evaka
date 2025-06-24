@@ -281,6 +281,14 @@ const BasicsSection = React.memo(function BasicsSection({
               message={i18n.documentTemplates.documentTypeInfos.CITIZEN_BASIC}
             />
           )}
+          {template.type === 'OTHER_DECISION' && (
+            <InfoBox
+              message={i18n.documentTemplates.documentTypeInfos.OTHER_DECISION}
+            />
+          )}
+          {template.type === 'OTHER' && (
+            <InfoBox message={i18n.documentTemplates.documentTypeInfos.OTHER} />
+          )}
         </GrovingDiv>
         <FixedSpaceColumn spacing="xxs">
           <span>{template.legalBasis}</span>
