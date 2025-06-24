@@ -319,6 +319,11 @@ interface BaseFeatureFlags {
    * Enable missing holiday questionnaire answer indicator
    */
   missingQuestionnaireAnswerMarkerEnabled?: boolean
+
+  /**
+   * Enable showing metadata in citizen applications
+   */
+  showMetadataToCitizen?: boolean
 }
 
 export type FeatureFlags = DeepReadonly<BaseFeatureFlags>

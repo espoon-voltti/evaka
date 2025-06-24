@@ -39,7 +39,14 @@ export const testTranslations: Translations = {
     yes: '',
     openExpandingInfo: '',
     showPassword: '',
-    hidePassword: ''
+    hidePassword: '',
+    userTypes: {
+      SYSTEM: '',
+      CITIZEN: '',
+      EMPLOYEE: '',
+      MOBILE_DEVICE: '',
+      UNKNOWN: ''
+    }
   },
   datePicker: {
     placeholder: '',
@@ -156,6 +163,53 @@ export const testTranslations: Translations = {
     unselectableDate: '',
     openAttendance: '',
     generic: ''
+  },
+  metadata: {
+    title: '',
+    notFound: '',
+    processNumber: '',
+    processName: '',
+    organization: '',
+    archiveDurationMonths: '',
+    primaryDocument: '',
+    secondaryDocuments: '',
+    documentId: '',
+    name: '',
+    createdAt: '',
+    createdBy: '',
+    monthsUnit: '',
+    confidentiality: '',
+    confidential: '',
+    public: '',
+    notSet: '',
+    confidentialityDuration: '',
+    confidentialityBasis: '',
+    years: '',
+    receivedBy: {
+      label: '',
+      PAPER: '',
+      ELECTRONIC: ''
+    },
+    sfiDelivery: {
+      label: '',
+      method: {
+        ELECTRONIC: '',
+        PAPER_MAIL: '',
+        PENDING: ''
+      }
+    },
+    history: '',
+    downloadPdf: '',
+    states: {
+      INITIAL: '',
+      PREPARATION: '',
+      DECIDING: '',
+      COMPLETED: ''
+    },
+    section: {
+      show: '',
+      hide: ''
+    }
   }
 }
 

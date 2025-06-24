@@ -22,6 +22,7 @@ import ListGrid from 'lib-components/layout/ListGrid'
 import { FixedSpaceFlexWrap } from 'lib-components/layout/flex-helpers'
 import { H2, H3, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
+import { featureFlags } from 'lib-customizations/citizen'
 import colors from 'lib-customizations/common'
 import {
   faArrowRight,
@@ -39,9 +40,13 @@ import {
 
 import { Status } from '../decisions/shared'
 import { useTranslation } from '../localization'
+import { MetadataSection } from '../metadata/MetadataSection'
 import { OverlayContext } from '../overlay/state'
 
-import { removeUnprocessableApplicationMutation } from './queries'
+import {
+  applicationMetadataQuery,
+  removeUnprocessableApplicationMutation
+} from './queries'
 
 const StyledLink = styled(Link)`
   color: ${colors.main.m2};
@@ -358,7 +363,15 @@ export default React.memo(function ChildApplicationsBlock({
                     />
                   )}
               </FixedSpaceFlexWrap>
-
+              {featureFlags.showMetadataToCitizen && (
+                <>
+                  <Gap size="s" />
+                  <MetadataSection
+                    data-qa={applicationId}
+                    query={applicationMetadataQuery({ applicationId })}
+                  />
+                </>
+              )}
               {index !== applicationSummaries.length - 1 && <LineBreak />}
             </React.Fragment>
           )

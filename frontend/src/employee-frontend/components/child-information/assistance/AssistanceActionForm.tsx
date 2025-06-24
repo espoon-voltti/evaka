@@ -26,6 +26,7 @@ import {
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
+import LabelValueList from 'lib-components/molecules/LabelValueList'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { DatePickerSpacer } from 'lib-components/molecules/date-picker/DateRangePicker'
@@ -39,7 +40,6 @@ import type { DateRange } from '../../../utils/date'
 import { rangeContainsDate } from '../../../utils/date'
 import { isDateRangeInverted } from '../../../utils/validation/validations'
 import FormActions from '../../common/FormActions'
-import LabelValueList from '../../common/LabelValueList'
 import {
   createAssistanceActionMutation,
   updateAssistanceActionMutation

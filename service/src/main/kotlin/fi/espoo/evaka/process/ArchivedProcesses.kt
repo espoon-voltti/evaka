@@ -48,7 +48,7 @@ data class ArchivedProcess(
     val year: Int,
     val number: Int,
     val organization: String,
-    val archiveDurationMonths: Int,
+    val archiveDurationMonths: Int?,
     val migrated: Boolean,
     @Json val history: List<ArchivedProcessHistoryRow>,
 ) {

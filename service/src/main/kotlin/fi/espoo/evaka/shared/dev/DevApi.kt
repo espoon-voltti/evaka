@@ -19,6 +19,8 @@ import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.application.DaycarePlacementPlan
 import fi.espoo.evaka.application.SimpleApplicationAction
 import fi.espoo.evaka.application.fetchApplicationDetails
+import fi.espoo.evaka.application.setApplicationProcessId
+import fi.espoo.evaka.application.updateApplicationDates
 import fi.espoo.evaka.assistance.DaycareAssistanceLevel
 import fi.espoo.evaka.assistance.OtherAssistanceMeasureType
 import fi.espoo.evaka.assistance.PreschoolAssistanceLevel
@@ -131,6 +133,8 @@ import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.placement.PlacementPlanService
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.process.DocumentConfidentiality
+import fi.espoo.evaka.process.MetadataService
+import fi.espoo.evaka.process.insertProcess
 import fi.espoo.evaka.reservations.DailyReservationRequest
 import fi.espoo.evaka.reservations.ReservationInsert
 import fi.espoo.evaka.reservations.createReservationsAndAbsences
@@ -720,9 +724,27 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
         @RequestBody applications: List<DevApplicationWithForm>,
     ): List<ApplicationId> =
         db.connect { dbc ->
+            val metadata = MetadataService(featureConfig)
+            val enteredBy: EvakaUserId = AuthenticatedUser.SystemInternalUser.evakaUserId
             dbc.transaction { tx ->
                 applications.map { application ->
                     val id = tx.insertApplication(application)
+                    if (application.status != ApplicationStatus.CREATED) {
+                        metadata
+                            .getProcess(
+                                ArchiveProcessType.fromApplicationType(application.type),
+                                clock.today().year,
+                            )
+                            ?.let { tx.insertProcess(it) }
+                            ?.also { tx.setApplicationProcessId(id, it.id, clock.now(), enteredBy) }
+                        tx.updateApplicationDates(
+                            id,
+                            sentDate = application.sentDate ?: application.createdAt.toLocalDate(),
+                            dueDate = application.dueDate,
+                            now = clock.now(),
+                            modifiedBy = enteredBy,
+                        )
+                    }
                     application.otherGuardians.forEach { otherGuardianId ->
                         tx.createUpdate {
                                 sql(
