@@ -490,19 +490,43 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
             )
         }
         db.read { tx ->
-            assertEquals(1, tx.getDaycareAclRows(daycare1.id, false).size)
-            assertEquals(1, tx.getDaycareAclRows(daycare2.id, false).size)
-            assertEquals(1, tx.getDaycareAclRows(daycare3.id, false).size)
-            assertEquals(1, tx.getDaycareAclRows(daycare4.id, false).size)
+            assertEquals(
+                1,
+                tx.getDaycareAclRows(daycare1.id, false, includeStaffEmployeeNumber = false).size,
+            )
+            assertEquals(
+                1,
+                tx.getDaycareAclRows(daycare2.id, false, includeStaffEmployeeNumber = false).size,
+            )
+            assertEquals(
+                1,
+                tx.getDaycareAclRows(daycare3.id, false, includeStaffEmployeeNumber = false).size,
+            )
+            assertEquals(
+                1,
+                tx.getDaycareAclRows(daycare4.id, false, includeStaffEmployeeNumber = false).size,
+            )
         }
 
         scheduledJobs.syncAclRows(db, MockEvakaClock(now))
 
         db.read { tx ->
-            assertEquals(1, tx.getDaycareAclRows(daycare1.id, false).size)
-            assertEquals(0, tx.getDaycareAclRows(daycare2.id, false).size)
-            assertEquals(1, tx.getDaycareAclRows(daycare3.id, false).size)
-            assertEquals(1, tx.getDaycareAclRows(daycare4.id, false).size)
+            assertEquals(
+                1,
+                tx.getDaycareAclRows(daycare1.id, false, includeStaffEmployeeNumber = false).size,
+            )
+            assertEquals(
+                0,
+                tx.getDaycareAclRows(daycare2.id, false, includeStaffEmployeeNumber = false).size,
+            )
+            assertEquals(
+                1,
+                tx.getDaycareAclRows(daycare3.id, false, includeStaffEmployeeNumber = false).size,
+            )
+            assertEquals(
+                1,
+                tx.getDaycareAclRows(daycare4.id, false, includeStaffEmployeeNumber = false).size,
+            )
         }
     }
 
@@ -549,13 +573,20 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
         db.read { tx ->
             assertEquals(
                 listOf(UserRole.SPECIAL_EDUCATION_TEACHER),
-                tx.getDaycareAclRows(daycare1.id, false).map { it.role },
+                tx.getDaycareAclRows(daycare1.id, false, includeStaffEmployeeNumber = false).map {
+                    it.role
+                },
             )
             assertEquals(
                 listOf(UserRole.SPECIAL_EDUCATION_TEACHER),
-                tx.getDaycareAclRows(daycare2.id, false).map { it.role },
+                tx.getDaycareAclRows(daycare2.id, false, includeStaffEmployeeNumber = false).map {
+                    it.role
+                },
             )
-            assertTrue(tx.getDaycareAclRows(daycare3.id, false).isEmpty())
+            assertTrue(
+                tx.getDaycareAclRows(daycare3.id, false, includeStaffEmployeeNumber = false)
+                    .isEmpty()
+            )
         }
     }
 

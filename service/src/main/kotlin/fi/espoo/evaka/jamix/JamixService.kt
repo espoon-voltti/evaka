@@ -171,7 +171,12 @@ fun fetchAndUpdateJamixDiets(
                 tx,
                 byUnit.flatMap { (unitId, nulled) ->
                     val supervisors =
-                        tx.getDaycareAclRows(unitId, false, UserRole.UNIT_SUPERVISOR)
+                        tx.getDaycareAclRows(
+                                daycareId = unitId,
+                                includeStaffOccupancy = false,
+                                includeStaffEmployeeNumber = false,
+                                role = UserRole.UNIT_SUPERVISOR,
+                            )
                             .map { it.employee }
                             .sortedBy { it.id }
                     supervisors.map { supervisor ->

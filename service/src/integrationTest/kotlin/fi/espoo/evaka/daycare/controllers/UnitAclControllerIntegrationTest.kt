@@ -50,6 +50,7 @@ class UnitAclControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             firstName = "First",
             lastName = "Last",
             email = "test@example.com",
+            employeeNumber = null,
             temporary = false,
             hasStaffOccupancyEffect = false,
             active = true,
@@ -194,6 +195,7 @@ class UnitAclControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                         DaycareAclRowEmployee(
                             id = employee.id,
                             email = employee.email,
+                            employeeNumber = employee.employeeNumber,
                             firstName = employee.firstName,
                             lastName = employee.lastName,
                             temporary = employee.temporary,
@@ -241,6 +243,7 @@ class UnitAclControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                         DaycareAclRowEmployee(
                             id = employee.id,
                             email = employee.email,
+                            employeeNumber = employee.employeeNumber,
                             firstName = employee.firstName,
                             lastName = employee.lastName,
                             temporary = employee.temporary,

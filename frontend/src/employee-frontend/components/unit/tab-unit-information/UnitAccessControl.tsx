@@ -190,7 +190,12 @@ function AclRow({
           <span data-qa="name">
             <PersonName person={row.employee} format="First Last" />
           </span>
-          <EmailSpan data-qa="email">{row.employee.email}</EmailSpan>
+          <ExtraSpan data-qa="email">{row.employee.email}</ExtraSpan>
+          {!!row.employee.employeeNumber && (
+            <ExtraSpan data-qa="person-number">
+              {i18n.employees.employeeNumber}: {row.employee.employeeNumber}
+            </ExtraSpan>
+          )}
         </FixedSpaceColumn>
       </Td>
       {unitGroups && (
@@ -385,7 +390,12 @@ function ScheduledAclTable({
                   <span data-qa="name">
                     <PersonName person={row} format="First Last" />
                   </span>
-                  <EmailSpan data-qa="email">{row.email}</EmailSpan>
+                  <ExtraSpan data-qa="email">{row.email}</ExtraSpan>
+                  {!!row.employeeNumber && (
+                    <ExtraSpan data-qa="employee-number">
+                      {i18n.employees.employeeNumber}: {row.employeeNumber}
+                    </ExtraSpan>
+                  )}
                 </FixedSpaceColumn>
               </Td>
               <Td>
@@ -834,7 +844,7 @@ export default React.memo(function UnitAccessControl({
   )
 })
 
-const EmailSpan = styled.span`
+const ExtraSpan = styled.span`
   font-size: 14px;
   color: ${(p) => p.theme.colors.grayscale.g70};
   font-weight: 600;

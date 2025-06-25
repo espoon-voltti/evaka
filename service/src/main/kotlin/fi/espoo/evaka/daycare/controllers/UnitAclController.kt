@@ -71,18 +71,31 @@ class UnitAclController(
                         Action.Unit.READ_STAFF_OCCUPANCY_COEFFICIENTS,
                         unitId,
                     )
+                val hasStaffEmployeeNumberPermission =
+                    accessControl.hasPermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Unit.READ_STAFF_EMPLOYEE_NUMBER,
+                        unitId,
+                    )
 
                 val aclRows =
-                    tx.getDaycareAclRows(unitId, hasOccupancyPermission).map {
-                        if (it.employee.active) it
-                        else
-                            it.copy(
-                                employee =
-                                    it.employee.copy(
-                                        lastName = "${it.employee.lastName} (deaktivoitu)"
-                                    )
-                            )
-                    }
+                    tx.getDaycareAclRows(
+                            unitId,
+                            hasOccupancyPermission,
+                            hasStaffEmployeeNumberPermission,
+                        )
+                        .map {
+                            if (it.employee.active) it
+                            else
+                                it.copy(
+                                    employee =
+                                        it.employee.copy(
+                                            lastName = "${it.employee.lastName} (deaktivoitu)"
+                                        )
+                                )
+                        }
 
                 Audit.UnitAclRead.log(
                     targetId = AuditId(unitId),
@@ -115,7 +128,16 @@ class UnitAclController(
                         Action.Unit.READ_ACL,
                         unitId,
                     )
-                    tx.getScheduledDaycareAclRows(unitId)
+                    val hasReadStaffEmployeeNumberPermission =
+                        accessControl.hasPermissionFor(
+                            tx,
+                            user,
+                            clock,
+                            Action.Unit.READ_STAFF_EMPLOYEE_NUMBER,
+                            unitId,
+                        )
+
+                    tx.getScheduledDaycareAclRows(unitId, hasReadStaffEmployeeNumberPermission)
                 }
             }
             .also {
@@ -508,7 +530,11 @@ class UnitAclController(
                         unitId,
                     )
                     val groupIds =
-                        tx.getDaycareAclRows(daycareId = unitId, false)
+                        tx.getDaycareAclRows(
+                                daycareId = unitId,
+                                includeStaffOccupancy = false,
+                                includeStaffEmployeeNumber = false,
+                            )
                             .filter { it.employee.id == employee.id && it.role == UserRole.STAFF }
                             .flatMap { it.groupIds }
                             .toSet()

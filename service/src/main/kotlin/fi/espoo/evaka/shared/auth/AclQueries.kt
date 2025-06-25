@@ -24,6 +24,7 @@ data class DaycareAclRowEmployee(
     val firstName: String,
     val lastName: String,
     val email: String?,
+    val employeeNumber: String?,
     val temporary: Boolean,
     val hasStaffOccupancyEffect: Boolean?,
     val active: Boolean,
@@ -32,6 +33,7 @@ data class DaycareAclRowEmployee(
 fun Database.Read.getDaycareAclRows(
     daycareId: DaycareId,
     includeStaffOccupancy: Boolean,
+    includeStaffEmployeeNumber: Boolean,
     role: UserRole? = null,
 ): List<DaycareAclRow> =
     createQuery {
@@ -41,6 +43,10 @@ SELECT e.id,
        e.first_name,
        e.last_name,
        e.email,
+       CASE
+            WHEN (${bind(includeStaffEmployeeNumber)} IS TRUE) THEN
+                e.employee_number
+            ELSE NULL END as employee_number,
        role,
        active,
        coalesce(group_ids, array []::uuid[]) AS group_ids,
@@ -178,12 +184,16 @@ data class ScheduledDaycareAclRow(
     val firstName: String,
     val lastName: String,
     val email: String?,
+    val employeeNumber: String?,
     val role: UserRole,
     val startDate: LocalDate,
     val endDate: LocalDate?,
 )
 
-fun Database.Read.getScheduledDaycareAclRows(daycareId: DaycareId): List<ScheduledDaycareAclRow> =
+fun Database.Read.getScheduledDaycareAclRows(
+    daycareId: DaycareId,
+    includeStaffEmployeeNumber: Boolean,
+): List<ScheduledDaycareAclRow> =
     createQuery {
             sql(
                 """
@@ -191,6 +201,10 @@ SELECT e.id,
        e.first_name,
        e.last_name,
        e.email,
+       CASE
+            WHEN (${bind(includeStaffEmployeeNumber)} IS TRUE) THEN
+                e.employee_number
+            ELSE NULL END as employee_number,
        das.role,
        das.start_date,
        das.end_date
