@@ -202,7 +202,9 @@ export default React.memo(function ReservationModal({
               hp.period
                 .complement(dateRange.value())
                 .some((range) => range.includes(day.date)) &&
-              day.children.some((child) => child.reservations.length === 0)
+              day.children.some(
+                (child) => child.reservations.length === 0 && !child.absence
+              )
           ) ||
             // at least one missing reservation in holiday period and inside selected daterange
             (timesBranch === 'dailyTimes' &&
