@@ -7,6 +7,7 @@ package fi.espoo.evaka.caseprocess
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
@@ -56,6 +57,45 @@ class ProcessMetadataControllerCitizen(
             .also { response ->
                 Audit.ApplicationReadMetadata.log(
                     targetId = AuditId(applicationId),
+                    objectId = response.data?.process?.id?.let(AuditId::invoke),
+                )
+            }
+    }
+
+    @GetMapping("/fee-decisions/{feeDecisionId}")
+    fun getFeeDecisionMetadata(
+        db: Database,
+        user: AuthenticatedUser.Citizen,
+        clock: EvakaClock,
+        @PathVariable feeDecisionId: FeeDecisionId,
+    ): ProcessMetadataResponse {
+        return db.connect { dbc ->
+            dbc.read { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Citizen.FeeDecision.READ,
+                    feeDecisionId,
+                )
+                val process =
+                    tx.getCaseProcessByFeeDecisionId(feeDecisionId)
+                        ?: return@read ProcessMetadataResponse(null)
+                val decisionDocument = tx.getFeeDecisionDocumentMetadata(feeDecisionId)
+
+                ProcessMetadataResponse(
+                    ProcessMetadata(
+                        process = process,
+                        processName = "Varhaiskasvatuksen maksupäätös",
+                        primaryDocument = decisionDocument,
+                        secondaryDocuments = emptyList(),
+                    ).redactForCitizen()
+                )
+            }
+        }
+            .also { response ->
+                Audit.FeeDecisionReadMetadata.log(
+                    targetId = AuditId(feeDecisionId),
                     objectId = response.data?.process?.id?.let(AuditId::invoke),
                 )
             }
