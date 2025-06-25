@@ -2528,6 +2528,7 @@ data class DevChildDocumentDecision(
     val modifiedBy: EmployeeId,
     val status: ChildDocumentDecisionStatus,
     val validity: DateRange?,
+    val daycareId: DaycareId?,
 )
 
 data class Citizen(

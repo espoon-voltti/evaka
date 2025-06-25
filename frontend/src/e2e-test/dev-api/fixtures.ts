@@ -1842,6 +1842,7 @@ export class Fixture {
             id: randomId(),
             createdAt: HelsinkiDateTime.now(),
             modifiedAt: HelsinkiDateTime.now(),
+            daycareId: null,
             ...decision
           }
         })

@@ -143,6 +143,7 @@ class ChildDocumentDecisionsReportTest : FullApplicationTest(resetDbBeforeEach =
                             modifiedBy = decisionMaker.id,
                             status = ChildDocumentDecisionStatus.ACCEPTED,
                             validity = DateRange(clock.today(), null),
+                            daycareId = daycare1.id,
                         ),
                 )
             )
@@ -206,6 +207,7 @@ class ChildDocumentDecisionsReportTest : FullApplicationTest(resetDbBeforeEach =
                                     modifiedBy = decisionMaker.id,
                                     status = ChildDocumentDecisionStatus.ACCEPTED,
                                     validity = validity,
+                                    daycareId = daycare1.id,
                                 ),
                         )
                     )

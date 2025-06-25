@@ -457,6 +457,7 @@ export interface DevChildDocument {
 export interface DevChildDocumentDecision {
   createdAt: HelsinkiDateTime
   createdBy: EmployeeId
+  daycareId: DaycareId | null
   id: ChildDocumentDecisionId
   modifiedAt: HelsinkiDateTime
   modifiedBy: EmployeeId

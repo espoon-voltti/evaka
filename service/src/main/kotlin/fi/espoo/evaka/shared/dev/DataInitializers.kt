@@ -1520,8 +1520,8 @@ fun Database.Transaction.insert(row: DevChildDocumentDecision): ChildDocumentDec
     return createUpdate {
             sql(
                 """
-INSERT INTO child_document_decision (id, created_at, created_by, modified_at, modified_by, status, valid_from, valid_to) 
-VALUES (${bind(row.id)}, ${bind(row.createdAt)}, ${bind(row.createdBy)}, ${bind(row.modifiedAt)}, ${bind(row.modifiedBy)}, ${bind(row.status)}, ${bind(row.validity?.start)}, ${bind(row.validity?.end)})
+INSERT INTO child_document_decision (id, created_at, created_by, modified_at, modified_by, status, valid_from, valid_to, daycare_id) 
+VALUES (${bind(row.id)}, ${bind(row.createdAt)}, ${bind(row.createdBy)}, ${bind(row.modifiedAt)}, ${bind(row.modifiedBy)}, ${bind(row.status)}, ${bind(row.validity?.start)}, ${bind(row.validity?.end)}, ${bind(row.daycareId)})
 """
             )
         }
