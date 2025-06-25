@@ -631,12 +631,13 @@ export interface MissingHeadOfFamilyReportRow {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.MissingServiceNeedReportRow
+* Generated from fi.espoo.evaka.reports.MissingServiceNeedReportResultRow
 */
-export interface MissingServiceNeedReportRow {
+export interface MissingServiceNeedReportResultRow {
   careAreaName: string
   childId: PersonId
   daysWithoutServiceNeed: number
+  defaultOption: ServiceNeedOption | null
   firstName: string
   lastName: string
   unitId: DaycareId

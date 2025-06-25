@@ -52,7 +52,7 @@ import type { ManualDuplicationReportRow } from 'lib-common/generated/api-types/
 import type { ManualDuplicationReportViewMode } from 'lib-common/generated/api-types/reports'
 import type { MealReportData } from 'lib-common/generated/api-types/reports'
 import type { MissingHeadOfFamilyReportRow } from 'lib-common/generated/api-types/reports'
-import type { MissingServiceNeedReportRow } from 'lib-common/generated/api-types/reports'
+import type { MissingServiceNeedReportResultRow } from 'lib-common/generated/api-types/reports'
 import type { NekkuOrderRow } from 'lib-common/generated/api-types/reports'
 import type { NonSsnChildrenReportRow } from 'lib-common/generated/api-types/reports'
 import type { OccupancyGroupReportResultRow } from 'lib-common/generated/api-types/reports'
@@ -830,12 +830,12 @@ export async function getMissingServiceNeedReport(
     from: LocalDate,
     to?: LocalDate | null
   }
-): Promise<MissingServiceNeedReportRow[]> {
+): Promise<MissingServiceNeedReportResultRow[]> {
   const params = createUrlSearchParams(
     ['from', request.from.formatIso()],
     ['to', request.to?.formatIso()]
   )
-  const { data: json } = await client.request<JsonOf<MissingServiceNeedReportRow[]>>({
+  const { data: json } = await client.request<JsonOf<MissingServiceNeedReportResultRow[]>>({
     url: uri`/employee/reports/missing-service-need`.toString(),
     method: 'GET',
     params

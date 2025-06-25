@@ -5,6 +5,9 @@
 package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.application.ServiceNeedOption
+import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.serviceneed.getServiceNeedOptions
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -31,7 +34,7 @@ class MissingServiceNeedReportController(private val accessControl: AccessContro
         clock: EvakaClock,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate?,
-    ): List<MissingServiceNeedReportRow> {
+    ): List<MissingServiceNeedReportResultRow> {
         if (to != null && to.isBefore(from)) throw BadRequest("Invalid time range")
 
         return db.connect { dbc ->
@@ -44,7 +47,26 @@ class MissingServiceNeedReportController(private val accessControl: AccessContro
                             Action.Unit.READ_MISSING_SERVICE_NEED_REPORT,
                         )
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
-                    it.getMissingServiceNeedRows(from, to, filter)
+                    val defaultOptionsByPlacementType =
+                        it.getServiceNeedOptions()
+                            .filter { op -> op.defaultOption }
+                            .associateBy { op -> op.validPlacementType }
+                            .mapValues { (_, value) ->
+                                ServiceNeedOption.fromFullServiceNeed(value)
+                            }
+
+                    it.getMissingServiceNeedRows(from, to, filter).map { row ->
+                        MissingServiceNeedReportResultRow(
+                            careAreaName = row.careAreaName,
+                            unitId = row.unitId,
+                            unitName = row.unitName,
+                            childId = row.childId,
+                            firstName = row.firstName,
+                            lastName = row.lastName,
+                            daysWithoutServiceNeed = row.daysWithoutServiceNeed,
+                            defaultOption = defaultOptionsByPlacementType[row.placementType],
+                        )
+                    }
                 }
             }
             .also {
@@ -70,20 +92,23 @@ private fun Database.Read.getMissingServiceNeedRows(
                 ELSE ca.name
             END) AS care_area_name,
             daycare.name AS unit_name, unit_id,
-            child_id, first_name, last_name, sum(days_without_sn) AS days_without_service_need
+            child_id, first_name, last_name, sum(days_without_sn) AS days_without_service_need,
+            results.placement_type
         FROM (
           SELECT DISTINCT
             child_id,
             unit_id,
-            days - days_with_sn AS days_without_sn
+            days - days_with_sn AS days_without_sn,
+            stats.placement_type
           FROM (
             SELECT
               pl.child_id,
               pl.unit_id,
               days_in_range(pl.period) AS days,
-              coalesce(sum(days_in_range(pl.period * sn.period)) OVER w, 0) AS days_with_sn
+              coalesce(sum(days_in_range(pl.period * sn.period)) OVER w, 0) AS days_with_sn,
+              pl.type AS placement_type
             FROM (
-              SELECT id, child_id, unit_id, daterange(start_date, end_date, '[]') * ${bind(dateRange)} AS period
+              SELECT id, child_id, unit_id, daterange(start_date, end_date, '[]') * ${bind(dateRange)} AS period, type
               FROM placement
               WHERE placement.type IN (
                 SELECT DISTINCT sno.valid_placement_type 
@@ -105,7 +130,7 @@ private fun Database.Read.getMissingServiceNeedRows(
             AND (daycare.invoiced_by_municipality OR daycare.provider_type = 'PRIVATE_SERVICE_VOUCHER')
         JOIN care_area ca ON ca.id = daycare.care_area_id
         WHERE ${predicate(unitFilter.forTable("daycare"))}
-        GROUP BY 1, daycare.name, unit_id, child_id, first_name, last_name, unit_id
+        GROUP BY 1, daycare.name, unit_id, child_id, first_name, last_name, unit_id, results.placement_type
         ORDER BY 1, daycare.name, last_name, first_name
         """
                     .trimIndent()
@@ -121,4 +146,16 @@ data class MissingServiceNeedReportRow(
     val firstName: String,
     val lastName: String,
     val daysWithoutServiceNeed: Int,
+    val placementType: PlacementType,
+)
+
+data class MissingServiceNeedReportResultRow(
+    val careAreaName: String,
+    val unitId: DaycareId,
+    val unitName: String,
+    val childId: ChildId,
+    val firstName: String,
+    val lastName: String,
+    val daysWithoutServiceNeed: Int,
+    val defaultOption: ServiceNeedOption?,
 )

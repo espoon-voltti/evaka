@@ -6,7 +6,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
 import { Link } from 'wouter'
 
-import type { MissingServiceNeedReportRow } from 'lib-common/generated/api-types/reports'
+import type { MissingServiceNeedReportResultRow } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
 import { constantQuery, useQueryResult } from 'lib-common/query'
 import Title from 'lib-components/atoms/Title'
@@ -58,7 +58,7 @@ export default React.memo(function MissingServiceNeed() {
   const [displayFilters, setDisplayFilters] =
     useState<DisplayFilters>(emptyDisplayFilters)
   const displayFilter = useCallback(
-    (row: MissingServiceNeedReportRow): boolean =>
+    (row: MissingServiceNeedReportResultRow): boolean =>
       !(
         displayFilters.careArea && row.careAreaName !== displayFilters.careArea
       ),
@@ -150,6 +150,10 @@ export default React.memo(function MissingServiceNeed() {
                   {
                     label: 'Puutteellisia päiviä',
                     value: (row) => row.daysWithoutServiceNeed
+                  },
+                  {
+                    label: i18n.reports.missingServiceNeed.defaultOption,
+                    value: (row) => row.defaultOption?.nameFi ?? ''
                   }
                 ]}
                 filename={`Puuttuvat palveluntarpeet ${filters.from?.formatIso()}-${
@@ -165,10 +169,11 @@ export default React.memo(function MissingServiceNeed() {
                     <Th>
                       {i18n.reports.missingServiceNeed.daysWithoutServiceNeed}
                     </Th>
+                    <Th>{i18n.reports.missingServiceNeed.defaultOption}</Th>
                   </Tr>
                 </Thead>
                 <Tbody>
-                  {filteredRows.map((row: MissingServiceNeedReportRow) => (
+                  {filteredRows.map((row) => (
                     <Tr key={`${row.unitId}:${row.childId}`}>
                       <Td>{row.careAreaName}</Td>
                       <Td>
@@ -180,6 +185,7 @@ export default React.memo(function MissingServiceNeed() {
                         </Link>
                       </Td>
                       <Td>{row.daysWithoutServiceNeed}</Td>
+                      <Td>{row.defaultOption?.nameFi ?? '-'}</Td>
                     </Tr>
                   ))}
                 </Tbody>
