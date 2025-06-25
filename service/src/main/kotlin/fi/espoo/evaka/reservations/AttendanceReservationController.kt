@@ -235,6 +235,10 @@ class AttendanceReservationController(
                                                 possibleAbsenceCategories =
                                                     placementStatus.placementType
                                                         .absenceCategories(),
+                                                shiftCare =
+                                                    childData.child.serviceNeeds
+                                                        .find { it.validDuring.includes(date) }
+                                                        ?.shiftCare,
                                                 dailyServiceTimes =
                                                     serviceTimes[childId]?.find {
                                                         it.validityPeriod.includes(day.date)
@@ -767,6 +771,7 @@ data class UnitAttendanceReservations(
         val absenceBillable: AbsenceTypeResponse?,
         val absenceNonbillable: AbsenceTypeResponse?,
         val possibleAbsenceCategories: Set<AbsenceCategory>,
+        val shiftCare: ShiftCareType?,
         val dailyServiceTimes: DailyServiceTimesValue?,
         val groupId: GroupId?,
         val backupGroupId: GroupId?,

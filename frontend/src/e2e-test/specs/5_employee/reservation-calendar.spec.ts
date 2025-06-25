@@ -34,7 +34,7 @@ import type {
   DevPerson
 } from '../../generated/api-types'
 import { UnitPage } from '../../pages/employee/units/unit'
-import type { UnitWeekCalendarPage } from '../../pages/employee/units/unit-week-calendar-page'
+import { UnitWeekCalendarPage } from '../../pages/employee/units/unit-week-calendar-page'
 import { waitUntilEqual } from '../../utils'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
@@ -139,6 +139,28 @@ describe('Unit group calendar', () => {
     await waitUntilEqual(
       () => childReservations.childReservationRows(child1Fixture.id).count(),
       1
+    )
+  })
+
+  test('Select shiftcare virtual group - child has shiftcare', async () => {
+    await insertTestDataAndLogin({ childShiftCare: 'FULL' })
+    const childReservations = (await openWeekCalendar()).childReservations
+    const calendarPage = new UnitWeekCalendarPage(page)
+    await calendarPage.selectGroup('shift-care')
+    await waitUntilEqual(
+      () => childReservations.childReservationRows(child1Fixture.id).count(),
+      1
+    )
+  })
+
+  test('Select shiftcare virtual group - child does not have shiftcare', async () => {
+    await insertTestDataAndLogin({ childShiftCare: 'NONE' })
+    const childReservations = (await openWeekCalendar()).childReservations
+    const calendarPage = new UnitWeekCalendarPage(page)
+    await calendarPage.selectGroup('shift-care')
+    await waitUntilEqual(
+      () => childReservations.childReservationRows(child1Fixture.id).count(),
+      0
     )
   })
 

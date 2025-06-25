@@ -20,6 +20,7 @@ import LocalDate from '../../local-date'
 import type { PersonId } from './shared'
 import type { PlacementType } from './placement'
 import type { ScheduleType } from './placement'
+import type { ShiftCareType } from './serviceneed'
 import TimeInterval from '../../time-interval'
 import TimeRange from '../../time-range'
 import { deserializeJsonChildServiceNeedInfo } from './absence'
@@ -109,6 +110,7 @@ export interface ChildRecordOfDay {
   possibleAbsenceCategories: AbsenceCategory[]
   reservations: ReservationResponse[]
   scheduleType: ScheduleType
+  shiftCare: ShiftCareType | null
 }
 
 /**

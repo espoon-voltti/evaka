@@ -2544,6 +2544,7 @@ export const fi = {
     calendar: {
       title: 'Kalenteri',
       noGroup: 'Ei ryhmää',
+      shiftCare: 'Vuorohoito',
       staff: 'Henkilökunta',
       allChildren: 'Kaikki lapset',
       modes: {
