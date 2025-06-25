@@ -18,6 +18,7 @@ import fi.espoo.evaka.document.DocumentTemplateContent
 import fi.espoo.evaka.document.getTemplate
 import fi.espoo.evaka.pis.Employee
 import fi.espoo.evaka.pis.listPersonByDuplicateOf
+import fi.espoo.evaka.placement.getPlacementsForChildDuring
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DocumentTemplateId
@@ -734,10 +735,20 @@ class ChildDocumentController(
                     if (document.status != DocumentStatus.DECISION_PROPOSAL)
                         throw BadRequest("Document is not in decision proposal status")
 
+                    val placementDaycareId =
+                        tx.getPlacementsForChildDuring(
+                                childId = document.child.id,
+                                start = body.validity.start,
+                                end = body.validity.start,
+                            )
+                            .firstOrNull()
+                            ?.unitId
+
                     tx.insertChildDocumentDecision(
                             status = ChildDocumentDecisionStatus.ACCEPTED,
                             userId = user.evakaUserId,
                             validity = body.validity,
+                            daycareId = placementDaycareId,
                         )
                         .also { decisionId ->
                             tx.setChildDocumentDecisionAndPublish(
@@ -790,6 +801,7 @@ class ChildDocumentController(
                             status = ChildDocumentDecisionStatus.REJECTED,
                             userId = user.evakaUserId,
                             validity = null,
+                            daycareId = null,
                         )
                         .also { decisionId ->
                             tx.setChildDocumentDecisionAndPublish(

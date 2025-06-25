@@ -878,6 +878,7 @@ export const fi = {
         status: 'Tila',
         open: 'Avaa lomake',
         modified: 'Muokattu',
+        unit: 'Yksikkö',
         valid: 'Voimassa',
         published: 'Julkaistu',
         sent: 'Lähetetty',
