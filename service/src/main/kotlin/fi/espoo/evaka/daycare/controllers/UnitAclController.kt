@@ -128,19 +128,16 @@ class UnitAclController(
                         Action.Unit.READ_ACL,
                         unitId,
                     )
-                    tx.getScheduledDaycareAclRows(unitId).map {
-                        if (
-                            accessControl.hasPermissionFor(
-                                tx,
-                                user,
-                                clock,
-                                Action.Unit.READ_STAFF_EMPLOYEE_NUMBER,
-                                unitId,
-                            )
+                    val hasReadStaffEmployeeNumberPermission =
+                        accessControl.hasPermissionFor(
+                            tx,
+                            user,
+                            clock,
+                            Action.Unit.READ_STAFF_EMPLOYEE_NUMBER,
+                            unitId,
                         )
-                            it
-                        else it.copy(employeeNumber = null)
-                    }
+
+                    tx.getScheduledDaycareAclRows(unitId, hasReadStaffEmployeeNumberPermission)
                 }
             }
             .also {

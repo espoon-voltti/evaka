@@ -190,7 +190,10 @@ data class ScheduledDaycareAclRow(
     val endDate: LocalDate?,
 )
 
-fun Database.Read.getScheduledDaycareAclRows(daycareId: DaycareId): List<ScheduledDaycareAclRow> =
+fun Database.Read.getScheduledDaycareAclRows(
+    daycareId: DaycareId,
+    includeStaffEmployeeNumber: Boolean,
+): List<ScheduledDaycareAclRow> =
     createQuery {
             sql(
                 """
@@ -198,7 +201,10 @@ SELECT e.id,
        e.first_name,
        e.last_name,
        e.email,
-       e.employee_number,
+       CASE
+            WHEN (${bind(includeStaffEmployeeNumber)} IS TRUE) THEN
+                e.employee_number
+            ELSE NULL END as employee_number,
        das.role,
        das.start_date,
        das.end_date
