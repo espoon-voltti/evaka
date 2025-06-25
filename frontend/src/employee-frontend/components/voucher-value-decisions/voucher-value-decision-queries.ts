@@ -4,13 +4,13 @@
 
 import { Queries } from 'lib-common/query'
 
+import { getVoucherValueDecisionMetadata } from '../../generated/api-clients/caseprocess'
 import {
   ignoreVoucherValueDecisionDrafts,
   searchVoucherValueDecisions,
   sendVoucherValueDecisionDrafts,
   unignoreVoucherValueDecisionDrafts
 } from '../../generated/api-clients/invoicing'
-import { getVoucherValueDecisionMetadata } from '../../generated/api-clients/process'
 
 const q = new Queries()
 

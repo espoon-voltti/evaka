@@ -5,6 +5,11 @@
 package fi.espoo.evaka.document.childdocument
 
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.caseprocess.CaseProcessState
+import fi.espoo.evaka.caseprocess.DocumentConfidentiality
+import fi.espoo.evaka.caseprocess.ProcessMetadataController
+import fi.espoo.evaka.caseprocess.SfiMethod
+import fi.espoo.evaka.caseprocess.getCaseProcess
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.document.CheckboxGroupQuestionOption
 import fi.espoo.evaka.document.ChildDocumentType
@@ -15,11 +20,6 @@ import fi.espoo.evaka.document.Question
 import fi.espoo.evaka.document.RadioButtonGroupQuestionOption
 import fi.espoo.evaka.document.Section
 import fi.espoo.evaka.pis.service.insertGuardian
-import fi.espoo.evaka.process.ArchivedProcessState
-import fi.espoo.evaka.process.DocumentConfidentiality
-import fi.espoo.evaka.process.ProcessMetadataController
-import fi.espoo.evaka.process.SfiMethod
-import fi.espoo.evaka.process.getProcess
 import fi.espoo.evaka.sficlient.MockSfiMessagesClient
 import fi.espoo.evaka.sficlient.rest.EventType
 import fi.espoo.evaka.shared.AreaId
@@ -389,7 +389,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
             assertEquals(employeeUser.evakaUserId, it.primaryDocument.createdBy?.id)
             it.process.history.also { history ->
                 assertEquals(1, history.size)
-                assertEquals(ArchivedProcessState.INITIAL, history.first().state)
+                assertEquals(CaseProcessState.INITIAL, history.first().state)
                 assertEquals(now1, history.first().enteredAt)
                 assertEquals(employeeUser.evakaUserId, history.first().enteredBy.id)
             }
@@ -397,25 +397,25 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
 
         val clock2 = MockEvakaClock(clock.now().plusHours(1))
         nextState(documentId, DocumentStatus.PREPARED, clock2)
-        assertEquals(2, db.read { it.getProcess(metadata.process.id)!!.history }.size)
+        assertEquals(2, db.read { it.getCaseProcess(metadata.process.id)!!.history }.size)
 
         val clock3 = MockEvakaClock(clock2.now().plusHours(1))
         nextState(documentId, DocumentStatus.COMPLETED, clock3)
-        assertEquals(3, db.read { it.getProcess(metadata.process.id)!!.history }.size)
+        assertEquals(3, db.read { it.getCaseProcess(metadata.process.id)!!.history }.size)
 
         val clock4 = MockEvakaClock(clock3.now().plusHours(1))
         prevState(documentId, DocumentStatus.PREPARED, clock4)
-        assertEquals(2, db.read { it.getProcess(metadata.process.id)!!.history }.size)
+        assertEquals(2, db.read { it.getCaseProcess(metadata.process.id)!!.history }.size)
 
         val clock5 = MockEvakaClock(clock4.now().plusHours(1))
         prevState(documentId, DocumentStatus.DRAFT, clock5)
-        val history = db.read { it.getProcess(metadata.process.id)!!.history }
+        val history = db.read { it.getCaseProcess(metadata.process.id)!!.history }
         assertEquals(1, history.size)
         assertEquals(clock.now(), history[0].enteredAt)
-        assertEquals(ArchivedProcessState.INITIAL, history[0].state)
+        assertEquals(CaseProcessState.INITIAL, history[0].state)
 
         controller.deleteDraftDocument(dbInstance(), employeeUser.user, clock5, documentId)
-        assertNull(db.read { it.getProcess(metadata.process.id) })
+        assertNull(db.read { it.getCaseProcess(metadata.process.id) })
     }
 
     @Test
@@ -448,13 +448,13 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         assertEquals(
             0,
             db.read {
-                it.createQuery { sql("SELECT count(*) FROM archived_process") }.exactlyOne<Int>()
+                it.createQuery { sql("SELECT count(*) FROM case_process") }.exactlyOne<Int>()
             },
         )
         assertEquals(
             0,
             db.read {
-                it.createQuery { sql("SELECT count(*) FROM archived_process_history") }
+                it.createQuery { sql("SELECT count(*) FROM case_process_history") }
                     .exactlyOne<Int>()
             },
         )
@@ -808,13 +808,10 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         assertThat(metadata.process.history)
             .extracting({ it.state }, { it.enteredBy.id })
             .containsExactly(
-                Tuple(ArchivedProcessState.INITIAL, employeeUser.id),
-                Tuple(ArchivedProcessState.PREPARATION, employeeUser.id),
-                Tuple(ArchivedProcessState.DECIDING, unitSupervisorUser.id),
-                Tuple(
-                    ArchivedProcessState.COMPLETED,
-                    AuthenticatedUser.SystemInternalUser.evakaUserId,
-                ),
+                Tuple(CaseProcessState.INITIAL, employeeUser.id),
+                Tuple(CaseProcessState.PREPARATION, employeeUser.id),
+                Tuple(CaseProcessState.DECIDING, unitSupervisorUser.id),
+                Tuple(CaseProcessState.COMPLETED, AuthenticatedUser.SystemInternalUser.evakaUserId),
             )
 
         assertThat(metadata.primaryDocument.sfiDeliveries)

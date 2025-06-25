@@ -4,13 +4,13 @@
 
 import { Queries } from 'lib-common/query'
 
+import { getFeeDecisionMetadata } from '../../generated/api-clients/caseprocess'
 import {
   confirmFeeDecisionDrafts,
   ignoreFeeDecisionDrafts,
   searchFeeDecisions,
   unignoreFeeDecisionDrafts
 } from '../../generated/api-clients/invoicing'
-import { getFeeDecisionMetadata } from '../../generated/api-clients/process'
 
 const q = new Queries()
 

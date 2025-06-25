@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2024 City of Espoo
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-package fi.espoo.evaka.process
+package fi.espoo.evaka.caseprocess
 
 import fi.espoo.evaka.application.ApplicationOrigin
 import fi.espoo.evaka.application.ApplicationType

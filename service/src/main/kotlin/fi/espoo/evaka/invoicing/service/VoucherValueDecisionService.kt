@@ -5,6 +5,9 @@
 package fi.espoo.evaka.invoicing.service
 
 import fi.espoo.evaka.EmailEnv
+import fi.espoo.evaka.caseprocess.CaseProcessState
+import fi.espoo.evaka.caseprocess.getCaseProcessByVoucherValueDecisionId
+import fi.espoo.evaka.caseprocess.insertCaseProcessHistoryRow
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.decision.DecisionSendAddress
 import fi.espoo.evaka.emailclient.Email
@@ -25,9 +28,6 @@ import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionType
 import fi.espoo.evaka.pdfgen.PdfGenerator
 import fi.espoo.evaka.pis.EmailMessageType
-import fi.espoo.evaka.process.ArchivedProcessState
-import fi.espoo.evaka.process.getArchiveProcessByVoucherValueDecisionId
-import fi.espoo.evaka.process.insertProcessHistoryRow
 import fi.espoo.evaka.s3.DocumentKey
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.setting.SettingType
@@ -169,10 +169,10 @@ class VoucherValueDecisionService(
 
         tx.markVoucherValueDecisionsSent(listOf(decision.id), now)
 
-        tx.getArchiveProcessByVoucherValueDecisionId(decisionId)?.let { process ->
-            tx.insertProcessHistoryRow(
+        tx.getCaseProcessByVoucherValueDecisionId(decisionId)?.let { process ->
+            tx.insertCaseProcessHistoryRow(
                 processId = process.id,
-                state = ArchivedProcessState.COMPLETED,
+                state = CaseProcessState.COMPLETED,
                 now = now,
                 userId = AuthenticatedUser.SystemInternalUser.evakaUserId,
             )

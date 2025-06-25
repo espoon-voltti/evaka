@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-package fi.espoo.evaka.process
+package fi.espoo.evaka.caseprocess
 
 import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.application.fetchApplicationDetails
@@ -17,13 +17,12 @@ import org.springframework.stereotype.Service
 
 @Service
 class ProcessMetadataService(private val accessControl: AccessControl) {
-
     fun getApplicationProcessMetadata(
         tx: Database.Read,
         user: AuthenticatedUser,
         clock: EvakaClock,
         applicationId: ApplicationId,
-        process: ArchivedProcess,
+        process: CaseProcess,
     ): ProcessMetadata {
         val isCitizen = user is AuthenticatedUser.Citizen
         val application = tx.fetchApplicationDetails(applicationId) ?: throw NotFound()

@@ -7,17 +7,17 @@ package fi.espoo.evaka.document.childdocument
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.EvakaEnv
+import fi.espoo.evaka.caseprocess.CaseProcessState
+import fi.espoo.evaka.caseprocess.deleteProcessByDocumentId
+import fi.espoo.evaka.caseprocess.insertCaseProcess
+import fi.espoo.evaka.caseprocess.insertCaseProcessHistoryRow
+import fi.espoo.evaka.caseprocess.updateDocumentCaseProcessHistory
 import fi.espoo.evaka.document.ChildDocumentType
 import fi.espoo.evaka.document.DocumentTemplate
 import fi.espoo.evaka.document.DocumentTemplateContent
 import fi.espoo.evaka.document.getTemplate
 import fi.espoo.evaka.pis.Employee
 import fi.espoo.evaka.pis.listPersonByDuplicateOf
-import fi.espoo.evaka.process.ArchivedProcessState
-import fi.espoo.evaka.process.deleteProcessByDocumentId
-import fi.espoo.evaka.process.insertProcess
-import fi.espoo.evaka.process.insertProcessHistoryRow
-import fi.espoo.evaka.process.updateDocumentProcessHistory
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DocumentTemplateId
@@ -106,7 +106,7 @@ class ChildDocumentController(
                 // guaranteed to be not null when processDefinitionNumber is not null by db
                 // constraint
                 val archiveDurationMonths = template.archiveDurationMonths!!
-                tx.insertProcess(
+                tx.insertCaseProcess(
                         processDefinitionNumber = processDefinitionNumber,
                         year = now.year,
                         organization = featureConfig.archiveMetadataOrganization,
@@ -114,9 +114,9 @@ class ChildDocumentController(
                     )
                     .id
                     .also { processId ->
-                        tx.insertProcessHistoryRow(
+                        tx.insertCaseProcessHistoryRow(
                             processId = processId,
-                            state = ArchivedProcessState.INITIAL,
+                            state = CaseProcessState.INITIAL,
                             now = now,
                             userId = user.evakaUserId,
                         )
@@ -477,7 +477,7 @@ class ChildDocumentController(
             }
         }
 
-        updateDocumentProcessHistory(
+        updateDocumentCaseProcessHistory(
             tx = tx,
             document = document,
             newStatus = statusTransition.newStatus,
@@ -523,7 +523,7 @@ class ChildDocumentController(
 
                     tx.changeStatus(documentId, statusTransition, clock.now())
 
-                    updateDocumentProcessHistory(
+                    updateDocumentCaseProcessHistory(
                         tx = tx,
                         document = document,
                         newStatus = statusTransition.newStatus,
@@ -694,7 +694,7 @@ class ChildDocumentController(
                         clock.now(),
                     )
 
-                    updateDocumentProcessHistory(
+                    updateDocumentCaseProcessHistory(
                         tx = tx,
                         document = document,
                         newStatus = DocumentStatus.DECISION_PROPOSAL,
@@ -749,7 +749,7 @@ class ChildDocumentController(
 
                     childDocumentService.schedulePdfGeneration(tx, listOf(documentId), clock.now())
 
-                    updateDocumentProcessHistory(
+                    updateDocumentCaseProcessHistory(
                         tx = tx,
                         document = document,
                         newStatus = DocumentStatus.COMPLETED,
@@ -801,7 +801,7 @@ class ChildDocumentController(
 
                     childDocumentService.schedulePdfGeneration(tx, listOf(documentId), clock.now())
 
-                    updateDocumentProcessHistory(
+                    updateDocumentCaseProcessHistory(
                         tx = tx,
                         document = document,
                         newStatus = DocumentStatus.COMPLETED,

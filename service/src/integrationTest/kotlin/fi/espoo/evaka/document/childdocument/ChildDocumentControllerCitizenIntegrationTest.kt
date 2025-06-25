@@ -5,13 +5,13 @@
 package fi.espoo.evaka.document.childdocument
 
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.caseprocess.DocumentConfidentiality
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.document.ChildDocumentType
 import fi.espoo.evaka.document.DocumentTemplateContent
 import fi.espoo.evaka.document.Question
 import fi.espoo.evaka.document.Section
 import fi.espoo.evaka.document.getTemplate
-import fi.espoo.evaka.process.DocumentConfidentiality
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DocumentTemplateId

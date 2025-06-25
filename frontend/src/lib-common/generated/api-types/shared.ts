@@ -15,8 +15,6 @@ export type ApplicationId = Id<'Application'>
 
 export type ApplicationNoteId = Id<'ApplicationNote'>
 
-export type ArchivedProcessId = Id<'ArchivedProcess'>
-
 export type AreaId = Id<'Area'>
 
 export type AssistanceActionId = Id<'AssistanceAction'>
@@ -42,6 +40,8 @@ export type BackupPickupId = Id<'BackupPickup'>
 export type CalendarEventId = Id<'CalendarEvent'>
 
 export type CalendarEventTimeId = Id<'CalendarEventTime'>
+
+export type CaseProcessId = Id<'CaseProcess'>
 
 export type ChildDailyNoteId = Id<'ChildDailyNote'>
 

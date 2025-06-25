@@ -6,7 +6,7 @@ package fi.espoo.evaka.document.childdocument
 
 import fi.espoo.evaka.document.ChildDocumentType
 import fi.espoo.evaka.pis.Employee
-import fi.espoo.evaka.shared.ArchivedProcessId
+import fi.espoo.evaka.shared.CaseProcessId
 import fi.espoo.evaka.shared.ChildDocumentDecisionId
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.ChildId
@@ -31,7 +31,7 @@ fun Database.Transaction.insertChildDocument(
     templateId: DocumentTemplateId,
     now: HelsinkiDateTime,
     userId: EvakaUserId,
-    processId: ArchivedProcessId?,
+    processId: CaseProcessId?,
 ): ChildDocumentId {
     val type =
         createQuery { sql("SELECT type FROM document_template WHERE id = ${bind(templateId)}") }

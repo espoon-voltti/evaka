@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-package fi.espoo.evaka.process
+package fi.espoo.evaka.caseprocess
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
@@ -40,7 +40,7 @@ class ProcessMetadataControllerCitizen(
                         applicationId,
                     )
                     val process =
-                        tx.getArchiveProcessByApplicationId(applicationId)
+                        tx.getCaseProcessByApplicationId(applicationId)
                             ?: return@read ProcessMetadataResponse(null)
                     val processMetadata =
                         processMetadataService.getApplicationProcessMetadata(

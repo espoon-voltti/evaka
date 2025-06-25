@@ -5,6 +5,8 @@
 package fi.espoo.evaka.assistanceneed.decision
 
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.caseprocess.CaseProcessState
+import fi.espoo.evaka.caseprocess.ProcessMetadataController
 import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.emailclient.Email
@@ -12,8 +14,6 @@ import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.pis.Employee
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.placement.PlacementType
-import fi.espoo.evaka.process.ArchivedProcessState
-import fi.espoo.evaka.process.ProcessMetadataController
 import fi.espoo.evaka.sficlient.MockSfiMessagesClient
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.ChildId
@@ -693,13 +693,13 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
         assertEquals(1440, metadata.process.archiveDurationMonths)
         assertEquals("Espoon kaupungin esiopetus ja varhaiskasvatus", metadata.process.organization)
         assertEquals(4, metadata.process.history.size)
-        assertEquals(ArchivedProcessState.INITIAL, metadata.process.history[0].state)
+        assertEquals(CaseProcessState.INITIAL, metadata.process.history[0].state)
         assertEquals(assistanceWorker.evakaUserId, metadata.process.history[0].enteredBy.id)
-        assertEquals(ArchivedProcessState.PREPARATION, metadata.process.history[1].state)
+        assertEquals(CaseProcessState.PREPARATION, metadata.process.history[1].state)
         assertEquals(assistanceWorker.evakaUserId, metadata.process.history[1].enteredBy.id)
-        assertEquals(ArchivedProcessState.DECIDING, metadata.process.history[2].state)
+        assertEquals(CaseProcessState.DECIDING, metadata.process.history[2].state)
         assertEquals(decisionMaker.evakaUserId, metadata.process.history[2].enteredBy.id)
-        assertEquals(ArchivedProcessState.COMPLETED, metadata.process.history[3].state)
+        assertEquals(CaseProcessState.COMPLETED, metadata.process.history[3].state)
         assertEquals(
             AuthenticatedUser.SystemInternalUser.evakaUserId,
             metadata.process.history[3].enteredBy.id,

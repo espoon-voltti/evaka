@@ -6,9 +6,9 @@ package fi.espoo.evaka.assistanceneed.preschooldecision
 
 import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionStatus
 import fi.espoo.evaka.assistanceneed.decision.UnreadAssistanceNeedDecisionItem
-import fi.espoo.evaka.shared.ArchivedProcessId
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
+import fi.espoo.evaka.shared.CaseProcessId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -22,7 +22,7 @@ import java.time.LocalDate
 
 fun Database.Transaction.insertEmptyAssistanceNeedPreschoolDecisionDraft(
     childId: ChildId,
-    processId: ArchivedProcessId?,
+    processId: CaseProcessId?,
     user: AuthenticatedUser.Employee,
     language: OfficialLanguage = OfficialLanguage.FI,
 ): AssistanceNeedPreschoolDecision =

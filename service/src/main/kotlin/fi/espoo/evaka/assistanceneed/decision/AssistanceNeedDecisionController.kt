@@ -5,14 +5,14 @@ package fi.espoo.evaka.assistanceneed.decision
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
+import fi.espoo.evaka.caseprocess.CaseProcessMetadataService
+import fi.espoo.evaka.caseprocess.CaseProcessState
+import fi.espoo.evaka.caseprocess.deleteProcessByAssistanceNeedDecisionId
+import fi.espoo.evaka.caseprocess.getCaseProcessByAssistanceNeedDecisionId
+import fi.espoo.evaka.caseprocess.insertCaseProcess
+import fi.espoo.evaka.caseprocess.insertCaseProcessHistoryRow
 import fi.espoo.evaka.pis.Employee
 import fi.espoo.evaka.pis.service.getChildGuardians
-import fi.espoo.evaka.process.ArchivedProcessState
-import fi.espoo.evaka.process.MetadataService
-import fi.espoo.evaka.process.deleteProcessByAssistanceNeedDecisionId
-import fi.espoo.evaka.process.getArchiveProcessByAssistanceNeedDecisionId
-import fi.espoo.evaka.process.insertProcess
-import fi.espoo.evaka.process.insertProcessHistoryRow
 import fi.espoo.evaka.shared.ArchiveProcessType
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.ChildId
@@ -46,7 +46,7 @@ class AssistanceNeedDecisionController(
     private val accessControl: AccessControl,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
 ) {
-    private val metadata = MetadataService(featureConfig)
+    private val metadata = CaseProcessMetadataService(featureConfig)
 
     @PostMapping("/employee/children/{childId}/assistance-needs/decision")
     fun createAssistanceNeedDecision(
@@ -91,15 +91,15 @@ class AssistanceNeedDecisionController(
                     val now = clock.now()
                     val processId =
                         metadata
-                            .getProcess(
+                            .getProcessParams(
                                 ArchiveProcessType.ASSISTANCE_NEED_DECISION_DAYCARE,
                                 now.year,
                             )
                             ?.let { process ->
-                                val processId = tx.insertProcess(process).id
-                                tx.insertProcessHistoryRow(
+                                val processId = tx.insertCaseProcess(process).id
+                                tx.insertCaseProcessHistoryRow(
                                     processId = processId,
-                                    state = ArchivedProcessState.INITIAL,
+                                    state = CaseProcessState.INITIAL,
                                     now = now,
                                     userId = user.evakaUserId,
                                 )
@@ -261,11 +261,11 @@ class AssistanceNeedDecisionController(
                         throw BadRequest("The decision must have a child")
                     }
 
-                    tx.getArchiveProcessByAssistanceNeedDecisionId(id)?.also { process ->
-                        if (process.history.none { it.state == ArchivedProcessState.PREPARATION }) {
-                            tx.insertProcessHistoryRow(
+                    tx.getCaseProcessByAssistanceNeedDecisionId(id)?.also { process ->
+                        if (process.history.none { it.state == CaseProcessState.PREPARATION }) {
+                            tx.insertCaseProcessHistoryRow(
                                 processId = process.id,
-                                state = ArchivedProcessState.PREPARATION,
+                                state = CaseProcessState.PREPARATION,
                                 now = clock.now(),
                                 userId = user.evakaUserId,
                             )
@@ -481,10 +481,10 @@ class AssistanceNeedDecisionController(
                     )
 
                     if (body.status != AssistanceNeedDecisionStatus.NEEDS_WORK) {
-                        tx.getArchiveProcessByAssistanceNeedDecisionId(id)?.also {
-                            tx.insertProcessHistoryRow(
+                        tx.getCaseProcessByAssistanceNeedDecisionId(id)?.also {
+                            tx.insertCaseProcessHistoryRow(
                                 processId = it.id,
-                                state = ArchivedProcessState.DECIDING,
+                                state = CaseProcessState.DECIDING,
                                 now = clock.now(),
                                 userId = user.evakaUserId,
                             )

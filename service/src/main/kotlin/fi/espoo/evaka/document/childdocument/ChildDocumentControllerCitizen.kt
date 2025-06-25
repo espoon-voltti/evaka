@@ -6,8 +6,8 @@ package fi.espoo.evaka.document.childdocument
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
+import fi.espoo.evaka.caseprocess.updateDocumentCaseProcessHistory
 import fi.espoo.evaka.children.getCitizenChildIds
-import fi.espoo.evaka.process.updateDocumentProcessHistory
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -209,7 +209,7 @@ class ChildDocumentControllerCitizen(
 
                     childDocumentService.schedulePdfGeneration(tx, listOf(documentId), clock.now())
 
-                    updateDocumentProcessHistory(
+                    updateDocumentCaseProcessHistory(
                         tx = tx,
                         document = document,
                         newStatus = statusTransition.newStatus,

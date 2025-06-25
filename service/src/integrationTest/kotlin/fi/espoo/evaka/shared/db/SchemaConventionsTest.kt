@@ -436,7 +436,7 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
     fun `every column with a foreign key should have at least one index that has the column as the first key`() {
         val permittedViolations =
             setOf(
-                ColumnRef("archived_process_history", "entered_by"),
+                ColumnRef("case_process_history", "entered_by"),
                 ColumnRef("child_document_read", "person_id"),
                 ColumnRef("daycare", "finance_decision_handler"),
                 ColumnRef("daycare_assistance", "modified_by"),

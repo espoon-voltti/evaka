@@ -11,7 +11,6 @@ import type { ApplicationId } from 'lib-common/generated/api-types/shared'
 import type { ApplicationOrigin } from 'lib-common/generated/api-types/application'
 import type { ApplicationStatus } from 'lib-common/generated/api-types/application'
 import type { ApplicationType } from 'lib-common/generated/api-types/application'
-import type { ArchivedProcessId } from 'lib-common/generated/api-types/shared'
 import type { AreaId } from 'lib-common/generated/api-types/shared'
 import type { AssistanceActionId } from 'lib-common/generated/api-types/shared'
 import type { AssistanceActionOptionCategory } from 'lib-common/generated/api-types/assistanceaction'
@@ -30,6 +29,7 @@ import type { CalendarEventId } from 'lib-common/generated/api-types/shared'
 import type { CalendarEventTimeId } from 'lib-common/generated/api-types/shared'
 import type { CalendarEventType } from 'lib-common/generated/api-types/calendarevent'
 import type { CareType } from 'lib-common/generated/api-types/daycare'
+import type { CaseProcessId } from 'lib-common/generated/api-types/shared'
 import type { ChildDocumentDecisionId } from 'lib-common/generated/api-types/shared'
 import type { ChildDocumentDecisionStatus } from 'lib-common/generated/api-types/document'
 import type { ChildDocumentId } from 'lib-common/generated/api-types/shared'
@@ -49,7 +49,7 @@ import type { DecisionId } from 'lib-common/generated/api-types/shared'
 import type { DecisionIncome } from 'lib-common/generated/api-types/invoicing'
 import type { DecisionStatus } from 'lib-common/generated/api-types/decision'
 import type { DecisionType } from 'lib-common/generated/api-types/decision'
-import type { DocumentConfidentiality } from 'lib-common/generated/api-types/process'
+import type { DocumentConfidentiality } from 'lib-common/generated/api-types/caseprocess'
 import type { DocumentContent } from 'lib-common/generated/api-types/document'
 import type { DocumentStatus } from 'lib-common/generated/api-types/document'
 import type { DocumentTemplateContent } from 'lib-common/generated/api-types/document'
@@ -444,7 +444,7 @@ export interface DevChildDocument {
   documentKey: string | null
   id: ChildDocumentId
   modifiedAt: HelsinkiDateTime
-  processId: ArchivedProcessId | null
+  processId: CaseProcessId | null
   publishedAt: HelsinkiDateTime | null
   publishedContent: DocumentContent | null
   status: DocumentStatus

@@ -5,11 +5,11 @@
 package fi.espoo.evaka.document
 
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.caseprocess.DocumentConfidentiality
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.document.childdocument.ChildDocumentController
 import fi.espoo.evaka.document.childdocument.ChildDocumentCreateRequest
 import fi.espoo.evaka.placement.PlacementType
-import fi.espoo.evaka.process.DocumentConfidentiality
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevCareArea

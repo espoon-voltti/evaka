@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-package fi.espoo.evaka.process
+package fi.espoo.evaka.caseprocess
 
 import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.application.ApplicationType
@@ -44,7 +44,7 @@ fun migrateProcessMetadata(
     tracer: Tracer = noopTracer(),
     batchSize: Int = 1000,
 ) {
-    val metadata = MetadataService(featureConfig)
+    val metadata = CaseProcessMetadataService(featureConfig)
 
     runBatches("application", tracer, batchSize) {
         migrateApplicationMetadata(dbc, batchSize, clock, metadata)
@@ -99,7 +99,7 @@ private fun migrateApplicationMetadata(
     dbc: Database.Connection,
     batchSize: Int,
     clock: EvakaClock,
-    metadata: MetadataService,
+    metadata: CaseProcessMetadataService,
 ): Int {
     val systemInternalUser = AuthenticatedUser.SystemInternalUser.evakaUserId
     return dbc.transaction { tx ->
@@ -128,7 +128,7 @@ private fun migrateApplicationMetadata(
 
         applications.forEach { application ->
             val process =
-                metadata.getProcess(
+                metadata.getProcessParams(
                     ArchiveProcessType.fromApplicationType(application.type),
                     application.sentDate.year,
                 )
@@ -137,11 +137,11 @@ private fun migrateApplicationMetadata(
                 return@forEach
             }
 
-            val processId = tx.insertProcess(process, migrated = true).id
+            val processId = tx.insertCaseProcess(process, migrated = true).id
             tx.setApplicationProcessId(application.id, processId, clock.now(), systemInternalUser)
-            tx.insertProcessHistoryRow(
+            tx.insertCaseProcessHistoryRow(
                 processId = processId,
-                state = ArchivedProcessState.INITIAL,
+                state = CaseProcessState.INITIAL,
                 now = HelsinkiDateTime.of(application.sentDate, LocalTime.MIDNIGHT),
                 userId = systemInternalUser,
             )
@@ -150,9 +150,9 @@ private fun migrateApplicationMetadata(
                 application.status == ApplicationStatus.ACTIVE ||
                     application.status == ApplicationStatus.REJECTED
             ) {
-                tx.insertProcessHistoryRow(
+                tx.insertCaseProcessHistoryRow(
                     processId = processId,
-                    state = ArchivedProcessState.COMPLETED,
+                    state = CaseProcessState.COMPLETED,
                     now =
                         application.decisionResolved
                             ?: application.statusModifiedAt
@@ -160,9 +160,9 @@ private fun migrateApplicationMetadata(
                     userId = application.decisionResolvedBy ?: systemInternalUser,
                 )
             } else if (application.status == ApplicationStatus.CANCELLED) {
-                tx.insertProcessHistoryRow(
+                tx.insertCaseProcessHistoryRow(
                     processId = processId,
-                    state = ArchivedProcessState.COMPLETED,
+                    state = CaseProcessState.COMPLETED,
                     now = application.statusModifiedAt ?: application.modifiedAt,
                     userId = systemInternalUser,
                 )
@@ -184,7 +184,7 @@ private data class FeeDecisionMigrationData(
 private fun migrateFeeDecisionMetadata(
     dbc: Database.Connection,
     batchSize: Int,
-    metadata: MetadataService,
+    metadata: CaseProcessMetadataService,
 ): Int {
     val systemInternalUser = AuthenticatedUser.SystemInternalUser.evakaUserId
     return dbc.transaction { tx ->
@@ -204,16 +204,16 @@ private fun migrateFeeDecisionMetadata(
 
         feeDecisions.forEach { decision ->
             val process =
-                metadata.getProcess(ArchiveProcessType.FEE_DECISION, decision.created.year)
+                metadata.getProcessParams(ArchiveProcessType.FEE_DECISION, decision.created.year)
             if (process == null) {
                 logger.warn { "Missing metadata config for FEE_DECISION" }
                 return@forEach
             }
-            val processId = tx.insertProcess(process, migrated = true).id
+            val processId = tx.insertCaseProcess(process, migrated = true).id
             tx.setFeeDecisionProcessId(decision.id, processId)
-            tx.insertProcessHistoryRow(
+            tx.insertCaseProcessHistoryRow(
                 processId = processId,
-                state = ArchivedProcessState.INITIAL,
+                state = CaseProcessState.INITIAL,
                 now = decision.created,
                 userId = systemInternalUser,
             )
@@ -224,9 +224,9 @@ private fun migrateFeeDecisionMetadata(
                 } else {
                     systemInternalUser
                 }
-            tx.insertProcessHistoryRow(
+            tx.insertCaseProcessHistoryRow(
                 processId = processId,
-                state = ArchivedProcessState.DECIDING,
+                state = CaseProcessState.DECIDING,
                 now = decision.approvedAt,
                 userId = approvedBy,
             )
@@ -234,9 +234,9 @@ private fun migrateFeeDecisionMetadata(
                 decision.status == FeeDecisionStatus.SENT ||
                     decision.status == FeeDecisionStatus.ANNULLED
             ) {
-                tx.insertProcessHistoryRow(
+                tx.insertCaseProcessHistoryRow(
                     processId = processId,
-                    state = ArchivedProcessState.COMPLETED,
+                    state = CaseProcessState.COMPLETED,
                     now = decision.sentAt ?: decision.approvedAt,
                     userId = systemInternalUser,
                 )
@@ -258,7 +258,7 @@ private data class VoucherValueDecisionMigrationData(
 private fun migrateVoucherValueDecisionMetadata(
     dbc: Database.Connection,
     batchSize: Int,
-    metadata: MetadataService,
+    metadata: CaseProcessMetadataService,
 ): Int {
     val systemInternalUser = AuthenticatedUser.SystemInternalUser.evakaUserId
     return dbc.transaction { tx ->
@@ -278,7 +278,7 @@ private fun migrateVoucherValueDecisionMetadata(
 
         voucherValueDecisions.forEach { decision ->
             val process =
-                metadata.getProcess(
+                metadata.getProcessParams(
                     ArchiveProcessType.VOUCHER_VALUE_DECISION,
                     decision.created.year,
                 )
@@ -286,11 +286,11 @@ private fun migrateVoucherValueDecisionMetadata(
                 logger.warn { "Missing metadata config for VOUCHER_VALUE_DECISION" }
                 return@forEach
             }
-            val processId = tx.insertProcess(process, migrated = true).id
+            val processId = tx.insertCaseProcess(process, migrated = true).id
             tx.setVoucherValueDecisionProcessId(decision.id, processId)
-            tx.insertProcessHistoryRow(
+            tx.insertCaseProcessHistoryRow(
                 processId = processId,
-                state = ArchivedProcessState.INITIAL,
+                state = CaseProcessState.INITIAL,
                 now = decision.created,
                 userId = systemInternalUser,
             )
@@ -301,9 +301,9 @@ private fun migrateVoucherValueDecisionMetadata(
                 } else {
                     systemInternalUser
                 }
-            tx.insertProcessHistoryRow(
+            tx.insertCaseProcessHistoryRow(
                 processId = processId,
-                state = ArchivedProcessState.DECIDING,
+                state = CaseProcessState.DECIDING,
                 now = decision.approvedAt,
                 userId = approvedBy,
             )
@@ -311,9 +311,9 @@ private fun migrateVoucherValueDecisionMetadata(
                 decision.status == VoucherValueDecisionStatus.SENT ||
                     decision.status == VoucherValueDecisionStatus.ANNULLED
             ) {
-                tx.insertProcessHistoryRow(
+                tx.insertCaseProcessHistoryRow(
                     processId = processId,
-                    state = ArchivedProcessState.COMPLETED,
+                    state = CaseProcessState.COMPLETED,
                     now = decision.sentAt ?: decision.approvedAt,
                     userId = systemInternalUser,
                 )
@@ -337,7 +337,7 @@ private data class AssistaceNeedDaycareDecisionData(
 private fun migrateAssistanceNeedDecisionDaycare(
     dbc: Database.Connection,
     batchSize: Int,
-    metadata: MetadataService,
+    metadata: CaseProcessMetadataService,
 ): Int {
     val systemInternalUser = AuthenticatedUser.SystemInternalUser.evakaUserId
     return dbc.transaction { tx ->
@@ -365,7 +365,7 @@ private fun migrateAssistanceNeedDecisionDaycare(
 
         assistanceNeedDecisions.forEach { decision ->
             val process =
-                metadata.getProcess(
+                metadata.getProcessParams(
                     ArchiveProcessType.ASSISTANCE_NEED_DECISION_DAYCARE,
                     decision.createdAt.year,
                 )
@@ -373,7 +373,7 @@ private fun migrateAssistanceNeedDecisionDaycare(
                 logger.warn { "Missing metadata config for ASSISTANCE_NEED_DECISION_DAYCARE" }
                 return@forEach
             }
-            val processId = tx.insertProcess(process, migrated = true).id
+            val processId = tx.insertCaseProcess(process, migrated = true).id
             tx.execute {
                 sql(
                     "UPDATE assistance_need_decision SET process_id = ${bind(processId)} WHERE id = ${bind(decision.id)}"
@@ -386,17 +386,17 @@ private fun migrateAssistanceNeedDecisionDaycare(
                 } else {
                     systemInternalUser
                 }
-            tx.insertProcessHistoryRow(
+            tx.insertCaseProcessHistoryRow(
                 processId = processId,
-                state = ArchivedProcessState.INITIAL,
+                state = CaseProcessState.INITIAL,
                 now = decision.createdAt,
                 userId = createdBy,
             )
 
             if (decision.sentForDecision == null) return@forEach
-            tx.insertProcessHistoryRow(
+            tx.insertCaseProcessHistoryRow(
                 processId = processId,
-                state = ArchivedProcessState.PREPARATION,
+                state = CaseProcessState.PREPARATION,
                 now = HelsinkiDateTime.of(decision.sentForDecision, LocalTime.MIDNIGHT),
                 userId = systemInternalUser,
             )
@@ -409,9 +409,9 @@ private fun migrateAssistanceNeedDecisionDaycare(
                 } else {
                     systemInternalUser
                 }
-            tx.insertProcessHistoryRow(
+            tx.insertCaseProcessHistoryRow(
                 processId = processId,
-                state = ArchivedProcessState.DECIDING,
+                state = CaseProcessState.DECIDING,
                 now = HelsinkiDateTime.of(decision.decisionMade, LocalTime.MIDNIGHT),
                 userId = decisionMaker,
             )
@@ -419,9 +419,9 @@ private fun migrateAssistanceNeedDecisionDaycare(
             if (!decision.status.isDecided() || decision.documentKey.isNullOrEmpty()) {
                 return@forEach
             }
-            tx.insertProcessHistoryRow(
+            tx.insertCaseProcessHistoryRow(
                 processId = processId,
-                state = ArchivedProcessState.COMPLETED,
+                state = CaseProcessState.COMPLETED,
                 now = HelsinkiDateTime.of(decision.decisionMade, LocalTime.MIDNIGHT),
                 userId = systemInternalUser,
             )
@@ -444,7 +444,7 @@ private data class AssistanceNeedPreschoolDecisionData(
 private fun migrateAssistanceNeedDecisionPreschool(
     dbc: Database.Connection,
     batchSize: Int,
-    metadata: MetadataService,
+    metadata: CaseProcessMetadataService,
 ): Int {
     val systemInternalUser = AuthenticatedUser.SystemInternalUser.evakaUserId
     return dbc.transaction { tx ->
@@ -472,7 +472,7 @@ private fun migrateAssistanceNeedDecisionPreschool(
 
         assistanceNeedPreschoolDecisions.forEach { decision ->
             val process =
-                metadata.getProcess(
+                metadata.getProcessParams(
                     ArchiveProcessType.ASSISTANCE_NEED_DECISION_PRESCHOOL,
                     decision.createdAt.year,
                 )
@@ -480,7 +480,7 @@ private fun migrateAssistanceNeedDecisionPreschool(
                 logger.warn { "Missing metadata config for ASSISTANCE_NEED_DECISION_PRESCHOOL" }
                 return@forEach
             }
-            val processId = tx.insertProcess(process, migrated = true).id
+            val processId = tx.insertCaseProcess(process, migrated = true).id
             tx.execute {
                 sql(
                     "UPDATE assistance_need_preschool_decision SET process_id = ${bind(processId)} WHERE id = ${bind(decision.id)}"
@@ -493,17 +493,17 @@ private fun migrateAssistanceNeedDecisionPreschool(
                 } else {
                     systemInternalUser
                 }
-            tx.insertProcessHistoryRow(
+            tx.insertCaseProcessHistoryRow(
                 processId = processId,
-                state = ArchivedProcessState.INITIAL,
+                state = CaseProcessState.INITIAL,
                 now = decision.createdAt,
                 userId = createdBy,
             )
 
             if (decision.sentForDecision == null) return@forEach
-            tx.insertProcessHistoryRow(
+            tx.insertCaseProcessHistoryRow(
                 processId = processId,
-                state = ArchivedProcessState.PREPARATION,
+                state = CaseProcessState.PREPARATION,
                 now = HelsinkiDateTime.of(decision.sentForDecision, LocalTime.MIDNIGHT),
                 userId = systemInternalUser,
             )
@@ -516,9 +516,9 @@ private fun migrateAssistanceNeedDecisionPreschool(
                 } else {
                     systemInternalUser
                 }
-            tx.insertProcessHistoryRow(
+            tx.insertCaseProcessHistoryRow(
                 processId = processId,
-                state = ArchivedProcessState.DECIDING,
+                state = CaseProcessState.DECIDING,
                 now = HelsinkiDateTime.of(decision.decisionMade, LocalTime.MIDNIGHT),
                 userId = decisionMaker,
             )
@@ -526,9 +526,9 @@ private fun migrateAssistanceNeedDecisionPreschool(
             if (!decision.status.isDecided() || decision.documentKey.isNullOrEmpty()) {
                 return@forEach
             }
-            tx.insertProcessHistoryRow(
+            tx.insertCaseProcessHistoryRow(
                 processId = processId,
-                state = ArchivedProcessState.COMPLETED,
+                state = CaseProcessState.COMPLETED,
                 now = HelsinkiDateTime.of(decision.decisionMade, LocalTime.MIDNIGHT),
                 userId = systemInternalUser,
             )
@@ -583,7 +583,7 @@ private fun migrateDocuments(
 
         documents.forEach { document ->
             val processId =
-                tx.insertProcess(
+                tx.insertCaseProcess(
                         processDefinitionNumber = document.processDefinitionNumber,
                         year = document.created.year,
                         organization = archiveMetadataOrganization,
@@ -596,18 +596,18 @@ private fun migrateDocuments(
                     "UPDATE child_document SET process_id = ${bind(processId)} WHERE id = ${bind(document.id)}"
                 )
             }
-            tx.insertProcessHistoryRow(
+            tx.insertCaseProcessHistoryRow(
                 processId = processId,
-                state = ArchivedProcessState.INITIAL,
+                state = CaseProcessState.INITIAL,
                 now = document.created,
                 userId = document.createdBy ?: systemInternalUser,
             )
             if (
                 document.status == DocumentStatus.COMPLETED && !document.documentKey.isNullOrEmpty()
             ) {
-                tx.insertProcessHistoryRow(
+                tx.insertCaseProcessHistoryRow(
                     processId = processId,
-                    state = ArchivedProcessState.COMPLETED,
+                    state = CaseProcessState.COMPLETED,
                     now = document.modifiedAt,
                     userId = systemInternalUser,
                 )

@@ -16,12 +16,12 @@ import {
   sendApplication,
   updateApplication
 } from '../generated/api-clients/application'
+import { getApplicationMetadata } from '../generated/api-clients/caseprocess'
 import {
   getApplicationUnits,
   getClubTerms,
   getPreschoolTerms
 } from '../generated/api-clients/daycare'
-import { getApplicationMetadata } from '../generated/api-clients/process'
 import { getServiceNeedOptionPublicInfos } from '../generated/api-clients/serviceneed'
 
 const q = new Queries()

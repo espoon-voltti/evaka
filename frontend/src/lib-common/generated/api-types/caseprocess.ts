@@ -4,19 +4,19 @@
 
 // GENERATED FILE: no manual modifications
 
-import type { ArchivedProcessId } from './shared'
+import type { CaseProcessId } from './shared'
 import type { EvakaUser } from './user'
 import HelsinkiDateTime from '../../helsinki-date-time'
 import type { JsonOf } from '../../json'
 import type { UUID } from '../../types'
 
 /**
-* Generated from fi.espoo.evaka.process.ArchivedProcess
+* Generated from fi.espoo.evaka.caseprocess.CaseProcess
 */
-export interface ArchivedProcess {
+export interface CaseProcess {
   archiveDurationMonths: number | null
-  history: ArchivedProcessHistoryRow[]
-  id: ArchivedProcessId
+  history: CaseProcessHistoryRow[]
+  id: CaseProcessId
   migrated: boolean
   number: number
   organization: string
@@ -26,26 +26,26 @@ export interface ArchivedProcess {
 }
 
 /**
-* Generated from fi.espoo.evaka.process.ArchivedProcessHistoryRow
+* Generated from fi.espoo.evaka.caseprocess.CaseProcessHistoryRow
 */
-export interface ArchivedProcessHistoryRow {
+export interface CaseProcessHistoryRow {
   enteredAt: HelsinkiDateTime
   enteredBy: EvakaUser
   rowIndex: number
-  state: ArchivedProcessState
+  state: CaseProcessState
 }
 
 /**
-* Generated from fi.espoo.evaka.process.ArchivedProcessState
+* Generated from fi.espoo.evaka.caseprocess.CaseProcessState
 */
-export type ArchivedProcessState =
+export type CaseProcessState =
   | 'INITIAL'
   | 'PREPARATION'
   | 'DECIDING'
   | 'COMPLETED'
 
 /**
-* Generated from fi.espoo.evaka.process.DocumentConfidentiality
+* Generated from fi.espoo.evaka.caseprocess.DocumentConfidentiality
 */
 export interface DocumentConfidentiality {
   basis: string
@@ -53,7 +53,7 @@ export interface DocumentConfidentiality {
 }
 
 /**
-* Generated from fi.espoo.evaka.process.DocumentMetadata
+* Generated from fi.espoo.evaka.caseprocess.DocumentMetadata
 */
 export interface DocumentMetadata {
   confidential: boolean | null
@@ -68,31 +68,31 @@ export interface DocumentMetadata {
 }
 
 /**
-* Generated from fi.espoo.evaka.process.DocumentOrigin
+* Generated from fi.espoo.evaka.caseprocess.DocumentOrigin
 */
 export type DocumentOrigin =
   | 'ELECTRONIC'
   | 'PAPER'
 
 /**
-* Generated from fi.espoo.evaka.process.ProcessMetadata
+* Generated from fi.espoo.evaka.caseprocess.ProcessMetadata
 */
 export interface ProcessMetadata {
   primaryDocument: DocumentMetadata
-  process: ArchivedProcess
+  process: CaseProcess
   processName: string | null
   secondaryDocuments: DocumentMetadata[]
 }
 
 /**
-* Generated from fi.espoo.evaka.process.ProcessMetadataResponse
+* Generated from fi.espoo.evaka.caseprocess.ProcessMetadataResponse
 */
 export interface ProcessMetadataResponse {
   data: ProcessMetadata | null
 }
 
 /**
-* Generated from fi.espoo.evaka.process.SfiDelivery
+* Generated from fi.espoo.evaka.caseprocess.SfiDelivery
 */
 export interface SfiDelivery {
   method: SfiMethod
@@ -101,7 +101,7 @@ export interface SfiDelivery {
 }
 
 /**
-* Generated from fi.espoo.evaka.process.SfiMethod
+* Generated from fi.espoo.evaka.caseprocess.SfiMethod
 */
 export type SfiMethod =
   | 'ELECTRONIC'
@@ -109,15 +109,15 @@ export type SfiMethod =
   | 'PENDING'
 
 
-export function deserializeJsonArchivedProcess(json: JsonOf<ArchivedProcess>): ArchivedProcess {
+export function deserializeJsonCaseProcess(json: JsonOf<CaseProcess>): CaseProcess {
   return {
     ...json,
-    history: json.history.map(e => deserializeJsonArchivedProcessHistoryRow(e))
+    history: json.history.map(e => deserializeJsonCaseProcessHistoryRow(e))
   }
 }
 
 
-export function deserializeJsonArchivedProcessHistoryRow(json: JsonOf<ArchivedProcessHistoryRow>): ArchivedProcessHistoryRow {
+export function deserializeJsonCaseProcessHistoryRow(json: JsonOf<CaseProcessHistoryRow>): CaseProcessHistoryRow {
   return {
     ...json,
     enteredAt: HelsinkiDateTime.parseIso(json.enteredAt)
@@ -138,7 +138,7 @@ export function deserializeJsonProcessMetadata(json: JsonOf<ProcessMetadata>): P
   return {
     ...json,
     primaryDocument: deserializeJsonDocumentMetadata(json.primaryDocument),
-    process: deserializeJsonArchivedProcess(json.process),
+    process: deserializeJsonCaseProcess(json.process),
     secondaryDocuments: json.secondaryDocuments.map(e => deserializeJsonDocumentMetadata(e))
   }
 }

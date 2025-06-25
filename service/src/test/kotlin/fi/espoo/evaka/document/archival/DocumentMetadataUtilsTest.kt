@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.document.archival
 
+import fi.espoo.evaka.caseprocess.*
 import fi.espoo.evaka.document.ChildDocumentType
 import fi.espoo.evaka.document.DocumentTemplate
 import fi.espoo.evaka.document.DocumentTemplateContent
@@ -13,7 +14,6 @@ import fi.espoo.evaka.document.childdocument.DocumentContent
 import fi.espoo.evaka.document.childdocument.DocumentStatus
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.placement.PlacementType
-import fi.espoo.evaka.process.*
 import fi.espoo.evaka.sarma.model.PersonalDataType
 import fi.espoo.evaka.shared.*
 import fi.espoo.evaka.shared.domain.DateRange
@@ -35,8 +35,7 @@ class DocumentMetadataUtilsTest {
         ChildDocumentId(UUID.fromString("c3cc95f8-f045-11ef-9114-87ea771c5c89"))
     private val templateId = UUID.fromString("c15d1888-f045-11ef-9114-c3ed20a5c03d")
     private val childId = PersonId(UUID.fromString("5a4f3ccc-5270-4d28-bd93-d355182b6768"))
-    private val processId =
-        ArchivedProcessId(UUID.fromString("c3c73bb2-f045-11ef-9114-03e2ccf106e6"))
+    private val processId = CaseProcessId(UUID.fromString("c3c73bb2-f045-11ef-9114-03e2ccf106e6"))
     private val userId = UUID.fromString("d71daacc-18e1-4605-8847-677469203e27")
 
     private fun createTestDocument(
@@ -97,12 +96,12 @@ class DocumentMetadataUtilsTest {
         )
     }
 
-    private fun createTestArchivedProcess(completionDate: LocalDateTime?): ArchivedProcess {
+    private fun createTestCaseProcess(completionDate: LocalDateTime?): CaseProcess {
         val initialHistory =
             listOf(
-                ArchivedProcessHistoryRow(
+                CaseProcessHistoryRow(
                     rowIndex = 1,
-                    state = ArchivedProcessState.INITIAL,
+                    state = CaseProcessState.INITIAL,
                     enteredAt = HelsinkiDateTime.of(LocalDateTime.parse("2023-02-01T12:10:00")),
                     enteredBy =
                         EvakaUser(
@@ -116,9 +115,9 @@ class DocumentMetadataUtilsTest {
         val completeHistory =
             if (completionDate != null) {
                 initialHistory +
-                    ArchivedProcessHistoryRow(
+                    CaseProcessHistoryRow(
                         rowIndex = 2,
-                        state = ArchivedProcessState.COMPLETED,
+                        state = CaseProcessState.COMPLETED,
                         enteredAt = HelsinkiDateTime.of(completionDate),
                         enteredBy =
                             EvakaUser(
@@ -131,7 +130,7 @@ class DocumentMetadataUtilsTest {
                 initialHistory
             }
 
-        return ArchivedProcess(
+        return CaseProcess(
             id = processId,
             processDefinitionNumber = "1234",
             year = 2023,
@@ -210,10 +209,10 @@ class DocumentMetadataUtilsTest {
     }
 
     @Test
-    fun `createDocumentDescription includes agents when archivedProcess is provided`() {
+    fun `createDocumentDescription includes agents when caseProcess is provided`() {
         val document = createTestDocument()
         val documentMetadata = createTestDocumentMetadata()
-        val archivedProcess = createTestArchivedProcess(null)
+        val caseProcess = createTestCaseProcess(null)
         val childIdentifier = ExternalIdentifier.SSN.getInstance("160616A978U")
         val childBirthDate = LocalDate.parse("2016-06-06")
 
@@ -221,7 +220,7 @@ class DocumentMetadataUtilsTest {
             createDocumentDescription(
                 document,
                 documentMetadata,
-                archivedProcess,
+                caseProcess,
                 childIdentifier,
                 childBirthDate,
             )
@@ -260,9 +259,9 @@ class DocumentMetadataUtilsTest {
         val document = createTestDocument()
         val documentMetadata = createTestDocumentMetadata()
         val completionDateTime = LocalDateTime.parse("2023-02-15T14:30:00")
-        val archivedProcess = createTestArchivedProcess(completionDateTime)
+        val caseProcess = createTestCaseProcess(completionDateTime)
 
-        val result = createCaseFile(documentMetadata, archivedProcess, document)
+        val result = createCaseFile(documentMetadata, caseProcess, document)
 
         assertEquals(documentMetadata.createdAt?.asXMLGregorianCalendar(), result.caseCreated)
 
@@ -289,9 +288,9 @@ class DocumentMetadataUtilsTest {
         val documentMetadata = createTestDocumentMetadata()
 
         // Create process without COMPLETED state
-        val archivedProcess = createTestArchivedProcess(completionDate = null)
+        val caseProcess = createTestCaseProcess(completionDate = null)
 
-        val result = createCaseFile(documentMetadata, archivedProcess, document)
+        val result = createCaseFile(documentMetadata, caseProcess, document)
 
         // Should use template end date
         val expectedFinishDate = document.template.validity.end?.toXMLGregorianCalendar()

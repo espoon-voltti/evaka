@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-package fi.espoo.evaka.process
+package fi.espoo.evaka.caseprocess
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
@@ -63,7 +63,7 @@ data class DocumentMetadata(
 )
 
 data class ProcessMetadata(
-    val process: ArchivedProcess,
+    val process: CaseProcess,
     val processName: String?,
     val primaryDocument: DocumentMetadata,
     val secondaryDocuments: List<DocumentMetadata>,
@@ -108,7 +108,7 @@ class ProcessMetadataController(
                         childDocumentId,
                     )
                     val process =
-                        tx.getArchiveProcessByChildDocumentId(childDocumentId)
+                        tx.getCaseProcessByChildDocumentId(childDocumentId)
                             ?: return@read ProcessMetadataResponse(null)
                     val type =
                         tx.getChildDocument(childDocumentId)?.template?.type ?: throw NotFound()
@@ -175,7 +175,7 @@ class ProcessMetadataController(
                         decisionId,
                     )
                     val process =
-                        tx.getArchiveProcessByAssistanceNeedDecisionId(decisionId)
+                        tx.getCaseProcessByAssistanceNeedDecisionId(decisionId)
                             ?: return@read ProcessMetadataResponse(null)
                     val decisionDocument = tx.getAssistanceNeedDecisionDocumentMetadata(decisionId)
 
@@ -226,7 +226,7 @@ class ProcessMetadataController(
                         decisionId,
                     )
                     val process =
-                        tx.getArchiveProcessByAssistanceNeedPreschoolDecisionId(decisionId)
+                        tx.getCaseProcessByAssistanceNeedPreschoolDecisionId(decisionId)
                             ?: return@read ProcessMetadataResponse(null)
                     val decisionDocument =
                         tx.getAssistanceNeedPreschoolDecisionDocumentMetadata(decisionId)
@@ -278,7 +278,7 @@ class ProcessMetadataController(
                         applicationId,
                     )
                     val process =
-                        tx.getArchiveProcessByApplicationId(applicationId)
+                        tx.getCaseProcessByApplicationId(applicationId)
                             ?: return@read ProcessMetadataResponse(null)
                     val processMetadata =
                         processMetadataService.getApplicationProcessMetadata(
@@ -316,7 +316,7 @@ class ProcessMetadataController(
                         feeDecisionId,
                     )
                     val process =
-                        tx.getArchiveProcessByFeeDecisionId(feeDecisionId)
+                        tx.getCaseProcessByFeeDecisionId(feeDecisionId)
                             ?: return@read ProcessMetadataResponse(null)
                     val decisionDocument = tx.getFeeDecisionDocumentMetadata(feeDecisionId)
 
@@ -355,7 +355,7 @@ class ProcessMetadataController(
                         voucherValueDecisionId,
                     )
                     val process =
-                        tx.getArchiveProcessByVoucherValueDecisionId(voucherValueDecisionId)
+                        tx.getCaseProcessByVoucherValueDecisionId(voucherValueDecisionId)
                             ?: return@read ProcessMetadataResponse(null)
                     val decisionDocument =
                         tx.getVoucherValueDecisionDocumentMetadata(voucherValueDecisionId)

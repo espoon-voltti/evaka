@@ -4,9 +4,9 @@
 
 package fi.espoo.evaka.document.archival
 
+import fi.espoo.evaka.caseprocess.*
 import fi.espoo.evaka.document.childdocument.*
 import fi.espoo.evaka.pis.getPersonById
-import fi.espoo.evaka.process.*
 import fi.espoo.evaka.s3.DocumentKey
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.shared.ChildDocumentId
@@ -57,7 +57,7 @@ fun uploadToArchive(
             tx.getPersonById(childId)
                 ?: throw IllegalStateException("No person found with $childId")
         }
-    val archivedProcess = db.read { tx -> tx.getArchiveProcessByChildDocumentId(documentId) }
+    val caseProcess = db.read { tx -> tx.getCaseProcessByChildDocumentId(documentId) }
     val documentMetadata = db.read { tx -> tx.getChildDocumentMetadata(documentId) }
 
     val documentKey =
@@ -86,7 +86,7 @@ fun uploadToArchive(
         createDocumentMetadata(
             document,
             documentMetadata,
-            archivedProcess,
+            caseProcess,
             Paths.get(documentContent.name).fileName.toString(),
             childInfo.identity,
             childInfo.dateOfBirth,

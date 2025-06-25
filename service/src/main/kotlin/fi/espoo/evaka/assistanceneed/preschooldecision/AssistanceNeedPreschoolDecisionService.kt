@@ -5,6 +5,9 @@
 package fi.espoo.evaka.assistanceneed.preschooldecision
 
 import fi.espoo.evaka.EmailEnv
+import fi.espoo.evaka.caseprocess.CaseProcessState
+import fi.espoo.evaka.caseprocess.getCaseProcessByAssistanceNeedPreschoolDecisionId
+import fi.espoo.evaka.caseprocess.insertCaseProcessHistoryRow
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.decision.getSendAddress
 import fi.espoo.evaka.emailclient.Email
@@ -17,9 +20,6 @@ import fi.espoo.evaka.pdfgen.Template
 import fi.espoo.evaka.pis.EmailMessageType
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.service.getChildGuardiansAndFosterParents
-import fi.espoo.evaka.process.ArchivedProcessState
-import fi.espoo.evaka.process.getArchiveProcessByAssistanceNeedPreschoolDecisionId
-import fi.espoo.evaka.process.insertProcessHistoryRow
 import fi.espoo.evaka.s3.DocumentKey
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.sficlient.SfiMessage
@@ -98,10 +98,10 @@ class AssistanceNeedPreschoolDecisionService(
             val sfiJob = AsyncJob.SendAssistanceNeedPreschoolDecisionSfiMessage(decisionId)
             asyncJobRunner.plan(tx, emailJobs + sfiJob, runAt = clock.now())
 
-            tx.getArchiveProcessByAssistanceNeedPreschoolDecisionId(msg.decisionId)?.also {
-                tx.insertProcessHistoryRow(
+            tx.getCaseProcessByAssistanceNeedPreschoolDecisionId(msg.decisionId)?.also {
+                tx.insertCaseProcessHistoryRow(
                     processId = it.id,
-                    state = ArchivedProcessState.COMPLETED,
+                    state = CaseProcessState.COMPLETED,
                     now = clock.now(),
                     userId = AuthenticatedUser.SystemInternalUser.evakaUserId,
                 )

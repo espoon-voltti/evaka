@@ -7,10 +7,10 @@ package fi.espoo.evaka.document
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonTypeName
 import fi.espoo.evaka.ConstList
+import fi.espoo.evaka.caseprocess.DocumentConfidentiality
 import fi.espoo.evaka.document.childdocument.AnsweredQuestion
 import fi.espoo.evaka.document.childdocument.DocumentStatus
 import fi.espoo.evaka.placement.PlacementType
-import fi.espoo.evaka.process.DocumentConfidentiality
 import fi.espoo.evaka.shared.DocumentTemplateId
 import fi.espoo.evaka.shared.HtmlBuilder
 import fi.espoo.evaka.shared.HtmlElement

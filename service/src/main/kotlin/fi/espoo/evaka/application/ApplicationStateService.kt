@@ -21,6 +21,12 @@ import fi.espoo.evaka.application.notes.updateServiceWorkerApplicationNote
 import fi.espoo.evaka.application.persistence.club.ClubFormV0
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.attachment.dissociateAttachmentsByApplicationAndType
+import fi.espoo.evaka.caseprocess.CaseProcessMetadataService
+import fi.espoo.evaka.caseprocess.CaseProcessState
+import fi.espoo.evaka.caseprocess.cancelLastCaseProcessHistoryRow
+import fi.espoo.evaka.caseprocess.getCaseProcessByApplicationId
+import fi.espoo.evaka.caseprocess.insertCaseProcess
+import fi.espoo.evaka.caseprocess.insertCaseProcessHistoryRow
 import fi.espoo.evaka.daycare.controllers.AdditionalInformation
 import fi.espoo.evaka.daycare.controllers.Child
 import fi.espoo.evaka.daycare.domain.Language
@@ -60,12 +66,6 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.deletePlacementPlans
 import fi.espoo.evaka.placement.getPlacementPlan
 import fi.espoo.evaka.placement.updatePlacementPlanUnitConfirmation
-import fi.espoo.evaka.process.ArchivedProcessState
-import fi.espoo.evaka.process.MetadataService
-import fi.espoo.evaka.process.cancelLastProcessHistoryRow
-import fi.espoo.evaka.process.getArchiveProcessByApplicationId
-import fi.espoo.evaka.process.insertProcess
-import fi.espoo.evaka.process.insertProcessHistoryRow
 import fi.espoo.evaka.serviceneed.getServiceNeedOptionPublicInfos
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ArchiveProcessType
@@ -115,7 +115,7 @@ class ApplicationStateService(
     private val messageProvider: IMessageProvider,
     private val messageService: MessageService,
 ) {
-    private val metadata = MetadataService(featureConfig)
+    private val metadata = CaseProcessMetadataService(featureConfig)
 
     fun doSimpleAction(
         tx: Database.Transaction,
@@ -367,12 +367,12 @@ class ApplicationStateService(
 
         val now = clock.now()
         metadata
-            .getProcess(ArchiveProcessType.fromApplicationType(application.type), now.year)
+            .getProcessParams(ArchiveProcessType.fromApplicationType(application.type), now.year)
             ?.also { process ->
-                val processId = tx.insertProcess(process).id
-                tx.insertProcessHistoryRow(
+                val processId = tx.insertCaseProcess(process).id
+                tx.insertCaseProcessHistoryRow(
                     processId = processId,
-                    state = ArchivedProcessState.INITIAL,
+                    state = CaseProcessState.INITIAL,
                     now = clock.now(),
                     userId = user.evakaUserId,
                 )
@@ -431,12 +431,12 @@ class ApplicationStateService(
 
         val now = clock.now()
         metadata
-            .getProcess(ArchiveProcessType.fromApplicationType(application.type), now.year)
+            .getProcessParams(ArchiveProcessType.fromApplicationType(application.type), now.year)
             ?.also { process ->
-                val processId = tx.insertProcess(process).id
-                tx.insertProcessHistoryRow(
+                val processId = tx.insertCaseProcess(process).id
+                tx.insertCaseProcessHistoryRow(
                     processId = processId,
-                    state = ArchivedProcessState.INITIAL,
+                    state = CaseProcessState.INITIAL,
                     now = clock.now(),
                     userId = user.evakaUserId,
                 )
@@ -475,11 +475,11 @@ class ApplicationStateService(
         tx.resetCheckedByAdminAndConfidentiality(applicationId, clock.now(), user.evakaUserId)
         tx.updateApplicationStatus(application.id, WAITING_PLACEMENT, user.evakaUserId, clock.now())
 
-        tx.getArchiveProcessByApplicationId(applicationId)?.also { process ->
-            if (process.history.none { it.state == ArchivedProcessState.PREPARATION }) {
-                tx.insertProcessHistoryRow(
+        tx.getCaseProcessByApplicationId(applicationId)?.also { process ->
+            if (process.history.none { it.state == CaseProcessState.PREPARATION }) {
+                tx.insertCaseProcessHistoryRow(
                     processId = process.id,
-                    state = ArchivedProcessState.PREPARATION,
+                    state = CaseProcessState.PREPARATION,
                     now = clock.now(),
                     userId = user.evakaUserId,
                 )
@@ -507,9 +507,9 @@ class ApplicationStateService(
         verifyStatus(application, setOf(WAITING_PLACEMENT, CANCELLED))
 
         if (application.status == CANCELLED) {
-            tx.getArchiveProcessByApplicationId(applicationId)?.also { process ->
-                if (process.history.any { it.state == ArchivedProcessState.COMPLETED }) {
-                    tx.cancelLastProcessHistoryRow(process.id, ArchivedProcessState.COMPLETED)
+            tx.getCaseProcessByApplicationId(applicationId)?.also { process ->
+                if (process.history.any { it.state == CaseProcessState.COMPLETED }) {
+                    tx.cancelLastCaseProcessHistoryRow(process.id, CaseProcessState.COMPLETED)
                 }
             }
         }
@@ -562,11 +562,11 @@ class ApplicationStateService(
 
         tx.updateApplicationStatus(application.id, CANCELLED, user.evakaUserId, clock.now())
 
-        tx.getArchiveProcessByApplicationId(applicationId)?.also { process ->
-            if (process.history.none { it.state == ArchivedProcessState.COMPLETED }) {
-                tx.insertProcessHistoryRow(
+        tx.getCaseProcessByApplicationId(applicationId)?.also { process ->
+            if (process.history.none { it.state == CaseProcessState.COMPLETED }) {
+                tx.insertCaseProcessHistoryRow(
                     processId = process.id,
-                    state = ArchivedProcessState.COMPLETED,
+                    state = CaseProcessState.COMPLETED,
                     now = clock.now(),
                     userId = user.evakaUserId,
                 )
@@ -1012,11 +1012,11 @@ class ApplicationStateService(
         if (application.status == WAITING_CONFIRMATION) {
             tx.updateApplicationStatus(application.id, ACTIVE, user.evakaUserId, clock.now())
 
-            tx.getArchiveProcessByApplicationId(applicationId)?.also { process ->
-                if (process.history.none { it.state == ArchivedProcessState.COMPLETED }) {
-                    tx.insertProcessHistoryRow(
+            tx.getCaseProcessByApplicationId(applicationId)?.also { process ->
+                if (process.history.none { it.state == CaseProcessState.COMPLETED }) {
+                    tx.insertCaseProcessHistoryRow(
                         processId = process.id,
-                        state = ArchivedProcessState.COMPLETED,
+                        state = CaseProcessState.COMPLETED,
                         now = clock.now(),
                         userId = user.evakaUserId,
                     )
@@ -1084,11 +1084,11 @@ class ApplicationStateService(
             tx.updateApplicationStatus(application.id, REJECTED, user.evakaUserId, clock.now())
         }
 
-        tx.getArchiveProcessByApplicationId(applicationId)?.also { process ->
-            if (process.history.none { it.state == ArchivedProcessState.COMPLETED }) {
-                tx.insertProcessHistoryRow(
+        tx.getCaseProcessByApplicationId(applicationId)?.also { process ->
+            if (process.history.none { it.state == CaseProcessState.COMPLETED }) {
+                tx.insertCaseProcessHistoryRow(
                     processId = process.id,
-                    state = ArchivedProcessState.COMPLETED,
+                    state = CaseProcessState.COMPLETED,
                     now = clock.now(),
                     userId = user.evakaUserId,
                 )
@@ -1556,11 +1556,11 @@ class ApplicationStateService(
                 )
             }
 
-            tx.getArchiveProcessByApplicationId(application.id)?.also { process ->
-                if (process.history.none { it.state == ArchivedProcessState.DECIDING }) {
-                    tx.insertProcessHistoryRow(
+            tx.getCaseProcessByApplicationId(application.id)?.also { process ->
+                if (process.history.none { it.state == CaseProcessState.DECIDING }) {
+                    tx.insertCaseProcessHistoryRow(
                         processId = process.id,
-                        state = ArchivedProcessState.DECIDING,
+                        state = CaseProcessState.DECIDING,
                         now = clock.now(),
                         userId = user.evakaUserId,
                     )

@@ -7,6 +7,7 @@ package fi.espoo.evaka.invoicing
 import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.caseprocess.CaseProcessMetadataService
 import fi.espoo.evaka.invoicing.controller.PaymentController
 import fi.espoo.evaka.invoicing.controller.PaymentDistinctiveParams
 import fi.espoo.evaka.invoicing.controller.PaymentSortParam
@@ -20,7 +21,6 @@ import fi.espoo.evaka.invoicing.domain.FeeAlterationWithEffect
 import fi.espoo.evaka.invoicing.domain.PaymentStatus
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.placement.PlacementType
-import fi.espoo.evaka.process.MetadataService
 import fi.espoo.evaka.reports.freezeVoucherValueReportRows
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
@@ -537,7 +537,7 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 asyncJobRunner = asyncJobRunner,
                 user = financeUser,
                 evakaEnv = evakaEnv,
-                metadata = MetadataService(featureConfig),
+                metadata = CaseProcessMetadataService(featureConfig),
                 now = approvedAt,
                 ids = listOf(decision.id),
                 decisionHandlerId = null,

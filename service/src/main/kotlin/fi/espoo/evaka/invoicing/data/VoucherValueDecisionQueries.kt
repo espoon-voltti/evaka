@@ -14,7 +14,7 @@ import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionSummary
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionType
 import fi.espoo.evaka.invoicing.partnerIsCodebtor
-import fi.espoo.evaka.shared.ArchivedProcessId
+import fi.espoo.evaka.shared.CaseProcessId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
@@ -730,7 +730,7 @@ fun Database.Transaction.setVoucherValueDecisionToIgnored(id: VoucherValueDecisi
 
 fun Database.Transaction.setVoucherValueDecisionProcessId(
     id: VoucherValueDecisionId,
-    processId: ArchivedProcessId,
+    processId: CaseProcessId,
 ) {
     createUpdate {
             sql(

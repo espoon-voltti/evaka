@@ -6,16 +6,16 @@ package fi.espoo.evaka.assistanceneed.preschooldecision
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionStatus
+import fi.espoo.evaka.caseprocess.CaseProcessMetadataService
+import fi.espoo.evaka.caseprocess.CaseProcessState
+import fi.espoo.evaka.caseprocess.deleteCaseProcessByAssistanceNeedPreschoolDecisionId
+import fi.espoo.evaka.caseprocess.getCaseProcessByAssistanceNeedPreschoolDecisionId
+import fi.espoo.evaka.caseprocess.insertCaseProcess
+import fi.espoo.evaka.caseprocess.insertCaseProcessHistoryRow
 import fi.espoo.evaka.pis.Employee
 import fi.espoo.evaka.pis.getEmployees
 import fi.espoo.evaka.pis.getEmployeesByRoles
 import fi.espoo.evaka.pis.service.getChildGuardians
-import fi.espoo.evaka.process.ArchivedProcessState
-import fi.espoo.evaka.process.MetadataService
-import fi.espoo.evaka.process.deleteProcessByAssistanceNeedPreschoolDecisionId
-import fi.espoo.evaka.process.getArchiveProcessByAssistanceNeedPreschoolDecisionId
-import fi.espoo.evaka.process.insertProcess
-import fi.espoo.evaka.process.insertProcessHistoryRow
 import fi.espoo.evaka.shared.ArchiveProcessType
 import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
 import fi.espoo.evaka.shared.ChildId
@@ -45,7 +45,7 @@ class AssistanceNeedPreschoolDecisionController(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val assistanceNeedPreschoolDecisionService: AssistanceNeedPreschoolDecisionService,
 ) {
-    private val metadata = MetadataService(featureConfig)
+    private val metadata = CaseProcessMetadataService(featureConfig)
 
     @PostMapping("/employee/children/{childId}/assistance-need-preschool-decisions")
     fun createAssistanceNeedPreschoolDecision(
@@ -67,15 +67,15 @@ class AssistanceNeedPreschoolDecisionController(
                     val now = clock.now()
                     val processId =
                         metadata
-                            .getProcess(
+                            .getProcessParams(
                                 ArchiveProcessType.ASSISTANCE_NEED_DECISION_PRESCHOOL,
                                 now.year,
                             )
                             ?.let { process ->
-                                val processId = tx.insertProcess(process).id
-                                tx.insertProcessHistoryRow(
+                                val processId = tx.insertCaseProcess(process).id
+                                tx.insertCaseProcessHistoryRow(
                                     processId = processId,
-                                    state = ArchivedProcessState.INITIAL,
+                                    state = CaseProcessState.INITIAL,
                                     now = now,
                                     userId = user.evakaUserId,
                                 )
@@ -190,11 +190,11 @@ class AssistanceNeedPreschoolDecisionController(
                     val decision = tx.getAssistanceNeedPreschoolDecisionById(id)
                     if (!decision.isValid) throw BadRequest("Decision form is not valid")
 
-                    tx.getArchiveProcessByAssistanceNeedPreschoolDecisionId(id)?.also { process ->
-                        if (process.history.none { it.state == ArchivedProcessState.PREPARATION }) {
-                            tx.insertProcessHistoryRow(
+                    tx.getCaseProcessByAssistanceNeedPreschoolDecisionId(id)?.also { process ->
+                        if (process.history.none { it.state == CaseProcessState.PREPARATION }) {
+                            tx.insertCaseProcessHistoryRow(
                                 processId = process.id,
-                                state = ArchivedProcessState.PREPARATION,
+                                state = CaseProcessState.PREPARATION,
                                 now = clock.now(),
                                 userId = user.evakaUserId,
                             )
@@ -321,10 +321,10 @@ class AssistanceNeedPreschoolDecisionController(
                     )
 
                     if (decided) {
-                        tx.getArchiveProcessByAssistanceNeedPreschoolDecisionId(id)?.also {
-                            tx.insertProcessHistoryRow(
+                        tx.getCaseProcessByAssistanceNeedPreschoolDecisionId(id)?.also {
+                            tx.insertCaseProcessHistoryRow(
                                 processId = it.id,
-                                state = ArchivedProcessState.DECIDING,
+                                state = CaseProcessState.DECIDING,
                                 now = clock.now(),
                                 userId = user.evakaUserId,
                             )
@@ -440,7 +440,7 @@ class AssistanceNeedPreschoolDecisionController(
                         Action.AssistanceNeedPreschoolDecision.DELETE,
                         id,
                     )
-                    deleteProcessByAssistanceNeedPreschoolDecisionId(tx, id)
+                    deleteCaseProcessByAssistanceNeedPreschoolDecisionId(tx, id)
                     if (!tx.deleteAssistanceNeedPreschoolDecision(id)) {
                         throw NotFound(
                             "Assistance need preschool decision $id cannot found or cannot be deleted",

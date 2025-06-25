@@ -6,14 +6,14 @@
 
 import type { ApplicationId } from 'lib-common/generated/api-types/shared'
 import type { JsonOf } from 'lib-common/json'
-import type { ProcessMetadataResponse } from 'lib-common/generated/api-types/process'
+import type { ProcessMetadataResponse } from 'lib-common/generated/api-types/caseprocess'
 import { client } from '../../api-client'
-import { deserializeJsonProcessMetadataResponse } from 'lib-common/generated/api-types/process'
+import { deserializeJsonProcessMetadataResponse } from 'lib-common/generated/api-types/caseprocess'
 import { uri } from 'lib-common/uri'
 
 
 /**
-* Generated from fi.espoo.evaka.process.ProcessMetadataControllerCitizen.getApplicationMetadata
+* Generated from fi.espoo.evaka.caseprocess.ProcessMetadataControllerCitizen.getApplicationMetadata
 */
 export async function getApplicationMetadata(
   request: {

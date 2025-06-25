@@ -5,7 +5,7 @@
 import type { UseQueryOptions } from '@tanstack/react-query'
 import React, { useState } from 'react'
 
-import type { ProcessMetadataResponse } from 'lib-common/generated/api-types/process'
+import type { ProcessMetadataResponse } from 'lib-common/generated/api-types/caseprocess'
 import { useQueryResult } from 'lib-common/query'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { Metadatas } from 'lib-components/molecules/Metadatas'

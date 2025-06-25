@@ -189,7 +189,7 @@ fun Database.Transaction.forceUnpublishTemplate(id: DocumentTemplateId) {
             WHERE template_id = ${bind(id)}
             FOR UPDATE 
         ), delete_processes AS (
-            DELETE FROM archived_process ap
+            DELETE FROM case_process ap
             WHERE ap.id IN (SELECT d2d.process_id FROM documents_to_delete d2d)
         ), delete_documents AS (
             DELETE FROM child_document cd WHERE cd.id IN (SELECT d2d.id FROM documents_to_delete d2d)
