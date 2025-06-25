@@ -196,7 +196,15 @@ export default React.memo(function ReservationModal({
       .filter(
         (hp) =>
           hp.period.overlaps(dateRange.value()) &&
-          (!dateRange.value().contains(hp.period) ||
+          // at least one missing reservation in holiday period but outside selected date range
+          (reservationsResponse.days.some(
+            (day) =>
+              hp.period
+                .complement(dateRange.value())
+                .some((range) => range.includes(day.date)) &&
+              day.children.some((child) => child.reservations.length === 0)
+          ) ||
+            // at least one missing reservation in holiday period and inside selected daterange
             (timesBranch === 'dailyTimes' &&
               timesForm.state.day.branch === 'reservationNoTimes' &&
               timesForm.state.day.state === 'notSet') ||
@@ -219,7 +227,7 @@ export default React.memo(function ReservationModal({
           hp.reservationDeadline.isAfter(LocalDate.todayInHelsinkiTz())
       )
       .map((hp) => hp.period)
-  }, [holidayPeriods, dateRange, timesBranch, timesForm])
+  }, [reservationsResponse, holidayPeriods, dateRange, timesBranch, timesForm])
 
   return (
     <ModalAccessibilityWrapper>
