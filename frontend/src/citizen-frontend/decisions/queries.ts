@@ -12,6 +12,7 @@ import {
   getLiableCitizenFinanceDecisions,
   rejectDecision
 } from '../generated/api-clients/application'
+import { getFeeDecisionMetadata } from '../generated/api-clients/caseprocess'
 import { receivedMessagesQuery } from '../messages/queries'
 
 const q = new Queries()
@@ -37,3 +38,5 @@ export const rejectDecisionMutation = q.mutation(rejectDecision, [
   applicationNotificationsQuery,
   receivedMessagesQuery
 ])
+
+export const feeDecisionMetadataQuery = q.query(getFeeDecisionMetadata)
