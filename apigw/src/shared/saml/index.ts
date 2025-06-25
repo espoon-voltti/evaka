@@ -48,11 +48,8 @@ export function createSamlConfig(
     privateKey: privateCert,
     signatureAlgorithm: 'sha256',
     validateInResponseTo: config.validateInResponseTo,
-    // When *both* wantXXXXSigned settings are false, node-saml still
-    // requires at least the whole response *or* the assertion to be signed, so
-    // these settings don't introduce a security problem
-    wantAssertionsSigned: false,
-    wantAuthnResponseSigned: false
+    wantAssertionsSigned: true,
+    wantAuthnResponseSigned: true
   }
 }
 
