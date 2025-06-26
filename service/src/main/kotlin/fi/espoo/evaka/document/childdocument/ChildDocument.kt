@@ -177,6 +177,7 @@ data class ChildDocumentDecision(
     val createdAt: HelsinkiDateTime,
     val validity: DateRange?,
     val decisionNumber: Int,
+    val daycareName: String?,
 )
 
 data class ChildDocumentSummary(

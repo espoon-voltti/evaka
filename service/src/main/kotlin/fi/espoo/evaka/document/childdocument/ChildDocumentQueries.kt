@@ -10,6 +10,7 @@ import fi.espoo.evaka.shared.CaseProcessId
 import fi.espoo.evaka.shared.ChildDocumentDecisionId
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DocumentTemplateId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.EvakaUserId
@@ -101,13 +102,15 @@ SELECT
     cdd.status AS decision_status,
     cdd.created_at AS decision_created_at,
     CASE WHEN cdd.valid_from IS NOT NULL THEN daterange(cdd.valid_from, cdd.valid_to, '[]') END AS decision_validity,
-    cdd.decision_number AS decision_decision_number
+    cdd.decision_number AS decision_decision_number,
+    d.name AS decision_daycare_name
 FROM child_document cd
 JOIN document_template dt on cd.template_id = dt.id
 JOIN person ch ON cd.child_id = ch.id
 LEFT JOIN evaka_user answered_by ON cd.answered_by = answered_by.id
 LEFT JOIN evaka_user decision_maker ON cd.decision_maker = decision_maker.employee_id
 LEFT JOIN child_document_decision cdd ON cdd.id = cd.decision_id
+LEFT JOIN daycare d ON d.id = cdd.daycare_id
 WHERE ${predicate(combinedPredicate)}
 """
             )
@@ -198,11 +201,13 @@ SELECT
     cdd.status AS decision_status,
     cdd.created_at AS decision_created_at,
     CASE WHEN cdd.valid_from IS NOT NULL THEN daterange(cdd.valid_from, cdd.valid_to, '[]') END AS decision_validity,
-    cdd.decision_number AS decision_decision_number
+    cdd.decision_number AS decision_decision_number,
+    d.name AS decision_daycare_name
 FROM child_document cd
 JOIN document_template dt on cd.template_id = dt.id
 JOIN person p on cd.child_id = p.id
 LEFT JOIN child_document_decision cdd ON cdd.id = cd.decision_id
+LEFT JOIN daycare d ON d.id = cdd.daycare_id
 WHERE cd.id = ${bind(id)}
 """
             )
@@ -515,12 +520,13 @@ fun Database.Transaction.insertChildDocumentDecision(
     status: ChildDocumentDecisionStatus,
     userId: EvakaUserId,
     validity: DateRange?,
+    daycareId: DaycareId?,
 ): ChildDocumentDecisionId {
     return createUpdate {
             sql(
                 """
-                INSERT INTO child_document_decision (created_by, modified_by, status, valid_from, valid_to) 
-                VALUES (${bind(userId)}, ${bind(userId)}, ${bind(status)}, ${bind(validity?.start)}, ${bind(validity?.end)})
+                INSERT INTO child_document_decision (created_by, modified_by, status, valid_from, valid_to, daycare_id) 
+                VALUES (${bind(userId)}, ${bind(userId)}, ${bind(status)}, ${bind(validity?.start)}, ${bind(validity?.end)}, ${bind(daycareId)})
                 RETURNING id
             """
             )

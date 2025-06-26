@@ -785,6 +785,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
             assertEquals(ChildDocumentDecisionStatus.ACCEPTED, doc.decision?.status)
             assertEquals(10_000, doc.decision?.decisionNumber)
             assertNotNull(doc.publishedAt)
+            assertEquals(testDaycare.name, doc.decision?.daycareName)
         }
 
         // sfi message was sent

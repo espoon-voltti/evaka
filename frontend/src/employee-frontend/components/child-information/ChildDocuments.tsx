@@ -48,8 +48,12 @@ import { activeDocumentTemplateSummariesQuery } from '../document-templates/quer
 
 import { childDocumentsQuery, createChildDocumentMutation } from './queries'
 
+const WiderTh = styled(Th)`
+  width: 40%;
+`
+
 const WiderTd = styled(Td)`
-  width: 50%;
+  width: 40%;
 `
 
 const StatusTd = styled(Td)`
@@ -71,7 +75,9 @@ const InternalChildDocuments = React.memo(function InternalChildDocuments({
       <Table data-qa="table-of-internal-child-documents">
         <Thead>
           <Tr>
-            <Th>{i18n.childInformation.childDocuments.table.document}</Th>
+            <WiderTh>
+              {i18n.childInformation.childDocuments.table.document}
+            </WiderTh>
             <Th>{i18n.childInformation.childDocuments.table.modified}</Th>
             <Th>{i18n.childInformation.childDocuments.table.published}</Th>
             <Th>{i18n.childInformation.childDocuments.table.status}</Th>
@@ -127,8 +133,11 @@ const DecisionChildDocuments = React.memo(function DecisionChildDocuments({
       <Table data-qa="table-of-decision-child-documents">
         <Thead>
           <Tr>
-            <Th>{i18n.childInformation.childDocuments.table.document}</Th>
+            <WiderTh>
+              {i18n.childInformation.childDocuments.table.document}
+            </WiderTh>
             <Th>{i18n.childInformation.childDocuments.table.modified}</Th>
+            <Th>{i18n.childInformation.childDocuments.table.unit}</Th>
             <Th>{i18n.childInformation.childDocuments.table.valid}</Th>
             <Th>{i18n.childInformation.childDocuments.table.status}</Th>
           </Tr>
@@ -153,6 +162,7 @@ const DecisionChildDocuments = React.memo(function DecisionChildDocuments({
                 </DisableableLink>
               </WiderTd>
               <Td>{document.modifiedAt.format()}</Td>
+              <Td>{document.decision?.daycareName ?? ''}</Td>
               <Td>
                 {document.decision?.validity
                   ? document.decision.validity.format()
@@ -185,7 +195,9 @@ const ExternalChildDocuments = React.memo(function ExternalChildDocuments({
       <Table data-qa="table-of-external-child-documents">
         <Thead>
           <Tr>
-            <Th>{i18n.childInformation.childDocuments.table.document}</Th>
+            <WiderTh>
+              {i18n.childInformation.childDocuments.table.document}
+            </WiderTh>
             <Th>{i18n.childInformation.childDocuments.table.sent}</Th>
             <Th>{i18n.childInformation.childDocuments.table.answered}</Th>
             <Th>{i18n.childInformation.childDocuments.table.status}</Th>

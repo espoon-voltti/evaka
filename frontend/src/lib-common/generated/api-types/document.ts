@@ -169,6 +169,7 @@ export interface ChildDocumentCreateRequest {
 */
 export interface ChildDocumentDecision {
   createdAt: HelsinkiDateTime
+  daycareName: string | null
   decisionNumber: number
   id: ChildDocumentDecisionId
   status: ChildDocumentDecisionStatus
