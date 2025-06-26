@@ -34,9 +34,9 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
-    val today = LocalDate.of(2022, 6, 1)
-    val now = HelsinkiDateTime.of(today, LocalTime.of(3, 45))
-    val mockClock = MockEvakaClock(now)
+    private val today = LocalDate.of(2024, 6, 1)
+    private val now = HelsinkiDateTime.of(today, LocalTime.of(3, 45))
+    private val mockClock = MockEvakaClock(now)
 
     @Test
     fun `sanityCheckAttendancesInFuture positive`() {

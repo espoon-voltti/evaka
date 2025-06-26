@@ -12,12 +12,16 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.ServiceNeedId
+import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.voltti.logging.loggers.warn
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.LocalDate
 
 private val logger = KotlinLogging.logger {}
+
+private val checkStart = LocalDate.of(2024, 1, 1)
+private val checkRange = DateRange(checkStart, null)
 
 fun runSanityChecks(tx: Database.Read, clock: EvakaClock) {
     logResult("child attendances on future days", tx.sanityCheckAttendancesInFuture(clock.today()))
@@ -72,7 +76,7 @@ fun Database.Read.sanityCheckServiceNeedOutsidePlacement(): List<ServiceNeedId> 
             sql(
                 """
         SELECT sn.id
-        FROM service_need sn
+        FROM (SELECT * FROM service_need WHERE start_date >= ${bind(checkStart)}) sn
         JOIN placement pl on pl.id = sn.placement_id
         WHERE sn.start_date < pl.start_date OR sn.end_date > pl.end_date
     """
@@ -86,7 +90,7 @@ fun Database.Read.sanityCheckGroupPlacementOutsidePlacement(): List<GroupPlaceme
             sql(
                 """
         SELECT gpl.id
-        FROM daycare_group_placement gpl
+        FROM (SELECT * FROM daycare_group_placement WHERE start_date >= ${bind(checkStart)}) gpl
         JOIN placement pl on pl.id = gpl.daycare_placement_id
         WHERE gpl.start_date < pl.start_date OR gpl.end_date > pl.end_date
     """
@@ -100,7 +104,7 @@ fun Database.Read.sanityCheckBackupCareOutsidePlacement(): List<BackupCareId> {
             sql(
                 """
         SELECT bc.id
-        FROM backup_care bc
+        FROM (SELECT * FROM backup_care WHERE start_date >= ${bind(checkStart)}) bc
         WHERE NOT isempty(
             datemultirange(daterange(bc.start_date, bc.end_date, '[]')) - (
                 SELECT coalesce(range_agg(daterange(p.start_date, p.end_date, '[]')), '{}'::datemultirange)
@@ -120,7 +124,7 @@ fun Database.Read.sanityCheckReservationsDuringFixedSchedulePlacements():
             sql(
                 """
         SELECT ar.id
-        FROM attendance_reservation ar
+        FROM (SELECT * FROM attendance_reservation WHERE date >= ${bind(checkStart)}) ar
         JOIN placement pl ON pl.child_id = ar.child_id AND daterange(pl.start_date, pl.end_date, '[]') @> ar.date
         WHERE pl.type IN ('PRESCHOOL', 'PREPARATORY')
     """
@@ -136,7 +140,7 @@ fun Database.Read.sanityCheckChildInOverlappingFeeDecisions(
             sql(
                 """
         SELECT DISTINCT fdc.child_id
-        FROM fee_decision fd
+        FROM (SELECT * FROM fee_decision WHERE ${bind(checkRange)} @> valid_during) fd
         JOIN fee_decision_child fdc on fdc.fee_decision_id = fd.id
         WHERE
             fd.status = ANY(${bind(statuses)}) AND
