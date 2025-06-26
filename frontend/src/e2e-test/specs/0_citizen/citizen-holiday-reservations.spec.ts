@@ -518,4 +518,97 @@ describe('Holiday periods and questionnaires', () => {
     await dayView2.assertAbsence(child.id, 'Henkilökunnan merkitsemä poissaolo')
     await dayView2.close()
   })
+
+  describe('Holiday period reservations', () => {
+    test('Daily reservation', async () => {
+      await setupFirstChildPlacement()
+      await Fixture.holidayPeriod({
+        period,
+        reservationsOpenOn: today,
+        reservationDeadline: today.addDays(5)
+      }).save()
+
+      await enduserLogin(page, guardian)
+      await new CitizenHeader(page).selectTab('calendar')
+      const calendar = new CitizenCalendarPage(page, 'desktop')
+      await calendar.clickHolidayCta()
+      await calendar.reservationModal.waitUntilVisible()
+
+      const reservationModal = calendar.getReservationModal()
+      await reservationModal.assertHolidayPeriodInfoContent(
+        'Loma-aika: 18.12.-08.01. Merkitse loma-ajan läsnäolot määräaikaan mennessä. Tarkat kellonajat voi merkitä, kun kyselyn määräaika on päättynyt.'
+      )
+
+      await reservationModal.assertIncompletelyAnsweredPeriodsInfoVisible()
+      await reservationModal.fillDailyHolidayPeriodReservationInfo(period, true)
+      await reservationModal.assertIncompletelyAnsweredPeriodsInfoNotVisible()
+    })
+
+    test('Weekly reservations', async () => {
+      await setupFirstChildPlacement()
+      await Fixture.holidayPeriod({
+        period,
+        reservationsOpenOn: today,
+        reservationDeadline: today.addDays(5)
+      }).save()
+
+      await enduserLogin(page, guardian)
+      await new CitizenHeader(page).selectTab('calendar')
+      const calendar = new CitizenCalendarPage(page, 'desktop')
+      await calendar.clickHolidayCta()
+      await calendar.reservationModal.waitUntilVisible()
+
+      const reservationModal = calendar.getReservationModal()
+      await reservationModal.assertHolidayPeriodInfoContent(
+        'Loma-aika: 18.12.-08.01. Merkitse loma-ajan läsnäolot määräaikaan mennessä. Tarkat kellonajat voi merkitä, kun kyselyn määräaika on päättynyt.'
+      )
+
+      await reservationModal.assertIncompletelyAnsweredPeriodsInfoVisible()
+      await reservationModal.fillWeeklyHolidayPeriodReservationInfo(period, [
+        false,
+        true,
+        false,
+        true,
+        false
+      ])
+      await reservationModal.assertIncompletelyAnsweredPeriodsInfoNotVisible()
+    })
+
+    test('Irregular reservations', async () => {
+      await setupFirstChildPlacement()
+      await Fixture.holidayPeriod({
+        period,
+        reservationsOpenOn: today,
+        reservationDeadline: today.addDays(5)
+      }).save()
+
+      await enduserLogin(page, guardian)
+      await new CitizenHeader(page).selectTab('calendar')
+      const calendar = new CitizenCalendarPage(page, 'desktop')
+      await calendar.clickHolidayCta()
+      await calendar.reservationModal.waitUntilVisible()
+
+      const reservationModal = calendar.getReservationModal()
+      await reservationModal.assertHolidayPeriodInfoContent(
+        'Loma-aika: 18.12.-08.01. Merkitse loma-ajan läsnäolot määräaikaan mennessä. Tarkat kellonajat voi merkitä, kun kyselyn määräaika on päättynyt.'
+      )
+
+      await reservationModal.assertIncompletelyAnsweredPeriodsInfoVisible()
+      await reservationModal.fillIrregularHolidayPeriodReservationInfo(period, [
+        { date: LocalDate.of(2035, 12, 18), present: true },
+        { date: LocalDate.of(2035, 12, 19), present: true },
+        { date: LocalDate.of(2035, 12, 20), present: true },
+        { date: LocalDate.of(2035, 12, 21), present: true },
+        { date: LocalDate.of(2035, 12, 27), present: true },
+        { date: LocalDate.of(2035, 12, 28), present: true },
+        { date: LocalDate.of(2035, 12, 31), present: true },
+        { date: LocalDate.of(2036, 1, 2), present: false },
+        { date: LocalDate.of(2036, 1, 3), present: false },
+        { date: LocalDate.of(2036, 1, 4), present: false },
+        { date: LocalDate.of(2036, 1, 7), present: false },
+        { date: LocalDate.of(2036, 1, 8), present: false }
+      ])
+      await reservationModal.assertIncompletelyAnsweredPeriodsInfoNotVisible()
+    })
+  })
 })

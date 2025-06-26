@@ -487,6 +487,11 @@ const en: Translations = {
       infoMessage:
         'Absences marked for the holiday period can only be canceled by contacting the staff.'
     },
+    incompletelyAnsweredHolidayPeriods: {
+      title: (periods: FiniteDateRange[]) =>
+        `Holiday period ${periods.map((p) => p.format()).join(', ')}`,
+      infoMessage: "N.B! You haven't answered the survey for all days!"
+    },
     absenceModal: {
       title: 'Register absences',
       selectedChildren: 'Selected children',

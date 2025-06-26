@@ -71,7 +71,13 @@ export const Day = React.memo(function Day({
         />
       )
     case 'reservationNoTimes':
-      return <ReservationNoTimes bind={form} label={label} />
+      return (
+        <ReservationNoTimes
+          bind={form}
+          label={label}
+          dataQaPrefix={dataQaPrefix}
+        />
+      )
   }
 })
 
@@ -402,10 +408,12 @@ const TimeRanges = React.memo(function TimeRanges({
 
 export const ReservationNoTimes = React.memo(function ReservationNoTimes({
   bind,
-  label
+  label,
+  dataQaPrefix
 }: {
   bind: BoundForm<typeof noTimes>
   label: React.ReactNode
+  dataQaPrefix?: string
 }) {
   const i18n = useTranslation()
 
@@ -414,6 +422,8 @@ export const ReservationNoTimes = React.memo(function ReservationNoTimes({
       {label !== undefined ? <LeftCell>{label}</LeftCell> : null}
       <MiddleCell narrow>
         <Radio
+          id={dataQaPrefix ? `${dataQaPrefix}-present-radio` : undefined}
+          data-qa={dataQaPrefix ? `${dataQaPrefix}-present-radio` : undefined}
           checked={bind.state === 'present'}
           onChange={() => bind.set('present')}
           label={i18n.calendar.reservationModal.present}
@@ -422,6 +432,8 @@ export const ReservationNoTimes = React.memo(function ReservationNoTimes({
       </MiddleCell>
       <RightCell>
         <Radio
+          id={dataQaPrefix ? `${dataQaPrefix}-absent-radio` : undefined}
+          data-qa={dataQaPrefix ? `${dataQaPrefix}-absent-radio` : undefined}
           checked={bind.state === 'absent'}
           onChange={() => bind.set('absent')}
           label={i18n.calendar.reservationModal.absent}

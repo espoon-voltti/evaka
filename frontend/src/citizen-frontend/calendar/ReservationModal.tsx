@@ -7,7 +7,7 @@ import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import type { Failure } from 'lib-common/api'
-import { useForm, useFormFields } from 'lib-common/form/hooks'
+import { useForm, useFormFields, useFormUnion } from 'lib-common/form/hooks'
 import { combine } from 'lib-common/form/types'
 import type { HolidayPeriod } from 'lib-common/generated/api-types/holidayperiod'
 import type { ReservationsResponse } from 'lib-common/generated/api-types/reservations'
@@ -152,6 +152,7 @@ export default React.memo(function ReservationModal({
   )
 
   const { selectedChildren, repetition, dateRange, times } = useFormFields(form)
+  const { branch: timesBranch, form: timesForm } = useFormUnion(times)
   const [showAllErrors, setShowAllErrors] = useState(false)
 
   const selectedRange = dateRange.isValid() ? dateRange.value() : undefined
@@ -186,6 +187,49 @@ export default React.memo(function ReservationModal({
         : [],
     [holidayPeriods, dateRange]
   )
+
+  const incompletelyAnsweredHolidayPeriods = useMemo(() => {
+    if (!dateRange.isValid()) {
+      return []
+    }
+    return holidayPeriods
+      .filter(
+        (hp) =>
+          hp.period.overlaps(dateRange.value()) &&
+          // at least one missing reservation in holiday period but outside selected date range
+          (reservationsResponse.days.some(
+            (day) =>
+              hp.period
+                .complement(dateRange.value())
+                .some((range) => range.includes(day.date)) &&
+              day.children.some(
+                (child) => child.reservations.length === 0 && !child.absence
+              )
+          ) ||
+            // at least one missing reservation in holiday period and inside selected daterange
+            (timesBranch === 'dailyTimes' &&
+              timesForm.state.day.branch === 'reservationNoTimes' &&
+              timesForm.state.day.state === 'notSet') ||
+            (timesBranch === 'weeklyTimes' &&
+              timesForm.state.some(
+                (row) =>
+                  row.day.branch === 'reservationNoTimes' &&
+                  row.day.state === 'notSet'
+              )) ||
+            (timesBranch === 'irregularTimes' &&
+              timesForm.state.some(
+                (row) =>
+                  hp.period.includes(row.date) &&
+                  row.day.branch === 'reservationNoTimes' &&
+                  row.day.state === 'notSet'
+              ))) &&
+          hp.reservationsOpenOn.isEqualOrBefore(
+            LocalDate.todayInHelsinkiTz()
+          ) &&
+          hp.reservationDeadline.isAfter(LocalDate.todayInHelsinkiTz())
+      )
+      .map((hp) => hp.period)
+  }, [reservationsResponse, holidayPeriods, dateRange, timesBranch, timesForm])
 
   return (
     <ModalAccessibilityWrapper>
@@ -294,6 +338,18 @@ export default React.memo(function ReservationModal({
                     {i18n.calendar.reservationModal.missingDateRange}
                   </MissingDateRange>
                 )}
+                {incompletelyAnsweredHolidayPeriods.length > 0 && (
+                  <InfoBox
+                    title={i18n.calendar.incompletelyAnsweredHolidayPeriods.title(
+                      incompletelyAnsweredHolidayPeriods
+                    )}
+                    message={
+                      i18n.calendar.incompletelyAnsweredHolidayPeriods
+                        .infoMessage
+                    }
+                    data-qa="incompletely-answered-periods-info"
+                  />
+                )}
               </CalendarModalSection>
             </div>
             <Gap size="m" />
@@ -372,6 +428,7 @@ const HolidayPeriodInfoBox = React.memo(function HolidayPeriodInfoBox({
       message={i18n.calendar.reservationModal.holidayPeriod(
         openHolidayPeriod.period
       )}
+      data-qa="holiday-period-info"
     />
   ) : null
 })

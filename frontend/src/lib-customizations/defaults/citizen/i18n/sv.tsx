@@ -485,6 +485,11 @@ const sv: Translations = {
       infoMessage:
         'Frånvaro som markerats under semesterperioden kan endast avbokas genom att kontakta personalen.'
     },
+    incompletelyAnsweredHolidayPeriods: {
+      title: (periods: FiniteDateRange[]) =>
+        `Semesterperiod ${periods.map((p) => p.format()).join(', ')}`,
+      infoMessage: 'OBS! Du har inte svarat på enkäten för alla dagarna!'
+    },
     absenceModal: {
       title: 'Anmäl frånvaro',
       selectedChildren: 'Utvalda barn',
