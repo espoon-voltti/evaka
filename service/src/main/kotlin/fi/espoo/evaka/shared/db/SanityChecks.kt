@@ -29,6 +29,7 @@ fun runSanityChecks(tx: Database.Read, clock: EvakaClock) {
     logResult("service need outside placement", tx.sanityCheckServiceNeedOutsidePlacement())
     logResult("group placement outside placement", tx.sanityCheckGroupPlacementOutsidePlacement())
     logResult("backup care outside placement", tx.sanityCheckBackupCareOutsidePlacement())
+    logResult("reservations outside placements", tx.sanityCheckReservationsOutsidePlacements(today))
     logResult(
         "reservations for fixed period placements",
         tx.sanityCheckReservationsDuringFixedSchedulePlacements(today),
@@ -113,6 +114,26 @@ fun Database.Read.sanityCheckBackupCareOutsidePlacement(): List<BackupCareId> {
                 WHERE p.child_id = bc.child_id
             )
         )
+    """
+            )
+        }
+        .toList()
+}
+
+fun Database.Read.sanityCheckReservationsOutsidePlacements(
+    today: LocalDate
+): List<AttendanceReservationId> {
+    return createQuery {
+            sql(
+                """
+        SELECT ar.id
+        FROM attendance_reservation ar
+        WHERE
+            ar.date >= ${bind(today)} AND
+            NOT EXISTS (
+                SELECT FROM placement p
+                WHERE p.child_id = ar.child_id AND daterange(p.start_date, p.end_date, '[]') @> ar.date
+            )
     """
             )
         }

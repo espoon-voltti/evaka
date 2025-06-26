@@ -405,6 +405,74 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     @Test
+    fun `sanityCheckReservationsOutsidePlacements positive`() {
+        val area = DevCareArea()
+        val unit = DevDaycare(areaId = area.id)
+        val child = DevPerson()
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(unit)
+            tx.insert(child, DevPersonType.CHILD)
+
+            tx.insert(
+                DevPlacement(
+                    childId = child.id,
+                    unitId = unit.id,
+                    startDate = today,
+                    endDate = today,
+                )
+            )
+            tx.insert(
+                DevReservation(
+                    childId = child.id,
+                    date = today.plusDays(1),
+                    startTime = LocalTime.of(8, 0),
+                    endTime = LocalTime.of(16, 0),
+                    createdBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
+                )
+            )
+        }
+
+        val violations = db.read { it.sanityCheckReservationsOutsidePlacements(today) }
+        assertEquals(1, violations.size)
+    }
+
+    @Test
+    fun `sanityCheckReservationsOutsidePlacements negative`() {
+        val area = DevCareArea()
+        val unit = DevDaycare(areaId = area.id)
+        val child = DevPerson()
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(unit)
+            tx.insert(child, DevPersonType.CHILD)
+
+            tx.insert(
+                DevPlacement(
+                    childId = child.id,
+                    unitId = unit.id,
+                    startDate = today,
+                    endDate = today,
+                )
+            )
+            tx.insert(
+                DevReservation(
+                    childId = child.id,
+                    date = today,
+                    startTime = LocalTime.of(8, 0),
+                    endTime = LocalTime.of(16, 0),
+                    createdBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
+                )
+            )
+        }
+
+        val violations = db.read { it.sanityCheckReservationsOutsidePlacements(today) }
+        assertEquals(0, violations.size)
+    }
+
+    @Test
     fun `sanityCheckReservationsDuringFixedSchedulePlacements positive`() {
         val area = DevCareArea()
         val unit = DevDaycare(areaId = area.id)
