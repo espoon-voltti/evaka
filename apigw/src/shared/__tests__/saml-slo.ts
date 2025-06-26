@@ -264,19 +264,8 @@ function buildLoginResponse(
   const issueInstant = '1980-01-01T01:01:00Z'
   const notOnOrAfter = '4980-01-01T01:01:00Z'
 
-  const loginResponse = `<samlp:Response
-  xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol"
-  xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"
-  ID="_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-  Version="2.0"
-  IssueInstant="${issueInstant}"
-  Destination="${SP_LOGIN_CALLBACK_URL}"
-  InResponseTo="${inResponseTo}">
-  <saml:Issuer>${IDP_ISSUER}</saml:Issuer>
-  <samlp:Status>
-      <samlp:StatusCode Value="urn:oasis:names:tc:SAML:2.0:status:Success"/>
-  </samlp:Status>
-  <saml:Assertion
+  const assertion = `<saml:Assertion
+      xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       xmlns:xs="http://www.w3.org/2001/XMLSchema"
       ID="_bbbbbbbbbbbbbbbbbbbbbbbb"
@@ -319,7 +308,21 @@ function buildLoginResponse(
               <saml:AuthnContextClassRef>urn:oasis:names:tc:SAML:2.0:ac:classes:Password</saml:AuthnContextClassRef>
           </saml:AuthnContext>
       </saml:AuthnStatement>
-  </saml:Assertion>
+  </saml:Assertion>`
+
+  const loginResponse = `<samlp:Response
+  xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol"
+  xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"
+  ID="_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  Version="2.0"
+  IssueInstant="${issueInstant}"
+  Destination="${SP_LOGIN_CALLBACK_URL}"
+  InResponseTo="${inResponseTo}">
+  <saml:Issuer>${IDP_ISSUER}</saml:Issuer>
+  <samlp:Status>
+      <samlp:StatusCode Value="urn:oasis:names:tc:SAML:2.0:status:Success"/>
+  </samlp:Status>
+  ${signXml(assertion)}
 </samlp:Response>`
   return Buffer.from(signXml(loginResponse)).toString('base64')
 }
@@ -352,8 +355,7 @@ function signXml(xml: string) {
     digestAlgorithm: 'http://www.w3.org/2001/04/xmlenc#sha256'
   })
   sig.signatureAlgorithm = 'http://www.w3.org/2001/04/xmldsig-more#rsa-sha256'
-  sig.canonicalizationAlgorithm =
-    'http://www.w3.org/TR/2001/REC-xml-c14n-20010315'
+  sig.canonicalizationAlgorithm = 'http://www.w3.org/2001/10/xml-exc-c14n#'
   sig.privateKey = IDP_PVK
   sig.computeSignature(xml)
   return sig.getSignedXml()
