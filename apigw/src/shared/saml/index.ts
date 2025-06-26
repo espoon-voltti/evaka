@@ -16,7 +16,8 @@ import { parseUrlWithOrigin } from '../parse-url-with-origin.js'
 
 export function createSamlConfig(
   config: EvakaSamlConfig,
-  cacheProvider?: CacheProvider
+  cacheProvider?: CacheProvider,
+  wantAuthnResponseSigned = true
 ): SamlConfig {
   const privateCert = readFileSync(config.privateCert, {
     encoding: 'utf8'
@@ -49,7 +50,7 @@ export function createSamlConfig(
     signatureAlgorithm: 'sha256',
     validateInResponseTo: config.validateInResponseTo,
     wantAssertionsSigned: true,
-    wantAuthnResponseSigned: true
+    wantAuthnResponseSigned
   }
 }
 

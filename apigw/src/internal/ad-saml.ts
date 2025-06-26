@@ -69,7 +69,8 @@ export function createSamlAdIntegration(
     saml: new SAML(
       createSamlConfig(
         config.saml,
-        redisCacheProvider(redisClient, { keyPrefix: 'ad-saml-resp:' })
+        redisCacheProvider(redisClient, { keyPrefix: 'ad-saml-resp:' }),
+        false // wantAuthnResponseSigned as Entra ID does not sign responses
       )
     ),
     authenticate,
