@@ -24,13 +24,14 @@ private val checkStart = LocalDate.of(2024, 1, 1)
 private val checkRange = DateRange(checkStart, null)
 
 fun runSanityChecks(tx: Database.Read, clock: EvakaClock) {
-    logResult("child attendances on future days", tx.sanityCheckAttendancesInFuture(clock.today()))
+    val today = clock.today()
+    logResult("child attendances on future days", tx.sanityCheckAttendancesInFuture(today))
     logResult("service need outside placement", tx.sanityCheckServiceNeedOutsidePlacement())
     logResult("group placement outside placement", tx.sanityCheckGroupPlacementOutsidePlacement())
     logResult("backup care outside placement", tx.sanityCheckBackupCareOutsidePlacement())
     logResult(
         "reservations for fixed period placements",
-        tx.sanityCheckReservationsDuringFixedSchedulePlacements(),
+        tx.sanityCheckReservationsDuringFixedSchedulePlacements(today),
     )
     logResult(
         "same child in overlapping draft fee decisions",
@@ -118,15 +119,16 @@ fun Database.Read.sanityCheckBackupCareOutsidePlacement(): List<BackupCareId> {
         .toList()
 }
 
-fun Database.Read.sanityCheckReservationsDuringFixedSchedulePlacements():
-    List<AttendanceReservationId> {
+fun Database.Read.sanityCheckReservationsDuringFixedSchedulePlacements(
+    today: LocalDate
+): List<AttendanceReservationId> {
     return createQuery {
             sql(
                 """
         SELECT ar.id
-        FROM (SELECT * FROM attendance_reservation WHERE date >= ${bind(checkStart)}) ar
+        FROM attendance_reservation ar
         JOIN placement pl ON pl.child_id = ar.child_id AND daterange(pl.start_date, pl.end_date, '[]') @> ar.date
-        WHERE pl.type IN ('PRESCHOOL', 'PREPARATORY')
+        WHERE ar.date >= ${bind(today)} AND pl.type IN ('PRESCHOOL', 'PREPARATORY')
     """
             )
         }

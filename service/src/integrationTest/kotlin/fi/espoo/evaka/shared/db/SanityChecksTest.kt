@@ -405,7 +405,7 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     @Test
-    fun `sanityCheckReservationsDuringFixedPeriodPlacements positive`() {
+    fun `sanityCheckReservationsDuringFixedSchedulePlacements positive`() {
         val area = DevCareArea()
         val unit = DevDaycare(areaId = area.id)
         val child = DevPerson()
@@ -435,12 +435,12 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         }
 
-        val violations = db.read { it.sanityCheckReservationsDuringFixedSchedulePlacements() }
+        val violations = db.read { it.sanityCheckReservationsDuringFixedSchedulePlacements(today) }
         assertEquals(1, violations.size)
     }
 
     @Test
-    fun `sanityCheckReservationsDuringFixedPeriodPlacements negative`() {
+    fun `sanityCheckReservationsDuringFixedSchedulePlacements negative`() {
         val area = DevCareArea()
         val unit = DevDaycare(areaId = area.id)
         val child = DevPerson()
@@ -470,7 +470,7 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         }
 
-        val violations = db.read { it.sanityCheckReservationsDuringFixedSchedulePlacements() }
+        val violations = db.read { it.sanityCheckReservationsDuringFixedSchedulePlacements(today) }
         assertEquals(0, violations.size)
     }
 
