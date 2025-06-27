@@ -6152,7 +6152,7 @@ __metadata:
     react-select: "npm:5.10.1"
     seamless-scroll-polyfill: "npm:2.3.4"
     styled-components: "npm:6.1.19"
-    terser: "npm:5.43.0"
+    terser: "npm:5.43.1"
     ts-jest: "npm:29.4.0"
     ts-node: "npm:10.9.2"
     tslib: "npm:2.8.1"
@@ -10715,9 +10715,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"terser@npm:5.43.0, terser@npm:^5.31.1":
-  version: 5.43.0
-  resolution: "terser@npm:5.43.0"
+"terser@npm:5.43.1, terser@npm:^5.31.1":
+  version: 5.43.1
+  resolution: "terser@npm:5.43.1"
   dependencies:
     "@jridgewell/source-map": "npm:^0.3.3"
     acorn: "npm:^8.14.0"
@@ -10725,7 +10725,7 @@ __metadata:
     source-map-support: "npm:~0.5.20"
   bin:
     terser: bin/terser
-  checksum: 10/e6141c5364eec85067b4b3e509f4d50638f022ed685965126e24209e5e2c77fab8fffbe0bfb6ed153839a225cc9eab266ac25a55272283a2653c328310e05b18
+  checksum: 10/c0a0fd62319e0ce66e800f57ae12ef4ca45f12e9422dac160b866f0d890d01f8b547c96de2557b8443d96953db36be5d900e8006436ef9f628dbd38082e8fe5d
   languageName: node
   linkType: hard
 
