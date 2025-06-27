@@ -30,14 +30,24 @@ class TampereRegionalSurvey(private val accessControl: AccessControl) {
         )
     }
 
-    private val voucherNonSchoolDaycareUnitPredicate = Predicate {
+    private val municipalNonSchoolFamilyAndUnitDaycarePredicate = Predicate {
         where(
-            "$it.with_school IS FALSE AND $it.provider_type = ANY ('{PRIVATE_SERVICE_VOUCHER}') AND $it.type && '{CENTRE}'"
+            "$it.with_school IS FALSE AND $it.provider_type = ANY ('{MUNICIPAL}') AND $it.type && '{CENTRE,FAMILY,GROUP_FAMILY}'"
+        )
+    }
+
+    private val voucherNonSchoolFamilyAndUnitDaycarePredicate = Predicate {
+        where(
+            "$it.with_school IS FALSE AND $it.provider_type = ANY ('{PRIVATE_SERVICE_VOUCHER}') AND $it.type && '{CENTRE,FAMILY,GROUP_FAMILY}'"
         )
     }
 
     private val nonSchoolDaycareUnitPredicate = Predicate {
         where("$it.with_school IS FALSE AND $it.type && '{CENTRE}'")
+    }
+
+    private val nonSchoolFamilyAndUnitDaycarePredicate = Predicate {
+        where("$it.with_school IS FALSE AND $it.type && '{CENTRE,FAMILY,GROUP_FAMILY}'")
     }
     private val preschoolDaycareSchoolPredicate = Predicate {
         where("$it.with_school IS TRUE AND $it.provider_type = ANY ('{MUNICIPAL}')")
@@ -47,9 +57,13 @@ class TampereRegionalSurvey(private val accessControl: AccessControl) {
         where("$it.type && '{FAMILY,GROUP_FAMILY}'")
     }
 
-    private val purchasedNonSchoolDaycareUnitPredicate = Predicate {
+    private val municipalFamilyCareDaycarePredicate = Predicate {
+        where("$it.type && '{FAMILY,GROUP_FAMILY}' AND $it.provider_type = ANY ('{MUNICIPAL}')")
+    }
+
+    private val purchasedNonSchoolFamilyAndUnitDaycarePredicate = Predicate {
         where(
-            "$it.with_school IS FALSE AND $it.provider_type = ANY ('{PURCHASED,EXTERNAL_PURCHASED}') AND $it.type && '{CENTRE}'"
+            "$it.with_school IS FALSE AND $it.provider_type = ANY ('{PURCHASED,EXTERNAL_PURCHASED}') AND $it.type && '{CENTRE,FAMILY,GROUP_FAMILY}'"
         )
     }
 
@@ -157,13 +171,13 @@ class TampereRegionalSurvey(private val accessControl: AccessControl) {
                     val voucherCounts =
                         tx.getAgeDivisionCounts(
                             statDay = yearlyStatDay,
-                            daycarePred = voucherNonSchoolDaycareUnitPredicate,
+                            daycarePred = voucherNonSchoolFamilyAndUnitDaycarePredicate,
                         )
 
                     val purchasedCounts =
                         tx.getAgeDivisionCounts(
                             statDay = yearlyStatDay,
-                            daycarePred = purchasedNonSchoolDaycareUnitPredicate,
+                            daycarePred = purchasedNonSchoolFamilyAndUnitDaycarePredicate,
                         )
 
                     val clubCounts =
@@ -185,7 +199,7 @@ class TampereRegionalSurvey(private val accessControl: AccessControl) {
                                     """
                                     )
                                 },
-                            daycarePred = nonSchoolDaycareUnitPredicate,
+                            daycarePred = nonSchoolFamilyAndUnitDaycarePredicate,
                         )
 
                     val yearlyRange =
@@ -194,7 +208,7 @@ class TampereRegionalSurvey(private val accessControl: AccessControl) {
                     val familyCareDayCounts =
                         tx.getEffectiveCareDayCounts(
                             range = yearlyRange,
-                            daycarePred = familyCareDaycarePredicate,
+                            daycarePred = municipalFamilyCareDaycarePredicate,
                         )
 
                     val daycareDayCounts =
@@ -257,21 +271,21 @@ class TampereRegionalSurvey(private val accessControl: AccessControl) {
                     val purchasedFiveYearOlds =
                         tx.getPlacementCount(
                             statDay = yearlyStatDay,
-                            daycarePred = purchasedNonSchoolDaycareUnitPredicate,
+                            daycarePred = purchasedNonSchoolFamilyAndUnitDaycarePredicate,
                             personPred = fiveYearOldPersonPred,
                         )
 
                     val voucher5YearOld =
                         tx.getPlacementCount(
                             statDay = yearlyStatDay,
-                            daycarePred = voucherNonSchoolDaycareUnitPredicate,
+                            daycarePred = voucherNonSchoolFamilyAndUnitDaycarePredicate,
                             personPred = fiveYearOldPersonPred,
                         )
 
                     val municipal5YearOld =
                         tx.getPlacementCount(
                             statDay = yearlyStatDay,
-                            daycarePred = municipalNonSchoolDaycareUnitPredicate,
+                            daycarePred = municipalNonSchoolFamilyAndUnitDaycarePredicate,
                             personPred = fiveYearOldPersonPred,
                         )
 
@@ -329,7 +343,7 @@ class TampereRegionalSurvey(private val accessControl: AccessControl) {
                     val preschoolDaycareUnitShiftCare =
                         tx.getPlacementCountWithServiceNeed(
                             statDay = yearlyStatDay,
-                            daycarePred = nonSchoolDaycareUnitPredicate,
+                            daycarePred = nonSchoolFamilyAndUnitDaycarePredicate,
                             placementPred = preschoolDaycarePlacementPredicate,
                             serviceNeedPred = shiftCareServiceNeedPredicate,
                         )
@@ -345,19 +359,19 @@ class TampereRegionalSurvey(private val accessControl: AccessControl) {
                     val voucherAssistance =
                         tx.getYearlyAssistanceCount(
                             statDay = yearlyStatDay,
-                            daycarePred = voucherNonSchoolDaycareUnitPredicate,
+                            daycarePred = voucherNonSchoolFamilyAndUnitDaycarePredicate,
                         )
 
                     val voucherAssistanceCounts =
                         tx.getYearlyAssistanceLevelCounts(
                             statDay = yearlyStatDay,
-                            daycarePred = voucherNonSchoolDaycareUnitPredicate,
+                            daycarePred = voucherNonSchoolFamilyAndUnitDaycarePredicate,
                         )
 
                     val municipalAssistanceCounts =
                         tx.getYearlyAssistanceLevelCounts(
                             statDay = yearlyStatDay,
-                            daycarePred = municipalNonSchoolDaycareUnitPredicate,
+                            daycarePred = municipalNonSchoolFamilyAndUnitDaycarePredicate,
                         )
 
                     RegionalSurveyReportYearlyStatisticsResult(
@@ -606,7 +620,7 @@ FROM unnest(${bind(reportingDays)}::date[]) day
          JOIN daycare d ON pl.unit_id = d.id
 WHERE pl.type = ANY ('{DAYCARE}')
   AND d.provider_type = ANY ('{MUNICIPAL}')
-  AND d.type && '{CENTRE}'
+  AND d.type && '{CENTRE,FAMILY,GROUP_FAMILY}'
   AND (EXISTS (SELECT FROM assistance_factor af WHERE af.child_id = pl.child_id AND af.valid_during @> day)
     OR EXISTS (SELECT
                FROM assistance_action an
