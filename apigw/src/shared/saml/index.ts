@@ -16,7 +16,8 @@ import { parseUrlWithOrigin } from '../parse-url-with-origin.js'
 
 export function createSamlConfig(
   config: EvakaSamlConfig,
-  cacheProvider?: CacheProvider
+  cacheProvider?: CacheProvider,
+  wantAuthnResponseSigned = true
 ): SamlConfig {
   const privateCert = readFileSync(config.privateCert, {
     encoding: 'utf8'
@@ -48,11 +49,8 @@ export function createSamlConfig(
     privateKey: privateCert,
     signatureAlgorithm: 'sha256',
     validateInResponseTo: config.validateInResponseTo,
-    // When *both* wantXXXXSigned settings are false, node-saml still
-    // requires at least the whole response *or* the assertion to be signed, so
-    // these settings don't introduce a security problem
-    wantAssertionsSigned: false,
-    wantAuthnResponseSigned: false
+    wantAssertionsSigned: true,
+    wantAuthnResponseSigned
   }
 }
 
