@@ -246,14 +246,13 @@ enum class ScheduledJob(
     /**
      * Rotates the SFI messages REST password.
      *
-     * If SFI messages is disabled or is still using the old SOAP interface, this job can be safely
-     * enabled but does nothing
+     * If the SFI messages feature is disabled, this job can be safely enabled but does nothing
      */
     RotateSfiMessagesPassword(
         ScheduledJobs::rotateSfiMessagesPassword,
         ScheduledJobSettings(
             enabled = true,
-            schedule = JobSchedule.cron("0 0 0 1 * *"), // first day of month
+            schedule = JobSchedule.cron("0 0 0 1 * *"), // first day of the month
         ),
     ),
     GetSfiEvents(
@@ -278,7 +277,7 @@ enum class ScheduledJob(
     ),
     MigrateMetadata(
         ScheduledJobs::migrateMetadata,
-        ScheduledJobSettings(enabled = false, schedule = JobSchedule.nightly()),
+        ScheduledJobSettings(enabled = true, schedule = JobSchedule.nightly()),
     ),
 }
 
