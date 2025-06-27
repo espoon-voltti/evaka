@@ -1458,11 +1458,12 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                 year = startDate.year,
             )
 
-        // shown: Aapo (GENERAL_WITH_DECISION), Terho (INTENSIFIED), Ville (SPECIAL)
-        // not shown: Bertil (wrong placement type), Cecil (wrong level), Fabio (wrong unit type),
+        // shown: Aapo (GENERAL_WITH_DECISION), Terho (INTENSIFIED), Ville (SPECIAL), Fabio
+        // (SPECIAL),
+        // not shown: Bertil (wrong placement type), Cecil (wrong level)
         // Pirjo (wrong provider type)
         assertEquals(1, results.yearlyStatistics.first().municipalGeneralAssistanceCount)
-        assertEquals(1, results.yearlyStatistics.first().municipalSpecialAssistanceCount)
+        assertEquals(2, results.yearlyStatistics.first().municipalSpecialAssistanceCount)
         assertEquals(1, results.yearlyStatistics.first().municipalEnhancedAssistanceCount)
     }
 
