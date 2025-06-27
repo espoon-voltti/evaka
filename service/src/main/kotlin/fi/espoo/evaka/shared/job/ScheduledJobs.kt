@@ -278,7 +278,7 @@ enum class ScheduledJob(
     ),
     MigrateMetadata(
         ScheduledJobs::migrateMetadata,
-        ScheduledJobSettings(enabled = false, schedule = JobSchedule.nightly()),
+        ScheduledJobSettings(enabled = true, schedule = JobSchedule.nightly()),
     ),
 }
 
