@@ -470,7 +470,7 @@ const BasicsEditor = React.memo(function BasicsEditor({
           hideErrorsBeforeTouched
           data-qa="process-definition-number"
         />
-        {processDefinitionNumber.value().trim().length > 0 && (
+        {processDefinitionNumber.state.trim().length > 0 && (
           <>
             <Gap />
             <Label>
