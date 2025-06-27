@@ -70,29 +70,31 @@ class ProcessMetadataControllerCitizen(
         @PathVariable feeDecisionId: FeeDecisionId,
     ): ProcessMetadataResponse {
         return db.connect { dbc ->
-            dbc.read { tx ->
-                accessControl.requirePermissionFor(
-                    tx,
-                    user,
-                    clock,
-                    Action.Citizen.FeeDecision.READ,
-                    feeDecisionId,
-                )
-                val process =
-                    tx.getCaseProcessByFeeDecisionId(feeDecisionId)
-                        ?: return@read ProcessMetadataResponse(null)
-                val decisionDocument = tx.getFeeDecisionDocumentMetadata(feeDecisionId)
+                dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Citizen.FeeDecision.READ,
+                        feeDecisionId,
+                    )
+                    val process =
+                        tx.getCaseProcessByFeeDecisionId(feeDecisionId)
+                            ?: return@read ProcessMetadataResponse(null)
+                    val decisionDocument =
+                        tx.getFeeDecisionDocumentMetadata(feeDecisionId, isCitizen = true)
 
-                ProcessMetadataResponse(
-                    ProcessMetadata(
-                        process = process,
-                        processName = "Varhaiskasvatuksen maksupäätös",
-                        primaryDocument = decisionDocument,
-                        secondaryDocuments = emptyList(),
-                    ).redactForCitizen()
-                )
+                    ProcessMetadataResponse(
+                        ProcessMetadata(
+                                process = process,
+                                processName = "Varhaiskasvatuksen maksupäätös",
+                                primaryDocument = decisionDocument,
+                                secondaryDocuments = emptyList(),
+                            )
+                            .redactForCitizen()
+                    )
+                }
             }
-        }
             .also { response ->
                 Audit.FeeDecisionReadMetadata.log(
                     targetId = AuditId(feeDecisionId),

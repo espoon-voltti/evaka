@@ -420,7 +420,7 @@ sealed interface Action {
             override vararg val defaultRules: ScopedActionRule<in FeeDecisionId>
         ) : ScopedAction<FeeDecisionId> {
             DOWNLOAD(IsCitizen(allowWeakLogin = false).liableForFeeDecisionPayment()),
-            READ(IsCitizen(allowWeakLogin = false).liableForFeeDecisionPayment())
+            READ(IsCitizen(allowWeakLogin = false).liableForFeeDecisionPayment()),
         }
 
         enum class VoucherValueDecision(
