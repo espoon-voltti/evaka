@@ -318,7 +318,8 @@ class ProcessMetadataController(
                     val process =
                         tx.getCaseProcessByFeeDecisionId(feeDecisionId)
                             ?: return@read ProcessMetadataResponse(null)
-                    val decisionDocument = tx.getFeeDecisionDocumentMetadata(feeDecisionId)
+                    val decisionDocument =
+                        tx.getFeeDecisionDocumentMetadata(feeDecisionId, isCitizen = false)
 
                     ProcessMetadataResponse(
                         ProcessMetadata(

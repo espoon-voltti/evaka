@@ -238,18 +238,18 @@ fun Database.Read.getApplicationDecisionDocumentMetadata(
         .exactlyOne()
 
 fun Database.Read.getFeeDecisionDocumentMetadata(
-    decisionId: FeeDecisionId
+    decisionId: FeeDecisionId,
+    isCitizen: Boolean,
 ): DocumentMetadata =
     createQuery {
-        sql(
-            """
+            sql(
+                """
         SELECT 
             d.id,
             d.created,
             e.id AS created_by_id,
             e.name AS created_by_name,
             e.type AS created_by_type,
-            d.document_key,
             (
                 $sfiDeliverySelect
                 WHERE sm.fee_decision_id = d.id
@@ -258,8 +258,8 @@ fun Database.Read.getFeeDecisionDocumentMetadata(
         LEFT JOIN evaka_user e ON e.employee_id = d.approved_by_id
         WHERE d.id = ${bind(decisionId)}
     """
-        )
-    }
+            )
+        }
         .map {
             DocumentMetadata(
                 documentId = column("id"),
@@ -277,7 +277,8 @@ fun Database.Read.getFeeDecisionDocumentMetadata(
                 confidentiality =
                     DocumentConfidentiality(durationYears = 25, basis = "JulkL 24.1 §"),
                 downloadPath =
-                    column<String?>("document_key")?.let { "/employee/fee-decisions/pdf/$it" },
+                    if (isCitizen) "/citizen/fee-decisions/$decisionId/download"
+                    else "/employee/fee-decisions/pdf/$decisionId",
                 receivedBy = null,
                 sfiDeliveries = jsonColumn("sfi_deliveries"),
             )
