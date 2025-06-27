@@ -573,3 +573,39 @@ fun Database.Transaction.setChildDocumentDecisionAndPublish(
         }
         .updateExactlyOne()
 }
+
+fun Database.Transaction.endExpiredChildDocumentDecisions(
+    today: LocalDate
+): List<ChildDocumentDecisionId> {
+    val yesterday = today.minusDays(1)
+    return createQuery {
+            sql(
+                """
+        WITH expired AS (
+            SELECT cdd.id
+            FROM child_document_decision cdd
+            JOIN child_document cd ON cdd.id = cd.decision_id
+            JOIN document_template dt ON cd.template_id = dt.id
+            LEFT JOIN placement current_placement ON cd.child_id = current_placement.child_id AND
+                daterange(current_placement.start_date, current_placement.end_date, '[]') @> ${bind(today)}
+            LEFT JOIN daycare current_unit ON current_unit.id = current_placement.unit_id
+            LEFT JOIN daycare decision_unit ON decision_unit.id = cdd.daycare_id
+            WHERE cdd.status = 'ACCEPTED'
+                AND (cdd.valid_from <= ${bind(yesterday)})
+                AND (cdd.valid_to IS NULL OR cdd.valid_to > ${bind(yesterday)})
+                AND (
+                    (current_placement.id IS NULL) OR 
+                    (NOT (current_placement.type = ANY(dt.placement_types))) OR 
+                    (cdd.daycare_id IS NOT NULL AND decision_unit.name <> current_unit.name)
+                )
+        )
+        UPDATE child_document_decision cdd
+        SET valid_to = ${bind(yesterday)}
+        FROM expired exp
+        WHERE cdd.id = exp.id
+        RETURNING cdd.id
+    """
+            )
+        }
+        .toList<ChildDocumentDecisionId>()
+}

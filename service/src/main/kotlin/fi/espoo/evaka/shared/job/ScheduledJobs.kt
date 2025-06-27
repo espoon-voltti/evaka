@@ -20,6 +20,7 @@ import fi.espoo.evaka.calendarevent.CalendarEventNotificationService
 import fi.espoo.evaka.caseprocess.migrateProcessMetadata
 import fi.espoo.evaka.daycare.controllers.removeDaycareAclForRole
 import fi.espoo.evaka.document.childdocument.ChildDocumentService
+import fi.espoo.evaka.document.childdocument.endExpiredChildDocumentDecisions
 import fi.espoo.evaka.dvv.DvvModificationsBatchRefreshService
 import fi.espoo.evaka.invoicing.service.FinanceDecisionGenerator
 import fi.espoo.evaka.invoicing.service.InvoiceGenerator
@@ -78,6 +79,10 @@ enum class ScheduledJob(
     ),
     EndOutdatedAssistanceNeedVoucherValueCoefficients(
         ScheduledJobs::endOutdatedAssistanceNeedVoucherValueCoefficients,
+        ScheduledJobSettings(enabled = true, schedule = JobSchedule.nightly()),
+    ),
+    EndExpiredChildDocumentDecisions(
+        ScheduledJobs::endExpiredChildDocumentDecisions,
         ScheduledJobSettings(enabled = true, schedule = JobSchedule.nightly()),
     ),
     EndActiveDaycareAssistanceDecisions(
@@ -332,6 +337,17 @@ class ScheduledJobs(
                 now = clock.now(),
             )
         }
+    }
+
+    fun endExpiredChildDocumentDecisions(db: Database.Connection, clock: EvakaClock) {
+        val today = clock.today()
+        val yesterday = today.minusDays(1)
+        db.transaction { tx -> tx.endExpiredChildDocumentDecisions(today) }
+            .forEach { id ->
+                logger.info {
+                    "Automatically set an end date of $yesterday to child document decision $id"
+                }
+            }
     }
 
     fun endActiveDaycareAssistanceDecisions(db: Database.Connection, clock: EvakaClock) {
