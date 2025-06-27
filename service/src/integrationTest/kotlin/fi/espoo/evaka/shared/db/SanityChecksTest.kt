@@ -34,9 +34,9 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
-    val today = LocalDate.of(2022, 6, 1)
-    val now = HelsinkiDateTime.of(today, LocalTime.of(3, 45))
-    val mockClock = MockEvakaClock(now)
+    private val today = LocalDate.of(2024, 6, 1)
+    private val now = HelsinkiDateTime.of(today, LocalTime.of(3, 45))
+    private val mockClock = MockEvakaClock(now)
 
     @Test
     fun `sanityCheckAttendancesInFuture positive`() {
@@ -53,7 +53,7 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         }
         val violations = db.read { it.sanityCheckAttendancesInFuture(mockClock.today()) }
-        assertEquals(1, violations)
+        assertEquals(1, violations.size)
     }
 
     @Test
@@ -71,7 +71,7 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         }
         val violations = db.read { it.sanityCheckAttendancesInFuture(mockClock.today()) }
-        assertEquals(0, violations)
+        assertEquals(0, violations.size)
     }
 
     @Test
@@ -103,7 +103,7 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         }
         val violations = db.read { it.sanityCheckServiceNeedOutsidePlacement() }
-        assertEquals(2, violations)
+        assertEquals(2, violations.size)
     }
 
     @Test
@@ -135,7 +135,7 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         }
         val violations = db.read { it.sanityCheckServiceNeedOutsidePlacement() }
-        assertEquals(0, violations)
+        assertEquals(0, violations.size)
     }
 
     @Test
@@ -164,7 +164,7 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         }
         val violations = db.read { it.sanityCheckGroupPlacementOutsidePlacement() }
-        assertEquals(2, violations)
+        assertEquals(2, violations.size)
     }
 
     @Test
@@ -193,7 +193,7 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         }
         val violations = db.read { it.sanityCheckGroupPlacementOutsidePlacement() }
-        assertEquals(0, violations)
+        assertEquals(0, violations.size)
     }
 
     @Test
@@ -243,7 +243,7 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
         }
 
         val violations = db.read { it.sanityCheckBackupCareOutsidePlacement() }
-        assertEquals(2, violations)
+        assertEquals(2, violations.size)
     }
 
     @Test
@@ -275,7 +275,7 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
         }
 
         val violations = db.read { it.sanityCheckBackupCareOutsidePlacement() }
-        assertEquals(0, violations)
+        assertEquals(0, violations.size)
     }
 
     @Test
@@ -338,7 +338,7 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
                     listOf(FeeDecisionStatus.SENT, FeeDecisionStatus.WAITING_FOR_SENDING)
                 )
             }
-        assertEquals(1, violations)
+        assertEquals(1, violations.size)
     }
 
     @Test
@@ -401,11 +401,79 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
                     listOf(FeeDecisionStatus.SENT, FeeDecisionStatus.WAITING_FOR_SENDING)
                 )
             }
-        assertEquals(0, violations)
+        assertEquals(0, violations.size)
     }
 
     @Test
-    fun `sanityCheckReservationsDuringFixedPeriodPlacements positive`() {
+    fun `sanityCheckReservationsOutsidePlacements positive`() {
+        val area = DevCareArea()
+        val unit = DevDaycare(areaId = area.id)
+        val child = DevPerson()
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(unit)
+            tx.insert(child, DevPersonType.CHILD)
+
+            tx.insert(
+                DevPlacement(
+                    childId = child.id,
+                    unitId = unit.id,
+                    startDate = today,
+                    endDate = today,
+                )
+            )
+            tx.insert(
+                DevReservation(
+                    childId = child.id,
+                    date = today.plusDays(1),
+                    startTime = LocalTime.of(8, 0),
+                    endTime = LocalTime.of(16, 0),
+                    createdBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
+                )
+            )
+        }
+
+        val violations = db.read { it.sanityCheckReservationsOutsidePlacements(today) }
+        assertEquals(1, violations.size)
+    }
+
+    @Test
+    fun `sanityCheckReservationsOutsidePlacements negative`() {
+        val area = DevCareArea()
+        val unit = DevDaycare(areaId = area.id)
+        val child = DevPerson()
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(unit)
+            tx.insert(child, DevPersonType.CHILD)
+
+            tx.insert(
+                DevPlacement(
+                    childId = child.id,
+                    unitId = unit.id,
+                    startDate = today,
+                    endDate = today,
+                )
+            )
+            tx.insert(
+                DevReservation(
+                    childId = child.id,
+                    date = today,
+                    startTime = LocalTime.of(8, 0),
+                    endTime = LocalTime.of(16, 0),
+                    createdBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
+                )
+            )
+        }
+
+        val violations = db.read { it.sanityCheckReservationsOutsidePlacements(today) }
+        assertEquals(0, violations.size)
+    }
+
+    @Test
+    fun `sanityCheckReservationsDuringFixedSchedulePlacements positive`() {
         val area = DevCareArea()
         val unit = DevDaycare(areaId = area.id)
         val child = DevPerson()
@@ -435,12 +503,12 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         }
 
-        val violations = db.read { it.sanityCheckReservationsDuringFixedSchedulePlacements() }
-        assertEquals(1, violations)
+        val violations = db.read { it.sanityCheckReservationsDuringFixedSchedulePlacements(today) }
+        assertEquals(1, violations.size)
     }
 
     @Test
-    fun `sanityCheckReservationsDuringFixedPeriodPlacements negative`() {
+    fun `sanityCheckReservationsDuringFixedSchedulePlacements negative`() {
         val area = DevCareArea()
         val unit = DevDaycare(areaId = area.id)
         val child = DevPerson()
@@ -470,8 +538,8 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         }
 
-        val violations = db.read { it.sanityCheckReservationsDuringFixedSchedulePlacements() }
-        assertEquals(0, violations)
+        val violations = db.read { it.sanityCheckReservationsDuringFixedSchedulePlacements(today) }
+        assertEquals(0, violations.size)
     }
 
     private data class ChildInDaycareFixture(

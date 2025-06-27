@@ -5,20 +5,34 @@
 package fi.espoo.evaka.shared.db
 
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
+import fi.espoo.evaka.shared.AttendanceReservationId
+import fi.espoo.evaka.shared.BackupCareId
+import fi.espoo.evaka.shared.ChildAttendanceId
+import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.GroupPlacementId
+import fi.espoo.evaka.shared.Id
+import fi.espoo.evaka.shared.ServiceNeedId
+import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.voltti.logging.loggers.warn
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.LocalDate
 
 private val logger = KotlinLogging.logger {}
 
+private val checkStart = LocalDate.of(2024, 1, 1)
+private val checkRange = DateRange(checkStart, null)
+
 fun runSanityChecks(tx: Database.Read, clock: EvakaClock) {
-    logResult("child attendances on future days", tx.sanityCheckAttendancesInFuture(clock.today()))
+    val today = clock.today()
+    logResult("child attendances on future days", tx.sanityCheckAttendancesInFuture(today))
     logResult("service need outside placement", tx.sanityCheckServiceNeedOutsidePlacement())
     logResult("group placement outside placement", tx.sanityCheckGroupPlacementOutsidePlacement())
     logResult("backup care outside placement", tx.sanityCheckBackupCareOutsidePlacement())
+    logResult("reservations outside placements", tx.sanityCheckReservationsOutsidePlacements(today))
     logResult(
         "reservations for fixed period placements",
-        tx.sanityCheckReservationsDuringFixedSchedulePlacements(),
+        tx.sanityCheckReservationsDuringFixedSchedulePlacements(today),
     )
     logResult(
         "same child in overlapping draft fee decisions",
@@ -36,61 +50,63 @@ fun runSanityChecks(tx: Database.Read, clock: EvakaClock) {
     )
 }
 
-private fun logResult(description: String, violations: Int) {
-    if (violations > 0) {
-        logger.warn { "Sanity check failed - $description: $violations instances" }
+private fun logResult(description: String, violations: List<Id<*>>) {
+    if (violations.isNotEmpty()) {
+        logger.warn(mapOf("violations" to violations)) {
+            "Sanity check failed - $description: $violations instances"
+        }
     } else {
         logger.info { "Sanity check passed - $description" }
     }
 }
 
-fun Database.Read.sanityCheckAttendancesInFuture(today: LocalDate): Int {
+fun Database.Read.sanityCheckAttendancesInFuture(today: LocalDate): List<ChildAttendanceId> {
     return createQuery {
             sql(
                 """
-        SELECT count(*)
+        SELECT id
         FROM child_attendance 
         WHERE date > ${bind(today)}
     """
             )
         }
-        .exactlyOne()
+        .toList()
 }
 
-fun Database.Read.sanityCheckServiceNeedOutsidePlacement(): Int {
+fun Database.Read.sanityCheckServiceNeedOutsidePlacement(): List<ServiceNeedId> {
     return createQuery {
             sql(
                 """
-        SELECT count(*)
-        FROM service_need sn
+        SELECT sn.id
+        FROM (SELECT * FROM service_need WHERE start_date >= ${bind(checkStart)}) sn
         JOIN placement pl on pl.id = sn.placement_id
         WHERE sn.start_date < pl.start_date OR sn.end_date > pl.end_date
     """
             )
         }
-        .exactlyOne()
+        .toList()
 }
 
-fun Database.Read.sanityCheckGroupPlacementOutsidePlacement(): Int {
+fun Database.Read.sanityCheckGroupPlacementOutsidePlacement(): List<GroupPlacementId> {
     return createQuery {
             sql(
                 """
-        SELECT count(*)
-        FROM daycare_group_placement gpl
+        SELECT gpl.id
+        FROM (SELECT * FROM daycare_group_placement WHERE start_date >= ${bind(checkStart)}) gpl
         JOIN placement pl on pl.id = gpl.daycare_placement_id
         WHERE gpl.start_date < pl.start_date OR gpl.end_date > pl.end_date
     """
             )
         }
-        .exactlyOne()
+        .toList()
 }
 
-fun Database.Read.sanityCheckBackupCareOutsidePlacement(): Int {
+fun Database.Read.sanityCheckBackupCareOutsidePlacement(): List<BackupCareId> {
     return createQuery {
             sql(
                 """
-        SELECT count(*)
-        FROM backup_care bc
+        SELECT bc.id
+        FROM (SELECT * FROM backup_care WHERE start_date >= ${bind(checkStart)}) bc
         WHERE NOT isempty(
             datemultirange(daterange(bc.start_date, bc.end_date, '[]')) - (
                 SELECT coalesce(range_agg(daterange(p.start_date, p.end_date, '[]')), '{}'::datemultirange)
@@ -101,31 +117,53 @@ fun Database.Read.sanityCheckBackupCareOutsidePlacement(): Int {
     """
             )
         }
-        .exactlyOne()
+        .toList()
 }
 
-fun Database.Read.sanityCheckReservationsDuringFixedSchedulePlacements(): Int {
+fun Database.Read.sanityCheckReservationsOutsidePlacements(
+    today: LocalDate
+): List<AttendanceReservationId> {
     return createQuery {
             sql(
                 """
-        SELECT count(*)
+        SELECT ar.id
         FROM attendance_reservation ar
-        JOIN placement pl ON pl.child_id = ar.child_id AND daterange(pl.start_date, pl.end_date, '[]') @> ar.date
-        WHERE pl.type IN ('PRESCHOOL', 'PREPARATORY')
+        WHERE
+            ar.date >= ${bind(today)} AND
+            NOT EXISTS (
+                SELECT FROM placement p
+                WHERE p.child_id = ar.child_id AND daterange(p.start_date, p.end_date, '[]') @> ar.date
+            )
     """
             )
         }
-        .exactlyOne()
+        .toList()
+}
+
+fun Database.Read.sanityCheckReservationsDuringFixedSchedulePlacements(
+    today: LocalDate
+): List<AttendanceReservationId> {
+    return createQuery {
+            sql(
+                """
+        SELECT ar.id
+        FROM attendance_reservation ar
+        JOIN placement pl ON pl.child_id = ar.child_id AND daterange(pl.start_date, pl.end_date, '[]') @> ar.date
+        WHERE ar.date >= ${bind(today)} AND pl.type IN ('PRESCHOOL', 'PREPARATORY')
+    """
+            )
+        }
+        .toList()
 }
 
 fun Database.Read.sanityCheckChildInOverlappingFeeDecisions(
     statuses: List<FeeDecisionStatus>
-): Int {
+): List<ChildId> {
     return createQuery {
             sql(
                 """
-        SELECT count(DISTINCT fdc.child_id)
-        FROM fee_decision fd
+        SELECT DISTINCT fdc.child_id
+        FROM (SELECT * FROM fee_decision WHERE ${bind(checkRange)} @> valid_during) fd
         JOIN fee_decision_child fdc on fdc.fee_decision_id = fd.id
         WHERE
             fd.status = ANY(${bind(statuses)}) AND
@@ -141,5 +179,5 @@ fun Database.Read.sanityCheckChildInOverlappingFeeDecisions(
     """
             )
         }
-        .exactlyOne()
+        .toList()
 }
