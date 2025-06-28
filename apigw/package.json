@@ -62,7 +62,7 @@
     "@types/through2": "2.0.41",
     "@types/tough-cookie": "4.0.5",
     "@types/xml2js": "0.4.14",
-    "concurrently": "9.1.2",
+    "concurrently": "9.2.0",
     "eslint": "9.29.0",
     "eslint-config-prettier": "10.1.5",
     "eslint-plugin-import": "2.31.0",
