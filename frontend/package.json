@@ -88,7 +88,7 @@
     "@types/react": "19.1.8",
     "@types/react-dom": "19.1.6",
     "@types/webpack": "5.28.5",
-    "@vitejs/plugin-legacy": "6.1.1",
+    "@vitejs/plugin-legacy": "7.0.0",
     "@vitejs/plugin-react": "4.6.0",
     "concurrently": "9.1.2",
     "csstype": "3.1.3",
