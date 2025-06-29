@@ -1372,15 +1372,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@csstools/postcss-cascade-layers@npm:^5.0.1":
-  version: 5.0.1
-  resolution: "@csstools/postcss-cascade-layers@npm:5.0.1"
+"@csstools/postcss-cascade-layers@npm:^5.0.2":
+  version: 5.0.2
+  resolution: "@csstools/postcss-cascade-layers@npm:5.0.2"
   dependencies:
     "@csstools/selector-specificity": "npm:^5.0.0"
     postcss-selector-parser: "npm:^7.0.0"
   peerDependencies:
     postcss: ^8.4
-  checksum: 10/ca0a3e324d914567f36e9ec48da290c9d10e9315dc77632f14ec8a8c608fd3b573ca146eb8aa81382013d998c4896f6ac53af48c71b23d0b3fa1b4ea5441b599
+  checksum: 10/9b73c28338f75eebd1032d6375e76547f90683806971f1dd3a47e6305901c89642094e1a80815fcfbb10b0afb61174f9ab3207db860a5841ca92ae993dc87cbe
   languageName: node
   linkType: hard
 
@@ -6138,7 +6138,7 @@ __metadata:
     playwright: "npm:1.53.1"
     polished: "npm:4.3.1"
     postcss: "npm:8.5.6"
-    postcss-preset-env: "npm:10.2.3"
+    postcss-preset-env: "npm:10.2.4"
     prettier: "npm:3.6.1"
     punycode: "npm:2.3.1"
     react: "npm:19.1.0"
@@ -9226,11 +9226,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"postcss-preset-env@npm:10.2.3":
-  version: 10.2.3
-  resolution: "postcss-preset-env@npm:10.2.3"
+"postcss-preset-env@npm:10.2.4":
+  version: 10.2.4
+  resolution: "postcss-preset-env@npm:10.2.4"
   dependencies:
-    "@csstools/postcss-cascade-layers": "npm:^5.0.1"
+    "@csstools/postcss-cascade-layers": "npm:^5.0.2"
     "@csstools/postcss-color-function": "npm:^4.0.10"
     "@csstools/postcss-color-mix-function": "npm:^3.0.10"
     "@csstools/postcss-color-mix-variadic-function-arguments": "npm:^1.0.0"
@@ -9296,7 +9296,7 @@ __metadata:
     postcss-selector-not: "npm:^8.0.1"
   peerDependencies:
     postcss: ^8.4
-  checksum: 10/c95ef93000eec70f5b4042eced3f318110207abeb468303d4b4fd3abdbeab72964b7e967f48a2577a129b39fe1a5e1fafa36850f51489cf3419be371d2580200
+  checksum: 10/1ef9728998aa355e5663d1e42f716b4222b73b92b69805244c29d30949016e5a868bef20924819041d12b2ef28c9bf946b95a21a99c6425db9a494caba89acfc
   languageName: node
   linkType: hard
 
