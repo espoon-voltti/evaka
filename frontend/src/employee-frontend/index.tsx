@@ -37,9 +37,8 @@ Sentry.init({
 })
 Sentry.getGlobalScope().addEventProcessor(sentryEventFilter)
 
-// Smooth-scrolling requires polyfilling in Safari, IE and older browsers:
-// https://developer.mozilla.org/en-US/docs/Web/API/Window/scrollTo#browser_compatibility
-// https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView#browser_compatibility
+// Smooth-scrolling requires polyfilling in Safari:
+// https://caniuse.com/mdn-api_window_scroll_options_behavior_parameter
 smoothScrollPolyfill()
 
 Chart.register(
