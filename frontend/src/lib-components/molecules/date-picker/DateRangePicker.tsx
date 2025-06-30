@@ -180,13 +180,14 @@ export const DateRangePickerF = React.memo(function DateRangePickerF({
 
   const handleChange = useCallback(
     ([newStart, newEnd]: [string, string]) => {
+      useTouched.on()
       update((prev) => ({
         ...prev,
         start: newStart,
         end: newEnd
       }))
     },
-    [update]
+    [update, useTouched]
   )
   const info = infoOverride ?? bind.inputInfo()
 
