@@ -390,7 +390,7 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
                 )
                 .data
         assertNotNull(metadata)
-        assertEquals("1/123.456.b/2024", metadata.process.processNumber)
+        assertEquals("1/123.456.b/2024", metadata.process.caseIdentifier)
         assertEquals(1440, metadata.process.archiveDurationMonths)
         assertEquals("Espoon kaupungin esiopetus ja varhaiskasvatus", metadata.process.organization)
         assertEquals(4, metadata.process.history.size)

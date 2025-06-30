@@ -160,7 +160,7 @@ export interface Translations {
   metadata: {
     title: string
     notFound: string
-    processNumber: string
+    caseIdentifier: string
     processName: string
     organization: string
     archiveDurationMonths: string

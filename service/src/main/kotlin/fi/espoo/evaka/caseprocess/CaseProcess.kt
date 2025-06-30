@@ -44,6 +44,7 @@ class CaseProcessMetadataService(private val featureConfig: FeatureConfig) {
 
 data class CaseProcess(
     val id: CaseProcessId,
+    val caseIdentifier: String,
     val processDefinitionNumber: String,
     val year: Int,
     val number: Int,
@@ -51,10 +52,7 @@ data class CaseProcess(
     val archiveDurationMonths: Int?,
     val migrated: Boolean,
     @Json val history: List<CaseProcessHistoryRow>,
-) {
-    val processNumber: String
-        get() = "$number/$processDefinitionNumber/$year"
-}
+)
 
 data class CaseProcessHistoryRow(
     val rowIndex: Int,
@@ -108,7 +106,7 @@ fun Database.Transaction.insertCaseProcess(
         ${bind(archiveDurationMonths)},
         ${bind(migrated)}
     )
-    RETURNING id, process_definition_number, year, number, organization, archive_duration_months, migrated, '[]'::jsonb AS history
+    RETURNING id, case_identifier, process_definition_number, year, number, organization, archive_duration_months, migrated, '[]'::jsonb AS history
 """
             )
         }
@@ -120,6 +118,7 @@ fun Database.Read.getCaseProcess(id: CaseProcessId): CaseProcess? =
                 """
     SELECT
         ap.id,
+        ap.case_identifier,
         ap.process_definition_number,
         ap.year,
         ap.number,

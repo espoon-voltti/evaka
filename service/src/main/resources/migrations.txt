@@ -540,3 +540,4 @@ V541__holiday_questionnaire_constraints.sql
 V542__assistance_action_option_validity.sql
 V543__case_process.sql
 V544__child_document_decision_unit.sql
+V545__case_identifier.sql

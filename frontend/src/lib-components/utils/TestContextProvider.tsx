@@ -167,7 +167,7 @@ export const testTranslations: Translations = {
   metadata: {
     title: '',
     notFound: '',
-    processNumber: '',
+    caseIdentifier: '',
     processName: '',
     organization: '',
     archiveDurationMonths: '',

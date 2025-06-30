@@ -2375,7 +2375,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 .getApplicationMetadata(dbInstance(), admin.user, clock, testApplicationId)
                 .data
         assertNotNull(metadata)
-        assertEquals("1/123.123.a/2020", metadata.process.processNumber)
+        assertEquals("1/123.123.a/2020", metadata.process.caseIdentifier)
         assertEquals(120, metadata.process.archiveDurationMonths)
         assertEquals(4, metadata.process.history.size)
         assertEquals(CaseProcessState.INITIAL, metadata.process.history[0].state)
