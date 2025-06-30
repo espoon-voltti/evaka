@@ -33,17 +33,13 @@ export default [
     files: ['**/*.{js,cjs,mjs}'],
     ...typescriptEslint.configs.disableTypeChecked
   },
+  importPlugin.flatConfigs.typescript,
   {
-    plugins: {
-      import: fixupPluginRules(importPlugin)
-    },
+    files: ['**/*.{ts,tsx,js,cjs,mjs}'],
     settings: {
       'import/internal-regex':
         '^(citizen-frontend|e2e-test|employee-frontend|employee-mobile-frontend|lib-common|lib-components|lib-customizations|lib-icons|maintenance-page-frontend)(/|$)'
-    }
-  },
-  {
-    files: ['**/*.{ts,tsx,js,cjs,mjs}'],
+    },
     rules: {
       'import/order': [
         'warn',
