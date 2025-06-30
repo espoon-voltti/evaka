@@ -239,6 +239,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                     ChildDocumentDetails(
                         id = documentId,
                         status = DocumentStatus.DRAFT,
+                        caseIdentifier = null,
                         publishedAt = null,
                         pdfAvailable = false,
                         content = DocumentContent(answers = emptyList()),

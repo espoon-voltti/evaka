@@ -178,6 +178,7 @@ SELECT
     cd.document_key IS NOT NULL AS pdf_available,
     cd.content,
     cd.published_content,
+    cp.case_identifier,
     p.id as child_id,
     p.first_name as child_first_name,
     p.last_name as child_last_name,
@@ -206,6 +207,7 @@ SELECT
 FROM child_document cd
 JOIN document_template dt on cd.template_id = dt.id
 JOIN person p on cd.child_id = p.id
+LEFT JOIN case_process cp ON cp.id = cd.process_id
 LEFT JOIN child_document_decision cdd ON cdd.id = cd.decision_id
 LEFT JOIN daycare d ON d.id = cdd.daycare_id
 WHERE cd.id = ${bind(id)}
