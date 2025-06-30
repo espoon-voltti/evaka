@@ -117,7 +117,9 @@ class HolidayPeriodControllerCitizenIntegrationTest :
                     endDate = placement.endDate,
                     optionId =
                         ServiceNeedOptionId(
-                            UUID.fromString("7406df92-e715-11ec-9ec2-9b7ff580dcb4") // full time daycare
+                            UUID.fromString(
+                                "7406df92-e715-11ec-9ec2-9b7ff580dcb4"
+                            ) // full time daycare
                         ),
                     confirmedBy = authenticatedParent.evakaUserId,
                 )
@@ -456,21 +458,16 @@ class HolidayPeriodControllerCitizenIntegrationTest :
         FixedPeriodsBody(mapOf(child1.id to FiniteDateRange(start, end)))
 
     private fun freeAbsenceShiftCare(start: LocalDate, end: LocalDate): FixedPeriodsBody {
+        val fullDay = TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59"))
         db.transaction { tx ->
             val daycareId =
                 tx.insert(
                     DevDaycare(
                         areaId = area.id,
                         operationTimes =
-                            listOf(
-                                TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
-                                TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
-                                TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
-                                TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
-                                TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
-                                TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
-                                TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
-                            ),
+                            listOf(fullDay, fullDay, fullDay, fullDay, fullDay, null, null),
+                        shiftCareOperationTimes =
+                            listOf(fullDay, fullDay, fullDay, fullDay, fullDay, fullDay, fullDay),
                         shiftCareOpenOnHolidays = true,
                     )
                 )
@@ -492,7 +489,9 @@ class HolidayPeriodControllerCitizenIntegrationTest :
                     endDate = placement.endDate,
                     optionId =
                         ServiceNeedOptionId(
-                            UUID.fromString("7406df92-e715-11ec-9ec2-9b7ff580dcb4") // full time daycare
+                            UUID.fromString(
+                                "7406df92-e715-11ec-9ec2-9b7ff580dcb4"
+                            ) // full time daycare
                         ),
                     shiftCare = ShiftCareType.FULL,
                     confirmedBy = authenticatedParent.evakaUserId,
