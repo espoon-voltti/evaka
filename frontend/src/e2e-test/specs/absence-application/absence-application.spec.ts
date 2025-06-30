@@ -13,7 +13,7 @@ import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
 import type { CitizenChildPage } from '../../pages/citizen/citizen-children'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import { UnitPage } from '../../pages/employee/units/unit'
-import { Page } from '../../utils/page'
+import { Checkbox, DatePicker, Page, TextInput } from '../../utils/page'
 import { employeeLogin, enduserLogin } from '../../utils/user'
 
 beforeEach(() => resetServiceState())
@@ -397,6 +397,73 @@ describe('Absence application', () => {
     const unitPage = new UnitPage(employeePage)
     const applicationProcessTab = await unitPage.openApplicationProcessTab()
     await applicationProcessTab.assertAbsenceApplications([])
+  })
+
+  test('Form is invalid if absence date range is not on placement date range', async () => {
+    const area = await Fixture.careArea().save()
+    const unit = await Fixture.daycare({ areaId: area.id }).save()
+    await Fixture.family({ guardian: adult, children: [child] }).save()
+    await Fixture.placement({
+      type: 'PRESCHOOL',
+      childId: child.id,
+      unitId: unit.id,
+      startDate: mockedTime.toLocalDate(),
+      endDate: mockedTime.toLocalDate()
+    }).save()
+
+    const page = await Page.open({
+      mockedTime,
+      citizenCustomizations: { featureFlags: { absenceApplications: true } }
+    })
+    await enduserLogin(page, adult)
+    await page.goto(
+      `http://localhost:9099/children/${child.id}/absence-application`
+    )
+    const startDate = new DatePicker(page.findByDataQa('start-date'))
+    const endDate = new DatePicker(page.findByDataQa('end-date'))
+    const description = new TextInput(page.findByDataQa('description'))
+    const confirmation = new Checkbox(page.findByDataQa('confirmation'))
+    await startDate.fill(mockedTime.toLocalDate().addDays(1))
+    await endDate.fill(mockedTime.toLocalDate().addDays(1))
+    await description.fill('test')
+    await confirmation.check()
+    await page
+      .find(
+        `span:has-text("Lapsella ei ole esiopetusta valitulla aikavälillä")`
+      )
+      .waitUntilVisible()
+    await page.findByDataQa('create-button').assertDisabled(true)
+  })
+
+  test('Form is valid if absence date range is partly within placement date range', async () => {
+    const area = await Fixture.careArea().save()
+    const unit = await Fixture.daycare({ areaId: area.id }).save()
+    await Fixture.family({ guardian: adult, children: [child] }).save()
+    await Fixture.placement({
+      type: 'PRESCHOOL',
+      childId: child.id,
+      unitId: unit.id,
+      startDate: mockedTime.toLocalDate(),
+      endDate: mockedTime.toLocalDate().addDays(5)
+    }).save()
+
+    const page = await Page.open({
+      mockedTime,
+      citizenCustomizations: { featureFlags: { absenceApplications: true } }
+    })
+    await enduserLogin(page, adult)
+    await page.goto(
+      `http://localhost:9099/children/${child.id}/absence-application`
+    )
+    const startDate = new DatePicker(page.findByDataQa('start-date'))
+    const endDate = new DatePicker(page.findByDataQa('end-date'))
+    const description = new TextInput(page.findByDataQa('description'))
+    const confirmation = new Checkbox(page.findByDataQa('confirmation'))
+    await startDate.fill(mockedTime.toLocalDate())
+    await endDate.fill(mockedTime.toLocalDate().addDays(8))
+    await description.fill('test')
+    await confirmation.check()
+    await page.findByDataQa('create-button').assertDisabled(false)
   })
 })
 
