@@ -76,6 +76,8 @@ SPDX-License-Identifier: LGPL-2.1-or-later
             <div><br /></div>
             <div th:text="#{header.decisionNumber}">Päätöksen numero</div>
             <div th:text="${decision.decisionNumber}"></div>
+            <div th:if="${decision.caseIdentifier}" th:text="#{header.caseIdentifier}"></div>
+            <div th:if="${decision.caseIdentifier}" th:text="${decision.caseIdentifier}"></div>
           </div>
         </div>
       </div>

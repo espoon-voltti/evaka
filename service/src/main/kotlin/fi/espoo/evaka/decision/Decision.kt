@@ -25,6 +25,7 @@ data class Decision(
     val childName: String,
     val documentKey: String?,
     val decisionNumber: Long,
+    val caseIdentifier: String?,
     val sentDate: LocalDate?,
     val status: DecisionStatus,
     val requestedStartDate: LocalDate?,

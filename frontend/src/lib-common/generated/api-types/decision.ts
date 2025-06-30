@@ -17,6 +17,7 @@ import type { ProviderType } from './daycare'
 */
 export interface Decision {
   applicationId: ApplicationId
+  caseIdentifier: string | null
   childId: PersonId
   childName: string
   createdBy: string

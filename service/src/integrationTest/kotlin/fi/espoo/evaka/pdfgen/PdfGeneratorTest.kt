@@ -499,6 +499,7 @@ fun createValidDecision(
         childId = childId,
         documentKey = documentKey,
         decisionNumber = decisionNumber,
+        caseIdentifier = "12/34.56/2019",
         sentDate = sentDate,
         status = status,
         childName = "Test Child",
