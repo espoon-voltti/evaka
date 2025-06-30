@@ -494,6 +494,7 @@ SELECT
     child.postal_code as child_postal_code,
     child.post_office as child_post_office,
     child.restricted_details_enabled as child_restricted_details_enabled,
+    case_process.case_identifier,
     daycare.name as placement_unit_name,
     daycare.language as placement_unit_language,
     care_area.id as placement_unit_area_id,
@@ -508,6 +509,7 @@ JOIN daycare ON decision.placement_unit_id = daycare.id
 JOIN care_area ON daycare.care_area_id = care_area.id
 LEFT JOIN employee as approved_by ON decision.approved_by = approved_by.id
 LEFT JOIN employee as finance_decision_handler ON finance_decision_handler.id = decision.decision_handler
+LEFT JOIN case_process ON case_process.id = decision.process_id
 WHERE decision.id = ${bind(id)}
 """
             )

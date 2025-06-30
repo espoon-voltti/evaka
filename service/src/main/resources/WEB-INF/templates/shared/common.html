@@ -111,6 +111,8 @@ SPDX-License-Identifier: LGPL-2.1-or-later
             <div><br /></div>
             <div th:text="#{decisionNumber}"></div>
             <div th:text="${decisionNumber}"></div>
+            <div th:if="${caseIdentifier}" th:text="#{caseIdentifier}"></div>
+            <div th:if="${caseIdentifier}" th:text="${caseIdentifier}"></div>
           </div>
         </div>
       </div>

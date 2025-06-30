@@ -201,6 +201,7 @@ export interface FeeDecisionChildDetailed {
 export interface FeeDecisionDetailed {
   approvedAt: HelsinkiDateTime | null
   approvedBy: EmployeeWithName | null
+  caseIdentifier: string | null
   children: FeeDecisionChildDetailed[]
   created: HelsinkiDateTime
   decisionNumber: number | null
@@ -1004,6 +1005,7 @@ export interface VoucherValueDecisionDetailed {
   assistanceNeedCoefficient: number
   baseCoPayment: number
   baseValue: number
+  caseIdentifier: string | null
   child: PersonDetailed
   childAge: number
   childIncome: DecisionIncome | null

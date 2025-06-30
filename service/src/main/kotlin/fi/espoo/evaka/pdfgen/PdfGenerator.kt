@@ -154,6 +154,7 @@ class PdfGenerator(
                 },
             "coPayment" to formatCents(decision.finalCoPayment),
             "decisionNumber" to decision.decisionNumber,
+            "caseIdentifier" to decision.caseIdentifier,
             "isReliefDecision" to isReliefDecision,
             "decisionType" to decision.decisionType.toString(),
             "headFullName" to with(decision.headOfFamily) { "$firstName $lastName" },
@@ -216,6 +217,7 @@ class PdfGenerator(
         return mapOf(
                 "approvedAt" to dateFmt(decision.approvedAt?.toLocalDate()),
                 "decisionNumber" to decision.decisionNumber,
+                "caseIdentifier" to decision.caseIdentifier,
                 "isReliefDecision" to isReliefDecision,
                 "decisionType" to decision.decisionType.toString(),
                 "hasPartner" to (decision.partner != null),

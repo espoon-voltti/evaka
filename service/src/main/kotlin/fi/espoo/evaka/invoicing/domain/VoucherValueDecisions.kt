@@ -226,6 +226,7 @@ data class VoucherValueDecisionDetailed(
     val assistanceNeedCoefficient: BigDecimal,
     val voucherValue: Int,
     val documentKey: String? = null,
+    val caseIdentifier: String?,
     @Nested("approved_by") val approvedBy: EmployeeWithName? = null,
     val approvedAt: HelsinkiDateTime? = null,
     val sentAt: HelsinkiDateTime? = null,

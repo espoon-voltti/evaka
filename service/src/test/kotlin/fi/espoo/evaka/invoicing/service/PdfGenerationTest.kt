@@ -49,6 +49,7 @@ class PdfGenerationTest {
             status = testDecision1.status,
             decisionNumber = testDecision1.decisionNumber,
             decisionType = FeeDecisionType.NORMAL,
+            caseIdentifier = "123/45.67/2019",
             validDuring = testDecision1.validDuring,
             headOfFamily =
                 PersonDetailed(
@@ -126,6 +127,7 @@ class PdfGenerationTest {
             approvedBy = EmployeeWithName(EmployeeId(UUID.randomUUID()), "Erkki", "Pelimerkki"),
             decisionNumber = testDecision1.decisionNumber,
             decisionType = VoucherValueDecisionType.NORMAL,
+            caseIdentifier = "123/45.67/2019",
             status = VoucherValueDecisionStatus.WAITING_FOR_SENDING,
             headOfFamily =
                 PersonDetailed(
@@ -228,6 +230,7 @@ class PdfGenerationTest {
                 "approvedAt" to "15.04.2019",
                 "decisionNumber" to 1010101010L,
                 "decisionType" to "NORMAL",
+                "caseIdentifier" to "123/45.67/2019",
                 "isReliefDecision" to false,
                 "hasPartner" to true,
                 "headFullName" to "John Doe",
@@ -285,6 +288,7 @@ class PdfGenerationTest {
                 "approvedAt" to "15.04.2019",
                 "decisionNumber" to 1010101010L,
                 "decisionType" to "RELIEF_ACCEPTED",
+                "caseIdentifier" to "123/45.67/2019",
                 "isReliefDecision" to true,
                 "hasPartner" to true,
                 "headFullName" to "John Doe",

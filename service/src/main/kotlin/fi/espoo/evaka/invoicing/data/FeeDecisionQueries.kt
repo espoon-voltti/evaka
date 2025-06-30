@@ -138,6 +138,7 @@ SELECT
     approved_by.last_name as approved_by_last_name,
     coalesce(finance_decision_handler.preferred_first_name, finance_decision_handler.first_name) AS finance_decision_handler_first_name,
     finance_decision_handler.last_name AS finance_decision_handler_last_name,
+    case_process.case_identifier,
     COALESCE((
         SELECT jsonb_agg(jsonb_build_object(
             'child', jsonb_build_object(
@@ -182,6 +183,7 @@ LEFT JOIN person as head ON decision.head_of_family_id = head.id
 LEFT JOIN person as partner ON decision.partner_id = partner.id
 LEFT JOIN employee as approved_by ON decision.approved_by_id = approved_by.id
 LEFT JOIN employee as finance_decision_handler ON finance_decision_handler.id = decision.decision_handler_id
+LEFT JOIN case_process ON case_process.id = decision.process_id
 WHERE ${predicate(predicate.forTable("decision"))}
 """
     )
