@@ -12,6 +12,7 @@ import fi.espoo.evaka.absence.application.AbsenceApplicationCreateRequest
 import fi.espoo.evaka.absence.application.AbsenceApplicationRejectRequest
 import fi.espoo.evaka.absence.application.AbsenceApplicationStatus
 import fi.espoo.evaka.absence.application.AbsenceApplicationSummary
+import fi.espoo.evaka.absence.application.getAbsenceApplicationDateRanges
 import fi.espoo.evaka.absence.application.selectAbsenceApplication
 import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.pis.PersonNameDetails
@@ -525,6 +526,112 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
                     id,
                 )
             }
+        }
+
+        @Test
+        fun `Ongoing or future placement date ranges are returned`() {
+            db.transaction { tx ->
+                tx.insert(
+                    DevPlacement(
+                        type = PlacementType.PRESCHOOL,
+                        childId = child.id,
+                        unitId = unit.id,
+                        startDate = LocalDate.of(2022, 1, 1),
+                        endDate = LocalDate.of(2022, 12, 31),
+                    )
+                )
+
+                tx.insert(
+                    DevPlacement(
+                        type = PlacementType.PRESCHOOL,
+                        childId = child.id,
+                        unitId = unit.id,
+                        startDate = LocalDate.of(2023, 2, 1),
+                        endDate = LocalDate.of(2023, 2, 28),
+                    )
+                )
+            }
+
+            assertEquals(
+                DateSet.of(
+                    FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31)),
+                    FiniteDateRange(LocalDate.of(2023, 2, 1), LocalDate.of(2023, 2, 28)),
+                ),
+                db.transaction { tx -> tx.getAbsenceApplicationDateRanges(child.id, clock.today()) },
+            )
+        }
+
+        @Test
+        fun `Ended placement date ranges are not returned`() {
+            db.transaction { tx ->
+                tx.insert(
+                    DevPlacement(
+                        type = PlacementType.PRESCHOOL,
+                        childId = child.id,
+                        unitId = unit.id,
+                        startDate = LocalDate.of(2021, 1, 1),
+                        endDate = LocalDate.of(2021, 12, 31),
+                    )
+                )
+
+                tx.insert(
+                    DevPlacement(
+                        type = PlacementType.PRESCHOOL,
+                        childId = child.id,
+                        unitId = unit.id,
+                        startDate = LocalDate.of(2022, 8, 1),
+                        endDate = LocalDate.of(2022, 8, 9),
+                    )
+                )
+            }
+
+            assertEquals(
+                DateSet.empty(),
+                db.transaction { tx -> tx.getAbsenceApplicationDateRanges(child.id, clock.today()) },
+            )
+        }
+
+        @Test
+        fun `Only preschool type placement date ranges are returned`() {
+            db.transaction { tx ->
+                tx.insert(
+                    DevPlacement(
+                        type = PlacementType.PRESCHOOL,
+                        childId = child.id,
+                        unitId = unit.id,
+                        startDate = LocalDate.of(2022, 8, 1),
+                        endDate = LocalDate.of(2022, 8, 31),
+                    )
+                )
+
+                tx.insert(
+                    DevPlacement(
+                        type = PlacementType.PRESCHOOL_DAYCARE,
+                        childId = child.id,
+                        unitId = unit.id,
+                        startDate = LocalDate.of(2022, 9, 1),
+                        endDate = LocalDate.of(2022, 9, 30),
+                    )
+                )
+
+                tx.insert(
+                    DevPlacement(
+                        type = PlacementType.DAYCARE,
+                        childId = child.id,
+                        unitId = unit.id,
+                        startDate = LocalDate.of(2022, 10, 1),
+                        endDate = LocalDate.of(2022, 10, 31),
+                    )
+                )
+            }
+
+            assertEquals(
+                DateSet.of(
+                    FiniteDateRange(LocalDate.of(2022, 8, 1), LocalDate.of(2022, 8, 31)),
+                    FiniteDateRange(LocalDate.of(2022, 9, 1), LocalDate.of(2022, 9, 30)),
+                ),
+                db.transaction { tx -> tx.getAbsenceApplicationDateRanges(child.id, clock.today()) },
+            )
         }
     }
 

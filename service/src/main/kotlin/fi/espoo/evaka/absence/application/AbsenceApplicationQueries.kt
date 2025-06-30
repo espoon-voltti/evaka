@@ -9,6 +9,7 @@ import fi.espoo.evaka.shared.AbsenceApplicationId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EvakaUserId
+import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.Predicate
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -145,6 +146,22 @@ WHERE type = ANY (${bind(PlacementType.preschool)})
             )
         }
         .toSet()
+
+fun Database.Read.getAbsenceApplicationDateRanges(childId: ChildId, today: LocalDate): DateSet =
+    DateSet.of(
+        createQuery {
+                sql(
+                    """
+SELECT daterange(start_date, end_date, '[]') AS range
+FROM placement
+WHERE type = ANY (${bind(PlacementType.preschool)})
+    AND child_id = ${bind(childId)}
+    AND daterange(start_date, end_date, '[]') && daterange(${bind(today)}, null, '[]')
+          """
+                )
+            }
+            .toSet()
+    )
 
 private fun Database.Read.absenceApplicationSummaryQuery(predicate: Predicate) = createQuery {
     sql(

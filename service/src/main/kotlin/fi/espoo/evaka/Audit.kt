@@ -51,6 +51,7 @@ enum class Audit(
     AbsenceApplicationAccept,
     AbsenceApplicationCreate,
     AbsenceApplicationDelete,
+    AbsenceApplicationPossibleRead,
     AbsenceApplicationRead,
     AbsenceApplicationReject,
     AbsenceCitizenCreate,
