@@ -23,11 +23,6 @@ export default [
     files: ['**/*.js'],
     ...typescriptEslint.configs.disableTypeChecked
   },
-  {
-    plugins: {
-      import: importPlugin
-    }
-  },
   importPlugin.flatConfigs.typescript,
   {
     rules: {
