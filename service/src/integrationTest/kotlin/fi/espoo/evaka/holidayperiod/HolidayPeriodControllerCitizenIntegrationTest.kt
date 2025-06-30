@@ -9,8 +9,10 @@ import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.insertPlacement
+import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.HolidayQuestionnaireId
+import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.db.Database
@@ -18,12 +20,17 @@ import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
+import fi.espoo.evaka.shared.dev.DevServiceNeed
 import fi.espoo.evaka.shared.dev.insert
+import fi.espoo.evaka.shared.dev.insertServiceNeedOptions
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
+import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.domain.Translatable
+import fi.espoo.evaka.shared.domain.isHoliday
+import fi.espoo.evaka.shared.domain.isWeekend
 import fi.espoo.evaka.shared.noopTracer
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.AccessControlTest.TestActionRuleMapping
@@ -93,7 +100,7 @@ class HolidayPeriodControllerCitizenIntegrationTest :
 
             tx.insertGuardian(parent.id, child1.id)
 
-            tx.insertPlacement(
+            val placement =  tx.insertPlacement(
                 PlacementType.DAYCARE,
                 child1.id,
                 daycare.id,
@@ -101,6 +108,14 @@ class HolidayPeriodControllerCitizenIntegrationTest :
                 mockToday.plusYears(1),
                 false,
             )
+            tx.insertServiceNeedOptions()
+            tx.insert(DevServiceNeed(
+                placementId = placement.id,
+                startDate = placement.startDate,
+                endDate = placement.endDate,
+                optionId = ServiceNeedOptionId(UUID.fromString("7406df92-e715-11ec-9ec2-9b7ff580dcb4")), // full time daycare
+                confirmedBy = authenticatedParent.evakaUserId
+            ))
         }
     }
 
@@ -229,15 +244,31 @@ class HolidayPeriodControllerCitizenIntegrationTest :
         reportFreePeriods(id, freeAbsence(firstOption.start, firstOption.end))
 
         assertEquals(
-            firstOption.dates().map { Absence(child1.id, it, AbsenceType.FREE_ABSENCE) }.toList(),
+            firstOption.dates().filter { !it.isWeekend() && !it.isHoliday() }.map { Absence(child1.id, it, AbsenceType.FREE_ABSENCE) }.toList(),
             db.read { it.getAllAbsences() },
         )
 
         val secondOption = freePeriodQuestionnaire.periodOptions[1]
         reportFreePeriods(id, freeAbsence(secondOption.start, secondOption.end))
         assertEquals(
-            secondOption.dates().map { Absence(child1.id, it, AbsenceType.FREE_ABSENCE) }.toList(),
+            secondOption.dates().filter { !it.isWeekend() && !it.isHoliday() }.map { Absence(child1.id, it, AbsenceType.FREE_ABSENCE) }.toList(),
             db.read { it.getAllAbsences() },
+        )
+    }
+
+    @Test
+    fun `free absences are saved only on operation days`() {
+        val id = createFixedPeriodQuestionnaire(freePeriodQuestionnaire)
+        val firstOption = freePeriodQuestionnaire.periodOptions[0]
+        reportFreePeriods(id, freeAbsence(firstOption.start, firstOption.end))
+        reportFreePeriods(id, freeAbsenceShiftCare(firstOption.start, firstOption.end))
+        assertEquals(
+            firstOption.dates().filter { !it.isWeekend() && !it.isHoliday() }.map { Absence(child1.id, it, AbsenceType.FREE_ABSENCE) }.toList(),
+            db.read { it.getAllAbsences().filter { absence -> absence.childId == child1.id } },
+        )
+        assertEquals(
+            firstOption.dates().map { Absence(child2.id, it, AbsenceType.FREE_ABSENCE) }.toList(),
+            db.read { it.getAllAbsences().filter { absence -> absence.childId == child2.id } },
         )
     }
 
@@ -370,11 +401,11 @@ class HolidayPeriodControllerCitizenIntegrationTest :
                 freeRangesQuestionnaire.period.start,
                 freeRangesQuestionnaire.absenceType,
             ),
-            absences.first(),
+            absences.first { !it.date.isWeekend() },
         )
         assertEquals(
             Absence(child1.id, freeRangesQuestionnaire.period.end, AbsenceType.OTHER_ABSENCE),
-            absences.last(),
+            absences.last { !it.date.isWeekend() },
         )
     }
 
@@ -405,6 +436,46 @@ class HolidayPeriodControllerCitizenIntegrationTest :
 
     private fun freeAbsence(start: LocalDate, end: LocalDate) =
         FixedPeriodsBody(mapOf(child1.id to FiniteDateRange(start, end)))
+
+    private fun freeAbsenceShiftCare(start: LocalDate, end: LocalDate): FixedPeriodsBody {
+        db.transaction { tx ->
+            val daycareId = tx.insert(DevDaycare(
+                areaId = area.id,
+                operationTimes = listOf(
+                    TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+                    TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+                    TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+                    TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+                    TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+                    TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+                    TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+                ),
+                shiftCareOpenOnHolidays = true,
+            ))
+            tx.insertGuardian(parent.id, child2.id)
+
+            val placement = tx.insertPlacement(
+                PlacementType.DAYCARE,
+                child2.id,
+                daycareId,
+                mockToday.minusYears(2),
+                mockToday.plusYears(1),
+                false,
+            )
+            tx.insert(
+                DevServiceNeed(
+                    placementId = placement.id,
+                    startDate = placement.startDate,
+                    endDate = placement.endDate,
+                    optionId = ServiceNeedOptionId(UUID.fromString("7406df92-e715-11ec-9ec2-9b7ff580dcb4")), // full time daycare
+                    shiftCare = ShiftCareType.FULL,
+                    confirmedBy = authenticatedParent.evakaUserId
+                )
+            )
+        }
+
+        return FixedPeriodsBody(mapOf(child2.id to FiniteDateRange(start, end)))
+    }
 
     private fun createFixedPeriodQuestionnaire(
         body: QuestionnaireBody.FixedPeriodQuestionnaireBody
