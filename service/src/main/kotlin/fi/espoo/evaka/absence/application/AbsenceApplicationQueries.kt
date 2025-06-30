@@ -12,6 +12,7 @@ import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.Predicate
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import java.time.LocalDate
 
 fun Database.Transaction.insertAbsenceApplication(
     application: AbsenceApplicationCreateRequest,
@@ -129,7 +130,8 @@ RETURNING id,
         .exactlyOne<AbsenceApplication>()
 
 fun Database.Read.getChildrenWithAbsenceApplicationPossibleOnSomeDate(
-    childIds: Set<ChildId>
+    childIds: Set<ChildId>,
+    today: LocalDate,
 ): Set<ChildId> =
     createQuery {
             sql(
@@ -138,6 +140,7 @@ SELECT DISTINCT child_id
 FROM placement
 WHERE type = ANY (${bind(PlacementType.preschool)})
   AND child_id = ANY (${bind(childIds)})
+  AND daterange(start_date, end_date, '[]') && daterange(${bind(today)}, null, '[]')
         """
             )
         }
