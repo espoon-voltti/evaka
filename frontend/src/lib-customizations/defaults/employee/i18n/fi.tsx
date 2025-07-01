@@ -5282,7 +5282,7 @@ export const fi = {
       name: 'Nimi',
       type: 'Asiakirjan tyyppi',
       placementTypes: 'Käytössä sijoituksilla',
-      language: 'Asiakirja kieli',
+      language: 'Asiakirjan kieli',
       confidential: 'Asiakirja on salassapidettävä',
       confidentialityDuration: 'Salassapitoaika (vuotta)',
       confidentialityBasis: 'Salassapitoperuste (lakiviittaus)',
