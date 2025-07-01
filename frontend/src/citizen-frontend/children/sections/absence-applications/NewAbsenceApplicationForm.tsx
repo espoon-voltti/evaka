@@ -41,7 +41,7 @@ import { useLang, useTranslation } from '../../../localization'
 
 import { postAbsenceApplicationMutation } from './queries'
 
-const dateRangeFunction = () =>
+const validatedAbsenceDateRange = () =>
   transformed(
     object({
       range: localDateRange(),
@@ -64,7 +64,7 @@ const dateRangeFunction = () =>
 const formModel = mapped(
   object({
     childId: required(value<ChildId>()),
-    range: required(dateRangeFunction()),
+    range: required(validatedAbsenceDateRange()),
     description: validated(string(), nonBlank),
     confirmation: validated(boolean(), (value) =>
       !value ? 'required' : undefined
