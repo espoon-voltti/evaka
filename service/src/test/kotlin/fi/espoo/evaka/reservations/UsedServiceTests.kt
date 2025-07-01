@@ -404,4 +404,84 @@ class UsedServiceTests {
                     }
             }
     }
+
+    @Test
+    fun `free absence in the future results in averaged reservation minutes`() {
+        val date = today.plusDays(1)
+
+        val operationDatesWithCount = { n: Int ->
+            (FiniteDateRange.ofMonth(date).dates().take(n)).toSet()
+        }
+
+        compute(
+                date = date,
+                placementType = PlacementType.DAYCARE,
+                serviceNeedHours = 120,
+                absences = listOf(AbsenceType.FREE_ABSENCE to AbsenceCategory.BILLABLE),
+                operationDates = operationDatesWithCount(23),
+            )
+            .also {
+                assertEquals((120.0 * 60 / 23).roundToLong(), it.reservedMinutes)
+                assertEquals(0, it.usedServiceMinutes)
+                assertEquals(emptyList(), it.usedServiceRanges)
+            }
+
+        compute(
+                date = date,
+                placementType = PlacementType.PRESCHOOL_DAYCARE,
+                shiftCareType = ShiftCareType.FULL,
+                serviceNeedHours = 120,
+                absences =
+                    listOf(
+                        AbsenceType.FREE_ABSENCE to AbsenceCategory.BILLABLE,
+                        AbsenceType.FREE_ABSENCE to AbsenceCategory.NONBILLABLE,
+                    ),
+                operationDates = operationDatesWithCount(31),
+            )
+            .also {
+                assertEquals((120.0 * 60 / 31).roundToLong(), it.reservedMinutes)
+                assertEquals(0, it.usedServiceMinutes)
+                assertEquals(emptyList(), it.usedServiceRanges)
+            }
+    }
+
+    @Test
+    fun `free absence in the past results in averaged used minutes`() {
+        val date = today.minusDays(1)
+
+        val operationDatesWithCount = { n: Int ->
+            (FiniteDateRange.ofMonth(date).dates().take(n - 1) + date).toSet()
+        }
+
+        compute(
+                date = date,
+                placementType = PlacementType.DAYCARE,
+                serviceNeedHours = 120,
+                absences = listOf(AbsenceType.FREE_ABSENCE to AbsenceCategory.BILLABLE),
+                operationDates = operationDatesWithCount(23),
+            )
+            .also {
+                assertEquals(0, it.reservedMinutes)
+                assertEquals((120.0 * 60 / 23).roundToLong(), it.usedServiceMinutes)
+                assertEquals(emptyList(), it.usedServiceRanges)
+            }
+
+        compute(
+                date = date,
+                placementType = PlacementType.PRESCHOOL_DAYCARE,
+                shiftCareType = ShiftCareType.FULL,
+                serviceNeedHours = 120,
+                absences =
+                    listOf(
+                        AbsenceType.FREE_ABSENCE to AbsenceCategory.BILLABLE,
+                        AbsenceType.FREE_ABSENCE to AbsenceCategory.NONBILLABLE,
+                    ),
+                operationDates = operationDatesWithCount(31),
+            )
+            .also {
+                assertEquals(0, it.reservedMinutes)
+                assertEquals((120.0 * 60 / 31).roundToLong(), it.usedServiceMinutes)
+                assertEquals(emptyList(), it.usedServiceRanges)
+            }
+    }
 }
