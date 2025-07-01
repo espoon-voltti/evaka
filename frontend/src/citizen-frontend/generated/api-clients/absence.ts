@@ -7,6 +7,7 @@
 import type { AbsenceApplicationCreateRequest } from 'lib-common/generated/api-types/absence'
 import type { AbsenceApplicationId } from 'lib-common/generated/api-types/shared'
 import type { AbsenceApplicationSummaryCitizen } from 'lib-common/generated/api-types/absence'
+import FiniteDateRange from 'lib-common/finite-date-range'
 import type { JsonCompatible } from 'lib-common/json'
 import type { JsonOf } from 'lib-common/json'
 import type { PersonId } from 'lib-common/generated/api-types/shared'
@@ -29,6 +30,26 @@ export async function deleteAbsenceApplication(
     method: 'DELETE'
   })
   return json
+}
+
+
+/**
+* Generated from fi.espoo.evaka.absence.application.AbsenceApplicationControllerCitizen.getAbsenceApplicationPossibleDateRanges
+*/
+export async function getAbsenceApplicationPossibleDateRanges(
+  request: {
+    childId: PersonId
+  }
+): Promise<FiniteDateRange[]> {
+  const params = createUrlSearchParams(
+    ['childId', request.childId]
+  )
+  const { data: json } = await client.request<JsonOf<FiniteDateRange[]>>({
+    url: uri`/citizen/absence-application/application-possible`.toString(),
+    method: 'GET',
+    params
+  })
+  return json.map((x) => FiniteDateRange.parseJson(x))
 }
 
 

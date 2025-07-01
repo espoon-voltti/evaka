@@ -2825,7 +2825,10 @@ export default {
         range: 'Aika, jonka lapsi on poissa esiopetuksesta',
         info: 'Hakemuksesi lähtee esiopetuksesta vastaavalle henkilökunnalle hyväksyttäväksi.',
         confirmation:
-          'Ymmärrän, että henkilökunta merkitsee lapselleni poissaolon vasta, kun hakemus on hyväksytty.'
+          'Ymmärrän, että henkilökunta merkitsee lapselleni poissaolon vasta, kun hakemus on hyväksytty.',
+        validationErrors: {
+          invalidDateRange: 'Lapsella ei ole esiopetusta valitulla aikavälillä.'
+        }
       }
     },
     serviceApplication: {

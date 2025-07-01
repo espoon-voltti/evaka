@@ -6,6 +6,7 @@ import { Queries } from 'lib-common/query'
 
 import {
   deleteAbsenceApplication,
+  getAbsenceApplicationPossibleDateRanges,
   getAbsenceApplications,
   postAbsenceApplication
 } from '../../../generated/api-clients/absence'
@@ -20,4 +21,8 @@ export const postAbsenceApplicationMutation = q.mutation(
 export const deleteAbsenceApplicationMutation = q.mutation(
   deleteAbsenceApplication,
   [getAbsenceApplicationsQuery.prefix]
+)
+
+export const getAbsenceApplicationPossibleDateRangesQuery = q.query(
+  getAbsenceApplicationPossibleDateRanges
 )

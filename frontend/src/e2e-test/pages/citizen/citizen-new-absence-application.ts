@@ -10,6 +10,7 @@ export class CitizenNewAbsenceApplicationPage {
   endDate: DatePicker
   description: TextInput
   confirmation: Checkbox
+  dateRangeWarning: Element
   createButton: Element
 
   constructor(page: Page) {
@@ -17,6 +18,9 @@ export class CitizenNewAbsenceApplicationPage {
     this.endDate = new DatePicker(page.findByDataQa('end-date'))
     this.description = new TextInput(page.findByDataQa('description'))
     this.confirmation = new Checkbox(page.findByDataQa('confirmation'))
+    this.dateRangeWarning = page.find(
+      `span:has-text("Lapsella ei ole esiopetusta valitulla aikavälillä")`
+    )
     this.createButton = page.findByDataQa('create-button')
   }
 }

@@ -398,6 +398,81 @@ describe('Absence application', () => {
     const applicationProcessTab = await unitPage.openApplicationProcessTab()
     await applicationProcessTab.assertAbsenceApplications([])
   })
+
+  test('Form is invalid if absence date range is not on placement date range', async () => {
+    const area = await Fixture.careArea().save()
+    const unit = await Fixture.daycare({ areaId: area.id }).save()
+    await Fixture.family({ guardian: adult, children: [child] }).save()
+    await Fixture.placement({
+      type: 'PRESCHOOL',
+      childId: child.id,
+      unitId: unit.id,
+      startDate: mockedTime.toLocalDate(),
+      endDate: mockedTime.toLocalDate()
+    }).save()
+
+    const page = await Page.open({
+      mockedTime,
+      citizenCustomizations: { featureFlags: { absenceApplications: true } }
+    })
+    await enduserLogin(page, adult)
+    const citizenHeader = new CitizenHeader(page)
+    const citizenChildPage = await citizenHeader.openChildPage(child.id)
+    await citizenChildPage.openCollapsible('absence-applications')
+    const newAbsenceApplicationPage =
+      await citizenChildPage.newAbsenceApplicationPage()
+    await newAbsenceApplicationPage.startDate.fill(
+      mockedTime.toLocalDate().addDays(1)
+    )
+    await newAbsenceApplicationPage.endDate.fill(
+      mockedTime.toLocalDate().addDays(1)
+    )
+    await newAbsenceApplicationPage.description.fill('test')
+    await newAbsenceApplicationPage.confirmation.check()
+    await newAbsenceApplicationPage.dateRangeWarning.waitUntilVisible()
+    await newAbsenceApplicationPage.createButton.assertDisabled(true)
+  })
+
+  test('Form is valid if absence date range is partly within placement date range', async () => {
+    const area = await Fixture.careArea().save()
+    const unit = await Fixture.daycare({ areaId: area.id }).save()
+    await Fixture.family({ guardian: adult, children: [child] }).save()
+    await Fixture.placement({
+      type: 'PRESCHOOL',
+      childId: child.id,
+      unitId: unit.id,
+      startDate: mockedTime.toLocalDate(),
+      endDate: mockedTime.toLocalDate().addDays(5)
+    }).save()
+
+    const page = await Page.open({
+      mockedTime,
+      citizenCustomizations: { featureFlags: { absenceApplications: true } }
+    })
+    await enduserLogin(page, adult)
+    const citizenHeader = new CitizenHeader(page)
+    const citizenChildPage = await citizenHeader.openChildPage(child.id)
+    await citizenChildPage.openCollapsible('absence-applications')
+    const newAbsenceApplicationPage =
+      await citizenChildPage.newAbsenceApplicationPage()
+    await newAbsenceApplicationPage.startDate.fill(mockedTime.toLocalDate())
+    await newAbsenceApplicationPage.endDate.fill(
+      mockedTime.toLocalDate().addDays(8)
+    )
+    await newAbsenceApplicationPage.description.fill('test')
+    await newAbsenceApplicationPage.confirmation.check()
+    await newAbsenceApplicationPage.createButton.assertDisabled(false)
+    await newAbsenceApplicationPage.createButton.click()
+
+    await citizenChildPage.openCollapsible('absence-applications')
+    await citizenChildPage.assertAbsenceApplications([
+      {
+        range: '05.05.2025 - 13.05.2025',
+        status: 'Odottaa päätöstä',
+        description: 'test'
+      }
+    ])
+  })
 })
 
 const createAbsenceApplication = async (

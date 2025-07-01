@@ -2636,7 +2636,11 @@ const en: Translations = {
         range: 'Aika, jonka lapsi on poissa esiopetuksesta (en)',
         info: 'Hakemuksesi lähtee esiopetuksesta vastaavalle henkilökunnalle hyväksyttäväksi. (en)',
         confirmation:
-          'Ymmärrän, että henkilökunta merkitsee lapselleni poissaolon vasta, kun hakemus on hyväksytty. (en)'
+          'Ymmärrän, että henkilökunta merkitsee lapselleni poissaolon vasta, kun hakemus on hyväksytty. (en)',
+        validationErrors: {
+          invalidDateRange:
+            'Lapsella ei ole esiopetusta valitulla aikavälillä. (en)'
+        }
       }
     },
     serviceApplication: {

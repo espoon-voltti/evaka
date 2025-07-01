@@ -17,6 +17,7 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
@@ -241,7 +242,10 @@ class AbsenceApplicationControllerCitizen(private val accessControl: AccessContr
                     if (body.startDate.isBefore(clock.today()))
                         throw BadRequest("Start date cannot be before today")
                     if (
-                        !tx.getChildrenWithAbsenceApplicationPossibleOnSomeDate(setOf(body.childId))
+                        !tx.getChildrenWithAbsenceApplicationPossibleOnSomeDate(
+                                setOf(body.childId),
+                                clock.today(),
+                            )
                             .contains(body.childId)
                     )
                         throw BadRequest("Child does not have preschool placement")
@@ -322,6 +326,32 @@ class AbsenceApplicationControllerCitizen(private val accessControl: AccessContr
                 Audit.AbsenceApplicationDelete.log(
                     targetId = AuditId(it.id),
                     objectId = AuditId(it.childId),
+                )
+            }
+    }
+
+    @GetMapping("/application-possible")
+    fun getAbsenceApplicationPossibleDateRanges(
+        db: Database,
+        user: AuthenticatedUser.Citizen,
+        clock: EvakaClock,
+        @RequestParam childId: ChildId,
+    ): DateSet {
+        return db.connect { dbc ->
+                dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Citizen.Child.READ_PLACEMENT,
+                        childId,
+                    )
+                    tx.getAbsenceApplicationDateRanges(childId, clock.today())
+                }
+            }
+            .also {
+                Audit.AbsenceApplicationPossibleRead.log(
+                    meta = mapOf("childId" to AuditId(childId))
                 )
             }
     }

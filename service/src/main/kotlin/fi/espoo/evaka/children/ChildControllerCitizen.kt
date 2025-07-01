@@ -58,7 +58,10 @@ class ChildControllerCitizen(private val accessControl: AccessControl) {
                             clock.today(),
                         )
                     val absenceApplicationPossible =
-                        tx.getChildrenWithAbsenceApplicationPossibleOnSomeDate(childIds.toSet())
+                        tx.getChildrenWithAbsenceApplicationPossibleOnSomeDate(
+                            childIds.toSet(),
+                            clock.today(),
+                        )
                     val permittedActions =
                         accessControl.getPermittedActions<ChildId, Action.Citizen.Child>(
                             tx,

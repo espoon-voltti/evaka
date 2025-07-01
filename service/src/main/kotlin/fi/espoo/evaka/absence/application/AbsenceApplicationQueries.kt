@@ -9,9 +9,11 @@ import fi.espoo.evaka.shared.AbsenceApplicationId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EvakaUserId
+import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.Predicate
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import java.time.LocalDate
 
 fun Database.Transaction.insertAbsenceApplication(
     application: AbsenceApplicationCreateRequest,
@@ -129,7 +131,8 @@ RETURNING id,
         .exactlyOne<AbsenceApplication>()
 
 fun Database.Read.getChildrenWithAbsenceApplicationPossibleOnSomeDate(
-    childIds: Set<ChildId>
+    childIds: Set<ChildId>,
+    today: LocalDate,
 ): Set<ChildId> =
     createQuery {
             sql(
@@ -138,10 +141,27 @@ SELECT DISTINCT child_id
 FROM placement
 WHERE type = ANY (${bind(PlacementType.preschool)})
   AND child_id = ANY (${bind(childIds)})
+  AND daterange(start_date, end_date, '[]') && daterange(${bind(today)}, null, '[]')
         """
             )
         }
         .toSet()
+
+fun Database.Read.getAbsenceApplicationDateRanges(childId: ChildId, today: LocalDate): DateSet =
+    DateSet.of(
+        createQuery {
+                sql(
+                    """
+SELECT daterange(start_date, end_date, '[]') AS range
+FROM placement
+WHERE type = ANY (${bind(PlacementType.preschool)})
+    AND child_id = ${bind(childId)}
+    AND daterange(start_date, end_date, '[]') && daterange(${bind(today)}, null, '[]')
+          """
+                )
+            }
+            .toSet()
+    )
 
 private fun Database.Read.absenceApplicationSummaryQuery(predicate: Predicate) = createQuery {
     sql(
