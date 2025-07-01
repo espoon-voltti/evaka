@@ -12,7 +12,10 @@ import {
   getLiableCitizenFinanceDecisions,
   rejectDecision
 } from '../generated/api-clients/application'
-import { getFeeDecisionMetadata } from '../generated/api-clients/caseprocess'
+import {
+  getFeeDecisionMetadata,
+  getVoucherValueDecisionMetadata
+} from '../generated/api-clients/caseprocess'
 import { receivedMessagesQuery } from '../messages/queries'
 
 const q = new Queries()
@@ -40,3 +43,7 @@ export const rejectDecisionMutation = q.mutation(rejectDecision, [
 ])
 
 export const feeDecisionMetadataQuery = q.query(getFeeDecisionMetadata)
+
+export const voucherValueDecisionMetadataQuery = q.query(
+  getVoucherValueDecisionMetadata
+)

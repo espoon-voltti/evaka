@@ -359,7 +359,10 @@ class ProcessMetadataController(
                         tx.getCaseProcessByVoucherValueDecisionId(voucherValueDecisionId)
                             ?: return@read ProcessMetadataResponse(null)
                     val decisionDocument =
-                        tx.getVoucherValueDecisionDocumentMetadata(voucherValueDecisionId)
+                        tx.getVoucherValueDecisionDocumentMetadata(
+                            voucherValueDecisionId,
+                            isCitizen = false,
+                        )
 
                     ProcessMetadataResponse(
                         ProcessMetadata(
@@ -469,55 +472,6 @@ class ProcessMetadataController(
                         },
                     receivedBy = null,
                     sfiDeliveries = emptyList(),
-                )
-            }
-            .exactlyOne()
-
-    private fun Database.Read.getVoucherValueDecisionDocumentMetadata(
-        voucherValueDecisionId: VoucherValueDecisionId
-    ): DocumentMetadata =
-        createQuery {
-                sql(
-                    """
-        SELECT
-            d.id,
-            d.created,
-            e.id AS created_by_id,
-            e.name AS created_by_name,
-            e.type AS created_by_type,
-            d.document_key,
-            (
-                $sfiDeliverySelect
-                WHERE sm.voucher_value_decision_id = d.id
-            ) AS sfi_deliveries
-        FROM voucher_value_decision d
-        LEFT JOIN evaka_user e ON e.employee_id = d.approved_by
-        WHERE d.id = ${bind(voucherValueDecisionId)}
-    """
-                )
-            }
-            .map {
-                DocumentMetadata(
-                    documentId = column("id"),
-                    name = "Arvopäätös",
-                    createdAt = column("created"),
-                    createdBy =
-                        column<EvakaUserId?>("created_by_id")?.let {
-                            EvakaUser(
-                                id = it,
-                                name = column("created_by_name"),
-                                type = column("created_by_type"),
-                            )
-                        },
-                    confidential = true,
-                    confidentiality =
-                        DocumentConfidentiality(durationYears = 25, basis = "JulkL 24.1 §"),
-                    downloadPath =
-                        column<String?>("document_key")?.let {
-                            "/employee/value-decisions/pdf/$it"
-                        },
-                    receivedBy = null,
-                    sfiDeliveries = jsonColumn("sfi_deliveries"),
                 )
             }
             .exactlyOne()

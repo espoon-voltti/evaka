@@ -22,7 +22,10 @@ import {
 } from '../../generated/api-clients/application'
 import { useTranslation } from '../../localization'
 import { MetadataSection } from '../../metadata/MetadataSection'
-import { feeDecisionMetadataQuery } from '../queries'
+import {
+  feeDecisionMetadataQuery,
+  voucherValueDecisionMetadataQuery
+} from '../queries'
 
 interface Props {
   decisionData: FinanceDecisionCitizenInfo
@@ -35,6 +38,15 @@ const getDecisionUrl = (decisionId: string, type: FinanceDecisionType) =>
     : downloadVoucherValueDecisionPdf({
         id: fromUuid(decisionId)
       }).url.toString()
+
+const getMetadataQuery = (decisionId: string, type: FinanceDecisionType) =>
+  type === 'FEE_DECISION'
+    ? feeDecisionMetadataQuery({
+        feeDecisionId: fromUuid(decisionId)
+      })
+    : voucherValueDecisionMetadataQuery({
+        voucherValueDecisionId: fromUuid(decisionId)
+      })
 
 export default React.memo(function FinanceDecision({
   decisionData,
@@ -124,9 +136,7 @@ export default React.memo(function FinanceDecision({
           <Gap size="s" />
           <MetadataSection
             data-qa={decisionData.id}
-            query={feeDecisionMetadataQuery({
-              feeDecisionId: fromUuid(decisionData.id)
-            })}
+            query={getMetadataQuery(decisionData.id, decisionData.type)}
           />
         </>
       )}
