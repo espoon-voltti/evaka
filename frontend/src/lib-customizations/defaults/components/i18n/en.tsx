@@ -186,51 +186,50 @@ const components: Translations = {
     generic: 'Check'
   },
   metadata: {
-    // TODO
-    title: 'Arkistoitava metadata',
-    notFound: 'Asiakirjalle ei ole arkistoitavaa metadataa',
-    caseIdentifier: 'Asianumero',
-    processName: 'Asiaprosessi',
-    organization: 'Organisaatio',
-    archiveDurationMonths: 'Arkistointiaika',
-    primaryDocument: 'Ensisijainen asiakirja',
-    secondaryDocuments: 'Muut asiakirjat',
-    documentId: 'Asiakirjan tunniste',
-    name: 'Asiakirjan nimi',
-    createdAt: 'Laatimisajankohta',
-    createdBy: 'Laatija',
-    monthsUnit: 'kuukautta',
-    confidentiality: 'Julkisuus',
-    confidential: 'Salassapidettävä',
-    public: 'Julkinen',
-    notSet: 'Asettamatta',
-    confidentialityDuration: 'Salassapitoaika',
-    confidentialityBasis: 'Salassapitoperuste',
-    years: 'vuotta',
+    title: 'Archivable metadata',
+    notFound: 'No archivable metadata for the document',
+    caseIdentifier: 'Case identifier',
+    processName: 'Case process',
+    organization: 'Organization',
+    archiveDurationMonths: 'Archiving period',
+    primaryDocument: 'Primary document',
+    secondaryDocuments: 'Other documents',
+    documentId: 'Document identifier',
+    name: 'Document name',
+    createdAt: 'Creation date',
+    createdBy: 'Creator',
+    monthsUnit: 'months',
+    confidentiality: 'Confidentiality',
+    confidential: 'Confidential',
+    public: 'Public',
+    notSet: 'Not set',
+    confidentialityDuration: 'Confidentiality period',
+    confidentialityBasis: 'Confidentiality basis',
+    years: 'years',
     receivedBy: {
-      label: 'Saapumistapa',
-      PAPER: 'Paperilla',
-      ELECTRONIC: 'Sähköisesti'
+      label: 'Received',
+      PAPER: 'On paper',
+      ELECTRONIC: 'Electronically'
     },
     sfiDelivery: {
-      label: 'Suomi.fi -toimitukset',
+      label: 'Suomi.fi deliveries',
       method: {
-        ELECTRONIC: 'Sähköisesti',
-        PAPER_MAIL: 'Postitse',
-        PENDING: 'Odottaa toimitusta'
+        ELECTRONIC: 'Electronically',
+        PAPER_MAIL: 'Paper mail',
+        PENDING: 'Waiting for delivery'
       }
     },
-    history: 'Prosessin historia',
-    downloadPdf: 'Lataa PDF',
+    history: 'Process history',
+    downloadPdf: 'Download PDF',
     states: {
-      INITIAL: 'Asian vireillepano / -tulo',
-      PREPARATION: 'Asian valmistelu',
-      DECIDING: 'Päätöksenteko',
-      COMPLETED: 'Toimeenpano / Päättäminen / Sulkeminen'
+      INITIAL: 'Initiation of the case',
+      PREPARATION: 'Preparation of the case',
+      DECIDING: 'Decision making',
+      COMPLETED: 'Implementation / Completion / Closing'
     },
     section: {
-      show: 'Näytä lisätiedot',
-      hide: 'Piilota lisätiedot'
+      show: 'Show more information',
+      hide: 'Hide more information'
     }
   }
 }
