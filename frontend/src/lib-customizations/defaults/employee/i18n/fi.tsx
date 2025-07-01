@@ -26,7 +26,7 @@ export const fi = {
     customers: 'Asiakastiedot',
     placementDraft: 'Sijoitushahmotelma',
     decision: 'Päätöksen teko ja lähetys',
-    documentTemplates: 'Lomakepohjat',
+    documentTemplates: 'Asiakirjapohjat',
     feeDecisions: 'Maksupäätökset',
     feeDecision: 'Maksupäätös',
     feeDecisionDraft: 'Maksupäätösluonnos',
@@ -874,9 +874,9 @@ export const fi = {
         external: 'Huoltajien täytettävät asiakirjat'
       },
       table: {
-        document: 'Lomake',
+        document: 'Asiakirja',
         status: 'Tila',
-        open: 'Avaa lomake',
+        open: 'Avaa asiakirja',
         modified: 'Muokattu',
         unit: 'Yksikkö',
         valid: 'Voimassa',
@@ -891,8 +891,8 @@ export const fi = {
         decision: 'Luo uusi päätös',
         external: 'Luo huoltajille täytettävä asiakirja'
       },
-      select: 'Valitse lomake',
-      removeConfirmation: 'Haluatko varmasti poistaa dokumentin?',
+      select: 'Valitse asiakirja',
+      removeConfirmation: 'Haluatko varmasti poistaa asiakirjan?',
       statuses: {
         DRAFT: 'Luonnos',
         PREPARED: 'Laadittu',
@@ -965,7 +965,7 @@ export const fi = {
           COMPLETED: 'Haluatko varmasti palauttaa asiakirjan valmiiksi?' // not applicable,
         },
         goBackToDraftConfirmText:
-          'Luonnosvaiheessa voit muokata lomakkeen tietoja.',
+          'Luonnosvaiheessa voit muokata asiakirjan tietoja.',
         deleteDraft: 'Poista luonnos',
         deleteDraftConfirmTitle: 'Haluatko varmasti poistaa luonnoksen?',
         fullyPublished: 'Asiakirjan viimeisin versio on julkaistu',
@@ -1201,7 +1201,7 @@ export const fi = {
       description:
         'Hyväksytyt ja hylätyt päätökset tuesta näkyvät huoltajalle eVakassa.',
       table: {
-        form: 'Lomake',
+        form: 'Asiakirja',
         inEffect: 'Voimassa',
         unit: 'Yksikkö',
         sentToDecisionMaker: 'Lähetetty päätöksen tekijälle',
@@ -2766,10 +2766,10 @@ export const fi = {
         }
       },
       childDocuments: {
-        createModalLink: 'Lähetä lomake',
+        createModalLink: 'Lähetä asiakirja',
         createModal: {
-          title: 'Lähetä lomake usealle vastaanottajalle',
-          template: 'Lomake',
+          title: 'Lähetä asiakirja usealle vastaanottajalle',
+          template: 'Asiakirja',
           placements: 'Vastaanottajat'
         }
       }
@@ -4721,20 +4721,20 @@ export const fi = {
       }
     },
     citizenDocumentResponseReport: {
-      title: 'Kuntalaisen lomakkeet',
+      title: 'Kuntalaisen asiakirjat',
       description:
-        'Raportti listaa ryhmittäin kuntalaisten lomakkeiden uusimmat vastaukset kyllä/ei- tai monivalintakysymyksiin',
+        'Raportti listaa ryhmittäin kuntalaisten asiakirjojen uusimmat vastaukset kyllä/ei- tai monivalintakysymyksiin',
       filters: {
         unit: 'Yksikkö',
         group: 'Ryhmä',
-        template: 'Lomake',
+        template: 'Asiakirja',
         showBackupChildren: 'Näytä myös varasijoitettuna olevat'
       },
       headers: {
         name: 'Nimi',
         answeredAt: 'Vastattu'
       },
-      noSentDocument: 'Ei lähetettyä lomaketta',
+      noSentDocument: 'Ei lähetettyä asiakirjaa',
       noAnswer: 'Ei vastattu'
     }
   },
@@ -5229,7 +5229,7 @@ export const fi = {
     }
   },
   documentTemplates: {
-    title: 'Lomakepohjat',
+    title: 'Asiakirjapohjat',
     documentTypes: {
       PEDAGOGICAL_REPORT: 'Pedagoginen selvitys',
       PEDAGOGICAL_ASSESSMENT: 'Pedagoginen arvio',
@@ -5244,7 +5244,7 @@ export const fi = {
     },
     documentTypeInfos: {
       CITIZEN_BASIC:
-        'Tämä on lomake, jonka sekä kuntalainen, että henkilökunta voivat täyttää. Halutessaan henkilökunta voi vastata kysymyksiin ensin, minkä jälkeen lomakkeen voi lähettää kuntalaiselle täytettäväksi eVakaan.',
+        'Tämä on asiakirja, jonka sekä kuntalainen, että henkilökunta voivat täyttää. Halutessaan henkilökunta voi vastata kysymyksiin ensin, minkä jälkeen asiakirjan voi lähettää kuntalaiselle täytettäväksi eVakaan.',
       OTHER_DECISION:
         'Tällä tehdään kaikki päätöspohjat hakemuksiin liittyviä päätöksiä lukuunottamatta',
       OTHER: 'Työntekijän täyttämä lapsen pedagoginen asiakirja tai suunnitelma'
@@ -5272,25 +5272,25 @@ export const fi = {
         draft: 'Luonnos',
         future: 'Tulossa käyttöön',
         past: 'Poistunut käytöstä',
-        type: 'Lomakeen tyyppi',
+        type: 'Asiakirjan tyyppi',
         all: 'Kaikki',
         language: 'Kieli'
       }
     },
     templateModal: {
-      title: 'Uusi lomakepohja',
+      title: 'Uusi asiakirjapohja',
       name: 'Nimi',
-      type: 'Lomakkeen tyyppi',
+      type: 'Asiakirjan tyyppi',
       placementTypes: 'Käytössä sijoituksilla',
-      language: 'Lomakkeen kieli',
-      confidential: 'Lomake on salassapidettävä',
+      language: 'Asiakirjan kieli',
+      confidential: 'Asiakirja on salassapidettävä',
       confidentialityDuration: 'Salassapitoaika (vuotta)',
       confidentialityBasis: 'Salassapitoperuste (lakiviittaus)',
-      legalBasis: 'Lait joihin lomake perustuu (vapaaehtoinen)',
+      legalBasis: 'Lait joihin asiakirja perustuu (vapaaehtoinen)',
       validity: 'Voimassa ajalla',
       processDefinitionNumber: 'Tehtäväluokka',
       processDefinitionNumberInfo:
-        'Tiedonohjaussuunnitelmassa määritelty tehtäväluokan numero. Jätä tyhjäksi jos lomaketta ei arkistoida.',
+        'Tiedonohjaussuunnitelmassa määritelty tehtäväluokan numero. Jätä tyhjäksi jos asiakirjaa ei arkistoida.',
       archiveDurationMonths: 'Arkistointiaika (kuukautta)',
       archiveExternally: 'Siirrettävä ulkoiseen arkistoon ennen poistoa'
     },
@@ -5311,7 +5311,7 @@ export const fi = {
         button: 'Peruuta julkaisu',
         confirmationTitle: 'Haluatko varmasti perua julkaisun?',
         confirmationText:
-          'Kaikki tätä lomakepohjaa käyttävät asiakirjat poistetaan.'
+          'Kaikki tätä asiakirjapohjaa käyttävät asiakirjat poistetaan.'
       }
     },
     questionTypes: {
