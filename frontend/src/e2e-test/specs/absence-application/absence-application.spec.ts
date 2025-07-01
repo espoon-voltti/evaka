@@ -462,6 +462,16 @@ describe('Absence application', () => {
     await newAbsenceApplicationPage.description.fill('test')
     await newAbsenceApplicationPage.confirmation.check()
     await newAbsenceApplicationPage.createButton.assertDisabled(false)
+    await newAbsenceApplicationPage.createButton.click()
+
+    await citizenChildPage.openCollapsible('absence-applications')
+    await citizenChildPage.assertAbsenceApplications([
+      {
+        range: '05.05.2025 - 13.05.2025',
+        status: 'Odottaa päätöstä',
+        description: 'test'
+      }
+    ])
   })
 })
 
