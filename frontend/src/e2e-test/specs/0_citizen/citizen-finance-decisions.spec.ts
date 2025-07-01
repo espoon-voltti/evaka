@@ -140,6 +140,18 @@ describe('Citizen finance decisions', () => {
       voucherValueDecision.id
     )
   })
+
+  test('Head of family sees their decision metadata with strong auth', async () => {
+    page = await Page.open({ mockedTime: now })
+    header = new CitizenHeader(page)
+    citizenDecisionsPage = new CitizenDecisionsPage(page)
+    await enduserLogin(page, testAdult)
+    await page.goto(config.enduserUrl)
+
+    await header.selectTab('decisions')
+
+    await citizenDecisionsPage.assertMetadataForDecisionShown(feeDecision.id)
+  })
 })
 
 async function insertFeeDecision(
@@ -155,7 +167,8 @@ async function insertFeeDecision(
           childIncome
         }))
       }
-    ]
+    ],
+    insertCaseProcess: true
   })
 }
 

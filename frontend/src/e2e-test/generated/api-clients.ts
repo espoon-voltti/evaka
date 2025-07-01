@@ -983,13 +983,18 @@ export async function createFamilyContact(
 */
 export async function createFeeDecisions(
   request: {
+    insertCaseProcess?: boolean | null,
     body: FeeDecision[]
   }
 ): Promise<void> {
   try {
+    const params = createUrlSearchParams(
+      ['insertCaseProcess', request.insertCaseProcess?.toString()]
+    )
     const { data: json } = await devClient.request<JsonOf<void>>({
       url: uri`/fee-decisions`.toString(),
       method: 'POST',
+      params,
       data: request.body satisfies JsonCompatible<FeeDecision[]>
     })
     return json
