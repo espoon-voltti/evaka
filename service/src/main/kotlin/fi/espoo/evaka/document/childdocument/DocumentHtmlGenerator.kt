@@ -196,21 +196,21 @@ private val translationsFi =
     Translations(
         confidential = "Salassapidettävä",
         decisionNumber = "Päätösnumero",
-        caseIdentifier = "Asianumero",
+        caseIdentifier = "Asiatunnus",
     )
 
 private val translationsSv =
     Translations(
         confidential = "Konfidentiellt",
         decisionNumber = "Beslutsnummer",
-        caseIdentifier = "Asianumero",
+        caseIdentifier = "Ärendekod",
     )
 
 private val translationsEn =
     Translations(
         confidential = "Confidential",
         decisionNumber = "Decision number",
-        caseIdentifier = "Asianumero",
+        caseIdentifier = "Case identifier",
     )
 
 private fun getTranslations(template: DocumentTemplate) =
