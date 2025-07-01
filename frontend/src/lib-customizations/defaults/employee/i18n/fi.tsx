@@ -796,9 +796,9 @@ export const fi = {
         removeConfirmation: 'Haluatko poistaa tuen tason ajanjakson?'
       },
       preschoolAssistance: {
-        title: 'Tuen taso esiopetuksessa',
-        create: 'Luo uusi tuen tason ajanjakso (esiopetus)',
-        removeConfirmation: 'Haluatko poistaa tuen tason ajanjakson?'
+        title: 'Tuki esiopetuksessa',
+        create: 'Luo uusi tuen ajanjakso (esiopetus)',
+        removeConfirmation: 'Haluatko poistaa tuen ajanjakson?'
       },
       otherAssistanceMeasure: {
         title: 'Muut toimet',
