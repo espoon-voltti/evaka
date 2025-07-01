@@ -268,12 +268,12 @@ export default {
       lastName: string
     }) => (
       <div>
-        Henkilökunta on pyytänyt sinua vastaamaan lomakkeeseen, joka koskee
+        Henkilökunta on pyytänyt sinua täyttämään asiakirjan, joka koskee
         lastasi:{' '}
         <span translate="no">{formatPersonName(child, 'FirstFirst Last')}</span>
         <br />
         <br />
-        <span style={{ color: colors.status.info }}>Vastaa lomakkeeseen</span>
+        <span style={{ color: colors.status.info }}>Täytä asiakirja</span>
       </div>
     )
   },

@@ -266,14 +266,11 @@ const en: Translations = {
       lastName: string
     }) => (
       <div>
-        Henkilökunta on pyytänyt sinua vastaamaan lomakkeeseen, joka koskee
-        lastasi:{' '}
+        The staff has requested you to fill in a document concerning your child:{' '}
         <span translate="no">{formatPersonName(child, 'FirstFirst Last')}</span>
         <br />
         <br />
-        <span style={{ color: colors.status.info }}>
-          Vastaa lomakkeeseen (en)
-        </span>
+        <span style={{ color: colors.status.info }}>Fill in the document</span>
       </div>
     )
   },
@@ -2693,16 +2690,16 @@ const en: Translations = {
       noDocuments: 'No documents',
       confidential: 'Confidential',
       validityPeriod: 'Valid during',
-      unanswered: 'Ei vastattu (en)',
-      answered: 'Vastattu (en)',
-      answeredByEmployee: 'Henkilökunta (en)',
-      preview: 'Esikatsele (en)',
-      send: 'Lähetä (en)',
-      success: 'Lomake lähetetty (en)',
+      unanswered: 'Not answered',
+      answered: 'Answered',
+      answeredByEmployee: 'Staff',
+      preview: 'Preview',
+      send: 'Send',
+      success: 'Document sent',
       sentInfo:
-        'Jos haluat muuttaa annettuja vastauksia, pyydä henkilökunnalta uusi lomake. (en)',
+        'If you want to change the answers you have given, please ask the staff for a new document.',
       // decision cannot be in English
-      decisionNumber: 'Päätösnumero',
+      decisionNumber: 'Decision number',
       sendingConfirmationTitle: 'Are you sure you want to send the document?',
       sendingConfirmationText:
         'Make sure to fill in all the fields. Answers cannot be changed after submission.'

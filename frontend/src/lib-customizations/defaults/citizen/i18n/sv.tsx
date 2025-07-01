@@ -264,14 +264,11 @@ const sv: Translations = {
       lastName: string
     }) => (
       <div>
-        Henkilökunta on pyytänyt sinua vastaamaan lomakkeeseen, joka koskee
-        lastasi:{' '}
+        Personalen har begärt att du fyller i ett dokument om ditt barn:{' '}
         <span translate="no">{formatPersonName(child, 'FirstFirst Last')}</span>
         <br />
         <br />
-        <span style={{ color: colors.status.info }}>
-          Vastaa lomakkeeseen (sv)
-        </span>
+        <span style={{ color: colors.status.info }}>Fyll i dokumentet</span>
       </div>
     )
   },
@@ -2935,18 +2932,18 @@ const sv: Translations = {
       noDocuments: 'Inga dokument',
       confidential: 'Konfidentiellt',
       validityPeriod: 'Giltig',
-      unanswered: 'Ei vastattu (sv)',
-      answered: 'Vastattu (sv)',
-      answeredByEmployee: 'Henkilökunta (sv)',
-      preview: 'Esikatsele (sv)',
-      send: 'Lähetä (sv)',
-      success: 'Lomake lähetetty (sv)',
+      unanswered: 'Ej besvarad',
+      answered: 'Besvarad',
+      answeredByEmployee: 'Personal',
+      preview: 'Förhandsgranska',
+      send: 'Skicka',
+      success: 'Dokumentet har skickats',
       sentInfo:
-        'Jos haluat muuttaa annettuja vastauksia, pyydä henkilökunnalta uusi lomake. (sv)',
+        'Om du vill ändra dina svar, be personalen om ett nytt dokument.',
       decisionNumber: 'Beslutsnummer',
       sendingConfirmationTitle: 'Är du säker på att du vill skicka dokumentet?',
       sendingConfirmationText:
-        'Säkerställ att du har fyllt i alla fält. Svaren kan inte ändras efter att de har skickats.'
+        'Kontrollera att du har fyllt i alla fält. Svaren kan inte ändras efter att de har skickats.'
     }
   },
   accessibilityStatement: (

@@ -68,7 +68,7 @@ const components: Translations = {
     documentStates: {
       DRAFT: 'Utkast',
       PREPARED: 'Behandlad',
-      CITIZEN_DRAFT: 'Täytettävänä huoltajalla (sv)',
+      CITIZEN_DRAFT: 'Att fyllas i av vårdnadshavare',
       DECISION_PROPOSAL: 'Beslutsförslag',
       COMPLETED: 'Färdig',
       ACCEPTED: 'Godkänt',

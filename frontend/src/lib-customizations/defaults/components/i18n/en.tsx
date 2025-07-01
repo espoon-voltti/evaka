@@ -68,7 +68,7 @@ const components: Translations = {
     documentStates: {
       DRAFT: 'Draft',
       PREPARED: 'Ready',
-      CITIZEN_DRAFT: 'Täytettävänä huoltajalla (en)',
+      CITIZEN_DRAFT: 'To be filled by guardian',
       DECISION_PROPOSAL: 'Decision proposal',
       COMPLETED: 'Completed',
       ACCEPTED: 'Accepted',
