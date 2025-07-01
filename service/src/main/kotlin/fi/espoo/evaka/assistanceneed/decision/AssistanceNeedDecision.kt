@@ -23,6 +23,7 @@ import org.jdbi.v3.json.Json
 data class AssistanceNeedDecision(
     val id: AssistanceNeedDecisionId,
     val decisionNumber: Long? = null,
+    val caseIdentifier: String?,
     @Nested("child") val child: AssistanceNeedDecisionChild?,
     val validityPeriod: DateRange,
     val endDateNotKnown: Boolean,

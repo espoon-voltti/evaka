@@ -922,6 +922,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
                 sentDate = LocalDate.now(),
                 AssistanceNeedDecision(
                     validityPeriod = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2023, 1, 1)),
+                    caseIdentifier = "12/123.456.a/2022",
                     status = AssistanceNeedDecisionStatus.ACCEPTED,
                     language = OfficialLanguage.FI,
                     decisionMade = LocalDate.of(2021, 12, 31),

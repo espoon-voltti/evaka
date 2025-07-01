@@ -23,6 +23,7 @@ import org.jdbi.v3.json.Json
 data class AssistanceNeedPreschoolDecision(
     val id: AssistanceNeedPreschoolDecisionId,
     val decisionNumber: Long,
+    val caseIdentifier: String?,
     @Nested("child") val child: AssistanceNeedPreschoolDecisionChild,
     @Nested val form: AssistanceNeedPreschoolDecisionForm,
     val status: AssistanceNeedDecisionStatus,
