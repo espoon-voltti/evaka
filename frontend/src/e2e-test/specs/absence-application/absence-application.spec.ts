@@ -13,7 +13,7 @@ import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
 import type { CitizenChildPage } from '../../pages/citizen/citizen-children'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import { UnitPage } from '../../pages/employee/units/unit'
-import { Checkbox, DatePicker, Page, TextInput } from '../../utils/page'
+import { Page } from '../../utils/page'
 import { employeeLogin, enduserLogin } from '../../utils/user'
 
 beforeEach(() => resetServiceState())
@@ -416,23 +416,21 @@ describe('Absence application', () => {
       citizenCustomizations: { featureFlags: { absenceApplications: true } }
     })
     await enduserLogin(page, adult)
-    await page.goto(
-      `http://localhost:9099/children/${child.id}/absence-application`
+    const citizenHeader = new CitizenHeader(page)
+    const citizenChildPage = await citizenHeader.openChildPage(child.id)
+    await citizenChildPage.openCollapsible('absence-applications')
+    const newAbsenceApplicationPage =
+      await citizenChildPage.newAbsenceApplicationPage()
+    await newAbsenceApplicationPage.startDate.fill(
+      mockedTime.toLocalDate().addDays(1)
     )
-    const startDate = new DatePicker(page.findByDataQa('start-date'))
-    const endDate = new DatePicker(page.findByDataQa('end-date'))
-    const description = new TextInput(page.findByDataQa('description'))
-    const confirmation = new Checkbox(page.findByDataQa('confirmation'))
-    await startDate.fill(mockedTime.toLocalDate().addDays(1))
-    await endDate.fill(mockedTime.toLocalDate().addDays(1))
-    await description.fill('test')
-    await confirmation.check()
-    await page
-      .find(
-        `span:has-text("Lapsella ei ole esiopetusta valitulla aikavälillä")`
-      )
-      .waitUntilVisible()
-    await page.findByDataQa('create-button').assertDisabled(true)
+    await newAbsenceApplicationPage.endDate.fill(
+      mockedTime.toLocalDate().addDays(1)
+    )
+    await newAbsenceApplicationPage.description.fill('test')
+    await newAbsenceApplicationPage.confirmation.check()
+    await newAbsenceApplicationPage.dateRangeWarning.waitUntilVisible()
+    await newAbsenceApplicationPage.createButton.assertDisabled(true)
   })
 
   test('Form is valid if absence date range is partly within placement date range', async () => {
@@ -452,18 +450,18 @@ describe('Absence application', () => {
       citizenCustomizations: { featureFlags: { absenceApplications: true } }
     })
     await enduserLogin(page, adult)
-    await page.goto(
-      `http://localhost:9099/children/${child.id}/absence-application`
+    const citizenHeader = new CitizenHeader(page)
+    const citizenChildPage = await citizenHeader.openChildPage(child.id)
+    await citizenChildPage.openCollapsible('absence-applications')
+    const newAbsenceApplicationPage =
+      await citizenChildPage.newAbsenceApplicationPage()
+    await newAbsenceApplicationPage.startDate.fill(mockedTime.toLocalDate())
+    await newAbsenceApplicationPage.endDate.fill(
+      mockedTime.toLocalDate().addDays(8)
     )
-    const startDate = new DatePicker(page.findByDataQa('start-date'))
-    const endDate = new DatePicker(page.findByDataQa('end-date'))
-    const description = new TextInput(page.findByDataQa('description'))
-    const confirmation = new Checkbox(page.findByDataQa('confirmation'))
-    await startDate.fill(mockedTime.toLocalDate())
-    await endDate.fill(mockedTime.toLocalDate().addDays(8))
-    await description.fill('test')
-    await confirmation.check()
-    await page.findByDataQa('create-button').assertDisabled(false)
+    await newAbsenceApplicationPage.description.fill('test')
+    await newAbsenceApplicationPage.confirmation.check()
+    await newAbsenceApplicationPage.createButton.assertDisabled(false)
   })
 })
 
