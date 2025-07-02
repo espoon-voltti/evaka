@@ -627,7 +627,7 @@ fun computeUsedService(
     val absenceTypes = absences.map { it.first }.toSet()
     val absenceCategories = absences.map { it.second }.toSet()
     val isFreeAbsence =
-        absenceTypes.intersect(setOf(AbsenceType.FREE_ABSENCE)) == absenceTypes &&
+        absenceTypes == setOf(AbsenceType.FREE_ABSENCE) &&
             absenceCategories == placementType.absenceCategories()
     val isRefundedAbsence =
         absenceTypes.intersect(
