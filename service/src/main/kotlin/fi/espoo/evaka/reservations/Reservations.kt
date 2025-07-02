@@ -624,6 +624,48 @@ fun computeUsedService(
         date > today ||
             date == today && (attendances.isEmpty() || attendances.any { it.end == null })
 
+    val absenceTypes = absences.map { it.first }.toSet()
+    val absenceCategories = absences.map { it.second }.toSet()
+    val isFreeAbsence =
+        absenceTypes == setOf(AbsenceType.FREE_ABSENCE) &&
+            absenceCategories == placementType.absenceCategories()
+    val isRefundedAbsence =
+        absenceTypes.intersect(
+            setOf(AbsenceType.FORCE_MAJEURE, AbsenceType.FREE_ABSENCE, AbsenceType.PARENTLEAVE)
+        ) == absenceTypes && absenceCategories == placementType.absenceCategories()
+
+    // days used in average calc
+    val daysInMonth =
+        if (isRefundedAbsence) {
+            val range = FiniteDateRange.ofMonth(date)
+            operationDates.count { range.includes(it) }
+        } else {
+            21
+        }
+    val dailyAverage = serviceNeedHours.toDouble() * 60 / daysInMonth
+
+    // Five-year-olds get 4 hours for free
+    val freeMinutes =
+        when (placementType) {
+            PlacementType.DAYCARE_FIVE_YEAR_OLDS -> 4 * 60
+            else -> 0
+        }
+
+    if (operationDates.contains(date) && isFreeAbsence) {
+        return if (isDateInFuture) {
+            UsedServiceResult(
+                reservedMinutes = dailyAverage.roundToLong(),
+                usedServiceMinutes = 0,
+                usedServiceRanges = emptyList(),
+            )
+        } else
+            UsedServiceResult(
+                reservedMinutes = dailyAverage.roundToLong(),
+                usedServiceMinutes = maxOf(0, dailyAverage.roundToLong() - freeMinutes),
+                usedServiceRanges = emptyList(),
+            )
+    }
+
     val endedAttendances = attendances.mapNotNull { it.asTimeRange() }
 
     if (!operationDates.contains(date) && shiftCareType != ShiftCareType.INTERMITTENT) {
@@ -643,12 +685,6 @@ fun computeUsedService(
         )
     val effectiveReservations = TimeSet.of(reservations).removeAll(fixedScheduleTimes)
 
-    // Five-year-olds get 4 hours for free
-    val freeMinutes =
-        when (placementType) {
-            PlacementType.DAYCARE_FIVE_YEAR_OLDS -> 4 * 60
-            else -> 0
-        }
     val minutesOf = { timeSet: TimeSet ->
         maxOf(0, timeSet.ranges().sumOf { it.duration.toMinutes() } - freeMinutes)
     }
@@ -661,15 +697,9 @@ fun computeUsedService(
         )
     }
 
-    val absenceTypes = absences.map { it.first }.toSet()
-    val absenceCategories = absences.map { it.second }.toSet()
     val isPlannedAbsence =
         absenceTypes == setOf(AbsenceType.PLANNED_ABSENCE) &&
             absenceCategories == placementType.absenceCategories()
-    val isRefundedAbsence =
-        absenceTypes.intersect(
-            setOf(AbsenceType.FORCE_MAJEURE, AbsenceType.FREE_ABSENCE, AbsenceType.PARENTLEAVE)
-        ) == absenceTypes && absenceCategories == placementType.absenceCategories()
 
     if (endedAttendances.isEmpty() && isPlannedAbsence) {
         return UsedServiceResult(
@@ -680,14 +710,6 @@ fun computeUsedService(
     }
 
     if (operationDates.contains(date) && reservations.isEmpty() && endedAttendances.isEmpty()) {
-        val daysInMonth =
-            if (isRefundedAbsence) {
-                val range = FiniteDateRange.ofMonth(date)
-                operationDates.count { range.includes(it) }
-            } else {
-                21
-            }
-        val dailyAverage = serviceNeedHours.toDouble() * 60 / daysInMonth
         return UsedServiceResult(
             reservedMinutes = 0,
             usedServiceMinutes = maxOf(0, dailyAverage.roundToLong() - freeMinutes),
