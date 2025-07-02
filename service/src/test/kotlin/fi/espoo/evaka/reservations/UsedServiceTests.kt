@@ -461,7 +461,7 @@ class UsedServiceTests {
                 operationDates = operationDatesWithCount(23),
             )
             .also {
-                assertEquals(0, it.reservedMinutes)
+                assertEquals((120.0 * 60 / 23).roundToLong(), it.reservedMinutes)
                 assertEquals((120.0 * 60 / 23).roundToLong(), it.usedServiceMinutes)
                 assertEquals(emptyList(), it.usedServiceRanges)
             }
@@ -479,7 +479,7 @@ class UsedServiceTests {
                 operationDates = operationDatesWithCount(31),
             )
             .also {
-                assertEquals(0, it.reservedMinutes)
+                assertEquals((120.0 * 60 / 31).roundToLong(), it.reservedMinutes)
                 assertEquals((120.0 * 60 / 31).roundToLong(), it.usedServiceMinutes)
                 assertEquals(emptyList(), it.usedServiceRanges)
             }

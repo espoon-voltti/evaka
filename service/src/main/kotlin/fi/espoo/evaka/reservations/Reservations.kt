@@ -644,14 +644,26 @@ fun computeUsedService(
         }
     val dailyAverage = serviceNeedHours.toDouble() * 60 / daysInMonth
 
+    // Five-year-olds get 4 hours for free
+    val freeMinutes =
+        when (placementType) {
+            PlacementType.DAYCARE_FIVE_YEAR_OLDS -> 4 * 60
+            else -> 0
+        }
+
     if (operationDates.contains(date) && isFreeAbsence) {
-        if (isDateInFuture) {
-            return UsedServiceResult(
+        return if (isDateInFuture) {
+            UsedServiceResult(
                 reservedMinutes = dailyAverage.roundToLong(),
                 usedServiceMinutes = 0,
                 usedServiceRanges = emptyList(),
             )
-        }
+        } else
+            UsedServiceResult(
+                reservedMinutes = dailyAverage.roundToLong(),
+                usedServiceMinutes = maxOf(0, dailyAverage.roundToLong() - freeMinutes),
+                usedServiceRanges = emptyList(),
+            )
     }
 
     val endedAttendances = attendances.mapNotNull { it.asTimeRange() }
@@ -673,12 +685,6 @@ fun computeUsedService(
         )
     val effectiveReservations = TimeSet.of(reservations).removeAll(fixedScheduleTimes)
 
-    // Five-year-olds get 4 hours for free
-    val freeMinutes =
-        when (placementType) {
-            PlacementType.DAYCARE_FIVE_YEAR_OLDS -> 4 * 60
-            else -> 0
-        }
     val minutesOf = { timeSet: TimeSet ->
         maxOf(0, timeSet.ranges().sumOf { it.duration.toMinutes() } - freeMinutes)
     }
