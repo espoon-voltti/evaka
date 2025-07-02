@@ -252,6 +252,32 @@ describe('Citizen application decisions', () => {
     // other guardian can only see the decisions but not resolve them -> not shown in counts
     await citizenDecisionsPage.assertUnresolvedDecisionsCount(0)
   })
+
+  test('Citizen can open and view decision metadata', async () => {
+    const application = applicationFixture(
+      testChild,
+      testAdult,
+      undefined,
+      'DAYCARE',
+      null,
+      [testDaycare.id],
+      true,
+      'SENT'
+    )
+    await createApplications({ body: [application] })
+    await execSimpleApplicationActions(
+      application.id,
+      [
+        'MOVE_TO_WAITING_PLACEMENT',
+        'CREATE_DEFAULT_PLACEMENT_PLAN',
+        'SEND_DECISIONS_WITHOUT_PROPOSAL'
+      ],
+      now
+    )
+    const { citizenDecisionsPage } = await openCitizenDecisionsPage(testAdult)
+
+    await citizenDecisionsPage.viewDecisionMetadata(application.id)
+  })
 })
 
 describe('Citizen assistance decisions', () => {

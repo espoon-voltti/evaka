@@ -22,9 +22,12 @@ import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import ListGrid from 'lib-components/layout/ListGrid'
 import { H3, Label, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+import { featureFlags } from 'lib-customizations/citizen'
 import { theme } from 'lib-customizations/common'
 
+import { applicationMetadataQuery } from '../../applications/queries'
 import { useTranslation } from '../../localization'
+import { MetadataSection } from '../../metadata/MetadataSection'
 import { PdfLink } from '../PdfLink'
 
 const preschoolInfoTypes: DecisionType[] = [
@@ -114,6 +117,15 @@ export default React.memo(function ApplicationDecision({
               <PdfLink decisionId={id} />
             </>
           )}
+      {featureFlags.showMetadataToCitizen && (
+        <>
+          <Gap size="s" />
+          <MetadataSection
+            data-qa={applicationId}
+            query={applicationMetadataQuery({ applicationId })}
+          />
+        </>
+      )}
     </CollapsibleContentArea>
   )
 })

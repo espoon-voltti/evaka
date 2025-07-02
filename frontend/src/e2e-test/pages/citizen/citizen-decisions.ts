@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import type { ApplicationId } from 'lib-common/generated/api-types/shared'
+
 import { waitUntilEqual } from '../../utils'
 import type { Page, Element } from '../../utils/page'
 
@@ -199,6 +201,11 @@ export default class CitizenDecisionsPage {
   async assertNoChildDecisions(childId: string) {
     await this.page.findByDataQa('decisions-page').waitUntilVisible()
     await this.page.findByDataQa(`child-decisions-${childId}`).waitUntilHidden()
+  }
+
+  async viewDecisionMetadata(applicationId: ApplicationId) {
+    await this.page.findByDataQa(`metadata-toggle-${applicationId}`).click()
+    await this.page.findByDataQa('process-number-field').waitUntilVisible()
   }
 }
 
