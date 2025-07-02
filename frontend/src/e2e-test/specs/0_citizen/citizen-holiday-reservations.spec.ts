@@ -4,6 +4,7 @@
 
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { HolidayQuestionnaire } from 'lib-common/generated/api-types/holidayperiod'
+import { evakaUserId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import type { UUID } from 'lib-common/types'
@@ -24,6 +25,7 @@ import {
 } from '../../generated/api-clients'
 import type {
   DevDaycare,
+  DevEmployee,
   DevPerson,
   DevPlacement
 } from '../../generated/api-types'
@@ -44,6 +46,7 @@ const child = testChild
 const today = LocalDate.of(2035, 12, 1)
 let daycare: DevDaycare
 let guardian: DevPerson
+let supervisor: DevEmployee
 
 const holidayQuestionnaireFixture = (
   initial?: Partial<FixedPeriodQuestionnaire>
@@ -85,7 +88,9 @@ async function assertCalendarDayRange(
 
   let today = startDate
   while (today.isEqualOrBefore(endDate)) {
-    await calendar.assertDay(today, groups)
+    if (!today.isWeekend()) {
+      await calendar.assertDay(today, groups)
+    }
     today = today.addBusinessDays(1)
   }
 }
@@ -108,14 +113,29 @@ beforeEach(async () => {
     updateMockVtjWithDependants: [child1]
   })
   await Fixture.guardian(child1, guardian).save()
+  supervisor = await Fixture.employee().unitSupervisor(daycare.id).save()
 })
 async function setupFirstChildPlacement(initial?: Partial<DevPlacement>) {
-  await Fixture.placement({
+  const placement = await Fixture.placement({
     childId: child.id,
     unitId: daycare.id,
     startDate: LocalDate.of(2022, 1, 1),
     endDate: LocalDate.of(2036, 6, 30),
     ...initial
+  }).save()
+  const serviceNeedOption = await Fixture.serviceNeedOption({
+    validPlacementType: 'DAYCARE',
+    defaultOption: false,
+    nameFi: 'Kokopäiväinen',
+    nameSv: 'Kokopäiväinen (sv)',
+    nameEn: 'Kokopäiväinen (en)'
+  }).save()
+  await Fixture.serviceNeed({
+    placementId: placement.id,
+    startDate: placement.startDate,
+    endDate: placement.endDate,
+    optionId: serviceNeedOption.id,
+    confirmedBy: evakaUserId(supervisor.id)
   }).save()
 }
 
@@ -128,11 +148,26 @@ async function setupAnotherChild(
   })
   await upsertVtjDataset({ body: vtjDependants(guardian, child2) })
   await Fixture.guardian(child2, guardian).save()
-  await Fixture.placement({
+  const placement = await Fixture.placement({
     childId: child2.id,
     unitId: daycare.id,
     startDate: startDate,
     endDate: endDate
+  }).save()
+  const serviceNeedOption = await Fixture.serviceNeedOption({
+    validPlacementType: 'DAYCARE',
+    defaultOption: false,
+    nameFi: 'Kokopäiväinen',
+    nameSv: 'Kokopäiväinen (sv)',
+    nameEn: 'Kokopäiväinen (en)'
+  }).save()
+  await Fixture.serviceNeed({
+    placementId: placement.id,
+    startDate: placement.startDate,
+    endDate: placement.endDate,
+    optionId: serviceNeedOption.id,
+    confirmedBy: evakaUserId(supervisor.id),
+    shiftCare: 'FULL'
   }).save()
 
   return child2

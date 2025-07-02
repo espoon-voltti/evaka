@@ -10,12 +10,21 @@ import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.absence.FullDayAbsenseUpsert
 import fi.espoo.evaka.absence.clearOldCitizenEditableAbsences
 import fi.espoo.evaka.absence.upsertFullDayAbsences
+import fi.espoo.evaka.daycare.Daycare
+import fi.espoo.evaka.daycare.getDaycaresById
+import fi.espoo.evaka.daycare.isUnitOperationDay
+import fi.espoo.evaka.placement.Placement
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.getConsecutivePlacementRanges
+import fi.espoo.evaka.placement.getPlacementsForChildDuring
 import fi.espoo.evaka.reservations.clearOldReservations
 import fi.espoo.evaka.reservations.deleteAbsencesCreatedFromQuestionnaire
 import fi.espoo.evaka.reservations.getReservableRange
+import fi.espoo.evaka.serviceneed.ServiceNeed
+import fi.espoo.evaka.serviceneed.ShiftCareType
+import fi.espoo.evaka.serviceneed.getServiceNeedsByChild
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.HolidayQuestionnaireId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -24,6 +33,7 @@ import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.getHolidays
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import java.time.LocalDate
@@ -146,15 +156,34 @@ class HolidayPeriodControllerCitizen(
 
                 val absences =
                     body.fixedPeriods.entries.flatMap { (childId, period) ->
-                        period?.dates()?.map {
-                            FullDayAbsenseUpsert(
-                                childId = childId,
-                                date = it,
-                                absenceTypeBillable = questionnaire.absenceType,
-                                absenceTypeNonbillable = questionnaire.absenceType,
-                                questionnaireId = questionnaire.id,
-                            )
-                        } ?: emptySequence()
+                        if (period == null || period.dates().none()) emptySequence()
+                        else {
+                            val placements =
+                                tx.getPlacementsForChildDuring(childId, period.start, period.end)
+                            val daycares = tx.getDaycaresById(placements.map { it.unitId }.toSet())
+                            val serviceNeeds = tx.getServiceNeedsByChild(childId)
+                            val holidays = getHolidays(period)
+                            period
+                                .dates()
+                                .filter {
+                                    isOperationalDay(
+                                        it,
+                                        placements,
+                                        daycares,
+                                        serviceNeeds,
+                                        holidays,
+                                    )
+                                }
+                                .map {
+                                    FullDayAbsenseUpsert(
+                                        childId = childId,
+                                        date = it,
+                                        absenceTypeBillable = questionnaire.absenceType,
+                                        absenceTypeNonbillable = questionnaire.absenceType,
+                                        questionnaireId = questionnaire.id,
+                                    )
+                                }
+                        }
                     }
 
                 upsertAbsences(tx, now, user, absences, questionnaire, childIds)
@@ -199,23 +228,45 @@ class HolidayPeriodControllerCitizen(
 
                 val absences =
                     body.openRanges.entries.flatMap { (childId, ranges) ->
+                        val placements =
+                            tx.getPlacementsForChildDuring(
+                                childId,
+                                ranges.minOf { it.start },
+                                ranges.maxOf { it.end },
+                            )
+                        val daycares = tx.getDaycaresById(placements.map { it.unitId }.toSet())
+                        val serviceNeeds = tx.getServiceNeedsByChild(childId)
+                        val holidays =
+                            getHolidays(
+                                FiniteDateRange(ranges.minOf { it.start }, ranges.maxOf { it.end })
+                            )
                         ranges.flatMap { range ->
-                            range.dates().map {
-                                val absenceType =
-                                    when {
-                                        range.durationInDays() >=
-                                            questionnaire.absenceTypeThreshold ->
-                                            questionnaire.absenceType
-                                        else -> AbsenceType.OTHER_ABSENCE
-                                    }
-                                FullDayAbsenseUpsert(
-                                    childId = childId,
-                                    date = it,
-                                    absenceTypeBillable = absenceType,
-                                    absenceTypeNonbillable = absenceType,
-                                    questionnaireId = questionnaire.id,
-                                )
-                            }
+                            val absenceType =
+                                when {
+                                    range.durationInDays() >= questionnaire.absenceTypeThreshold ->
+                                        questionnaire.absenceType
+                                    else -> AbsenceType.OTHER_ABSENCE
+                                }
+                            range
+                                .dates()
+                                .filter {
+                                    isOperationalDay(
+                                        it,
+                                        placements,
+                                        daycares,
+                                        serviceNeeds,
+                                        holidays,
+                                    )
+                                }
+                                .map {
+                                    FullDayAbsenseUpsert(
+                                        childId = childId,
+                                        date = it,
+                                        absenceTypeBillable = absenceType,
+                                        absenceTypeNonbillable = absenceType,
+                                        questionnaireId = questionnaire.id,
+                                    )
+                                }
                         }
                     }
 
@@ -322,6 +373,32 @@ class HolidayPeriodControllerCitizen(
             }
         tx.deleteAbsencesCreatedFromQuestionnaire(questionnaire.id, childIds)
         tx.upsertFullDayAbsences(user.evakaUserId, now, absences)
+    }
+
+    private fun isOperationalDay(
+        date: LocalDate,
+        placements: List<Placement>,
+        daycares: Map<DaycareId, Daycare>,
+        serviceNeeds: List<ServiceNeed>,
+        holidays: Set<LocalDate>,
+    ): Boolean {
+        val placement =
+            placements.find { placement ->
+                FiniteDateRange(placement.startDate, placement.endDate).includes(date)
+            } ?: return false
+
+        val daycare = daycares[placement.unitId] ?: return false
+        val serviceNeed =
+            serviceNeeds.find { serviceNeed -> serviceNeed.placementId == placement.id }
+
+        return isUnitOperationDay(
+            daycare.operationDays,
+            daycare.shiftCareOperationDays,
+            daycare.shiftCareOpenOnHolidays,
+            holidays,
+            date,
+            serviceNeed != null && serviceNeed.shiftCare != ShiftCareType.NONE,
+        )
     }
 }
 
