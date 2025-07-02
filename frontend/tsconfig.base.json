@@ -6,7 +6,7 @@
       "dom",
       "es2021"
     ],
-    "types": [],
+    "types": ["node"],
     "declaration": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
