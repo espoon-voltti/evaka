@@ -83,14 +83,22 @@ export default class CitizenDecisionsPage {
       .waitUntilHidden()
   }
 
-  async assertMetadataForDecisionShown(decisionId: string) {
+  async assertMetadataForFinanceDecisionShown(financeDecisionId: string) {
     const financeDecision = this.page.findByDataQa(
-      `finance-decision-${decisionId}`
+      `finance-decision-${financeDecisionId}`
     )
     if ((await financeDecision.getAttribute('data-status')) === 'closed') {
       await financeDecision.click()
     }
-    await this.#decisionMetadataButton(decisionId).click()
+    await this.#decisionMetadataButton(financeDecisionId).click()
+    await financeDecision
+      .findByDataQa('process-number-field')
+      .waitUntilVisible()
+  }
+  async assertMetadataForFinanceDecisionNotShown(financeDecisionId: string) {
+    await this.page
+      .findByDataQa(`finance-decision-${financeDecisionId}`)
+      .waitUntilHidden()
   }
 
   async navigateToDecisionResponse(applicationId: string) {

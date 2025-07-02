@@ -1540,13 +1540,18 @@ export async function createServiceNeeds(
 */
 export async function createVoucherValueDecisions(
   request: {
+    insertCaseProcess?: boolean | null,
     body: VoucherValueDecision[]
   }
 ): Promise<void> {
   try {
+    const params = createUrlSearchParams(
+      ['insertCaseProcess', request.insertCaseProcess?.toString()]
+    )
     const { data: json } = await devClient.request<JsonOf<void>>({
       url: uri`/value-decisions`.toString(),
       method: 'POST',
+      params,
       data: request.body satisfies JsonCompatible<VoucherValueDecision[]>
     })
     return json

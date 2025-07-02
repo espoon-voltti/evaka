@@ -84,6 +84,7 @@ import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.incomestatement.updateIncomeStatementHandled
 import fi.espoo.evaka.invoicing.data.markVoucherValueDecisionsSent
 import fi.espoo.evaka.invoicing.data.setFeeDecisionProcessId
+import fi.espoo.evaka.invoicing.data.setVoucherValueDecisionProcessId
 import fi.espoo.evaka.invoicing.data.updateFeeDecisionDocumentKey
 import fi.espoo.evaka.invoicing.data.updateVoucherValueDecisionDocumentKey
 import fi.espoo.evaka.invoicing.data.upsertFeeDecisions
@@ -540,6 +541,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
     fun createVoucherValueDecisions(
         db: Database,
         @RequestBody decisions: List<VoucherValueDecision>,
+        @RequestParam(required = false) insertCaseProcess: Boolean,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -550,6 +552,16 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
                     }
                     if (fd.documentKey != null) {
                         tx.updateVoucherValueDecisionDocumentKey(fd.id, fd.documentKey)
+                    }
+                    if (insertCaseProcess && fd.sentAt != null) {
+                        val metadata = CaseProcessMetadataService(featureConfig)
+                        metadata
+                            .getProcessParams(
+                                ArchiveProcessType.VOUCHER_VALUE_DECISION,
+                                fd.sentAt.year,
+                            )
+                            ?.let { tx.insertCaseProcess(it) }
+                            ?.also { tx.setVoucherValueDecisionProcessId(fd.id, processId = it.id) }
                     }
                 }
             }
