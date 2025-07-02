@@ -231,13 +231,15 @@ class HolidayPeriodControllerCitizen(
                         val placements =
                             tx.getPlacementsForChildDuring(
                                 childId,
-                                ranges.first().start,
-                                ranges.last().end,
+                                ranges.minOf { it.start },
+                                ranges.maxOf { it.end },
                             )
                         val daycares = tx.getDaycaresById(placements.map { it.unitId }.toSet())
                         val serviceNeeds = tx.getServiceNeedsByChild(childId)
                         val holidays =
-                            getHolidays(FiniteDateRange(ranges.first().start, ranges.last().end))
+                            getHolidays(
+                                FiniteDateRange(ranges.minOf { it.start }, ranges.maxOf { it.end })
+                            )
                         ranges.flatMap { range ->
                             val absenceType =
                                 when {
@@ -385,10 +387,9 @@ class HolidayPeriodControllerCitizen(
                 FiniteDateRange(placement.startDate, placement.endDate).includes(date)
             } ?: return false
 
-        val daycare = daycares.getValue(placement.unitId)
+        val daycare = daycares[placement.unitId] ?: return false
         val serviceNeed =
             serviceNeeds.find { serviceNeed -> serviceNeed.placementId == placement.id }
-                ?: return false
 
         return isUnitOperationDay(
             daycare.operationDays,
@@ -396,7 +397,7 @@ class HolidayPeriodControllerCitizen(
             daycare.shiftCareOpenOnHolidays,
             holidays,
             date,
-            serviceNeed.shiftCare != ShiftCareType.NONE,
+            serviceNeed?.shiftCare != ShiftCareType.NONE,
         )
     }
 }
