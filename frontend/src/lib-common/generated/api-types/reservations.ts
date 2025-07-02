@@ -17,6 +17,7 @@ import HelsinkiDateTime from '../../helsinki-date-time'
 import type { HolidayPeriodEffect } from './holidayperiod'
 import type { JsonOf } from '../../json'
 import LocalDate from '../../local-date'
+import type { OngoingAttendanceWithUnit } from './attendance'
 import type { PersonId } from './shared'
 import type { PlacementType } from './placement'
 import type { ScheduleType } from './placement'
@@ -26,6 +27,7 @@ import TimeRange from '../../time-range'
 import { deserializeJsonChildServiceNeedInfo } from './absence'
 import { deserializeJsonDailyServiceTimesValue } from './dailyservicetimes'
 import { deserializeJsonHolidayPeriodEffect } from './holidayperiod'
+import { deserializeJsonOngoingAttendanceWithUnit } from './attendance'
 
 /**
 * Generated from fi.espoo.evaka.reservations.AbsenceInfo
@@ -245,6 +247,13 @@ export interface MonthSummary {
   serviceNeedMinutes: number
   usedServiceMinutes: number
   year: number
+}
+
+/**
+* Generated from fi.espoo.evaka.reservations.AttendanceReservationController.OngoingAttendanceResponse
+*/
+export interface OngoingAttendanceResponse {
+  ongoingAttendance: OngoingAttendanceWithUnit | null
 }
 
 /**
@@ -588,6 +597,14 @@ export function deserializeJsonExpectedAbsencesRequest(json: JsonOf<ExpectedAbse
     ...json,
     attendances: json.attendances.map(e => TimeRange.parseJson(e)),
     date: LocalDate.parseIso(json.date)
+  }
+}
+
+
+export function deserializeJsonOngoingAttendanceResponse(json: JsonOf<OngoingAttendanceResponse>): OngoingAttendanceResponse {
+  return {
+    ...json,
+    ongoingAttendance: (json.ongoingAttendance != null) ? deserializeJsonOngoingAttendanceWithUnit(json.ongoingAttendance) : null
   }
 }
 

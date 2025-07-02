@@ -141,6 +141,23 @@ fun Database.Read.getOngoingAttendanceForChildren(
         }
         .toMap { column<ChildId>("child_id") to row<OngoingAttendance>() }
 
+data class OngoingAttendanceWithUnit(
+    val id: ChildAttendanceId,
+    val date: LocalDate,
+    val startTime: LocalTime,
+    val unitId: DaycareId,
+)
+
+fun Database.Read.getOngoingAttendanceInAnyUnitForChild(
+    childId: ChildId
+): OngoingAttendanceWithUnit? =
+    createQuery {
+            sql(
+                "SELECT id, date, start_time, unit_id FROM child_attendance WHERE child_id = ${bind(childId)} AND end_time IS NULL"
+            )
+        }
+        .exactlyOneOrNull()
+
 data class ChildBasics(
     val id: ChildId,
     val firstName: String,

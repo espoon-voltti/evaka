@@ -14,7 +14,9 @@ import {
   Fixture,
   familyWithTwoGuardians,
   testCareArea,
-  testDaycare
+  testDaycare,
+  testDaycare2,
+  testCareArea2
 } from '../../dev-api/fixtures'
 import {
   createDaycareGroups,
@@ -40,7 +42,7 @@ let childInformationPage: ChildInformationPage
 let childId: PersonId
 let admin: DevEmployee
 
-const mockedDate = LocalDate.of(2022, 3, 1)
+const mockedDate = LocalDate.of(2020, 3, 1)
 
 beforeEach(async () => {
   await resetServiceState()
@@ -420,6 +422,24 @@ describe('Child information - backup care', () => {
     await section.assertError(
       'Varasijoitus ei ole minkään lapsen sijoituksen aikana.'
     )
+  })
+
+  test('error is shown if child has ongoing attendance in another unit', async () => {
+    await testCareArea2.save()
+    await testDaycare2.save()
+    await Fixture.childAttendance({
+      unitId: testDaycare.id,
+      childId,
+      date: mockedDate,
+      arrived: LocalTime.of(8, 0),
+      departed: null
+    }).save()
+    await section.fillNewBackupCareFields(
+      testDaycare2.name,
+      mockedDate,
+      mockedDate
+    )
+    await section.assertError('Lapsi on jo kirjattu sisään toiseen yksikköön.')
   })
 })
 

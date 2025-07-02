@@ -1718,7 +1718,9 @@ export const fi = {
       dateRange: 'Varasijoitus ajalle',
       unit: 'Yksikkö',
       validationNoMatchingPlacement:
-        'Varasijoitus ei ole minkään lapsen sijoituksen aikana.'
+        'Varasijoitus ei ole minkään lapsen sijoituksen aikana.',
+      validationChildAlreadyInOtherUnit:
+        'Lapsi on jo kirjattu sisään toiseen yksikköön.'
     },
     backupPickups: {
       title: 'Varahakijat',

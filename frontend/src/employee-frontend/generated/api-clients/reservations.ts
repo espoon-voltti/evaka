@@ -12,9 +12,12 @@ import type { ExpectedAbsencesResponse } from 'lib-common/generated/api-types/re
 import type { JsonCompatible } from 'lib-common/json'
 import type { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
+import type { OngoingAttendanceResponse } from 'lib-common/generated/api-types/reservations'
+import type { PersonId } from 'lib-common/generated/api-types/shared'
 import type { UnitAttendanceReservations } from 'lib-common/generated/api-types/reservations'
 import { client } from '../../api/client'
 import { createUrlSearchParams } from 'lib-common/api'
+import { deserializeJsonOngoingAttendanceResponse } from 'lib-common/generated/api-types/reservations'
 import { deserializeJsonUnitAttendanceReservations } from 'lib-common/generated/api-types/reservations'
 import { uri } from 'lib-common/uri'
 
@@ -59,6 +62,26 @@ export async function getExpectedAbsences(
     data: request.body satisfies JsonCompatible<ExpectedAbsencesRequest>
   })
   return json
+}
+
+
+/**
+* Generated from fi.espoo.evaka.reservations.AttendanceReservationController.getOngoingChildAttendance
+*/
+export async function getOngoingChildAttendance(
+  request: {
+    childId: PersonId
+  }
+): Promise<OngoingAttendanceResponse> {
+  const params = createUrlSearchParams(
+    ['childId', request.childId]
+  )
+  const { data: json } = await client.request<JsonOf<OngoingAttendanceResponse>>({
+    url: uri`/employee/attendance-reservations/ongoing`.toString(),
+    method: 'GET',
+    params
+  })
+  return deserializeJsonOngoingAttendanceResponse(json)
 }
 
 

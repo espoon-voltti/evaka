@@ -59,6 +59,7 @@ import {
 } from '../../generated/api-clients/placement'
 import {
   getAttendanceReservations,
+  getOngoingChildAttendance,
   getExpectedAbsences,
   postChildDatePresence,
   postReservations
@@ -224,6 +225,8 @@ export const updateUnitClosingDateMutation = q.mutation(updateUnitClosingDate, [
 export const unitAttendanceReservationsQuery = q.query(
   getAttendanceReservations
 )
+
+export const ongoingChildAttendanceQuery = q.query(getOngoingChildAttendance)
 
 export const postReservationsMutation = q.mutation(postReservations, [
   unitAttendanceReservationsQuery.prefix
