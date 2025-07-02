@@ -104,6 +104,7 @@
     "jest": "30.0.3",
     "jest-circus": "30.0.3",
     "jest-environment-jsdom": "30.0.2",
+    "jest-environment-jsdom-global": "4.0.0",
     "jest-environment-node": "30.0.2",
     "jest-junit": "16.0.0",
     "make-error-cause": "2.3.0",

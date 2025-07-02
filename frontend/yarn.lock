@@ -6372,6 +6372,7 @@ __metadata:
     jest: "npm:30.0.3"
     jest-circus: "npm:30.0.3"
     jest-environment-jsdom: "npm:30.0.2"
+    jest-environment-jsdom-global: "npm:4.0.0"
     jest-environment-node: "npm:30.0.2"
     jest-junit: "npm:16.0.0"
     leaflet: "npm:1.9.4"
@@ -7803,6 +7804,15 @@ __metadata:
     jest-util: "npm:30.0.2"
     pretty-format: "npm:30.0.2"
   checksum: 10/5dd3e43d657a6c779c3db665a67a2888e80c27a4d38a63763328c3b56d602f7e4414a278b536107eb0581c54fd890f14a1231946796846023640bc62947cecb2
+  languageName: node
+  linkType: hard
+
+"jest-environment-jsdom-global@npm:4.0.0":
+  version: 4.0.0
+  resolution: "jest-environment-jsdom-global@npm:4.0.0"
+  peerDependencies:
+    jest-environment-jsdom: 22.x || 23.x || 24.x || 25.x || 26.x || 27.x || 28.x || 29.x
+  checksum: 10/3a4dbb8b3dad93fe4ee14ed1aeb984f33bbd1a5fdbc58d4ce4b30b0b12277aaa3619476b60e6c1b0bab64a2d145c421ef9b25ad2aebbcff573de56b4254a338d
   languageName: node
   linkType: hard
 
