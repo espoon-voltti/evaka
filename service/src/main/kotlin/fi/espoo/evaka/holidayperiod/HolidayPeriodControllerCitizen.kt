@@ -397,7 +397,7 @@ class HolidayPeriodControllerCitizen(
             daycare.shiftCareOpenOnHolidays,
             holidays,
             date,
-            serviceNeed?.shiftCare != ShiftCareType.NONE,
+            serviceNeed != null && serviceNeed.shiftCare != ShiftCareType.NONE,
         )
     }
 }
