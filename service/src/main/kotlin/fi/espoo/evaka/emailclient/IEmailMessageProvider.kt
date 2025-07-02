@@ -93,6 +93,8 @@ interface IEmailMessageProvider {
 
     fun pedagogicalDocumentNotification(language: Language, childId: ChildId): EmailContent
 
+    fun citizenBasicDocumentNotification(language: Language, childId: ChildId): EmailContent
+
     fun incomeNotification(
         notificationType: IncomeNotificationType,
         language: Language,

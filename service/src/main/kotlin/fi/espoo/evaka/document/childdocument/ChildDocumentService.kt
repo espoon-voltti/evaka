@@ -59,6 +59,7 @@ class ChildDocumentService(
         asyncJobRunner.registerHandler(::createAndUploadPdf)
         asyncJobRunner.registerHandler(::sendSfiDecision)
         asyncJobRunner.registerHandler(::sendChildDocumentNotificationEmail)
+        asyncJobRunner.registerHandler(::sendCitizenBasicDocumentNotificationEmail)
         asyncJobRunner.registerHandler<AsyncJob.DeleteChildDocumentPdf> { _, _, msg ->
             documentClient.delete(DocumentKey.ChildDocument(msg.key))
         }
@@ -228,7 +229,7 @@ class ChildDocumentService(
                 .filter { !tx.isDocumentPublishedContentUpToDate(it) }
                 .also {
                     schedulePdfGeneration(tx, it, now)
-                    scheduleEmailNotification(tx, it, now)
+                    scheduleEmailNotification(tx, it, now, DocumentStatus.COMPLETED)
                 }
 
             tx.markCompletedAndPublish(documentIds, now)
@@ -243,8 +244,36 @@ class ChildDocumentService(
         tx: Database.Transaction,
         ids: List<ChildDocumentId>,
         now: HelsinkiDateTime,
+        documentStatus: DocumentStatus,
     ) {
-        val payloads = ids.flatMap { getChildDocumentNotifications(tx, it, now.toLocalDate()) }
+        val payloads: List<AsyncJob>
+
+        if (documentStatus == DocumentStatus.CITIZEN_DRAFT) {
+            payloads =
+                ids.flatMap {
+                    getNotificationRecipients(tx, it, now.toLocalDate()).toList {
+                        AsyncJob.SendCitizenBasicDocumentNotificationEmail(
+                            documentId = it,
+                            childId = column("child_id"),
+                            recipientId = column("recipient_id"),
+                            language = getLanguage(column("language")),
+                        )
+                    }
+                }
+        } else {
+            payloads =
+                ids.flatMap {
+                    getNotificationRecipients(tx, it, now.toLocalDate()).toList {
+                        AsyncJob.SendChildDocumentNotificationEmail(
+                            documentId = it,
+                            childId = column("child_id"),
+                            recipientId = column("recipient_id"),
+                            language = getLanguage(column("language")),
+                        )
+                    }
+                }
+        }
+
         logger.info { "Scheduling sending of ${payloads.size} child document notification emails" }
         asyncJobRunner.plan(tx, payloads = payloads, runAt = now, retryCount = 10)
     }
@@ -276,14 +305,14 @@ class ChildDocumentService(
         }
     }
 
-    private fun getChildDocumentNotifications(
+    private fun getNotificationRecipients(
         tx: Database.Read,
         documentId: ChildDocumentId,
         today: LocalDate,
-    ): List<AsyncJob.SendChildDocumentNotificationEmail> {
+    ): Database.Query {
         return tx.createQuery {
-                sql(
-                    """
+            sql(
+                """
 WITH children AS (
     SELECT child_id
     FROM child_document
@@ -304,16 +333,8 @@ FROM parents
 JOIN person ON person.id = parents.parent_id
 WHERE person.email IS NOT NULL AND person.email != ''
 """
-                )
-            }
-            .toList {
-                AsyncJob.SendChildDocumentNotificationEmail(
-                    documentId = documentId,
-                    childId = column("child_id"),
-                    recipientId = column("recipient_id"),
-                    language = getLanguage(column("language")),
-                )
-            }
+            )
+        }
     }
 
     fun sendChildDocumentNotificationEmail(
@@ -330,6 +351,29 @@ WHERE person.email IS NOT NULL AND person.email != ''
                 emailType = EmailMessageType.DOCUMENT_NOTIFICATION,
                 fromAddress = emailEnv.sender(msg.language),
                 content = emailMessageProvider.childDocumentNotification(msg.language, msg.childId),
+                traceId = msg.documentId.toString(),
+            )
+            ?.also { emailClient.send(it) }
+    }
+
+    fun sendCitizenBasicDocumentNotificationEmail(
+        db: Database.Connection,
+        clock: EvakaClock,
+        msg: AsyncJob.SendCitizenBasicDocumentNotificationEmail,
+    ) {
+        logger.info {
+            "Sending citizen basic document notification email for document ${msg.documentId} to person ${msg.recipientId}"
+        }
+        Email.create(
+                dbc = db,
+                personId = msg.recipientId,
+                emailType = EmailMessageType.DOCUMENT_NOTIFICATION,
+                fromAddress = emailEnv.sender(msg.language),
+                content =
+                    emailMessageProvider.citizenBasicDocumentNotification(
+                        msg.language,
+                        msg.childId,
+                    ),
                 traceId = msg.documentId.toString(),
             )
             ?.also { emailClient.send(it) }
