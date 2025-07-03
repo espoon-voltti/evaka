@@ -6,6 +6,7 @@ package fi.espoo.evaka.document.childdocument
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
+import fi.espoo.evaka.ChildAudit
 import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.caseprocess.CaseProcessState
 import fi.espoo.evaka.caseprocess.deleteProcessByDocumentId
@@ -320,15 +321,26 @@ class ChildDocumentController(
                         }
                     }
 
-                    tx.updateChildDocumentContent(
-                        documentId,
-                        document.status,
-                        body,
-                        clock.now(),
-                        user.evakaUserId,
+                    val contentChanged = document.content != body
+                    if (contentChanged) {
+                        tx.updateChildDocumentContent(
+                            documentId,
+                            document.status,
+                            body,
+                            clock.now(),
+                            user.evakaUserId,
+                        )
+                    }
+
+                    document.child.id to contentChanged
+                }
+                .also { (childId, contentChanged) ->
+                    ChildAudit.ChildDocumentUpdateContent.log(
+                        targetId = AuditId(documentId),
+                        childId = AuditId(childId),
+                        meta = mapOf("contentChanged" to contentChanged),
                     )
                 }
-                .also { Audit.ChildDocumentUpdateContent.log(targetId = AuditId(documentId)) }
         }
     }
 
