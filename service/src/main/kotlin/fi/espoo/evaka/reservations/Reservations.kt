@@ -630,9 +630,8 @@ fun computeUsedService(
         absenceTypes == setOf(AbsenceType.FREE_ABSENCE) &&
             absenceCategories == placementType.absenceCategories()
     val isRefundedAbsence =
-        absenceTypes.intersect(
-            setOf(AbsenceType.FORCE_MAJEURE, AbsenceType.FREE_ABSENCE, AbsenceType.PARENTLEAVE)
-        ) == absenceTypes && absenceCategories == placementType.absenceCategories()
+        absenceTypes.intersect(setOf(AbsenceType.FORCE_MAJEURE, AbsenceType.PARENTLEAVE)) ==
+            absenceTypes && absenceCategories == placementType.absenceCategories()
 
     // days used in average calc
     val daysInMonth =

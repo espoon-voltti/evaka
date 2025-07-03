@@ -365,44 +365,43 @@ class UsedServiceTests {
     }
 
     @Test
-    fun `average for free absence types is divided by the number of operation days`() {
+    fun `average for refunded absence types is divided by the number of operation days`() {
         val date = today.minusDays(1)
 
         val operationDatesWithCount = { n: Int ->
             (FiniteDateRange.ofMonth(date).dates().take(n - 1) + date).toSet()
         }
 
-        listOf(AbsenceType.FORCE_MAJEURE, AbsenceType.FREE_ABSENCE, AbsenceType.PARENTLEAVE)
-            .forEach { absenceType ->
-                compute(
-                        date = date,
-                        placementType = PlacementType.DAYCARE,
-                        serviceNeedHours = 120,
-                        absences = listOf(absenceType to AbsenceCategory.BILLABLE),
-                        operationDates = operationDatesWithCount(23),
-                    )
-                    .also {
-                        assertEquals((120.0 * 60 / 23).roundToLong(), it.usedServiceMinutes)
-                        assertEquals(emptyList(), it.usedServiceRanges)
-                    }
+        listOf(AbsenceType.FORCE_MAJEURE, AbsenceType.PARENTLEAVE).forEach { absenceType ->
+            compute(
+                    date = date,
+                    placementType = PlacementType.DAYCARE,
+                    serviceNeedHours = 120,
+                    absences = listOf(absenceType to AbsenceCategory.BILLABLE),
+                    operationDates = operationDatesWithCount(23),
+                )
+                .also {
+                    assertEquals((120.0 * 60 / 23).roundToLong(), it.usedServiceMinutes)
+                    assertEquals(emptyList(), it.usedServiceRanges)
+                }
 
-                compute(
-                        date = date,
-                        placementType = PlacementType.PRESCHOOL_DAYCARE,
-                        shiftCareType = ShiftCareType.FULL,
-                        serviceNeedHours = 120,
-                        absences =
-                            listOf(
-                                absenceType to AbsenceCategory.BILLABLE,
-                                absenceType to AbsenceCategory.NONBILLABLE,
-                            ),
-                        operationDates = operationDatesWithCount(31),
-                    )
-                    .also {
-                        assertEquals((120.0 * 60 / 31).roundToLong(), it.usedServiceMinutes)
-                        assertEquals(emptyList(), it.usedServiceRanges)
-                    }
-            }
+            compute(
+                    date = date,
+                    placementType = PlacementType.PRESCHOOL_DAYCARE,
+                    shiftCareType = ShiftCareType.FULL,
+                    serviceNeedHours = 120,
+                    absences =
+                        listOf(
+                            absenceType to AbsenceCategory.BILLABLE,
+                            absenceType to AbsenceCategory.NONBILLABLE,
+                        ),
+                    operationDates = operationDatesWithCount(31),
+                )
+                .also {
+                    assertEquals((120.0 * 60 / 31).roundToLong(), it.usedServiceMinutes)
+                    assertEquals(emptyList(), it.usedServiceRanges)
+                }
+        }
     }
 
     @Test
@@ -421,7 +420,7 @@ class UsedServiceTests {
                 operationDates = operationDatesWithCount(23),
             )
             .also {
-                assertEquals((120.0 * 60 / 23).roundToLong(), it.reservedMinutes)
+                assertEquals((120.0 * 60 / 21).roundToLong(), it.reservedMinutes)
                 assertEquals(0, it.usedServiceMinutes)
                 assertEquals(emptyList(), it.usedServiceRanges)
             }
@@ -439,7 +438,7 @@ class UsedServiceTests {
                 operationDates = operationDatesWithCount(31),
             )
             .also {
-                assertEquals((120.0 * 60 / 31).roundToLong(), it.reservedMinutes)
+                assertEquals((120.0 * 60 / 21).roundToLong(), it.reservedMinutes)
                 assertEquals(0, it.usedServiceMinutes)
                 assertEquals(emptyList(), it.usedServiceRanges)
             }
@@ -461,8 +460,8 @@ class UsedServiceTests {
                 operationDates = operationDatesWithCount(23),
             )
             .also {
-                assertEquals((120.0 * 60 / 23).roundToLong(), it.reservedMinutes)
-                assertEquals((120.0 * 60 / 23).roundToLong(), it.usedServiceMinutes)
+                assertEquals((120.0 * 60 / 21).roundToLong(), it.reservedMinutes)
+                assertEquals((120.0 * 60 / 21).roundToLong(), it.usedServiceMinutes)
                 assertEquals(emptyList(), it.usedServiceRanges)
             }
 
@@ -479,8 +478,8 @@ class UsedServiceTests {
                 operationDates = operationDatesWithCount(31),
             )
             .also {
-                assertEquals((120.0 * 60 / 31).roundToLong(), it.reservedMinutes)
-                assertEquals((120.0 * 60 / 31).roundToLong(), it.usedServiceMinutes)
+                assertEquals((120.0 * 60 / 21).roundToLong(), it.reservedMinutes)
+                assertEquals((120.0 * 60 / 21).roundToLong(), it.usedServiceMinutes)
                 assertEquals(emptyList(), it.usedServiceRanges)
             }
     }
