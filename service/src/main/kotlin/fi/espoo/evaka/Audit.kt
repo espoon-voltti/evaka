@@ -167,6 +167,7 @@ enum class Audit(
     ChildAssistanceNeedVoucherCoefficientUpdate,
     ChildAssistanceNeedVoucherCoefficientDelete,
     ChildAttendanceChildrenRead,
+    ChildAttendanceOngoingRead,
     ChildAttendanceReportRead,
     ChildAttendanceStatusesRead,
     // ChildAttendancesUpsert,

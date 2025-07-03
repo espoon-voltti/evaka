@@ -6,6 +6,7 @@ package fi.espoo.evaka.backupcare
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
+import fi.espoo.evaka.attendance.getOngoingAttendanceInAnyUnitForChild
 import fi.espoo.evaka.placement.childPlacementsHasConsecutiveRange
 import fi.espoo.evaka.placement.clearCalendarEventAttendees
 import fi.espoo.evaka.placement.getPlacementsForChildDuring
@@ -102,6 +103,13 @@ class BackupCareController(private val accessControl: AccessControl) {
                                     body.period,
                                 )
                             }
+                        if (body.period.includes(clock.today())) {
+                            val currentUnit =
+                                tx.getOngoingAttendanceInAnyUnitForChild(childId)?.unitId
+                            if (currentUnit != null && currentUnit != body.unitId) {
+                                throw BadRequest("Child has ongoing attendance in another unit")
+                            }
+                        }
                         tx.createBackupCare(user.evakaUserId, clock.now(), childId, body)
                     }
                 }

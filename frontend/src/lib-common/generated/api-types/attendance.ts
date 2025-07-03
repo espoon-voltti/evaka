@@ -6,6 +6,7 @@
 
 import type { AbsenceCategory } from './absence'
 import type { AbsenceType } from './absence'
+import type { ChildAttendanceId } from './shared'
 import type { ChildDailyNote } from './note'
 import type { ChildStickyNote } from './note'
 import type { DailyServiceTimesValue } from './dailyservicetimes'
@@ -273,6 +274,16 @@ export interface GroupInfo {
   name: string
   staffCapacity: number
   utilization: number
+}
+
+/**
+* Generated from fi.espoo.evaka.attendance.OngoingAttendanceWithUnit
+*/
+export interface OngoingAttendanceWithUnit {
+  date: LocalDate
+  id: ChildAttendanceId
+  startTime: LocalTime
+  unitId: DaycareId
 }
 
 /**
@@ -598,6 +609,15 @@ export function deserializeJsonExternalStaffMember(json: JsonOf<ExternalStaffMem
   return {
     ...json,
     arrived: HelsinkiDateTime.parseIso(json.arrived)
+  }
+}
+
+
+export function deserializeJsonOngoingAttendanceWithUnit(json: JsonOf<OngoingAttendanceWithUnit>): OngoingAttendanceWithUnit {
+  return {
+    ...json,
+    date: LocalDate.parseIso(json.date),
+    startTime: LocalTime.parseIso(json.startTime)
   }
 }
 

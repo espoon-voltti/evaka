@@ -12,7 +12,9 @@ import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.absence.ChildServiceNeedInfo
 import fi.espoo.evaka.absence.getAbsencesOfChildByRange
 import fi.espoo.evaka.assistance.getAssistanceFactorsForChildrenOverRange
+import fi.espoo.evaka.attendance.OngoingAttendanceWithUnit
 import fi.espoo.evaka.attendance.deleteAbsencesByDate
+import fi.espoo.evaka.attendance.getOngoingAttendanceInAnyUnitForChild
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue
 import fi.espoo.evaka.dailyservicetimes.getChildDailyServiceTimes
 import fi.espoo.evaka.dailyservicetimes.getDailyServiceTimesForChildren
@@ -269,6 +271,31 @@ class AttendanceReservationController(
                     meta = mapOf("from" to from, "to" to to),
                 )
             }
+    }
+
+    data class OngoingAttendanceResponse(val ongoingAttendance: OngoingAttendanceWithUnit?)
+
+    @GetMapping("/employee/attendance-reservations/ongoing")
+    fun getOngoingChildAttendance(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @RequestParam childId: ChildId,
+    ): OngoingAttendanceResponse {
+        return db.connect { dbc ->
+                dbc.read { tx ->
+                    ac.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Child.READ_ONGOING_ATTENDANCE,
+                        childId,
+                    )
+                    val attendance = tx.getOngoingAttendanceInAnyUnitForChild(childId)
+                    OngoingAttendanceResponse(attendance)
+                }
+            }
+            .also { Audit.ChildAttendanceOngoingRead.log(targetId = AuditId(childId)) }
     }
 
     @PostMapping("/employee/attendance-reservations")

@@ -39,11 +39,12 @@ import { unitsQuery } from '../../../queries'
 import { ChildContext } from '../../../state'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
-import type { DateRange } from '../../../utils/date'
+import { rangeContainsDate, type DateRange } from '../../../utils/date'
 import {
   isDateRangeInverted,
   isDateRangeOverlappingWithExisting
 } from '../../../utils/validation/validations'
+import { ongoingChildAttendanceQuery } from '../../unit/queries'
 import {
   createBackupCareMutation,
   placementsQuery,
@@ -157,6 +158,10 @@ export default function BackupCareForm({
 
   const [formState, setFormState] = useState<FormState>(initialFormState)
 
+  const ongoingAttendanceResult = useQueryResult(
+    ongoingChildAttendanceQuery({ childId })
+  )
+
   const [validatedState, formErrors] = useMemo((): [
     ValidatedFormState | null,
     string[]
@@ -193,17 +198,32 @@ export default function BackupCareForm({
       errors.push(
         i18n.childInformation.backupCares.validationNoMatchingPlacement
       )
+    else if (
+      rangeContainsDate({ startDate, endDate }, LocalDate.todayInSystemTz()) &&
+      ongoingAttendanceResult.isSuccess &&
+      ongoingAttendanceResult.value?.ongoingAttendance &&
+      ongoingAttendanceResult.value.ongoingAttendance.unitId !== unit.id
+    )
+      errors.push(
+        i18n.childInformation.backupCares.validationChildAlreadyInOtherUnit
+      )
 
     if (errors.length > 0) {
       return [null, errors]
     } else {
       return [{ unit, startDate, endDate }, []]
     }
-  }, [backupCare, backupCares, consecutivePlacementRanges, formState, i18n])
+  }, [
+    backupCare,
+    backupCares,
+    consecutivePlacementRanges,
+    formState,
+    i18n,
+    ongoingAttendanceResult
+  ])
 
   const updateFormState: UpdateStateFn<FormState> = (value) => {
-    const newState = { ...formState, ...value }
-    setFormState(newState)
+    setFormState((oldState) => ({ ...oldState, ...value }))
   }
 
   const options = useMemo(
@@ -311,7 +331,11 @@ export default function BackupCareForm({
             mutation={createOrUpdateBackupCare}
             onClick={onClick}
             onSuccess={clearUiMode}
-            disabled={formErrors.length > 0 || !formState.unit}
+            disabled={
+              formErrors.length > 0 ||
+              !formState.unit ||
+              ongoingAttendanceResult.isLoading
+            }
             data-qa="submit-backup-care-form"
             text={i18n.common.confirm}
           />

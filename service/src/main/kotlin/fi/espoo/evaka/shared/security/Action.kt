@@ -1210,6 +1210,11 @@ sealed interface Action {
             HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY)
                 .inPlacementUnitOfChild(),
         ),
+        READ_ONGOING_ATTENDANCE(
+            HasGlobalRole(ADMIN, SERVICE_WORKER),
+            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY)
+                .inPlacementUnitOfChild(),
+        ),
         READ_BACKUP_CARE(
             HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, FINANCE_STAFF),
             HasUnitRole(
