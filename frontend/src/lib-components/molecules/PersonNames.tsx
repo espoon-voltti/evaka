@@ -4,93 +4,74 @@
 
 import React from 'react'
 
-import type { NamedPerson, PersonNameFormat } from 'lib-common/names'
+import type { NamedPerson } from 'lib-common/names'
+import { formatPersonName } from 'lib-common/names'
 
-import { useTranslations, type Translations } from '../i18n'
+import { useTranslations } from '../i18n'
 
-function formatFirstName(
-  firstName: string | undefined,
-  i18n: Translations
-): string {
-  return firstName || i18n.common.noFirstName
-}
-
-function formatLastName(
-  lastName: string | undefined,
-  i18n: Translations
-): string {
-  return lastName || i18n.common.noLastName
-}
-
-function formatFirstFirstName(
-  firstName: string | undefined,
-  i18n: Translations
-): string {
-  if (!firstName) return i18n.common.noFirstName
-
-  const firstNames = firstName.split(/\s/)
-  return firstNames.length > 0 ? firstNames[0] : i18n.common.noFirstName
-}
-
-function formatNickName(
-  preferred: string | null | undefined,
-  firstName: string | undefined,
-  i18n: Translations
-): string {
-  if (preferred) return preferred
-  if (!firstName) return i18n.common.noFirstName
-
-  const firstNames = firstName.split(/\s/)
-  return firstNames.length > 0 ? firstNames[0] : i18n.common.noFirstName
-}
-
-export function usePersonName(
-  person: NamedPerson | undefined,
-  format: PersonNameFormat
-): string {
-  const i18n = useTranslations()
-  const { firstName, lastName, preferredName, preferredFirstName } =
-    person ?? {}
-  const preferred = preferredName || preferredFirstName
-  switch (format) {
-    case 'First Last (Preferred)':
-      return `${formatFirstName(firstName, i18n)} ${formatLastName(lastName, i18n)}${preferred ? ` (${preferred})` : ''}`
-    case 'First Last':
-      return `${formatFirstName(firstName, i18n)} ${formatLastName(lastName, i18n)}`
-    case 'First':
-      return formatFirstName(firstName, i18n)
-    case 'FirstFirst Last (Preferred)':
-      return `${formatFirstFirstName(firstName, i18n)} ${formatLastName(lastName, i18n)}${preferred ? ` (${preferred})` : ''}`
-    case 'FirstFirst Last':
-      return `${formatFirstFirstName(firstName, i18n)} ${formatLastName(lastName, i18n)}`
-    case 'FirstFirst':
-      return formatFirstFirstName(firstName, i18n)
-    case 'Last First':
-      return `${formatLastName(lastName, i18n)} ${formatFirstName(firstName, i18n)}`
-    case 'Last FirstFirst':
-      return `${formatLastName(lastName, i18n)} ${formatFirstFirstName(firstName, i18n)}`
-    case 'Last Preferred':
-      return `${formatLastName(lastName, i18n)} ${formatNickName(preferred, firstName, i18n)}`
-    case 'Last, First':
-      return `${formatLastName(lastName, i18n)}, ${formatFirstName(firstName, i18n)}`
-    case 'Last, FirstFirst':
-      return `${formatLastName(lastName, i18n)}, ${formatFirstFirstName(firstName, i18n)}`
-    case 'Last':
-      return formatLastName(lastName, i18n)
-    case 'Preferred Last':
-      return `${formatNickName(preferred, firstName, i18n)} ${formatLastName(lastName, i18n)}`
-    case 'Preferred':
-      return formatNickName(preferred, firstName, i18n)
-  }
-}
-
-interface PersonNameProps {
-  person: NamedPerson
-  format: PersonNameFormat
-}
+type PersonNameProps =
+  | {
+      person: NamedPerson
+      format:
+        | 'First Last (Preferred)'
+        | 'FirstFirst Last (Preferred)'
+        | 'Last Preferred'
+        | 'Preferred Last'
+    }
+  | {
+      person: Pick<NamedPerson, 'firstName' | 'lastName'>
+      format:
+        | 'First Last'
+        | 'FirstFirst Last'
+        | 'Last First'
+        | 'Last FirstFirst'
+        | 'Last, First'
+        | 'Last, FirstFirst'
+    }
+  | { person: Pick<NamedPerson, 'firstName'>; format: 'First' | 'FirstFirst' }
+  | { person: Pick<NamedPerson, 'lastName'>; format: 'Last' }
+  | {
+      person: Pick<
+        NamedPerson,
+        'firstName' | 'preferredName' | 'preferredFirstName'
+      >
+      format: 'Preferred'
+    }
 
 export function PersonName(props: PersonNameProps) {
+  const i18n = useTranslations()
   const { person, format } = props
-  const formattedName = usePersonName(person, format)
+
+  // The switch/case is required because TypeScript's type narrowing is not smart enough. This causes a type error:
+  // const formattedName = formatPersonName(person, format, i18n.common)
+
+  let formattedName: string
+  switch (format) {
+    case 'First Last (Preferred)':
+    case 'FirstFirst Last (Preferred)':
+    case 'Last Preferred':
+    case 'Preferred Last':
+      formattedName = formatPersonName(person, format, i18n.common)
+      break
+    case 'First Last':
+    case 'FirstFirst Last':
+    case 'Last First':
+    case 'Last FirstFirst':
+    case 'Last, First':
+    case 'Last, FirstFirst':
+      formattedName = formatPersonName(person, format, i18n.common)
+      break
+    case 'First':
+    case 'FirstFirst':
+      formattedName = formatPersonName(person, format, i18n.common)
+      break
+    case 'Last':
+      formattedName = formatPersonName(person, format, i18n.common)
+      break
+    case 'Preferred':
+      formattedName = formatPersonName(person, format, i18n.common)
+      break
+  }
+
   return <span translate="no">{formattedName}</span>
 }

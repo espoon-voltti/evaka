@@ -59,20 +59,14 @@ export default React.memo(function GuardianSubSection({
         <FixedSpaceColumn spacing="xs">
           <Label>{t.applications.editor.contactInfo.guardianFirstName}</Label>
           <PersonName
-            person={{
-              firstName: formData.guardianFirstName,
-              lastName: formData.guardianLastName
-            }}
+            person={{ firstName: formData.guardianFirstName }}
             format="First"
           />
         </FixedSpaceColumn>
         <FixedSpaceColumn spacing="xs">
           <Label>{t.applications.editor.contactInfo.guardianLastName}</Label>
           <PersonName
-            person={{
-              firstName: formData.guardianFirstName,
-              lastName: formData.guardianLastName
-            }}
+            person={{ lastName: formData.guardianLastName }}
             format="Last"
           />
         </FixedSpaceColumn>

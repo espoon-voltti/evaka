@@ -260,7 +260,7 @@ const DiscussionChildElement = React.memo(function DiscussionChildElement({
     <div data-qa={`discussion-child-${childWithSurveys.childId}`}>
       <StaticChip color={colors.main.m1}>
         <PersonName
-          person={{ firstName: childWithSurveys.firstName, lastName: '' }}
+          person={{ firstName: childWithSurveys.firstName }}
           format="FirstFirst"
         />
       </StaticChip>
