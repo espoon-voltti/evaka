@@ -11,6 +11,7 @@ import type { EmailVerification } from 'lib-common/generated/api-types/pis'
 import type LocalDate from 'lib-common/local-date'
 import { formatPersonName } from 'lib-common/names'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
+import OrderedList from 'lib-components/atoms/OrderedList'
 import UnorderedList from 'lib-components/atoms/UnorderedList'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import type { Translations as ComponentTranslations } from 'lib-components/i18n'
@@ -199,6 +200,45 @@ export default {
   loginPage: {
     title: 'Espoon kaupungin varhaiskasvatus',
     systemNotification: 'Tärkeä tiedote',
+    addToHomeScreen: {
+      title: 'Haluatko löytää tälle sivulle helpommin?',
+      subTitle: 'Lisää eVaka puhelimesi kotivalikkoon!',
+      ios: 'Lisää pikakuvake iOS-laitteella (Safari)',
+      android: 'Lisää pikakuvake Android-laitteella (Chrome)',
+      instructions: {
+        ios: (
+          <>
+            <OrderedList>
+              <li>
+                Paina “jaa”-ikonia selaimen alalaidassa (neliö, jossa on
+                ylöspäin osoittava nuoli)
+              </li>
+              <li>Skrollaa alas ja valitse “lisää kotivalikkoon”</li>
+              <li>Kirjoita halutessasi pikakuvakkeelle nimi</li>
+              <li>Paina “Lisää” sivun yläreunasta</li>
+            </OrderedList>
+            <P>
+              Nyt kotivalikossasi pitäisi näkyä ikoni, jonka painaminen avaa
+              tämän sivun.
+            </P>
+          </>
+        ),
+        android: (
+          <>
+            <OrderedList>
+              <li>Paina “valikko”-ikonia (⋮) selaimen oikeassa ylänurkassa</li>
+              <li>Valitse “Lisää aloitusnäyttöön”</li>
+              <li>Kirjoita halutessasi pikakuvakkeelle nimi</li>
+              <li>Paina “Luo pikakuvake”</li>
+            </OrderedList>
+            <P>
+              Nyt kotivalikossasi pitäisi näkyä ikoni, jonka painaminen avaa
+              tämän sivun.
+            </P>
+          </>
+        )
+      }
+    },
     login: {
       title: 'Kirjaudu käyttäjätunnuksella',
       paragraph:

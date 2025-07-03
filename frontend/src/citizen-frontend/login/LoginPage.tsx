@@ -9,6 +9,7 @@ import { Link, Redirect, useLocation, useSearchParams } from 'wouter'
 
 import { useQueryResult } from 'lib-common/query'
 import Main from 'lib-components/atoms/Main'
+import UnorderedList from 'lib-components/atoms/UnorderedList'
 import LinkButton from 'lib-components/atoms/buttons/LinkButton'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
@@ -21,7 +22,7 @@ import {
   InfoButton
 } from 'lib-components/molecules/ExpandingInfo'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
-import { fontWeights, H1, H2, P } from 'lib-components/typography'
+import { fontWeights, H1, H2, P, Strong } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { farMap } from 'lib-icons'
 
@@ -66,35 +67,40 @@ export default React.memo(function LoginPage() {
         <FixedSpaceColumn spacing="s">
           <ContentArea opaque>
             <H1 noMargin>{i18n.loginPage.title}</H1>
+            {systemNotifications.isSuccess &&
+              systemNotifications.value.notification && (
+                <>
+                  <Gap size="m" />
+                  <AlertBox
+                    title={i18n.loginPage.systemNotification}
+                    message={
+                      <div>
+                        {(lang === 'sv'
+                          ? systemNotifications.value.notification.textSv
+                          : lang === 'en'
+                            ? systemNotifications.value.notification.textEn
+                            : systemNotifications.value.notification.text
+                        )
+                          .split('\n')
+                          .map((line, index) => (
+                            <Fragment key={index}>
+                              {line}
+                              <br />
+                            </Fragment>
+                          ))}
+                      </div>
+                    }
+                    wide
+                    noMargin
+                    data-qa="system-notification"
+                  />
+                </>
+              )}
+            <MobileOnly>
+              <Gap size="m" />
+              <AddToHomeScreenInstructions />
+            </MobileOnly>
           </ContentArea>
-          {systemNotifications.isSuccess &&
-            systemNotifications.value.notification && (
-              <ContentArea opaque>
-                <AlertBox
-                  title={i18n.loginPage.systemNotification}
-                  message={
-                    <div>
-                      {(lang === 'sv'
-                        ? systemNotifications.value.notification.textSv
-                        : lang === 'en'
-                          ? systemNotifications.value.notification.textEn
-                          : systemNotifications.value.notification.text
-                      )
-                        .split('\n')
-                        .map((line, index) => (
-                          <Fragment key={index}>
-                            {line}
-                            <br />
-                          </Fragment>
-                        ))}
-                    </div>
-                  }
-                  wide
-                  noMargin
-                  data-qa="system-notification"
-                />
-              </ContentArea>
-            )}
           <ContentArea opaque>
             <H2 noMargin>{i18n.loginPage.login.title}</H2>
             <Gap size="m" />
@@ -174,3 +180,48 @@ const MapLink = styled(Link)`
   display: inline-block;
   font-weight: ${fontWeights.semibold};
 `
+
+const AddToHomeScreenInstructions = React.memo(
+  function AddToHomeScreenInstructions() {
+    const i18n = useTranslation()
+
+    const [instructions, setInstructions] = useState<'ios' | 'android' | null>(
+      null
+    )
+    const toggle = (which: 'ios' | 'android') => {
+      setInstructions((current) => (current === which ? null : which))
+    }
+
+    return (
+      <>
+        <P noMargin>
+          <Strong>{i18n.loginPage.addToHomeScreen.title}</Strong>
+        </P>
+        <P noMargin>{i18n.loginPage.addToHomeScreen.subTitle}</P>
+        <Gap size="s" />
+        <UnorderedList>
+          <li>
+            {i18n.loginPage.addToHomeScreen.ios}{' '}
+            <ParagraphInfoButton
+              onClick={() => toggle('ios')}
+              aria-label={i18n.common.openExpandingInfo}
+            />
+          </li>
+          <li>
+            {i18n.loginPage.addToHomeScreen.android}{' '}
+            <ParagraphInfoButton
+              onClick={() => toggle('android')}
+              aria-label={i18n.common.openExpandingInfo}
+            />
+          </li>
+        </UnorderedList>
+        {instructions && (
+          <ExpandingInfoBox
+            info={i18n.loginPage.addToHomeScreen.instructions[instructions]}
+            close={() => setInstructions(null)}
+          />
+        )}
+      </>
+    )
+  }
+)

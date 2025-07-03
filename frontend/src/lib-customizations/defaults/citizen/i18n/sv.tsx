@@ -10,6 +10,7 @@ import type { EmailVerification } from 'lib-common/generated/api-types/pis'
 import type LocalDate from 'lib-common/local-date'
 import { formatPersonName } from 'lib-common/names'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
+import OrderedList from 'lib-components/atoms/OrderedList'
 import UnorderedList from 'lib-components/atoms/UnorderedList'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import type { Translations as ComponentTranslations } from 'lib-components/i18n'
@@ -199,6 +200,39 @@ const sv: Translations = {
   loginPage: {
     title: 'Esbo stads småbarnspedagogik',
     systemNotification: 'Viktigt meddelande',
+    addToHomeScreen: {
+      title: 'Vill du hitta till denna sida lättare?',
+      subTitle: 'Lägg till eVaka på din telefons hemskärm!',
+      ios: 'Lägg till genväg på iOS (Safari)',
+      android: 'Lägg till genväg på Android (Chrome)',
+      instructions: {
+        ios: (
+          <>
+            <OrderedList>
+              <li>
+                Tryck på “dela”-ikonen längst ner i webbläsaren (en fyrkant med
+                en uppåtpil)
+              </li>
+              <li>Scrolla ner och välj “Lägg till på hemskärmen”</li>
+              <li>Ge genvägen ett namn om du vill</li>
+              <li>Tryck på “Lägg till” högst upp på sidan</li>
+            </OrderedList>
+            <P>Nu borde du se en ikon på din hemskärm som öppnar denna sida.</P>
+          </>
+        ),
+        android: (
+          <>
+            <OrderedList>
+              <li>Tryck på “meny”-ikonen (⋮) uppe till höger i webbläsaren</li>
+              <li>Välj “Lägg till på startskärmen”</li>
+              <li>Ge genvägen ett namn om du vill</li>
+              <li>Tryck på “Skapa genväg”</li>
+            </OrderedList>
+            <P>Nu borde du se en ikon på din hemskärm som öppnar denna sida.</P>
+          </>
+        )
+      }
+    },
     login: {
       title: 'Logga in med användarnamn',
       paragraph:

@@ -10,6 +10,7 @@ import type { EmailVerification } from 'lib-common/generated/api-types/pis'
 import type LocalDate from 'lib-common/local-date'
 import { formatPersonName } from 'lib-common/names'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
+import OrderedList from 'lib-components/atoms/OrderedList'
 import UnorderedList from 'lib-components/atoms/UnorderedList'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import type { Translations as ComponentTranslations } from 'lib-components/i18n'
@@ -201,6 +202,47 @@ const en: Translations = {
   loginPage: {
     title: 'City of Espoo early childhood education',
     systemNotification: 'Important announcement',
+    addToHomeScreen: {
+      title: 'Would you like to find this page more easily?',
+      subTitle: 'Add eVaka to your phone’s home screen!',
+      ios: 'Add a shortcut on iOS (Safari)',
+      android: 'Add a shortcut on Android (Chrome)',
+      instructions: {
+        ios: (
+          <>
+            <OrderedList>
+              <li>
+                Tap the “share” icon at the bottom of the browser (a square with
+                an upward arrow)
+              </li>
+              <li>Scroll down and select “Add to Home Screen”</li>
+              <li>Optionally, enter a name for the shortcut</li>
+              <li>Tap “Add” at the top of the page</li>
+            </OrderedList>
+            <P>
+              Now you should see an icon on your home screen that opens this
+              page.
+            </P>
+          </>
+        ),
+        android: (
+          <>
+            <OrderedList>
+              <li>
+                Tap the “menu” icon (⋮) at the top right corner of the browser
+              </li>
+              <li>Select “Add to Home screen”</li>
+              <li>Optionally, enter a name for the shortcut</li>
+              <li>Tap “Create shortcut”</li>
+            </OrderedList>
+            <P>
+              Now you should see an icon on your home screen that opens this
+              page.
+            </P>
+          </>
+        )
+      }
+    },
     login: {
       title: 'Sign in with username',
       paragraph:
