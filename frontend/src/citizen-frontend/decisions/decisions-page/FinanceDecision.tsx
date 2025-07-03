@@ -13,6 +13,7 @@ import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import ListGrid from 'lib-components/layout/ListGrid'
 import { H3, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+import { featureFlags } from 'lib-customizations/citizen'
 import { faFileAlt } from 'lib-icons'
 
 import {
@@ -20,6 +21,11 @@ import {
   downloadVoucherValueDecisionPdf
 } from '../../generated/api-clients/application'
 import { useTranslation } from '../../localization'
+import { MetadataSection } from '../../metadata/MetadataSection'
+import {
+  feeDecisionMetadataQuery,
+  voucherValueDecisionMetadataQuery
+} from '../queries'
 
 interface Props {
   decisionData: FinanceDecisionCitizenInfo
@@ -32,6 +38,15 @@ const getDecisionUrl = (decisionId: string, type: FinanceDecisionType) =>
     : downloadVoucherValueDecisionPdf({
         id: fromUuid(decisionId)
       }).url.toString()
+
+const getMetadataQuery = (decisionId: string, type: FinanceDecisionType) =>
+  type === 'FEE_DECISION'
+    ? feeDecisionMetadataQuery({
+        feeDecisionId: fromUuid(decisionId)
+      })
+    : voucherValueDecisionMetadataQuery({
+        voucherValueDecisionId: fromUuid(decisionId)
+      })
 
 export default React.memo(function FinanceDecision({
   decisionData,
@@ -116,6 +131,15 @@ export default React.memo(function FinanceDecision({
           )
         }
       />
+      {featureFlags.showMetadataToCitizen && (
+        <>
+          <Gap size="s" />
+          <MetadataSection
+            data-qa={decisionData.id}
+            query={getMetadataQuery(decisionData.id, decisionData.type)}
+          />
+        </>
+      )}
     </CollapsibleContentArea>
   )
 })

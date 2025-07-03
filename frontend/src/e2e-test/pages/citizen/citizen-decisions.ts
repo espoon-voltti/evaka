@@ -15,6 +15,9 @@ export default class CitizenDecisionsPage {
       .findAll(`[data-qa="button-confirm-decisions-${applicationId}"]`)
       .first()
 
+  #decisionMetadataButton = (decisionId: string) =>
+    this.page.findByDataQa(`metadata-toggle-${decisionId}`)
+
   async assertUnresolvedDecisionsCount(count: number) {
     return assertUnresolvedDecisionsCount(this.page, count)
   }
@@ -77,6 +80,24 @@ export default class CitizenDecisionsPage {
   async assertFinanceDecisionNotShown(decisionId: string) {
     await this.page
       .findByDataQa(`finance-decision-${decisionId}`)
+      .waitUntilHidden()
+  }
+
+  async assertMetadataForFinanceDecisionShown(financeDecisionId: string) {
+    const financeDecision = this.page.findByDataQa(
+      `finance-decision-${financeDecisionId}`
+    )
+    if ((await financeDecision.getAttribute('data-status')) === 'closed') {
+      await financeDecision.click()
+    }
+    await this.#decisionMetadataButton(financeDecisionId).click()
+    await financeDecision
+      .findByDataQa('process-number-field')
+      .waitUntilVisible()
+  }
+  async assertMetadataForFinanceDecisionNotShown(financeDecisionId: string) {
+    await this.page
+      .findByDataQa(`finance-decision-${financeDecisionId}`)
       .waitUntilHidden()
   }
 

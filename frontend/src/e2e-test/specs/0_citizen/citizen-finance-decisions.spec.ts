@@ -121,7 +121,7 @@ describe('Citizen finance decisions', () => {
     )
   })
 
-  test('Partner sees their decisions with strong auth', async () => {
+  test('Restricted partner sees their decisions with strong auth', async () => {
     page = await Page.open({ mockedTime: now })
     header = new CitizenHeader(page)
     citizenDecisionsPage = new CitizenDecisionsPage(page)
@@ -140,6 +140,40 @@ describe('Citizen finance decisions', () => {
       voucherValueDecision.id
     )
   })
+
+  test('Head of family sees their decision metadata with strong auth', async () => {
+    page = await Page.open({ mockedTime: now })
+    header = new CitizenHeader(page)
+    citizenDecisionsPage = new CitizenDecisionsPage(page)
+    await enduserLogin(page, testAdult)
+    await page.goto(config.enduserUrl)
+
+    await header.selectTab('decisions')
+
+    await citizenDecisionsPage.assertMetadataForFinanceDecisionShown(
+      feeDecision.id
+    )
+    await citizenDecisionsPage.assertMetadataForFinanceDecisionShown(
+      voucherValueDecision.id
+    )
+  })
+
+  test('Restricted partner sees their decision metadata with strong auth', async () => {
+    page = await Page.open({ mockedTime: now })
+    header = new CitizenHeader(page)
+    citizenDecisionsPage = new CitizenDecisionsPage(page)
+    await enduserLogin(page, partner)
+    await page.goto(config.enduserUrl)
+
+    await header.selectTab('decisions')
+
+    await citizenDecisionsPage.assertMetadataForFinanceDecisionShown(
+      feeDecision.id
+    )
+    await citizenDecisionsPage.assertMetadataForFinanceDecisionNotShown(
+      voucherValueDecision.id
+    )
+  })
 })
 
 async function insertFeeDecision(
@@ -155,10 +189,14 @@ async function insertFeeDecision(
           childIncome
         }))
       }
-    ]
+    ],
+    insertCaseProcess: true
   })
 }
 
 async function insertVoucherValueDecision(fixture: VoucherValueDecision) {
-  await createVoucherValueDecisions({ body: [fixture] })
+  await createVoucherValueDecisions({
+    body: [fixture],
+    insertCaseProcess: true
+  })
 }

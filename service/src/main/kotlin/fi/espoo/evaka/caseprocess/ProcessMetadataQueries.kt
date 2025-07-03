@@ -10,6 +10,8 @@ import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.EvakaUserId
+import fi.espoo.evaka.shared.FeeDecisionId
+import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.user.EvakaUser
@@ -230,6 +232,104 @@ fun Database.Read.getApplicationDecisionDocumentMetadata(
                         val prefix = if (isCitizen) "citizen" else "employee"
                         "/$prefix/decisions/$decisionId/download"
                     },
+                receivedBy = null,
+                sfiDeliveries = jsonColumn("sfi_deliveries"),
+            )
+        }
+        .exactlyOne()
+
+fun Database.Read.getFeeDecisionDocumentMetadata(
+    decisionId: FeeDecisionId,
+    isCitizen: Boolean,
+): DocumentMetadata =
+    createQuery {
+            sql(
+                """
+        SELECT 
+            d.id,
+            d.created,
+            e.id AS created_by_id,
+            e.name AS created_by_name,
+            e.type AS created_by_type,
+            (
+                $sfiDeliverySelect
+                WHERE sm.fee_decision_id = d.id
+            ) AS sfi_deliveries
+        FROM fee_decision d
+        LEFT JOIN evaka_user e ON e.employee_id = d.approved_by_id
+        WHERE d.id = ${bind(decisionId)}
+    """
+            )
+        }
+        .map {
+            DocumentMetadata(
+                documentId = column("id"),
+                name = "Maksupäätös",
+                createdAt = column("created"),
+                createdBy =
+                    column<EvakaUserId?>("created_by_id")?.let {
+                        EvakaUser(
+                            id = it,
+                            name = column("created_by_name"),
+                            type = column("created_by_type"),
+                        )
+                    },
+                confidential = true,
+                confidentiality =
+                    DocumentConfidentiality(durationYears = 25, basis = "JulkL 24.1 §"),
+                downloadPath =
+                    if (isCitizen) "/citizen/fee-decisions/$decisionId/download"
+                    else "/employee/fee-decisions/pdf/$decisionId",
+                receivedBy = null,
+                sfiDeliveries = jsonColumn("sfi_deliveries"),
+            )
+        }
+        .exactlyOne()
+
+fun Database.Read.getVoucherValueDecisionDocumentMetadata(
+    voucherValueDecisionId: VoucherValueDecisionId,
+    isCitizen: Boolean,
+): DocumentMetadata =
+    createQuery {
+            sql(
+                """
+        SELECT
+            d.id,
+            d.created,
+            e.id AS created_by_id,
+            e.name AS created_by_name,
+            e.type AS created_by_type,
+            d.document_key,
+            (
+                $sfiDeliverySelect
+                WHERE sm.voucher_value_decision_id = d.id
+            ) AS sfi_deliveries
+        FROM voucher_value_decision d
+        LEFT JOIN evaka_user e ON e.employee_id = d.approved_by
+        WHERE d.id = ${bind(voucherValueDecisionId)}
+    """
+            )
+        }
+        .map {
+            DocumentMetadata(
+                documentId = column("id"),
+                name = "Arvopäätös",
+                createdAt = column("created"),
+                createdBy =
+                    column<EvakaUserId?>("created_by_id")?.let {
+                        EvakaUser(
+                            id = it,
+                            name = column("created_by_name"),
+                            type = column("created_by_type"),
+                        )
+                    },
+                confidential = true,
+                confidentiality =
+                    DocumentConfidentiality(durationYears = 25, basis = "JulkL 24.1 §"),
+                downloadPath =
+                    if (isCitizen)
+                        "/citizen/voucher-value-decisions/$voucherValueDecisionId/download"
+                    else "/employee/value-decisions/pdf/$voucherValueDecisionId",
                 receivedBy = null,
                 sfiDeliveries = jsonColumn("sfi_deliveries"),
             )

@@ -419,13 +419,15 @@ sealed interface Action {
         enum class FeeDecision(
             override vararg val defaultRules: ScopedActionRule<in FeeDecisionId>
         ) : ScopedAction<FeeDecisionId> {
-            DOWNLOAD(IsCitizen(allowWeakLogin = false).liableForFeeDecisionPayment())
+            DOWNLOAD(IsCitizen(allowWeakLogin = false).liableForFeeDecisionPayment()),
+            READ(IsCitizen(allowWeakLogin = false).liableForFeeDecisionPayment()),
         }
 
         enum class VoucherValueDecision(
             override vararg val defaultRules: ScopedActionRule<in VoucherValueDecisionId>
         ) : ScopedAction<VoucherValueDecisionId> {
-            DOWNLOAD(IsCitizen(allowWeakLogin = false).liableForVoucherValueDecisionPayment())
+            DOWNLOAD(IsCitizen(allowWeakLogin = false).liableForVoucherValueDecisionPayment()),
+            READ(IsCitizen(allowWeakLogin = false).liableForVoucherValueDecisionPayment()),
         }
 
         enum class Child(override vararg val defaultRules: ScopedActionRule<in ChildId>) :
