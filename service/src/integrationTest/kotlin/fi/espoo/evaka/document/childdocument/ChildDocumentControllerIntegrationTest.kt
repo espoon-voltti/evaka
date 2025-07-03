@@ -373,7 +373,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         val metadata = getChildDocumentMetadata(documentId).data
         assertNotNull(metadata)
         metadata.also {
-            assertEquals("1/123.456.789/2022", it.process.processNumber)
+            assertEquals("1/123.456.789/2022", it.process.caseIdentifier)
             assertEquals("Espoon kaupungin esiopetus ja varhaiskasvatus", it.process.organization)
             assertEquals(120, it.process.archiveDurationMonths)
             assertEquals("HOJKS", it.primaryDocument.name)

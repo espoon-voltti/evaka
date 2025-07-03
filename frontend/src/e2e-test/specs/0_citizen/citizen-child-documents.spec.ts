@@ -421,7 +421,7 @@ describe('Citizen child documents editor page', () => {
     await header.selectTab('calendar')
     const toast1 = page.findByDataQa(`toast-child-document-${document.id}`)
     await toast1.assertTextEquals(
-      'Henkilökunta on pyytänyt sinua vastaamaan lomakkeeseen, joka koskee lastasi: Jari-Petteri Karhula\n\nVastaa lomakkeeseen'
+      'Henkilökunta on pyytänyt sinua täyttämään asiakirjan, joka koskee lastasi: Jari-Petteri Karhula\n\nTäytä asiakirja'
     )
     await toast1.click()
     const childDocumentPage = new ChildDocumentPage(page)

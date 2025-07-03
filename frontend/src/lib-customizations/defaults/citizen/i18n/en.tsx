@@ -266,14 +266,11 @@ const en: Translations = {
       lastName: string
     }) => (
       <div>
-        Henkilökunta on pyytänyt sinua vastaamaan lomakkeeseen, joka koskee
-        lastasi:{' '}
+        The staff has requested you to fill in a document concerning your child:{' '}
         <span translate="no">{formatPersonName(child, 'FirstFirst Last')}</span>
         <br />
         <br />
-        <span style={{ color: colors.status.info }}>
-          Vastaa lomakkeeseen (en)
-        </span>
+        <span style={{ color: colors.status.info }}>Fill in the document</span>
       </div>
     )
   },
@@ -514,8 +511,8 @@ const en: Translations = {
       attendanceAlreadyExistsErrorDescription:
         'It is not possible to add an absence for a child on a day that already has an attendance record.',
       tooManyAbsencesErrorDescription:
-        'Yli viikon pituinen poissaolo esiopetuksesta on sallittu ainoastaan hyväksyttävästä syystä. (en)',
-      tooManyAbsencesErrorLink: 'Tee poissaolohakemus (en)'
+        'A continuous absence of more than one week is only allowed for a valid reason.',
+      tooManyAbsencesErrorLink: 'Submit an absence application'
     },
     holidayModal: {
       additionalInformation: 'Read more',
@@ -2617,29 +2614,29 @@ const en: Translations = {
       empty: 'Not defined'
     },
     absenceApplication: {
-      title: 'Pitkät poissaolot esiopetuksesta (en)',
-      header: 'Esiopetuksen poissaolot (en)',
-      info: 'Jos lapsesi on tarkoitus olla yli viikko poissa esiopetuksesta, tee asiasta hakemus. (en)',
-      new: 'Uusi poissaolohakemus (en)',
-      list: 'Haetut poissaolojaksot (en)',
-      cancel: 'Peru (en)',
-      cancelConfirmation: 'Perutaanko hakemus? (en)',
-      description: 'Poissaolon syy (en)',
-      rejectedReason: 'Hylkäyksen syy (en)',
+      title: 'Long absences from pre-primary education',
+      header: 'Pre-primary education absences',
+      info: 'If your child is going to be absent from pre-primary education for more than a week, please submit an application.',
+      new: 'New absence application',
+      list: 'Applied absence periods',
+      cancel: 'Cancel',
+      cancelConfirmation: 'Do you want to cancel the application?',
+      description: 'Reason for absence',
+      rejectedReason: 'Reason for rejection',
       status: {
-        WAITING_DECISION: 'Odottaa päätöstä (en)',
-        ACCEPTED: 'Hyväksytty (en)',
-        REJECTED: 'Hylätty (en)'
+        WAITING_DECISION: 'Waiting for decision',
+        ACCEPTED: 'Accepted',
+        REJECTED: 'Rejected'
       },
       newPage: {
-        title: 'Pitkä poissaolo esiopetuksesta (en)',
-        range: 'Aika, jonka lapsi on poissa esiopetuksesta (en)',
-        info: 'Hakemuksesi lähtee esiopetuksesta vastaavalle henkilökunnalle hyväksyttäväksi. (en)',
+        title: 'Long absence from pre-primary education',
+        range: 'Period of absence from pre-primary education',
+        info: 'Your application will be sent to the staff responsible for pre-primary education for approval.',
         confirmation:
-          'Ymmärrän, että henkilökunta merkitsee lapselleni poissaolon vasta, kun hakemus on hyväksytty. (en)',
+          'I understand that the staff will only mark the absence for my child after the application has been approved.',
         validationErrors: {
           invalidDateRange:
-            'Lapsella ei ole esiopetusta valitulla aikavälillä. (en)'
+            'Child is not in pre-primary education during the selected period.'
         }
       }
     },
@@ -2693,16 +2690,16 @@ const en: Translations = {
       noDocuments: 'No documents',
       confidential: 'Confidential',
       validityPeriod: 'Valid during',
-      unanswered: 'Ei vastattu (en)',
-      answered: 'Vastattu (en)',
-      answeredByEmployee: 'Henkilökunta (en)',
-      preview: 'Esikatsele (en)',
-      send: 'Lähetä (en)',
-      success: 'Lomake lähetetty (en)',
+      unanswered: 'Not answered',
+      answered: 'Answered',
+      answeredByEmployee: 'Staff',
+      preview: 'Preview',
+      send: 'Send',
+      success: 'Document sent',
       sentInfo:
-        'Jos haluat muuttaa annettuja vastauksia, pyydä henkilökunnalta uusi lomake. (en)',
+        'If you want to change the answers you have given, please ask the staff for a new document.',
       // decision cannot be in English
-      decisionNumber: 'Päätösnumero',
+      decisionNumber: 'Decision number',
       sendingConfirmationTitle: 'Are you sure you want to send the document?',
       sendingConfirmationText:
         'Make sure to fill in all the fields. Answers cannot be changed after submission.'

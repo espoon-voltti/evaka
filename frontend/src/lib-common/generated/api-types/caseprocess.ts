@@ -15,13 +15,13 @@ import type { UUID } from '../../types'
 */
 export interface CaseProcess {
   archiveDurationMonths: number | null
+  caseIdentifier: string
   history: CaseProcessHistoryRow[]
   id: CaseProcessId
   migrated: boolean
   number: number
   organization: string
   processDefinitionNumber: string
-  processNumber: string
   year: number
 }
 

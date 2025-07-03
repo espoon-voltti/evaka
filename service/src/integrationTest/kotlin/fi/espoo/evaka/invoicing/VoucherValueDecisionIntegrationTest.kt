@@ -189,7 +189,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
         getAllValueDecisions().first().let { decision ->
             val process = db.read { tx -> tx.getCaseProcessByVoucherValueDecisionId(decision.id) }
             assertNotNull(process)
-            assertEquals("1/123.789.b/${now.toLocalDate().year}", process.processNumber)
+            assertEquals("1/123.789.b/${now.toLocalDate().year}", process.caseIdentifier)
             assertEquals(
                 listOf(
                     CaseProcessState.INITIAL,
@@ -214,7 +214,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     MockEvakaClock(now),
                     decision.id,
                 )
-            assertEquals(process.processNumber, metadata.data?.process?.processNumber)
+            assertEquals(process.caseIdentifier, metadata.data?.process?.caseIdentifier)
         }
     }
 

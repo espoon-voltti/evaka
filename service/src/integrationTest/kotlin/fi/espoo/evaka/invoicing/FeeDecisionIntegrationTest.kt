@@ -1016,7 +1016,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
         val process = db.read { tx -> tx.getCaseProcessByFeeDecisionId(draft.id) }
         assertNotNull(process)
-        assertEquals("1/123.789.a/${LocalDate.now().year}", process.processNumber)
+        assertEquals("1/123.789.a/${LocalDate.now().year}", process.caseIdentifier)
         assertEquals(
             listOf(CaseProcessState.INITIAL, CaseProcessState.DECIDING, CaseProcessState.COMPLETED),
             process.history.map { it.state },
@@ -1037,7 +1037,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 RealEvakaClock(),
                 draft.id,
             )
-        assertEquals(process.processNumber, metadata.data?.process?.processNumber)
+        assertEquals(process.caseIdentifier, metadata.data?.process?.caseIdentifier)
     }
 
     @Test

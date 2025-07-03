@@ -184,7 +184,7 @@ const components: Translations = {
   metadata: {
     title: 'Arkistoitava metadata',
     notFound: 'Asiakirjalle ei ole arkistoitavaa metadataa',
-    processNumber: 'Asianumero',
+    caseIdentifier: 'Asiatunnus',
     processName: 'Asiaprosessi',
     organization: 'Organisaatio',
     archiveDurationMonths: 'Arkistointiaika',

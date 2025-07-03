@@ -372,7 +372,7 @@ fun createDocumentMetadata(
                 recordIdentifiers =
                     StandardMetadataType.RecordIdentifiers().apply {
                         recordIdentifier = document.id.toString()
-                        caseIdentifier = caseProcess?.processNumber
+                        caseIdentifier = caseProcess?.caseIdentifier
                     }
 
                 documentDescription =

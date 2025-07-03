@@ -182,6 +182,7 @@ class ArchiveChildDocumentServiceTest {
         val caseProcess =
             CaseProcess(
                 id = processId,
+                caseIdentifier = "1/1234/2023",
                 processDefinitionNumber = "1234",
                 year = 2023,
                 number = 1,

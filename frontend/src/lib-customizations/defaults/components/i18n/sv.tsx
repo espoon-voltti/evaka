@@ -68,7 +68,7 @@ const components: Translations = {
     documentStates: {
       DRAFT: 'Utkast',
       PREPARED: 'Behandlad',
-      CITIZEN_DRAFT: 'Täytettävänä huoltajalla (sv)',
+      CITIZEN_DRAFT: 'Att fyllas i av vårdnadshavare',
       DECISION_PROPOSAL: 'Beslutsförslag',
       COMPLETED: 'Färdig',
       ACCEPTED: 'Godkänt',
@@ -186,51 +186,50 @@ const components: Translations = {
     generic: 'Kolla'
   },
   metadata: {
-    // TODO
-    title: 'Arkistoitava metadata',
-    notFound: 'Asiakirjalle ei ole arkistoitavaa metadataa',
-    processNumber: 'Asianumero',
-    processName: 'Asiaprosessi',
-    organization: 'Organisaatio',
-    archiveDurationMonths: 'Arkistointiaika',
-    primaryDocument: 'Ensisijainen asiakirja',
-    secondaryDocuments: 'Muut asiakirjat',
-    documentId: 'Asiakirjan tunniste',
-    name: 'Asiakirjan nimi',
-    createdAt: 'Laatimisajankohta',
-    createdBy: 'Laatija',
-    monthsUnit: 'kuukautta',
-    confidentiality: 'Julkisuus',
-    confidential: 'Salassapidettävä',
-    public: 'Julkinen',
-    notSet: 'Asettamatta',
-    confidentialityDuration: 'Salassapitoaika',
-    confidentialityBasis: 'Salassapitoperuste',
-    years: 'vuotta',
+    title: 'Arkiverbar metadata',
+    notFound: 'Det finns ingen arkiverbar metadata för dokumentet',
+    caseIdentifier: 'Ärendekod',
+    processName: 'Ärendeprocess',
+    organization: 'Organisation',
+    archiveDurationMonths: 'Arkiveringstid',
+    primaryDocument: 'Primärt dokument',
+    secondaryDocuments: 'Övriga dokument',
+    documentId: 'Dokumentets identifierare',
+    name: 'Dokumentets namn',
+    createdAt: 'Skapandedatum',
+    createdBy: 'Skapare',
+    monthsUnit: 'månader',
+    confidentiality: 'Sekretess',
+    confidential: 'Sekretessbelagd',
+    public: 'Offentlig',
+    notSet: 'Ej angivet',
+    confidentialityDuration: 'Sekretessperiod',
+    confidentialityBasis: 'Sekretessgrund',
+    years: 'år',
     receivedBy: {
-      label: 'Saapumistapa',
-      PAPER: 'Paperilla',
-      ELECTRONIC: 'Sähköisesti'
+      label: 'Mottagningssätt',
+      PAPER: 'På papper',
+      ELECTRONIC: 'Elektroniskt'
     },
     sfiDelivery: {
-      label: 'Suomi.fi -toimitukset',
+      label: 'Suomi.fi-leveranser',
       method: {
-        ELECTRONIC: 'Sähköisesti',
-        PAPER_MAIL: 'Postitse',
-        PENDING: 'Odottaa toimitusta'
+        ELECTRONIC: 'Elektroniskt',
+        PAPER_MAIL: 'Per post',
+        PENDING: 'Väntar på leverans'
       }
     },
-    history: 'Prosessin historia',
-    downloadPdf: 'Lataa PDF',
+    history: 'Processens historia',
+    downloadPdf: 'Ladda ner PDF',
     states: {
-      INITIAL: 'Asian vireillepano / -tulo',
-      PREPARATION: 'Asian valmistelu',
-      DECIDING: 'Päätöksenteko',
-      COMPLETED: 'Toimeenpano / Päättäminen / Sulkeminen'
+      INITIAL: 'Initiering av ärendet',
+      PREPARATION: 'Förberedelse av ärendet',
+      DECIDING: 'Beslutsfattande',
+      COMPLETED: 'Genomförande / Avslut / Stängning'
     },
     section: {
-      show: 'Näytä lisätiedot',
-      hide: 'Piilota lisätiedot'
+      show: 'Visa mer information',
+      hide: 'Dölj mer information'
     }
   }
 }

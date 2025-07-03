@@ -264,14 +264,11 @@ const sv: Translations = {
       lastName: string
     }) => (
       <div>
-        Henkilökunta on pyytänyt sinua vastaamaan lomakkeeseen, joka koskee
-        lastasi:{' '}
+        Personalen har begärt att du fyller i ett dokument om ditt barn:{' '}
         <span translate="no">{formatPersonName(child, 'FirstFirst Last')}</span>
         <br />
         <br />
-        <span style={{ color: colors.status.info }}>
-          Vastaa lomakkeeseen (sv)
-        </span>
+        <span style={{ color: colors.status.info }}>Fyll i dokumentet</span>
       </div>
     )
   },
@@ -512,8 +509,8 @@ const sv: Translations = {
       attendanceAlreadyExistsErrorDescription:
         'Det är inte möjligt att tillägga en frånvaro för barnet på en dag som redan har en anteckning om närvaro.',
       tooManyAbsencesErrorDescription:
-        'Yli viikon pituinen poissaolo esiopetuksesta on sallittu ainoastaan hyväksyttävästä syystä. (sv)',
-      tooManyAbsencesErrorLink: 'Tee poissaolohakemus (sv)'
+        'En frånvaro från förskoleundervisningen som varar över en vecka är tillåten endast av godtagbar orsak.',
+      tooManyAbsencesErrorLink: 'Lämna in en frånvaroansökan'
     },
     holidayModal: {
       additionalInformation: 'Läs mera',
@@ -2859,29 +2856,29 @@ const sv: Translations = {
       empty: 'Inte definierat'
     },
     absenceApplication: {
-      title: 'Pitkät poissaolot esiopetuksesta (sv)',
-      header: 'Esiopetuksen poissaolot (sv)',
-      info: 'Jos lapsesi on tarkoitus olla yli viikko poissa esiopetuksesta, tee asiasta hakemus. (sv)',
-      new: 'Uusi poissaolohakemus (sv)',
-      list: 'Haetut poissaolojaksot (sv)',
-      cancel: 'Peru (sv)',
-      cancelConfirmation: 'Perutaanko hakemus? (sv)',
-      description: 'Poissaolon syy (sv)',
-      rejectedReason: 'Hylkäyksen syy (sv)',
+      title: 'Långa frånvaroperioder från förskoleundervisningen',
+      header: 'Frånvaro från förskoleundervisningen',
+      info: 'Om ditt barn kommer att vara borta från förskoleundervisningen i mer än en vecka, lämna in en ansökan om frånvaro.',
+      new: 'Ny frånvaroansökan',
+      list: 'Ansökta frånvaroperioder',
+      cancel: 'Avbryt',
+      cancelConfirmation: 'Vill du avbryta ansökan?',
+      description: 'Orsak till frånvaro',
+      rejectedReason: 'Orsak till avslag',
       status: {
-        WAITING_DECISION: 'Odottaa päätöstä (sv)',
-        ACCEPTED: 'Hyväksytty (sv)',
-        REJECTED: 'Hylätty (sv)'
+        WAITING_DECISION: 'Väntar på beslut',
+        ACCEPTED: 'Godkänd',
+        REJECTED: 'Avslagen'
       },
       newPage: {
-        title: 'Pitkä poissaolo esiopetuksesta (sv)',
-        range: 'Aika, jonka lapsi on poissa esiopetuksesta (sv)',
-        info: 'Hakemuksesi lähtee esiopetuksesta vastaavalle henkilökunnalle hyväksyttäväksi. (sv)',
+        title: 'Lång frånvaro från förskoleundervisningen',
+        range: 'Period då barnet är borta från förskoleundervisningen',
+        info: 'Din ansökan skickas till den ansvariga personalen för förskoleundervisningen för godkännande.',
         confirmation:
-          'Ymmärrän, että henkilökunta merkitsee lapselleni poissaolon vasta, kun hakemus on hyväksytty. (sv)',
+          'Jag förstår att personalen markerar frånvaron för mitt barn först när ansökan har godkänts.',
         validationErrors: {
           invalidDateRange:
-            'Lapsella ei ole esiopetusta valitulla aikavälillä. (sv)'
+            'Barnet har inte förskoleundervisning under den valda perioden.'
         }
       }
     },
@@ -2935,18 +2932,18 @@ const sv: Translations = {
       noDocuments: 'Inga dokument',
       confidential: 'Konfidentiellt',
       validityPeriod: 'Giltig',
-      unanswered: 'Ei vastattu (sv)',
-      answered: 'Vastattu (sv)',
-      answeredByEmployee: 'Henkilökunta (sv)',
-      preview: 'Esikatsele (sv)',
-      send: 'Lähetä (sv)',
-      success: 'Lomake lähetetty (sv)',
+      unanswered: 'Ej besvarad',
+      answered: 'Besvarad',
+      answeredByEmployee: 'Personal',
+      preview: 'Förhandsgranska',
+      send: 'Skicka',
+      success: 'Dokumentet har skickats',
       sentInfo:
-        'Jos haluat muuttaa annettuja vastauksia, pyydä henkilökunnalta uusi lomake. (sv)',
+        'Om du vill ändra dina svar, be personalen om ett nytt dokument.',
       decisionNumber: 'Beslutsnummer',
       sendingConfirmationTitle: 'Är du säker på att du vill skicka dokumentet?',
       sendingConfirmationText:
-        'Säkerställ att du har fyllt i alla fält. Svaren kan inte ändras efter att de har skickats.'
+        'Kontrollera att du har fyllt i alla fält. Svaren kan inte ändras efter att de har skickats.'
     }
   },
   accessibilityStatement: (

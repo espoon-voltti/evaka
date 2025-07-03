@@ -140,8 +140,8 @@ export const Metadatas = React.memo(function Metadatas({
         spacing="small"
         contents={[
           {
-            label: i18n.metadata.processNumber,
-            value: metadata.process.processNumber,
+            label: i18n.metadata.caseIdentifier,
+            value: metadata.process.caseIdentifier,
             dataQa: 'process-number-field'
           },
           ...(metadata.processName
