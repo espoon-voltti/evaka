@@ -15,7 +15,7 @@ dependencies {
         api(libs.fuel.jackson)
         api("com.github.mwiede:jsch:2.27.2")
         api("com.google.guava:guava:33.4.8-jre")
-        api("com.networknt:json-schema-validator:1.5.7")
+        api("com.networknt:json-schema-validator:1.5.8")
         api("com.zaxxer:HikariCP:6.3.0")
         api("io.github.oshai:kotlin-logging-jvm:7.0.7")
         api("io.kotest:kotest-property:5.9.1")
