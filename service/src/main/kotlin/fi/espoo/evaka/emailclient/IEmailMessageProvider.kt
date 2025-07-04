@@ -89,7 +89,11 @@ interface IEmailMessageProvider {
         isSenderMunicipalAccount: Boolean,
     ): EmailContent = messageNotification(language, thread)
 
-    fun childDocumentNotification(language: Language, childId: ChildId): EmailContent
+    fun childDocumentNotification(
+        language: Language,
+        childId: ChildId,
+        isDecision: Boolean,
+    ): EmailContent
 
     fun pedagogicalDocumentNotification(language: Language, childId: ChildId): EmailContent
 

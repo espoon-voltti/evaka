@@ -31,6 +31,8 @@ import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.Predicate
+import fi.espoo.evaka.shared.db.Predicate.Companion.invoke
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
@@ -324,12 +326,24 @@ WHERE person.email IS NOT NULL AND person.email != ''
         logger.info {
             "Sending child document notification email for document ${msg.documentId} to person ${msg.recipientId}"
         }
+        val document =
+            db.read { tx ->
+                val documents =
+                    tx.getChildDocuments(Predicate { where("$it.id = ${bind(msg.documentId)}") })
+                documents.singleOrNull()
+                    ?: throw NotFound("Child document ${msg.documentId} not found")
+            }
         Email.create(
                 dbc = db,
                 personId = msg.recipientId,
                 emailType = EmailMessageType.DOCUMENT_NOTIFICATION,
                 fromAddress = emailEnv.sender(msg.language),
-                content = emailMessageProvider.childDocumentNotification(msg.language, msg.childId),
+                content =
+                    emailMessageProvider.childDocumentNotification(
+                        msg.language,
+                        msg.childId,
+                        isDecision = document.type.decision,
+                    ),
                 traceId = msg.documentId.toString(),
             )
             ?.also { emailClient.send(it) }
