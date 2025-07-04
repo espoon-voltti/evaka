@@ -3,15 +3,19 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, { Fragment, useState } from 'react'
+import React, { Fragment, useCallback, useState } from 'react'
 import styled from 'styled-components'
 import { Link, Redirect, useLocation, useSearchParams } from 'wouter'
 
 import { useQueryResult } from 'lib-common/query'
+import useLocalStorage from 'lib-common/utils/useLocalStorage'
 import Main from 'lib-components/atoms/Main'
 import UnorderedList from 'lib-components/atoms/UnorderedList'
 import LinkButton from 'lib-components/atoms/buttons/LinkButton'
-import Container, { ContentArea } from 'lib-components/layout/Container'
+import Container, {
+  CollapsibleContentArea,
+  ContentArea
+} from 'lib-components/layout/Container'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import {
   MobileOnly,
@@ -22,7 +26,7 @@ import {
   InfoButton
 } from 'lib-components/molecules/ExpandingInfo'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
-import { fontWeights, H1, H2, P, Strong } from 'lib-components/typography'
+import { fontWeights, H1, H2, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { farMap } from 'lib-icons'
 
@@ -185,6 +189,16 @@ const AddToHomeScreenInstructions = React.memo(
   function AddToHomeScreenInstructions() {
     const i18n = useTranslation()
 
+    const [open, setOpen] = useLocalStorage(
+      'add-to-homescreen-instructions',
+      'open',
+      (value) => value === 'open' || value === 'closed'
+    )
+    const toggleOpen = useCallback(
+      () => setOpen((open) => (open === 'open' ? 'closed' : 'open')),
+      [setOpen]
+    )
+
     const [instructions, setInstructions] = useState<'ios' | 'android' | null>(
       null
     )
@@ -193,10 +207,14 @@ const AddToHomeScreenInstructions = React.memo(
     }
 
     return (
-      <>
-        <P noMargin>
-          <Strong>{i18n.loginPage.addToHomeScreen.title}</Strong>
-        </P>
+      <CollapsibleContentArea
+        open={open === 'open'}
+        toggleOpen={toggleOpen}
+        opaque={false}
+        title={i18n.loginPage.addToHomeScreen.title}
+        paddingHorizontal="0"
+        paddingVertical="0"
+      >
         <P noMargin>{i18n.loginPage.addToHomeScreen.subTitle}</P>
         <Gap size="s" />
         <UnorderedList>
@@ -221,7 +239,7 @@ const AddToHomeScreenInstructions = React.memo(
             close={() => setInstructions(null)}
           />
         )}
-      </>
+      </CollapsibleContentArea>
     )
   }
 )
