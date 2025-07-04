@@ -649,6 +649,7 @@ const MonthPicker = React.memo(function MonthPicker({
         icon={faCalendarAlt}
         text={i18n.common.today}
         onClick={goToThisMonth}
+        data-qa="current-month-button"
       />
     </MonthPickerContainer>
   )
