@@ -391,6 +391,30 @@ $unsubscribeEn
         )
     }
 
+    override fun citizenBasicDocumentNotification(
+        language: Language,
+        childId: ChildId,
+    ): EmailContent {
+        return EmailContent.fromHtml(
+            subject =
+                "Uusi täytettävä asiakirja eVakassa / Nytt ifyllnadsdokument i eVaka / New fillable document in eVaka",
+            html =
+                """
+<p>Sinua on pyydetty täyttämään asiakirja eVakassa. Löydät asiakirjan täältä: ${childLink(Language.fi, childId)}</p>
+<p>Tämä on eVaka-järjestelmän automaattisesti lähettämä ilmoitus. Älä vastaa tähän viestiin.</p>
+$unsubscribeFi
+<hr>
+<p>Du har blivit ombedd at fylla i ett dokument i eVaka. Du hittar dokumentet här: ${childLink(Language.sv, childId)}</p>
+<p>Detta besked skickas automatiskt av eVaka. Svara inte på detta besked.</p>
+$unsubscribeSv
+<hr>
+<p>You have been requested to fill out a document in eVaka. You can find the document here: ${childLink(Language.en, childId)}</p>
+<p>This is an automatic message from the eVaka system. Do not reply to this message.</p>
+$unsubscribeEn
+""",
+        )
+    }
+
     override fun incomeNotification(
         notificationType: IncomeNotificationType,
         language: Language,

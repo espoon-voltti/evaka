@@ -204,6 +204,15 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
+    data class SendCitizenBasicDocumentNotificationEmail(
+        val documentId: ChildDocumentId,
+        val childId: ChildId,
+        val recipientId: PersonId,
+        val language: Language,
+    ) : AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
     data class SendPatuReport(val dateRange: DateRange) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
@@ -528,6 +537,7 @@ sealed interface AsyncJob : AsyncJobPayload {
                     SendAssistanceNeedPreschoolDecisionEmail::class,
                     SendCalendarEventDigestEmail::class,
                     SendChildDocumentNotificationEmail::class,
+                    SendCitizenBasicDocumentNotificationEmail::class,
                     SendConfirmationCodeEmail::class,
                     SendDiscussionReservationReminderEmail::class,
                     SendDiscussionSurveyCreationNotificationEmail::class,

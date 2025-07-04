@@ -10,14 +10,21 @@ import fi.espoo.evaka.document.ChildDocumentType
 import fi.espoo.evaka.document.DocumentTemplateContent
 import fi.espoo.evaka.document.Question
 import fi.espoo.evaka.document.Section
+import fi.espoo.evaka.emailclient.Email
 import fi.espoo.evaka.emailclient.MockEmailClient
+import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.shared.ChildDocumentId
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DocumentTemplateId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevChildDocument
 import fi.espoo.evaka.shared.dev.DevDocumentTemplate
+import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevGuardian
+import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
@@ -39,6 +46,7 @@ import org.springframework.beans.factory.annotation.Autowired
 class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired lateinit var service: ChildDocumentService
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
+    @Autowired lateinit var controller: ChildDocumentController
 
     final val clock = MockEvakaClock(2022, 1, 1, 15, 0)
 
@@ -50,6 +58,8 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
     final val expiredHojksDocumentId = ChildDocumentId(UUID.randomUUID())
     final val alreadyCompletedHojksDocumentId = ChildDocumentId(UUID.randomUUID())
     final val expiredDecisionDocumentId = ChildDocumentId(UUID.randomUUID())
+    final val templateIdCitizenBasic = DocumentTemplateId(UUID.randomUUID())
+    final val templateIdPed = DocumentTemplateId(UUID.randomUUID())
 
     val templateContent =
         DocumentTemplateContent(
@@ -259,5 +269,122 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             }
         }
         assertEquals(0, MockEmailClient.emails.size)
+    }
+
+    @Test
+    fun `citizen basic notification email is sent if document is fillable by guardian`() {
+        val testAdult =
+            DevPerson(
+                id = PersonId(UUID.randomUUID()),
+                firstName = "John",
+                lastName = "Doe",
+                ssn = "010101-123N",
+                email = "john.doe@example.com",
+            )
+        val testChild = DevPerson(id = ChildId(UUID.randomUUID()))
+        val employeeUser = DevEmployee(roles = setOf(UserRole.ADMIN))
+        db.transaction { tx ->
+            tx.insert(
+                DevDocumentTemplate(
+                    id = templateIdCitizenBasic,
+                    type = ChildDocumentType.CITIZEN_BASIC,
+                    name = "Perustietolomake",
+                    content = templateContent,
+                    validity = DateRange(clock.today(), clock.today().plusDays(1)),
+                )
+            )
+            tx.insert(employeeUser)
+            tx.insert(testAdult, DevPersonType.ADULT)
+            tx.insert(testChild, DevPersonType.CHILD)
+            tx.insertGuardian(testAdult.id, testChild.id)
+        }
+        val documentId =
+            controller.createDocument(
+                dbInstance(),
+                employeeUser.user,
+                clock,
+                ChildDocumentCreateRequest(testChild.id, templateIdCitizenBasic),
+            )
+
+        controller.nextDocumentStatus(
+            dbInstance(),
+            employeeUser.user,
+            clock,
+            documentId,
+            ChildDocumentController.StatusChangeRequest(DocumentStatus.CITIZEN_DRAFT),
+        )
+
+        asyncJobRunner.runPendingJobsSync(clock)
+
+        assertEquals(1, getCitizenBasicNotificationEmails().size)
+        assertEquals(0, getChildDocumentNotificationEmails().size)
+    }
+
+    @Test
+    fun `child document notification email is sent if document is not fillable by guardian`() {
+        val testAdult =
+            DevPerson(
+                id = PersonId(UUID.randomUUID()),
+                firstName = "John",
+                lastName = "Doe",
+                ssn = "010101-123N",
+                email = "john.doe@example.com",
+            )
+        val testChild = DevPerson(id = ChildId(UUID.randomUUID()))
+        val employeeUser = DevEmployee(roles = setOf(UserRole.ADMIN))
+        db.transaction { tx ->
+            tx.insert(
+                DevDocumentTemplate(
+                    id = templateIdPed,
+                    type = ChildDocumentType.PEDAGOGICAL_ASSESSMENT,
+                    name = "Pedagoginen arvio",
+                    content = templateContent,
+                    validity = DateRange(clock.today(), clock.today().plusDays(1)),
+                )
+            )
+            tx.insert(employeeUser)
+            tx.insert(testAdult, DevPersonType.ADULT)
+            tx.insert(testChild, DevPersonType.CHILD)
+            tx.insertGuardian(testAdult.id, testChild.id)
+        }
+
+        val documentId =
+            controller.createDocument(
+                dbInstance(),
+                employeeUser.user,
+                clock,
+                ChildDocumentCreateRequest(testChild.id, templateIdPed),
+            )
+
+        controller.nextDocumentStatus(
+            dbInstance(),
+            employeeUser.user,
+            clock,
+            documentId,
+            ChildDocumentController.StatusChangeRequest(DocumentStatus.COMPLETED),
+        )
+
+        asyncJobRunner.runPendingJobsSync(clock)
+
+        assertEquals(0, getCitizenBasicNotificationEmails().size)
+        assertEquals(1, getChildDocumentNotificationEmails().size)
+    }
+
+    private fun getCitizenBasicNotificationEmails(): List<Email> {
+        val emails =
+            MockEmailClient.emails.filter {
+                it.content.subject ==
+                    "Uusi täytettävä asiakirja eVakassa / Nytt ifyllnadsdokument i eVaka / New fillable document in eVaka"
+            }
+        return emails
+    }
+
+    private fun getChildDocumentNotificationEmails(): List<Email> {
+        val emails =
+            MockEmailClient.emails.filter {
+                it.content.subject ==
+                    "Uusi asiakirja eVakassa / Nytt dokument i eVaka / New document in eVaka"
+            }
+        return emails
     }
 }
