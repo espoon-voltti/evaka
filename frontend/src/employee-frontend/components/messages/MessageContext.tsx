@@ -74,7 +74,6 @@ import {
   groupMessageBoxes,
   isFolderView,
   isStandardView,
-  municipalMessageBoxes,
   personalMessageBoxes,
   serviceWorkerMessageBoxes,
   financeMessageBoxes
@@ -751,7 +750,7 @@ export const MessageContextProvider = React.memo(
         })
       } else if (municipalAccount) {
         setParams({
-          messageBox: messageBox ?? municipalMessageBoxes[0],
+          messageBox: messageBox ?? 'drafts',
           accountId: municipalAccount.account.id,
           unitId: null,
           threadId: threadId
