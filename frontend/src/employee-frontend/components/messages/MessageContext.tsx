@@ -40,9 +40,9 @@ import type {
 } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { fromNullableUuid, fromUuid, tryFromUuid } from 'lib-common/id-type'
+import { constantQuery, useQueryResult } from 'lib-common/query'
 import type { UUID } from 'lib-common/types'
-import { usePeriodicRefresh } from 'lib-common/utils/usePeriodicRefresh'
-import { useApiState, useRestApi } from 'lib-common/utils/useRestApi'
+import { useRestApi } from 'lib-common/utils/useRestApi'
 import type { GroupMessageAccount } from 'lib-components/messages/types'
 import {
   isGroupMessageAccount,
@@ -53,27 +53,27 @@ import {
 } from 'lib-components/messages/types'
 import type { SelectOption } from 'lib-components/molecules/Select'
 
-import { client } from '../../api/client'
 import {
-  getAccountsByUser,
   getArchivedMessages,
   getMessagesInFolder,
   getDraftMessages,
   getMessageCopies,
   getReceivedMessages,
   getSentMessages,
-  getThread,
-  getUnreadMessages,
-  getFolders
+  getThread
 } from '../../generated/api-clients/messaging'
 import { UserContext } from '../../state/user'
 
+import {
+  accountsByUserQuery,
+  foldersQuery,
+  unreadMessagesQuery
+} from './queries'
 import type { AccountView } from './types-view'
 import {
   groupMessageBoxes,
   isFolderView,
   isStandardView,
-  municipalMessageBoxes,
   personalMessageBoxes,
   serviceWorkerMessageBoxes,
   financeMessageBoxes
@@ -83,11 +83,8 @@ const getMessageCopiesResult = wrapResult(getMessageCopies)
 const getDraftMessagesResult = wrapResult(getDraftMessages)
 const getArchivedMessagesResult = wrapResult(getArchivedMessages)
 const getMessagesInFolderResult = wrapResult(getMessagesInFolder)
-const getFoldersResult = wrapResult(getFolders)
-const getAccountsByUserResult = wrapResult(getAccountsByUser)
 const getReceivedMessagesResult = wrapResult(getReceivedMessages)
 const getSentMessagesResult = wrapResult(getSentMessages)
-const getUnreadMessagesResult = wrapResult(getUnreadMessages)
 const getThreadResult = wrapResult(getThread)
 
 type RepliesByThread = Record<UUID, string>
@@ -131,7 +128,6 @@ export interface MessagesState {
   prefilledTitle: string | null
   relatedApplicationId: ApplicationId | null
   accountAllowsNewMessage: () => boolean
-  refreshUnreadCounts: () => void
 }
 
 const defaultState: MessagesState = {
@@ -172,8 +168,7 @@ const defaultState: MessagesState = {
   prefilledRecipient: null,
   prefilledTitle: null,
   relatedApplicationId: null,
-  accountAllowsNewMessage: () => false,
-  refreshUnreadCounts: () => undefined
+  accountAllowsNewMessage: () => false
 }
 
 export const MessageContext = createContext<MessagesState>(defaultState)
@@ -273,20 +268,14 @@ export const MessageContextProvider = React.memo(
       Result<MessageThread[]>
     >(Loading.of())
 
-    const [accounts] = useApiState(
-      () =>
-        user?.accessibleFeatures.messages
-          ? getAccountsByUserResult()
-          : Promise.resolve(Loading.of<AuthorizedMessageAccount[]>()),
-      [user]
+    const accounts = useQueryResult(
+      user?.accessibleFeatures.messages
+        ? accountsByUserQuery()
+        : constantQuery<AuthorizedMessageAccount[]>([])
     )
 
-    const [folders] = useApiState(
-      () =>
-        user?.accessibleFeatures.messages
-          ? getFoldersResult()
-          : Promise.resolve(Loading.of<MessageThreadFolder[]>()),
-      [user]
+    const folders = useQueryResult(
+      user?.accessibleFeatures.messages ? foldersQuery() : constantQuery([])
     )
 
     const municipalAccount = useMemo(
@@ -352,15 +341,14 @@ export const MessageContextProvider = React.memo(
       [groupAccounts]
     )
 
-    const [unreadCountsByAccount, refreshUnreadCounts] = useApiState(
-      () =>
-        user?.accessibleFeatures.messages
-          ? getUnreadMessagesResult()
-          : Promise.resolve(Loading.of<UnreadCountByAccount[]>()),
-      [user]
+    const unreadCountsByAccount = useQueryResult(
+      user?.accessibleFeatures.messages
+        ? unreadMessagesQuery()
+        : constantQuery([]),
+      {
+        refetchInterval: 60 * 1000 // 1 minute
+      }
     )
-
-    usePeriodicRefresh(client, refreshUnreadCounts, { thresholdInMinutes: 1 })
 
     const selectedAccount: AccountView | undefined = useMemo(() => {
       const account = accounts
@@ -762,7 +750,7 @@ export const MessageContextProvider = React.memo(
         })
       } else if (municipalAccount) {
         setParams({
-          messageBox: messageBox ?? municipalMessageBoxes[0],
+          messageBox: messageBox ?? 'drafts',
           accountId: municipalAccount.account.id,
           unitId: null,
           threadId: threadId
@@ -832,8 +820,7 @@ export const MessageContextProvider = React.memo(
         prefilledRecipient,
         prefilledTitle,
         relatedApplicationId,
-        accountAllowsNewMessage,
-        refreshUnreadCounts
+        accountAllowsNewMessage
       }),
       [
         accounts,
@@ -870,8 +857,7 @@ export const MessageContextProvider = React.memo(
         prefilledRecipient,
         prefilledTitle,
         relatedApplicationId,
-        accountAllowsNewMessage,
-        refreshUnreadCounts
+        accountAllowsNewMessage
       ]
     )
 
