@@ -564,6 +564,7 @@ enum class Audit(
     TampereRegionalSurveyMonthly,
     TampereRegionalSurveyYearly,
     TampereRegionalSurveyAgeStatistics,
+    TampereRegionalSurveyMunicipalVoucherDistribution,
     TemporaryEmployeesRead,
     TemporaryEmployeeCreate,
     TemporaryEmployeeRead,

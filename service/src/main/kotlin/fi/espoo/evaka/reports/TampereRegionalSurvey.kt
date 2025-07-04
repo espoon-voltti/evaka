@@ -416,6 +416,105 @@ class TampereRegionalSurvey(private val accessControl: AccessControl) {
             .also { Audit.TampereRegionalSurveyYearly.log(meta = mapOf("year" to year)) }
     }
 
+    @GetMapping("/employee/reports/tampere-regional-survey/municipal-voucher-distribution")
+    fun getTampereRegionalSurveyMunicipalVoucherDistribution(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @RequestParam year: Int,
+    ): RegionalSurveyMunicipalVoucherDistributionResult {
+        val yearlyStatDay = LocalDate.of(year, 12, 15)
+
+        return db.connect { dbc ->
+                dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Global.READ_TAMPERE_REGIONAL_SURVEY_REPORT,
+                    )
+
+                    val regionalMunicipalities =
+                        listOf(
+                            "HÄMEENKYRÖ",
+                            "KANGASALA",
+                            "LEMPÄÄLÄ",
+                            "NOKIA",
+                            "ORIVESI",
+                            "PIRKKALA",
+                            "TAMPERE",
+                            "VESILAHTI",
+                            "YLÖJÄRVI",
+                        )
+
+                    val results =
+                        tx.getVoucherCountPerDaycareMunicipality(statDay = yearlyStatDay)
+                            .groupBy { vc ->
+                                if (regionalMunicipalities.contains(vc.municipality))
+                                    vc.municipality
+                                else "MUU"
+                            }
+                            .mapValues { (municipality, voucherCounts) ->
+                                MunicipalVoucherCount(
+                                    municipality,
+                                    voucherCounts.sumOf { it.under3VoucherCount },
+                                    voucherCounts.sumOf { it.over3VoucherCount },
+                                )
+                            }
+
+                    val voucherCounts =
+                        (regionalMunicipalities + "MUU").map {
+                            results[it] ?: MunicipalVoucherCount(it, 0, 0)
+                        }
+
+                    RegionalSurveyMunicipalVoucherDistributionResult(
+                        year = year,
+                        voucherCounts = voucherCounts,
+                    )
+                }
+            }
+            .also {
+                Audit.TampereRegionalSurveyMunicipalVoucherDistribution.log(
+                    meta = mapOf("year" to year)
+                )
+            }
+    }
+
+    private fun Database.Read.getVoucherCountPerDaycareMunicipality(
+        statDay: LocalDate
+    ): List<MunicipalVoucherCount> {
+        return createQuery {
+                sql(
+                    """
+                SELECT 
+                    count(pl.id) FILTER ( WHERE date_part('year', age(${bind(statDay)}, p.date_of_birth)) < 3)  as under_3_voucher_count,
+                    count(pl.id) FILTER ( WHERE date_part('year', age(${bind(statDay)}, p.date_of_birth)) >= 3) as over_3_voucher_count,
+                    upper(d.post_office)                                                                               as municipality
+                FROM placement pl
+                JOIN daycare d ON d.id = pl.unit_id
+                JOIN person p on pl.child_id = p.id
+                WHERE pl.type = ANY ('{DAYCARE,PRESCHOOL_DAYCARE,PRESCHOOL_DAYCARE_ONLY}')
+                AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(statDay)}
+                AND d.type && '{CENTRE}'
+                AND d.provider_type = 'PRIVATE_SERVICE_VOUCHER'
+                GROUP BY upper(d.post_office) 
+                """
+                )
+            }
+            .toList<MunicipalVoucherCount>()
+    }
+
+    data class RegionalSurveyMunicipalVoucherDistributionResult(
+        val year: Int,
+        val voucherCounts: List<MunicipalVoucherCount>,
+    )
+
+    data class MunicipalVoucherCount(
+        val municipality: String,
+        val under3VoucherCount: Int,
+        val over3VoucherCount: Int,
+    )
+
     private fun Database.Read.getMunicipalAssistanceMonthlyResults(
         reportingDays: List<LocalDate>
     ): List<MonthlyAssistanceResult> {

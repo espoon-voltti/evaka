@@ -8,6 +8,7 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.assistance.DaycareAssistanceLevel
 import fi.espoo.evaka.daycare.CareType
+import fi.espoo.evaka.daycare.VisitingAddress
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.serviceneed.ServiceNeedOption
@@ -2120,6 +2121,143 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
         assertEquals(expectedResults, shiftCareCountResults)
     }
 
+    @Test
+    fun `Municipal voucher age division is correct`() {
+        val octFirst = LocalDate.of(2024, 10, 1)
+        val defaultPlacementRange = FiniteDateRange(octFirst, octFirst.plusMonths(3).minusDays(1))
+        val testUnitData = initTestUnitData(startDate)
+        // adds placements to Tampere: Aapo, Bertil, Cecil
+        initTestPlacementData(octFirst, testUnitData[3], defaultPlacementRange)
+
+        db.transaction { tx ->
+            val testArea = DevCareArea(name = "testing", shortName = "testing")
+            tx.insert(testArea)
+            val nokiaDaycare =
+                DevDaycare(
+                    name = "Voucher daycare in Nokia",
+                    areaId = testArea.id,
+                    openingDate = octFirst,
+                    type = setOf(CareType.CENTRE),
+                    operationTimes =
+                        List(5) { TimeRange(LocalTime.of(8, 0), LocalTime.of(18, 0)) } +
+                            List(2) { null },
+                    enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS),
+                    providerType = ProviderType.PRIVATE_SERVICE_VOUCHER,
+                    visitingAddress = VisitingAddress(postOffice = "nOkia"),
+                )
+
+            val typoDaycare =
+                DevDaycare(
+                    name = "Voucher daycare with a typoed postoffice",
+                    areaId = testArea.id,
+                    openingDate = octFirst,
+                    type = setOf(CareType.CENTRE),
+                    operationTimes =
+                        List(5) { TimeRange(LocalTime.of(8, 0), LocalTime.of(18, 0)) } +
+                            List(2) { null },
+                    enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS),
+                    providerType = ProviderType.PRIVATE_SERVICE_VOUCHER,
+                    visitingAddress = VisitingAddress(postOffice = "nokkia"),
+                )
+
+            val vesilahtiDaycare =
+                DevDaycare(
+                    name = "Voucher daycare in Vesilahti",
+                    areaId = testArea.id,
+                    openingDate = octFirst,
+                    type = setOf(CareType.CENTRE),
+                    operationTimes =
+                        List(5) { TimeRange(LocalTime.of(8, 0), LocalTime.of(18, 0)) } +
+                            List(2) { null },
+                    enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS),
+                    providerType = ProviderType.PRIVATE_SERVICE_VOUCHER,
+                    visitingAddress = VisitingAddress(postOffice = "Vesilahti"),
+                )
+
+            listOf(nokiaDaycare, typoDaycare, vesilahtiDaycare).forEach { tx.insert(it) }
+
+            val testChildCecilia =
+                DevPerson(
+                    dateOfBirth = octFirst.minusYears(2),
+                    firstName = "Cecilia",
+                    lastName = "af Clubbenberg",
+                    language = "sv",
+                )
+
+            val testChildElmo =
+                DevPerson(
+                    dateOfBirth = octFirst.minusYears(4),
+                    firstName = "Elmo",
+                    lastName = "Esiopetettava",
+                    language = "fi",
+                )
+
+            val testChildVeikko =
+                DevPerson(
+                    dateOfBirth = octFirst.minusYears(2),
+                    firstName = "Veikko",
+                    lastName = "Vesilahdelta",
+                    language = "fi",
+                )
+
+            tx.insert(testChildCecilia, DevPersonType.CHILD)
+            tx.insert(testChildElmo, DevPersonType.CHILD)
+            tx.insert(testChildVeikko, DevPersonType.CHILD)
+
+            val placementC =
+                DevPlacement(
+                    type = PlacementType.DAYCARE,
+                    childId = testChildCecilia.id,
+                    unitId = nokiaDaycare.id,
+                    startDate = octFirst,
+                    endDate = octFirst.plusYears(1),
+                )
+
+            val placementV =
+                DevPlacement(
+                    type = PlacementType.DAYCARE,
+                    childId = testChildElmo.id,
+                    unitId = typoDaycare.id,
+                    startDate = octFirst,
+                    endDate = octFirst.plusYears(1),
+                )
+
+            val placementVes =
+                DevPlacement(
+                    type = PlacementType.DAYCARE,
+                    childId = testChildVeikko.id,
+                    unitId = vesilahtiDaycare.id,
+                    startDate = octFirst,
+                    endDate = octFirst.plusYears(1),
+                )
+
+            tx.insert(placementC)
+            tx.insert(placementV)
+            tx.insert(placementVes)
+        }
+
+        val result =
+            tampereRegionalSurvey.getTampereRegionalSurveyMunicipalVoucherDistribution(
+                dbInstance(),
+                adminLoginUser,
+                mockClock,
+                year = octFirst.year,
+            )
+
+        val zeroCountMunicipalities =
+            listOf("HÄMEENKYRÖ", "KANGASALA", "LEMPÄÄLÄ", "ORIVESI", "PIRKKALA", "YLÖJÄRVI")
+        val expectedResults =
+            zeroCountMunicipalities.map { TampereRegionalSurvey.MunicipalVoucherCount(it, 0, 0) } +
+                listOf(
+                    TampereRegionalSurvey.MunicipalVoucherCount("NOKIA", 1, 0),
+                    TampereRegionalSurvey.MunicipalVoucherCount("TAMPERE", 1, 2),
+                    TampereRegionalSurvey.MunicipalVoucherCount("VESILAHTI", 1, 0),
+                    TampereRegionalSurvey.MunicipalVoucherCount("MUU", 0, 1),
+                )
+
+        assertThat(result.voucherCounts).containsExactlyInAnyOrderElementsOf(expectedResults)
+    }
+
     private fun initTestUnitData(monday: LocalDate): List<DaycareId> {
         return db.transaction { tx ->
             val areaAId = tx.insert(DevCareArea(name = "Area A", shortName = "Area A"))
@@ -2136,6 +2274,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                             List(5) { TimeRange(LocalTime.of(8, 0), LocalTime.of(18, 0)) } +
                                 List(2) { null },
                         enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS),
+                        visitingAddress = VisitingAddress(postOffice = "TAMPERE"),
                     )
                 )
 
@@ -2153,6 +2292,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                             List(7) { TimeRange(LocalTime.of(0, 0), LocalTime.of(23, 59)) },
                         shiftCareOpenOnHolidays = true,
                         enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS),
+                        visitingAddress = VisitingAddress(postOffice = "TAMPERE"),
                     )
                 )
 
@@ -2167,6 +2307,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                             List(5) { TimeRange(LocalTime.of(8, 0), LocalTime.of(18, 0)) } +
                                 List(2) { null },
                         enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS),
+                        visitingAddress = VisitingAddress(postOffice = "TAMPERE"),
                     )
                 )
 
@@ -2182,6 +2323,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                             List(5) { TimeRange(LocalTime.of(8, 0), LocalTime.of(18, 0)) } +
                                 List(2) { null },
                         enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS),
+                        visitingAddress = VisitingAddress(postOffice = "TAMPERE"),
                     )
                 )
 
@@ -2197,6 +2339,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                             List(5) { TimeRange(LocalTime.of(8, 0), LocalTime.of(18, 0)) } +
                                 List(2) { null },
                         enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS),
+                        visitingAddress = VisitingAddress(postOffice = "TAMPERE"),
                     )
                 )
 
@@ -2216,6 +2359,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                         shiftCareOpenOnHolidays = true,
                         enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS),
                         withSchool = true,
+                        visitingAddress = VisitingAddress(postOffice = "TAMPERE"),
                     )
                 )
 
@@ -2231,6 +2375,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                             List(5) { TimeRange(LocalTime.of(8, 0), LocalTime.of(18, 0)) } +
                                 List(2) { null },
                         enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS),
+                        visitingAddress = VisitingAddress(postOffice = "TAMPERE"),
                     )
                 )
 
@@ -2246,6 +2391,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                             List(5) { TimeRange(LocalTime.of(8, 0), LocalTime.of(18, 0)) } +
                                 List(2) { null },
                         enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS),
+                        visitingAddress = VisitingAddress(postOffice = "TAMPERE"),
                     )
                 )
 

@@ -71,6 +71,7 @@ import type { PreschoolUnitsReportRow } from 'lib-common/generated/api-types/rep
 import type { PresenceReportRow } from 'lib-common/generated/api-types/reports'
 import type { ProviderType } from 'lib-common/generated/api-types/daycare'
 import type { RawReportRow } from 'lib-common/generated/api-types/reports'
+import type { RegionalSurveyMunicipalVoucherDistributionResult } from 'lib-common/generated/api-types/reports'
 import type { RegionalSurveyReportAgeStatisticsResult } from 'lib-common/generated/api-types/reports'
 import type { RegionalSurveyReportResult } from 'lib-common/generated/api-types/reports'
 import type { RegionalSurveyReportYearlyStatisticsResult } from 'lib-common/generated/api-types/reports'
@@ -1273,6 +1274,26 @@ export async function getTampereRegionalSurveyMonthlyStatistics(
   )
   const { data: json } = await client.request<JsonOf<RegionalSurveyReportResult>>({
     url: uri`/employee/reports/tampere-regional-survey/monthly-statistics`.toString(),
+    method: 'GET',
+    params
+  })
+  return json
+}
+
+
+/**
+* Generated from fi.espoo.evaka.reports.TampereRegionalSurvey.getTampereRegionalSurveyMunicipalVoucherDistribution
+*/
+export async function getTampereRegionalSurveyMunicipalVoucherDistribution(
+  request: {
+    year: number
+  }
+): Promise<RegionalSurveyMunicipalVoucherDistributionResult> {
+  const params = createUrlSearchParams(
+    ['year', request.year.toString()]
+  )
+  const { data: json } = await client.request<JsonOf<RegionalSurveyMunicipalVoucherDistributionResult>>({
+    url: uri`/employee/reports/tampere-regional-survey/municipal-voucher-distribution`.toString(),
     method: 'GET',
     params
   })

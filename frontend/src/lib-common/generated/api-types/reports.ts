@@ -645,6 +645,15 @@ export interface MissingServiceNeedReportResultRow {
 }
 
 /**
+* Generated from fi.espoo.evaka.reports.TampereRegionalSurvey.MunicipalVoucherCount
+*/
+export interface MunicipalVoucherCount {
+  municipality: string
+  over3VoucherCount: number
+  under3VoucherCount: number
+}
+
+/**
 * Generated from fi.espoo.evaka.reports.NekkuOrderRow
 */
 export interface NekkuOrderRow {
@@ -892,6 +901,14 @@ export interface ReferenceCount {
   column: string
   count: number
   table: string
+}
+
+/**
+* Generated from fi.espoo.evaka.reports.TampereRegionalSurvey.RegionalSurveyMunicipalVoucherDistributionResult
+*/
+export interface RegionalSurveyMunicipalVoucherDistributionResult {
+  voucherCounts: MunicipalVoucherCount[]
+  year: number
 }
 
 /**
