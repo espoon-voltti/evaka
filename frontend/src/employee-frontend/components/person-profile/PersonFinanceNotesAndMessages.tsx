@@ -70,9 +70,9 @@ import {
   deleteDraftMutation,
   archiveFinanceThreadMutation,
   draftsQuery,
-  financeFoldersQuery,
   financeThreadsQuery,
-  replyToFinanceThreadMutation
+  replyToFinanceThreadMutation,
+  foldersQuery
 } from '../messages/queries'
 
 import {
@@ -100,7 +100,7 @@ export default React.memo(function PersonFinanceNotesAndMessages({
   const financeThreads = useQueryResult(
     financeAccount ? financeThreadsQuery({ personId: id }) : constantQuery([])
   )
-  const messageFolders = useQueryResult(financeFoldersQuery())
+  const messageFolders = useQueryResult(foldersQuery())
   const [sending, setSending] = useState(false)
   const [thread, setThread] = useState<MessageThread>()
   const messageDrafts = useQueryResult(

@@ -200,7 +200,7 @@ function invalidateQueryKeysFn<Arg>(
 
   const invalidationFns = invalidations.map((invalidation) =>
     isQuery in invalidation
-      ? // If the invalidation is a query, do not pass any arguments to it. Typings ensure that q query can be used as
+      ? // If the invalidation is a query, do not pass any arguments to it. Typings ensure that a query can be used as
         // an invalidation only if it has no arguments. The arguments are added to the query key, so passing the
         // *mutation's* argument would result in the wrong query key being computed.
         () => invalidation().queryKey

@@ -10,9 +10,11 @@ import {
   createMessage,
   createMessagePreflightCheck,
   deleteDraftMessage,
+  getAccountsByUser,
   getDraftMessages,
   getFinanceMessagesWithPerson,
   getFolders,
+  getUnreadMessages,
   initDraftMessage,
   markLastReceivedMessageInThreadUnread,
   markThreadRead,
@@ -22,11 +24,19 @@ import {
 
 const q = new Queries()
 
+export const accountsByUserQuery = q.query(getAccountsByUser)
+
+export const foldersQuery = q.query(getFolders)
+
+export const unreadMessagesQuery = q.query(getUnreadMessages)
+
 export const createMessagePreflightCheckQuery = q.query(
   createMessagePreflightCheck
 )
 
-export const markThreadReadMutation = q.mutation(markThreadRead)
+export const markThreadReadMutation = q.mutation(markThreadRead, [
+  unreadMessagesQuery
+])
 
 export const replyToThreadMutation = q.mutation(replyToThread)
 
@@ -39,8 +49,6 @@ export const saveDraftMutation = q.mutation(updateDraftMessage, [draftsQuery])
 export const deleteDraftMutation = q.mutation(deleteDraftMessage, [draftsQuery])
 
 export const financeThreadsQuery = q.query(getFinanceMessagesWithPerson)
-
-export const financeFoldersQuery = q.query(getFolders)
 
 export const createFinanceThreadMutation = q.parametricMutation<{
   id: PersonId
@@ -55,5 +63,6 @@ export const archiveFinanceThreadMutation = q.parametricMutation<{
 }>()(archiveThread, [({ id }) => financeThreadsQuery({ personId: id })])
 
 export const markLastReceivedMessageInThreadUnreadMutation = q.mutation(
-  markLastReceivedMessageInThreadUnread
+  markLastReceivedMessageInThreadUnread,
+  [unreadMessagesQuery]
 )

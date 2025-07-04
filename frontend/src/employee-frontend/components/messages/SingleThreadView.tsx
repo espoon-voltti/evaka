@@ -199,13 +199,8 @@ export function SingleThreadView({
 }: Props) {
   const { i18n } = useTranslation()
   const [, navigate] = useLocation()
-  const {
-    getReplyContent,
-    onReplySent,
-    setReplyContent,
-    refreshMessages,
-    refreshUnreadCounts
-  } = useContext(MessageContext)
+  const { getReplyContent, onReplySent, setReplyContent, refreshMessages } =
+    useContext(MessageContext)
   const [searchParams] = useSearchParams()
   const [replyEditorVisible, setReplyEditorVisible] = useState<boolean>(
     !!searchParams.get('reply')
@@ -273,17 +268,9 @@ export function SingleThreadView({
     if (hasUnreadMessages) {
       void markThreadRead({ accountId, threadId }).then(() => {
         refreshMessages(accountId)
-        void refreshUnreadCounts()
       })
     }
-  }, [
-    accountId,
-    markThreadRead,
-    messages,
-    refreshMessages,
-    refreshUnreadCounts,
-    threadId
-  ])
+  }, [accountId, markThreadRead, messages, refreshMessages, threadId])
 
   return (
     <ThreadContainer>
@@ -362,7 +349,6 @@ export function SingleThreadView({
                   onClick={() => ({ accountId, threadId })}
                   onSuccess={() => {
                     navigate('/messages')
-                    refreshUnreadCounts()
                   }}
                 />
                 {onArchived && (
