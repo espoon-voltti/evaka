@@ -267,6 +267,7 @@ class PdfGeneratorTest {
             ChildDocumentDetails(
                 id = ChildDocumentId(UUID.randomUUID()),
                 status = DocumentStatus.COMPLETED,
+                caseIdentifier = "123/45.67/2023",
                 publishedAt = HelsinkiDateTime.now(),
                 pdfAvailable = false,
                 child =
@@ -499,6 +500,7 @@ fun createValidDecision(
         childId = childId,
         documentKey = documentKey,
         decisionNumber = decisionNumber,
+        caseIdentifier = "12/34.56/2019",
         sentDate = sentDate,
         status = status,
         childName = "Test Child",

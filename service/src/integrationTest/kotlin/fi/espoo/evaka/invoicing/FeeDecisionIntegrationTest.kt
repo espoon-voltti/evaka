@@ -323,9 +323,10 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 created = created,
                 approvedAt = null,
                 sentAt = null,
+                caseIdentifier = null,
                 headOfFamily = expected.headOfFamily.copy(email = null),
             ),
-            actual.copy(created = created, approvedAt = null, sentAt = null),
+            actual.copy(created = created, approvedAt = null, sentAt = null, caseIdentifier = null),
         )
     }
 
@@ -2566,6 +2567,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             status = feeDecision.status,
             decisionNumber = feeDecision.decisionNumber,
             decisionType = feeDecision.decisionType,
+            caseIdentifier = null,
             validDuring = feeDecision.validDuring,
             headOfFamily =
                 allAdults.find { it.id == feeDecision.headOfFamilyId }!!.toPersonDetailed(),

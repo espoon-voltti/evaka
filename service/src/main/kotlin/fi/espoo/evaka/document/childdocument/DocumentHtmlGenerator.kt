@@ -150,6 +150,10 @@ private fun generateHeader(document: ChildDocumentDetails): HtmlElement {
                     if (template.confidentiality != null)
                         div(getTranslations(template).confidential)
                     else null,
+                    document.caseIdentifier?.let {
+                        div(getTranslations(document.template).caseIdentifier)
+                    },
+                    document.caseIdentifier?.let { div(it) },
                 )
             },
         )
@@ -182,16 +186,32 @@ private fun generateQuestionHtml(
     )
 }
 
-private data class Translations(val confidential: String, val decisionNumber: String)
+private data class Translations(
+    val confidential: String,
+    val decisionNumber: String,
+    val caseIdentifier: String,
+)
 
 private val translationsFi =
-    Translations(confidential = "Salassapidettävä", decisionNumber = "Päätösnumero")
+    Translations(
+        confidential = "Salassapidettävä",
+        decisionNumber = "Päätösnumero",
+        caseIdentifier = "Asiatunnus",
+    )
 
 private val translationsSv =
-    Translations(confidential = "Konfidentiellt", decisionNumber = "Beslutsnummer")
+    Translations(
+        confidential = "Konfidentiellt",
+        decisionNumber = "Beslutsnummer",
+        caseIdentifier = "Ärendekod",
+    )
 
 private val translationsEn =
-    Translations(confidential = "Confidential", decisionNumber = "Decision number")
+    Translations(
+        confidential = "Confidential",
+        decisionNumber = "Decision number",
+        caseIdentifier = "Case identifier",
+    )
 
 private fun getTranslations(template: DocumentTemplate) =
     when (template.language) {

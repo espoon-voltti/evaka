@@ -44,6 +44,7 @@ class DocumentMetadataUtilsTest {
         return ChildDocumentDetails(
             id = documentId,
             status = DocumentStatus.COMPLETED,
+            caseIdentifier = "1/1234/2023",
             publishedAt = HelsinkiDateTime.of(LocalDateTime.parse("2023-02-01T12:10:00")),
             archivedAt = null,
             pdfAvailable = true,

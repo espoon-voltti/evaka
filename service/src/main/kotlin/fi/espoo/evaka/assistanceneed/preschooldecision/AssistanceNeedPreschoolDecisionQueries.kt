@@ -61,6 +61,7 @@ fun Database.Read.getAssistanceNeedPreschoolDecisionById(
 SELECT 
     ad.id, 
     ad.decision_number,
+    cp.case_identifier,
     ad.child_id, 
     concat(child.first_name, ' ', child.last_name) child_name,
     child.date_of_birth child_date_of_birth,
@@ -131,6 +132,7 @@ SELECT
     CASE WHEN decision_maker.id IS NOT NULL THEN coalesce(decision_maker.preferred_first_name, decision_maker.first_name) || ' ' || decision_maker.last_name END as decision_maker_name
 FROM assistance_need_preschool_decision ad
 JOIN person child ON child.id = ad.child_id
+LEFT JOIN case_process cp ON cp.id = ad.process_id
 LEFT JOIN assistance_need_preschool_decision_guardian dg ON dg.assistance_need_decision_id = ad.id
 LEFT JOIN person p ON p.id = dg.person_id
 LEFT JOIN daycare d ON ad.selected_unit = d.id
@@ -138,7 +140,7 @@ LEFT JOIN employee preparer1 ON ad.preparer_1_employee_id = preparer1.id
 LEFT JOIN employee preparer2 ON ad.preparer_2_employee_id = preparer2.id
 LEFT JOIN employee decision_maker ON ad.decision_maker_employee_id = decision_maker.id
 WHERE ad.id = ${bind(id)}
-GROUP BY ad.id, child.id, d.id, preparer1.id, preparer2.id, decision_maker.id;
+GROUP BY ad.id, child.id, cp.id, d.id, preparer1.id, preparer2.id, decision_maker.id;
 """
             )
         }

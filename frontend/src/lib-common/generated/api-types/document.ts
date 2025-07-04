@@ -189,6 +189,7 @@ export type ChildDocumentDecisionStatus =
 */
 export interface ChildDocumentDetails {
   archivedAt: HelsinkiDateTime | null
+  caseIdentifier: string | null
   child: ChildBasics
   content: DocumentContent
   decision: ChildDocumentDecision | null
