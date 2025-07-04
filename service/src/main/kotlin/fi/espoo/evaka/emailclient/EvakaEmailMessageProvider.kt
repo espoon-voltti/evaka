@@ -353,30 +353,13 @@ $unsubscribeEn
         childId: ChildId,
         notificationType: ChildDocumentNotificationType,
     ): EmailContent {
-        if (notificationType == ChildDocumentNotificationType.EDITABLE_DOCUMENT) {
-            return EmailContent.fromHtml(
-                subject =
-                    "Uusi täytettävä asiakirja eVakassa / Nytt ifyllnadsdokument i eVaka / New fillable document in eVaka",
-                html =
-                    """
-<p>Sinua on pyydetty täyttämään asiakirja eVakassa. Löydät asiakirjan täältä: ${childLink(Language.fi, childId)}</p>
-<p>Tämä on eVaka-järjestelmän automaattisesti lähettämä ilmoitus. Älä vastaa tähän viestiin.</p>
-$unsubscribeFi
-<hr>
-<p>Du har blivit ombedd at fylla i ett dokument i eVaka. Du hittar dokumentet här: ${childLink(Language.sv, childId)}</p>
-<p>Detta besked skickas automatiskt av eVaka. Svara inte på detta besked.</p>
-$unsubscribeSv
-<hr>
-<p>You have been requested to fill out a document in eVaka. You can find the document here: ${childLink(Language.en, childId)}</p>
-<p>This is an automatic message from the eVaka system. Do not reply to this message.</p>
-$unsubscribeEn
-""",
-            )
-        }
-        return EmailContent.fromHtml(
-            subject = "Uusi asiakirja eVakassa / Nytt dokument i eVaka / New document in eVaka",
-            html =
-                """
+        return when (notificationType) {
+            ChildDocumentNotificationType.BASIC_DOCUMENT ->
+                EmailContent.fromHtml(
+                    subject =
+                        "Uusi asiakirja eVakassa / Nytt dokument i eVaka / New document in eVaka",
+                    html =
+                        """
 <p>Sinulle on saapunut uusi/päivitetty asiakirja eVakaan. Lue asiakirja täältä: ${childLink(Language.fi, childId)}</p>
 <p>Tämä on eVaka-järjestelmän automaattisesti lähettämä ilmoitus. Älä vastaa tähän viestiin.</p>
 $unsubscribeFi
@@ -389,7 +372,45 @@ $unsubscribeSv
 <p>This is an automatic message from the eVaka system. Do not reply to this message.</p>
 $unsubscribeEn
 """,
-        )
+                )
+            ChildDocumentNotificationType.EDITABLE_DOCUMENT ->
+                EmailContent.fromHtml(
+                    subject =
+                        "Uusi täytettävä asiakirja eVakassa / Nytt ifyllnadsdokument i eVaka / New fillable document in eVaka",
+                    html =
+                        """
+<p>Sinua on pyydetty täyttämään asiakirja eVakassa. Löydät asiakirjan täältä: ${childLink(Language.fi, childId)}</p>
+<p>Tämä on eVaka-järjestelmän automaattisesti lähettämä ilmoitus. Älä vastaa tähän viestiin.</p>
+$unsubscribeFi
+<hr>
+<p>Du har blivit ombedd at fylla i ett dokument i eVaka. Du hittar dokumentet här: ${childLink(Language.sv, childId)}</p>
+<p>Detta besked skickas automatiskt av eVaka. Svara inte på detta besked.</p>
+$unsubscribeSv
+<hr>
+<p>You have been requested to fill out a document in eVaka. You can find the document here: ${childLink(Language.en, childId)}</p>
+<p>This is an automatic message from the eVaka system. Do not reply to this message.</p>
+$unsubscribeEn
+""",
+                )
+            ChildDocumentNotificationType.DECISION_DOCUMENT ->
+                EmailContent.fromHtml(
+                    subject = "Uusi päätös eVakassa / Nytt beslut i eVaka / New decision in eVaka",
+                    html =
+                        """
+<p>Sinulle on saapunut uusi päätös eVakaan. Lue päätös täältä: ${childLink(Language.fi, childId)}</p>
+<p>Tämä on eVaka-järjestelmän automaattisesti lähettämä ilmoitus. Älä vastaa tähän viestiin.</p>
+$unsubscribeFi
+<hr>
+<p>Du har fått ett nytt beslut i eVaka. Läs beslutet här: ${childLink(Language.sv, childId)}</p>
+<p>Detta besked skickas automatiskt av eVaka. Svara inte på detta besked.</p>
+$unsubscribeSv
+<hr>
+<p>You have received a new decision in eVaka. Read the decision here: ${childLink(Language.en, childId)}</p>
+<p>This is an automatic message from the eVaka system. Do not reply to this message.</p>
+$unsubscribeEn
+""",
+                )
+        }
     }
 
     override fun pedagogicalDocumentNotification(
