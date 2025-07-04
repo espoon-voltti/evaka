@@ -76,6 +76,15 @@ export function useMonthlySummaryInfo(
           usedServiceMinutes > serviceNeedMinutes
       )
     )
+
+    const tooManyReservedMinutes = childSummaries.some(
+      ({ reservedMinutes, serviceNeedMinutes }) =>
+        reservedMinutes > serviceNeedMinutes
+    )
+
+    if (tooManyReservedMinutes) {
+      setSummaryInfoOpen(true)
+    }
   }, [childSummaries, selectedMonthData.month, selectedMonthData.year])
 
   const toggleSummaryInfo = useCallback(() => {
