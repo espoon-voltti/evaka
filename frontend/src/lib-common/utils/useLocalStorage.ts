@@ -2,23 +2,23 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import type { Dispatch } from 'react'
+import type { Dispatch, SetStateAction } from 'react'
 import { useEffect, useState } from 'react'
 
 export default function useLocalStorage(
   key: string,
   initialValue: string
-): [string, Dispatch<string>]
+): [string, Dispatch<SetStateAction<string>>]
 export default function useLocalStorage<T extends string>(
   key: string,
   initialValue: string,
   validateStoredValue: (v: string | null) => v is T
-): [T, Dispatch<T>]
+): [T, Dispatch<SetStateAction<T>>]
 export default function useLocalStorage<T extends string>(
   key: string,
   initialValue: T,
   validateStoredValue?: (v: string | null) => v is T
-): [T, Dispatch<T>] {
+): [T, Dispatch<SetStateAction<T>>] {
   const [value, setValue] = useState<T>((): T => {
     try {
       const storedValue = window.localStorage?.getItem(key)
