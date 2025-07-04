@@ -115,6 +115,7 @@ export function useExtendedReservationsRange(dateRange: FiniteDateRange) {
           const extendedReservations = {
             value: {
               ...prevReservations.value,
+              children: [...fetchedReservations.value.children],
               days: [
                 ...fetchedReservations.value.days,
                 ...prevReservations.value.days

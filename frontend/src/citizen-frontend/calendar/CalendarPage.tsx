@@ -61,10 +61,11 @@ function useEventsRange(
 }
 
 function getPreviousMonthRangeBeforeDate(
-  beforeDate: LocalDate
+  beforeDate: LocalDate,
+  rangeEnd: LocalDate
 ): FiniteDateRange {
-  const end = beforeDate.subDays(1)
-  const start = end.startOfMonth().startOfWeek()
+  const end = rangeEnd
+  const start = beforeDate.subDays(1).startOfMonth().startOfWeek()
   return new FiniteDateRange(start, end)
 }
 
@@ -94,8 +95,10 @@ const CalendarPage = React.memo(function CalendarPage() {
 
   const fetchPreviousData = useCallback(
     (beforeDate: LocalDate) =>
-      setReservationsDateRange(getPreviousMonthRangeBeforeDate(beforeDate)),
-    [setReservationsDateRange]
+      setReservationsDateRange(
+        getPreviousMonthRangeBeforeDate(beforeDate, reservationsDateRange.end)
+      ),
+    [reservationsDateRange.end]
   )
 
   // Based on the initial data fetch, index 1 represents the current month
