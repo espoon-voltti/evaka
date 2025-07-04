@@ -44,20 +44,14 @@ export default React.memo(function ChildSubSection({
           <FixedSpaceColumn spacing="xs">
             <Label>{t.applications.editor.contactInfo.childFirstName}</Label>
             <PersonName
-              person={{
-                firstName: formData.childFirstName,
-                lastName: formData.childLastName
-              }}
+              person={{ firstName: formData.childFirstName }}
               format="First"
             />
           </FixedSpaceColumn>
           <FixedSpaceColumn spacing="xs">
             <Label>{t.applications.editor.contactInfo.childLastName}</Label>
             <PersonName
-              person={{
-                firstName: formData.childFirstName,
-                lastName: formData.childLastName
-              }}
+              person={{ lastName: formData.childLastName }}
               format="Last"
             />
           </FixedSpaceColumn>
