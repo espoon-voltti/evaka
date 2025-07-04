@@ -347,9 +347,19 @@ $unsubscribeEn
         )
     }
 
-    override fun childDocumentNotification(language: Language, childId: ChildId): EmailContent {
+    override fun childDocumentNotification(
+        language: Language,
+        childId: ChildId,
+        isDecision: Boolean,
+    ): EmailContent {
+        val subject =
+            if (isDecision) {
+                "Uusi päätös eVakassa / Nytt beslut i eVaka / New decision in eVaka"
+            } else {
+                "Uusi asiakirja eVakassa / Nytt dokument i eVaka / New document in eVaka"
+            }
         return EmailContent.fromHtml(
-            subject = "Uusi asiakirja eVakassa / Nytt dokument i eVaka / New document in eVaka",
+            subject = subject,
             html =
                 """
 <p>Sinulle on saapunut uusi/päivitetty asiakirja eVakaan. Lue asiakirja täältä: ${childLink(Language.fi, childId)}</p>
