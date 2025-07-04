@@ -60,7 +60,12 @@ export function useMonthlySummaryInfo(
   childSummaries: MonthlyTimeSummary[],
   selectedMonthData: { month: number; year: number }
 ) {
-  const [summaryInfoOpen, setSummaryInfoOpen] = useState(false)
+  const [summaryInfoOpen, setSummaryInfoOpen] = useState(() =>
+    childSummaries.some(
+      ({ reservedMinutes, serviceNeedMinutes }) =>
+        reservedMinutes > serviceNeedMinutes
+    )
+  )
   const [displayAlert, setDisplayAlert] = useState(false)
 
   useEffect(() => {
@@ -69,12 +74,6 @@ export function useMonthlySummaryInfo(
         ({ reservedMinutes, usedServiceMinutes, serviceNeedMinutes }) =>
           reservedMinutes > serviceNeedMinutes ||
           usedServiceMinutes > serviceNeedMinutes
-      )
-    )
-    setSummaryInfoOpen(
-      childSummaries.some(
-        ({ reservedMinutes, serviceNeedMinutes }) =>
-          reservedMinutes > serviceNeedMinutes
       )
     )
   }, [childSummaries, selectedMonthData.month, selectedMonthData.year])
