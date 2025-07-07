@@ -133,6 +133,11 @@ enum class DocumentStatus(val employeeEditable: Boolean, val citizenEditable: Bo
     override val sqlType: String = "child_document_status"
 }
 
+enum class ChildDocumentNotificationType {
+    CHILD_DOCUMENT,
+    CITIZEN_DRAFT,
+}
+
 enum class ChildDocumentDecisionStatus : DatabaseEnum {
     ACCEPTED,
     REJECTED,

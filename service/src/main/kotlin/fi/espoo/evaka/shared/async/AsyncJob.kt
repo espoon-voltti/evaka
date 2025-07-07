@@ -10,6 +10,7 @@ import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.application.PlacementToolData
 import fi.espoo.evaka.calendarevent.CalendarEventTime
 import fi.espoo.evaka.daycare.domain.Language
+import fi.espoo.evaka.document.childdocument.ChildDocumentNotificationType
 import fi.espoo.evaka.invoicing.service.IncomeNotificationType
 import fi.espoo.evaka.koski.KoskiStudyRightKey
 import fi.espoo.evaka.nekku.NekkuSpecialDietChoices
@@ -200,15 +201,8 @@ sealed interface AsyncJob : AsyncJobPayload {
         val childId: ChildId,
         val recipientId: PersonId,
         val language: Language,
-    ) : AsyncJob {
-        override val user: AuthenticatedUser? = null
-    }
-
-    data class SendCitizenBasicDocumentNotificationEmail(
-        val documentId: ChildDocumentId,
-        val childId: ChildId,
-        val recipientId: PersonId,
-        val language: Language,
+        val notificationType: ChildDocumentNotificationType =
+            ChildDocumentNotificationType.CHILD_DOCUMENT,
     ) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
@@ -537,7 +531,6 @@ sealed interface AsyncJob : AsyncJobPayload {
                     SendAssistanceNeedPreschoolDecisionEmail::class,
                     SendCalendarEventDigestEmail::class,
                     SendChildDocumentNotificationEmail::class,
-                    SendCitizenBasicDocumentNotificationEmail::class,
                     SendConfirmationCodeEmail::class,
                     SendDiscussionReservationReminderEmail::class,
                     SendDiscussionSurveyCreationNotificationEmail::class,
