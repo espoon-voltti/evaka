@@ -353,7 +353,7 @@ WHERE person.email IS NOT NULL AND person.email != ''
                 emailType = EmailMessageType.DOCUMENT_NOTIFICATION,
                 fromAddress = emailEnv.sender(msg.language),
                 content =
-                    if (msg.notificationType === ChildDocumentNotificationType.CHILD_DOCUMENT) {
+                    if (msg.notificationType == ChildDocumentNotificationType.CHILD_DOCUMENT) {
                         emailMessageProvider.childDocumentNotification(msg.language, msg.childId)
                     } else {
                         emailMessageProvider.citizenBasicDocumentNotification(
