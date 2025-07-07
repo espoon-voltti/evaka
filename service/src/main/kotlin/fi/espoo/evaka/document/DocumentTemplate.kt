@@ -374,6 +374,18 @@ enum class ChildDocumentType(
         decision = false,
         autoCompleteAtEndOfValidity = false,
     ),
+    MIGRATED_DAYCARE_ASSISTANCE_NEED_DECISION(
+        statuses = listOf(DocumentStatus.COMPLETED),
+        manuallyPublishable = false,
+        decision = true,
+        autoCompleteAtEndOfValidity = false,
+    ),
+    MIGRATED_PRESCHOOL_ASSISTANCE_NEED_DECISION(
+        statuses = listOf(DocumentStatus.COMPLETED),
+        manuallyPublishable = false,
+        decision = true,
+        autoCompleteAtEndOfValidity = false,
+    ),
     VASU(
         statuses = listOf(DocumentStatus.DRAFT, DocumentStatus.PREPARED, DocumentStatus.COMPLETED),
         manuallyPublishable = true,

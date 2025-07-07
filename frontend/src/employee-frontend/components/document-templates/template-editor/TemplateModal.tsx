@@ -69,7 +69,7 @@ export default React.memo(function TemplateModal({ onClose, mode }: Props) {
       childDocumentTypes
         .filter(
           (type) =>
-            !type.startsWith('MIGRATED_') &&
+            (!type.startsWith('MIGRATED_') || mode.type === 'import') &&
             (featureFlags.citizenChildDocumentTypes ||
               type !== 'CITIZEN_BASIC') &&
             (featureFlags.decisionChildDocumentTypes ||
@@ -80,7 +80,7 @@ export default React.memo(function TemplateModal({ onClose, mode }: Props) {
           value: option,
           label: i18n.documentTemplates.documentTypes[option]
         })),
-    [i18n.documentTemplates]
+    [i18n.documentTemplates, mode.type]
   )
 
   const getLanguageOptions = useCallback(

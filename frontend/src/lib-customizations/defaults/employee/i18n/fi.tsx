@@ -5268,6 +5268,10 @@ export const fi = {
       HOJKS: 'HOJKS',
       MIGRATED_VASU: 'Varhaiskasvatussuunnitelma (siirretty)',
       MIGRATED_LEOPS: 'Esiopetuksen suunnitelma (siirretty)',
+      MIGRATED_DAYCARE_ASSISTANCE_NEED_DECISION:
+        'Päätös tuesta varhaiskasvatuksessa (siirretty)',
+      MIGRATED_PRESCHOOL_ASSISTANCE_NEED_DECISION:
+        'Päätös tuesta esiopetuksessa (siirretty)',
       VASU: 'Varhaiskasvatussuunnitelma',
       LEOPS: 'Esiopetuksen suunnitelma',
       CITIZEN_BASIC: 'Huoltajan kanssa täytettävä asiakirja',
