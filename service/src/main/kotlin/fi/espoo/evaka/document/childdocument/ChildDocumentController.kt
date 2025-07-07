@@ -761,6 +761,11 @@ class ChildDocumentController(
                         }
 
                     childDocumentService.schedulePdfGeneration(tx, listOf(documentId), clock.now())
+                    childDocumentService.scheduleEmailNotification(
+                        tx,
+                        listOf(documentId),
+                        clock.now(),
+                    )
 
                     updateDocumentCaseProcessHistory(
                         tx = tx,
@@ -814,6 +819,11 @@ class ChildDocumentController(
                         }
 
                     childDocumentService.schedulePdfGeneration(tx, listOf(documentId), clock.now())
+                    childDocumentService.scheduleEmailNotification(
+                        tx,
+                        listOf(documentId),
+                        clock.now(),
+                    )
 
                     updateDocumentCaseProcessHistory(
                         tx = tx,
