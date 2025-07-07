@@ -216,6 +216,7 @@ describe('Employee - Child documents', () => {
   test('Accepting and annulling decision', async () => {
     await Fixture.documentTemplate({
       type: 'OTHER_DECISION',
+      endDecisionWhenUnitChanges: true,
       published: true
     }).save()
 
@@ -270,6 +271,7 @@ describe('Employee - Child documents', () => {
   test('Rejecting decision', async () => {
     await Fixture.documentTemplate({
       type: 'OTHER_DECISION',
+      endDecisionWhenUnitChanges: true,
       published: true
     }).save()
 

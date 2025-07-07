@@ -308,6 +308,7 @@ export interface DocumentTemplate {
   archiveExternally: boolean
   confidentiality: DocumentConfidentiality | null
   content: DocumentTemplateContent
+  endDecisionWhenUnitChanges: boolean | null
   id: DocumentTemplateId
   language: UiLanguage
   legalBasis: string
@@ -329,6 +330,7 @@ export namespace DocumentTemplateBasicsRequest {
     archiveDurationMonths: number
     archiveExternally: boolean
     confidentiality: DocumentConfidentiality | null
+    endDecisionWhenUnitChanges: boolean | null
     language: UiLanguage
     legalBasis: string
     name: string
@@ -346,6 +348,7 @@ export namespace DocumentTemplateBasicsRequest {
     archiveDurationMonths: number | null
     archiveExternally: boolean
     confidentiality: DocumentConfidentiality | null
+    endDecisionWhenUnitChanges: boolean | null
     language: UiLanguage
     legalBasis: string
     name: string
@@ -400,6 +403,7 @@ export interface ExportedDocumentTemplate {
   archiveExternally: boolean
   confidentiality: DocumentConfidentiality | null
   content: DocumentTemplateContent
+  endDecisionWhenUnitChanges: boolean | null
   language: UiLanguage
   legalBasis: string
   name: string

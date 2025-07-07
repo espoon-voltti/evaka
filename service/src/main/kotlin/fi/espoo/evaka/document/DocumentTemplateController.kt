@@ -61,6 +61,7 @@ class DocumentTemplateController(
                         Action.Global.CREATE_DOCUMENT_TEMPLATE,
                     )
                     validateLanguage(body.language, body.type)
+                    validateDecisionConfig(body.endDecisionWhenUnitChanges, body.type)
                     tx.insertTemplate(body)
                 }
             }
@@ -83,6 +84,7 @@ class DocumentTemplateController(
                         Action.Global.CREATE_DOCUMENT_TEMPLATE,
                     )
                     validateLanguage(body.language, body.type)
+                    validateDecisionConfig(body.endDecisionWhenUnitChanges, body.type)
                     tx.importTemplate(body)
                 }
             }
@@ -253,6 +255,7 @@ class DocumentTemplateController(
                     )
 
                     validateLanguage(body.language, body.type)
+                    validateDecisionConfig(body.endDecisionWhenUnitChanges, body.type)
 
                     tx.duplicateTemplate(templateId, body)
                 }
@@ -278,6 +281,7 @@ class DocumentTemplateController(
                         templateId,
                     )
                     validateLanguage(body.language, body.type)
+                    validateDecisionConfig(body.endDecisionWhenUnitChanges, body.type)
 
                     tx.getTemplate(templateId)?.also {
                         if (it.published) throw BadRequest("Cannot update published template")
@@ -422,6 +426,15 @@ class DocumentTemplateController(
 private fun validateLanguage(lang: UiLanguage, type: ChildDocumentType) {
     if (type != ChildDocumentType.CITIZEN_BASIC && lang == UiLanguage.EN) {
         throw BadRequest("English is not supported for this document type")
+    }
+}
+
+private fun validateDecisionConfig(endDecisionWhenUnitChanges: Boolean?, type: ChildDocumentType) {
+    if (type.decision && endDecisionWhenUnitChanges == null) {
+        throw BadRequest("Missing mandatory field endDecisionWhenUnitChanges")
+    }
+    if (!type.decision && endDecisionWhenUnitChanges != null) {
+        throw BadRequest("Decision config not allowed for this document type")
     }
 }
 

@@ -1698,6 +1698,7 @@ export class Fixture {
       processDefinitionNumber: null,
       archiveDurationMonths: null,
       archiveExternally: false,
+      endDecisionWhenUnitChanges: null,
       content: {
         sections: [
           {

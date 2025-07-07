@@ -68,6 +68,7 @@ class ChildDocumentDecisionsReportTest : FullApplicationTest(resetDbBeforeEach =
                             )
                         )
                 ),
+            endDecisionWhenUnitChanges = true,
         )
     val child2Document =
         DevChildDocument(

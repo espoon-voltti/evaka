@@ -541,3 +541,4 @@ V542__assistance_action_option_validity.sql
 V543__case_process.sql
 V544__child_document_decision_unit.sql
 V545__case_identifier.sql
+V546__end_decision_when_unit_changes_config.sql

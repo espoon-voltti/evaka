@@ -72,6 +72,7 @@ class DocumentMetadataUtilsTest {
                     archiveDurationMonths = null,
                     content = DocumentTemplateContent(sections = listOf()),
                     archiveExternally = true,
+                    endDecisionWhenUnitChanges = if (documentType.decision) true else null,
                 ),
         )
     }

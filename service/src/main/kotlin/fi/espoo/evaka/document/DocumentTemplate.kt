@@ -427,6 +427,7 @@ data class DocumentTemplate(
     val processDefinitionNumber: String?,
     val archiveDurationMonths: Int?,
     val archiveExternally: Boolean,
+    val endDecisionWhenUnitChanges: Boolean?,
     @Json val content: DocumentTemplateContent,
 )
 
@@ -441,6 +442,7 @@ data class ExportedDocumentTemplate(
     val processDefinitionNumber: String?,
     val archiveDurationMonths: Int?,
     val archiveExternally: Boolean,
+    val endDecisionWhenUnitChanges: Boolean?,
     @Json val content: DocumentTemplateContent,
 )
 
@@ -456,6 +458,7 @@ sealed interface DocumentTemplateBasicsRequest {
     val legalBasis: String
     val validity: DateRange
     val archiveExternally: Boolean
+    val endDecisionWhenUnitChanges: Boolean?
 
     @JsonTypeName("REGULAR")
     data class Regular(
@@ -468,6 +471,7 @@ sealed interface DocumentTemplateBasicsRequest {
         override val validity: DateRange,
         override val processDefinitionNumber: String? = null,
         override val archiveDurationMonths: Int? = null,
+        override val endDecisionWhenUnitChanges: Boolean?,
     ) : DocumentTemplateBasicsRequest {
         override val archiveExternally = false
     }
@@ -483,6 +487,7 @@ sealed interface DocumentTemplateBasicsRequest {
         override val validity: DateRange,
         override val processDefinitionNumber: String,
         override val archiveDurationMonths: Int,
+        override val endDecisionWhenUnitChanges: Boolean?,
     ) : DocumentTemplateBasicsRequest {
         override val archiveExternally = true
     }

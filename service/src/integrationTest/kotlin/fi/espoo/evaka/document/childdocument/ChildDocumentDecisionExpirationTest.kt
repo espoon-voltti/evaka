@@ -36,14 +36,6 @@ class ChildDocumentDecisionExpirationTest : PureJdbiTest(resetDbBeforeEach = tru
     val careArea = DevCareArea()
     val daycare1 = DevDaycare(areaId = careArea.id, name = "Daycare 1")
     val daycare2 = DevDaycare(areaId = careArea.id, name = "Daycare 2")
-    val decisionTemplate =
-        DevDocumentTemplate(
-            name = "Varhaiskasvatuksen tuen päätös",
-            type = ChildDocumentType.OTHER_DECISION,
-            placementTypes = setOf(PlacementType.DAYCARE, PlacementType.DAYCARE_PART_TIME),
-            validity = DateRange(today.minusMonths(6), null),
-            content = DocumentTemplateContent(emptyList()),
-        )
     val child = DevPerson()
 
     @BeforeEach
@@ -53,7 +45,6 @@ class ChildDocumentDecisionExpirationTest : PureJdbiTest(resetDbBeforeEach = tru
             tx.insert(careArea)
             tx.insert(daycare1)
             tx.insert(daycare2)
-            tx.insert(decisionTemplate)
             tx.insert(child, DevPersonType.CHILD)
         }
     }
@@ -67,8 +58,20 @@ class ChildDocumentDecisionExpirationTest : PureJdbiTest(resetDbBeforeEach = tru
         decisionValidityStart: LocalDate = today.minusMonths(3),
         decisionValidityEnd: LocalDate? = today.plusMonths(3),
         decisionUnit: DaycareId = daycare1.id,
+        endDecisionWhenUnitChanges: Boolean = true,
     ) {
+        val decisionTemplate =
+            DevDocumentTemplate(
+                name = "Varhaiskasvatuksen tuen päätös",
+                type = ChildDocumentType.OTHER_DECISION,
+                placementTypes = setOf(PlacementType.DAYCARE, PlacementType.DAYCARE_PART_TIME),
+                validity = DateRange(today.minusMonths(6), null),
+                content = DocumentTemplateContent(emptyList()),
+                endDecisionWhenUnitChanges = endDecisionWhenUnitChanges,
+            )
+
         db.transaction { tx ->
+            tx.insert(decisionTemplate)
             tx.insert(
                 DevPlacement(
                     childId = child.id,
@@ -170,6 +173,23 @@ class ChildDocumentDecisionExpirationTest : PureJdbiTest(resetDbBeforeEach = tru
             )
         }
         runJobAndExpect(true)
+    }
+
+    @Test
+    fun `decision does not expire if placement unit changes but related flag is false`() {
+        setup(placementEnd = yesterday, endDecisionWhenUnitChanges = false)
+        db.transaction { tx ->
+            tx.insert(
+                DevPlacement(
+                    childId = child.id,
+                    unitId = daycare2.id,
+                    type = PlacementType.DAYCARE,
+                    startDate = today,
+                    endDate = today.plusMonths(6),
+                )
+            )
+        }
+        runJobAndExpect(false)
     }
 
     @Test

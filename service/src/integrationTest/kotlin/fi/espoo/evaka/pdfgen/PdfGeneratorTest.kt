@@ -292,6 +292,7 @@ class PdfGeneratorTest {
                         archiveDurationMonths = null,
                         published = true,
                         archiveExternally = false,
+                        endDecisionWhenUnitChanges = null,
                         content =
                             DocumentTemplateContent(
                                 sections =

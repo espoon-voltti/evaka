@@ -113,6 +113,7 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     name = "Tuen päätös",
                     validity = DateRange(clock.today().minusYears(1), clock.today().minusDays(1)),
                     content = templateContent,
+                    endDecisionWhenUnitChanges = true,
                 )
             )
         }
