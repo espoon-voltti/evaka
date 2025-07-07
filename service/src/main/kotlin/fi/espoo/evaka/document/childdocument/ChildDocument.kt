@@ -134,8 +134,9 @@ enum class DocumentStatus(val employeeEditable: Boolean, val citizenEditable: Bo
 }
 
 enum class ChildDocumentNotificationType {
-    CHILD_DOCUMENT,
-    CITIZEN_DRAFT,
+    BASIC_DOCUMENT,
+    EDITABLE_DOCUMENT,
+    DECISION_DOCUMENT,
 }
 
 enum class ChildDocumentDecisionStatus : DatabaseEnum {

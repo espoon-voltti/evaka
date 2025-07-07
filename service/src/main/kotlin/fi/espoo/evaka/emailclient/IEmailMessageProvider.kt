@@ -6,6 +6,7 @@ package fi.espoo.evaka.emailclient
 
 import fi.espoo.evaka.calendarevent.CalendarEventTime
 import fi.espoo.evaka.daycare.domain.Language
+import fi.espoo.evaka.document.childdocument.ChildDocumentNotificationType
 import fi.espoo.evaka.invoicing.domain.FinanceDecisionType
 import fi.espoo.evaka.invoicing.service.IncomeNotificationType
 import fi.espoo.evaka.messaging.AccountType
@@ -89,11 +90,13 @@ interface IEmailMessageProvider {
         isSenderMunicipalAccount: Boolean,
     ): EmailContent = messageNotification(language, thread)
 
-    fun childDocumentNotification(language: Language, childId: ChildId): EmailContent
+    fun childDocumentNotification(
+        language: Language,
+        childId: ChildId,
+        notificationType: ChildDocumentNotificationType,
+    ): EmailContent
 
     fun pedagogicalDocumentNotification(language: Language, childId: ChildId): EmailContent
-
-    fun citizenBasicDocumentNotification(language: Language, childId: ChildId): EmailContent
 
     fun incomeNotification(
         notificationType: IncomeNotificationType,

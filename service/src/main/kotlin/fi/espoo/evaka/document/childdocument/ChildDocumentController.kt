@@ -401,7 +401,6 @@ class ChildDocumentController(
                             tx,
                             listOf(documentId),
                             clock.now(),
-                            document.status,
                         )
                     }
                 }
@@ -473,22 +472,12 @@ class ChildDocumentController(
                             statusTransition.newStatus == DocumentStatus.COMPLETED
                     },
             )
-            if (statusTransition.newStatus == DocumentStatus.CITIZEN_DRAFT) {
-                childDocumentService.scheduleEmailNotification(
-                    tx,
-                    listOf(documentId),
-                    clock.now(),
-                    statusTransition.newStatus,
-                )
-            } else if (!wasUpToDate) {
-                childDocumentService.schedulePdfGeneration(tx, listOf(documentId), clock.now())
-                childDocumentService.scheduleEmailNotification(
-                    tx,
-                    listOf(documentId),
-                    clock.now(),
-                    statusTransition.newStatus,
-                )
+            if (statusTransition.newStatus == DocumentStatus.CITIZEN_DRAFT || !wasUpToDate) {
+                childDocumentService.scheduleEmailNotification(tx, listOf(documentId), clock.now())
             }
+
+            if (!wasUpToDate)
+                childDocumentService.schedulePdfGeneration(tx, listOf(documentId), clock.now())
         }
 
         updateDocumentCaseProcessHistory(

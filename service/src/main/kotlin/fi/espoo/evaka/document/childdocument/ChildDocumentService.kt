@@ -228,7 +228,7 @@ class ChildDocumentService(
                 .filter { !tx.isDocumentPublishedContentUpToDate(it) }
                 .also {
                     schedulePdfGeneration(tx, it, now)
-                    scheduleEmailNotification(tx, it, now, DocumentStatus.COMPLETED)
+                    scheduleEmailNotification(tx, it, now)
                 }
 
             tx.markCompletedAndPublish(documentIds, now)
@@ -243,28 +243,9 @@ class ChildDocumentService(
         tx: Database.Transaction,
         ids: List<ChildDocumentId>,
         now: HelsinkiDateTime,
-        documentStatus: DocumentStatus,
     ) {
         val payloads: List<AsyncJob.SendChildDocumentNotificationEmail> =
-            if (documentStatus == DocumentStatus.CITIZEN_DRAFT) {
-                ids.flatMap {
-                    getChildDocumentNotifications(
-                        tx,
-                        it,
-                        now.toLocalDate(),
-                        ChildDocumentNotificationType.CITIZEN_DRAFT,
-                    )
-                }
-            } else {
-                ids.flatMap {
-                    getChildDocumentNotifications(
-                        tx,
-                        it,
-                        now.toLocalDate(),
-                        ChildDocumentNotificationType.CHILD_DOCUMENT,
-                    )
-                }
-            }
+            ids.flatMap { getChildDocumentNotifications(tx, it, now.toLocalDate()) }
 
         logger.info { "Scheduling sending of ${payloads.size} child document notification emails" }
         asyncJobRunner.plan(tx, payloads = payloads, runAt = now, retryCount = 10)
@@ -301,27 +282,26 @@ class ChildDocumentService(
         tx: Database.Read,
         documentId: ChildDocumentId,
         today: LocalDate,
-        notificationType: ChildDocumentNotificationType,
     ): List<AsyncJob.SendChildDocumentNotificationEmail> {
         return tx.createQuery {
                 sql(
                     """
 WITH children AS (
-    SELECT child_id
+    SELECT child_id, type, status
     FROM child_document
     WHERE id = ${bind(documentId)}
 ), parents AS (
-    SELECT g.guardian_id AS parent_id, children.child_id
+    SELECT g.guardian_id AS parent_id, children.child_id, children.type, children.status
     FROM guardian g
     JOIN children ON children.child_id = g.child_id
     
     UNION DISTINCT 
     
-    SELECT fp.parent_id, children.child_id
+    SELECT fp.parent_id, children.child_id, children.type, children.status
     FROM foster_parent fp
     JOIN children ON children.child_id = fp.child_id AND fp.valid_during @> ${bind(today)}
 )
-SELECT parents.child_id, person.id AS recipient_id, person.language
+SELECT parents.child_id, parents.type, parents.status, person.id AS recipient_id, person.language
 FROM parents 
 JOIN person ON person.id = parents.parent_id
 WHERE person.email IS NOT NULL AND person.email != ''
@@ -329,6 +309,16 @@ WHERE person.email IS NOT NULL AND person.email != ''
                 )
             }
             .toList {
+                val documentType = column("type") as ChildDocumentType
+                val documentStatus = column("status") as DocumentStatus
+                val notificationType =
+                    when {
+                        documentType.decision -> ChildDocumentNotificationType.DECISION_DOCUMENT
+                        documentStatus.citizenEditable ->
+                            ChildDocumentNotificationType.EDITABLE_DOCUMENT
+                        else -> ChildDocumentNotificationType.BASIC_DOCUMENT
+                    }
+
                 AsyncJob.SendChildDocumentNotificationEmail(
                     documentId = documentId,
                     childId = column("child_id"),
@@ -353,14 +343,11 @@ WHERE person.email IS NOT NULL AND person.email != ''
                 emailType = EmailMessageType.DOCUMENT_NOTIFICATION,
                 fromAddress = emailEnv.sender(msg.language),
                 content =
-                    if (msg.notificationType == ChildDocumentNotificationType.CHILD_DOCUMENT) {
-                        emailMessageProvider.childDocumentNotification(msg.language, msg.childId)
-                    } else {
-                        emailMessageProvider.citizenBasicDocumentNotification(
-                            msg.language,
-                            msg.childId,
-                        )
-                    },
+                    emailMessageProvider.childDocumentNotification(
+                        msg.language,
+                        msg.childId,
+                        msg.notificationType,
+                    ),
                 traceId = msg.documentId.toString(),
             )
             ?.also { emailClient.send(it) }

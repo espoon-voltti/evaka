@@ -202,7 +202,7 @@ sealed interface AsyncJob : AsyncJobPayload {
         val recipientId: PersonId,
         val language: Language,
         val notificationType: ChildDocumentNotificationType =
-            ChildDocumentNotificationType.CHILD_DOCUMENT,
+            ChildDocumentNotificationType.BASIC_DOCUMENT,
     ) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
