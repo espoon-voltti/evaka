@@ -28,6 +28,7 @@ Boundary(kunnan_tietojärjestelmäpalvelut, "Kunnan tietojärjestelmäpalvelut")
   System_Ext(finance, "Taloushallinto", "Kunnan taloushallinnon järjestelmä tai väylä")
   System_Ext(dw, "Tietovarastointi", "Kunnan tietovarasto (DW)")
   System_Ext(planning, "Työvuorosuunnittelu", "Kunnan työvuorosuunnittelun järjestelmä")
+  System_Ext(meal, "Ruokapalvelu", "Kunnan ruokapalvelun järjestelmä")
 }
 
 Boundary(kunnan_tyontekija, "Kunnan työntekijä") {
