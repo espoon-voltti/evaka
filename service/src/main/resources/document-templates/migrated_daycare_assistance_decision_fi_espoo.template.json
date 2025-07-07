@@ -1,0 +1,376 @@
+{
+  "name": "Päätös tuesta varhaiskasvatuksessa",
+  "type": "MIGRATED_DAYCARE_ASSISTANCE_NEED_DECISION",
+  "placementTypes": [
+    "DAYCARE",
+    "PRESCHOOL_DAYCARE",
+    "PREPARATORY_DAYCARE",
+    "DAYCARE_PART_TIME"
+  ],
+  "language": "FI",
+  "confidentiality": null,
+  "legalBasis": "Varhaiskasvatuslaki 40 §",
+  "validity": {
+    "start": "2020-08-03",
+    "end": "2025-07-31"
+  },
+  "processDefinitionNumber": "12.06.03",
+  "archiveDurationMonths": 120,
+  "archiveExternally": true,
+  "endDecisionWhenUnitChanges": true,
+  "content": {
+    "sections": [
+      {
+        "id": "6d788a31-b4f9-4396-9b14-1204cb63a23d",
+        "label": "Lapsen tarvitsemat tuen muodot",
+        "questions": [
+          {
+            "id": "pedagogical_motivation",
+            "label": "Pedagogiset tuen muodot ja perustelut",
+            "infoText": "Kirjaa tähän esitys lapsen tarvitsemista pedagogisen tuen muodoista, esim. päivän rakenteeseen, päivärytmiin ja oppimisympäristöihin liityvät ratkaisut sekä pedagogiset ja erityispedagogiset ratkaisut. Perustele lyhyesti, miksi lapsi saa näitä tuen muotoja.",
+            "multiline": true,
+            "type": "TEXT"
+          },
+          {
+            "id": "structural_motivation",
+            "label": "Rakenteelliset tuen muodot",
+            "options": [
+              {
+                "id": "structural_motivation_opt_smaller_group",
+                "label": "Ryhmäkoon pienennys",
+                "withText": false
+              },
+              {
+                "id": "structural_motivation_opt_special_group",
+                "label": "Erityisryhmä",
+                "withText": false
+              },
+              {
+                "id": "structural_motivation_opt_small_group",
+                "label": "Pienryhmä",
+                "withText": false
+              },
+              {
+                "id": "structural_motivation_opt_group_assistant",
+                "label": "Ryhmäkohtainen avustaja",
+                "withText": false
+              },
+              {
+                "id": "structural_motivation_opt_child_assistant",
+                "label": "Lapsikohtainen avustaja",
+                "withText": false
+              },
+              {
+                "id": "structural_motivation_opt_additional_staff",
+                "label": "Henkilöresurssin lisäys",
+                "withText": false
+              }
+            ],
+            "infoText": "Valitse lapsen tarvitsemat rakenteellisen tuen muodot.",
+            "type": "CHECKBOX_GROUP"
+          },
+          {
+            "id": "structural_motivation_description",
+            "label": "Valittujen rakenteellisten tuen muotojen kuvaus ja perustelut",
+            "infoText": "Perustele, miksi lapsi saa näitä tuen muotoja.",
+            "multiline": true,
+            "type": "TEXT"
+          },
+          {
+            "id": "care_motivation",
+            "label": "Hoidolliset tuen muodot ja perustelut",
+            "infoText": "Kirjaa tähän lapsen tarvitsemat hoidollisen tuen muodot, esim. menetelmät lapsen hoitoon, hoivaan ja avustamiseen huomioiden pitkäaikaissairauksien hoito, lääkitys, ruokavalio, liikkuminen ja näihin liittyvät apuvälineet. Perustele, miksi lapsi saa näitä tuen muotoja.",
+            "multiline": true,
+            "type": "TEXT"
+          },
+          {
+            "id": "services",
+            "label": "Tukipalvelut",
+            "options": [
+              {
+                "id": "service_opt_consultation_special_ed",
+                "label": "Varhaiskasvatuksen erityisopettajan antama konsultaatio",
+                "withText": false
+              },
+              {
+                "id": "service_opt_part_time_special_ed",
+                "label": "Varhaiskasvatuksen erityisopettajan osa-aikainen opetus",
+                "withText": false
+              },
+              {
+                "id": "service_opt_full_time_special_ed",
+                "label": "Varhaiskasvatuksen erityisopettajan kokoaikainen opetus",
+                "withText": false
+              },
+              {
+                "id": "service_opt_interpretation_and_assistance_services",
+                "label": "Tulkitsemis- ja avustamispalvelut",
+                "withText": false
+              },
+              {
+                "id": "service_opt_special_aides",
+                "label": "Apuvälineet",
+                "withText": false
+              }
+            ],
+            "infoText": "Valitse tästä lapselle esitettävät tukipalvelut.",
+            "type": "CHECKBOX_GROUP"
+          },
+          {
+            "id": "services_motivation",
+            "label": "Perustelut valituille tukipalveluille",
+            "infoText": "Perustele, miksi lapsi saa näitä tukipalveluja",
+            "multiline": true,
+            "type": "TEXT"
+          }
+        ],
+        "infoText": ""
+      },
+      {
+        "id": "447a5fd8-3bcf-4237-a7a5-3817309da6ab",
+        "label": "Huoltajien kanssa tehty yhteistyö",
+        "questions": [
+          {
+            "id": "guardians_heard_on",
+            "label": "Huoltajien kuulemisen päivämäärä",
+            "infoText": "",
+            "type": "DATE"
+          },
+          {
+            "id": "196854b0-2f56-4230-9ed8-5f6caca1e4af",
+            "label": "Huoltajat, joita on kuultu, ja kuulemistapa",
+            "text": "",
+            "infoText": "Kirjaa tähän millä keinoin huoltajaa on kuultu (esim. palaveri, etäyhteys, huoltajan kirjallinen vastine). Jos huoltajaa ei ole kuultu, kirjaa tähän selvitys siitä, miten ja milloin hänet on kutsuttu kuultavaksi, ja miten ja milloin lapsen varhaiskasvatussuunnitelma on annettu huoltajalle tiedoksi.\nKaikilla lapsen huoltajilla tulee olla mahdollisuus tulla kuulluksi. Huoltaja voi tarvittaessa valtuuttaa toisen huoltajan edustamaan itseään valtakirjalla.",
+            "type": "STATIC_TEXT_DISPLAY"
+          },
+          {
+            "id": "guardian_1",
+            "label": "Huoltaja 1",
+            "fieldLabels": [
+              "Nimi",
+              "Huoltajaa on kuultu"
+            ],
+            "infoText": "",
+            "allowMultipleRows": false,
+            "type": "GROUPED_TEXT_FIELDS"
+          },
+          {
+            "id": "guardian_1_details",
+            "label": "Kuulemistapa",
+            "infoText": "",
+            "multiline": true,
+            "type": "TEXT"
+          },
+          {
+            "id": "guardian_2",
+            "label": "Huoltaja 2",
+            "fieldLabels": [
+              "Nimi",
+              "Huoltajaa on kuultu"
+            ],
+            "infoText": "",
+            "allowMultipleRows": false,
+            "type": "GROUPED_TEXT_FIELDS"
+          },
+          {
+            "id": "guardian_2_details",
+            "label": "Kuulemistapa",
+            "infoText": "",
+            "multiline": true,
+            "type": "TEXT"
+          },
+          {
+            "id": "other_representative_heard",
+            "label": "Muuta laillista edustajaa kuultu",
+            "infoText": "",
+            "type": "CHECKBOX"
+          },
+          {
+            "id": "other_representative_details",
+            "label": "Muun laillisen edustajan nimi, puhelinnumero ja kuulemistapa",
+            "infoText": "",
+            "multiline": true,
+            "type": "TEXT"
+          },
+          {
+            "id": "view_of_guardians",
+            "label": "Huoltajien näkemys esitetystä tuesta",
+            "infoText": "Kirjaa tähän huoltajien näkemys lapselle esitetystä tuesta.",
+            "multiline": true,
+            "type": "TEXT"
+          }
+        ],
+        "infoText": ""
+      },
+      {
+        "id": "4d87a839-2e7e-4a55-972c-ef7515956404",
+        "label": "Päätettävä tuen taso ja voimassaolo",
+        "questions": [
+          {
+            "id": "assistance_levels",
+            "label": "Lapsen tuen taso jatkossa",
+            "options": [
+              {
+                "id": "SPECIAL_ASSISTANCE",
+                "label": "Erityinen tuki",
+                "withText": false
+              },
+              {
+                "id": "ENHANCED_ASSISTANCE",
+                "label": "Tehostettu tuki",
+                "withText": false
+              },
+              {
+                "id": "ASSISTANCE_SERVICES_FOR_TIME",
+                "label": "Tukipalvelut päätöksen voimassaolon aikana",
+                "withText": false
+              },
+              {
+                "id": "ASSISTANCE_ENDS",
+                "label": "Erityinen/tehostettu tuki päättyy",
+                "withText": false
+              }
+            ],
+            "infoText": "",
+            "type": "CHECKBOX_GROUP"
+          },
+          {
+            "id": "validity_period_start",
+            "label": "Voimassa alkaen",
+            "infoText": "Lapsen tuki tarkistetaan aina tuen tarpeen muuttuessa ja vähintään kerran vuodessa.",
+            "type": "DATE"
+          },
+          {
+            "id": "validity_period_end",
+            "label": "Päätös voimassa tukipalveluiden osalta saakka",
+            "infoText": "",
+            "multiline": false,
+            "type": "TEXT"
+          },
+          {
+            "id": "selected_unit_name",
+            "label": "Päätökselle valittu varhaiskasvatusyksikkö",
+            "infoText": "",
+            "multiline": false,
+            "type": "TEXT"
+          },
+          {
+            "id": "motivation_for_decision",
+            "label": "Perustelut lapsen tuen tasolle ja tuen järjestelyt loma-aikoina",
+            "infoText": "",
+            "multiline": true,
+            "type": "TEXT"
+          }
+        ],
+        "infoText": ""
+      },
+      {
+        "id": "4e1b3fc3-bd01-4daf-acaf-ca9ccf6ef13c",
+        "label": "Sovelletut oikeusohjeet",
+        "questions": [
+          {
+            "id": "a212b887-1b84-4945-b262-a9b0e23b5149",
+            "label": "",
+            "text": "Varhaiskasvatuslaki, 3 a luku",
+            "infoText": "",
+            "type": "STATIC_TEXT_DISPLAY"
+          }
+        ],
+        "infoText": ""
+      },
+      {
+        "id": "e7dc2e28-d5af-451a-b89d-3bfbee847d54",
+        "label": "Toimivalta",
+        "questions": [
+          {
+            "id": "4720d2bb-6dad-417a-b6c9-0f4bae152859",
+            "label": "",
+            "text": "Delegointipäätös suomenkielisen varhaiskasvatuksen sekä kasvun ja oppimisen toimialan esikunnan viranhaltijoiden ratkaisuvallasta A osa 3 § 3 kohta",
+            "infoText": "",
+            "type": "STATIC_TEXT_DISPLAY"
+          }
+        ],
+        "infoText": ""
+      },
+      {
+        "id": "cbfbd188-a01b-478b-aae9-69d87815da0f",
+        "label": "Vastuuhenkilöt",
+        "questions": [
+          {
+            "id": "preparers",
+            "label": "Päätöksen valmistelijat",
+            "fieldLabels": [
+              "Nimi",
+              "Titteli",
+              "Puhelinnumero"
+            ],
+            "infoText": "",
+            "allowMultipleRows": true,
+            "type": "GROUPED_TEXT_FIELDS"
+          },
+          {
+            "id": "decision_maker",
+            "label": "Päätöksen tekijä",
+            "fieldLabels": [
+              "Nimi",
+              "Titteli"
+            ],
+            "infoText": "",
+            "allowMultipleRows": false,
+            "type": "GROUPED_TEXT_FIELDS"
+          },
+          {
+            "id": "51f2a6d6-59d2-4699-b773-97ae79d03b35",
+            "label": "",
+            "text": "Varhaiskasvatuslain 15 e §:n mukaan tämä päätös voidaan panna täytäntöön muutoksenhausta huolimatta.",
+            "infoText": "",
+            "type": "STATIC_TEXT_DISPLAY"
+          }
+        ],
+        "infoText": ""
+      },
+      {
+        "id": "382e88af-2e52-48e7-b7da-eb41fd5e123b",
+        "label": "Oikaisuvaatimusohje",
+        "questions": [
+          {
+            "id": "f2083143-2cf5-4ab8-ab98-e74cce37a578",
+            "label": "Oikaisuvaatimusoikeus",
+            "text": "Oikaisuvaatimuksen saa tehdä se, johon päätös on kohdistettu tai jonka oikeuteen, velvollisuuteen tai etuun päätös välittömästi vaikuttaa (asianosainen).",
+            "infoText": "",
+            "type": "STATIC_TEXT_DISPLAY"
+          },
+          {
+            "id": "086aac4a-8ec2-4a45-844f-c519e47ea2b1",
+            "label": "Oikaisuvaatimusaika",
+            "text": "Oikaisuvaatimus on tehtävä 30 päivän kuluessa päätöksen tiedoksisaannista.",
+            "infoText": "",
+            "type": "STATIC_TEXT_DISPLAY"
+          },
+          {
+            "id": "54634279-0f24-4229-ab96-b93a15bf4f58",
+            "label": "Tiedoksisaanti",
+            "text": "Asianosaisen katsotaan saaneen päätöksestä tiedon, jollei muuta näytetä, seitsemän päivän kuluttua kirjeen lähettämisestä tai saantitodistukseen tai tiedoksiantotodistukseen merkittynä päivänä. Käytettäessä tavallista sähköistä tiedoksiantoa asianosaisen katsotaan saaneen päätöksestä tiedon, jollei muuta näytetä kolmantena päivänä viestin lähettämisestä. Tiedoksisaantipäivää ei lueta määräaikaan. Jos määräajan viimeinen päivä on pyhäpäivä, itsenäisyyspäivä, vapunpäivä, joulu- tai juhannusaatto tai arkilauantai, saa tehtävän toimittaa ensimmäisenä arkipäivänä sen jälkeen.",
+            "infoText": "",
+            "type": "STATIC_TEXT_DISPLAY"
+          },
+          {
+            "id": "f056da35-c2e9-4425-9d9a-8ce719cd3ffa",
+            "label": "Oikaisuviranomainen",
+            "text": "Oikaisu tehdään Etelä-Suomen aluehallintovirastolle. Oikaisuvaatimuksen voi tehdä joko sähköisenä tai postitse.\n\nOikaisuvaatimus – varhaiskasvatus, opetus ja koulutus - Suomi.fi\n\nEtelä-Suomen aluehallintovirasto\nKäyntiosoite: Ratapihantie 9, 00521 Helsinki\nVirastoaika: ma-pe 8.00–16.15\nPostiosoite: PL 1, 13035 AVI\nSähköposti: kirjaamo.etela@avi.fi\nFax: 0295 016 661\nPuhelin: 0295 016 000",
+            "infoText": "",
+            "type": "STATIC_TEXT_DISPLAY"
+          },
+          {
+            "id": "26c85f53-4fb1-4530-9800-ff0c2c093622",
+            "label": "Oikaisuvaatimuksen muoto ja sisältö",
+            "text": "Oikaisuvaatimus on tehtävä kirjallisesti. Myös sähköinen asiakirja täyttää vaatimuksen kirjallisesta muodosta.\n\nOikaisuvaatimuksessa on ilmoitettava\n - Oikaisuvaatimuksen tekijän nimi, kotikunta, postiosoite, puhelinnumero ja muut asian hoitamiseksi tarvittavat yhteystiedot\n - päätös, johon haetaan oikaisua\n - miltä osin päätökseen haetaan oikaisua ja mitä oikaisua siihen vaaditaan tehtäväksi\n - vaatimuksen perusteet\n\nJos oikaisuvaatimuspäätös voidaan antaa tiedoksi sähköisenä viestinä, yhteystietona pyydetään ilmoittamaan myös sähköpostiosoite.\n\nJos oikaisuvaatimuksen tekijän puhevaltaa käyttää hänen laillinen edustajansa tai asiamiehensä tai jos oikaisuvaatimuksen laatijana on joku muu henkilö, oikaisuvaatimuksessa on ilmoitettava myös tämän nimi ja kotikunta.\n\nOikaisuvaatimukseen on liitettävä\n - päätös, johon haetaan oikaisua, alkuperäisenä tai jäljennöksenä\n - todistus siitä, minä päivänä päätös on annettu tiedoksi, tai muu selvitys oikaisuvaatimusajan alkamisen ajankohdasta\n - asiakirjat, joihin oikaisuvaatimuksen tekijä vetoaa oikaisuvaatimuksensa tueksi, jollei niitä ole jo aikaisemmin toimitettu viranomaiselle.",
+            "infoText": "",
+            "type": "STATIC_TEXT_DISPLAY"
+          }
+        ],
+        "infoText": ""
+      }
+    ]
+  }
+}
