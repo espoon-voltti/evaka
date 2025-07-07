@@ -19,6 +19,7 @@ export const StaticChip = styled.div<{
   color: string
   textColor?: string
   fitContent?: boolean
+  nowrap?: boolean
 }>`
   display: inline-block;
   font-family: 'Open Sans', sans-serif;
@@ -49,6 +50,12 @@ export const StaticChip = styled.div<{
       ? css`
           width: fit-content;
           height: fit-content;
+        `
+      : ''}
+  ${(p) =>
+    p.nowrap
+      ? css`
+          white-space: nowrap;
         `
       : ''}
 `
