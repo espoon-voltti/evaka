@@ -64,9 +64,8 @@ function getPreviousMonthRangeBeforeDate(
   beforeDate: LocalDate,
   rangeEnd: LocalDate
 ): FiniteDateRange {
-  const end = rangeEnd
   const start = beforeDate.subDays(1).startOfMonth().startOfWeek()
-  return new FiniteDateRange(start, end)
+  return new FiniteDateRange(start, rangeEnd)
 }
 
 const CalendarPage = React.memo(function CalendarPage() {
