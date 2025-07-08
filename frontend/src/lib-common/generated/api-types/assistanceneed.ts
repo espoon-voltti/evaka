@@ -51,6 +51,7 @@ export interface AssistanceNeedDecision {
   annulmentReason: string
   assistanceLevels: AssistanceLevel[]
   careMotivation: string | null
+  caseIdentifier: string | null
   child: AssistanceNeedDecisionChild | null
   decisionMade: LocalDate | null
   decisionMaker: AssistanceNeedDecisionMaker | null
@@ -236,6 +237,7 @@ export type AssistanceNeedDecisionStatus = typeof assistanceNeedDecisionStatuses
 */
 export interface AssistanceNeedPreschoolDecision {
   annulmentReason: string
+  caseIdentifier: string | null
   child: AssistanceNeedPreschoolDecisionChild
   decisionMade: LocalDate | null
   decisionMakerHasOpened: boolean

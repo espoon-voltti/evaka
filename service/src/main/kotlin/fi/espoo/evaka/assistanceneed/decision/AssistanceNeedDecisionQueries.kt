@@ -113,7 +113,7 @@ fun Database.Read.getAssistanceNeedDecisionById(
     createQuery {
             sql(
                 """
-SELECT ad.id, decision_number, child_id, concat(child.first_name, ' ', child.last_name) child_name, validity_period, end_date_not_known, status,
+SELECT ad.id, decision_number, cp.case_identifier, child_id, concat(child.first_name, ' ', child.last_name) child_name, validity_period, end_date_not_known, status,
   ad.language, decision_made, sent_for_decision, pedagogical_motivation, structural_motivation_opt_smaller_group,
   structural_motivation_opt_special_group, structural_motivation_opt_small_group,
   structural_motivation_opt_group_assistant, structural_motivation_opt_child_assistant,
@@ -136,6 +136,7 @@ SELECT ad.id, decision_number, child_id, concat(child.first_name, ' ', child.las
   unit.postal_code selected_unit_postal_code, unit.post_office selected_unit_post_office,
   (document_key IS NOT NULL) has_document, child.date_of_birth child_date_of_birth
 FROM assistance_need_decision ad
+LEFT JOIN case_process cp ON cp.id = ad.process_id
 LEFT JOIN assistance_need_decision_guardian dg ON dg.assistance_need_decision_id = ad.id
 LEFT JOIN person p ON p.id = dg.person_id
 LEFT JOIN daycare unit ON unit.id = ad.selected_unit
@@ -144,7 +145,7 @@ LEFT JOIN employee p2 ON p2.id = ad.preparer_2_employee_id
 LEFT JOIN employee dm ON dm.id = ad.decision_maker_employee_id
 LEFT JOIN person child ON child.id = ad.child_id
 WHERE ad.id = ${bind(id)}
-GROUP BY ad.id, child_id, validity_period, unit.id, p1.id, p2.id, dm.id, child.id;
+GROUP BY ad.id, child_id, validity_period, cp.id, unit.id, p1.id, p2.id, dm.id, child.id;
 """
             )
         }

@@ -205,6 +205,7 @@ data class FeeDecisionDetailed(
     @Json val partnerIncome: DecisionIncome?,
     val familySize: Int,
     @Json val feeThresholds: FeeDecisionThresholds,
+    val caseIdentifier: String?,
     val documentKey: String? = null,
     @Nested("approved_by") val approvedBy: EmployeeWithName? = null,
     val approvedAt: HelsinkiDateTime? = null,

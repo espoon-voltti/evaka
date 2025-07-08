@@ -15,7 +15,6 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.setting.SettingType
 import fi.espoo.evaka.shared.domain.OfficialLanguage
 import fi.espoo.evaka.shared.domain.europeHelsinki
-import fi.espoo.evaka.shared.message.IMessageProvider
 import fi.espoo.evaka.shared.noopTracer
 import fi.espoo.evaka.shared.template.ITemplateProvider
 import fi.espoo.evaka.shared.withSpan
@@ -41,7 +40,6 @@ class Page(val template: Template, val context: Context)
 
 @Component
 class PdfGenerator(
-    private val messageProvider: IMessageProvider,
     private val templateProvider: ITemplateProvider,
     private val templateEngine: ITemplateEngine,
     private val tracer: Tracer = noopTracer(),
@@ -156,6 +154,7 @@ class PdfGenerator(
                 },
             "coPayment" to formatCents(decision.finalCoPayment),
             "decisionNumber" to decision.decisionNumber,
+            "caseIdentifier" to decision.caseIdentifier,
             "isReliefDecision" to isReliefDecision,
             "decisionType" to decision.decisionType.toString(),
             "headFullName" to with(decision.headOfFamily) { "$firstName $lastName" },
@@ -218,6 +217,7 @@ class PdfGenerator(
         return mapOf(
                 "approvedAt" to dateFmt(decision.approvedAt?.toLocalDate()),
                 "decisionNumber" to decision.decisionNumber,
+                "caseIdentifier" to decision.caseIdentifier,
                 "isReliefDecision" to isReliefDecision,
                 "decisionType" to decision.decisionType.toString(),
                 "hasPartner" to (decision.partner != null),

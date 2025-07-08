@@ -36,19 +36,21 @@ private fun Database.Read.createDecisionQuery(
             ap.child_id, ap.guardian_id,
             (SELECT name FROM evaka_user WHERE id = d.created_by) AS created_by,
             c.first_name AS child_first_name, c.last_name AS child_last_name,
-            eu.name AS resolved_by_name
+            eu.name AS resolved_by_name,
+            cp.case_identifier
         FROM decision d
         INNER JOIN daycare u on d.unit_id = u.id
         INNER JOIN application ap on d.application_id = ap.id
         INNER JOIN person c on ap.child_id = c.id
         LEFT JOIN evaka_user eu on d.resolved_by = eu.id
+        LEFT JOIN case_process cp ON cp.id = ap.process_id
         WHERE ${predicate(decision.forTable("d"))}
         AND ${predicate(application.forTable("ap"))}
     """
     )
 }
 
-private fun Row.decisionFromResultSet(): Decision =
+private fun Row.decisionFromRow(): Decision =
     Decision(
         id = column("id"),
         createdBy = column("created_by"),
@@ -57,6 +59,7 @@ private fun Row.decisionFromResultSet(): Decision =
         endDate = column("end_date"),
         documentKey = column("document_key"),
         decisionNumber = column("number"),
+        caseIdentifier = column("case_identifier"),
         sentDate = column("sent_date"),
         status = column("status"),
         requestedStartDate = column("requested_start_date"),
@@ -85,14 +88,14 @@ private fun Row.decisionFromResultSet(): Decision =
 
 fun Database.Read.getDecision(decisionId: DecisionId): Decision? =
     createDecisionQuery(decision = Predicate { where("$it.id = ${bind(decisionId)}") })
-        .exactlyOneOrNull(Row::decisionFromResultSet)
+        .exactlyOneOrNull(Row::decisionFromRow)
 
 fun Database.Read.getSentDecision(decisionId: DecisionId): Decision? =
     createDecisionQuery(
             decision =
                 Predicate { where("$it.sent_date IS NOT NULL AND $it.id = ${bind(decisionId)}") }
         )
-        .exactlyOneOrNull(Row::decisionFromResultSet)
+        .exactlyOneOrNull(Row::decisionFromRow)
 
 fun Database.Read.getDecisionsByChild(
     childId: ChildId,
@@ -105,7 +108,7 @@ fun Database.Read.getDecisionsByChild(
                 },
             application = Predicate { where("$it.child_id = ${bind(childId)}") },
         )
-        .toList(Row::decisionFromResultSet)
+        .toList(Row::decisionFromRow)
 
 fun Database.Read.getDecisionsByApplication(
     applicationId: ApplicationId,
@@ -119,7 +122,7 @@ fun Database.Read.getDecisionsByApplication(
                     )
                 }
         )
-        .toList(Row::decisionFromResultSet)
+        .toList(Row::decisionFromRow)
 
 fun Database.Read.getSentDecisionsByApplication(
     applicationId: ApplicationId,
@@ -137,7 +140,7 @@ fun Database.Read.getSentDecisionsByApplication(
                     )
                 }
         )
-        .toList(Row::decisionFromResultSet)
+        .toList(Row::decisionFromRow)
 
 fun Database.Read.getDecisionsByGuardian(
     guardianId: PersonId,
@@ -162,7 +165,7 @@ fun Database.Read.getDecisionsByGuardian(
                     )
                 },
         )
-        .toList(Row::decisionFromResultSet)
+        .toList(Row::decisionFromRow)
 
 data class ApplicationDecisionRow(
     val applicationId: ApplicationId,
