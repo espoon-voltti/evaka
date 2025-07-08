@@ -346,7 +346,23 @@ class AbsenceApplicationControllerCitizen(private val accessControl: AccessContr
                         Action.Citizen.Child.READ_PLACEMENT,
                         childId,
                     )
-                    tx.getAbsenceApplicationDateRanges(childId, clock.today())
+                    val dateRanges = tx.getAbsenceApplicationDateRanges(childId, clock.today())
+                    val allTerms = tx.getPreschoolTerms()
+
+                    DateSet.of(
+                        dateRanges
+                            .map { range: FiniteDateRange ->
+                                val terms = allTerms.filter { it.extendedTerm.overlaps(range) }
+                                val operationalDates =
+                                    DateSet.of(terms.map { it.extendedTerm })
+                                        .intersection(listOf(range))
+                                val breaks = terms.flatMap { it.termBreaks.ranges() }
+                                operationalDates.removeAll(breaks).ranges()
+                            }
+                            .reduce { allOperationalDates, operationalDates ->
+                                allOperationalDates + operationalDates
+                            }
+                    )
                 }
             }
             .also {
