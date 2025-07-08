@@ -454,7 +454,8 @@ private fun LocalDate.isOnOrBefore(other: LocalDate): Boolean = this.isBefore(ot
 
 private fun LocalDate.weeklyJobsThreeWeeksFromNow(): FiniteDateRange {
     val daysUntilNextMonday = (DayOfWeek.MONDAY.value - this.dayOfWeek.value + 7) % 7
-    val nextMonday = this.plusDays(if (daysUntilNextMonday == 0) 7 else daysUntilNextMonday.toLong())
+    val nextMonday =
+        this.plusDays(if (daysUntilNextMonday == 0) 7 else daysUntilNextMonday.toLong())
     val nextMondayPlusWeeks = nextMonday.plusWeeks(2)
     val jobDateRangeEnd = nextMondayPlusWeeks.plusDays(6)
     return FiniteDateRange(nextMondayPlusWeeks, jobDateRangeEnd)
