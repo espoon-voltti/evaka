@@ -60,7 +60,12 @@ export function useMonthlySummaryInfo(
   childSummaries: MonthlyTimeSummary[],
   selectedMonthData: { month: number; year: number }
 ) {
-  const [summaryInfoOpen, setSummaryInfoOpen] = useState(false)
+  const [summaryInfoOpen, setSummaryInfoOpen] = useState(() =>
+    childSummaries.some(
+      ({ reservedMinutes, serviceNeedMinutes }) =>
+        reservedMinutes > serviceNeedMinutes
+    )
+  )
   const [displayAlert, setDisplayAlert] = useState(false)
 
   useEffect(() => {
@@ -71,12 +76,15 @@ export function useMonthlySummaryInfo(
           usedServiceMinutes > serviceNeedMinutes
       )
     )
-    setSummaryInfoOpen(
-      childSummaries.some(
-        ({ reservedMinutes, serviceNeedMinutes }) =>
-          reservedMinutes > serviceNeedMinutes
-      )
+
+    const tooManyReservedMinutes = childSummaries.some(
+      ({ reservedMinutes, serviceNeedMinutes }) =>
+        reservedMinutes > serviceNeedMinutes
     )
+
+    if (tooManyReservedMinutes) {
+      setSummaryInfoOpen(true)
+    }
   }, [childSummaries, selectedMonthData.month, selectedMonthData.year])
 
   const toggleSummaryInfo = useCallback(() => {
@@ -115,6 +123,7 @@ export function useExtendedReservationsRange(dateRange: FiniteDateRange) {
           const extendedReservations = {
             value: {
               ...prevReservations.value,
+              children: [...fetchedReservations.value.children],
               days: [
                 ...fetchedReservations.value.days,
                 ...prevReservations.value.days

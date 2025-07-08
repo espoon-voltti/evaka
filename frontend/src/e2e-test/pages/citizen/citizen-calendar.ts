@@ -71,6 +71,7 @@ export default class CitizenCalendarPage {
   navigateNextMonthButton = () => this.page.findByDataQa('next-month-button')
   navigatePreviousMonthButton = () =>
     this.page.findByDataQa('previous-month-button')
+  navigateToTodayButton = () => this.page.findByDataQa('current-month-button')
   monthTitle = () => this.page.findByDataQa('calendar-month-title')
   mobileLoadPreviousDataButton = () =>
     this.page.findByDataQa('fetch-previous-button')
@@ -194,6 +195,10 @@ export default class CitizenCalendarPage {
     for (let i = 0; i < n; i++) {
       await this.navigateToPreviousMonth()
     }
+  }
+
+  async navigateToToday() {
+    return await this.navigateToTodayButton().click()
   }
 
   async assertMonthTitle(title: string) {

@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import FiniteDateRange from 'lib-common/finite-date-range'
 import { evakaUserId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
@@ -94,6 +95,80 @@ describe('Service time usage', () => {
     await summary.title.assertTextEquals('Läsnäolot 01.01. - 31.01.2022')
     await summary.textElement.assertTextEquals(
       'Kaarina\n' + '\n' + 'Suunnitelma 8 h / 140 h\n' + 'Toteuma 8 h / 140 h'
+    )
+  })
+
+  it('Reservation time updated in monthly summary after change', async () => {
+    const calendarPage = await openCalendarPage()
+    const summary = await calendarPage.openMonthlySummary(
+      today.year,
+      today.month
+    )
+    await summary.title.assertTextEquals('Läsnäolot 01.01. - 31.01.2022')
+    await summary.textElement.assertTextEquals(
+      'Kaarina\n' +
+        '\n' +
+        'Suunnitelma - / 140 h\n' +
+        'Toteuma 6 h 40 min / 140 h'
+    )
+    const dayCell = calendarPage.dayCell(today.addWeeks(2))
+    await dayCell
+      .findByDataQa('reservation-text')
+      .assertTextEquals('Ilmoitus puuttuu')
+    const reservationModal = await calendarPage.openReservationModal()
+    await reservationModal.fillDailyReservationInfo(
+      new FiniteDateRange(today.addWeeks(2), today.addWeeks(2)),
+      '08:00',
+      '16:00'
+    )
+    await reservationModal.save()
+    await dayCell
+      .findByDataQa('reservation-text')
+      .assertTextEquals('08:00–16:00')
+    await summary.title.assertTextEquals('Läsnäolot 01.01. - 31.01.2022')
+    await summary.textElement.assertTextEquals(
+      'Kaarina\n' +
+        '\n' +
+        'Suunnitelma 8 h / 140 h\n' +
+        'Toteuma 6 h 40 min / 140 h'
+    )
+  })
+
+  it('Reservation time updated correctly in monthly summary after citizen moves away from the initial data range and then back', async () => {
+    const calendarPage = await openCalendarPage()
+    const summary = await calendarPage.openMonthlySummary(
+      today.year,
+      today.month
+    )
+    await summary.title.assertTextEquals('Läsnäolot 01.01. - 31.01.2022')
+    await summary.textElement.assertTextEquals(
+      'Kaarina\n' +
+        '\n' +
+        'Suunnitelma - / 140 h\n' +
+        'Toteuma 6 h 40 min / 140 h'
+    )
+    const dayCell = calendarPage.dayCell(today.addWeeks(2))
+    await dayCell
+      .findByDataQa('reservation-text')
+      .assertTextEquals('Ilmoitus puuttuu')
+    await calendarPage.navigateToNextMonths(2)
+    await calendarPage.navigateToToday()
+    const reservationModal = await calendarPage.openReservationModal()
+    await reservationModal.fillDailyReservationInfo(
+      new FiniteDateRange(today.addWeeks(2), today.addWeeks(2)),
+      '08:00',
+      '16:00'
+    )
+    await reservationModal.save()
+    await dayCell
+      .findByDataQa('reservation-text')
+      .assertTextEquals('08:00–16:00')
+    await summary.title.assertTextEquals('Läsnäolot 01.01. - 31.01.2022')
+    await summary.textElement.assertTextEquals(
+      'Kaarina\n' +
+        '\n' +
+        'Suunnitelma 8 h / 140 h\n' +
+        'Toteuma 6 h 40 min / 140 h'
     )
   })
 
