@@ -596,7 +596,7 @@ fun Database.Transaction.endExpiredChildDocumentDecisions(
                 AND (
                     (current_placement.id IS NULL) OR 
                     (NOT (current_placement.type = ANY(dt.placement_types))) OR 
-                    (cdd.daycare_id IS NOT NULL AND decision_unit.name <> current_unit.name)
+                    (dt.end_decision_when_unit_changes = TRUE AND cdd.daycare_id IS NOT NULL AND decision_unit.name <> current_unit.name)
                 )
         )
         UPDATE child_document_decision cdd

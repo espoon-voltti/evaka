@@ -156,7 +156,8 @@ beforeEach(async () => {
   templateIdDecision = (
     await Fixture.documentTemplate({
       type: 'OTHER_DECISION',
-      name: 'Tuenpäätös'
+      name: 'Tuenpäätös',
+      endDecisionWhenUnitChanges: true
     })
       .withPublished(true)
       .save()

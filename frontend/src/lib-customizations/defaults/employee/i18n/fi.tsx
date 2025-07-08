@@ -5294,7 +5294,8 @@ export const fi = {
       processDefinitionNumberInfo:
         'Tiedonohjaussuunnitelmassa määritelty tehtäväluokan numero. Jätä tyhjäksi jos asiakirjaa ei arkistoida.',
       archiveDurationMonths: 'Arkistointiaika (kuukautta)',
-      archiveExternally: 'Siirrettävä ulkoiseen arkistoon ennen poistoa'
+      archiveExternally: 'Siirrettävä ulkoiseen arkistoon ennen poistoa',
+      endDecisionWhenUnitChanges: 'Päätös katkeaa, jos lapsi vaihtaa yksikköä'
     },
     templateEditor: {
       confidential: 'Salassapidettävä',

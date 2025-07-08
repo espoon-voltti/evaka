@@ -31,6 +31,7 @@ import { SelectF } from 'lib-components/atoms/dropdowns/Select'
 import Checkbox, { CheckboxF } from 'lib-components/atoms/form/Checkbox'
 import { InputFieldF } from 'lib-components/atoms/form/InputField'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
+import { getDocumentCategory } from 'lib-components/document-templates/documents'
 import { ContentArea } from 'lib-components/layout/Container'
 import {
   FixedSpaceColumn,
@@ -254,6 +255,18 @@ const BasicsSection = React.memo(function BasicsSection({
                 label: i18n.documentTemplates.templateModal.type,
                 value: i18n.documentTemplates.documentTypes[template.type]
               },
+              ...(getDocumentCategory(template.type) === 'decision'
+                ? [
+                    {
+                      label:
+                        i18n.documentTemplates.templateModal
+                          .endDecisionWhenUnitChanges,
+                      value: template.endDecisionWhenUnitChanges
+                        ? i18n.common.yes
+                        : i18n.common.no
+                    }
+                  ]
+                : []),
               {
                 label: i18n.documentTemplates.templateModal.placementTypes,
                 value: template.placementTypes
@@ -355,7 +368,8 @@ const BasicsEditor = React.memo(function BasicsEditor({
       validity: openEndedLocalDateRange.fromRange(template.validity),
       processDefinitionNumber: template.processDefinitionNumber ?? '',
       archiveDurationMonths: template.archiveDurationMonths?.toString() ?? '0',
-      archiveExternally: template.archiveExternally ?? false
+      archiveExternally: template.archiveExternally ?? false,
+      endDecisionWhenUnitChanges: template.endDecisionWhenUnitChanges ?? true
     }),
     {
       ...i18n.validationErrors
@@ -396,7 +410,8 @@ const BasicsEditor = React.memo(function BasicsEditor({
     validity,
     processDefinitionNumber,
     archiveDurationMonths,
-    archiveExternally
+    archiveExternally,
+    endDecisionWhenUnitChanges
   } = useFormFields(form)
 
   return (
@@ -411,6 +426,17 @@ const BasicsEditor = React.memo(function BasicsEditor({
         <Label>{i18n.documentTemplates.templateModal.type}</Label>
         <SelectF bind={type} data-qa="type-select" />
         <Gap />
+        {type.isValid() && getDocumentCategory(type.value()) === 'decision' && (
+          <>
+            <CheckboxF
+              bind={endDecisionWhenUnitChanges}
+              label={
+                i18n.documentTemplates.templateModal.endDecisionWhenUnitChanges
+              }
+            />
+            <Gap />
+          </>
+        )}
         <Label>{i18n.documentTemplates.templateModal.placementTypes}</Label>
         <MultiSelect
           value={placementTypes.state}

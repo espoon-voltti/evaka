@@ -33,6 +33,7 @@ import type {
 } from 'lib-common/generated/api-types/document'
 import type { PlacementType } from 'lib-common/generated/api-types/placement'
 import type { UiLanguage } from 'lib-common/generated/api-types/shared'
+import { getDocumentCategory } from 'lib-components/document-templates/documents'
 import CheckboxGroupQuestionDescriptor from 'lib-components/document-templates/question-descriptors/CheckboxGroupQuestionDescriptor'
 import CheckboxQuestionDescriptor from 'lib-components/document-templates/question-descriptors/CheckboxQuestionDescriptor'
 import DateQuestionDescriptor from 'lib-components/document-templates/question-descriptors/DateQuestionDescriptor'
@@ -63,7 +64,8 @@ export const documentTemplateForm = transformed(
     validity: required(openEndedLocalDateRange()),
     processDefinitionNumber: required(value<string>()),
     archiveDurationMonths: required(value<string>()),
-    archiveExternally: boolean()
+    archiveExternally: boolean(),
+    endDecisionWhenUnitChanges: boolean()
   }),
   (value) => {
     const caseManaged = value.processDefinitionNumber.trim().length > 0
@@ -133,7 +135,11 @@ export const documentTemplateForm = transformed(
             archiveDurationMonths: caseManaged
               ? parseInt(value.archiveDurationMonths)
               : null
-          })
+          }),
+      endDecisionWhenUnitChanges:
+        getDocumentCategory(value.type) === 'decision'
+          ? value.endDecisionWhenUnitChanges
+          : null
     }
     return ValidationSuccess.of(output)
   }

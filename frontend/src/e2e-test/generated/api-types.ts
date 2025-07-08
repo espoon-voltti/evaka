@@ -609,6 +609,7 @@ export interface DevDocumentTemplate {
   archiveExternally: boolean
   confidentiality: DocumentConfidentiality | null
   content: DocumentTemplateContent
+  endDecisionWhenUnitChanges: boolean | null
   id: DocumentTemplateId
   language: UiLanguage
   legalBasis: string

@@ -179,6 +179,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
             processDefinitionNumber = "123.456.000",
             archiveDurationMonths = 120,
             confidentiality = DocumentConfidentiality(100, "JulkL 24.1 § 25 ja 30 kohdat"),
+            endDecisionWhenUnitChanges = true,
         )
 
     @BeforeEach
@@ -265,6 +266,8 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                                 archiveDurationMonths = null,
                                 content = templateContent,
                                 archiveExternally = false,
+                                endDecisionWhenUnitChanges =
+                                    devTemplatePed.endDecisionWhenUnitChanges,
                             ),
                         archivedAt = null,
                     ),

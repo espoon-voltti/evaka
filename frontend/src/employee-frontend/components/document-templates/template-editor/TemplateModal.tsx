@@ -20,6 +20,7 @@ import { SelectF } from 'lib-components/atoms/dropdowns/Select'
 import { CheckboxF } from 'lib-components/atoms/form/Checkbox'
 import { InputFieldF } from 'lib-components/atoms/form/InputField'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
+import { getDocumentCategory } from 'lib-components/document-templates/documents'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { DateRangePickerF } from 'lib-components/molecules/date-picker/DateRangePicker'
 import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
@@ -120,7 +121,9 @@ export default React.memo(function TemplateModal({ onClose, mode }: Props) {
             processDefinitionNumber: mode.data.processDefinitionNumber ?? '',
             archiveDurationMonths:
               mode.data.archiveDurationMonths?.toString() ?? '120',
-            archiveExternally: mode.data.archiveExternally
+            archiveExternally: mode.data.archiveExternally,
+            endDecisionWhenUnitChanges:
+              mode.data.endDecisionWhenUnitChanges ?? true
           }
         : {
             name: '',
@@ -140,7 +143,8 @@ export default React.memo(function TemplateModal({ onClose, mode }: Props) {
             validity: openEndedLocalDateRange.empty(),
             processDefinitionNumber: '',
             archiveDurationMonths: '120',
-            archiveExternally: false
+            archiveExternally: false,
+            endDecisionWhenUnitChanges: true
           },
     {
       ...i18n.validationErrors
@@ -181,7 +185,8 @@ export default React.memo(function TemplateModal({ onClose, mode }: Props) {
     validity,
     processDefinitionNumber,
     archiveDurationMonths,
-    archiveExternally
+    archiveExternally,
+    endDecisionWhenUnitChanges
   } = useFormFields(form)
 
   return (
@@ -226,6 +231,17 @@ export default React.memo(function TemplateModal({ onClose, mode }: Props) {
       <Label>{i18n.documentTemplates.templateModal.type}</Label>
       <SelectF bind={type} data-qa="type-select" />
       <Gap />
+      {type.isValid() && getDocumentCategory(type.value()) === 'decision' && (
+        <>
+          <CheckboxF
+            bind={endDecisionWhenUnitChanges}
+            label={
+              i18n.documentTemplates.templateModal.endDecisionWhenUnitChanges
+            }
+          />
+          <Gap />
+        </>
+      )}
       <Label>{i18n.documentTemplates.templateModal.placementTypes}</Label>
       <MultiSelect
         value={placementTypes.state}

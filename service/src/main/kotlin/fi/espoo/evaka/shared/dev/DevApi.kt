@@ -2504,6 +2504,7 @@ data class DevDocumentTemplate(
     val published: Boolean = true,
     @Json val content: DocumentTemplateContent,
     val archiveExternally: Boolean = false,
+    val endDecisionWhenUnitChanges: Boolean? = null,
 ) {
     fun toDocumentTemplate() =
         DocumentTemplate(
@@ -2520,6 +2521,7 @@ data class DevDocumentTemplate(
             archiveDurationMonths = archiveDurationMonths,
             content = content,
             archiveExternally = archiveExternally,
+            endDecisionWhenUnitChanges = endDecisionWhenUnitChanges,
         )
 }
 
