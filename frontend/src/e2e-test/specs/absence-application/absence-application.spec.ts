@@ -223,6 +223,14 @@ describe('Absence application', () => {
   })
 
   test('accepted flow', async () => {
+    const mockedDate = mockedTime.toLocalDate()
+    const termRange = new FiniteDateRange(mockedDate, mockedDate.addYears(1))
+    await Fixture.preschoolTerm({
+      extendedTerm: termRange,
+      finnishPreschool: termRange,
+      swedishPreschool: termRange,
+      applicationPeriod: termRange.withStart(mockedDate.subMonths(2))
+    }).save()
     const area = await Fixture.careArea().save()
     const unit = await Fixture.daycare({ areaId: area.id }).save()
     const unitSupervisor = await Fixture.employee()
@@ -284,6 +292,14 @@ describe('Absence application', () => {
   })
 
   test('rejected flow', async () => {
+    const mockedDate = mockedTime.toLocalDate()
+    const termRange = new FiniteDateRange(mockedDate, mockedDate.addYears(1))
+    await Fixture.preschoolTerm({
+      extendedTerm: termRange,
+      finnishPreschool: termRange,
+      swedishPreschool: termRange,
+      applicationPeriod: termRange.withStart(mockedDate.subMonths(2))
+    }).save()
     const area = await Fixture.careArea().save()
     const unit = await Fixture.daycare({ areaId: area.id }).save()
     const unitSupervisor = await Fixture.employee()
@@ -349,6 +365,14 @@ describe('Absence application', () => {
   })
 
   test('delete flow', async () => {
+    const mockedDate = mockedTime.toLocalDate()
+    const termRange = new FiniteDateRange(mockedDate, mockedDate.addYears(1))
+    await Fixture.preschoolTerm({
+      extendedTerm: termRange,
+      finnishPreschool: termRange,
+      swedishPreschool: termRange,
+      applicationPeriod: termRange.withStart(mockedDate.subMonths(2))
+    }).save()
     const area = await Fixture.careArea().save()
     const unit = await Fixture.daycare({ areaId: area.id }).save()
     const unitSupervisor = await Fixture.employee()
@@ -399,7 +423,15 @@ describe('Absence application', () => {
     await applicationProcessTab.assertAbsenceApplications([])
   })
 
-  test('Form is invalid if absence date range is not on placement date range', async () => {
+  test('Form is invalid if absence date range is not on possible absence application date range', async () => {
+    const mockedDate = mockedTime.toLocalDate()
+    const termRange = new FiniteDateRange(mockedDate, mockedDate.addYears(1))
+    await Fixture.preschoolTerm({
+      extendedTerm: termRange,
+      finnishPreschool: termRange,
+      swedishPreschool: termRange,
+      applicationPeriod: termRange.withStart(mockedDate.subMonths(2))
+    }).save()
     const area = await Fixture.careArea().save()
     const unit = await Fixture.daycare({ areaId: area.id }).save()
     await Fixture.family({ guardian: adult, children: [child] }).save()
@@ -433,7 +465,15 @@ describe('Absence application', () => {
     await newAbsenceApplicationPage.createButton.assertDisabled(true)
   })
 
-  test('Form is valid if absence date range is partly within placement date range', async () => {
+  test('Form is valid if absence date range is partly within possible absence application date range', async () => {
+    const mockedDate = mockedTime.toLocalDate()
+    const termRange = new FiniteDateRange(mockedDate, mockedDate.addYears(1))
+    await Fixture.preschoolTerm({
+      extendedTerm: termRange,
+      finnishPreschool: termRange,
+      swedishPreschool: termRange,
+      applicationPeriod: termRange.withStart(mockedDate.subMonths(2))
+    }).save()
     const area = await Fixture.careArea().save()
     const unit = await Fixture.daycare({ areaId: area.id }).save()
     await Fixture.family({ guardian: adult, children: [child] }).save()

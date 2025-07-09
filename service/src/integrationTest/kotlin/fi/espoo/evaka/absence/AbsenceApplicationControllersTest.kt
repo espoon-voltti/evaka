@@ -553,7 +553,7 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
             }
 
             assertEquals(
-                DateSet.of(
+                setOf<FiniteDateRange>(
                     FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31)),
                     FiniteDateRange(LocalDate.of(2023, 2, 1), LocalDate.of(2023, 2, 28)),
                 ),
@@ -586,7 +586,7 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
             }
 
             assertEquals(
-                DateSet.empty(),
+                setOf<FiniteDateRange>(),
                 db.transaction { tx -> tx.getAbsenceApplicationDateRanges(child.id, clock.today()) },
             )
         }
@@ -626,11 +626,148 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
             }
 
             assertEquals(
-                DateSet.of(
+                setOf<FiniteDateRange>(
                     FiniteDateRange(LocalDate.of(2022, 8, 1), LocalDate.of(2022, 8, 31)),
                     FiniteDateRange(LocalDate.of(2022, 9, 1), LocalDate.of(2022, 9, 30)),
                 ),
                 db.transaction { tx -> tx.getAbsenceApplicationDateRanges(child.id, clock.today()) },
+            )
+        }
+
+        @Test
+        fun `Term breaks are not included in the absence application date ranges`() {
+            db.transaction { tx ->
+                val termRange = FiniteDateRange(clock.today(), clock.today().plusMonths(2))
+                tx.insert(
+                    DevPreschoolTerm(
+                        finnishPreschool = termRange,
+                        swedishPreschool = termRange,
+                        extendedTerm = termRange,
+                        applicationPeriod = termRange.copy(start = clock.today().minusMonths(2)),
+                        termBreaks =
+                            DateSet.of(
+                                FiniteDateRange(
+                                    LocalDate.of(2022, 8, 20),
+                                    LocalDate.of(2022, 8, 25),
+                                ),
+                                FiniteDateRange(
+                                    LocalDate.of(2022, 9, 10),
+                                    LocalDate.of(2022, 9, 15),
+                                ),
+                                FiniteDateRange(
+                                    LocalDate.of(2022, 10, 1),
+                                    LocalDate.of(2022, 10, 5),
+                                ),
+                            ),
+                    )
+                )
+                tx.insert(
+                    DevPlacement(
+                        type = PlacementType.PRESCHOOL,
+                        childId = child.id,
+                        unitId = unit.id,
+                        startDate = termRange.start,
+                        endDate = termRange.end,
+                    )
+                )
+            }
+
+            assertEquals(
+                DateSet.of(
+                    FiniteDateRange(LocalDate.of(2022, 8, 10), LocalDate.of(2022, 8, 19)),
+                    FiniteDateRange(LocalDate.of(2022, 8, 26), LocalDate.of(2022, 9, 9)),
+                    FiniteDateRange(LocalDate.of(2022, 9, 16), LocalDate.of(2022, 9, 30)),
+                    FiniteDateRange(LocalDate.of(2022, 10, 6), LocalDate.of(2022, 10, 10)),
+                ),
+                absenceApplicationControllerCitizen.getAbsenceApplicationPossibleDateRanges(
+                    dbInstance(),
+                    adult.user(CitizenAuthLevel.STRONG),
+                    clock,
+                    child.id,
+                ),
+            )
+        }
+
+        @Test
+        fun `Absence application date ranges include only the placement range`() {
+            db.transaction { tx ->
+                val termRange = FiniteDateRange(clock.today(), clock.today().plusMonths(2))
+                tx.insert(
+                    DevPreschoolTerm(
+                        finnishPreschool = termRange,
+                        swedishPreschool = termRange,
+                        extendedTerm = termRange,
+                        applicationPeriod = termRange.copy(start = clock.today().minusMonths(2)),
+                        termBreaks = DateSet.empty(),
+                    )
+                )
+                tx.insert(
+                    DevPlacement(
+                        type = PlacementType.PRESCHOOL,
+                        childId = child.id,
+                        unitId = unit.id,
+                        startDate = termRange.start.plusDays(10),
+                        endDate = termRange.end.minusMonths(1),
+                    )
+                )
+            }
+
+            assertEquals(
+                DateSet.of(FiniteDateRange(LocalDate.of(2022, 8, 20), LocalDate.of(2022, 9, 10))),
+                absenceApplicationControllerCitizen.getAbsenceApplicationPossibleDateRanges(
+                    dbInstance(),
+                    adult.user(CitizenAuthLevel.STRONG),
+                    clock,
+                    child.id,
+                ),
+            )
+        }
+
+        @Test
+        fun `Absence application date ranges include both ongoing and future placements`() {
+            db.transaction { tx ->
+                val termRange = FiniteDateRange(clock.today(), clock.today().plusMonths(2))
+                tx.insert(
+                    DevPreschoolTerm(
+                        finnishPreschool = termRange,
+                        swedishPreschool = termRange,
+                        extendedTerm = termRange,
+                        applicationPeriod = termRange.copy(start = clock.today().minusMonths(2)),
+                        termBreaks = DateSet.empty(),
+                    )
+                )
+                tx.insert(
+                    DevPlacement(
+                        type = PlacementType.PRESCHOOL,
+                        childId = child.id,
+                        unitId = unit.id,
+                        startDate = termRange.start,
+                        endDate = termRange.end.minusMonths(1),
+                    )
+                )
+
+                tx.insert(
+                    DevPlacement(
+                        type = PlacementType.PRESCHOOL,
+                        childId = child.id,
+                        unitId = unit.id,
+                        startDate = termRange.end.minusMonths(1).plusDays(2),
+                        endDate = termRange.end,
+                    )
+                )
+            }
+
+            assertEquals(
+                DateSet.of(
+                    FiniteDateRange(LocalDate.of(2022, 8, 10), LocalDate.of(2022, 9, 10)),
+                    FiniteDateRange(LocalDate.of(2022, 9, 12), LocalDate.of(2022, 10, 10)),
+                ),
+                absenceApplicationControllerCitizen.getAbsenceApplicationPossibleDateRanges(
+                    dbInstance(),
+                    adult.user(CitizenAuthLevel.STRONG),
+                    clock,
+                    child.id,
+                ),
             )
         }
     }
