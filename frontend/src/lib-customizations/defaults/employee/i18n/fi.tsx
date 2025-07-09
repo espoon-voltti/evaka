@@ -4654,6 +4654,8 @@ export const fi = {
       monthlyReport: 'Seutuselvityksen kuukausittaiset määrät',
       ageStatisticsReport: 'Seutuselvityksen ikäjakaumat',
       yearlyStatisticsReport: 'Seutuselvityksen vuosittaiset määrät',
+      municipalVoucherReport:
+        'Seutuselvityksen palvelusetelien sijaintikuntakohtaiset määrät',
       reportLabel: 'Seutuselvitys',
       monthlyColumns: {
         month: 'Kuukausi',
@@ -4720,6 +4722,12 @@ export const fi = {
         municipalEnhancedAssistanceCount:
           'Tehostetun tuen lapsimäärä (kunnallinen)',
         statDay: '(tilanne 15.12.)'
+      },
+      municipalVoucherColumns: {
+        statDay: '(tilanne 15.12.)',
+        municipality: 'Sijaintikunta',
+        under3VoucherCount: 'Alle 3v palvelusetelit',
+        over3VoucherCount: '3v ja yli palvelusetelit'
       }
     },
     citizenDocumentResponseReport: {

@@ -8,6 +8,7 @@ import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import type {
+  RegionalSurveyMunicipalVoucherDistributionResult,
   RegionalSurveyReportAgeStatisticsResult,
   RegionalSurveyReportResult,
   RegionalSurveyReportYearlyStatisticsResult
@@ -35,6 +36,7 @@ import { FilterLabel, FilterRow } from './common'
 import {
   tampereRegionalSurveyAgeReport,
   tampereRegionalSurveyMonthlyReport,
+  tampereRegionalSurveyMunicipalVoucherReport,
   tampereRegionalSurveyYearlyReport
 } from './queries'
 
@@ -46,12 +48,14 @@ interface ReportSelection {
   monthlyStatistics: boolean
   ageStatistics: boolean
   yearlyStatistics: boolean
+  municipalVouchers: boolean
 }
 
 const emptyReportSelection = {
   monthlyStatistics: false,
   ageStatistics: false,
-  yearlyStatistics: false
+  yearlyStatistics: false,
+  municipalVouchers: false
 }
 
 const emptyMonthlyValue: RegionalSurveyReportResult = {
@@ -69,6 +73,12 @@ const emptyYearlyValue: RegionalSurveyReportYearlyStatisticsResult = {
   year: 0
 }
 
+const emptyMunicipalVoucherValue: RegionalSurveyMunicipalVoucherDistributionResult =
+  {
+    voucherCounts: [],
+    year: 0
+  }
+
 export default React.memo(function TampereRegionalSurveyReport() {
   const { i18n } = useTranslation()
   const t = i18n.reports.tampereRegionalSurvey
@@ -84,6 +94,8 @@ export default React.memo(function TampereRegionalSurveyReport() {
     `${headerText} ${t.ageStatisticColumns.languageStatDay}`
   const formatMonthlyHeader = (headerText: string) =>
     `${headerText} ${t.monthlyColumns.statDay}`
+  const formatMunicipalVoucherHeader = (headerText: string) =>
+    `${headerText} ${t.municipalVoucherColumns.statDay}`
 
   const yearOptions = range(
     LocalDate.todayInSystemTz().year,
@@ -116,6 +128,12 @@ export default React.memo(function TampereRegionalSurveyReport() {
       : constantQuery(emptyYearlyValue)
   )
 
+  const municipalVoucherResult = useQueryResult(
+    activeParams && reportSelection.municipalVouchers
+      ? tampereRegionalSurveyMunicipalVoucherReport(activeParams)
+      : constantQuery(emptyMunicipalVoucherValue)
+  )
+
   const fetchMonthlyResults = useCallback(() => {
     if (selectedYear) {
       setReportSelection({ ...reportSelection, monthlyStatistics: true })
@@ -133,6 +151,13 @@ export default React.memo(function TampereRegionalSurveyReport() {
   const fetchYearlyResults = useCallback(() => {
     if (selectedYear) {
       setReportSelection({ ...reportSelection, yearlyStatistics: true })
+      setActiveParams({ year: selectedYear })
+    }
+  }, [selectedYear, reportSelection])
+
+  const fetchMunicipalVoucherResults = useCallback(() => {
+    if (selectedYear) {
+      setReportSelection({ ...reportSelection, municipalVouchers: true })
       setActiveParams({ year: selectedYear })
     }
   }, [selectedYear, reportSelection])
@@ -481,6 +506,45 @@ export default React.memo(function TampereRegionalSurveyReport() {
                     }
                   ]}
                   filename={`${t.reportLabel} ${selectedYear} - ${t.yearlyStatisticsReport}.csv`}
+                />
+              ) : null
+            })}
+          </ReportRow>
+          <ReportRow spacing="L" alignItems="center" fullWidth>
+            <ReportLabel>{t.municipalVoucherReport}</ReportLabel>
+            <Button
+              primary
+              disabled={!selectedYear}
+              text={i18n.common.search}
+              onClick={fetchMunicipalVoucherResults}
+              data-qa="fetch-municipal-vouchers-button"
+            />
+            {renderResult(municipalVoucherResult, (result) => {
+              return result.voucherCounts.length > 0 &&
+                result.year === selectedYear ? (
+                <ReportDownload
+                  data={result.voucherCounts}
+                  columns={[
+                    {
+                      label: formatMunicipalVoucherHeader(
+                        t.municipalVoucherColumns.municipality
+                      ),
+                      value: (row) => row.municipality
+                    },
+                    {
+                      label: formatMunicipalVoucherHeader(
+                        t.municipalVoucherColumns.under3VoucherCount
+                      ),
+                      value: (row) => row.under3VoucherCount
+                    },
+                    {
+                      label: formatMunicipalVoucherHeader(
+                        t.municipalVoucherColumns.over3VoucherCount
+                      ),
+                      value: (row) => row.over3VoucherCount
+                    }
+                  ]}
+                  filename={`${t.reportLabel} ${selectedYear} - ${t.municipalVoucherReport}.csv`}
                 />
               ) : null
             })}

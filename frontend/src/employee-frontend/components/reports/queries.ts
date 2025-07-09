@@ -60,6 +60,7 @@ import {
   getStartingPlacementsReport,
   getTampereRegionalSurveyAgeStatistics,
   getTampereRegionalSurveyMonthlyStatistics,
+  getTampereRegionalSurveyMunicipalVoucherDistribution,
   getTampereRegionalSurveyYearlyStatistics,
   getTitaniaErrorsReport,
   getUnitsReport,
@@ -197,6 +198,10 @@ export const tampereRegionalSurveyAgeReport = q.query(
 
 export const tampereRegionalSurveyYearlyReport = q.query(
   getTampereRegionalSurveyYearlyStatistics
+)
+
+export const tampereRegionalSurveyMunicipalVoucherReport = q.query(
+  getTampereRegionalSurveyMunicipalVoucherDistribution
 )
 
 export const missingServiceNeedReportQuery = q.query(
