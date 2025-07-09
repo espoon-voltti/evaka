@@ -353,7 +353,7 @@ fun planNekkuOrderJobs(
     asyncJobRunner: AsyncJobRunner<AsyncJob>,
     now: HelsinkiDateTime,
 ) {
-    val range = now.toLocalDate().startOfWeekAfterNextWeek().weekSpan()
+    val range = now.toLocalDate().weeklyJobsThreeWeeksFromNow()
     dbc.transaction { tx ->
         val nekkuGroupIds = tx.getNekkuDaycareGroupId(range)
         asyncJobRunner.plan(
@@ -452,15 +452,13 @@ private fun LocalDate.nextWeeksSunday() = this.thisWeeksSunday().plusDays(7)
 
 private fun LocalDate.isOnOrBefore(other: LocalDate): Boolean = this.isBefore(other.plusDays(1))
 
-private fun LocalDate.startOfWeekAfterNextWeek(): LocalDate {
-    val daysUntilNextWeekAfterMonday = (8 - this.dayOfWeek.value)
-    return this.plusDays(daysUntilNextWeekAfterMonday.toLong())
-}
-
-private fun LocalDate.weekSpan(): FiniteDateRange {
-    val start = this.startOfWeekAfterNextWeek()
-    val end = start.plusDays(6)
-    return FiniteDateRange(start, end)
+private fun LocalDate.weeklyJobsThreeWeeksFromNow(): FiniteDateRange {
+    val daysUntilNextMonday = (DayOfWeek.MONDAY.value - this.dayOfWeek.value + 7) % 7
+    val nextMonday =
+        this.plusDays(if (daysUntilNextMonday == 0) 7 else daysUntilNextMonday.toLong())
+    val nextMondayPlusWeeks = nextMonday.plusWeeks(2)
+    val jobDateRangeEnd = nextMondayPlusWeeks.plusDays(6)
+    return FiniteDateRange(nextMondayPlusWeeks, jobDateRangeEnd)
 }
 
 private fun LocalDate.daySpan(): FiniteDateRange {

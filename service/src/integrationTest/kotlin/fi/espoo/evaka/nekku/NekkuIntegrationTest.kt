@@ -47,7 +47,6 @@ import org.springframework.beans.factory.annotation.Autowired
 class NekkuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
     @Autowired private lateinit var nekkuController: NekkuController
-    @Autowired private lateinit var nekkuService: NekkuService
 
     private val now = HelsinkiDateTime.of(LocalDate.of(2025, 5, 12), LocalTime.of(9, 50))
 
@@ -1870,7 +1869,7 @@ Lapsen tunniste: ${firstChildWithRemovedAllergy.id}, lapsen ruokavaliot: Laktoos
     }
 
     @Test
-    fun `meal order jobs for daycare groups with customer number are planned`() {
+    fun `meal order jobs for daycare groups with customer number are planned for three week time`() {
 
         val client =
             TestNekkuClient(
@@ -1908,6 +1907,16 @@ Lapsen tunniste: ${firstChildWithRemovedAllergy.id}, lapsen ruokavaliot: Laktoos
                 mealtimeBreakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
                 mealtimeLunch = TimeRange(LocalTime.of(11, 15), LocalTime.of(11, 45)),
                 mealtimeSnack = TimeRange(LocalTime.of(13, 30), LocalTime.of(13, 50)),
+                shiftCareOperationTimes =
+                    listOf(
+                        TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+                        TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+                        TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+                        TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+                        TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+                        TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+                        TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+                    ),
             )
         val group = DevDaycareGroup(daycareId = daycare.id, nekkuCustomerNumber = "2501K6089")
 
@@ -1917,16 +1926,16 @@ Lapsen tunniste: ${firstChildWithRemovedAllergy.id}, lapsen ruokavaliot: Laktoos
             tx.insert(group)
         }
 
-        // Tuesday
-        val now = HelsinkiDateTime.of(LocalDate.of(2025, 3, 24), LocalTime.of(2, 25))
+        // Friday
+        val now = HelsinkiDateTime.of(LocalDate.of(2025, 3, 21), LocalTime.of(2, 25))
 
         planNekkuOrderJobs(db, asyncJobRunner, now)
 
-        assertEquals(5, getNekkuWeeklyJobs().count())
+        assertEquals(7, getNekkuWeeklyJobs().count())
     }
 
     @Test
-    fun `meal order jobs for daycare groups are planned for two week time and it does not create job for daycare that is not open`() {
+    fun `meal order jobs for daycare groups are planned for three week time and it does not create job for daycare that is not open`() {
 
         val client =
             TestNekkuClient(
@@ -1984,14 +1993,14 @@ Lapsen tunniste: ${firstChildWithRemovedAllergy.id}, lapsen ruokavaliot: Laktoos
         }
 
         // monday
-        val now = HelsinkiDateTime.of(LocalDate.of(2025, 3, 24), LocalTime.of(2, 25))
+        val now = HelsinkiDateTime.of(LocalDate.of(2025, 3, 17), LocalTime.of(2, 25))
 
-        val nowPlusTwoWeeks = HelsinkiDateTime.of(LocalDate.of(2025, 4, 7), LocalTime.of(2, 25))
+        val nowPlusThreeWeeks = HelsinkiDateTime.of(LocalDate.of(2025, 4, 7), LocalTime.of(2, 25))
 
         planNekkuOrderJobs(db, asyncJobRunner, now)
 
         assertEquals(
-            nowPlusTwoWeeks.toLocalDate().toString(),
+            nowPlusThreeWeeks.toLocalDate().toString(),
             getNekkuWeeklyJobs().first().date.toString(),
         )
 
@@ -1999,7 +2008,7 @@ Lapsen tunniste: ${firstChildWithRemovedAllergy.id}, lapsen ruokavaliot: Laktoos
     }
 
     @Test
-    fun `meal order jobs for daycare groups are planned for two week time and it checks holidays`() {
+    fun `meal order jobs for daycare groups are planned for three week time and it checks holidays`() {
 
         val client =
             TestNekkuClient(
@@ -2046,15 +2055,15 @@ Lapsen tunniste: ${firstChildWithRemovedAllergy.id}, lapsen ruokavaliot: Laktoos
             tx.insert(group)
         }
 
-        // monday
-        val now = HelsinkiDateTime.of(LocalDate.of(2025, 3, 31), LocalTime.of(2, 25))
+        // friday
+        val now = HelsinkiDateTime.of(LocalDate.of(2025, 3, 28), LocalTime.of(2, 25))
 
-        val nowPlusTwoWeeks = HelsinkiDateTime.of(LocalDate.of(2025, 4, 14), LocalTime.of(2, 25))
+        val nowPlusThreeWeeks = HelsinkiDateTime.of(LocalDate.of(2025, 4, 14), LocalTime.of(2, 25))
 
         planNekkuOrderJobs(db, asyncJobRunner, now)
 
         assertEquals(
-            nowPlusTwoWeeks.toLocalDate().toString(),
+            nowPlusThreeWeeks.toLocalDate().toString(),
             getNekkuWeeklyJobs().first().date.toString(),
         )
 
@@ -2120,15 +2129,15 @@ Lapsen tunniste: ${firstChildWithRemovedAllergy.id}, lapsen ruokavaliot: Laktoos
             tx.insert(group)
         }
 
-        // monday
-        val now = HelsinkiDateTime.of(LocalDate.of(2025, 3, 31), LocalTime.of(2, 25))
+        // friday
+        val now = HelsinkiDateTime.of(LocalDate.of(2025, 3, 28), LocalTime.of(2, 25))
 
-        val nowPlusTwoWeeks = HelsinkiDateTime.of(LocalDate.of(2025, 4, 14), LocalTime.of(2, 25))
+        val nowPlusThreeWeeks = HelsinkiDateTime.of(LocalDate.of(2025, 4, 14), LocalTime.of(2, 25))
 
         planNekkuOrderJobs(db, asyncJobRunner, now)
 
         assertEquals(
-            nowPlusTwoWeeks.toLocalDate().toString(),
+            nowPlusThreeWeeks.toLocalDate().toString(),
             getNekkuWeeklyJobs().first().date.toString(),
         )
 
