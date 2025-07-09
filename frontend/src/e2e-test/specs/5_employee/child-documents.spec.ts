@@ -261,7 +261,7 @@ describe('Employee - Child documents', () => {
       now.toLocalDate().addDays(7)
     )
     await childDocument.acceptDecision(validity)
-    await childDocument.status.assertTextEquals('Hyväksytty')
+    await childDocument.status.assertTextEquals('Myönnetty')
     await nav.assertTabNotificationsCount('reports', 0)
 
     await childDocument.annulDecision()
@@ -296,7 +296,7 @@ describe('Employee - Child documents', () => {
     await page.goto(documentUrl)
     childDocument = new ChildDocumentPage(page)
     await childDocument.rejectDecision()
-    await childDocument.status.assertTextEquals('Hylätty')
+    await childDocument.status.assertTextEquals('Ei myönnetty')
   })
 
   test('Edit mode cannot be entered for 15 minutes after another use has edited the document content', async () => {

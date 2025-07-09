@@ -69,8 +69,8 @@ const components: Translations = {
       CITIZEN_DRAFT: 'Täytettävänä huoltajalla',
       DECISION_PROPOSAL: 'Päätösesitys',
       COMPLETED: 'Valmis',
-      ACCEPTED: 'Hyväksytty',
-      REJECTED: 'Hylätty',
+      ACCEPTED: 'Myönnetty',
+      REJECTED: 'Ei myönnetty',
       ANNULLED: 'Mitätöity'
     }
   },
