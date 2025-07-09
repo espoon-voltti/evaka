@@ -244,7 +244,9 @@ class ChildDocumentService(
         ids: List<ChildDocumentId>,
         now: HelsinkiDateTime,
     ) {
-        val payloads = ids.flatMap { getChildDocumentNotifications(tx, it, now.toLocalDate()) }
+        val payloads: List<AsyncJob.SendChildDocumentNotificationEmail> =
+            ids.flatMap { getChildDocumentNotifications(tx, it, now.toLocalDate()) }
+
         logger.info { "Scheduling sending of ${payloads.size} child document notification emails" }
         asyncJobRunner.plan(tx, payloads = payloads, runAt = now, retryCount = 10)
     }
@@ -284,22 +286,22 @@ class ChildDocumentService(
         return tx.createQuery {
                 sql(
                     """
-WITH children AS (
-    SELECT child_id
+WITH child_document AS (
+    SELECT child_id, type, status
     FROM child_document
     WHERE id = ${bind(documentId)}
 ), parents AS (
-    SELECT g.guardian_id AS parent_id, children.child_id
+    SELECT g.guardian_id AS parent_id, child_document.child_id, child_document.type, child_document.status
     FROM guardian g
-    JOIN children ON children.child_id = g.child_id
+    JOIN child_document ON child_document.child_id = g.child_id
     
     UNION DISTINCT 
     
-    SELECT fp.parent_id, children.child_id
+    SELECT fp.parent_id, child_document.child_id, child_document.type, child_document.status
     FROM foster_parent fp
-    JOIN children ON children.child_id = fp.child_id AND fp.valid_during @> ${bind(today)}
+    JOIN child_document ON child_document.child_id = fp.child_id AND fp.valid_during @> ${bind(today)}
 )
-SELECT parents.child_id, person.id AS recipient_id, person.language
+SELECT parents.child_id, parents.type AS document_type, parents.status AS document_status, person.id AS recipient_id, person.language
 FROM parents 
 JOIN person ON person.id = parents.parent_id
 WHERE person.email IS NOT NULL AND person.email != ''
@@ -307,11 +309,22 @@ WHERE person.email IS NOT NULL AND person.email != ''
                 )
             }
             .toList {
+                val documentType = column<ChildDocumentType>("document_type")
+                val documentStatus = column<DocumentStatus>("document_status")
+                val notificationType =
+                    when {
+                        documentType.decision -> ChildDocumentNotificationType.DECISION_DOCUMENT
+                        documentStatus.citizenEditable ->
+                            ChildDocumentNotificationType.EDITABLE_DOCUMENT
+                        else -> ChildDocumentNotificationType.BASIC_DOCUMENT
+                    }
+
                 AsyncJob.SendChildDocumentNotificationEmail(
                     documentId = documentId,
                     childId = column("child_id"),
                     recipientId = column("recipient_id"),
                     language = getLanguage(column("language")),
+                    notificationType = notificationType,
                 )
             }
     }
@@ -329,7 +342,12 @@ WHERE person.email IS NOT NULL AND person.email != ''
                 personId = msg.recipientId,
                 emailType = EmailMessageType.DOCUMENT_NOTIFICATION,
                 fromAddress = emailEnv.sender(msg.language),
-                content = emailMessageProvider.childDocumentNotification(msg.language, msg.childId),
+                content =
+                    emailMessageProvider.childDocumentNotification(
+                        msg.language,
+                        msg.childId,
+                        msg.notificationType,
+                    ),
                 traceId = msg.documentId.toString(),
             )
             ?.also { emailClient.send(it) }

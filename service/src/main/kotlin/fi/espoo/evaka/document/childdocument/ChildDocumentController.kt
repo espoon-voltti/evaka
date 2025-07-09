@@ -472,10 +472,12 @@ class ChildDocumentController(
                             statusTransition.newStatus == DocumentStatus.COMPLETED
                     },
             )
-            if (!wasUpToDate) {
-                childDocumentService.schedulePdfGeneration(tx, listOf(documentId), clock.now())
+            if (statusTransition.newStatus == DocumentStatus.CITIZEN_DRAFT || !wasUpToDate) {
                 childDocumentService.scheduleEmailNotification(tx, listOf(documentId), clock.now())
             }
+
+            if (!wasUpToDate)
+                childDocumentService.schedulePdfGeneration(tx, listOf(documentId), clock.now())
         }
 
         updateDocumentCaseProcessHistory(

@@ -605,7 +605,7 @@ describe('Employee - Child documents', () => {
         from: 'Espoon Varhaiskasvatus <no-reply.evaka@espoo.fi>',
         to: 'johannes.karhula@evaka.test',
         subject:
-          'Uusi asiakirja eVakassa / Nytt dokument i eVaka / New document in eVaka'
+          'Uusi täytettävä asiakirja eVakassa / Nytt ifyllnadsdokument i eVaka / New fillable document in eVaka'
       }
     ])
   })
@@ -754,7 +754,7 @@ describe('Employee - Child documents', () => {
         from: 'Espoon Varhaiskasvatus <no-reply.evaka@espoo.fi>',
         to: 'johannes.karhula@evaka.test',
         subject:
-          'Uusi asiakirja eVakassa / Nytt dokument i eVaka / New document in eVaka'
+          'Uusi täytettävä asiakirja eVakassa / Nytt ifyllnadsdokument i eVaka / New fillable document in eVaka'
       }
     ])
   })
@@ -1006,7 +1006,7 @@ describe('Employee - Child documents - unit groups page', () => {
       from: 'Espoon Varhaiskasvatus <no-reply.evaka@espoo.fi>',
       to: 'adult1@evaka.test',
       subject:
-        'Uusi asiakirja eVakassa / Nytt dokument i eVaka / New document in eVaka'
+        'Uusi täytettävä asiakirja eVakassa / Nytt ifyllnadsdokument i eVaka / New fillable document in eVaka'
     }
     await runJobs({ mockedTime: now })
     const emails1 = await getSentEmails()
@@ -1062,7 +1062,7 @@ describe('Employee - Child documents - unit groups page', () => {
       from: 'Espoon Varhaiskasvatus <no-reply.evaka@espoo.fi>',
       to: 'adult1@evaka.test',
       subject:
-        'Uusi asiakirja eVakassa / Nytt dokument i eVaka / New document in eVaka'
+        'Uusi täytettävä asiakirja eVakassa / Nytt ifyllnadsdokument i eVaka / New fillable document in eVaka'
     }
     await runJobs({ mockedTime: now })
     const emails1 = await getSentEmails()
