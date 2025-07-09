@@ -46,32 +46,30 @@ fun migrateProcessMetadata(
 ) {
     val metadata = CaseProcessMetadataService(featureConfig)
 
-    runBatches("application", tracer, batchSize) {
+    runBatches("application", tracer) {
         migrateApplicationMetadata(dbc, batchSize, clock, metadata)
     }
 
-    runBatches("fee decision", tracer, batchSize) {
-        migrateFeeDecisionMetadata(dbc, batchSize, metadata)
-    }
+    runBatches("fee decision", tracer) { migrateFeeDecisionMetadata(dbc, batchSize, metadata) }
 
-    runBatches("voucher value decision", tracer, batchSize) {
+    runBatches("voucher value decision", tracer) {
         migrateVoucherValueDecisionMetadata(dbc, batchSize, metadata)
     }
 
-    runBatches("assistance need daycare decision", tracer, batchSize) {
+    runBatches("assistance need daycare decision", tracer) {
         migrateAssistanceNeedDecisionDaycare(dbc, batchSize, metadata)
     }
 
-    runBatches("assistance need preschool decision", tracer, batchSize) {
+    runBatches("assistance need preschool decision", tracer) {
         migrateAssistanceNeedDecisionPreschool(dbc, batchSize, metadata)
     }
 
-    runBatches("child document", tracer, batchSize) {
+    runBatches("child document", tracer) {
         migrateDocuments(dbc, batchSize, featureConfig.archiveMetadataOrganization)
     }
 }
 
-private fun runBatches(dataName: String, tracer: Tracer, batchSize: Int, migrate: () -> Int) {
+private fun runBatches(dataName: String, tracer: Tracer, migrate: () -> Int) {
     var totalMigrated = 0
     logger.info { "Starting metadata migration of $dataName" }
     do {
@@ -80,7 +78,7 @@ private fun runBatches(dataName: String, tracer: Tracer, batchSize: Int, migrate
         if (migrated > 0) {
             logger.info { "Migrating $dataName: Migrated $migrated records, total $totalMigrated" }
         }
-    } while (migrated == batchSize)
+    } while (migrated > 0)
     logger.info { "Completed metadata migration of $dataName" }
 }
 
@@ -126,6 +124,7 @@ private fun migrateApplicationMetadata(
                 }
                 .toList<ApplicationMigrationData>()
 
+        var migratedCount = 0
         applications.forEach { application ->
             val process =
                 metadata.getProcessParams(
@@ -167,8 +166,9 @@ private fun migrateApplicationMetadata(
                     userId = systemInternalUser,
                 )
             }
+            migratedCount++
         }
-        applications.size
+        migratedCount
     }
 }
 
@@ -202,6 +202,7 @@ private fun migrateFeeDecisionMetadata(
                 }
                 .toList<FeeDecisionMigrationData>()
 
+        var migratedCount = 0
         feeDecisions.forEach { decision ->
             val process =
                 metadata.getProcessParams(ArchiveProcessType.FEE_DECISION, decision.created.year)
@@ -241,8 +242,9 @@ private fun migrateFeeDecisionMetadata(
                     userId = systemInternalUser,
                 )
             }
+            migratedCount++
         }
-        feeDecisions.size
+        migratedCount
     }
 }
 
@@ -276,6 +278,7 @@ private fun migrateVoucherValueDecisionMetadata(
                 }
                 .toList<VoucherValueDecisionMigrationData>()
 
+        var migratedCount = 0
         voucherValueDecisions.forEach { decision ->
             val process =
                 metadata.getProcessParams(
@@ -318,8 +321,9 @@ private fun migrateVoucherValueDecisionMetadata(
                     userId = systemInternalUser,
                 )
             }
+            migratedCount++
         }
-        voucherValueDecisions.size
+        migratedCount
     }
 }
 
@@ -363,6 +367,7 @@ private fun migrateAssistanceNeedDecisionDaycare(
                 }
                 .toList<AssistaceNeedDaycareDecisionData>()
 
+        var migratedCount = 0
         assistanceNeedDecisions.forEach { decision ->
             val process =
                 metadata.getProcessParams(
@@ -425,8 +430,9 @@ private fun migrateAssistanceNeedDecisionDaycare(
                 now = HelsinkiDateTime.of(decision.decisionMade, LocalTime.MIDNIGHT),
                 userId = systemInternalUser,
             )
+            migratedCount++
         }
-        assistanceNeedDecisions.size
+        migratedCount
     }
 }
 
@@ -470,6 +476,7 @@ private fun migrateAssistanceNeedDecisionPreschool(
                 }
                 .toList<AssistanceNeedPreschoolDecisionData>()
 
+        var migratedCount = 0
         assistanceNeedPreschoolDecisions.forEach { decision ->
             val process =
                 metadata.getProcessParams(
@@ -532,8 +539,9 @@ private fun migrateAssistanceNeedDecisionPreschool(
                 now = HelsinkiDateTime.of(decision.decisionMade, LocalTime.MIDNIGHT),
                 userId = systemInternalUser,
             )
+            migratedCount++
         }
-        assistanceNeedPreschoolDecisions.size
+        migratedCount
     }
 }
 
@@ -581,6 +589,7 @@ private fun migrateDocuments(
                 }
                 .toList<DocumentData>()
 
+        var migratedCount = 0
         documents.forEach { document ->
             val processId =
                 tx.insertCaseProcess(
@@ -612,7 +621,8 @@ private fun migrateDocuments(
                     userId = systemInternalUser,
                 )
             }
+            migratedCount++
         }
-        documents.size
+        migratedCount
     }
 }
