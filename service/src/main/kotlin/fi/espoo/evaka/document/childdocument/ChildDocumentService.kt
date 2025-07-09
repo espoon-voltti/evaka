@@ -286,22 +286,22 @@ class ChildDocumentService(
         return tx.createQuery {
                 sql(
                     """
-WITH children AS (
+WITH child_document AS (
     SELECT child_id, type, status
     FROM child_document
     WHERE id = ${bind(documentId)}
 ), parents AS (
-    SELECT g.guardian_id AS parent_id, children.child_id, children.type, children.status
+    SELECT g.guardian_id AS parent_id, child_document.child_id, child_document.type, child_document.status
     FROM guardian g
-    JOIN children ON children.child_id = g.child_id
+    JOIN child_document ON child_document.child_id = g.child_id
     
     UNION DISTINCT 
     
-    SELECT fp.parent_id, children.child_id, children.type, children.status
+    SELECT fp.parent_id, child_document.child_id, child_document.type, child_document.status
     FROM foster_parent fp
-    JOIN children ON children.child_id = fp.child_id AND fp.valid_during @> ${bind(today)}
+    JOIN child_document ON child_document.child_id = fp.child_id AND fp.valid_during @> ${bind(today)}
 )
-SELECT parents.child_id, parents.type, parents.status, person.id AS recipient_id, person.language
+SELECT parents.child_id, parents.type AS document_type, parents.status AS document_status, person.id AS recipient_id, person.language
 FROM parents 
 JOIN person ON person.id = parents.parent_id
 WHERE person.email IS NOT NULL AND person.email != ''
@@ -309,8 +309,8 @@ WHERE person.email IS NOT NULL AND person.email != ''
                 )
             }
             .toList {
-                val documentType = column("type") as ChildDocumentType
-                val documentStatus = column("status") as DocumentStatus
+                val documentType = column<ChildDocumentType>("document_type")
+                val documentStatus = column<DocumentStatus>("document_status")
                 val notificationType =
                     when {
                         documentType.decision -> ChildDocumentNotificationType.DECISION_DOCUMENT
