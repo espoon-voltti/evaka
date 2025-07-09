@@ -722,6 +722,54 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
                 ),
             )
         }
+
+        @Test
+        fun `Absence application date ranges include both ongoing and future placements`() {
+            db.transaction { tx ->
+                val termRange = FiniteDateRange(clock.today(), clock.today().plusMonths(2))
+                tx.insert(
+                    DevPreschoolTerm(
+                        finnishPreschool = termRange,
+                        swedishPreschool = termRange,
+                        extendedTerm = termRange,
+                        applicationPeriod = termRange.copy(start = clock.today().minusMonths(2)),
+                        termBreaks = DateSet.empty(),
+                    )
+                )
+                tx.insert(
+                    DevPlacement(
+                        type = PlacementType.PRESCHOOL,
+                        childId = child.id,
+                        unitId = unit.id,
+                        startDate = termRange.start,
+                        endDate = termRange.end.minusMonths(1),
+                    )
+                )
+
+                tx.insert(
+                    DevPlacement(
+                        type = PlacementType.PRESCHOOL,
+                        childId = child.id,
+                        unitId = unit.id,
+                        startDate = termRange.end.minusMonths(1).plusDays(2),
+                        endDate = termRange.end,
+                    )
+                )
+            }
+
+            assertEquals(
+                DateSet.of(
+                    FiniteDateRange(LocalDate.of(2022, 8, 10), LocalDate.of(2022, 9, 10)),
+                    FiniteDateRange(LocalDate.of(2022, 9, 12), LocalDate.of(2022, 10, 10)),
+                ),
+                absenceApplicationControllerCitizen.getAbsenceApplicationPossibleDateRanges(
+                    dbInstance(),
+                    adult.user(CitizenAuthLevel.STRONG),
+                    clock,
+                    child.id,
+                ),
+            )
+        }
     }
 
     @Nested
