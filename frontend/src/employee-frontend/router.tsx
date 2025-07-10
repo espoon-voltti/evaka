@@ -78,7 +78,6 @@ import HolidayPeriodAttendanceReport from './components/reports/HolidayPeriodAtt
 import HolidayQuestionnaireReport from './components/reports/HolidayQuestionnaireReport'
 import IncompleteIncomes from './components/reports/IncompleteIncomeReport'
 import ReportInvoices from './components/reports/Invoices'
-import ManualDuplicationReport from './components/reports/ManualDuplicationReport'
 import MealReport from './components/reports/MealReport'
 import ReportMissingHeadOfFamily from './components/reports/MissingHeadOfFamily'
 import ReportMissingServiceNeed from './components/reports/MissingServiceNeed'
@@ -376,11 +375,6 @@ const routes: EmployeeRoute[] = [
   {
     path: '/reports/assistance-need-decisions',
     component: AssistanceNeedDecisionsReport,
-    title: 'reports'
-  },
-  {
-    path: '/reports/manual-duplication',
-    component: ManualDuplicationReport,
     title: 'reports'
   },
   {

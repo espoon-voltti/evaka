@@ -48,8 +48,6 @@ import type { InvoiceReport } from 'lib-common/generated/api-types/reports'
 import type { JsonCompatible } from 'lib-common/json'
 import type { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
-import type { ManualDuplicationReportRow } from 'lib-common/generated/api-types/reports'
-import type { ManualDuplicationReportViewMode } from 'lib-common/generated/api-types/reports'
 import type { MealReportData } from 'lib-common/generated/api-types/reports'
 import type { MissingHeadOfFamilyReportRow } from 'lib-common/generated/api-types/reports'
 import type { MissingServiceNeedReportResultRow } from 'lib-common/generated/api-types/reports'
@@ -106,7 +104,6 @@ import { deserializeJsonEndedPlacementsReportRow } from 'lib-common/generated/ap
 import { deserializeJsonFuturePreschoolersReportRow } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonHolidayReportRow } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonIncompleteIncomeDbRow } from 'lib-common/generated/api-types/reports'
-import { deserializeJsonManualDuplicationReportRow } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonMealReportData } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonMissingHeadOfFamilyReportRow } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonNekkuOrderRow } from 'lib-common/generated/api-types/reports'
@@ -755,26 +752,6 @@ export async function getInvoiceReport(
     params
   })
   return json
-}
-
-
-/**
-* Generated from fi.espoo.evaka.reports.ManualDuplicationReportController.getManualDuplicationReport
-*/
-export async function getManualDuplicationReport(
-  request: {
-    viewMode?: ManualDuplicationReportViewMode | null
-  }
-): Promise<ManualDuplicationReportRow[]> {
-  const params = createUrlSearchParams(
-    ['viewMode', request.viewMode?.toString()]
-  )
-  const { data: json } = await client.request<JsonOf<ManualDuplicationReportRow[]>>({
-    url: uri`/employee/reports/manual-duplication`.toString(),
-    method: 'GET',
-    params
-  })
-  return json.map(e => deserializeJsonManualDuplicationReportRow(e))
 }
 
 

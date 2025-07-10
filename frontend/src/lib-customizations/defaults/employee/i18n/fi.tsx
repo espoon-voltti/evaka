@@ -4397,27 +4397,6 @@ export const fi = {
         CORRECTION: 'Korjaus'
       }
     },
-    manualDuplication: {
-      title: 'Manuaalisen toisinnuksen raportti',
-      description:
-        'Raportti listaa esiopetusta täydentävän varhaiskasvatuksen tapaukset, jotka mahdollisesti vaativat lapsen manuaalista toisinnusta',
-      childName: 'Lapsen nimi',
-      dateOfBirth: 'Syntymäaika',
-      connectedDaycare: 'Täydentävän yksikkö',
-      connectedSno: 'Täydentävän palveluntarve',
-      connectedDuration: 'Täydentävän kesto',
-      preschoolDaycare: 'Esiopetuksen yksikkö',
-      preschooldDuration: 'Esiopetuksen kesto',
-      filters: {
-        viewOption: {
-          label: 'Valitse näkymä:',
-          items: {
-            DUPLICATED: 'Näytä vain jo monistetut tapaukset',
-            NONDUPLICATED: 'Näytä vain käsittelemättömät tapaukset'
-          }
-        }
-      }
-    },
     nonSsnChildren: {
       title: 'Hetuttomat lapset',
       description:
