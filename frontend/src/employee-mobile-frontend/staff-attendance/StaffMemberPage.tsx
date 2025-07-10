@@ -26,7 +26,7 @@ import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { H4, Label } from 'lib-components/typography'
-import { defaultMargins } from 'lib-components/white-space'
+import { defaultMargins, Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/employeeMobile'
 import { faCalendar } from 'lib-icons'
 
@@ -142,6 +142,7 @@ export default React.memo(function StaffMemberPage({
         ) : (
           <>
             <EmployeeCardBackground staff={toStaff(staffMember)} />
+            <Gap size="s" />
             <FixedSpaceColumn>
               {featureFlags.staffAttendanceTypes ? (
                 <>
