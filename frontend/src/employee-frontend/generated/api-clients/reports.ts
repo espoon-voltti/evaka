@@ -508,18 +508,10 @@ export async function getDecisionsReport(
 /**
 * Generated from fi.espoo.evaka.reports.DuplicatePeopleReportController.getDuplicatePeopleReport
 */
-export async function getDuplicatePeopleReport(
-  request: {
-    showIntentionalDuplicates?: boolean | null
-  }
-): Promise<DuplicatePeopleReportRow[]> {
-  const params = createUrlSearchParams(
-    ['showIntentionalDuplicates', request.showIntentionalDuplicates?.toString()]
-  )
+export async function getDuplicatePeopleReport(): Promise<DuplicatePeopleReportRow[]> {
   const { data: json } = await client.request<JsonOf<DuplicatePeopleReportRow[]>>({
     url: uri`/employee/reports/duplicate-people`.toString(),
-    method: 'GET',
-    params
+    method: 'GET'
   })
   return json.map(e => deserializeJsonDuplicatePeopleReportRow(e))
 }
