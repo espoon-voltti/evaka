@@ -61,6 +61,14 @@ private val childDocumentCss =
         margin-bottom: 48px;
     }
     
+    .decision-status {
+        margin-bottom: 24px;
+    }
+    
+    .bold {
+        font-weight: 600;
+    }
+    
     .sections {
         display: flex;
         flex-direction: column;
@@ -112,7 +120,7 @@ fun generateChildDocumentHtml(document: ChildDocumentDetails): String {
 
 private fun generateBody(document: ChildDocumentDetails): HtmlElement {
     return HtmlBuilder.body {
-        listOf(
+        listOfNotNull(
             generateHeader(document),
             h2(
                 text =
@@ -122,6 +130,9 @@ private fun generateBody(document: ChildDocumentDetails): HtmlElement {
                         } ?: ""),
                 className = "child-info",
             ),
+            document.decision?.status?.let {
+                div(className = "decision-status") { generateDecisionStatusHtml(document, it) }
+            },
             div(className = "sections") {
                 document.template.content.sections.map {
                     generateSectionHtml(it, document.content.answers, document.template.language)
@@ -156,6 +167,13 @@ private fun generateHeader(document: ChildDocumentDetails): HtmlElement {
     }
 }
 
+private fun generateDecisionStatusHtml(
+    document: ChildDocumentDetails,
+    status: ChildDocumentDecisionStatus,
+): List<HtmlElement> {
+    return listOf(getTranslations(document.template).decisionStatus(status))
+}
+
 private fun generateSectionHtml(
     section: Section,
     answers: List<AnsweredQuestion<*>>,
@@ -182,16 +200,78 @@ private fun generateQuestionHtml(
     )
 }
 
-private data class Translations(val confidential: String, val decisionNumber: String)
+private data class Translations(
+    val confidential: String,
+    val decisionNumber: String,
+    val decisionStatus: (ChildDocumentDecisionStatus) -> HtmlElement,
+)
 
 private val translationsFi =
-    Translations(confidential = "Salassapidettävä", decisionNumber = "Päätösnumero")
+    Translations(
+        confidential = "Salassapidettävä",
+        decisionNumber = "Päätösnumero",
+        decisionStatus = { status: ChildDocumentDecisionStatus ->
+            val statusString =
+                when (status) {
+                    ChildDocumentDecisionStatus.ACCEPTED -> "myönteinen"
+                    ChildDocumentDecisionStatus.REJECTED -> "kielteinen"
+                    ChildDocumentDecisionStatus.ANNULLED -> "mitätöity"
+                }
+            HtmlBuilder.span {
+                listOf<HtmlElement>(
+                    text("Teille on tehty"),
+                    text(" "),
+                    span(statusString, className = "bold"),
+                    text(" "),
+                    text("päätös"),
+                )
+            }
+        },
+    )
 
 private val translationsSv =
-    Translations(confidential = "Konfidentiellt", decisionNumber = "Beslutsnummer")
+    Translations(
+        confidential = "Konfidentiellt",
+        decisionNumber = "Beslutsnummer",
+        decisionStatus = { status: ChildDocumentDecisionStatus ->
+            val statusString =
+                when (status) {
+                    ChildDocumentDecisionStatus.ACCEPTED -> "godkänt"
+                    ChildDocumentDecisionStatus.REJECTED -> "avvisat"
+                    ChildDocumentDecisionStatus.ANNULLED -> "annullerat"
+                }
+            HtmlBuilder.span {
+                listOf(
+                    text("Ni har fått ett"),
+                    text(" "),
+                    span(statusString, className = "bold"),
+                    text(" "),
+                    text("beslut"),
+                )
+            }
+        },
+    )
 
 private val translationsEn =
-    Translations(confidential = "Confidential", decisionNumber = "Decision number")
+    Translations(
+        confidential = "Confidential",
+        decisionNumber = "Decision number",
+        decisionStatus = { status: ChildDocumentDecisionStatus ->
+            val statusString =
+                when (status) {
+                    ChildDocumentDecisionStatus.ACCEPTED -> "An accepted"
+                    ChildDocumentDecisionStatus.REJECTED -> "A rejected"
+                    ChildDocumentDecisionStatus.ANNULLED -> "An annulled"
+                }
+            HtmlBuilder.span {
+                listOf(
+                    span(statusString, className = "bold"),
+                    text(" "),
+                    text("decision has been made for you"),
+                )
+            }
+        },
+    )
 
 private fun getTranslations(template: DocumentTemplate) =
     when (template.language) {
