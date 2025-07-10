@@ -723,6 +723,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     id = tx.createDaycareGroupMessageAccount(group.id),
                     name = group.name,
                     type = AccountType.GROUP,
+                    personId = null,
                 )
             child1Id = tx.insert(DevPerson(), DevPersonType.CHILD)
             child2Id = tx.insert(DevPerson(), DevPersonType.CHILD)
@@ -1526,6 +1527,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             id = getCitizenMessageAccount(person.id),
             name = "${person.lastName} ${person.firstName}",
             type = AccountType.CITIZEN,
+            personId = person.id,
         )
 
     private fun Database.Transaction.createAccount(group: DevDaycareGroup) =
@@ -1533,6 +1535,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             id = createDaycareGroupMessageAccount(group.id),
             name = group.name,
             type = AccountType.GROUP,
+            personId = null,
         )
 
     private fun Database.Transaction.createAccount(employee: DevEmployee) =
@@ -1540,6 +1543,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             id = upsertEmployeeMessageAccount(employee.id),
             name = "${employee.lastName} ${employee.firstName}",
             type = AccountType.PERSONAL,
+            personId = null,
         )
 
     private fun deletePlacement(placement: PlacementId) =

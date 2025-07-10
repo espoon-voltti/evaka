@@ -170,6 +170,7 @@ export interface Message {
 export interface MessageAccount {
   id: MessageAccountId
   name: string
+  personId: PersonId | null
   type: AccountType
 }
 

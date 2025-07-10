@@ -4975,6 +4975,7 @@ export const fi = {
         s === 1 ? '1 sekunti aikaa' : `${s} sekuntia aikaa`
     },
     sensitive: 'arkaluontoinen',
+    customer: 'Asiakas',
     messageEditor: {
       message: 'Viesti',
       newMessage: 'Uusi viesti',
