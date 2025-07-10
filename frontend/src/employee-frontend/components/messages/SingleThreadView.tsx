@@ -12,7 +12,7 @@ import React, {
   useState
 } from 'react'
 import styled from 'styled-components'
-import { useLocation, useSearchParams } from 'wouter'
+import { Link, useLocation, useSearchParams } from 'wouter'
 
 import { wrapResult } from 'lib-common/api'
 import type {
@@ -82,18 +82,12 @@ const TitleRow = styled.div`
   }
 `
 
-const StickyTitleRow = styled(TitleRow)`
+const ThreadHeader = styled.div`
   position: sticky;
   top: 0;
   padding: ${defaultMargins.L};
   background: ${colors.grayscale.g0};
-  max-height: 100px;
-  overflow: auto;
-
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: ${defaultMargins.s};
+  max-height: 120px;
 `
 
 const MessageContent = styled.div`
@@ -272,6 +266,22 @@ export function SingleThreadView({
     }
   }, [accountId, markThreadRead, messages, refreshMessages, threadId])
 
+  const singleCustomer = useMemo(() => {
+    if (messages.length === 0) return null
+    const firstMessage = messages[0]
+    if (
+      firstMessage.sender.type !== 'FINANCE' &&
+      firstMessage.sender.type !== 'SERVICE_WORKER'
+    )
+      return null
+    if (
+      firstMessage.recipients.length !== 1 ||
+      firstMessage.recipients[0].personId === null
+    )
+      return null
+    return firstMessage.recipients[0]
+  }, [messages])
+
   return (
     <ThreadContainer>
       <ContentArea opaque paddingVertical={defaultMargins.xs}>
@@ -285,13 +295,25 @@ export function SingleThreadView({
       <Gap size="xs" />
       <ScrollContainer>
         <div>
-          <StickyTitleRow ref={stickyTitleRowRef}>
-            <H2 noMargin>
-              {title}
-              {sensitive && ` (${i18n.messages.sensitive})`}
-            </H2>
-            <MessageCharacteristics type={type} urgent={urgent} />
-          </StickyTitleRow>
+          <ThreadHeader ref={stickyTitleRowRef}>
+            <FixedSpaceColumn>
+              <FixedSpaceRow justifyContent="space-between">
+                <H2 noMargin>
+                  {title}
+                  {sensitive && ` (${i18n.messages.sensitive})`}
+                </H2>
+                <MessageCharacteristics type={type} urgent={urgent} />
+              </FixedSpaceRow>
+              {singleCustomer && singleCustomer.personId && (
+                <div>
+                  ${i18n.messages.customer}:{' '}
+                  <Link to={`/profile/${singleCustomer.personId}`}>
+                    {singleCustomer.name}
+                  </Link>
+                </div>
+              )}
+            </FixedSpaceColumn>
+          </ThreadHeader>
           {messages.map((message, idx) => (
             <React.Fragment key={`${message.id}-fragment`}>
               {!replyEditorVisible && idx === messages.length - 1 && (

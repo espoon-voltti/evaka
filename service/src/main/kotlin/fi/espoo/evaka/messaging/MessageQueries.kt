@@ -691,7 +691,8 @@ SELECT
                 WHEN mav.type = 'FINANCE' THEN ${bind(financeAccountName)}
                 ELSE mav.name 
             END,
-            'type', mav.type
+            'type', mav.type,
+            'personId', mav.person_id
         )
         FROM message_account_view mav
         WHERE mav.id = m.sender_id
@@ -706,7 +707,8 @@ SELECT
                     WHEN mav.type = 'FINANCE' THEN ${bind(financeAccountName)}
                     ELSE mav.name
                 END,
-                'type', mav.type
+                'type', mav.type,
+                'personId', mav.person_id
             )
         )
         FROM message_recipients mr
@@ -899,6 +901,7 @@ fun Database.Read.getCitizenRecipients(
         val id: MessageAccountId,
         val name: String,
         val type: AccountType,
+        val personId: PersonId?,
         val childId: ChildId,
         val replyOnly: Boolean,
         val oooPeriod: FiniteDateRange?,
@@ -986,7 +989,7 @@ group_accounts AS (
     JOIN message_account acc on g.id = acc.daycare_group_id
 ),
 citizen_accounts AS (
-    SELECT acc.id, acc_name.name, 'CITIZEN' AS type, c.child_id
+    SELECT acc.id, acc_name.name, 'CITIZEN' AS type, acc.person_id, c.child_id
     FROM children c
     JOIN guardian g ON c.child_id = g.child_id
     JOIN message_account acc ON g.guardian_id = acc.person_id
@@ -995,7 +998,7 @@ citizen_accounts AS (
 
     UNION ALL
 
-    SELECT acc.id, acc_name.name, 'CITIZEN' AS type, c.child_id
+    SELECT acc.id, acc_name.name, 'CITIZEN' AS type, acc.person_id, c.child_id
     FROM children c
     JOIN foster_parent fp ON c.child_id = fp.child_id AND valid_during @> ${bind(today)}
     JOIN message_account acc ON fp.parent_id = acc.person_id
@@ -1003,13 +1006,13 @@ citizen_accounts AS (
     WHERE acc.id != ${bind(accountId)} AND NOT c.guardian_relationship
 ),
 mixed_accounts AS (
-    SELECT id, name, type, child_id, reply_only, ooo_period FROM personal_accounts
+    SELECT id, name, type, null::uuid as person_id, child_id, reply_only, ooo_period FROM personal_accounts
     UNION ALL
-    SELECT id, name, type, child_id, reply_only, null as ooo_period FROM group_accounts
+    SELECT id, name, type, null::uuid as person_id, child_id, reply_only, null as ooo_period FROM group_accounts
     UNION ALL
-    SELECT id, name, type, child_id, FALSE AS reply_only, null as ooo_period FROM citizen_accounts
+    SELECT id, name, type, person_id, child_id, FALSE AS reply_only, null as ooo_period FROM citizen_accounts
 )
-SELECT id, name, type, child_id, reply_only, ooo_period FROM mixed_accounts
+SELECT id, name, type, person_id, child_id, reply_only, ooo_period FROM mixed_accounts
 ORDER BY type, name  -- groups first
 """
             )
@@ -1022,14 +1025,26 @@ ORDER BY type, name  -- groups first
                     .filter { !it.replyOnly }
                     .map {
                         MessageAccountWithPresence(
-                            account = MessageAccount(id = it.id, name = it.name, type = it.type),
+                            account =
+                                MessageAccount(
+                                    id = it.id,
+                                    name = it.name,
+                                    type = it.type,
+                                    personId = it.personId,
+                                ),
                             outOfOffice = it.oooPeriod,
                         )
                     }
             val reply =
                 accounts.map {
                     MessageAccountWithPresence(
-                        account = MessageAccount(id = it.id, name = it.name, type = it.type),
+                        account =
+                            MessageAccount(
+                                id = it.id,
+                                name = it.name,
+                                type = it.type,
+                                personId = it.personId,
+                            ),
                         outOfOffice = it.oooPeriod,
                     )
                 }
