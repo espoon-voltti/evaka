@@ -438,36 +438,6 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
     }
 
     @Test
-    fun `duplicate child is shown depending on query param`() {
-        db.transaction {
-            it.createUpdate {
-                    sql(
-                        """
-                        UPDATE person
-                        SET duplicate_of = ${bind(testChild_2.id)}
-                        WHERE id = ${bind(testChild_1.id)}
-                        """
-                    )
-                }
-                .execute()
-            it.insert(
-                DevPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
-                    startDate = startDate,
-                    endDate = startDate,
-                )
-            )
-        }
-
-        assertEquals(listOf(), getReport(startDate, startDate, showIntentionalDuplicates = false))
-        assertEquals(
-            listOf(toReportRow(testChild_1, listOf(FiniteDateRange(startDate, startDate)))),
-            getReport(startDate, startDate, showIntentionalDuplicates = true),
-        )
-    }
-
-    @Test
     fun `works with multiple children`() {
         db.transaction {
             it.insert(
@@ -501,7 +471,6 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
     private fun getReport(
         from: LocalDate,
         to: LocalDate? = null,
-        showIntentionalDuplicates: Boolean = false,
     ): List<MissingHeadOfFamilyReportRow> =
         missingHeadOfFamilyReportController.getMissingHeadOfFamilyReport(
             dbInstance(),
@@ -509,7 +478,6 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
             RealEvakaClock(),
             from,
             to,
-            showIntentionalDuplicates = showIntentionalDuplicates,
         )
 
     private fun toReportRow(child: DevPerson, rangesWithoutHead: List<FiniteDateRange>) =

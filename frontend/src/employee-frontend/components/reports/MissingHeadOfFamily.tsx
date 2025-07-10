@@ -5,7 +5,7 @@
 import React from 'react'
 import { Link } from 'wouter'
 
-import { boolean, openEndedLocalDateRange } from 'lib-common/form/fields'
+import { openEndedLocalDateRange } from 'lib-common/form/fields'
 import { object, required, transformed } from 'lib-common/form/form'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
 import { ValidationSuccess } from 'lib-common/form/types'
@@ -13,30 +13,26 @@ import LocalDate from 'lib-common/local-date'
 import { constantQuery, useQueryResult } from 'lib-common/query'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
-import { CheckboxF } from 'lib-components/atoms/form/Checkbox'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { PersonName } from 'lib-components/molecules/PersonNames'
 import { DateRangePickerF } from 'lib-components/molecules/date-picker/DateRangePicker'
-import { featureFlags } from 'lib-customizations/employee'
 
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 
 import ReportDownload from './ReportDownload'
-import { FilterLabel, FilterRow, RowCountInfo, TableScrollable } from './common'
+import { FilterRow, RowCountInfo, TableScrollable } from './common'
 import { missingHeadOfFamilyReportQuery } from './queries'
 
 const filterForm = transformed(
   object({
-    range: required(openEndedLocalDateRange()),
-    showIntentionalDuplicates: boolean()
+    range: required(openEndedLocalDateRange())
   }),
-  ({ range: { start, end }, showIntentionalDuplicates }) =>
+  ({ range: { start, end } }) =>
     ValidationSuccess.of({
       from: start,
-      to: end,
-      showIntentionalDuplicates
+      to: end
     })
 )
 
@@ -49,12 +45,11 @@ export default React.memo(function MissingHeadOfFamily() {
       range: openEndedLocalDateRange.fromDates(
         LocalDate.todayInSystemTz().subMonths(1).withDate(1),
         LocalDate.todayInSystemTz().addMonths(2).lastDayOfMonth()
-      ),
-      showIntentionalDuplicates: false
+      )
     }),
     i18n.validationErrors
   )
-  const { range, showIntentionalDuplicates } = useFormFields(filters)
+  const { range } = useFormFields(filters)
 
   const rows = useQueryResult(
     filters.isValid()
@@ -71,17 +66,6 @@ export default React.memo(function MissingHeadOfFamily() {
         <FilterRow>
           <DateRangePickerF bind={range} locale={lang} />
         </FilterRow>
-
-        {featureFlags.personDuplicate && (
-          <FilterRow>
-            <FilterLabel />
-            <CheckboxF
-              bind={showIntentionalDuplicates}
-              label={i18n.reports.common.filters.showIntentionalDuplicates}
-              data-qa="show-intentional-duplicates-checkbox"
-            />
-          </FilterRow>
-        )}
 
         {renderResult(rows, (rows) => (
           <>

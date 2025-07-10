@@ -774,14 +774,12 @@ export async function getMealReportByUnit(
 export async function getMissingHeadOfFamilyReport(
   request: {
     from: LocalDate,
-    to?: LocalDate | null,
-    showIntentionalDuplicates?: boolean | null
+    to?: LocalDate | null
   }
 ): Promise<MissingHeadOfFamilyReportRow[]> {
   const params = createUrlSearchParams(
     ['from', request.from.formatIso()],
-    ['to', request.to?.formatIso()],
-    ['showIntentionalDuplicates', request.showIntentionalDuplicates?.toString()]
+    ['to', request.to?.formatIso()]
   )
   const { data: json } = await client.request<JsonOf<MissingHeadOfFamilyReportRow[]>>({
     url: uri`/employee/reports/missing-head-of-family`.toString(),
