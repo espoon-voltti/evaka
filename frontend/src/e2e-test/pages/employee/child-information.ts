@@ -453,6 +453,46 @@ export class ChildDocumentsSection extends Section {
       answered: row.findByDataQa('document-answered-at')
     }
   }
+
+  readonly decisionChildDocumentsCount = () =>
+    this.page
+      .findByDataQa('table-of-decision-child-documents')
+      .findAllByDataQa('child-document-row')
+      .count()
+
+  decisionChildDocuments(nth: number) {
+    const row = this.page
+      .findByDataQa('table-of-decision-child-documents')
+      .findAllByDataQa('child-document-row')
+      .nth(nth)
+    return new DecisionChildDocumentRow(row)
+  }
+}
+
+class DecisionChildDocumentRow extends Element {
+  get openLink() {
+    return this.findByDataQa('open-document')
+  }
+  get status() {
+    return this.findByDataQa('document-status')
+  }
+  get published() {
+    return this.findByDataQa('document-published-at')
+  }
+  get validity() {
+    return this.findByDataQa('decision-validity')
+  }
+  get editDecisionValidityButton() {
+    return this.findByDataQa('edit-decision-validity')
+  }
+  async setDecisionValidity(start: LocalDate, end: LocalDate | null) {
+    // Assumes the modal is open
+    const picker = new DateRangePicker(
+      this.findByDataQa('decision-validity-picker')
+    )
+    await picker.fill(start, end ?? '')
+    await this.findByDataQa('modal-okBtn').click()
+  }
 }
 
 export class BackupCaresSection extends Section {
