@@ -3798,9 +3798,6 @@ export const fi = {
         PRIVATE_SERVICE_VOUCHER: 'Palveluseteli',
         EXTERNAL_PURCHASED: 'Ostopalvelu (muu)'
       },
-      filters: {
-        showIntentionalDuplicates: 'Näytä myös tarkoituksellisesti monistetut'
-      },
       period: 'Ajanjakso',
       date: 'Päivämäärä',
       clock: 'Klo',
