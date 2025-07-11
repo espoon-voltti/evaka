@@ -546,6 +546,13 @@ export interface StatusChangeRequest {
 }
 
 /**
+* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentController.UpdateChildDocumentDecisionValidityRequest
+*/
+export interface UpdateChildDocumentDecisionValidityRequest {
+  newValidity: DateRange
+}
+
+/**
 * Generated from fi.espoo.evaka.document.childdocument.ChildDocumentControllerCitizen.UpdateChildDocumentRequest
 */
 export interface UpdateChildDocumentRequest {
@@ -725,6 +732,14 @@ export function deserializeJsonExportedDocumentTemplate(json: JsonOf<ExportedDoc
   return {
     ...json,
     validity: DateRange.parseJson(json.validity)
+  }
+}
+
+
+export function deserializeJsonUpdateChildDocumentDecisionValidityRequest(json: JsonOf<UpdateChildDocumentDecisionValidityRequest>): UpdateChildDocumentDecisionValidityRequest {
+  return {
+    ...json,
+    newValidity: DateRange.parseJson(json.newValidity)
   }
 }
 

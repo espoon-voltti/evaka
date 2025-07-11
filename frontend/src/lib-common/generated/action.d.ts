@@ -269,6 +269,7 @@ export type ChildDocument =
   | 'READ_METADATA'
   | 'REJECT_DECISION'
   | 'UPDATE'
+  | 'UPDATE_DECISION_VALIDITY'
 
 export type DailyServiceTime =
   | 'DELETE'
