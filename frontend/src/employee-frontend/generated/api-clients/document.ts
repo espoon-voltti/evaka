@@ -27,6 +27,7 @@ import type { JsonOf } from 'lib-common/json'
 import type { PersonId } from 'lib-common/generated/api-types/shared'
 import type { ProposeChildDocumentDecisionRequest } from 'lib-common/generated/api-types/document'
 import type { StatusChangeRequest } from 'lib-common/generated/api-types/document'
+import type { UpdateChildDocumentDecisionValidityRequest } from 'lib-common/generated/api-types/document'
 import type { Uri } from 'lib-common/uri'
 import { client } from '../../api/client'
 import { createUrlSearchParams } from 'lib-common/api'
@@ -564,6 +565,24 @@ export async function takeDocumentWriteLock(
     method: 'PUT'
   })
   return deserializeJsonDocumentLockResponse(json)
+}
+
+
+/**
+* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentController.updateChildDocumentDecisionValidity
+*/
+export async function updateChildDocumentDecisionValidity(
+  request: {
+    documentId: ChildDocumentId,
+    body: UpdateChildDocumentDecisionValidityRequest
+  }
+): Promise<void> {
+  const { data: json } = await client.request<JsonOf<void>>({
+    url: uri`/employee/child-documents/${request.documentId}/validity`.toString(),
+    method: 'POST',
+    data: request.body satisfies JsonCompatible<UpdateChildDocumentDecisionValidityRequest>
+  })
+  return json
 }
 
 

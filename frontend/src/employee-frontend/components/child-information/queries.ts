@@ -93,7 +93,8 @@ import {
   acceptChildDocumentDecision,
   annulChildDocumentDecision,
   rejectChildDocumentDecision,
-  proposeChildDocumentDecision
+  proposeChildDocumentDecision,
+  updateChildDocumentDecisionValidity
 } from '../../generated/api-clients/document'
 import {
   createFeeAlteration,
@@ -278,6 +279,14 @@ export const annulChildDocumentDecisionMutation = q.parametricMutation<{
   ({ childId }) => childDocumentsQuery({ childId }),
   ({ documentId }) => childDocumentQuery({ documentId })
 ])
+
+export const updateChildDocumentDecisionValidityMutation =
+  q.parametricMutation<{
+    childId: ChildId
+  }>()(updateChildDocumentDecisionValidity, [
+    ({ childId }) => childDocumentsQuery({ childId }),
+    ({ documentId }) => childDocumentQuery({ documentId })
+  ])
 
 export const planArchiveChildDocumentMutation = q.mutation(
   planArchiveChildDocument

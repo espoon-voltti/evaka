@@ -907,7 +907,8 @@ export const fi = {
         rejectConfirmTitle: 'Haluatko varmasti tehdä kielteisen päätöksen?',
         annul: 'Mitätöi päätös',
         annulConfirmTitle: 'Haluatko varmasti mitätöidä päätöksen?',
-        decisionNumber: 'Päätösnumero'
+        decisionNumber: 'Päätösnumero',
+        updateValidity: 'Korjaa päätöksen voimassaoloaikaa'
       },
       editor: {
         lockedErrorTitle: 'Asiakirja on tilapäisesti lukittu',
