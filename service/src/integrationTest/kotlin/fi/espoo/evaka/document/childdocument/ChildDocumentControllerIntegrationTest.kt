@@ -284,6 +284,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                         Action.ChildDocument.ARCHIVE,
                         Action.ChildDocument.PROPOSE_DECISION,
                         Action.ChildDocument.ANNUL_DECISION,
+                        Action.ChildDocument.UPDATE_DECISION_VALIDITY,
                     ),
             ),
             document,

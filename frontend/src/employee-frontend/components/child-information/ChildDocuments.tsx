@@ -209,7 +209,9 @@ const DecisionValidityCell = React.memo(function DecisionValidityCell({
 
   return (
     <FixedSpaceRow justifyContent="space-between">
-      <div>{document.decision.validity.format()}</div>
+      <div data-qa="decision-validity">
+        {document.decision.validity.format()}
+      </div>
       {document.decision.status === 'ACCEPTED' &&
         permittedActions.includes('UPDATE_DECISION_VALIDITY') && (
           <IconOnlyButton

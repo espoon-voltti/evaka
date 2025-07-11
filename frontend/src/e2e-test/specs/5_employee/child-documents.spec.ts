@@ -822,6 +822,66 @@ describe('Employee - Child documents', () => {
       'vaihtoehto 1 : lisäinfoa\nvaihtoehto 2 :\nvaihtoehto 3'
     )
   })
+
+  test('Admin can edit decision validity date', async () => {
+    // Create a decision template
+    await Fixture.documentTemplate({
+      type: 'OTHER_DECISION',
+      endDecisionWhenUnitChanges: true,
+      published: true
+    }).save()
+
+    // Unit supervisor creates a decision document
+    page = await Page.open({ mockedTime: now })
+    await employeeLogin(page, unitSupervisor)
+    await page.goto(`${config.employeeUrl}/child-information/${testChild2.id}`)
+    let childInformationPage = new ChildInformationPage(page)
+    let childDocumentsSection =
+      await childInformationPage.openCollapsible('childDocuments')
+    await childDocumentsSection.createDecisionDocumentButton.click()
+    await childDocumentsSection.modalOk.click()
+
+    let childDocument = new ChildDocumentPage(page)
+    await childDocument.status.assertTextEquals('Luonnos')
+
+    // Propose decision to director
+    await childDocument.proposeDecision(director)
+    const documentUrl = page.url
+    await page.close()
+
+    // Director accepts the decision with initial validity
+    page = await Page.open({ mockedTime: now })
+    await employeeLogin(page, director)
+    await page.goto(documentUrl)
+    childDocument = new ChildDocumentPage(page)
+    const initialStart = now.toLocalDate().addDays(1)
+    const initialEnd = now.toLocalDate().addDays(5)
+    await childDocument.acceptDecision(new DateRange(initialStart, initialEnd))
+    await childDocument.status.assertTextEquals('Myönnetty')
+    await page.close()
+
+    // Admin edits the validity date range
+    const editTime = now.withDate(now.toLocalDate().addDays(1))
+    page = await Page.open({ mockedTime: editTime })
+    await employeeLogin(page, admin)
+    await page.goto(`${config.employeeUrl}/child-information/${testChild2.id}`)
+    childInformationPage = new ChildInformationPage(page)
+    childDocumentsSection =
+      await childInformationPage.openCollapsible('childDocuments')
+    await waitUntilEqual(childDocumentsSection.decisionChildDocumentsCount, 1)
+    const row = childDocumentsSection.decisionChildDocuments(0)
+    // Open the DecisionValidityModal
+    await row.editDecisionValidityButton.click()
+    // Set new validity range
+    const newStart = now.toLocalDate().addDays(2)
+    const newEnd = now.toLocalDate().addDays(7)
+    await row.setDecisionValidity(newStart, newEnd)
+    // Assert the new validity is shown
+    await row.validity.assertTextEquals(
+      new DateRange(newStart, newEnd).format()
+    )
+    await page.close()
+  })
 })
 
 describe('Employee - Child documents - unit groups page', () => {
