@@ -883,6 +883,27 @@ describe('Sending and receiving messages', () => {
         await header.assertUnreadMessagesCount(0)
       })
 
+      test('Mark unread button is hidden for citizen if there are no messages from staff in the thread', async () => {
+        const recipients = ['Kosmiset vakiot (Henkilökunta)']
+        await openCitizen(mockedDateAt10)
+        await citizenPage.goto(config.enduserMessagesUrl)
+        const citizenMessagesPage = new CitizenMessagesPage(
+          citizenPage,
+          'desktop'
+        )
+        await citizenMessagesPage.sendNewMessage(
+          defaultTitle,
+          defaultContent,
+          [],
+          recipients,
+          false
+        )
+        await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
+
+        await citizenMessagesPage.openFirstThread()
+        await citizenMessagesPage.assertHasNoMarkUnreadButton()
+      })
+
       test('Staff can mark message as unread, members in same group', async () => {
         const employee = await Fixture.employee()
           .staff(testDaycare.id)
