@@ -45,7 +45,6 @@ import {
   deleteParentship,
   deletePartnership,
   disableSsn,
-  duplicatePerson,
   getFamilyByPerson,
   getFosterChildren,
   getParentships,
@@ -89,8 +88,6 @@ export const disableSsnMutation = q.mutation(disableSsn, [
   ({ personId }) => personQuery({ personId }),
   ({ personId }) => childQuery({ childId: personId })
 ])
-
-export const duplicatePersonMutation = q.mutation(duplicatePerson)
 
 export const addSsnMutation = q.mutation(addSsn, [
   ({ personId }) => personQuery({ personId }),
