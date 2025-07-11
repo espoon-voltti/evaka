@@ -589,14 +589,16 @@ export const MessageContextProvider = React.memo(
                 sender: {
                   id: message.senderId,
                   name: message.senderName,
-                  type: message.senderAccountType
+                  type: message.senderAccountType,
+                  personId: null
                 },
                 sentAt: message.sentAt,
                 recipients: [
                   {
                     id: message.recipientId,
                     name: message.recipientName,
-                    type: message.recipientAccountType
+                    type: message.recipientAccountType,
+                    personId: null
                   }
                 ],
                 readAt: message.readAt,
