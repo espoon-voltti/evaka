@@ -9,7 +9,6 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.Predicate
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -30,7 +29,6 @@ class MissingHeadOfFamilyReportController(private val accessControl: AccessContr
         clock: EvakaClock,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate?,
-        @RequestParam showIntentionalDuplicates: Boolean = false,
     ): List<MissingHeadOfFamilyReportRow> {
         return db.connect { dbc ->
                 dbc.read {
@@ -41,11 +39,7 @@ class MissingHeadOfFamilyReportController(private val accessControl: AccessContr
                         Action.Global.READ_MISSING_HEAD_OF_FAMILY_REPORT,
                     )
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
-                    it.getMissingHeadOfFamilyRows(
-                        from = from,
-                        to = to,
-                        includeIntentionalDuplicates = showIntentionalDuplicates,
-                    )
+                    it.getMissingHeadOfFamilyRows(from = from, to = to)
                 }
             }
             .also {
@@ -59,13 +53,9 @@ class MissingHeadOfFamilyReportController(private val accessControl: AccessContr
 private fun Database.Read.getMissingHeadOfFamilyRows(
     from: LocalDate,
     to: LocalDate?,
-    includeIntentionalDuplicates: Boolean,
 ): List<MissingHeadOfFamilyReportRow> =
     createQuery {
             val dateRange = DateRange(from, to)
-            val duplicateFilter: Predicate =
-                if (includeIntentionalDuplicates) Predicate.alwaysTrue()
-                else Predicate { where("$it.duplicate_of IS NULL") }
             sql(
                 """
 SELECT child_id, first_name, last_name, without_head
@@ -106,7 +96,6 @@ FROM (
                 daterange(start_date, end_date, '[]') && ${bind(dateRange)} AND
                 type <> 'CLUB'
         ) AND
-        ${predicate(duplicateFilter.forTable("p"))} AND
         p.date_of_death IS NULL
 ) s
 WHERE NOT isempty(without_head)

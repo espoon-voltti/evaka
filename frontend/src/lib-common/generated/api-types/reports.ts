@@ -13,7 +13,6 @@ import type { AssistanceNeedDecisionStatus } from './assistanceneed'
 import type { ChildDocumentType } from './document'
 import type { DaycareAssistanceLevel } from './assistance'
 import type { DaycareId } from './shared'
-import type { DecisionType } from './decision'
 import type { DocumentContent } from './document'
 import type { DocumentStatus } from './document'
 import type { DocumentTemplateContent } from './document'
@@ -569,35 +568,6 @@ export interface InvoiceReportRow {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.ManualDuplicationReportController.ManualDuplicationReportRow
-*/
-export interface ManualDuplicationReportRow {
-  applicationId: ApplicationId
-  childFirstName: string
-  childId: PersonId
-  childLastName: string
-  connectedDaycareId: DaycareId
-  connectedDaycareName: string
-  connectedDecisionType: DecisionType
-  connectedEndDate: LocalDate
-  connectedSnoName: string | null
-  connectedStartDate: LocalDate
-  dateOfBirth: LocalDate
-  preschoolDaycareId: DaycareId
-  preschoolDaycareName: string
-  preschoolDecisionType: DecisionType
-  preschoolEndDate: LocalDate
-  preschoolStartDate: LocalDate
-}
-
-/**
-* Generated from fi.espoo.evaka.reports.ManualDuplicationReportViewMode
-*/
-export type ManualDuplicationReportViewMode =
-  | 'DUPLICATED'
-  | 'NONDUPLICATED'
-
-/**
 * Generated from fi.espoo.evaka.reports.MealReportData
 */
 export interface MealReportData {
@@ -975,7 +945,6 @@ export type Report =
   | 'HOLIDAY_QUESTIONNAIRE'
   | 'INVOICE'
   | 'INCOMPLETE_INCOMES'
-  | 'MANUAL_DUPLICATION'
   | 'MISSING_HEAD_OF_FAMILY'
   | 'MISSING_SERVICE_NEED'
   | 'NON_SSN_CHILDREN'
@@ -1385,18 +1354,6 @@ export function deserializeJsonIncompleteIncomeDbRow(json: JsonOf<IncompleteInco
   return {
     ...json,
     validFrom: LocalDate.parseIso(json.validFrom)
-  }
-}
-
-
-export function deserializeJsonManualDuplicationReportRow(json: JsonOf<ManualDuplicationReportRow>): ManualDuplicationReportRow {
-  return {
-    ...json,
-    connectedEndDate: LocalDate.parseIso(json.connectedEndDate),
-    connectedStartDate: LocalDate.parseIso(json.connectedStartDate),
-    dateOfBirth: LocalDate.parseIso(json.dateOfBirth),
-    preschoolEndDate: LocalDate.parseIso(json.preschoolEndDate),
-    preschoolStartDate: LocalDate.parseIso(json.preschoolStartDate)
   }
 }
 

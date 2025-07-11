@@ -48,8 +48,6 @@ import type { InvoiceReport } from 'lib-common/generated/api-types/reports'
 import type { JsonCompatible } from 'lib-common/json'
 import type { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
-import type { ManualDuplicationReportRow } from 'lib-common/generated/api-types/reports'
-import type { ManualDuplicationReportViewMode } from 'lib-common/generated/api-types/reports'
 import type { MealReportData } from 'lib-common/generated/api-types/reports'
 import type { MissingHeadOfFamilyReportRow } from 'lib-common/generated/api-types/reports'
 import type { MissingServiceNeedReportResultRow } from 'lib-common/generated/api-types/reports'
@@ -106,7 +104,6 @@ import { deserializeJsonEndedPlacementsReportRow } from 'lib-common/generated/ap
 import { deserializeJsonFuturePreschoolersReportRow } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonHolidayReportRow } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonIncompleteIncomeDbRow } from 'lib-common/generated/api-types/reports'
-import { deserializeJsonManualDuplicationReportRow } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonMealReportData } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonMissingHeadOfFamilyReportRow } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonNekkuOrderRow } from 'lib-common/generated/api-types/reports'
@@ -511,18 +508,10 @@ export async function getDecisionsReport(
 /**
 * Generated from fi.espoo.evaka.reports.DuplicatePeopleReportController.getDuplicatePeopleReport
 */
-export async function getDuplicatePeopleReport(
-  request: {
-    showIntentionalDuplicates?: boolean | null
-  }
-): Promise<DuplicatePeopleReportRow[]> {
-  const params = createUrlSearchParams(
-    ['showIntentionalDuplicates', request.showIntentionalDuplicates?.toString()]
-  )
+export async function getDuplicatePeopleReport(): Promise<DuplicatePeopleReportRow[]> {
   const { data: json } = await client.request<JsonOf<DuplicatePeopleReportRow[]>>({
     url: uri`/employee/reports/duplicate-people`.toString(),
-    method: 'GET',
-    params
+    method: 'GET'
   })
   return json.map(e => deserializeJsonDuplicatePeopleReportRow(e))
 }
@@ -759,26 +748,6 @@ export async function getInvoiceReport(
 
 
 /**
-* Generated from fi.espoo.evaka.reports.ManualDuplicationReportController.getManualDuplicationReport
-*/
-export async function getManualDuplicationReport(
-  request: {
-    viewMode?: ManualDuplicationReportViewMode | null
-  }
-): Promise<ManualDuplicationReportRow[]> {
-  const params = createUrlSearchParams(
-    ['viewMode', request.viewMode?.toString()]
-  )
-  const { data: json } = await client.request<JsonOf<ManualDuplicationReportRow[]>>({
-    url: uri`/employee/reports/manual-duplication`.toString(),
-    method: 'GET',
-    params
-  })
-  return json.map(e => deserializeJsonManualDuplicationReportRow(e))
-}
-
-
-/**
 * Generated from fi.espoo.evaka.reports.MealReportController.getMealReportByUnit
 */
 export async function getMealReportByUnit(
@@ -805,14 +774,12 @@ export async function getMealReportByUnit(
 export async function getMissingHeadOfFamilyReport(
   request: {
     from: LocalDate,
-    to?: LocalDate | null,
-    showIntentionalDuplicates?: boolean | null
+    to?: LocalDate | null
   }
 ): Promise<MissingHeadOfFamilyReportRow[]> {
   const params = createUrlSearchParams(
     ['from', request.from.formatIso()],
-    ['to', request.to?.formatIso()],
-    ['showIntentionalDuplicates', request.showIntentionalDuplicates?.toString()]
+    ['to', request.to?.formatIso()]
   )
   const { data: json } = await client.request<JsonOf<MissingHeadOfFamilyReportRow[]>>({
     url: uri`/employee/reports/missing-head-of-family`.toString(),

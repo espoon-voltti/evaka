@@ -509,20 +509,6 @@ export default React.memo(function Reports() {
                   )
                 }
               : null,
-            reports.has('MANUAL_DUPLICATION')
-              ? {
-                  name: i18n.reports.manualDuplication.title,
-                  item: (
-                    <Report
-                      path="/reports/manual-duplication"
-                      color={colors.status.warning}
-                      icon={faChild}
-                      i18n={i18n.reports.manualDuplication}
-                      data-qa="report-manual-duplication"
-                    />
-                  )
-                }
-              : null,
             reports.has('NON_SSN_CHILDREN')
               ? {
                   name: i18n.reports.nonSsnChildren.title,

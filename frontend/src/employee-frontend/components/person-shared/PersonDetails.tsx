@@ -11,7 +11,7 @@ import React, {
   useState
 } from 'react'
 import styled from 'styled-components'
-import { Link, useLocation } from 'wouter'
+import { Link } from 'wouter'
 
 import type { UpdateStateFn } from 'lib-common/form-state'
 import type { Action } from 'lib-common/generated/action'
@@ -35,8 +35,7 @@ import {
 } from 'lib-components/molecules/ExpandingInfo'
 import LabelValueList from 'lib-components/molecules/LabelValueList'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
-import { featureFlags } from 'lib-customizations/employee'
-import { faCalendar, faCopy, faFileAlt, faPen, faSync } from 'lib-icons'
+import { faCalendar, faFileAlt, faPen, faSync } from 'lib-icons'
 
 import { getAddressPagePdf } from '../../generated/api-clients/pis'
 import { useTranslation } from '../../state/i18n'
@@ -45,7 +44,6 @@ import { UIContext } from '../../state/ui'
 import { isEmailValid } from '../../utils/validation/validations'
 import {
   disableSsnMutation,
-  duplicatePersonMutation,
   updatePersonAndFamilyFromVtjMutation,
   updatePersonDetailsMutation
 } from '../person-profile/queries'
@@ -107,7 +105,6 @@ export default React.memo(function PersonDetails({
   permittedActions
 }: Props) {
   const { i18n } = useTranslation()
-  const [, navigate] = useLocation()
   const { uiMode, toggleUiMode, clearUiMode } = useContext<UiState>(UIContext)
   const editing = uiMode === 'person-details-editing'
   const [form, setForm] = useState<Form>({
@@ -194,24 +191,6 @@ export default React.memo(function PersonDetails({
     <>
       {uiMode === 'add-ssn-modal' && <AddSsnModal personId={person.id} />}
       <RightAlignedRow>
-        {featureFlags.personDuplicate &&
-        permittedActions.has('DUPLICATE') &&
-        person.duplicateOf === null &&
-        isChild &&
-        uiMode !== 'person-details-editing' ? (
-          <ButtonSpacer>
-            <MutateButton
-              appearance="inline"
-              icon={faCopy}
-              mutation={duplicatePersonMutation}
-              onClick={() => ({ personId: person.id })}
-              onSuccess={(personId) => {
-                navigate(`/child-information/${personId}`)
-              }}
-              text={i18n.personProfile.duplicate}
-            />
-          </ButtonSpacer>
-        ) : null}
         {isChild &&
         permittedActions.has('READ_ATTENDANCE_REPORT') &&
         uiMode !== 'person-details-editing' ? (

@@ -397,7 +397,6 @@ enum class Audit(
     InvoicesSend,
     InvoicesSendByDate,
     // InvoicesUpdate,
-    ManualDuplicationReportRead,
     MealReportRead,
     MessagingMyAccountsRead,
     MessagingUnreadMessagesRead,

@@ -82,10 +82,7 @@ describe('Preschool absence report', () => {
     const admin = await Fixture.employee().admin().save()
 
     const page = await Page.open({
-      mockedTime: mockedToday.toHelsinkiDateTime(LocalTime.of(8, 0)),
-      employeeCustomizations: {
-        featureFlags: { personDuplicate: true }
-      }
+      mockedTime: mockedToday.toHelsinkiDateTime(LocalTime.of(8, 0))
     })
 
     const report = await navigateToReport(page, admin)

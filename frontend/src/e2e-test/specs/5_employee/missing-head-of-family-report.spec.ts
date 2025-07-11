@@ -17,7 +17,7 @@ import { employeeLogin } from '../../utils/user'
 beforeEach(async (): Promise<void> => resetServiceState())
 
 describe('Missing head of family report', () => {
-  test('showIntentionalDuplicates filter works', async () => {
+  test('report works', async () => {
     const mockedToday = LocalDate.of(2023, 6, 12)
 
     const admin = await Fixture.employee().admin().save()
@@ -45,20 +45,9 @@ describe('Missing head of family report', () => {
     }).save()
 
     const page = await Page.open({
-      mockedTime: mockedToday.toHelsinkiDateTime(LocalTime.of(8, 0)),
-      employeeCustomizations: {
-        featureFlags: { personDuplicate: true }
-      }
+      mockedTime: mockedToday.toHelsinkiDateTime(LocalTime.of(8, 0))
     })
     const report = await navigateToReport(page, admin)
-    await report.assertRows([
-      {
-        childName: `${child.lastName} ${child.firstName}`,
-        rangesWithoutHead: '12.06.2023 - 16.06.2023'
-      }
-    ])
-
-    await report.toggleShowIntentionalDuplicates()
     await report.assertRows([
       {
         childName: `${child.lastName} ${child.firstName}`,
@@ -67,14 +56,6 @@ describe('Missing head of family report', () => {
       {
         childName: `${duplicate.lastName} ${duplicate.firstName}`,
         rangesWithoutHead: '12.06.2023 - 14.06.2023'
-      }
-    ])
-
-    await report.toggleShowIntentionalDuplicates()
-    await report.assertRows([
-      {
-        childName: `${child.lastName} ${child.firstName}`,
-        rangesWithoutHead: '12.06.2023 - 16.06.2023'
       }
     ])
   })
