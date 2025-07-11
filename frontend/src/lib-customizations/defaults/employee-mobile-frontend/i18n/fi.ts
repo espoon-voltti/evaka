@@ -371,7 +371,7 @@ export const fi = {
     dateOfBirth: 'Syntymäaika',
     address: 'Lapsen kotiosoite',
     type: 'Sijoitusmuoto',
-    allergiesHeader: 'Allergiat, ruokavalio, lääkitys',
+    otherInfoHeader: 'Muut tiedot',
     allergies: 'Allergiat',
     diet: 'Ruokavalio',
     medication: 'Lääkitys',

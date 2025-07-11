@@ -91,7 +91,7 @@ export default React.memo(function ChildSensitiveInfo({
       {renderPinRequiringResult(childSensitiveResult, unitId, (child) => (
         <>
           <ContentArea shadow opaque>
-            <CollapsibleSection fitted title={i18n.childInfo.allergiesHeader}>
+            <CollapsibleSection fitted title={i18n.childInfo.otherInfoHeader}>
               <Gap size="s" />
               <FixedSpaceColumn>
                 {renderKeyValue(
