@@ -875,6 +875,46 @@ class ChildDocumentController(
             }
             .also { Audit.ChildDocumentAnnulDecision.log(targetId = AuditId(documentId)) }
     }
+
+    data class UpdateChildDocumentDecisionValidityRequest(val newValidity: DateRange)
+
+    @PostMapping("/{documentId}/validity")
+    fun updateChildDocumentDecisionValidity(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable documentId: ChildDocumentId,
+        @RequestBody body: UpdateChildDocumentDecisionValidityRequest,
+    ) {
+        db.connect { dbc ->
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.ChildDocument.UPDATE_DECISION_VALIDITY,
+                        documentId,
+                    )
+
+                    val document =
+                        tx.getChildDocument(documentId)
+                            ?: throw NotFound("Document $documentId not found")
+                    if (!document.template.type.decision)
+                        throw BadRequest("Document is not a decision")
+                    if (
+                        document.status != DocumentStatus.COMPLETED ||
+                            document.decision?.status != ChildDocumentDecisionStatus.ACCEPTED
+                    )
+                        throw BadRequest("Only accepted decision can have validity updated")
+
+                    tx.setChildDocumentDecisionValidity(
+                        decisionId = document.decision.id,
+                        validity = body.newValidity,
+                    )
+                }
+            }
+            .also { Audit.ChildDocumentUpdateDecisionValidity.log(targetId = AuditId(documentId)) }
+    }
 }
 
 fun validateContentAgainstTemplate(

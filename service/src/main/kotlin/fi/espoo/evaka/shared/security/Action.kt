@@ -2454,6 +2454,7 @@ sealed interface Action {
             HasGlobalRole(ADMIN),
             IsEmployee.andIsDecisionMakerForChildDocumentDecision(),
         ),
+        UPDATE_DECISION_VALIDITY(HasGlobalRole(ADMIN)),
         ARCHIVE(HasGlobalRole(ADMIN));
 
         override fun toString(): String = "${javaClass.name}.$name"
