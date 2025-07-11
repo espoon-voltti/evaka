@@ -407,13 +407,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@datadog/native-appsec@npm:8.5.2":
-  version: 8.5.2
-  resolution: "@datadog/native-appsec@npm:8.5.2"
+"@datadog/native-appsec@npm:9.0.0":
+  version: 9.0.0
+  resolution: "@datadog/native-appsec@npm:9.0.0"
   dependencies:
     node-gyp: "npm:latest"
     node-gyp-build: "npm:^3.9.0"
-  checksum: 10/0b1fa3f5214c4eaa15cccf2268fcba243b20d7c467bc4406c06a0d2b6e3bb190f0794c62accb2da498eee69165499bcfc17827dff65fbeea04a330a1e152bef0
+  checksum: 10/5f69f4bbc2f10af2d7ea778d5c1eb30c6d3e0db63cf6b946addcd5544366ac93f967610a02a86325bd361c0555053b4007f38c46f7e4c1ed5452d7b1bbf37101
   languageName: node
   linkType: hard
 
@@ -996,6 +996,24 @@ __metadata:
     "@jridgewell/resolve-uri": "npm:^3.1.0"
     "@jridgewell/sourcemap-codec": "npm:^1.4.14"
   checksum: 10/5eb38fe4b395b695fdd9bb751915dd299fcd96740063362573cb0188e69c3de1ff38bb5b6629995c8d65acb9fd2b1bf2e47285a60aea8d6bc354aef5328d6550
+  languageName: node
+  linkType: hard
+
+"@jsep-plugin/assignment@npm:^1.3.0":
+  version: 1.3.0
+  resolution: "@jsep-plugin/assignment@npm:1.3.0"
+  peerDependencies:
+    jsep: ^0.4.0||^1.0.0
+  checksum: 10/0c93b703d84af95b4be9fb6c23fbdbe7c7b6985b41c98fd10386cd54686ed1eb751cb39f5d54abcb621e4da2a0900a3b2a852e5bf7f2d322b756db3b22e42a45
+  languageName: node
+  linkType: hard
+
+"@jsep-plugin/regex@npm:^1.0.4":
+  version: 1.0.4
+  resolution: "@jsep-plugin/regex@npm:1.0.4"
+  peerDependencies:
+    jsep: ^0.4.0||^1.0.0
+  checksum: 10/0ea6ba81f03955972b762fd9fbc8e3fd7e1c1c12e52ce3d4366e23c0a63c8bff8528687b8b3d8f641cf9f626f8bf5a7841efcd31a2489fe967e1900e5738ee3a
   languageName: node
   linkType: hard
 
@@ -2890,12 +2908,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dd-trace@npm:5.57.1":
-  version: 5.57.1
-  resolution: "dd-trace@npm:5.57.1"
+"dd-trace@npm:5.58.0":
+  version: 5.58.0
+  resolution: "dd-trace@npm:5.58.0"
   dependencies:
     "@datadog/libdatadog": "npm:0.7.0"
-    "@datadog/native-appsec": "npm:8.5.2"
+    "@datadog/native-appsec": "npm:9.0.0"
     "@datadog/native-iast-taint-tracking": "npm:4.0.0"
     "@datadog/native-metrics": "npm:3.1.1"
     "@datadog/pprof": "npm:5.9.0"
@@ -2910,6 +2928,7 @@ __metadata:
     import-in-the-middle: "npm:^1.14.2"
     istanbul-lib-coverage: "npm:^3.2.2"
     jest-docblock: "npm:^29.7.0"
+    jsonpath-plus: "npm:^10.3.0"
     koalas: "npm:^1.0.2"
     limiter: "npm:^1.1.5"
     lodash.sortby: "npm:^4.7.0"
@@ -2927,7 +2946,7 @@ __metadata:
     source-map: "npm:^0.7.4"
     tlhunter-sorted-set: "npm:^0.1.0"
     ttl-set: "npm:^1.0.0"
-  checksum: 10/5bf660ca335f75d0218065c717a4c46214029f20035cf134c2500c2df07690b3e12aabba07fba0498bf0fcabc0ec603ebb339c81f961128dd84b5cae72706660
+  checksum: 10/47cf35d8737319d9a6ee79f8a984adc980cfb69140d241e8c777d322d2ebaeb9509e3a17f0dace80753192abc03faeb9e18fa96929d5c43fb89a19e90aa1e0fa
   languageName: node
   linkType: hard
 
@@ -3588,7 +3607,7 @@ __metadata:
     connect-redis: "npm:9.0.0"
     cookie-parser: "npm:1.4.7"
     date-fns: "npm:4.1.0"
-    dd-trace: "npm:5.57.1"
+    dd-trace: "npm:5.58.0"
     eslint: "npm:9.30.1"
     eslint-config-prettier: "npm:10.1.5"
     eslint-plugin-import: "npm:2.32.0"
@@ -5380,6 +5399,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"jsep@npm:^1.4.0":
+  version: 1.4.0
+  resolution: "jsep@npm:1.4.0"
+  checksum: 10/935824fe6ac28fcff3cd13878f508f99f6c13e7f0f53ec9fca0d3db465e6dd15f8af030bcdc75a38b07c78359c656647435923a26aceb91607027021f00c17f2
+  languageName: node
+  linkType: hard
+
 "jsesc@npm:^3.0.2":
   version: 3.1.0
   resolution: "jsesc@npm:3.1.0"
@@ -5441,6 +5467,20 @@ __metadata:
   bin:
     json5: lib/cli.js
   checksum: 10/1db67b853ff0de3534085d630691d3247de53a2ed1390ba0ddff681ea43e9b3e30ecbdb65c5e9aab49435e44059c23dbd6fee8ee619419ba37465bb0dd7135da
+  languageName: node
+  linkType: hard
+
+"jsonpath-plus@npm:^10.3.0":
+  version: 10.3.0
+  resolution: "jsonpath-plus@npm:10.3.0"
+  dependencies:
+    "@jsep-plugin/assignment": "npm:^1.3.0"
+    "@jsep-plugin/regex": "npm:^1.0.4"
+    jsep: "npm:^1.4.0"
+  bin:
+    jsonpath: bin/jsonpath-cli.js
+    jsonpath-plus: bin/jsonpath-cli.js
+  checksum: 10/082302334414c7c5ab0cc8239563118f7f14bb2949d001b009f436491d00f94a7a293eed3eaf61ffdaf72f6fda9d25198a4280c4f68a4c403154ca7ed2bd0dc9
   languageName: node
   linkType: hard
 
