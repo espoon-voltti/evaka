@@ -319,6 +319,10 @@ export default React.memo(
       return recipients.every((r) => allowedReplyAccounts.has(r.id))
     }, [allowedAccounts, applicationStatus, children, recipients])
 
+    const hasReceivedMessages = useMemo(() => {
+      return messages.some((m) => m.sender.type !== 'CITIZEN')
+    }, [messages])
+
     return (
       <ThreadContainer data-qa="thread-reader">
         <ThreadTitleRow tabIndex={-1} ref={titleRowRef}>
@@ -416,15 +420,17 @@ export default React.memo(
                     onClick={closeThread}
                     text={i18n.messages.thread.close}
                   />
-                  <MutateButton
-                    appearance="inline"
-                    icon={faEnvelope}
-                    text={i18n.messages.markUnread}
-                    data-qa="mark-unread-btn"
-                    mutation={markLastReceivedMessageInThreadUnreadMutation}
-                    onClick={() => ({ threadId })}
-                    onSuccess={() => navigate('/messages')}
-                  />
+                  {hasReceivedMessages && (
+                    <MutateButton
+                      appearance="inline"
+                      icon={faEnvelope}
+                      text={i18n.messages.markUnread}
+                      data-qa="mark-unread-btn"
+                      mutation={markLastReceivedMessageInThreadUnreadMutation}
+                      onClick={() => ({ threadId })}
+                      onSuccess={() => navigate('/messages')}
+                    />
+                  )}
                   <Button
                     appearance="inline"
                     icon={faTrash}
@@ -457,15 +463,17 @@ export default React.memo(
                     text={i18n.messages.thread.close}
                   />
                   <FixedSpaceRow>
-                    <MutateButton
-                      appearance="inline"
-                      icon={faEnvelope}
-                      text={i18n.messages.markUnread}
-                      data-qa="mark-unread-btn"
-                      mutation={markLastReceivedMessageInThreadUnreadMutation}
-                      onClick={() => ({ threadId })}
-                      onSuccess={() => navigate('/messages')}
-                    />
+                    {hasReceivedMessages && (
+                      <MutateButton
+                        appearance="inline"
+                        icon={faEnvelope}
+                        text={i18n.messages.markUnread}
+                        data-qa="mark-unread-btn"
+                        mutation={markLastReceivedMessageInThreadUnreadMutation}
+                        onClick={() => ({ threadId })}
+                        onSuccess={() => navigate('/messages')}
+                      />
+                    )}
                     <Button
                       appearance="inline"
                       icon={faTrash}
