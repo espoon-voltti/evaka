@@ -272,6 +272,10 @@ export function SingleThreadView({
     }
   }, [accountId, markThreadRead, messages, refreshMessages, threadId])
 
+  const hasCitizenMessages = useMemo(() => {
+    return messages.some((message) => message.sender.type === 'CITIZEN')
+  }, [messages])
+
   return (
     <ThreadContainer>
       <ContentArea opaque paddingVertical={defaultMargins.xs}>
@@ -340,17 +344,19 @@ export function SingleThreadView({
                   data-qa="message-reply-editor-btn"
                   text={i18n.messages.replyToThread}
                 />
-                <MutateButton
-                  appearance="inline"
-                  icon={faEnvelope}
-                  text={i18n.messages.markUnread}
-                  data-qa="mark-unread-btn"
-                  mutation={markLastReceivedMessageInThreadUnreadMutation}
-                  onClick={() => ({ accountId, threadId })}
-                  onSuccess={() => {
-                    navigate('/messages')
-                  }}
-                />
+                {hasCitizenMessages && (
+                  <MutateButton
+                    appearance="inline"
+                    icon={faEnvelope}
+                    text={i18n.messages.markUnread}
+                    data-qa="mark-unread-btn"
+                    mutation={markLastReceivedMessageInThreadUnreadMutation}
+                    onClick={() => ({ accountId, threadId })}
+                    onSuccess={() => {
+                      navigate('/messages')
+                    }}
+                  />
+                )}
                 {onArchived && (
                   <AsyncButton
                     appearance="inline"
