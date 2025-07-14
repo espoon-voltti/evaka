@@ -322,7 +322,7 @@ class NekkuHttpClient(private val env: NekkuEnv, private val jsonMapper: JsonMap
             if (!response.isSuccessful) {
                 val errorMessage =
                     try {
-                        response.body?.string() ?: "No error body"
+                        response.body.string()
                     } catch (e: Exception) {
                         "Failed to read error body: ${e.message}"
                     }
@@ -333,10 +333,6 @@ class NekkuHttpClient(private val env: NekkuEnv, private val jsonMapper: JsonMap
             }
 
             val body = response.body
-            if (body == null) {
-                logger.error { "Nekku API returned null body with status code ${response.code}" }
-                throw IOException("Response body was null with status code ${response.code}")
-            }
 
             return try {
                 jsonMapper.readValue<T>(body.string())
