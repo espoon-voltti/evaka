@@ -9,8 +9,6 @@ import fi.espoo.evaka.daycare.controllers.ChildController
 import fi.espoo.evaka.identity.getDobFromSsn
 import fi.espoo.evaka.pis.controllers.PersonController
 import fi.espoo.evaka.pis.controllers.SearchPersonBody
-import fi.espoo.evaka.pis.getFosterChildren
-import fi.espoo.evaka.pis.getFosterParents
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.pis.service.PersonPatch
@@ -19,27 +17,18 @@ import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevEmployee
-import fi.espoo.evaka.shared.dev.DevFosterParent
-import fi.espoo.evaka.shared.dev.DevGuardian
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.BadRequest
-import fi.espoo.evaka.shared.domain.DateRange
-import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
-import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
 import fi.espoo.evaka.vtjclient.service.persondetails.legacyMockVtjDataset
-import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
 import kotlin.test.assertEquals
-import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.groups.Tuple
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -58,183 +47,6 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     @BeforeEach
     fun beforeEach() {
         MockPersonDetailsService.add(legacyMockVtjDataset())
-    }
-
-    @Test
-    fun `duplicate throws forbidden when user is staff`() {
-        val user = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.STAFF))
-
-        assertThrows<Forbidden> {
-            controller.duplicatePerson(dbInstance(), user, clock, PersonId(UUID.randomUUID()))
-        }
-    }
-
-    @Test
-    fun `duplicate throws not found when person doesn't exist`() {
-        val user = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
-
-        assertThrows<NotFound> {
-            controller.duplicatePerson(dbInstance(), user, clock, PersonId(UUID.randomUUID()))
-        }
-    }
-
-    @Test
-    fun `duplicate throws bad request when person is duplicate`() {
-        val user = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
-        val person = createPerson(testPerson.copy(id = PersonId(UUID.randomUUID())))
-        val duplicate =
-            createPerson(
-                testPerson.copy(
-                    id = PersonId(UUID.randomUUID()),
-                    ssn = null,
-                    duplicateOf = person.id,
-                )
-            )
-
-        assertThrows<BadRequest> {
-            controller.duplicatePerson(dbInstance(), user, clock, duplicate.id)
-        }
-    }
-
-    @Test
-    fun `duplicate person data`() {
-        val user = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
-        val person = createPerson()
-        assertThat(person).extracting { it.identity }.isNotNull
-
-        val duplicateId = controller.duplicatePerson(dbInstance(), user, clock, person.id)
-
-        val original = controller.getPerson(dbInstance(), user, clock, person.id)
-        val duplicate = controller.getPerson(dbInstance(), user, clock, duplicateId)
-        assertThat(duplicate)
-            .returns(null) { it.person.socialSecurityNumber }
-            .returns(null) { it.person.updatedFromVtj }
-            .returns(true) { it.person.ssnAddingDisabled }
-            .returns(person.id) { it.person.duplicateOf }
-            .usingRecursiveComparison()
-            .ignoringFields(
-                "person.id",
-                "person.duplicateOf",
-                "person.socialSecurityNumber",
-                "person.updatedFromVtj",
-                "person.ssnAddingDisabled",
-            )
-            .isEqualTo(original)
-        val duplicateOf =
-            db.transaction { tx ->
-                tx.createQuery {
-                        sql("SELECT duplicate_of FROM person WHERE id = ${bind(duplicateId)}")
-                    }
-                    .exactlyOne<PersonId>()
-            }
-        assertThat(duplicateOf).isEqualTo(person.id)
-    }
-
-    @Test
-    fun `duplicate child data`() {
-        val user = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
-        val person = createPerson()
-        db.transaction { tx ->
-            tx.insert(
-                DevChild(
-                    id = person.id,
-                    allergies = "Heinänuha",
-                    diet = "Gluteeniton",
-                    medication = "Astma",
-                    additionalInfo = "Lisätiedot",
-                )
-            )
-        }
-
-        val duplicateId = controller.duplicatePerson(dbInstance(), user, clock, person.id)
-
-        val original = childController.getAdditionalInfo(dbInstance(), user, clock, person.id)
-        val duplicate = childController.getAdditionalInfo(dbInstance(), user, clock, duplicateId)
-        assertThat(duplicate).isEqualTo(original)
-    }
-
-    @Test
-    fun `duplicate guardians as foster parents`() {
-        val person = createPerson()
-        db.transaction { tx ->
-            tx.insert(devEmployee)
-
-            val guardianId = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
-            tx.insert(DevGuardian(guardianId = guardianId, childId = person.id))
-        }
-
-        val duplicateId = controller.duplicatePerson(dbInstance(), admin, clock, person.id)
-
-        val fosterParents = db.transaction { tx -> tx.getFosterParents(duplicateId) }
-        assertThat(fosterParents)
-            .extracting({ it.child.id }, { it.parent.firstName }, { it.validDuring })
-            .containsExactly(Tuple(duplicateId, "Test", DateRange(clock.today(), null)))
-    }
-
-    @Test
-    fun `do not duplicate children as foster children`() {
-        val person = createPerson()
-        db.transaction { tx ->
-            val childId = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
-            tx.insert(DevGuardian(guardianId = person.id, childId = childId))
-        }
-
-        val duplicateId = controller.duplicatePerson(dbInstance(), admin, clock, person.id)
-
-        val fosterChildren = db.transaction { tx -> tx.getFosterChildren(duplicateId) }
-        assertThat(fosterChildren).isEmpty()
-    }
-
-    @Test
-    fun `duplicate foster parents as foster parents`() {
-        val person = createPerson()
-        val fosterValidDuring = DateRange(LocalDate.of(2023, 1, 27), LocalDate.of(2023, 12, 24))
-        db.transaction { tx ->
-            tx.insert(devEmployee)
-
-            val fosterParentId = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
-            tx.insert(
-                DevFosterParent(
-                    parentId = fosterParentId,
-                    childId = person.id,
-                    validDuring = fosterValidDuring,
-                    modifiedAt = clock.now(),
-                    modifiedBy = admin.evakaUserId,
-                )
-            )
-        }
-
-        val duplicateId = controller.duplicatePerson(dbInstance(), admin, clock, person.id)
-
-        val fosterParents = db.transaction { tx -> tx.getFosterParents(duplicateId) }
-        assertThat(fosterParents)
-            .extracting({ it.child.id }, { it.parent.firstName }, { it.validDuring })
-            .containsExactly(Tuple(duplicateId, "Test", fosterValidDuring))
-    }
-
-    @Test
-    fun `do not duplicate foster children as foster children`() {
-        val person = createPerson()
-        val fosterValidDuring = DateRange(LocalDate.of(2023, 1, 27), LocalDate.of(2023, 12, 24))
-        db.transaction { tx ->
-            tx.insert(devEmployee)
-
-            val childId = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
-            tx.insert(
-                DevFosterParent(
-                    parentId = person.id,
-                    childId = childId,
-                    validDuring = fosterValidDuring,
-                    modifiedAt = clock.now(),
-                    modifiedBy = admin.evakaUserId,
-                )
-            )
-        }
-
-        val duplicateId = controller.duplicatePerson(dbInstance(), admin, clock, person.id)
-
-        val fosterChildren = db.transaction { tx -> tx.getFosterChildren(duplicateId) }
-        assertThat(fosterChildren).isEmpty()
     }
 
     @Test

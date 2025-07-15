@@ -177,11 +177,6 @@ interface BaseFeatureFlags {
   placementGuarantee: boolean
 
   /**
-   * Enable support for duplicating a child as a new SSN-less person
-   */
-  personDuplicate: boolean
-
-  /**
    * Enable support for intermittent shift care
    */
   intermittentShiftCare: boolean

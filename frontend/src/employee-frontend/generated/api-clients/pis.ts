@@ -725,22 +725,6 @@ export async function disableSsn(
 
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.PersonController.duplicatePerson
-*/
-export async function duplicatePerson(
-  request: {
-    personId: PersonId
-  }
-): Promise<PersonId> {
-  const { data: json } = await client.request<JsonOf<PersonId>>({
-    url: uri`/employee/person/${request.personId}/duplicate`.toString(),
-    method: 'POST'
-  })
-  return json
-}
-
-
-/**
 * Generated from fi.espoo.evaka.pis.controllers.PersonController.getAddressPagePdf
 */
 export function getAddressPagePdf(

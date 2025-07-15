@@ -10,33 +10,27 @@ import type { DuplicatePeopleReportRow } from 'lib-common/generated/api-types/re
 import type { PersonId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
-import type { Arg0 } from 'lib-common/types'
 import Title from 'lib-components/atoms/Title'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
-import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Th, Tr, Td, Thead, Tbody } from 'lib-components/layout/Table'
 import { PersonName } from 'lib-components/molecules/PersonNames'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { colors } from 'lib-customizations/common'
-import { featureFlags } from 'lib-customizations/employee'
 import { faQuestion } from 'lib-icons'
 
 import { PROFILE_AGE_THRESHOLD_DEFAULT } from '../../constants'
-import type { getDuplicatePeopleReport } from '../../generated/api-clients/reports'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
 import { renderResult } from '../async-rendering'
 
-import { FilterRow, TableScrollable } from './common'
+import { TableScrollable } from './common'
 import {
   duplicatePeopleReportQuery,
   mergePeopleMutation,
   safeDeletePersonMutation
 } from './queries'
-
-type DuplicatePeopleFilters = Arg0<typeof getDuplicatePeopleReport>
 
 interface RowProps {
   odd: boolean
@@ -69,11 +63,7 @@ export default React.memo(function DuplicatePeople() {
   const [deleteId, setDeleteId] = useState<PersonId | null>(null)
   const { setErrorMessage } = useContext(UIContext)
 
-  const [filters, setFilters] = useState<DuplicatePeopleFilters>({
-    showIntentionalDuplicates: !featureFlags.personDuplicate
-  })
-
-  const rows = useQueryResult(duplicatePeopleReportQuery(filters))
+  const rows = useQueryResult(duplicatePeopleReportQuery())
   const { mutateAsync: safeDeletePerson } = useMutationResult(
     safeDeletePersonMutation
   )
@@ -84,20 +74,6 @@ export default React.memo(function DuplicatePeople() {
       <ReturnButton label={i18n.common.goBack} />
       <ContentArea opaque>
         <Title size={1}>{i18n.reports.duplicatePeople.title}</Title>
-        {featureFlags.personDuplicate && (
-          <FilterRow>
-            <Checkbox
-              onChange={(checkedValue) =>
-                setFilters({
-                  ...filters,
-                  showIntentionalDuplicates: checkedValue
-                })
-              }
-              label={i18n.reports.common.filters.showIntentionalDuplicates}
-              checked={filters.showIntentionalDuplicates ?? false}
-            />
-          </FilterRow>
-        )}
         {renderResult(rows, (rows) => (
           <>
             <TableScrollable>

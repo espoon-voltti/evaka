@@ -1799,7 +1799,6 @@ export const fi = {
       'Palveluohjauksen ja talouden käyttäjät eivät saa asetettua lapselle henkilötunnusta. Kun henkilötunnus puuttuu, lapsella ei ole huoltajasuhdetta. Jos henkilötunnus halutaan myöhemmin asettaa, lapsen aiemmat dokumentit on poistettava järjestelmästä.',
     ssnInvalid: 'Epäkelpo henkilötunnus',
     ssnConflict: 'Tämä käyttäjä löytyy jo järjestelmästä.',
-    duplicate: 'Monista hetuton',
     updateFromVtj: 'Päivitä VTJ:stä',
     partner: 'Puolisot',
     partnerInfo:
@@ -3799,9 +3798,6 @@ export const fi = {
         PRIVATE_SERVICE_VOUCHER: 'Palveluseteli',
         EXTERNAL_PURCHASED: 'Ostopalvelu (muu)'
       },
-      filters: {
-        showIntentionalDuplicates: 'Näytä myös tarkoituksellisesti monistetut'
-      },
       period: 'Ajanjakso',
       date: 'Päivämäärä',
       clock: 'Klo',
@@ -4395,27 +4391,6 @@ export const fi = {
         NEW: 'Uusi päätös',
         REFUND: 'Hyvitys',
         CORRECTION: 'Korjaus'
-      }
-    },
-    manualDuplication: {
-      title: 'Manuaalisen toisinnuksen raportti',
-      description:
-        'Raportti listaa esiopetusta täydentävän varhaiskasvatuksen tapaukset, jotka mahdollisesti vaativat lapsen manuaalista toisinnusta',
-      childName: 'Lapsen nimi',
-      dateOfBirth: 'Syntymäaika',
-      connectedDaycare: 'Täydentävän yksikkö',
-      connectedSno: 'Täydentävän palveluntarve',
-      connectedDuration: 'Täydentävän kesto',
-      preschoolDaycare: 'Esiopetuksen yksikkö',
-      preschooldDuration: 'Esiopetuksen kesto',
-      filters: {
-        viewOption: {
-          label: 'Valitse näkymä:',
-          items: {
-            DUPLICATED: 'Näytä vain jo monistetut tapaukset',
-            NONDUPLICATED: 'Näytä vain käsittelemättömät tapaukset'
-          }
-        }
       }
     },
     nonSsnChildren: {

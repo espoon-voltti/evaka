@@ -7,18 +7,12 @@ package fi.espoo.evaka.pis.controllers
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.EvakaEnv
-import fi.espoo.evaka.daycare.controllers.upsertAdditionalInformation
-import fi.espoo.evaka.daycare.getChild
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.identity.isValidSSN
 import fi.espoo.evaka.pdfgen.PdfGenerator
 import fi.espoo.evaka.pis.PersonSummary
-import fi.espoo.evaka.pis.createFosterParentRelationship
 import fi.espoo.evaka.pis.createPerson
-import fi.espoo.evaka.pis.duplicatePerson
-import fi.espoo.evaka.pis.getFosterParents
 import fi.espoo.evaka.pis.getPersonById
-import fi.espoo.evaka.pis.getPersonDuplicateOf
 import fi.espoo.evaka.pis.searchPeople
 import fi.espoo.evaka.pis.service.FridgeFamilyService
 import fi.espoo.evaka.pis.service.MergeService
@@ -29,7 +23,6 @@ import fi.espoo.evaka.pis.service.PersonWithChildrenDTO
 import fi.espoo.evaka.pis.service.blockGuardian
 import fi.espoo.evaka.pis.service.createAddressPagePdf
 import fi.espoo.evaka.pis.service.getBlockedGuardians
-import fi.espoo.evaka.pis.service.getChildGuardians
 import fi.espoo.evaka.pis.service.hideNonPermittedPersonData
 import fi.espoo.evaka.pis.service.unblockGuardian
 import fi.espoo.evaka.shared.ChildId
@@ -37,7 +30,6 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
-import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
@@ -94,61 +86,6 @@ class PersonController(
                 } ?: throw NotFound("Person $personId not found")
             }
             .also { Audit.PersonDetailsRead.log(targetId = AuditId(personId)) }
-    }
-
-    @PostMapping("/{personId}/duplicate")
-    fun duplicatePerson(
-        db: Database,
-        user: AuthenticatedUser.Employee,
-        clock: EvakaClock,
-        @PathVariable personId: PersonId,
-    ): PersonId {
-        return db.connect { dbc ->
-                dbc.transaction { tx ->
-                    accessControl.requirePermissionFor(
-                        tx,
-                        user,
-                        clock,
-                        Action.Person.DUPLICATE,
-                        personId,
-                    )
-
-                    if (tx.getPersonDuplicateOf(personId) != null) {
-                        throw BadRequest("Person $personId is duplicate")
-                    }
-
-                    val duplicateId =
-                        tx.duplicatePerson(personId) ?: throw NotFound("Person $personId not found")
-                    tx.getChild(personId)?.let { child ->
-                        tx.upsertAdditionalInformation(
-                            childId = duplicateId,
-                            data = child.additionalInformation,
-                        )
-                    }
-
-                    val parentRelationships =
-                        tx.getChildGuardians(personId).map { guardianId ->
-                            CreateFosterParentRelationshipBody(
-                                childId = duplicateId,
-                                parentId = guardianId,
-                                DateRange(clock.today(), null),
-                            )
-                        } +
-                            tx.getFosterParents(personId).map { relationship ->
-                                CreateFosterParentRelationshipBody(
-                                    childId = duplicateId,
-                                    parentId = relationship.parent.id,
-                                    validDuring = relationship.validDuring,
-                                )
-                            }
-                    parentRelationships.forEach { relationship ->
-                        tx.createFosterParentRelationship(relationship, user, clock.now())
-                    }
-
-                    duplicateId
-                }
-            }
-            .also { Audit.PersonDuplicate.log(targetId = AuditId(personId)) }
     }
 
     @GetMapping("/details/{personId}")
