@@ -4,20 +4,30 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import isEqual from 'lodash/isEqual'
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState, useCallback } from 'react'
 import { useSearchParams, useLocation } from 'wouter'
 
 import { combine } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
-import { openEndedLocalDateRange } from 'lib-common/form/fields'
-import { object, required } from 'lib-common/form/form'
-import { useForm, useFormFields } from 'lib-common/form/hooks'
+import {
+  openEndedLocalDateRange,
+  string,
+  boolean
+} from 'lib-common/form/fields'
+import { object, required, mapped, array, value } from 'lib-common/form/form'
+import type { BoundForm } from 'lib-common/form/hooks'
+import { useForm, useFormFields, useFormElems } from 'lib-common/form/hooks'
+import type { StateOf } from 'lib-common/form/types'
 import type {
+  AcceptedChildDecisions,
   ChildDocumentDetails,
   ChildDocumentWithPermittedActions
 } from 'lib-common/generated/api-types/document'
 import type { Employee } from 'lib-common/generated/api-types/pis'
-import type { ChildDocumentId } from 'lib-common/generated/api-types/shared'
+import type {
+  ChildDocumentDecisionId,
+  ChildDocumentId
+} from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { formatPersonName } from 'lib-common/names'
 import {
@@ -27,6 +37,7 @@ import {
 } from 'lib-common/query'
 import type { UUID } from 'lib-common/types'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
+import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import {
@@ -34,6 +45,7 @@ import {
   MutateButton
 } from 'lib-components/atoms/buttons/MutateButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
+import Radio from 'lib-components/atoms/form/Radio'
 import DocumentView from 'lib-components/document-templates/DocumentView'
 import {
   documentForm,
@@ -47,7 +59,7 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import { ConfirmedMutation } from 'lib-components/molecules/ConfirmedMutation'
 import { DateRangePickerF } from 'lib-components/molecules/date-picker/DateRangePicker'
-import { Label } from 'lib-components/typography'
+import { H1, Label, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { featureFlags } from 'lib-customizations/employee'
@@ -66,6 +78,7 @@ import MetadataSection from '../archive-metadata/MetadataSection'
 import { renderResult } from '../async-rendering'
 import {
   acceptChildDocumentDecisionMutation,
+  acceptedChildDocumentDecisionsQuery,
   annulChildDocumentDecisionMutation,
   childDocumentDecisionMakersQuery,
   childDocumentMetadataQuery,
@@ -115,15 +128,43 @@ const ChildDocumentMetadataSection = React.memo(
   }
 )
 
+const optionForm = object({
+  label: string(),
+  value: boolean()
+})
+
+type Answer = boolean | undefined
+
+const otherDecisionForm = object({
+  id: value<ChildDocumentDecisionId>(),
+  templateId: string(),
+  label: string(),
+  options: array(optionForm),
+  endDecision: required(value<Answer>()),
+  validity: openEndedLocalDateRange()
+})
+
+const endingDecisionIds = mapped(
+  object({
+    otherDecisions: array(otherDecisionForm)
+  }),
+  (output): ChildDocumentDecisionId[] =>
+    output.otherDecisions
+      .filter((decision) => decision.endDecision)
+      .map<ChildDocumentDecisionId>((decision) => decision.id)
+)
+
 const ChildDocumentReadViewInner = React.memo(
   function ChildDocumentReadViewInner({
     documentAndPermissions,
     childIdFromUrl,
-    decisionMakerOptions
+    decisionMakerOptions,
+    acceptedDecisions
   }: {
     documentAndPermissions: ChildDocumentWithPermittedActions
     childIdFromUrl: UUID | null
     decisionMakerOptions: Employee[]
+    acceptedDecisions: AcceptedChildDecisions[]
   }) {
     const { data: document, permittedActions } = documentAndPermissions
     const { i18n } = useTranslation()
@@ -192,6 +233,64 @@ const ChildDocumentReadViewInner = React.memo(
     )
 
     const [acceptingDecision, setAcceptingDecision] = useState(false)
+    const [confirmedValidity, setConfirmedValidity] = useState(false)
+    const [validity, setValidity] = useState<DateRange | undefined>(undefined)
+
+    const filteredDecisions = useMemo(() => {
+      if (!validity) return acceptedDecisions
+      return acceptedDecisions.filter((decision) =>
+        decision.validity.overlapsWith(validity)
+      )
+    }, [acceptedDecisions, validity])
+
+    const getOtherDecisions = useCallback(
+      (
+        filteredDecisions: AcceptedChildDecisions[]
+      ): StateOf<typeof endingDecisionIds> => ({
+        otherDecisions: filteredDecisions.map((decision) => ({
+          id: decision.id,
+          templateId: decision.templateId,
+          label: decision.templateName,
+          options: [
+            {
+              label:
+                i18n.childInformation.childDocuments.decisions
+                  .otherValidDecisions.options.end,
+              value: true
+            },
+            {
+              label:
+                i18n.childInformation.childDocuments.decisions
+                  .otherValidDecisions.options.keep,
+              value: false
+            }
+          ],
+          endDecision:
+            decision.templateId === document.template.id ? true : undefined,
+          validity: openEndedLocalDateRange.fromRange(decision.validity)
+        }))
+      }),
+      [i18n, document.template.id]
+    )
+
+    const endingDecisionsForm = useForm(
+      endingDecisionIds,
+      () => getOtherDecisions(filteredDecisions),
+      i18n.validationErrors
+    )
+    const updateForm = endingDecisionsForm.update
+    useEffect(() => {
+      updateForm(() => getOtherDecisions(filteredDecisions))
+    }, [
+      filteredDecisions,
+      document.template.id,
+      updateForm,
+      i18n.childInformation.childDocuments.decisions.otherValidDecisions.options
+        .end,
+      i18n.childInformation.childDocuments.decisions.otherValidDecisions.options
+        .keep,
+      getOtherDecisions
+    ])
 
     return (
       <div>
@@ -277,291 +376,342 @@ const ChildDocumentReadViewInner = React.memo(
 
         <ActionBar>
           <Container>
-            <FixedSpaceRow justifyContent="space-between" alignItems="flex-end">
-              {acceptingDecision ? (
-                <Button
-                  text={i18n.common.cancel}
-                  onClick={() => setAcceptingDecision(false)}
+            <ContentArea opaque>
+              {confirmedValidity && (
+                <OtherValidDecisionForm
+                  validity={validity}
+                  endingDecisionsForm={endingDecisionsForm}
+                  document={document}
                 />
-              ) : (
-                <FixedSpaceRow alignItems="flex-end">
+              )}
+              <Gap size="X3L" />
+              <FixedSpaceRow
+                justifyContent="space-between"
+                alignItems="flex-end"
+              >
+                {acceptingDecision && !confirmedValidity ? (
                   <Button
-                    text={i18n.common.leavePage}
-                    onClick={goToChildProfile}
-                    data-qa="return-button"
+                    text={i18n.common.cancel}
+                    onClick={() => setAcceptingDecision(false)}
                   />
-                  {permittedActions.includes('DELETE') &&
-                    document.status === 'DRAFT' && (
-                      <ConfirmedMutation
-                        buttonText={
-                          i18n.childInformation.childDocuments.editor
-                            .deleteDraft
-                        }
-                        mutation={deleteChildDocumentMutation}
-                        onClick={() => ({
-                          documentId: document.id,
-                          childId: document.child.id
-                        })}
-                        onSuccess={goToChildProfile}
-                        confirmationTitle={
-                          i18n.childInformation.childDocuments.editor
-                            .deleteDraftConfirmTitle
-                        }
-                      />
-                    )}
-                  {permittedActions.includes('PREV_STATUS') &&
-                    prevStatus != null && (
-                      <ConfirmedMutation
-                        buttonText={
-                          i18n.childInformation.childDocuments.editor
-                            .goToPrevStatus[prevStatus]
-                        }
-                        mutation={childDocumentPrevStatusMutation}
-                        onClick={() => ({
-                          documentId: document.id,
-                          childId: document.child.id,
-                          body: {
-                            newStatus: prevStatus
-                          }
-                        })}
-                        confirmationTitle={
-                          i18n.childInformation.childDocuments.editor
-                            .goToPrevStatusConfirmTitle[prevStatus]
-                        }
-                        confirmationText={
-                          prevStatus === 'DRAFT'
-                            ? i18n.childInformation.childDocuments.editor
-                                .goBackToDraftConfirmText
-                            : undefined
-                        }
-                        data-qa="prev-status-button"
-                      />
-                    )}
-                </FixedSpaceRow>
-              )}
-
-              {acceptingDecision ? (
-                <AcceptDecisionForm document={document} />
-              ) : (
-                <FixedSpaceRow alignItems="flex-end">
-                  {permittedActions.includes('UPDATE') && isEditable && (
-                    <Button
-                      text={i18n.common.edit}
-                      onClick={() =>
-                        navigate(
-                          `/child-documents/${document.id}/edit${childIdFromUrl ? `?childId=${childIdFromUrl}` : ''}`
-                        )
-                      }
-                      data-qa="edit-button"
-                    />
-                  )}
-
-                  {permittedActions.includes('PUBLISH') && isPublishable && (
-                    <ConfirmedMutation
-                      buttonText={
-                        i18n.childInformation.childDocuments.editor.publish
-                      }
-                      mutation={publishChildDocumentMutation}
-                      onClick={() => ({
-                        documentId: document.id,
-                        childId: document.child.id
-                      })}
-                      confirmationTitle={
-                        i18n.childInformation.childDocuments.editor
-                          .publishConfirmTitle
-                      }
-                      confirmationText={
-                        i18n.childInformation.childDocuments.editor
-                          .publishConfirmText
-                      }
-                      data-qa="publish-button"
-                    />
-                  )}
-
-                  {permittedActions.includes('NEXT_STATUS') &&
-                    nextStatus != null && (
-                      <ConfirmedMutation
-                        buttonText={
-                          i18n.childInformation.childDocuments.editor
-                            .goToNextStatus[nextStatus]
-                        }
-                        primary
-                        mutation={childDocumentNextStatusMutation}
-                        onClick={() => ({
-                          documentId: document.id,
-                          childId: document.child.id,
-                          body: {
-                            newStatus: nextStatus
-                          }
-                        })}
-                        disabled={isDecision && document.decisionMaker === null}
-                        confirmationTitle={
-                          i18n.childInformation.childDocuments.editor
-                            .goToNextStatusConfirmTitle[nextStatus]
-                        }
-                        confirmationText={
-                          isDecision
-                            ? undefined
-                            : nextStatus === 'COMPLETED'
-                              ? i18n.childInformation.childDocuments.editor
-                                  .goToCompletedConfirmText
-                              : i18n.childInformation.childDocuments.editor
-                                  .publishConfirmText
-                        }
-                        extraConfirmationCheckboxText={
-                          nextStatus === 'COMPLETED'
-                            ? i18n.childInformation.childDocuments.editor
-                                .extraConfirmCompletion
-                            : undefined
-                        }
-                        modalIcon={faExclamation}
-                        modalType="warning"
-                        data-qa="next-status-button"
-                      />
-                    )}
-
-                  {permittedActions.includes('REJECT_DECISION') &&
-                    isDecidable && (
-                      <ConfirmedMutation
-                        buttonText={
-                          i18n.childInformation.childDocuments.decisions.reject
-                        }
-                        mutation={rejectChildDocumentDecisionMutation}
-                        onClick={() => ({
-                          documentId: document.id,
-                          childId: document.child.id
-                        })}
-                        confirmationTitle={
-                          i18n.childInformation.childDocuments.decisions
-                            .rejectConfirmTitle
-                        }
-                        data-qa="reject-decision-button"
-                      />
-                    )}
-
-                  {permittedActions.includes('ACCEPT_DECISION') &&
-                    isDecidable && (
-                      <Button
-                        text={
-                          i18n.childInformation.childDocuments.decisions.accept
-                        }
-                        primary
-                        onClick={() => setAcceptingDecision(true)}
-                        data-qa="accept-decision-button"
-                      />
-                    )}
-
-                  {permittedActions.includes('ANNUL_DECISION') &&
-                    isAnnullable && (
-                      <ConfirmedMutation
-                        buttonText={
-                          i18n.childInformation.childDocuments.decisions.annul
-                        }
-                        mutation={annulChildDocumentDecisionMutation}
-                        onClick={() => ({
-                          documentId: document.id,
-                          childId: document.child.id
-                        })}
-                        confirmationTitle={
-                          i18n.childInformation.childDocuments.decisions
-                            .annulConfirmTitle
-                        }
-                        data-qa="annul-decision-button"
-                      />
-                    )}
-                </FixedSpaceRow>
-              )}
-
-              {isDecision &&
-                document.status === 'DRAFT' &&
-                permittedActions.includes('PROPOSE_DECISION') && (
+                ) : confirmedValidity ? (
+                  <Button
+                    text={i18n.common.cancel}
+                    onClick={() => {
+                      setConfirmedValidity(false)
+                      setValidity(undefined)
+                    }}
+                    data-qa="cancel-accept-decision-button"
+                  />
+                ) : (
                   <FixedSpaceRow alignItems="flex-end">
-                    <FixedSpaceColumn spacing="xxs">
-                      <Label>
-                        {
-                          i18n.childInformation.childDocuments.editor
-                            .decisionMaker
-                        }{' '}
-                        *
-                      </Label>
-                      <Combobox
-                        items={decisionMakerOptions}
-                        selectedItem={decisionMaker}
-                        onChange={setDecisionMaker}
-                        getItemLabel={formatEmployeeName}
-                        filterItems={filterEmployees}
-                        getItemDataQa={(e) => e.id}
-                        placeholder={i18n.common.select}
-                        openAbove
-                        data-qa="decision-maker-combobox"
-                      />
-                    </FixedSpaceColumn>
-                    <ConfirmedMutation
-                      buttonText={
-                        i18n.childInformation.childDocuments.editor
-                          .goToNextStatus.DECISION_PROPOSAL
-                      }
-                      primary
-                      mutation={proposeChildDocumentDecisionMutation}
-                      onClick={() =>
-                        decisionMaker
-                          ? {
-                              documentId: document.id,
-                              childId: document.child.id,
-                              body: {
-                                decisionMaker: decisionMaker.id
-                              }
-                            }
-                          : cancelMutation
-                      }
-                      disabled={!decisionMaker}
-                      confirmationTitle={
-                        i18n.childInformation.childDocuments.editor
-                          .goToNextStatusConfirmTitle.DECISION_PROPOSAL
-                      }
-                      data-qa="propose-decision-button"
+                    <Button
+                      text={i18n.common.leavePage}
+                      onClick={goToChildProfile}
+                      data-qa="return-button"
                     />
+                    {permittedActions.includes('DELETE') &&
+                      document.status === 'DRAFT' && (
+                        <ConfirmedMutation
+                          buttonText={
+                            i18n.childInformation.childDocuments.editor
+                              .deleteDraft
+                          }
+                          mutation={deleteChildDocumentMutation}
+                          onClick={() => ({
+                            documentId: document.id,
+                            childId: document.child.id
+                          })}
+                          onSuccess={goToChildProfile}
+                          confirmationTitle={
+                            i18n.childInformation.childDocuments.editor
+                              .deleteDraftConfirmTitle
+                          }
+                        />
+                      )}
+                    {permittedActions.includes('PREV_STATUS') &&
+                      prevStatus != null && (
+                        <ConfirmedMutation
+                          buttonText={
+                            i18n.childInformation.childDocuments.editor
+                              .goToPrevStatus[prevStatus]
+                          }
+                          mutation={childDocumentPrevStatusMutation}
+                          onClick={() => ({
+                            documentId: document.id,
+                            childId: document.child.id,
+                            body: {
+                              newStatus: prevStatus
+                            }
+                          })}
+                          confirmationTitle={
+                            i18n.childInformation.childDocuments.editor
+                              .goToPrevStatusConfirmTitle[prevStatus]
+                          }
+                          confirmationText={
+                            prevStatus === 'DRAFT'
+                              ? i18n.childInformation.childDocuments.editor
+                                  .goBackToDraftConfirmText
+                              : undefined
+                          }
+                          data-qa="prev-status-button"
+                        />
+                      )}
                   </FixedSpaceRow>
                 )}
-            </FixedSpaceRow>
 
-            {isPublishable && (
-              <>
-                <Gap size="s" />
-                <FixedSpaceRow alignItems="center" justifyContent="flex-end">
-                  <FixedSpaceRow alignItems="center" spacing="xs">
-                    {publishedUpToDate ? (
-                      <>
-                        <FontAwesomeIcon
-                          icon={fasCheckCircle}
-                          color={colors.status.success}
-                          size="lg"
+                {acceptingDecision && !confirmedValidity ? (
+                  <AcceptDecisionForm
+                    document={document}
+                    setConfirmedValidity={setConfirmedValidity}
+                    setValidity={setValidity}
+                    acceptedDecisions={acceptedDecisions}
+                  />
+                ) : confirmedValidity ? (
+                  <ConfirmedMutation
+                    primary
+                    buttonText={i18n.common.confirm}
+                    confirmationTitle={
+                      i18n.childInformation.childDocuments.decisions
+                        .acceptConfirmTitle
+                    }
+                    mutation={acceptChildDocumentDecisionMutation}
+                    disabled={!endingDecisionsForm.isValid()}
+                    onClick={() => ({
+                      documentId: document.id,
+                      childId: document.child.id,
+                      body: {
+                        validity: validity!,
+                        endingDecisionIds: endingDecisionsForm.value()
+                      }
+                    })}
+                    data-qa="confirm-other-decisions-button"
+                  />
+                ) : (
+                  <FixedSpaceRow alignItems="flex-end">
+                    {permittedActions.includes('UPDATE') && isEditable && (
+                      <Button
+                        text={i18n.common.edit}
+                        onClick={() =>
+                          navigate(
+                            `/child-documents/${document.id}/edit${childIdFromUrl ? `?childId=${childIdFromUrl}` : ''}`
+                          )
+                        }
+                        data-qa="edit-button"
+                      />
+                    )}
+
+                    {permittedActions.includes('PUBLISH') && isPublishable && (
+                      <ConfirmedMutation
+                        buttonText={
+                          i18n.childInformation.childDocuments.editor.publish
+                        }
+                        mutation={publishChildDocumentMutation}
+                        onClick={() => ({
+                          documentId: document.id,
+                          childId: document.child.id
+                        })}
+                        confirmationTitle={
+                          i18n.childInformation.childDocuments.editor
+                            .publishConfirmTitle
+                        }
+                        confirmationText={
+                          i18n.childInformation.childDocuments.editor
+                            .publishConfirmText
+                        }
+                        data-qa="publish-button"
+                      />
+                    )}
+
+                    {permittedActions.includes('NEXT_STATUS') &&
+                      nextStatus != null && (
+                        <ConfirmedMutation
+                          buttonText={
+                            i18n.childInformation.childDocuments.editor
+                              .goToNextStatus[nextStatus]
+                          }
+                          primary
+                          mutation={childDocumentNextStatusMutation}
+                          onClick={() => ({
+                            documentId: document.id,
+                            childId: document.child.id,
+                            body: {
+                              newStatus: nextStatus
+                            }
+                          })}
+                          disabled={
+                            isDecision && document.decisionMaker === null
+                          }
+                          confirmationTitle={
+                            i18n.childInformation.childDocuments.editor
+                              .goToNextStatusConfirmTitle[nextStatus]
+                          }
+                          confirmationText={
+                            isDecision
+                              ? undefined
+                              : nextStatus === 'COMPLETED'
+                                ? i18n.childInformation.childDocuments.editor
+                                    .goToCompletedConfirmText
+                                : i18n.childInformation.childDocuments.editor
+                                    .publishConfirmText
+                          }
+                          extraConfirmationCheckboxText={
+                            nextStatus === 'COMPLETED'
+                              ? i18n.childInformation.childDocuments.editor
+                                  .extraConfirmCompletion
+                              : undefined
+                          }
+                          modalIcon={faExclamation}
+                          modalType="warning"
+                          data-qa="next-status-button"
                         />
-                        <span>
+                      )}
+
+                    {permittedActions.includes('REJECT_DECISION') &&
+                      isDecidable && (
+                        <ConfirmedMutation
+                          buttonText={
+                            i18n.childInformation.childDocuments.decisions
+                              .reject
+                          }
+                          mutation={rejectChildDocumentDecisionMutation}
+                          onClick={() => ({
+                            documentId: document.id,
+                            childId: document.child.id
+                          })}
+                          confirmationTitle={
+                            i18n.childInformation.childDocuments.decisions
+                              .rejectConfirmTitle
+                          }
+                          data-qa="reject-decision-button"
+                        />
+                      )}
+
+                    {permittedActions.includes('ACCEPT_DECISION') &&
+                      isDecidable && (
+                        <Button
+                          text={
+                            i18n.childInformation.childDocuments.decisions
+                              .accept
+                          }
+                          primary
+                          onClick={() => setAcceptingDecision(true)}
+                          data-qa="accept-decision-button"
+                        />
+                      )}
+
+                    {permittedActions.includes('ANNUL_DECISION') &&
+                      isAnnullable && (
+                        <ConfirmedMutation
+                          buttonText={
+                            i18n.childInformation.childDocuments.decisions.annul
+                          }
+                          mutation={annulChildDocumentDecisionMutation}
+                          onClick={() => ({
+                            documentId: document.id,
+                            childId: document.child.id
+                          })}
+                          confirmationTitle={
+                            i18n.childInformation.childDocuments.decisions
+                              .annulConfirmTitle
+                          }
+                          data-qa="annul-decision-button"
+                        />
+                      )}
+                  </FixedSpaceRow>
+                )}
+
+                {isDecision &&
+                  document.status === 'DRAFT' &&
+                  permittedActions.includes('PROPOSE_DECISION') && (
+                    <FixedSpaceRow alignItems="flex-end">
+                      <FixedSpaceColumn spacing="xxs">
+                        <Label>
                           {
                             i18n.childInformation.childDocuments.editor
-                              .fullyPublished
-                          }
-                        </span>
-                      </>
-                    ) : (
-                      <>
-                        <FontAwesomeIcon
-                          icon={fasExclamationTriangle}
-                          color={colors.status.warning}
-                          size="lg"
+                              .decisionMaker
+                          }{' '}
+                          *
+                        </Label>
+                        <Combobox
+                          items={decisionMakerOptions}
+                          selectedItem={decisionMaker}
+                          onChange={setDecisionMaker}
+                          getItemLabel={formatEmployeeName}
+                          filterItems={filterEmployees}
+                          getItemDataQa={(e) => e.id}
+                          placeholder={i18n.common.select}
+                          openAbove
+                          data-qa="decision-maker-combobox"
                         />
-                        <span>
-                          {i18n.childInformation.childDocuments.editor.notFullyPublished(
-                            document.publishedAt
-                          )}
-                        </span>
-                      </>
-                    )}
+                      </FixedSpaceColumn>
+                      <ConfirmedMutation
+                        buttonText={
+                          i18n.childInformation.childDocuments.editor
+                            .goToNextStatus.DECISION_PROPOSAL
+                        }
+                        primary
+                        mutation={proposeChildDocumentDecisionMutation}
+                        onClick={() =>
+                          decisionMaker
+                            ? {
+                                documentId: document.id,
+                                childId: document.child.id,
+                                body: {
+                                  decisionMaker: decisionMaker.id
+                                }
+                              }
+                            : cancelMutation
+                        }
+                        disabled={!decisionMaker}
+                        confirmationTitle={
+                          i18n.childInformation.childDocuments.editor
+                            .goToNextStatusConfirmTitle.DECISION_PROPOSAL
+                        }
+                        data-qa="propose-decision-button"
+                      />
+                    </FixedSpaceRow>
+                  )}
+              </FixedSpaceRow>
+
+              {isPublishable && (
+                <>
+                  <Gap size="s" />
+                  <FixedSpaceRow alignItems="center" justifyContent="flex-end">
+                    <FixedSpaceRow alignItems="center" spacing="xs">
+                      {publishedUpToDate ? (
+                        <>
+                          <FontAwesomeIcon
+                            icon={fasCheckCircle}
+                            color={colors.status.success}
+                            size="lg"
+                          />
+                          <span>
+                            {
+                              i18n.childInformation.childDocuments.editor
+                                .fullyPublished
+                            }
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          <FontAwesomeIcon
+                            icon={fasExclamationTriangle}
+                            color={colors.status.warning}
+                            size="lg"
+                          />
+                          <span>
+                            {i18n.childInformation.childDocuments.editor.notFullyPublished(
+                              document.publishedAt
+                            )}
+                          </span>
+                        </>
+                      )}
+                    </FixedSpaceRow>
                   </FixedSpaceRow>
-                </FixedSpaceRow>
-              </>
-            )}
+                </>
+              )}
+            </ContentArea>
           </Container>
         </ActionBar>
       </div>
@@ -574,9 +724,15 @@ const acceptForm = object({
 })
 
 const AcceptDecisionForm = React.memo(function AcceptDecisionForm({
-  document
+  document,
+  setConfirmedValidity,
+  setValidity,
+  acceptedDecisions
 }: {
   document: ChildDocumentDetails
+  setConfirmedValidity: (validity: boolean) => void
+  setValidity: (validity: DateRange | undefined) => void
+  acceptedDecisions: AcceptedChildDecisions[]
 }) {
   const { i18n, lang } = useTranslation()
 
@@ -612,18 +768,121 @@ const AcceptDecisionForm = React.memo(function AcceptDecisionForm({
         }
         mutation={acceptChildDocumentDecisionMutation}
         disabled={!form.isValid()}
-        onClick={() => ({
-          documentId: document.id,
-          childId: document.child.id,
-          body: {
-            validity: validity.value()
+        onClick={() => {
+          if (
+            acceptedDecisions.some((decision) =>
+              decision.validity.overlapsWith(validity.value())
+            )
+          ) {
+            setConfirmedValidity(true)
+            setValidity(validity.value())
+            return cancelMutation
           }
-        })}
+          return {
+            documentId: document.id,
+            childId: document.child.id,
+            body: {
+              validity: validity.value(),
+              endingDecisionIds: null
+            }
+          }
+        }}
         data-qa="accept-decision-confirm-button"
       />
     </FixedSpaceRow>
   )
 })
+
+const OtherValidDecisionForm = React.memo(function OtherValidDecisionForm({
+  validity,
+  endingDecisionsForm,
+  document
+}: {
+  validity: DateRange | undefined
+  endingDecisionsForm: BoundForm<typeof endingDecisionIds>
+  document: ChildDocumentDetails
+}) {
+  const { i18n } = useTranslation()
+  const { otherDecisions } = useFormFields(endingDecisionsForm)
+  const otherDecisionElems = useFormElems(otherDecisions)
+
+  return (
+    <>
+      <H1>
+        {
+          i18n.childInformation.childDocuments.decisions.otherValidDecisions
+            .title
+        }
+      </H1>
+      {i18n.childInformation.childDocuments.decisions.otherValidDecisions.description(
+        validity
+      )}
+      <Label>
+        {
+          i18n.childInformation.childDocuments.decisions.otherValidDecisions
+            .label
+        }
+      </Label>
+      {otherDecisionElems.map((otherDecision, index) => (
+        <div key={index} data-qa="other-decision">
+          {index ? <HorizontalLine /> : ''}
+          <FixedSpaceRow
+            alignItems="flex-end"
+            justifyContent="space-between"
+            key={0}
+          >
+            <P>
+              {index + 1 + '. '}
+              {otherDecision.state.label + ' ('}
+              {otherDecision.state.validity.start + ' - '}
+              {otherDecision.state.validity.end ?? ''})
+            </P>
+            <FixedSpaceColumn spacing="xs">
+              <OtherValidDecisionRadioButtons
+                otherValidDecisionForm={otherDecision}
+                document={document}
+              />
+            </FixedSpaceColumn>
+          </FixedSpaceRow>
+        </div>
+      ))}
+    </>
+  )
+})
+
+const OtherValidDecisionRadioButtons = React.memo(
+  function OtherValidDecisionRadioButtons({
+    otherValidDecisionForm,
+    document
+  }: {
+    otherValidDecisionForm: BoundForm<typeof otherDecisionForm>
+    document: ChildDocumentDetails
+  }) {
+    const { i18n } = useTranslation()
+
+    const { options, endDecision, templateId } = useFormFields(
+      otherValidDecisionForm
+    )
+    const optionElems = useFormElems(options)
+
+    return optionElems.map((optionElem, index) => (
+      <Radio
+        key={index}
+        label={optionElem.state.label}
+        checked={
+          (optionElem.state.label ===
+            i18n.childInformation.childDocuments.decisions.otherValidDecisions
+              .options.end &&
+            templateId.value() === document.template.id) ||
+          endDecision.state === optionElem.state.value
+        }
+        disabled={templateId.value() === document.template.id}
+        onChange={() => endDecision.set(optionElem.state.value)}
+        data-qa={`other-decision-option-${index}`}
+      />
+    ))
+  }
+)
 
 export default React.memo(function ChildDocumentReadView() {
   const documentId = useIdRouteParam<ChildDocumentId>('documentId')
@@ -640,9 +899,21 @@ export default React.memo(function ChildDocumentReadView() {
     )
   )
 
+  const acceptedDecisionsResult = useChainedQuery(
+    documentResult.map((document) => {
+      return getDocumentCategory(document.data.template.type) === 'decision' &&
+        document.permittedActions.includes('READ_ACCEPTED_DECISIONS')
+        ? acceptedChildDocumentDecisionsQuery({ documentId })
+        : constantQuery([])
+    })
+  )
+
   return renderResult(
-    combine(documentResult, decisionMakersResult),
-    ([documentAndPermissions, decisionMakers], isReloading) => {
+    combine(documentResult, decisionMakersResult, acceptedDecisionsResult),
+    (
+      [documentAndPermissions, decisionMakers, acceptedDecisions],
+      isReloading
+    ) => {
       // do not initialize form with possibly stale data
       if (isReloading) return null
 
@@ -651,6 +922,7 @@ export default React.memo(function ChildDocumentReadView() {
           documentAndPermissions={documentAndPermissions}
           childIdFromUrl={childIdFromUrl}
           decisionMakerOptions={decisionMakers}
+          acceptedDecisions={acceptedDecisions}
         />
       )
     }
