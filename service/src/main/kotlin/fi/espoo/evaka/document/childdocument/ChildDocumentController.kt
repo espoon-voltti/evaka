@@ -19,6 +19,7 @@ import fi.espoo.evaka.document.getTemplate
 import fi.espoo.evaka.pis.Employee
 import fi.espoo.evaka.pis.listPersonByDuplicateOf
 import fi.espoo.evaka.placement.getPlacementsForChildDuring
+import fi.espoo.evaka.shared.ChildDocumentDecisionId
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DocumentTemplateId
@@ -731,7 +732,10 @@ class ChildDocumentController(
             .also { Audit.ChildDocumentProposeDecision.log(targetId = AuditId(documentId)) }
     }
 
-    data class AcceptChildDocumentDecisionRequest(val validity: DateRange)
+    data class AcceptChildDocumentDecisionRequest(
+        val validity: DateRange,
+        val endingDecisionIds: List<ChildDocumentDecisionId>? = emptyList(),
+    )
 
     @PostMapping("/{documentId}/accept")
     fun acceptChildDocumentDecision(
@@ -781,6 +785,15 @@ class ChildDocumentController(
                                 clock.now(),
                             )
                         }
+
+                    body.endingDecisionIds?.isEmpty()?.let {
+                        if (!it) {
+                            tx.endChildDocumentDecisionsWithSubstitutiveDecision(
+                                endingDecisionIds = body.endingDecisionIds,
+                                endDate = body.validity.start.minusDays(1),
+                            )
+                        }
+                    }
 
                     childDocumentService.schedulePdfGeneration(tx, listOf(documentId), clock.now())
                     childDocumentService.scheduleEmailNotification(
