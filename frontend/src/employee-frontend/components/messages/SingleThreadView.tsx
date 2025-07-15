@@ -306,7 +306,7 @@ export function SingleThreadView({
               </FixedSpaceRow>
               {singleCustomer && singleCustomer.personId && (
                 <div>
-                  ${i18n.messages.customer}:{' '}
+                  {i18n.messages.customer}:{' '}
                   <Link to={`/profile/${singleCustomer.personId}`}>
                     {singleCustomer.name}
                   </Link>
