@@ -610,6 +610,33 @@ fun Database.Transaction.endExpiredChildDocumentDecisions(
         .toList<ChildDocumentDecisionId>()
 }
 
+fun Database.Read.getAcceptedChildDocumentDecisions(
+    documentId: ChildDocumentId
+): List<AcceptedChildDecisions> {
+    return createQuery {
+            sql(
+                """
+WITH child AS (
+SELECT child_id 
+FROM child_document
+WHERE id = ${bind(documentId)}
+)
+SELECT
+    cd.decision_id AS id,
+    cd.template_id,
+    daterange(cdd.valid_from, cdd.valid_to, '[]') AS validity,
+    dt.name AS template_name
+FROM child
+JOIN child_document cd ON cd.child_id = child.child_id
+JOIN child_document_decision cdd ON cd.decision_id = cdd.id
+JOIN document_template dt ON cd.template_id = dt.id
+WHERE cd.child_id = child.child_id AND cdd.status = 'ACCEPTED'
+"""
+            )
+        }
+        .toList<AcceptedChildDecisions>()
+}
+
 fun Database.Transaction.setChildDocumentDecisionValidity(
     decisionId: ChildDocumentDecisionId,
     validity: DateRange,
