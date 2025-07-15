@@ -632,6 +632,28 @@ class ChildDocumentController(
         }
     }
 
+    @GetMapping("/accepted-decisions")
+    fun getAcceptedChildDocumentDecisions(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @RequestParam documentId: ChildDocumentId,
+    ): List<AcceptedChildDecisions> {
+        return db.connect { dbc ->
+                dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.ChildDocument.READ_ACCEPTED_DECISIONS,
+                        documentId,
+                    )
+                    tx.getAcceptedChildDocumentDecisions(documentId)
+                }
+            }
+            .also { Audit.ChildDocumentReadAcceptedDecisions.log(targetId = AuditId(documentId)) }
+    }
+
     @GetMapping("/{documentId}/pdf")
     fun downloadChildDocument(
         db: Database,
