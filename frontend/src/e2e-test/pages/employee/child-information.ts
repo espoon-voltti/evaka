@@ -465,24 +465,20 @@ export class ChildDocumentsSection extends Section {
       .findByDataQa('table-of-decision-child-documents')
       .findAllByDataQa('child-document-row')
       .nth(nth)
-    return new DecisionChildDocumentRow(row)
-  }
-}
 
-class DecisionChildDocumentRow extends Element {
-  get validity() {
-    return this.findByDataQa('decision-validity')
-  }
-  get editDecisionValidityButton() {
-    return this.findByDataQa('edit-decision-validity')
-  }
-  async setDecisionValidity(start: LocalDate, end: LocalDate | null) {
-    // Assumes the modal is open
-    const picker = new DateRangePicker(
-      this.findByDataQa('decision-validity-picker')
-    )
-    await picker.fill(start, end ?? '')
-    await this.findByDataQa('modal-okBtn').click()
+    return {
+      openLink: row.findByDataQa('open-document'),
+      status: row.findByDataQa('document-status'),
+      validity: row.findByDataQa('decision-validity'),
+      setDecisionValidity: async (start: LocalDate, end: LocalDate | null) => {
+        await row.findByDataQa('edit-decision-validity').click()
+        const picker = new DateRangePicker(
+          this.findByDataQa('decision-validity-picker')
+        )
+        await picker.fill(start, end ?? '')
+        await this.findByDataQa('modal-okBtn').click()
+      }
+    }
   }
 }
 
