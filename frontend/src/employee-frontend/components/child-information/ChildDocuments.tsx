@@ -163,7 +163,7 @@ const DecisionChildDocuments = React.memo(function DecisionChildDocuments({
               </WiderTd>
               <Td>{document.modifiedAt.format()}</Td>
               <Td>{document.decision?.daycareName ?? ''}</Td>
-              <Td>
+              <Td data-qa="document-validity">
                 {document.decision?.validity
                   ? document.decision.validity.format()
                   : ''}

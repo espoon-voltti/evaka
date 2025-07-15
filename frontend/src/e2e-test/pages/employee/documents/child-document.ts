@@ -26,6 +26,8 @@ export class ChildDocumentPage {
   archiveTooltip: Element
   acceptDecisionButton: Element
   sendingConfirmationModal: Modal
+  confirmOtherDecisionsButton: Element
+  documentSection: Element
 
   constructor(private readonly page: Page) {
     this.status = page.findByDataQa('document-state-chip')
@@ -38,6 +40,10 @@ export class ChildDocumentPage {
     this.archiveTooltip = page.findByDataQa('archive-tooltip')
     this.acceptDecisionButton = page.findByDataQa('accept-decision-button')
     this.sendingConfirmationModal = new Modal(page.findByDataQa('modal'))
+    this.confirmOtherDecisionsButton = page.findByDataQa(
+      'confirm-other-decisions-button'
+    )
+    this.documentSection = page.findByDataQa('document-section')
   }
 
   getTextQuestion(sectionName: string, questionName: string) {
@@ -140,5 +146,41 @@ export class ChildDocumentPage {
       .findByDataQa('concurrent-edit-error-modal')
       .findByDataQa('modal-okBtn')
       .click()
+  }
+
+  async selectOneOptionForAllOtherDecisions(option: boolean) {
+    const otherDecisions = this.page.findAllByDataQa('other-decision')
+    const otherDecisionsCount = await otherDecisions.count()
+
+    if (otherDecisionsCount > 0) {
+      for (let i = 0; i < otherDecisionsCount; i++) {
+        const decision = otherDecisions.nth(i)
+        if (option) {
+          await decision.findByDataQa('other-decision-option-0').click()
+        } else {
+          await decision.findByDataQa('other-decision-option-1').click()
+        }
+      }
+    }
+  }
+
+  async selectDifferentOptionsForOtherDecisions() {
+    const otherDecisions = this.page.findAllByDataQa('other-decision')
+    const otherDecisionsCount = await otherDecisions.count()
+
+    if (otherDecisionsCount > 0) {
+      for (let i = 0; i < otherDecisionsCount; i++) {
+        const decision = otherDecisions.nth(i)
+        if (i % 2 === 0) {
+          await decision.findByDataQa('other-decision-option-0').click()
+        } else {
+          await decision.findByDataQa('other-decision-option-1').click()
+        }
+      }
+    }
+  }
+
+  async clickModalOkButton() {
+    await this.page.findByDataQa('modal-okBtn').click()
   }
 }

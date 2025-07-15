@@ -820,6 +820,230 @@ describe('Employee - Child documents', () => {
       'vaihtoehto 1 : lisäinfoa\nvaihtoehto 2 :\nvaihtoehto 3'
     )
   })
+
+  test('Employee needs to decide if other decisions are ended when accepting a new decision', async () => {
+    const template1 = await Fixture.documentTemplate({
+      type: 'OTHER_DECISION',
+      name: 'Päätösasiakirja 1',
+      published: true
+    }).save()
+
+    const template2 = await Fixture.documentTemplate({
+      type: 'OTHER_DECISION',
+      name: 'Päätösasiakirja 2',
+      published: true
+    }).save()
+
+    await Fixture.documentTemplate({
+      type: 'OTHER_DECISION',
+      name: 'Päätösasiakirja 3',
+      published: true
+    }).save()
+
+    await Fixture.childDocument({
+      templateId: template1.id,
+      childId: testChild2.id,
+      status: 'COMPLETED',
+      content: {
+        answers: []
+      },
+      publishedAt: now,
+      publishedContent: {
+        answers: []
+      },
+      decisionMaker: director.id
+    })
+      .withDecision({
+        status: 'ACCEPTED',
+        validity: new DateRange(
+          now.toLocalDate(),
+          now.toLocalDate().addDays(7)
+        ),
+        createdBy: director.id,
+        modifiedBy: director.id
+      })
+      .save()
+
+    await Fixture.childDocument({
+      templateId: template2.id,
+      childId: testChild2.id,
+      status: 'COMPLETED',
+      content: {
+        answers: []
+      },
+      publishedAt: now,
+      publishedContent: {
+        answers: []
+      },
+      decisionMaker: director.id
+    })
+      .withDecision({
+        status: 'ACCEPTED',
+        validity: new DateRange(
+          now.toLocalDate(),
+          now.toLocalDate().addDays(7)
+        ),
+        createdBy: director.id,
+        modifiedBy: director.id
+      })
+      .save()
+
+    let page = await Page.open({ mockedTime: now })
+    await employeeLogin(page, unitSupervisor)
+    let childInformationPage = new ChildInformationPage(page)
+    await childInformationPage.navigateToChild(testChild2.id)
+    let childDocumentsSection =
+      await childInformationPage.openCollapsible('childDocuments')
+    await childDocumentsSection.createDecisionDocumentButton.click()
+    await childDocumentsSection.createModalTemplateSelect.selectOption(
+      'Päätösasiakirja 3'
+    )
+    await childDocumentsSection.modalOk.click()
+
+    const childDocumentPage = new ChildDocumentPage(page)
+    await childDocumentPage.documentSection.waitUntilVisible()
+    await childDocumentPage.status.assertTextEquals('Luonnos')
+    await childDocumentPage.proposeDecision(director)
+    await childDocumentPage.status.assertTextEquals('Päätösesitys')
+    await childDocumentPage.acceptDecisionButton.waitUntilHidden()
+    const documentUrl = page.url
+    await page.close()
+
+    page = await Page.open({ mockedTime: now })
+    await employeeLogin(page, director)
+    await page.goto(config.employeeUrl)
+    const nav = new EmployeeNav(page)
+    await nav.assertTabNotificationsCount('reports', 1)
+    await nav.openTab('reports')
+    const reportsPage = new ReportsPage(page)
+    const reportPage = await reportsPage.openChildDocumentDecisionsReport()
+    await reportPage.rows.assertCount(1)
+    await reportPage.rows.nth(0).click()
+    await waitUntilEqual(() => Promise.resolve(page.url), documentUrl)
+
+    const childDocument = new ChildDocumentPage(page)
+    const validity = new DateRange(
+      now.toLocalDate().addDays(1),
+      now.toLocalDate().addDays(7)
+    )
+    await childDocument.acceptDecision(validity)
+    await childDocument.confirmOtherDecisionsButton.assertDisabled(true)
+    await childDocument.selectDifferentOptionsForOtherDecisions()
+    await childDocument.confirmOtherDecisionsButton.assertDisabled(false)
+    await childDocument.confirmOtherDecisionsButton.click()
+    await childDocument.clickModalOkButton()
+    await childDocument.status.assertTextEquals('Hyväksytty')
+    await page.close()
+
+    page = await Page.open({ mockedTime: now })
+    await employeeLogin(page, unitSupervisor)
+    childInformationPage = new ChildInformationPage(page)
+    await childInformationPage.navigateToChild(testChild2.id)
+    childDocumentsSection =
+      await childInformationPage.openCollapsible('childDocuments')
+    await waitUntilEqual(childDocumentsSection.decisionChildDocumentsCount, 3)
+    // First decision is moved to the second row when it's end date was updated
+    await childDocumentsSection
+      .decisionChildDocuments(0)
+      .validity.assertTextEquals('01.02.2023 - 08.02.2023')
+    await childDocumentsSection
+      .decisionChildDocuments(1)
+      .validity.assertTextEquals('01.02.2023 - 01.02.2023')
+    await childDocumentsSection
+      .decisionChildDocuments(2)
+      .validity.assertTextEquals('02.02.2023 - 08.02.2023')
+  })
+
+  test('Other decisions made with the same template are ended automatically when accepting a new decision', async () => {
+    const template = await Fixture.documentTemplate({
+      type: 'OTHER_DECISION',
+      name: 'Päätösasiakirja',
+      published: true
+    }).save()
+
+    await Fixture.childDocument({
+      templateId: template.id,
+      childId: testChild2.id,
+      status: 'COMPLETED',
+      content: {
+        answers: []
+      },
+      publishedAt: now,
+      publishedContent: {
+        answers: []
+      },
+      decisionMaker: director.id
+    })
+      .withDecision({
+        status: 'ACCEPTED',
+        validity: new DateRange(
+          now.toLocalDate(),
+          now.toLocalDate().addDays(7)
+        ),
+        createdBy: director.id,
+        modifiedBy: director.id
+      })
+      .save()
+
+    let page = await Page.open({ mockedTime: now })
+    await employeeLogin(page, unitSupervisor)
+    let childInformationPage = new ChildInformationPage(page)
+    await childInformationPage.navigateToChild(testChild2.id)
+    let childDocumentsSection =
+      await childInformationPage.openCollapsible('childDocuments')
+    await childDocumentsSection.createDecisionDocumentButton.click()
+    await childDocumentsSection.createModalTemplateSelect.selectOption(
+      'Päätösasiakirja'
+    )
+    await childDocumentsSection.modalOk.click()
+
+    const childDocumentPage = new ChildDocumentPage(page)
+    await childDocumentPage.documentSection.waitUntilVisible()
+    await childDocumentPage.status.assertTextEquals('Luonnos')
+    await childDocumentPage.proposeDecision(director)
+    await childDocumentPage.status.assertTextEquals('Päätösesitys')
+    await childDocumentPage.acceptDecisionButton.waitUntilHidden()
+    const documentUrl = page.url
+    await page.close()
+
+    page = await Page.open({ mockedTime: now })
+    await employeeLogin(page, director)
+    await page.goto(config.employeeUrl)
+    const nav = new EmployeeNav(page)
+    await nav.assertTabNotificationsCount('reports', 1)
+    await nav.openTab('reports')
+    const reportsPage = new ReportsPage(page)
+    const reportPage = await reportsPage.openChildDocumentDecisionsReport()
+    await reportPage.rows.assertCount(1)
+    await reportPage.rows.nth(0).click()
+    await waitUntilEqual(() => Promise.resolve(page.url), documentUrl)
+
+    const childDocument = new ChildDocumentPage(page)
+    const validity = new DateRange(
+      now.toLocalDate().addDays(1),
+      now.toLocalDate().addDays(7)
+    )
+    await childDocument.acceptDecision(validity)
+    await childDocument.confirmOtherDecisionsButton.assertDisabled(false)
+    await childDocument.confirmOtherDecisionsButton.click()
+    await childDocument.clickModalOkButton()
+    await childDocument.status.assertTextEquals('Hyväksytty')
+    await page.close()
+
+    page = await Page.open({ mockedTime: now })
+    await employeeLogin(page, unitSupervisor)
+    childInformationPage = new ChildInformationPage(page)
+    await childInformationPage.navigateToChild(testChild2.id)
+    childDocumentsSection =
+      await childInformationPage.openCollapsible('childDocuments')
+    await waitUntilEqual(childDocumentsSection.decisionChildDocumentsCount, 2)
+    await childDocumentsSection
+      .decisionChildDocuments(0)
+      .validity.assertTextEquals('01.02.2023 - 01.02.2023')
+    await childDocumentsSection
+      .decisionChildDocuments(1)
+      .validity.assertTextEquals('02.02.2023 - 08.02.2023')
+  })
 })
 
 describe('Employee - Child documents - unit groups page', () => {
