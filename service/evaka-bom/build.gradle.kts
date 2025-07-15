@@ -49,6 +49,9 @@ dependencies {
         api(libs.ktlint.cli.ruleset.core)
         api(libs.ktlint.rule.engine.core)
         api(libs.ktlint.test)
+
+        // Override for CVE vulnerability
+        api("org.apache.commons:commons-lang3:3.18.0")
     }
 
     api(platform("com.fasterxml.jackson:jackson-bom:2.19.1"))
