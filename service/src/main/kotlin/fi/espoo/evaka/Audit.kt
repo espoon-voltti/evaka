@@ -202,6 +202,7 @@ enum class Audit(
     ChildDocumentCreate,
     ChildDocumentDelete,
     ChildDocumentArchive,
+    ChildDocumentReadAcceptedDecisions,
     ChildDocumentDownload,
     ChildDocumentMarkRead,
     ChildDocumentNextStatus,

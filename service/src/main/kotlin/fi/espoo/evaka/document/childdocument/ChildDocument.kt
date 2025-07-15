@@ -228,3 +228,10 @@ data class ChildDocumentsCreateRequest(
     val childIds: Set<ChildId>,
     val templateId: DocumentTemplateId,
 )
+
+data class AcceptedChildDecisions(
+    val id: ChildDocumentDecisionId,
+    val templateId: DocumentTemplateId,
+    val templateName: String,
+    val validity: DateRange,
+)

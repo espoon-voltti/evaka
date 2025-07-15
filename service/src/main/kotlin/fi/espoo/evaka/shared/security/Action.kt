@@ -2384,6 +2384,7 @@ sealed interface Action {
             IsEmployee.andIsDecisionMakerForChildDocumentDecision(),
         ),
         READ_METADATA(HasGlobalRole(ADMIN)),
+        READ_ACCEPTED_DECISIONS(IsEmployee.andIsDecisionMakerForChildDocumentDecision()),
         DOWNLOAD(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
