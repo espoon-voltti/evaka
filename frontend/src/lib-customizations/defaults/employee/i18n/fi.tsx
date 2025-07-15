@@ -5,6 +5,7 @@
 import type { ReactNode } from 'react'
 import React from 'react'
 
+import type DateRange from 'lib-common/date-range'
 import type FiniteDateRange from 'lib-common/finite-date-range'
 import type { InvoiceStatus } from 'lib-common/generated/api-types/invoicing'
 import type HelsinkiDateTime from 'lib-common/helsinki-date-time'
@@ -907,7 +908,23 @@ export const fi = {
         rejectConfirmTitle: 'Haluatko varmasti tehdä kielteisen päätöksen?',
         annul: 'Mitätöi päätös',
         annulConfirmTitle: 'Haluatko varmasti mitätöidä päätöksen?',
-        decisionNumber: 'Päätösnumero'
+        decisionNumber: 'Päätösnumero',
+        otherValidDecisions: {
+          title: 'Muut voimassaolevat päätökset',
+          description: (validity: DateRange | undefined) => (
+            <P>
+              Olet tekemässä myönteisen päätöksen.
+              <br />
+              Lapsella on muita päätöksiä, jotka ovat voimassa nyt tehtävän
+              päätöksen astuessa voimaan {validity!.start.format().toString()}
+            </P>
+          ),
+          label: 'Valitse sopiva toimenpide seuraaville päätöksille*',
+          options: {
+            end: 'Katkaistaan',
+            keep: 'Ei katkaista'
+          }
+        }
       },
       editor: {
         lockedErrorTitle: 'Asiakirja on tilapäisesti lukittu',
