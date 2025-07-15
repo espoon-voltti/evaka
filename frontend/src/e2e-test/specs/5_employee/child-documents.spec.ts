@@ -213,7 +213,7 @@ describe('Employee - Child documents', () => {
     await childDocument.status.assertTextEquals('Valmis')
   })
 
-  test('Accepting and annulling decision', async () => {
+  test('Accepting, editing validity, and annulling decision', async () => {
     await Fixture.documentTemplate({
       type: 'OTHER_DECISION',
       endDecisionWhenUnitChanges: true,
@@ -224,8 +224,8 @@ describe('Employee - Child documents', () => {
     page = await Page.open({ mockedTime: now })
     await employeeLogin(page, unitSupervisor)
     await page.goto(`${config.employeeUrl}/child-information/${testChild2.id}`)
-    const childInformationPage = new ChildInformationPage(page)
-    const childDocumentsSection =
+    let childInformationPage = new ChildInformationPage(page)
+    let childDocumentsSection =
       await childInformationPage.openCollapsible('childDocuments')
     await childDocumentsSection.createDecisionDocumentButton.click()
     await childDocumentsSection.modalOk.click()
@@ -243,19 +243,19 @@ describe('Employee - Child documents', () => {
     await page.close()
 
     // Director makes a decision
-    page = await Page.open({ mockedTime: now })
-    await employeeLogin(page, director)
-    await page.goto(config.employeeUrl)
-    const nav = new EmployeeNav(page)
+    const directorPage = await Page.open({ mockedTime: now })
+    await employeeLogin(directorPage, director)
+    await directorPage.goto(config.employeeUrl)
+    const nav = new EmployeeNav(directorPage)
     await nav.assertTabNotificationsCount('reports', 1)
     await nav.openTab('reports')
-    const reportsPage = new ReportsPage(page)
+    const reportsPage = new ReportsPage(directorPage)
     const reportPage = await reportsPage.openChildDocumentDecisionsReport()
     await reportPage.rows.assertCount(1)
     await reportPage.rows.nth(0).click()
-    await waitUntilEqual(() => Promise.resolve(page.url), documentUrl)
+    await waitUntilEqual(() => Promise.resolve(directorPage.url), documentUrl)
 
-    childDocument = new ChildDocumentPage(page)
+    childDocument = new ChildDocumentPage(directorPage)
     const validity = new DateRange(
       now.toLocalDate().addDays(2),
       now.toLocalDate().addDays(7)
@@ -264,6 +264,25 @@ describe('Employee - Child documents', () => {
     await childDocument.status.assertTextEquals('Myönnetty')
     await nav.assertTabNotificationsCount('reports', 0)
 
+    // Admin edits the validity date range
+    const editTime = now.withDate(now.toLocalDate().addDays(1))
+    page = await Page.open({ mockedTime: editTime })
+    await employeeLogin(page, admin)
+    await page.goto(`${config.employeeUrl}/child-information/${testChild2.id}`)
+    childInformationPage = new ChildInformationPage(page)
+    childDocumentsSection =
+      await childInformationPage.openCollapsible('childDocuments')
+    await waitUntilEqual(childDocumentsSection.decisionChildDocumentsCount, 1)
+    const row = childDocumentsSection.decisionChildDocuments(0)
+    const newStart = now.toLocalDate().addDays(3)
+    const newEnd = now.toLocalDate().addDays(10)
+    await row.setDecisionValidity(newStart, newEnd)
+    await row.validity.assertTextEquals(
+      new DateRange(newStart, newEnd).format()
+    )
+    await page.close()
+
+    // Director annuls the decision
     await childDocument.annulDecision()
     await childDocument.status.assertTextEquals('Mitätöity')
   })

@@ -9,9 +9,12 @@ import styled from 'styled-components'
 import { useLocation } from 'wouter'
 
 import { combine } from 'lib-common/api'
-import { oneOf, required } from 'lib-common/form/form'
-import { useForm } from 'lib-common/form/hooks'
+import DateRange from 'lib-common/date-range'
+import { openEndedLocalDateRange } from 'lib-common/form/fields'
+import { object, oneOf, required } from 'lib-common/form/form'
+import { useForm, useFormFields } from 'lib-common/form/hooks'
 import type {
+  ChildDocumentSummary,
   ChildDocumentSummaryWithPermittedActions,
   DocumentTemplateSummary
 } from 'lib-common/generated/api-types/document'
@@ -19,6 +22,7 @@ import type {
   ChildId,
   DocumentTemplateId
 } from 'lib-common/generated/api-types/shared'
+import LocalDate from 'lib-common/local-date'
 import {
   constantQuery,
   useMutationResult,
@@ -27,6 +31,7 @@ import {
 import type { UUID } from 'lib-common/types'
 import DisableableLink from 'lib-components/atoms/DisableableLink'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
+import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { SelectF } from 'lib-components/atoms/dropdowns/Select'
 import { ChildDocumentStateChip } from 'lib-components/document-templates/ChildDocumentStateChip'
 import type { ChildDocumentCategory } from 'lib-components/document-templates/documents'
@@ -36,17 +41,22 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
+import { DateRangePickerF } from 'lib-components/molecules/date-picker/DateRangePicker'
 import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
 import { H3, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/employee'
-import { faFile } from 'lib-icons'
+import { faFile, faPen } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 import { activeDocumentTemplateSummariesQuery } from '../document-templates/queries'
 
-import { childDocumentsQuery, createChildDocumentMutation } from './queries'
+import {
+  childDocumentsQuery,
+  createChildDocumentMutation,
+  updateChildDocumentDecisionValidityMutation
+} from './queries'
 
 const WiderTh = styled(Th)`
   width: 40%;
@@ -119,11 +129,118 @@ const InternalChildDocuments = React.memo(function InternalChildDocuments({
   )
 })
 
+const validityForm = object({
+  validity: required(openEndedLocalDateRange())
+})
+
+const DecisionValidityModal = React.memo(function DecisionValidityModal({
+  onClose,
+  document,
+  childId,
+  permittedActions: _permittedActions,
+  onSuccess
+}: {
+  onClose: () => void
+  document: ChildDocumentSummary
+  childId: ChildId
+  permittedActions: string[]
+  onSuccess: () => void
+}) {
+  const { i18n, lang } = useTranslation()
+  const { mutateAsync } = useMutationResult(
+    updateChildDocumentDecisionValidityMutation
+  )
+  const form = useForm(
+    validityForm,
+    () => ({
+      validity: openEndedLocalDateRange.fromRange(
+        document.decision?.validity ??
+          new DateRange(LocalDate.todayInHelsinkiTz(), null)
+      )
+    }),
+    i18n.validationErrors
+  )
+  const { validity } = useFormFields(form)
+
+  return (
+    <AsyncFormModal
+      title={i18n.childInformation.childDocuments.decisions.updateValidity}
+      resolveAction={() =>
+        mutateAsync({
+          body: { newValidity: validity.value() },
+          childId,
+          documentId: document.id
+        })
+      }
+      onSuccess={() => {
+        onSuccess()
+        onClose()
+      }}
+      resolveLabel={i18n.common.confirm}
+      rejectAction={onClose}
+      rejectLabel={i18n.common.cancel}
+      resolveDisabled={!form.isValid()}
+    >
+      <FixedSpaceColumn>
+        <Label>{i18n.childInformation.childDocuments.table.valid}</Label>
+        <DateRangePickerF
+          bind={validity}
+          locale={lang}
+          data-qa="decision-validity-picker"
+        />
+      </FixedSpaceColumn>
+    </AsyncFormModal>
+  )
+})
+
+const DecisionValidityCell = React.memo(function DecisionValidityCell({
+  document,
+  childId,
+  permittedActions
+}: {
+  document: ChildDocumentSummary
+  childId: ChildId
+  permittedActions: string[]
+}) {
+  const { i18n } = useTranslation()
+  const [modalOpen, setModalOpen] = useState(false)
+
+  if (!document.decision?.validity) return null
+
+  return (
+    <FixedSpaceRow justifyContent="space-between">
+      <div data-qa="decision-validity">
+        {document.decision.validity.format()}
+      </div>
+      {document.decision.status === 'ACCEPTED' &&
+        permittedActions.includes('UPDATE_DECISION_VALIDITY') && (
+          <IconOnlyButton
+            onClick={() => setModalOpen(true)}
+            data-qa="edit-decision-validity"
+            icon={faPen}
+            aria-label={
+              i18n.childInformation.childDocuments.decisions.updateValidity
+            }
+          />
+        )}
+      {modalOpen && (
+        <DecisionValidityModal
+          onClose={() => setModalOpen(false)}
+          document={document}
+          childId={childId}
+          permittedActions={permittedActions}
+          onSuccess={() => setModalOpen(false)}
+        />
+      )}
+    </FixedSpaceRow>
+  )
+})
+
 const DecisionChildDocuments = React.memo(function DecisionChildDocuments({
   childId,
   documents
 }: {
-  childId: UUID
+  childId: ChildId
   documents: ChildDocumentSummaryWithPermittedActions[]
 }) {
   const { i18n } = useTranslation()
@@ -164,9 +281,11 @@ const DecisionChildDocuments = React.memo(function DecisionChildDocuments({
               <Td>{document.modifiedAt.format()}</Td>
               <Td>{document.decision?.daycareName ?? ''}</Td>
               <Td>
-                {document.decision?.validity
-                  ? document.decision.validity.format()
-                  : ''}
+                <DecisionValidityCell
+                  document={document}
+                  childId={childId}
+                  permittedActions={permittedActions}
+                />
               </Td>
               <StatusTd data-qa="document-status">
                 <ChildDocumentStateChip

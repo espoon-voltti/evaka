@@ -453,6 +453,33 @@ export class ChildDocumentsSection extends Section {
       answered: row.findByDataQa('document-answered-at')
     }
   }
+
+  readonly decisionChildDocumentsCount = () =>
+    this.page
+      .findByDataQa('table-of-decision-child-documents')
+      .findAllByDataQa('child-document-row')
+      .count()
+
+  decisionChildDocuments(nth: number) {
+    const row = this.page
+      .findByDataQa('table-of-decision-child-documents')
+      .findAllByDataQa('child-document-row')
+      .nth(nth)
+
+    return {
+      openLink: row.findByDataQa('open-document'),
+      status: row.findByDataQa('document-status'),
+      validity: row.findByDataQa('decision-validity'),
+      setDecisionValidity: async (start: LocalDate, end: LocalDate | null) => {
+        await row.findByDataQa('edit-decision-validity').click()
+        const picker = new DateRangePicker(
+          this.findByDataQa('decision-validity-picker')
+        )
+        await picker.fill(start, end ?? '')
+        await this.findByDataQa('modal-okBtn').click()
+      }
+    }
+  }
 }
 
 export class BackupCaresSection extends Section {

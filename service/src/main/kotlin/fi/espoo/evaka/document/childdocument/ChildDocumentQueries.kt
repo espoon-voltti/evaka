@@ -609,3 +609,20 @@ fun Database.Transaction.endExpiredChildDocumentDecisions(
         }
         .toList<ChildDocumentDecisionId>()
 }
+
+fun Database.Transaction.setChildDocumentDecisionValidity(
+    decisionId: ChildDocumentDecisionId,
+    validity: DateRange,
+) {
+    return createUpdate {
+            sql(
+                """
+            UPDATE child_document_decision
+            SET valid_from = ${bind(validity.start)}, valid_to = ${bind(validity.end)}
+            WHERE id = ${bind(decisionId)} AND status = 'ACCEPTED'
+            RETURNING id
+        """
+            )
+        }
+        .updateExactlyOne()
+}
