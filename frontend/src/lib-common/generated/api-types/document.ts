@@ -24,6 +24,17 @@ import type { UiLanguage } from './shared'
 * Generated from fi.espoo.evaka.document.childdocument.ChildDocumentController.AcceptChildDocumentDecisionRequest
 */
 export interface AcceptChildDocumentDecisionRequest {
+  endingDecisionIds: ChildDocumentDecisionId[] | null
+  validity: DateRange
+}
+
+/**
+* Generated from fi.espoo.evaka.document.childdocument.AcceptedChildDecisions
+*/
+export interface AcceptedChildDecisions {
+  id: ChildDocumentDecisionId
+  templateId: DocumentTemplateId
+  templateName: string
   validity: DateRange
 }
 
@@ -562,6 +573,14 @@ export interface UpdateChildDocumentRequest {
 
 
 export function deserializeJsonAcceptChildDocumentDecisionRequest(json: JsonOf<AcceptChildDocumentDecisionRequest>): AcceptChildDocumentDecisionRequest {
+  return {
+    ...json,
+    validity: DateRange.parseJson(json.validity)
+  }
+}
+
+
+export function deserializeJsonAcceptedChildDecisions(json: JsonOf<AcceptedChildDecisions>): AcceptedChildDecisions {
   return {
     ...json,
     validity: DateRange.parseJson(json.validity)

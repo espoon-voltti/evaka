@@ -265,6 +265,7 @@ export type ChildDocument =
   | 'PROPOSE_DECISION'
   | 'PUBLISH'
   | 'READ'
+  | 'READ_ACCEPTED_DECISIONS'
   | 'READ_METADATA'
   | 'REJECT_DECISION'
   | 'UPDATE'
