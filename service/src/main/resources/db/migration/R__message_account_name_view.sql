@@ -1,6 +1,6 @@
 DROP VIEW IF EXISTS message_account_name_view;
 DROP VIEW IF EXISTS message_account_view;
-CREATE VIEW message_account_view(id, type, name) AS (
+CREATE VIEW message_account_view(id, type, name, person_id) AS (
     SELECT
         acc.id,
         acc.type,
@@ -24,6 +24,7 @@ CREATE VIEW message_account_view(id, type, name) AS (
             WHEN 'MUNICIPAL' THEN NULL
             WHEN 'SERVICE_WORKER' THEN NULL
             WHEN 'FINANCE' THEN NULL
-        END
+        END,
+        acc.person_id
     FROM message_account acc
 );

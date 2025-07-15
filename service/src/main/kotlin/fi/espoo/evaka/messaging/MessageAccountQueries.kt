@@ -105,6 +105,7 @@ AND (
                                     financeAccountName = financeAccountName,
                                 ),
                             type = accountType,
+                            personId = null,
                         )
                     },
                 daycareGroup =
@@ -154,7 +155,8 @@ fun Database.Read.getMessageAccount(
 SELECT
     acc.id,
     acc.name,
-    acc.type
+    acc.type,
+    acc.person_id
 FROM message_account_view acc
 WHERE acc.id = ${bind(accountId)}
 """
@@ -173,6 +175,7 @@ WHERE acc.id = ${bind(accountId)}
                             financeAccountName = financeAccountName,
                         ),
                     type = accountType,
+                    personId = column("person_id"),
                 )
             }
         }

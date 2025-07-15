@@ -99,7 +99,7 @@ function MessageReplyEditor<T, R>({
             .filter((r) => r.selected)
             .map((r) => r.id)}
           accounts={recipients.map((r) => ({
-            account: { id: r.id, name: r.name, type: r.type },
+            account: { id: r.id, name: r.name, type: r.type, personId: null },
             outOfOffice: r.outOfOffice
           }))}
         />

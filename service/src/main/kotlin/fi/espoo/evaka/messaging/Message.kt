@@ -206,7 +206,12 @@ enum class AccountType : DatabaseEnum {
     override val sqlType: String = "message_account_type"
 }
 
-data class MessageAccount(val id: MessageAccountId, val name: String, val type: AccountType)
+data class MessageAccount(
+    val id: MessageAccountId,
+    val name: String,
+    val type: AccountType,
+    val personId: PersonId?,
+)
 
 data class MessageAccountWithPresence(
     val account: MessageAccount,
