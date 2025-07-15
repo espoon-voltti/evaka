@@ -636,3 +636,20 @@ WHERE cd.child_id = child.child_id AND cdd.status = 'ACCEPTED'
         }
         .toList<AcceptedChildDecisions>()
 }
+
+fun Database.Read.endChildDocumentDecisionsWithSubstitutiveDecision(
+    endingDecisionIds: List<ChildDocumentDecisionId>,
+    endDate: LocalDate,
+): List<ChildDocumentDecisionId> {
+    return createQuery {
+            sql(
+                """
+UPDATE child_document_decision cdd
+SET valid_to = ${bind(endDate)}
+WHERE cdd.id = ANY(${bind(endingDecisionIds)})
+RETURNING cdd.id
+"""
+            )
+        }
+        .toList<ChildDocumentDecisionId>()
+}
