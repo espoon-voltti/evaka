@@ -827,19 +827,22 @@ describe('Employee - Child documents', () => {
     const template1 = await Fixture.documentTemplate({
       type: 'OTHER_DECISION',
       name: 'Päätösasiakirja 1',
-      published: true
+      published: true,
+      endDecisionWhenUnitChanges: true
     }).save()
 
     const template2 = await Fixture.documentTemplate({
       type: 'OTHER_DECISION',
       name: 'Päätösasiakirja 2',
-      published: true
+      published: true,
+      endDecisionWhenUnitChanges: true
     }).save()
 
     await Fixture.documentTemplate({
       type: 'OTHER_DECISION',
       name: 'Päätösasiakirja 3',
-      published: true
+      published: true,
+      endDecisionWhenUnitChanges: true
     }).save()
 
     await Fixture.childDocument({
@@ -934,7 +937,7 @@ describe('Employee - Child documents', () => {
     await childDocument.confirmOtherDecisionsButton.assertDisabled(false)
     await childDocument.confirmOtherDecisionsButton.click()
     await childDocument.clickModalOkButton()
-    await childDocument.status.assertTextEquals('Hyväksytty')
+    await childDocument.status.assertTextEquals('Myönnetty')
     await page.close()
 
     page = await Page.open({ mockedTime: now })
@@ -960,7 +963,8 @@ describe('Employee - Child documents', () => {
     const template = await Fixture.documentTemplate({
       type: 'OTHER_DECISION',
       name: 'Päätösasiakirja',
-      published: true
+      published: true,
+      endDecisionWhenUnitChanges: true
     }).save()
 
     await Fixture.childDocument({
@@ -1029,7 +1033,7 @@ describe('Employee - Child documents', () => {
     await childDocument.confirmOtherDecisionsButton.assertDisabled(false)
     await childDocument.confirmOtherDecisionsButton.click()
     await childDocument.clickModalOkButton()
-    await childDocument.status.assertTextEquals('Hyväksytty')
+    await childDocument.status.assertTextEquals('Myönnetty')
     await page.close()
 
     page = await Page.open({ mockedTime: now })
