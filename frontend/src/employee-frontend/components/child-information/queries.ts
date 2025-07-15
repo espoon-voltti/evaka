@@ -93,7 +93,8 @@ import {
   acceptChildDocumentDecision,
   annulChildDocumentDecision,
   rejectChildDocumentDecision,
-  proposeChildDocumentDecision
+  proposeChildDocumentDecision,
+  getAcceptedChildDocumentDecisions
 } from '../../generated/api-clients/document'
 import {
   createFeeAlteration,
@@ -202,6 +203,10 @@ export const childDocumentQuery = q.query(getDocument, {
 
 export const childDocumentDecisionMakersQuery = q.query(
   getChildDocumentDecisionMakers
+)
+
+export const acceptedChildDocumentDecisionsQuery = q.query(
+  getAcceptedChildDocumentDecisions
 )
 
 export const childDocumentMetadataQuery = q.query(getChildDocumentMetadata)
