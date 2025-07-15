@@ -95,6 +95,7 @@ import {
   rejectChildDocumentDecision,
   proposeChildDocumentDecision,
   getAcceptedChildDocumentDecisions,
+  getAcceptedChildDocumentDecisions,
   updateChildDocumentDecisionValidity
 } from '../../generated/api-clients/document'
 import {
