@@ -370,7 +370,7 @@ const TimeRanges = React.memo(function TimeRanges({
                     focusElementOnNextFrame(`${dataQaPrefix}-time-1-start`)
                   }
                 }}
-                aria-label={i18n.common.add}
+                aria-label={i18n.calendar.reservationModal.secondTimeRange.add}
               />
             ) : null}
           </FixedSpaceRow>
@@ -397,7 +397,7 @@ const TimeRanges = React.memo(function TimeRanges({
             <IconOnlyButton
               icon={faTrash}
               onClick={() => bind.update((prev) => prev.slice(0, 1))}
-              aria-label={i18n.common.delete}
+              aria-label={i18n.calendar.reservationModal.secondTimeRange.delete}
             />
           </RightCell>
         </FixedSpaceRow>
