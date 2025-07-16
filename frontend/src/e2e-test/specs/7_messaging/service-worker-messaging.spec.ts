@@ -216,6 +216,26 @@ describe('Service Worker Messaging', () => {
       await folderMessagesPage.openFirstThreadReplyEditor()
     })
 
+    it('service worker cannot mark a message sent by them as unread', async () => {
+      // Using this scenario from the previous test as it enables testing
+      // the "Mark unread" button to be not shown on employee side
+      await openStaffPage(mockedTime, serviceWorker)
+      const applReadView = new ApplicationReadView(staffPage)
+      await applReadView.navigateToApplication(applicationFixtureId)
+      const messagesPage = await applReadView.openMessagesPage()
+      const messageEditor = messagesPage.getMessageEditor()
+      await messageEditor.inputContent.fill('message')
+      await messageEditor.folderSelection.selectOption({ label: 'Kansio 1' })
+      await messageEditor.sendButton.click()
+      await messageEditor.waitUntilHidden()
+      await runPendingAsyncJobs(mockedTime.addMinutes(1))
+
+      const folderMessagesPage = await messagesPage.openFolder('Kansio 1')
+      await folderMessagesPage.messages.assertCount(1)
+      await folderMessagesPage.openFirstThread()
+      await folderMessagesPage.assertHasNoMarkUnreadButton()
+    })
+
     it('should prefill the recipient and title fields when sending a new message', async () => {
       await openStaffPage(mockedTime, serviceWorker)
       const applReadView = new ApplicationReadView(staffPage)

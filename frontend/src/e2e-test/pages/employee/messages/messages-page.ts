@@ -200,9 +200,15 @@ export class FolderMessagesPage {
     await modal.findByDataQa('modal-okBtn').click()
   }
 
+  async openFirstThread() {
+    await this.messages.first().click()
+  }
   async openFirstThreadReplyEditor() {
     await this.messages.first().click()
     await this.page.findByDataQa('message-reply-editor-btn').click()
+  }
+  async assertHasNoMarkUnreadButton() {
+    await this.page.findByDataQa('mark-unread-btn').waitUntilHidden()
   }
 }
 

@@ -159,6 +159,10 @@ export default class CitizenMessagesPage {
     await this.#threadListItem.click()
   }
 
+  async assertHasNoMarkUnreadButton() {
+    await this.markUnreadButton.waitUntilHidden()
+  }
+
   async discardReplyEditor() {
     await this.discardMessageButton.click()
   }
