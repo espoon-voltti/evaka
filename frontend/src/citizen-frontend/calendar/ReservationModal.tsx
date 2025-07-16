@@ -279,9 +279,15 @@ export default React.memo(function ReservationModal({
 
                 <HolidayPeriodInfoBox holidayPeriods={holidayPeriods} />
 
-                <Label>{i18n.calendar.reservationModal.selectRecurrence}</Label>
+                <Label htmlFor="recurrence">
+                  {i18n.calendar.reservationModal.selectRecurrence}
+                </Label>
                 <Gap size="xxs" />
-                <SelectF bind={repetition} data-qa="repetition" />
+                <SelectF
+                  bind={repetition}
+                  data-qa="repetition"
+                  id="recurrence"
+                />
                 <Gap size="s" />
 
                 <ExpandingInfo
