@@ -257,8 +257,13 @@ export default React.memo(function ReservationModal({
 
               <Gap size="zero" sizeOnMobile="s" />
 
-              <CalendarModalSection>
-                <H2>{i18n.calendar.reservationModal.selectChildren}</H2>
+              <CalendarModalSection
+                role="group"
+                aria-labelledby="select-children"
+              >
+                <H2 id="select-children">
+                  {i18n.calendar.reservationModal.selectChildren}
+                </H2>
                 <Gap size="xs" />
                 <ChildSelector
                   bind={selectedChildren}
