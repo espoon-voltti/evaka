@@ -496,6 +496,11 @@ fun Database.Read.getDetailedDaycarePlacements(
     val defaultServiceNeedOptions =
         getServiceNeedOptions().filter { it.defaultOption }.associateBy { it.validPlacementType }
 
+    val preschoolPlacementIds =
+        daycarePlacements.filter { it.type == PlacementType.PRESCHOOL_DAYCARE }.map { it.id }
+    val plannedPreschoolDatesForTerminatedPlacement =
+        getPlannedPreschoolDatesForTerminatedPlacement(preschoolPlacementIds)
+
     return daycarePlacements
         .map { daycarePlacement ->
             DaycarePlacementWithDetails(
@@ -512,6 +517,8 @@ fun Database.Read.getDetailedDaycarePlacements(
                 defaultServiceNeedOption = defaultServiceNeedOptions[daycarePlacement.type],
                 terminatedBy = daycarePlacement.terminatedBy,
                 terminationRequestedDate = daycarePlacement.terminationRequestedDate,
+                terminatedPreschoolDaycareDates =
+                    plannedPreschoolDatesForTerminatedPlacement[daycarePlacement.id],
                 placeGuarantee = daycarePlacement.placeGuarantee,
                 modifiedAt = daycarePlacement.modifiedAt,
                 modifiedBy = daycarePlacement.modifiedBy,
@@ -681,6 +688,7 @@ data class DaycarePlacementWithDetails(
     val isRestrictedFromUser: Boolean = false,
     val terminationRequestedDate: LocalDate?,
     val terminatedBy: EvakaUser?,
+    val terminatedPreschoolDaycareDates: DateRange? = null,
     val placeGuarantee: Boolean,
     val modifiedAt: HelsinkiDateTime?,
     val modifiedBy: EvakaUser?,

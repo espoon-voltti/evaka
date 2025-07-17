@@ -509,6 +509,44 @@ data class TerminatedPlacement(
     val connectedDaycareOnly: Boolean,
 )
 
+fun Database.Read.getPlannedPreschoolDatesForTerminatedPlacement(
+    placementIds: List<PlacementId>
+): Map<PlacementId, DateRange> =
+    createQuery {
+            sql(
+                """
+SELECT p.id placement_id, 
+    plan.end_date + INTERVAL '1 day' AS daycare_start_date,
+    plan.preschool_daycare_end_date daycare_end_date
+FROM placement p
+JOIN placement_plan plan
+  ON plan.unit_id = p.unit_id
+  AND plan.type = p.type
+  AND plan.start_date <= p.start_date
+  AND plan.end_date >= p.start_date
+  AND plan.preschool_daycare_start_date IS NOT NULL
+  AND plan.preschool_daycare_end_date > plan.end_date
+WHERE p.id = ANY(${bind(placementIds)})
+    AND p.type = 'PRESCHOOL_DAYCARE'
+    AND NOT EXISTS (
+        SELECT 1
+        FROM placement daycare_p
+        WHERE daycare_p.child_id = p.child_id
+            AND daycare_p.type = 'DAYCARE'
+            AND daycare_p.unit_id = p.unit_id
+            AND daycare_p.start_date >= plan.preschool_daycare_start_date
+            AND daycare_p.end_date <= plan.preschool_daycare_start_date
+    )
+"""
+            )
+        }
+        .toMap {
+            val id = column<PlacementId>("placement_id")
+            val start = column<LocalDate>("daycare_start_date")
+            val end = column<LocalDate>("daycare_end_date")
+            id to DateRange(start, end)
+        }
+
 data class ChildPlacement(
     val childId: ChildId,
     val id: PlacementId,

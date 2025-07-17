@@ -187,7 +187,7 @@ fun terminateBilledDaycare(
         // billed DAYCARE part
         // of a PRESCHOOL_DAYCARE placement has been terminated before. Detect those and prevent
         // duplicates.
-        val adjacentPlacement =
+        val followingPlacement =
             terminatablePlacementGroup.placements
                 .find {
                     it.type == newPlacementType && it.startDate == placement.endDate.plusDays(1)
@@ -203,12 +203,12 @@ fun terminateBilledDaycare(
         // - no adjacent => change the end date and create adjacent
 
         if (placement.startDate.isAfter(terminationDate)) {
-            if (adjacentPlacement != null) {
+            if (followingPlacement != null) {
                 // given an adjacent placement, do not create a duplicate PRESCHOOL or PREPARATORY
                 // placement, just update the dates
                 tx.cancelPlacement(now, user.evakaUserId, placement.id)
                 tx.updatePlacementStartDate(
-                    adjacentPlacement.id,
+                    followingPlacement.id,
                     placement.startDate,
                     now,
                     user.evakaUserId,
@@ -234,9 +234,9 @@ fun terminateBilledDaycare(
                 user.evakaUserId,
             )
             tx.updatePlacementTermination(placement.id, now.toLocalDate(), user.evakaUserId)
-            if (adjacentPlacement != null) {
+            if (followingPlacement != null) {
                 tx.updatePlacementStartDate(
-                    adjacentPlacement.id,
+                    followingPlacement.id,
                     terminationDate.plusDays(1),
                     now,
                     user.evakaUserId,
