@@ -884,7 +884,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
     }
 
     @Test
-    fun `Decision maker can get other accepted decisions for child`() {
+    fun `Only the decision maker can get other accepted decisions for child`() {
         val documentId1 =
             controller.createDocument(
                 dbInstance(),
@@ -934,6 +934,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
 
     @Test
     fun `Substitutive decision can end other accepted decisions for child`() {
+        // Create and accept the first decision
         val documentId1 =
             controller.createDocument(
                 dbInstance(),
@@ -944,12 +945,11 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
 
         proposeChildDocumentDecision(documentId1, unitSupervisorUser.id)
 
-        val validity1 = DateRange(clock.today(), clock.today().plusDays(7))
+        val validity1 = DateRange(clock.today(), null)
 
         acceptChildDocumentDecision(documentId1, validity1, user = unitSupervisorUser)
 
-        var document1 = getDocument(documentId1)
-
+        // Create and accept the second decision
         val documentId2 =
             controller.createDocument(
                 dbInstance(),
@@ -962,6 +962,8 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
 
         val validity2 = DateRange(clock.today().plusDays(1), clock.today().plusDays(7))
 
+        var document1 = getDocument(documentId1)
+
         acceptChildDocumentDecision(
             documentId2,
             validity2,
@@ -969,8 +971,12 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
             endingDecisionIds = listOf(document1.decision!!.id),
         )
 
+        // Check that the first decision has ended before the second decision and that the second
+        // decision is valid
         document1 = getDocument(documentId1)
-        assertEquals(clock.today(), document1.decision!!.validity!!.end)
+        val document2 = getDocument(documentId2)
+        assertEquals(validity2.start.minusDays(1), document1.decision!!.validity!!.end)
+        assertEquals(validity2, document2.decision!!.validity)
     }
 
     @Test
