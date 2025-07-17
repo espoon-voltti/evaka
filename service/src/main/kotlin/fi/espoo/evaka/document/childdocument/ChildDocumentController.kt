@@ -789,6 +789,7 @@ class ChildDocumentController(
                     body.endingDecisionIds?.isEmpty()?.let {
                         if (!it) {
                             tx.endChildDocumentDecisionsWithSubstitutiveDecision(
+                                childId = document.child.id,
                                 endingDecisionIds = body.endingDecisionIds,
                                 endDate = body.validity.start.minusDays(1),
                             )

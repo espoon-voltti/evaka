@@ -633,6 +633,7 @@ WHERE new_document.id = ${bind(documentId)} AND cdd.status = 'ACCEPTED'
 }
 
 fun Database.Read.endChildDocumentDecisionsWithSubstitutiveDecision(
+    childId: ChildId,
     endingDecisionIds: List<ChildDocumentDecisionId>,
     endDate: LocalDate,
 ): List<ChildDocumentDecisionId> {
@@ -641,7 +642,12 @@ fun Database.Read.endChildDocumentDecisionsWithSubstitutiveDecision(
                 """
 UPDATE child_document_decision cdd
 SET valid_to = ${bind(endDate)}
+FROM child_document cd
 WHERE cdd.id = ANY(${bind(endingDecisionIds)})
+    AND cdd.status = 'ACCEPTED'
+    AND (cdd.valid_to IS NULL OR cdd.valid_to > ${bind(endDate)})
+    AND cd.decision_id = cdd.id
+    AND cd.child_id = ${bind(childId)}
 RETURNING cdd.id
 """
             )
