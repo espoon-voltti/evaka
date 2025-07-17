@@ -912,12 +912,12 @@ export const fi = {
         updateValidity: 'Korjaa päätöksen voimassaoloaikaa',
         otherValidDecisions: {
           title: 'Muut voimassaolevat päätökset',
-          description: (validity: DateRange | undefined) => (
+          description: (validity: DateRange) => (
             <P>
               Olet tekemässä myönteisen päätöksen.
               <br />
               Lapsella on muita päätöksiä, jotka ovat voimassa nyt tehtävän
-              päätöksen astuessa voimaan {validity!.start.format().toString()}
+              päätöksen astuessa voimaan {validity.start.format().toString()}
             </P>
           ),
           label: 'Valitse sopiva toimenpide seuraaville päätöksille*',

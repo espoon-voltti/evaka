@@ -4,7 +4,7 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import isEqual from 'lodash/isEqual'
-import React, { useEffect, useMemo, useState, useCallback } from 'react'
+import React, { useMemo, useState } from 'react'
 import { useSearchParams, useLocation } from 'wouter'
 
 import { combine } from 'lib-common/api'
@@ -17,7 +17,6 @@ import {
 import { object, required, mapped, array, value } from 'lib-common/form/form'
 import type { BoundForm } from 'lib-common/form/hooks'
 import { useForm, useFormFields, useFormElems } from 'lib-common/form/hooks'
-import type { StateOf } from 'lib-common/form/types'
 import type {
   AcceptedChildDecisions,
   ChildDocumentDetails,
@@ -59,6 +58,7 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import { ConfirmedMutation } from 'lib-components/molecules/ConfirmedMutation'
 import { DateRangePickerF } from 'lib-components/molecules/date-picker/DateRangePicker'
+import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { H1, Label, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
@@ -233,64 +233,68 @@ const ChildDocumentReadViewInner = React.memo(
     )
 
     const [acceptingDecision, setAcceptingDecision] = useState(false)
-    const [confirmedValidity, setConfirmedValidity] = useState(false)
     const [validity, setValidity] = useState<DateRange | undefined>(undefined)
-
-    const filteredDecisions = useMemo(() => {
-      if (!validity) return acceptedDecisions
-      return acceptedDecisions.filter((decision) =>
-        decision.validity.overlapsWith(validity)
-      )
-    }, [acceptedDecisions, validity])
-
-    const getOtherDecisions = useCallback(
-      (
-        filteredDecisions: AcceptedChildDecisions[]
-      ): StateOf<typeof endingDecisionIds> => ({
-        otherDecisions: filteredDecisions.map((decision) => ({
-          id: decision.id,
-          templateId: decision.templateId,
-          label: decision.templateName,
-          options: [
-            {
-              label:
-                i18n.childInformation.childDocuments.decisions
-                  .otherValidDecisions.options.end,
-              value: true
-            },
-            {
-              label:
-                i18n.childInformation.childDocuments.decisions
-                  .otherValidDecisions.options.keep,
-              value: false
-            }
-          ],
-          endDecision:
-            decision.templateId === document.template.id ? true : undefined,
-          validity: openEndedLocalDateRange.fromRange(decision.validity)
-        }))
-      }),
-      [i18n, document.template.id]
-    )
 
     const endingDecisionsForm = useForm(
       endingDecisionIds,
-      () => getOtherDecisions(filteredDecisions),
+      () => ({
+        otherDecisions: [
+          {
+            id: '' as ChildDocumentDecisionId,
+            templateId: '',
+            label: '',
+            options: [
+              {
+                label: '',
+                value: true
+              },
+              {
+                label: '',
+                value: false
+              }
+            ],
+            endDecision: undefined,
+            validity: openEndedLocalDateRange.fromRange(undefined)
+          }
+        ]
+      }),
       i18n.validationErrors
     )
-    const updateForm = endingDecisionsForm.update
-    useEffect(() => {
-      updateForm(() => getOtherDecisions(filteredDecisions))
-    }, [
-      filteredDecisions,
-      document.template.id,
-      updateForm,
-      i18n.childInformation.childDocuments.decisions.otherValidDecisions.options
-        .end,
-      i18n.childInformation.childDocuments.decisions.otherValidDecisions.options
-        .keep,
-      getOtherDecisions
-    ])
+
+    const updateEndingDecisionsForm = (newValidity: DateRange | undefined) => {
+      endingDecisionsForm.update(() => {
+        let filteredDecisions = acceptedDecisions
+        if (newValidity) {
+          filteredDecisions = acceptedDecisions.filter((decision) =>
+            decision.validity.overlapsWith(newValidity)
+          )
+        }
+        return {
+          otherDecisions: filteredDecisions.map((decision) => ({
+            id: decision.id,
+            templateId: decision.templateId,
+            label: decision.templateName,
+            options: [
+              {
+                label:
+                  i18n.childInformation.childDocuments.decisions
+                    .otherValidDecisions.options.end,
+                value: true
+              },
+              {
+                label:
+                  i18n.childInformation.childDocuments.decisions
+                    .otherValidDecisions.options.keep,
+                value: false
+              }
+            ],
+            endDecision:
+              decision.templateId === document.template.id ? true : undefined,
+            validity: openEndedLocalDateRange.fromRange(decision.validity)
+          }))
+        }
+      })
+    }
 
     return (
       <div>
@@ -377,28 +381,29 @@ const ChildDocumentReadViewInner = React.memo(
         <ActionBar>
           <Container>
             <ContentArea opaque>
-              {confirmedValidity && (
-                <OtherValidDecisionForm
-                  validity={validity}
-                  endingDecisionsForm={endingDecisionsForm}
-                  document={document}
-                />
+              {validity && (
+                <>
+                  <OtherValidDecisionForm
+                    validity={validity}
+                    endingDecisionsForm={endingDecisionsForm}
+                    document={document}
+                  />
+                  <Gap size="X3L" />
+                </>
               )}
-              <Gap size="X3L" />
               <FixedSpaceRow
                 justifyContent="space-between"
                 alignItems="flex-end"
               >
-                {acceptingDecision && !confirmedValidity ? (
+                {acceptingDecision && !validity ? (
                   <Button
                     text={i18n.common.cancel}
                     onClick={() => setAcceptingDecision(false)}
                   />
-                ) : confirmedValidity ? (
+                ) : validity ? (
                   <Button
                     text={i18n.common.cancel}
                     onClick={() => {
-                      setConfirmedValidity(false)
                       setValidity(undefined)
                     }}
                     data-qa="cancel-accept-decision-button"
@@ -460,14 +465,14 @@ const ChildDocumentReadViewInner = React.memo(
                   </FixedSpaceRow>
                 )}
 
-                {acceptingDecision && !confirmedValidity ? (
+                {acceptingDecision && !validity ? (
                   <AcceptDecisionForm
                     document={document}
-                    setConfirmedValidity={setConfirmedValidity}
                     setValidity={setValidity}
                     acceptedDecisions={acceptedDecisions}
+                    updateEndingDecisionsForm={updateEndingDecisionsForm}
                   />
-                ) : confirmedValidity ? (
+                ) : validity ? (
                   <ConfirmedMutation
                     primary
                     buttonText={i18n.common.confirm}
@@ -481,7 +486,7 @@ const ChildDocumentReadViewInner = React.memo(
                       documentId: document.id,
                       childId: document.child.id,
                       body: {
-                        validity: validity!,
+                        validity: validity,
                         endingDecisionIds: endingDecisionsForm.value()
                       }
                     })}
@@ -725,16 +730,20 @@ const acceptForm = object({
 
 const AcceptDecisionForm = React.memo(function AcceptDecisionForm({
   document,
-  setConfirmedValidity,
   setValidity,
-  acceptedDecisions
+  acceptedDecisions,
+  updateEndingDecisionsForm
 }: {
   document: ChildDocumentDetails
-  setConfirmedValidity: (validity: boolean) => void
   setValidity: (validity: DateRange | undefined) => void
   acceptedDecisions: AcceptedChildDecisions[]
+  updateEndingDecisionsForm: (validity: DateRange | undefined) => void
 }) {
   const { i18n, lang } = useTranslation()
+
+  const [confirming, setConfirming] = React.useState(false)
+  const [decisionsWithSameTemplate, setDecisionsWithSameTemplate] =
+    React.useState<AcceptedChildDecisions[]>([])
 
   const form = useForm(
     acceptForm,
@@ -760,35 +769,58 @@ const AcceptDecisionForm = React.memo(function AcceptDecisionForm({
           data-qa="decision-validity-picker"
         />
       </FixedSpaceColumn>
-      <ConfirmedMutation
+      <Button
         primary
-        buttonText={i18n.common.confirm}
-        confirmationTitle={
-          i18n.childInformation.childDocuments.decisions.acceptConfirmTitle
-        }
-        mutation={acceptChildDocumentDecisionMutation}
+        text={i18n.common.confirm}
         disabled={!form.isValid()}
         onClick={() => {
+          const filteredDecisions = acceptedDecisions.filter((decision) =>
+            decision.validity.overlapsWith(validity.value())
+          )
+          const decisionsWithSameTemplate = filteredDecisions.filter(
+            (decision) => decision.templateId === document.template.id
+          )
+
+          setDecisionsWithSameTemplate(decisionsWithSameTemplate)
+
           if (
-            acceptedDecisions.some((decision) =>
-              decision.validity.overlapsWith(validity.value())
-            )
+            filteredDecisions.length > 0 &&
+            decisionsWithSameTemplate.length !== filteredDecisions.length
           ) {
-            setConfirmedValidity(true)
             setValidity(validity.value())
-            return cancelMutation
-          }
-          return {
-            documentId: document.id,
-            childId: document.child.id,
-            body: {
-              validity: validity.value(),
-              endingDecisionIds: null
-            }
+            updateEndingDecisionsForm(validity.value())
+          } else {
+            setConfirming(true)
           }
         }}
         data-qa="accept-decision-confirm-button"
       />
+      {confirming && (
+        <MutateFormModal
+          title={
+            i18n.childInformation.childDocuments.decisions.acceptConfirmTitle
+          }
+          resolveMutation={acceptChildDocumentDecisionMutation}
+          resolveAction={() => ({
+            documentId: document.id,
+            childId: document.child.id,
+            body: {
+              validity: validity.value(),
+              endingDecisionIds: decisionsWithSameTemplate.map(
+                (decision) => decision.id
+              )
+            }
+          })}
+          resolveLabel={i18n.common.confirm}
+          onSuccess={() => {
+            setConfirming(false)
+          }}
+          rejectAction={() => {
+            setConfirming(false)
+          }}
+          rejectLabel={i18n.common.cancel}
+        />
+      )}
     </FixedSpaceRow>
   )
 })
@@ -798,7 +830,7 @@ const OtherValidDecisionForm = React.memo(function OtherValidDecisionForm({
   endingDecisionsForm,
   document
 }: {
-  validity: DateRange | undefined
+  validity: DateRange
   endingDecisionsForm: BoundForm<typeof endingDecisionIds>
   document: ChildDocumentDetails
 }) {
@@ -835,7 +867,7 @@ const OtherValidDecisionForm = React.memo(function OtherValidDecisionForm({
               {index + 1 + '. '}
               {otherDecision.state.label + ' ('}
               {otherDecision.state.validity.start + ' - '}
-              {otherDecision.state.validity.end ?? ''})
+              {(otherDecision.state.validity.end ?? '') + ')'}
             </P>
             <FixedSpaceColumn spacing="xs">
               <OtherValidDecisionRadioButtons
