@@ -616,21 +616,16 @@ fun Database.Read.getAcceptedChildDocumentDecisions(
     return createQuery {
             sql(
                 """
-WITH child AS (
-SELECT child_id 
-FROM child_document
-WHERE id = ${bind(documentId)}
-)
 SELECT
-    cd.decision_id AS id,
-    cd.template_id,
+    accepted_document.decision_id AS id,
+    accepted_document.template_id,
     daterange(cdd.valid_from, cdd.valid_to, '[]') AS validity,
     dt.name AS template_name
-FROM child
-JOIN child_document cd ON cd.child_id = child.child_id
-JOIN child_document_decision cdd ON cd.decision_id = cdd.id
-JOIN document_template dt ON cd.template_id = dt.id
-WHERE cd.child_id = child.child_id AND cdd.status = 'ACCEPTED'
+FROM child_document new_document
+         JOIN child_document accepted_document ON accepted_document.child_id = new_document.child_id
+         JOIN child_document_decision cdd ON accepted_document.decision_id = cdd.id
+         JOIN document_template dt ON accepted_document.template_id = dt.id
+WHERE new_document.id = ${bind(documentId)} AND cdd.status = 'ACCEPTED'
 """
             )
         }
