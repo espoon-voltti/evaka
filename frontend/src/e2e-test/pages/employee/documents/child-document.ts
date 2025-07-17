@@ -141,6 +141,25 @@ export class ChildDocumentPage {
     await this.page.findByDataQa('modal-okBtn').click()
   }
 
+  async confirmDecisionValidity(validity: DateRange) {
+    await this.acceptDecisionButton.click()
+    const validityStartPicker = new DatePicker(
+      this.page
+        .findByDataQa('decision-validity-picker')
+        .findByDataQa('start-date')
+    )
+    await validityStartPicker.fill(validity.start)
+    if (validity.end) {
+      const validityEndPicker = new DatePicker(
+        this.page
+          .findByDataQa('decision-validity-picker')
+          .findByDataQa('end-date')
+      )
+      await validityEndPicker.fill(validity.end)
+    }
+    await this.page.findByDataQa('accept-decision-confirm-button').click()
+  }
+
   async closeConcurrentEditErrorModal() {
     await this.page
       .findByDataQa('concurrent-edit-error-modal')

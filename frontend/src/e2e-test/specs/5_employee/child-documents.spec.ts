@@ -912,6 +912,7 @@ describe('Employee - Child documents', () => {
       })
       .save()
 
+    // Unit supervisor creates a new decision draft
     let page = await Page.open({ mockedTime: now })
     await employeeLogin(page, unitSupervisor)
     let childInformationPage = new ChildInformationPage(page)
@@ -924,6 +925,7 @@ describe('Employee - Child documents', () => {
     )
     await childDocumentsSection.modalOk.click()
 
+    // Decision proposal is sent to decision maker (director)
     const childDocumentPage = new ChildDocumentPage(page)
     await childDocumentPage.documentSection.waitUntilVisible()
     await childDocumentPage.status.assertTextEquals('Luonnos')
@@ -933,6 +935,7 @@ describe('Employee - Child documents', () => {
     const documentUrl = page.url
     await page.close()
 
+    // Director opens the decision proposal
     page = await Page.open({ mockedTime: now })
     await employeeLogin(page, director)
     await page.goto(config.employeeUrl)
@@ -945,12 +948,15 @@ describe('Employee - Child documents', () => {
     await reportPage.rows.nth(0).click()
     await waitUntilEqual(() => Promise.resolve(page.url), documentUrl)
 
+    // Director gives validity dates for the decision
     const childDocument = new ChildDocumentPage(page)
     const validity = new DateRange(
       now.toLocalDate().addDays(1),
       now.toLocalDate().addDays(7)
     )
-    await childDocument.acceptDecision(validity)
+    await childDocument.confirmDecisionValidity(validity)
+
+    // Director decides if other decisions are ended (First decision is ended, second is not)
     await childDocument.confirmOtherDecisionsButton.assertDisabled(true)
     await childDocument.selectDifferentOptionsForOtherDecisions()
     await childDocument.confirmOtherDecisionsButton.assertDisabled(false)
@@ -959,6 +965,7 @@ describe('Employee - Child documents', () => {
     await childDocument.status.assertTextEquals('Myönnetty')
     await page.close()
 
+    // Unit supervisor checks old and new decisions
     page = await Page.open({ mockedTime: now })
     await employeeLogin(page, unitSupervisor)
     childInformationPage = new ChildInformationPage(page)
@@ -966,7 +973,7 @@ describe('Employee - Child documents', () => {
     childDocumentsSection =
       await childInformationPage.openCollapsible('childDocuments')
     await waitUntilEqual(childDocumentsSection.decisionChildDocumentsCount, 3)
-    // First decision is moved to the second row when it's end date was updated
+    // First decision is moved to the second row when its end date was updated
     await childDocumentsSection
       .decisionChildDocuments(0)
       .validity.assertTextEquals('01.02.2023 - 08.02.2023')
@@ -1001,15 +1008,13 @@ describe('Employee - Child documents', () => {
     })
       .withDecision({
         status: 'ACCEPTED',
-        validity: new DateRange(
-          now.toLocalDate(),
-          now.toLocalDate().addDays(7)
-        ),
+        validity: new DateRange(now.toLocalDate(), null),
         createdBy: director.id,
         modifiedBy: director.id
       })
       .save()
 
+    // Unit supervisor creates a new decision draft
     let page = await Page.open({ mockedTime: now })
     await employeeLogin(page, unitSupervisor)
     let childInformationPage = new ChildInformationPage(page)
@@ -1022,6 +1027,7 @@ describe('Employee - Child documents', () => {
     )
     await childDocumentsSection.modalOk.click()
 
+    // Decision proposal is sent to decision maker (director)
     const childDocumentPage = new ChildDocumentPage(page)
     await childDocumentPage.documentSection.waitUntilVisible()
     await childDocumentPage.status.assertTextEquals('Luonnos')
@@ -1031,6 +1037,7 @@ describe('Employee - Child documents', () => {
     const documentUrl = page.url
     await page.close()
 
+    // Director opens the decision proposal
     page = await Page.open({ mockedTime: now })
     await employeeLogin(page, director)
     await page.goto(config.employeeUrl)
@@ -1043,18 +1050,21 @@ describe('Employee - Child documents', () => {
     await reportPage.rows.nth(0).click()
     await waitUntilEqual(() => Promise.resolve(page.url), documentUrl)
 
+    /*
+      Director gives validity dates for the decision. Because all other decisions
+      were made with the same template, they are ended automatically and the dialog
+      for confirming other decisions is not shown.
+    */
     const childDocument = new ChildDocumentPage(page)
     const validity = new DateRange(
       now.toLocalDate().addDays(1),
       now.toLocalDate().addDays(7)
     )
     await childDocument.acceptDecision(validity)
-    await childDocument.confirmOtherDecisionsButton.assertDisabled(false)
-    await childDocument.confirmOtherDecisionsButton.click()
-    await childDocument.clickModalOkButton()
     await childDocument.status.assertTextEquals('Myönnetty')
     await page.close()
 
+    // Unit supervisor checks old and new decisions
     page = await Page.open({ mockedTime: now })
     await employeeLogin(page, unitSupervisor)
     childInformationPage = new ChildInformationPage(page)

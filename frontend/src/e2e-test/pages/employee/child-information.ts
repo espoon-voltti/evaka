@@ -434,25 +434,6 @@ export class ChildDocumentsSection extends Section {
     }
   }
 
-  readonly decisionChildDocumentsCount = () =>
-    this.page
-      .findByDataQa('table-of-decision-child-documents')
-      .findAllByDataQa('child-document-row')
-      .count()
-
-  decisionChildDocuments(nth: number) {
-    const row = this.page
-      .findByDataQa('table-of-decision-child-documents')
-      .findAllByDataQa('child-document-row')
-      .nth(nth)
-
-    return {
-      openLink: row.findByDataQa('open-document'),
-      status: row.findByDataQa('document-status'),
-      validity: row.findByDataQa('document-validity')
-    }
-  }
-
   readonly externalChildDocumentsCount = () =>
     this.page
       .findByDataQa('table-of-external-child-documents')
