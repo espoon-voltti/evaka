@@ -145,6 +145,22 @@ class PlacementControllerCitizen(
                                     )
                                 }
                         }
+                        // Make sure termination bookkeeping happens when the whole placement gets
+                        // removed, and the previous placement is untouched
+                        val allPlacements =
+                            terminatablePlacementGroup.placements +
+                                terminatablePlacementGroup.additionalPlacements
+                        if (allPlacements.any { it.startDate == terminationDate.plusDays(1) }) {
+                            val endingPlacement =
+                                allPlacements.find { it.endDate == terminationDate }
+                            if (endingPlacement != null) {
+                                tx.updatePlacementTermination(
+                                    endingPlacement.id,
+                                    clock.today(),
+                                    user.evakaUserId,
+                                )
+                            }
+                        }
 
                         val cancelableTransferApplicationIds =
                             tx.cancelAllActiveTransferApplications(childId, clock, user.evakaUserId)

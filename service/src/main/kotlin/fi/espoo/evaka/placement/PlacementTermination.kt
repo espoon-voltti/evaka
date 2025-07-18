@@ -156,7 +156,7 @@ fun terminateBilledDaycare(
     unitId: DaycareId,
     now: HelsinkiDateTime,
 ) {
-    // additional placements after termination date are always cancelled
+    // additional placements after termination date are always canceled
     terminatablePlacementGroup.additionalPlacements
         .filter { it.endDate.isAfter(terminationDate) }
         .forEach { cancelOrTerminatePlacement(tx, it, terminationDate, user, now) }
@@ -166,6 +166,7 @@ fun terminateBilledDaycare(
             (it.type == PRESCHOOL_DAYCARE || it.type == PREPARATORY_DAYCARE) &&
                 it.endDate.isAfter(terminationDate)
         }
+
     // placements which have already been updated on the earlier iteration
     val placementsToSkip = mutableListOf<ChildPlacement>()
     for (placement in preschoolOrPreparatoryWithDaycare) {
