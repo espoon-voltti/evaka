@@ -833,7 +833,6 @@ WHERE placement_id = ${bind(id)}
 }
 
 fun Database.Transaction.terminatePlacementFrom(
-    terminationRequestedDate: LocalDate,
     placementId: PlacementId,
     terminationDate: LocalDate,
     terminatedBy: EvakaUserId,
@@ -848,7 +847,7 @@ fun Database.Transaction.terminatePlacementFrom(
             sql(
                 """
 UPDATE placement
-SET termination_requested_date = ${bind(terminationRequestedDate)},
+SET termination_requested_date = ${bind(now.toLocalDate())},
     terminated_by = ${bind(terminatedBy)},
     end_date = ${bind(terminationDate)}
 WHERE id = ${bind(placementId)}

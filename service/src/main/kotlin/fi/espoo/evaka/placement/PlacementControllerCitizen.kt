@@ -124,7 +124,6 @@ class PlacementControllerCitizen(
                             terminateBilledDaycare(
                                 tx,
                                 user,
-                                clock.today(),
                                 terminatablePlacementGroup,
                                 terminationDate,
                                 childId,
@@ -139,7 +138,6 @@ class PlacementControllerCitizen(
                                 .forEach {
                                     cancelOrTerminatePlacement(
                                         tx,
-                                        clock.today(),
                                         it,
                                         terminationDate,
                                         user,
