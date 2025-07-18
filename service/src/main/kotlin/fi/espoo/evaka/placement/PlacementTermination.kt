@@ -135,7 +135,6 @@ private fun ChildPlacement.startsAfter(date: LocalDate): Boolean = this.startDat
 
 fun cancelOrTerminatePlacement(
     tx: Database.Transaction,
-    terminationRequestedDate: LocalDate,
     placement: ChildPlacement,
     terminationDate: LocalDate,
     terminatedBy: AuthenticatedUser.Citizen,
@@ -144,38 +143,30 @@ fun cancelOrTerminatePlacement(
     if (placement.startsAfter(terminationDate)) {
         tx.cancelPlacement(now, terminatedBy.evakaUserId, placement.id)
     } else {
-        tx.terminatePlacementFrom(
-            terminationRequestedDate,
-            placement.id,
-            terminationDate,
-            terminatedBy.evakaUserId,
-            now,
-        )
+        tx.terminatePlacementFrom(placement.id, terminationDate, terminatedBy.evakaUserId, now)
     }
 }
 
 fun terminateBilledDaycare(
     tx: Database.Transaction,
     user: AuthenticatedUser.Citizen,
-    terminationRequestedDate: LocalDate,
     terminatablePlacementGroup: TerminatablePlacementGroup,
     terminationDate: LocalDate,
     childId: ChildId,
     unitId: DaycareId,
     now: HelsinkiDateTime,
 ) {
-    // additional placements after termination date are always cancelled
+    // additional placements after termination date are always canceled
     terminatablePlacementGroup.additionalPlacements
         .filter { it.endDate.isAfter(terminationDate) }
-        .forEach {
-            cancelOrTerminatePlacement(tx, terminationRequestedDate, it, terminationDate, user, now)
-        }
+        .forEach { cancelOrTerminatePlacement(tx, it, terminationDate, user, now) }
 
     val preschoolOrPreparatoryWithDaycare =
         terminatablePlacementGroup.placements.filter {
             (it.type == PRESCHOOL_DAYCARE || it.type == PREPARATORY_DAYCARE) &&
                 it.endDate.isAfter(terminationDate)
         }
+
     // placements which have already been updated on the earlier iteration
     val placementsToSkip = mutableListOf<ChildPlacement>()
     for (placement in preschoolOrPreparatoryWithDaycare) {
@@ -196,7 +187,7 @@ fun terminateBilledDaycare(
         // billed DAYCARE part
         // of a PRESCHOOL_DAYCARE placement has been terminated before. Detect those and prevent
         // duplicates.
-        val adjacentPlacement =
+        val followingPlacement =
             terminatablePlacementGroup.placements
                 .find {
                     it.type == newPlacementType && it.startDate == placement.endDate.plusDays(1)
@@ -212,12 +203,12 @@ fun terminateBilledDaycare(
         // - no adjacent => change the end date and create adjacent
 
         if (placement.startDate.isAfter(terminationDate)) {
-            if (adjacentPlacement != null) {
+            if (followingPlacement != null) {
                 // given an adjacent placement, do not create a duplicate PRESCHOOL or PREPARATORY
                 // placement, just update the dates
                 tx.cancelPlacement(now, user.evakaUserId, placement.id)
                 tx.updatePlacementStartDate(
-                    adjacentPlacement.id,
+                    followingPlacement.id,
                     placement.startDate,
                     now,
                     user.evakaUserId,
@@ -236,27 +227,16 @@ fun terminateBilledDaycare(
             }
         } else {
             tx.movePlacementEndDateEarlier(
-                Placement(
-                    id = placement.id,
-                    type = placement.type,
-                    childId = placement.childId,
-                    unitId = placement.unitId,
-                    startDate = placement.startDate,
-                    endDate = placement.endDate,
-                    terminationRequestedDate = placement.terminationRequestedDate,
-                    terminationRequestedBy = placement.terminatedBy?.id,
-                    placeGuarantee = false,
-                    modifiedAt = null,
-                    modifiedBy = null,
-                ),
+                placement.id,
+                placement.endDate,
                 terminationDate,
                 now,
                 user.evakaUserId,
             )
-            tx.updatePlacementTermination(placement.id, terminationRequestedDate, user.evakaUserId)
-            if (adjacentPlacement != null) {
+            tx.updatePlacementTermination(placement.id, now.toLocalDate(), user.evakaUserId)
+            if (followingPlacement != null) {
                 tx.updatePlacementStartDate(
-                    adjacentPlacement.id,
+                    followingPlacement.id,
                     terminationDate.plusDays(1),
                     now,
                     user.evakaUserId,

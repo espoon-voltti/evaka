@@ -410,9 +410,9 @@ export default React.memo(function PlacementRow({
               {i18n.childInformation.placements.terminatedByGuardian}
             </DataLabel>
             <DataValue data-qa="placement-terminated">
-              {`${
-                i18n.childInformation.placements.terminated
-              } ${placement.terminationRequestedDate.format()}`}
+              {`${i18n.childInformation.placements.terminated} ${placement.terminationRequestedDate.format()}`}
+              {placement.terminatedPreschoolDaycareDates &&
+                ` ${i18n.childInformation.placements.terminatedDaycare} ${placement.terminatedPreschoolDaycareDates.format()}`}
             </DataValue>
           </DataRow>
         )}

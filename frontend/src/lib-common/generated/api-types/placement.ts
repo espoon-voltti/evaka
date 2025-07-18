@@ -7,6 +7,7 @@
 import type { Action } from '../action'
 import type { ApplicationId } from './shared'
 import type { BackupCareId } from './shared'
+import DateRange from '../../date-range'
 import type { DaycareId } from './shared'
 import type { EvakaUser } from './user'
 import FiniteDateRange from '../../finite-date-range'
@@ -104,6 +105,7 @@ export interface DaycarePlacementWithDetails {
   serviceNeeds: ServiceNeed[]
   startDate: LocalDate
   terminatedBy: EvakaUser | null
+  terminatedPreschoolDaycareDates: DateRange | null
   terminationRequestedDate: LocalDate | null
   type: PlacementType
 }
@@ -424,6 +426,7 @@ export function deserializeJsonDaycarePlacementWithDetails(json: JsonOf<DaycareP
     modifiedAt: (json.modifiedAt != null) ? HelsinkiDateTime.parseIso(json.modifiedAt) : null,
     serviceNeeds: json.serviceNeeds.map(e => deserializeJsonServiceNeed(e)),
     startDate: LocalDate.parseIso(json.startDate),
+    terminatedPreschoolDaycareDates: (json.terminatedPreschoolDaycareDates != null) ? DateRange.parseJson(json.terminatedPreschoolDaycareDates) : null,
     terminationRequestedDate: (json.terminationRequestedDate != null) ? LocalDate.parseIso(json.terminationRequestedDate) : null
   }
 }

@@ -124,7 +124,6 @@ class PlacementControllerCitizen(
                             terminateBilledDaycare(
                                 tx,
                                 user,
-                                clock.today(),
                                 terminatablePlacementGroup,
                                 terminationDate,
                                 childId,
@@ -139,13 +138,28 @@ class PlacementControllerCitizen(
                                 .forEach {
                                     cancelOrTerminatePlacement(
                                         tx,
-                                        clock.today(),
                                         it,
                                         terminationDate,
                                         user,
                                         clock.now(),
                                     )
                                 }
+                        }
+                        // Make sure termination bookkeeping happens when the whole placement gets
+                        // removed, and no other placement would be touched otherwise.
+                        val allPlacements =
+                            terminatablePlacementGroup.placements +
+                                terminatablePlacementGroup.additionalPlacements
+                        if (allPlacements.any { it.startDate == terminationDate.plusDays(1) }) {
+                            val endingPlacement =
+                                allPlacements.find { it.endDate == terminationDate }
+                            if (endingPlacement != null) {
+                                tx.updatePlacementTermination(
+                                    endingPlacement.id,
+                                    clock.today(),
+                                    user.evakaUserId,
+                                )
+                            }
                         }
 
                         val cancelableTransferApplicationIds =

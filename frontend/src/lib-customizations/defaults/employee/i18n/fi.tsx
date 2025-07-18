@@ -1572,6 +1572,7 @@ export const fi = {
       modifiedBy: 'Muutoksentekijä',
       terminatedByGuardian: 'Huoltaja irtisanonut',
       terminated: 'Irtisanottu',
+      terminatedDaycare: 'Irtisanottu myös varhaiskasvatus',
       area: 'Alue',
       daycareUnit: 'Toimipaikka',
       daycareGroups: 'Ryhmä',
