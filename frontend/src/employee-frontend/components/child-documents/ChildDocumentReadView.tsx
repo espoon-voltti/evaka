@@ -263,12 +263,11 @@ const ChildDocumentReadViewInner = React.memo(
 
     const updateEndingDecisionsForm = (newValidity: DateRange | undefined) => {
       endingDecisionsForm.update(() => {
-        let filteredDecisions = acceptedDecisions
-        if (newValidity) {
-          filteredDecisions = acceptedDecisions.filter((decision) =>
-            decision.validity.overlapsWith(newValidity)
-          )
-        }
+        const filteredDecisions = newValidity
+          ? acceptedDecisions.filter((decision) =>
+              decision.validity.overlapsWith(newValidity)
+            )
+          : acceptedDecisions
         return {
           otherDecisions: filteredDecisions.map((decision) => ({
             id: decision.id,
@@ -777,15 +776,16 @@ const AcceptDecisionForm = React.memo(function AcceptDecisionForm({
           const filteredDecisions = acceptedDecisions.filter((decision) =>
             decision.validity.overlapsWith(validity.value())
           )
-          const decisionsWithSameTemplate = filteredDecisions.filter(
+          const filteredDecisionsWithSameTemplate = filteredDecisions.filter(
             (decision) => decision.templateId === document.template.id
           )
 
-          setDecisionsWithSameTemplate(decisionsWithSameTemplate)
+          setDecisionsWithSameTemplate(filteredDecisionsWithSameTemplate)
 
           if (
             filteredDecisions.length > 0 &&
-            decisionsWithSameTemplate.length !== filteredDecisions.length
+            filteredDecisionsWithSameTemplate.length !==
+              filteredDecisions.length
           ) {
             setValidity(validity.value())
             updateEndingDecisionsForm(validity.value())
