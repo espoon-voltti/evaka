@@ -94,6 +94,7 @@ import {
   annulChildDocumentDecision,
   rejectChildDocumentDecision,
   proposeChildDocumentDecision,
+  getAcceptedChildDocumentDecisions,
   updateChildDocumentDecisionValidity
 } from '../../generated/api-clients/document'
 import {
@@ -203,6 +204,10 @@ export const childDocumentQuery = q.query(getDocument, {
 
 export const childDocumentDecisionMakersQuery = q.query(
   getChildDocumentDecisionMakers
+)
+
+export const acceptedChildDocumentDecisionsQuery = q.query(
+  getAcceptedChildDocumentDecisions
 )
 
 export const childDocumentMetadataQuery = q.query(getChildDocumentMetadata)

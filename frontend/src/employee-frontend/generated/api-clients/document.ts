@@ -5,6 +5,7 @@
 // GENERATED FILE: no manual modifications
 
 import type { AcceptChildDocumentDecisionRequest } from 'lib-common/generated/api-types/document'
+import type { AcceptedChildDecisions } from 'lib-common/generated/api-types/document'
 import type { ChildDocumentCreateRequest } from 'lib-common/generated/api-types/document'
 import type { ChildDocumentId } from 'lib-common/generated/api-types/shared'
 import type { ChildDocumentSummaryWithPermittedActions } from 'lib-common/generated/api-types/document'
@@ -31,6 +32,7 @@ import type { UpdateChildDocumentDecisionValidityRequest } from 'lib-common/gene
 import type { Uri } from 'lib-common/uri'
 import { client } from '../../api/client'
 import { createUrlSearchParams } from 'lib-common/api'
+import { deserializeJsonAcceptedChildDecisions } from 'lib-common/generated/api-types/document'
 import { deserializeJsonChildDocumentSummaryWithPermittedActions } from 'lib-common/generated/api-types/document'
 import { deserializeJsonChildDocumentWithPermittedActions } from 'lib-common/generated/api-types/document'
 import { deserializeJsonDocumentLockResponse } from 'lib-common/generated/api-types/document'
@@ -373,6 +375,26 @@ export function downloadChildDocument(
   return {
     url: uri`/employee/child-documents/${request.documentId}/pdf`.withBaseUrl(client.defaults.baseURL ?? '')
   }
+}
+
+
+/**
+* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentController.getAcceptedChildDocumentDecisions
+*/
+export async function getAcceptedChildDocumentDecisions(
+  request: {
+    documentId: ChildDocumentId
+  }
+): Promise<AcceptedChildDecisions[]> {
+  const params = createUrlSearchParams(
+    ['documentId', request.documentId]
+  )
+  const { data: json } = await client.request<JsonOf<AcceptedChildDecisions[]>>({
+    url: uri`/employee/child-documents/accepted-decisions`.toString(),
+    method: 'GET',
+    params
+  })
+  return json.map(e => deserializeJsonAcceptedChildDecisions(e))
 }
 
 

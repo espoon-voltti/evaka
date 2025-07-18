@@ -19,6 +19,7 @@ import fi.espoo.evaka.document.getTemplate
 import fi.espoo.evaka.pis.Employee
 import fi.espoo.evaka.pis.listPersonByDuplicateOf
 import fi.espoo.evaka.placement.getPlacementsForChildDuring
+import fi.espoo.evaka.shared.ChildDocumentDecisionId
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DocumentTemplateId
@@ -632,6 +633,28 @@ class ChildDocumentController(
         }
     }
 
+    @GetMapping("/accepted-decisions")
+    fun getAcceptedChildDocumentDecisions(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @RequestParam documentId: ChildDocumentId,
+    ): List<AcceptedChildDecisions> {
+        return db.connect { dbc ->
+                dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.ChildDocument.READ_ACCEPTED_DECISIONS,
+                        documentId,
+                    )
+                    tx.getAcceptedChildDocumentDecisions(documentId)
+                }
+            }
+            .also { Audit.ChildDocumentReadAcceptedDecisions.log(targetId = AuditId(documentId)) }
+    }
+
     @GetMapping("/{documentId}/pdf")
     fun downloadChildDocument(
         db: Database,
@@ -709,7 +732,10 @@ class ChildDocumentController(
             .also { Audit.ChildDocumentProposeDecision.log(targetId = AuditId(documentId)) }
     }
 
-    data class AcceptChildDocumentDecisionRequest(val validity: DateRange)
+    data class AcceptChildDocumentDecisionRequest(
+        val validity: DateRange,
+        val endingDecisionIds: List<ChildDocumentDecisionId>? = emptyList(),
+    )
 
     @PostMapping("/{documentId}/accept")
     fun acceptChildDocumentDecision(
@@ -759,6 +785,16 @@ class ChildDocumentController(
                                 clock.now(),
                             )
                         }
+
+                    body.endingDecisionIds?.isEmpty()?.let {
+                        if (!it) {
+                            tx.endChildDocumentDecisionsWithSubstitutiveDecision(
+                                childId = document.child.id,
+                                endingDecisionIds = body.endingDecisionIds,
+                                endDate = body.validity.start.minusDays(1),
+                            )
+                        }
+                    }
 
                     childDocumentService.schedulePdfGeneration(tx, listOf(documentId), clock.now())
                     childDocumentService.scheduleEmailNotification(

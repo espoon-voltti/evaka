@@ -610,6 +610,51 @@ fun Database.Transaction.endExpiredChildDocumentDecisions(
         .toList<ChildDocumentDecisionId>()
 }
 
+fun Database.Read.getAcceptedChildDocumentDecisions(
+    documentId: ChildDocumentId
+): List<AcceptedChildDecisions> {
+    return createQuery {
+            sql(
+                """
+SELECT
+    accepted_document.decision_id AS id,
+    accepted_document.template_id,
+    daterange(cdd.valid_from, cdd.valid_to, '[]') AS validity,
+    dt.name AS template_name
+FROM child_document new_document
+         JOIN child_document accepted_document ON accepted_document.child_id = new_document.child_id
+         JOIN child_document_decision cdd ON accepted_document.decision_id = cdd.id
+         JOIN document_template dt ON accepted_document.template_id = dt.id
+WHERE new_document.id = ${bind(documentId)} AND cdd.status = 'ACCEPTED'
+"""
+            )
+        }
+        .toList<AcceptedChildDecisions>()
+}
+
+fun Database.Read.endChildDocumentDecisionsWithSubstitutiveDecision(
+    childId: ChildId,
+    endingDecisionIds: List<ChildDocumentDecisionId>,
+    endDate: LocalDate,
+): List<ChildDocumentDecisionId> {
+    return createQuery {
+            sql(
+                """
+UPDATE child_document_decision cdd
+SET valid_to = ${bind(endDate)}
+FROM child_document cd
+WHERE cdd.id = ANY(${bind(endingDecisionIds)})
+    AND cdd.status = 'ACCEPTED'
+    AND (cdd.valid_to IS NULL OR cdd.valid_to > ${bind(endDate)})
+    AND cd.decision_id = cdd.id
+    AND cd.child_id = ${bind(childId)}
+RETURNING cdd.id
+"""
+            )
+        }
+        .toList<ChildDocumentDecisionId>()
+}
+
 fun Database.Transaction.setChildDocumentDecisionValidity(
     decisionId: ChildDocumentDecisionId,
     validity: DateRange,

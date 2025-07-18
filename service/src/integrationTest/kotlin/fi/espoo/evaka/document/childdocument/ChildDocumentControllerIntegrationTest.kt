@@ -23,6 +23,7 @@ import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.sficlient.MockSfiMessagesClient
 import fi.espoo.evaka.sficlient.rest.EventType
 import fi.espoo.evaka.shared.AreaId
+import fi.espoo.evaka.shared.ChildDocumentDecisionId
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.DocumentTemplateId
 import fi.espoo.evaka.shared.EmployeeId
@@ -883,6 +884,102 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
     }
 
     @Test
+    fun `Only the decision maker can get other accepted decisions for child`() {
+        val documentId1 =
+            controller.createDocument(
+                dbInstance(),
+                employeeUser.user,
+                clock,
+                ChildDocumentCreateRequest(testChild_1.id, templateIdAssistanceDecision),
+            )
+
+        proposeChildDocumentDecision(documentId1, unitSupervisorUser.id)
+
+        val validity = DateRange(clock.today(), clock.today().plusDays(7))
+
+        acceptChildDocumentDecision(documentId1, validity, user = unitSupervisorUser)
+
+        val document1 = getDocument(documentId1)
+
+        val documentId2 =
+            controller.createDocument(
+                dbInstance(),
+                employeeUser.user,
+                clock,
+                ChildDocumentCreateRequest(testChild_1.id, templateIdAssistanceDecision),
+            )
+
+        proposeChildDocumentDecision(documentId2, unitSupervisorUser.id)
+
+        // not the assigned decision maker
+        assertThrows<Forbidden> {
+            controller.getAcceptedChildDocumentDecisions(
+                dbInstance(),
+                employeeUser.user,
+                clock,
+                documentId2,
+            )
+        }
+
+        val decisions =
+            controller.getAcceptedChildDocumentDecisions(
+                dbInstance(),
+                unitSupervisorUser,
+                clock,
+                documentId2,
+            )
+        assertEquals(1, decisions.size)
+        assertEquals(document1.decision?.id, decisions.first().id)
+    }
+
+    @Test
+    fun `Substitutive decision can end other accepted decisions for child`() {
+        // Create and accept the first decision
+        val documentId1 =
+            controller.createDocument(
+                dbInstance(),
+                employeeUser.user,
+                clock,
+                ChildDocumentCreateRequest(testChild_1.id, templateIdAssistanceDecision),
+            )
+
+        proposeChildDocumentDecision(documentId1, unitSupervisorUser.id)
+
+        val validity1 = DateRange(clock.today(), null)
+
+        acceptChildDocumentDecision(documentId1, validity1, user = unitSupervisorUser)
+
+        // Create and accept the second decision
+        val documentId2 =
+            controller.createDocument(
+                dbInstance(),
+                employeeUser.user,
+                clock,
+                ChildDocumentCreateRequest(testChild_1.id, templateIdAssistanceDecision),
+            )
+
+        proposeChildDocumentDecision(documentId2, unitSupervisorUser.id)
+
+        val validity2 = DateRange(clock.today().plusDays(1), clock.today().plusDays(7))
+
+        var document1 = getDocument(documentId1)
+
+        acceptChildDocumentDecision(
+            documentId2,
+            validity2,
+            user = unitSupervisorUser,
+            endingDecisionIds = listOf(document1.decision!!.id),
+        )
+
+        // Check that the first decision has ended before the second decision and that the second
+        // decision is valid
+        document1 = getDocument(documentId1)
+        val document2 = getDocument(documentId2)
+        assertEquals(validity2.start.minusDays(1), document1.decision!!.validity!!.end)
+        assertEquals(validity2, document2.decision!!.validity)
+    }
+
+    @Test
     fun `User 1 takes a lock and updates, user 2 cannot do that for 15 minutes`() {
         // user 1 creates at 10:00
         val documentId =
@@ -1208,13 +1305,14 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         validity: DateRange,
         user: AuthenticatedUser.Employee = employeeUser.user,
         clockOverride: MockEvakaClock = clock,
+        endingDecisionIds: List<ChildDocumentDecisionId> = emptyList(),
     ) =
         controller.acceptChildDocumentDecision(
             dbInstance(),
             user,
             clockOverride,
             id,
-            ChildDocumentController.AcceptChildDocumentDecisionRequest(validity),
+            ChildDocumentController.AcceptChildDocumentDecisionRequest(validity, endingDecisionIds),
         )
 
     private fun rejectChildDocumentDecision(
