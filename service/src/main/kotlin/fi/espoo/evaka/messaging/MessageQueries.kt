@@ -5,6 +5,7 @@
 package fi.espoo.evaka.messaging
 
 import fi.espoo.evaka.application.ApplicationStatus
+import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.application.getCitizenChildren
 import fi.espoo.evaka.attachment.Attachment
 import fi.espoo.evaka.invoicing.controller.SortDirection
@@ -456,6 +457,8 @@ private data class ReceivedThread(
     val urgent: Boolean,
     val sensitive: Boolean,
     val isCopy: Boolean,
+    val applicationId: ApplicationId?,
+    val applicationType: ApplicationType?,
     val applicationStatus: ApplicationStatus?,
     @Json val children: List<MessageChild>,
 )
@@ -625,6 +628,8 @@ SELECT
     t.urgent,
     t.sensitive,
     t.is_copy,
+    t.application_id,
+    a.type as application_type,
     coalesce((
         SELECT jsonb_agg(jsonb_build_object(
             'childId', mtc.child_id,
@@ -638,6 +643,7 @@ SELECT
     ), '[]'::jsonb) AS children
 FROM message_thread_participant tp
 JOIN message_thread t on t.id = tp.thread_id
+JOIN application a on a.id = t.application_id
 WHERE
     tp.participant_id = ${bind(accountId)} AND
     tp.last_received_timestamp IS NOT NULL AND
@@ -762,6 +768,8 @@ private fun combineThreadsAndMessages(
                         applicationStatus = thread.applicationStatus,
                         children = thread.children,
                         messages = messages,
+                        applicationId = thread.applicationId,
+                        applicationType = thread.applicationType,
                     )
                 )
             }
