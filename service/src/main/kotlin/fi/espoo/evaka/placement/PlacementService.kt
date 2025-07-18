@@ -355,7 +355,7 @@ private fun Database.Transaction.clearOldPlacements(
                 // old placement overlaps with the beginning of new placement
                 old.startDate.isBefore(from) && !old.endDate.isAfter(to) -> {
                     checkAclAuth(aclAuth, old)
-                    movePlacementEndDateEarlier(old, from.minusDays(1), now, userId)
+                    movePlacementEndDateEarlier(old.id, old.endDate, from.minusDays(1), now, userId)
                 }
 
                 // old placement overlaps with the ending of new placement
@@ -387,21 +387,22 @@ fun Database.Transaction.movePlacementStartDateLater(
 }
 
 fun Database.Transaction.movePlacementEndDateEarlier(
-    placement: Placement,
+    placementId: PlacementId,
+    currentEndDate: LocalDate,
     newEndDate: LocalDate,
     now: HelsinkiDateTime,
     userId: EvakaUserId,
 ) {
-    if (newEndDate.isAfter(placement.endDate))
+    if (newEndDate.isAfter(currentEndDate))
         throw IllegalArgumentException("Use this method only for shortening placement")
 
-    clearGroupPlacementsAfter(placement.id, newEndDate)
+    clearGroupPlacementsAfter(placementId, newEndDate)
     clearServiceNeedsFromPeriod(
         this,
-        placement.id,
-        FiniteDateRange(newEndDate.plusDays(1), placement.endDate),
+        placementId,
+        FiniteDateRange(newEndDate.plusDays(1), currentEndDate),
     )
-    updatePlacementEndDate(placement.id, newEndDate, now, userId)
+    updatePlacementEndDate(placementId, newEndDate, now, userId)
 }
 
 private fun Database.Transaction.splitPlacementWithGap(
@@ -411,7 +412,13 @@ private fun Database.Transaction.splitPlacementWithGap(
     now: HelsinkiDateTime,
     userId: EvakaUserId,
 ) {
-    movePlacementEndDateEarlier(placement, newEndDate = gapStartInclusive.minusDays(1), now, userId)
+    movePlacementEndDateEarlier(
+        placementId = placement.id,
+        currentEndDate = placement.endDate,
+        newEndDate = gapStartInclusive.minusDays(1),
+        now,
+        userId,
+    )
 
     insertPlacement(
         type = placement.type,

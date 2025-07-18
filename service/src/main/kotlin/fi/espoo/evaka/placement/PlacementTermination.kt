@@ -236,19 +236,8 @@ fun terminateBilledDaycare(
             }
         } else {
             tx.movePlacementEndDateEarlier(
-                Placement(
-                    id = placement.id,
-                    type = placement.type,
-                    childId = placement.childId,
-                    unitId = placement.unitId,
-                    startDate = placement.startDate,
-                    endDate = placement.endDate,
-                    terminationRequestedDate = placement.terminationRequestedDate,
-                    terminationRequestedBy = placement.terminatedBy?.id,
-                    placeGuarantee = false,
-                    modifiedAt = null,
-                    modifiedBy = null,
-                ),
+                placement.id,
+                placement.endDate,
                 terminationDate,
                 now,
                 user.evakaUserId,
