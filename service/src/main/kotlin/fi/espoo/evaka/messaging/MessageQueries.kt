@@ -643,7 +643,7 @@ SELECT
     ), '[]'::jsonb) AS children
 FROM message_thread_participant tp
 JOIN message_thread t on t.id = tp.thread_id
-JOIN application a on a.id = t.application_id
+LEFT JOIN application a on a.id = t.application_id
 WHERE
     tp.participant_id = ${bind(accountId)} AND
     tp.last_received_timestamp IS NOT NULL AND
