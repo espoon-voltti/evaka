@@ -87,7 +87,7 @@ const ThreadHeader = styled.div`
   top: 0;
   padding: ${defaultMargins.L};
   background: ${colors.grayscale.g0};
-  max-height: 120px;
+  max-height: 150px;
 `
 
 const MessageContent = styled.div`
@@ -187,7 +187,17 @@ interface Props {
 export function SingleThreadView({
   accountId,
   goBack,
-  thread: { id: threadId, messages, title, type, urgent, sensitive, children },
+  thread: {
+    id: threadId,
+    messages,
+    title,
+    type,
+    urgent,
+    sensitive,
+    children,
+    applicationId,
+    applicationType
+  },
   view,
   onArchived
 }: Props) {
@@ -282,6 +292,12 @@ export function SingleThreadView({
     return firstMessage.recipients[0]
   }, [messages])
 
+  const isServiceWorkerApplicationThread = useMemo(() => {
+    if (!applicationId) return false
+    const firstMessage = messages[0]
+    return firstMessage.sender.type === 'SERVICE_WORKER'
+  }, [applicationId, messages])
+
   const hasCitizenMessages = useMemo(() => {
     return messages.some((message) => message.sender.type === 'CITIZEN')
   }, [messages])
@@ -308,14 +324,27 @@ export function SingleThreadView({
                 </H2>
                 <MessageCharacteristics type={type} urgent={urgent} />
               </FixedSpaceRow>
-              {singleCustomer && singleCustomer.personId && (
-                <div>
-                  {i18n.messages.customer}:{' '}
-                  <Link to={`/profile/${singleCustomer.personId}`}>
-                    {singleCustomer.name}
-                  </Link>
-                </div>
-              )}
+              <FixedSpaceRow justifyContent="left">
+                {singleCustomer && singleCustomer.personId && (
+                  <div>
+                    {i18n.messages.customer}:{' '}
+                    <Link to={`/profile/${singleCustomer.personId}`}>
+                      {singleCustomer.name}
+                    </Link>
+                  </div>
+                )}
+                {isServiceWorkerApplicationThread && (
+                  <div>
+                    {applicationType
+                      ? i18n.messages.applicationTypes[applicationType]
+                      : i18n.messages.application}
+                    {': '}
+                    <Link to={`/applications/${applicationId}`}>
+                      {i18n.messages.showApplication}
+                    </Link>
+                  </div>
+                )}
+              </FixedSpaceRow>
             </FixedSpaceColumn>
           </ThreadHeader>
           {messages.map((message, idx) => (

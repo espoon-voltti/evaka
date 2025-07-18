@@ -6,6 +6,7 @@
 
 import type { ApplicationId } from './shared'
 import type { ApplicationStatus } from './application'
+import type { ApplicationType } from './application'
 import type { AreaId } from './shared'
 import type { Attachment } from './attachment'
 import type { AttachmentId } from './shared'
@@ -282,7 +283,9 @@ export type MessageRecipientType =
 * Generated from fi.espoo.evaka.messaging.MessageThread
 */
 export interface MessageThread {
+  applicationId: ApplicationId | null
   applicationStatus: ApplicationStatus | null
+  applicationType: ApplicationType | null
   children: MessageChild[]
   id: MessageThreadId
   isCopy: boolean

@@ -4994,6 +4994,13 @@ export const fi = {
     },
     sensitive: 'arkaluontoinen',
     customer: 'Asiakas',
+    applicationTypes: {
+      PRESCHOOL: 'Esiopetushakemus',
+      DAYCARE: 'Varhaiskasvatushakemus',
+      CLUB: 'Kerhohakemus'
+    },
+    application: 'Hakemus',
+    showApplication: 'Näytä hakemus',
     messageEditor: {
       message: 'Viesti',
       newMessage: 'Uusi viesti',

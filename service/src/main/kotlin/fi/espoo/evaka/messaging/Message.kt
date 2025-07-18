@@ -8,7 +8,9 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonTypeName
 import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver
 import fi.espoo.evaka.application.ApplicationStatus
+import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.attachment.Attachment
+import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
@@ -46,6 +48,8 @@ data class MessageThread(
     val urgent: Boolean,
     val sensitive: Boolean,
     val isCopy: Boolean,
+    val applicationId: ApplicationId?,
+    val applicationType: ApplicationType?,
     val applicationStatus: ApplicationStatus?,
     val children: List<MessageChild>,
     @Json val messages: List<Message>,
