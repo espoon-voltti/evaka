@@ -257,8 +257,13 @@ export default React.memo(function ReservationModal({
 
               <Gap size="zero" sizeOnMobile="s" />
 
-              <CalendarModalSection>
-                <H2>{i18n.calendar.reservationModal.selectChildren}</H2>
+              <CalendarModalSection
+                role="group"
+                aria-labelledby="select-children"
+              >
+                <H2 id="select-children">
+                  {i18n.calendar.reservationModal.selectChildren}
+                </H2>
                 <Gap size="xs" />
                 <ChildSelector
                   bind={selectedChildren}
@@ -279,9 +284,15 @@ export default React.memo(function ReservationModal({
 
                 <HolidayPeriodInfoBox holidayPeriods={holidayPeriods} />
 
-                <Label>{i18n.calendar.reservationModal.selectRecurrence}</Label>
+                <Label htmlFor="recurrence">
+                  {i18n.calendar.reservationModal.selectRecurrence}
+                </Label>
                 <Gap size="xxs" />
-                <SelectF bind={repetition} data-qa="repetition" />
+                <SelectF
+                  bind={repetition}
+                  data-qa="repetition"
+                  id="recurrence"
+                />
                 <Gap size="s" />
 
                 <ExpandingInfo

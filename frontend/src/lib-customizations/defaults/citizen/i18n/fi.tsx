@@ -507,6 +507,8 @@ export default {
       start: 'Alkaa',
       end: 'Päättyy',
       secondTimeRange: {
+        add: 'Lisää toinen aikaväli',
+        delete: 'Poista toinen aikaväli',
         start: 'Toisen aikavälin alku',
         end: 'Toisen aikavälin loppu'
       },
