@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import orderBy from 'lodash/orderBy'
 import range from 'lodash/range'
-import sortBy from 'lodash/sortBy'
 import React, { useMemo, useState } from 'react'
 import styled from 'styled-components'
 import { Link, useSearchParams } from 'wouter'
@@ -122,13 +122,35 @@ const minYear = now.year - 4
 const maxYear = now.year
 const yearOptions = range(maxYear, minYear - 1, -1)
 
+type SortOption = 'child' | 'group' | 'assistanceNeedCoefficient'
+const sortOptions: Record<
+  SortOption,
+  {
+    columns: (keyof ServiceVoucherValueRow)[]
+    directions: ('asc' | 'desc')[]
+  }
+> = {
+  child: {
+    columns: ['childLastName', 'childFirstName'],
+    directions: ['asc', 'asc']
+  },
+  group: {
+    columns: ['childGroupName', 'childLastName', 'childFirstName'],
+    directions: ['desc', 'asc', 'asc']
+  },
+  assistanceNeedCoefficient: {
+    columns: ['assistanceNeedCoefficient', 'childLastName', 'childFirstName'],
+    directions: ['desc', 'asc', 'asc']
+  }
+}
+
 export default React.memo(function VoucherServiceProviderUnit() {
   const [queryParams] = useSearchParams()
   const { i18n } = useTranslation()
   const unitId = useIdRouteParam<DaycareId>('unitId')
-  const [sort, setSort] = useState<'child' | 'group'>('child')
+  const [sort, setSort] = useState<SortOption>('child')
 
-  const sortOnClick = (prop: 'child' | 'group') => () => {
+  const sortOnClick = (prop: SortOption) => () => {
     if (sort !== prop) {
       setSort(prop)
     }
@@ -159,11 +181,13 @@ export default React.memo(function VoucherServiceProviderUnit() {
   const report = useQueryResult(
     serviceVoucherReportForUnitQuery({ unitId, ...filters })
   )
-  const sortedReport = report.map((rs) =>
-    sort === 'group'
-      ? { ...rs, rows: sortBy(rs.rows, 'childGroupName') }
-      : { ...rs, rows: sortBy(rs.rows, ['childLastName', 'childFirstName']) }
-  )
+  const sortedReport = useMemo(() => {
+    const { columns, directions } = sortOptions[sort]
+    return report.map((rs) => ({
+      ...rs,
+      rows: orderBy(rs.rows, columns, directions)
+    }))
+  }, [report, sort])
   const unitName = useMemo(
     () => report.map((r) => r.rows[0].unitName).getOrElse(''),
     [report]
@@ -382,9 +406,14 @@ export default React.memo(function VoucherServiceProviderUnit() {
                     {i18n.reports.voucherServiceProviderUnit.numberOfDays}
                   </StyledTh>
                   <Th>{i18n.reports.voucherServiceProviderUnit.serviceNeed}</Th>
-                  <StyledTh>
+                  <SortableTh
+                    sorted={
+                      sort === 'assistanceNeedCoefficient' ? 'DESC' : undefined
+                    }
+                    onClick={sortOnClick('assistanceNeedCoefficient')}
+                  >
                     {i18n.reports.voucherServiceProviderUnit.assistanceNeed}
-                  </StyledTh>
+                  </SortableTh>
                   <StyledTh>
                     {
                       i18n.reports.voucherServiceProviderUnit
