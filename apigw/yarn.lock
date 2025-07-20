@@ -407,13 +407,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@datadog/native-appsec@npm:9.0.0":
-  version: 9.0.0
-  resolution: "@datadog/native-appsec@npm:9.0.0"
+"@datadog/native-appsec@npm:10.0.0":
+  version: 10.0.0
+  resolution: "@datadog/native-appsec@npm:10.0.0"
   dependencies:
     node-gyp: "npm:latest"
     node-gyp-build: "npm:^3.9.0"
-  checksum: 10/5f69f4bbc2f10af2d7ea778d5c1eb30c6d3e0db63cf6b946addcd5544366ac93f967610a02a86325bd361c0555053b4007f38c46f7e4c1ed5452d7b1bbf37101
+  checksum: 10/4c4c5feb327a7da7b27029f72c7f3645cfe779582298970ff37f71618b5009fd0b70a5110390b58d2fa3bc2b870b2574ac8dede9567304910af8cf42b48169e9
   languageName: node
   linkType: hard
 
@@ -2918,12 +2918,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dd-trace@npm:5.58.0":
-  version: 5.58.0
-  resolution: "dd-trace@npm:5.58.0"
+"dd-trace@npm:5.59.0":
+  version: 5.59.0
+  resolution: "dd-trace@npm:5.59.0"
   dependencies:
     "@datadog/libdatadog": "npm:0.7.0"
-    "@datadog/native-appsec": "npm:9.0.0"
+    "@datadog/native-appsec": "npm:10.0.0"
     "@datadog/native-iast-taint-tracking": "npm:4.0.0"
     "@datadog/native-metrics": "npm:3.1.1"
     "@datadog/pprof": "npm:5.9.0"
@@ -2934,7 +2934,7 @@ __metadata:
     "@opentelemetry/core": "npm:^1.14.0"
     crypto-randomuuid: "npm:^1.0.0"
     dc-polyfill: "npm:^0.1.9"
-    ignore: "npm:^5.2.4"
+    ignore: "npm:^7.0.5"
     import-in-the-middle: "npm:^1.14.2"
     istanbul-lib-coverage: "npm:^3.2.2"
     jest-docblock: "npm:^29.7.0"
@@ -2942,10 +2942,10 @@ __metadata:
     koalas: "npm:^1.0.2"
     limiter: "npm:^1.1.5"
     lodash.sortby: "npm:^4.7.0"
-    lru-cache: "npm:^7.18.3"
+    lru-cache: "npm:^10.4.3"
     module-details-from-path: "npm:^1.0.4"
     mutexify: "npm:^1.4.0"
-    opentracing: "npm:>=0.12.1"
+    opentracing: "npm:>=0.14.7"
     path-to-regexp: "npm:^0.1.12"
     pprof-format: "npm:^2.1.0"
     protobufjs: "npm:^7.5.3"
@@ -2956,7 +2956,7 @@ __metadata:
     source-map: "npm:^0.7.4"
     tlhunter-sorted-set: "npm:^0.1.0"
     ttl-set: "npm:^1.0.0"
-  checksum: 10/47cf35d8737319d9a6ee79f8a984adc980cfb69140d241e8c777d322d2ebaeb9509e3a17f0dace80753192abc03faeb9e18fa96929d5c43fb89a19e90aa1e0fa
+  checksum: 10/3ee1eca395429d0e6c5bad0eaa8dcbaa2d5dcc1f7e9f2b59e4f3d0d89ae5bea43e4b9729cc99c4acc337cc1460162ea247fc742a561788b68d57df24650192b9
   languageName: node
   linkType: hard
 
@@ -3617,7 +3617,7 @@ __metadata:
     connect-redis: "npm:9.0.0"
     cookie-parser: "npm:1.4.7"
     date-fns: "npm:4.1.0"
-    dd-trace: "npm:5.58.0"
+    dd-trace: "npm:5.59.0"
     eslint: "npm:9.31.0"
     eslint-config-prettier: "npm:10.1.5"
     eslint-plugin-import: "npm:2.32.0"
@@ -4419,17 +4419,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ignore@npm:^5.2.0, ignore@npm:^5.2.4":
+"ignore@npm:^5.2.0":
   version: 5.3.1
   resolution: "ignore@npm:5.3.1"
   checksum: 10/0a884c2fbc8c316f0b9f92beaf84464253b73230a4d4d286697be45fca081199191ca33e1c2e82d9e5f851f5e9a48a78e25a35c951e7eb41e59f150db3530065
   languageName: node
   linkType: hard
 
-"ignore@npm:^7.0.0":
-  version: 7.0.4
-  resolution: "ignore@npm:7.0.4"
-  checksum: 10/01ee59df2ffd14b0844efc17f5ab3642c848e45efdb7cc757928da5e076cb74313748f77f5ffe362a6407c5e7cc71f10fad5e8eb9d91c1a17c4e7ef2c1f8e40e
+"ignore@npm:^7.0.0, ignore@npm:^7.0.5":
+  version: 7.0.5
+  resolution: "ignore@npm:7.0.5"
+  checksum: 10/f134b96a4de0af419196f52c529d5c6120c4456ff8a6b5a14ceaaa399f883e15d58d2ce651c9b69b9388491d4669dda47285d307e827de9304a53a1824801bc6
   languageName: node
   linkType: hard
 
@@ -5682,7 +5682,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lru-cache@npm:^10.2.0":
+"lru-cache@npm:^10.2.0, lru-cache@npm:^10.4.3":
   version: 10.4.3
   resolution: "lru-cache@npm:10.4.3"
   checksum: 10/e6e90267360476720fa8e83cc168aa2bf0311f3f2eea20a6ba78b90a885ae72071d9db132f40fda4129c803e7dcec3a6b6a6fbb44ca90b081630b810b5d6a41a
@@ -5707,7 +5707,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lru-cache@npm:^7.14.0, lru-cache@npm:^7.18.3":
+"lru-cache@npm:^7.14.0":
   version: 7.18.3
   resolution: "lru-cache@npm:7.18.3"
   checksum: 10/6029ca5aba3aacb554e919d7ef804fffd4adfc4c83db00fac8248c7c78811fb6d4b6f70f7fd9d55032b3823446546a007edaa66ad1f2377ae833bd983fac5d98
@@ -6307,7 +6307,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"opentracing@npm:>=0.12.1":
+"opentracing@npm:>=0.14.7":
   version: 0.14.7
   resolution: "opentracing@npm:0.14.7"
   checksum: 10/0159a5a2a40bef0722cd6e0607808355e0e22909fe54f3441fbce3c78183fed0a12f834ca43eff0c93abddb8b1ab89548162b05cd9b340678dfa3b5cb9eb04b8
