@@ -23,7 +23,7 @@ import {
   ExpandingInfoBox,
   InlineInfoButton
 } from 'lib-components/molecules/ExpandingInfo'
-import { fontWeights, H2 } from 'lib-components/typography'
+import { fontWeights, H1 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/citizen'
 import colors from 'lib-customizations/common'
@@ -720,7 +720,7 @@ const WeekNumber = styled(HeadingCell)`
   text-align: right;
 `
 
-const MonthTitle = styled(H2).attrs({ noMargin: true })`
+const MonthTitle = styled(H1).attrs({ noMargin: true })`
   color: ${(p) => p.theme.colors.main.m1};
   align-items: center;
   display: flex;
