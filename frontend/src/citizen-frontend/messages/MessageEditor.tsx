@@ -41,7 +41,7 @@ import FileUpload, {
 } from 'lib-components/molecules/FileUpload'
 import { InfoBox } from 'lib-components/molecules/MessageBoxes'
 import { PersonName } from 'lib-components/molecules/PersonNames'
-import { Bold, P } from 'lib-components/typography'
+import { Bold, H2, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faTimes } from 'lib-icons'
@@ -500,11 +500,12 @@ const TopBar = styled.div`
   padding: ${defaultMargins.m};
 `
 
-const Title = styled.span`
+const Title = styled(H2)`
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   margin-right: ${defaultMargins.s};
+  color: ${colors.grayscale.g0};
 `
 
 const FormArea = styled.div`
