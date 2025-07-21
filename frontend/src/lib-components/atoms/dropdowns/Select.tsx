@@ -75,6 +75,7 @@ interface RawProps {
   disabled?: boolean
   placeholder?: string
   name?: string
+  autoFocus?: boolean
   onFocus?: FocusEventHandler<HTMLSelectElement>
   onBlur?: () => void
   fullWidth?: boolean
@@ -89,6 +90,7 @@ const RawSelect = React.memo(function RawSelect({
   disabled,
   placeholder,
   name,
+  autoFocus,
   onFocus,
   onBlur,
   fullWidth,
@@ -109,6 +111,7 @@ const RawSelect = React.memo(function RawSelect({
           value={value}
           onChange={handleChange}
           disabled={disabled}
+          autoFocus={autoFocus}
           onFocus={onFocus}
           onBlur={onBlur}
         >
@@ -161,6 +164,7 @@ interface SelectFProps<T> {
   disabled?: boolean
   placeholder?: string
   name?: string
+  autoFocus?: boolean
   onFocus?: FocusEventHandler<HTMLSelectElement>
   hideErrorsBeforeTouched?: boolean
   fullWidth?: boolean
