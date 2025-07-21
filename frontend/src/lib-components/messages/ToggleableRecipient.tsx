@@ -50,6 +50,8 @@ export function ToggleableRecipient({
     ? () => onToggleRecipient(id, !selected)
     : undefined
   const i18n = useTranslations()
+  const label =
+    type === 'GROUP' ? `${name} (${i18n.messages.staffAnnotation})` : name
   return (
     <Recipient
       onClick={onClick}
@@ -57,12 +59,12 @@ export function ToggleableRecipient({
       toggleable={toggleable}
       disabled={!toggleable}
       data-qa={dataQa}
+      aria-label={label}
+      aria-pressed={selected}
     >
       {selected ? (
         <>
-          {type === 'GROUP'
-            ? `${name} (${i18n.messages.staffAnnotation})`
-            : name}
+          {label}
           {toggleable && <FontAwesomeIcon icon={faTimes} />}
         </>
       ) : (
