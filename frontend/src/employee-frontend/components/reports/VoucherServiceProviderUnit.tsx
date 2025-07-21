@@ -136,7 +136,7 @@ const sortOptions: Record<
   },
   group: {
     columns: ['childGroupName', 'childLastName', 'childFirstName'],
-    directions: ['desc', 'asc', 'asc']
+    directions: ['asc', 'asc', 'asc']
   },
   assistanceNeedCoefficient: {
     columns: ['assistanceNeedCoefficient', 'childLastName', 'childFirstName'],
