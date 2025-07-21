@@ -52,7 +52,10 @@ export default React.memo(function ChildHeader({
       />
       <div>
         <H1 noMargin data-qa="child-name">
-          <PersonName person={{ firstName, lastName }} format="First Last" />
+          <PersonName
+            person={{ firstName, lastName }}
+            format={childPageNameFormat}
+          />
         </H1>
         {group && <Title>{group.name}</Title>}
         <br />
@@ -61,3 +64,5 @@ export default React.memo(function ChildHeader({
     </ChildHeaderContainer>
   )
 })
+
+export const childPageNameFormat = 'First Last'

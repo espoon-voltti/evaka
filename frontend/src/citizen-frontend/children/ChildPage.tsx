@@ -7,6 +7,7 @@ import React from 'react'
 import { Failure, Success } from 'lib-common/api'
 import type { ChildAndPermittedActions } from 'lib-common/generated/api-types/children'
 import type { ChildId } from 'lib-common/generated/api-types/shared'
+import { formatPersonName } from 'lib-common/names'
 import { useQueryResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import Main from 'lib-components/atoms/Main'
@@ -17,8 +18,10 @@ import { featureFlags } from 'lib-customizations/citizen'
 import Footer from '../Footer'
 import { renderResult } from '../async-rendering'
 import { useUser } from '../auth/state'
+import { useTranslation } from '../localization'
+import useTitle from '../useTitle'
 
-import ChildHeader from './ChildHeader'
+import ChildHeader, { childPageNameFormat } from './ChildHeader'
 import { childrenQuery } from './queries'
 import ChildDocumentsSection from './sections/ChildDocumentsSection'
 import { AbsenceApplicationsSection } from './sections/absence-applications/AbsenceApplicationsSection'
@@ -34,43 +37,13 @@ export default React.memo(function ChildPage() {
     return child ? Success.of(child) : Failure.of({ message: 'Not found' })
   })
 
-  const user = useUser()
-
   return (
     <>
       <Main>
         <Container>
           <Gap size="s" />
           {renderResult(child, (child) => (
-            <>
-              <ContentArea opaque>
-                <ChildHeader child={child} />
-              </ContentArea>
-              <Gap size="s" />
-              <ServiceNeedAndDailyServiceTimeSection
-                childId={childId}
-                showServiceTimes={child.permittedActions.includes(
-                  'READ_DAILY_SERVICE_TIMES'
-                )}
-              />
-              {user?.accessibleFeatures.childDocumentation && (
-                <>
-                  <Gap size="s" />
-                  <PedagogicalDocumentsSection childId={childId} />
-                  <Gap size="s" />
-                  <ChildDocumentsSection childId={childId} />
-                </>
-              )}
-              {featureFlags.absenceApplications &&
-                child.absenceApplicationCreationPossible && (
-                  <>
-                    <Gap size="s" />
-                    <AbsenceApplicationsSection childId={childId} />
-                  </>
-                )}
-              <Gap size="s" />
-              <PlacementTerminationSection childId={childId} />
-            </>
+            <ChildData child={child} />
           ))}
         </Container>
       </Main>
@@ -78,3 +51,42 @@ export default React.memo(function ChildPage() {
     </>
   )
 })
+
+const ChildData = ({ child }: { child: ChildAndPermittedActions }) => {
+  const i18n = useTranslation()
+  const { id: childId, firstName, lastName } = child
+  useTitle(i18n, formatPersonName({ firstName, lastName }, childPageNameFormat))
+  const user = useUser()
+
+  return (
+    <>
+      <ContentArea opaque>
+        <ChildHeader child={child} />
+      </ContentArea>
+      <Gap size="s" />
+      <ServiceNeedAndDailyServiceTimeSection
+        childId={childId}
+        showServiceTimes={child.permittedActions.includes(
+          'READ_DAILY_SERVICE_TIMES'
+        )}
+      />
+      {user?.accessibleFeatures.childDocumentation && (
+        <>
+          <Gap size="s" />
+          <PedagogicalDocumentsSection childId={childId} />
+          <Gap size="s" />
+          <ChildDocumentsSection childId={childId} />
+        </>
+      )}
+      {featureFlags.absenceApplications &&
+        child.absenceApplicationCreationPossible && (
+          <>
+            <Gap size="s" />
+            <AbsenceApplicationsSection childId={childId} />
+          </>
+        )}
+      <Gap size="s" />
+      <PlacementTerminationSection childId={childId} />
+    </>
+  )
+}

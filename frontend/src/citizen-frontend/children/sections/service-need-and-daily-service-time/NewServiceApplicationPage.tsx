@@ -42,6 +42,7 @@ import { Gap } from 'lib-components/white-space'
 import Footer from '../../../Footer'
 import { renderResult } from '../../../async-rendering'
 import { useLang, useTranslation } from '../../../localization'
+import useTitle from '../../../useTitle'
 import {
   childServiceNeedOptionsQuery,
   createServiceApplicationsMutation
@@ -64,6 +65,7 @@ const form = transformed(
 export default React.memo(function NewServiceApplicationPage() {
   const childId = useIdRouteParam<ChildId>('childId')
   const i18n = useTranslation()
+  useTitle(i18n, i18n.children.serviceApplication.title)
   const [, navigate] = useLocation()
   const [lang] = useLang()
   const boundForm = useForm(

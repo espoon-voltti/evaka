@@ -13,24 +13,14 @@ import Container from 'lib-components/layout/Container'
 
 import Footer from '../../Footer'
 import { renderResult } from '../../async-rendering'
-import { useTranslation } from '../../localization'
-import useTitle from '../../useTitle'
 import { applicationChildrenQuery, applicationQuery } from '../queries'
 
 import ApplicationReadViewContents from './ApplicationReadViewContents'
 
 export default React.memo(function ApplicationReadView() {
   const applicationId = useIdRouteParam<ApplicationId>('applicationId')
-  const t = useTranslation()
   const application = useQueryResult(applicationQuery({ applicationId }))
   const children = useQueryResult(applicationChildrenQuery())
-
-  useTitle(
-    t,
-    application
-      .map(({ type }) => t.applications.editor.heading.title[type])
-      .getOrElse('')
-  )
 
   return (
     <>

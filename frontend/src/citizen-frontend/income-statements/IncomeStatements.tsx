@@ -35,6 +35,7 @@ import Footer from '../Footer'
 import { renderResult } from '../async-rendering'
 import { useTranslation } from '../localization'
 import { OverlayContext } from '../overlay/state'
+import useTitle from '../useTitle'
 
 import ChildrenIncomeStatements from './ChildrenIncomeStatements'
 import {
@@ -215,6 +216,7 @@ type DeletionState =
 
 export default React.memo(function IncomeStatements() {
   const t = useTranslation()
+  useTitle(t, t.income.title)
   const [, navigate] = useLocation()
   const { setErrorMessage } = useContext(OverlayContext)
 

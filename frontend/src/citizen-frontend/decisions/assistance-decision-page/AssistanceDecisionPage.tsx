@@ -22,6 +22,7 @@ import { renderResult } from '../../async-rendering'
 import { getAssistanceNeedDecisionPdf } from '../../generated/api-clients/assistanceneed'
 import { useTranslation } from '../../localization'
 import { LocalizationContext } from '../../localization/state'
+import useTitle from '../../useTitle'
 
 import {
   assistanceDecisionQuery,
@@ -33,6 +34,7 @@ export default React.memo(function AssistanceNeedDecisionPage() {
 
   const assistanceNeedDecision = useQueryResult(assistanceDecisionQuery({ id }))
   const i18n = useTranslation()
+  useTitle(i18n, i18n.decisions.assistanceDecisions.title)
 
   const { mutate: markAssistanceNeedDecisionAsRead } = useMutationResult(
     markAssistanceNeedDecisionAsReadMutation

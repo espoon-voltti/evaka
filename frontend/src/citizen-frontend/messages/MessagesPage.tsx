@@ -28,6 +28,7 @@ import { renderResult } from '../async-rendering'
 import { useUser } from '../auth/state'
 import { childrenQuery } from '../children/queries'
 import { useTranslation } from '../localization'
+import useTitle from '../useTitle'
 import { focusElementAfterDelay } from '../utils/focus'
 
 import EmptyThreadView from './EmptyThreadView'
@@ -55,6 +56,7 @@ const StyledFlex = styled(AdaptiveFlex)`
 
 export default React.memo(function MessagesPage() {
   const i18n = useTranslation()
+  useTitle(i18n, i18n.messages.inboxTitle)
   const [, navigate] = useLocation()
   const [searchParams] = useSearchParams()
   const { messageAccount, selectedThread, setSelectedThread } =
