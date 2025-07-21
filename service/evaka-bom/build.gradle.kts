@@ -39,7 +39,7 @@ dependencies {
         api("org.jsoup:jsoup:1.21.1")
         api(libs.mockito.core)
         api(libs.mockito.junit.jupiter)
-        api("org.mockito.kotlin:mockito-kotlin:5.4.0")
+        api("org.mockito.kotlin:mockito-kotlin:6.0.0")
         api("org.postgresql:postgresql:42.7.7")
         api("org.skyscreamer:jsonassert:1.5.3")
         api("org.thymeleaf.extras:thymeleaf-extras-java8time:3.0.4.RELEASE")
