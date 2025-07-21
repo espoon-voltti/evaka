@@ -505,6 +505,8 @@ const en: Translations = {
       start: 'Start',
       end: 'End',
       secondTimeRange: {
+        add: 'Add second time range',
+        delete: 'Delete second time range',
         start: 'Second time range start',
         end: 'Second time range end'
       },

@@ -107,8 +107,15 @@ const ReservationTimes = React.memo(function ReservationTimes({
   switch (branch) {
     case 'absent':
       return (
-        <FixedSpaceRow fullWidth alignItems="center">
-          {label !== undefined ? <LeftCell>{label}</LeftCell> : null}
+        <FixedSpaceRow
+          fullWidth
+          alignItems="center"
+          role="group"
+          aria-labelledby={dataQaPrefix}
+        >
+          {label !== undefined ? (
+            <LeftCell id={dataQaPrefix}>{label}</LeftCell>
+          ) : null}
           <MiddleCell>{i18n.calendar.reservationModal.absent}</MiddleCell>
           <RightCell>
             <IconOnlyButton
@@ -168,8 +175,12 @@ const ReadOnlyDay = React.memo(function ReadOnlyDay({
           fullWidth
           alignItems="center"
           data-qa={dataQa('noChildren')}
+          role="group"
+          aria-labelledby={dataQaPrefix}
         >
-          {label !== undefined ? <LeftCell>{label}</LeftCell> : null}
+          {label !== undefined ? (
+            <LeftCell id={dataQaPrefix}>{label}</LeftCell>
+          ) : null}
           <MiddleCell />
           <RightCell />
         </FixedSpaceRow>
@@ -189,8 +200,12 @@ const ReadOnlyDay = React.memo(function ReadOnlyDay({
           fullWidth
           alignItems="center"
           data-qa={dataQa('termBreak')}
+          role="group"
+          aria-labelledby={dataQaPrefix}
         >
-          {label !== undefined ? <LeftCell>{label}</LeftCell> : null}
+          {label !== undefined ? (
+            <LeftCell id={dataQaPrefix}>{label}</LeftCell>
+          ) : null}
           <MiddleCell>{i18n.calendar.termBreak}</MiddleCell>
           <RightCell />
         </FixedSpaceRow>
@@ -222,8 +237,12 @@ const ReadOnlyDay = React.memo(function ReadOnlyDay({
           fullWidth
           alignItems="center"
           data-qa={dataQa('holiday')}
+          role="group"
+          aria-labelledby={dataQaPrefix}
         >
-          {label !== undefined ? <LeftCell>{label}</LeftCell> : null}
+          {label !== undefined ? (
+            <LeftCell id={dataQaPrefix}>{label}</LeftCell>
+          ) : null}
           <MiddleCell>{i18n.calendar.holiday}</MiddleCell>
           <RightCell />
         </FixedSpaceRow>
@@ -246,8 +265,14 @@ function WithInfo({
   const [infoOpen, useInfoOpen] = useBoolean(false)
   return (
     <>
-      <FixedSpaceRow fullWidth alignItems="center" data-qa={dataQa}>
-        {label !== undefined ? <LeftCell>{label}</LeftCell> : null}
+      <FixedSpaceRow
+        fullWidth
+        alignItems="center"
+        data-qa={dataQa}
+        role="group"
+        aria-labelledby={dataQa}
+      >
+        {label !== undefined ? <LeftCell id={dataQa}>{label}</LeftCell> : null}
         <MiddleCell>{shortText}</MiddleCell>
         <RightCell>
           <InfoButton
@@ -327,8 +352,15 @@ const TimeRanges = React.memo(function TimeRanges({
 
   return (
     <>
-      <FixedSpaceRow fullWidth alignItems="center">
-        {label !== undefined ? <LeftCell>{label}</LeftCell> : null}
+      <FixedSpaceRow
+        fullWidth
+        alignItems="center"
+        role="group"
+        aria-labelledby={dataQaPrefix}
+      >
+        {label !== undefined ? (
+          <LeftCell id={dataQaPrefix}>{label}</LeftCell>
+        ) : null}
         <MiddleCell>
           <LimitedLocalTimeRange
             bind={firstTimeRange}
@@ -370,7 +402,7 @@ const TimeRanges = React.memo(function TimeRanges({
                     focusElementOnNextFrame(`${dataQaPrefix}-time-1-start`)
                   }
                 }}
-                aria-label={i18n.common.add}
+                aria-label={i18n.calendar.reservationModal.secondTimeRange.add}
               />
             ) : null}
           </FixedSpaceRow>
@@ -397,7 +429,7 @@ const TimeRanges = React.memo(function TimeRanges({
             <IconOnlyButton
               icon={faTrash}
               onClick={() => bind.update((prev) => prev.slice(0, 1))}
-              aria-label={i18n.common.delete}
+              aria-label={i18n.calendar.reservationModal.secondTimeRange.delete}
             />
           </RightCell>
         </FixedSpaceRow>
@@ -418,8 +450,15 @@ export const ReservationNoTimes = React.memo(function ReservationNoTimes({
   const i18n = useTranslation()
 
   return (
-    <FixedSpaceRow fullWidth alignItems="center">
-      {label !== undefined ? <LeftCell>{label}</LeftCell> : null}
+    <FixedSpaceRow
+      fullWidth
+      alignItems="center"
+      role="group"
+      aria-labelledby={dataQaPrefix}
+    >
+      {label !== undefined ? (
+        <LeftCell id={dataQaPrefix}>{label}</LeftCell>
+      ) : null}
       <MiddleCell narrow>
         <Radio
           id={dataQaPrefix ? `${dataQaPrefix}-present-radio` : undefined}
