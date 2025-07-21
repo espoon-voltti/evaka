@@ -8,7 +8,7 @@ import React, { useContext } from 'react'
 import styled from 'styled-components'
 
 import { tabletMin } from 'lib-components/breakpoints'
-import { H3 } from 'lib-components/typography'
+import { H2 } from 'lib-components/typography'
 import colors from 'lib-customizations/common'
 
 import { renderResult } from '../async-rendering'
@@ -29,12 +29,12 @@ export default React.memo(function EmptyThreadView() {
               size="7x"
               color={colors.grayscale.g35}
             />
-            <H3 data-qa="inbox-empty" data-loading={isReloading}>
+            <H2 data-qa="inbox-empty" data-loading={isReloading}>
               {i18n.messages.emptyInbox}
-            </H3>
+            </H2>
           </>
         ) : (
-          <H3>{i18n.messages.noSelectedMessage}</H3>
+          <H2>{i18n.messages.noSelectedMessage}</H2>
         )
       )}
     </EmptyThreadViewContainer>
