@@ -38,19 +38,21 @@ export default React.memo(function StaffMemberPlannedAttendancesPage({
 
   const unitId = unitOrGroup.unitId
 
+  const attendanceRangeStart = LocalDate.todayInSystemTz().addDays(1)
+  const attendanceRangeEnd = LocalDate.todayInSystemTz().addWeeks(1).endOfWeek()
+
   const attendanceResponse = useQueryResult(
     staffAttendancesByEmployeeQuery({
       unitId,
       employeeId,
-      from: LocalDate.todayInSystemTz().addDays(1),
-      to: LocalDate.todayInSystemTz().addDays(7)
+      from: attendanceRangeStart,
+      to: attendanceRangeEnd
     })
   )
 
   const days = useMemo(() => {
-    const today = LocalDate.todayInHelsinkiTz()
-    const startDate = today.addDays(1)
-    const endDate = today.addWeeks(1).endOfWeek()
+    const startDate = attendanceRangeStart
+    const endDate = attendanceRangeEnd
     const result = []
     for (
       let date = startDate;
@@ -60,7 +62,7 @@ export default React.memo(function StaffMemberPlannedAttendancesPage({
       result.push(date)
     }
     return result
-  }, [])
+  }, [attendanceRangeEnd, attendanceRangeStart])
 
   return renderResult(attendanceResponse, (staffMember) => {
     return (
@@ -135,7 +137,7 @@ export default React.memo(function StaffMemberPlannedAttendancesPage({
 const DayPlansContainer = styled(FixedSpaceColumn).attrs({
   alignItems: 'stretch'
 })`
-  padding: 0 32px;
+  padding: 0 32px 32px;
 `
 
 const DayPlan = styled(FixedSpaceColumn).attrs({ spacing: 'xxs' })``
