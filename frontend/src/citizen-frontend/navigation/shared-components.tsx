@@ -4,9 +4,10 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef } from 'react'
 import styled, { css } from 'styled-components'
 
+import { useBoolean } from 'lib-common/form/hooks'
 import NavLink from 'lib-components/atoms/NavLink'
 import { fontWeights } from 'lib-components/typography'
 import useCloseOnOutsideClick from 'lib-components/utils/useCloseOnOutsideClick'
@@ -87,11 +88,8 @@ export const LanguageMenu = React.memo(function LanguageMenu({
 }) {
   const t = useTranslation()
   const [lang, setLang] = useLang()
-  const [open, setOpen] = useState(false)
-  const toggleOpen = useCallback(() => setOpen((state) => !state), [setOpen])
-  const dropDownContainerRef = useCloseOnOutsideClick<HTMLDivElement>(() =>
-    setOpen(false)
-  )
+  const [open, { toggle: toggleOpen, off: close }] = useBoolean(false)
+  const dropDownContainerRef = useCloseOnOutsideClick<HTMLDivElement>(close)
 
   const firstButtonRef = useRef<HTMLButtonElement | null>(null)
   useEffect(() => {
@@ -121,7 +119,7 @@ export const LanguageMenu = React.memo(function LanguageMenu({
               className={classNames({ active: lang === l })}
               onClick={() => {
                 setLang(l)
-                setOpen(false)
+                close()
               }}
               data-qa={`lang-${l}`}
               lang={l}

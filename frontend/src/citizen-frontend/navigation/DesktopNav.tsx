@@ -4,16 +4,11 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useRef,
-  useState
-} from 'react'
+import React, { useContext, useEffect, useRef } from 'react'
 import styled from 'styled-components'
 import { Link } from 'wouter'
 
+import { useBoolean } from 'lib-common/form/hooks'
 import NavLink, { useIsRouteActive } from 'lib-components/atoms/NavLink'
 import { desktopMin, desktopSmall } from 'lib-components/breakpoints'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
@@ -214,11 +209,8 @@ const ChildrenMenu = React.memo(function ChildrenMenu() {
   const childrenWithOwnPage = useChildrenWithOwnPage()
   const { unreadChildNotifications, totalUnreadChildNotifications } =
     useUnreadChildNotifications()
-  const [open, setOpen] = useState(false)
-  const toggleOpen = useCallback(() => setOpen((state) => !state), [setOpen])
-  const dropDownContainerRef = useCloseOnOutsideClick<HTMLDivElement>(() =>
-    setOpen(false)
-  )
+  const [open, { toggle: toggleOpen, off: close }] = useBoolean(false)
+  const dropDownContainerRef = useCloseOnOutsideClick<HTMLDivElement>(close)
 
   const firstAnchorRef = useRef<HTMLAnchorElement | null>(null)
   useEffect(() => {
@@ -285,9 +277,7 @@ const ChildrenMenu = React.memo(function ChildrenMenu() {
               ref={index === 0 ? firstAnchorRef : null}
               key={child.id}
               to={`/children/${child.id}`}
-              onClick={() => {
-                setOpen(false)
-              }}
+              onClick={close}
               data-qa={`children-menu-${child.id}`}
             >
               <PersonName person={child} format="FirstFirst Last" />
@@ -320,11 +310,8 @@ const SubNavigationMenu = React.memo(function SubNavigationMenu({
   unreadDecisions: number
 }) {
   const t = useTranslation()
-  const [open, setOpen] = useState(false)
-  const toggleOpen = useCallback(() => setOpen((state) => !state), [setOpen])
-  const dropDownContainerRef = useCloseOnOutsideClick<HTMLDivElement>(() =>
-    setOpen(false)
-  )
+  const [open, { toggle: toggleOpen, off: close }] = useBoolean(false)
+  const dropDownContainerRef = useCloseOnOutsideClick<HTMLDivElement>(close)
   const showUserAttentionIndicator = isPersonalDetailsIncomplete(user)
   const weakAuth = user.authLevel !== 'STRONG'
   const maybeLockElem = weakAuth && (
@@ -361,7 +348,7 @@ const SubNavigationMenu = React.memo(function SubNavigationMenu({
             ref={firstAnchorRef}
             data-qa="sub-nav-menu-applications"
             to="/applications"
-            onClick={() => setOpen(false)}
+            onClick={close}
             aria-label={
               t.header.nav.applications +
               (weakAuth ? ` (${t.header.requiresStrongAuth})` : '')
@@ -372,7 +359,7 @@ const SubNavigationMenu = React.memo(function SubNavigationMenu({
           <DropDownLink
             data-qa="sub-nav-menu-decisions"
             to="/decisions"
-            onClick={() => setOpen(false)}
+            onClick={close}
             aria-label={
               t.header.nav.decisions +
               (weakAuth ? ` (${t.header.requiresStrongAuth})` : '') +
@@ -392,7 +379,7 @@ const SubNavigationMenu = React.memo(function SubNavigationMenu({
             data-qa="sub-nav-menu-income"
             to="/income"
             matchRoutes={['/income', '/child-income']}
-            onClick={() => setOpen(false)}
+            onClick={close}
             aria-label={
               t.header.nav.income +
               (weakAuth ? ` (${t.header.requiresStrongAuth})` : '')
@@ -404,7 +391,7 @@ const SubNavigationMenu = React.memo(function SubNavigationMenu({
           <DropDownLink
             data-qa="sub-nav-menu-personal-details"
             to="/personal-details"
-            onClick={() => setOpen(false)}
+            onClick={close}
             aria-label={
               t.header.nav.personalDetails +
               (showUserAttentionIndicator ? ` (${t.header.attention})` : '')
