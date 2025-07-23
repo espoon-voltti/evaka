@@ -1071,6 +1071,17 @@ class ApplicationStateService(
             throw BadRequest("Decision is not pending")
         }
 
+        if (
+            (decision.type == DecisionType.PRESCHOOL_DAYCARE ||
+                decision.type == DecisionType.PRESCHOOL_CLUB) &&
+                decisions.any {
+                    it.type in listOf(DecisionType.PRESCHOOL, DecisionType.PREPARATORY_EDUCATION) &&
+                        it.status != DecisionStatus.ACCEPTED
+                }
+        ) {
+            throw BadRequest("Primary decision must be accepted first")
+        }
+
         tx.markDecisionRejected(user, clock, decisionId)
 
         val alsoReject =
