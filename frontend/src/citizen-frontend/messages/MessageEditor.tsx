@@ -330,9 +330,12 @@ export default React.memo(function MessageEditor({
             {showSecondaryRecipientSelection && (
               <>
                 <Gap size="xs" />
-                <div>
+                <div
+                  role="group"
+                  aria-labelledby="message-editor-secondary-recipients"
+                >
                   <label>
-                    <Bold>
+                    <Bold id="message-editor-secondary-recipients">
                       {i18n.messages.messageEditor.secondaryRecipients}
                     </Bold>
                   </label>
