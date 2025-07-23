@@ -940,7 +940,7 @@ describe('Realtime staff attendance edit page', () => {
 
   test('Staff member can edit past attendances', async () => {
     const today = LocalDate.of(2023, 1, 24)
-    const date = today.subDays(3)
+    const date = today.subDays(5)
     const arrivalTime = '09:00'
     const departureTime = '17:00'
     await Fixture.realtimeStaffAttendance({
