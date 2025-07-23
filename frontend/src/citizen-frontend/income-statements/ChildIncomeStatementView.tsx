@@ -29,6 +29,7 @@ import { Gap } from 'lib-components/white-space'
 
 import { renderResult } from '../async-rendering'
 import { useTranslation } from '../localization'
+import useTitle from '../useTitle'
 
 import {
   CitizenAttachments,
@@ -44,6 +45,7 @@ export default React.memo(function ChildIncomeStatementView() {
   const incomeStatementId =
     useIdRouteParam<IncomeStatementId>('incomeStatementId')
   const t = useTranslation()
+  useTitle(t, t.income.view.title)
   const result = useQueryResult(incomeStatementQuery({ incomeStatementId }))
 
   return renderResult(result, (incomeStatement) => (

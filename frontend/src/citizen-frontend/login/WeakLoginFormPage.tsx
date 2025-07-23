@@ -30,11 +30,13 @@ import { Gap } from 'lib-components/white-space'
 import Footer from '../Footer'
 import { useUser } from '../auth/state'
 import { useTranslation } from '../localization'
+import useTitle from '../useTitle'
 
 import { authWeakLoginMutation } from './queries'
 
 export default React.memo(function WeakLoginFormPage() {
   const i18n = useTranslation()
+  useTitle(i18n, i18n.loginPage.login.title)
   const user = useUser()
 
   const [searchParams] = useSearchParams()

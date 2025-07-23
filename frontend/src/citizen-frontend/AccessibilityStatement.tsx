@@ -10,9 +10,11 @@ import Container, { ContentArea } from 'lib-components/layout/Container'
 
 import Footer from './Footer'
 import { useTranslation } from './localization'
+import useTitle from './useTitle'
 
 export default React.memo(function AccessibilityStatement() {
   const t = useTranslation()
+  useTitle(t, t.footer.accessibilityStatement)
 
   return (
     <>

@@ -92,6 +92,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
   citizenChildren
 }: ApplicationEditorContentProps) {
   const t = useTranslation()
+  useTitle(t, t.applications.editor.heading.title[application.type])
   const [, navigate] = useLocation()
 
   const { setErrorMessage, setInfoMessage, clearInfoMessage } =
@@ -486,16 +487,8 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
 
 export default React.memo(function ApplicationEditor() {
   const applicationId = useIdRouteParam<ApplicationId>('applicationId')
-  const t = useTranslation()
   const application = useQueryResult(applicationQuery({ applicationId }))
   const children = useQueryResult(applicationChildrenQuery())
-
-  useTitle(
-    t,
-    application
-      .map(({ type }) => t.applications.editor.heading.title[type])
-      .getOrElse('')
-  )
 
   return (
     <>

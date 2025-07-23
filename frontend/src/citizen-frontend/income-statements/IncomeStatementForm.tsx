@@ -52,6 +52,7 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 import Footer from '../Footer'
 import { errorToInputInfo } from '../input-info-helper'
 import { useLang, useTranslation } from '../localization'
+import useTitle from '../useTitle'
 
 import {
   AttachmentSection,
@@ -94,6 +95,7 @@ export default React.memo(function IncomeStatementForm({
   onCancel
 }: Props) {
   const t = useTranslation()
+  useTitle(t, t.income.formTitle)
   const onGrossChange = useFieldSetState(onChange, 'gross')
   const onEntrepreneurChange = useFieldSetState(onChange, 'entrepreneur')
   const scrollTarget = useRef<HTMLElement>(null)

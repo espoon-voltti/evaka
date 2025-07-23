@@ -40,6 +40,7 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 
 import { renderResult } from '../async-rendering'
 import { useTranslation } from '../localization'
+import useTitle from '../useTitle'
 
 import {
   CitizenAttachments,
@@ -67,6 +68,7 @@ const IncomeStatementView2 = React.memo(function IncomeStatementView2({
   incomeStatement: IncomeStatement
 }) {
   const t = useTranslation()
+  useTitle(t, t.income.view.title)
 
   return (
     <Container>

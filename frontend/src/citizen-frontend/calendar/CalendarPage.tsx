@@ -21,6 +21,8 @@ import Footer from '../Footer'
 import RequireAuth from '../RequireAuth'
 import { renderResult } from '../async-rendering'
 import { useUser } from '../auth/state'
+import { useTranslation } from '../localization'
+import useTitle from '../useTitle'
 import { focusElementOnNextFrame } from '../utils/focus'
 
 import AbsenceModal from './AbsenceModal'
@@ -354,6 +356,9 @@ const DesktopOnly = styled(Desktop)`
 `
 
 export default React.memo(function CalendarPageWrapper() {
+  const i18n = useTranslation()
+  useTitle(i18n, i18n.calendar.title)
+
   return (
     <>
       <Main>

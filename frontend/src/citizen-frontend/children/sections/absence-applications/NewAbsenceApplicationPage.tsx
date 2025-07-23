@@ -9,12 +9,16 @@ import { useQueryResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 
 import { renderResult } from '../../../async-rendering'
+import { useTranslation } from '../../../localization'
+import useTitle from '../../../useTitle'
 
 import { NewAbsenceApplicationForm } from './NewAbsenceApplicationForm'
 import { getAbsenceApplicationPossibleDateRangesQuery } from './queries'
 
 export const NewAbsenceApplicationPage = () => {
   const childId = useIdRouteParam<ChildId>('childId')
+  const i18n = useTranslation()
+  useTitle(i18n, i18n.children.absenceApplication.title)
   const absenceApplicationDateRanges = useQueryResult(
     getAbsenceApplicationPossibleDateRangesQuery({ childId: childId })
   )

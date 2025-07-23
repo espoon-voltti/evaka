@@ -18,6 +18,7 @@ import Footer from '../Footer'
 import { renderResult } from '../async-rendering'
 import { AuthContext } from '../auth/state'
 import { useTranslation } from '../localization'
+import useTitle from '../useTitle'
 
 import LoginDetailsSection from './LoginDetailsSection'
 import NotificationSettingsSection from './NotificationSettingsSection'
@@ -30,6 +31,7 @@ import {
 
 export default React.memo(function PersonalDetails() {
   const t = useTranslation()
+  useTitle(t, t.personalDetails.title)
   const { user, refreshAuthStatus } = useContext(AuthContext)
   const notificationSettings = useQueryResult(notificationSettingsQuery())
   const notificationSettingsSection = useRef<HTMLDivElement>(null)

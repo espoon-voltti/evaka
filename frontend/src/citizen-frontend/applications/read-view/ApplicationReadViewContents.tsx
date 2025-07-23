@@ -14,6 +14,7 @@ import { H1 } from 'lib-components/typography'
 
 import { AuthContext } from '../../auth/state'
 import { useTranslation } from '../../localization'
+import useTitle from '../../useTitle'
 import AdditionalDetailsSection from '../editor/verification/AdditionalDetailsSection'
 import BasicsSection from '../editor/verification/BasicsSection'
 import ContactInfoSection from '../editor/verification/ContactInfoSection'
@@ -30,6 +31,7 @@ export default React.memo(function ApplicationReadViewContents({
   formData
 }: DaycareApplicationReadViewProps) {
   const t = useTranslation()
+  useTitle(t, t.applications.editor.heading.title[application.type])
   const type = application.type
   const { user } = useContext(AuthContext)
 

@@ -43,6 +43,7 @@ import Footer from '../Footer'
 import { renderResult } from '../async-rendering'
 import { downloadChildDocument } from '../generated/api-clients/document'
 import { useTranslation } from '../localization'
+import useTitle from '../useTitle'
 
 import {
   childDocumentDetailsQuery,
@@ -116,6 +117,7 @@ const ChildDocumentView = React.memo(function ChildDocumentView({
   document: ChildDocumentCitizenDetails
 }) {
   const i18n = useTranslation()
+  useTitle(i18n, document.template.name)
 
   const { mutateAsync: markRead } = useMutation(childDocumentReadMutation)
   useEffect(() => {

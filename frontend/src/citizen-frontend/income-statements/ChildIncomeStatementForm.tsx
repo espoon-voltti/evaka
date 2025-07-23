@@ -28,6 +28,7 @@ import { Gap } from 'lib-components/white-space'
 
 import { errorToInputInfo } from '../input-info-helper'
 import { useLang, useTranslation } from '../localization'
+import useTitle from '../useTitle'
 
 import ChildIncomeStatementAttachments from './ChildIncomeStatementAttachments'
 import { AttachmentSection } from './IncomeStatementAttachments'
@@ -235,6 +236,7 @@ export default React.memo(
     ref: React.ForwardedRef<IncomeStatementFormAPI>
   ) {
     const t = useTranslation()
+    useTitle(t, t.income.childFormTitle)
     const scrollTarget = useRef<HTMLDivElement>(null)
 
     const isValidStartDate = useCallback(

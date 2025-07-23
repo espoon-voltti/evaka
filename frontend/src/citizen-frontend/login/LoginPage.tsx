@@ -34,6 +34,7 @@ import Footer from '../Footer'
 import { useUser } from '../auth/state'
 import { useLang, useTranslation } from '../localization'
 import { getStrongLoginUri, getWeakLoginUri } from '../navigation/const'
+import useTitle from '../useTitle'
 
 import { systemNotificationsQuery } from './queries'
 
@@ -43,6 +44,7 @@ const ParagraphInfoButton = styled(InfoButton)`
 
 export default React.memo(function LoginPage() {
   const i18n = useTranslation()
+  useTitle(i18n, i18n.common.title)
   const [lang] = useLang()
   const user = useUser()
 

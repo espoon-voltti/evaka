@@ -21,6 +21,7 @@ import Footer from '../../Footer'
 import { renderResult } from '../../async-rendering'
 import { getAssistanceNeedPreschoolDecisionPdf } from '../../generated/api-clients/assistanceneed'
 import { useTranslation } from '../../localization'
+import useTitle from '../../useTitle'
 
 import {
   assistanceNeedPreschoolDecisionQuery,
@@ -32,6 +33,7 @@ export default React.memo(function AssistanceNeedPreschoolDecisionPage() {
 
   const decision = useQueryResult(assistanceNeedPreschoolDecisionQuery({ id }))
   const i18n = useTranslation()
+  useTitle(i18n, i18n.decisions.assistancePreschoolDecisions.title)
 
   const { mutate: markAssistanceNeedDecisionAsRead } = useMutationResult(
     markAssistanceNeedPreschoolDecisionAsReadMutation
