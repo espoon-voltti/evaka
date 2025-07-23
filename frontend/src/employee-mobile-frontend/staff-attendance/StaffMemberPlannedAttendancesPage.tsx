@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useMemo } from 'react'
+import React from 'react'
 import styled from 'styled-components'
 
 import type { EmployeeId } from 'lib-common/generated/api-types/shared'
@@ -38,44 +38,29 @@ export default React.memo(function StaffMemberPlannedAttendancesPage({
 
   const unitId = unitOrGroup.unitId
 
-  const attendanceRangeStart = LocalDate.todayInSystemTz().addDays(1)
-  const attendanceRangeEnd = LocalDate.todayInSystemTz().addWeeks(1).endOfWeek()
-
   const attendanceResponse = useQueryResult(
     staffAttendancesByEmployeeQuery({
       unitId,
       employeeId,
-      from: attendanceRangeStart,
-      to: attendanceRangeEnd
+      from: LocalDate.todayInSystemTz().addDays(1),
+      to: LocalDate.todayInSystemTz().addWeeks(1).endOfWeek()
     })
   )
 
-  const days = useMemo(() => {
-    const startDate = attendanceRangeStart
-    const endDate = attendanceRangeEnd
-    const result = []
-    for (
-      let date = startDate;
-      date.isEqualOrBefore(endDate);
-      date = date.addDays(1)
-    ) {
-      result.push(date)
-    }
-    return result
-  }, [attendanceRangeEnd, attendanceRangeStart])
-
-  return renderResult(attendanceResponse, (staffMember) => {
+  return renderResult(attendanceResponse, (staffMemberWithOperationalDays) => {
     return (
       <StaffMemberPageContainer
         back={routes.staffAttendancesToday(unitOrGroup, 'present').value}
       >
-        <EmployeeCardBackground staff={toStaff(staffMember)} />
+        <EmployeeCardBackground
+          staff={toStaff(staffMemberWithOperationalDays.staffMember)}
+        />
         <Gap />
         <DayPlansContainer>
           <ExpandingInfo info={i18n.attendances.staff.staffMemberPlanInfo}>
             <H3 noMargin>{i18n.attendances.staff.nextDays}</H3>
           </ExpandingInfo>
-          {staffMember.unitIds.length > 1 && (
+          {staffMemberWithOperationalDays.staffMember.unitIds.length > 1 && (
             <div>
               <AlertBox
                 message={i18n.attendances.staff.staffMemberMultipleUnits}
@@ -84,23 +69,24 @@ export default React.memo(function StaffMemberPlannedAttendancesPage({
             </div>
           )}
           <FixedSpaceColumn spacing="s">
-            {days.map((date) => {
-              const attendances = staffMember.plannedAttendances
-                .filter(
-                  (a) =>
-                    a.start.toLocalDate().isEqual(date) ||
-                    a.end.toLocalDate().isEqual(date)
-                )
-                .map((a) => ({
-                  start: a.start.toLocalDate().isEqual(date)
-                    ? a.start.toLocalTime().format()
-                    : '→',
-                  end: a.end.toLocalDate().isEqual(date)
-                    ? a.end.toLocalTime().format()
-                    : '→',
-                  type: i18n.attendances.staffTypes[a.type],
-                  description: a.description
-                }))
+            {staffMemberWithOperationalDays.operationalDays.map((date) => {
+              const attendances =
+                staffMemberWithOperationalDays.staffMember.plannedAttendances
+                  .filter(
+                    (a) =>
+                      a.start.toLocalDate().isEqual(date) ||
+                      a.end.toLocalDate().isEqual(date)
+                  )
+                  .map((a) => ({
+                    start: a.start.toLocalDate().isEqual(date)
+                      ? a.start.toLocalTime().format()
+                      : '→',
+                    end: a.end.toLocalDate().isEqual(date)
+                      ? a.end.toLocalTime().format()
+                      : '→',
+                    type: i18n.attendances.staffTypes[a.type],
+                    description: a.description
+                  }))
               return (
                 <DayPlan
                   key={date.formatIso()}

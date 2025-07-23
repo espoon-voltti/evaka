@@ -154,6 +154,7 @@ export interface ContactInfo {
 */
 export interface CurrentDayStaffAttendanceResponse {
   extraAttendances: ExternalStaffMember[]
+  operationalDays: LocalDate[]
   staff: StaffMember[]
 }
 
@@ -442,6 +443,14 @@ export interface StaffMemberAttendance {
 }
 
 /**
+* Generated from fi.espoo.evaka.attendance.StaffMemberWithOperationalDays
+*/
+export interface StaffMemberWithOperationalDays {
+  operationalDays: LocalDate[]
+  staffMember: StaffMember
+}
+
+/**
 * Generated from fi.espoo.evaka.attendance.UnitInfo
 */
 export interface UnitInfo {
@@ -532,6 +541,7 @@ export function deserializeJsonCurrentDayStaffAttendanceResponse(json: JsonOf<Cu
   return {
     ...json,
     extraAttendances: json.extraAttendances.map(e => deserializeJsonExternalStaffMember(e)),
+    operationalDays: json.operationalDays.map(e => LocalDate.parseIso(e)),
     staff: json.staff.map(e => deserializeJsonStaffMember(e))
   }
 }
@@ -715,5 +725,14 @@ export function deserializeJsonStaffMemberAttendance(json: JsonOf<StaffMemberAtt
     ...json,
     arrived: HelsinkiDateTime.parseIso(json.arrived),
     departed: (json.departed != null) ? HelsinkiDateTime.parseIso(json.departed) : null
+  }
+}
+
+
+export function deserializeJsonStaffMemberWithOperationalDays(json: JsonOf<StaffMemberWithOperationalDays>): StaffMemberWithOperationalDays {
+  return {
+    ...json,
+    operationalDays: json.operationalDays.map(e => LocalDate.parseIso(e)),
+    staffMember: deserializeJsonStaffMember(json.staffMember)
   }
 }

@@ -16,6 +16,7 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
 import fi.espoo.evaka.user.EvakaUser
 import java.math.BigDecimal
+import java.time.LocalDate
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.core.mapper.PropagateNull
 import org.jdbi.v3.json.Json
@@ -41,6 +42,7 @@ enum class StaffAttendanceType : DatabaseEnum {
 data class CurrentDayStaffAttendanceResponse(
     val staff: List<StaffMember>,
     val extraAttendances: List<ExternalStaffMember>,
+    val operationalDays: List<LocalDate>,
 )
 
 data class ExternalStaffMember(
@@ -77,6 +79,11 @@ data class StaffMember(
                 .ranges()
                 .toList()
 }
+
+data class StaffMemberWithOperationalDays(
+    val staffMember: StaffMember,
+    val operationalDays: List<LocalDate>,
+)
 
 data class StaffMemberAttendance(
     @PropagateNull val id: StaffAttendanceRealtimeId,

@@ -57,39 +57,43 @@ export default React.memo(function StaffPreviousAttendancesPage({
 
   return renderResult(
     combine(unitResponse, attendanceResponse),
-    ([unitInfo, staffMember]) => {
+    ([unitInfo, staffMemberWithOperationalDays]) => {
       return (
         <StaffMemberPageContainer
           back={routes.staffAttendancesToday(unitOrGroup, 'present').value}
         >
-          <EmployeeCardBackground staff={toStaff(staffMember)} />
+          <EmployeeCardBackground
+            staff={toStaff(staffMemberWithOperationalDays.staffMember)}
+          />
           <Gap />
           <FixedSpaceColumn alignItems="center">
             <H3>{i18n.attendances.staff.previousDays}</H3>
             <FixedSpaceColumn spacing="m">
-              {[0, 1, 2, 3, 4, 5, 6, 7].map((sinceDays) => {
-                const date = LocalDate.todayInHelsinkiTz().subDays(sinceDays)
-                return (
-                  <DateAttendances
-                    key={`attendances-${date.formatIso()}`}
-                    date={date}
-                    attendances={staffMember.attendances.filter((a) =>
-                      a.arrived.toLocalDate().isEqual(date)
-                    )}
-                    groups={unitInfo.groups}
-                    onEdit={() =>
-                      navigate(
-                        routes.staffAttendanceEdit(
-                          unitOrGroup,
-                          employeeId,
-                          date
-                        ).value
-                      )
-                    }
-                  />
-                )
-              })}
+              {staffMemberWithOperationalDays.operationalDays
+                .reverse()
+                .map((date) => {
+                  return (
+                    <DateAttendances
+                      key={`attendances-${date.formatIso()}`}
+                      date={date}
+                      attendances={staffMemberWithOperationalDays.staffMember.attendances.filter(
+                        (a) => a.arrived.toLocalDate().isEqual(date)
+                      )}
+                      groups={unitInfo.groups}
+                      onEdit={() =>
+                        navigate(
+                          routes.staffAttendanceEdit(
+                            unitOrGroup,
+                            employeeId,
+                            date
+                          ).value
+                        )
+                      }
+                    />
+                  )
+                })}
             </FixedSpaceColumn>
+            <Gap size="s" />
           </FixedSpaceColumn>
         </StaffMemberPageContainer>
       )

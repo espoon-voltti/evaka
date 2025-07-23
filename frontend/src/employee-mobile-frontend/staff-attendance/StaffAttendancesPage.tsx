@@ -283,56 +283,57 @@ const StaffAttendancesPlanned = React.memo(function StaffAttendancesPlanned({
   const staffAttendanceResponse = useQueryResult(
     staffAttendanceQuery({
       unitId: unitOrGroup.unitId,
-      startDate: today,
-      endDate: today.addDays(5)
+      startDate: today.addDays(1),
+      endDate: today.addDays(7)
     })
   )
 
   const staffMemberDays: Result<StaffMembersByDate[]> = useMemo(
     () =>
       staffAttendanceResponse.map((res) =>
-        [1, 2, 3, 4, 5].map((i) => {
-          const date = today.addDays(i)
-          return {
-            date,
-            staff: res.staff
-              .filter(
-                (s) =>
-                  unitOrGroup.type !== 'group' ||
-                  s.groupIds.includes(unitOrGroup.id)
-              )
-              .map((s) => ({
-                employeeId: s.employeeId,
-                firstName: s.firstName,
-                lastName: s.lastName,
-                occupancyEffect: s.occupancyEffect,
-                plans: s.plannedAttendances
-                  .filter(
-                    (p) =>
-                      p.start.toLocalDate().isEqual(date) ||
-                      p.end.toLocalDate().isEqual(date)
-                  )
-                  .map((p) => ({
-                    start: p.start.toLocalDate().isEqual(date)
-                      ? p.start.toLocalTime()
-                      : null,
-                    end: p.end.toLocalDate().isEqual(date)
-                      ? p.end.toLocalTime()
-                      : null,
-                    type: p.type,
-                    description: p.description
-                  })),
-                confidence:
-                  s.unitIds.length > 1
-                    ? 'maybeInOtherUnit'
-                    : s.groupIds.length > 1
-                      ? 'maybeInOtherGroup'
-                      : 'full'
-              }))
-          }
-        })
+        res.operationalDays
+          .filter((_, index) => index < 5)
+          .map((date) => {
+            return {
+              date,
+              staff: res.staff
+                .filter(
+                  (s) =>
+                    unitOrGroup.type !== 'group' ||
+                    s.groupIds.includes(unitOrGroup.id)
+                )
+                .map((s) => ({
+                  employeeId: s.employeeId,
+                  firstName: s.firstName,
+                  lastName: s.lastName,
+                  occupancyEffect: s.occupancyEffect,
+                  plans: s.plannedAttendances
+                    .filter(
+                      (p) =>
+                        p.start.toLocalDate().isEqual(date) ||
+                        p.end.toLocalDate().isEqual(date)
+                    )
+                    .map((p) => ({
+                      start: p.start.toLocalDate().isEqual(date)
+                        ? p.start.toLocalTime()
+                        : null,
+                      end: p.end.toLocalDate().isEqual(date)
+                        ? p.end.toLocalTime()
+                        : null,
+                      type: p.type,
+                      description: p.description
+                    })),
+                  confidence:
+                    s.unitIds.length > 1
+                      ? 'maybeInOtherUnit'
+                      : s.groupIds.length > 1
+                        ? 'maybeInOtherGroup'
+                        : 'full'
+                }))
+            }
+          })
       ),
-    [unitOrGroup, staffAttendanceResponse, today]
+    [unitOrGroup, staffAttendanceResponse]
   )
 
   return renderResult(staffMemberDays, (days) => (
