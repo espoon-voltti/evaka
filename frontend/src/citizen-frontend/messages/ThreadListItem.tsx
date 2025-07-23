@@ -11,6 +11,7 @@ import type {
   CitizenMessageThread,
   MessageAccount
 } from 'lib-common/generated/api-types/messaging'
+import type { MessageThreadId } from 'lib-common/generated/api-types/shared'
 import { ScreenReaderOnly } from 'lib-components/atoms/ScreenReaderOnly'
 import {
   FixedSpaceColumn,
@@ -31,6 +32,9 @@ import { getAttachmentUrl } from '../attachments/attachments'
 import { useTranslation } from '../localization'
 
 import { isRegularThread } from './utils'
+
+export const messageThreadIdAttr = (messageThreadId: MessageThreadId) =>
+  `message-thread-${messageThreadId}`
 
 interface Props {
   thread: CitizenMessageThread
@@ -82,6 +86,7 @@ export default React.memo(function ThreadListItem({
       onKeyDown={(e) => e.key === 'Enter' && onClick()}
       data-qa="thread-list-item"
       tabIndex={0}
+      id={messageThreadIdAttr(thread.id)}
     >
       <FixedSpaceColumn>
         <Header isRead={!hasUnreadMessages}>
