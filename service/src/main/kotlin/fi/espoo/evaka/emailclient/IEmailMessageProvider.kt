@@ -141,6 +141,8 @@ interface IEmailMessageProvider {
     fun serviceApplicationDecidedNotification(accepted: Boolean, startDate: LocalDate): EmailContent
 
     fun confirmationCode(confirmationCode: HtmlSafe<String>): EmailContent
+
+    fun passwordChanged(): EmailContent
 }
 
 data class MessageThreadData(
