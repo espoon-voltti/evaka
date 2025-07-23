@@ -4,7 +4,8 @@
 
 import sum from 'lodash/sum'
 import sumBy from 'lodash/sumBy'
-import { useMemo } from 'react'
+import type { KeyboardEvent } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import type { ChildId } from 'lib-common/generated/api-types/shared'
 import { useQuery } from 'lib-common/query'
@@ -86,3 +87,14 @@ export function useUnreadDecisions() {
 }
 
 export const isPersonalDetailsIncomplete = (user: User) => !user.email
+
+export const useOnEscape = (action: () => void) => {
+  return useCallback(
+    (event: KeyboardEvent<HTMLElement>) => {
+      if (event.key === 'Escape') {
+        action()
+      }
+    },
+    [action]
+  )
+}

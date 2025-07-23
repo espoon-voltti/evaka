@@ -48,6 +48,7 @@ import {
 import {
   isPersonalDetailsIncomplete,
   useChildrenWithOwnPage,
+  useOnEscape,
   useUnreadChildNotifications
 } from './utils'
 
@@ -211,6 +212,7 @@ const ChildrenMenu = React.memo(function ChildrenMenu() {
     useUnreadChildNotifications()
   const [open, { toggle: toggleOpen, off: close }] = useBoolean(false)
   const dropDownContainerRef = useCloseOnOutsideClick<HTMLDivElement>(close)
+  const closeOnEscape = useOnEscape(close)
 
   const firstAnchorRef = useRef<HTMLAnchorElement | null>(null)
   useEffect(() => {
@@ -242,7 +244,7 @@ const ChildrenMenu = React.memo(function ChildrenMenu() {
   )
 
   return (
-    <DropDownContainer ref={dropDownContainerRef}>
+    <DropDownContainer ref={dropDownContainerRef} onKeyUp={closeOnEscape}>
       <DropDownButton
         className={classNames({ active })}
         onClick={toggleOpen}
@@ -312,6 +314,7 @@ const SubNavigationMenu = React.memo(function SubNavigationMenu({
   const t = useTranslation()
   const [open, { toggle: toggleOpen, off: close }] = useBoolean(false)
   const dropDownContainerRef = useCloseOnOutsideClick<HTMLDivElement>(close)
+  const closeOnEscape = useOnEscape(close)
   const showUserAttentionIndicator = isPersonalDetailsIncomplete(user)
   const weakAuth = user.authLevel !== 'STRONG'
   const maybeLockElem = weakAuth && (
@@ -326,7 +329,7 @@ const SubNavigationMenu = React.memo(function SubNavigationMenu({
   }, [open])
 
   return (
-    <DropDownContainer ref={dropDownContainerRef}>
+    <DropDownContainer ref={dropDownContainerRef} onKeyUp={closeOnEscape}>
       <DropDownButton
         onClick={toggleOpen}
         data-qa="sub-nav-menu-desktop"

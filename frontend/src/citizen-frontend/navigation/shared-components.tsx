@@ -18,6 +18,8 @@ import { fasChevronDown, fasChevronUp } from 'lib-icons'
 import type { Lang } from '../localization'
 import { langs, useLang, useTranslation } from '../localization'
 
+import { useOnEscape } from './utils'
+
 export const CircledChar = styled.div.attrs({
   className: 'circled-char'
 })`
@@ -90,6 +92,7 @@ export const LanguageMenu = React.memo(function LanguageMenu({
   const [lang, setLang] = useLang()
   const [open, { toggle: toggleOpen, off: close }] = useBoolean(false)
   const dropDownContainerRef = useCloseOnOutsideClick<HTMLDivElement>(close)
+  const closeOnEscape = useOnEscape(close)
 
   const firstButtonRef = useRef<HTMLButtonElement | null>(null)
   useEffect(() => {
@@ -99,7 +102,7 @@ export const LanguageMenu = React.memo(function LanguageMenu({
   }, [open])
 
   return (
-    <DropDownContainer ref={dropDownContainerRef}>
+    <DropDownContainer ref={dropDownContainerRef} onKeyUp={closeOnEscape}>
       <DropDownButton
         $alignRight={alignRight}
         onClick={toggleOpen}
