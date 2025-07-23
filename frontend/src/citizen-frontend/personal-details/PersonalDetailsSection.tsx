@@ -215,7 +215,11 @@ export default React.memo(function PersonalDetailsSection({
             </div>
             <Label>{t.personalDetails.detailsSection.preferredName}</Label>
             {editing ? (
-              <SelectF bind={preferredNameState} data-qa="preferred-name" />
+              <SelectF
+                bind={preferredNameState}
+                data-qa="preferred-name"
+                autoFocus={true}
+              />
             ) : (
               <div data-qa="preferred-name" translate="no">
                 {preferredName}
