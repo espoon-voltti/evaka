@@ -9,6 +9,7 @@ import styled from 'styled-components'
 import { Link } from 'wouter'
 
 import { useBoolean } from 'lib-common/form/hooks'
+import { useOnFocusOutside } from 'lib-common/utils/useOnFocusOutside'
 import NavLink, { useIsRouteActive } from 'lib-components/atoms/NavLink'
 import { desktopMin, desktopSmall } from 'lib-components/breakpoints'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
@@ -48,7 +49,6 @@ import {
   isPersonalDetailsIncomplete,
   useChildrenWithOwnPage,
   useOnEscape,
-  useOnFocusOutside,
   useUnreadChildNotifications
 } from './utils'
 

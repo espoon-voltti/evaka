@@ -8,6 +8,7 @@ import React, { useEffect, useRef } from 'react'
 import styled, { css } from 'styled-components'
 
 import { useBoolean } from 'lib-common/form/hooks'
+import { useOnFocusOutside } from 'lib-common/utils/useOnFocusOutside'
 import NavLink from 'lib-components/atoms/NavLink'
 import { fontWeights } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
@@ -17,7 +18,7 @@ import { fasChevronDown, fasChevronUp } from 'lib-icons'
 import type { Lang } from '../localization'
 import { langs, useLang, useTranslation } from '../localization'
 
-import { useOnEscape, useOnFocusOutside } from './utils'
+import { useOnEscape } from './utils'
 
 export const CircledChar = styled.div.attrs({
   className: 'circled-char'

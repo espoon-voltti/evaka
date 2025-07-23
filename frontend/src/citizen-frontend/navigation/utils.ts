@@ -4,7 +4,7 @@
 
 import sum from 'lodash/sum'
 import sumBy from 'lodash/sumBy'
-import type { FocusEvent, KeyboardEvent } from 'react'
+import type { KeyboardEvent } from 'react'
 import { useCallback, useMemo } from 'react'
 
 import type { ChildId } from 'lib-common/generated/api-types/shared'
@@ -87,17 +87,6 @@ export function useUnreadDecisions() {
 }
 
 export const isPersonalDetailsIncomplete = (user: User) => !user.email
-
-export const useOnFocusOutside = (action: () => void) => {
-  return useCallback(
-    (event: FocusEvent) => {
-      if (!event.currentTarget.contains(event.relatedTarget)) {
-        action()
-      }
-    },
-    [action]
-  )
-}
 
 export const useOnEscape = (action: () => void) => {
   return useCallback(
