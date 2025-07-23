@@ -14,7 +14,6 @@ import { desktopMin, desktopSmall } from 'lib-components/breakpoints'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { PersonName } from 'lib-components/molecules/PersonNames'
 import { fontWeights } from 'lib-components/typography'
-import useCloseOnOutsideClick from 'lib-components/utils/useCloseOnOutsideClick'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import {
@@ -49,6 +48,7 @@ import {
   isPersonalDetailsIncomplete,
   useChildrenWithOwnPage,
   useOnEscape,
+  useOnFocusOutside,
   useUnreadChildNotifications
 } from './utils'
 
@@ -211,7 +211,7 @@ const ChildrenMenu = React.memo(function ChildrenMenu() {
   const { unreadChildNotifications, totalUnreadChildNotifications } =
     useUnreadChildNotifications()
   const [open, { toggle: toggleOpen, off: close }] = useBoolean(false)
-  const dropDownContainerRef = useCloseOnOutsideClick<HTMLDivElement>(close)
+  const closeOnFocusOutside = useOnFocusOutside(close)
   const closeOnEscape = useOnEscape(close)
 
   const firstAnchorRef = useRef<HTMLAnchorElement | null>(null)
@@ -244,7 +244,7 @@ const ChildrenMenu = React.memo(function ChildrenMenu() {
   )
 
   return (
-    <DropDownContainer ref={dropDownContainerRef} onKeyUp={closeOnEscape}>
+    <DropDownContainer onBlur={closeOnFocusOutside} onKeyUp={closeOnEscape}>
       <DropDownButton
         className={classNames({ active })}
         onClick={toggleOpen}
@@ -313,7 +313,7 @@ const SubNavigationMenu = React.memo(function SubNavigationMenu({
 }) {
   const t = useTranslation()
   const [open, { toggle: toggleOpen, off: close }] = useBoolean(false)
-  const dropDownContainerRef = useCloseOnOutsideClick<HTMLDivElement>(close)
+  const closeOnFocusOutside = useOnFocusOutside(close)
   const closeOnEscape = useOnEscape(close)
   const showUserAttentionIndicator = isPersonalDetailsIncomplete(user)
   const weakAuth = user.authLevel !== 'STRONG'
@@ -329,7 +329,7 @@ const SubNavigationMenu = React.memo(function SubNavigationMenu({
   }, [open])
 
   return (
-    <DropDownContainer ref={dropDownContainerRef} onKeyUp={closeOnEscape}>
+    <DropDownContainer onBlur={closeOnFocusOutside} onKeyUp={closeOnEscape}>
       <DropDownButton
         onClick={toggleOpen}
         data-qa="sub-nav-menu-desktop"

@@ -10,7 +10,6 @@ import styled, { css } from 'styled-components'
 import { useBoolean } from 'lib-common/form/hooks'
 import NavLink from 'lib-components/atoms/NavLink'
 import { fontWeights } from 'lib-components/typography'
-import useCloseOnOutsideClick from 'lib-components/utils/useCloseOnOutsideClick'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { fasChevronDown, fasChevronUp } from 'lib-icons'
@@ -18,7 +17,7 @@ import { fasChevronDown, fasChevronUp } from 'lib-icons'
 import type { Lang } from '../localization'
 import { langs, useLang, useTranslation } from '../localization'
 
-import { useOnEscape } from './utils'
+import { useOnEscape, useOnFocusOutside } from './utils'
 
 export const CircledChar = styled.div.attrs({
   className: 'circled-char'
@@ -91,7 +90,7 @@ export const LanguageMenu = React.memo(function LanguageMenu({
   const t = useTranslation()
   const [lang, setLang] = useLang()
   const [open, { toggle: toggleOpen, off: close }] = useBoolean(false)
-  const dropDownContainerRef = useCloseOnOutsideClick<HTMLDivElement>(close)
+  const closeOnFocusOutside = useOnFocusOutside(close)
   const closeOnEscape = useOnEscape(close)
 
   const firstButtonRef = useRef<HTMLButtonElement | null>(null)
@@ -102,7 +101,7 @@ export const LanguageMenu = React.memo(function LanguageMenu({
   }, [open])
 
   return (
-    <DropDownContainer ref={dropDownContainerRef} onKeyUp={closeOnEscape}>
+    <DropDownContainer onBlur={closeOnFocusOutside} onKeyUp={closeOnEscape}>
       <DropDownButton
         $alignRight={alignRight}
         onClick={toggleOpen}
