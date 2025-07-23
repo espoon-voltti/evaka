@@ -145,12 +145,13 @@ class PlacementControllerCitizen(
                                     )
                                 }
                         }
-                        // Make sure termination bookkeeping happens when the whole placement gets
-                        // removed, and the previous placement is untouched
+                        // Make sure termination bookkeeping happens when no placement is terminated
+                        // from the middle i.e. some placements have been completely deleted and the
+                        // termination date is the end date of some placement.
                         val allPlacements =
                             terminatablePlacementGroup.placements +
                                 terminatablePlacementGroup.additionalPlacements
-                        if (allPlacements.any { it.startDate == terminationDate.plusDays(1) }) {
+                        if (allPlacements.any { it.startDate > terminationDate }) {
                             val endingPlacement =
                                 allPlacements.find { it.endDate == terminationDate }
                             if (endingPlacement != null) {

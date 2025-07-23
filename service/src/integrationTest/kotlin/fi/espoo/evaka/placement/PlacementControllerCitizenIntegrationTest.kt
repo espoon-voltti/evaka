@@ -56,6 +56,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.system.CapturedOutput
 import org.springframework.boot.test.system.OutputCaptureExtension
@@ -693,16 +695,25 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
         )
     }
 
-    @Test
-    fun `terminating PRESCHOOL_DAYCARE followed by DAYCARE on the change date updates PRESCHOOL_DAYCARE termination date`() {
+    @ParameterizedTest
+    @ValueSource(longs = [1, 10])
+    fun `terminating PRESCHOOL_DAYCARE on the end date updates PRESCHOOL_DAYCARE termination date`(
+        daycareStartsAfterDays: Long
+    ) {
         /*
+        1st run:
         |--- PRESCHOOL_DAYCARE ---||--------- DAYCARE --------||--- PRESCHOOL_DAYCARE ---|
+               terminationDate   x
+        |--- PRESCHOOL_DAYCARE ---|                            |------ PRESCHOOL---------|
+
+        2nd run:
+        |--- PRESCHOOL_DAYCARE ---|     |---- DAYCARE --------||--- PRESCHOOL_DAYCARE ---|
                terminationDate   x
         |--- PRESCHOOL_DAYCARE ---|                            |------ PRESCHOOL---------|
         */
         val startPreschool = today.minusWeeks(2)
         val endPreschool = startPreschool.plusMonths(1)
-        val startDaycare = endPreschool.plusDays(1)
+        val startDaycare = endPreschool.plusDays(daycareStartsAfterDays)
         val endDaycare = startDaycare.plusMonths(1)
         val startNextPreschoolDaycare = endDaycare.plusDays(1)
         val endNextPreschoolDaycare = startNextPreschoolDaycare.plusMonths(1)
