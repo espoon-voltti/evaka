@@ -913,8 +913,10 @@ class ApplicationStateService(
         decisionId: DecisionId,
         requestedStartDate: LocalDate,
     ) {
+        val automatedDecision: Boolean
         if (user is AuthenticatedUser.SystemInternalUser) {
             // automated decision
+            automatedDecision = true
         } else {
             accessControl.requirePermissionFor(
                 tx,
@@ -923,6 +925,7 @@ class ApplicationStateService(
                 Action.Application.ACCEPT_DECISION,
                 applicationId,
             )
+            automatedDecision = false
         }
 
         val application = getApplication(tx, applicationId)
@@ -1009,7 +1012,13 @@ class ApplicationStateService(
 
         placementPlanService.softDeleteUnusedPlacementPlanByApplication(tx, applicationId)
 
-        if (application.status == WAITING_CONFIRMATION) {
+        if (
+            automatedDecision ||
+                (application.status == WAITING_CONFIRMATION &&
+                    decisions
+                        .filter { it.id != decision.id }
+                        .none { it.status == DecisionStatus.PENDING })
+        ) {
             tx.updateApplicationStatus(application.id, ACTIVE, user.evakaUserId, clock.now())
 
             tx.getCaseProcessByApplicationId(applicationId)?.also { process ->
@@ -1062,6 +1071,17 @@ class ApplicationStateService(
             throw BadRequest("Decision is not pending")
         }
 
+        if (
+            (decision.type == DecisionType.PRESCHOOL_DAYCARE ||
+                decision.type == DecisionType.PRESCHOOL_CLUB) &&
+                decisions.any {
+                    it.type in listOf(DecisionType.PRESCHOOL, DecisionType.PREPARATORY_EDUCATION) &&
+                        it.status != DecisionStatus.ACCEPTED
+                }
+        ) {
+            throw BadRequest("Primary decision must be accepted first")
+        }
+
         tx.markDecisionRejected(user, clock, decisionId)
 
         val alsoReject =
@@ -1080,7 +1100,14 @@ class ApplicationStateService(
 
         placementPlanService.softDeleteUnusedPlacementPlanByApplication(tx, applicationId)
 
-        if (application.status == WAITING_CONFIRMATION) {
+        if (
+            application.status == WAITING_CONFIRMATION &&
+                decision.type in
+                    listOf(DecisionType.PRESCHOOL_DAYCARE, DecisionType.PRESCHOOL_CLUB) &&
+                decisions.any { it.id != decision.id }
+        ) {
+            tx.updateApplicationStatus(application.id, ACTIVE, user.evakaUserId, clock.now())
+        } else if (application.status == WAITING_CONFIRMATION) {
             tx.updateApplicationStatus(application.id, REJECTED, user.evakaUserId, clock.now())
         }
 

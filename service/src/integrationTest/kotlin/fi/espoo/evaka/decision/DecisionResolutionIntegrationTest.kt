@@ -198,7 +198,10 @@ class DecisionResolutionIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         if (test.isAccept) {
             acceptDecisionAndAssert(user, applicationId, ids.primaryId!!, period.start)
             db.read { r ->
-                assertEquals(ApplicationStatus.ACTIVE, r.getApplicationStatus(ids.applicationId))
+                assertEquals(
+                    ApplicationStatus.WAITING_CONFIRMATION,
+                    r.getApplicationStatus(ids.applicationId),
+                )
                 r.getPlacementRowsByChild(testChild_1.id).exactlyOne().also {
                     assertEquals(PlacementType.PRESCHOOL, it.type)
                     assertEquals(testDaycare.id, it.unitId)
@@ -212,6 +215,7 @@ class DecisionResolutionIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                 preschoolDaycarePeriod.start,
             )
             db.read { r ->
+                assertEquals(ApplicationStatus.ACTIVE, r.getApplicationStatus(ids.applicationId))
                 r.getPlacementRowsByChild(testChild_1.id).toList().also {
                     assertEquals(2, it.size)
                     assertEquals(PlacementType.PRESCHOOL_DAYCARE, it[0].type)
@@ -260,7 +264,10 @@ class DecisionResolutionIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         if (test.isAccept) {
             acceptDecisionAndAssert(user, applicationId, ids.primaryId!!, period.start)
             db.read { r ->
-                assertEquals(ApplicationStatus.ACTIVE, r.getApplicationStatus(ids.applicationId))
+                assertEquals(
+                    ApplicationStatus.WAITING_CONFIRMATION,
+                    r.getApplicationStatus(ids.applicationId),
+                )
                 r.getPlacementRowsByChild(testChild_1.id).exactlyOne().also {
                     assertEquals(PlacementType.PREPARATORY, it.type)
                     assertEquals(testDaycare.id, it.unitId)
@@ -274,6 +281,7 @@ class DecisionResolutionIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                 preschoolDaycarePeriod.start,
             )
             db.read { r ->
+                assertEquals(ApplicationStatus.ACTIVE, r.getApplicationStatus(ids.applicationId))
                 r.getPlacementRowsByChild(testChild_1.id).toList().also {
                     assertEquals(2, it.size)
                     assertEquals(PlacementType.PREPARATORY_DAYCARE, it[0].type)

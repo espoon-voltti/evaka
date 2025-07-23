@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import FiniteDateRange from 'lib-common/finite-date-range'
 import type {
   ApplicationId,
   GroupId,
@@ -31,10 +32,12 @@ import type {
   DevEmployee,
   DevPerson
 } from '../../generated/api-types'
+import CitizenDecisionsPage from '../../pages/citizen/citizen-decisions'
+import CitizenHeader from '../../pages/citizen/citizen-header'
 import type { ApplicationProcessPage } from '../../pages/employee/units/unit'
 import { UnitPage } from '../../pages/employee/units/unit'
 import { Page } from '../../utils/page'
-import { employeeLogin } from '../../utils/user'
+import { employeeLogin, enduserLogin } from '../../utils/user'
 
 let page: Page
 let unitPage: UnitPage
@@ -160,5 +163,133 @@ describe('Unit groups - placement plans / proposals', () => {
     await applicationProcessPage.placementProposals.assertPlacementProposalRowCount(
       2
     )
+  })
+
+  test('Application is shown in the unit page until guardian handles both decisions', async () => {
+    const today = LocalDate.todayInSystemTz()
+    const mockChild = Fixture.person({ ssn: '010116A9219' })
+    const mockAdult = Fixture.person({ ssn: '010106A973C' })
+    await Fixture.preschoolTerm({
+      finnishPreschool: new FiniteDateRange(
+        today.subMonths(1),
+        today.addMonths(1)
+      ),
+      swedishPreschool: new FiniteDateRange(
+        today.subMonths(1),
+        today.addMonths(1)
+      ),
+      extendedTerm: new FiniteDateRange(today.subMonths(1), today.addMonths(1)),
+      applicationPeriod: new FiniteDateRange(
+        today.subMonths(1),
+        today.addMonths(1)
+      )
+    }).save()
+    const testArea = await Fixture.careArea().save()
+    const testDaycare = await Fixture.daycare({
+      areaId: testArea.id
+    }).save()
+    const mockUnitSupervisor = await Fixture.employee()
+      .unitSupervisor(testDaycare.id)
+      .save()
+    await Fixture.family({
+      guardian: mockAdult,
+      children: [mockChild]
+    }).save()
+    const testApplication: DevApplicationWithForm = {
+      ...applicationFixture(
+        mockChild,
+        mockAdult,
+        undefined,
+        'PRESCHOOL',
+        null,
+        [testDaycare.id],
+        true
+      ),
+      id: randomId<ApplicationId>(),
+      type: 'PRESCHOOL',
+      status: 'WAITING_CONFIRMATION',
+      confidential: true
+    }
+    await createApplications({ body: [testApplication] })
+
+    await Fixture.placementPlan({
+      applicationId: testApplication.id,
+      unitId: testDaycare.id,
+      periodStart: today,
+      periodEnd: today,
+      preschoolDaycarePeriodStart: today,
+      preschoolDaycarePeriodEnd: today.addDays(7)
+    }).save()
+
+    const decision1 = await Fixture.decision({
+      applicationId: testApplication.id,
+      employeeId: mockUnitSupervisor.id,
+      unitId: testDaycare.id,
+      type: 'PRESCHOOL',
+      status: 'PENDING',
+      startDate: today,
+      endDate: today
+    }).save()
+
+    const decision2 = await Fixture.decision({
+      applicationId: testApplication.id,
+      employeeId: mockUnitSupervisor.id,
+      unitId: testDaycare.id,
+      type: 'PRESCHOOL_DAYCARE',
+      status: 'PENDING',
+      startDate: today.addDays(1),
+      endDate: today.addDays(1)
+    }).save()
+
+    // Unit supervisor opens the unit application process page and checks that
+    // the application is shown
+    await employeeLogin(page, mockUnitSupervisor)
+    let unitPage = new UnitPage(page)
+    await unitPage.navigateToUnit(testDaycare.id)
+    let applicationProcessPage = await unitPage.openApplicationProcessTab()
+    await applicationProcessPage.waitUntilVisible()
+    await applicationProcessPage.waitingConfirmation.assertRowCount(1)
+    await page.close()
+
+    // Guardian accepts the first decision
+    page = await Page.open()
+    await enduserLogin(page, mockAdult)
+    let header = new CitizenHeader(page)
+    await header.selectTab('decisions')
+    let citizenDecisionsPage = new CitizenDecisionsPage(page)
+    let responsePage = await citizenDecisionsPage.navigateToDecisionResponse(
+      testApplication.id
+    )
+    await responsePage.acceptDecision(decision1.id)
+    await page.close()
+
+    // Unit supervisor checks that the application is still shown
+    page = await Page.open()
+    await employeeLogin(page, mockUnitSupervisor)
+    unitPage = new UnitPage(page)
+    await unitPage.navigateToUnit(testDaycare.id)
+    applicationProcessPage = await unitPage.openApplicationProcessTab()
+    await applicationProcessPage.waitingConfirmation.assertRowCount(1)
+    await page.close()
+
+    // Guardian accepts the second decision
+    page = await Page.open()
+    await enduserLogin(page, mockAdult)
+    header = new CitizenHeader(page)
+    await header.selectTab('decisions')
+    citizenDecisionsPage = new CitizenDecisionsPage(page)
+    responsePage = await citizenDecisionsPage.navigateToDecisionResponse(
+      testApplication.id
+    )
+    await responsePage.acceptDecision(decision2.id)
+    await page.close()
+
+    // Unit supervisor checks that the application is no longer shown
+    page = await Page.open()
+    await employeeLogin(page, mockUnitSupervisor)
+    unitPage = new UnitPage(page)
+    await unitPage.navigateToUnit(testDaycare.id)
+    applicationProcessPage = await unitPage.openApplicationProcessTab()
+    await applicationProcessPage.waitingConfirmation.assertRowCount(0)
   })
 })
