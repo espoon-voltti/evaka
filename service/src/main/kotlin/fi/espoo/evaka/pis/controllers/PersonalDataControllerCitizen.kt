@@ -183,12 +183,20 @@ class PersonalDataControllerCitizen(
                     throw BadRequest("Invalid username")
                 }
                 try {
-                    tx.updateWeakLoginCredentials(
-                        clock.now(),
-                        user.id,
-                        body.username?.lowercase(),
-                        password,
-                    )
+                    val updateResult =
+                        tx.updateWeakLoginCredentials(
+                            clock.now(),
+                            user.id,
+                            body.username?.lowercase(),
+                            password,
+                        )
+                    if (updateResult.passwordChanged) {
+                        asyncJobRunner.plan(
+                            tx,
+                            sequenceOf(AsyncJob.SendPasswordChangedEmail(user.id)),
+                            runAt = clock.now(),
+                        )
+                    }
                 } catch (e: Exception) {
                     throw mapPSQLException(e)
                 }
