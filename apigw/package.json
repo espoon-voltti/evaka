@@ -21,7 +21,7 @@
   },
   "dependencies": {
     "@node-saml/node-saml": "5.0.1",
-    "axios": "1.10.0",
+    "axios": "1.11.0",
     "connect-redis": "9.0.0",
     "cookie-parser": "1.4.7",
     "date-fns": "4.1.0",
