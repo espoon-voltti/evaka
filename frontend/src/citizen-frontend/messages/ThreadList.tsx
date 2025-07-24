@@ -43,7 +43,8 @@ const hasUnreadMessages = (
 
 interface Props {
   accountId: MessageAccountId
-  selectThread: (threadId: MessageThreadId | undefined) => void
+  selectThread: (threadId: MessageThreadId) => void
+  closeThread: () => void
   setEditorVisible: (value: boolean) => void
   newMessageButtonEnabled: boolean
 }
@@ -51,6 +52,7 @@ interface Props {
 export default React.memo(function ThreadList({
   accountId,
   selectThread,
+  closeThread,
   setEditorVisible,
   newMessageButtonEnabled
 }: Props) {
@@ -66,7 +68,7 @@ export default React.memo(function ThreadList({
         <MobileOnly>
           <ReturnButton
             label={t.common.return}
-            onClick={() => selectThread(undefined)}
+            onClick={closeThread}
             margin={defaultMargins.s}
           />
         </MobileOnly>

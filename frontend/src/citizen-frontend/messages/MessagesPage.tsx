@@ -29,12 +29,13 @@ import { useUser } from '../auth/state'
 import { childrenQuery } from '../children/queries'
 import { useTranslation } from '../localization'
 import useTitle from '../useTitle'
-import { focusElementAfterDelay } from '../utils/focus'
+import { focusElementAfterDelay, focusElementOnNextFrame } from '../utils/focus'
 
 import EmptyThreadView from './EmptyThreadView'
 import MessageEditor from './MessageEditor'
 import RedactedThreadView from './RedactedThreadView'
 import ThreadList from './ThreadList'
+import { messageThreadIdAttr } from './ThreadListItem'
 import type { ThreadViewApi } from './ThreadView'
 import ThreadView from './ThreadView'
 import { recipientsQuery, sendMessageMutation } from './queries'
@@ -116,6 +117,14 @@ export default React.memo(function MessagesPage() {
 
   const { mutateAsync: sendMessage } = useMutationResult(sendMessageMutation)
 
+  const closeThread = useCallback(() => {
+    const selectedThreadId = selectedThread?.id
+    selectThread(undefined)
+    if (selectedThreadId !== undefined) {
+      focusElementOnNextFrame(messageThreadIdAttr(selectedThreadId))
+    }
+  }, [selectThread, selectedThread?.id])
+
   return (
     <Container>
       {renderResult(messageAccount, (messageAccount) => (
@@ -128,6 +137,7 @@ export default React.memo(function MessagesPage() {
               <ThreadList
                 accountId={messageAccount.accountId}
                 selectThread={selectThread}
+                closeThread={closeThread}
                 setEditorVisible={changeEditorVisibility}
                 newMessageButtonEnabled={canSendNewMessage}
               />
@@ -135,7 +145,7 @@ export default React.memo(function MessagesPage() {
                 isRegularThread(selectedThread) ? (
                   <ThreadView
                     accountId={messageAccount.accountId}
-                    closeThread={() => selectThread(undefined)}
+                    closeThread={closeThread}
                     thread={selectedThread}
                     allowedAccounts={
                       recipients.getOrElse(null)?.childrenToMessageAccounts ??
@@ -156,7 +166,7 @@ export default React.memo(function MessagesPage() {
                 ) : (
                   <RedactedThreadView
                     thread={selectedThread}
-                    closeThread={() => selectThread(undefined)}
+                    closeThread={closeThread}
                   />
                 )
               ) : (
