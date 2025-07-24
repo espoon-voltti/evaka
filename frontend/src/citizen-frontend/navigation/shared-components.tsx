@@ -4,18 +4,21 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef } from 'react'
 import styled, { css } from 'styled-components'
 
+import { useBoolean } from 'lib-common/form/hooks'
+import { useOnFocusOutside } from 'lib-common/utils/useOnFocusOutside'
 import NavLink from 'lib-components/atoms/NavLink'
 import { fontWeights } from 'lib-components/typography'
-import useCloseOnOutsideClick from 'lib-components/utils/useCloseOnOutsideClick'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { fasChevronDown, fasChevronUp } from 'lib-icons'
 
 import type { Lang } from '../localization'
 import { langs, useLang, useTranslation } from '../localization'
+
+import { useOnEscape } from './utils'
 
 export const CircledChar = styled.div.attrs({
   className: 'circled-char'
@@ -87,11 +90,9 @@ export const LanguageMenu = React.memo(function LanguageMenu({
 }) {
   const t = useTranslation()
   const [lang, setLang] = useLang()
-  const [open, setOpen] = useState(false)
-  const toggleOpen = useCallback(() => setOpen((state) => !state), [setOpen])
-  const dropDownContainerRef = useCloseOnOutsideClick<HTMLDivElement>(() =>
-    setOpen(false)
-  )
+  const [open, { toggle: toggleOpen, off: close }] = useBoolean(false)
+  const closeOnFocusOutside = useOnFocusOutside(close)
+  const closeOnEscape = useOnEscape(close)
 
   const firstButtonRef = useRef<HTMLButtonElement | null>(null)
   useEffect(() => {
@@ -101,7 +102,7 @@ export const LanguageMenu = React.memo(function LanguageMenu({
   }, [open])
 
   return (
-    <DropDownContainer ref={dropDownContainerRef}>
+    <DropDownContainer onBlur={closeOnFocusOutside} onKeyUp={closeOnEscape}>
       <DropDownButton
         $alignRight={alignRight}
         onClick={toggleOpen}
@@ -121,7 +122,7 @@ export const LanguageMenu = React.memo(function LanguageMenu({
               className={classNames({ active: lang === l })}
               onClick={() => {
                 setLang(l)
-                setOpen(false)
+                close()
               }}
               data-qa={`lang-${l}`}
               lang={l}

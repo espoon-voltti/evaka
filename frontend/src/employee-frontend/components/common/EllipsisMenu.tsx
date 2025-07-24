@@ -6,9 +6,9 @@ import React from 'react'
 import styled from 'styled-components'
 
 import { useBoolean } from 'lib-common/form/hooks'
+import { useOnFocusOutside } from 'lib-common/utils/useOnFocusOutside'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import LegacyInlineButton from 'lib-components/atoms/buttons/LegacyInlineButton'
-import useCloseOnOutsideClick from 'lib-components/utils/useCloseOnOutsideClick'
 import { defaultMargins } from 'lib-components/white-space'
 import { faEllipsisVAlt } from 'lib-icons'
 
@@ -31,11 +31,12 @@ export default React.memo(function EllipsisMenu({
   ['data-qa']: dataQa
 }: Props) {
   const [isMenuOpen, { toggle: toggleMenu, off: closeMenu }] = useBoolean(false)
+  const closeOnFocusOutside = useOnFocusOutside(closeMenu)
 
   const { i18n } = useTranslation()
 
   return (
-    <Container>
+    <Container onBlur={closeOnFocusOutside}>
       {items.length > 0 && (
         <>
           <IconOnlyButton
@@ -68,10 +69,8 @@ const MenuList = React.memo(function MenuList({
   items,
   closeMenu
 }: MenuListProps) {
-  const containerRef = useCloseOnOutsideClick<HTMLDivElement>(closeMenu)
-
   return (
-    <Menu ref={containerRef} onClick={(e) => e.stopPropagation()}>
+    <Menu onClick={(e) => e.stopPropagation()}>
       {items.map(({ id, label, onClick, disabled }) => (
         <MenuItem
           key={id}
