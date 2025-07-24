@@ -135,7 +135,6 @@ private fun ChildPlacement.startsAfter(date: LocalDate): Boolean = this.startDat
 
 fun cancelOrTerminatePlacement(
     tx: Database.Transaction,
-    terminationRequestedDate: LocalDate,
     placement: ChildPlacement,
     terminationDate: LocalDate,
     terminatedBy: AuthenticatedUser.Citizen,
@@ -144,38 +143,30 @@ fun cancelOrTerminatePlacement(
     if (placement.startsAfter(terminationDate)) {
         tx.cancelPlacement(now, terminatedBy.evakaUserId, placement.id)
     } else {
-        tx.terminatePlacementFrom(
-            terminationRequestedDate,
-            placement.id,
-            terminationDate,
-            terminatedBy.evakaUserId,
-            now,
-        )
+        tx.terminatePlacementFrom(placement.id, terminationDate, terminatedBy.evakaUserId, now)
     }
 }
 
 fun terminateBilledDaycare(
     tx: Database.Transaction,
     user: AuthenticatedUser.Citizen,
-    terminationRequestedDate: LocalDate,
     terminatablePlacementGroup: TerminatablePlacementGroup,
     terminationDate: LocalDate,
     childId: ChildId,
     unitId: DaycareId,
     now: HelsinkiDateTime,
 ) {
-    // additional placements after termination date are always cancelled
+    // additional placements after termination date are always canceled
     terminatablePlacementGroup.additionalPlacements
         .filter { it.endDate.isAfter(terminationDate) }
-        .forEach {
-            cancelOrTerminatePlacement(tx, terminationRequestedDate, it, terminationDate, user, now)
-        }
+        .forEach { cancelOrTerminatePlacement(tx, it, terminationDate, user, now) }
 
     val preschoolOrPreparatoryWithDaycare =
         terminatablePlacementGroup.placements.filter {
             (it.type == PRESCHOOL_DAYCARE || it.type == PREPARATORY_DAYCARE) &&
                 it.endDate.isAfter(terminationDate)
         }
+
     // placements which have already been updated on the earlier iteration
     val placementsToSkip = mutableListOf<ChildPlacement>()
     for (placement in preschoolOrPreparatoryWithDaycare) {
@@ -236,24 +227,13 @@ fun terminateBilledDaycare(
             }
         } else {
             tx.movePlacementEndDateEarlier(
-                Placement(
-                    id = placement.id,
-                    type = placement.type,
-                    childId = placement.childId,
-                    unitId = placement.unitId,
-                    startDate = placement.startDate,
-                    endDate = placement.endDate,
-                    terminationRequestedDate = placement.terminationRequestedDate,
-                    terminationRequestedBy = placement.terminatedBy?.id,
-                    placeGuarantee = false,
-                    modifiedAt = null,
-                    modifiedBy = null,
-                ),
+                placement.id,
+                placement.endDate,
                 terminationDate,
                 now,
                 user.evakaUserId,
             )
-            tx.updatePlacementTermination(placement.id, terminationRequestedDate, user.evakaUserId)
+            tx.updatePlacementTermination(placement.id, now.toLocalDate(), user.evakaUserId)
             if (adjacentPlacement != null) {
                 tx.updatePlacementStartDate(
                     adjacentPlacement.id,

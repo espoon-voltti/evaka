@@ -56,6 +56,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.system.CapturedOutput
 import org.springframework.boot.test.system.OutputCaptureExtension
@@ -632,17 +634,21 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
 
         assertPlacements(
             listOf(
-                Triple(PlacementType.PRESCHOOL_DAYCARE, startPreschool, endPreschool),
-                Triple(PlacementType.DAYCARE, startDaycare, endDaycare),
                 Triple(
                     PlacementType.PRESCHOOL_DAYCARE,
-                    startNextPreschoolDaycare,
-                    placementTerminationDate,
+                    FiniteDateRange(startPreschool, endPreschool),
+                    null,
+                ),
+                Triple(PlacementType.DAYCARE, FiniteDateRange(startDaycare, endDaycare), null),
+                Triple(
+                    PlacementType.PRESCHOOL_DAYCARE,
+                    FiniteDateRange(startNextPreschoolDaycare, placementTerminationDate),
+                    today,
                 ),
                 Triple(
                     PlacementType.PRESCHOOL,
-                    placementTerminationDate.plusDays(1),
-                    endNextPreschoolDaycare,
+                    FiniteDateRange(placementTerminationDate.plusDays(1), endNextPreschoolDaycare),
+                    null,
                 ),
             ),
             group1,
@@ -669,24 +675,108 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
 
         assertPlacements(
             listOf(
-                Triple(PlacementType.PRESCHOOL_DAYCARE, startPreschool, endPreschool),
-                Triple(PlacementType.DAYCARE, startDaycare, terminationDate2),
-                Triple(PlacementType.PRESCHOOL, startNextPreschoolDaycare, endNextPreschoolDaycare),
+                Triple(
+                    PlacementType.PRESCHOOL_DAYCARE,
+                    FiniteDateRange(startPreschool, endPreschool),
+                    null,
+                ),
+                Triple(
+                    PlacementType.DAYCARE,
+                    FiniteDateRange(startDaycare, terminationDate2),
+                    today,
+                ),
+                Triple(
+                    PlacementType.PRESCHOOL,
+                    FiniteDateRange(startNextPreschoolDaycare, endNextPreschoolDaycare),
+                    null,
+                ),
             ),
             group,
         )
     }
 
+    @ParameterizedTest
+    @ValueSource(longs = [1, 10])
+    fun `terminating PRESCHOOL_DAYCARE on the end date updates PRESCHOOL_DAYCARE termination date`(
+        daycareStartsAfterDays: Long
+    ) {
+        /*
+        1st run:
+        |--- PRESCHOOL_DAYCARE ---||--------- DAYCARE --------||--- PRESCHOOL_DAYCARE ---|
+               terminationDate   x
+        |--- PRESCHOOL_DAYCARE ---|                            |------ PRESCHOOL---------|
+
+        2nd run:
+        |--- PRESCHOOL_DAYCARE ---|     |---- DAYCARE --------||--- PRESCHOOL_DAYCARE ---|
+               terminationDate   x
+        |--- PRESCHOOL_DAYCARE ---|                            |------ PRESCHOOL---------|
+        */
+        val startPreschool = today.minusWeeks(2)
+        val endPreschool = startPreschool.plusMonths(1)
+        val startDaycare = endPreschool.plusDays(daycareStartsAfterDays)
+        val endDaycare = startDaycare.plusMonths(1)
+        val startNextPreschoolDaycare = endDaycare.plusDays(1)
+        val endNextPreschoolDaycare = startNextPreschoolDaycare.plusMonths(1)
+        insertComplexPlacements(
+            child.id,
+            startPreschool,
+            endPreschool,
+            startDaycare,
+            endDaycare,
+            startNextPreschoolDaycare,
+            endNextPreschoolDaycare,
+        )
+        val placementTerminationDate = endPreschool
+        terminatePlacements(
+            child.id,
+            PlacementControllerCitizen.PlacementTerminationRequestBody(
+                type = TerminatablePlacementType.PRESCHOOL,
+                terminationDate = placementTerminationDate,
+                unitId = daycareId,
+                terminateDaycareOnly = true,
+            ),
+        )
+        val placementGroups = getChildPlacements(child.id)
+        assertEquals(1, placementGroups.size)
+        val group1 = placementGroups[0]
+        assertEquals(TerminatablePlacementType.PRESCHOOL, group1.type)
+        assertEquals(startPreschool, group1.startDate)
+        assertEquals(endNextPreschoolDaycare, group1.endDate)
+        assertEquals(2, group1.placements.size)
+        assertEquals(0, group1.additionalPlacements.size)
+
+        assertPlacements(
+            listOf(
+                Triple(
+                    PlacementType.PRESCHOOL_DAYCARE,
+                    FiniteDateRange(startPreschool, endPreschool),
+                    today,
+                ),
+                Triple(
+                    PlacementType.PRESCHOOL,
+                    FiniteDateRange(startNextPreschoolDaycare, endNextPreschoolDaycare),
+                    null,
+                ),
+            ),
+            group1,
+        )
+    }
+
     private fun assertPlacements(
-        expected: List<Triple<PlacementType, LocalDate, LocalDate>>,
+        expected: List<Triple<PlacementType, FiniteDateRange, LocalDate?>>,
         group: TerminatablePlacementGroup,
     ) {
         val placements = group.placements + group.additionalPlacements
 
-        expected.forEach { (type, start, end) ->
+        expected.forEach { (type, range, terminationRequestedDate) ->
             assertNotNull(
-                placements.find { it.type == type && it.startDate == start && it.endDate == end },
-                "$type $start $end not found in $placements",
+                placements.find {
+                    it.type == type &&
+                        it.startDate == range.start &&
+                        it.endDate == range.end &&
+                        it.terminationRequestedDate == terminationRequestedDate
+                },
+                "$type ${range.start} ${range.end} $terminationRequestedDate not found in $placements",
             )
         }
 
