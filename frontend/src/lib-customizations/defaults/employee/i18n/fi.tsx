@@ -1576,7 +1576,7 @@ export const fi = {
       daycareUnit: 'Toimipaikka',
       daycareGroups: 'Ryhmä',
       daycareGroupMissing: 'Ei ryhmitetty',
-      type: 'Toimintamuoto',
+      type: 'Sijoitustyyppi',
       providerType: 'Järjestämismuoto',
       updatedAt: 'Päivitetty viimeksi',
       serviceNeedMissing1: 'Sijoitukselta puuttuu palveluntarve',
@@ -2456,7 +2456,7 @@ export const fi = {
       name: 'Nimi',
       birthday: 'Syntymäaika',
       placementDuration: 'Sijoitettu yksikköön',
-      type: 'Toimintamuoto',
+      type: 'Sijoitustyyppi',
       subtype: 'Osa/Koko',
       application: 'Hakemus'
     },
@@ -2493,14 +2493,14 @@ export const fi = {
         `Viimeksi muokattu ${date}. Muokkaaja: ${name}`,
       subtype: 'Osa/Koko',
       title: 'Sijoitusehdotukset',
-      type: 'Toimintamuoto',
+      type: 'Sijoitustyyppi',
       unknown: 'Ei tiedossa'
     },
     applications: {
       title: 'Hakemukset',
       child: 'Lapsen nimi/synt.aika',
       guardian: 'Hakenut huoltaja',
-      type: 'Toimintamuoto',
+      type: 'Sijoitustyyppi',
       types: {
         CLUB: 'Kerho',
         DAYCARE: 'Varhaiskasvatus',
@@ -2537,7 +2537,7 @@ export const fi = {
       over3: 'Yli 3-vuotias sijoituksen alkaessa',
       placementDuration: 'Sijoitettu yksikköön',
       missingGroup: 'Ryhmä puuttuu',
-      type: 'Toimintamuoto',
+      type: 'Sijoitustyyppi',
       subtype: 'Osa/Koko',
       addToGroup: 'Ryhmitä',
       modal: {
@@ -2743,7 +2743,7 @@ export const fi = {
       serviceNeedChecked: 'Palveluntarve merkitty',
       serviceNeedMissing1: 'Palveluntarve puuttuu (',
       serviceNeedMissing2: 'päivää)',
-      placementType: 'Toimintamuoto',
+      placementType: 'Sijoitustyyppi',
       placementSubtype: 'Osa/Koko',
       noChildren: 'Ryhmään ei ole sijoitettu lapsia.',
       returnBtn: 'Palauta',
@@ -3419,7 +3419,7 @@ export const fi = {
       },
       child: {
         ssn: 'Henkilötunnus',
-        placementType: 'Toimintamuoto',
+        placementType: 'Sijoitustyyppi',
         careArea: 'Palvelualue',
         daycare: 'Toimipaikka',
         placementDate: 'Sijoitus voimassa',
@@ -3533,7 +3533,7 @@ export const fi = {
       name: 'Nimi',
       ssn: 'Henkilötunnus',
       postOffice: 'Postitoimipaikka',
-      placementType: 'Toimintamuoto',
+      placementType: 'Sijoitustyyppi',
       careArea: 'Palvelualue',
       unit: 'Toimipaikka',
       serviceNeed: 'Palveluntarve'
@@ -3733,7 +3733,7 @@ export const fi = {
       'Aiemmat päällekkäiset sijoitukset katkaistaan automaattisesti mikäli kuntalainen ottaa tarjottavan paikan vastaan.',
     createPlacementDraft: 'Luo sijoitushahmotelma',
     datesTitle: 'Nyt luotava sijoitushahmotelma',
-    type: 'Toimintamuoto',
+    type: 'Sijoitustyyppi',
     date: 'Sijoituspäivämäärä',
     dateError: 'Päällekkäinen sijoitus ajanjaksolle.',
     preparatoryPeriod: 'Valmistava opetus',
@@ -3761,7 +3761,7 @@ export const fi = {
       'Henkilö joka on merkitty hakemuksella huoltajaksi ei ole VTJn mukaan lapsen huoltaja. Päätös pitää lähettää paperisena.',
     unit: 'Toimipaikka',
     contact: 'Kontaktihenkilö',
-    decisionLabelHeading: 'Toimintamuoto',
+    decisionLabelHeading: 'Sijoitustyyppi',
     decisionValueHeading: 'Päätöspäivämäärä',
     types: {
       CLUB: 'Kerho',
@@ -3977,7 +3977,7 @@ export const fi = {
       area: 'Palvelualue',
       unit: 'Yksikkö',
       providerType: 'Järjestämismuoto',
-      placementType: 'Toimintamuoto',
+      placementType: 'Sijoitustyyppi',
       type: 'Päätöstyyppi',
       types: {
         FEE_DECISION: 'Maksupäätökset',
@@ -4261,7 +4261,7 @@ export const fi = {
         DAYCARE: 'varhaiskasvatuksessa',
         PRESCHOOL: 'esiopetuksessa'
       },
-      placementType: 'Toimintamuoto',
+      placementType: 'Sijoitustyyppi',
       level: 'Tuen taso ja muut toimet',
       showZeroRows: 'Näytä nollarivit',
       groupingTypes: {
@@ -4432,7 +4432,7 @@ export const fi = {
       placementCount: 'Lapsia yhteensä',
       calculatedPlacements: 'Laskennallinen määrä',
       providerType: 'Järjestämismuoto',
-      placementType: 'Sijoitusmuoto',
+      placementType: 'Sijoitustyyppi',
       placementsOver3: 'Vähintään 3v',
       placementsUnder3: 'Alle 3v',
       total: 'Yhteensä'
