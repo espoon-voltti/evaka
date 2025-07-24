@@ -9,6 +9,7 @@ import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.absence.getDaycareIdByGroup
 import fi.espoo.evaka.attendance.RealtimeStaffAttendanceController.OpenGroupAttendanceResponse
 import fi.espoo.evaka.changes
+import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
@@ -59,6 +60,13 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                         Action.Unit.READ_REALTIME_STAFF_ATTENDANCES,
                         unitId,
                     )
+                    val unit = tx.getDaycare(unitId) ?: throw NotFound("Unit $unitId not found")
+                    val unitOperationalDays =
+                        dateRange
+                            .dates()
+                            .filter { unit.operationDays.contains(it.dayOfWeek.value) }
+                            .toList()
+
                     CurrentDayStaffAttendanceResponse(
                         staff =
                             tx.getStaffAttendances(
@@ -67,6 +75,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                                 now = clock.now(),
                             ),
                         extraAttendances = tx.getExternalStaffAttendances(unitId),
+                        operationalDays = unitOperationalDays,
                     )
                 }
             }
@@ -91,7 +100,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
         @RequestParam employeeId: EmployeeId,
         @RequestParam from: LocalDate,
         @RequestParam to: LocalDate,
-    ): StaffMember {
+    ): StaffMemberWithOperationalDays {
         return db.connect { dbc ->
                 dbc.read { tx ->
                     ac.requirePermissionFor(
@@ -101,13 +110,26 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                         Action.Unit.READ_REALTIME_STAFF_ATTENDANCES,
                         unitId,
                     )
-                    tx.getStaffAttendances(
-                            unitId = unitId,
-                            dateRange = FiniteDateRange(from, to),
-                            now = clock.now(),
-                            employeeId = employeeId,
-                        )
-                        .find { it.employeeId == employeeId } ?: throw NotFound()
+                    val unit = tx.getDaycare(unitId) ?: throw NotFound("Unit $unitId not found")
+                    val unitOperationalDays =
+                        FiniteDateRange(from, to)
+                            .dates()
+                            .filter { unit.operationDays.contains(it.dayOfWeek.value) }
+                            .toList()
+
+                    val staffMember =
+                        tx.getStaffAttendances(
+                                unitId = unitId,
+                                dateRange = FiniteDateRange(from, to),
+                                now = clock.now(),
+                                employeeId = employeeId,
+                            )
+                            .find { it.employeeId == employeeId } ?: throw NotFound()
+
+                    StaffMemberWithOperationalDays(
+                        staffMember = staffMember,
+                        operationalDays = unitOperationalDays,
+                    )
                 }
             }
             .also {

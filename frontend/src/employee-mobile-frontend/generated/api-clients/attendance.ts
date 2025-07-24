@@ -27,7 +27,7 @@ import type { StaffAttendanceExternalId } from 'lib-common/generated/api-types/s
 import type { StaffAttendanceUpdateRequest } from 'lib-common/generated/api-types/attendance'
 import type { StaffAttendanceUpdateResponse } from 'lib-common/generated/api-types/attendance'
 import type { StaffDepartureRequest } from 'lib-common/generated/api-types/attendance'
-import type { StaffMember } from 'lib-common/generated/api-types/attendance'
+import type { StaffMemberWithOperationalDays } from 'lib-common/generated/api-types/attendance'
 import type { UnitInfo } from 'lib-common/generated/api-types/attendance'
 import type { UnitStats } from 'lib-common/generated/api-types/attendance'
 import { client } from '../../client'
@@ -36,7 +36,7 @@ import { deserializeJsonAttendanceChild } from 'lib-common/generated/api-types/a
 import { deserializeJsonChildAttendanceStatusResponse } from 'lib-common/generated/api-types/attendance'
 import { deserializeJsonCurrentDayStaffAttendanceResponse } from 'lib-common/generated/api-types/attendance'
 import { deserializeJsonOpenGroupAttendanceResponse } from 'lib-common/generated/api-types/attendance'
-import { deserializeJsonStaffMember } from 'lib-common/generated/api-types/attendance'
+import { deserializeJsonStaffMemberWithOperationalDays } from 'lib-common/generated/api-types/attendance'
 import { uri } from 'lib-common/uri'
 
 
@@ -275,19 +275,19 @@ export async function getEmployeeAttendances(
     from: LocalDate,
     to: LocalDate
   }
-): Promise<StaffMember> {
+): Promise<StaffMemberWithOperationalDays> {
   const params = createUrlSearchParams(
     ['unitId', request.unitId],
     ['employeeId', request.employeeId],
     ['from', request.from.formatIso()],
     ['to', request.to.formatIso()]
   )
-  const { data: json } = await client.request<JsonOf<StaffMember>>({
+  const { data: json } = await client.request<JsonOf<StaffMemberWithOperationalDays>>({
     url: uri`/employee-mobile/realtime-staff-attendances/employee`.toString(),
     method: 'GET',
     params
   })
-  return deserializeJsonStaffMember(json)
+  return deserializeJsonStaffMemberWithOperationalDays(json)
 }
 
 
