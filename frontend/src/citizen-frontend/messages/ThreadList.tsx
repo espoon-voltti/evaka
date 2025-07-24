@@ -43,7 +43,7 @@ const hasUnreadMessages = (
 
 interface Props {
   accountId: MessageAccountId
-  selectThread: (threadId: MessageThreadId | undefined) => void
+  selectThread: (threadId: MessageThreadId) => void
   closeThread: () => void
   setEditorVisible: (value: boolean) => void
   newMessageButtonEnabled: boolean
