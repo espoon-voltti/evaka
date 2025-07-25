@@ -13,6 +13,7 @@ import {
   getAssistanceNeedsAndActionsReport,
   getAssistanceNeedsAndActionsReportByChild,
   getAttendanceReservationReportByChild,
+  getAttendanceReservationReportByUnit,
   getChildAgeLanguageReport,
   getChildAttendanceReport,
   getChildDocumentDecisionsReport,
@@ -82,6 +83,10 @@ export const assistanceNeedsAndActionsReportByChildQuery = q.query(
 
 export const attendanceReservationReportByChildQuery = q.query(
   getAttendanceReservationReportByChild
+)
+
+export const attendanceReservationReportByUnitQuery = q.query(
+  getAttendanceReservationReportByUnit
 )
 
 export const childAttendanceReportQuery = q.query(getChildAttendanceReport)
