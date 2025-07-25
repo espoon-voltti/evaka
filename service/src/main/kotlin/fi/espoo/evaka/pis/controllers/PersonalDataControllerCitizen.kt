@@ -86,8 +86,21 @@ class PersonalDataControllerCitizen(
                     throw BadRequest(validationErrors.joinToString(", "))
 
                 tx.updatePersonalDetails(user.id, body)
-                if (tx.hasWeakCredentials(user.id)) {
+                val hasWeakCredentials = tx.hasWeakCredentials(user.id)
+                if (hasWeakCredentials) {
                     sendEmailVerificationCode(tx, clock, user)
+                }
+                if (body.email != person.email && person.email != null) {
+                    asyncJobRunner.plan(
+                        tx,
+                        listOfNotNull(
+                            AsyncJob.SendEmailChangedEmail(person.email),
+                            AsyncJob.SendEmailChangedEmail(body.email).takeUnless {
+                                hasWeakCredentials
+                            },
+                        ),
+                        runAt = clock.now(),
+                    )
                 }
             }
         }

@@ -143,6 +143,8 @@ interface IEmailMessageProvider {
     fun confirmationCode(confirmationCode: HtmlSafe<String>): EmailContent
 
     fun passwordChanged(): EmailContent
+
+    fun emailChanged(): EmailContent
 }
 
 data class MessageThreadData(
