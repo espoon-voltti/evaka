@@ -594,13 +594,6 @@ WHERE vd.id = ${bind { id -> id }} AND voucher_value_decision.id = vd.id
     }
 }
 
-fun Database.Read.getVoucherValueDecisionDocumentKey(id: VoucherValueDecisionId): String? {
-    return createQuery {
-            sql("SELECT document_key FROM voucher_value_decision WHERE id = ${bind(id)}")
-        }
-        .exactlyOneOrNull<String>()
-}
-
 fun Database.Read.getVoucherValueDecisionByLiableCitizen(
     citizenId: PersonId
 ): List<VoucherValueDecisionCitizenInfoRow> {

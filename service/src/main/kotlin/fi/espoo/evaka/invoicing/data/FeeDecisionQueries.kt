@@ -792,19 +792,6 @@ fun Database.Transaction.updateFeeDecisionDocumentKey(id: FeeDecisionId, key: St
         .execute()
 }
 
-fun Database.Read.getFeeDecisionDocumentKey(decisionId: FeeDecisionId): String? {
-    return createQuery {
-            sql(
-                """
-                SELECT document_key 
-                FROM fee_decision
-                WHERE id = ${bind(decisionId)}
-                """
-            )
-        }
-        .exactlyOneOrNull<String>()
-}
-
 fun Database.Transaction.setFeeDecisionType(id: FeeDecisionId, type: FeeDecisionType) {
     createUpdate {
             sql(

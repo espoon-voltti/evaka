@@ -15,7 +15,6 @@ import fi.espoo.evaka.emailclient.EmailClient
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
 import fi.espoo.evaka.invoicing.data.getValueDecisionsByIds
 import fi.espoo.evaka.invoicing.data.getVoucherValueDecision
-import fi.espoo.evaka.invoicing.data.getVoucherValueDecisionDocumentKey
 import fi.espoo.evaka.invoicing.data.markVoucherValueDecisionsSent
 import fi.espoo.evaka.invoicing.data.removeVoucherValueDecisionIgnore
 import fi.espoo.evaka.invoicing.data.setVoucherValueDecisionToIgnored
@@ -67,6 +66,9 @@ class VoucherValueDecisionService(
         asyncJobRunner.registerHandler(::runSendNewVoucherValueDecisionEmail)
     }
 
+    private fun getDecisionLanguage(decision: VoucherValueDecisionDetailed): OfficialLanguage =
+        if (decision.headOfFamily.language == "sv") OfficialLanguage.SV else OfficialLanguage.FI
+
     fun createDecisionPdf(tx: Database.Transaction, decisionId: VoucherValueDecisionId) {
         val decision = getDecision(tx, decisionId)
         check(decision.documentKey.isNullOrBlank()) {
@@ -87,14 +89,18 @@ class VoucherValueDecisionService(
         dbc: Database.Connection,
         decisionId: VoucherValueDecisionId,
     ): ResponseEntity<Any> {
-        val documentLocation =
-            documentClient.locate(
-                DocumentKey.VoucherValueDecision(
-                    dbc.read { it.getVoucherValueDecisionDocumentKey(decisionId) }
-                        ?: throw NotFound("No voucher value decision found with ID ($decisionId)")
-                )
-            )
-        return documentClient.responseAttachment(documentLocation, null)
+        val (documentKey, fileName) =
+            dbc.read { tx ->
+                val decision =
+                    tx.getVoucherValueDecision(decisionId) ?: throw NotFound("Decision not found")
+                if (decision.documentKey == null)
+                    throw NotFound("Document key not found for decision $decisionId")
+                val lang = getDecisionLanguage(decision)
+                DocumentKey.VoucherValueDecision(decision.documentKey) to
+                    calculateDecisionFileName(decision, lang, includeValidFrom = true)
+            }
+        val documentLocation = documentClient.locate(documentKey)
+        return documentClient.responseAttachment(documentLocation, fileName)
     }
 
     fun sendDecision(
@@ -119,8 +125,7 @@ class VoucherValueDecisionService(
             return false
         }
 
-        val lang =
-            if (decision.headOfFamily.language == "sv") OfficialLanguage.SV else OfficialLanguage.FI
+        val lang = getDecisionLanguage(decision)
 
         // If address is missing (restricted info enabled), use the financial handling address
         // instead
@@ -131,7 +136,7 @@ class VoucherValueDecisionService(
         val documentLocation =
             documentClient.locate(DocumentKey.VoucherValueDecision(decision.documentKey))
 
-        val documentDisplayName = suomiFiDocumentFileName(lang)
+        val documentDisplayName = calculateDecisionFileName(decision, lang)
         val messageHeader = messageProvider.getVoucherValueDecisionHeader(lang)
         val messageContent = messageProvider.getVoucherValueDecisionContent(lang)
 
@@ -292,11 +297,15 @@ class VoucherValueDecisionService(
             "Successfully sent voucher value decision email (id: $voucherValueDecisionId)."
         }
     }
-}
 
-private fun suomiFiDocumentFileName(lang: OfficialLanguage) =
-    if (lang == OfficialLanguage.SV) {
-        "Beslut_om_avgift_för_småbarnspedagogik.pdf"
-    } else {
-        "Varhaiskasvatuksen_maksupäätös.pdf"
+    private fun calculateDecisionFileName(
+        decision: VoucherValueDecisionDetailed,
+        lang: OfficialLanguage,
+        includeValidFrom: Boolean = false,
+    ): String {
+        val validFromStr = if (includeValidFrom) "_${decision.validFrom}" else ""
+        return if (lang == OfficialLanguage.SV)
+            "Beslut_om_avgift_för_småbarnspedagogik$validFromStr.pdf"
+        else "Varhaiskasvatuksen_maksupäätös$validFromStr.pdf"
     }
+}
