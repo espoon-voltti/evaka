@@ -52,6 +52,7 @@ import {
   getPreschoolAbsenceReport,
   getPreschoolApplicationReport,
   getPresenceReport,
+  getRawReport,
   getServiceNeedReport,
   getServiceVoucherReportForAllUnits,
   getServiceVoucherReportForUnit,
@@ -64,7 +65,8 @@ import {
   getTitaniaErrorsReport,
   getUnitsReport,
   getVardaChildErrorsReport,
-  getVardaUnitErrorsReport
+  getVardaUnitErrorsReport,
+  sendPatuReport
 } from '../../generated/api-clients/reports'
 import { markChildForVardaReset } from '../../generated/api-clients/varda'
 
@@ -220,6 +222,9 @@ export const assistanceNeedDecisionsReportQuery = q.query(
 )
 
 export const presenceReportQuery = q.query(getPresenceReport)
+
+export const rawReportQuery = q.query(getRawReport)
+export const sendPatuReportMutation = q.mutation(sendPatuReport)
 
 export const serviceVoucherReportForUnitQuery = q.query(
   getServiceVoucherReportForUnit
