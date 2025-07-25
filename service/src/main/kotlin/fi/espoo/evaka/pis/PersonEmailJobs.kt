@@ -27,6 +27,7 @@ class PersonEmailJobs(
     init {
         asyncJobRunner.registerHandler(::sendConfirmationCodeEmail)
         asyncJobRunner.registerHandler(::sendPasswordChangedEmail)
+        asyncJobRunner.registerHandler(::sendEmailChangedEmail)
     }
 
     private val logger = KotlinLogging.logger {}
@@ -76,8 +77,8 @@ AND expires_at > ${bind(clock.now())}
         val (email, verifiedEmail) = dbc.read { it.getPersonEmails(job.personId) }
         val toAddress = verifiedEmail ?: email
         if (toAddress == null) {
-            logger.warn {
-                "No email found for person ${job.personId} to send password change notification"
+            logger.error {
+                "No email found for person ${job.personId} to send password changed notification"
             }
             return
         }
@@ -86,6 +87,20 @@ AND expires_at > ${bind(clock.now())}
                 fromAddress = emailEnv.sender(Language.fi),
                 emailMessageProvider.passwordChanged(),
                 "${clock.today()}:${job.personId}",
+            )
+            ?.also { emailClient.send(it) }
+    }
+
+    fun sendEmailChangedEmail(
+        dbc: Database.Connection,
+        clock: EvakaClock,
+        job: AsyncJob.SendEmailChangedEmail,
+    ) {
+        Email.createForAddress(
+                toAddress = job.email,
+                fromAddress = emailEnv.sender(Language.fi),
+                emailMessageProvider.emailChanged(),
+                "${clock.today()}:${job.email}",
             )
             ?.also { emailClient.send(it) }
     }
