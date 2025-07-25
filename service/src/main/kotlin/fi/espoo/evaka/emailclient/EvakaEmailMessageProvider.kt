@@ -854,4 +854,26 @@ $unsubscribeEn
 <p>Vahvistuskoodi / bekräftelsekod / confirmation code: <strong>$confirmationCode</strong></p>
 """,
         )
+
+    override fun passwordChanged(): EmailContent =
+        EmailContent.fromHtml(
+            subject =
+                "eVaka-salasanasi on vaihdettu / Ditt eVaka lösenord har ändrats / Your eVaka password has been changed",
+            html =
+                """<p>eVaka-salasanasi on vaihdettu onnistuneesti.</p>
+<p>Din eVaka lösenord har ändrats.</p>
+<p>Your eVaka password has been changed successfully.</p>
+""",
+        )
+
+    override fun emailChanged(): EmailContent =
+        EmailContent.fromHtml(
+            subject =
+                "eVaka-sähköpostiosoitteesi on vaihdettu / Din eVaka e-postadress har ändrats / Your eVaka email address has been changed",
+            html =
+                """<p>eVaka-sähköpostiosoitteesi on vaihdettu onnistuneesti. Et saa enää eVaka-sähköposteja vanhaan osoitteeseesi.</p>
+<p>Din eVaka e-postadress har ändrats. Du får inte längre e-post från eVaka till din gamla adress.</p>
+<p>Your eVaka email address has been changed successfully. You will no longer receive eVaka emails to your old address.</p>
+""",
+        )
 }
