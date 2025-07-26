@@ -20,9 +20,9 @@
     "e2e-ci": "LANG=fi-FI LANGUAGE=fi_FI BASE_URL=${BASE_URL:-http://localhost:9099} jest --runInBand --retries=2"
   },
   "dependencies": {
-    "@fortawesome/fontawesome-svg-core": "6.7.2",
-    "@fortawesome/free-regular-svg-icons": "6.7.2",
-    "@fortawesome/free-solid-svg-icons": "6.7.2",
+    "@fortawesome/fontawesome-svg-core": "7.0.0",
+    "@fortawesome/free-regular-svg-icons": "7.0.0",
+    "@fortawesome/free-solid-svg-icons": "7.0.0",
     "@fortawesome/react-fontawesome": "patch:@fortawesome/react-fontawesome@npm%3A0.2.2#~/.yarn/patches/@fortawesome-react-fontawesome-npm-0.2.2-e1863961b2.patch",
     "@react-spring/rafz": "10.0.1",
     "@react-spring/web": "10.0.1",
