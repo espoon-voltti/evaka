@@ -20,7 +20,7 @@
     "prepack": "exit 1"
   },
   "dependencies": {
-    "@node-saml/node-saml": "5.0.1",
+    "@node-saml/node-saml": "5.1.0",
     "axios": "1.11.0",
     "connect-redis": "9.0.0",
     "cookie-parser": "1.4.7",
