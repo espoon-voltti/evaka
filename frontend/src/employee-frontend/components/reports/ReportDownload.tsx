@@ -34,6 +34,7 @@ interface Props<T> {
   data: T[]
   columns: Column<T>[]
   filename: string | (() => string)
+  disabled?: boolean
   'data-qa'?: string
 }
 
@@ -41,6 +42,7 @@ function ReportDownload<T>({
   data,
   columns,
   filename,
+  disabled,
   'data-qa': dataQa
 }: Props<T>) {
   const { i18n } = useTranslation()
@@ -62,7 +64,7 @@ function ReportDownload<T>({
         text={i18n.reports.downloadButton}
         appearance="inline"
         onClick={downloadCsv}
-        disabled={data.length === 0}
+        disabled={disabled || data.length === 0}
       />
     </RowRightAligned>
   )
