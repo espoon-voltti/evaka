@@ -441,6 +441,73 @@ describe('Child information - backup care', () => {
     )
     await section.assertError('Lapsi on jo kirjattu sisään toiseen yksikköön.')
   })
+
+  test('error is shown if backup care unit is not open for the whole period', async () => {
+    const area = await Fixture.careArea().save()
+    const testDaycare = await Fixture.daycare({
+      areaId: area.id,
+      openingDate: mockedDate.addMonths(1),
+      closingDate: mockedDate.addMonths(2)
+    }).save()
+    const testChild = await Fixture.person().saveChild()
+    await Fixture.placement({
+      childId: testChild.id,
+      unitId: testDaycare.id,
+      startDate: mockedDate,
+      endDate: mockedDate.addMonths(3)
+    }).save()
+
+    // Backup care period is before the daycare opening date
+    await section.fillNewBackupCareFields(
+      testDaycare.name,
+      mockedDate,
+      mockedDate
+    )
+    await section.assertError(
+      'Yksikkö ei ole avoinna koko varasijoituksen ajan.'
+    )
+    await section.cancelBackupCareForm()
+
+    // Backup care period starts before the daycare opening date
+    await section.fillNewBackupCareFields(
+      testDaycare.name,
+      mockedDate.addMonths(1).subDays(1),
+      mockedDate.addMonths(2)
+    )
+    await section.assertError(
+      'Yksikkö ei ole avoinna koko varasijoituksen ajan.'
+    )
+    await section.cancelBackupCareForm()
+
+    // Backup care period ends after the daycare closing date
+    await section.fillNewBackupCareFields(
+      testDaycare.name,
+      mockedDate.addMonths(1),
+      mockedDate.addMonths(2).addDays(1)
+    )
+    await section.assertError(
+      'Yksikkö ei ole avoinna koko varasijoituksen ajan.'
+    )
+    await section.cancelBackupCareForm()
+
+    // Backup care period is after the daycare closing date
+    await section.fillNewBackupCareFields(
+      testDaycare.name,
+      mockedDate.addMonths(2).addDays(1),
+      mockedDate.addMonths(3)
+    )
+    await section.assertError(
+      'Yksikkö ei ole avoinna koko varasijoituksen ajan.'
+    )
+    await section.cancelBackupCareForm()
+
+    // Backup care period is during the daycare opening and closing dates
+    await section.createBackupCare(
+      testDaycare.name,
+      mockedDate.addMonths(1),
+      mockedDate.addMonths(2)
+    )
+  })
 })
 
 describe('Child information - backup pickups', () => {

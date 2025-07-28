@@ -1738,7 +1738,9 @@ export const fi = {
       validationNoMatchingPlacement:
         'Varasijoitus ei ole minkään lapsen sijoituksen aikana.',
       validationChildAlreadyInOtherUnit:
-        'Lapsi on jo kirjattu sisään toiseen yksikköön.'
+        'Lapsi on jo kirjattu sisään toiseen yksikköön.',
+      validationBackupCareNotOpen:
+        'Yksikkö ei ole avoinna koko varasijoituksen ajan.'
     },
     backupPickups: {
       title: 'Varahakijat',

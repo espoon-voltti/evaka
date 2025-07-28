@@ -603,6 +603,7 @@ enum class Audit(
     UnitRead,
     UnitDailyReservationStatistics,
     UnitSearch,
+    UnitOperationPeriodsRead,
     UnitUpdate,
     UnitView,
     UnitsReportRead,

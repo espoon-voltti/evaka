@@ -12,6 +12,8 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.dev.DevCareArea
+import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
@@ -184,6 +186,67 @@ class BackupCareIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
             newPeriod,
             db.read { r -> r.getBackupCaresForChild(testChild_1.id)[0].period },
         )
+    }
+
+    @Test
+    fun `backup care must be created for unit that is open the whole period`() {
+        val area = db.transaction { tx -> tx.insert(DevCareArea(shortName = "test_area1")) }
+        val daycareId =
+            db.transaction { tx ->
+                tx.insert(
+                    DevDaycare(
+                        openingDate = backupCareStart,
+                        closingDate = backupCareEnd,
+                        areaId = area,
+                    )
+                )
+            }
+
+        // Backup care starts before daycare opening
+        assertThrows<BadRequest> {
+            backupCareController.createBackupCare(
+                dbInstance(),
+                serviceWorker,
+                clock,
+                testChild_1.id,
+                NewBackupCare(
+                    unitId = daycareId,
+                    groupId = null,
+                    period = FiniteDateRange(backupCareStart.minusDays(1), backupCareEnd),
+                ),
+            )
+        }
+
+        // Backup care continues after daycare closing
+        assertThrows<BadRequest> {
+            backupCareController.createBackupCare(
+                dbInstance(),
+                serviceWorker,
+                clock,
+                testChild_1.id,
+                NewBackupCare(
+                    unitId = daycareId,
+                    groupId = null,
+                    period = FiniteDateRange(backupCareStart, backupCareEnd.plusDays(1)),
+                ),
+            )
+        }
+
+        // Backup care is completely outside daycare opening and closing dates
+        assertThrows<BadRequest> {
+            backupCareController.createBackupCare(
+                dbInstance(),
+                serviceWorker,
+                clock,
+                testChild_1.id,
+                NewBackupCare(
+                    unitId = daycareId,
+                    groupId = null,
+                    period =
+                        FiniteDateRange(backupCareStart.minusDays(1), backupCareStart.minusDays(1)),
+                ),
+            )
+        }
     }
 
     private fun createBackupCareAndAssert(

@@ -14,13 +14,17 @@ import type {
   ChildBackupCare,
   ChildBackupCareResponse
 } from 'lib-common/generated/api-types/backupcare'
-import type { UnitStub } from 'lib-common/generated/api-types/daycare'
-import type { ChildId } from 'lib-common/generated/api-types/shared'
+import type {
+  UnitOperationPeriod,
+  UnitStub
+} from 'lib-common/generated/api-types/daycare'
+import type { ChildId, DaycareId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import {
   constantQuery,
   first,
   second,
+  useChainedQuery,
   useQueryResult,
   useSelectMutation
 } from 'lib-common/query'
@@ -35,8 +39,7 @@ import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { DatePickerSpacer } from 'lib-components/molecules/date-picker/DateRangePicker'
 import { fontWeights } from 'lib-components/typography'
 
-import { unitsQuery } from '../../../queries'
-import { ChildContext } from '../../../state'
+import { unitOperationPeriodsQuery, unitsQuery } from '../../../queries'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
 import { rangeContainsDate, type DateRange } from '../../../utils/date'
@@ -50,6 +53,7 @@ import {
   placementsQuery,
   updateBackupCareMutation
 } from '../queries'
+import { ChildContext } from '../state'
 
 export interface Props {
   childId: ChildId
@@ -106,6 +110,16 @@ export default function BackupCareForm({
       type: ['DAYCARE', 'PRESCHOOL'],
       from: LocalDate.todayInHelsinkiTz()
     })
+  )
+
+  const unitOperationPeriods = useChainedQuery(
+    units.map((unitStubs) =>
+      unitStubs.length > 0
+        ? unitOperationPeriodsQuery({
+            unitIds: unitStubs.map((unit) => unit.id)
+          })
+        : constantQuery({} as Partial<Record<DaycareId, UnitOperationPeriod>>)
+    )
   )
 
   const placements = useQueryResult(
@@ -207,6 +221,12 @@ export default function BackupCareForm({
       errors.push(
         i18n.childInformation.backupCares.validationChildAlreadyInOtherUnit
       )
+    else if (
+      unitOperationPeriods.isSuccess &&
+      (unitOperationPeriods.value[unit.id]?.openingDate?.isAfter(startDate) ||
+        unitOperationPeriods.value[unit.id]?.closingDate?.isBefore(endDate))
+    )
+      errors.push(i18n.childInformation.backupCares.validationBackupCareNotOpen)
 
     if (errors.length > 0) {
       return [null, errors]
@@ -219,7 +239,8 @@ export default function BackupCareForm({
     consecutivePlacementRanges,
     formState,
     i18n,
-    ongoingAttendanceResult
+    ongoingAttendanceResult,
+    unitOperationPeriods
   ])
 
   const updateFormState: UpdateStateFn<FormState> = (value) => {
@@ -324,6 +345,7 @@ export default function BackupCareForm({
           <LegacyButton
             onClick={() => clearUiMode()}
             text={i18n.common.cancel}
+            data-qa="cancel-backup-care-form"
           />
           <MutateButton
             primary
