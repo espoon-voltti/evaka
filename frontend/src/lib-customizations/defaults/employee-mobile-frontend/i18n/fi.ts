@@ -370,7 +370,7 @@ export const fi = {
     preferredName: 'Kutsumanimi',
     dateOfBirth: 'Syntymäaika',
     address: 'Lapsen kotiosoite',
-    type: 'Sijoitusmuoto',
+    type: 'Sijoitustyyppi',
     otherInfoHeader: 'Muut tiedot',
     allergies: 'Allergiat',
     diet: 'Ruokavalio',
