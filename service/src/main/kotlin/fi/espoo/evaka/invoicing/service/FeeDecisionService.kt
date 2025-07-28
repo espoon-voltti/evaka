@@ -21,7 +21,6 @@ import fi.espoo.evaka.invoicing.data.deleteFeeDecisions
 import fi.espoo.evaka.invoicing.data.findFeeDecisionsForHeadOfFamily
 import fi.espoo.evaka.invoicing.data.getDetailedFeeDecisionsByIds
 import fi.espoo.evaka.invoicing.data.getFeeDecision
-import fi.espoo.evaka.invoicing.data.getFeeDecisionDocumentKey
 import fi.espoo.evaka.invoicing.data.getFeeDecisionsByIds
 import fi.espoo.evaka.invoicing.data.lockFeeDecisions
 import fi.espoo.evaka.invoicing.data.lockFeeDecisionsForHeadOfFamily
@@ -307,9 +306,7 @@ class FeeDecisionService(
             DecisionSendAddress.fromPerson(recipient)
                 ?: messageProvider.getDefaultFinancialDecisionAddress(lang)
 
-        val feeDecisionDisplayName =
-            if (lang == OfficialLanguage.SV) "Beslut_om_avgift_för_småbarnspedagogik.pdf"
-            else "Varhaiskasvatuksen_maksupäätös.pdf"
+        val feeDecisionDisplayName = calculateDecisionFileName(decision, lang)
 
         val documentLocation = documentClient.locate(DocumentKey.FeeDecision(decision.documentKey))
 
@@ -392,14 +389,17 @@ class FeeDecisionService(
         dbc: Database.Connection,
         decisionId: FeeDecisionId,
     ): ResponseEntity<Any> {
-        val documentLocation =
-            documentClient.locate(
-                DocumentKey.FeeDecision(
-                    dbc.read { it.getFeeDecisionDocumentKey(decisionId) }
-                        ?: throw NotFound("Document key not found for decision $decisionId")
-                )
-            )
-        return documentClient.responseAttachment(documentLocation, null)
+        val (documentKey, fileName) =
+            dbc.read { tx ->
+                val decision = tx.getFeeDecision(decisionId) ?: throw NotFound("Decision not found")
+                if (decision.documentKey == null)
+                    throw NotFound("Document key not found for decision $decisionId")
+                val lang = getDecisionLanguage(decision)
+                DocumentKey.FeeDecision(decision.documentKey) to
+                    calculateDecisionFileName(decision, lang, includeValidFrom = true)
+            }
+        val documentLocation = documentClient.locate(documentKey)
+        return documentClient.responseAttachment(documentLocation, fileName)
     }
 
     fun setType(tx: Database.Transaction, decisionId: FeeDecisionId, type: FeeDecisionType) {
@@ -440,5 +440,16 @@ class FeeDecisionService(
             ?.also { emailClient.send(it) }
 
         logger.info { "Successfully sent fee decision email (id: $feeDecisionId)." }
+    }
+
+    private fun calculateDecisionFileName(
+        decision: FeeDecisionDetailed,
+        lang: OfficialLanguage,
+        includeValidFrom: Boolean = false,
+    ): String {
+        val validFromStr = if (includeValidFrom) "_${decision.validDuring.start}" else ""
+        return if (lang == OfficialLanguage.SV)
+            "Beslut_om_avgift_för_småbarnspedagogik$validFromStr.pdf"
+        else "Varhaiskasvatuksen_maksupäätös$validFromStr.pdf"
     }
 }
