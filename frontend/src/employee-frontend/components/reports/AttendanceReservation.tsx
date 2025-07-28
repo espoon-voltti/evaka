@@ -6,29 +6,41 @@ import type { RefObject } from 'react'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import styled from 'styled-components'
 
-import type { Result } from 'lib-common/api'
-import { combine, Failure, Loading, Success, wrapResult } from 'lib-common/api'
+import { combine } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
+import { localDateRange } from 'lib-common/form/fields'
+import {
+  array,
+  object,
+  required,
+  transformed,
+  value
+} from 'lib-common/form/form'
+import { useForm, useFormFields } from 'lib-common/form/hooks'
+import { ValidationError, ValidationSuccess } from 'lib-common/form/types'
+import type { StateOf } from 'lib-common/form/types'
 import type {
-  AttendanceReservationReportRow,
-  ReservationType
-} from 'lib-common/generated/api-types/reports'
-import type { DaycareId, GroupId } from 'lib-common/generated/api-types/shared'
+  Daycare,
+  DaycareGroup
+} from 'lib-common/generated/api-types/daycare'
+import type { ReservationType } from 'lib-common/generated/api-types/reports'
+import type { GroupId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import { constantQuery, useQueryResult } from 'lib-common/query'
+import type { Arg0 } from 'lib-common/types'
 import { formatDecimal } from 'lib-common/utils/number'
 import { scrollRefIntoView } from 'lib-common/utils/scrolling'
 import Title from 'lib-components/atoms/Title'
-import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
-import DateRangePicker from 'lib-components/molecules/date-picker/DateRangePicker'
+import { DateRangePickerF } from 'lib-components/molecules/date-picker/DateRangePicker'
 
-import { getAttendanceReservationReportByUnit } from '../../generated/api-clients/reports'
+import type { getAttendanceReservationReportByUnit } from '../../generated/api-clients/reports'
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 import { FlexRow } from '../common/styled/containers'
@@ -36,14 +48,41 @@ import { unitGroupsQuery, daycaresQuery } from '../unit/queries'
 
 import ReportDownload from './ReportDownload'
 import { FilterLabel, FilterRow, TableScrollable } from './common'
+import { attendanceReservationReportByUnitQuery } from './queries'
 
-const getAttendanceReservationReportByUnitResult = wrapResult(
-  getAttendanceReservationReportByUnit
+const model = transformed(
+  object({
+    range: required(localDateRange()),
+    unit: required(value<Daycare | undefined>()),
+    groups: array(value<DaycareGroup>()),
+    reservationType: value<ReservationType>()
+  }),
+  (output) => {
+    const tooLongRange = output.range.end.isAfter(
+      output.range.start.addMonths(2)
+    )
+    if (tooLongRange) {
+      return ValidationError.field('range', 'tooLongRange')
+    }
+    return ValidationSuccess.of({
+      start: output.range.start,
+      end: output.range.end,
+      unitId: output.unit.id,
+      groupIds: output.groups.map((group) => group.id),
+      reservationType: output.reservationType
+    })
+  }
 )
-
-interface AttendanceReservationReportFilters {
-  range: FiniteDateRange
-  groupIds: GroupId[]
+const initialState = (): StateOf<typeof model> => {
+  const defaultDate = LocalDate.todayInSystemTz().addWeeks(1)
+  return {
+    range: localDateRange.fromRange(
+      new FiniteDateRange(defaultDate.startOfWeek(), defaultDate.endOfWeek())
+    ),
+    unit: undefined,
+    groups: [],
+    reservationType: 'RESERVATION'
+  }
 }
 
 const dateFormat = 'EEEEEE d.M.'
@@ -63,64 +102,37 @@ interface AttendanceReservationReportUiRow {
 export default React.memo(function AttendanceReservation() {
   const { lang, i18n } = useTranslation()
 
-  const [unitId, setUnitId] = useState<DaycareId | null>(null)
-  const [filters, setFilters] = useState<AttendanceReservationReportFilters>(
-    () => {
-      const defaultDate = LocalDate.todayInSystemTz().addWeeks(1)
-      return {
-        range: new FiniteDateRange(
-          defaultDate.startOfWeek(),
-          defaultDate.endOfWeek()
-        ),
-        groupIds: []
-      }
-    }
-  )
-  const [reservationType, setReservationType] =
-    useState<ReservationType>('RESERVATION')
-
-  const tooLongRange = filters.range.end.isAfter(
-    filters.range.start.addMonths(2)
-  )
+  const form = useForm(model, initialState, {
+    ...i18n.validationErrors,
+    tooLongRange: i18n.reports.attendanceReservation.tooLongRange
+  })
+  const {
+    range: rangeField,
+    unit: unitField,
+    groups: groupsField,
+    reservationType: reservationTypeField
+  } = useFormFields(form)
 
   const units = useQueryResult(daycaresQuery({ includeClosed: true }))
   const groups = useQueryResult(
-    unitId ? unitGroupsQuery({ daycareId: unitId }) : constantQuery([])
+    unitField.isValid()
+      ? unitGroupsQuery({ daycareId: unitField.value().id })
+      : constantQuery([])
   )
 
-  const [report, setReport] = useState<
-    Result<AttendanceReservationReportRow[]>
-  >(Success.of([]))
+  const [filters, setFilters] =
+    useState<Arg0<typeof getAttendanceReservationReportByUnit>>()
+  const report = useQueryResult(
+    filters !== undefined
+      ? attendanceReservationReportByUnitQuery(filters)
+      : constantQuery([])
+  )
 
   const autoScrollRef = useRef<HTMLTableRowElement>(null)
 
   const fetchAttendanceReservationReport = useCallback(() => {
-    if (tooLongRange) {
-      return Promise.resolve(
-        Failure.of<AttendanceReservationReportRow[]>({
-          message: 'Too long range'
-        })
-      )
-    } else if (unitId == null) {
-      return Promise.resolve(Loading.of<AttendanceReservationReportRow[]>())
-    } else {
-      setReport(Loading.of())
-      return getAttendanceReservationReportByUnitResult({
-        unitId,
-        start: filters.range.start,
-        end: filters.range.end,
-        groupIds: filters.groupIds,
-        reservationType: reservationType
-      })
-    }
-  }, [
-    tooLongRange,
-    unitId,
-    filters.range.start,
-    filters.range.end,
-    filters.groupIds,
-    reservationType
-  ])
+    setFilters(form.value())
+  }, [form])
 
   useEffect(() => {
     scrollRefIntoView(autoScrollRef)
@@ -220,20 +232,7 @@ export default React.memo(function AttendanceReservation() {
         <FilterRow>
           <FilterLabel>{i18n.reports.common.period}</FilterLabel>
           <FlexRow>
-            <DateRangePicker
-              start={filters.range.start}
-              end={filters.range.end}
-              onChange={(start, end) => {
-                if (start !== null && end !== null) {
-                  setFilters({
-                    ...filters,
-                    range: new FiniteDateRange(start, end)
-                  })
-                }
-              }}
-              locale={lang}
-              required={true}
-            />
+            <DateRangePickerF bind={rangeField} locale={lang} />
           </FlexRow>
         </FilterRow>
         <FilterRow>
@@ -241,13 +240,10 @@ export default React.memo(function AttendanceReservation() {
           <FlexRow>
             <Combobox
               items={filteredUnits}
-              onChange={(selectedItem) => {
-                setUnitId(selectedItem !== null ? selectedItem.id : null)
-                setFilters({ ...filters, groupIds: [] })
-              }}
-              selectedItem={
-                filteredUnits.find((unit) => unit.id === unitId) ?? null
+              onChange={(selectedItem) =>
+                unitField.set(selectedItem ?? undefined)
               }
+              selectedItem={unitField.state ?? null}
               getItemLabel={(item) => item.name}
               placeholder={i18n.filters.unitPlaceholder}
             />
@@ -258,15 +254,8 @@ export default React.memo(function AttendanceReservation() {
           <div style={{ width: '100%' }}>
             <MultiSelect
               options={filteredGroups}
-              onChange={(selectedItems) =>
-                setFilters({
-                  ...filters,
-                  groupIds: selectedItems.map((selectedItem) => selectedItem.id)
-                })
-              }
-              value={filteredGroups.filter((group) =>
-                filters.groupIds.includes(group.id)
-              )}
+              onChange={groupsField.set}
+              value={groupsField.state}
               getOptionId={(group) => group.id}
               getOptionLabel={(group) => group.name}
               placeholder=""
@@ -278,26 +267,24 @@ export default React.memo(function AttendanceReservation() {
           <FilterLabel>{i18n.reports.common.attendanceType}</FilterLabel>
           <Combobox<ReservationType>
             items={['RESERVATION', 'REALIZATION']}
-            onChange={(type) => (type ? setReservationType(type) : undefined)}
-            selectedItem={reservationType}
+            onChange={(type) =>
+              type ? reservationTypeField.set(type) : undefined
+            }
+            selectedItem={reservationTypeField.state}
             getItemLabel={(item) => i18n.reports.common.attendanceTypes[item]}
           />
         </FilterRow>
         <FilterRow>
-          <AsyncButton
+          <Button
             primary
-            disabled={unitId === null}
+            disabled={!form.isValid()}
             text={i18n.common.search}
             onClick={fetchAttendanceReservationReport}
-            onSuccess={(newReport) => setReport(Success.of(newReport))}
             data-qa="send-button"
           />
         </FilterRow>
 
-        {tooLongRange && (
-          <div>{i18n.reports.attendanceReservation.tooLongRange}</div>
-        )}
-        {unitId !== null
+        {filters !== undefined
           ? renderResult(
               combine(filteredRows, tableComponents),
               ([filteredRows, tableComponents]) => (
@@ -311,7 +298,7 @@ export default React.memo(function AttendanceReservation() {
                       {
                         label: i18n.reports.common.groupName,
                         value: (row) => row.groupName,
-                        exclude: filters.groupIds.length === 0
+                        exclude: filters.groupIds?.length === 0
                       },
                       {
                         label: i18n.reports.common.clock,
@@ -340,9 +327,9 @@ export default React.memo(function AttendanceReservation() {
                       }
                     ]}
                     filename={`${i18n.reports.attendanceReservation.title} ${
-                      filteredUnits.find((unit) => unit.id === unitId)?.name ??
-                      ''
-                    } ${filters.range.start.formatIso()}-${filters.range.end.formatIso()}.csv`}
+                      filteredUnits.find((unit) => unit.id === filters.unitId)
+                        ?.name ?? ''
+                    } ${filters.start.formatIso()}-${filters.end.formatIso()}.csv`}
                   />
                   {tableComponents}
                 </>
