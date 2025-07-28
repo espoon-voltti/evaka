@@ -269,7 +269,6 @@ export default React.memo(function DatePickerLowLevel({
                   />
                 </DayPickerDiv>
               </DayPickerPositioner>
-              )
             </FocusLock>,
             document.getElementById('datepicker-container') ?? document.body
           )
