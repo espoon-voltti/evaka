@@ -4,7 +4,12 @@
 
 *
 !src
-src/lib-customizations/espoo
+src/lib-customizations/**/*
+!src/lib-customizations/defaults
+!src/lib-customizations/defaults/**/*
+!src/lib-customizations/*.ts
+!src/lib-customizations/*.json
+!src/lib-customizations/*.tsx
 !packages
 !public
 !vendor
