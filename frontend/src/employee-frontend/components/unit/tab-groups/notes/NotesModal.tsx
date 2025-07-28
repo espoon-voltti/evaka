@@ -56,7 +56,8 @@ const getLabels = (i18n: Translations, title: string, placeholder: string) => ({
   static: {
     edit: i18n.common.edit,
     remove: i18n.common.remove,
-    validTo: i18n.common.validTo
+    validTo: i18n.common.validTo,
+    lastModified: i18n.common.lastModified
   },
   title
 })

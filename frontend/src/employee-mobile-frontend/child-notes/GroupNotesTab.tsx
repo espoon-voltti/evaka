@@ -33,7 +33,8 @@ const getStickyNoteTabLabels = (i18n: Translations): StickyNoteTabLabels => ({
   static: {
     edit: i18n.common.edit,
     remove: i18n.common.remove,
-    validTo: i18n.common.validTo
+    validTo: i18n.common.validTo,
+    lastModified: i18n.common.lastModified
   },
   title: i18n.attendances.notes.groupNote
 })

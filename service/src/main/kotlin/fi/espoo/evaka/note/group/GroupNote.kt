@@ -15,6 +15,7 @@ data class GroupNote(
     val note: String,
     val modifiedAt: HelsinkiDateTime,
     val expires: LocalDate,
+    val created: HelsinkiDateTime,
 )
 
 data class GroupNoteBody(val note: String, val expires: LocalDate)

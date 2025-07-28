@@ -224,6 +224,7 @@ export const fi = {
       ]
     },
     nb: 'Huom',
+    lastModified: (dateTime: string) => `Viimeksi muokattu: ${dateTime}`,
     validTo: (date: string) => `Voimassa ${date} saakka`,
     closeModal: 'Sulje ponnahdusikkuna',
     datePicker: {

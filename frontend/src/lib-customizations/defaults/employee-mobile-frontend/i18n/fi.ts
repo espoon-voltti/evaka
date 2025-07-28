@@ -96,6 +96,7 @@ export const fi = {
     },
     nb: 'Huom',
     validity: 'Voimassaolo',
+    lastModified: (dateTime: string) => `Viimeksi muokattu: ${dateTime}`,
     validTo: (date: string) => `Voimassa ${date} saakka`,
     lastName: 'Sukunimi',
     firstName: 'Etunimi',
