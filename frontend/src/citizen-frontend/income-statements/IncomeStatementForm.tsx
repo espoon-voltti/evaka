@@ -83,6 +83,24 @@ interface Props {
   onCancel: () => void
 }
 
+const StyledActionContainer = styled(ActionContainer)`
+  @media (max-width: 445px) {
+    justify-content: center;
+  }
+`
+
+const ResponsiveFixedSpace = styled(FixedSpaceRow)`
+  @media (max-width: 445px) {
+    justify-content: space-between;
+    height: 190px;
+    flex-direction: column;
+
+    > button {
+      margin-right: 0;
+    }
+  }
+`
+
 export default React.memo(function IncomeStatementForm({
   incomeStatementId,
   status,
@@ -273,7 +291,7 @@ export default React.memo(function IncomeStatementForm({
           </>
         )}
         <Gap />
-        <ActionContainer>
+        <StyledActionContainer>
           <div>
             <AssureCheckbox>
               <Checkbox
@@ -287,7 +305,7 @@ export default React.memo(function IncomeStatementForm({
               <LabelError text={t.income.errors.choose} />
             ) : null}
           </div>
-          <FixedSpaceRow>
+          <ResponsiveFixedSpace>
             <Button text={t.common.cancel} onClick={onCancel} />
             {status === 'DRAFT' && (
               <AsyncButton
@@ -303,8 +321,8 @@ export default React.memo(function IncomeStatementForm({
               onClick={() => onSave(false)}
               onSuccess={onSuccess}
             />
-          </FixedSpaceRow>
-        </ActionContainer>
+          </ResponsiveFixedSpace>
+        </StyledActionContainer>
       </Container>
       <Footer />
     </>
