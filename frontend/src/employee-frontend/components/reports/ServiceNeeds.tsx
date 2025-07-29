@@ -107,7 +107,7 @@ const ServiceNeedsInner = (props: { areas: AreaJSON[] }) => {
           <SelectF bind={providerType} placeholder={i18n.common.all} />
         </FilterRow>
         <FilterRow>
-          <FilterLabel>{i18n.reports.common.unitType}</FilterLabel>
+          <FilterLabel>{i18n.reports.common.placementType}</FilterLabel>
           <SelectF bind={placementType} placeholder={i18n.common.all} />
         </FilterRow>
 

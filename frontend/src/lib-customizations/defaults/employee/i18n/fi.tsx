@@ -3816,6 +3816,7 @@ export const fi = {
         PRIVATE_SERVICE_VOUCHER: 'Palveluseteli',
         EXTERNAL_PURCHASED: 'Ostopalvelu (muu)'
       },
+      placementType: 'Sijoitustyyppi',
       period: 'Ajanjakso',
       date: 'Päivämäärä',
       clock: 'Klo',
