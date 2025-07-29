@@ -45,6 +45,7 @@ import type { TemporaryEmployee } from 'lib-common/generated/api-types/pis'
 import type { UnitFeatures } from 'lib-common/generated/api-types/daycare'
 import type { UnitGroupDetails } from 'lib-common/generated/api-types/daycare'
 import type { UnitNotifications } from 'lib-common/generated/api-types/daycare'
+import type { UnitOperationPeriod } from 'lib-common/generated/api-types/daycare'
 import type { UnitStub } from 'lib-common/generated/api-types/daycare'
 import type { UnitTypeFilter } from 'lib-common/generated/api-types/daycare'
 import type { UpdateFeaturesRequest } from 'lib-common/generated/api-types/daycare'
@@ -63,6 +64,7 @@ import { deserializeJsonPublicUnit } from 'lib-common/generated/api-types/daycar
 import { deserializeJsonScheduledDaycareAclRow } from 'lib-common/generated/api-types/shared'
 import { deserializeJsonStaffAttendanceForDates } from 'lib-common/generated/api-types/daycare'
 import { deserializeJsonUnitGroupDetails } from 'lib-common/generated/api-types/daycare'
+import { deserializeJsonUnitOperationPeriod } from 'lib-common/generated/api-types/daycare'
 import { uri } from 'lib-common/uri'
 
 
@@ -311,6 +313,28 @@ export async function getUnitNotifications(
     method: 'GET'
   })
   return json
+}
+
+
+/**
+* Generated from fi.espoo.evaka.daycare.controllers.DaycareController.getUnitOperationPeriods
+*/
+export async function getUnitOperationPeriods(
+  request: {
+    unitIds?: DaycareId[] | null
+  }
+): Promise<Partial<Record<DaycareId, UnitOperationPeriod>>> {
+  const params = createUrlSearchParams(
+    ...(request.unitIds?.map((e): [string, string | null | undefined] => ['unitIds', e]) ?? [])
+  )
+  const { data: json } = await client.request<JsonOf<Partial<Record<DaycareId, UnitOperationPeriod>>>>({
+    url: uri`/employee/daycares/employee/unitOperationPeriods`.toString(),
+    method: 'GET',
+    params
+  })
+  return Object.fromEntries(Object.entries(json).map(
+    ([k, v]) => [k, v !== undefined ? deserializeJsonUnitOperationPeriod(v) : v]
+  ))
 }
 
 

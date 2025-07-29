@@ -20,6 +20,7 @@ import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Coordinate
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.security.PilotFeature
@@ -504,6 +505,37 @@ SELECT EXISTS(
     FROM daycare
     WHERE id = ANY(${bind(ids)})
     AND ${bind(feature)} = ANY(enabled_pilot_features)
+)
+"""
+            )
+        }
+        .exactlyOne<Boolean>()
+
+fun Database.Read.getUnitOperationPeriods(
+    unitIds: List<DaycareId>?
+): Map<DaycareId, UnitOperationPeriod> =
+    createQuery {
+            sql(
+                """
+SELECT id, opening_date, closing_date
+FROM daycare unit
+WHERE id = ANY(${bind(unitIds)})
+"""
+            )
+        }
+        .toMap {
+            Pair(column("id"), UnitOperationPeriod(column("opening_date"), column("closing_date")))
+        }
+
+fun Database.Read.isDaycareOpenForPeriod(id: DaycareId, period: FiniteDateRange): Boolean =
+    createQuery {
+            sql(
+                """
+SELECT EXISTS (
+    SELECT 1
+    FROM daycare
+    WHERE id = ${bind(id)}
+    AND daterange(opening_date, closing_date, '[]') @> daterange(${bind(period.start)}, ${bind(period.end)}, '[]')
 )
 """
             )

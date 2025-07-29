@@ -6,7 +6,11 @@ import { Queries } from 'lib-common/query'
 
 import { getAssistanceActionOptions } from './generated/api-clients/assistance'
 import { deleteAttachment } from './generated/api-clients/attachment'
-import { getAreas, getUnits } from './generated/api-clients/daycare'
+import {
+  getAreas,
+  getUnitOperationPeriods,
+  getUnits
+} from './generated/api-clients/daycare'
 import {
   getPairingStatus,
   postPairing,
@@ -47,6 +51,8 @@ export const personDependantsQuery = q.query(getPersonDependants)
 export const areasQuery = q.query(getAreas)
 
 export const unitsQuery = q.query(getUnits)
+
+export const unitOperationPeriodsQuery = q.query(getUnitOperationPeriods)
 
 export const financeDecisionHandlersQuery = q.query(getFinanceDecisionHandlers)
 

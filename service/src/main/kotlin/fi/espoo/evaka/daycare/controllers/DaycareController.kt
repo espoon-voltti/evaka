@@ -15,6 +15,7 @@ import fi.espoo.evaka.daycare.CaretakerAmount
 import fi.espoo.evaka.daycare.Daycare
 import fi.espoo.evaka.daycare.DaycareFields
 import fi.espoo.evaka.daycare.UnitFeatures
+import fi.espoo.evaka.daycare.UnitOperationPeriod
 import fi.espoo.evaka.daycare.addUnitFeatures
 import fi.espoo.evaka.daycare.createDaycare
 import fi.espoo.evaka.daycare.deleteCaretakers
@@ -28,6 +29,7 @@ import fi.espoo.evaka.daycare.getDaycares
 import fi.espoo.evaka.daycare.getGroupStats
 import fi.espoo.evaka.daycare.getLastPlacementDate
 import fi.espoo.evaka.daycare.getUnitFeatures
+import fi.espoo.evaka.daycare.getUnitOperationPeriods
 import fi.espoo.evaka.daycare.insertCaretakers
 import fi.espoo.evaka.daycare.removeUnitFeatures
 import fi.espoo.evaka.daycare.service.Caretakers
@@ -781,6 +783,24 @@ class DaycareController(
                 }
             }
             .also { Audit.UnitCounters.log(targetId = AuditId(daycareId)) }
+    }
+
+    @GetMapping("/employee/unitOperationPeriods")
+    fun getUnitOperationPeriods(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @RequestParam unitIds: List<DaycareId>?,
+    ): Map<DaycareId, UnitOperationPeriod> {
+        return db.connect { dbc ->
+                dbc.read { tx ->
+                    accessControl.requireAuthorizationFilter(tx, user, clock, Action.Unit.READ)
+                    tx.getUnitOperationPeriods(unitIds)
+                }
+            }
+            .also { response ->
+                Audit.UnitOperationPeriodsRead.log(targetId = AuditId(response.keys))
+            }
     }
 
     data class CreateDaycareResponse(val id: DaycareId)

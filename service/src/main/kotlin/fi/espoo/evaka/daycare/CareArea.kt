@@ -154,3 +154,5 @@ data class UnitFeatures(
     val providerType: ProviderType,
     val type: List<CareType>,
 )
+
+data class UnitOperationPeriod(val openingDate: LocalDate?, val closingDate: LocalDate?)

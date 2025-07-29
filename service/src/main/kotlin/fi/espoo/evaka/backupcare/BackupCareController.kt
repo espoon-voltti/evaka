@@ -7,6 +7,7 @@ package fi.espoo.evaka.backupcare
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.attendance.getOngoingAttendanceInAnyUnitForChild
+import fi.espoo.evaka.daycare.isDaycareOpenForPeriod
 import fi.espoo.evaka.placement.childPlacementsHasConsecutiveRange
 import fi.espoo.evaka.placement.clearCalendarEventAttendees
 import fi.espoo.evaka.placement.getPlacementsForChildDuring
@@ -93,6 +94,11 @@ class BackupCareController(private val accessControl: AccessControl) {
                         if (!tx.childPlacementsHasConsecutiveRange(childId, body.period)) {
                             throw BadRequest(
                                 "The new backup care period is not contained within a placement"
+                            )
+                        }
+                        if (!tx.isDaycareOpenForPeriod(body.unitId, body.period)) {
+                            throw BadRequest(
+                                "The unit is not open during the whole backup care period"
                             )
                         }
                         tx.getPlacementsForChildDuring(childId, body.period.start, body.period.end)

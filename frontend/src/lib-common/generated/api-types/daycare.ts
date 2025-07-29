@@ -547,6 +547,14 @@ export interface UnitNotifications {
 }
 
 /**
+* Generated from fi.espoo.evaka.daycare.UnitOperationPeriod
+*/
+export interface UnitOperationPeriod {
+  closingDate: LocalDate | null
+  openingDate: LocalDate | null
+}
+
+/**
 * Generated from fi.espoo.evaka.daycare.UnitStub
 */
 export interface UnitStub {
@@ -828,5 +836,14 @@ export function deserializeJsonUnitGroupDetails(json: JsonOf<UnitGroupDetails>):
     missingGroupPlacements: json.missingGroupPlacements.map(e => deserializeJsonMissingGroupPlacement(e)),
     placements: json.placements.map(e => deserializeJsonDaycarePlacementWithDetails(e)),
     recentlyTerminatedPlacements: json.recentlyTerminatedPlacements.map(e => deserializeJsonTerminatedPlacement(e))
+  }
+}
+
+
+export function deserializeJsonUnitOperationPeriod(json: JsonOf<UnitOperationPeriod>): UnitOperationPeriod {
+  return {
+    ...json,
+    closingDate: (json.closingDate != null) ? LocalDate.parseIso(json.closingDate) : null,
+    openingDate: (json.openingDate != null) ? LocalDate.parseIso(json.openingDate) : null
   }
 }

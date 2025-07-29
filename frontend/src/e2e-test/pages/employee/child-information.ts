@@ -484,6 +484,7 @@ export class ChildDocumentsSection extends Section {
 
 export class BackupCaresSection extends Section {
   #createBackupCareButton = this.find('[data-qa="backup-care-create-btn"]')
+  #cancelBackupCareFormButton = this.find('[data-qa="cancel-backup-care-form"]')
   #backupCareSelectUnit = new Combobox(
     this.find('[data-qa="backup-care-select-unit"]')
   )
@@ -564,6 +565,10 @@ export class BackupCaresSection extends Section {
     await modal.waitUntilVisible()
     await this.#backupCares.find('[data-qa="modal-okBtn"]').click()
     await modal.waitUntilHidden()
+  }
+
+  async cancelBackupCareForm() {
+    await this.#cancelBackupCareFormButton.click()
   }
 
   #backupCareRow(index: number) {

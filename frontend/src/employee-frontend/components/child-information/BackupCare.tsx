@@ -9,7 +9,6 @@ import type { ChildId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 
-import { ChildContext } from '../../state'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
 import { renderResult } from '../async-rendering'
@@ -17,6 +16,7 @@ import { renderResult } from '../async-rendering'
 import BackupCareForm from './backup-care/BackupCareForm'
 import BackupCareRow from './backup-care/BackupCareRow'
 import { backupCaresQuery } from './queries'
+import { ChildContext } from './state'
 
 export interface Props {
   childId: ChildId
