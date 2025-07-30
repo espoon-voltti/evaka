@@ -93,7 +93,7 @@ const ResponsiveFixedSpace = styled(FixedSpaceRow)`
   @media (max-width: 445px) {
     justify-content: space-between;
     height: 190px;
-    flex-direction: column;
+    flex-direction: column-reverse;
 
     > button {
       margin-right: 0;
