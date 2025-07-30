@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.pis
 
+import com.google.common.hash.Hashing
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.EvakaEnv
@@ -18,6 +19,8 @@ import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.async.AsyncJob
+import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.*
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -27,8 +30,12 @@ import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.*
 import fi.espoo.evaka.user.*
 import fi.espoo.evaka.webpush.WebPush
+import io.github.oshai.kotlinlogging.KotlinLogging
+import java.nio.charset.StandardCharsets
 import java.util.*
 import org.springframework.web.bind.annotation.*
+
+private val logger = KotlinLogging.logger {}
 
 /**
  * Controller for "system" endpoints intended to be only called from apigw as the system internal
@@ -43,6 +50,7 @@ class SystemController(
     private val passwordService: PasswordService,
     private val webPush: WebPush?,
     private val featureConfig: FeatureConfig,
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
 ) {
     @PostMapping("/system/citizen-login")
     fun citizenLogin(
@@ -101,6 +109,22 @@ class SystemController(
             if (!isMatch || citizen == null) throw Forbidden()
 
             dbc.transaction { tx ->
+                    val userIdHash =
+                        Hashing.sha256()
+                            .hashString(citizen.id.toString(), StandardCharsets.UTF_8)
+                            .toString()
+                    if (!request.deviceAuthHistory.contains(userIdHash)) {
+                        logger.info { "Login from new device detected" }
+                        if (featureConfig.newBrowserLoginEmailEnabled) {
+                            asyncJobRunner.plan(
+                                tx,
+                                sequenceOf(
+                                    AsyncJob.SendNewBrowserLoginEmail(personId = citizen.id)
+                                ),
+                                runAt = clock.now(),
+                            )
+                        }
+                    }
                     if (passwordService.needsRehashing(citizen.password)) {
                         tx.updatePasswordWithoutTimestamp(
                             citizen.id,
@@ -435,7 +459,11 @@ class SystemController(
         val lastName: String,
     )
 
-    data class CitizenWeakLoginRequest(val username: String, val password: Sensitive<String>) {
+    data class CitizenWeakLoginRequest(
+        val username: String,
+        val password: Sensitive<String>,
+        val deviceAuthHistory: List<String> = emptyList(),
+    ) {
         init {
             if (username.lowercase() != username) {
                 throw BadRequest("Invalid username")

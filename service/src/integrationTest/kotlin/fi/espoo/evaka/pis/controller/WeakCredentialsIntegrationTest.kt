@@ -25,6 +25,7 @@ import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 
 class WeakCredentialsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
@@ -163,6 +164,83 @@ class WeakCredentialsIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
         assertEquals(0, MockEmailClient.emails.size)
     }
 
+    @Test
+    fun `a person cannot login with wrong password`() {
+        val correctPassword = Sensitive("correct123")
+        val wrongPassword = Sensitive("wrong456")
+
+        db.transaction { tx ->
+            tx.insert(person, DevPersonType.ADULT)
+            tx.insert(citizenUser(person.id, email, correctPassword))
+        }
+        MockPersonDetailsService.addPersons(person)
+
+        assertThrows<fi.espoo.evaka.shared.domain.Forbidden> {
+            citizenWeakLogin(username = email, password = wrongPassword)
+        }
+    }
+
+    @Test
+    fun `notification email is sent when logging in from a new device`() {
+        whenever(featureConfig.newBrowserLoginEmailEnabled).thenReturn(true)
+
+        val password = Sensitive("test123123")
+        db.transaction { tx ->
+            tx.insert(person, DevPersonType.ADULT)
+            tx.insert(citizenUser(person.id, email, password))
+        }
+        MockPersonDetailsService.addPersons(person)
+
+        // Login with empty deviceAuthHistory (simulating new device)
+        val identity =
+            citizenWeakLogin(
+                username = email,
+                password = password,
+                previouslyAuthenticatedUserHashes = emptyList(),
+            )
+        assertEquals(person.id, identity.id)
+
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
+        assertEquals(1, MockEmailClient.emails.size)
+        val notificationEmail = MockEmailClient.emails.first()
+        assertEquals(email, notificationEmail.toAddress)
+        assertContains(
+            notificationEmail.content.subject,
+            "Kirjautuminen uudella laitteella eVakaan",
+        )
+    }
+
+    @Test
+    fun `no notification email is sent when logging in from a previously used device`() {
+        whenever(featureConfig.newBrowserLoginEmailEnabled).thenReturn(true)
+
+        val password = Sensitive("test123123")
+        db.transaction { tx ->
+            tx.insert(person, DevPersonType.ADULT)
+            tx.insert(citizenUser(person.id, email, password))
+        }
+        MockPersonDetailsService.addPersons(person)
+
+        // Generate the expected user hash for this person
+        val userIdHash =
+            com.google.common.hash.Hashing.sha256()
+                .hashString(person.id.toString(), java.nio.charset.StandardCharsets.UTF_8)
+                .toString()
+
+        // Login with the user hash in deviceAuthHistory (simulating known
+        // device)
+        val identity =
+            citizenWeakLogin(
+                username = email,
+                password = password,
+                previouslyAuthenticatedUserHashes = listOf(userIdHash),
+            )
+        assertEquals(person.id, identity.id)
+
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
+        assertEquals(0, MockEmailClient.emails.size)
+    }
+
     private fun updateWeakLoginCredentials(username: String?, password: Sensitive<String>?) =
         controller.updateWeakLoginCredentials(
             dbInstance(),
@@ -183,12 +261,20 @@ class WeakCredentialsIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
             ),
         )
 
-    private fun citizenWeakLogin(username: String, password: Sensitive<String>) =
+    private fun citizenWeakLogin(
+        username: String,
+        password: Sensitive<String>,
+        previouslyAuthenticatedUserHashes: List<String> = emptyList(),
+    ) =
         systemController.citizenWeakLogin(
             dbInstance(),
             AuthenticatedUser.SystemInternalUser,
             clock,
-            SystemController.CitizenWeakLoginRequest(username, password),
+            SystemController.CitizenWeakLoginRequest(
+                username,
+                password,
+                previouslyAuthenticatedUserHashes,
+            ),
         )
 
     private fun citizenUser(id: PersonId, email: String, password: Sensitive<String>) =
