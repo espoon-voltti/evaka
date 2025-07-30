@@ -19,7 +19,7 @@ import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.testAdult_1
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
+import kotlin.test.assertNotNull
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 
@@ -74,7 +74,7 @@ class PersonalDataControllerCitizenIntegrationTest : FullApplicationTest(resetDb
     }
 
     @Test
-    fun `email is sent to old and new address after updating email`() {
+    fun `email is sent to old address after updating email`() {
         val oldEmail = "vanha@example.com"
         val newEmail = "uusi@example.com"
         val person = DevPerson(email = oldEmail)
@@ -88,12 +88,13 @@ class PersonalDataControllerCitizenIntegrationTest : FullApplicationTest(resetDb
         )
 
         asyncJobRunner.runPendingJobsSync(RealEvakaClock())
-        assertEquals(2, MockEmailClient.emails.size)
-        assertEquals(setOf(oldEmail, newEmail), MockEmailClient.emails.map { it.toAddress }.toSet())
-        assertTrue(
-            MockEmailClient.emails
-                .map { it.content.subject }
-                .all { it.startsWith("eVaka-sähköpostiosoitteesi on vaihdettu") }
-        )
+        assertEquals(1, MockEmailClient.emails.size)
+        val email =
+            MockEmailClient.emails.singleOrNull {
+                it.toAddress == oldEmail &&
+                    it.content.subject.startsWith("eVaka-sähköpostiosoitteesi on vaihdettu") &&
+                    it.content.text.contains(newEmail)
+            }
+        assertNotNull(email, "Email should be sent to old address after email update")
     }
 }

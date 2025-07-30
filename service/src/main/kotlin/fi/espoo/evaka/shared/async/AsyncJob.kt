@@ -470,7 +470,7 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
-    data class SendEmailChangedEmail(val email: String) : AsyncJob {
+    data class SendEmailChangedEmail(val personId: PersonId, val oldEmail: String) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
 

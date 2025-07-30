@@ -93,12 +93,7 @@ class PersonalDataControllerCitizen(
                 if (body.email != person.email && person.email != null) {
                     asyncJobRunner.plan(
                         tx,
-                        listOfNotNull(
-                            AsyncJob.SendEmailChangedEmail(person.email),
-                            AsyncJob.SendEmailChangedEmail(body.email).takeUnless {
-                                hasWeakCredentials
-                            },
-                        ),
+                        listOf(AsyncJob.SendEmailChangedEmail(user.id, person.email)),
                         runAt = clock.now(),
                     )
                 }

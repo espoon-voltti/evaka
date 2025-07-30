@@ -96,11 +96,12 @@ AND expires_at > ${bind(clock.now())}
         clock: EvakaClock,
         job: AsyncJob.SendEmailChangedEmail,
     ) {
+        val (email, _) = dbc.read { it.getPersonEmails(job.personId) }
         Email.createForAddress(
-                toAddress = job.email,
+                toAddress = job.oldEmail,
                 fromAddress = emailEnv.sender(Language.fi),
-                emailMessageProvider.emailChanged(),
-                "${clock.today()}:${job.email}",
+                emailMessageProvider.emailChanged(email ?: ""),
+                "${clock.today()}:${job.oldEmail}",
             )
             ?.also { emailClient.send(it) }
     }

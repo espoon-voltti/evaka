@@ -866,14 +866,19 @@ $unsubscribeEn
 """,
         )
 
-    override fun emailChanged(): EmailContent =
+    override fun emailChanged(newEmail: String): EmailContent =
         EmailContent.fromHtml(
             subject =
                 "eVaka-sähköpostiosoitteesi on vaihdettu / Din eVaka e-postadress har ändrats / Your eVaka email address has been changed",
             html =
-                """<p>eVaka-sähköpostiosoitteesi on vaihdettu onnistuneesti. Et saa enää eVaka-sähköposteja vanhaan osoitteeseesi.</p>
-<p>Din eVaka e-postadress har ändrats. Du får inte längre e-post från eVaka till din gamla adress.</p>
-<p>Your eVaka email address has been changed successfully. You will no longer receive eVaka emails to your old address.</p>
+                """<p>eVaka-sähköpostiosoitteesi on vaihdettu. Uusi osoitteesi on $newEmail. Et saa enää eVaka-sähköposteja vanhaan osoitteeseesi.</p>
+<p>Jos muutit sähköpostiosoitteesi itse, voit jättää tämän viestin huomiotta. Muussa tapauksessa kirjaudu eVakaan vahvalla tunnistautumisella ja korjaa sähköpostiosoitteesi.</p>
+<hr>
+<p>Din eVaka e-postadress har ändrats. Din nya adress är $newEmail. Du får inte längre e-post från eVaka till din gamla adress.</p>
+<p>Om du har ändrat din e-postadress själv kan du ignorera det här meddelandet. Om inte, logga in i eVaka med stark identifiering och korrigera din e-postadress.</p>
+<hr>
+<p>Your eVaka email address has been changed. Your new address is $newEmail. You will no longer receive eVaka emails to your old address.</p>
+<p>If you changed your email address yourself, you can ignore this message. If not, log in to eVaka with strong authentication and correct your email address.</p>
 """,
         )
 }
