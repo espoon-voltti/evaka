@@ -662,7 +662,7 @@ fun addUnderOneYearOldDiet(
             NekkuSpecialDietChoices(
                 defaultOptionsId,
                 textFieldsPerSpecialDiet[defaultOptionsId]
-                    ?: error("Special diet $defaultOptionsId not fond"),
+                    ?: error("Special diet $defaultOptionsId not found"),
                 UNDER_ONE_YEAR_OLD_DIET,
             )
         )
