@@ -10,6 +10,7 @@ import express from 'express'
 import _ from 'lodash'
 
 import { createLogoutToken } from '../auth/index.js'
+import { setDeviceAuthHistoryCookie } from '../device-cookies.js'
 import { AsyncRequestHandler, toRequestHandler } from '../express.js'
 import { logAuditEvent, logDebug } from '../logging.js'
 import {
@@ -33,6 +34,7 @@ export interface SamlEndpointConfig<T extends SessionType> {
   strategyName: string
   defaultPageUrl: string
   authenticate: AuthenticateProfile
+  citizenCookieSecret?: string
 }
 
 export class SamlError extends Error {
@@ -77,8 +79,14 @@ export interface SamlIntegration {
 export function createSamlIntegration<T extends SessionType>(
   endpointConfig: SamlEndpointConfig<T>
 ): SamlIntegration {
-  const { sessions, strategyName, saml, defaultPageUrl, authenticate } =
-    endpointConfig
+  const {
+    sessions,
+    strategyName,
+    saml,
+    defaultPageUrl,
+    authenticate,
+    citizenCookieSecret
+  } = endpointConfig
 
   const eventCode = (name: SamlAuditEvent) =>
     `evaka.saml.${strategyName}.${name}`
@@ -199,6 +207,11 @@ export function createSamlIntegration<T extends SessionType>(
       const user = await authenticate(req, profile)
       await sessions.login(req, user)
       logAuditEvent(eventCode('sign_in'), req, 'User logged in successfully')
+
+      // Set device cookie for citizen authentication
+      if (citizenCookieSecret) {
+        setDeviceAuthHistoryCookie(res, user.id, citizenCookieSecret)
+      }
 
       // Persist in session to allow custom logic per strategy
       req.session.idpProvider = strategyName

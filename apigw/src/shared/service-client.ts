@@ -158,6 +158,7 @@ export async function citizenLogin(
 interface CitizenWeakLoginRequest {
   username: string
   password: string
+  deviceAuthHistory: string[]
 }
 
 export async function citizenWeakLogin(
