@@ -74,19 +74,13 @@ AND expires_at > ${bind(clock.now())}
         clock: EvakaClock,
         job: AsyncJob.SendPasswordChangedEmail,
     ) {
-        val (email, verifiedEmail) = dbc.read { it.getPersonEmails(job.personId) }
-        val toAddress = verifiedEmail ?: email
-        if (toAddress == null) {
-            logger.error {
-                "No email found for person ${job.personId} to send password changed notification"
-            }
-            return
-        }
-        Email.createForAddress(
-                toAddress = toAddress,
+        Email.create(
+                dbc,
+                job.personId,
+                EmailMessageType.TRANSACTIONAL,
                 fromAddress = emailEnv.sender(Language.fi),
-                emailMessageProvider.passwordChanged(),
-                "${clock.today()}:${job.personId}",
+                content = emailMessageProvider.passwordChanged(),
+                traceId = "${clock.today()}:${job.personId}",
             )
             ?.also { emailClient.send(it) }
     }

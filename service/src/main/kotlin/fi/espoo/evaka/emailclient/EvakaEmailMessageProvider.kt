@@ -860,9 +860,14 @@ $unsubscribeEn
             subject =
                 "eVaka-salasanasi on vaihdettu / Ditt eVaka lösenord har ändrats / Your eVaka password has been changed",
             html =
-                """<p>eVaka-salasanasi on vaihdettu onnistuneesti.</p>
+                """<p>eVaka-salasanasi on vaihdettu.</p>
+<p>Jos vaihdoit salasanasi itse, voit jättää tämän viestin huomiotta. Muussa tapauksessa kirjaudu eVakaan vahvalla tunnistautumisella ja vaihda salasanasi.</p>
+<hr>
 <p>Din eVaka lösenord har ändrats.</p>
-<p>Your eVaka password has been changed successfully.</p>
+<p>Om du har ändrat ditt lösenord själv kan du ignorera det här meddelandet. Om inte, logga in i eVaka med stark identifiering och ändra ditt lösenord.</p>
+<hr>
+<p>Your eVaka password has been changed.</p>
+<p>If you changed your password yourself, you can ignore this message. If not, log in to eVaka with strong authentication and change your password.</p>
 """,
         )
 
