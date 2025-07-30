@@ -11,7 +11,10 @@ import { assertStringProp } from '../shared/express.ts'
 import { citizenLogin } from '../shared/service-client.ts'
 import type { Sessions } from '../shared/session.ts'
 
-export function createDevSfiRouter(sessions: Sessions<'citizen'>): Router {
+export function createDevSfiRouter(
+  sessions: Sessions<'citizen'>,
+  citizenCookieSecret: string
+): Router {
   return createDevAuthRouter({
     sessions,
     root: '/',
@@ -67,6 +70,7 @@ export function createDevSfiRouter(sessions: Sessions<'citizen'>): Router {
         authType: 'dev',
         userType: 'CITIZEN_STRONG'
       }
-    }
+    },
+    citizenCookieSecret
   })
 }

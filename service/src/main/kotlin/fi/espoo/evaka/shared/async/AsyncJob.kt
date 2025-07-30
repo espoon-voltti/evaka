@@ -429,6 +429,10 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
+    data class SendNewBrowserLoginEmail(val personId: PersonId) : AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
     data class SendSpecialDietNullificationWarningEmail(
         val unitId: DaycareId,
         val employeeId: EmployeeId,
@@ -550,6 +554,7 @@ sealed interface AsyncJob : AsyncJobPayload {
                     SendMissingReservationsReminder::class,
                     SendNekkuCustomerNumberNullificationWarningEmail::class,
                     SendNekkuSpecialDietRemovalWarningEmail::class,
+                    SendNewBrowserLoginEmail::class,
                     SendNewCustomerIncomeNotificationEmail::class,
                     SendNewDecisionEmail::class,
                     SendNewFeeDecisionEmail::class,
