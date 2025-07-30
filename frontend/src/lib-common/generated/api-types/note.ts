@@ -85,6 +85,7 @@ export interface ChildStickyNoteBody {
 * Generated from fi.espoo.evaka.note.group.GroupNote
 */
 export interface GroupNote {
+  created: HelsinkiDateTime
   expires: LocalDate
   groupId: GroupId
   id: GroupNoteId
@@ -138,6 +139,7 @@ export function deserializeJsonChildStickyNoteBody(json: JsonOf<ChildStickyNoteB
 export function deserializeJsonGroupNote(json: JsonOf<GroupNote>): GroupNote {
   return {
     ...json,
+    created: HelsinkiDateTime.parseIso(json.created),
     expires: LocalDate.parseIso(json.expires),
     modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt)
   }

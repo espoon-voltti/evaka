@@ -19,6 +19,7 @@ export interface StaticLabels {
   edit: string
   remove: string
   validTo: (date: string) => string
+  lastModified?: (dateTime: string) => string
 }
 
 interface Props<IdType extends Id<string>> {
@@ -42,6 +43,17 @@ export function StaticStickyNote<IdType extends Id<string>>({
       <P noMargin data-qa="sticky-note-note" preserveWhiteSpace>
         {note.note}
       </P>
+      {note.created &&
+        note.modifiedAt &&
+        labels.lastModified &&
+        !note.created.isEqual(note.modifiedAt) && (
+          <>
+            <Gap size="xs" />
+            <InformationText data-qa="sticky-note-modified">
+              {labels.lastModified(note.modifiedAt.format())}
+            </InformationText>
+          </>
+        )}
       <Gap size="xs" />
       <InformationText data-qa="sticky-note-expires">
         {labels.validTo(note.expires.format())}

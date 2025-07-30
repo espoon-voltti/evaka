@@ -17,7 +17,7 @@ private fun Database.Read.getGroupNotesForGroups(groupIds: List<GroupId>): List<
     createQuery {
             sql(
                 """
-SELECT gn.id, gn.group_id, gn.note, gn.modified_at, gn.expires
+SELECT gn.id, gn.group_id, gn.note, gn.modified_at, gn.expires, gn.created
 FROM group_note gn
 WHERE group_id = ANY(${bind(groupIds)})
 """
