@@ -130,16 +130,16 @@ class TestNekkuClient(
 ) : NekkuClient {
     val orders = mutableListOf<NekkuClient.NekkuOrders>()
 
-    override fun getCustomers(): List<NekkuApiCustomer> {
-        return customers
+    override fun getCustomers(): List<NekkuCustomer> {
+        return customers.map { it.toEvaka() }
     }
 
-    override fun getSpecialDiets(): List<NekkuApiSpecialDiet> {
-        return specialDiets
+    override fun getSpecialDiets(): List<NekkuSpecialDiet> {
+        return specialDiets.map { it.toEvaka() }
     }
 
-    override fun getProducts(): List<NekkuApiProduct> {
-        return nekkuProducts
+    override fun getProducts(): List<NekkuProduct> {
+        return nekkuProducts.map { it.toEvaka() }
     }
 
     override fun createNekkuMealOrder(nekkuOrders: NekkuClient.NekkuOrders): NekkuOrderResult {
@@ -161,16 +161,16 @@ class DeserializingTestNekkuClient(
 ) : NekkuClient {
     val orders = mutableListOf<NekkuClient.NekkuOrders>()
 
-    override fun getCustomers(): List<NekkuApiCustomer> {
-        return jsonMapper.readValue<List<NekkuApiCustomer>>(customers)
+    override fun getCustomers(): List<NekkuCustomer> {
+        return jsonMapper.readValue<List<NekkuApiCustomer>>(customers).map { it.toEvaka() }
     }
 
-    override fun getSpecialDiets(): List<NekkuApiSpecialDiet> {
-        return jsonMapper.readValue<List<NekkuApiSpecialDiet>>(specialDiets)
+    override fun getSpecialDiets(): List<NekkuSpecialDiet> {
+        return jsonMapper.readValue<List<NekkuApiSpecialDiet>>(specialDiets).map { it.toEvaka() }
     }
 
-    override fun getProducts(): List<NekkuApiProduct> {
-        return jsonMapper.readValue<List<NekkuApiProduct>>(nekkuProducts)
+    override fun getProducts(): List<NekkuProduct> {
+        return jsonMapper.readValue<List<NekkuApiProduct>>(nekkuProducts).map { it.toEvaka() }
     }
 
     override fun createNekkuMealOrder(nekkuOrders: NekkuClient.NekkuOrders): NekkuOrderResult {

@@ -30,8 +30,7 @@ fun fetchAndUpdateNekkuCustomers(
     asyncJobRunner: AsyncJobRunner<AsyncJob>,
     now: HelsinkiDateTime,
 ) {
-    val customersFromNekku =
-        client.getCustomers().map { it.toEvaka() }.filter { it.group.contains("Varhaiskasvatus") }
+    val customersFromNekku = client.getCustomers().filter { it.group.contains("Varhaiskasvatus") }
 
     if (customersFromNekku.isEmpty())
         error("Refusing to sync empty Nekku customer list into database")
@@ -212,7 +211,7 @@ fun fetchAndUpdateNekkuSpecialDiets(
     now: HelsinkiDateTime,
 ) {
 
-    val specialDietsFromNekku = client.getSpecialDiets().map { it.toEvaka() }
+    val specialDietsFromNekku = client.getSpecialDiets()
 
     if (specialDietsFromNekku.isEmpty())
         error("Refusing to sync empty Nekku special diet list into database")
@@ -529,7 +528,7 @@ fun Database.Transaction.getUnitAndGroupForChildren(
 
 /** Throws an IllegalStateException if Nekku returns an empty product list. */
 fun fetchAndUpdateNekkuProducts(client: NekkuClient, db: Database.Connection) {
-    val productsFromNekku = client.getProducts().map { it.toEvaka() }
+    val productsFromNekku = client.getProducts()
 
     if (productsFromNekku.isEmpty())
         error("Refusing to sync empty Nekku product list into database")
