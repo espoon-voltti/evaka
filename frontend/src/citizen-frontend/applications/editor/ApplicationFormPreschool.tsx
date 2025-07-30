@@ -25,7 +25,7 @@ export default React.memo(function ApplicationFormPreschool({
   setFormData,
   errors,
   verificationRequested,
-  originalPreferredStartDate,
+  isInvalidDate,
   minDate,
   maxDate,
   terms
@@ -70,7 +70,7 @@ export default React.memo(function ApplicationFormPreschool({
 
       <ServiceNeedSection
         status={application.status}
-        originalPreferredStartDate={originalPreferredStartDate}
+        isInvalidDate={isInvalidDate}
         minDate={minDate}
         maxDate={maxDate}
         type={applicationType}

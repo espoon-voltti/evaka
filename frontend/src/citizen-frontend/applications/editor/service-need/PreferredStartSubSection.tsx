@@ -27,14 +27,13 @@ import {
 import { deleteAttachmentMutation } from '../../../attachments/queries'
 import { errorToInputInfo } from '../../../input-info-helper'
 import { useLang, useTranslation } from '../../../localization'
-import { isValidPreferredStartDate } from '../validations'
 
 import { ClubTermsInfo } from './ClubTermsInfo'
 import { PreschoolTermsInfoSection } from './PreschoolTermInfoSection'
 import type { ServiceNeedSectionProps } from './ServiceNeedSection'
 
 export default React.memo(function PreferredStartSubSection({
-  originalPreferredStartDate,
+  isInvalidDate,
   minDate,
   maxDate,
   type,
@@ -97,11 +96,7 @@ export default React.memo(function PreferredStartSubSection({
           locale={lang}
           info={errorToInputInfo(errors.preferredStartDate, t.validationErrors)}
           hideErrorsBeforeTouched={!verificationRequested}
-          isInvalidDate={(date: LocalDate) =>
-            isValidPreferredStartDate(date, originalPreferredStartDate, terms)
-              ? null
-              : t.validationErrors.unselectableDate
-          }
+          isInvalidDate={isInvalidDate}
           minDate={minDate}
           maxDate={maxDate}
           data-qa="preferredStartDate-input"

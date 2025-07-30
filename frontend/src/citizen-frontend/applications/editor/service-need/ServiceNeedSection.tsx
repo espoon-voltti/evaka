@@ -27,7 +27,7 @@ import ServiceTimeSubSectionPreschool from './ServiceTimeSubSectionPreschool'
 
 export type ServiceNeedSectionProps = {
   status: ApplicationStatus
-  originalPreferredStartDate: LocalDate | null
+  isInvalidDate: ((localDate: LocalDate) => string | null) | undefined
   minDate: LocalDate
   maxDate: LocalDate
   type: ApplicationType

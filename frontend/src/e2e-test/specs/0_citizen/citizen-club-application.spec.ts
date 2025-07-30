@@ -6,6 +6,7 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
 import {
+  clubTerm2020,
   clubTerm2021,
   Fixture,
   testAdult,
@@ -30,6 +31,7 @@ const mockedDate = LocalDate.of(2021, 3, 1)
 
 beforeEach(async () => {
   await resetServiceState()
+  await clubTerm2020.save()
   await clubTerm2021.save()
   await testCareArea.save()
   await testClub.save()
@@ -86,5 +88,43 @@ describe('Citizen club applications', () => {
 
     const application = await getApplication({ applicationId })
     fullClubForm.validateResult(application)
+  })
+
+  test('Citizen cannot move preferred start date before a previously selected date', async () => {
+    await header.selectTab('applications')
+    const editorPage = await applicationsPage.createApplication(
+      testChild.id,
+      'CLUB'
+    )
+    const applicationId = editorPage.getNewApplicationId()
+    await editorPage.fillData({
+      ...minimalClubForm.form,
+      serviceNeed: {
+        ...minimalClubForm.form.serviceNeed,
+        preferredStartDate: '24.08.2021'
+      }
+    })
+    await editorPage.verifyAndSend({ hasOtherGuardian: true })
+
+    await applicationsPage.editApplication(applicationId)
+    await editorPage.setPreferredStartDate('23.08.2021')
+    await editorPage.assertPreferredStartDateInfo('Valitse myöhäisempi päivä')
+    await editorPage.setPreferredStartDate('01.02.2021')
+    await editorPage.assertPreferredStartDateInfo('Valitse myöhäisempi päivä')
+    await editorPage.setPreferredStartDate('24.08.2021')
+    await editorPage.assertPreferredStartDateInfo(undefined)
+    await editorPage.setPreferredStartDate('25.08.2021')
+    await editorPage.assertPreferredStartDateInfo(undefined)
+  })
+
+  test('preferred start date cannot be in term break', async () => {
+    await header.selectTab('applications')
+    const editorPage = await applicationsPage.createApplication(
+      testChild.id,
+      'CLUB'
+    )
+
+    await editorPage.setPreferredStartDate('18.10.2021')
+    await editorPage.assertPreferredStartDateInfo('Päivä ei ole sallittu')
   })
 })

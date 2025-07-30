@@ -25,7 +25,7 @@ export default React.memo(function ApplicationFormDaycare({
   setFormData,
   errors,
   verificationRequested,
-  originalPreferredStartDate,
+  isInvalidDate,
   minDate,
   maxDate
 }: ApplicationFormProps) {
@@ -63,9 +63,9 @@ export default React.memo(function ApplicationFormDaycare({
 
       <ServiceNeedSection
         status={application.status}
+        isInvalidDate={isInvalidDate}
         minDate={minDate}
         maxDate={maxDate}
-        originalPreferredStartDate={originalPreferredStartDate}
         type={applicationType}
         formData={formData.serviceNeed}
         updateFormData={(data) =>
