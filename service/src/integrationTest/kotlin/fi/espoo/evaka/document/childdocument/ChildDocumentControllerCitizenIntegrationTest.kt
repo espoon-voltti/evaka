@@ -15,14 +15,20 @@ import fi.espoo.evaka.document.getTemplate
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DocumentTemplateId
+import fi.espoo.evaka.shared.EmployeeId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevChildDocument
+import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDocumentTemplate
+import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevGuardian
+import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
@@ -365,6 +371,14 @@ class ChildDocumentControllerCitizenIntegrationTest :
                 tx.insert(testAdult_2, DevPersonType.ADULT)
                 tx.insert(DevGuardian(testAdult_2.id, testChild_2.id))
                 tx.insert(
+                    DevPlacement(
+                        childId = testChild_2.id,
+                        unitId = testDaycare.id,
+                        startDate = clock.today(),
+                        endDate = clock.today().plusDays(5),
+                    )
+                )
+                tx.insert(
                     DevChildDocument(
                         status = DocumentStatus.CITIZEN_DRAFT,
                         childId = testChild_2.id,
@@ -447,6 +461,71 @@ class ChildDocumentControllerCitizenIntegrationTest :
         assertEquals(listOf(summary2), getDocumentsByChild(testChild_2.id, user = citizen2))
         assertEquals(listOf(summary2), getUnansweredChildDocuments(user = citizen2))
         assertThrows<Forbidden> { getDocumentsByChild(testChild_1.id, user = citizen2) }
+    }
+
+    @Test
+    fun `guardian can't get documents if child's placement has ended`() {
+        val template =
+            DevDocumentTemplate(
+                    type = ChildDocumentType.CITIZEN_BASIC,
+                    name = "Medialupa",
+                    validity = DateRange(clock.today(), clock.today()),
+                    content = templateContent,
+                )
+                .also { db.transaction { tx -> tx.insert(it) } }
+
+        val adult =
+            DevPerson(PersonId(UUID.randomUUID())).also {
+                db.transaction { tx -> tx.insert(it, DevPersonType.ADULT) }
+            }
+        val child =
+            DevPerson(PersonId(UUID.randomUUID())).also {
+                db.transaction { tx -> tx.insert(it, DevPersonType.CHILD) }
+            }
+        db.transaction { tx -> tx.insert(DevGuardian(adult.id, child.id)) }
+
+        val adultUser = AuthenticatedUser.Citizen(adult.id, CitizenAuthLevel.STRONG)
+        val employee =
+            DevEmployee(EmployeeId(UUID.randomUUID())).also {
+                db.transaction { tx -> tx.insert(it) }
+            }
+        val employeeUser = AuthenticatedUser.Employee(employee.id, setOf(UserRole.ADMIN))
+
+        val careArea =
+            DevCareArea(shortName = "test_care_area").also {
+                db.transaction { tx -> tx.insert(it) }
+            }
+        val daycare =
+            DevDaycare(areaId = careArea.id).also { db.transaction { tx -> tx.insert(it) } }
+
+        db.transaction { tx ->
+            tx.insert(
+                DevChildDocument(
+                    status = DocumentStatus.CITIZEN_DRAFT,
+                    childId = child.id,
+                    templateId = template.id,
+                    content = documentContent,
+                    publishedContent = documentContent,
+                    modifiedAt = clock.now(),
+                    contentModifiedAt = clock.now(),
+                    contentModifiedBy = employeeUser.id,
+                    publishedAt = clock.now(),
+                    answeredAt = null,
+                    answeredBy = null,
+                )
+            )
+
+            tx.insert(
+                DevPlacement(
+                    childId = child.id,
+                    unitId = daycare.id,
+                    startDate = clock.today().minusDays(1),
+                    endDate = clock.today().minusDays(1),
+                )
+            )
+        }
+
+        assertThrows<Forbidden> { getDocumentsByChild(child.id, adultUser) }
     }
 
     @Test

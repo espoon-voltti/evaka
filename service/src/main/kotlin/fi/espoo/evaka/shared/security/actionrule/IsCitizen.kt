@@ -182,6 +182,32 @@ WHERE parent_id = ${bind(userId)} AND valid_during @> ${bind(now.toLocalDate())}
             )
         }
 
+    fun guardianOfChildWithActiveOrUpcomingPlacement() =
+        rule<ChildId> { guardianId, now ->
+            sql(
+                """
+SELECT guardian.child_id AS id
+FROM guardian
+JOIN placement p ON p.child_id = guardian.child_id AND p.end_date >= ${bind(now.toLocalDate())}
+WHERE guardian_id = ${bind(guardianId)}
+"""
+                    .trimIndent()
+            )
+        }
+
+    fun fosterParentOfChildWithActiveOrUpcomingPlacement() =
+        rule<ChildId> { userId, now ->
+            sql(
+                """
+SELECT foster_parent.child_id AS id
+FROM foster_parent
+JOIN placement p ON p.child_id = foster_parent.child_id AND p.end_date >= ${bind(now.toLocalDate())}
+WHERE parent_id = ${bind(userId)} AND valid_during @> ${bind(now.toLocalDate())}
+"""
+                    .trimIndent()
+            )
+        }
+
     fun fosterParentOfChildOfChildImage() =
         rule<ChildImageId> { userId, now ->
             sql(
@@ -250,13 +276,14 @@ WHERE fp.parent_id = ${bind(userId)} AND fp.valid_during @> ${bind(now.toLocalDa
         }
 
     fun guardianOfChildOfPedagogicalDocumentOfAttachment() =
-        rule<AttachmentId> { guardianId, _ ->
+        rule<AttachmentId> { guardianId, now ->
             sql(
                 """
 SELECT a.id
 FROM attachment a
 JOIN pedagogical_document pd ON a.pedagogical_document_id = pd.id
 JOIN guardian g ON pd.child_id = g.child_id
+JOIN placement p ON pd.child_id = p.child_id AND p.end_date >= ${bind(now.toLocalDate())}
 WHERE g.guardian_id = ${bind(guardianId)}
             """
                     .trimIndent()
@@ -271,6 +298,7 @@ SELECT a.id
 FROM attachment a
 JOIN pedagogical_document pd ON a.pedagogical_document_id = pd.id
 JOIN foster_parent fp ON pd.child_id = fp.child_id
+JOIN placement p ON pd.child_id = p.child_id AND p.end_date >= ${bind(now.toLocalDate())}
 WHERE fp.parent_id = ${bind(userId)} AND fp.valid_during @> ${bind(now.toLocalDate())}
             """
                     .trimIndent()

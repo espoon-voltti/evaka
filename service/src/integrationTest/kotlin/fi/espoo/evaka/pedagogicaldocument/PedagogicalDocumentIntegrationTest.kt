@@ -9,6 +9,7 @@ import com.github.kittinunf.fuel.core.FileDataPart
 import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.attachment.AttachmentsController
 import fi.espoo.evaka.daycare.addUnitFeatures
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.shared.AttachmentId
@@ -16,18 +17,24 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.PedagogicalDocumentId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
+import fi.espoo.evaka.shared.dev.DevCareArea
+import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevGuardian
+import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertEmployeeToDaycareGroupAcl
 import fi.espoo.evaka.shared.dev.updateDaycareAclWithEmployee
+import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.testAdult_1
@@ -43,10 +50,14 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 
 class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var pedagogicalDocumentController: PedagogicalDocumentController
+    @Autowired
+    private lateinit var pedagogicalDocumentControllerCitizen: PedagogicalDocumentControllerCitizen
+    @Autowired private lateinit var attachmentsController: AttachmentsController
 
     private val employeeId = EmployeeId(UUID.randomUUID())
     private val employee = AuthenticatedUser.Employee(employeeId, setOf(UserRole.ADMIN))
@@ -412,6 +423,44 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
         )
         // only docs with attachments are counted in unread
         assertEquals(1, getUnreadCount(guardian).values.sum())
+    }
+
+    @Test
+    fun `guardian can't read documents or attachments if child's placement has ended`() {
+        val adult = DevPerson(PersonId(UUID.randomUUID()))
+        val child = DevPerson(PersonId(UUID.randomUUID()))
+        val guardian = AuthenticatedUser.Citizen(adult.id, CitizenAuthLevel.STRONG)
+        db.transaction {
+            val adultId = it.insert(adult, DevPersonType.ADULT)
+            val childId = it.insert(child, DevPersonType.CHILD)
+            val areaId = it.insert(DevCareArea(shortName = "test_care_area"))
+            val daycareId = it.insert(DevDaycare(areaId = areaId))
+            it.insert(DevGuardian(adultId, childId))
+            it.insert(
+                DevPlacement(
+                    childId = childId,
+                    unitId = daycareId,
+                    startDate = clock.now().minusDays(1).toLocalDate(),
+                    endDate = clock.now().minusDays(1).toLocalDate(),
+                )
+            )
+        }
+
+        val pedDoc = createDocumentAsUser(child.id, employee)
+        val attachmentId = uploadAttachment(pedDoc.id)
+
+        assertThrows<Forbidden> {
+            pedagogicalDocumentControllerCitizen.getPedagogicalDocumentsForChild(
+                dbInstance(),
+                guardian,
+                clock,
+                child.id,
+            )
+        }
+
+        assertThrows<Forbidden> {
+            attachmentsController.getAttachment(dbInstance(), guardian, clock, attachmentId, "file")
+        }
     }
 
     @Test

@@ -31,8 +31,7 @@ SELECT
     u.id AS unit_id,
     u.name AS unit_name,
     upcoming_pl.type AS upcoming_placement_type,
-    upcoming_pl.type IS NOT NULL AS has_upcoming_placements,
-    EXISTS (SELECT 1 FROM pedagogical_document doc WHERE p.id = doc.child_id) has_pedagogical_documents
+    upcoming_pl.type IS NOT NULL AS has_upcoming_placements
 FROM children c
 INNER JOIN person p ON c.child_id = p.id
 LEFT JOIN child_images img ON p.id = img.child_id

@@ -28,7 +28,6 @@ data class Child(
     @Nested("group") val group: Group?,
     @Nested("unit") val unit: Unit?,
     val upcomingPlacementType: PlacementType?,
-    val hasPedagogicalDocuments: Boolean,
 )
 
 data class ChildAndPermittedActions(
@@ -41,7 +40,6 @@ data class ChildAndPermittedActions(
     @Nested("group") val group: Group?,
     @Nested("unit") val unit: Unit?,
     val upcomingPlacementType: PlacementType?,
-    val hasPedagogicalDocuments: Boolean,
     val permittedActions: Set<Action.Citizen.Child>,
     val serviceApplicationCreationPossible: Boolean,
     val absenceApplicationCreationPossible: Boolean,
@@ -63,7 +61,6 @@ data class ChildAndPermittedActions(
                 group = child.group,
                 unit = child.unit,
                 upcomingPlacementType = child.upcomingPlacementType,
-                hasPedagogicalDocuments = child.hasPedagogicalDocuments,
                 permittedActions = permittedActions,
                 serviceApplicationCreationPossible = serviceApplicationCreationPossible,
                 absenceApplicationCreationPossible = absenceApplicationCreationPossible,
