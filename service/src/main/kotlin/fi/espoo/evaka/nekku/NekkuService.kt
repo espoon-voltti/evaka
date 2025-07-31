@@ -160,7 +160,7 @@ class NekkuService(
         createAndSendNekkuOrder(
             client,
             dbc,
-            groupId = job.customerGroupId,
+            groupId = job.groupId,
             date = job.date,
             featureConfig.nekkuMealDeductionFactor,
         )
@@ -175,7 +175,7 @@ class NekkuService(
         createAndSendNekkuOrder(
             client,
             dbc,
-            groupId = job.customerGroupId,
+            groupId = job.groupId,
             date = job.date,
             featureConfig.nekkuMealDeductionFactor,
         )
@@ -246,17 +246,16 @@ fun planNekkuOrderJobs(
     asyncJobRunner: AsyncJobRunner<AsyncJob>,
     now: HelsinkiDateTime,
 ) {
-    val range = now.toLocalDate().weeklyJobsThreeWeeksFromNow()
+    val orderDates = now.toLocalDate().weeklyJobsForThirdWeekFromNow()
     dbc.transaction { tx ->
-        val nekkuGroupIds = tx.getNekkuDaycareGroupId(range)
+        val nekkuGroupIds = tx.getNekkuOpenDaycareGroupIds(orderDates)
         asyncJobRunner.plan(
             tx,
             nekkuGroupIds.flatMap { nekkuGroupId ->
-                val daycareOperationInfo =
-                    tx.getDaycareOperationInfo(nekkuGroupId) ?: return@flatMap emptySequence()
-                range.dates().mapNotNull { date ->
-                    if (isDaycareOpenOnDate(date, daycareOperationInfo)) {
-                        AsyncJob.SendNekkuOrder(customerGroupId = nekkuGroupId, date = date)
+                val groupOperationDays = tx.getGroupOperationDays(nekkuGroupId) ?: return@flatMap emptySequence()
+                orderDates.dates().mapNotNull { date ->
+                    if (isGroupOpenOnDate(date, groupOperationDays)) {
+                        AsyncJob.SendNekkuOrder(groupId = nekkuGroupId, date = date)
                     } else null
                 }
             },
@@ -275,18 +274,18 @@ fun planNekkuDailyOrderJobs(
     val range = now.toLocalDate().daySpan()
 
     dbc.transaction { tx ->
-        val nekkuDaycareGroupIds = tx.getNekkuDaycareGroupId(range)
+        val nekkuGroupIds = tx.getNekkuOpenDaycareGroupIds(range)
         asyncJobRunner.plan(
             tx,
-            nekkuDaycareGroupIds.mapNotNull { nekkuDaycareGroupId ->
-                val daycareOperationInfo = tx.getDaycareOperationInfo(nekkuDaycareGroupId)
+            nekkuGroupIds.mapNotNull { nekkuGroupId ->
+                val groupOperationDays = tx.getGroupOperationDays(nekkuGroupId)
                 if (
-                    daycareOperationInfo != null &&
-                        isDaycareOpenOnDate(now.toLocalDate(), daycareOperationInfo)
+                    groupOperationDays != null &&
+                        isGroupOpenOnDate(now.toLocalDate(), groupOperationDays)
                 ) {
                     AsyncJob.SendNekkuDailyOrder(
-                        customerGroupId = nekkuDaycareGroupId,
-                        date = daycareOpenNextTime(now.toLocalDate(), daycareOperationInfo),
+                        groupId = nekkuGroupId,
+                        date = daycareOpenNextTime(now.toLocalDate(), groupOperationDays),
                     )
                 } else null
             },
@@ -317,10 +316,9 @@ fun planNekkuManualOrderJob(
             "Can only make a manual order if an automatic order has been made for the day"
         )
 
-    val daycareOperationInfo =
-        tx.getDaycareOperationInfo(groupId)
-            ?: throw BadRequest("Daycare operation info not found for group $groupId")
-    if (!isDaycareOpenOnDate(date, daycareOperationInfo))
+    val groupOperationDays = tx.getGroupOperationDays(groupId)
+        ?: throw BadRequest("Daycare operation info not found for group $groupId")
+    if (!isGroupOpenOnDate(date, groupOperationDays))
         throw BadRequest("Group $groupId is not open on $date")
 
     if (tx.getNekkuDaycareGroupId(FiniteDateRange(date, date)).none { it == groupId })
@@ -339,17 +337,16 @@ fun planNekkuManualOrderJob(
 
 private fun LocalDate.thisWeeksSunday() = this.plusDays((7 - this.dayOfWeek.value).toLong())
 
+private fun LocalDate.nextWeeksMonday() = this.thisWeeksSunday().plusDays(1)
+
 private fun LocalDate.nextWeeksSunday() = this.thisWeeksSunday().plusDays(7)
 
 private fun LocalDate.isOnOrBefore(other: LocalDate): Boolean = this.isBefore(other.plusDays(1))
 
-private fun LocalDate.weeklyJobsThreeWeeksFromNow(): FiniteDateRange {
-    val daysUntilNextMonday = (DayOfWeek.MONDAY.value - this.dayOfWeek.value + 7) % 7
-    val nextMonday =
-        this.plusDays(if (daysUntilNextMonday == 0) 7 else daysUntilNextMonday.toLong())
-    val nextMondayPlusWeeks = nextMonday.plusWeeks(2)
-    val jobDateRangeEnd = nextMondayPlusWeeks.plusDays(6)
-    return FiniteDateRange(nextMondayPlusWeeks, jobDateRangeEnd)
+private fun LocalDate.weeklyJobsForThirdWeekFromNow(): FiniteDateRange {
+    val nextMondayPlusTwoWeeks = this.nextWeeksMonday().plusWeeks(2)
+    val jobDateRangeEnd = nextMondayPlusTwoWeeks.plusDays(6)
+    return FiniteDateRange(nextMondayPlusTwoWeeks, jobDateRangeEnd)
 }
 
 private fun LocalDate.daySpan(): FiniteDateRange {
@@ -683,7 +680,7 @@ fun addUnderOneYearOldDiet(
             textField.copy(value = textField.value + ", " + UNDER_ONE_YEAR_OLD_DIET)
 }
 
-fun isDaycareOpenOnDate(date: LocalDate, daycareOperationInfo: NekkuDaycareOperationInfo): Boolean {
+fun isGroupOpenOnDate(date: LocalDate, daycareOperationInfo: NekkuDaycareOperationInfo): Boolean {
     return date.dayOfWeek.value in daycareOperationInfo.combinedDays &&
         (daycareOperationInfo.shiftCareOpenOnHolidays || !isHoliday(date))
 }
@@ -702,7 +699,7 @@ fun daycareOpenNextTime(
     for (i in 1..7) {
         val candidateDate = date.plusDays(i.toLong())
 
-        if (isDaycareOpenOnDate(candidateDate, daycareOperationInfo)) {
+        if (isGroupOpenOnDate(candidateDate, daycareOperationInfo)) {
             return candidateDate
         }
     }
