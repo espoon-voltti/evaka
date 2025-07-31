@@ -465,9 +465,6 @@ class ChildDocumentControllerCitizenIntegrationTest :
 
     @Test
     fun `guardian can't get documents if child's placement has ended`() {
-        publishDocument(documentId)
-        asyncJobRunner.runPendingJobsSync(clock)
-
         val template =
             DevDocumentTemplate(
                     type = ChildDocumentType.CITIZEN_BASIC,
