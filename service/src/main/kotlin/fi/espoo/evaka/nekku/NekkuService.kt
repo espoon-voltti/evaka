@@ -328,7 +328,7 @@ fun planNekkuManualOrderJob(
 
     asyncJobRunner.plan(
         tx,
-        if (haveDaycareTimesBeenLockedForDate(now.toLocalDate(), date))
+        if (haveDaycareTimesBeenLockedForDate(today, date))
             listOf(AsyncJob.SendNekkuDailyOrder(groupId, date))
         else listOf(AsyncJob.SendNekkuOrder(groupId, date)),
         runAt = now,
