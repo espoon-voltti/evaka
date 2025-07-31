@@ -462,8 +462,8 @@ sealed interface Action {
                 IsCitizen(allowWeakLogin = false).fosterParentOfChild(),
             ),
             READ_PEDAGOGICAL_DOCUMENTS(
-                IsCitizen(allowWeakLogin = false).guardianOfChild(),
-                IsCitizen(allowWeakLogin = false).fosterParentOfChild(),
+                IsCitizen(allowWeakLogin = false).guardianOfChildWithActiveOrUpcomingPlacement(),
+                IsCitizen(allowWeakLogin = false).fosterParentOfChildWithActiveOrUpcomingPlacement(),
             ),
             CREATE_ABSENCE_APPLICATION(
                 IsCitizen(allowWeakLogin = true).guardianOfChild(),
@@ -491,8 +491,8 @@ sealed interface Action {
                 IsCitizen(allowWeakLogin = true).fosterParentOfChild(),
             ),
             READ_CHILD_DOCUMENTS(
-                IsCitizen(allowWeakLogin = false).guardianOfChild(),
-                IsCitizen(allowWeakLogin = false).fosterParentOfChild(),
+                IsCitizen(allowWeakLogin = false).guardianOfChildWithActiveOrUpcomingPlacement(),
+                IsCitizen(allowWeakLogin = false).fosterParentOfChildWithActiveOrUpcomingPlacement(),
             ),
             CREATE_CALENDAR_EVENT_TIME_RESERVATION(
                 IsCitizen(allowWeakLogin = true).guardianOfChild(),

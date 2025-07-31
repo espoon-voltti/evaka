@@ -57,10 +57,7 @@ export function useChildrenWithOwnPage() {
   const { data } = useQuery(childrenQuery())
   return useMemo(() => {
     if (!data) return []
-    return data.filter(
-      (child) =>
-        child.upcomingPlacementType !== null || child.hasPedagogicalDocuments
-    )
+    return data.filter((child) => child.upcomingPlacementType !== null)
   }, [data])
 }
 
