@@ -666,6 +666,8 @@ fun addUnderOneYearOldDiet(
                 UNDER_ONE_YEAR_OLD_DIET,
             )
         )
+    // if the child's special diet choices already contain the free text field
+    // we append to it, otherwise we will create a new free text field
     val textField =
         nekkuSpecialDietChoices.find { it.fieldId == textFieldsPerSpecialDiet[it.dietId] }
     return if (textField == null) {
