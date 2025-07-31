@@ -86,8 +86,16 @@ class PersonalDataControllerCitizen(
                     throw BadRequest(validationErrors.joinToString(", "))
 
                 tx.updatePersonalDetails(user.id, body)
-                if (tx.hasWeakCredentials(user.id)) {
+                val hasWeakCredentials = tx.hasWeakCredentials(user.id)
+                if (hasWeakCredentials) {
                     sendEmailVerificationCode(tx, clock, user)
+                }
+                if (body.email != person.email && person.email != null) {
+                    asyncJobRunner.plan(
+                        tx,
+                        listOf(AsyncJob.SendEmailChangedEmail(user.id, person.email)),
+                        runAt = clock.now(),
+                    )
                 }
             }
         }
@@ -183,12 +191,20 @@ class PersonalDataControllerCitizen(
                     throw BadRequest("Invalid username")
                 }
                 try {
-                    tx.updateWeakLoginCredentials(
-                        clock.now(),
-                        user.id,
-                        body.username?.lowercase(),
-                        password,
-                    )
+                    val updateResult =
+                        tx.updateWeakLoginCredentials(
+                            clock.now(),
+                            user.id,
+                            body.username?.lowercase(),
+                            password,
+                        )
+                    if (updateResult.passwordChanged) {
+                        asyncJobRunner.plan(
+                            tx,
+                            sequenceOf(AsyncJob.SendPasswordChangedEmail(user.id)),
+                            runAt = clock.now(),
+                        )
+                    }
                 } catch (e: Exception) {
                     throw mapPSQLException(e)
                 }

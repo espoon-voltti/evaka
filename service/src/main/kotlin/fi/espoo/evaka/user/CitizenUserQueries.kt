@@ -63,26 +63,40 @@ WHERE id = ${bind(id)}
         }
         .updateExactlyOne()
 
+data class UpdateWeakLoginCredentialsResult(
+    val usernameChanged: Boolean,
+    val passwordChanged: Boolean,
+)
+
 fun Database.Transaction.updateWeakLoginCredentials(
     now: HelsinkiDateTime,
     id: PersonId,
     username: String?, // null = don't update
     password: EncodedPassword?, // null = don't update
-) =
+): UpdateWeakLoginCredentialsResult =
     createUpdate {
             sql(
                 """
+WITH old AS (
+    SELECT username AS old_username, password AS old_password
+    FROM citizen_user
+    WHERE id = ${bind(id)}
+)
 UPDATE citizen_user
 SET
     username = coalesce(${bind(username)}, username),
     username_updated_at = coalesce(${bind(now.takeIf { username != null })}, username_updated_at),
     password = coalesce(${bindJson(password)}, password),
     password_updated_at = coalesce(${bind(now.takeIf { password != null })}, password_updated_at)
+FROM old
 WHERE id = ${bind(id)}
+RETURNING (old_username IS NOT NULL AND old_username != username) AS username_changed,
+          (old_password IS NOT NULL AND old_password != password) AS password_changed
 """
             )
         }
-        .updateExactlyOne()
+        .executeAndReturnGeneratedKeys()
+        .exactlyOne()
 
 fun Database.Transaction.hasWeakCredentials(person: PersonId): Boolean =
     createQuery {

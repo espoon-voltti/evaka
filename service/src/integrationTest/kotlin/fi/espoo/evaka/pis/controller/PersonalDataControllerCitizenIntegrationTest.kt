@@ -5,20 +5,27 @@
 package fi.espoo.evaka.pis.controller
 
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.pis.EmailMessageType
+import fi.espoo.evaka.pis.PersonalDataUpdate
 import fi.espoo.evaka.pis.controllers.PersonalDataControllerCitizen
+import fi.espoo.evaka.shared.async.AsyncJob
+import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
+import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.testAdult_1
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 
 class PersonalDataControllerCitizenIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
-    @Autowired lateinit var personalDataController: PersonalDataControllerCitizen
+    @Autowired private lateinit var personalDataController: PersonalDataControllerCitizen
+    @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
     @Test
     fun `all notifications are enabled by default`() {
@@ -64,5 +71,30 @@ class PersonalDataControllerCitizenIntegrationTest : FullApplicationTest(resetDb
             ),
             settings,
         )
+    }
+
+    @Test
+    fun `email is sent to old address after updating email`() {
+        val oldEmail = "vanha@example.com"
+        val newEmail = "uusi@example.com"
+        val person = DevPerson(email = oldEmail)
+        db.transaction { tx -> tx.insert(person, DevPersonType.ADULT) }
+
+        personalDataController.updatePersonalData(
+            dbInstance(),
+            AuthenticatedUser.Citizen(person.id, CitizenAuthLevel.STRONG),
+            RealEvakaClock(),
+            PersonalDataUpdate(person.firstName, "123456", person.backupPhone, newEmail),
+        )
+
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
+        assertEquals(1, MockEmailClient.emails.size)
+        val email =
+            MockEmailClient.emails.singleOrNull {
+                it.toAddress == oldEmail &&
+                    it.content.subject.startsWith("eVaka-sähköpostiosoitteesi on vaihdettu") &&
+                    it.content.text.contains(newEmail)
+            }
+        assertNotNull(email, "Email should be sent to old address after email update")
     }
 }

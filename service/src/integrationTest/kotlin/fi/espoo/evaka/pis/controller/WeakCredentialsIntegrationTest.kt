@@ -6,9 +6,12 @@ package fi.espoo.evaka.pis.controller
 
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.Sensitive
+import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.pis.SystemController
 import fi.espoo.evaka.pis.controllers.PersonalDataControllerCitizen
 import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.async.AsyncJob
+import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.*
 import fi.espoo.evaka.shared.dev.DevCitizenUser
 import fi.espoo.evaka.shared.dev.DevPerson
@@ -16,7 +19,9 @@ import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.MockEvakaClock
+import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
+import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -26,6 +31,7 @@ class WeakCredentialsIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
     @Autowired private lateinit var controller: PersonalDataControllerCitizen
     @Autowired private lateinit var systemController: SystemController
     @Autowired private lateinit var passwordService: PasswordService
+    @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
     private val clock = MockEvakaClock(2024, 1, 1, 12, 0)
 
@@ -43,6 +49,9 @@ class WeakCredentialsIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
         val password = Sensitive("test123123")
         updateWeakLoginCredentials(username = email, password = password)
 
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
+        assertEquals(0, MockEmailClient.emails.size)
+
         val identity = citizenWeakLogin(username = email, password = password)
         assertEquals(person.id, identity.id)
     }
@@ -59,6 +68,9 @@ class WeakCredentialsIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
 
         updateWeakLoginCredentials(username = newEmail, password = null)
 
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
+        assertEquals(0, MockEmailClient.emails.size)
+
         val identity = citizenWeakLogin(username = newEmail, password = password)
         assertEquals(person.id, identity.id)
     }
@@ -74,6 +86,9 @@ class WeakCredentialsIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
         MockPersonDetailsService.addPersons(person)
 
         updateWeakLoginCredentials(username = newEmail, password = null)
+
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
+        assertEquals(0, MockEmailClient.emails.size)
 
         // In a real environment apigw converts the username to lowercase when logging in.
         // This conversion must be in the apigw so the login rate limit is applied correctly to the
@@ -97,6 +112,13 @@ class WeakCredentialsIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
         val newPassword = Sensitive("test256256")
         updateWeakLoginCredentials(username = null, password = newPassword)
 
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
+        assertEquals(1, MockEmailClient.emails.size)
+        assertContains(
+            MockEmailClient.emails.first().content.subject,
+            "eVaka-salasanasi on vaihdettu",
+        )
+
         val identity = citizenWeakLogin(username = email, password = newPassword)
         assertEquals(person.id, identity.id)
     }
@@ -113,6 +135,9 @@ class WeakCredentialsIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
                 updateWeakLoginCredentials(username = email, password = password)
             }
         assertEquals("PASSWORD_FORMAT", error.errorCode)
+
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
+        assertEquals(0, MockEmailClient.emails.size)
     }
 
     @Test
@@ -133,6 +158,9 @@ class WeakCredentialsIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
                 updateWeakLoginCredentials(username = email, password = password)
             }
         assertEquals("PASSWORD_UNACCEPTABLE", error.errorCode)
+
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
+        assertEquals(0, MockEmailClient.emails.size)
     }
 
     private fun updateWeakLoginCredentials(username: String?, password: Sensitive<String>?) =

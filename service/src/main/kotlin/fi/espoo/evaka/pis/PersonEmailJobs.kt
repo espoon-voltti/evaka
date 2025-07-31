@@ -18,7 +18,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 
 @Service
-class EmailVerificationJobs(
+class PersonEmailJobs(
     private val emailClient: EmailClient,
     private val emailMessageProvider: IEmailMessageProvider,
     private val emailEnv: EmailEnv,
@@ -26,6 +26,8 @@ class EmailVerificationJobs(
 ) {
     init {
         asyncJobRunner.registerHandler(::sendConfirmationCodeEmail)
+        asyncJobRunner.registerHandler(::sendPasswordChangedEmail)
+        asyncJobRunner.registerHandler(::sendEmailChangedEmail)
     }
 
     private val logger = KotlinLogging.logger {}
@@ -65,5 +67,36 @@ AND expires_at > ${bind(clock.now())}
         } catch (e: Exception) {
             logger.error(e) { "Error marking email verification sent" }
         }
+    }
+
+    fun sendPasswordChangedEmail(
+        dbc: Database.Connection,
+        clock: EvakaClock,
+        job: AsyncJob.SendPasswordChangedEmail,
+    ) {
+        Email.create(
+                dbc,
+                job.personId,
+                EmailMessageType.TRANSACTIONAL,
+                fromAddress = emailEnv.sender(Language.fi),
+                content = emailMessageProvider.passwordChanged(),
+                traceId = "${clock.today()}:${job.personId}",
+            )
+            ?.also { emailClient.send(it) }
+    }
+
+    fun sendEmailChangedEmail(
+        dbc: Database.Connection,
+        clock: EvakaClock,
+        job: AsyncJob.SendEmailChangedEmail,
+    ) {
+        val (email, _) = dbc.read { it.getPersonEmails(job.personId) }
+        Email.createForAddress(
+                toAddress = job.oldEmail,
+                fromAddress = emailEnv.sender(Language.fi),
+                emailMessageProvider.emailChanged(email ?: ""),
+                "${clock.today()}:${job.oldEmail}",
+            )
+            ?.also { emailClient.send(it) }
     }
 }
