@@ -109,16 +109,9 @@ fun insertNekkuSpecialDietChoice(
     }
 }
 
-fun getNekkuWeeklyJobs(db: Database.Connection) =
+fun getNekkuJobs(db: Database.Connection) =
     db.read { tx ->
         tx.createQuery { sql("SELECT payload FROM async_job WHERE type = 'SendNekkuOrder'") }
-            .map { jsonColumn<AsyncJob.SendNekkuOrder>("payload") }
-            .toList()
-    }
-
-fun getNekkuDailyJobs(db: Database.Connection) =
-    db.read { tx ->
-        tx.createQuery { sql("SELECT payload FROM async_job WHERE type = 'SendNekkuDailyOrder'") }
             .map { jsonColumn<AsyncJob.SendNekkuOrder>("payload") }
             .toList()
     }
