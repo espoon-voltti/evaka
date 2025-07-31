@@ -861,13 +861,13 @@ $unsubscribeEn
                 "eVaka-salasanasi on vaihdettu / Ditt eVaka lösenord har ändrats / Your eVaka password has been changed",
             html =
                 """<p>eVaka-salasanasi on vaihdettu.</p>
-<p>Jos vaihdoit salasanasi itse, voit jättää tämän viestin huomiotta. Muussa tapauksessa kirjaudu eVakaan vahvalla tunnistautumisella ja vaihda salasanasi.</p>
+<p>Jos vaihdoit salasanasi itse, voit jättää tämän viestin huomiotta. Muussa tapauksessa kirjaudu eVakaan vahvalla tunnistautumisella (Kirjaudu Suomi.fi:ssä) ja vaihda salasanasi.</p>
 <hr>
 <p>Din eVaka lösenord har ändrats.</p>
-<p>Om du har ändrat ditt lösenord själv kan du ignorera det här meddelandet. Om inte, logga in i eVaka med stark identifiering och ändra ditt lösenord.</p>
+<p>Om du har ändrat ditt lösenord själv kan du ignorera det här meddelandet. Om inte, logga in i eVaka med stark identifiering (Logga in via Suomi.fi) och ändra ditt lösenord.</p>
 <hr>
 <p>Your eVaka password has been changed.</p>
-<p>If you changed your password yourself, you can ignore this message. If not, log in to eVaka with strong authentication and change your password.</p>
+<p>If you changed your password yourself, you can ignore this message. If not, log in to eVaka with strong authentication (Sign in using Suomi.fi) and change your password.</p>
 """,
         )
 
@@ -877,13 +877,13 @@ $unsubscribeEn
                 "eVaka-sähköpostiosoitteesi on vaihdettu / Din eVaka e-postadress har ändrats / Your eVaka email address has been changed",
             html =
                 """<p>eVaka-sähköpostiosoitteesi on vaihdettu. Uusi osoitteesi on $newEmail. Et saa enää eVaka-sähköposteja vanhaan osoitteeseesi.</p>
-<p>Jos muutit sähköpostiosoitteesi itse, voit jättää tämän viestin huomiotta. Muussa tapauksessa kirjaudu eVakaan vahvalla tunnistautumisella ja korjaa sähköpostiosoitteesi.</p>
+<p>Jos muutit sähköpostiosoitteesi itse, voit jättää tämän viestin huomiotta. Muussa tapauksessa kirjaudu eVakaan vahvalla tunnistautumisella (Kirjaudu Suomi.fi:ssä) ja korjaa sähköpostiosoitteesi.</p>
 <hr>
 <p>Din eVaka e-postadress har ändrats. Din nya adress är $newEmail. Du får inte längre e-post från eVaka till din gamla adress.</p>
-<p>Om du har ändrat din e-postadress själv kan du ignorera det här meddelandet. Om inte, logga in i eVaka med stark identifiering och korrigera din e-postadress.</p>
+<p>Om du har ändrat din e-postadress själv kan du ignorera det här meddelandet. Om inte, logga in i eVaka med stark identifiering (Logga in via Suomi.fi) och korrigera din e-postadress.</p>
 <hr>
 <p>Your eVaka email address has been changed. Your new address is $newEmail. You will no longer receive eVaka emails to your old address.</p>
-<p>If you changed your email address yourself, you can ignore this message. If not, log in to eVaka with strong authentication and correct your email address.</p>
+<p>If you changed your email address yourself, you can ignore this message. If not, log in to eVaka with strong authentication (Sign in using Suomi.fi) and correct your email address.</p>
 """,
         )
 }
