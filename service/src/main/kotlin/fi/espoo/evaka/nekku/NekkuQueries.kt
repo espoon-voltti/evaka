@@ -641,7 +641,7 @@ data class NekkuDaycareCustomerMapping(
     val customerType: String,
 )
 
-fun Database.Read.getNekkuDaycareGroupId(range: FiniteDateRange): List<GroupId> =
+fun Database.Read.getNekkuOpenDaycareGroupIds(range: FiniteDateRange): List<GroupId> =
     createQuery {
             sql(
                 """
@@ -865,7 +865,7 @@ fun Database.Read.getDaycareGroupIds(daycareId: DaycareId): List<GroupId> =
     createQuery { sql("SELECT id FROM daycare_group WHERE daycare_id = ${bind(daycareId)}") }
         .toList()
 
-fun Database.Read.getDaycareOperationInfo(groupId: GroupId): NekkuDaycareOperationInfo? =
+fun Database.Read.getGroupOperationDays(groupId: GroupId): NekkuDaycareOperationInfo? =
     createQuery {
             sql(
                 """
