@@ -64,7 +64,6 @@ class NekkuService(
         asyncJobRunner.registerHandler(::syncNekkuSpecialDiets)
         asyncJobRunner.registerHandler(::syncNekkuProducts)
         asyncJobRunner.registerHandler(::sendNekkuOrder)
-        asyncJobRunner.registerHandler(::sendNekkuDailyOrder)
         asyncJobRunner.registerHandler(::sendNekkuCustomerNumberNullificationWarningEmail)
         asyncJobRunner.registerHandler(::sendNekkuSpecialDietRemovalWarningEmail)
     }
@@ -157,21 +156,6 @@ class NekkuService(
     fun sendNekkuOrder(dbc: Database.Connection, clock: EvakaClock, job: AsyncJob.SendNekkuOrder) {
         if (client == null) error("Cannot send Nekku order: NekkuEnv is not configured")
 
-        createAndSendNekkuOrder(
-            client,
-            dbc,
-            groupId = job.groupId,
-            date = job.date,
-            featureConfig.nekkuMealDeductionFactor,
-        )
-    }
-
-    fun sendNekkuDailyOrder(
-        dbc: Database.Connection,
-        clock: EvakaClock,
-        job: AsyncJob.SendNekkuDailyOrder,
-    ) {
-        if (client == null) error("Cannot send Nekku order: NekkuEnv is not configured")
         createAndSendNekkuOrder(
             client,
             dbc,
@@ -283,7 +267,7 @@ fun planNekkuDailyOrderJobs(
                     groupOperationDays != null &&
                         isGroupOpenOnDate(now.toLocalDate(), groupOperationDays)
                 ) {
-                    AsyncJob.SendNekkuDailyOrder(
+                    AsyncJob.SendNekkuOrder(
                         groupId = nekkuGroupId,
                         date = daycareOpenNextTime(now.toLocalDate(), groupOperationDays),
                     )
@@ -326,9 +310,7 @@ fun planNekkuManualOrderJob(
 
     asyncJobRunner.plan(
         tx,
-        if (haveDaycareTimesBeenLockedForDate(today, date))
-            listOf(AsyncJob.SendNekkuDailyOrder(groupId, date))
-        else listOf(AsyncJob.SendNekkuOrder(groupId, date)),
+        listOf(AsyncJob.SendNekkuOrder(groupId, date)),
         runAt = now,
         retryInterval = Duration.ofHours(1),
         retryCount = 3,
