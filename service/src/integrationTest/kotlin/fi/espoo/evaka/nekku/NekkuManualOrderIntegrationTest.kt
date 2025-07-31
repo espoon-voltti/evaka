@@ -376,8 +376,7 @@ class NekkuManualOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             planNekkuManualOrderJob(tx, asyncJobRunner, now, group.id, LocalDate.of(2025, 5, 20))
         }
 
-        assertEquals(1, getNekkuWeeklyJobs(db).size)
-        assertEquals(0, getNekkuDailyJobs(db).size)
+        assertEquals(1, getNekkuJobs(db).size)
     }
 
     @Test
@@ -434,7 +433,6 @@ class NekkuManualOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             planNekkuManualOrderJob(tx, asyncJobRunner, now, group.id, LocalDate.of(2025, 5, 14))
         }
 
-        assertEquals(0, getNekkuWeeklyJobs(db).size)
-        assertEquals(1, getNekkuDailyJobs(db).size)
+        assertEquals(1, getNekkuJobs(db).size)
     }
 }
