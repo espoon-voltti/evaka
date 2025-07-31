@@ -126,6 +126,7 @@ export interface DatePickerLowLevelProps {
   id?: string
   required?: boolean
   initialMonth?: LocalDate
+  isInvalidDate?: (localDate: LocalDate) => string | null
   minDate?: LocalDate
   maxDate?: LocalDate
   useBrowserPicker?: boolean
@@ -142,6 +143,7 @@ export default React.memo(function DatePickerLowLevel({
   id,
   required,
   initialMonth,
+  isInvalidDate,
   minDate,
   maxDate,
   useBrowserPicker = nativeDatePickerEnabled,
@@ -192,6 +194,18 @@ export default React.memo(function DatePickerLowLevel({
       onBlur?.(e)
     },
     [onBlur, onChange]
+  )
+
+  const isDateDisabled = useCallback(
+    (localDate: LocalDate) => {
+      return (
+        (isInvalidDate && isInvalidDate(localDate) !== null) ||
+        (minDate && minDate.isAfter(localDate)) ||
+        (maxDate && maxDate.isBefore(localDate)) ||
+        false
+      )
+    },
+    [isInvalidDate, maxDate, minDate]
   )
 
   useFloatingPositioning({
@@ -264,8 +278,7 @@ export default React.memo(function DatePickerLowLevel({
                     inputValue={value}
                     initialMonth={initialMonth}
                     onSelect={handleDateSelect}
-                    minDate={minDate}
-                    maxDate={maxDate}
+                    isDateDisabled={isDateDisabled}
                   />
                 </DayPickerDiv>
               </DayPickerPositioner>

@@ -114,6 +114,31 @@ describe('DatePicker', () => {
       expect(onChange.mock.calls.length).toEqual(0)
       onChange.mockClear()
     })
+
+    it('does NOT call onChange if value is invalid', async () => {
+      const date = LocalDate.of(2023, 9, 13)
+      const onChange = jest.fn()
+
+      render(
+        jsx(
+          <DatePicker
+            date={null}
+            onChange={onChange}
+            locale="fi"
+            isInvalidDate={(localDate) =>
+              localDate.isEqual(date) ? null : 'Invalid'
+            }
+          />
+        )
+      )
+
+      const input = get()
+      await userEvent.type(input, date.subDays(1).format())
+      await userEvent.clear(input)
+      await userEvent.type(input, date.addDays(1).format())
+      expect(onChange.mock.calls.length).toEqual(0)
+      onChange.mockClear()
+    })
   })
   describe('native datepicker (android)', () => {
     const jsx = (child: React.JSX.Element) => (
@@ -188,6 +213,31 @@ describe('DatePicker', () => {
             locale="fi"
             minDate={date}
             maxDate={date}
+          />
+        )
+      )
+
+      const input = get()
+      change(input, date.subDays(1).formatIso())
+      change(input, '')
+      change(input, date.addDays(1).formatIso())
+      expect(onChange.mock.calls.length).toEqual(0)
+      onChange.mockClear()
+    })
+
+    it('does NOT call onChange if value is invalid', () => {
+      const date = LocalDate.of(2023, 9, 13)
+      const onChange = jest.fn()
+
+      render(
+        jsx(
+          <DatePicker
+            date={null}
+            onChange={onChange}
+            locale="fi"
+            isInvalidDate={(localDate) =>
+              localDate.isEqual(date) ? null : 'Invalid'
+            }
           />
         )
       )

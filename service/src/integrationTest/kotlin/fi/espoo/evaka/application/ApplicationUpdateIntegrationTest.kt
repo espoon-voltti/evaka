@@ -7,19 +7,28 @@ package fi.espoo.evaka.application
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.application.ApplicationStatus.CREATED
 import fi.espoo.evaka.application.ApplicationStatus.SENT
+import fi.espoo.evaka.application.persistence.club.ClubFormV0
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.data.DateSet
+import fi.espoo.evaka.shared.dev.DevClubTerm
 import fi.espoo.evaka.shared.dev.DevPersonType
+import fi.espoo.evaka.shared.dev.DevPreschoolTerm
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
+import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import fi.espoo.evaka.shared.domain.RealEvakaClock
+import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.test.getValidDaycareApplication
+import fi.espoo.evaka.test.getValidPreschoolApplication
+import fi.espoo.evaka.test.validClubApplication
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
+import fi.espoo.evaka.testClub
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
 import java.time.LocalDate
@@ -28,13 +37,14 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 
 class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired lateinit var applicationControllerV2: ApplicationControllerV2
     @Autowired lateinit var applicationControllerCitizen: ApplicationControllerCitizen
 
-    private val clock = RealEvakaClock()
+    private val clock = MockEvakaClock(2021, 1, 8, 10, 10, 10)
     private val citizen = AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG)
     private val serviceWorker =
         AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
@@ -45,6 +55,7 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             tx.insert(testDecisionMaker_1)
             tx.insert(testArea)
             tx.insert(testDaycare)
+            tx.insert(testClub)
             tx.insert(testAdult_1, DevPersonType.ADULT)
             tx.insert(testChild_1, DevPersonType.CHILD)
         }
@@ -442,6 +453,199 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 .filter { it.type == ApplicationAttachmentType.EXTENDED_CARE }
                 .size,
         )
+    }
+
+    @Test
+    fun `preschool application update throws bad request when preferred start date is in term break`() {
+        val application =
+            db.transaction { tx ->
+                tx.insert(
+                    DevPreschoolTerm(
+                        finnishPreschool =
+                            FiniteDateRange(LocalDate.of(2021, 8, 11), LocalDate.of(2022, 6, 3)),
+                        swedishPreschool =
+                            FiniteDateRange(LocalDate.of(2021, 8, 11), LocalDate.of(2022, 6, 3)),
+                        extendedTerm =
+                            FiniteDateRange(LocalDate.of(2021, 8, 1), LocalDate.of(2022, 6, 3)),
+                        applicationPeriod =
+                            FiniteDateRange(LocalDate.of(2021, 1, 8), LocalDate.of(2021, 1, 20)),
+                        termBreaks =
+                            DateSet.of(
+                                FiniteDateRange(
+                                    LocalDate.of(2021, 10, 18),
+                                    LocalDate.of(2021, 10, 24),
+                                )
+                            ),
+                    )
+                )
+                val sentDate = LocalDate.of(2021, 1, 8)
+                val applicationId =
+                    tx.insertTestApplication(
+                        status = CREATED,
+                        sentDate = sentDate,
+                        dueDate = null,
+                        childId = testChild_1.id,
+                        guardianId = testAdult_1.id,
+                        type = ApplicationType.PRESCHOOL,
+                        document = DaycareFormV0.fromApplication2(getValidPreschoolApplication()),
+                    )
+                tx.fetchApplicationDetails(applicationId)!!
+            }
+
+        val updatedApplication =
+            application.copy(
+                form =
+                    application.form.copy(
+                        preferences =
+                            application.form.preferences.copy(
+                                preferredStartDate = LocalDate.of(2021, 10, 18)
+                            )
+                    )
+            )
+        val exception =
+            assertThrows<BadRequest> {
+                applicationControllerCitizen.updateApplication(
+                    dbInstance(),
+                    citizen,
+                    clock,
+                    application.id,
+                    CitizenApplicationUpdate(
+                        form = ApplicationFormUpdate.from(updatedApplication.form),
+                        allowOtherGuardianAccess = updatedApplication.allowOtherGuardianAccess,
+                    ),
+                )
+            }
+        assertEquals("Cannot apply to preschool on 2021-10-18 (term break)", exception.message)
+    }
+
+    @Test
+    fun `preschool application update throws bad request when connected preferred start date is in term break`() {
+        val application =
+            db.transaction { tx ->
+                tx.insert(
+                    DevPreschoolTerm(
+                        finnishPreschool =
+                            FiniteDateRange(LocalDate.of(2021, 8, 11), LocalDate.of(2022, 6, 3)),
+                        swedishPreschool =
+                            FiniteDateRange(LocalDate.of(2021, 8, 11), LocalDate.of(2022, 6, 3)),
+                        extendedTerm =
+                            FiniteDateRange(LocalDate.of(2021, 8, 1), LocalDate.of(2022, 6, 3)),
+                        applicationPeriod =
+                            FiniteDateRange(LocalDate.of(2021, 1, 8), LocalDate.of(2021, 1, 20)),
+                        termBreaks =
+                            DateSet.of(
+                                FiniteDateRange(
+                                    LocalDate.of(2021, 10, 18),
+                                    LocalDate.of(2021, 10, 24),
+                                )
+                            ),
+                    )
+                )
+                val sentDate = LocalDate.of(2021, 1, 8)
+                val applicationId =
+                    tx.insertTestApplication(
+                        status = CREATED,
+                        sentDate = sentDate,
+                        dueDate = null,
+                        childId = testChild_1.id,
+                        guardianId = testAdult_1.id,
+                        type = ApplicationType.PRESCHOOL,
+                        document = DaycareFormV0.fromApplication2(getValidPreschoolApplication()),
+                    )
+                tx.fetchApplicationDetails(applicationId)!!
+            }
+
+        val updatedApplication =
+            application.copy(
+                form =
+                    application.form.copy(
+                        preferences =
+                            application.form.preferences.copy(
+                                preferredStartDate = LocalDate.of(2021, 8, 11),
+                                connectedDaycarePreferredStartDate = LocalDate.of(2021, 10, 18),
+                            )
+                    )
+            )
+        val exception =
+            assertThrows<BadRequest> {
+                applicationControllerCitizen.updateApplication(
+                    dbInstance(),
+                    citizen,
+                    clock,
+                    application.id,
+                    CitizenApplicationUpdate(
+                        form = ApplicationFormUpdate.from(updatedApplication.form),
+                        allowOtherGuardianAccess = updatedApplication.allowOtherGuardianAccess,
+                    ),
+                )
+            }
+        assertEquals(
+            "Cannot apply to connected preschool on 2021-10-18 (term break)",
+            exception.message,
+        )
+    }
+
+    @Test
+    fun `club application update throws bad request when preferred start date is in term break`() {
+        val application =
+            db.transaction { tx ->
+                tx.insert(
+                    DevClubTerm(
+                        term = FiniteDateRange(LocalDate.of(2021, 8, 11), LocalDate.of(2022, 6, 3)),
+                        applicationPeriod =
+                            FiniteDateRange(LocalDate.of(2021, 1, 8), LocalDate.of(2021, 1, 20)),
+                        termBreaks =
+                            DateSet.of(
+                                FiniteDateRange(
+                                    LocalDate.of(2021, 10, 18),
+                                    LocalDate.of(2021, 10, 24),
+                                )
+                            ),
+                    )
+                )
+                val sentDate = LocalDate.of(2021, 1, 8)
+                val applicationId =
+                    tx.insertTestApplication(
+                        status = CREATED,
+                        sentDate = sentDate,
+                        dueDate = null,
+                        childId = testChild_1.id,
+                        guardianId = testAdult_1.id,
+                        type = ApplicationType.CLUB,
+                        document =
+                            ClubFormV0.fromForm2(
+                                validClubApplication(testClub, LocalDate.of(2021, 8, 11)).form,
+                                false,
+                                false,
+                            ),
+                    )
+                tx.fetchApplicationDetails(applicationId)!!
+            }
+
+        val updatedApplication =
+            application.copy(
+                form =
+                    application.form.copy(
+                        preferences =
+                            application.form.preferences.copy(
+                                preferredStartDate = LocalDate.of(2021, 10, 18)
+                            )
+                    )
+            )
+        val exception =
+            assertThrows<BadRequest> {
+                applicationControllerCitizen.updateApplication(
+                    dbInstance(),
+                    citizen,
+                    clock,
+                    application.id,
+                    CitizenApplicationUpdate(
+                        form = ApplicationFormUpdate.from(updatedApplication.form),
+                        allowOtherGuardianAccess = updatedApplication.allowOtherGuardianAccess,
+                    ),
+                )
+            }
+        assertEquals("Cannot apply to club on 2021-10-18 (term break)", exception.message)
     }
 
     private fun insertApplication(

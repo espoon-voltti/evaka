@@ -2002,7 +2002,7 @@ export const preschoolTerm2020 = Fixture.preschoolTerm({
   ),
   applicationPeriod: new FiniteDateRange(
     LocalDate.of(2020, 1, 8),
-    LocalDate.of(2020, 1, 20)
+    LocalDate.of(2021, 6, 4)
   ),
   termBreaks: []
 })
@@ -2022,9 +2022,11 @@ export const preschoolTerm2021 = Fixture.preschoolTerm({
   ),
   applicationPeriod: new FiniteDateRange(
     LocalDate.of(2021, 1, 8),
-    LocalDate.of(2021, 1, 20)
+    LocalDate.of(2022, 6, 3)
   ),
-  termBreaks: []
+  termBreaks: [
+    new FiniteDateRange(LocalDate.of(2021, 10, 18), LocalDate.of(2021, 10, 24))
+  ]
 })
 
 export const preschoolTerm2022 = Fixture.preschoolTerm({
@@ -2042,7 +2044,7 @@ export const preschoolTerm2022 = Fixture.preschoolTerm({
   ),
   applicationPeriod: new FiniteDateRange(
     LocalDate.of(2022, 1, 10),
-    LocalDate.of(2022, 1, 21)
+    LocalDate.of(2023, 6, 2)
   ),
   termBreaks: []
 })
@@ -2062,7 +2064,7 @@ export const preschoolTerm2023 = Fixture.preschoolTerm({
   ),
   applicationPeriod: new FiniteDateRange(
     LocalDate.of(2023, 1, 8),
-    LocalDate.of(2023, 1, 20)
+    LocalDate.of(2024, 6, 6)
   ),
   termBreaks: [
     new FiniteDateRange(LocalDate.of(2023, 10, 16), LocalDate.of(2023, 10, 20)),
@@ -2078,7 +2080,7 @@ export const clubTerm2020 = Fixture.clubTerm({
   ),
   applicationPeriod: new FiniteDateRange(
     LocalDate.of(2020, 1, 8),
-    LocalDate.of(2020, 1, 20)
+    LocalDate.of(2021, 6, 4)
   ),
   termBreaks: []
 })
@@ -2090,9 +2092,11 @@ export const clubTerm2021 = Fixture.clubTerm({
   ),
   applicationPeriod: new FiniteDateRange(
     LocalDate.of(2021, 1, 8),
-    LocalDate.of(2021, 1, 20)
+    LocalDate.of(2022, 6, 3)
   ),
-  termBreaks: []
+  termBreaks: [
+    new FiniteDateRange(LocalDate.of(2021, 10, 18), LocalDate.of(2021, 10, 24))
+  ]
 })
 
 export const clubTerm2022 = Fixture.clubTerm({
@@ -2102,7 +2106,7 @@ export const clubTerm2022 = Fixture.clubTerm({
   ),
   applicationPeriod: new FiniteDateRange(
     LocalDate.of(2022, 1, 8),
-    LocalDate.of(2022, 1, 20)
+    LocalDate.of(2023, 6, 3)
   ),
   termBreaks: []
 })
@@ -2114,7 +2118,7 @@ export const clubTerm2023 = Fixture.clubTerm({
   ),
   applicationPeriod: new FiniteDateRange(
     LocalDate.of(2023, 1, 8),
-    LocalDate.of(2023, 1, 20)
+    LocalDate.of(2024, 6, 3)
   ),
   termBreaks: [
     new FiniteDateRange(LocalDate.of(2023, 10, 16), LocalDate.of(2023, 10, 20)),

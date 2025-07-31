@@ -4,7 +4,7 @@
 
 import type { Locale, Month, Day } from 'date-fns'
 import { fi, sv, enGB } from 'date-fns/locale'
-import React, { useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import type { OnSelectHandler } from 'react-day-picker'
 import { DayPicker } from 'react-day-picker'
 
@@ -16,8 +16,7 @@ interface Props {
   onSelect: OnSelectHandler<Date | undefined>
   inputValue: string
   locale: 'fi' | 'sv' | 'en'
-  minDate?: LocalDate
-  maxDate?: LocalDate
+  isDateDisabled: (localDate: LocalDate) => boolean
   initialMonth?: LocalDate
 }
 
@@ -25,8 +24,7 @@ export default React.memo(function DatePickerDay({
   onSelect,
   inputValue,
   locale,
-  minDate,
-  maxDate,
+  isDateDisabled,
   initialMonth
 }: Props) {
   const date = useMemo(
@@ -41,6 +39,10 @@ export default React.memo(function DatePickerDay({
       date?.toSystemTzDate() ??
       LocalDate.todayInHelsinkiTz().toSystemTzDate()
   )
+  const disabled = useCallback(
+    (date: Date) => isDateDisabled(LocalDate.fromSystemTzDate(date)),
+    [isDateDisabled]
+  )
 
   return (
     <DayPicker
@@ -54,14 +56,7 @@ export default React.memo(function DatePickerDay({
       selected={date?.toSystemTzDate()}
       month={month}
       onMonthChange={setMonth}
-      disabled={(date: Date) => {
-        const localDate = LocalDate.fromSystemTzDate(date)
-        return (
-          (minDate && minDate.isAfter(localDate)) ||
-          (maxDate && maxDate.isBefore(localDate)) ||
-          false
-        )
-      }}
+      disabled={disabled}
     />
   )
 })

@@ -47,6 +47,7 @@ type ServiceTimeSubSectionProps = Omit<ServiceNeedSectionProps, 'type'>
 const applicationType = 'PRESCHOOL'
 
 export default React.memo(function ServiceTimeSubSectionPreschool({
+  isInvalidDate,
   minDate,
   maxDate,
   formData,
@@ -157,6 +158,7 @@ export default React.memo(function ServiceTimeSubSectionPreschool({
                   t.validationErrors
                 )}
                 hideErrorsBeforeTouched={!verificationRequested}
+                isInvalidDate={isInvalidDate}
                 minDate={minDate}
                 maxDate={maxDate}
                 initialMonth={

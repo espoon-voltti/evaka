@@ -37,6 +37,7 @@ const DateRangePicker = React.memo(function DateRangePicker({
   end,
   onChange,
   onValidationResult,
+  isInvalidDate,
   minDate,
   maxDate,
   ...datePickerProps
@@ -55,19 +56,35 @@ const DateRangePicker = React.memo(function DateRangePicker({
   const validate = useCallback(
     (start: LocalDate | null, end: LocalDate | null): boolean => {
       let isValid = true
-      if (start && minDate && start.isBefore(minDate)) {
-        setInternalStartError({
-          text: i18n.datePicker.validationErrors.dateTooEarly,
-          status: 'warning'
-        })
-        isValid = false
+      if (start) {
+        if (minDate && start.isBefore(minDate)) {
+          setInternalStartError({
+            text: i18n.datePicker.validationErrors.dateTooEarly,
+            status: 'warning'
+          })
+          isValid = false
+        } else {
+          const validationError = isInvalidDate?.(start)
+          if (validationError) {
+            setInternalStartError({ text: validationError, status: 'warning' })
+            isValid = false
+          }
+        }
       }
-      if (end && maxDate && end.isAfter(maxDate)) {
-        setInternalEndError({
-          text: i18n.datePicker.validationErrors.dateTooEarly,
-          status: 'warning'
-        })
-        isValid = false
+      if (end) {
+        if (maxDate && end.isAfter(maxDate)) {
+          setInternalEndError({
+            text: i18n.datePicker.validationErrors.dateTooEarly,
+            status: 'warning'
+          })
+          isValid = false
+        } else {
+          const validationError = isInvalidDate?.(end)
+          if (validationError) {
+            setInternalEndError({ text: validationError, status: 'warning' })
+            isValid = false
+          }
+        }
       }
       if (start && end && isValid && start.isAfter(end)) {
         setInternalStartError({
@@ -90,6 +107,7 @@ const DateRangePicker = React.memo(function DateRangePicker({
     [
       i18n.datePicker.validationErrors.dateTooEarly,
       i18n.datePicker.validationErrors.dateTooLate,
+      isInvalidDate,
       minDate,
       maxDate
     ]
@@ -140,6 +158,7 @@ const DateRangePicker = React.memo(function DateRangePicker({
       onChange={handleChange}
       startInfo={internalStartError ?? datePickerProps.startInfo}
       endInfo={internalEndError ?? datePickerProps.endInfo}
+      isInvalidDate={isInvalidDate}
       minDate={minDate}
       maxDate={maxDate}
       {...datePickerProps}
@@ -160,7 +179,13 @@ const DateInputSpacer = styled.div`
 export interface DateRangePickerFProps
   extends Omit<
     DateRangePickerLowLevelProps,
-    'value' | 'onChange' | 'startInfo' | 'endInfo' | 'minDate' | 'maxDate'
+    | 'value'
+    | 'onChange'
+    | 'startInfo'
+    | 'endInfo'
+    | 'isInvalidDate'
+    | 'minDate'
+    | 'maxDate'
   > {
   bind: BoundForm<LocalDateRangeField>
   info?: InputInfo | undefined

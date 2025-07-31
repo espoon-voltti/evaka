@@ -76,7 +76,7 @@ export type ApplicationFormProps = {
   ) => void
   errors: ApplicationFormDataErrors
   verificationRequested: boolean
-  originalPreferredStartDate: LocalDate | null
+  isInvalidDate: ((localDate: LocalDate) => string | null) | undefined
   minDate: LocalDate
   maxDate: LocalDate
   terms?: Term[]
@@ -85,6 +85,7 @@ export type ApplicationFormProps = {
 export interface Term {
   term: FiniteDateRange
   extendedTerm: FiniteDateRange
+  termBreaks: FiniteDateRange[]
 }
 
 const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
@@ -117,16 +118,18 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
           })
           .map((term) => ({
             term: term.finnishPreschool,
-            extendedTerm: term.extendedTerm
+            extendedTerm: term.extendedTerm,
+            termBreaks: term.termBreaks
           }))
       case 'CLUB':
         return (clubTerms ?? [])
-          .filter(({ term }) =>
-            term.end.isEqualOrAfter(LocalDate.todayInHelsinkiTz())
+          .filter(({ applicationPeriod }) =>
+            applicationPeriod.includes(LocalDate.todayInHelsinkiTz())
           )
-          .map(({ term }) => ({
+          .map(({ term, termBreaks }) => ({
             term,
-            extendedTerm: term
+            extendedTerm: term,
+            termBreaks
           }))
       default:
         return undefined
@@ -171,6 +174,20 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
 
     return maxTermDate?.isBefore(maxPreferred) ? maxTermDate : maxPreferred
   }, [terms])
+  const isInvalidDate = useMemo(
+    () =>
+      terms !== undefined
+        ? (localDate: LocalDate) =>
+            terms.some(
+              ({ extendedTerm, termBreaks }) =>
+                extendedTerm.includes(localDate) &&
+                termBreaks.every((termBreak) => !termBreak.includes(localDate))
+            )
+              ? null
+              : t.validationErrors.unselectableDate
+        : undefined,
+    [t.validationErrors.unselectableDate, terms]
+  )
 
   const hasOtherGuardian = application.hasOtherGuardian
 
@@ -297,7 +314,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
             setFormData={setFormData}
             errors={errors}
             verificationRequested={verificationRequested}
-            originalPreferredStartDate={originalPreferredStartDate}
+            isInvalidDate={isInvalidDate}
             minDate={minDate}
             maxDate={maxDate}
           />
@@ -311,7 +328,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
             errors={errors}
             verificationRequested={verificationRequested}
             terms={terms}
-            originalPreferredStartDate={originalPreferredStartDate}
+            isInvalidDate={isInvalidDate}
             minDate={minDate}
             maxDate={maxDate}
           />
@@ -325,7 +342,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
             errors={errors}
             verificationRequested={verificationRequested}
             terms={terms}
-            originalPreferredStartDate={originalPreferredStartDate}
+            isInvalidDate={isInvalidDate}
             minDate={minDate}
             maxDate={maxDate}
           />

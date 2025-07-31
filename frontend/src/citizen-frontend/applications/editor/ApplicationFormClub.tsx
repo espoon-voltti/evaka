@@ -19,7 +19,7 @@ export default React.memo(function ApplicationFormClub({
   setFormData,
   errors,
   verificationRequested,
-  originalPreferredStartDate,
+  isInvalidDate,
   minDate,
   maxDate,
   terms
@@ -38,7 +38,7 @@ export default React.memo(function ApplicationFormClub({
 
       <ServiceNeedSection
         status={application.status}
-        originalPreferredStartDate={originalPreferredStartDate}
+        isInvalidDate={isInvalidDate}
         minDate={minDate}
         maxDate={maxDate}
         type={applicationType}

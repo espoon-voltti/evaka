@@ -224,6 +224,32 @@ describe('DateRangePicker', () => {
     onChange.mockClear()
   })
 
+  it('does NOT call onChange if dates are invalid', async () => {
+    const date = LocalDate.of(2023, 9, 1)
+    const onChange = jest.fn()
+
+    render(
+      <TestContextProvider translations={translations}>
+        <DateRangePicker
+          start={null}
+          end={null}
+          onChange={onChange}
+          isInvalidDate={(localDate) =>
+            localDate.isEqual(date) ? null : 'Invalid'
+          }
+          locale="fi"
+        />
+      </TestContextProvider>
+    )
+
+    const [start, end] = screen.getAllByRole('textbox')
+    await userEvent.type(start, date.subDays(1).format())
+    await userEvent.clear(start)
+    await userEvent.type(end, date.addDays(1).format())
+    expect(onChange.mock.calls).toEqual([])
+    onChange.mockClear()
+  })
+
   it('if start passes end, sets end to start', async () => {
     const dateBefore = LocalDate.of(2023, 9, 1)
     const dateAfter = dateBefore.addDays(5)

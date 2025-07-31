@@ -7,6 +7,7 @@ import LocalTime from 'lib-common/local-time'
 
 import {
   Fixture,
+  preschoolTerm2020,
   preschoolTerm2021,
   testAdult,
   testAdult2,
@@ -38,6 +39,7 @@ const mockedDate = LocalDate.of(2021, 1, 15)
 
 beforeEach(async () => {
   await resetServiceState()
+  await preschoolTerm2020.save()
   await preschoolTerm2021.save()
   await testCareArea.save()
   await testDaycare.save()
@@ -96,6 +98,44 @@ describe('Citizen preschool applications', () => {
 
     const application = await getApplication({ applicationId })
     fullPreschoolForm.validateResult(application, [testChild2])
+  })
+
+  test('Citizen cannot move preferred start date before a previously selected date', async () => {
+    await header.selectTab('applications')
+    const editorPage = await applicationsPage.createApplication(
+      testChild.id,
+      'PRESCHOOL'
+    )
+    const applicationId = editorPage.getNewApplicationId()
+    await editorPage.fillData({
+      ...minimalPreschoolForm.form,
+      serviceNeed: {
+        ...minimalPreschoolForm.form.serviceNeed,
+        preferredStartDate: '24.08.2021'
+      }
+    })
+    await editorPage.verifyAndSend({ hasOtherGuardian: true })
+
+    await applicationsPage.editApplication(applicationId)
+    await editorPage.setPreferredStartDate('23.08.2021')
+    await editorPage.assertPreferredStartDateInfo('Valitse myöhäisempi päivä')
+    await editorPage.setPreferredStartDate('01.02.2021')
+    await editorPage.assertPreferredStartDateInfo('Valitse myöhäisempi päivä')
+    await editorPage.setPreferredStartDate('24.08.2021')
+    await editorPage.assertPreferredStartDateInfo(undefined)
+    await editorPage.setPreferredStartDate('25.08.2021')
+    await editorPage.assertPreferredStartDateInfo(undefined)
+  })
+
+  test('preferred start date cannot be in term break', async () => {
+    await header.selectTab('applications')
+    const editorPage = await applicationsPage.createApplication(
+      testChild.id,
+      'PRESCHOOL'
+    )
+
+    await editorPage.setPreferredStartDate('18.10.2021')
+    await editorPage.assertPreferredStartDateInfo('Päivä ei ole sallittu')
   })
 
   test('If user has no email selected in settings the application assumes user has no email', async () => {
@@ -169,6 +209,12 @@ describe('Citizen preschool applications - connected daycare preferred start dat
       name: 'cannot be before preschool preferred start date when preschool preferred start date is in the middle of term',
       preferredStartDate: LocalDate.of(2021, 8, 12),
       connectedDaycarePreferredStartDate: LocalDate.of(2021, 8, 11),
+      isValid: false
+    },
+    {
+      name: 'cannot be in term break',
+      preferredStartDate: LocalDate.of(2021, 8, 11),
+      connectedDaycarePreferredStartDate: LocalDate.of(2021, 10, 18),
       isValid: false
     }
   ]

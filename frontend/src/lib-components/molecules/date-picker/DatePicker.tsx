@@ -19,7 +19,6 @@ export interface DatePickerProps
   extends Omit<DatePickerLowLevelProps, 'value' | 'onChange'> {
   date: LocalDate | null
   onChange: (date: LocalDate | null) => void
-  isInvalidDate?: (date: LocalDate) => string | null
 }
 
 const DatePicker = React.memo(function DatePicker({
@@ -80,6 +79,7 @@ const DatePicker = React.memo(function DatePicker({
       value={textValue}
       onChange={handleChange}
       info={internalError ?? info}
+      isInvalidDate={isInvalidDate}
       minDate={minDate}
       maxDate={maxDate}
       {...props}
@@ -92,7 +92,7 @@ export default DatePicker
 export interface DatePickerFProps
   extends Omit<
     DatePickerLowLevelProps,
-    'value' | 'onChange' | 'minDate' | 'maxDate'
+    'value' | 'onChange' | 'isInvalidDate' | 'minDate' | 'maxDate'
   > {
   bind: BoundForm<LocalDateField>
 }
