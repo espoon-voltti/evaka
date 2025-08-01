@@ -153,7 +153,7 @@ export default React.memo(function AttendanceList({
 
   return (
     <>
-      <TabLinks tabs={tabs} mobile sticky topOffset={64} />
+      <TabLinks tabs={tabs} mobile sticky />
       <ContentArea
         opaque={false}
         paddingVertical="zero"
