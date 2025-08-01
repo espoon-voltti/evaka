@@ -15,7 +15,6 @@ import TopBarWithGroupSelector from './TopBarWithGroupSelector'
 const FlexibleDiv = styled.div`
   flex-grow: 1;
   display: block;
-  overflow: auto;
 `
 
 type PageWithNavigation = BottomNavbarProps &

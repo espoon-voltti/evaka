@@ -26,6 +26,8 @@ interface TabsProps extends BaseProps {
   active: string
   tabs: Tab[]
   id?: string
+  sticky?: boolean
+  topOffset?: number
 }
 
 export const Tabs = React.memo(function Tabs({
@@ -33,11 +35,16 @@ export const Tabs = React.memo(function Tabs({
   'data-qa': dataQa,
   active,
   tabs,
-  id
+  id,
+  sticky,
+  topOffset
 }: TabsProps) {
   const maxWidth = mobile ? `${100 / tabs.length}vw` : undefined
   return (
-    <Container>
+    <StickyableContainer
+      className={sticky ? 'sticky' : undefined}
+      $topOffset={topOffset}
+    >
       <TabsContainer data-qa={dataQa} shadow={mobile} id={id}>
         {tabs.map(({ id, onClick, label, counter }) => (
           <Tab
@@ -53,7 +60,7 @@ export const Tabs = React.memo(function Tabs({
           </Tab>
         ))}
       </TabsContainer>
-    </Container>
+    </StickyableContainer>
   )
 })
 
