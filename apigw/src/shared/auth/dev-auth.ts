@@ -6,6 +6,7 @@ import { AxiosError } from 'axios'
 import type { Request } from 'express'
 import express from 'express'
 
+import { setDeviceAuthHistoryCookie } from '../device-cookies.js'
 import { AsyncRequestHandler, toRequestHandler } from '../express.js'
 import { validateRelayStateUrl } from '../saml/index.js'
 import { Sessions, SessionType } from '../session.js'
@@ -17,13 +18,15 @@ export interface DevAuthRouterOptions<T extends SessionType> {
   root: string
   verifyUser: (req: Request) => Promise<EvakaSessionUser>
   loginFormHandler: AsyncRequestHandler
+  citizenCookieSecret?: string
 }
 
 export function createDevAuthRouter<T extends SessionType>({
   sessions,
   root,
   verifyUser,
-  loginFormHandler
+  loginFormHandler,
+  citizenCookieSecret
 }: DevAuthRouterOptions<T>): express.Router {
   const router = express.Router()
 
@@ -39,6 +42,12 @@ export function createDevAuthRouter<T extends SessionType>({
           res.redirect(`${root}?loginError=true`)
         } else {
           await sessions.login(req, user)
+
+          // Set device cookie for citizen authentication
+          if (citizenCookieSecret) {
+            setDeviceAuthHistoryCookie(res, user.id, citizenCookieSecret)
+          }
+
           res.redirect(validateRelayStateUrl(req)?.toString() ?? root)
         }
       } catch (err) {
