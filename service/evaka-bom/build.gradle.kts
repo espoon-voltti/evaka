@@ -25,7 +25,7 @@ dependencies {
         api("jakarta.xml.ws:jakarta.xml.ws-api:4.0.2")
         api("net.logstash.logback:logstash-logback-encoder:8.1")
         api("nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect:3.4.0")
-        api("org.apache.commons:commons-csv:1.14.0")
+        api("org.apache.commons:commons-csv:1.14.1")
         api("org.apache.commons:commons-text:1.14.0")
         api("org.apache.commons:commons-imaging:1.0.0-alpha6")
         api("org.apache.httpcomponents:httpclient:4.5.14")
