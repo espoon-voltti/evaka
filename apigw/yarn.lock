@@ -1460,12 +1460,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/express-http-proxy@npm:1.6.6":
-  version: 1.6.6
-  resolution: "@types/express-http-proxy@npm:1.6.6"
+"@types/express-http-proxy@npm:1.6.7":
+  version: 1.6.7
+  resolution: "@types/express-http-proxy@npm:1.6.7"
   dependencies:
     "@types/express": "npm:*"
-  checksum: 10/bf8d642e2d00c6d5dc5a3bc6617a4f249d00646b1469a1c523836753c12c6574d97a44d4b1b299798ee6fb93bf0dda969a7d3cd763c5ad0dd92b4f3c6e828982
+  checksum: 10/0f2964b4bc4f5f5f8e282615aed279310b54eab07d5a6fd6b216ca4bb8a1462e428d4658e78a2c32703a7c4e5c13112ea6a0cfe6e0f164d937b0caedf654fcb0
   languageName: node
   linkType: hard
 
@@ -3601,7 +3601,7 @@ __metadata:
     "@jest/globals": "npm:30.0.5"
     "@node-saml/node-saml": "npm:5.1.0"
     "@types/cookie-parser": "npm:1.4.9"
-    "@types/express-http-proxy": "npm:1.6.6"
+    "@types/express-http-proxy": "npm:1.6.7"
     "@types/express-session": "npm:1.18.2"
     "@types/jsonwebtoken": "npm:9.0.10"
     "@types/lodash": "npm:4.17.20"
