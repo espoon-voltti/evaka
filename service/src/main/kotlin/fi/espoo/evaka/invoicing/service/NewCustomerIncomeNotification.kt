@@ -17,6 +17,7 @@ import fi.espoo.evaka.shared.async.removeUnclaimedJobs
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.time.Duration
 import org.springframework.stereotype.Service
 
 private val logger = KotlinLogging.logger {}
@@ -37,6 +38,7 @@ class NewCustomerIncomeNotification(
             setOf(AsyncJobType(AsyncJob.SendNewCustomerIncomeNotificationEmail::class))
         )
 
+        tx.setStatementTimeout(Duration.ofSeconds(300))
         val guardiansForNotification = tx.newCustomerIdsForIncomeNotifications(clock.today(), null)
 
         asyncJobRunner.plan(
