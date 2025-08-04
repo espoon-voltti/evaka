@@ -124,7 +124,7 @@ export async function insertPedagogicalDocumentAttachment(
   const file = await fs.readFile(`${filePath}/${fileName}`)
   return await createPedagogicalDocumentAttachment({
     pedagogicalDocumentId,
-    file: new File([file], fileName),
+    file: new File([new Uint8Array(file)], fileName),
     employeeId
   })
 }
