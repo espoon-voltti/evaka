@@ -1429,9 +1429,6 @@ class ApplicationStateService(
             if (!canApplyForPreferredDate) {
                 throw BadRequest("Cannot apply to preschool on $preferredStartDate at the moment")
             }
-            if (activePreschoolTerm.termBreaks.includes(preferredStartDate)) {
-                throw BadRequest("Cannot apply to preschool on $preferredStartDate (term break)")
-            }
 
             val connectedDaycarePreferredStartDate =
                 application.preferences.connectedDaycarePreferredStartDate
@@ -1462,11 +1459,6 @@ class ApplicationStateService(
                 ) {
                     throw BadRequest("Cannot apply to connected daycare before preschool")
                 }
-                if (activePreschoolTerm.termBreaks.includes(connectedDaycarePreferredStartDate)) {
-                    throw BadRequest(
-                        "Cannot apply to connected preschool on $connectedDaycarePreferredStartDate (term break)"
-                    )
-                }
             }
         }
 
@@ -1477,9 +1469,6 @@ class ApplicationStateService(
                 activeClubTerm?.applicationPeriod?.includes(currentDate) == true
             if (!canApplyForPreferredDate) {
                 throw BadRequest("Cannot apply to club on $preferredStartDate")
-            }
-            if (activeClubTerm.termBreaks.includes(preferredStartDate)) {
-                throw BadRequest("Cannot apply to club on $preferredStartDate (term break)")
             }
         }
 
