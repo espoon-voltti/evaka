@@ -26,6 +26,7 @@ COPY ./service/gradlew ./service/build.gradle.kts ./service/gradle.properties ./
 COPY ./service/vtjclient/build.gradle.kts ./service/vtjclient/build.gradle.kts
 COPY ./service/service-lib/*.kts ./service/service-lib/
 COPY ./service/evaka-bom/*.kts ./service/evaka-bom/
+COPY ./service/codegen/build.gradle.kts ./service/codegen/
 COPY ./service/sarmamodel/build.gradle.kts ./service/sarmamodel/
 
 WORKDIR /evaka/service
