@@ -49,7 +49,7 @@ const daycareAssistanceForm = transformed(
           data.id !== ignoredId && data.validDuring.overlaps(validDuring)
       )
     ) {
-      return ValidationError.of('overlap')
+      return ValidationError.of('overlap' as const)
     }
     const success: DaycareAssistanceUpdate = { level, validDuring }
     return ValidationSuccess.of(success)

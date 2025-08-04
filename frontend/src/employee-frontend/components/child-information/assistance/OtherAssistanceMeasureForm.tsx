@@ -51,7 +51,7 @@ const otherAssistanceMeasureForm = transformed(
           data.validDuring.overlaps(validDuring)
       )
     ) {
-      return ValidationError.of('overlap')
+      return ValidationError.of('overlap' as const)
     }
     const success: OtherAssistanceMeasureUpdate = { type, validDuring }
     return ValidationSuccess.of(success)

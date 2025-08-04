@@ -75,7 +75,7 @@ const preschoolAssistanceForm = transformed(
           data.id !== ignoredId && data.validDuring.overlaps(validDuring)
       )
     ) {
-      return ValidationError.of('overlap')
+      return ValidationError.of('overlap' as const)
     }
     const success: PreschoolAssistanceUpdate = { level, validDuring }
     return ValidationSuccess.of(success)
