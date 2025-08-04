@@ -109,7 +109,12 @@ fun Database.Read.newCustomerIdsForIncomeNotifications(
     return createQuery {
             sql(
                 """
-WITH fridge_parents AS (
+WITH previously_placed_children AS (
+    SELECT pl.child_id, fc.head_of_child
+    FROM placement pl
+    JOIN fridge_child fc ON pl.child_id = fc.child_id AND ${bind(today)} BETWEEN fc.start_date AND fc.end_date
+    WHERE pl.start_date < ${bind(currentMonth.start)}
+), fridge_parents AS (
     SELECT fc_head.head_of_child AS parent_id, fp_spouse.person_id AS spouse_id
     FROM placement pl
     
@@ -129,14 +134,9 @@ WITH fridge_parents AS (
     WHERE pl.start_date BETWEEN ${bind(currentMonth.start)} AND ${bind(currentMonth.end)}
     AND NOT EXISTS(
         SELECT 1
-        FROM placement
-        WHERE start_date < ${bind(currentMonth.start)}
-        AND child_id IN (
-            SELECT child_id
-            FROM fridge_child
-            WHERE (head_of_child = fc_head.head_of_child OR head_of_child = fp_spouse.person_id)
-            AND child_id != pl.child_id
-        )
+        FROM previously_placed_children
+        WHERE child_id != pl.child_id
+        AND (head_of_child = fc_head.head_of_child OR head_of_child = fp_spouse.person_id)
     )
     AND NOT EXISTS(
         SELECT 1
