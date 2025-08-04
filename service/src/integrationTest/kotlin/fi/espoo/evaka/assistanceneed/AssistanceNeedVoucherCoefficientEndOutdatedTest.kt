@@ -198,6 +198,53 @@ class AssistanceNeedVoucherCoefficientEndOutdatedTest : PureJdbiTest(resetDbBefo
     }
 
     @Test
+    fun `new coefficient is not ended when placement changes to a different unit`() {
+        db.transaction { tx ->
+            val area = DevCareArea()
+            val unit = DevDaycare(areaId = area.id)
+            val unit2 = DevDaycare(areaId = area.id)
+            val child = DevPerson()
+
+            tx.insert(area)
+            tx.insert(unit)
+            tx.insert(unit2)
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(
+                DevPlacement(
+                    childId = child.id,
+                    unitId = unit.id,
+                    startDate = jan1,
+                    endDate = yesterday,
+                )
+            )
+            tx.insert(
+                DevPlacement(
+                    childId = child.id,
+                    unitId = unit2.id,
+                    startDate = today,
+                    endDate = dec31,
+                )
+            )
+            tx.insert(
+                DevAssistanceNeedVoucherCoefficient(
+                    childId = child.id,
+                    validityPeriod = FiniteDateRange(today, dec31),
+                )
+            )
+        }
+        assertEquals(listOf(FiniteDateRange(today, dec31)), getCoefficientRanges())
+
+        db.transaction { tx ->
+            tx.endOutdatedAssistanceNeedVoucherCoefficients(
+                user = AuthenticatedUser.SystemInternalUser,
+                now = clock.now(),
+            )
+        }
+
+        assertEquals(listOf(FiniteDateRange(today, dec31)), getCoefficientRanges())
+    }
+
+    @Test
     fun `past data is not affected`() {
         db.transaction { tx ->
             val area = DevCareArea()

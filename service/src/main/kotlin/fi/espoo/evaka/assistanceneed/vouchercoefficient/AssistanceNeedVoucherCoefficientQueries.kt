@@ -148,7 +148,7 @@ SET validity_period = daterange(lower(validity_period), ${bind(yesterday)}, '[]'
     modified_by = ${bind(user.evakaUserId)}
 FROM placement pl
 WHERE
-    a.validity_period && daterange(${bind(yesterday)}, ${bind(today)}, '[]') AND
+    a.validity_period @> daterange(${bind(yesterday)}, ${bind(today)}, '[]') AND
     daterange(pl.start_date, pl.end_date, '[]') @> ${bind(yesterday)} AND
     pl.child_id = a.child_id AND
     NOT EXISTS (
