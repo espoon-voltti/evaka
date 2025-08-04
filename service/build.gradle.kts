@@ -206,7 +206,7 @@ allprojects {
 
     tasks.register("resolveDependencies") {
         description = "Resolves all dependencies"
-        doLast {
+        val counts =
             configurations
                 .matching {
                     it.isCanBeResolved &&
@@ -218,12 +218,13 @@ allprojects {
                     it.name to files.size
                 }
                 .groupBy({ (_, count) -> count }) { (name, _) -> name }
-                .forEach { (count, names) ->
-                    @Suppress("ktlint:evaka:no-println")
-                    println(
-                        "Resolved $count dependency files for configurations: ${names.joinToString(", ")}"
-                    )
-                }
+        doLast {
+            counts.forEach { (count, names) ->
+                @Suppress("ktlint:evaka:no-println")
+                println(
+                    "Resolved $count dependency files for configurations: ${names.joinToString(", ")}"
+                )
+            }
         }
     }
 }
