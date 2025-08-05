@@ -2278,7 +2278,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         val decisions =
             getAllFeeDecisions()
-                .sortedBy { it.children.minOf { it.child.dateOfBirth } }
+                .sortedBy { it.children.minOf { c -> c.child.dateOfBirth } }
                 .sortedBy { it.validFrom }
         assertEquals(4, decisions.size)
         decisions[0].let { decision ->
@@ -3000,7 +3000,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         getAllFeeDecisions().let {
             assertEquals(1, it.size)
-            assertEquals(1, it.filter { it.status == FeeDecisionStatus.SENT }.size)
+            assertEquals(1, it.filter { d -> d.status == FeeDecisionStatus.SENT }.size)
         }
 
         db.transaction {
@@ -3009,10 +3009,10 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         db.transaction { generator.generateNewDecisionsForAdult(it, testAdult_1.id) }
 
-        getAllFeeDecisions().let {
+        getAllFeeDecisions().let { it ->
             assertEquals(2, it.size)
-            assertEquals(1, it.filter { it.status == FeeDecisionStatus.SENT }.size)
-            assertEquals(1, it.filter { it.status == FeeDecisionStatus.DRAFT }.size)
+            assertEquals(1, it.filter { d -> d.status == FeeDecisionStatus.SENT }.size)
+            assertEquals(1, it.filter { d -> d.status == FeeDecisionStatus.DRAFT }.size)
         }
 
         insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
@@ -3021,7 +3021,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         getAllFeeDecisions().let {
             assertEquals(1, it.size)
-            assertEquals(1, it.filter { it.status == FeeDecisionStatus.SENT }.size)
+            assertEquals(1, it.filter { d -> d.status == FeeDecisionStatus.SENT }.size)
         }
     }
 
@@ -3055,16 +3055,16 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         getAllFeeDecisions().let {
             assertEquals(2, it.size)
-            assertEquals(1, it.filter { it.status == FeeDecisionStatus.SENT }.size)
-            assertEquals(1, it.filter { it.status == FeeDecisionStatus.DRAFT }.size)
+            assertEquals(1, it.filter { d -> d.status == FeeDecisionStatus.SENT }.size)
+            assertEquals(1, it.filter { d -> d.status == FeeDecisionStatus.DRAFT }.size)
         }
 
         db.transaction { generator.generateNewDecisionsForAdult(it, testAdult_1.id) }
 
         getAllFeeDecisions().let {
             assertEquals(2, it.size)
-            assertEquals(1, it.filter { it.status == FeeDecisionStatus.SENT }.size)
-            assertEquals(1, it.filter { it.status == FeeDecisionStatus.DRAFT }.size)
+            assertEquals(1, it.filter { d -> d.status == FeeDecisionStatus.SENT }.size)
+            assertEquals(1, it.filter { d -> d.status == FeeDecisionStatus.DRAFT }.size)
         }
     }
 

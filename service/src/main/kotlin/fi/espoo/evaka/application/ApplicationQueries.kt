@@ -586,9 +586,9 @@ fun Database.Read.fetchApplicationSummaries(
                                     unitRejectOtherReason = column("unit_reject_other_reason"),
                                     modifiedAt = column("status_modified_at"),
                                     modifiedBy =
-                                        column<EvakaUserId?>("status_modified_by_id")?.let {
+                                        column<EvakaUserId?>("status_modified_by_id")?.let { id ->
                                             EvakaUser(
-                                                id = it,
+                                                id = id,
                                                 name = column("status_modified_by_name"),
                                                 type = column("status_modified_by_type"),
                                             )

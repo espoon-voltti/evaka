@@ -5445,8 +5445,9 @@ Lapsen tunniste: ${firstChildWithRemovedAllergy.id}, lapsen ruokavaliot: Laktoos
             listOf(mixedBabyWithOtherSpecialDiet, mixedBabyWithoutLactoseAndAnotherSpecialDiet)
 
         db.transaction { tx ->
-            removedChildren.forEach {
-                listOf(
+            removedChildren
+                .flatMap {
+                    listOf(
                         // Child is absent, so no meals on Monday
                         DevAbsence(
                             childId = it.id,
@@ -5466,8 +5467,8 @@ Lapsen tunniste: ${firstChildWithRemovedAllergy.id}, lapsen ruokavaliot: Laktoos
                             modifiedAt = HelsinkiDateTime.now(),
                         ),
                     )
-                    .forEach { tx.insert(it) }
-            }
+                }
+                .forEach { tx.insert(it) }
         }
 
         insertNekkuSpecialDietChoice(

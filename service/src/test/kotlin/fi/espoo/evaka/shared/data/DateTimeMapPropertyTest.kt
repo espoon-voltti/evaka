@@ -33,8 +33,8 @@ class DateTimeMapPropertyTest :
     override fun pointsOfRange(range: HelsinkiDateTimeRange): Sequence<HelsinkiDateTime> =
         if (range.start == range.end) emptySequence()
         else
-            generateSequence(range.start) {
-                it.plus(Duration.ofNanos(1000)).takeIf { it < range.end }
+            generateSequence(range.start) { t ->
+                t.plus(Duration.ofNanos(1000)).takeIf { it < range.end }
             }
 
     @Test

@@ -597,8 +597,9 @@ fun nekkuMealReportData(
                         childInfo.mealTimes,
                         childInfo.eatsBreakfast,
                     )
-                    .mapNotNull {
-                        val sku = getNekkuProductNumber(nekkuProducts, it, childInfo, customerType)
+                    .mapNotNull { mealTime ->
+                        val sku =
+                            getNekkuProductNumber(nekkuProducts, mealTime, childInfo, customerType)
                         if (sku == null) null
                         else
                             NekkuMealInfo(

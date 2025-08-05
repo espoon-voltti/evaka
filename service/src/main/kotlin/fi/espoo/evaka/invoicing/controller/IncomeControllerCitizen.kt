@@ -28,15 +28,15 @@ class IncomeControllerCitizen(private val accessControl: AccessControl) {
         clock: EvakaClock,
     ): List<LocalDate> {
         return db.connect { dbc ->
-                dbc.read {
+                dbc.read { tx ->
                     accessControl.requirePermissionFor(
-                        it,
+                        tx,
                         user,
                         clock,
                         Action.Citizen.Person.READ_EXPIRED_INCOME_DATES,
                         user.id,
                     )
-                    it.expiringIncomes(
+                    tx.expiringIncomes(
                             clock.today(),
                             FiniteDateRange(clock.today(), clock.today().plusWeeks(4)),
                             null,

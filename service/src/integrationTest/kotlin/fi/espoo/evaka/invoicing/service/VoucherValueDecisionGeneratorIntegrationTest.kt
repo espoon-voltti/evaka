@@ -1414,16 +1414,16 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
 
         getAllVoucherValueDecisions().let {
             assertEquals(2, it.size)
-            assertEquals(1, it.filter { it.status == VoucherValueDecisionStatus.SENT }.size)
-            assertEquals(1, it.filter { it.status == VoucherValueDecisionStatus.DRAFT }.size)
+            assertEquals(1, it.filter { d -> d.status == VoucherValueDecisionStatus.SENT }.size)
+            assertEquals(1, it.filter { d -> d.status == VoucherValueDecisionStatus.DRAFT }.size)
         }
 
         db.transaction { generator.generateNewDecisionsForAdult(it, testAdult_1.id) }
 
         getAllVoucherValueDecisions().let {
             assertEquals(2, it.size)
-            assertEquals(1, it.filter { it.status == VoucherValueDecisionStatus.SENT }.size)
-            assertEquals(1, it.filter { it.status == VoucherValueDecisionStatus.DRAFT }.size)
+            assertEquals(1, it.filter { d -> d.status == VoucherValueDecisionStatus.SENT }.size)
+            assertEquals(1, it.filter { d -> d.status == VoucherValueDecisionStatus.DRAFT }.size)
         }
     }
 

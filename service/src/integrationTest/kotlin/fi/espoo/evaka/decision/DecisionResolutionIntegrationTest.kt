@@ -235,11 +235,11 @@ class DecisionResolutionIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             }
         } else {
             rejectDecisionAndAssert(user, applicationId, ids.primaryId!!)
-            db.read {
-                assertEquals(ApplicationStatus.REJECTED, it.getApplicationStatus(ids.applicationId))
-                assertTrue(it.getPlacementRowsByChild(testChild_1.id).toList().isEmpty())
+            db.read { tx ->
+                assertEquals(ApplicationStatus.REJECTED, tx.getApplicationStatus(ids.applicationId))
+                assertTrue(tx.getPlacementRowsByChild(testChild_1.id).toList().isEmpty())
                 assertTrue(
-                    it.getDecisionRowsByApplication(ids.applicationId).toList().all {
+                    tx.getDecisionRowsByApplication(ids.applicationId).toList().all {
                         it.status == DecisionStatus.REJECTED
                     }
                 )

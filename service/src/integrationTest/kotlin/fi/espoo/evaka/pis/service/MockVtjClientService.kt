@@ -46,11 +46,11 @@ class MockVtjClientService : IVtjClientService {
 
                                 it.nykyisetEtunimet =
                                     VTJHenkiloVastaussanoma.Henkilo.Huollettava.NykyisetEtunimet()
-                                        .also { it.etunimet = child.firstName }
+                                        .also { e -> e.etunimet = child.firstName }
 
                                 it.nykyinenSukunimi =
                                     VTJHenkiloVastaussanoma.Henkilo.Huollettava.NykyinenSukunimi()
-                                        .also { it.sukunimi = child.lastName }
+                                        .also { s -> s.sukunimi = child.lastName }
                             }
                         },
                     )
@@ -75,18 +75,18 @@ class MockVtjClientService : IVtjClientService {
                         ht.value = person.ssn
                     }
                 it.vakinainenKotimainenLahiosoite =
-                    VTJHenkiloVastaussanoma.Henkilo.VakinainenKotimainenLahiosoite().also {
-                        it.postitoimipaikkaS = person.streetAddress
-                        it.postitoimipaikkaS = person.postOffice
-                        it.postinumero = person.postalCode
+                    VTJHenkiloVastaussanoma.Henkilo.VakinainenKotimainenLahiosoite().also { o ->
+                        o.postitoimipaikkaS = person.streetAddress
+                        o.postitoimipaikkaS = person.postOffice
+                        o.postinumero = person.postalCode
                     }
                 it.nykyisetEtunimet =
-                    VTJHenkiloVastaussanoma.Henkilo.NykyisetEtunimet().also {
-                        it.etunimet = person.firstName
+                    VTJHenkiloVastaussanoma.Henkilo.NykyisetEtunimet().also { e ->
+                        e.etunimet = person.firstName
                     }
                 it.nykyinenSukunimi =
-                    VTJHenkiloVastaussanoma.Henkilo.NykyinenSukunimi().also {
-                        it.sukunimi = person.lastName
+                    VTJHenkiloVastaussanoma.Henkilo.NykyinenSukunimi().also { s ->
+                        s.sukunimi = person.lastName
                     }
                 it.aidinkieli = VTJHenkiloVastaussanoma.Henkilo.Aidinkieli()
                 it.turvakielto = VTJHenkiloVastaussanoma.Henkilo.Turvakielto()
