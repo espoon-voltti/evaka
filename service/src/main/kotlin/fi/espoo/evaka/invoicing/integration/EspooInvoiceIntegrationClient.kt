@@ -122,7 +122,9 @@ class EspooInvoiceIntegrationClient(
                                             invoice.rows
                                                 .groupBy { it.child }
                                                 .toList()
-                                                .sortedByDescending { (child) -> child.dateOfBirth }
+                                                .sortedByDescending { (child, _) ->
+                                                    child.dateOfBirth
+                                                }
                                                 .flatMap { (child, rows) ->
                                                     val nameRow =
                                                         emptyRow(

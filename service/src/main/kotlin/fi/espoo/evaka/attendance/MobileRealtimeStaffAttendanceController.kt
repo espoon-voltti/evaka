@@ -384,7 +384,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                     meta = mapOf("date" to body.date, "changes" to changes),
                 )
             }
-            .let { (updates) ->
+            .let { (updates, _) ->
                 StaffAttendanceUpdateResponse(
                     deleted =
                         updates.mapNotNull {

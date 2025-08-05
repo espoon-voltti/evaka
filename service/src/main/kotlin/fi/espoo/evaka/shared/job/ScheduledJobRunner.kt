@@ -82,7 +82,7 @@ class ScheduledJobRunner(
             .build()
 
     private fun planAsyncJob(db: Database.Connection, definition: ScheduledJobDefinition) {
-        val (job, settings) = definition
+        val (job, settings, _) = definition
         val logMeta = mapOf("jobName" to job.name)
         logger.info(logMeta) { "Planning scheduled job ${job.name}" }
         val payload =

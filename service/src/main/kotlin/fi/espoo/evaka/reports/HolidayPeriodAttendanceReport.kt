@@ -151,7 +151,8 @@ class HolidayPeriodAttendanceReport(private val accessControl: AccessControl) {
                         )
 
                     // collect daily report values
-                    periodDays.map { (date) ->
+                    periodDays.map { h ->
+                        val date = h.date
                         val dailyDirectlyPlacedData =
                             directlyPlacedChildData.filter { sn ->
                                 sn.validity.includes(date) &&
@@ -226,11 +227,11 @@ class HolidayPeriodAttendanceReport(private val accessControl: AccessControl) {
                         HolidayReportRow(
                             date = date,
                             presentChildren =
-                                confirmedPresent.map { (child) ->
+                                confirmedPresent.map { info ->
                                     ChildWithName(
-                                        id = child.id,
-                                        firstName = child.firstName,
-                                        lastName = child.lastName,
+                                        id = info.child.id,
+                                        firstName = info.child.firstName,
+                                        lastName = info.child.lastName,
                                     )
                                 },
                             assistanceChildren =
@@ -238,11 +239,11 @@ class HolidayPeriodAttendanceReport(private val accessControl: AccessControl) {
                                     .filter {
                                         assistanceRangesByChild[it.child.id]?.includes(date) == true
                                     }
-                                    .map { (child) ->
+                                    .map { info ->
                                         ChildWithName(
-                                            id = child.id,
-                                            firstName = child.firstName,
-                                            lastName = child.lastName,
+                                            id = info.child.id,
+                                            firstName = info.child.firstName,
+                                            lastName = info.child.lastName,
                                         )
                                     },
                             presentOccupancyCoefficient = dailyOccupancyCoefficient,
@@ -254,11 +255,11 @@ class HolidayPeriodAttendanceReport(private val accessControl: AccessControl) {
                                     .filter {
                                         operationDaysByChild[it.child.id]?.contains(date) == true
                                     }
-                                    .map { (child) ->
+                                    .map { info ->
                                         ChildWithName(
-                                            id = child.id,
-                                            firstName = child.firstName,
-                                            lastName = child.lastName,
+                                            id = info.child.id,
+                                            firstName = info.child.firstName,
+                                            lastName = info.child.lastName,
                                         )
                                     },
                         )

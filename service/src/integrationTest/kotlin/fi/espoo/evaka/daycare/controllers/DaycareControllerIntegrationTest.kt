@@ -101,9 +101,9 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
 
     @Test
     fun `get daycare`() {
-        val (daycare, _, _) = getDaycare(testDaycare.id)
+        val response = getDaycare(testDaycare.id)
 
-        db.read { assertEquals(it.getDaycare(testDaycare.id), daycare) }
+        db.read { assertEquals(it.getDaycare(testDaycare.id), response.daycare) }
     }
 
     @Test

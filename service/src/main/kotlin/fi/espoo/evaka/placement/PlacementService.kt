@@ -62,7 +62,7 @@ fun createPlacements(
 ): List<Placement> {
     placementTypePeriods
         .sortedBy { it.first.start }
-        .forEach { (period) ->
+        .forEach { (period, _) ->
             tx.clearOldPlacements(childId, period.start, period.end, now = now, userId = userId)
         }
 

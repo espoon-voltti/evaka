@@ -489,7 +489,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         val endDate = today.plusDays(30)
 
         db.transaction { tx ->
-            val (childId, daycareId, group1Id, tempGroup1Account, group2Id, tempGroup2Account) =
+            val (childId, daycareId, group1Id, tempGroup1Account, group2Id, tempGroup2Account, _) =
                 prepareDataForRecipientsTest(tx)
             group1Account = tempGroup1Account
             group2Account = tempGroup2Account
@@ -550,7 +550,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         val endDate = today.plusDays(30)
 
         db.transaction { tx ->
-            val (childId, daycareId, group1Id, tempGroup1Account, group2Id, tempGroup2Account) =
+            val (childId, daycareId, group1Id, tempGroup1Account, group2Id, tempGroup2Account, _) =
                 prepareDataForRecipientsTest(tx)
             group1Account = tempGroup1Account
             group2Account = tempGroup2Account
@@ -603,7 +603,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         val endDate = today.minusDays(1)
 
         db.transaction { tx ->
-            val (childId, daycareId, group1Id, _, _) = prepareDataForRecipientsTest(tx)
+            val (childId, daycareId, group1Id, _, _, _, _) = prepareDataForRecipientsTest(tx)
             val placementId =
                 tx.insert(
                     DevPlacement(

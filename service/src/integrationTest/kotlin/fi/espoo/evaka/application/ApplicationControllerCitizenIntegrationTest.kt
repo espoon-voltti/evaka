@@ -71,62 +71,64 @@ class ApplicationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
 
     @Test
     fun `user can cancel a sent unprocessed application`() {
-        val (id) =
+        val application =
             db.transaction { tx ->
-                val application =
-                    tx.insertTestApplication(
+                tx.insertTestApplication(
                         guardian = testAdult_1,
                         child = testChild_1,
                         appliedType = PlacementType.DAYCARE,
                     )
-                stateService.sendApplication(
-                    tx = tx,
-                    user = AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG),
-                    clock = clock,
-                    applicationId = application.id,
-                )
-                application
+                    .also {
+                        stateService.sendApplication(
+                            tx = tx,
+                            user =
+                                AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG),
+                            clock = clock,
+                            applicationId = it.id,
+                        )
+                    }
             }
 
         applicationControllerCitizen.deleteOrCancelUnprocessedApplication(
             db = dbInstance(),
             user = AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG),
             clock = clock,
-            applicationId = id,
+            applicationId = application.id,
         )
 
         db.transaction { tx ->
-            assertEquals(ApplicationStatus.CANCELLED, tx.getApplicationStatus(id))
+            assertEquals(ApplicationStatus.CANCELLED, tx.getApplicationStatus(application.id))
         }
     }
 
     @Test
     fun `user can not cancel a processed application`() {
-        val (id) =
+        val application =
             db.transaction { tx ->
-                val application =
-                    tx.insertTestApplication(
+                tx.insertTestApplication(
                         guardian = testAdult_1,
                         child = testChild_1,
                         appliedType = PlacementType.DAYCARE,
                     )
-                stateService.sendApplication(
-                    tx = tx,
-                    user = AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG),
-                    clock = clock,
-                    applicationId = application.id,
-                )
-                stateService.moveToWaitingPlacement(
-                    tx = tx,
-                    user =
-                        AuthenticatedUser.Employee(
-                            testDecisionMaker_1.id,
-                            setOf(UserRole.SERVICE_WORKER),
-                        ),
-                    clock = clock,
-                    applicationId = application.id,
-                )
-                application
+                    .also {
+                        stateService.sendApplication(
+                            tx = tx,
+                            user =
+                                AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG),
+                            clock = clock,
+                            applicationId = it.id,
+                        )
+                        stateService.moveToWaitingPlacement(
+                            tx = tx,
+                            user =
+                                AuthenticatedUser.Employee(
+                                    testDecisionMaker_1.id,
+                                    setOf(UserRole.SERVICE_WORKER),
+                                ),
+                            clock = clock,
+                            applicationId = it.id,
+                        )
+                    }
             }
 
         assertThrows<BadRequest> {
@@ -134,7 +136,7 @@ class ApplicationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                 db = dbInstance(),
                 user = AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG),
                 clock = clock,
-                applicationId = id,
+                applicationId = application.id,
             )
         }
     }

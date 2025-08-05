@@ -644,7 +644,7 @@ internal fun toFamilyCompositions(
     spanningPeriod: FiniteDateRange,
 ): Map<PersonId, List<Pair<FiniteDateRange, List<ChildWithDateOfBirth>>>> {
     return relationships
-        .groupBy { (_, headOfFamily) -> headOfFamily }
+        .groupBy { (_, headOfFamily, _) -> headOfFamily }
         .mapValues { (_, value) -> value.map { it.first to it.third } }
         .mapValues { (_, children) ->
             asDistinctPeriods(children.map { it.first }, spanningPeriod)

@@ -169,7 +169,8 @@ class HolidayQuestionnaireReport(
                             directlyPlacedChildren + backupChildrenInUnit,
                         )
 
-                    questionnaireDays.map { (date) ->
+                    questionnaireDays.map { h ->
+                        val date = h.date
                         val dailyDirectlyPlacedData =
                             directlyPlacedChildData.filter { sn ->
                                 sn.validity.includes(date) &&
@@ -222,11 +223,11 @@ class HolidayQuestionnaireReport(
                         HolidayReportRow(
                             date = date,
                             presentChildren =
-                                present.map { (child) ->
+                                present.map { info ->
                                     ChildWithName(
-                                        id = child.id,
-                                        firstName = child.firstName,
-                                        lastName = child.lastName,
+                                        id = info.child.id,
+                                        firstName = info.child.firstName,
+                                        lastName = info.child.lastName,
                                     )
                                 },
                             assistanceChildren =
@@ -234,11 +235,11 @@ class HolidayQuestionnaireReport(
                                     .filter {
                                         assistanceRangesByChild[it.child.id]?.includes(date) == true
                                     }
-                                    .map { (child) ->
+                                    .map { info ->
                                         ChildWithName(
-                                            id = child.id,
-                                            firstName = child.firstName,
-                                            lastName = child.lastName,
+                                            id = info.child.id,
+                                            firstName = info.child.firstName,
+                                            lastName = info.child.lastName,
                                         )
                                     },
                             presentOccupancyCoefficient = dailyOccupancyCoefficient,
@@ -249,11 +250,11 @@ class HolidayQuestionnaireReport(
                                     .filter {
                                         operationDaysByChild[it.child.id]?.contains(date) == true
                                     }
-                                    .map { (child) ->
+                                    .map { info ->
                                         ChildWithName(
-                                            id = child.id,
-                                            firstName = child.firstName,
-                                            lastName = child.lastName,
+                                            id = info.child.id,
+                                            firstName = info.child.firstName,
+                                            lastName = info.child.lastName,
                                         )
                                     },
                         )
