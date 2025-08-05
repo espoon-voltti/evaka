@@ -15,7 +15,7 @@ import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import fi.espoo.evaka.shared.security.actionrule.forTable
 import java.time.LocalDate
 
-private val assistanceSelectFields =
+private const val assistanceSelectFields =
     """
     a.id,
     a.child_id,
@@ -214,7 +214,7 @@ WHERE id = ${bind(id)}
 fun Database.Transaction.deleteDaycareAssistance(id: DaycareAssistanceId) =
     createUpdate { sql("DELETE FROM daycare_assistance WHERE id = ${bind(id)}") }.execute()
 
-private val preschoolAssistanceSelectFields =
+private const val preschoolAssistanceSelectFields =
     """
     p.id,
     p.child_id,
@@ -297,7 +297,7 @@ WHERE id = ${bind(id)}
 fun Database.Transaction.deletePreschoolAssistance(id: PreschoolAssistanceId) =
     createUpdate { sql("DELETE FROM preschool_assistance WHERE id = ${bind(id)}") }.execute()
 
-private val otherAssistanceSelectFields =
+private const val otherAssistanceSelectFields =
     """
     o.id,
     o.child_id,

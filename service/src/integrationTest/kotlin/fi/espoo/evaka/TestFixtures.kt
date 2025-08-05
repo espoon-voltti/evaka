@@ -61,8 +61,8 @@ Queries and data classes for initializing integration tests with person and unit
 
 val testArea = DevCareArea(id = AreaId(UUID.randomUUID()), name = "Test Area", areaCode = 200)
 
-val defaultMunicipalOrganizerOid = "1.2.246.562.10.888888888888"
-val defaultPurchasedOrganizerOid = "1.2.246.562.10.66666666666"
+const val defaultMunicipalOrganizerOid = "1.2.246.562.10.888888888888"
+const val defaultPurchasedOrganizerOid = "1.2.246.562.10.66666666666"
 
 val testDecisionMaker_1 =
     DevEmployee(id = EmployeeId(UUID.randomUUID()), firstName = "Decision", lastName = "Maker")

@@ -12,7 +12,7 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 
-private val anvcSelectFields =
+private const val anvcSelectFields =
     """
     a.id,
     a.child_id,
