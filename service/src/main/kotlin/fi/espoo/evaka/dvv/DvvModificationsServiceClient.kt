@@ -130,7 +130,7 @@ class DvvModificationsServiceClient(
                 .jsonBody(
                     """{
                     "viimeisinKirjausavain": $updateToken,
-                    "hetulista": [${ssns.map { "\"$it\"" }.joinToString()}]
+                    "hetulista": [${ssns.joinToString { "\"$it\"" }}]
                 }
                 """
                         .trimIndent()

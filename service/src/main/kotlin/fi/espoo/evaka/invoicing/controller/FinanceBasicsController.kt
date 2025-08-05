@@ -163,9 +163,7 @@ class FinanceBasicsController(private val accessControl: AccessControl) {
                     )
 
                     val serviceNeedOption =
-                        tx.getServiceNeedOptions()
-                            .filter { it.id == body.serviceNeedOptionId }
-                            .firstOrNull()
+                        tx.getServiceNeedOptions().firstOrNull { it.id == body.serviceNeedOptionId }
                     if (serviceNeedOption == null)
                         throw BadRequest("Invalid service need option ID")
 

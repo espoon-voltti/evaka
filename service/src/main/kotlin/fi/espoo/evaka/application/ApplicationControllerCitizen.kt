@@ -303,17 +303,14 @@ class ApplicationControllerCitizen(
                         Action.Citizen.Child.READ_DUPLICATE_APPLICATIONS,
                         childId,
                     )
-                    ApplicationType.entries
-                        .map { type ->
-                            type to
-                                (type != ApplicationType.CLUB &&
-                                    tx.duplicateApplicationExists(
-                                        guardianId = user.id,
-                                        childId = childId,
-                                        type = type,
-                                    ))
-                        }
-                        .toMap()
+                    ApplicationType.entries.associateWith { type ->
+                        (type != ApplicationType.CLUB &&
+                            tx.duplicateApplicationExists(
+                                guardianId = user.id,
+                                childId = childId,
+                                type = type,
+                            ))
+                    }
                 }
             }
             .also {
@@ -340,16 +337,13 @@ class ApplicationControllerCitizen(
                         Action.Citizen.Child.READ_PLACEMENT_STATUS_BY_APPLICATION_TYPE,
                         childId,
                     )
-                    ApplicationType.entries
-                        .map { type ->
-                            type to
-                                tx.activePlacementExists(
-                                    childId = childId,
-                                    type = type,
-                                    today = clock.today(),
-                                )
-                        }
-                        .toMap()
+                    ApplicationType.entries.associateWith { type ->
+                        tx.activePlacementExists(
+                            childId = childId,
+                            type = type,
+                            today = clock.today(),
+                        )
+                    }
                 }
             }
             .also { Audit.ApplicationReadActivePlacementsByType.log(targetId = AuditId(childId)) }

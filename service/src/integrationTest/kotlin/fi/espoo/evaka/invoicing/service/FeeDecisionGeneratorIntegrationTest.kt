@@ -3041,7 +3041,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         assertEquals(2, decisions.size)
         assertEquals(2, decisions.filter { it.status == FeeDecisionStatus.DRAFT }.size)
 
-        val firstDecision = decisions.filter { it.validDuring.end == subPeriod2.end }.first()
+        val firstDecision = decisions.first { it.validDuring.end == subPeriod2.end }
 
         feeDecisionController.confirmFeeDecisionDrafts(
             dbInstance(),
