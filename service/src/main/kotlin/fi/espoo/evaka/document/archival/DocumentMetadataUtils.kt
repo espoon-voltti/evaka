@@ -242,7 +242,7 @@ fun createDocumentDescription(
     documentMetadata: DocumentMetadata,
     caseProcess: CaseProcess?,
     childIdentifier: ExternalIdentifier,
-    childBirthDate: java.time.LocalDate,
+    childBirthDate: LocalDate,
 ): StandardMetadataType.DocumentDescription {
     return StandardMetadataType.DocumentDescription().apply {
         // Basic document info
@@ -358,7 +358,7 @@ fun createDocumentMetadata(
     caseProcess: CaseProcess?,
     filename: String,
     childIdentifier: ExternalIdentifier,
-    birthDate: java.time.LocalDate,
+    birthDate: LocalDate,
 ): RecordMetadataInstance {
     return RecordMetadataInstance().apply {
         standardMetadata =

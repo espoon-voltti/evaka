@@ -21,7 +21,6 @@ import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDifference
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.placement.PlacementType
-import fi.espoo.evaka.placement.PlacementType.DAYCARE
 import fi.espoo.evaka.serviceNeedOptionVoucherValueCoefficients
 import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.shared.ChildId
@@ -811,7 +810,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         val incomePeriod1 = DateRange(period.start, null)
         val clock = MockEvakaClock(HelsinkiDateTime.Companion.of(period.start, LocalTime.of(0, 0)))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
-        insertPlacement(testChild_1.id, period, DAYCARE, testVoucherDaycare.id)
+        insertPlacement(testChild_1.id, period, PlacementType.DAYCARE, testVoucherDaycare.id)
         insertIncome(testAdult_1.id, 310200, incomePeriod1)
 
         db.transaction { generator.generateNewDecisionsForAdult(it, testAdult_1.id) }
@@ -848,7 +847,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         val incomePeriod1 = DateRange(period.start, null)
         val clock = MockEvakaClock(HelsinkiDateTime.Companion.of(period.start, LocalTime.of(0, 0)))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
-        insertPlacement(testChild_1.id, period, DAYCARE, testVoucherDaycare.id)
+        insertPlacement(testChild_1.id, period, PlacementType.DAYCARE, testVoucherDaycare.id)
         insertIncome(testAdult_1.id, 310200, incomePeriod1)
 
         db.transaction { generator.generateNewDecisionsForAdult(it, testAdult_1.id) }
