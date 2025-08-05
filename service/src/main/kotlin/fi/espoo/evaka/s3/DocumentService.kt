@@ -8,7 +8,7 @@ import java.io.InputStream
 import org.springframework.http.ContentDisposition
 import org.springframework.http.ResponseEntity
 
-data class Document(val name: String, val bytes: ByteArray, val contentType: String)
+class Document(val name: String, val bytes: ByteArray, val contentType: String)
 
 data class DocumentLocation(val bucket: String, val key: String)
 
