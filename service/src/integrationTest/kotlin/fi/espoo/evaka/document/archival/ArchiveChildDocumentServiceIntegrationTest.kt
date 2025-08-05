@@ -71,7 +71,7 @@ class ArchiveChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBe
     }
 
     // Mock document service implementation
-    inner class TestDocumentService : DocumentService {
+    class TestDocumentService : DocumentService {
 
         override fun locate(key: DocumentKey): DocumentLocation =
             DocumentLocation(bucket = "test-bucket", key = key.value)
