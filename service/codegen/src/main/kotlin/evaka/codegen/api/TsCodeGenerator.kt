@@ -29,7 +29,7 @@ abstract class TsCodeGenerator(val metadata: TypeMetadata) {
             "deserializeJson${sealedVariant.parent.name}${sealedVariant.obj.name}",
         )
 
-    fun arrayType(elementType: KType?, compact: Boolean): TsCode {
+    private fun arrayType(elementType: KType?, compact: Boolean): TsCode {
         val elementTs =
             if (elementType == null) TsCode("never")
             else
@@ -39,16 +39,16 @@ abstract class TsCodeGenerator(val metadata: TypeMetadata) {
         return elementTs + "[]"
     }
 
-    fun tsProperty(name: String, prop: TsProperty, value: TsCode): TsCode =
+    private fun tsProperty(name: String, prop: TsProperty, value: TsCode): TsCode =
         TsCode("$name${if (prop.isOptional) "?" else ""}: ") + value
 
-    fun recordType(type: Pair<KType?, KType?>, compact: Boolean): TsCode {
+    private fun recordType(type: Pair<KType?, KType?>, compact: Boolean): TsCode {
         val keyTs = type.first?.let { keyType(it) } ?: TsCode("never")
         val valueTs = type.second?.let { tsType(it, compact) } ?: TsCode("never")
         return TsCode { "Partial<Record<${inline(keyTs)}, ${inline(valueTs)}>>" }
     }
 
-    fun tupleType(elementTypes: List<KType?>, compact: Boolean): TsCode =
+    private fun tupleType(elementTypes: List<KType?>, compact: Boolean): TsCode =
         TsCode.join(
             elementTypes.map { type -> type?.let { tsType(it, compact) } ?: TsCode("never") },
             separator = ", ",
@@ -128,7 +128,7 @@ abstract class TsCodeGenerator(val metadata: TypeMetadata) {
             is Excluded -> TsCode("never")
         }.let { if (tsType.isNullable) it + " | null" else it }
 
-    fun stringEnum(enum: TsStringEnum): TsCode = TsCode {
+    private fun stringEnum(enum: TsStringEnum): TsCode = TsCode {
         if (enum.constList != null)
             """${enum.docHeader()}
 export const ${enum.constList.name} = [
@@ -142,7 +142,7 @@ export type ${enum.name} =
 ${enum.values.joinToString("\n") { "| '$it'" }.prependIndent("  ")}"""
     }
 
-    fun tsPlainObject(obj: TsPlainObject): TsCode {
+    private fun tsPlainObject(obj: TsPlainObject): TsCode {
         val typeParams =
             if (obj.clazz.typeParameters.isNotEmpty())
                 obj.clazz.typeParameters.joinToString(",", prefix = "<", postfix = ">")
@@ -161,7 +161,7 @@ ${join(props, "\n").prependIndent("  ")}
         }
     }
 
-    fun sealedClass(sealed: TsSealedClass): TsCode {
+    private fun sealedClass(sealed: TsSealedClass): TsCode {
         val serializer = sealed.jacksonSerializer
         val variants = sealed.variants.map { metadata[it] as TsSealedVariant }
         val tsVariants =
@@ -196,7 +196,7 @@ export type ${sealed.name} = ${variants.joinToString(separator = " | ") { "${sea
         }
     }
 
-    fun tsIdType(namedType: TsIdType): TsCode =
+    private fun tsIdType(namedType: TsIdType): TsCode =
         TsCode("export type ${namedType.name} = Id<'${namedType.tableName}'>", Imports.id)
 
     fun namedType(namedType: TsNamedType<*>): TsCode =
@@ -450,7 +450,7 @@ ${join(propCodes, ",\n").prependIndent("    ")}
             else -> TsCode { "['$name', ${inline(serializeRequestParam(type, valueExpression))}]" }
         }
 
-    fun serializeRequestParam(type: KType, valueExpression: TsCode): TsCode =
+    private fun serializeRequestParam(type: KType, valueExpression: TsCode): TsCode =
         when (val tsRepr = metadata[type] ?: error("No TS type found for $type")) {
             is TsPlain,
             is TsStringEnum ->

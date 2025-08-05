@@ -21,7 +21,7 @@ class PatuAsyncJobProcessor(
         }
     }
 
-    fun runSendPatuReport(dbc: Database.Connection, msg: AsyncJob.SendPatuReport) {
+    private fun runSendPatuReport(dbc: Database.Connection, msg: AsyncJob.SendPatuReport) {
         logger.info { "Running patu report job ${msg.dateRange}" }
         patuReportingService.sendPatuReport(dbc, msg.dateRange)
     }

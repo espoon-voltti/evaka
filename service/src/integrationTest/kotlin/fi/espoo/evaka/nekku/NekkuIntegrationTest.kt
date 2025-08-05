@@ -6025,7 +6025,7 @@ class DeserializingTestNekkuClient(
     private val specialDiets: String = "",
     private val nekkuProducts: String = "",
 ) : NekkuClient {
-    val orders = mutableListOf<NekkuClient.NekkuOrders>()
+    private val orders = mutableListOf<NekkuClient.NekkuOrders>()
 
     override fun getCustomers(): List<NekkuApiCustomer> {
         return jsonMapper.readValue<List<NekkuApiCustomer>>(customers)

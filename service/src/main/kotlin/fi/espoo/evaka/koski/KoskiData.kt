@@ -198,7 +198,7 @@ sealed class KoskiActiveDataRaw(val type: OpiskeluoikeudenTyyppiKoodi) {
         )
     }
 
-    fun haeOpiskeluoikeus(
+    private fun haeOpiskeluoikeus(
         sourceSystem: String,
         ophOrganizationOid: String,
         ophMunicipalityCode: String,
