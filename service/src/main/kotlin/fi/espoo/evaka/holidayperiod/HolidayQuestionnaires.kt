@@ -75,7 +75,7 @@ sealed class HolidayQuestionnaire(val type: QuestionnaireType) {
 }
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
-sealed class QuestionnaireBody() {
+sealed class QuestionnaireBody {
     abstract val absenceType: AbsenceType
     abstract val requiresStrongAuth: Boolean
     abstract val active: FiniteDateRange

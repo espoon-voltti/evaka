@@ -808,7 +808,7 @@ data class CustomerApiType(val weekdays: List<NekkuCustomerApiWeekday>, val type
 }
 
 @ConstList("nekku_customer_weekday")
-enum class NekkuCustomerWeekday() : DatabaseEnum {
+enum class NekkuCustomerWeekday : DatabaseEnum {
     MONDAY,
     TUESDAY,
     WEDNESDAY,
