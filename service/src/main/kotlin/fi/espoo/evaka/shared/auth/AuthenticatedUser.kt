@@ -79,7 +79,7 @@ sealed class AuthenticatedUser {
             get() = employeeId?.let { Hashing.sha256().hashString(it.toString(), Charsets.UTF_8) }
     }
 
-    object Integration : AuthenticatedUser() {
+    data object Integration : AuthenticatedUser() {
         override fun rawId(): UUID = UUID.fromString("00000000-0000-0000-0000-000000000000")
 
         override val type = AuthenticatedUserType.integration
@@ -87,7 +87,7 @@ sealed class AuthenticatedUser {
         override fun toString(): String = "Integration"
     }
 
-    object SystemInternalUser : AuthenticatedUser() {
+    data object SystemInternalUser : AuthenticatedUser() {
         override fun rawId(): UUID = UUID.fromString("00000000-0000-0000-0000-000000000000")
 
         override val type = AuthenticatedUserType.system

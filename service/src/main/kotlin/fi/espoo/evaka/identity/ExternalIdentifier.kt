@@ -17,5 +17,5 @@ sealed class ExternalIdentifier {
         override fun toString(): String = ssn
     }
 
-    object NoID : ExternalIdentifier()
+    data object NoID : ExternalIdentifier()
 }
