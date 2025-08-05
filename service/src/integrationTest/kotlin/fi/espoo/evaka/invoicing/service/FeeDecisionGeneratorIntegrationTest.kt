@@ -3009,7 +3009,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         db.transaction { generator.generateNewDecisionsForAdult(it, testAdult_1.id) }
 
-        getAllFeeDecisions().let { it ->
+        getAllFeeDecisions().let {
             assertEquals(2, it.size)
             assertEquals(1, it.filter { d -> d.status == FeeDecisionStatus.SENT }.size)
             assertEquals(1, it.filter { d -> d.status == FeeDecisionStatus.DRAFT }.size)

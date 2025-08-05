@@ -196,7 +196,7 @@ fun fetchAndUpdateJamixDiets(
 /** Throws an IllegalStateException if Jamix returns an empty texture list. */
 fun fetchAndUpdateJamixTextures(client: JamixClient, db: Database.Connection) {
     val texturesFromJamix =
-        client.getTextures().map { it -> MealTexture(it.modelId, it.fields.textureName) }
+        client.getTextures().map { MealTexture(it.modelId, it.fields.textureName) }
 
     if (texturesFromJamix.isEmpty())
         error("Refusing to sync empty meal textures list into database")

@@ -115,7 +115,7 @@ class IncompleteIncomeReportTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `adults that have expired incomes and children have some placements, are found in report`() {
         db.transaction { tx ->
             tx.insert(testIncome)
-            children.forEach { it ->
+            children.forEach {
                 tx.insert(
                     DevPlacement(
                         childId = it.id,
@@ -141,7 +141,7 @@ class IncompleteIncomeReportTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.transaction { tx ->
             tx.insert(testDecisionMaker_2)
             tx.insert(testIncomeUserEdited)
-            children.forEach { it ->
+            children.forEach {
                 tx.insert(
                     DevPlacement(
                         childId = it.id,

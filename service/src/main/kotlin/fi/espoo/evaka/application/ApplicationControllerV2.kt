@@ -225,7 +225,7 @@ class ApplicationControllerV2(
                     it.fetchApplicationSummariesForGuardian(guardianId)
                 }
             }
-            .also { it ->
+            .also {
                 val childIds = it.map { application -> application.childId }.toSet()
                 ChildAudit.ApplicationRead.log(
                     targetId = AuditId(guardianId),
@@ -260,7 +260,7 @@ class ApplicationControllerV2(
                     it.fetchApplicationSummariesForChild(childId, filter)
                 }
             }
-            .also { it ->
+            .also {
                 val applicationIds = it.map { application -> application.applicationId }.toSet()
                 ChildAudit.ApplicationRead.log(
                     targetId = AuditId(applicationIds),
