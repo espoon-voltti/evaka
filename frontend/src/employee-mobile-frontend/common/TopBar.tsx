@@ -24,10 +24,10 @@ import { TopBarIconContainer } from './top-bar/TopBarIconContainer'
 import { currentSystemNotificationQuery } from './top-bar/queries'
 
 const StickyableTopBar = styled.section<{
-  invertedColors?: boolean
-  sticky?: boolean
+  $invertedColors?: boolean
+  $sticky?: boolean
 }>`
-  position: ${(p) => (p.sticky ? 'sticky' : 'static')};
+  position: ${(p) => (p.$sticky ? 'sticky' : 'static')};
   top: 0;
   width: 100%;
   height: ${topBarHeight};
@@ -40,13 +40,13 @@ const StickyableTopBar = styled.section<{
   flex-shrink: 0;
 
   background: ${(p) =>
-    p.invertedColors ? p.theme.colors.grayscale.g4 : p.theme.colors.main.m2};
+    p.$invertedColors ? p.theme.colors.grayscale.g4 : p.theme.colors.main.m2};
   color: ${(p) =>
-    p.invertedColors ? p.theme.colors.main.m1 : p.theme.colors.grayscale.g0};
+    p.$invertedColors ? p.theme.colors.main.m1 : p.theme.colors.grayscale.g0};
 
   button {
     color: ${(p) =>
-      p.invertedColors ? p.theme.colors.main.m1 : p.theme.colors.grayscale.g0};
+      p.$invertedColors ? p.theme.colors.main.m1 : p.theme.colors.grayscale.g0};
   }
 `
 
@@ -90,7 +90,7 @@ export default React.memo(function TopBar({
 
   return (
     <>
-      <StickyableTopBar invertedColors={invertedColors} sticky={sticky}>
+      <StickyableTopBar $invertedColors={invertedColors} $sticky={sticky}>
         {onBack && (
           <TopBarIconContainer>
             <IconOnlyButton
