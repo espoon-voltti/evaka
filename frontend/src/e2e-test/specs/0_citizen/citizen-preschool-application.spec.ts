@@ -127,17 +127,6 @@ describe('Citizen preschool applications', () => {
     await editorPage.assertPreferredStartDateInfo(undefined)
   })
 
-  test('preferred start date cannot be in term break', async () => {
-    await header.selectTab('applications')
-    const editorPage = await applicationsPage.createApplication(
-      testChild.id,
-      'PRESCHOOL'
-    )
-
-    await editorPage.setPreferredStartDate('18.10.2021')
-    await editorPage.assertPreferredStartDateInfo('Päivä ei ole sallittu')
-  })
-
   test('If user has no email selected in settings the application assumes user has no email', async () => {
     await header.selectTab('personal-details')
     const personalDetailsPage = new CitizenPersonalDetailsPage(page)
@@ -209,12 +198,6 @@ describe('Citizen preschool applications - connected daycare preferred start dat
       name: 'cannot be before preschool preferred start date when preschool preferred start date is in the middle of term',
       preferredStartDate: LocalDate.of(2021, 8, 12),
       connectedDaycarePreferredStartDate: LocalDate.of(2021, 8, 11),
-      isValid: false
-    },
-    {
-      name: 'cannot be in term break',
-      preferredStartDate: LocalDate.of(2021, 8, 11),
-      connectedDaycarePreferredStartDate: LocalDate.of(2021, 10, 18),
       isValid: false
     }
   ]

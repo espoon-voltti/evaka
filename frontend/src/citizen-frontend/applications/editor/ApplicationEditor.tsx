@@ -85,7 +85,6 @@ export type ApplicationFormProps = {
 export interface Term {
   term: FiniteDateRange
   extendedTerm: FiniteDateRange
-  termBreaks: FiniteDateRange[]
 }
 
 const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
@@ -118,18 +117,16 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
           })
           .map((term) => ({
             term: term.finnishPreschool,
-            extendedTerm: term.extendedTerm,
-            termBreaks: term.termBreaks
+            extendedTerm: term.extendedTerm
           }))
       case 'CLUB':
         return (clubTerms ?? [])
           .filter(({ applicationPeriod }) =>
             applicationPeriod.includes(LocalDate.todayInHelsinkiTz())
           )
-          .map(({ term, termBreaks }) => ({
+          .map(({ term }) => ({
             term,
-            extendedTerm: term,
-            termBreaks
+            extendedTerm: term
           }))
       default:
         return undefined
@@ -178,11 +175,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
     () =>
       terms !== undefined
         ? (localDate: LocalDate) =>
-            terms.some(
-              ({ extendedTerm, termBreaks }) =>
-                extendedTerm.includes(localDate) &&
-                termBreaks.every((termBreak) => !termBreak.includes(localDate))
-            )
+            terms.some(({ extendedTerm }) => extendedTerm.includes(localDate))
               ? null
               : t.validationErrors.unselectableDate
         : undefined,

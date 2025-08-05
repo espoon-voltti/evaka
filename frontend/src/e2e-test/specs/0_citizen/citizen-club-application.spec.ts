@@ -116,15 +116,4 @@ describe('Citizen club applications', () => {
     await editorPage.setPreferredStartDate('25.08.2021')
     await editorPage.assertPreferredStartDateInfo(undefined)
   })
-
-  test('preferred start date cannot be in term break', async () => {
-    await header.selectTab('applications')
-    const editorPage = await applicationsPage.createApplication(
-      testChild.id,
-      'CLUB'
-    )
-
-    await editorPage.setPreferredStartDate('18.10.2021')
-    await editorPage.assertPreferredStartDateInfo('Päivä ei ole sallittu')
-  })
 })
