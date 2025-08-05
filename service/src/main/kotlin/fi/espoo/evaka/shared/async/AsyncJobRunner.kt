@@ -50,16 +50,11 @@ class AsyncJobRunner<T : AsyncJobPayload>(
     private var handlers: Map<AsyncJobType<out T>, AsyncJobPool.Handler<*>> = emptyMap()
     private var afterCommitHooks: Map<AsyncJobType<out T>, () -> Unit> = emptyMap()
 
-    private val pools: List<AsyncJobPool<T>>
-    private val jobsPerPool: Map<AsyncJobPool.Id<T>, Set<AsyncJobType<out T>>>
+    private val pools: List<AsyncJobPool<T>> =
+        pools.map { AsyncJobPool(it.id, it.config, jdbi, tracer, PoolRegistration(it.id)) }
+    private val jobsPerPool: Map<AsyncJobPool.Id<T>, Set<AsyncJobType<out T>>> =
+        pools.associate { pool -> pool.id to pool.jobs.map { AsyncJobType(it) }.toSet() }
     private val backgroundTimer: AtomicReference<Timer> = AtomicReference()
-
-    init {
-        this.jobsPerPool =
-            pools.associate { pool -> pool.id to pool.jobs.map { AsyncJobType(it) }.toSet() }
-        this.pools =
-            pools.map { AsyncJobPool(it.id, it.config, jdbi, tracer, PoolRegistration(it.id)) }
-    }
 
     inner class PoolRegistration(val id: AsyncJobPool.Id<T>) : AsyncJobPool.Registration<T> {
         override fun jobTypes() = jobsPerPool[id] ?: emptySet()
