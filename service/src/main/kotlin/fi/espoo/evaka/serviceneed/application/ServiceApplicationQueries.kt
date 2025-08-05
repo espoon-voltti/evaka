@@ -13,7 +13,6 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.Predicate
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import fi.espoo.evaka.shared.security.actionrule.forTable
 import java.time.LocalDate
 
 fun Database.Read.getServiceApplications(where: Predicate): List<ServiceApplication> =

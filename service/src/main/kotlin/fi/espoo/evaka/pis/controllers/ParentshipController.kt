@@ -9,7 +9,6 @@ import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.pis.Creator
 import fi.espoo.evaka.pis.getParentship
 import fi.espoo.evaka.pis.getParentships
-import fi.espoo.evaka.pis.service.Parentship
 import fi.espoo.evaka.pis.service.ParentshipDetailed
 import fi.espoo.evaka.pis.service.ParentshipService
 import fi.espoo.evaka.shared.ParentshipId
