@@ -96,7 +96,7 @@ class DvvModificationsServiceClientIntegrationTest :
         assertEquals("LISATTY", ssnModified.muutosattribuutti)
         assertEquals("AKTIIVI", ssnModified.voimassaolo)
         assertEquals("010281-999C", ssnModified.aktiivinenHenkilotunnus)
-        assertEquals("010181-999K", ssnModified.edellisetHenkilotunnukset.get(0))
+        assertEquals("010181-999K", ssnModified.edellisetHenkilotunnukset[0])
     }
 
     @Test

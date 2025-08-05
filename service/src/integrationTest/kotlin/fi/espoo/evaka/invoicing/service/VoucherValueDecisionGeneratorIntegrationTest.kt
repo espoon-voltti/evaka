@@ -823,7 +823,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
             dbInstance(),
             AuthenticatedUser.Employee(testDecisionMaker_2.id, setOf(UserRole.ADMIN)),
             clock,
-            listOf(decisions.get(0).id),
+            listOf(decisions[0].id),
             null,
         )
 
@@ -860,7 +860,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
             dbInstance(),
             AuthenticatedUser.Employee(testDecisionMaker_2.id, setOf(UserRole.ADMIN)),
             clock,
-            listOf(decisions.get(0).id),
+            listOf(decisions[0].id),
             null,
         )
 

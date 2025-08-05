@@ -838,7 +838,7 @@ val serviceNeedOptionVoucherValueTestFixtures =
         val baseValueUnder3y = 134850 // 87000 * 1.55
         val newBaseValue = 88000
         val newBaseValueUnder3y = 136400 // 88000 * 1.55
-        val coefficient = serviceNeedOptionVoucherValueCoefficients.get(it.id)!!
+        val coefficient = serviceNeedOptionVoucherValueCoefficients[it.id]!!
 
         listOf(
             ServiceNeedOptionVoucherValue(

@@ -132,6 +132,6 @@ class IncomeControllerCitizenIntegrationTest : FullApplicationTest(resetDbBefore
             )
 
         assertEquals(1, expirationDates.size)
-        assertEquals(expirationDate, expirationDates.get(0))
+        assertEquals(expirationDate, expirationDates[0])
     }
 }

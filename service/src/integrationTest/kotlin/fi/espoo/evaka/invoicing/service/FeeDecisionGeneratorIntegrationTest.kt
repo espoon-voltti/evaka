@@ -2992,7 +2992,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             dbInstance(),
             AuthenticatedUser.Employee(testDecisionMaker_2.id, setOf(UserRole.ADMIN)),
             clock,
-            listOf(decisions.get(0).id),
+            listOf(decisions[0].id),
             null,
         )
 
@@ -3199,7 +3199,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             dbInstance(),
             AuthenticatedUser.Employee(testDecisionMaker_2.id, setOf(UserRole.ADMIN)),
             clock,
-            listOf(decisions.get(0).id),
+            listOf(decisions[0].id),
             null,
         )
 
@@ -3236,7 +3236,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             dbInstance(),
             AuthenticatedUser.Employee(testDecisionMaker_2.id, setOf(UserRole.ADMIN)),
             clock,
-            listOf(decisions.get(0).id),
+            listOf(decisions[0].id),
             null,
         )
 
