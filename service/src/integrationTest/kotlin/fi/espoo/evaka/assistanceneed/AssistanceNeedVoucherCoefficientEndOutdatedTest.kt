@@ -198,7 +198,7 @@ class AssistanceNeedVoucherCoefficientEndOutdatedTest : PureJdbiTest(resetDbBefo
     }
 
     @Test
-    fun `new coefficient is not ended when placement changes to a different unit`() {
+    fun `future coefficient is not ended when placement changes to a different unit`() {
         db.transaction { tx ->
             val area = DevCareArea()
             val unit = DevDaycare(areaId = area.id)
