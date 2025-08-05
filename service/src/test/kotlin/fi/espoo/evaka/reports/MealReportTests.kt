@@ -695,7 +695,7 @@ class MealReportTests {
             object : DaycareInfo {
                 override val name = "Test Daycare"
                 override val operationDays = setOf(1, 2, 3, 4, 5)
-                override val shiftCareOperationDays: Set<Int>? = setOf(1, 2, 3, 4, 5, 6, 7)
+                override val shiftCareOperationDays = setOf(1, 2, 3, 4, 5, 6, 7)
                 override val shiftCareOpenOnHolidays: Boolean = false
                 override val mealTimes =
                     DaycareMealtimes(
@@ -811,7 +811,7 @@ class MealReportTests {
             object : DaycareInfo {
                 override val name = "24/7 Daycare"
                 override val operationDays = setOf(1, 2, 3, 4, 5)
-                override val shiftCareOperationDays: Set<Int>? = setOf(1, 2, 3, 4, 5, 6, 7)
+                override val shiftCareOperationDays = setOf(1, 2, 3, 4, 5, 6, 7)
                 override val shiftCareOpenOnHolidays: Boolean = false
                 override val mealTimes =
                     DaycareMealtimes(
@@ -995,7 +995,7 @@ class MealReportTests {
             object : DaycareInfo {
                 override val name = "Daycare"
                 override val operationDays = setOf(1, 2, 3, 4, 5)
-                override val shiftCareOperationDays: Set<Int>? = setOf(1, 2, 3, 4, 5, 6, 7)
+                override val shiftCareOperationDays = setOf(1, 2, 3, 4, 5, 6, 7)
                 override val shiftCareOpenOnHolidays: Boolean = true
                 override val mealTimes =
                     DaycareMealtimes(

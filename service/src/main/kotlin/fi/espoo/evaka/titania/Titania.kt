@@ -248,7 +248,7 @@ data class TitaniaException(val status: HttpStatus, val detail: List<TitaniaErro
 
     constructor(detail: TitaniaErrorDetail) : this(detail.errorcode.status, listOf(detail))
 
-    override val message: String?
+    override val message: String
         get() = detail.joinToString { it.message }
 }
 

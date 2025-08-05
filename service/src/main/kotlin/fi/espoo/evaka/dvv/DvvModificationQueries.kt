@@ -38,7 +38,7 @@ LIMIT 1
         .exactlyOne<String>()
 }
 
-fun Database.Read.getDvvModificationToken(token: String): DvvModificationToken? {
+fun Database.Read.getDvvModificationToken(token: String): DvvModificationToken {
     return createQuery {
             sql(
                 """
