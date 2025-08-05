@@ -208,7 +208,7 @@ private object EnvFields {
 // json utils
 
 fun Any.asMap(jsonMapper: JsonMapper = mapper): Map<String, Any> =
-    jsonMapper.convertValue<Map<String, Any>>(this, object : TypeReference<Map<String, Any>>() {})
+    jsonMapper.convertValue(this, object : TypeReference<Map<String, Any>>() {})
 
 private fun ILoggingEvent.toJson(encoder: CompositeJsonEncoder<ILoggingEvent>): JsonNode =
     mapper.readTree(encoder.encode(this))

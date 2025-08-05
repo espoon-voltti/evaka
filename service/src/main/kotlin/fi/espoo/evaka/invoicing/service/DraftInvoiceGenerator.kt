@@ -856,7 +856,7 @@ enum class FullMonthAbsenceType {
 }
 
 private fun datesByWeekInPeriod(period: FiniteDateRange): List<List<LocalDate>> {
-    return period.dates().fold<LocalDate, List<List<LocalDate>>>(listOf()) { weeks, date ->
+    return period.dates().fold(listOf()) { weeks, date ->
         if (weeks.isEmpty() || date.dayOfWeek == DayOfWeek.MONDAY) {
             weeks.plusElement(listOf(date))
         } else {

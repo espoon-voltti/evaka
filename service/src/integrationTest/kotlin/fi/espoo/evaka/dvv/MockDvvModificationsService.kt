@@ -49,7 +49,7 @@ fun getModifications(ssns: List<String>): String {
 }
 
 val modifications =
-    mapOf<String, String>(
+    mapOf(
         "nimenmuutos" to
             """
 {
