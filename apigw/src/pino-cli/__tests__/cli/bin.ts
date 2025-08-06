@@ -26,17 +26,6 @@ import {
 } from '../../test-utils/fixtures/log-messages.ts'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const cliPath = path.join(
-  __dirname,
-  '..',
-  '..',
-  '..',
-  '..',
-  'dist',
-  'pino-cli',
-  'cli',
-  'bin.js'
-)
 
 const objToLogMessage = (obj: unknown): string => {
   return JSON.stringify(obj) + '\n'
@@ -46,13 +35,21 @@ const logMessageToObj = (data: Buffer): unknown => {
   return JSON.parse(data.toString())
 }
 
+const runCli = (input: string) =>
+  spawnSync(
+    process.argv[0],
+    [
+      '--experimental-strip-types',
+      path.join(__dirname, '..', '..', '..', 'pino-cli', 'cli', 'bin.ts')
+    ],
+    { input }
+  )
+
 describe('transport', () => {
   describe('given non-json input', () => {
     test('filters the non-json input', () => {
       const invalidLogLine = 'not a valid log line\n'
-      const cli = spawnSync(process.argv[0], [cliPath], {
-        input: invalidLogLine
-      })
+      const cli = runCli(invalidLogLine)
 
       expect(cli.stdout.toString()).toEqual('')
       expect(cli.status).toEqual(0)
@@ -62,9 +59,7 @@ describe('transport', () => {
   describe('given json input that is not a pino access log nor a pino app audit log', () => {
     test('returns the original json input as is', () => {
       const obj1 = { name: 'foo:bar', version: 5, message: 'foo bar' }
-      const cli1 = spawnSync(process.argv[0], [cliPath], {
-        input: objToLogMessage(obj1)
-      })
+      const cli1 = runCli(objToLogMessage(obj1))
 
       expect(logMessageToObj(cli1.stdout)).toEqual(obj1)
       expect(cli1.status).toEqual(0)
@@ -75,9 +70,7 @@ describe('transport', () => {
         message: 'foo bar',
         req: { url: '/path' }
       }
-      const cli2 = spawnSync(process.argv[0], [cliPath], {
-        input: objToLogMessage(obj2)
-      })
+      const cli2 = runCli(objToLogMessage(obj2))
 
       expect(logMessageToObj(cli2.stdout)).toEqual(obj2)
       expect(cli2.status).toEqual(0)
@@ -89,9 +82,7 @@ describe('transport', () => {
         req: { url: '/path' },
         res: { statusCode: 200 }
       }
-      const cli3 = spawnSync(process.argv[0], [cliPath], {
-        input: objToLogMessage(obj3)
-      })
+      const cli3 = runCli(objToLogMessage(obj3))
 
       expect(logMessageToObj(cli3.stdout)).toEqual(obj3)
       expect(cli3.status).toEqual(0)
@@ -106,9 +97,7 @@ describe('transport', () => {
       pinoAccessLogMessage.req.url = '/health'
       pinoAccessLogMessage.req.path = '/health'
 
-      const cli = spawnSync(process.argv[0], [cliPath], {
-        input: objToLogMessage(pinoAccessLogMessage)
-      })
+      const cli = runCli(objToLogMessage(pinoAccessLogMessage))
 
       expect(cli.stdout.toString()).toEqual('')
       expect(cli.status).toEqual(0)
@@ -118,9 +107,7 @@ describe('transport', () => {
   describe('pino access log', () => {
     describe('given a valid log message', () => {
       test('returns a valid access log message in proper format', () => {
-        const cli = spawnSync(process.argv[0], [cliPath], {
-          input: objToLogMessage(validPinoAccessLogMessage)
-        })
+        const cli = runCli(objToLogMessage(validPinoAccessLogMessage))
 
         expect(logMessageToObj(cli.stdout)).toEqual(
           expected.validAccessLogMessage
@@ -140,9 +127,7 @@ describe('transport', () => {
         )
         delete logMessage['@timestamp']
 
-        const cli = spawnSync(process.argv[0], [cliPath], {
-          input: objToLogMessage(invalidPinoAccessLogMessage)
-        })
+        const cli = runCli(objToLogMessage(invalidPinoAccessLogMessage))
 
         expect(logMessageToObj(cli.stdout)).toEqual(logMessage)
         expect(cli.status).toEqual(0)
@@ -157,9 +142,7 @@ describe('transport', () => {
         const logMessage = lodash.cloneDeep(expected.validAccessLogMessage)
         logMessage.appBuild = ''
 
-        const cli = spawnSync(process.argv[0], [cliPath], {
-          input: objToLogMessage(invalidPinoAccessLogMessage)
-        })
+        const cli = runCli(objToLogMessage(invalidPinoAccessLogMessage))
 
         expect(logMessageToObj(cli.stdout)).toEqual(logMessage)
         expect(cli.status).toEqual(0)
@@ -174,9 +157,7 @@ describe('transport', () => {
         const logMessage = lodash.cloneDeep(expected.validAccessLogMessage)
         logMessage.appCommit = ''
 
-        const cli = spawnSync(process.argv[0], [cliPath], {
-          input: objToLogMessage(invalidPinoAccessLogMessage)
-        })
+        const cli = runCli(objToLogMessage(invalidPinoAccessLogMessage))
 
         expect(logMessageToObj(cli.stdout)).toEqual(logMessage)
         expect(cli.status).toEqual(0)
@@ -193,9 +174,7 @@ describe('transport', () => {
         )
         delete logMessage.appName
 
-        const cli = spawnSync(process.argv[0], [cliPath], {
-          input: objToLogMessage(invalidPinoAccessLogMessage)
-        })
+        const cli = runCli(objToLogMessage(invalidPinoAccessLogMessage))
 
         expect(logMessageToObj(cli.stdout)).toEqual(logMessage)
         expect(cli.status).toEqual(0)
@@ -213,9 +192,7 @@ describe('transport', () => {
         const logMessage = lodash.cloneDeep(expected.validAccessLogMessage)
         logMessage.clientIp = ''
 
-        const cli = spawnSync(process.argv[0], [cliPath], {
-          input: objToLogMessage(invalidPinoAccessLogMessage)
-        })
+        const cli = runCli(objToLogMessage(invalidPinoAccessLogMessage))
 
         expect(logMessageToObj(cli.stdout)).toEqual(logMessage)
         expect(cli.status).toEqual(0)
@@ -233,9 +210,7 @@ describe('transport', () => {
         const logMessage = lodash.cloneDeep(expected.validAccessLogMessage)
         logMessage.contentLength = -1
 
-        const cli = spawnSync(process.argv[0], [cliPath], {
-          input: objToLogMessage(invalidPinoAccessLogMessage)
-        })
+        const cli = runCli(objToLogMessage(invalidPinoAccessLogMessage))
 
         expect(logMessageToObj(cli.stdout)).toEqual(logMessage)
         expect(cli.status).toEqual(0)
@@ -252,9 +227,7 @@ describe('transport', () => {
         )
         delete logMessage.env
 
-        const cli = spawnSync(process.argv[0], [cliPath], {
-          input: objToLogMessage(invalidPinoAccessLogMessage)
-        })
+        const cli = runCli(objToLogMessage(invalidPinoAccessLogMessage))
 
         expect(logMessageToObj(cli.stdout)).toEqual(logMessage)
         expect(cli.status).toEqual(0)
@@ -269,9 +242,7 @@ describe('transport', () => {
         const logMessage = lodash.cloneDeep(expected.validAccessLogMessage)
         logMessage.hostIp = ''
 
-        const cli = spawnSync(process.argv[0], [cliPath], {
-          input: objToLogMessage(invalidPinoAccessLogMessage)
-        })
+        const cli = runCli(objToLogMessage(invalidPinoAccessLogMessage))
 
         expect(logMessageToObj(cli.stdout)).toEqual(logMessage)
         expect(cli.status).toEqual(0)
@@ -289,9 +260,7 @@ describe('transport', () => {
         const logMessage = lodash.cloneDeep(expected.validAccessLogMessage)
         logMessage.httpMethod = ''
 
-        const cli = spawnSync(process.argv[0], [cliPath], {
-          input: objToLogMessage(invalidPinoAccessLogMessage)
-        })
+        const cli = runCli(objToLogMessage(invalidPinoAccessLogMessage))
 
         expect(logMessageToObj(cli.stdout)).toEqual(logMessage)
         expect(cli.status).toEqual(0)
@@ -309,9 +278,7 @@ describe('transport', () => {
         const logMessage = lodash.cloneDeep(expected.validAccessLogMessage)
         logMessage.path = ''
 
-        const cli = spawnSync(process.argv[0], [cliPath], {
-          input: objToLogMessage(invalidPinoAccessLogMessage)
-        })
+        const cli = runCli(objToLogMessage(invalidPinoAccessLogMessage))
 
         expect(logMessageToObj(cli.stdout)).toEqual(logMessage)
         expect(cli.status).toEqual(0)
@@ -329,9 +296,7 @@ describe('transport', () => {
         const logMessage = lodash.cloneDeep(expected.validAccessLogMessage)
         logMessage.queryString = ''
 
-        const cli = spawnSync(process.argv[0], [cliPath], {
-          input: objToLogMessage(invalidPinoAccessLogMessage)
-        })
+        const cli = runCli(objToLogMessage(invalidPinoAccessLogMessage))
 
         expect(logMessageToObj(cli.stdout)).toEqual(logMessage)
         expect(cli.status).toEqual(0)
@@ -346,9 +311,7 @@ describe('transport', () => {
         const logMessage = lodash.cloneDeep(expected.validAccessLogMessage)
         logMessage.responseTime = -1
 
-        const cli = spawnSync(process.argv[0], [cliPath], {
-          input: objToLogMessage(invalidPinoAccessLogMessage)
-        })
+        const cli = runCli(objToLogMessage(invalidPinoAccessLogMessage))
 
         expect(logMessageToObj(cli.stdout)).toEqual(logMessage)
         expect(cli.status).toEqual(0)
@@ -366,9 +329,7 @@ describe('transport', () => {
         const logMessage = lodash.cloneDeep(expected.validAccessLogMessage)
         logMessage.statusCode = ''
 
-        const cli = spawnSync(process.argv[0], [cliPath], {
-          input: objToLogMessage(invalidPinoAccessLogMessage)
-        })
+        const cli = runCli(objToLogMessage(invalidPinoAccessLogMessage))
 
         expect(logMessageToObj(cli.stdout)).toEqual(logMessage)
         expect(cli.status).toEqual(0)
@@ -386,9 +347,7 @@ describe('transport', () => {
         const logMessage = lodash.cloneDeep(expected.validAccessLogMessage)
         logMessage.userIdHash = ''
 
-        const cli = spawnSync(process.argv[0], [cliPath], {
-          input: objToLogMessage(invalidPinoAccessLogMessage)
-        })
+        const cli = runCli(objToLogMessage(invalidPinoAccessLogMessage))
 
         expect(logMessageToObj(cli.stdout)).toEqual(logMessage)
         expect(cli.status).toEqual(0)
@@ -404,9 +363,7 @@ describe('transport', () => {
         const logMessage = lodash.cloneDeep(expected.validAccessLogMessage)
         logMessage.parentSpanId = ''
 
-        const cli = spawnSync(process.argv[0], [cliPath], {
-          input: objToLogMessage(invalidPinoAccessLogMessage)
-        })
+        const cli = runCli(objToLogMessage(invalidPinoAccessLogMessage))
 
         expect(logMessageToObj(cli.stdout)).toEqual(logMessage)
         expect(cli.status).toEqual(0)
@@ -422,9 +379,7 @@ describe('transport', () => {
         const logMessage = lodash.cloneDeep(expected.validAccessLogMessage)
         logMessage.spanId = ''
 
-        const cli = spawnSync(process.argv[0], [cliPath], {
-          input: objToLogMessage(invalidPinoAccessLogMessage)
-        })
+        const cli = runCli(objToLogMessage(invalidPinoAccessLogMessage))
 
         expect(logMessageToObj(cli.stdout)).toEqual(logMessage)
         expect(cli.status).toEqual(0)
@@ -440,9 +395,7 @@ describe('transport', () => {
         const logMessage = lodash.cloneDeep(expected.validAccessLogMessage)
         logMessage.traceId = ''
 
-        const cli = spawnSync(process.argv[0], [cliPath], {
-          input: objToLogMessage(invalidPinoAccessLogMessage)
-        })
+        const cli = runCli(objToLogMessage(invalidPinoAccessLogMessage))
 
         expect(logMessageToObj(cli.stdout)).toEqual(logMessage)
         expect(cli.status).toEqual(0)
@@ -453,9 +406,7 @@ describe('transport', () => {
   describe('pino app audit log', () => {
     describe('given a valid log message', () => {
       test('returns a valid audit log message in proper format', () => {
-        const cli = spawnSync(process.argv[0], [cliPath], {
-          input: objToLogMessage(validPinoAppAuditLogMessage)
-        })
+        const cli = runCli(objToLogMessage(validPinoAppAuditLogMessage))
 
         expect(logMessageToObj(cli.stdout)).toEqual(
           expected.validAuditLogMessage
@@ -475,9 +426,7 @@ describe('transport', () => {
         )
         delete logMessage['@timestamp']
 
-        const cli = spawnSync(process.argv[0], [cliPath], {
-          input: objToLogMessage(invalidPinoAppAuditLogMessage)
-        })
+        const cli = runCli(objToLogMessage(invalidPinoAppAuditLogMessage))
 
         expect(logMessageToObj(cli.stdout)).toEqual(logMessage)
         expect(cli.status).toEqual(0)
@@ -492,9 +441,7 @@ describe('transport', () => {
         const logMessage = lodash.cloneDeep(expected.validAuditLogMessage)
         logMessage.appBuild = ''
 
-        const cli = spawnSync(process.argv[0], [cliPath], {
-          input: objToLogMessage(invalidPinoAppAuditLogMessage)
-        })
+        const cli = runCli(objToLogMessage(invalidPinoAppAuditLogMessage))
 
         expect(logMessageToObj(cli.stdout)).toEqual(logMessage)
         expect(cli.status).toEqual(0)
@@ -509,9 +456,7 @@ describe('transport', () => {
         const logMessage = lodash.cloneDeep(expected.validAuditLogMessage)
         logMessage.appCommit = ''
 
-        const cli = spawnSync(process.argv[0], [cliPath], {
-          input: objToLogMessage(invalidPinoAppAuditLogMessage)
-        })
+        const cli = runCli(objToLogMessage(invalidPinoAppAuditLogMessage))
 
         expect(logMessageToObj(cli.stdout)).toEqual(logMessage)
         expect(cli.status).toEqual(0)
@@ -528,9 +473,7 @@ describe('transport', () => {
         )
         delete logMessage.appName
 
-        const cli = spawnSync(process.argv[0], [cliPath], {
-          input: objToLogMessage(invalidPinoAppAuditLogMessage)
-        })
+        const cli = runCli(objToLogMessage(invalidPinoAppAuditLogMessage))
 
         expect(logMessageToObj(cli.stdout)).toEqual(logMessage)
         expect(cli.status).toEqual(0)
@@ -545,9 +488,7 @@ describe('transport', () => {
         const logMessage = lodash.cloneDeep(expected.validAuditLogMessage)
         logMessage.description = ''
 
-        const cli = spawnSync(process.argv[0], [cliPath], {
-          input: objToLogMessage(invalidPinoAppAuditLogMessage)
-        })
+        const cli = runCli(objToLogMessage(invalidPinoAppAuditLogMessage))
 
         expect(logMessageToObj(cli.stdout)).toEqual(logMessage)
         expect(cli.status).toEqual(0)
@@ -564,9 +505,7 @@ describe('transport', () => {
         )
         delete logMessage.env
 
-        const cli = spawnSync(process.argv[0], [cliPath], {
-          input: objToLogMessage(invalidPinoAppAuditLogMessage)
-        })
+        const cli = runCli(objToLogMessage(invalidPinoAppAuditLogMessage))
 
         expect(logMessageToObj(cli.stdout)).toEqual(logMessage)
         expect(cli.status).toEqual(0)
@@ -581,9 +520,7 @@ describe('transport', () => {
         const logMessage = lodash.cloneDeep(expected.validAuditLogMessage)
         logMessage.eventCode = ''
 
-        const cli = spawnSync(process.argv[0], [cliPath], {
-          input: objToLogMessage(invalidPinoAppAuditLogMessage)
-        })
+        const cli = runCli(objToLogMessage(invalidPinoAppAuditLogMessage))
 
         expect(logMessageToObj(cli.stdout)).toEqual(logMessage)
         expect(cli.status).toEqual(0)
@@ -598,9 +535,7 @@ describe('transport', () => {
         const logMessage = lodash.cloneDeep(expected.validAuditLogMessage)
         logMessage.hostIp = ''
 
-        const cli = spawnSync(process.argv[0], [cliPath], {
-          input: objToLogMessage(invalidPinoAppAuditLogMessage)
-        })
+        const cli = runCli(objToLogMessage(invalidPinoAppAuditLogMessage))
 
         expect(logMessageToObj(cli.stdout)).toEqual(logMessage)
         expect(cli.status).toEqual(0)
@@ -616,9 +551,7 @@ describe('transport', () => {
         const logMessage = lodash.cloneDeep(expected.validAuditLogMessage)
         delete logMessage.objectId
 
-        const cli = spawnSync(process.argv[0], [cliPath], {
-          input: objToLogMessage(invalidPinoAppAuditLogMessage)
-        })
+        const cli = runCli(objToLogMessage(invalidPinoAppAuditLogMessage))
 
         expect(logMessageToObj(cli.stdout)).toEqual(logMessage)
         expect(cli.status).toEqual(0)
@@ -633,9 +566,7 @@ describe('transport', () => {
         const logMessage = lodash.cloneDeep(expected.validAuditLogMessage)
         logMessage.securityEvent = false
 
-        const cli = spawnSync(process.argv[0], [cliPath], {
-          input: objToLogMessage(invalidPinoAppAuditLogMessage)
-        })
+        const cli = runCli(objToLogMessage(invalidPinoAppAuditLogMessage))
 
         expect(logMessageToObj(cli.stdout)).toEqual(logMessage)
         expect(cli.status).toEqual(0)
@@ -650,9 +581,7 @@ describe('transport', () => {
         const logMessage = lodash.cloneDeep(expected.validAuditLogMessage)
         logMessage.securityLevel = ''
 
-        const cli = spawnSync(process.argv[0], [cliPath], {
-          input: objToLogMessage(invalidPinoAppAuditLogMessage)
-        })
+        const cli = runCli(objToLogMessage(invalidPinoAppAuditLogMessage))
 
         expect(logMessageToObj(cli.stdout)).toEqual(logMessage)
         expect(cli.status).toEqual(0)
@@ -667,9 +596,7 @@ describe('transport', () => {
         const logMessage = lodash.cloneDeep(expected.validAuditLogMessage)
         logMessage.targetId = ''
 
-        const cli = spawnSync(process.argv[0], [cliPath], {
-          input: objToLogMessage(invalidPinoAppAuditLogMessage)
-        })
+        const cli = runCli(objToLogMessage(invalidPinoAppAuditLogMessage))
 
         expect(logMessageToObj(cli.stdout)).toEqual(logMessage)
         expect(cli.status).toEqual(0)
@@ -684,9 +611,7 @@ describe('transport', () => {
         const logMessage = lodash.cloneDeep(expected.validAuditLogMessage)
         logMessage.userId = ''
 
-        const cli = spawnSync(process.argv[0], [cliPath], {
-          input: objToLogMessage(invalidPinoAppAuditLogMessage)
-        })
+        const cli = runCli(objToLogMessage(invalidPinoAppAuditLogMessage))
 
         expect(logMessageToObj(cli.stdout)).toEqual(logMessage)
         expect(cli.status).toEqual(0)
@@ -701,9 +626,7 @@ describe('transport', () => {
         const logMessage = lodash.cloneDeep(expected.validAuditLogMessage)
         logMessage.userIdHash = ''
 
-        const cli = spawnSync(process.argv[0], [cliPath], {
-          input: objToLogMessage(invalidPinoAppAuditLogMessage)
-        })
+        const cli = runCli(objToLogMessage(invalidPinoAppAuditLogMessage))
 
         expect(logMessageToObj(cli.stdout)).toEqual(logMessage)
         expect(cli.status).toEqual(0)
@@ -718,9 +641,7 @@ describe('transport', () => {
         const logMessage = lodash.cloneDeep(expected.validAuditLogMessage)
         logMessage.userIp = ''
 
-        const cli = spawnSync(process.argv[0], [cliPath], {
-          input: objToLogMessage(invalidPinoAppAuditLogMessage)
-        })
+        const cli = runCli(objToLogMessage(invalidPinoAppAuditLogMessage))
 
         expect(logMessageToObj(cli.stdout)).toEqual(logMessage)
         expect(cli.status).toEqual(0)
@@ -737,9 +658,7 @@ describe('transport', () => {
         )
         delete logMessage.version
 
-        const cli = spawnSync(process.argv[0], [cliPath], {
-          input: objToLogMessage(invalidPinoAppAuditLogMessage)
-        })
+        const cli = runCli(objToLogMessage(invalidPinoAppAuditLogMessage))
 
         expect(logMessageToObj(cli.stdout)).toEqual(logMessage)
         expect(cli.status).toEqual(0)
@@ -755,9 +674,7 @@ describe('transport', () => {
         const logMessage = lodash.cloneDeep(expected.validAuditLogMessage)
         logMessage.parentSpanId = ''
 
-        const cli = spawnSync(process.argv[0], [cliPath], {
-          input: objToLogMessage(invalidPinoAppAuditLogMessage)
-        })
+        const cli = runCli(objToLogMessage(invalidPinoAppAuditLogMessage))
 
         expect(logMessageToObj(cli.stdout)).toEqual(logMessage)
         expect(cli.status).toEqual(0)
@@ -773,9 +690,7 @@ describe('transport', () => {
         const logMessage = lodash.cloneDeep(expected.validAuditLogMessage)
         logMessage.spanId = ''
 
-        const cli = spawnSync(process.argv[0], [cliPath], {
-          input: objToLogMessage(invalidPinoAppAuditLogMessage)
-        })
+        const cli = runCli(objToLogMessage(invalidPinoAppAuditLogMessage))
 
         expect(logMessageToObj(cli.stdout)).toEqual(logMessage)
         expect(cli.status).toEqual(0)
@@ -791,9 +706,7 @@ describe('transport', () => {
         const logMessage = lodash.cloneDeep(expected.validAuditLogMessage)
         logMessage.traceId = ''
 
-        const cli = spawnSync(process.argv[0], [cliPath], {
-          input: objToLogMessage(invalidPinoAppAuditLogMessage)
-        })
+        const cli = runCli(objToLogMessage(invalidPinoAppAuditLogMessage))
 
         expect(logMessageToObj(cli.stdout)).toEqual(logMessage)
         expect(cli.status).toEqual(0)
@@ -804,9 +717,7 @@ describe('transport', () => {
   describe('pino misc log', () => {
     describe('given a valid log message', () => {
       test('returns a valid misc log message in proper format', () => {
-        const cli = spawnSync(process.argv[0], [cliPath], {
-          input: objToLogMessage(validPinoMiscLogMessage)
-        })
+        const cli = runCli(objToLogMessage(validPinoMiscLogMessage))
 
         expect(logMessageToObj(cli.stdout)).toEqual(
           expected.validMiscLogMessage
@@ -817,9 +728,7 @@ describe('transport', () => {
 
     describe('given a valid log message with an error', () => {
       test('returns a valid misc log message in proper format, including exception and stackTrace', () => {
-        const cli = spawnSync(process.argv[0], [cliPath], {
-          input: objToLogMessage(validPinoMiscLogMessageWithError)
-        })
+        const cli = runCli(objToLogMessage(validPinoMiscLogMessageWithError))
 
         expect(logMessageToObj(cli.stdout)).toEqual(
           expected.validMiscLogMessageWithError
@@ -839,9 +748,7 @@ describe('transport', () => {
         )
         delete logMessage['@timestamp']
 
-        const cli = spawnSync(process.argv[0], [cliPath], {
-          input: objToLogMessage(invalidPinoMiscLogMessage)
-        })
+        const cli = runCli(objToLogMessage(invalidPinoMiscLogMessage))
 
         expect(logMessageToObj(cli.stdout)).toEqual(logMessage)
         expect(cli.status).toEqual(0)
@@ -856,9 +763,7 @@ describe('transport', () => {
         const logMessage = lodash.cloneDeep(expected.validMiscLogMessage)
         logMessage.appBuild = ''
 
-        const cli = spawnSync(process.argv[0], [cliPath], {
-          input: objToLogMessage(invalidPinoMiscLogMessage)
-        })
+        const cli = runCli(objToLogMessage(invalidPinoMiscLogMessage))
 
         expect(logMessageToObj(cli.stdout)).toEqual(logMessage)
         expect(cli.status).toEqual(0)
@@ -873,9 +778,7 @@ describe('transport', () => {
         const logMessage = lodash.cloneDeep(expected.validMiscLogMessage)
         logMessage.appCommit = ''
 
-        const cli = spawnSync(process.argv[0], [cliPath], {
-          input: objToLogMessage(invalidPinoMiscLogMessage)
-        })
+        const cli = runCli(objToLogMessage(invalidPinoMiscLogMessage))
 
         expect(logMessageToObj(cli.stdout)).toEqual(logMessage)
         expect(cli.status).toEqual(0)
@@ -892,9 +795,7 @@ describe('transport', () => {
         )
         delete logMessage.appName
 
-        const cli = spawnSync(process.argv[0], [cliPath], {
-          input: objToLogMessage(invalidPinoMiscLogMessage)
-        })
+        const cli = runCli(objToLogMessage(invalidPinoMiscLogMessage))
 
         expect(logMessageToObj(cli.stdout)).toEqual(logMessage)
         expect(cli.status).toEqual(0)
@@ -912,9 +813,7 @@ describe('transport', () => {
         )
         delete logMessage.exception
 
-        const cli = spawnSync(process.argv[0], [cliPath], {
-          input: objToLogMessage(invalidPinoMiscLogMessageWithError)
-        })
+        const cli = runCli(objToLogMessage(invalidPinoMiscLogMessageWithError))
 
         expect(logMessageToObj(cli.stdout)).toEqual(logMessage)
         expect(cli.status).toEqual(0)
@@ -929,9 +828,7 @@ describe('transport', () => {
         const logMessage = lodash.cloneDeep(expected.validMiscLogMessage)
         logMessage.logLevel = ''
 
-        const cli = spawnSync(process.argv[0], [cliPath], {
-          input: objToLogMessage(invalidPinoMiscLogMessage)
-        })
+        const cli = runCli(objToLogMessage(invalidPinoMiscLogMessage))
 
         expect(logMessageToObj(cli.stdout)).toEqual(logMessage)
         expect(cli.status).toEqual(0)
@@ -946,9 +843,7 @@ describe('transport', () => {
         const logMessage = lodash.cloneDeep(expected.validMiscLogMessage)
         logMessage.message = ''
 
-        const cli = spawnSync(process.argv[0], [cliPath], {
-          input: objToLogMessage(invalidPinoMiscLogMessage)
-        })
+        const cli = runCli(objToLogMessage(invalidPinoMiscLogMessage))
 
         expect(logMessageToObj(cli.stdout)).toEqual(logMessage)
         expect(cli.status).toEqual(0)
@@ -964,9 +859,7 @@ describe('transport', () => {
         const logMessage = lodash.cloneDeep(expected.validMiscLogMessage)
         delete logMessage.meta
 
-        const cli = spawnSync(process.argv[0], [cliPath], {
-          input: objToLogMessage(invalidPinoMiscLogMessage)
-        })
+        const cli = runCli(objToLogMessage(invalidPinoMiscLogMessage))
 
         expect(logMessageToObj(cli.stdout)).toEqual(logMessage)
         expect(cli.status).toEqual(0)
@@ -983,9 +876,7 @@ describe('transport', () => {
         )
         delete logMessage.env
 
-        const cli = spawnSync(process.argv[0], [cliPath], {
-          input: objToLogMessage(invalidPinoMiscLogMessage)
-        })
+        const cli = runCli(objToLogMessage(invalidPinoMiscLogMessage))
 
         expect(logMessageToObj(cli.stdout)).toEqual(logMessage)
         expect(cli.status).toEqual(0)
@@ -1000,9 +891,7 @@ describe('transport', () => {
         const logMessage = lodash.cloneDeep(expected.validMiscLogMessage)
         logMessage.hostIp = ''
 
-        const cli = spawnSync(process.argv[0], [cliPath], {
-          input: objToLogMessage(invalidPinoMiscLogMessage)
-        })
+        const cli = runCli(objToLogMessage(invalidPinoMiscLogMessage))
 
         expect(logMessageToObj(cli.stdout)).toEqual(logMessage)
         expect(cli.status).toEqual(0)
@@ -1020,9 +909,7 @@ describe('transport', () => {
         )
         delete logMessage.stackTrace
 
-        const cli = spawnSync(process.argv[0], [cliPath], {
-          input: objToLogMessage(invalidPinoMiscLogMessageWithError)
-        })
+        const cli = runCli(objToLogMessage(invalidPinoMiscLogMessageWithError))
 
         expect(logMessageToObj(cli.stdout)).toEqual(logMessage)
         expect(cli.status).toEqual(0)
@@ -1037,9 +924,7 @@ describe('transport', () => {
         const logMessage = lodash.cloneDeep(expected.validMiscLogMessage)
         logMessage.userIdHash = ''
 
-        const cli = spawnSync(process.argv[0], [cliPath], {
-          input: objToLogMessage(invalidPinoMiscLogMessage)
-        })
+        const cli = runCli(objToLogMessage(invalidPinoMiscLogMessage))
 
         expect(logMessageToObj(cli.stdout)).toEqual(logMessage)
         expect(cli.status).toEqual(0)
@@ -1056,9 +941,7 @@ describe('transport', () => {
         )
         delete logMessage.version
 
-        const cli = spawnSync(process.argv[0], [cliPath], {
-          input: objToLogMessage(invalidPinoMiscLogMessage)
-        })
+        const cli = runCli(objToLogMessage(invalidPinoMiscLogMessage))
 
         expect(logMessageToObj(cli.stdout)).toEqual(logMessage)
         expect(cli.status).toEqual(0)
@@ -1074,9 +957,7 @@ describe('transport', () => {
         const logMessage = lodash.cloneDeep(expected.validMiscLogMessage)
         logMessage.parentSpanId = ''
 
-        const cli = spawnSync(process.argv[0], [cliPath], {
-          input: objToLogMessage(invalidPinoMiscLogMessage)
-        })
+        const cli = runCli(objToLogMessage(invalidPinoMiscLogMessage))
 
         expect(logMessageToObj(cli.stdout)).toEqual(logMessage)
         expect(cli.status).toEqual(0)
@@ -1092,9 +973,7 @@ describe('transport', () => {
         const logMessage = lodash.cloneDeep(expected.validMiscLogMessage)
         logMessage.spanId = ''
 
-        const cli = spawnSync(process.argv[0], [cliPath], {
-          input: objToLogMessage(invalidPinoMiscLogMessage)
-        })
+        const cli = runCli(objToLogMessage(invalidPinoMiscLogMessage))
 
         expect(logMessageToObj(cli.stdout)).toEqual(logMessage)
         expect(cli.status).toEqual(0)
@@ -1110,9 +989,7 @@ describe('transport', () => {
         const logMessage = lodash.cloneDeep(expected.validMiscLogMessage)
         logMessage.traceId = ''
 
-        const cli = spawnSync(process.argv[0], [cliPath], {
-          input: objToLogMessage(invalidPinoMiscLogMessage)
-        })
+        const cli = runCli(objToLogMessage(invalidPinoMiscLogMessage))
 
         expect(logMessageToObj(cli.stdout)).toEqual(logMessage)
         expect(cli.status).toEqual(0)
