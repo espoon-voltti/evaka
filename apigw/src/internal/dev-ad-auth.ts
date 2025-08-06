@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Router } from 'express'
+import type { Router } from 'express'
 import _ from 'lodash'
 import { v4 as uuidv4 } from 'uuid'
 import { z } from 'zod'
@@ -11,7 +11,7 @@ import { createDevAuthRouter } from '../shared/auth/dev-auth.js'
 import { getEmployees } from '../shared/dev-api.js'
 import { assertStringProp } from '../shared/express.js'
 import { employeeLogin } from '../shared/service-client.js'
-import { Sessions } from '../shared/session.js'
+import type { Sessions } from '../shared/session.js'
 
 const Employee = z.object({
   externalId: z.string(),

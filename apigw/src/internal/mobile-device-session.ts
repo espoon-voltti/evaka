@@ -2,7 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import express, { CookieOptions } from 'express'
+import type { CookieOptions } from 'express'
+import type express from 'express'
 import { v4 as uuid } from 'uuid'
 
 import { pinSessionTimeoutSeconds, useSecureCookies } from '../shared/config.js'
@@ -11,14 +12,14 @@ import {
   toMiddleware,
   toRequestHandler
 } from '../shared/express.js'
-import { RedisClient } from '../shared/redis-client.js'
+import type { RedisClient } from '../shared/redis-client.js'
+import type { MobileDeviceIdentity } from '../shared/service-client.js'
 import {
   employeePinLogin,
   identifyMobileDevice,
-  MobileDeviceIdentity,
   validatePairing
 } from '../shared/service-client.js'
-import { Sessions } from '../shared/session.js'
+import type { Sessions } from '../shared/session.js'
 
 export const mobileLongTermCookieName = 'evaka.employee.mobile'
 const mobileLongTermCookieOptions: CookieOptions = {

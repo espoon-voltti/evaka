@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import axios from 'axios'
-import express from 'express'
+import type express from 'express'
 
 import { systemUserHeader } from './auth/index.js'
 import { getJwt } from './auth/jwt.js'

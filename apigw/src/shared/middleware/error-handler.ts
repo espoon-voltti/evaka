@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { ErrorRequestHandler } from 'express'
+import type { ErrorRequestHandler } from 'express'
 
 import { includeAllErrorMessages } from '../config.js'
 import { InvalidRequest } from '../express.js'

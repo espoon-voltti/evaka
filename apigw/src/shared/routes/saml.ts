@@ -4,26 +4,27 @@
 
 import * as url from 'node:url'
 
-import { AuthOptions, Profile, SAML } from '@node-saml/node-saml'
+import type { AuthOptions, Profile, SAML } from '@node-saml/node-saml'
 import { AxiosError } from 'axios'
 import express from 'express'
 import _ from 'lodash'
 
 import { createLogoutToken } from '../auth/index.js'
-import { AsyncRequestHandler, toRequestHandler } from '../express.js'
+import type { AsyncRequestHandler } from '../express.js'
+import { toRequestHandler } from '../express.js'
 import { logAuditEvent, logDebug } from '../logging.js'
 import {
   parseDescriptionFromSamlError,
   samlErrorSchema
 } from '../saml/error-utils.js'
+import type { AuthenticateProfile } from '../saml/index.js'
 import {
-  AuthenticateProfile,
   getRawUnvalidatedRelayState,
   SamlProfileIdSchema,
   SamlSessionSchema,
   validateRelayStateUrl
 } from '../saml/index.js'
-import { Sessions, SessionType } from '../session.js'
+import type { Sessions, SessionType } from '../session.js'
 
 const urlencodedParser = express.urlencoded({ extended: false })
 

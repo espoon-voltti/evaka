@@ -5,14 +5,14 @@
 import { SAML } from '@node-saml/node-saml'
 import { z } from 'zod'
 
-import { EvakaSamlConfig } from '../shared/config.js'
+import type { EvakaSamlConfig } from '../shared/config.js'
 import { logWarn } from '../shared/logging.js'
-import { RedisClient } from '../shared/redis-client.js'
+import type { RedisClient } from '../shared/redis-client.js'
 import { createSamlIntegration } from '../shared/routes/saml.js'
 import { authenticateProfile, createSamlConfig } from '../shared/saml/index.js'
 import redisCacheProvider from '../shared/saml/node-saml-cache-redis.js'
 import { citizenLogin, employeeSuomiFiLogin } from '../shared/service-client.js'
-import { Sessions } from '../shared/session.js'
+import type { Sessions } from '../shared/session.js'
 
 // Suomi.fi e-Identification – Attributes transmitted on an identified user:
 //   https://esuomi.fi/suomi-fi-services/suomi-fi-e-identification/14247-2/?lang=en

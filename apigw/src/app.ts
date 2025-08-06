@@ -27,20 +27,16 @@ import {
 } from './internal/mobile-device-session.js'
 import { internalAuthStatus } from './internal/routes/auth-status.js'
 import { integrationUserHeader } from './shared/auth/index.js'
-import {
-  appCommit,
-  Config,
-  enableDevApi,
-  titaniaConfig
-} from './shared/config.js'
+import type { Config } from './shared/config.js'
+import { appCommit, enableDevApi, titaniaConfig } from './shared/config.js'
 import { toRequestHandler } from './shared/express.js'
 import { cacheControl } from './shared/middleware/cache-control.js'
 import { csrf } from './shared/middleware/csrf.js'
 import { errorHandler } from './shared/middleware/error-handler.js'
 import { createProxy } from './shared/proxy-utils.js'
-import { RedisClient } from './shared/redis-client.js'
+import type { RedisClient } from './shared/redis-client.js'
 import { handleCspReport } from './shared/routes/csp.js'
-import { SamlIntegration } from './shared/routes/saml.js'
+import type { SamlIntegration } from './shared/routes/saml.js'
 import { validateRelayStateUrl } from './shared/saml/index.js'
 import { sessionSupport } from './shared/session.js'
 

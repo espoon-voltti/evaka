@@ -5,12 +5,12 @@
 import { getHours } from 'date-fns/getHours'
 import { z } from 'zod'
 
-import { EvakaSessionUser } from '../../shared/auth/index.js'
+import type { EvakaSessionUser } from '../../shared/auth/index.js'
 import { toRequestHandler } from '../../shared/express.js'
 import { logAuditEvent, logWarn } from '../../shared/logging.js'
-import { RedisClient } from '../../shared/redis-client.js'
+import type { RedisClient } from '../../shared/redis-client.js'
 import { citizenWeakLogin } from '../../shared/service-client.js'
-import { Sessions } from '../../shared/session.js'
+import type { Sessions } from '../../shared/session.js'
 
 const Request = z.object({
   username: z

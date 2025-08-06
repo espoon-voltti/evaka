@@ -2,10 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Request } from 'express'
-import { SerializedRequest, SerializedResponse } from 'pino-std-serializers'
+import type { Request } from 'express'
+import type {
+  SerializedRequest,
+  SerializedResponse
+} from 'pino-std-serializers'
 
-import { EvakaSessionUser } from './auth/index.js'
+import type { EvakaSessionUser } from './auth/index.js'
 
 export interface PinoRequest
   extends Omit<

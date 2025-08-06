@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import express from 'express'
+import type express from 'express'
 
 const requiresCsrfCheck = (req: express.Request) => {
   switch (req.method) {

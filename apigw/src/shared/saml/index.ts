@@ -4,13 +4,15 @@
 
 import { readFileSync } from 'node:fs'
 
-import { CacheProvider, Profile, SamlConfig } from '@node-saml/node-saml'
-import express from 'express'
+import type { CacheProvider, Profile, SamlConfig } from '@node-saml/node-saml'
+import type express from 'express'
 import { z } from 'zod'
 
-import { EvakaSessionUser } from '../auth/index.js'
-import certificates, { TrustedCertificates } from '../certificates.js'
-import { evakaBaseUrl, EvakaSamlConfig } from '../config.js'
+import type { EvakaSessionUser } from '../auth/index.js'
+import type { TrustedCertificates } from '../certificates.js'
+import certificates from '../certificates.js'
+import type { EvakaSamlConfig } from '../config.js'
+import { evakaBaseUrl } from '../config.js'
 import { logError } from '../logging.js'
 import { parseUrlWithOrigin } from '../parse-url-with-origin.js'
 

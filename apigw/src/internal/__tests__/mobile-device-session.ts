@@ -13,7 +13,7 @@ import {
 import { v4 as uuid } from 'uuid'
 
 import { appCommit, configFromEnv } from '../../shared/config.js'
-import { UUID } from '../../shared/service-client.js'
+import type { UUID } from '../../shared/service-client.js'
 import { sessionCookie } from '../../shared/session.js'
 import { GatewayTester } from '../../shared/test/gateway-tester.js'
 import { mobileLongTermCookieName } from '../mobile-device-session.js'

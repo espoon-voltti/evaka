@@ -2,21 +2,24 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import http from 'http'
+import type http from 'http'
 
-import axios, {
+import type {
   AxiosInstance,
   AxiosResponse,
   InternalAxiosRequestConfig
 } from 'axios'
+import axios from 'axios'
 import express from 'express'
 import nock from 'nock'
 import { Cookie, CookieJar } from 'tough-cookie'
 
 import { apiRouter } from '../../app.js'
-import { Config, evakaServiceUrl } from '../config.js'
-import { CitizenUser, EmployeeUser } from '../service-client.js'
-import { sessionCookie, SessionType } from '../session.js'
+import type { Config } from '../config.js'
+import { evakaServiceUrl } from '../config.js'
+import type { CitizenUser, EmployeeUser } from '../service-client.js'
+import type { SessionType } from '../session.js'
+import { sessionCookie } from '../session.js'
 
 import { MockRedisClient } from './mock-redis-client.js'
 

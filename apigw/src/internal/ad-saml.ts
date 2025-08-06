@@ -5,13 +5,13 @@
 import { SAML } from '@node-saml/node-saml'
 import { z } from 'zod'
 
-import { EvakaSamlConfig } from '../shared/config.js'
-import { RedisClient } from '../shared/redis-client.js'
+import type { EvakaSamlConfig } from '../shared/config.js'
+import type { RedisClient } from '../shared/redis-client.js'
 import { createSamlIntegration } from '../shared/routes/saml.js'
 import { authenticateProfile, createSamlConfig } from '../shared/saml/index.js'
 import redisCacheProvider from '../shared/saml/node-saml-cache-redis.js'
 import { employeeLogin } from '../shared/service-client.js'
-import { Sessions } from '../shared/session.js'
+import type { Sessions } from '../shared/session.js'
 
 const AD_GIVEN_NAME_KEY =
   'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname'

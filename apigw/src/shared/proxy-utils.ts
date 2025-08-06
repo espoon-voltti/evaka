@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { OutgoingHttpHeaders } from 'node:http'
+import type { OutgoingHttpHeaders } from 'node:http'
 
 import type express from 'express'
 import expressHttpProxy from 'express-http-proxy'

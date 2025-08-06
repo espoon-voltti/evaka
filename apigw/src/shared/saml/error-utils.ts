@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Request } from 'express'
+import type { Request } from 'express'
 import { XMLParser } from 'fast-xml-parser'
 import { z } from 'zod'
 

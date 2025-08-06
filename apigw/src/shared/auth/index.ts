@@ -2,9 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Profile } from '@node-saml/node-saml'
+import type { Profile } from '@node-saml/node-saml'
 
-import { SamlSession } from '../saml/index.js'
+import type { SamlSession } from '../saml/index.js'
 
 export type CitizenSessionUser =
   | {
