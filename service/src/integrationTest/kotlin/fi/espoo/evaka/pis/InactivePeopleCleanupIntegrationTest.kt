@@ -11,6 +11,12 @@ import fi.espoo.evaka.application.syncApplicationOtherGuardians
 import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionStatus
 import fi.espoo.evaka.assistanceneed.decision.ServiceOptions
 import fi.espoo.evaka.assistanceneed.decision.StructuralMotivationOptions
+import fi.espoo.evaka.document.DocumentTemplateContent
+import fi.espoo.evaka.document.Question
+import fi.espoo.evaka.document.Section
+import fi.espoo.evaka.document.childdocument.AnsweredQuestion
+import fi.espoo.evaka.document.childdocument.DocumentContent
+import fi.espoo.evaka.document.childdocument.DocumentStatus
 import fi.espoo.evaka.incomestatement.IncomeStatementBody
 import fi.espoo.evaka.messaging.MessageType
 import fi.espoo.evaka.messaging.getCitizenMessageAccount
@@ -26,9 +32,13 @@ import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevAssistanceNeedDecision
 import fi.espoo.evaka.shared.dev.DevAssistanceNeedPreschoolDecision
+import fi.espoo.evaka.shared.dev.DevChildDocument
 import fi.espoo.evaka.shared.dev.DevDaycare
+import fi.espoo.evaka.shared.dev.DevDocumentTemplate
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevGuardian
 import fi.espoo.evaka.shared.dev.DevIncomeStatement
@@ -322,6 +332,62 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
             tx.createUpdate {
                     sql(
                         "INSERT INTO pedagogical_document_read (person_id, pedagogical_document_id, read_at) VALUES (${bind(testAdult_1.id)}, ${bind(docId)}, ${bind(testDate)})"
+                    )
+                }
+                .execute()
+        }
+
+        assertCleanedUpPeople(testDate, setOf())
+    }
+
+    @Test
+    fun `adult and child with child document is not cleaned up`() {
+        val templateContent =
+            DocumentTemplateContent(
+                sections =
+                    listOf(
+                        Section(
+                            id = "s1",
+                            label = "Eka",
+                            questions =
+                                listOf(Question.TextQuestion(id = "q1", label = "kysymys 1")),
+                        )
+                    )
+            )
+        val documentContent =
+            DocumentContent(
+                answers = listOf(AnsweredQuestion.TextAnswer(questionId = "q1", answer = "foobar"))
+            )
+        val employee = DevEmployee()
+        val employeeUser = AuthenticatedUser.Employee(employee.id, setOf(UserRole.ADMIN))
+        db.transaction { tx ->
+            tx.insert(employee)
+            tx.insert(testChild_1, DevPersonType.RAW_ROW)
+            val template =
+                tx.insert(
+                    DevDocumentTemplate(
+                        validity = DateRange(testDate, null),
+                        content = templateContent,
+                    )
+                )
+            val document =
+                tx.insert(
+                    DevChildDocument(
+                        status = DocumentStatus.COMPLETED,
+                        childId = testChild_1.id,
+                        templateId = template,
+                        content = documentContent,
+                        publishedContent = documentContent,
+                        modifiedAt = HelsinkiDateTime.now(),
+                        contentModifiedAt = HelsinkiDateTime.now(),
+                        contentModifiedBy = employeeUser.id,
+                        publishedAt = HelsinkiDateTime.now(),
+                    )
+                )
+            tx.insert(testAdult_1, DevPersonType.RAW_ROW)
+            tx.createUpdate {
+                    sql(
+                        "INSERT INTO child_document_read (person_id, document_id, read_at) VALUES (${bind(testAdult_1.id)}, ${bind(document)}, ${bind(testDate)})"
                     )
                 }
                 .execute()

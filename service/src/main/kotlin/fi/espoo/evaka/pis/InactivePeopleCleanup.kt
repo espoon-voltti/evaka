@@ -65,6 +65,10 @@ WITH people_with_no_archive_data AS (
     EXCEPT
     SELECT DISTINCT person_id FROM pedagogical_document_read
     EXCEPT
+    SELECT DISTINCT child_id FROM child_document
+    EXCEPT
+    SELECT DISTINCT person_id FROM child_document_read
+    EXCEPT
     SELECT DISTINCT person_id FROM message_account
     WHERE person_id IS NOT NULL
     AND (
