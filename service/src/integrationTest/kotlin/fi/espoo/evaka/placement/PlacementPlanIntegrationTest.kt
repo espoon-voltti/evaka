@@ -70,7 +70,7 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
     private val preschoolTerm = preschoolTerm2023
 
     private val clock =
-        MockEvakaClock(HelsinkiDateTime.Companion.of(LocalDate.of(2020, 1, 1), LocalTime.of(15, 0)))
+        MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2020, 1, 1), LocalTime.of(15, 0)))
 
     @BeforeEach
     fun beforeEach() {

@@ -1196,8 +1196,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
     fun `switch both family head and partnership the other way around`() {
         val firstPeriod = DateRange(LocalDate.of(2020, 11, 13), LocalDate.of(2021, 1, 31))
         val secondPeriod = DateRange(LocalDate.of(2021, 2, 1), null)
-        val clock =
-            MockEvakaClock(HelsinkiDateTime.Companion.of(firstPeriod.start, LocalTime.of(0, 0)))
+        val clock = MockEvakaClock(HelsinkiDateTime.of(firstPeriod.start, LocalTime.of(0, 0)))
         insertPartnership(testAdult_1.id, testAdult_2.id, firstPeriod, clock.now())
         insertPartnership(testAdult_2.id, testAdult_1.id, secondPeriod, clock.now())
         insertFamilyRelations(
@@ -2261,8 +2260,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         val firstPeriod = FiniteDateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 1, 31))
         val secondPeriod = FiniteDateRange(LocalDate.of(2020, 2, 1), LocalDate.of(2020, 12, 31))
         val wholePeriod = firstPeriod.copy(end = secondPeriod.end)
-        val clock =
-            MockEvakaClock(HelsinkiDateTime.Companion.of(wholePeriod.start, LocalTime.of(0, 0)))
+        val clock = MockEvakaClock(HelsinkiDateTime.of(wholePeriod.start, LocalTime.of(0, 0)))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), wholePeriod)
         insertFamilyRelations(testAdult_2.id, listOf(testChild_3.id), wholePeriod)
         insertFamilyRelations(testAdult_3.id, listOf(testChild_4.id), wholePeriod)
@@ -2338,7 +2336,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
     @Test
     fun `when fridge partners are guardians of all children, only send one fee decision`() {
         val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
-        val clock = MockEvakaClock(HelsinkiDateTime.Companion.of(period.start, LocalTime.of(0, 0)))
+        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.of(0, 0)))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id, testChild_2.id), period)
         insertFamilyRelations(testAdult_2.id, listOf(testChild_8.id), period)
         insertGuardianship(testAdult_1.id, listOf(testChild_1.id, testChild_2.id, testChild_8.id))
@@ -2376,7 +2374,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
     @Test
     fun `when both fridge partners are not guardians of each child, only send one fee decision`() {
         val period = FiniteDateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 12, 31))
-        val clock = MockEvakaClock(HelsinkiDateTime.Companion.of(period.start, LocalTime.of(0, 0)))
+        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.of(0, 0)))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id, testChild_2.id), period)
         insertFamilyRelations(testAdult_2.id, listOf(testChild_3.id, testChild_4.id), period)
         insertGuardianship(testAdult_1.id, listOf(testChild_1.id, testChild_2.id, testChild_3.id))
@@ -2482,7 +2480,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
     @Test
     fun `fee decision generation works as expected with changing children`() {
         val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
-        val clock = MockEvakaClock(HelsinkiDateTime.Companion.of(period.start, LocalTime.of(0, 0)))
+        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.of(0, 0)))
         val subPeriod_1 = period.copy(end = period.start.plusMonths(1))
         val subPeriod_2 = period.copy(start = subPeriod_1.end.plusDays(1))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
@@ -2532,7 +2530,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
     @Test
     fun `fee decision generation works as expected with a children that has missing income`() {
         val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
-        val clock = MockEvakaClock(HelsinkiDateTime.Companion.of(period.start, LocalTime.of(0, 0)))
+        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.of(0, 0)))
         val subPeriod_1 = period.copy(end = period.start.plusMonths(1))
         val subPeriod_2 = period.copy(start = subPeriod_1.end.plusDays(1))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
@@ -2863,7 +2861,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
     @Test
     fun `fee decision is generated for fridge family with two head of families with different children for placed child`() {
         val period = FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
-        val clock = MockEvakaClock(HelsinkiDateTime.Companion.of(period.start, LocalTime.of(0, 0)))
+        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.of(0, 0)))
 
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         insertFamilyRelations(testAdult_2.id, listOf(testChild_2.id), period)
@@ -2877,7 +2875,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
     @Test
     fun `fee decision is generated for fridge family with two head of families with different children for non placed child`() {
         val period = FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
-        val clock = MockEvakaClock(HelsinkiDateTime.Companion.of(period.start, LocalTime.of(0, 0)))
+        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.of(0, 0)))
 
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         insertFamilyRelations(testAdult_2.id, listOf(testChild_2.id), period)
@@ -2933,7 +2931,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         val period1 = FiniteDateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 7, 31))
         val period2 = FiniteDateRange(LocalDate.of(2020, 8, 1), LocalDate.of(2020, 12, 31))
         val period = FiniteDateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 12, 31))
-        val clock = MockEvakaClock(HelsinkiDateTime.Companion.of(period.start, LocalTime.of(0, 0)))
+        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.of(0, 0)))
         insertPartnership(testAdult_1.id, testAdult_2.id, period.asDateRange(), clock.now())
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         insertFamilyRelations(testAdult_2.id, listOf(testChild_2.id), period)
@@ -2980,7 +2978,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
     @Test
     fun `duplicate sent fee decision is not generated`() {
         val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
-        val clock = MockEvakaClock(HelsinkiDateTime.Companion.of(period.start, LocalTime.of(0, 0)))
+        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.of(0, 0)))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         val placementId = insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
         db.transaction { generator.generateNewDecisionsForAdult(it, testAdult_1.id) }
@@ -3030,8 +3028,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         val period = FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
         val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
         val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
-        val clock =
-            MockEvakaClock(HelsinkiDateTime.Companion.of(subPeriod2.start, LocalTime.of(0, 0)))
+        val clock = MockEvakaClock(HelsinkiDateTime.of(subPeriod2.start, LocalTime.of(0, 0)))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         insertPlacement(testChild_1.id, subPeriod1, DAYCARE, testDaycare.id)
         insertPlacement(testChild_1.id, subPeriod2, DAYCARE_PART_TIME, testDaycare2.id)
@@ -3072,7 +3069,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
     fun `head of family changes`() {
         val admin = AuthenticatedUser.Employee(testDecisionMaker_2.id, setOf(UserRole.ADMIN))
         val period = FiniteDateRange(LocalDate.of(2022, 3, 1), LocalDate.of(2022, 4, 30))
-        val clock = MockEvakaClock(HelsinkiDateTime.Companion.of(period.start, LocalTime.of(0, 0)))
+        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.of(0, 0)))
         insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
         parentshipController.createParentship(
             dbInstance(),
@@ -3185,7 +3182,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
     fun `fee decision is generated even if income changes to identical income`() {
         val period = FiniteDateRange(LocalDate.of(2025, 5, 1), LocalDate.of(2025, 12, 31))
         val incomePeriod1 = DateRange(period.start, null)
-        val clock = MockEvakaClock(HelsinkiDateTime.Companion.of(period.start, LocalTime.of(0, 0)))
+        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.of(0, 0)))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
         insertIncome(testAdult_1.id, 310200, incomePeriod1, IncomeEffect.INCOME)
@@ -3222,7 +3219,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
     fun `if an income is missing id then old logic is used and a new decision is not generated if income changes to identical income`() {
         val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         val incomePeriod1 = DateRange(period.start, null)
-        val clock = MockEvakaClock(HelsinkiDateTime.Companion.of(period.start, LocalTime.of(0, 0)))
+        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.of(0, 0)))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
         insertIncome(testAdult_1.id, 310200, incomePeriod1, IncomeEffect.INCOME)

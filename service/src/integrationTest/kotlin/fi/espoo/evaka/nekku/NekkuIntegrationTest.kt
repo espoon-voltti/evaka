@@ -5601,7 +5601,7 @@ Lapsen tunniste: ${firstChildWithRemovedAllergy.id}, lapsen ruokavaliot: Laktoos
             )
         val group = DevDaycareGroup(daycareId = daycare.id, nekkuCustomerNumber = "2501K6090")
 
-        val now = HelsinkiDateTime.Companion.of(LocalDate.of(2025, 5, 7), LocalTime.of(12, 34, 52))
+        val now = HelsinkiDateTime.of(LocalDate.of(2025, 5, 7), LocalTime.of(12, 34, 52))
         db.transaction { tx ->
             tx.insert(area)
             tx.insert(daycare)
@@ -5636,7 +5636,7 @@ Lapsen tunniste: ${firstChildWithRemovedAllergy.id}, lapsen ruokavaliot: Laktoos
     @Test
     fun `should throw when manual order is attempted if group ID is invalid`() {
 
-        val now = HelsinkiDateTime.Companion.of(LocalDate.of(2025, 5, 7), LocalTime.of(12, 34, 52))
+        val now = HelsinkiDateTime.of(LocalDate.of(2025, 5, 7), LocalTime.of(12, 34, 52))
 
         db.transaction { tx ->
             assertThrows<BadRequest> {
@@ -5695,7 +5695,7 @@ Lapsen tunniste: ${firstChildWithRemovedAllergy.id}, lapsen ruokavaliot: Laktoos
             )
         val group = DevDaycareGroup(daycareId = daycare.id, nekkuCustomerNumber = "2501K6090")
 
-        val now = HelsinkiDateTime.Companion.of(LocalDate.of(2025, 5, 7), LocalTime.of(12, 34, 52))
+        val now = HelsinkiDateTime.of(LocalDate.of(2025, 5, 7), LocalTime.of(12, 34, 52))
 
         db.transaction { tx ->
             tx.insert(area)
@@ -5727,7 +5727,7 @@ Lapsen tunniste: ${firstChildWithRemovedAllergy.id}, lapsen ruokavaliot: Laktoos
             )
         val group = DevDaycareGroup(daycareId = daycare.id, nekkuCustomerNumber = null)
 
-        val now = HelsinkiDateTime.Companion.of(LocalDate.of(2025, 5, 7), LocalTime.of(12, 34, 52))
+        val now = HelsinkiDateTime.of(LocalDate.of(2025, 5, 7), LocalTime.of(12, 34, 52))
 
         db.transaction { tx ->
             tx.insert(area)
@@ -5826,7 +5826,7 @@ Lapsen tunniste: ${firstChildWithRemovedAllergy.id}, lapsen ruokavaliot: Laktoos
                 endDate = LocalDate.of(2025, 5, 1),
             )
 
-        val now = HelsinkiDateTime.Companion.of(LocalDate.of(2025, 5, 7), LocalTime.of(12, 34, 52))
+        val now = HelsinkiDateTime.of(LocalDate.of(2025, 5, 7), LocalTime.of(12, 34, 52))
 
         db.transaction { tx ->
             tx.insert(area)
@@ -5901,7 +5901,7 @@ Lapsen tunniste: ${firstChildWithRemovedAllergy.id}, lapsen ruokavaliot: Laktoos
             )
         val group = DevDaycareGroup(daycareId = daycare.id, nekkuCustomerNumber = "2501K6090")
 
-        val now = HelsinkiDateTime.Companion.of(LocalDate.of(2025, 5, 7), LocalTime.of(12, 34, 52))
+        val now = HelsinkiDateTime.of(LocalDate.of(2025, 5, 7), LocalTime.of(12, 34, 52))
 
         db.transaction { tx ->
             tx.insert(area)
@@ -5959,7 +5959,7 @@ Lapsen tunniste: ${firstChildWithRemovedAllergy.id}, lapsen ruokavaliot: Laktoos
             )
         val group = DevDaycareGroup(daycareId = daycare.id, nekkuCustomerNumber = "2501K6090")
 
-        val now = HelsinkiDateTime.Companion.of(LocalDate.of(2025, 5, 7), LocalTime.of(12, 34, 52))
+        val now = HelsinkiDateTime.of(LocalDate.of(2025, 5, 7), LocalTime.of(12, 34, 52))
 
         db.transaction { tx ->
             tx.insert(area)

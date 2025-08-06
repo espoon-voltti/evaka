@@ -808,7 +808,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
     fun `partner income difference - decision is generated even if income changes to identical income`() {
         val period = FiniteDateRange(LocalDate.of(2025, 5, 1), LocalDate.of(2025, 12, 31))
         val incomePeriod1 = DateRange(period.start, null)
-        val clock = MockEvakaClock(HelsinkiDateTime.Companion.of(period.start, LocalTime.of(0, 0)))
+        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.of(0, 0)))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         insertPlacement(testChild_1.id, period, PlacementType.DAYCARE, testVoucherDaycare.id)
         insertIncome(testAdult_1.id, 310200, incomePeriod1)
@@ -845,7 +845,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
     fun `partner income difference - if an income is missing id then old logic is used and a new decision is not generated if income changes to identical income`() {
         val period = FiniteDateRange(LocalDate.of(2025, 5, 1), LocalDate.of(2025, 12, 31))
         val incomePeriod1 = DateRange(period.start, null)
-        val clock = MockEvakaClock(HelsinkiDateTime.Companion.of(period.start, LocalTime.of(0, 0)))
+        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.of(0, 0)))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         insertPlacement(testChild_1.id, period, PlacementType.DAYCARE, testVoucherDaycare.id)
         insertIncome(testAdult_1.id, 310200, incomePeriod1)
