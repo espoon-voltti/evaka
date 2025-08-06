@@ -2,14 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Router } from 'express'
+import type { Router } from 'express'
 import _ from 'lodash'
 
 import { createDevAuthRouter } from '../shared/auth/dev-auth.js'
 import { getVtjPersons } from '../shared/dev-api.js'
 import { assertStringProp } from '../shared/express.js'
 import { employeeSuomiFiLogin } from '../shared/service-client.js'
-import { Sessions } from '../shared/session.js'
+import type { Sessions } from '../shared/session.js'
 
 export function createDevEmployeeSfiRouter(
   sessions: Sessions<'employee'>

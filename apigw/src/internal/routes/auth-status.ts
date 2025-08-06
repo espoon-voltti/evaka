@@ -2,21 +2,21 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import express from 'express'
+import type express from 'express'
 import _ from 'lodash'
 
-import {
+import type {
   EmployeeSessionUser,
   EvakaSessionUser
 } from '../../shared/auth/index.js'
 import { appCommit } from '../../shared/config.js'
 import { toRequestHandler } from '../../shared/express.js'
+import type { UUID } from '../../shared/service-client.js'
 import {
   authenticateMobileDevice,
-  getEmployeeDetails,
-  UUID
+  getEmployeeDetails
 } from '../../shared/service-client.js'
-import { Sessions } from '../../shared/session.js'
+import type { Sessions } from '../../shared/session.js'
 
 export interface AuthStatus {
   loggedIn: boolean

@@ -4,7 +4,7 @@
 
 import type { CacheProvider } from '@node-saml/node-saml'
 
-import { RedisClient } from '../redis-client.js'
+import type { RedisClient } from '../redis-client.js'
 
 export interface ProviderOptions {
   /**

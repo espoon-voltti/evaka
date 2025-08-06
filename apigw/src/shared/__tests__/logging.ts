@@ -12,7 +12,7 @@ import {
   resSerializer,
   userIdHashReqSerializer
 } from '../logging.js'
-import { PinoRequest, PinoResponse, UserPinoRequest } from '../types.js'
+import type { PinoRequest, PinoResponse, UserPinoRequest } from '../types.js'
 
 const path = '/api/grants/youth/v1/grant-applications'
 const queryString =

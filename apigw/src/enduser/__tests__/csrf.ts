@@ -13,7 +13,7 @@ import {
 } from '@jest/globals'
 
 import { configFromEnv } from '../../shared/config.js'
-import { CitizenUser } from '../../shared/service-client.js'
+import type { CitizenUser } from '../../shared/service-client.js'
 import { GatewayTester } from '../../shared/test/gateway-tester.js'
 
 const mockUser: CitizenUser = {

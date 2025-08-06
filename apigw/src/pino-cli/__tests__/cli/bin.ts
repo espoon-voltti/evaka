@@ -9,7 +9,7 @@ import { fileURLToPath } from 'node:url'
 import { describe, expect, test } from '@jest/globals'
 import lodash from 'lodash'
 
-import {
+import type {
   AccessLog,
   AuditLog,
   MiscLog,

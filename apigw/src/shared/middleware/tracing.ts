@@ -4,7 +4,7 @@
 
 import { Buffer } from 'node:buffer'
 
-import express from 'express'
+import type express from 'express'
 import { v4 as uuidv4 } from 'uuid'
 
 // Generates a random 64-bit tracing ID in hex format
