@@ -36,20 +36,21 @@ export interface SamlEndpointConfig<T extends SessionType> {
   authenticate: AuthenticateProfile
 }
 
+export type Options = {
+  /**
+   * True if this error should not be logged by the error middleware
+   */
+  silent?: boolean
+  /**
+   * Redirect the browser to this URL if possible using status 301
+   */
+  redirectUrl?: string
+} & ErrorOptions
+
 export class SamlError extends Error {
-  constructor(
-    message: string,
-    public options?: {
-      /**
-       * True if this error should not be logged by the error middleware
-       */
-      silent?: boolean
-      /**
-       * Redirect the browser to this URL if possible using status 301
-       */
-      redirectUrl?: string
-    } & ErrorOptions
-  ) {
+  public options: Options | undefined
+
+  constructor(message: string, options?: Options) {
     super(message, options)
     this.name = 'SamlError'
   }

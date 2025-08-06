@@ -31,10 +31,13 @@ export class GatewayTester {
   private readonly baseUrl: string
   public setCsrfHeader = false
 
-  private constructor(
-    private readonly server: http.Server,
-    public readonly sessionType: SessionType
-  ) {
+  private readonly server: http.Server
+  public readonly sessionType: SessionType
+
+  private constructor(server: http.Server, sessionType: SessionType) {
+    this.server = server
+    this.sessionType = sessionType
+
     const address = server.address()
     if (!address || typeof address === 'string')
       throw new Error('Unsupported http server address format')
