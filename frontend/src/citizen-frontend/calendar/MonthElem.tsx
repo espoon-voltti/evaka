@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React from 'react'
+import React, { useEffect, useRef } from 'react'
 import styled, { css } from 'styled-components'
 
 import type { CitizenCalendarEvent } from 'lib-common/generated/api-types/calendarevent'
@@ -58,10 +58,23 @@ export default React.memo(function MonthElem({
 
   const { summaryInfoOpen, toggleSummaryInfo, displayAlert } =
     useSummaryInfo(childSummaries)
+
+  const mainHeading = useRef<HTMLHeadingElement | null>(null)
+  const isCurrentMonth = calendarMonth.calendarDays
+    .map((cd) => cd.date)
+    .some((day) => day.isEqual(scrollToDate))
+
+  useEffect(() => {
+    // focus on the accessibility heading
+    if (isCurrentMonth && mainHeading.current) {
+      mainHeading.current.focus()
+    }
+  }, [isCurrentMonth])
+
   return (
     <div>
       <MonthSummaryContainer>
-        <MonthTitle>
+        <MonthTitle tabIndex={-1} ref={mainHeading}>
           {`${i18n.common.datetime.months[calendarMonth.monthNumber - 1]} ${calendarMonth.year}`}
           {childSummaries.length > 0 && (
             <InlineInfoButton

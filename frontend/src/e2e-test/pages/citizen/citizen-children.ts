@@ -34,7 +34,7 @@ export class CitizenChildPage {
   }
 
   async assertChildNameIsShown(name: string) {
-    await this.page.find(`h1:has-text("${name}")`).waitUntilVisible()
+    await this.page.findByDataQa('child-name').assertTextEquals(name)
   }
 
   async goBack() {
