@@ -304,8 +304,7 @@ class VoucherValueDecisionService(
         includeValidFrom: Boolean = false,
     ): String {
         val validFromStr = if (includeValidFrom) "_${decision.validFrom}" else ""
-        return if (lang == OfficialLanguage.SV)
-            "Beslut_om_avgift_för_småbarnspedagogik$validFromStr.pdf"
-        else "Varhaiskasvatuksen_maksupäätös$validFromStr.pdf"
+        return if (lang == OfficialLanguage.SV) "Beslut_om_servicecedels_värde$validFromStr.pdf"
+        else "Varhaiskasvatuksen_arvopäätös$validFromStr.pdf"
     }
 }
