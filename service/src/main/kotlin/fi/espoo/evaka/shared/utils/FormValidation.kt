@@ -4,5 +4,5 @@
 
 package fi.espoo.evaka.shared.utils
 
-val PHONE_PATTERN = "^[0-9 \\-+()]{6,20}\$".toRegex()
-val EMAIL_PATTERN = "^\\S+@\\S+\$".toRegex()
+val PHONE_PATTERN = "^[0-9 \\-+()]{6,20}$".toRegex()
+val EMAIL_PATTERN = "^\\S+@\\S+$".toRegex()
