@@ -268,10 +268,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
 
         planNekkuDailyOrderJobs(db, asyncJobRunner, now)
 
-        assertEquals(
-            tomorrow.toLocalDate().toString(),
-            getNekkuJobs(db).single().date.toString(),
-        )
+        assertEquals(tomorrow.toLocalDate().toString(), getNekkuJobs(db).single().date.toString())
     }
 
     @Test
@@ -314,10 +311,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
 
         planNekkuDailyOrderJobs(db, asyncJobRunner, friday)
 
-        assertEquals(
-            nextMonday.toLocalDate().toString(),
-            getNekkuJobs(db).single().date.toString(),
-        )
+        assertEquals(nextMonday.toLocalDate().toString(), getNekkuJobs(db).single().date.toString())
     }
 
     @Test
