@@ -36,8 +36,6 @@ RUN yarn install --immutable
 
 COPY . .
 
-RUN yarn build
-
 FROM builder AS test
 
 RUN yarn lint
@@ -67,4 +65,4 @@ LABEL fi.espoo.build="$build" \
       fi.espoo.commit="$commit"
 
 ENTRYPOINT ["./entrypoint.sh"]
-CMD ["node", "--enable-source-maps", "--loader", "dd-trace/loader-hook.mjs", "dist/index.js"]
+CMD ["node", "--loader", "dd-trace/loader-hook.mjs", "src/index.ts"]
