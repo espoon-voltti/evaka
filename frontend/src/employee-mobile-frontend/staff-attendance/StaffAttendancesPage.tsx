@@ -220,7 +220,7 @@ const StaffAttendancesToday = React.memo(function StaffAttendancesToday({
 
   return (
     <>
-      <TabLinks tabs={tabs} mobile />
+      <TabLinks tabs={tabs} mobile sticky />
       {renderResult(filteredStaff, (staff) => (
         <FixedSpaceColumn spacing="zero">
           {staff.map((staffMember) => {

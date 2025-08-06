@@ -129,7 +129,7 @@ export default React.memo(function AttendancePageWrapper({
         toggleSearch={toggleSearch}
         countInfo={countInfo}
       >
-        <TabLinks tabs={tabs} mobile sticky />
+        <TabLinks tabs={tabs} mobile />
         {renderResult(
           combine(unitChildren, attendanceStatuses),
           ([unitChildren, attendanceStatuses]) => (

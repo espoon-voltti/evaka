@@ -23,8 +23,11 @@ import { LoggedInUser } from './top-bar/LoggedInUser'
 import { TopBarIconContainer } from './top-bar/TopBarIconContainer'
 import { currentSystemNotificationQuery } from './top-bar/queries'
 
-const StickyTopBar = styled.section<{ invertedColors?: boolean }>`
-  position: sticky;
+const StickyableTopBar = styled.section<{
+  $invertedColors?: boolean
+  $sticky?: boolean
+}>`
+  position: ${(p) => (p.$sticky ? 'sticky' : 'static')};
   top: 0;
   width: 100%;
   height: ${topBarHeight};
@@ -37,13 +40,13 @@ const StickyTopBar = styled.section<{ invertedColors?: boolean }>`
   flex-shrink: 0;
 
   background: ${(p) =>
-    p.invertedColors ? p.theme.colors.grayscale.g4 : p.theme.colors.main.m2};
+    p.$invertedColors ? p.theme.colors.grayscale.g4 : p.theme.colors.main.m2};
   color: ${(p) =>
-    p.invertedColors ? p.theme.colors.main.m1 : p.theme.colors.grayscale.g0};
+    p.$invertedColors ? p.theme.colors.main.m1 : p.theme.colors.grayscale.g0};
 
   button {
     color: ${(p) =>
-      p.invertedColors ? p.theme.colors.main.m1 : p.theme.colors.grayscale.g0};
+      p.$invertedColors ? p.theme.colors.main.m1 : p.theme.colors.grayscale.g0};
   }
 `
 
@@ -62,6 +65,7 @@ interface Props {
   onClose?: () => void
   closeDisabled?: boolean
   invertedColors?: boolean
+  sticky?: boolean
 }
 
 export default React.memo(function TopBar({
@@ -70,7 +74,8 @@ export default React.memo(function TopBar({
   onBack,
   onClose,
   closeDisabled = false,
-  invertedColors
+  invertedColors,
+  sticky = true
 }: Props) {
   const { i18n } = useTranslation()
 
@@ -85,7 +90,7 @@ export default React.memo(function TopBar({
 
   return (
     <>
-      <StickyTopBar invertedColors={invertedColors}>
+      <StickyableTopBar $invertedColors={invertedColors} $sticky={sticky}>
         {onBack && (
           <TopBarIconContainer>
             <IconOnlyButton
@@ -130,7 +135,7 @@ export default React.memo(function TopBar({
             <LoggedInUser unitId={unitId} />
           )}
         </FixedSpaceRow>
-      </StickyTopBar>
+      </StickyableTopBar>
       {showNotificationModal &&
         !hideSystemNotification &&
         notificationResult.isSuccess &&

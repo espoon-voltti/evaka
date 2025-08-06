@@ -7,5 +7,6 @@ export const topBarHeight = '60px'
 export const zIndex = {
   searchBar: 10,
   topBar: 5,
-  groupSelector: 4
+  groupSelector: 4,
+  bottomBar: 3
 }

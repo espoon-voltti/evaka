@@ -73,7 +73,7 @@ export default React.memo(function TopBarWithGroupSelector({
 
   return (
     <>
-      <TopBar {...topBarProps} unitId={unitId} />
+      <TopBar {...topBarProps} unitId={unitId} sticky={false} />
       <Gap size="xxs" />
       <GroupSelectorBar
         unitId={unitId}

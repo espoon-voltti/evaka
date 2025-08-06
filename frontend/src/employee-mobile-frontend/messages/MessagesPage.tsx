@@ -182,7 +182,12 @@ export default function MessagesPage({
                   paddingHorizontal="zero"
                   data-qa="messages-page-content-area"
                 >
-                  <Tabs mobile active={activeTab} tabs={threadListTabs} />
+                  <Tabs
+                    mobile
+                    active={activeTab}
+                    tabs={threadListTabs}
+                    sticky
+                  />
                   {activeTab === 'received' ? (
                     <ReceivedThreadsList
                       groupAccounts={groupAccounts}

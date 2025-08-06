@@ -30,6 +30,7 @@ import {
 import { routes } from '../App'
 import { renderResult } from '../async-rendering'
 import { UserContext } from '../auth/state'
+import { zIndex } from '../constants'
 import { unreadCountsQuery } from '../messages/queries'
 import { MessageContext } from '../messages/state'
 import { unitInfoQuery } from '../units/queries'
@@ -55,6 +56,7 @@ const Root = styled.div`
   background: ${colors.grayscale.g0};
   box-shadow: 0px -4px 10px rgba(0, 0, 0, 0.15);
   margin-bottom: 0 !important;
+  z-index: ${zIndex.bottomBar};
 `
 
 export const ReserveSpace = styled.div`
