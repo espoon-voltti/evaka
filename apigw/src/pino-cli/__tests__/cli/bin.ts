@@ -16,14 +16,14 @@ import type {
   PinoAccessLog,
   PinoAppAuditLog,
   PinoMiscLog
-} from '../../cli/index.js'
+} from '../../cli/index.ts'
 import {
   expected,
   validPinoAccessLogMessage,
   validPinoAppAuditLogMessage,
   validPinoMiscLogMessage,
   validPinoMiscLogMessageWithError
-} from '../../test-utils/fixtures/log-messages.js'
+} from '../../test-utils/fixtures/log-messages.ts'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const cliPath = path.join(

@@ -14,14 +14,14 @@ import express from 'express'
 import nock from 'nock'
 import { Cookie, CookieJar } from 'tough-cookie'
 
-import { apiRouter } from '../../app.js'
-import type { Config } from '../config.js'
-import { evakaServiceUrl } from '../config.js'
-import type { CitizenUser, EmployeeUser } from '../service-client.js'
-import type { SessionType } from '../session.js'
-import { sessionCookie } from '../session.js'
+import { apiRouter } from '../../app.ts'
+import type { Config } from '../config.ts'
+import { evakaServiceUrl } from '../config.ts'
+import type { CitizenUser, EmployeeUser } from '../service-client.ts'
+import type { SessionType } from '../session.ts'
+import { sessionCookie } from '../session.ts'
 
-import { MockRedisClient } from './mock-redis-client.js'
+import { MockRedisClient } from './mock-redis-client.ts'
 
 export class GatewayTester {
   public readonly client: AxiosInstance

@@ -10,9 +10,9 @@ import {
   digitransitApiKey,
   digitransitApiUrl,
   enableDevApi
-} from '../shared/config.js'
-import { logError, logWarn } from '../shared/logging.js'
-import { createProxy } from '../shared/proxy-utils.js'
+} from '../shared/config.ts'
+import { logError, logWarn } from '../shared/logging.ts'
+import { createProxy } from '../shared/proxy-utils.ts'
 
 const router = express.Router()
 

@@ -12,9 +12,9 @@ import {
   it
 } from '@jest/globals'
 
-import { configFromEnv } from '../../shared/config.js'
-import type { CitizenUser } from '../../shared/service-client.js'
-import { GatewayTester } from '../../shared/test/gateway-tester.js'
+import { configFromEnv } from '../../shared/config.ts'
+import type { CitizenUser } from '../../shared/service-client.ts'
+import { GatewayTester } from '../../shared/test/gateway-tester.ts'
 
 const mockUser: CitizenUser = {
   id: '4f73e4f8-8759-46c6-9b9d-4da860138ce2'

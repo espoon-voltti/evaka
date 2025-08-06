@@ -2,24 +2,24 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import './tracer.js'
+import './tracer.ts'
 
 import * as redis from '@redis/client'
 import express from 'express'
 import helmet from 'helmet'
 
-import { apiRouter } from './app.js'
-import { configFromEnv, httpPort, toRedisClientOpts } from './shared/config.js'
+import { apiRouter } from './app.ts'
+import { configFromEnv, httpPort, toRedisClientOpts } from './shared/config.ts'
 import {
   logError,
   loggingMiddleware,
   logInfo,
   logWarn
-} from './shared/logging.js'
-import { fallbackErrorHandler } from './shared/middleware/error-handler.js'
-import tracing from './shared/middleware/tracing.js'
-import { assertRedisConnection } from './shared/redis-client.js'
-import { trustReverseProxy } from './shared/reverse-proxy.js'
+} from './shared/logging.ts'
+import { fallbackErrorHandler } from './shared/middleware/error-handler.ts'
+import tracing from './shared/middleware/tracing.ts'
+import { assertRedisConnection } from './shared/redis-client.ts'
+import { trustReverseProxy } from './shared/reverse-proxy.ts'
 
 const config = configFromEnv()
 

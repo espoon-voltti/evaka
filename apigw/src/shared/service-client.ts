@@ -5,9 +5,9 @@
 import axios from 'axios'
 import type express from 'express'
 
-import { systemUserHeader } from './auth/index.js'
-import { getJwt } from './auth/jwt.js'
-import { evakaServiceUrl } from './config.js'
+import { systemUserHeader } from './auth/index.ts'
+import { getJwt } from './auth/jwt.ts'
+import { evakaServiceUrl } from './config.ts'
 
 export const client = axios.create({
   baseURL: evakaServiceUrl

@@ -9,22 +9,22 @@ import { AxiosError } from 'axios'
 import express from 'express'
 import _ from 'lodash'
 
-import { createLogoutToken } from '../auth/index.js'
-import type { AsyncRequestHandler } from '../express.js'
-import { toRequestHandler } from '../express.js'
-import { logAuditEvent, logDebug } from '../logging.js'
+import { createLogoutToken } from '../auth/index.ts'
+import type { AsyncRequestHandler } from '../express.ts'
+import { toRequestHandler } from '../express.ts'
+import { logAuditEvent, logDebug } from '../logging.ts'
 import {
   parseDescriptionFromSamlError,
   samlErrorSchema
-} from '../saml/error-utils.js'
-import type { AuthenticateProfile } from '../saml/index.js'
+} from '../saml/error-utils.ts'
+import type { AuthenticateProfile } from '../saml/index.ts'
 import {
   getRawUnvalidatedRelayState,
   SamlProfileIdSchema,
   SamlSessionSchema,
   validateRelayStateUrl
-} from '../saml/index.js'
-import type { Sessions, SessionType } from '../session.js'
+} from '../saml/index.ts'
+import type { Sessions, SessionType } from '../session.ts'
 
 const urlencodedParser = express.urlencoded({ extended: false })
 

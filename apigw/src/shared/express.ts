@@ -5,7 +5,7 @@
 import type express from 'express'
 import { BaseError } from 'make-error-cause'
 
-import type { EvakaSessionUser } from './auth/index.js'
+import type { EvakaSessionUser } from './auth/index.ts'
 
 export interface LogoutToken {
   // milliseconds value of a Date. Not an actual Date because it will be JSONified

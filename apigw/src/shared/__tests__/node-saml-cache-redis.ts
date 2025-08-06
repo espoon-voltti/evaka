@@ -5,8 +5,8 @@
 import { describe, beforeEach, expect, it, test } from '@jest/globals'
 import type { CacheProvider } from '@node-saml/node-saml'
 
-import redisCacheProvider from '../saml/node-saml-cache-redis.js'
-import { MockRedisClient } from '../test/mock-redis-client.js'
+import redisCacheProvider from '../saml/node-saml-cache-redis.ts'
+import { MockRedisClient } from '../test/mock-redis-client.ts'
 
 const ttlSeconds = 1
 let redisClient: MockRedisClient

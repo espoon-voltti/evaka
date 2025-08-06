@@ -2,12 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import type { EvakaSessionUser } from '../../shared/auth/index.js'
-import { appCommit } from '../../shared/config.js'
-import { toRequestHandler } from '../../shared/express.js'
-import type { CitizenUserResponse } from '../../shared/service-client.js'
-import { getCitizenDetails } from '../../shared/service-client.js'
-import type { Sessions } from '../../shared/session.js'
+import type { EvakaSessionUser } from '../../shared/auth/index.ts'
+import { appCommit } from '../../shared/config.ts'
+import { toRequestHandler } from '../../shared/express.ts'
+import type { CitizenUserResponse } from '../../shared/service-client.ts'
+import { getCitizenDetails } from '../../shared/service-client.ts'
+import type { Sessions } from '../../shared/session.ts'
 
 export interface AuthStatus {
   loggedIn: boolean

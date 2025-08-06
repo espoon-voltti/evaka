@@ -9,7 +9,7 @@ import type {
 import split from 'split2'
 import * as through from 'through2'
 
-import { ipv6ToIpv4 } from './utils.js'
+import { ipv6ToIpv4 } from './utils.ts'
 
 export interface BaseLog {
   '@timestamp': string

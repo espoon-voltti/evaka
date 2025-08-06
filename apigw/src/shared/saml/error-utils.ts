@@ -6,7 +6,7 @@ import type { Request } from 'express'
 import { XMLParser } from 'fast-xml-parser'
 import { z } from 'zod'
 
-import { logDebug, logError } from '../logging.js'
+import { logDebug, logError } from '../logging.ts'
 
 export type PrimaryStatusCodeValue =
   | 'urn:oasis:names:tc:SAML:2.0:status:Success'

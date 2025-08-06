@@ -4,7 +4,7 @@
 
 import { describe, expect, it } from '@jest/globals'
 
-import { parseUrlWithOrigin } from '../parse-url-with-origin.js'
+import { parseUrlWithOrigin } from '../parse-url-with-origin.ts'
 
 describe('parseUrlWithOrigin', () => {
   const origin = 'https://example.com'

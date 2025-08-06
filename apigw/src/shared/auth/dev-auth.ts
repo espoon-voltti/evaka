@@ -6,12 +6,12 @@ import { AxiosError } from 'axios'
 import type { Request } from 'express'
 import express from 'express'
 
-import type { AsyncRequestHandler } from '../express.js'
-import { toRequestHandler } from '../express.js'
-import { validateRelayStateUrl } from '../saml/index.js'
-import type { Sessions, SessionType } from '../session.js'
+import type { AsyncRequestHandler } from '../express.ts'
+import { toRequestHandler } from '../express.ts'
+import { validateRelayStateUrl } from '../saml/index.ts'
+import type { Sessions, SessionType } from '../session.ts'
 
-import type { EvakaSessionUser } from './index.js'
+import type { EvakaSessionUser } from './index.ts'
 
 export interface DevAuthRouterOptions<T extends SessionType> {
   sessions: Sessions<T>

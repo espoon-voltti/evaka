@@ -5,7 +5,7 @@
 import { ValidateInResponseTo } from '@node-saml/node-saml'
 import type { RedisClientOptions } from '@redis/client'
 
-import type { TrustedCertificates } from './certificates.js'
+import type { TrustedCertificates } from './certificates.ts'
 
 type EnvVariables = typeof envVariables
 const envVariables = {

@@ -15,12 +15,12 @@ import type { Cookie } from 'tough-cookie'
 import { SignedXml } from 'xml-crypto'
 import xml2js from 'xml2js'
 
-import type { Config } from '../config.js'
-import { configFromEnv } from '../config.js'
-import type { DevCitizen } from '../dev-api.js'
-import type { CitizenUser } from '../service-client.js'
-import { sessionCookie } from '../session.js'
-import { GatewayTester } from '../test/gateway-tester.js'
+import type { Config } from '../config.ts'
+import { configFromEnv } from '../config.ts'
+import type { DevCitizen } from '../dev-api.ts'
+import type { CitizenUser } from '../service-client.ts'
+import { sessionCookie } from '../session.ts'
+import { GatewayTester } from '../test/gateway-tester.ts'
 
 const mockUser: DevCitizen & CitizenUser = {
   id: '942b9cab-210d-4d49-b4c9-65f26390eed3',
