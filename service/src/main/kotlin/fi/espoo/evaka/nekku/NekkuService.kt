@@ -305,7 +305,7 @@ fun planNekkuManualOrderJob(
     if (!isGroupOpenOnDate(date, groupOperationDays))
         throw BadRequest("Group $groupId is not open on $date")
 
-    if (tx.getNekkuDaycareGroupId(date.daySpan()).none { it == groupId })
+    if (tx.getNekkuOpenDaycareGroupIds(date.daySpan()).none { it == groupId }))
         throw BadRequest("No customer number for group $groupId or group or unit is not open")
 
     asyncJobRunner.plan(
