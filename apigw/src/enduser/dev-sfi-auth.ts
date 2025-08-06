@@ -5,11 +5,11 @@
 import type { Router } from 'express'
 import _ from 'lodash'
 
-import { createDevAuthRouter } from '../shared/auth/dev-auth.js'
-import { getCitizens } from '../shared/dev-api.js'
-import { assertStringProp } from '../shared/express.js'
-import { citizenLogin } from '../shared/service-client.js'
-import type { Sessions } from '../shared/session.js'
+import { createDevAuthRouter } from '../shared/auth/dev-auth.ts'
+import { getCitizens } from '../shared/dev-api.ts'
+import { assertStringProp } from '../shared/express.ts'
+import { citizenLogin } from '../shared/service-client.ts'
+import type { Sessions } from '../shared/session.ts'
 
 export function createDevSfiRouter(sessions: Sessions<'citizen'>): Router {
   return createDevAuthRouter({

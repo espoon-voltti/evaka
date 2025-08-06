@@ -6,8 +6,8 @@ import { describe, expect, test } from '@jest/globals'
 import { differenceInMonths } from 'date-fns'
 import nodeForge from 'node-forge'
 
-import type { TrustedCertificates } from '../certificates.js'
-import certificates from '../certificates.js'
+import type { TrustedCertificates } from '../certificates.ts'
+import certificates from '../certificates.ts'
 
 describe('SAML certificates', () => {
   test('at least one certificate must exist', () => {

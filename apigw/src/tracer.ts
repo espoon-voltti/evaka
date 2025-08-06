@@ -12,7 +12,7 @@ import {
   traceAgentHostname,
   traceAgentPort,
   profilingEnabled
-} from './shared/config.js'
+} from './shared/config.ts'
 
 if (tracingEnabled) {
   tracer.tracer.init({

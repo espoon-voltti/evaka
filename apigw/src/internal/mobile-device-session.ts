@@ -6,20 +6,20 @@ import type { CookieOptions } from 'express'
 import type express from 'express'
 import { v4 as uuid } from 'uuid'
 
-import { pinSessionTimeoutSeconds, useSecureCookies } from '../shared/config.js'
+import { pinSessionTimeoutSeconds, useSecureCookies } from '../shared/config.ts'
 import {
   assertStringProp,
   toMiddleware,
   toRequestHandler
-} from '../shared/express.js'
-import type { RedisClient } from '../shared/redis-client.js'
-import type { MobileDeviceIdentity } from '../shared/service-client.js'
+} from '../shared/express.ts'
+import type { RedisClient } from '../shared/redis-client.ts'
+import type { MobileDeviceIdentity } from '../shared/service-client.ts'
 import {
   employeePinLogin,
   identifyMobileDevice,
   validatePairing
-} from '../shared/service-client.js'
-import type { Sessions } from '../shared/session.js'
+} from '../shared/service-client.ts'
+import type { Sessions } from '../shared/session.ts'
 
 export const mobileLongTermCookieName = 'evaka.employee.mobile'
 const mobileLongTermCookieOptions: CookieOptions = {

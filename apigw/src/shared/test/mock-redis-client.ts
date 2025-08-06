@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import type { RedisClient, RedisTransaction } from '../redis-client.js'
+import type { RedisClient, RedisTransaction } from '../redis-client.ts'
 
 export class MockRedisClient implements RedisClient {
   private time: number

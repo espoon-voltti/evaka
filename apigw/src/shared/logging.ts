@@ -8,8 +8,8 @@ import pino from 'pino'
 import { pinoHttp } from 'pino-http'
 import queryString from 'query-string'
 
-import { appBuild, appCommit, hostIp, prettyLogs, volttiEnv } from './config.js'
-import { createSha256Hash } from './crypto.js'
+import { appBuild, appCommit, hostIp, prettyLogs, volttiEnv } from './config.ts'
+import { createSha256Hash } from './crypto.ts'
 import type {
   LogFn,
   LogLevel,
@@ -19,7 +19,7 @@ import type {
   PinoResponse,
   PinoResSerializer,
   UserPinoRequest
-} from './types.js'
+} from './types.d.ts'
 
 const BASE_LOGGER_OPTS: pino.LoggerOptions = {
   base: {

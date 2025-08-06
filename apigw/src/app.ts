@@ -6,17 +6,17 @@ import cookieParser from 'cookie-parser'
 import express from 'express'
 import expressBasicAuth from 'express-basic-auth'
 
-import { createDevSfiRouter } from './enduser/dev-sfi-auth.js'
-import mapRoutes from './enduser/mapRoutes.js'
-import { citizenAuthStatus } from './enduser/routes/auth-status.js'
-import { authWeakLogin } from './enduser/routes/auth-weak-login.js'
+import { createDevSfiRouter } from './enduser/dev-sfi-auth.ts'
+import mapRoutes from './enduser/mapRoutes.ts'
+import { citizenAuthStatus } from './enduser/routes/auth-status.ts'
+import { authWeakLogin } from './enduser/routes/auth-weak-login.ts'
 import {
   createCitizenSuomiFiIntegration,
   createEmployeeSuomiFiIntegration
-} from './enduser/suomi-fi-saml.js'
-import { createSamlAdIntegration } from './internal/ad-saml.js'
-import { createDevAdRouter } from './internal/dev-ad-auth.js'
-import { createDevEmployeeSfiRouter } from './internal/dev-sfi-auth.js'
+} from './enduser/suomi-fi-saml.ts'
+import { createSamlAdIntegration } from './internal/ad-saml.ts'
+import { createDevAdRouter } from './internal/dev-ad-auth.ts'
+import { createDevEmployeeSfiRouter } from './internal/dev-sfi-auth.ts'
 import {
   checkMobileEmployeeIdToken,
   devApiE2ESignup,
@@ -24,21 +24,21 @@ import {
   pinLoginRequestHandler,
   pinLogoutRequestHandler,
   refreshMobileSession
-} from './internal/mobile-device-session.js'
-import { internalAuthStatus } from './internal/routes/auth-status.js'
-import { integrationUserHeader } from './shared/auth/index.js'
-import type { Config } from './shared/config.js'
-import { appCommit, enableDevApi, titaniaConfig } from './shared/config.js'
-import { toRequestHandler } from './shared/express.js'
-import { cacheControl } from './shared/middleware/cache-control.js'
-import { csrf } from './shared/middleware/csrf.js'
-import { errorHandler } from './shared/middleware/error-handler.js'
-import { createProxy } from './shared/proxy-utils.js'
-import type { RedisClient } from './shared/redis-client.js'
-import { handleCspReport } from './shared/routes/csp.js'
-import type { SamlIntegration } from './shared/routes/saml.js'
-import { validateRelayStateUrl } from './shared/saml/index.js'
-import { sessionSupport } from './shared/session.js'
+} from './internal/mobile-device-session.ts'
+import { internalAuthStatus } from './internal/routes/auth-status.ts'
+import { integrationUserHeader } from './shared/auth/index.ts'
+import type { Config } from './shared/config.ts'
+import { appCommit, enableDevApi, titaniaConfig } from './shared/config.ts'
+import { toRequestHandler } from './shared/express.ts'
+import { cacheControl } from './shared/middleware/cache-control.ts'
+import { csrf } from './shared/middleware/csrf.ts'
+import { errorHandler } from './shared/middleware/error-handler.ts'
+import { createProxy } from './shared/proxy-utils.ts'
+import type { RedisClient } from './shared/redis-client.ts'
+import { handleCspReport } from './shared/routes/csp.ts'
+import type { SamlIntegration } from './shared/routes/saml.ts'
+import { validateRelayStateUrl } from './shared/saml/index.ts'
+import { sessionSupport } from './shared/session.ts'
 
 export function apiRouter(config: Config, redisClient: RedisClient) {
   const router = express.Router()

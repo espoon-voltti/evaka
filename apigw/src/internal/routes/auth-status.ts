@@ -8,15 +8,15 @@ import _ from 'lodash'
 import type {
   EmployeeSessionUser,
   EvakaSessionUser
-} from '../../shared/auth/index.js'
-import { appCommit } from '../../shared/config.js'
-import { toRequestHandler } from '../../shared/express.js'
-import type { UUID } from '../../shared/service-client.js'
+} from '../../shared/auth/index.ts'
+import { appCommit } from '../../shared/config.ts'
+import { toRequestHandler } from '../../shared/express.ts'
+import type { UUID } from '../../shared/service-client.ts'
 import {
   authenticateMobileDevice,
   getEmployeeDetails
-} from '../../shared/service-client.js'
-import type { Sessions } from '../../shared/session.js'
+} from '../../shared/service-client.ts'
+import type { Sessions } from '../../shared/session.ts'
 
 export interface AuthStatus {
   loggedIn: boolean

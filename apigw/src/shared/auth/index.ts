@@ -4,7 +4,7 @@
 
 import type { Profile } from '@node-saml/node-saml'
 
-import type { SamlSession } from '../saml/index.js'
+import type { SamlSession } from '../saml/index.ts'
 
 export type CitizenSessionUser =
   | {

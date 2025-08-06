@@ -4,7 +4,7 @@
 
 import type express from 'express'
 
-import { logWarn } from '../logging.js'
+import { logWarn } from '../logging.ts'
 
 export const handleCspReport: express.RequestHandler = (req, res) => {
   logWarn('CSP report received', req, {

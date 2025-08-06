@@ -8,7 +8,7 @@ import type {
   SerializedResponse
 } from 'pino-std-serializers'
 
-import type { EvakaSessionUser } from './auth/index.js'
+import type { EvakaSessionUser } from './auth/index.ts'
 
 export interface PinoRequest
   extends Omit<
