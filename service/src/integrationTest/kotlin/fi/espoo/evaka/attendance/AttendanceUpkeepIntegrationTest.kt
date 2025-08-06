@@ -12,7 +12,7 @@ import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestChildAttendance
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import fi.espoo.evaka.shared.domain.RealEvakaClock
+import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.job.ScheduledJobs
 import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
@@ -28,6 +28,8 @@ import org.springframework.beans.factory.annotation.Autowired
 
 class AttendanceUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var scheduledJobs: ScheduledJobs
+
+    private val clock = MockEvakaClock(2020, 10, 26, 0, 10)
 
     @BeforeEach
     fun beforeEach() {
@@ -54,7 +56,7 @@ class AttendanceUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             )
         }
 
-        scheduledJobs.endOfDayAttendanceUpkeep(db, RealEvakaClock())
+        scheduledJobs.endOfDayAttendanceUpkeep(db, clock)
 
         val attendanceEndTimes = getAttendanceEndTimes()
         assertEquals(1, attendanceEndTimes.size)
@@ -70,8 +72,8 @@ class AttendanceUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 DevPlacement(
                     childId = testChild_1.id,
                     unitId = testRoundTheClockDaycare.id,
-                    startDate = LocalDate.now().minusDays(1),
-                    endDate = LocalDate.now().plusDays(1),
+                    startDate = clock.now().toLocalDate().minusDays(1),
+                    endDate = clock.now().toLocalDate().plusDays(1),
                 )
             )
             it.insertTestChildAttendance(
@@ -82,7 +84,7 @@ class AttendanceUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             )
         }
 
-        scheduledJobs.endOfDayAttendanceUpkeep(db, RealEvakaClock())
+        scheduledJobs.endOfDayAttendanceUpkeep(db, clock)
 
         val attendanceEndTimes = getAttendanceEndTimes()
         assertEquals(1, attendanceEndTimes.size)
@@ -99,8 +101,8 @@ class AttendanceUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 DevPlacement(
                     childId = testChild_1.id,
                     unitId = testRoundTheClockDaycare.id,
-                    startDate = LocalDate.now().minusDays(2),
-                    endDate = LocalDate.now().minusDays(1),
+                    startDate = clock.now().toLocalDate().minusDays(2),
+                    endDate = clock.now().toLocalDate().minusDays(1),
                 )
             )
             it.insertTestChildAttendance(
@@ -115,13 +117,13 @@ class AttendanceUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 DevPlacement(
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
-                    startDate = LocalDate.now(),
-                    endDate = LocalDate.now().plusDays(1),
+                    startDate = clock.now().toLocalDate(),
+                    endDate = clock.now().toLocalDate().plusDays(1),
                 )
             )
         }
 
-        scheduledJobs.endOfDayAttendanceUpkeep(db, RealEvakaClock())
+        scheduledJobs.endOfDayAttendanceUpkeep(db, clock)
 
         val attendanceEndTimes = getAttendanceEndTimes()
         assertEquals(1, attendanceEndTimes.size)
@@ -138,8 +140,8 @@ class AttendanceUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 DevPlacement(
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
-                    startDate = LocalDate.now().minusDays(2),
-                    endDate = LocalDate.now().plusDays(1),
+                    startDate = clock.now().toLocalDate().minusDays(2),
+                    endDate = clock.now().toLocalDate().plusDays(1),
                 )
             )
             // Backup placement to attendance's unit is active
@@ -149,7 +151,10 @@ class AttendanceUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     unitId = testRoundTheClockDaycare.id,
                     groupId = null,
                     period =
-                        FiniteDateRange(LocalDate.now().minusDays(2), LocalDate.now().plusDays(1)),
+                        FiniteDateRange(
+                            clock.now().toLocalDate().minusDays(2),
+                            clock.now().toLocalDate().plusDays(1),
+                        ),
                 )
             )
             it.insertTestChildAttendance(
@@ -160,7 +165,7 @@ class AttendanceUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             )
         }
 
-        scheduledJobs.endOfDayAttendanceUpkeep(db, RealEvakaClock())
+        scheduledJobs.endOfDayAttendanceUpkeep(db, clock)
 
         val attendanceEndTimes = getAttendanceEndTimes()
         assertEquals(1, attendanceEndTimes.size)
@@ -177,8 +182,8 @@ class AttendanceUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 DevPlacement(
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
-                    startDate = LocalDate.now().minusDays(2),
-                    endDate = LocalDate.now().plusDays(1),
+                    startDate = clock.now().toLocalDate().minusDays(2),
+                    endDate = clock.now().toLocalDate().plusDays(1),
                 )
             )
             // Backup placement to attendance's unit has ended
@@ -188,7 +193,10 @@ class AttendanceUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     unitId = testRoundTheClockDaycare.id,
                     groupId = null,
                     period =
-                        FiniteDateRange(LocalDate.now().minusDays(2), LocalDate.now().minusDays(1)),
+                        FiniteDateRange(
+                            clock.now().toLocalDate().minusDays(2),
+                            clock.now().toLocalDate().minusDays(1),
+                        ),
                 )
             )
             // Backup placement to another unit has ended
@@ -197,7 +205,11 @@ class AttendanceUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     childId = testChild_1.id,
                     unitId = testDaycare2.id,
                     groupId = null,
-                    period = FiniteDateRange(LocalDate.now(), LocalDate.now().plusDays(1)),
+                    period =
+                        FiniteDateRange(
+                            clock.now().toLocalDate(),
+                            clock.now().toLocalDate().plusDays(1),
+                        ),
                 )
             )
             it.insertTestChildAttendance(
@@ -208,7 +220,7 @@ class AttendanceUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             )
         }
 
-        scheduledJobs.endOfDayAttendanceUpkeep(db, RealEvakaClock())
+        scheduledJobs.endOfDayAttendanceUpkeep(db, clock)
 
         val attendanceEndTimes = getAttendanceEndTimes()
         assertEquals(1, attendanceEndTimes.size)

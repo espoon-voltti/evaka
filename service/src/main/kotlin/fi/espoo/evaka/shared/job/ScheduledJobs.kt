@@ -95,11 +95,11 @@ enum class ScheduledJob(
     ),
     EndOfDayAttendanceUpkeep(
         ScheduledJobs::endOfDayAttendanceUpkeep,
-        ScheduledJobSettings(enabled = true, schedule = JobSchedule.nightly()),
+        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(0, 0))),
     ),
     EndOfDayStaffAttendanceUpkeep(
         ScheduledJobs::endOfDayStaffAttendanceUpkeep,
-        ScheduledJobSettings(enabled = true, schedule = JobSchedule.nightly()),
+        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(0, 0))),
     ),
     EndOfDayReservationUpkeep(
         ScheduledJobs::endOfDayReservationUpkeep,
