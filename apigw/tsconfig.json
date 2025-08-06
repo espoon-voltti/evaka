@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "allowImportingTsExtensions": true,
+    "erasableSyntaxOnly": true,
     "esModuleInterop": true,
     "module": "node16",
     "moduleResolution": "node16",
