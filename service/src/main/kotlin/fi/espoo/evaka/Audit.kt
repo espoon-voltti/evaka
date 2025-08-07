@@ -215,7 +215,6 @@ enum class Audit(
     ChildDocumentTryTakeLockOnContent,
     ChildDocumentUnreadCount,
     ChildDocumentUpdate,
-    ChildDocumentUpdateContent,
     ChildDocumentsCreate,
     ChildFeeAlterationsCreate,
     ChildFeeAlterationsDelete,
@@ -652,7 +651,8 @@ enum class ChildAudit(
     private val securityEvent: Boolean = false,
     private val securityLevel: String = "low",
 ) {
-    ApplicationRead;
+    ApplicationRead,
+    ChildDocumentUpdateContent;
 
     private val eventCode = name
 
