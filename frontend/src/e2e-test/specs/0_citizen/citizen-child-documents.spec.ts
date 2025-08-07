@@ -426,7 +426,6 @@ describe('Citizen child documents editor page', () => {
     )
     await toast1.click()
     const childDocumentPage = new ChildDocumentPage(page)
-    await childDocumentPage.editButton.click()
     await childDocumentPage.status.assertTextEquals('Täytettävänä huoltajalla')
     const question1 = childDocumentPage.getTextQuestion('Testi', 'Kysymys 1')
     await question1.fill('Jonkin sortin vastaus 1')
