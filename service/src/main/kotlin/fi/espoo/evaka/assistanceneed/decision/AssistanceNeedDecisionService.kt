@@ -129,7 +129,7 @@ class AssistanceNeedDecisionService(
                 OfficialLanguage.SV -> Language.sv
                 else -> Language.fi
             }
-        val fromAddress = emailEnv.applicationReceivedSender(language)
+        val fromAddress = emailEnv.sender(language)
         val content = emailMessageProvider.assistanceNeedDecisionNotification(language)
 
         Email.create(

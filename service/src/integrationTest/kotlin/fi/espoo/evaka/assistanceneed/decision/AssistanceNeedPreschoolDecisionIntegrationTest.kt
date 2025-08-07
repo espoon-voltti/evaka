@@ -486,7 +486,7 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
             getEmailFor(testAdult_2).content.subject,
         )
         assertEquals(
-            "Test email sender fi <testemail_fi@test.com>",
+            "Espoon Varhaiskasvatus <no-reply.evaka@espoo.fi>",
             getEmailFor(testAdult_2).fromAddress.address,
         )
     }
