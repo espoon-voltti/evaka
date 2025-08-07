@@ -140,7 +140,7 @@ class AssistanceNeedDecisionsReportTest : FullApplicationTest(resetDbBeforeEach 
         assertEquals(3, decisionMaker1UnreadCount)
 
         whenPostAssistanceNeedDecisionMarkAsOpenedThenExpectSuccess(
-            decisions.get(decisionMaker1.id)!!.first(),
+            decisions[decisionMaker1.id]!!.first(),
             decisionMaker1,
         )
 
@@ -157,7 +157,7 @@ class AssistanceNeedDecisionsReportTest : FullApplicationTest(resetDbBeforeEach 
     fun `unopened indication is updated for opened decision`() {
         val decisions = this.createTestDecisions()
 
-        val firstDecisionId = decisions.get(decisionMaker1.id)!!.first()
+        val firstDecisionId = decisions[decisionMaker1.id]!!.first()
         whenPostAssistanceNeedDecisionMarkAsOpenedThenExpectSuccess(firstDecisionId, decisionMaker1)
 
         val report = whenGetAssistanceNeedDecisionsReportThenExpectSuccess(decisionMaker1)
@@ -178,7 +178,7 @@ class AssistanceNeedDecisionsReportTest : FullApplicationTest(resetDbBeforeEach 
 
         assertEquals(200, res.statusCode)
 
-        val (_, sendRes) =
+        val (_, sendRes, _) =
             http
                 .post("/employee/assistance-need-decision/${result.get().id}/send")
                 .asUser(assistanceWorker)
@@ -219,7 +219,7 @@ class AssistanceNeedDecisionsReportTest : FullApplicationTest(resetDbBeforeEach 
         id: AssistanceNeedDecisionId,
         decisionMaker: AuthenticatedUser,
     ) {
-        val (_, res) =
+        val (_, res, _) =
             http
                 .post("/employee/assistance-need-decision/$id/mark-as-opened")
                 .asUser(decisionMaker)

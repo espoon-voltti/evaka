@@ -702,6 +702,6 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 )
             }
         assertEquals(1, result.data.size)
-        assertEquals(expectedChildLastName, result.data.get(0).children.get(0).lastName)
+        assertEquals(expectedChildLastName, result.data[0].children[0].lastName)
     }
 }

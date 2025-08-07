@@ -21,7 +21,6 @@ import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDifference
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.placement.PlacementType
-import fi.espoo.evaka.placement.PlacementType.DAYCARE
 import fi.espoo.evaka.serviceNeedOptionVoucherValueCoefficients
 import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.shared.ChildId
@@ -809,9 +808,9 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
     fun `partner income difference - decision is generated even if income changes to identical income`() {
         val period = FiniteDateRange(LocalDate.of(2025, 5, 1), LocalDate.of(2025, 12, 31))
         val incomePeriod1 = DateRange(period.start, null)
-        val clock = MockEvakaClock(HelsinkiDateTime.Companion.of(period.start, LocalTime.of(0, 0)))
+        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.of(0, 0)))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
-        insertPlacement(testChild_1.id, period, DAYCARE, testVoucherDaycare.id)
+        insertPlacement(testChild_1.id, period, PlacementType.DAYCARE, testVoucherDaycare.id)
         insertIncome(testAdult_1.id, 310200, incomePeriod1)
 
         db.transaction { generator.generateNewDecisionsForAdult(it, testAdult_1.id) }
@@ -823,7 +822,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
             dbInstance(),
             AuthenticatedUser.Employee(testDecisionMaker_2.id, setOf(UserRole.ADMIN)),
             clock,
-            listOf(decisions.get(0).id),
+            listOf(decisions[0].id),
             null,
         )
 
@@ -846,9 +845,9 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
     fun `partner income difference - if an income is missing id then old logic is used and a new decision is not generated if income changes to identical income`() {
         val period = FiniteDateRange(LocalDate.of(2025, 5, 1), LocalDate.of(2025, 12, 31))
         val incomePeriod1 = DateRange(period.start, null)
-        val clock = MockEvakaClock(HelsinkiDateTime.Companion.of(period.start, LocalTime.of(0, 0)))
+        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.of(0, 0)))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
-        insertPlacement(testChild_1.id, period, DAYCARE, testVoucherDaycare.id)
+        insertPlacement(testChild_1.id, period, PlacementType.DAYCARE, testVoucherDaycare.id)
         insertIncome(testAdult_1.id, 310200, incomePeriod1)
 
         db.transaction { generator.generateNewDecisionsForAdult(it, testAdult_1.id) }
@@ -860,7 +859,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
             dbInstance(),
             AuthenticatedUser.Employee(testDecisionMaker_2.id, setOf(UserRole.ADMIN)),
             clock,
-            listOf(decisions.get(0).id),
+            listOf(decisions[0].id),
             null,
         )
 
@@ -1414,16 +1413,16 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
 
         getAllVoucherValueDecisions().let {
             assertEquals(2, it.size)
-            assertEquals(1, it.filter { it.status == VoucherValueDecisionStatus.SENT }.size)
-            assertEquals(1, it.filter { it.status == VoucherValueDecisionStatus.DRAFT }.size)
+            assertEquals(1, it.filter { d -> d.status == VoucherValueDecisionStatus.SENT }.size)
+            assertEquals(1, it.filter { d -> d.status == VoucherValueDecisionStatus.DRAFT }.size)
         }
 
         db.transaction { generator.generateNewDecisionsForAdult(it, testAdult_1.id) }
 
         getAllVoucherValueDecisions().let {
             assertEquals(2, it.size)
-            assertEquals(1, it.filter { it.status == VoucherValueDecisionStatus.SENT }.size)
-            assertEquals(1, it.filter { it.status == VoucherValueDecisionStatus.DRAFT }.size)
+            assertEquals(1, it.filter { d -> d.status == VoucherValueDecisionStatus.SENT }.size)
+            assertEquals(1, it.filter { d -> d.status == VoucherValueDecisionStatus.DRAFT }.size)
         }
     }
 

@@ -490,9 +490,9 @@ fun Database.Transaction.groupByDaycareAndGroup(
         getUnitAndGroupForChildren(childrenWithDiets.map { it.childId }, today)
     return unitAndGroupPerChild.mapValues { unitEntry ->
         unitEntry.value.mapValues { groupEntry ->
-            groupEntry.value
-                .map { childId -> childId to (dietsByChildren[childId] ?: listOf()) }
-                .toMap()
+            groupEntry.value.associate { childId ->
+                childId to (dietsByChildren[childId] ?: listOf())
+            }
         }
     }
 }

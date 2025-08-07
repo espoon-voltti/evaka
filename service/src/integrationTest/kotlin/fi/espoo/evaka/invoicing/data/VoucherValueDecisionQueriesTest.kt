@@ -946,7 +946,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
     }
 
     @Test
-    fun `getHeadOfFamilyVoucherValueDecisions`() {
+    fun getHeadOfFamilyVoucherValueDecisions() {
         db.transaction { tx ->
             val baseDecision = { child: DevPerson ->
                 createVoucherValueDecisionFixture(

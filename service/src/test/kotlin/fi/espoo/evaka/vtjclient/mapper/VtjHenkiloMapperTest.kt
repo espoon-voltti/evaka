@@ -5,7 +5,6 @@
 package fi.espoo.evaka.vtjclient.mapper
 
 import fi.espoo.evaka.vtjclient.dto.Nationality
-import fi.espoo.evaka.vtjclient.dto.NativeLanguage
 import fi.espoo.evaka.vtjclient.dto.RestrictedDetails
 import fi.espoo.evaka.vtjclient.soap.VTJHenkiloVastaussanoma.Henkilo
 import fi.espoo.evaka.vtjclient.soap.VTJHenkiloVastaussanoma.Henkilo.Aidinkieli
@@ -335,9 +334,9 @@ class VtjHenkiloMapperTest {
                         kielikoodi = "fi"
                     }
             }
-        val result: NativeLanguage? = value.mapNativeLanguage()
+        val result = value.mapNativeLanguage()
 
-        assertThat(result!!.code).isEqualTo("fi")
+        assertThat(result.code).isEqualTo("fi")
         assertThat(result.languageName).isEqualTo("suomi")
     }
 
@@ -351,18 +350,18 @@ class VtjHenkiloMapperTest {
                         kielikoodi = ""
                     }
             }
-        val result: NativeLanguage? = value.mapNativeLanguage()
+        val result = value.mapNativeLanguage()
 
-        assertThat(result!!.code).isEqualTo("")
+        assertThat(result.code).isEqualTo("")
         assertThat(result.languageName).isEqualTo("")
     }
 
     @Test
     fun `null native language fields should be mapped to an empty NativeLanguage`() {
         val value = Henkilo().apply { aidinkieli = Aidinkieli() }
-        val result: NativeLanguage? = value.mapNativeLanguage()
+        val result = value.mapNativeLanguage()
 
-        assertThat(result!!.code).isEqualTo("")
+        assertThat(result.code).isEqualTo("")
         assertThat(result.languageName).isEqualTo("")
     }
 

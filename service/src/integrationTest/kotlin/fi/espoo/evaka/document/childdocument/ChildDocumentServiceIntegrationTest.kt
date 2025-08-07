@@ -161,10 +161,7 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     contentModifiedAt = clock.now(),
                     contentModifiedBy = null,
                     publishedAt =
-                        HelsinkiDateTime.Companion.of(
-                            clock.today().minusMonths(1),
-                            LocalTime.of(8, 0),
-                        ),
+                        HelsinkiDateTime.of(clock.today().minusMonths(1), LocalTime.of(8, 0)),
                     answeredAt = null,
                     answeredBy = null,
                 )
@@ -249,10 +246,7 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     contentModifiedAt = clock.now(),
                     contentModifiedBy = null,
                     publishedAt =
-                        HelsinkiDateTime.Companion.of(
-                            clock.today().minusMonths(1),
-                            LocalTime.of(8, 0),
-                        ),
+                        HelsinkiDateTime.of(clock.today().minusMonths(1), LocalTime.of(8, 0)),
                     answeredAt = null,
                     answeredBy = null,
                 )

@@ -102,8 +102,8 @@ fun parseAddress(
     regularAddress: Henkilo.VakinainenKotimainenLahiosoite,
 ) =
     listOfNotNull(
-            mailAddresses.mapNotNull { parseMailAddress(it) }.firstOrNull(),
-            temporaryAddresses.mapNotNull { parseTemporaryAddress(it) }.firstOrNull(),
+            mailAddresses.firstNotNullOfOrNull { parseMailAddress(it) },
+            temporaryAddresses.firstNotNullOfOrNull { parseTemporaryAddress(it) },
             parseRegularAddress(regularAddress),
         )
         .firstOrNull()

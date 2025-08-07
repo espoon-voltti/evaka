@@ -355,10 +355,8 @@ fun planNekkuOrderJobs(
         asyncJobRunner.plan(
             tx,
             nekkuGroupIds.flatMap { nekkuGroupId ->
-                val daycareOperationInfo = tx.getDaycareOperationInfo(nekkuGroupId)
-                if (daycareOperationInfo == null) {
-                    return@flatMap emptySequence()
-                }
+                val daycareOperationInfo =
+                    tx.getDaycareOperationInfo(nekkuGroupId) ?: return@flatMap emptySequence()
                 range.dates().mapNotNull { date ->
                     if (isDaycareOpenOnDate(date, daycareOperationInfo)) {
                         AsyncJob.SendNekkuOrder(customerGroupId = nekkuGroupId, date = date)
@@ -422,13 +420,13 @@ fun planNekkuManualOrderJob(
             "Can only make a manual order if an automatic order has been made for the day"
         )
 
-    val daycareOperationInfo = tx.getDaycareOperationInfo(groupId)
-    if (daycareOperationInfo == null)
-        throw BadRequest("Daycare operation info not found for group $groupId")
+    val daycareOperationInfo =
+        tx.getDaycareOperationInfo(groupId)
+            ?: throw BadRequest("Daycare operation info not found for group $groupId")
     if (!isDaycareOpenOnDate(date, daycareOperationInfo))
         throw BadRequest("Group $groupId is not open on $date")
 
-    if (tx.getNekkuDaycareGroupId(date.daySpan()).filter { it == groupId }.isEmpty())
+    if (tx.getNekkuDaycareGroupId(date.daySpan()).none { it == groupId })
         throw BadRequest("No customer number for group $groupId or group or unit is not open")
 
     asyncJobRunner.plan(
@@ -599,8 +597,9 @@ fun nekkuMealReportData(
                         childInfo.mealTimes,
                         childInfo.eatsBreakfast,
                     )
-                    .mapNotNull {
-                        val sku = getNekkuProductNumber(nekkuProducts, it, childInfo, customerType)
+                    .mapNotNull { mealTime ->
+                        val sku =
+                            getNekkuProductNumber(nekkuProducts, mealTime, childInfo, customerType)
                         if (sku == null) null
                         else
                             NekkuMealInfo(
@@ -809,7 +808,7 @@ data class CustomerApiType(val weekdays: List<NekkuCustomerApiWeekday>, val type
 }
 
 @ConstList("nekku_customer_weekday")
-enum class NekkuCustomerWeekday() : DatabaseEnum {
+enum class NekkuCustomerWeekday : DatabaseEnum {
     MONDAY,
     TUESDAY,
     WEDNESDAY,

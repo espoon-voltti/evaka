@@ -167,7 +167,7 @@ interface BoundedRange<Point : Comparable<Point>, This : BoundedRange<Point, Thi
         abstract val left: This?
         abstract val right: This?
 
-        object None : SubtractResult<Nothing>() {
+        data object None : SubtractResult<Nothing>() {
             override val left: Nothing? = null
             override val right: Nothing? = null
 

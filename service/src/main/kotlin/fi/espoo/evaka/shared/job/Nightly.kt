@@ -8,7 +8,7 @@ import com.github.kagkarlsson.scheduler.task.schedule.Daily
 import fi.espoo.evaka.shared.domain.europeHelsinki
 import java.time.LocalTime
 
-class Nightly() : Daily(europeHelsinki, runAt) {
+class Nightly : Daily(europeHelsinki, runAt) {
     companion object {
         private var runAt: LocalTime = LocalTime.of(0, 10)
 

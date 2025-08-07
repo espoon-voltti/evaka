@@ -30,7 +30,6 @@ import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.config.PDFConfig
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.OfficialLanguage
-import fi.espoo.evaka.shared.message.EvakaMessageProvider
 import fi.espoo.evaka.shared.template.EvakaTemplateProvider
 import java.math.BigDecimal
 import java.time.LocalDate
@@ -42,7 +41,7 @@ import org.junit.jupiter.api.Test
 
 class PdfGenerationTest {
     private val service: PdfGenerator =
-        PdfGenerator(EvakaMessageProvider(), EvakaTemplateProvider(), PDFConfig.templateEngine())
+        PdfGenerator(EvakaTemplateProvider(), PDFConfig.templateEngine())
 
     private val normalDecision =
         FeeDecisionDetailed(

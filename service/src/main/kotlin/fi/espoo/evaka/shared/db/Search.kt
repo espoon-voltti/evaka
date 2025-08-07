@@ -166,5 +166,4 @@ fun freeTextParamsToTsQuery(searchText: String): String =
         .let(stripNonAlphanumeric)
         .let(splitSearchText)
         .filter { it.isNotBlank() }
-        .map { param -> "$param:*" }
-        .joinToString(" & ")
+        .joinToString(" & ") { param -> "$param:*" }

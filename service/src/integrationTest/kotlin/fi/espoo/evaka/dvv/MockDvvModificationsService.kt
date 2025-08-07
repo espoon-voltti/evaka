@@ -44,13 +44,12 @@ class MockDvvModificationsService {
 
 fun getModifications(ssns: List<String>): String {
     return ssns
-        .map { ssn -> if (modifications.containsKey(ssn)) modifications[ssn] else null }
-        .filterNotNull()
+        .mapNotNull { ssn -> if (modifications.containsKey(ssn)) modifications[ssn] else null }
         .joinToString(",")
 }
 
 val modifications =
-    mapOf<String, String>(
+    mapOf(
         "nimenmuutos" to
             """
 {

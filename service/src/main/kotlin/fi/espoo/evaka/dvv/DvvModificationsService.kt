@@ -81,7 +81,7 @@ class DvvModificationsService(
                                     else -> {
                                         logger.error {
                                             "Refreshing person from VTJ for an unknown DVV modification type: ${infoGroup.tietoryhma} (all modification in this group: ${
-                                                personModifications.tietoryhmat.map { it.tietoryhma }.joinToString(", ")
+                                                personModifications.tietoryhmat.joinToString(", ") { it.tietoryhma }
                                             })"
                                         }
                                         ssnsToUpdateFromVtj.add(personModifications.henkilotunnus)

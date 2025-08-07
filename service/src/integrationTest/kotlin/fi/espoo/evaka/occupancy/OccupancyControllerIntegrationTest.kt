@@ -53,8 +53,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
     @Autowired private lateinit var occupancyController: OccupancyController
 
     private val today = LocalDate.of(2024, 8, 21)
-    private val mockClock =
-        MockEvakaClock(HelsinkiDateTime.Companion.of(today, LocalTime.of(16, 0)))
+    private val mockClock = MockEvakaClock(HelsinkiDateTime.of(today, LocalTime.of(16, 0)))
     private val startDate = LocalDate.of(2019, 1, 1)
     private val endDate = LocalDate.of(2021, 12, 31)
 

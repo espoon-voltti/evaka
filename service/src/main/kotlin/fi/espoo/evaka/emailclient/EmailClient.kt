@@ -11,7 +11,7 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import io.github.oshai.kotlinlogging.KotlinLogging
 
-private val EMAIL_PATTERN = "^([\\w.%+-]+)@([\\w-]+\\.)+([\\w]{2,})\$".toRegex()
+private val EMAIL_PATTERN = "^([\\w.%+-]+)@([\\w-]+\\.)+([\\w]{2,})$".toRegex()
 
 private val logger = KotlinLogging.logger {}
 

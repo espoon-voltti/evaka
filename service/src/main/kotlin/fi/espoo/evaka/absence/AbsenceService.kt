@@ -79,14 +79,13 @@ class AbsenceService(
         val reservableRange =
             getReservableRange(now, featureConfig.citizenReservationThresholdHours)
 
-        val range = body.dateRange.intersection(FiniteDateRange(today, reservableRange.end))
-        if (range == null) {
-            return Triple<List<AbsenceId>, List<AttendanceReservationId>?, List<AbsenceId>>(
-                emptyList(),
-                emptyList(),
-                emptyList(),
-            )
-        }
+        val range =
+            body.dateRange.intersection(FiniteDateRange(today, reservableRange.end))
+                ?: return Triple<List<AbsenceId>, List<AttendanceReservationId>?, List<AbsenceId>>(
+                    emptyList(),
+                    emptyList(),
+                    emptyList(),
+                )
         if (!listOf(OTHER_ABSENCE, PLANNED_ABSENCE, SICKLEAVE).contains(body.absenceType)) {
             throw BadRequest("Invalid absence type")
         }

@@ -46,7 +46,7 @@ interface PaymentIntegrationClient {
         }
     }
 
-    class FailingClient() : PaymentIntegrationClient {
+    class FailingClient : PaymentIntegrationClient {
         override fun send(payments: List<Payment>, tx: Database.Read): SendResult {
             throw RuntimeException("Payments are not in use")
         }

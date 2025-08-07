@@ -26,7 +26,7 @@ private val logger = KotlinLogging.logger {}
 
 @Service
 class ArchiveChildDocumentService(
-    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
+    asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val documentClient: DocumentService,
     private val client: SärmäClientInterface,
 ) {

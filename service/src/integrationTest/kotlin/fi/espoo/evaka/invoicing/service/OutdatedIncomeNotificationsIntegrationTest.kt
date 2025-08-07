@@ -503,8 +503,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
         val mails = getEmails()
         assertEquals(1, mails.size)
         assertTrue(
-            mails
-                .get(0)
+            mails[0]
                 .content
                 .text
                 .contains(
@@ -544,8 +543,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
         val mails = getEmails()
         assertEquals(1, mails.size)
         assertTrue(
-            mails
-                .get(0)
+            mails[0]
                 .content
                 .text
                 .contains(
@@ -556,11 +554,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
         val secondMails = getEmails()
         assertEquals(1, secondMails.size)
         assertTrue(
-            secondMails
-                .get(0)
-                .content
-                .text
-                .contains("Ette ole vielä toimittaneet uusia tulotietoja")
+            secondMails[0].content.text.contains("Ette ole vielä toimittaneet uusia tulotietoja")
         )
 
         // A check that no new income has yet been generated (it is generated only after the third
@@ -635,8 +629,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
         val mails = getEmails()
         assertEquals(1, mails.size)
         assertTrue(
-            mails
-                .get(0)
+            mails[0]
                 .content
                 .text
                 .contains("Seuraava asiakasmaksunne määräytyy korkeimman maksuluokan mukaan")

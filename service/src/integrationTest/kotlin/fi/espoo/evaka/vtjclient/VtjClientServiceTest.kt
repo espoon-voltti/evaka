@@ -160,8 +160,8 @@ class VtjClientServiceTest : FullApplicationTest(resetDbBeforeEach = false) {
             assertThat(firstNames).isEqualTo("Minja Zavutina")
             assertThat(lastName).isEqualTo("Popov")
             assertThat(socialSecurityNumber).isEqualTo("311211A9527")
-            assertThat(guardians.any { it.socialSecurityNumber.equals("010181-9533") })
-            assertThat(guardians.any { it.socialSecurityNumber.equals("020190-9521") })
+            assertThat(guardians.any { it.socialSecurityNumber == "010181-9533" })
+            assertThat(guardians.any { it.socialSecurityNumber == "020190-9521" })
         }
         mockServer?.verify()
     }

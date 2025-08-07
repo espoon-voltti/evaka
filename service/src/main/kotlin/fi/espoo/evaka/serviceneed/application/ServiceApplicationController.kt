@@ -6,7 +6,6 @@ package fi.espoo.evaka.serviceneed.application
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
-import fi.espoo.evaka.AuditId.Companion.invoke
 import fi.espoo.evaka.absence.generateAbsencesFromIrregularDailyServiceTimes
 import fi.espoo.evaka.placement.createPlacement
 import fi.espoo.evaka.placement.deleteFutureReservationsAndAbsencesOutsideValidPlacements

@@ -433,8 +433,7 @@ class HolidayPeriodControllerCitizenIntegrationTest :
         mockedDay: LocalDate,
         controller: HolidayPeriodControllerCitizen = holidayPeriodControllerCitizen,
     ): List<ActiveQuestionnaire> {
-        val mockClock =
-            MockEvakaClock(HelsinkiDateTime.Companion.of(mockedDay, LocalTime.of(11, 0)))
+        val mockClock = MockEvakaClock(HelsinkiDateTime.of(mockedDay, LocalTime.of(11, 0)))
         return controller.getActiveQuestionnaires(dbInstance(), authenticatedParent, mockClock)
     }
 
@@ -443,8 +442,7 @@ class HolidayPeriodControllerCitizenIntegrationTest :
         body: FixedPeriodsBody,
         mockedDay: LocalDate = mockToday,
     ) {
-        val mockClock =
-            MockEvakaClock(HelsinkiDateTime.Companion.of(mockedDay, LocalTime.of(11, 0)))
+        val mockClock = MockEvakaClock(HelsinkiDateTime.of(mockedDay, LocalTime.of(11, 0)))
         holidayPeriodControllerCitizen.answerFixedPeriodQuestionnaire(
             dbInstance(),
             authenticatedParent,
@@ -511,8 +509,7 @@ class HolidayPeriodControllerCitizenIntegrationTest :
         body: OpenRangesBody,
         mockedDay: LocalDate = mockToday,
     ) {
-        val mockClock =
-            MockEvakaClock(HelsinkiDateTime.Companion.of(mockedDay, LocalTime.of(11, 0)))
+        val mockClock = MockEvakaClock(HelsinkiDateTime.of(mockedDay, LocalTime.of(11, 0)))
         holidayPeriodControllerCitizen.answerOpenRangeQuestionnaire(
             dbInstance(),
             authenticatedParent,

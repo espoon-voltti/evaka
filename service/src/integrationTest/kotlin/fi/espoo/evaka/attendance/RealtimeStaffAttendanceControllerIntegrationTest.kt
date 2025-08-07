@@ -238,7 +238,7 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
                 entries = emptyList(),
             ),
         )
-        assertEquals(0, getAttendances(testDaycare.id).staff.get(0).attendances.size)
+        assertEquals(0, getAttendances(testDaycare.id).staff[0].attendances.size)
     }
 
     @Test

@@ -179,7 +179,7 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
         Read(handle) {
         private var savepointId: Long = 0
 
-        fun nextSavepoint(): String = "savepoint-${savepointId++}"
+        private fun nextSavepoint(): String = "savepoint-${savepointId++}"
 
         fun createUpdate(f: QuerySql.Builder.() -> QuerySql): Update =
             createUpdate(QuerySql.Builder().run { f(this) })

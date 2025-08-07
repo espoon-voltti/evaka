@@ -1287,8 +1287,8 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
     }
 
     private fun getAbsencesOfChildByRange(range: DateRange) =
-        db.read {
-            it.getAbsencesOfChildByRange(childId, range)
+        db.read { tx ->
+            tx.getAbsencesOfChildByRange(childId, range)
                 .sortedWith(compareBy({ it.date }, { it.category }))
         }
 }

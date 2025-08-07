@@ -6,7 +6,6 @@ package fi.espoo.evaka.serviceneed.application
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
-import fi.espoo.evaka.AuditId.Companion.invoke
 import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.placement.getPlacementsForChildDuring
 import fi.espoo.evaka.serviceneed.getServiceNeedOptions

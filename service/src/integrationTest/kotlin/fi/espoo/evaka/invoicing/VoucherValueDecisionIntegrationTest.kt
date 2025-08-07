@@ -506,7 +506,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
         db.read {
             val processedEvents = it.getSfiMessageEventsByMessageId(messageId)
             assertEquals(1, processedEvents.size)
-            assertEquals(EventType.ELECTRONIC_MESSAGE_CREATED, processedEvents.get(0).eventType)
+            assertEquals(EventType.ELECTRONIC_MESSAGE_CREATED, processedEvents[0].eventType)
         }
     }
 

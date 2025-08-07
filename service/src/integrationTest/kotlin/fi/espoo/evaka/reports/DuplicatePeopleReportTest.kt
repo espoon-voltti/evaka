@@ -74,7 +74,7 @@ class DuplicatePeopleReportTest : FullApplicationTest(resetDbBeforeEach = true) 
                 id = PersonId(UUID.randomUUID()),
                 firstName = firstName.split(" ")[0] + " ",
                 ssn = null,
-                lastName = " " + lastName,
+                lastName = " $lastName",
             )
         db.transaction {
             it.insert(personWithSsn, DevPersonType.RAW_ROW)

@@ -17,7 +17,7 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 fun Database.Read.getChildBasicInfo(clock: EvakaClock, childId: ChildId): ChildBasicInformation? {
     val person = getPersonById(childId) ?: return null
 
-    val placementType = getCurrentPlacementForChild(clock, childId)?.let { it.type }
+    val placementType = getCurrentPlacementForChild(clock, childId)?.type
     val child = getChild(childId)
     val backupPickups = getBackupPickupsForChild(childId)
     val familyContacts = fetchFamilyContacts(clock.today(), childId)

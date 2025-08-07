@@ -128,9 +128,9 @@ class CaretakerQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     FiniteDateRange(LocalDate.of(2000, 1, 1), LocalDate.of(2000, 6, 1)),
                 )
             assertEquals(3, groupStats.keys.size)
-            assertEquals(Caretakers(3.0, 5.0), groupStats.get(groupId1))
-            assertEquals(Caretakers(1.0, 3.0), groupStats.get(groupId2))
-            assertEquals(Caretakers(4.0, 6.0), groupStats.get(groupId3))
+            assertEquals(Caretakers(3.0, 5.0), groupStats[groupId1])
+            assertEquals(Caretakers(1.0, 3.0), groupStats[groupId2])
+            assertEquals(Caretakers(4.0, 6.0), groupStats[groupId3])
         }
 
     @Test
@@ -142,9 +142,9 @@ class CaretakerQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     FiniteDateRange(LocalDate.of(2000, 2, 3), LocalDate.of(2000, 4, 1)),
                 )
             assertEquals(3, groupStats.keys.size)
-            assertEquals(Caretakers(4.0, 5.0), groupStats.get(groupId1))
-            assertEquals(Caretakers(1.0, 3.0), groupStats.get(groupId2))
-            assertEquals(Caretakers(4.0, 4.0), groupStats.get(groupId3))
+            assertEquals(Caretakers(4.0, 5.0), groupStats[groupId1])
+            assertEquals(Caretakers(1.0, 3.0), groupStats[groupId2])
+            assertEquals(Caretakers(4.0, 4.0), groupStats[groupId3])
         }
 
     @Test
@@ -152,7 +152,7 @@ class CaretakerQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.transaction { tx ->
             val singleDate = LocalDate.of(2000, 2, 1)
             val groupStats = tx.getGroupStats(daycareId, singleDate.toFiniteDateRange())
-            assertEquals(Caretakers(3.0, 3.0), groupStats.get(groupId1))
+            assertEquals(Caretakers(3.0, 3.0), groupStats[groupId1])
         }
 
     @Test
@@ -160,7 +160,7 @@ class CaretakerQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.transaction { tx ->
             val singleDate = LocalDate.of(2000, 2, 2)
             val groupStats = tx.getGroupStats(daycareId, singleDate.toFiniteDateRange())
-            assertEquals(Caretakers(5.0, 5.0), groupStats.get(groupId1))
+            assertEquals(Caretakers(5.0, 5.0), groupStats[groupId1])
         }
 
     @Test

@@ -5,7 +5,6 @@
 package fi.espoo.evaka.nekku
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.AuditId.Companion.invoke
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner

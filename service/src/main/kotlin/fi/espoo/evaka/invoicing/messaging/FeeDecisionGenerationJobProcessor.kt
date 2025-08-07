@@ -17,7 +17,7 @@ private val logger = KotlinLogging.logger {}
 @Component
 class FeeDecisionGenerationJobProcessor(
     private val generator: FinanceDecisionGenerator,
-    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
+    asyncJobRunner: AsyncJobRunner<AsyncJob>,
 ) {
     init {
         asyncJobRunner.registerHandler<AsyncJob.GenerateFinanceDecisions>(::runJob)

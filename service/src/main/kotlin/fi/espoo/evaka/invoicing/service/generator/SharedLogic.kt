@@ -29,7 +29,7 @@ fun getPlacementDetailsByChild(
             *placements.flatMap { it.value }.toTypedArray(),
             *serviceNeeds.flatMap { it.value }.toTypedArray(),
             *serviceNeedOptionVoucherValues
-                .flatMap { it.value.map { it.voucherValues } }
+                .flatMap { it.value.map { r -> r.voucherValues } }
                 .toTypedArray(),
         )
 

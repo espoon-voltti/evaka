@@ -218,7 +218,7 @@ private val translationsFi =
                     ChildDocumentDecisionStatus.ANNULLED -> "mitätöity"
                 }
             HtmlBuilder.span {
-                listOf<HtmlElement>(
+                listOf(
                     text("Teille on tehty"),
                     text(" "),
                     span(statusString, className = "bold"),
