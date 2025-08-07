@@ -5858,6 +5858,120 @@ Lapsen tunniste: ${firstChildWithRemovedAllergy.id}, lapsen ruokavaliot: Laktoos
     }
 
     @Test
+    fun `should throw when manual order is attempted for tomorrow if group or unit is closed tomorrow but open day after tomorrow`() {
+
+        val today = LocalDate.of(2025, 5, 15)
+
+        val client =
+            TestNekkuClient(
+                customers =
+                    listOf(
+                        NekkuApiCustomer(
+                            "2501K6090",
+                            "Ahvenojan päiväkoti",
+                            "Varhaiskasvatus",
+                            listOf(
+                                CustomerApiType(
+                                    listOf(
+                                        NekkuCustomerApiWeekday.MONDAY,
+                                        NekkuCustomerApiWeekday.TUESDAY,
+                                        NekkuCustomerApiWeekday.WEDNESDAY,
+                                        NekkuCustomerApiWeekday.THURSDAY,
+                                        NekkuCustomerApiWeekday.FRIDAY,
+                                        NekkuCustomerApiWeekday.SATURDAY,
+                                        NekkuCustomerApiWeekday.SUNDAY,
+                                        NekkuCustomerApiWeekday.WEEKDAYHOLIDAY,
+                                    ),
+                                    "100-lasta",
+                                )
+                            ),
+                        ),
+                        NekkuApiCustomer(
+                            "2501K6091",
+                            "Haukipuron päiväkoti",
+                            "Varhaiskasvatus",
+                            listOf(
+                                CustomerApiType(
+                                    listOf(
+                                        NekkuCustomerApiWeekday.MONDAY,
+                                        NekkuCustomerApiWeekday.TUESDAY,
+                                        NekkuCustomerApiWeekday.WEDNESDAY,
+                                        NekkuCustomerApiWeekday.THURSDAY,
+                                        NekkuCustomerApiWeekday.FRIDAY,
+                                        NekkuCustomerApiWeekday.SATURDAY,
+                                        NekkuCustomerApiWeekday.SUNDAY,
+                                        NekkuCustomerApiWeekday.WEEKDAYHOLIDAY,
+                                    ),
+                                    "100-lasta",
+                                )
+                            ),
+                        ),
+                    ),
+                nekkuProducts = nekkuProductsForOrder,
+                specialDiets = listOf(getNekkuSpecialDiet()),
+            )
+
+        fetchAndUpdateNekkuCustomers(client, db, asyncJobRunner, now)
+
+        val area = DevCareArea()
+        val closedDaycare =
+            DevDaycare(
+                areaId = area.id,
+                mealtimeBreakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
+                mealtimeLunch = TimeRange(LocalTime.of(11, 15), LocalTime.of(11, 45)),
+                mealtimeSnack = TimeRange(LocalTime.of(13, 30), LocalTime.of(13, 50)),
+                openingDate = today.plusDays(2),
+                closingDate = today.plusMonths(6),
+            )
+        val groupInClosedDaycare =
+            DevDaycareGroup(daycareId = closedDaycare.id, nekkuCustomerNumber = "2501K6090")
+        val openDaycare =
+            DevDaycare(
+                areaId = area.id,
+                mealtimeBreakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
+                mealtimeLunch = TimeRange(LocalTime.of(11, 15), LocalTime.of(11, 45)),
+                mealtimeSnack = TimeRange(LocalTime.of(13, 30), LocalTime.of(13, 50)),
+            )
+        val closedGroupInOpenDaycare =
+            DevDaycareGroup(
+                daycareId = openDaycare.id,
+                nekkuCustomerNumber = "2501K6091",
+                startDate = today.plusDays(2),
+                endDate = today.plusMonths(6),
+            )
+
+        val now = HelsinkiDateTime.Companion.of(today, LocalTime.of(12, 34, 52))
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(closedDaycare)
+            tx.insert(openDaycare)
+            tx.insert(groupInClosedDaycare)
+            tx.insert(closedGroupInOpenDaycare)
+
+            assertThrows<BadRequest> {
+                planNekkuManualOrderJob(
+                    tx,
+                    asyncJobRunner,
+                    now,
+                    groupInClosedDaycare.id,
+                    today.plusDays(1),
+                )
+            }
+
+            assertThrows<BadRequest> {
+                planNekkuManualOrderJob(
+                    tx,
+                    asyncJobRunner,
+                    now,
+                    closedGroupInOpenDaycare.id,
+                    today.plusDays(1),
+                )
+            }
+        }
+    }
+
+    @Test
     fun `manual order should plan weekly order if daycare times have not been locked for the order date`() {
 
         val client =
