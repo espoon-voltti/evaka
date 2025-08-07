@@ -61,7 +61,7 @@ class ServiceApplicationService(
 
         logger.info { "Sending service application decided email (${application.id})." }
 
-        val fromAddress = emailEnv.applicationReceivedSender(language)
+        val fromAddress = emailEnv.sender(language)
         val content =
             emailMessageProvider.serviceApplicationDecidedNotification(
                 accepted = accepted,

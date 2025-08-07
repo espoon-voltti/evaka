@@ -127,7 +127,7 @@ class AssistanceNeedPreschoolDecisionService(
                 OfficialLanguage.SV -> Language.sv
                 else -> Language.fi
             }
-        val fromAddress = emailEnv.applicationReceivedSender(language)
+        val fromAddress = emailEnv.sender(language)
         val content = emailMessageProvider.assistanceNeedPreschoolDecisionNotification(language)
 
         Email.create(

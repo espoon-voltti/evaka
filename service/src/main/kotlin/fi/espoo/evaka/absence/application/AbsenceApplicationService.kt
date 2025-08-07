@@ -58,7 +58,7 @@ class AbsenceApplicationService(
                     db,
                     guardian.id,
                     EmailMessageType.DECISION_NOTIFICATION,
-                    emailEnv.applicationReceivedSender(language),
+                    emailEnv.sender(language),
                     emailMessageProvider.absenceApplicationDecidedNotification(
                         when (application.status) {
                             AbsenceApplicationStatus.ACCEPTED -> true
