@@ -85,7 +85,7 @@ export default React.memo(function ThreadList({
       <Container className={selectedThread ? 'desktop-only' : undefined}>
         <Gap size="s" sizeOnMobile="m" />
         <HeaderContainer>
-          <H1 data-qa="test" noMargin ref={mainHeading} tabIndex={-1}>
+          <H1 noMargin ref={mainHeading} tabIndex={-1}>
             {t.messages.inboxTitle}
           </H1>
         </HeaderContainer>
