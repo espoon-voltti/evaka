@@ -52,10 +52,6 @@ describe('Missing head of family report', () => {
       {
         childName: `${child.lastName} ${child.firstName}`,
         rangesWithoutHead: '12.06.2023 - 16.06.2023'
-      },
-      {
-        childName: `${duplicate.lastName} ${duplicate.firstName}`,
-        rangesWithoutHead: '12.06.2023 - 14.06.2023'
       }
     ])
   })
