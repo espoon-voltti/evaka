@@ -778,6 +778,70 @@ describe('Employee - Child documents', () => {
     ])
   })
 
+  test('English citizen basic document can be sent irrespective of unit language', async () => {
+    const child1 = await Fixture.person({ ssn: '240190-5442' }).saveChild()
+    const child2 = await Fixture.person({ ssn: '210390-383J' }).saveChild()
+    const careArea = await Fixture.careArea().save()
+    const daycare1 = await Fixture.daycare({
+      areaId: careArea.id,
+      language: 'fi',
+      enabledPilotFeatures: ['VASU_AND_PEDADOC']
+    }).save()
+    const daycare2 = await Fixture.daycare({
+      areaId: careArea.id,
+      language: 'sv',
+      enabledPilotFeatures: ['VASU_AND_PEDADOC']
+    }).save()
+    const supervisor = await Fixture.employee()
+      .unitSupervisor(daycare1.id)
+      .unitSupervisor(daycare2.id)
+      .save()
+    await Fixture.placement({
+      childId: child1.id,
+      unitId: daycare1.id,
+      startDate: now.toLocalDate().subDays(1),
+      endDate: now.toLocalDate().addDays(1)
+    }).save()
+    await Fixture.placement({
+      childId: child2.id,
+      unitId: daycare2.id,
+      startDate: now.toLocalDate().subDays(1),
+      endDate: now.toLocalDate().addDays(1)
+    }).save()
+    const templateName = 'English citizen basic'
+    await Fixture.documentTemplate({
+      type: 'CITIZEN_BASIC',
+      name: templateName,
+      published: true,
+      language: 'EN'
+    }).save()
+
+    page = await Page.open({
+      mockedTime: now,
+      employeeCustomizations: {
+        featureFlags: { citizenChildDocumentTypes: true }
+      }
+    })
+    await employeeLogin(page, supervisor)
+    const childInformationPage = new ChildInformationPage(page)
+    await childInformationPage.navigateToChild(child1.id)
+    const childDocumentsSection =
+      await childInformationPage.openCollapsible('childDocuments')
+    await childDocumentsSection.createExternalDocumentButton.click()
+    await childDocumentsSection.createModalTemplateSelect.assertTextEquals(
+      templateName
+    )
+    await childDocumentsSection.modalOk.click()
+
+    await childInformationPage.navigateToChild(child2.id)
+    await childInformationPage.openCollapsible('childDocuments')
+    await childDocumentsSection.createExternalDocumentButton.click()
+    await childDocumentsSection.createModalTemplateSelect.assertTextEquals(
+      templateName
+    )
+    await childDocumentsSection.modalOk.click()
+  })
+
   test('checkbox group answers are ordered correctly', async () => {
     const child = await Fixture.person().saveChild()
     const template = await Fixture.documentTemplate({

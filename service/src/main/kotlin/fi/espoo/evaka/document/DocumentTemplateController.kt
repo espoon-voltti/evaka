@@ -136,7 +136,8 @@ class DocumentTemplateController(
                             it.validity.includes(clock.today()) &&
                             it.placementTypes.contains(placement.type) &&
                             (it.language.name.uppercase() ==
-                                placement.unitLanguage.name.uppercase())
+                                placement.unitLanguage.name.uppercase() ||
+                                it.language == UiLanguage.EN)
                     }
                 }
             }
