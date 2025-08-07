@@ -59,7 +59,16 @@
       rangeStrategy: 'auto'
     },
     {
-      // Paid font awesome packages are not avilable in public npm
+      // Don't update Font Awesome icons past 6.x
+      matchPackageNames: [
+        '@fortawesome/fontawesome-svg-core',
+        '@fortawesome/free-regular-svg-icons',
+        '@fortawesome/free-solid-svg-icons'
+      ],
+      allowedVersions: '< 7.0.0'
+    },
+    {
+      // Paid Font Awesome packages are not avilable in public npm
       matchPackageNames: [
         '@fortawesome/pro-light-svg-icons',
         '@fortawesome/pro-regular-svg-icons',
