@@ -8,6 +8,7 @@ import fi.espoo.evaka.shared.IncomeNotificationId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.DatabaseEnum
+import fi.espoo.evaka.shared.db.PredicateSql
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
@@ -106,6 +107,17 @@ fun Database.Read.newCustomerIdsForIncomeNotifications(
 ): List<PersonId> {
     val currentMonth = FiniteDateRange.ofMonth(today)
 
+    val guardianPredicate =
+        if (guardianId != null) {
+            PredicateSql {
+                where(
+                    "fc_head.head_of_child = ${bind(guardianId)} OR fp_spouse.person_id = ${bind(guardianId)}"
+                )
+            }
+        } else {
+            PredicateSql.alwaysTrue()
+        }
+
     return createQuery {
             sql(
                 """
@@ -131,20 +143,21 @@ WITH previously_placed_children AS (
         fp_spouse.person_id <> fp.person_id AND
         daterange(fp_spouse.start_date, fp_spouse.end_date, '[]') @> ${bind(today)} AND fp_spouse.conflict = false
     )
-    WHERE pl.start_date BETWEEN ${bind(currentMonth.start)} AND ${bind(currentMonth.end)}
-    AND NOT EXISTS(
-        SELECT 1
-        FROM previously_placed_children
-        WHERE child_id != pl.child_id
-        AND (head_of_child = fc_head.head_of_child OR head_of_child = fp_spouse.person_id)
-    )
-    AND NOT EXISTS(
-        SELECT 1
-        FROM income i
-        WHERE (i.person_id = fc_head.head_of_child OR i.person_id = fp_spouse.person_id)
-        AND (i.valid_to >= pl.end_date OR ( i.valid_to < pl.end_date AND i.valid_to > (${bind(today)} + INTERVAL '4 weeks')))
-    )
-    ${if (guardianId != null) "AND (fc_head.head_of_child = ${bind(guardianId)} OR fp_spouse.person_id = ${bind(guardianId)})" else ""}
+    WHERE
+        pl.start_date BETWEEN ${bind(currentMonth.start)} AND ${bind(currentMonth.end)} AND
+        NOT EXISTS(
+            SELECT 1
+            FROM previously_placed_children
+            WHERE child_id != pl.child_id
+            AND (head_of_child = fc_head.head_of_child OR head_of_child = fp_spouse.person_id)
+        ) AND
+        NOT EXISTS(
+            SELECT 1
+            FROM income i
+            WHERE (i.person_id = fc_head.head_of_child OR i.person_id = fp_spouse.person_id)
+            AND (i.valid_to >= pl.end_date OR (i.valid_to < pl.end_date AND i.valid_to > (${bind(today)} + INTERVAL '4 weeks')))
+        ) AND
+        ${predicate(guardianPredicate)}
 )
 SELECT DISTINCT person_id FROM (
     SELECT parent_id AS person_id 
