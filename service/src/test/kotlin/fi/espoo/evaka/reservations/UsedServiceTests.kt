@@ -103,7 +103,7 @@ class UsedServiceTests {
     @Test
     fun `uses hours divided by 21 if no absences, reservations or attendances exist`() {
         compute(absences = listOf(), reservations = listOf(), attendances = listOf()).also {
-            assertEquals(it.usedServiceMinutes, (120.0 * 60 / 21).roundToLong())
+            assertEquals(it.usedServiceMinutes, (120.0 * 60 / 21).toLong())
             assertEquals(it.usedServiceRanges, emptyList())
         }
 
@@ -115,7 +115,7 @@ class UsedServiceTests {
             )
             .also {
                 // Five-year-olds get 4 hours for free
-                assertEquals((120.0 * 60 / 21).roundToLong() - 4 * 60, it.usedServiceMinutes)
+                assertEquals((120.0 * 60 / 21).toLong() - 4 * 60, it.usedServiceMinutes)
                 assertEquals(emptyList(), it.usedServiceRanges)
             }
     }
@@ -177,7 +177,7 @@ class UsedServiceTests {
     @Test
     fun `uses hours divided by 21 if other than planned absences exist without reservation`() {
         compute(absences = listOf(AbsenceType.OTHER_ABSENCE to AbsenceCategory.BILLABLE)).also {
-            assertEquals(it.usedServiceMinutes, (120.0 * 60 / 21).roundToLong())
+            assertEquals(it.usedServiceMinutes, (120.0 * 60 / 21).toLong())
             assertEquals(it.usedServiceRanges, emptyList())
         }
     }
@@ -456,13 +456,13 @@ class UsedServiceTests {
         compute(
                 date = date,
                 placementType = PlacementType.DAYCARE,
-                serviceNeedHours = 120,
+                serviceNeedHours = 85,
                 absences = listOf(AbsenceType.FREE_ABSENCE to AbsenceCategory.BILLABLE),
                 operationDates = operationDatesWithCount(23),
             )
             .also {
-                assertEquals((120.0 * 60 / 23).roundToLong(), it.reservedMinutes)
-                assertEquals((120.0 * 60 / 23).roundToLong(), it.usedServiceMinutes)
+                assertEquals((85.0 * 60 / 23).toLong(), it.reservedMinutes)
+                assertEquals((85.0 * 60 / 23).toLong(), it.usedServiceMinutes)
                 assertEquals(emptyList(), it.usedServiceRanges)
             }
 
@@ -479,8 +479,8 @@ class UsedServiceTests {
                 operationDates = operationDatesWithCount(31),
             )
             .also {
-                assertEquals((120.0 * 60 / 31).roundToLong(), it.reservedMinutes)
-                assertEquals((120.0 * 60 / 31).roundToLong(), it.usedServiceMinutes)
+                assertEquals((120.0 * 60 / 31).toLong(), it.reservedMinutes)
+                assertEquals((120.0 * 60 / 31).toLong(), it.usedServiceMinutes)
                 assertEquals(emptyList(), it.usedServiceRanges)
             }
     }
