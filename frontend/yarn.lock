@@ -2382,27 +2382,27 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@fortawesome/react-fontawesome@npm:0.2.2":
-  version: 0.2.2
-  resolution: "@fortawesome/react-fontawesome@npm:0.2.2"
+"@fortawesome/react-fontawesome@npm:0.2.3":
+  version: 0.2.3
+  resolution: "@fortawesome/react-fontawesome@npm:0.2.3"
   dependencies:
     prop-types: "npm:^15.8.1"
   peerDependencies:
-    "@fortawesome/fontawesome-svg-core": ~1 || ~6
-    react: ">=16.3"
-  checksum: 10/05537fd7c34d43e0d8823df0195cb6fd935ff78e296e2d362e668bcf75f13d71c70c7fd6d596dff4e37b5f27e0ae43b98cb4732e0d91570f30b8a5581bbe2704
+    "@fortawesome/fontawesome-svg-core": ~1 || ~6 || ~7
+    react: ^16.3 || ^17.0.0 || ^18.0.0 || ^19.0.0
+  checksum: 10/cd0da6a27748c7c8efa22ea9b3449bc0d0fbd0010623d462771d17e77a915cd1abbc1b2b73663a1c888a0510bdde2eb483760b61e80780d8b684714d18728983
   languageName: node
   linkType: hard
 
-"@fortawesome/react-fontawesome@patch:@fortawesome/react-fontawesome@npm%3A0.2.2#~/.yarn/patches/@fortawesome-react-fontawesome-npm-0.2.2-e1863961b2.patch":
-  version: 0.2.2
-  resolution: "@fortawesome/react-fontawesome@patch:@fortawesome/react-fontawesome@npm%3A0.2.2#~/.yarn/patches/@fortawesome-react-fontawesome-npm-0.2.2-e1863961b2.patch::version=0.2.2&hash=76a249"
+"@fortawesome/react-fontawesome@patch:@fortawesome/react-fontawesome@0.2.3#~/.yarn/patches/@fortawesome-react-fontawesome-npm-0.2.2-e1863961b2.patch":
+  version: 0.2.3
+  resolution: "@fortawesome/react-fontawesome@patch:@fortawesome/react-fontawesome@npm%3A0.2.3#~/.yarn/patches/@fortawesome-react-fontawesome-npm-0.2.2-e1863961b2.patch::version=0.2.3&hash=76a249"
   dependencies:
     prop-types: "npm:^15.8.1"
   peerDependencies:
-    "@fortawesome/fontawesome-svg-core": ~1 || ~6
-    react: ">=16.3"
-  checksum: 10/eaa2fce4e2cc5515f42c47b85d3ef9f99a83f85511513a30137266e980278f81ccf4fcea6803a85dca77a15c2bcadb1e2ad3bb188d8e4be76c4738fdc0f36df7
+    "@fortawesome/fontawesome-svg-core": ~1 || ~6 || ~7
+    react: ^16.3 || ^17.0.0 || ^18.0.0 || ^19.0.0
+  checksum: 10/0ee4089c42278b5264af4b85a552ca165cb0aa3398fc0e881e5765f23d49c4a32ae6e48e0495f50165c8a7b0194798cb139e6adb7f2806ceae4a4076bc143ab8
   languageName: node
   linkType: hard
 
@@ -6346,7 +6346,7 @@ __metadata:
     "@fortawesome/fontawesome-svg-core": "npm:6.7.2"
     "@fortawesome/free-regular-svg-icons": "npm:6.7.2"
     "@fortawesome/free-solid-svg-icons": "npm:6.7.2"
-    "@fortawesome/react-fontawesome": "npm:0.2.2"
+    "@fortawesome/react-fontawesome": "npm:0.2.3"
     "@playwright/test": "npm:1.54.1"
     "@react-spring/rafz": "npm:10.0.1"
     "@react-spring/web": "npm:10.0.1"
