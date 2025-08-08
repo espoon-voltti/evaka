@@ -12,9 +12,6 @@ import fi.espoo.evaka.incomestatement.IncomeSource
 import fi.espoo.evaka.incomestatement.IncomeStatementBody
 import fi.espoo.evaka.incomestatement.IncomeStatementStatus
 import fi.espoo.evaka.shared.ChildId
-import fi.espoo.evaka.shared.DaycareId
-import fi.espoo.evaka.shared.EmployeeId
-import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.PartnershipId
 import fi.espoo.evaka.shared.PersonId
@@ -36,7 +33,6 @@ import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.job.ScheduledJobs
-import fi.espoo.evaka.shared.security.upsertEmployeeUser
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
@@ -52,7 +48,7 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
 
     private lateinit var clock: MockEvakaClock
 
-    private val testChild =
+    private val child =
         DevPerson(
             id = ChildId(UUID.randomUUID()),
             dateOfBirth = LocalDate.of(2017, 6, 1),
@@ -67,11 +63,12 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
 
     private val fridgeHeadOfChildEmail = "fridge_hoc@example.com"
     private val fridgePartnerEmail = "fridge_partner@example.com"
-    private lateinit var fridgeHeadOfChildId: PersonId
-    private lateinit var childId: ChildId
-    private lateinit var employeeId: EmployeeId
-    private lateinit var employeeEvakaUserId: EvakaUserId
-    private lateinit var daycareId: DaycareId
+
+    private val fridgeHeadOfChild = DevPerson(email = fridgeHeadOfChildEmail)
+
+    private val area = DevCareArea()
+    private val daycare = DevDaycare(areaId = area.id)
+    private val employee = DevEmployee(roles = setOf(UserRole.SERVICE_WORKER))
 
     @BeforeEach
     fun beforeEach() {
@@ -79,144 +76,108 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
         clock = MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2024, 2, 1), LocalTime.of(21, 0)))
 
         db.transaction { tx ->
-            val areaId = tx.insert(DevCareArea())
-            fridgeHeadOfChildId =
-                tx.insert(DevPerson(email = fridgeHeadOfChildEmail), DevPersonType.ADULT)
-            daycareId = tx.insert(DevDaycare(areaId = areaId))
-            childId = tx.insert(testChild, DevPersonType.CHILD)
-            val placementStart = clock.today().plusWeeks(2)
-            val placementEnd = clock.today().plusMonths(6)
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(employee)
+
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(fridgeHeadOfChild, DevPersonType.ADULT)
 
             tx.insert(
                 DevFridgeChild(
-                    childId = childId,
-                    headOfChild = fridgeHeadOfChildId,
+                    childId = child.id,
+                    headOfChild = fridgeHeadOfChild.id,
                     startDate = clock.today(),
                     endDate = clock.today().plusYears(1),
                 )
             )
+        }
+    }
+
+    private fun insertPlacement(child: DevPerson, start: LocalDate, end: LocalDate) {
+        db.transaction { tx ->
             tx.insert(
                 DevPlacement(
-                    childId = childId,
-                    unitId = daycareId,
-                    startDate = placementStart,
-                    endDate = placementEnd,
+                    childId = child.id,
+                    unitId = daycare.id,
+                    startDate = start,
+                    endDate = end,
                 )
             )
-            employeeId = tx.insert(DevEmployee(roles = setOf(UserRole.SERVICE_WORKER)))
-            tx.upsertEmployeeUser(employeeId)
-            employeeEvakaUserId = EvakaUserId(employeeId.raw)
         }
     }
 
     @Test
     fun `notification is sent when placement starts in current month`() {
+        insertPlacement(child, clock.today().plusWeeks(2), clock.today().plusMonths(6))
         assertEquals(1, getEmails().size)
-        assertEquals(1, getIncomeNotifications(fridgeHeadOfChildId).size)
+        assertEquals(1, getIncomeNotifications(fridgeHeadOfChild.id).size)
         assertEquals(
             IncomeNotificationType.NEW_CUSTOMER,
-            getIncomeNotifications(fridgeHeadOfChildId)[0].notificationType,
+            getIncomeNotifications(fridgeHeadOfChild.id)[0].notificationType,
         )
     }
 
     @Test
     fun `notifications are not sent when placement does not start in current month`() {
+        insertPlacement(child, clock.today().plusWeeks(2), clock.today().plusMonths(6))
         clock.tick(Duration.ofDays(-1))
         assertEquals(0, getEmails().size)
     }
 
     @Test
     fun `notifications are not sent when placement for other child exists`() {
+        val otherChild = DevPerson()
         db.transaction { tx ->
-            val otherChild =
-                DevPerson(
-                    id = ChildId(UUID.randomUUID()),
-                    dateOfBirth = LocalDate.of(2015, 12, 1),
-                    ssn = "011215A9926",
-                    firstName = "Jackie",
-                    lastName = "Doe",
-                    streetAddress = "Kamreerintie 2",
-                    postalCode = "02770",
-                    postOffice = "Espoo",
-                    restrictedDetailsEnabled = false,
-                )
-
-            val otherChildId = tx.insert(otherChild, DevPersonType.CHILD)
-            val otherPlacementStart = clock.today().minusYears(1)
-            val otherPlacementEnd = clock.today().plusYears(1)
+            tx.insert(otherChild, DevPersonType.CHILD)
             tx.insert(
                 DevFridgeChild(
-                    childId = otherChildId,
-                    headOfChild = fridgeHeadOfChildId,
+                    childId = otherChild.id,
+                    headOfChild = fridgeHeadOfChild.id,
                     startDate = clock.today().minusYears(1),
                     endDate = clock.today().plusYears(1),
                 )
             )
-            tx.insert(
-                DevPlacement(
-                    childId = otherChildId,
-                    unitId = daycareId,
-                    startDate = otherPlacementStart,
-                    endDate = otherPlacementEnd,
-                )
-            )
         }
+
+        insertPlacement(child, clock.today().plusWeeks(2), clock.today().plusMonths(6))
+        insertPlacement(otherChild, clock.today().minusYears(1), clock.today().plusYears(1))
 
         assertEquals(0, getEmails().size)
     }
 
     @Test
     fun `notifications are sent when placement for other child also starts in same month`() {
+        val otherChild = DevPerson()
         db.transaction { tx ->
-            val otherChild =
-                DevPerson(
-                    id = ChildId(UUID.randomUUID()),
-                    dateOfBirth = LocalDate.of(2015, 12, 1),
-                    ssn = "011215A9926",
-                    firstName = "Jackie",
-                    lastName = "Doe",
-                    streetAddress = "Kamreerintie 2",
-                    postalCode = "02770",
-                    postOffice = "Espoo",
-                    restrictedDetailsEnabled = false,
-                )
-
-            val otherChildId = tx.insert(otherChild, DevPersonType.CHILD)
-            val otherPlacementStart = clock.today().plusWeeks(2)
-            val otherPlacementEnd = clock.today().plusMonths(6)
+            tx.insert(otherChild, DevPersonType.CHILD)
             tx.insert(
                 DevFridgeChild(
-                    childId = otherChildId,
-                    headOfChild = fridgeHeadOfChildId,
-                    startDate = clock.today(),
+                    childId = otherChild.id,
+                    headOfChild = fridgeHeadOfChild.id,
+                    startDate = clock.today().minusYears(1),
                     endDate = clock.today().plusYears(1),
                 )
             )
-            tx.insert(
-                DevPlacement(
-                    childId = otherChildId,
-                    unitId = daycareId,
-                    startDate = otherPlacementStart,
-                    endDate = otherPlacementEnd,
-                )
-            )
         }
+        insertPlacement(child, clock.today().plusWeeks(2), clock.today().plusMonths(6))
+        insertPlacement(otherChild, clock.today().plusWeeks(2), clock.today().plusMonths(6))
 
         assertEquals(1, getEmails().size)
     }
 
     @Test
     fun `notification is sent to fridge partner also`() {
-        lateinit var fridgePartnerId: PersonId
+        val fridgePartner = DevPerson(email = fridgePartnerEmail)
         db.transaction { tx ->
-            fridgePartnerId = tx.insert(DevPerson(email = fridgePartnerEmail), DevPersonType.ADULT)
+            tx.insert(fridgePartner, DevPersonType.ADULT)
             val partnershipId = PartnershipId(UUID.randomUUID())
             tx.insert(
                 DevFridgePartner(
                     partnershipId = partnershipId,
                     indx = 1,
                     otherIndx = 2,
-                    personId = fridgeHeadOfChildId,
+                    personId = fridgeHeadOfChild.id,
                     startDate = clock.today(),
                     endDate = clock.today(),
                     createdAt = clock.now(),
@@ -227,51 +188,41 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
                     partnershipId = partnershipId,
                     indx = 2,
                     otherIndx = 1,
-                    personId = fridgePartnerId,
+                    personId = fridgePartner.id,
                     startDate = clock.today(),
                     endDate = clock.today(),
                     createdAt = clock.now(),
                 )
             )
         }
+        insertPlacement(child, clock.today().plusWeeks(2), clock.today().plusMonths(6))
 
         assertEquals(2, getEmails().size)
-        assertEquals(1, getIncomeNotifications(fridgeHeadOfChildId).size)
-        assertEquals(1, getIncomeNotifications(fridgePartnerId).size)
+        assertEquals(1, getIncomeNotifications(fridgeHeadOfChild.id).size)
+        assertEquals(1, getIncomeNotifications(fridgePartner.id).size)
         assertEquals(
             IncomeNotificationType.NEW_CUSTOMER,
-            getIncomeNotifications(fridgePartnerId)[0].notificationType,
+            getIncomeNotifications(fridgePartner.id)[0].notificationType,
         )
     }
 
     @Test
     fun `notifications are not sent when placement for other child for partner exists`() {
+        val fridgePartner = DevPerson(email = fridgePartnerEmail)
+        val partnersChild = DevPerson()
+
         db.transaction { tx ->
-            val partnersChild =
-                DevPerson(
-                    id = ChildId(UUID.randomUUID()),
-                    dateOfBirth = LocalDate.of(2018, 8, 1),
-                    ssn = "010814A953E",
-                    firstName = "Joey",
-                    lastName = "Doe",
-                    streetAddress = "Kamreerintie 2",
-                    postalCode = "02770",
-                    postOffice = "Espoo",
-                    restrictedDetailsEnabled = false,
-                )
-            val partnersChildId = tx.insert(partnersChild, DevPersonType.CHILD)
-            val fridgePartnerId =
-                tx.insert(DevPerson(email = fridgePartnerEmail), DevPersonType.ADULT)
+            tx.insert(fridgePartner, DevPersonType.ADULT)
+            tx.insert(partnersChild, DevPersonType.CHILD)
+
             val partnershipId = PartnershipId(UUID.randomUUID())
-            val partnerPlacementStart = clock.today().minusYears(2)
-            val partnerPlacementEnd = clock.today().plusMonths(6)
 
             tx.insert(
                 DevFridgePartner(
                     partnershipId = partnershipId,
                     indx = 1,
                     otherIndx = 2,
-                    personId = fridgeHeadOfChildId,
+                    personId = fridgeHeadOfChild.id,
                     startDate = clock.today(),
                     endDate = clock.today(),
                     createdAt = clock.now(),
@@ -282,7 +233,7 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
                     partnershipId = partnershipId,
                     indx = 2,
                     otherIndx = 1,
-                    personId = fridgePartnerId,
+                    personId = fridgePartner.id,
                     startDate = clock.today(),
                     endDate = clock.today(),
                     createdAt = clock.now(),
@@ -291,21 +242,15 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
 
             tx.insert(
                 DevFridgeChild(
-                    childId = partnersChildId,
-                    headOfChild = fridgePartnerId,
+                    childId = partnersChild.id,
+                    headOfChild = fridgePartner.id,
                     startDate = clock.today().minusYears(1),
                     endDate = clock.today().plusYears(1),
                 )
             )
-            tx.insert(
-                DevPlacement(
-                    childId = partnersChildId,
-                    unitId = daycareId,
-                    startDate = partnerPlacementStart,
-                    endDate = partnerPlacementEnd,
-                )
-            )
         }
+        insertPlacement(child, clock.today().plusWeeks(2), clock.today().plusMonths(6))
+        insertPlacement(partnersChild, clock.today().minusYears(2), clock.today().plusMonths(6))
 
         assertEquals(0, getEmails().size)
     }
@@ -318,13 +263,14 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
             it.insert(
                 DevIncomeStatement(
                     id = IncomeStatementId(UUID.randomUUID()),
-                    personId = fridgeHeadOfChildId,
+                    personId = fridgeHeadOfChild.id,
                     data = createGrossIncome(incomeExpirationDate.plusDays(1)),
                     status = IncomeStatementStatus.SENT,
                     handlerId = null,
                 )
             )
         }
+        insertPlacement(child, clock.today().plusWeeks(2), clock.today().plusMonths(6))
 
         assertEquals(0, getEmails().size)
     }
@@ -339,7 +285,7 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
             it.insert(
                 DevIncomeStatement(
                     id = IncomeStatementId(UUID.randomUUID()),
-                    personId = fridgeHeadOfChildId,
+                    personId = fridgeHeadOfChild.id,
                     data = createGrossIncome(clock.today()),
                     status = IncomeStatementStatus.HANDLED,
                     handlerId = employee.id,
@@ -347,6 +293,7 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
                 )
             )
         }
+        insertPlacement(child, clock.today().plusWeeks(2), clock.today().plusMonths(6))
 
         assertEquals(1, getEmails().size)
     }
@@ -358,16 +305,17 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
         db.transaction {
             it.insert(
                 DevIncome(
-                    personId = fridgeHeadOfChildId,
+                    personId = fridgeHeadOfChild.id,
                     modifiedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
                     validFrom = incomeExpirationDate.minusWeeks(4),
                     validTo = incomeExpirationDate,
                 )
             )
         }
+        insertPlacement(child, clock.today().plusWeeks(2), clock.today().plusMonths(6))
 
         assertEquals(1, getEmails().size)
-        assertEquals(1, getIncomeNotifications(fridgeHeadOfChildId).size)
+        assertEquals(1, getIncomeNotifications(fridgeHeadOfChild.id).size)
     }
 
     @Test
@@ -377,13 +325,14 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
         db.transaction {
             it.insert(
                 DevIncome(
-                    personId = fridgeHeadOfChildId,
+                    personId = fridgeHeadOfChild.id,
                     modifiedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
                     validFrom = incomeExpirationDate.minusWeeks(4),
                     validTo = incomeExpirationDate,
                 )
             )
         }
+        insertPlacement(child, clock.today().plusWeeks(2), clock.today().plusMonths(6))
 
         assertEquals(0, getEmails().size)
     }
@@ -395,7 +344,7 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
         db.transaction {
             it.insert(
                 DevIncome(
-                    personId = fridgeHeadOfChildId,
+                    personId = fridgeHeadOfChild.id,
                     modifiedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
                     validFrom = incomeExpirationDate.minusWeeks(4),
                     validTo = incomeExpirationDate,
@@ -405,13 +354,14 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
             it.insert(
                 DevIncomeStatement(
                     id = IncomeStatementId(UUID.randomUUID()),
-                    personId = fridgeHeadOfChildId,
+                    personId = fridgeHeadOfChild.id,
                     data = createGrossIncome(clock.today()),
                     status = IncomeStatementStatus.SENT,
                     handlerId = null,
                 )
             )
         }
+        insertPlacement(child, clock.today().plusWeeks(2), clock.today().plusMonths(6))
 
         assertEquals(0, getEmails().size)
     }
@@ -426,7 +376,7 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
 
             it.insert(
                 DevIncome(
-                    personId = fridgeHeadOfChildId,
+                    personId = fridgeHeadOfChild.id,
                     modifiedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
                     validFrom = incomeExpirationDate.minusWeeks(4),
                     validTo = incomeExpirationDate,
@@ -436,7 +386,7 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
             it.insert(
                 DevIncomeStatement(
                     id = IncomeStatementId(UUID.randomUUID()),
-                    personId = fridgeHeadOfChildId,
+                    personId = fridgeHeadOfChild.id,
                     data = createGrossIncome(clock.today()),
                     status = IncomeStatementStatus.HANDLED,
                     handlerId = employee.id,
@@ -444,6 +394,7 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
                 )
             )
         }
+        insertPlacement(child, clock.today().plusWeeks(2), clock.today().plusMonths(6))
 
         assertEquals(1, getEmails().size)
     }
