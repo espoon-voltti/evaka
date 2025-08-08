@@ -66,7 +66,6 @@ import fi.espoo.evaka.withHolidays
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
-import kotlin.math.roundToLong
 import kotlin.test.assertEquals
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.groups.Tuple
@@ -1064,7 +1063,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                 mockNow = HelsinkiDateTime.of(friday, LocalTime.of(12, 0)),
             )
 
-        assertEquals(
+        val expectedReservationDays =
             listOf(
                 ReservationResponseDay(
                     date = monday,
@@ -1154,15 +1153,15 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                                 usedService =
                                     UsedServiceResult(
                                         reservedMinutes = 0,
-                                        usedServiceMinutes = (120.0 * 60 / 21).roundToLong(),
+                                        usedServiceMinutes = (120.0 * 60 / 21).toLong(),
                                         usedServiceRanges = emptyList(),
                                     ),
                             )
                         ),
                 ),
-            ),
-            res.days,
-        )
+            )
+
+        assertEquals(expectedReservationDays, res.days)
 
         assertEquals(
             listOf(
@@ -1170,8 +1169,14 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                     year = monday.year,
                     month = monday.monthValue,
                     serviceNeedMinutes = snDaycareHours120.daycareMinutesPerMonth()!!,
-                    reservedMinutes = 840,
-                    usedServiceMinutes = 1698,
+                    reservedMinutes =
+                        expectedReservationDays.sumOf { d ->
+                            d.children.sumOf { child -> child.usedService?.reservedMinutes ?: 0 }
+                        },
+                    usedServiceMinutes =
+                        expectedReservationDays.sumOf { d ->
+                            d.children.sumOf { child -> child.usedService?.usedServiceMinutes ?: 0 }
+                        },
                 )
             ),
             res.children.single().monthSummaries,

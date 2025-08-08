@@ -44,7 +44,6 @@ import fi.espoo.evaka.shared.utils.mapOfNotNullValues
 import fi.espoo.evaka.user.EvakaUser
 import java.time.LocalDate
 import java.time.LocalTime
-import kotlin.math.roundToLong
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 sealed interface DailyReservationRequest {
@@ -642,7 +641,7 @@ fun computeUsedService(
         } else {
             21
         }
-    val dailyAverage = serviceNeedHours.toDouble() * 60 / daysInMonth
+    val dailyAverageRoundedDown = (serviceNeedHours.toDouble() * 60 / daysInMonth).toLong()
 
     // Five-year-olds get 4 hours for free
     val freeMinutes =
@@ -654,14 +653,14 @@ fun computeUsedService(
     if (operationDates.contains(date) && isFreeAbsence) {
         return if (isDateInFuture) {
             UsedServiceResult(
-                reservedMinutes = dailyAverage.roundToLong(),
+                reservedMinutes = dailyAverageRoundedDown,
                 usedServiceMinutes = 0,
                 usedServiceRanges = emptyList(),
             )
         } else
             UsedServiceResult(
-                reservedMinutes = dailyAverage.roundToLong(),
-                usedServiceMinutes = maxOf(0, dailyAverage.roundToLong() - freeMinutes),
+                reservedMinutes = dailyAverageRoundedDown,
+                usedServiceMinutes = maxOf(0, dailyAverageRoundedDown - freeMinutes),
                 usedServiceRanges = emptyList(),
             )
     }
@@ -712,7 +711,7 @@ fun computeUsedService(
     if (operationDates.contains(date) && reservations.isEmpty() && endedAttendances.isEmpty()) {
         return UsedServiceResult(
             reservedMinutes = 0,
-            usedServiceMinutes = maxOf(0, dailyAverage.roundToLong() - freeMinutes),
+            usedServiceMinutes = maxOf(0, dailyAverageRoundedDown - freeMinutes),
             usedServiceRanges = emptyList(),
         )
     }
