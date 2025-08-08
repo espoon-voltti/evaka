@@ -11,9 +11,6 @@ import fi.espoo.evaka.incomestatement.Gross
 import fi.espoo.evaka.incomestatement.IncomeSource
 import fi.espoo.evaka.incomestatement.IncomeStatementBody
 import fi.espoo.evaka.incomestatement.IncomeStatementStatus
-import fi.espoo.evaka.insertServiceNeedOptions
-import fi.espoo.evaka.serviceneed.ShiftCareType
-import fi.espoo.evaka.serviceneed.insertServiceNeed
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
@@ -40,7 +37,6 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.job.ScheduledJobs
 import fi.espoo.evaka.shared.security.upsertEmployeeUser
-import fi.espoo.evaka.snDaycareContractDays15
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
@@ -99,25 +95,13 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
                     endDate = clock.today().plusYears(1),
                 )
             )
-            val placementId =
-                tx.insert(
-                    DevPlacement(
-                        childId = childId,
-                        unitId = daycareId,
-                        startDate = placementStart,
-                        endDate = placementEnd,
-                    )
+            tx.insert(
+                DevPlacement(
+                    childId = childId,
+                    unitId = daycareId,
+                    startDate = placementStart,
+                    endDate = placementEnd,
                 )
-            tx.insertServiceNeedOptions()
-            tx.insertServiceNeed(
-                placementId = placementId,
-                startDate = placementStart,
-                endDate = placementEnd,
-                optionId = snDaycareContractDays15.id,
-                shiftCare = ShiftCareType.NONE,
-                partWeek = false,
-                confirmedBy = null,
-                confirmedAt = null,
             )
             employeeId = tx.insert(DevEmployee(roles = setOf(UserRole.SERVICE_WORKER)))
             tx.upsertEmployeeUser(employeeId)
@@ -168,24 +152,13 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
                     endDate = clock.today().plusYears(1),
                 )
             )
-            val placementId =
-                tx.insert(
-                    DevPlacement(
-                        childId = otherChildId,
-                        unitId = daycareId,
-                        startDate = otherPlacementStart,
-                        endDate = otherPlacementEnd,
-                    )
+            tx.insert(
+                DevPlacement(
+                    childId = otherChildId,
+                    unitId = daycareId,
+                    startDate = otherPlacementStart,
+                    endDate = otherPlacementEnd,
                 )
-            tx.insertServiceNeed(
-                placementId = placementId,
-                startDate = otherPlacementStart,
-                endDate = otherPlacementEnd,
-                optionId = snDaycareContractDays15.id,
-                shiftCare = ShiftCareType.NONE,
-                partWeek = false,
-                confirmedBy = null,
-                confirmedAt = null,
             )
         }
 
@@ -219,24 +192,13 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
                     endDate = clock.today().plusYears(1),
                 )
             )
-            val placementId =
-                tx.insert(
-                    DevPlacement(
-                        childId = otherChildId,
-                        unitId = daycareId,
-                        startDate = otherPlacementStart,
-                        endDate = otherPlacementEnd,
-                    )
+            tx.insert(
+                DevPlacement(
+                    childId = otherChildId,
+                    unitId = daycareId,
+                    startDate = otherPlacementStart,
+                    endDate = otherPlacementEnd,
                 )
-            tx.insertServiceNeed(
-                placementId = placementId,
-                startDate = otherPlacementStart,
-                endDate = otherPlacementEnd,
-                optionId = snDaycareContractDays15.id,
-                shiftCare = ShiftCareType.NONE,
-                partWeek = false,
-                confirmedBy = null,
-                confirmedAt = null,
             )
         }
 
@@ -335,24 +297,13 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
                     endDate = clock.today().plusYears(1),
                 )
             )
-            val placementId =
-                tx.insert(
-                    DevPlacement(
-                        childId = partnersChildId,
-                        unitId = daycareId,
-                        startDate = partnerPlacementStart,
-                        endDate = partnerPlacementEnd,
-                    )
+            tx.insert(
+                DevPlacement(
+                    childId = partnersChildId,
+                    unitId = daycareId,
+                    startDate = partnerPlacementStart,
+                    endDate = partnerPlacementEnd,
                 )
-            tx.insertServiceNeed(
-                placementId = placementId,
-                startDate = partnerPlacementStart,
-                endDate = partnerPlacementEnd,
-                optionId = snDaycareContractDays15.id,
-                shiftCare = ShiftCareType.NONE,
-                partWeek = false,
-                confirmedBy = null,
-                confirmedAt = null,
             )
         }
 
@@ -360,7 +311,7 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
     }
 
     @Test
-    fun `Notifications are not sent if there is a new unhandled income statement`() {
+    fun `notifications are not sent if there is a new unhandled income statement`() {
         val incomeExpirationDate = clock.today().plusWeeks(4)
 
         db.transaction {
@@ -379,7 +330,7 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
     }
 
     @Test
-    fun `Notifications are sent if there is a handled income statement`() {
+    fun `notifications are sent if there is a handled income statement`() {
         val employee = DevEmployee()
 
         db.transaction {
@@ -401,7 +352,7 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
     }
 
     @Test
-    fun `Expiring income is notified 4 weeks beforehand`() {
+    fun `expiring income is notified 4 weeks beforehand`() {
         val incomeExpirationDate = clock.today().plusWeeks(4)
 
         db.transaction {
@@ -420,7 +371,7 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
     }
 
     @Test
-    fun `Notifications are not sent if there is a valid income`() {
+    fun `notifications are not sent if there is a valid income`() {
         val incomeExpirationDate = clock.today().plusWeeks(4).plusDays(1)
 
         db.transaction {
@@ -438,7 +389,7 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
     }
 
     @Test
-    fun `Expiring income is not notified if there is a new unhandled income statement`() {
+    fun `expiring income is not notified if there is a new unhandled income statement`() {
         val incomeExpirationDate = clock.today().plusWeeks(4)
 
         db.transaction {
@@ -466,7 +417,7 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
     }
 
     @Test
-    fun `Expiring income is notified if there is a handled income statement`() {
+    fun `expiring income is notified if there is a handled income statement`() {
         val incomeExpirationDate = clock.today().plusWeeks(4)
         val employee = DevEmployee()
 
