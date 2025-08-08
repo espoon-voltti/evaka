@@ -2,15 +2,15 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import {
+import type {
   AccessLog,
   PinoAccessLog,
   PinoAppAuditLog,
   AuditLog,
   PinoMiscLog,
   MiscLog
-} from '../../cli/index.js'
-import { ipv6ToIpv4 } from '../../cli/utils.js'
+} from '../../cli/index.ts'
+import { ipv6ToIpv4 } from '../../cli/utils.ts'
 
 export const validPinoAccessLogMessage: PinoAccessLog = {
   level: 'info',

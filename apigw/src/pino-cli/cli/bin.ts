@@ -4,7 +4,7 @@
 
 import pump from 'pump'
 
-import { parserStream, transportStream } from './index.js'
+import { parserStream, transportStream } from './index.ts'
 
 pump(process.stdin, parserStream, transportStream, (err) => {
   if (err) {

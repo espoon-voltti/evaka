@@ -15,7 +15,8 @@ export default [
   {
     languageOptions: {
       parserOptions: {
-        project: 'tsconfig.json'
+        projectService: true,
+        tsconfigRootDir: import.meta.dirname
       }
     }
   },
@@ -25,7 +26,14 @@ export default [
   },
   importPlugin.flatConfigs.typescript,
   {
+    files: ['**/*.ts'],
     rules: {
+      '@typescript-eslint/consistent-type-definitions': 'off',
+      '@typescript-eslint/consistent-type-exports': ['error'],
+      '@typescript-eslint/consistent-type-imports': [
+        'error',
+        { disallowTypeAnnotations: false }
+      ],
       '@typescript-eslint/no-empty-object-type': [
         'error',
         { allowInterfaces: 'always' }

@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { ValidateInResponseTo } from '@node-saml/node-saml'
-import { RedisClientOptions } from '@redis/client'
+import type { RedisClientOptions } from '@redis/client'
 
-import { TrustedCertificates } from './certificates.js'
+import type { TrustedCertificates } from './certificates.ts'
 
 type EnvVariables = typeof envVariables
 const envVariables = {

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { RedisClient, RedisTransaction } from '../redis-client.js'
+import type { RedisClient, RedisTransaction } from '../redis-client.ts'
 
 export class MockRedisClient implements RedisClient {
   private time: number
@@ -78,17 +78,21 @@ export class MockRedisClient implements RedisClient {
 }
 
 class MockTransaction implements RedisTransaction {
-  constructor(private client: RedisClient) {}
+  #client: RedisClient
   #queue: (() => Promise<unknown>)[] = []
+
+  constructor(client: RedisClient) {
+    this.#client = client
+  }
   incr(key: string): RedisTransaction {
     this.#queue.push(async () => {
-      await this.client.incr(key)
+      await this.#client.incr(key)
     })
     return this
   }
   expire(key: string, seconds: number): RedisTransaction {
     this.#queue.push(async () => {
-      await this.client.expire(key, seconds)
+      await this.#client.expire(key, seconds)
     })
     return this
   }

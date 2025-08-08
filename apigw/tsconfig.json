@@ -1,18 +1,13 @@
 {
   "compilerOptions": {
+    "allowImportingTsExtensions": true,
+    "erasableSyntaxOnly": true,
     "esModuleInterop": true,
     "module": "node16",
     "moduleResolution": "node16",
     "noEmit": true,
-    "noEmitOnError": true,
-    "outDir": "dist",
-    "sourceMap": true,
     "strict": true,
     "target": "es2023"
   },
-  "exclude": [
-    ".git",
-    "node_modules",
-    "dist"
-  ]
+  "include": ["src/**/*.ts"]
 }

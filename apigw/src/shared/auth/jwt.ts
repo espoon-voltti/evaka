@@ -6,7 +6,7 @@ import { readFileSync } from 'node:fs'
 
 import jwt from 'jsonwebtoken'
 
-import { jwtKid, jwtPrivateKey, jwtRefreshEnabled } from '../config.js'
+import { jwtKid, jwtPrivateKey, jwtRefreshEnabled } from '../config.ts'
 
 const privateKey = readFileSync(jwtPrivateKey)
 const jwtLifetimeSeconds = 60 * 60 // 1 hour

@@ -2,11 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { SerializedRequest, SerializedResponse } from 'pino-std-serializers'
+import type {
+  SerializedRequest,
+  SerializedResponse
+} from 'pino-std-serializers'
 import split from 'split2'
 import * as through from 'through2'
 
-import { ipv6ToIpv4 } from './utils.js'
+import { ipv6ToIpv4 } from './utils.ts'
 
 export interface BaseLog {
   '@timestamp': string

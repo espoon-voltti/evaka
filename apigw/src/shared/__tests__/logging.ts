@@ -4,15 +4,15 @@
 
 import { describe, expect, it, test } from '@jest/globals'
 
-import { createSha256Hash } from '../crypto.js'
+import { createSha256Hash } from '../crypto.ts'
 import {
   contentLengthResSerializer,
   queryStringReqSerializer,
   reqSerializer,
   resSerializer,
   userIdHashReqSerializer
-} from '../logging.js'
-import { PinoRequest, PinoResponse, UserPinoRequest } from '../types.js'
+} from '../logging.ts'
+import type { PinoRequest, PinoResponse, UserPinoRequest } from '../types.d.ts'
 
 const path = '/api/grants/youth/v1/grant-applications'
 const queryString =
