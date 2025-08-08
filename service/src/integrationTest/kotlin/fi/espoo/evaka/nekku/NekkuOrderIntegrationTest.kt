@@ -2960,8 +2960,9 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
             listOf(mixedBabyWithOtherSpecialDiet, mixedBabyWithoutLactoseAndAnotherSpecialDiet)
 
         db.transaction { tx ->
-            removedChildren.forEach {
-                listOf(
+            removedChildren
+                .flatMap {
+                    listOf(
                         // Child is absent, so no meals on Monday
                         DevAbsence(
                             childId = it.id,
@@ -2981,8 +2982,8 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                             modifiedAt = HelsinkiDateTime.now(),
                         ),
                     )
-                    .forEach { tx.insert(it) }
-            }
+                }
+                .forEach { tx.insert(it) }
         }
 
         insertNekkuSpecialDietChoice(
