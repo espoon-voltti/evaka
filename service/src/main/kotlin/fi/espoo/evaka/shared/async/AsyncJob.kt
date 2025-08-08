@@ -395,11 +395,7 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
-    data class SendNekkuOrder(val customerGroupId: GroupId, val date: LocalDate) : AsyncJob {
-        override val user: AuthenticatedUser? = null
-    }
-
-    data class SendNekkuDailyOrder(val customerGroupId: GroupId, val date: LocalDate) : AsyncJob {
+    data class SendNekkuOrder(val groupId: GroupId, val date: LocalDate) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
 
@@ -510,7 +506,6 @@ sealed interface AsyncJob : AsyncJobPayload {
                     SendChildDocumentDecisionSfiMessage::class,
                     SendDecision::class,
                     SendJamixOrder::class,
-                    SendNekkuDailyOrder::class,
                     SendNekkuOrder::class,
                     SendPatuReport::class,
                     SyncJamixDiets::class,
