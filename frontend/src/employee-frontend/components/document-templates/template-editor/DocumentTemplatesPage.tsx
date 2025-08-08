@@ -258,8 +258,7 @@ export default React.memo(function DocumentTemplatesPage() {
           if (
             !past.value() &&
             template.validity.end &&
-            template.validity.end.isBefore(today) &&
-            template.published
+            template.validity.end.isBefore(today)
           )
             return false
           if (type.value() !== undefined && type.value() !== template.type)

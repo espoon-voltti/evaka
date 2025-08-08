@@ -5286,7 +5286,7 @@ export const fi = {
         active: 'Käytössä',
         draft: 'Luonnos',
         future: 'Tulossa käyttöön',
-        past: 'Poistunut käytöstä',
+        past: 'Päättyneet',
         type: 'Asiakirjan tyyppi',
         all: 'Kaikki',
         language: 'Kieli'
