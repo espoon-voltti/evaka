@@ -236,7 +236,8 @@ fun planNekkuOrderJobs(
         asyncJobRunner.plan(
             tx,
             nekkuGroupIds.flatMap { nekkuGroupId ->
-                val groupOperationDays = tx.getGroupOperationDays(nekkuGroupId) ?: return@flatMap emptySequence()
+                val groupOperationDays =
+                    tx.getGroupOperationDays(nekkuGroupId) ?: return@flatMap emptySequence()
                 orderDates.dates().mapNotNull { date ->
                     if (isGroupOpenOnDate(date, groupOperationDays)) {
                         AsyncJob.SendNekkuOrder(groupId = nekkuGroupId, date = date)
@@ -300,8 +301,9 @@ fun planNekkuManualOrderJob(
             "Can only make a manual order if an automatic order has been made for the day"
         )
 
-    val groupOperationDays = tx.getGroupOperationDays(groupId)
-        ?: throw BadRequest("Daycare operation info not found for group $groupId")
+    val groupOperationDays =
+        tx.getGroupOperationDays(groupId)
+            ?: throw BadRequest("Daycare operation info not found for group $groupId")
     if (!isGroupOpenOnDate(date, groupOperationDays))
         throw BadRequest("Group $groupId is not open on $date")
 
