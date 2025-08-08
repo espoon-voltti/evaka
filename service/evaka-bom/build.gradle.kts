@@ -58,7 +58,7 @@ dependencies {
     api(platform("com.squareup.okhttp3:okhttp-bom:5.1.0"))
     api(platform("io.opentelemetry:opentelemetry-bom:1.52.0"))
     api(platform("io.netty:netty-bom:4.2.3.Final"))
-    api(platform("org.apache.cxf:cxf-bom:4.1.2"))
+    api(platform("org.apache.cxf:cxf-bom:4.1.3"))
     api(platform("org.jdbi:jdbi3-bom:3.49.5"))
     api(platform(libs.kotlin.bom))
     api(platform("org.junit:junit-bom:5.13.4"))
