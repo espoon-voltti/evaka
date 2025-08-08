@@ -60,6 +60,7 @@ private fun Database.Read.getDuplicatePeople(): List<DuplicatePeopleReportRow> {
             FROM person p
             WHERE p.first_name IS NOT NULL AND p.last_name IS NOT NULL 
                 AND p.first_name <> '' AND p.last_name <> '' AND lower(last_name) <> 'testaaja'
+                AND p.duplicate_of IS NULL
         ), duplicate_keys AS (
             SELECT key
             FROM people p

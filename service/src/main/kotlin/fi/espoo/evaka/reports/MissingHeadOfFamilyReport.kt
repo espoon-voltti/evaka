@@ -96,7 +96,8 @@ FROM (
                 daterange(start_date, end_date, '[]') && ${bind(dateRange)} AND
                 type <> 'CLUB'
         ) AND
-        p.date_of_death IS NULL
+        p.duplicate_of IS NULL
+        AND p.date_of_death IS NULL
 ) s
 WHERE NOT isempty(without_head)
 ORDER BY last_name, first_name
