@@ -607,6 +607,15 @@ const MonthPicker = React.memo(function MonthPicker({
   goToThisMonth: () => void
 }) {
   const i18n = useTranslation()
+  const mainHeading = useRef<HTMLHeadingElement | null>(null)
+
+  useEffect(() => {
+    // focus on the accessibility heading
+    if (mainHeading.current) {
+      mainHeading.current.focus()
+    }
+  }, [])
+
   const monthTitle = `${i18n.common.datetime.months[selectedMonthData.month - 1]} ${selectedMonthData.year}`
   return (
     <MonthPickerContainer>
@@ -614,6 +623,8 @@ const MonthPicker = React.memo(function MonthPicker({
         data-qa="calendar-month-title"
         aria-live="polite"
         aria-label={monthTitle}
+        tabIndex={-1}
+        ref={mainHeading}
       >
         {monthTitle}
         {childSummaries.length > 0 && (
