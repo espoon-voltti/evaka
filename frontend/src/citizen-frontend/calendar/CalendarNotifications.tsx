@@ -234,7 +234,9 @@ export default React.memo(function CalendarNotifications({
           icon: faInfo,
           iconColor: colors.status.info,
           onClick(close) {
-            navigate(`/child-documents/${childDocument.id}?returnTo=calendar`)
+            navigate(
+              `/child-documents/${childDocument.id}?returnTo=calendar&readOnly=false`
+            )
             close()
           },
           children: i18n.ctaToast.unansweredChildDocumentCta(

@@ -131,9 +131,12 @@ const ChildDocumentView = React.memo(function ChildDocumentView({
     i18n.validationErrors
   )
 
-  const [readOnly, { on: readOnlyOn, off: readOnlyOff }] = useBoolean(true)
-
   const [searchParams] = useSearchParams()
+
+  const initialReadOnly = searchParams.get('readOnly') !== 'false'
+  const [readOnly, { on: readOnlyOn, off: readOnlyOff }] =
+    useBoolean(initialReadOnly)
+
   const { addNotification } = useContext(NotificationsContext)
   const [, navigate] = useLocation()
   const onSuccess = useCallback(() => {
