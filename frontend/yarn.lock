@@ -4141,9 +4141,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vitejs/plugin-legacy@npm:7.1.0":
-  version: 7.1.0
-  resolution: "@vitejs/plugin-legacy@npm:7.1.0"
+"@vitejs/plugin-legacy@npm:7.2.1":
+  version: 7.2.1
+  resolution: "@vitejs/plugin-legacy@npm:7.2.1"
   dependencies:
     "@babel/core": "npm:^7.28.0"
     "@babel/plugin-transform-dynamic-import": "npm:^7.27.1"
@@ -4153,14 +4153,14 @@ __metadata:
     babel-plugin-polyfill-regenerator: "npm:^0.6.5"
     browserslist: "npm:^4.25.1"
     browserslist-to-esbuild: "npm:^2.1.1"
-    core-js: "npm:^3.44.0"
+    core-js: "npm:^3.45.0"
     magic-string: "npm:^0.30.17"
     regenerator-runtime: "npm:^0.14.1"
     systemjs: "npm:^6.15.1"
   peerDependencies:
     terser: ^5.16.0
     vite: ^7.0.0
-  checksum: 10/32bc01ad3119f9d8f5781c1275c4455d6816f9f0edca957f02621853bea67454d26cdabbddbaec3964b14e49f6edc76f86938eced4abd197a81cf07954c94e18
+  checksum: 10/4c03ae69c20fa4dc6375a09d35f78ed663d723665a715d838b49d5ee9819969c0ad8c089e92a74f050765cb5be38b49a84e827abb7ed4b58740b6d11ad494bbc
   languageName: node
   linkType: hard
 
@@ -5293,10 +5293,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"core-js@npm:3.44.0, core-js@npm:^3.44.0":
+"core-js@npm:3.44.0":
   version: 3.44.0
   resolution: "core-js@npm:3.44.0"
   checksum: 10/759ef4ab0d12c9a6e8a32537d2b0fe64c2d7be40e13e0d7eb9604a970c380d64f37489dee03bd1c286c169e47a69d3ca2a968e8fcde0f78094ea22a20465d763
+  languageName: node
+  linkType: hard
+
+"core-js@npm:^3.45.0":
+  version: 3.45.0
+  resolution: "core-js@npm:3.45.0"
+  checksum: 10/162cd63b4d4cb2fed7a8635e69b760f4247e5d39ea99348e0b66af8e8899395a34de1b93504eb8db2adf4c47a0756475545c3da9c24875c7c33396fa8dc061c1
   languageName: node
   linkType: hard
 
@@ -6350,7 +6357,7 @@ __metadata:
     "@types/react": "npm:19.1.9"
     "@types/react-dom": "npm:19.1.7"
     "@types/webpack": "npm:5.28.5"
-    "@vitejs/plugin-legacy": "npm:7.1.0"
+    "@vitejs/plugin-legacy": "npm:7.2.1"
     "@vitejs/plugin-react": "npm:4.7.0"
     autosize: "npm:6.0.1"
     axios: "npm:1.11.0"
