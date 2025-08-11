@@ -29,6 +29,7 @@ import {
 } from '../../generated/api-clients'
 import type { DevPlacement } from '../../generated/api-types'
 import CitizenApplicationsPage from '../../pages/citizen/citizen-applications'
+import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
 import { CitizenChildPage } from '../../pages/citizen/citizen-children'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import { waitUntilEqual } from '../../utils'
@@ -617,9 +618,14 @@ describe.each(envs)('Citizen children page with weak login (%s)', (env) => {
       body: credentials
     })
     await enduserLoginWeak(page, credentials)
+    const defaultPage = new CitizenCalendarPage(page, env)
     const header = new CitizenHeader(page, env)
     const childPage = new CitizenChildPage(page, env)
 
+    //wait until the default page has loaded on desktop
+    if (env === 'desktop') {
+      await defaultPage.assertMonthTitle('Maaliskuu 2022')
+    }
     await header.openChildPage(testChild.id)
     await childPage.assertChildNameIsShown(
       'Jari-Petteri Mukkelis-Makkelis Vetelä-Viljami Eelis-Juhani Karhula'
