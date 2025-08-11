@@ -16,6 +16,7 @@ import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import TextArea from 'lib-components/atoms/form/TextArea'
+import { desktopMinPx } from 'lib-components/breakpoints'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import {
   FixedSpaceColumn,
@@ -44,6 +45,17 @@ import { useFieldDispatch, useFieldSetState } from './hooks'
 
 const OtherInfoContainer = styled.div`
   max-width: 716px;
+`
+
+const StickyContainer = styled.div`
+  position: sticky;
+  bottom: 0;
+  box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.15);
+
+  @media (max-width: ${desktopMinPx - 1}px) {
+    box-shadow: none;
+    position: static;
+  }
 `
 
 const ChildIncome = React.memo(function ChildIncome({
@@ -292,7 +304,8 @@ export default React.memo(
               onChange={onChange}
             />
           </ContentArea>
-          <ActionContainer>
+          <Gap />
+          <ContentArea opaque paddingVertical="L">
             <AssureCheckbox>
               <Checkbox
                 label={t.income.assure}
@@ -301,26 +314,32 @@ export default React.memo(
                 onChange={useFieldDispatch(onChange, 'assure')}
               />
             </AssureCheckbox>
-            <FixedSpaceRow>
-              <Button text={t.common.cancel} onClick={onCancel} />
-              {status === 'DRAFT' && draftSaveEnabled && (
+          </ContentArea>
+          <StickyContainer>
+            <ActionContainer>
+              <FixedSpaceRow>
+                <Button text={t.common.cancel} onClick={onCancel} />
+                {status === 'DRAFT' && draftSaveEnabled && (
+                  <AsyncButton
+                    text={t.income.saveAsDraft}
+                    onClick={() => onSave(true)}
+                    onSuccess={onSuccess}
+                    data-qa="save-draft-btn"
+                  />
+                )}
                 <AsyncButton
-                  text={t.income.saveAsDraft}
-                  onClick={() => onSave(true)}
+                  text={
+                    status === 'DRAFT' ? t.income.send : t.income.updateSent
+                  }
+                  primary
+                  onClick={() => onSave(false)}
+                  disabled={!sendButtonEnabled}
                   onSuccess={onSuccess}
-                  data-qa="save-draft-btn"
+                  data-qa="save-btn"
                 />
-              )}
-              <AsyncButton
-                text={status === 'DRAFT' ? t.income.send : t.income.updateSent}
-                primary
-                onClick={() => onSave(false)}
-                disabled={!sendButtonEnabled}
-                onSuccess={onSuccess}
-                data-qa="save-btn"
-              />
-            </FixedSpaceRow>
-          </ActionContainer>
+              </FixedSpaceRow>
+            </ActionContainer>
+          </StickyContainer>
         </Container>
       </>
     )

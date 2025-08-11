@@ -28,7 +28,7 @@ import InputField from 'lib-components/atoms/form/InputField'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import Radio from 'lib-components/atoms/form/Radio'
 import TextArea from 'lib-components/atoms/form/TextArea'
-import { tabletMin } from 'lib-components/breakpoints'
+import { desktopMinPx, tabletMin } from 'lib-components/breakpoints'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import ListGrid from 'lib-components/layout/ListGrid'
 import {
@@ -98,6 +98,17 @@ const ResponsiveFixedSpace = styled(FixedSpaceRow)`
     > button {
       margin-right: 0;
     }
+  }
+`
+
+const StickyContainer = styled.div`
+  position: sticky;
+  bottom: 0;
+  box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.15);
+
+  @media (max-width: ${desktopMinPx - 1}px) {
+    box-shadow: none;
+    position: static;
   }
 `
 
@@ -291,38 +302,40 @@ export default React.memo(function IncomeStatementForm({
           </>
         )}
         <Gap />
-        <StyledActionContainer>
-          <div>
-            <AssureCheckbox>
-              <Checkbox
-                label={t.income.assure}
-                checked={formData.assure}
-                data-qa="assure-checkbox"
-                onChange={useFieldDispatch(onChange, 'assure')}
-              />
-            </AssureCheckbox>
-            {showFormErrors === 'SAVE' && !formData.assure ? (
-              <LabelError text={t.income.errors.choose} />
-            ) : null}
-          </div>
-          <ResponsiveFixedSpace>
-            <Button text={t.common.cancel} onClick={onCancel} />
-            {status === 'DRAFT' && (
-              <AsyncButton
-                text={t.income.saveAsDraft}
-                onClick={() => onSave(true)}
-                onSuccess={onSuccess}
-                data-qa="save-draft-btn"
-              />
-            )}
-            <AsyncButton
-              text={status === 'DRAFT' ? t.income.send : t.income.updateSent}
-              primary
-              onClick={() => onSave(false)}
-              onSuccess={onSuccess}
+        <ContentArea opaque paddingVertical="L">
+          <AssureCheckbox>
+            <Checkbox
+              label={t.income.assure}
+              checked={formData.assure}
+              data-qa="assure-checkbox"
+              onChange={useFieldDispatch(onChange, 'assure')}
             />
-          </ResponsiveFixedSpace>
-        </StyledActionContainer>
+          </AssureCheckbox>
+          {showFormErrors === 'SAVE' && !formData.assure ? (
+            <LabelError text={t.income.errors.choose} />
+          ) : null}
+        </ContentArea>
+        <StickyContainer>
+          <StyledActionContainer>
+            <ResponsiveFixedSpace>
+              <Button text={t.common.cancel} onClick={onCancel} />
+              {status === 'DRAFT' && (
+                <AsyncButton
+                  text={t.income.saveAsDraft}
+                  onClick={() => onSave(true)}
+                  onSuccess={onSuccess}
+                  data-qa="save-draft-btn"
+                />
+              )}
+              <AsyncButton
+                text={status === 'DRAFT' ? t.income.send : t.income.updateSent}
+                primary
+                onClick={() => onSave(false)}
+                onSuccess={onSuccess}
+              />
+            </ResponsiveFixedSpace>
+          </StyledActionContainer>
+        </StickyContainer>
       </Container>
       <Footer />
     </>

@@ -508,7 +508,7 @@ const customizations: CitizenCustomizations = {
           <MultiLineCheckboxLabel>
             <span>
               Vakuutan antamani tiedot oikeiksi ja olen tutustunut
-              asiakasmaksuperusteisiin:
+              asiakasmaksuperusteisiin: *
             </span>
             <a
               href="https://www.espoo.fi/fi/kasvatus-ja-opetus/varhaiskasvatus/varhaiskasvatuksen-asiakasmaksut#section-59617"

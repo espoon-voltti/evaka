@@ -14,7 +14,7 @@ import { useIdRouteParam } from 'lib-common/useRouteParams'
 import { NotificationsContext } from 'lib-components/Notifications'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
-import { tabletMin } from 'lib-components/breakpoints'
+import { desktopMinPx, tabletMin } from 'lib-components/breakpoints'
 import { ChildDocumentStateChip } from 'lib-components/document-templates/ChildDocumentStateChip'
 import DocumentView from 'lib-components/document-templates/DocumentView'
 import {
@@ -52,12 +52,37 @@ import {
 } from './queries'
 
 const TopButtonRow = styled(FixedSpaceRow)`
-  @media (max-width: ${tabletMin}) {
+  @media (max-width: 1215px) {
     margin-right: ${defaultMargins.s};
   }
 
   @media print {
     display: none;
+  }
+`
+
+const StickyContainer = styled(Container)`
+  position: sticky;
+  bottom: 0;
+  background-color: ${(p) => p.theme.colors.grayscale.g0};
+  box-shadow: 0 -2px 4px 0 rgba(0, 0, 0, 0.15);
+  padding: ${defaultMargins.s} 0;
+
+  @media (max-width: ${desktopMinPx - 1}px) {
+    box-shadow: none;
+    position: static;
+  }
+
+  > * {
+    margin-right: ${defaultMargins.m};
+
+    @media (min-width: ${tabletMin}) {
+      margin: ${defaultMargins.s} ${defaultMargins.m} ${defaultMargins.s} 0;
+    }
+
+    @media (min-width: 1216px) {
+      margin-left: ${defaultMargins.m};
+    }
   }
 `
 
@@ -197,56 +222,58 @@ const ChildDocumentView = React.memo(function ChildDocumentView({
         </ContentArea>
       </Container>
       <Gap size="m" />
-      <FixedSpaceRow
-        justifyContent="space-between"
-        alignItems="center"
-        gap={defaultMargins.m}
-      >
-        <ReturnButton label={i18n.common.return} data-qa="return-button" />
-        {document.status === 'CITIZEN_DRAFT' && (
-          <>
-            {readOnly && (
-              <Button
-                text={i18n.common.edit}
-                onClick={readOnlyOff}
-                data-qa="edit-button"
-              />
-            )}
-            <AlignRight>
-              {readOnly ? (
-                <ConfirmedMutation
-                  mutation={updateChildDocumentMutation}
-                  onClick={() => ({
-                    documentId: document.id,
-                    body: {
-                      status: 'COMPLETED' as const,
-                      content: bind.value()
-                    }
-                  })}
-                  confirmationTitle={
-                    i18n.children.childDocuments.sendingConfirmationTitle
-                  }
-                  confirmationText={
-                    i18n.children.childDocuments.sendingConfirmationText
-                  }
-                  onSuccess={onSuccess}
-                  buttonText={i18n.children.childDocuments.send}
-                  primary
-                  disabled={!bind.isValid()}
-                  data-qa="send-button"
-                />
-              ) : (
+      <StickyContainer>
+        <FixedSpaceRow
+          justifyContent="space-between"
+          alignItems="center"
+          gap={defaultMargins.m}
+        >
+          <ReturnButton label={i18n.common.return} data-qa="return-button" />
+          {document.status === 'CITIZEN_DRAFT' && (
+            <>
+              {readOnly && (
                 <Button
-                  text={i18n.children.childDocuments.preview}
-                  onClick={readOnlyOn}
-                  primary
-                  data-qa="preview-button"
+                  text={i18n.common.edit}
+                  onClick={readOnlyOff}
+                  data-qa="edit-button"
                 />
               )}
-            </AlignRight>
-          </>
-        )}
-      </FixedSpaceRow>
+              <AlignRight>
+                {readOnly ? (
+                  <ConfirmedMutation
+                    mutation={updateChildDocumentMutation}
+                    onClick={() => ({
+                      documentId: document.id,
+                      body: {
+                        status: 'COMPLETED' as const,
+                        content: bind.value()
+                      }
+                    })}
+                    confirmationTitle={
+                      i18n.children.childDocuments.sendingConfirmationTitle
+                    }
+                    confirmationText={
+                      i18n.children.childDocuments.sendingConfirmationText
+                    }
+                    onSuccess={onSuccess}
+                    buttonText={i18n.children.childDocuments.send}
+                    primary
+                    disabled={!bind.isValid()}
+                    data-qa="send-button"
+                  />
+                ) : (
+                  <Button
+                    text={i18n.children.childDocuments.preview}
+                    onClick={readOnlyOn}
+                    primary
+                    data-qa="preview-button"
+                  />
+                )}
+              </AlignRight>
+            </>
+          )}
+        </FixedSpaceRow>
+      </StickyContainer>
     </>
   )
 })
