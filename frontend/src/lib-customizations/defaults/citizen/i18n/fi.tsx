@@ -1428,7 +1428,11 @@ export default {
             moveDown: 'Siirrä alaspäin',
             remove: 'Poista hakutoive'
           }
-        }
+        },
+        movePreferredUnitScreenReaderMessage: (
+          unitName: string,
+          position: number
+        ) => `Yksikkö ${unitName} siirretty sijalle ${position}`
       },
       fee: {
         title: 'Varhaiskasvatusmaksu',

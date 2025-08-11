@@ -1478,7 +1478,11 @@ const en: Translations = {
             moveDown: 'Move down',
             remove: 'Remove preference'
           }
-        }
+        },
+        movePreferredUnitScreenReaderMessage: (
+          unitName: string,
+          position: number
+        ) => `Unit ${unitName} moved to position ${position}`
       },
       fee: {
         title: 'Early childhood education fee',
