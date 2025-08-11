@@ -244,6 +244,9 @@ class CitizenApplicationEditor {
 
   async verifyAndSend({ hasOtherGuardian }: { hasOtherGuardian: boolean }) {
     await this.goToVerification()
+    await this.#verifyCheckbox.evaluate((e) =>
+      e.scrollIntoView({ block: 'center' })
+    )
     await this.#verifyCheckbox.check()
     if (hasOtherGuardian) {
       await this.#allowOtherGuardianAccess.check()

@@ -118,6 +118,7 @@ export default class CitizenIncomePage {
     check: boolean
   ) {
     const elem = new Checkbox(this.page.findByDataQa(`${checkbox}`))
+    await elem.evaluate((e) => e.scrollIntoView({ block: 'center' }))
     if (check) {
       await elem.check()
     } else {
