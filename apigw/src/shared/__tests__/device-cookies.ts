@@ -2,28 +2,19 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { createHash, createHmac } from 'node:crypto'
+import { createHash } from 'node:crypto'
 
 import { beforeEach, describe, expect, it, jest } from '@jest/globals'
-import express from 'express'
+import type express from 'express'
 
 import {
   AUTH_HISTORY_COOKIE_PREFIX,
-  cookieSignatureOk,
   filterValidDeviceAuthHistory,
   setDeviceAuthHistoryCookie
 } from '../device-cookies.js'
 
 describe('device-cookies', () => {
-  const testSecret = 'test-secret-key-for-hmac-signing'
   const testUserId = 'user123'
-
-  // Helper function to create a valid signature for a hash
-  const createValidSignature = (hash: string, secret: string): string => {
-    const hmac = createHmac('sha256', secret)
-    hmac.update(hash)
-    return hmac.digest('hex')
-  }
 
   // Helper function to create a user hash
   const createUserHash = (userId: string): string => {
@@ -32,104 +23,43 @@ describe('device-cookies', () => {
     return hashGenerator.digest('hex')
   }
 
-  describe('cookieSignatureOk', () => {
-    it('returns true for valid signature', () => {
-      const hash = 'test-hash-value'
-      const validSignature = createValidSignature(hash, testSecret)
-
-      expect(cookieSignatureOk(hash, validSignature, testSecret)).toBe(true)
-    })
-
-    it('returns false for invalid signature', () => {
-      const hash = 'test-hash-value'
-      const invalidSignature = 'invalid-signature-value'
-
-      expect(cookieSignatureOk(hash, invalidSignature, testSecret)).toBe(false)
-    })
-
-    it('returns false for signature created with different secret', () => {
-      const hash = 'test-hash-value'
-      const signatureWithDifferentSecret = createValidSignature(
-        hash,
-        'different-secret'
-      )
-
-      expect(
-        cookieSignatureOk(hash, signatureWithDifferentSecret, testSecret)
-      ).toBe(false)
-    })
-  })
-
   describe('filterValidDeviceAuthHistory', () => {
     it('returns empty array when no device auth cookies are present', () => {
-      const cookies = {
-        'other-cookie': 'value',
-        'session-cookie': 'session-value'
-      }
-
-      const result = filterValidDeviceAuthHistory(cookies, testSecret)
+      const result = filterValidDeviceAuthHistory({})
       expect(result).toEqual([])
     })
 
-    it('returns valid hashes for cookies with correct signatures', () => {
+    it('returns all valid hashes', () => {
       const hash1 = createUserHash('user1')
       const hash2 = createUserHash('user2')
-      const validSignature1 = createValidSignature(hash1, testSecret)
-      const validSignature2 = createValidSignature(hash2, testSecret)
 
-      const cookies = {
-        [`${AUTH_HISTORY_COOKIE_PREFIX}${hash1}`]: validSignature1,
-        [`${AUTH_HISTORY_COOKIE_PREFIX}${hash2}`]: validSignature2,
+      const cookies: Record<string, string> = {
+        [`${AUTH_HISTORY_COOKIE_PREFIX}${hash1}`]: 's:' + hash1,
+        [`${AUTH_HISTORY_COOKIE_PREFIX}${hash2}`]: 's:' + hash2,
         'other-cookie': 'value'
       }
 
-      const result = filterValidDeviceAuthHistory(cookies, testSecret)
+      const result = filterValidDeviceAuthHistory(cookies)
       expect(result).toHaveLength(2)
       expect(result).toContain(hash1)
       expect(result).toContain(hash2)
     })
 
-    it('filters out cookies with invalid signatures', () => {
+    it('calls callback when cookie-parser marks a cookie as invalid (false)', () => {
       const validHash = createUserHash('valid-user')
       const invalidHash = createUserHash('invalid-user')
-      const validSignature = createValidSignature(validHash, testSecret)
-      const invalidSignature = 'invalid-signature'
+      const nameValid = `${AUTH_HISTORY_COOKIE_PREFIX}${validHash}`
+      const nameInvalid = `${AUTH_HISTORY_COOKIE_PREFIX}${invalidHash}`
 
-      const cookies = {
-        [`${AUTH_HISTORY_COOKIE_PREFIX}${validHash}`]: validSignature,
-        [`${AUTH_HISTORY_COOKIE_PREFIX}${invalidHash}`]: invalidSignature
+      const signedCookies: Record<string, unknown> = {
+        [nameValid]: validHash,
+        [nameInvalid]: false
       }
 
-      const result = filterValidDeviceAuthHistory(cookies, testSecret)
-      expect(result).toHaveLength(1)
-      expect(result).toContain(validHash)
-      expect(result).not.toContain(invalidHash)
-    })
-
-    it('calls invalidSignatureCallback for invalid signatures', () => {
-      const validHash = createUserHash('valid-user')
-      const invalidHash = createUserHash('invalid-user')
-      const validSignature = createValidSignature(validHash, testSecret)
-      const invalidSignature = 'invalid-signature'
-
-      const cookies = {
-        [`${AUTH_HISTORY_COOKIE_PREFIX}${validHash}`]: validSignature,
-        [`${AUTH_HISTORY_COOKIE_PREFIX}${invalidHash}`]: invalidSignature
-      }
-
-      const invalidSignatureCallback = jest.fn()
-      const result = filterValidDeviceAuthHistory(
-        cookies,
-        testSecret,
-        invalidSignatureCallback
-      )
-
-      expect(result).toHaveLength(1)
-      expect(invalidSignatureCallback).toHaveBeenCalledTimes(1)
-      expect(invalidSignatureCallback).toHaveBeenCalledWith(
-        `${AUTH_HISTORY_COOKIE_PREFIX}${invalidHash}`,
-        invalidHash
-      )
+      const cb = jest.fn()
+      const result = filterValidDeviceAuthHistory(signedCookies, cb)
+      expect(result).toEqual([validHash])
+      expect(cb).toHaveBeenCalledWith(nameInvalid, invalidHash)
     })
   })
 
@@ -147,27 +77,27 @@ describe('device-cookies', () => {
       } as unknown as jest.Mocked<express.Response>
     })
 
-    it('sets cookie with correct name and signature', () => {
-      setDeviceAuthHistoryCookie(mockResponse, testUserId, testSecret)
+    it('sets signed cookie with correct name and value', () => {
+      setDeviceAuthHistoryCookie(mockResponse, testUserId)
 
       const expectedHash = createUserHash(testUserId)
-      const expectedSignature = createValidSignature(expectedHash, testSecret)
       const expectedCookieName = `${AUTH_HISTORY_COOKIE_PREFIX}${expectedHash}`
 
       expect(cookieFn).toHaveBeenCalledTimes(1)
       expect(cookieFn).toHaveBeenCalledWith(
         expectedCookieName,
-        expectedSignature,
+        expectedHash,
         expect.objectContaining({
           secure: true,
           httpOnly: true,
-          sameSite: 'strict'
+          sameSite: 'strict',
+          signed: true
         })
       )
     })
 
     it('sets cookie with correct security attributes', () => {
-      setDeviceAuthHistoryCookie(mockResponse, testUserId, testSecret)
+      setDeviceAuthHistoryCookie(mockResponse, testUserId)
 
       expect(cookieFn).toHaveBeenCalledWith(
         expect.any(String),
@@ -176,6 +106,7 @@ describe('device-cookies', () => {
           secure: true,
           httpOnly: true,
           sameSite: 'strict',
+          signed: true,
           expires: expect.any(Date)
         })
       )
@@ -185,8 +116,8 @@ describe('device-cookies', () => {
       const user1 = 'user1'
       const user2 = 'user2'
 
-      setDeviceAuthHistoryCookie(mockResponse, user1, testSecret)
-      setDeviceAuthHistoryCookie(mockResponse, user2, testSecret)
+      setDeviceAuthHistoryCookie(mockResponse, user1)
+      setDeviceAuthHistoryCookie(mockResponse, user2)
 
       expect(cookieFn).toHaveBeenCalledTimes(2)
 
@@ -195,48 +126,29 @@ describe('device-cookies', () => {
 
       // Cookie names should be different
       expect(call1?.[0]).not.toEqual(call2?.[0])
-      // Signatures should be different
+      // Values should be different
       expect(call1?.[1]).not.toEqual(call2?.[1])
     })
 
     it('creates same cookie for same user with same secret', () => {
-      setDeviceAuthHistoryCookie(mockResponse, testUserId, testSecret)
+      setDeviceAuthHistoryCookie(mockResponse, testUserId)
 
       // Reset mock to test second call
       cookieFn.mockReset()
 
-      setDeviceAuthHistoryCookie(mockResponse, testUserId, testSecret)
+      setDeviceAuthHistoryCookie(mockResponse, testUserId)
 
       expect(cookieFn).toHaveBeenCalledTimes(1)
 
       // Both calls should produce identical results
       const expectedHash = createUserHash(testUserId)
-      const expectedSignature = createValidSignature(expectedHash, testSecret)
       const expectedCookieName = `${AUTH_HISTORY_COOKIE_PREFIX}${expectedHash}`
 
       expect(cookieFn).toHaveBeenCalledWith(
         expectedCookieName,
-        expectedSignature,
+        expectedHash,
         expect.any(Object)
       )
-    })
-
-    it('creates different signatures with different secrets', () => {
-      const secret1 = 'secret1'
-      const secret2 = 'secret2'
-
-      setDeviceAuthHistoryCookie(mockResponse, testUserId, secret1)
-      setDeviceAuthHistoryCookie(mockResponse, testUserId, secret2)
-
-      expect(cookieFn).toHaveBeenCalledTimes(2)
-
-      const call1 = cookieFn.mock.calls[0]
-      const call2 = cookieFn.mock.calls[1]
-
-      // Cookie names should be the same (same user)
-      expect(call1?.[0]).toEqual(call2?.[0])
-      // But signatures should be different (different secrets)
-      expect(call1?.[1]).not.toEqual(call2?.[1])
     })
   })
 })
