@@ -2,49 +2,31 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { createHash, createHmac } from 'node:crypto'
+import { createHash } from 'node:crypto'
 
 import type express from 'express'
 
 export const AUTH_HISTORY_COOKIE_PREFIX = '__Host-evaka-device-user-'
 
-export const cookieSignatureOk = (
-  hash: string,
-  signature: string,
-  cookieSecret: string
-): boolean => {
-  const hmac = createHmac('sha256', cookieSecret)
-  hmac.update(hash)
-  return hmac.digest('hex') === signature
-}
-
 export const filterValidDeviceAuthHistory = (
-  cookies: Record<string, string>,
-  cookieSecret: string,
+  signedCookies: Record<string, unknown>,
   invalidSignatureCallback?: (cookieName: string, hash: string) => void
 ): string[] => {
-  const validHashes: string[] = []
-
-  Object.keys(cookies)
-    .filter((name) => name.startsWith(AUTH_HISTORY_COOKIE_PREFIX))
-    .forEach((cookieName) => {
-      const signature = cookies[cookieName]
-      const hash = cookieName.substring(AUTH_HISTORY_COOKIE_PREFIX.length)
-
-      if (cookieSignatureOk(hash, signature, cookieSecret)) {
-        validHashes.push(hash)
-      } else if (invalidSignatureCallback) {
-        invalidSignatureCallback(cookieName, hash)
-      }
-    })
-
-  return validHashes
+  return Object.entries(signedCookies).reduce<string[]>(
+    (acc, [name, value]) => {
+      if (!name.startsWith(AUTH_HISTORY_COOKIE_PREFIX)) return acc
+      const hash = name.substring(AUTH_HISTORY_COOKIE_PREFIX.length)
+      if (value === false) invalidSignatureCallback?.(name, hash)
+      else acc.push(hash)
+      return acc
+    },
+    []
+  )
 }
 
 export const setDeviceAuthHistoryCookie = (
   res: express.Response,
-  userId: string,
-  cookieSecret: string
+  userId: string
 ): void => {
   // create a new cookie for the user if it's a new browser
   const hashGenerator = createHash('sha256')
@@ -52,13 +34,11 @@ export const setDeviceAuthHistoryCookie = (
   const hash = hashGenerator.digest('hex')
 
   const cookieName = `${AUTH_HISTORY_COOKIE_PREFIX}${hash}`
-  const signatureHmac = createHmac('sha256', cookieSecret)
-  signatureHmac.update(hash)
-  const signature = signatureHmac.digest('hex')
-  res.cookie(cookieName, signature, {
+  res.cookie(cookieName, hash, {
     secure: true,
     httpOnly: true,
     sameSite: 'strict',
+    signed: true,
     expires: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000) // 90 days
   })
 }

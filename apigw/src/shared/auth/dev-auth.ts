@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { AxiosError } from 'axios'
+import cookieParser from 'cookie-parser'
 import type { Request } from 'express'
 import express from 'express'
 
@@ -32,6 +33,9 @@ export function createDevAuthRouter<T extends SessionType>({
   const router = express.Router()
 
   router.use(sessions.middleware)
+  if (citizenCookieSecret) {
+    router.use(cookieParser(citizenCookieSecret))
+  }
   router.get('/login', toRequestHandler(loginFormHandler))
   router.post(
     `/login/callback`,
@@ -46,7 +50,7 @@ export function createDevAuthRouter<T extends SessionType>({
 
           // Set device cookie for citizen authentication
           if (citizenCookieSecret) {
-            setDeviceAuthHistoryCookie(res, user.id, citizenCookieSecret)
+            setDeviceAuthHistoryCookie(res, user.id)
           }
 
           res.redirect(validateRelayStateUrl(req)?.toString() ?? root)

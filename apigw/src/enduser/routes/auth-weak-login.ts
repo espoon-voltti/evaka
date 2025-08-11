@@ -34,15 +34,14 @@ export const authWeakLogin = (
   redis: RedisClient,
   cookieSecret: string
 ) => [
-  cookieParser(),
+  cookieParser(cookieSecret),
   toRequestHandler(async (req, res) => {
     logAuditEvent(eventCode('sign_in_requested'), req, 'Login endpoint called')
     try {
       const { username, password } = Request.parse(req.body)
 
       const deviceAuthHistory = filterValidDeviceAuthHistory(
-        req.cookies,
-        cookieSecret,
+        req.signedCookies,
         (cookieName, hash) => {
           // TODO pitäisikö nämä hylätyt expiroida?
           logWarn('Invalid device cookie signature detected', req, {
@@ -86,7 +85,7 @@ export const authWeakLogin = (
       logAuditEvent(eventCode('sign_in'), req, 'User logged in successfully')
 
       // Set device cookie if it's a new browser
-      setDeviceAuthHistoryCookie(res, user.id, cookieSecret)
+      setDeviceAuthHistoryCookie(res, user.id)
 
       res.sendStatus(200)
     } catch (err) {

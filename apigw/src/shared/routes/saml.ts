@@ -6,6 +6,7 @@ import * as url from 'node:url'
 
 import type { AuthOptions, Profile, SAML } from '@node-saml/node-saml'
 import { AxiosError } from 'axios'
+import cookieParser from 'cookie-parser'
 import express from 'express'
 import _ from 'lodash'
 
@@ -212,7 +213,7 @@ export function createSamlIntegration<T extends SessionType>(
 
       // Set device cookie for citizen authentication
       if (citizenCookieSecret) {
-        setDeviceAuthHistoryCookie(res, user.id, citizenCookieSecret)
+        setDeviceAuthHistoryCookie(res, user.id)
       }
 
       // Persist in session to allow custom logic per strategy
@@ -359,6 +360,9 @@ export function createSamlIntegration<T extends SessionType>(
   // * HTTP POST: the browser makes a POST request with URI-encoded form body
   const router = express.Router()
   router.use(sessions.middleware)
+  if (citizenCookieSecret) {
+    router.use(cookieParser(citizenCookieSecret))
+  }
   // Our application directs the browser to this endpoint to start the login
   // flow. We generate a LoginRequest.
   router.get(`/login`, toRequestHandler(login))
