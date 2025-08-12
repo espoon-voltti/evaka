@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.invoicing.service
 
+import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.IncomeNotificationId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
@@ -125,7 +126,9 @@ WITH previously_placed_children AS (
     SELECT pl.child_id, fc.head_of_child
     FROM placement pl
     JOIN fridge_child fc ON pl.child_id = fc.child_id AND ${bind(today)} BETWEEN fc.start_date AND fc.end_date
-    WHERE pl.start_date < ${bind(currentMonth.start)}
+    WHERE
+        pl.start_date < ${bind(currentMonth.start)} AND
+        pl.type = ANY(${bind(PlacementType.invoiced)})
 ), fridge_parents AS (
     SELECT fc_head.head_of_child AS parent_id, fp_spouse.person_id AS spouse_id
     FROM placement pl
@@ -145,6 +148,7 @@ WITH previously_placed_children AS (
     )
     WHERE
         pl.start_date BETWEEN ${bind(currentMonth.start)} AND ${bind(currentMonth.end)} AND
+        pl.type = ANY(${bind(PlacementType.invoiced)}) AND
         NOT EXISTS(
             SELECT 1
             FROM previously_placed_children

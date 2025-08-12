@@ -11,6 +11,7 @@ import fi.espoo.evaka.incomestatement.Gross
 import fi.espoo.evaka.incomestatement.IncomeSource
 import fi.espoo.evaka.incomestatement.IncomeStatementBody
 import fi.espoo.evaka.incomestatement.IncomeStatementStatus
+import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.PartnershipId
@@ -94,12 +95,18 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
         }
     }
 
-    private fun insertPlacement(child: DevPerson, start: LocalDate, end: LocalDate) {
+    private fun insertPlacement(
+        child: DevPerson,
+        start: LocalDate,
+        end: LocalDate,
+        type: PlacementType = PlacementType.DAYCARE,
+    ) {
         db.transaction { tx ->
             tx.insert(
                 DevPlacement(
                     childId = child.id,
                     unitId = daycare.id,
+                    type = type,
                     startDate = start,
                     endDate = end,
                 )
@@ -126,6 +133,17 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
     }
 
     @Test
+    fun `notification is not sent when non-invoiced placement starts in current month`() {
+        insertPlacement(
+            child,
+            clock.today().plusWeeks(2),
+            clock.today().plusMonths(6),
+            PlacementType.PRESCHOOL,
+        )
+        assertEquals(0, getEmails().size)
+    }
+
+    @Test
     fun `notifications are not sent when placement for other child exists`() {
         val otherChild = DevPerson()
         db.transaction { tx ->
@@ -144,6 +162,32 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
         insertPlacement(otherChild, clock.today().minusYears(1), clock.today().plusYears(1))
 
         assertEquals(0, getEmails().size)
+    }
+
+    @Test
+    fun `notification is sent when non-invoiced placement for other child exists`() {
+        val otherChild = DevPerson()
+        db.transaction { tx ->
+            tx.insert(otherChild, DevPersonType.CHILD)
+            tx.insert(
+                DevFridgeChild(
+                    childId = otherChild.id,
+                    headOfChild = fridgeHeadOfChild.id,
+                    startDate = clock.today().minusYears(1),
+                    endDate = clock.today().plusYears(1),
+                )
+            )
+        }
+
+        insertPlacement(child, clock.today().plusWeeks(2), clock.today().plusMonths(6))
+        insertPlacement(
+            otherChild,
+            clock.today().minusYears(1),
+            clock.today().plusYears(1),
+            PlacementType.PRESCHOOL,
+        )
+
+        assertEquals(1, getEmails().size)
     }
 
     @Test
