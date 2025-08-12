@@ -130,7 +130,7 @@ const features: Features = {
     invoiceDisplayAccountNumber: true,
     serviceApplications: false,
     multiSelectDeparture: true,
-    archiveIntegrationEnabled: false,
+    archiveIntegrationEnabled: true,
     aromiIntegration: false,
     decisionChildDocumentTypes: false,
     showCitizenApplicationPreschoolTerms: false,
