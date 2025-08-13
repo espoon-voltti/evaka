@@ -8,13 +8,6 @@ evaka:
     sender_name:
       fi: "Espoon Varhaiskasvatus"
       sv: "Esbo småbarnspedagogik"
-    application_received:
-      sender_address:
-        fi: "vaka.palveluohjaus@espoo.fi"
-        sv: "dagis@esbo.fi"
-      sender_name:
-        fi: "Varhaiskasvatuksen palveluohjaus"
-        sv: "Servicesakkunnig / Esbo stad"
   oph:
     municipality_code: "049"
     organizer_oid: "1.2.246.562.10.90008375488"

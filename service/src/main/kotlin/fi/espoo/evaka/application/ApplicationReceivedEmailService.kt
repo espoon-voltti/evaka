@@ -30,7 +30,7 @@ class ApplicationReceivedEmailService(
         type: ApplicationType,
         sentWithinPreschoolApplicationPeriod: Boolean? = null,
     ) {
-        val fromAddress = emailEnv.applicationReceivedSender(language)
+        val fromAddress = emailEnv.sender(language)
         val content =
             when (type) {
                 ApplicationType.CLUB -> emailMessageProvider.clubApplicationReceived(language)

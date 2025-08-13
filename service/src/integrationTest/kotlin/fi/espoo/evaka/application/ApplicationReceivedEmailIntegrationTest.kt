@@ -172,7 +172,10 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
         assertEquals(1, sentMails.size)
 
         val sentMail = sentMails[0]
-        assertEquals("Test email sender sv <testemail_sv@test.com>", sentMail.fromAddress.address)
+        assertEquals(
+            "Esbo småbarnspedagogik <no-reply.evaka@espoo.fi>",
+            sentMail.fromAddress.address,
+        )
         assertEquals(guardian.email, sentMail.toAddress)
         assertEquals(guardian.id.toString(), sentMail.traceId)
         assertEquals(
@@ -412,7 +415,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
         assertEmail(
             MockEmailClient.getEmail("working@test.fi"),
             "working@test.fi",
-            "Test email sender fi <testemail_fi@test.com>",
+            "Espoon Varhaiskasvatus <no-reply.evaka@espoo.fi>",
             "Olemme vastaanottaneet hakemuksenne / Vi har tagit emot din ansökan / We have received your application",
             "Varhaiskasvatushakemuksella on <strong>neljän (4) kuukauden hakuaika",
             "Varhaiskasvatushakemuksella on neljän (4) kuukauden hakuaika",
@@ -428,7 +431,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
         assertEmail(
             MockEmailClient.getEmail("Working.Email@Test.Com"),
             "Working.Email@Test.Com",
-            "Test email sender sv <testemail_sv@test.com>",
+            "Esbo småbarnspedagogik <no-reply.evaka@espoo.fi>",
             "Olemme vastaanottaneet hakemuksenne / Vi har tagit emot din ansökan / We have received your application",
             "Ansökan om småbarnspedagogik har en <strong>ansökningstid på fyra (4) månader",
             "Ansökan om småbarnspedagogik har en ansökningstid på fyra (4) månader",

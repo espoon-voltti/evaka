@@ -16,13 +16,6 @@ evaka:
     sender_name:
       fi: Espoon Varhaiskasvatus
       sv: Esbo småbarnspedagogik
-    application_received:
-      sender_address:
-        fi: testemail_fi@test.com
-        sv: testemail_sv@test.com
-      sender_name:
-        fi: Test email sender fi
-        sv: Test email sender sv
   async_job_runner:
     disable_runner: true
   fee_decision:
