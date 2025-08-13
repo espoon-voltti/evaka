@@ -11,7 +11,7 @@
     "lint": "eslint --max-warnings 0 .",
     "lint:fix": "yarn lint --fix",
     "test": "NODE_ENV=test NODE_OPTIONS=--experimental-vm-modules jest",
-    "dev": "concurrently --prefix '[{name}]' --names 'tsc,node' 'tsc --preserveWatchOutput --watch' 'NODE_ENV=local nodemon -e ts,json -x \"node src/index.ts\"'",
+    "dev": "concurrently --prefix '[{name}]' --names 'tsc,node' 'tsc --preserveWatchOutput --watch' 'NODE_ENV=local node --watch-preserve-output --watch src/index.ts'",
     "test-ci": "NODE_ENV=test NODE_OPTIONS=--experimental-vm-modules jest --runInBand",
     "prepack": "exit 1"
   },
@@ -67,7 +67,6 @@
     "jest-junit": "16.0.0",
     "nock": "14.0.9",
     "node-forge": "1.3.1",
-    "nodemon": "3.1.10",
     "prettier": "3.6.2",
     "tough-cookie": "5.1.2",
     "ts-jest": "29.4.1",
