@@ -10,8 +10,8 @@
   semanticCommits: 'disabled',
   automergeStrategy: 'merge-commit',
 
-  // Wait for a version to be 3 days old before making a PR
-  minimumReleaseAge: '3 days',
+  // Wait for a version to be 5 days old before making a PR
+  minimumReleaseAge: '5 days',
 
   // Update during weekends
   schedule: ['* * * * 0,6'],
