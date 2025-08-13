@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useRef } from 'react'
 import styled from 'styled-components'
 
 import type { PreferredUnit } from 'lib-common/generated/api-types/application'
@@ -41,6 +41,7 @@ export default React.memo(function UnitsSubSection({
   units
 }: Props) {
   const t = useTranslation()
+  const emptyPreferredUnitsLabel = useRef<HTMLLabelElement>(null)
   const [displayFinnish, setDisplayFinnish] = useState(true)
   const [displaySwedish, setDisplaySwedish] = useState(false)
   const [isUnitSelectionInvalid, setIsUnitSelectionInvalid] = useState(false)
@@ -184,7 +185,7 @@ export default React.memo(function UnitsSubSection({
               <Gap size="xs" />
             </FixedWidthDiv>
             <FixedWidthDiv>
-              <Label>
+              <Label tabIndex={-1} ref={emptyPreferredUnitsLabel}>
                 {t.applications.editor.unitPreference.units.preferences.label(
                   maxUnits
                 )}
@@ -222,14 +223,17 @@ export default React.memo(function UnitsSubSection({
                             key={unit.id}
                             unit={unit}
                             n={i + 1}
-                            remove={() =>
+                            remove={() => {
                               updateFormData((prev) => ({
                                 preferredUnits: [
                                   ...prev.preferredUnits.slice(0, i),
                                   ...prev.preferredUnits.slice(i + 1)
                                 ]
                               }))
-                            }
+                              if (emptyPreferredUnitsLabel.current) {
+                                emptyPreferredUnitsLabel.current.focus()
+                              }
+                            }}
                             moveUp={
                               i > 0
                                 ? () => {
