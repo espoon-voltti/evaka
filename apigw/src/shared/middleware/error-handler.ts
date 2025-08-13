@@ -2,14 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { ErrorRequestHandler } from 'express'
+import type { ErrorRequestHandler } from 'express'
 
-import { includeAllErrorMessages } from '../config.js'
-import { InvalidRequest } from '../express.js'
-import { logError } from '../logging.js'
-import { SamlError } from '../routes/saml.js'
+import { includeAllErrorMessages } from '../config.ts'
+import { InvalidRequest } from '../express.ts'
+import { logError } from '../logging.ts'
+import { SamlError } from '../routes/saml.ts'
 
-import { InvalidAntiCsrfToken } from './csrf.js'
+import { InvalidAntiCsrfToken } from './csrf.ts'
 
 interface LogResponse {
   message: string | null

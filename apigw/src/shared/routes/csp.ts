@@ -2,9 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import express from 'express'
+import type express from 'express'
 
-import { logWarn } from '../logging.js'
+import { logWarn } from '../logging.ts'
 
 export const handleCspReport: express.RequestHandler = (req, res) => {
   logWarn('CSP report received', req, {

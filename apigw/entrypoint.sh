@@ -39,7 +39,7 @@ trap 'term_handler' SIGTERM
 # that the exit status for the Docker container will be 143 in this case although it should be the exit status of
 # pino-cli, e.g., 1. Storing the exit status of the pino-cli child process would require using bash named
 # pipes which would make the implementation a bit more complex. For simplicity, the current solution is good enough.
-"$@" > >(node ./dist/pino-cli/cli/bin.js || kill $$) &
+"$@" > >(node ./src/pino-cli/cli/bin.ts || kill $$) &
 pid="$!"
 
 # Keep the Docker container from exiting by waiting for a status change in the main Node.js child process

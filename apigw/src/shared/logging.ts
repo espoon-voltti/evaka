@@ -2,15 +2,15 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Request } from 'express'
+import type { Request } from 'express'
 import _ from 'lodash'
 import pino from 'pino'
 import { pinoHttp } from 'pino-http'
 import queryString from 'query-string'
 
-import { appBuild, appCommit, hostIp, prettyLogs, volttiEnv } from './config.js'
-import { createSha256Hash } from './crypto.js'
-import {
+import { appBuild, appCommit, hostIp, prettyLogs, volttiEnv } from './config.ts'
+import { createSha256Hash } from './crypto.ts'
+import type {
   LogFn,
   LogLevel,
   LogMeta,
@@ -19,7 +19,7 @@ import {
   PinoResponse,
   PinoResSerializer,
   UserPinoRequest
-} from './types.js'
+} from './types.d.ts'
 
 const BASE_LOGGER_OPTS: pino.LoggerOptions = {
   base: {

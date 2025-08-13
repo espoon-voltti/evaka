@@ -4,26 +4,27 @@
 
 import * as url from 'node:url'
 
-import { AuthOptions, Profile, SAML } from '@node-saml/node-saml'
+import type { AuthOptions, Profile, SAML } from '@node-saml/node-saml'
 import { AxiosError } from 'axios'
 import express from 'express'
 import _ from 'lodash'
 
-import { createLogoutToken } from '../auth/index.js'
-import { AsyncRequestHandler, toRequestHandler } from '../express.js'
-import { logAuditEvent, logDebug } from '../logging.js'
+import { createLogoutToken } from '../auth/index.ts'
+import type { AsyncRequestHandler } from '../express.ts'
+import { toRequestHandler } from '../express.ts'
+import { logAuditEvent, logDebug } from '../logging.ts'
 import {
   parseDescriptionFromSamlError,
   samlErrorSchema
-} from '../saml/error-utils.js'
+} from '../saml/error-utils.ts'
+import type { AuthenticateProfile } from '../saml/index.ts'
 import {
-  AuthenticateProfile,
   getRawUnvalidatedRelayState,
   SamlProfileIdSchema,
   SamlSessionSchema,
   validateRelayStateUrl
-} from '../saml/index.js'
-import { Sessions, SessionType } from '../session.js'
+} from '../saml/index.ts'
+import type { Sessions, SessionType } from '../session.ts'
 
 const urlencodedParser = express.urlencoded({ extended: false })
 
@@ -35,20 +36,21 @@ export interface SamlEndpointConfig<T extends SessionType> {
   authenticate: AuthenticateProfile
 }
 
+export type Options = {
+  /**
+   * True if this error should not be logged by the error middleware
+   */
+  silent?: boolean
+  /**
+   * Redirect the browser to this URL if possible using status 301
+   */
+  redirectUrl?: string
+} & ErrorOptions
+
 export class SamlError extends Error {
-  constructor(
-    message: string,
-    public options?: {
-      /**
-       * True if this error should not be logged by the error middleware
-       */
-      silent?: boolean
-      /**
-       * Redirect the browser to this URL if possible using status 301
-       */
-      redirectUrl?: string
-    } & ErrorOptions
-  ) {
+  public options: Options | undefined
+
+  constructor(message: string, options?: Options) {
     super(message, options)
     this.name = 'SamlError'
   }
