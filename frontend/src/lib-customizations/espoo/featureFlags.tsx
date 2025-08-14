@@ -135,7 +135,7 @@ const features: Features = {
     decisionChildDocumentTypes: false,
     showCitizenApplicationPreschoolTerms: false,
     missingQuestionnaireAnswerMarkerEnabled: false,
-    absenceApplications: false,
+    absenceApplications: true,
     showMetadataToCitizen: false
   }
 }
