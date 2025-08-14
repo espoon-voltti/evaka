@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useState, useCallback, useRef } from 'react'
+import React, { useState, useRef } from 'react'
 import styled from 'styled-components'
 
 import type { PreferredUnit } from 'lib-common/generated/api-types/application'
@@ -22,6 +22,7 @@ import { Gap } from 'lib-components/white-space'
 import { getMaxPreferredUnits } from 'lib-customizations/citizen'
 import colors from 'lib-customizations/common'
 
+import { useTimedScreenReaderMessage } from '../../../calendar/hooks'
 import { useTranslation } from '../../../localization'
 
 import PreferredUnitBox from './PreferredUnitBox'
@@ -45,24 +46,9 @@ export default React.memo(function UnitsSubSection({
   const [displayFinnish, setDisplayFinnish] = useState(true)
   const [displaySwedish, setDisplaySwedish] = useState(false)
   const [isUnitSelectionInvalid, setIsUnitSelectionInvalid] = useState(false)
-  const [screenReaderMessage, setScreenReaderMessage] = useState<string | null>(
-    null
-  )
+  const [screenReaderMessage, showTimedScreenReaderMessage] =
+    useTimedScreenReaderMessage()
   const maxUnits = getMaxPreferredUnits(applicationType)
-  const [isMessageTimerOn, setIsMessageTimerOn] = useState(false)
-  const showTimedScreenReaderMessage = useCallback(
-    (message: string) => {
-      setScreenReaderMessage(message)
-      if (!isMessageTimerOn) {
-        setIsMessageTimerOn(true)
-        setTimeout(() => {
-          setScreenReaderMessage(null)
-          setIsMessageTimerOn(false)
-        }, 5000)
-      }
-    },
-    [isMessageTimerOn]
-  )
 
   return (
     <>
