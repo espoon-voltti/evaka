@@ -370,6 +370,8 @@ const TimeRanges = React.memo(function TimeRanges({
             bind={firstTimeRange}
             hideErrorsBeforeTouched={!showAllErrors}
             dataQaPrefix={dataQaPrefix ? `${dataQaPrefix}-time-0` : undefined}
+            ariaDescriptionStart={i18n.calendar.reservationModal.startAria}
+            ariaDescriptionEnd={i18n.calendar.reservationModal.endAria}
             onFocus={onFocus}
           />
         </MiddleCell>

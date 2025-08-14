@@ -504,6 +504,8 @@ const en: Translations = {
       },
       start: 'Start',
       end: 'End',
+      startAria: 'Time range start',
+      endAria: 'Time range end',
       secondTimeRange: {
         add: 'Add second time range',
         delete: 'Delete second time range',
