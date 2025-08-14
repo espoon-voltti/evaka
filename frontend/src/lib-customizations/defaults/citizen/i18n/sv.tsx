@@ -1420,7 +1420,11 @@ const sv: Translations = {
             moveDown: 'Flytta neråt',
             remove: 'Ta bort önskad enhet'
           }
-        }
+        },
+        movePreferredUnitScreenReaderMessage: (
+          unitName: string,
+          position: number
+        ) => `Enhet ${unitName} flyttad till plats ${position}`
       },
       fee: {
         title: 'Avgiften för småbarnspedagogik',

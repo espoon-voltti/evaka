@@ -2,13 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useState } from 'react'
+import React, { useState, useCallback, useRef } from 'react'
 import styled from 'styled-components'
 
 import type { PreferredUnit } from 'lib-common/generated/api-types/application'
 import type { PublicUnit } from 'lib-common/generated/api-types/daycare'
 import { SelectionChip } from 'lib-components/atoms/Chip'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
+import { ScreenReaderOnly } from 'lib-components/atoms/ScreenReaderOnly'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import {
   FixedSpaceColumn,
@@ -40,11 +41,28 @@ export default React.memo(function UnitsSubSection({
   units
 }: Props) {
   const t = useTranslation()
+  const emptyPreferredUnitsLabel = useRef<HTMLLabelElement>(null)
   const [displayFinnish, setDisplayFinnish] = useState(true)
   const [displaySwedish, setDisplaySwedish] = useState(false)
   const [isUnitSelectionInvalid, setIsUnitSelectionInvalid] = useState(false)
-
+  const [screenReaderMessage, setScreenReaderMessage] = useState<string | null>(
+    null
+  )
   const maxUnits = getMaxPreferredUnits(applicationType)
+  const [isMessageTimerOn, setIsMessageTimerOn] = useState(false)
+  const showTimedScreenReaderMessage = useCallback(
+    (message: string) => {
+      setScreenReaderMessage(message)
+      if (!isMessageTimerOn) {
+        setIsMessageTimerOn(true)
+        setTimeout(() => {
+          setScreenReaderMessage(null)
+          setIsMessageTimerOn(false)
+        }, 5000)
+      }
+    },
+    [isMessageTimerOn]
+  )
 
   return (
     <>
@@ -167,7 +185,7 @@ export default React.memo(function UnitsSubSection({
               <Gap size="xs" />
             </FixedWidthDiv>
             <FixedWidthDiv>
-              <Label>
+              <Label tabIndex={-1} ref={emptyPreferredUnitsLabel}>
                 {t.applications.editor.unitPreference.units.preferences.label(
                   maxUnits
                 )}
@@ -193,6 +211,9 @@ export default React.memo(function UnitsSubSection({
                   />
                 )}
               <FixedSpaceColumn spacing="s">
+                <ScreenReaderOnly aria-live="polite" aria-atomic={true}>
+                  {screenReaderMessage}
+                </ScreenReaderOnly>
                 {units
                   ? formData.preferredUnits
                       .map((u) => units.find((u2) => u.id === u2.id))
@@ -202,17 +223,20 @@ export default React.memo(function UnitsSubSection({
                             key={unit.id}
                             unit={unit}
                             n={i + 1}
-                            remove={() =>
+                            remove={() => {
                               updateFormData((prev) => ({
                                 preferredUnits: [
                                   ...prev.preferredUnits.slice(0, i),
                                   ...prev.preferredUnits.slice(i + 1)
                                 ]
                               }))
-                            }
+                              if (emptyPreferredUnitsLabel.current) {
+                                emptyPreferredUnitsLabel.current.focus()
+                              }
+                            }}
                             moveUp={
                               i > 0
-                                ? () =>
+                                ? () => {
                                     updateFormData((prev) => ({
                                       preferredUnits: [
                                         ...prev.preferredUnits.slice(0, i - 1),
@@ -221,11 +245,18 @@ export default React.memo(function UnitsSubSection({
                                         ...prev.preferredUnits.slice(i + 1)
                                       ]
                                     }))
+                                    showTimedScreenReaderMessage(
+                                      t.applications.editor.unitPreference.movePreferredUnitScreenReaderMessage(
+                                        unit.name,
+                                        i
+                                      )
+                                    )
+                                  }
                                 : null
                             }
                             moveDown={
                               i < formData.preferredUnits.length - 1
-                                ? () =>
+                                ? () => {
                                     updateFormData((prev) => ({
                                       preferredUnits: [
                                         ...prev.preferredUnits.slice(0, i),
@@ -234,6 +265,13 @@ export default React.memo(function UnitsSubSection({
                                         ...prev.preferredUnits.slice(i + 2)
                                       ]
                                     }))
+                                    showTimedScreenReaderMessage(
+                                      t.applications.editor.unitPreference.movePreferredUnitScreenReaderMessage(
+                                        unit.name,
+                                        i + 2
+                                      )
+                                    )
+                                  }
                                 : null
                             }
                           />
