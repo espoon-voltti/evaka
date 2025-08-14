@@ -509,6 +509,7 @@ export default {
       secondTimeRange: {
         add: 'Lisää toinen aikaväli',
         delete: 'Poista toinen aikaväli',
+        deleteSuccess: 'Toinen aikaväli poistettu',
         start: 'Toisen aikavälin alku',
         end: 'Toisen aikavälin loppu'
       },

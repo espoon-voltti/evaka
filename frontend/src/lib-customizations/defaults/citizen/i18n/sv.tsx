@@ -498,6 +498,7 @@ const sv: Translations = {
       secondTimeRange: {
         add: 'Lägg till ett andra tidsintervall',
         delete: 'Radera andra tidsintervallet',
+        deleteSuccess: 'Andra tidsintervallet raderat',
         start: 'Andra tidsintervall start',
         end: 'Andra tidsintervall slut'
       },

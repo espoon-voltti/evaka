@@ -149,3 +149,27 @@ export function useExtendedReservationsRange(dateRange: FiniteDateRange) {
 
   return { reservations, loading: fetchedReservations.isLoading }
 }
+
+export const useTimedScreenReaderMessage = (): [
+  string | null,
+  (message: string) => void
+] => {
+  const [screenReaderMessage, setScreenReaderMessage] = useState<string | null>(
+    null
+  )
+  const [isMessageTimerOn, setIsMessageTimerOn] = useState(false)
+  const showTimedScreenReaderMessage = useCallback(
+    (message: string) => {
+      setScreenReaderMessage(message)
+      if (!isMessageTimerOn) {
+        setIsMessageTimerOn(true)
+        setTimeout(() => {
+          setScreenReaderMessage(null)
+          setIsMessageTimerOn(false)
+        }, 5000)
+      }
+    },
+    [isMessageTimerOn]
+  )
+  return [screenReaderMessage, showTimedScreenReaderMessage]
+}

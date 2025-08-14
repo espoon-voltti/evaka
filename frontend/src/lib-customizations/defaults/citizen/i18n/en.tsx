@@ -507,6 +507,7 @@ const en: Translations = {
       secondTimeRange: {
         add: 'Add second time range',
         delete: 'Delete second time range',
+        deleteSuccess: 'Second time range deleted',
         start: 'Second time range start',
         end: 'Second time range end'
       },
