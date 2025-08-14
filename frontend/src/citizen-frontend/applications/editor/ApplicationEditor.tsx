@@ -5,6 +5,7 @@
 import maxBy from 'lodash/maxBy'
 import minBy from 'lodash/minBy'
 import React, { useContext, useEffect, useMemo, useState } from 'react'
+import styled from 'styled-components'
 import { useLocation } from 'wouter'
 
 import { combine } from 'lib-common/api'
@@ -30,8 +31,9 @@ import ReturnButton, {
   ReturnButtonWrapper
 } from 'lib-components/atoms/buttons/ReturnButton'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
+import { desktopMinPx, tabletMin } from 'lib-components/breakpoints'
 import ActionRow from 'lib-components/layout/ActionRow'
-import Container from 'lib-components/layout/Container'
+import Container, { ContentArea } from 'lib-components/layout/Container'
 import { ExpandingInfoGroup } from 'lib-components/molecules/ExpandingInfo'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { faAngleLeft, faCheck, faExclamation } from 'lib-icons'
@@ -86,6 +88,25 @@ export interface Term {
   term: FiniteDateRange
   extendedTerm: FiniteDateRange
 }
+
+const StickyContainer = styled(Container)`
+  position: sticky;
+  bottom: 0;
+  background-color: ${(p) => p.theme.colors.grayscale.g0};
+  box-shadow: 0 -2px 4px 0 rgba(0, 0, 0, 0.15);
+  padding: ${defaultMargins.s} 0;
+
+  @media (max-width: ${desktopMinPx - 1}px) {
+    box-shadow: none;
+    position: static;
+  }
+
+  @media (min-width: ${tabletMin}) {
+    > * {
+      margin: ${defaultMargins.s} ${defaultMargins.m};
+    }
+  }
+`
 
 const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
   application,
@@ -376,95 +397,99 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
   }
 
   const renderActions = () => (
-    <Container>
+    <>
       {verifying && (
-        <div style={{ marginLeft: defaultMargins.s }}>
-          <Checkbox
-            label={t.applications.editor.actions.hasVerified}
-            checked={verified}
-            onChange={setVerified}
-            data-qa="verify-checkbox"
-          />
-          <Gap size="s" />
-          {hasOtherGuardian && (
-            <>
-              <Checkbox
-                label={t.applications.editor.actions.allowOtherGuardianAccess}
-                checked={allowOtherGuardianAccess}
-                onChange={setAllowOtherGuardianAccess}
-                data-qa="allow-other-guardian-access"
-              />
-              <Gap size="s" />
-            </>
-          )}
-        </div>
+        <ContentArea opaque>
+          <div style={{ marginLeft: defaultMargins.s }}>
+            <Checkbox
+              label={t.applications.editor.actions.hasVerified}
+              checked={verified}
+              onChange={setVerified}
+              data-qa="verify-checkbox"
+            />
+            <Gap size="s" />
+            {hasOtherGuardian && (
+              <>
+                <Checkbox
+                  label={t.applications.editor.actions.allowOtherGuardianAccess}
+                  checked={allowOtherGuardianAccess}
+                  onChange={setAllowOtherGuardianAccess}
+                  data-qa="allow-other-guardian-access"
+                />
+                <Gap size="s" />
+              </>
+            )}
+          </div>
+        </ContentArea>
       )}
 
-      <ActionRow breakpoint="660px">
-        {!verifying && (
-          <LegacyButton
-            data-qa="cancel-application-button"
-            text={t.applications.editor.actions.cancel}
-            onClick={() => history.go(-1)}
-            disabled={submitting}
-          />
-        )}
-
-        <div className="expander" />
-
-        {application.status === 'CREATED' && !verifying && (
-          <LegacyButton
-            text={t.applications.editor.actions.saveDraft}
-            onClick={onSaveDraft}
-            disabled={submitting}
-            data-qa="save-as-draft-btn"
-          />
-        )}
-        {verifying ? (
-          <>
+      <StickyContainer>
+        <ActionRow breakpoint="660px">
+          {!verifying && (
             <LegacyButton
-              text={t.applications.editor.actions.returnToEditBtn}
-              onClick={() => setVerifying(false)}
+              data-qa="cancel-application-button"
+              text={t.applications.editor.actions.cancel}
+              onClick={() => history.go(-1)}
               disabled={submitting}
-              data-qa="return-to-edit-btn"
             />
-            {application.status === 'CREATED' ? (
+          )}
+
+          <div className="expander" />
+
+          {application.status === 'CREATED' && !verifying && (
+            <LegacyButton
+              text={t.applications.editor.actions.saveDraft}
+              onClick={onSaveDraft}
+              disabled={submitting}
+              data-qa="save-as-draft-btn"
+            />
+          )}
+          {verifying ? (
+            <>
               <LegacyButton
-                text={t.applications.editor.actions.send}
-                onClick={onSend}
-                disabled={
-                  submitting ||
-                  !verified ||
-                  (hasOtherGuardian && !allowOtherGuardianAccess)
-                }
-                primary
-                data-qa="send-btn"
+                text={t.applications.editor.actions.returnToEditBtn}
+                onClick={() => setVerifying(false)}
+                disabled={submitting}
+                data-qa="return-to-edit-btn"
               />
-            ) : (
-              <LegacyButton
-                text={t.applications.editor.actions.update}
-                onClick={onUpdate}
-                disabled={
-                  submitting ||
-                  !verified ||
-                  (hasOtherGuardian && !allowOtherGuardianAccess)
-                }
-                primary
-                data-qa="save-btn"
-              />
-            )}
-          </>
-        ) : (
-          <LegacyButton
-            text={t.applications.editor.actions.verify}
-            onClick={onVerify}
-            disabled={submitting}
-            primary
-            data-qa="verify-btn"
-          />
-        )}
-      </ActionRow>
-    </Container>
+              {application.status === 'CREATED' ? (
+                <LegacyButton
+                  text={t.applications.editor.actions.send}
+                  onClick={onSend}
+                  disabled={
+                    submitting ||
+                    !verified ||
+                    (hasOtherGuardian && !allowOtherGuardianAccess)
+                  }
+                  primary
+                  data-qa="send-btn"
+                />
+              ) : (
+                <LegacyButton
+                  text={t.applications.editor.actions.update}
+                  onClick={onUpdate}
+                  disabled={
+                    submitting ||
+                    !verified ||
+                    (hasOtherGuardian && !allowOtherGuardianAccess)
+                  }
+                  primary
+                  data-qa="save-btn"
+                />
+              )}
+            </>
+          ) : (
+            <LegacyButton
+              text={t.applications.editor.actions.verify}
+              onClick={onVerify}
+              disabled={submitting}
+              primary
+              data-qa="verify-btn"
+            />
+          )}
+        </ActionRow>
+      </StickyContainer>
+    </>
   )
 
   return (
