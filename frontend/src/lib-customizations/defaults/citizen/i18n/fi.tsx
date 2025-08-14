@@ -506,9 +506,12 @@ export default {
       },
       start: 'Alkaa',
       end: 'Päättyy',
+      startAria: 'Ilmoita aloitusaika',
+      endAria: 'Ilmoita loppumisaika',
       secondTimeRange: {
         add: 'Lisää toinen aikaväli',
         delete: 'Poista toinen aikaväli',
+        deleteSuccess: 'Toinen aikaväli poistettu',
         start: 'Toisen aikavälin alku',
         end: 'Toisen aikavälin loppu'
       },
