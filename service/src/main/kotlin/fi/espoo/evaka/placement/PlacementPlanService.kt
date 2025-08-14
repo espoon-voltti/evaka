@@ -9,6 +9,8 @@ import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.application.DaycarePlacementPlan
 import fi.espoo.evaka.application.fetchApplicationDetails
+import fi.espoo.evaka.daycare.CareType
+import fi.espoo.evaka.daycare.Daycare
 import fi.espoo.evaka.daycare.getActiveClubTermAt
 import fi.espoo.evaka.daycare.getActivePreschoolTermAt
 import fi.espoo.evaka.serviceneed.findServiceNeedOptionById
@@ -17,7 +19,6 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.FeatureConfig
-import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.data.DateSet
@@ -30,7 +31,6 @@ import fi.espoo.evaka.shared.domain.NotFound
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.LocalDate
 import java.time.Month
-import java.util.UUID
 import org.springframework.stereotype.Service
 
 private val logger = KotlinLogging.logger {}
@@ -288,18 +288,21 @@ class PlacementPlanService(
 
     fun calculateSpeculatedPlacements(
         tx: Database.Read,
-        unitId: DaycareId,
+        unit: Daycare,
         application: ApplicationDetails,
         period: FiniteDateRange,
         preschoolDaycarePeriod: FiniteDateRange?,
-    ): List<Placement> {
+    ): List<SpeculatedPlacement> {
         val placementType = application.derivePlacementType()
+
+        val familyUnitPlacement =
+            unit.type.contains(CareType.FAMILY) || unit.type.contains(CareType.GROUP_FAMILY)
 
         val placementTypePeriods =
             getPlacementTypePeriods(
                 tx,
                 application.childId,
-                unitId,
+                unit.id,
                 placementType,
                 when (placementType) {
                     PlacementType.PRESCHOOL_DAYCARE,
@@ -311,18 +314,12 @@ class PlacementPlanService(
             )
 
         return placementTypePeriods.map { (period, placementType) ->
-            Placement(
-                id = PlacementId(UUID.randomUUID()),
+            SpeculatedPlacement(
                 type = placementType,
                 childId = application.childId,
-                unitId = unitId,
-                startDate = period.start,
-                endDate = period.end,
-                terminationRequestedBy = null,
-                terminationRequestedDate = null,
-                placeGuarantee = false,
-                modifiedAt = null,
-                modifiedBy = null,
+                unitId = unit.id,
+                familyUnitPlacement = familyUnitPlacement,
+                period = period,
             )
         }
     }
