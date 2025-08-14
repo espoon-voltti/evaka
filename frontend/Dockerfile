@@ -3,7 +3,7 @@
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
-ARG NGINX_VERSION=1.27.5
+ARG NGINX_VERSION=1.29.1
 
 FROM node:22.18.0-bookworm-slim AS builder
 ARG CACHE_BUST
