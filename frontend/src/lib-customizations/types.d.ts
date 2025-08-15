@@ -266,7 +266,6 @@ interface BaseFeatureFlags {
 
   /**
    * Enable a feature where a citizen can apply for a change in service need.
-   * Not ready for production!
    */
   serviceApplications?: boolean
 
