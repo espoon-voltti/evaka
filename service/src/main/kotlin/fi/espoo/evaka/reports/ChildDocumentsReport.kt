@@ -97,12 +97,21 @@ class ChildDocumentsReport(private val accessControl: AccessControl) {
                         clock,
                         Action.Global.READ_DOCUMENT_TEMPLATE,
                     )
+                    val templateTypes =
+                        setOf(
+                            ChildDocumentType.PEDAGOGICAL_REPORT,
+                            ChildDocumentType.PEDAGOGICAL_ASSESSMENT,
+                            ChildDocumentType.HOJKS,
+                            ChildDocumentType.VASU,
+                            ChildDocumentType.LEOPS,
+                            ChildDocumentType.OTHER,
+                        )
                     tx.createQuery {
                             sql(
                                 """
                     SELECT id, name, type
                     FROM document_template
-                    WHERE validity @> ${bind(clock.today())} AND published
+                    WHERE validity @> ${bind(clock.today())} AND published AND type = ANY(${bind(templateTypes)})
                 """
                             )
                         }
