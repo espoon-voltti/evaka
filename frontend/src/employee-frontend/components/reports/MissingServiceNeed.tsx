@@ -174,7 +174,9 @@ export default React.memo(function MissingServiceNeed() {
                 </Thead>
                 <Tbody>
                   {filteredRows.map((row) => (
-                    <Tr key={`${row.unitId}:${row.childId}`}>
+                    <Tr
+                      key={`${row.unitId}:${row.childId}:${row.defaultOption?.id ?? ''}`}
+                    >
                       <Td>{row.careAreaName}</Td>
                       <Td>
                         <Link to={`/units/${row.unitId}`}>{row.unitName}</Link>
