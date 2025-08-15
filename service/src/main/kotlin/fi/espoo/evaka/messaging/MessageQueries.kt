@@ -27,6 +27,8 @@ import org.jdbi.v3.json.Json
 
 private val logger = KotlinLogging.logger {}
 
+val accessLimitInterval = "interval '1 week'"
+
 sealed class AccountAccessLimit {
     data object NoFurtherLimit : AccountAccessLimit()
 
@@ -59,7 +61,8 @@ fun Database.Read.getFolder(id: MessageThreadFolderId) =
         .exactlyOneOrNull<MessageThreadFolder>()
 
 fun Database.Read.getUnreadMessagesCounts(
-    idFilter: AccessControlFilter<MessageAccountId>
+    idFilter: AccessControlFilter<MessageAccountId>,
+    employeeId: EmployeeId? = null,
 ): Set<UnreadCountByAccount> {
     data class RawData(
         val accountId: MessageAccountId,
@@ -67,6 +70,19 @@ fun Database.Read.getUnreadMessagesCounts(
         val folderId: MessageThreadFolderId?,
         val count: Int,
     )
+
+    val dgaPred =
+        if (employeeId == null) PredicateSql.alwaysFalse()
+        else PredicateSql { where("dga.employee_id = ${bind(employeeId)}") }
+    val daPred =
+        if (employeeId == null) PredicateSql.alwaysFalse()
+        else PredicateSql { where("da.employee_id = ${bind(employeeId)}") }
+    val isCitizen =
+        if (employeeId == null) {
+            PredicateSql.alwaysTrue()
+        } else {
+            PredicateSql.alwaysFalse()
+        }
 
     val data =
         createQuery {
@@ -78,10 +94,18 @@ fun Database.Read.getUnreadMessagesCounts(
             mtp.folder_id, 
             count(mt.id) AS count
         FROM message_account acc
+        LEFT JOIN (
+            SELECT
+                dga.employee_id,
+                daycare_group_id,
+                (dga.created - $accessLimitInterval)::date AS access_limit
+            FROM daycare_group_acl dga
+        ) dga ON ${predicate(dgaPred)} AND dga.daycare_group_id = acc.daycare_group_id
+        LEFT JOIN daycare_acl da ON ${predicate(daPred)}
         LEFT JOIN message_recipients mr ON mr.recipient_id = acc.id AND mr.read_at IS NULL
         LEFT JOIN message m ON mr.message_id = m.id AND m.sent_at IS NOT NULL
-        LEFT JOIN message_thread mt ON m.thread_id = mt.id
-        LEFT JOIN message_thread_participant mtp ON m.thread_id = mtp.thread_id AND mtp.participant_id = acc.id
+        LEFT JOIN message_thread_participant mtp ON m.thread_id = mtp.thread_id AND mtp.participant_id = acc.id AND (da.role = 'UNIT_SUPERVISOR' OR (mtp.folder_id IS NOT NULL OR ${predicate(isCitizen)} OR mtp.last_message_timestamp >= dga.access_limit))
+        LEFT JOIN message_thread mt ON m.thread_id = mt.id AND (da.role = 'UNIT_SUPERVISOR' OR (mtp.folder_id IS NOT NULL OR ${predicate(isCitizen)} OR mt.is_copy = false OR m.sent_at >= dga.access_limit))
         LEFT JOIN message_thread_folder mtf ON mtp.folder_id = mtf.id
         WHERE ${predicate(idFilter.forTable("acc"))} AND (mtp.folder_id IS NULL OR mtf.name != 'ARCHIVE')
         GROUP BY acc.id, mt.is_copy, mtp.folder_id
@@ -568,7 +592,7 @@ fun Database.Read.getAccountAccessLimit(
             sql(
                 """
 SELECT
-    dga.created::date
+    (dga.created - $accessLimitInterval)::date
 FROM daycare_group_acl dga
 JOIN message_account ma ON ma.daycare_group_id = dga.daycare_group_id
 JOIN daycare_group dg ON dga.daycare_group_id = dg.id
@@ -580,8 +604,7 @@ WHERE ma.id = ${bind(groupAccountId)} AND dga.employee_id = ${bind(employeeId)} 
         .mapTo<LocalDate>()
         .exactlyOneOrNull()
         .let {
-            it?.let { AccountAccessLimit.AvailableFrom(it.minusWeeks(1)) }
-                ?: AccountAccessLimit.NoFurtherLimit
+            it?.let { AccountAccessLimit.AvailableFrom(it) } ?: AccountAccessLimit.NoFurtherLimit
         }
 }
 
