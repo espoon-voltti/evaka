@@ -16,6 +16,7 @@ import { combine } from 'lib-common/api'
 import type { MessageThreadId } from 'lib-common/generated/api-types/shared'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { NotificationsContext } from 'lib-components/Notifications'
+import { Notifications } from 'lib-components/Notifications'
 import Main from 'lib-components/atoms/Main'
 import { desktopMin, tabletMin } from 'lib-components/breakpoints'
 import AdaptiveFlex from 'lib-components/layout/AdaptiveFlex'
@@ -26,6 +27,7 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 import Footer, { footerHeightDesktop } from '../Footer'
 import { renderResult } from '../async-rendering'
 import { useUser } from '../auth/state'
+import { AuthContext } from '../auth/state'
 import { childrenQuery } from '../children/queries'
 import { useTranslation } from '../localization'
 import useTitle from '../useTitle'
@@ -116,6 +118,7 @@ export default React.memo(function MessagesPage() {
     !editorVisible && !!user?.accessibleFeatures.composeNewMessage
 
   const { mutateAsync: sendMessage } = useMutationResult(sendMessageMutation)
+  const { apiVersion } = useContext(AuthContext)
 
   const closeThread = useCallback(() => {
     const selectedThreadId = selectedThread?.id
@@ -126,86 +129,94 @@ export default React.memo(function MessagesPage() {
   }, [selectThread, selectedThread?.id])
 
   return (
-    <Container>
-      {renderResult(messageAccount, (messageAccount) => (
-        <>
-          <Main>
-            <TabletAndDesktop>
-              <Gap size="L" />
-            </TabletAndDesktop>
-            <StyledFlex breakpoint={tabletMin} horizontalSpacing="L">
-              <ThreadList
-                accountId={messageAccount.accountId}
-                selectThread={selectThread}
-                closeThread={closeThread}
-                setEditorVisible={changeEditorVisibility}
-                newMessageButtonEnabled={canSendNewMessage}
-              />
-              {selectedThread ? (
-                isRegularThread(selectedThread) ? (
-                  <ThreadView
-                    accountId={messageAccount.accountId}
-                    closeThread={closeThread}
-                    thread={selectedThread}
-                    allowedAccounts={
-                      recipients.getOrElse(null)?.childrenToMessageAccounts ??
-                      []
-                    }
-                    accountDetails={
-                      recipients.getOrElse(null)?.messageAccounts ?? []
-                    }
-                    onThreadDeleted={() => {
-                      onSelectedThreadDeleted()
-                      addTimedNotification({
-                        children: i18n.messages.confirmDelete.success,
-                        dataQa: 'thread-deleted-notification'
-                      })
-                    }}
-                    ref={threadView}
-                  />
+    <FullWidthContainer>
+      <Notifications apiVersion={apiVersion} sticky topOffset={80} />
+      <Container data-qa="message-container">
+        {renderResult(messageAccount, (messageAccount) => (
+          <>
+            <Main>
+              <TabletAndDesktop>
+                <Gap size="L" />
+              </TabletAndDesktop>
+              <StyledFlex breakpoint={tabletMin} horizontalSpacing="L">
+                <ThreadList
+                  accountId={messageAccount.accountId}
+                  selectThread={selectThread}
+                  closeThread={closeThread}
+                  setEditorVisible={changeEditorVisibility}
+                  newMessageButtonEnabled={canSendNewMessage}
+                />
+                {selectedThread ? (
+                  isRegularThread(selectedThread) ? (
+                    <ThreadView
+                      accountId={messageAccount.accountId}
+                      closeThread={closeThread}
+                      thread={selectedThread}
+                      allowedAccounts={
+                        recipients.getOrElse(null)?.childrenToMessageAccounts ??
+                        []
+                      }
+                      accountDetails={
+                        recipients.getOrElse(null)?.messageAccounts ?? []
+                      }
+                      onThreadDeleted={() => {
+                        onSelectedThreadDeleted()
+                        addTimedNotification({
+                          children: i18n.messages.confirmDelete.success,
+                          dataQa: 'thread-deleted-notification'
+                        })
+                      }}
+                      ref={threadView}
+                    />
+                  ) : (
+                    <RedactedThreadView
+                      thread={selectedThread}
+                      closeThread={closeThread}
+                    />
+                  )
                 ) : (
-                  <RedactedThreadView
-                    thread={selectedThread}
-                    closeThread={closeThread}
-                  />
-                )
-              ) : (
-                <EmptyThreadView />
-              )}
-            </StyledFlex>
-            {editorVisible &&
-              renderResult(
-                combine(children, recipients),
-                ([children, recipientOptions]) => (
-                  <MessageEditor
-                    children_={children}
-                    recipientOptions={recipientOptions}
-                    messageAttachmentsAllowed={
-                      messageAccount.messageAttachmentsAllowed
-                    }
-                    onSend={(body) => sendMessage({ body })}
-                    onSuccess={() => {
-                      changeEditorVisibility(false)
-                      addTimedNotification({
-                        children:
-                          i18n.messages.messageEditor.messageSentNotification,
-                        dataQa: 'message-sent-notification'
-                      })
-                      focusElementAfterDelay('new-message-btn')
-                    }}
-                    onFailure={() => setDisplaySendError(true)}
-                    onClose={() => {
-                      changeEditorVisibility(false)
-                      focusElementAfterDelay('new-message-btn')
-                    }}
-                    displaySendError={displaySendError}
-                  />
-                )
-              )}
-          </Main>
-          <Footer />
-        </>
-      ))}
-    </Container>
+                  <EmptyThreadView />
+                )}
+              </StyledFlex>
+              {editorVisible &&
+                renderResult(
+                  combine(children, recipients),
+                  ([children, recipientOptions]) => (
+                    <MessageEditor
+                      children_={children}
+                      recipientOptions={recipientOptions}
+                      messageAttachmentsAllowed={
+                        messageAccount.messageAttachmentsAllowed
+                      }
+                      onSend={(body) => sendMessage({ body })}
+                      onSuccess={() => {
+                        changeEditorVisibility(false)
+                        addTimedNotification({
+                          children:
+                            i18n.messages.messageEditor.messageSentNotification,
+                          dataQa: 'message-sent-notification'
+                        })
+                        focusElementAfterDelay('new-message-btn')
+                      }}
+                      onFailure={() => setDisplaySendError(true)}
+                      onClose={() => {
+                        changeEditorVisibility(false)
+                        focusElementAfterDelay('new-message-btn')
+                      }}
+                      displaySendError={displaySendError}
+                    />
+                  )
+                )}
+            </Main>
+            <Footer />
+          </>
+        ))}
+      </Container>
+    </FullWidthContainer>
   )
 })
+
+const FullWidthContainer = styled.div`
+  width: 100%;
+  margin: 0;
+`

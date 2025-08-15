@@ -4,7 +4,13 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import type { MutableRefObject } from 'react'
-import React, { useCallback, useEffect, useMemo, useRef } from 'react'
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useContext
+} from 'react'
 import styled, { css, useTheme } from 'styled-components'
 
 import type FiniteDateRange from 'lib-common/finite-date-range'
@@ -15,6 +21,7 @@ import type {
 } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
+import { Notifications } from 'lib-components/Notifications'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import LegacyInlineButton from 'lib-components/atoms/buttons/LegacyInlineButton'
@@ -38,6 +45,7 @@ import {
   faUserMinus
 } from 'lib-icons'
 
+import { AuthContext } from '../auth/state'
 import { useUser } from '../auth/state'
 import { useLang, useTranslation } from '../localization'
 
@@ -106,7 +114,7 @@ export default React.memo(function CalendarMonthView({
     [calendarDays]
   )
   const todayRef = useRef<HTMLButtonElement>(null)
-
+  const { apiVersion } = useContext(AuthContext)
   const selectedMonthData = calendarMonths[selectedMonthIndex]
 
   const prevMonthCallback = useCallback(() => {
@@ -225,7 +233,9 @@ export default React.memo(function CalendarMonthView({
             data-qa="open-reservations-modal"
           />
         </ButtonContainer>
+        <Notifications apiVersion={apiVersion} sticky />
       </StickyTopBar>
+
       <Container>
         <MonthPicker
           childSummaries={childSummaries}

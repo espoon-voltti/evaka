@@ -125,9 +125,13 @@ export const NotificationsContextProvider = React.memo(
 )
 
 export const Notifications = React.memo(function Notifications({
-  apiVersion
+  apiVersion,
+  sticky,
+  topOffset
 }: {
   apiVersion: string | undefined
+  sticky?: boolean
+  topOffset?: number
 }) {
   const i18n = useTranslations()
   const {
@@ -149,7 +153,7 @@ export const Notifications = React.memo(function Notifications({
     addNotification
   )
   return (
-    <OuterContainer>
+    <OuterContainer sticky={sticky} topOffset={topOffset}>
       <ColumnContainer
         spacing="s"
         alignItems="flex-end"
@@ -195,12 +199,15 @@ export const Notifications = React.memo(function Notifications({
   )
 })
 
-const OuterContainer = styled.div`
-  position: fixed;
-  top: 0;
+const OuterContainer = styled.div<{
+  sticky: boolean | undefined
+  topOffset: number | undefined
+}>`
+  position: ${(p) => (p.sticky ? 'sticky' : 'fixed')};
+  top: ${(p) => `${p.topOffset ? p.topOffset : '16'}px`};
   left: 0;
   right: 0;
-  z-index: 100;
+  z-index: 15; //this needs to stay behind modals and nav dropdowns
   height: 0;
 `
 

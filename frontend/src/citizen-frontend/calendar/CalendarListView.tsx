@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, { useMemo, useRef } from 'react'
+import React, { useMemo, useRef, useContext } from 'react'
 import styled from 'styled-components'
 
 import type { CitizenCalendarEvent } from 'lib-common/generated/api-types/calendarevent'
@@ -12,11 +12,13 @@ import type {
   ReservationResponseDay
 } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
+import { Notifications } from 'lib-components/Notifications'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { defaultMargins } from 'lib-components/white-space'
 import { faPlus } from 'lib-icons'
 
+import { AuthContext } from '../auth/state'
 import { useTranslation } from '../localization'
 import { mobileBottomNavHeight } from '../navigation/const'
 
@@ -74,6 +76,7 @@ export default React.memo(function CalendarListView({
   const months = useMemo(() => groupByMonth(calendarDays), [calendarDays])
   const childImages = useMemo(() => getChildImages(childData), [childData])
   const scrollToDate = useRef<LocalDate>(LocalDate.todayInHelsinkiTz())
+  const { apiVersion } = useContext(AuthContext)
 
   const fetchPreviousMonths = () => {
     const beforeDate = months[0].calendarDays[0].date
@@ -84,6 +87,7 @@ export default React.memo(function CalendarListView({
   return (
     <>
       <FixedSpaceColumn spacing="zero">
+        <Notifications apiVersion={apiVersion} sticky topOffset={64} />
         {months.map((m, index) => (
           <MonthElem
             key={`month-${m.year}-${m.monthNumber}`}

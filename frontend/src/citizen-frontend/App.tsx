@@ -9,10 +9,7 @@ import React, { useCallback, useContext } from 'react'
 import styled, { StyleSheetManager, ThemeProvider } from 'styled-components'
 import { Redirect } from 'wouter'
 
-import {
-  Notifications,
-  NotificationsContextProvider
-} from 'lib-components/Notifications'
+import { NotificationsContextProvider } from 'lib-components/Notifications'
 import { EnvironmentLabel } from 'lib-components/atoms/EnvironmentLabel'
 import SkipToContent from 'lib-components/atoms/buttons/SkipToContent'
 import { desktopMin } from 'lib-components/breakpoints'
@@ -92,7 +89,6 @@ const Content = React.memo(function Content({
   children: React.ReactNode
 }) {
   const t = useTranslation()
-  const { apiVersion } = useContext(AuthContext)
   const { modalOpen } = useContext(OverlayContext)
 
   const { user } = useContext(AuthContext)
@@ -105,7 +101,6 @@ const Content = React.memo(function Content({
     <FullPageContainer>
       <SkipToContent target="main">{t.skipLinks.mainContent}</SkipToContent>
       <Header ariaHidden={modalOpen} />
-      <Notifications apiVersion={apiVersion} />
       <MainContainer ariaHidden={modalOpen}>{children}</MainContainer>
       <MobileNav />
       {sessionExpirationDetected && (
