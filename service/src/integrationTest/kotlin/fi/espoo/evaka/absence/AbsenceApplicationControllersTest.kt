@@ -210,7 +210,7 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
             assertThat(MockEmailClient.emails)
                 .extracting({ it.toAddress }, { it.content.subject })
                 .containsExactly(
-                    Tuple("test@example.com", "Esiopetuksen poissaolohakemus hyväksytty")
+                    Tuple("test@example.com", "Esiopetuksen poissaolohakemus käsitelty")
                 )
 
             assertThrows<BadRequest> {
@@ -516,7 +516,9 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
             asyncJobRunner.runPendingJobsSync(clock)
             assertThat(MockEmailClient.emails)
                 .extracting({ it.toAddress }, { it.content.subject })
-                .containsExactly(Tuple("test@example.com", "Esiopetuksen poissaolohakemus hylätty"))
+                .containsExactly(
+                    Tuple("test@example.com", "Esiopetuksen poissaolohakemus käsitelty")
+                )
 
             assertThrows<BadRequest> {
                 absenceApplicationControllerCitizen.deleteAbsenceApplication(
