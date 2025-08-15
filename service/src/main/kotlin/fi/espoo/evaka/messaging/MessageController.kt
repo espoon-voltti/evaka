@@ -499,7 +499,7 @@ class MessageController(
                             clock,
                             Action.MessageAccount.ACCESS,
                         )
-                    tx.getUnreadMessagesCounts(filter)
+                    tx.getUnreadMessagesCounts(filter, user.id)
                 }
             }
             .also { response ->
