@@ -92,16 +92,17 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     )
                 )
 
-            oldPlacement =
-                tx.insertPlacement(
-                    PlacementType.DAYCARE,
-                    childId,
-                    unitId,
-                    placementStart,
-                    placementEnd,
-                    false,
+            val daycarePlacementId =
+                tx.insert(
+                    DevPlacement(
+                        childId = childId,
+                        unitId = unitId,
+                        startDate = placementStart,
+                        endDate = placementEnd,
+                        placeGuarantee = false,
+                    )
                 )
-            daycarePlacementId = oldPlacement.id
+            oldPlacement = tx.getPlacement(daycarePlacementId)!!
 
             groupPlacementId =
                 tx.insert(

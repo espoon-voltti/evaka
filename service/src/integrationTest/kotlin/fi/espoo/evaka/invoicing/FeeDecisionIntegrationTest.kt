@@ -33,7 +33,6 @@ import fi.espoo.evaka.invoicing.domain.UnitData
 import fi.espoo.evaka.pis.EmailMessageType
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.placement.PlacementType
-import fi.espoo.evaka.placement.insertPlacement
 import fi.espoo.evaka.sficlient.MockSfiMessagesClient
 import fi.espoo.evaka.sficlient.SfiAsyncJobs
 import fi.espoo.evaka.sficlient.getSfiGetEventsContinuationTokens
@@ -53,6 +52,7 @@ import fi.espoo.evaka.shared.dev.DevIncomeStatement
 import fi.espoo.evaka.shared.dev.DevParentship
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
+import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestPartnership
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -495,26 +495,26 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         val testDecisionWithOneStartingChild = testDecisions[0]
         val firstPlacementStartingThisMonthChild = testDecisionWithOneStartingChild.children[0]
         db.transaction {
-            it.insertPlacement(
-                PlacementType.DAYCARE,
-                firstPlacementStartingThisMonthChild.child.id,
-                firstPlacementStartingThisMonthChild.placement.unitId,
-                LocalDate.now(),
-                LocalDate.now(),
-                false,
+            it.insert(
+                DevPlacement(
+                    childId = firstPlacementStartingThisMonthChild.child.id,
+                    unitId = firstPlacementStartingThisMonthChild.placement.unitId,
+                    startDate = LocalDate.now(),
+                    endDate = LocalDate.now(),
+                )
             )
         }
 
         val testDecisionWithNoStartingChild = testDecisions[3]
         val previousPlacementChild = testDecisionWithNoStartingChild.children[0]
         db.transaction {
-            it.insertPlacement(
-                PlacementType.DAYCARE,
-                previousPlacementChild.child.id,
-                previousPlacementChild.placement.unitId,
-                LocalDate.now().minusMonths(1),
-                LocalDate.now(),
-                false,
+            it.insert(
+                DevPlacement(
+                    childId = previousPlacementChild.child.id,
+                    unitId = previousPlacementChild.placement.unitId,
+                    startDate = LocalDate.now().minusMonths(1),
+                    endDate = LocalDate.now(),
+                )
             )
         }
 
