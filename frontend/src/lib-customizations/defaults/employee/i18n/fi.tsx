@@ -1217,6 +1217,8 @@ export const fi = {
       pageTitle: 'Päätös tuesta varhaiskasvatuksessa',
       annulmentReason: 'Päätöksen mitätöinnin perustelu',
       sectionTitle: 'Päätökset tuesta varhaiskasvatuksessa',
+      deprecated:
+        'Täältä löydät toistaiseksi vanhan malliset tuen päätökset. Uudet päätökset tehdään osiossa Lapsen asiakirjat > Muut päätökset.',
       description:
         'Hyväksytyt ja hylätyt päätökset tuesta näkyvät huoltajalle eVakassa.',
       table: {
