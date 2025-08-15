@@ -1,30 +1,25 @@
-// SPDX-FileCopyrightText: 2017-2023 City of Espoo
+// SPDX-FileCopyrightText: 2017-2025 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import orderBy from 'lodash/orderBy'
-import React, { useContext, useRef, useState } from 'react'
-import styled from 'styled-components'
-import { useLocation } from 'wouter'
+import React, { useState } from 'react'
 
 import { wrapResult } from 'lib-common/api'
-import DateRange from 'lib-common/date-range'
 import type {
   AssistanceNeedDecisionId,
   ChildId
 } from 'lib-common/generated/api-types/shared'
-import LocalDate from 'lib-common/local-date'
 import type { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Title from 'lib-components/atoms/Title'
-import AddButton from 'lib-components/atoms/buttons/AddButton'
 import { Table, Tbody, Th, Thead, Tr } from 'lib-components/layout/Table'
+import { InfoBox } from 'lib-components/molecules/MessageBoxes'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { P } from 'lib-components/typography'
 import { faQuestion } from 'lib-icons'
 
 import {
-  createAssistanceNeedDecision,
   deleteAssistanceNeedDecision,
   getAssistanceNeedDecisions
 } from '../../generated/api-clients/assistanceneed'
@@ -32,27 +27,11 @@ import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 
 import AssistanceNeedDecisionSectionRow from './AssistanceNeedDecisionSectionRow'
-import { ChildContext } from './state'
-import type { ChildState } from './state'
 
-const createAssistanceNeedDecisionResult = wrapResult(
-  createAssistanceNeedDecision
-)
 const getAssistanceNeedDecisionsResult = wrapResult(getAssistanceNeedDecisions)
 const deleteAssistanceNeedDecisionResult = wrapResult(
   deleteAssistanceNeedDecision
 )
-
-export const TitleRow = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin: 30px 0;
-
-  .title {
-    margin: 0;
-  }
-`
 
 export interface Props {
   id: ChildId
@@ -62,23 +41,17 @@ export default React.memo(function AssistanceNeedDecisionSection({
   id
 }: Props) {
   const { i18n } = useTranslation()
-  const { permittedActions } = useContext<ChildState>(ChildContext)
-  const refSectionTop = useRef(null)
 
   const [assistanceNeedDecisions, reloadDecisions] = useApiState(
     () => getAssistanceNeedDecisionsResult({ childId: id }),
     [id]
   )
 
-  const [, navigate] = useLocation()
-
-  const [isCreatingDecision, setIsCreatingDecision] = useState(false)
-
   const [removingDecision, setRemovingDecision] =
     useState<AssistanceNeedDecisionId>()
 
   return (
-    <div ref={refSectionTop}>
+    <div>
       {!!removingDecision && (
         <DeleteDecisionModal
           onClose={(shouldRefresh) => {
@@ -92,93 +65,13 @@ export default React.memo(function AssistanceNeedDecisionSection({
         />
       )}
 
-      <TitleRow>
-        <Title size={4}>
-          {i18n.childInformation.assistanceNeedDecision.sectionTitle}
-        </Title>
-        {permittedActions.has('CREATE_ASSISTANCE_NEED_DECISION') && (
-          <AddButton
-            flipped
-            text={i18n.childInformation.assistanceNeedDecision.create}
-            onClick={() => {
-              setIsCreatingDecision(true)
-              void createAssistanceNeedDecisionResult({
-                childId: id,
-                body: {
-                  decision: {
-                    assistanceLevels: [],
-                    careMotivation: null,
-                    decisionMade: null,
-                    decisionMaker: {
-                      employeeId: null,
-                      title: null
-                    },
-                    decisionNumber: null,
-                    expertResponsibilities: null,
-                    guardianInfo: [],
-                    guardiansHeardOn: null,
-                    language: 'FI',
-                    motivationForDecision: null,
-                    otherRepresentativeDetails: null,
-                    otherRepresentativeHeard: false,
-                    pedagogicalMotivation: null,
-                    preparedBy1: {
-                      employeeId: null,
-                      title: null,
-                      phoneNumber: null
-                    },
-                    preparedBy2: {
-                      employeeId: null,
-                      title: null,
-                      phoneNumber: null
-                    },
-                    selectedUnit: null,
-                    sentForDecision: null,
-                    serviceOptions: {
-                      consultationSpecialEd: false,
-                      fullTimeSpecialEd: false,
-                      interpretationAndAssistanceServices: false,
-                      partTimeSpecialEd: false,
-                      specialAides: false
-                    },
-                    servicesMotivation: null,
-                    status: 'DRAFT',
-                    structuralMotivationDescription: null,
-                    structuralMotivationOptions: {
-                      additionalStaff: false,
-                      childAssistant: false,
-                      groupAssistant: false,
-                      smallGroup: false,
-                      smallerGroup: false,
-                      specialGroup: false
-                    },
-                    validityPeriod: new DateRange(
-                      LocalDate.todayInHelsinkiTz(),
-                      null
-                    ),
-                    endDateNotKnown: false,
-                    viewOfGuardians: null
-                  }
-                }
-              }).then((decision) => {
-                void reloadDecisions()
-                setIsCreatingDecision(false)
-
-                decision.map(({ id: decisionId }) =>
-                  navigate(
-                    `/child-information/${id}/assistance-need-decision/${
-                      decisionId ?? ''
-                    }/edit`
-                  )
-                )
-              })
-            }}
-            disabled={isCreatingDecision}
-            data-qa="assistance-need-decision-create-btn"
-          />
-        )}
-      </TitleRow>
+      <Title size={4}>
+        {i18n.childInformation.assistanceNeedDecision.sectionTitle}
+      </Title>
       <P>{i18n.childInformation.assistanceNeedDecision.description}</P>
+      <InfoBox
+        message={i18n.childInformation.assistanceNeedDecision.deprecated}
+      />
       {renderResult(assistanceNeedDecisions, (decisions) =>
         decisions.length === 0 ? null : (
           <Table data-qa="table-of-assistance-need-decisions">
