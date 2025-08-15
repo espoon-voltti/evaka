@@ -156,11 +156,7 @@ class DecisionService(
         decision: Decision,
         tx: Database.Transaction,
     ): OfficialLanguage {
-        return if (decision.type == DecisionType.CLUB) {
-            OfficialLanguage.FI
-        } else {
-            tx.getDecisionLanguage(decision.id)
-        }
+        return tx.getDecisionLanguage(decision.id)
     }
 
     private fun uploadPdfToS3(document: DocumentKey, bytes: ByteArray): DocumentLocation =
