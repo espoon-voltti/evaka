@@ -6415,7 +6415,7 @@ __metadata:
     typescript: "npm:5.9.2"
     typescript-eslint: "npm:8.39.0"
     uuid: "npm:11.1.0"
-    vite: "npm:7.1.0"
+    vite: "npm:7.1.1"
     wouter: "npm:3.7.1"
   peerDependencies:
     "@fortawesome/pro-light-svg-icons": ^6.4.0
@@ -11643,9 +11643,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite@npm:7.1.0":
-  version: 7.1.0
-  resolution: "vite@npm:7.1.0"
+"vite@npm:7.1.1":
+  version: 7.1.1
+  resolution: "vite@npm:7.1.1"
   dependencies:
     esbuild: "npm:^0.25.0"
     fdir: "npm:^6.4.6"
@@ -11694,7 +11694,7 @@ __metadata:
       optional: true
   bin:
     vite: bin/vite.js
-  checksum: 10/255f17e7933306e05a6ae7136c8e7d29b48e35e2c657da75f515a8a6b802c008e46fdd62e4ec35a3aca64cdd17ad1dc3998c6c4a32650c79d5f7f3b0f9ddcbb8
+  checksum: 10/42d13cee247410843a1dad3507600f886f8139c9e718a94c2981f0810a6b35a9b78a71b9bae5c375559ea404b22f545ead7d530431629850b4c47c232af06fd5
   languageName: node
   linkType: hard
 
