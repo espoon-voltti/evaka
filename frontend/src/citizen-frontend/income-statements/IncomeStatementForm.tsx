@@ -549,6 +549,8 @@ const IncomeTypeSelection = React.memo(
               <FeeInfo>{t.income.incomeNotifyForPeriod}</FeeInfo>
               <Gap size="s" />
               {dateRange(false)}
+              <Gap size="s" />
+              <InfoBox message={t.income.incomeNotifyForPeriodInfo} noMargin />
             </>
           )}
         </FixedSpaceColumn>

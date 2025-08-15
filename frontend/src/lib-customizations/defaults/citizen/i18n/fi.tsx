@@ -2413,6 +2413,8 @@ export default {
     incomeStatementMissing:
       'Jos lapsellasi on tuloja, ilmoita se tuloselvityksellä.',
     incomeNotifyForPeriod: 'Ilmoitan tuloni seuraavalle ajalle',
+    incomeNotifyForPeriodInfo:
+      'Jos tulosi eivät muutu, voit tehdä tuloselvityksen kerralla vuodeksi eteenpäin.',
     incomeType: {
       startDate: 'Alkaen',
       endDate: 'Päättyen',
