@@ -271,6 +271,7 @@ class PlacementPlanService(
             placeGuarantee = false,
             now,
             userId,
+            PlacementSource.APPLICATION,
         )
 
         tx.deleteFutureReservationsAndAbsencesOutsideValidPlacements(childId, clock.today())

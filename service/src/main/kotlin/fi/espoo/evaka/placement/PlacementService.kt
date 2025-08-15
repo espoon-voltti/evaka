@@ -59,6 +59,7 @@ fun createPlacements(
     placeGuarantee: Boolean,
     now: HelsinkiDateTime,
     userId: EvakaUserId,
+    source: PlacementSource,
 ): List<Placement> {
     placementTypePeriods
         .sortedBy { it.first.start }
@@ -76,6 +77,11 @@ fun createPlacements(
                 period.start,
                 period.end,
                 placeGuarantee && firstPlacementTypePeriod == period.start,
+                createdAt = now,
+                createdBy = userId,
+                source = source,
+                modifiedAt = now,
+                modifiedBy = userId,
             )
 
         if (serviceNeed?.placementType == type) {
@@ -106,6 +112,7 @@ fun createPlacement(
     placeGuarantee: Boolean,
     now: HelsinkiDateTime,
     userId: EvakaUserId,
+    source: PlacementSource,
 ): List<Placement> {
     val placementTypePeriods =
         if (useFiveYearsOldDaycare) {
@@ -122,6 +129,7 @@ fun createPlacement(
         placeGuarantee = placeGuarantee,
         now = now,
         userId = userId,
+        source = source,
     )
 }
 
@@ -184,13 +192,13 @@ fun Database.Transaction.updatePlacement(
             }
 
         newPeriods.forEach { (period, type) ->
-            insertPlacement(
+            insertDerivedPlacement(
+                old,
                 type,
-                old.childId,
-                old.unitId,
                 period.start,
                 period.end,
-                old.placeGuarantee,
+                modifiedAt = now,
+                modifiedBy = userId,
             )
         }
     } catch (e: Exception) {
@@ -420,13 +428,13 @@ private fun Database.Transaction.splitPlacementWithGap(
         userId,
     )
 
-    insertPlacement(
-        type = placement.type,
-        childId = placement.childId,
-        unitId = placement.unitId,
-        startDate = gapEndInclusive.plusDays(1),
-        endDate = placement.endDate,
-        placeGuarantee = placement.placeGuarantee,
+    insertDerivedPlacement(
+        placement,
+        placement.type,
+        gapEndInclusive.plusDays(1),
+        placement.endDate,
+        now,
+        userId,
     )
 }
 

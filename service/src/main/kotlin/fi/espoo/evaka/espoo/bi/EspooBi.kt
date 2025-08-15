@@ -63,7 +63,7 @@ JOIN person USING (id)
         csvQuery<BiPlacement> {
             sql(
                 """
-SELECT id, created, updated, child_id AS child, unit_id AS unit, start_date, end_date, FALSE AS is_backup, type
+SELECT id, created_at AS created, updated_at AS updated, child_id AS child, unit_id AS unit, start_date, end_date, FALSE AS is_backup, type
 FROM placement
 
 UNION ALL

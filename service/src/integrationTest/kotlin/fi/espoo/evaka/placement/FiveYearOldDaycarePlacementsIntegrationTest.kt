@@ -59,6 +59,7 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
                     placeGuarantee = true,
                     now = now,
                     userId = user.evakaUserId,
+                    source = PlacementSource.MANUAL,
                 )
             }
 
@@ -100,6 +101,7 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
                     placeGuarantee = false,
                     now = now,
                     userId = user.evakaUserId,
+                    source = PlacementSource.MANUAL,
                 )
             }
 
@@ -128,6 +130,7 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
                     placeGuarantee = false,
                     now = now,
                     userId = user.evakaUserId,
+                    source = PlacementSource.MANUAL,
                 )
             }
 
@@ -156,6 +159,7 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
                         placeGuarantee = false,
                         now = now,
                         userId = user.evakaUserId,
+                        source = PlacementSource.MANUAL,
                     )
                 }
                 .first()
@@ -203,6 +207,7 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
                         placeGuarantee = false,
                         now = now,
                         userId = user.evakaUserId,
+                        source = PlacementSource.MANUAL,
                     )
                 }
                 .first()
@@ -250,6 +255,7 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
                         placeGuarantee = false,
                         now = now,
                         userId = user.evakaUserId,
+                        source = PlacementSource.MANUAL,
                     )
                 }
                 .first()
@@ -297,6 +303,7 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
                         placeGuarantee = false,
                         now = now,
                         userId = user.evakaUserId,
+                        source = PlacementSource.MANUAL,
                     )
                 }
                 .first()
@@ -344,6 +351,7 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
                         placeGuarantee = false,
                         now = now,
                         userId = user.evakaUserId,
+                        source = PlacementSource.MANUAL,
                     )
                 }
                 .first()
@@ -387,6 +395,7 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
                         placeGuarantee = false,
                         now = now,
                         userId = user.evakaUserId,
+                        source = PlacementSource.MANUAL,
                     )
                 }
                 .first()

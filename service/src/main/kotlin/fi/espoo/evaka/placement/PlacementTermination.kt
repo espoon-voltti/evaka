@@ -251,6 +251,11 @@ fun terminateBilledDaycare(
                     startDate = terminationDate.plusDays(1),
                     endDate = placement.endDate,
                     placeGuarantee = false,
+                    createdAt = now,
+                    createdBy = user.evakaUserId,
+                    source = PlacementSource.PLACEMENT_TERMINATION,
+                    modifiedAt = now,
+                    modifiedBy = user.evakaUserId,
                 )
             }
         }
