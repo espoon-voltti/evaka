@@ -107,12 +107,16 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
 
   let citizenSfiIntegration: SamlIntegration | undefined
   if (config.sfi.type === 'mock') {
-    router.use('/citizen/auth/sfi', createDevSfiRouter(citizenSessions))
+    router.use(
+      '/citizen/auth/sfi',
+      createDevSfiRouter(citizenSessions, config.citizen.cookieSecret)
+    )
   } else if (config.sfi.type === 'saml') {
     citizenSfiIntegration = createCitizenSuomiFiIntegration(
       citizenSessions,
       config.sfi.saml,
-      redisClient
+      redisClient,
+      config.citizen.cookieSecret
     )
     router.use('/citizen/auth/sfi', citizenSfiIntegration.router)
   }
@@ -240,7 +244,8 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
     authWeakLogin(
       citizenSessions,
       config.citizen.weakLoginRateLimit,
-      redisClient
+      redisClient,
+      config.citizen.cookieSecret
     )
   )
   router.all('/citizen/auth/{*rest}', (_, res) => res.redirect('/'))

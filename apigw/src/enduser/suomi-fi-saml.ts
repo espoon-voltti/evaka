@@ -53,20 +53,22 @@ const authenticateCitizen = authenticateProfile(
 
 export function createCitizenSuomiFiIntegration(
   sessions: Sessions<'citizen'>,
-  config: EvakaSamlConfig,
-  redisClient: RedisClient
+  samlConfig: EvakaSamlConfig,
+  redisClient: RedisClient,
+  citizenCookieSecret: string
 ) {
   return createSamlIntegration({
     sessions,
     strategyName: 'suomifi',
     saml: new SAML(
       createSamlConfig(
-        config,
+        samlConfig,
         redisCacheProvider(redisClient, { keyPrefix: 'suomifi-saml-resp:' })
       )
     ),
     authenticate: authenticateCitizen,
-    defaultPageUrl: '/'
+    defaultPageUrl: '/',
+    citizenCookieSecret
   })
 }
 

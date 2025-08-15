@@ -3,9 +3,11 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { AxiosError } from 'axios'
+import cookieParser from 'cookie-parser'
 import type { Request } from 'express'
 import express from 'express'
 
+import { setDeviceAuthHistoryCookie } from '../device-cookies.ts'
 import type { AsyncRequestHandler } from '../express.ts'
 import { toRequestHandler } from '../express.ts'
 import { validateRelayStateUrl } from '../saml/index.ts'
@@ -18,17 +20,22 @@ export interface DevAuthRouterOptions<T extends SessionType> {
   root: string
   verifyUser: (req: Request) => Promise<EvakaSessionUser>
   loginFormHandler: AsyncRequestHandler
+  citizenCookieSecret?: string
 }
 
 export function createDevAuthRouter<T extends SessionType>({
   sessions,
   root,
   verifyUser,
-  loginFormHandler
+  loginFormHandler,
+  citizenCookieSecret
 }: DevAuthRouterOptions<T>): express.Router {
   const router = express.Router()
 
   router.use(sessions.middleware)
+  if (citizenCookieSecret) {
+    router.use(cookieParser(citizenCookieSecret))
+  }
   router.get('/login', toRequestHandler(loginFormHandler))
   router.post(
     `/login/callback`,
@@ -40,6 +47,12 @@ export function createDevAuthRouter<T extends SessionType>({
           res.redirect(`${root}?loginError=true`)
         } else {
           await sessions.login(req, user)
+
+          // Set device cookie for citizen authentication
+          if (citizenCookieSecret) {
+            setDeviceAuthHistoryCookie(res, user.id)
+          }
+
           res.redirect(validateRelayStateUrl(req)?.toString() ?? root)
         }
       } catch (err) {
