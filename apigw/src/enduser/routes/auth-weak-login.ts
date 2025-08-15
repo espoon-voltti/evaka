@@ -43,8 +43,8 @@ export const authWeakLogin = (
       const deviceAuthHistory = filterValidDeviceAuthHistory(
         req.signedCookies,
         (cookieName, hash) => {
-          // TODO pitäisikö nämä hylätyt expiroida?
           logWarn('Invalid device cookie signature detected', req, {
+            eventCode: eventCode('invalid_device_cookie_signature'),
             cookieName,
             hash
           })

@@ -30,6 +30,7 @@ import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.*
 import fi.espoo.evaka.user.*
 import fi.espoo.evaka.webpush.WebPush
+import fi.espoo.voltti.logging.loggers.info
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.nio.charset.StandardCharsets
 import java.util.*
@@ -114,8 +115,10 @@ class SystemController(
                             .hashString(citizen.id.toString(), StandardCharsets.UTF_8)
                             .toString()
                     if (!request.deviceAuthHistory.contains(userIdHash)) {
-                        logger.info { "Login from new device detected" }
-                        if (featureConfig.newBrowserLoginEmailEnabled) {
+                        logger.info(mapOf("eventCode" to "NEW_DEVICE_LOGIN")) {
+                            "Login from new device detected"
+                        }
+                        if (env.newBrowserLoginEmailEnabled) {
                             asyncJobRunner.plan(
                                 tx,
                                 sequenceOf(

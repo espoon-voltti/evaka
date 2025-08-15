@@ -51,6 +51,7 @@ data class EvakaEnv(
     val replacementInvoicesStart: YearMonth?,
     val passwordBlacklistDirectory: String?,
     val placementToolServiceNeedOptionId: ServiceNeedOptionId?,
+    val newBrowserLoginEmailEnabled: Boolean,
 ) {
     companion object {
         fun fromEnvironment(env: Environment): EvakaEnv {
@@ -98,6 +99,8 @@ data class EvakaEnv(
                     env.lookup<String?>("evaka.placement_tool.service_need_option_id")?.let {
                         ServiceNeedOptionId(UUID.fromString(it))
                     },
+                newBrowserLoginEmailEnabled =
+                    env.lookup("evaka.new_browser_login_email.enabled") ?: false,
             )
         }
     }

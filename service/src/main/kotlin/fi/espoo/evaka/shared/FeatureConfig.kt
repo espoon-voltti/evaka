@@ -167,9 +167,6 @@ data class FeatureConfig(
 
     /** Nekku Meal Decution Factor that deducts normal diets from the group order */
     val nekkuMealDeductionFactor: Double = 1.0,
-
-    /** Whether to send email notifications when users log in from new browsers/devices */
-    val newBrowserLoginEmailEnabled: Boolean = false,
 )
 
 enum class ArchiveProcessType {

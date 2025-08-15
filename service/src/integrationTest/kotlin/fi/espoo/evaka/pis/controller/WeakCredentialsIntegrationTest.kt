@@ -182,7 +182,7 @@ class WeakCredentialsIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
 
     @Test
     fun `notification email is sent when logging in from a new device`() {
-        whenever(featureConfig.newBrowserLoginEmailEnabled).thenReturn(true)
+        whenever(evakaEnv.newBrowserLoginEmailEnabled).thenReturn(true)
 
         val password = Sensitive("test123123")
         db.transaction { tx ->
@@ -212,7 +212,7 @@ class WeakCredentialsIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
 
     @Test
     fun `no notification email is sent when logging in from a previously used device`() {
-        whenever(featureConfig.newBrowserLoginEmailEnabled).thenReturn(true)
+        whenever(evakaEnv.newBrowserLoginEmailEnabled).thenReturn(true)
 
         val password = Sensitive("test123123")
         db.transaction { tx ->
