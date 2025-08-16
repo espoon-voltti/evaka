@@ -44,13 +44,13 @@ jobs:
   lint-shell:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: espoon-voltti/voltti-actions/shellcheck@v1
 
   check-licenses:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - name: Reuse Compliance Check
       uses: fsfe/reuse-action@v5
 
@@ -59,7 +59,7 @@ jobs:
     needs:
       - cache-bust
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Setup Docker building
         if: ${{ !github.event.pull_request.head.repo.fork }}
@@ -124,7 +124,7 @@ jobs:
     needs:
       - cache-bust
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Cache fortawesome
         if: ${{ !github.event.pull_request.head.repo.fork }}
@@ -193,7 +193,7 @@ jobs:
       - frontend
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Login to GitHub Container Registry
         if: ${{ !github.event.pull_request.head.repo.fork }}
@@ -231,7 +231,7 @@ jobs:
     needs:
       - cache-bust
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Setup Docker building
         if: ${{ !github.event.pull_request.head.repo.fork }}
@@ -289,7 +289,7 @@ jobs:
     needs:
       - cache-bust
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Setup Docker building
         if: ${{ !github.event.pull_request.head.repo.fork }}
@@ -350,7 +350,7 @@ jobs:
       - service
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Setup Docker building
         if: ${{ !github.event.pull_request.head.repo.fork }}
@@ -396,7 +396,7 @@ jobs:
       - service
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Configure AWS credentials
         if: ${{ !github.event.pull_request.head.repo.fork }}
@@ -443,7 +443,7 @@ jobs:
         test_chunk_count: [4] # must max value of above list
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Login to GitHub Container Registry
         if: ${{ !github.event.pull_request.head.repo.fork }}
@@ -491,7 +491,7 @@ jobs:
       GH_TOKEN: ${{ github.token }}
       CHUNK_COUNT: 6  # must match the number of chunks in the e2e job
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Split e2e tests
         run: |
           ./bin/timings.sh $CHUNK_COUNT e2e-test-chunk--{}.txt
@@ -518,7 +518,7 @@ jobs:
     env:
       PLAYWRIGHT_TAG: "${{ inputs.playwright_tag || 'master' }}"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Login to Docker Hub
         if: ${{ !github.event.pull_request.head.repo.fork }}
