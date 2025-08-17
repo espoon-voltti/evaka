@@ -117,7 +117,7 @@
     "ts-node": "10.9.2",
     "typescript": "5.9.2",
     "typescript-eslint": "8.39.1",
-    "vite": "7.1.1"
+    "vite": "7.1.2"
   },
   "peerDependencies": {
     "@fortawesome/pro-light-svg-icons": "^6.4.0",
