@@ -8,10 +8,16 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 
 <suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
     <suppress>
-        <notes><![CDATA[
-        Misidentification. The checkstyle reporter for Ktlint version x.y is not the same as the actual checkstyle library version x.y.
+       <notes><![CDATA[
+       Misidentification. The checkstyle reporter for Ktlint version x.y is not the same as the actual checkstyle library version x.y.
        ]]></notes>
        <packageUrl regex="true">^pkg:maven/com\.pinterest\.ktlint/ktlint\-cli\-reporter\-checkstyle@.*$</packageUrl>
        <cpe>cpe:/a:checkstyle:checkstyle</cpe>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+        Only affects applications deployed as a WAR or with an embedded Servlet container, not Tomcat
+        ]]></notes>
+        <cve>CVE-2025-41242</cve>
     </suppress>
 </suppressions>
