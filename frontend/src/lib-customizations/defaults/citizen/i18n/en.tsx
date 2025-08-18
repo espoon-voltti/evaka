@@ -2171,6 +2171,8 @@ const en: Translations = {
     incomeStatementMissing:
       'If your child has income, report it with an income statement.',
     incomeNotifyForPeriod: 'I declare my income for the following period',
+    incomeNotifyForPeriodInfo:
+      'If your income does not change, you can submit an income statement for up to one year in advance.',
     incomeType: {
       startDate: 'Valid as of',
       endDate: 'Valid until',

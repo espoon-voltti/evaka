@@ -2404,6 +2404,8 @@ const sv: Translations = {
     incomeStatementMissing:
       'Om ditt barn har inkomst, anmäl det med en inkomstredovisning.',
     incomeNotifyForPeriod: 'Jag anmäler mina inkomster för följande period',
+    incomeNotifyForPeriodInfo:
+      'Om din inkomst inte förändras kan du lämna in en inkomstutredning för upp till ett år i förväg.',
     incomeType: {
       startDate: 'Från och med',
       endDate: 'Till och med',
