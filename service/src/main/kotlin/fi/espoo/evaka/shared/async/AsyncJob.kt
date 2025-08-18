@@ -484,7 +484,6 @@ sealed interface AsyncJob : AsyncJobPayload {
                 AsyncJobPool.Id(AsyncJob::class, "main"),
                 AsyncJobPool.Config(concurrency = 4),
                 setOf(
-                    ArchiveChildDocument::class,
                     CreateAssistanceNeedDecisionPdf::class,
                     CreateAssistanceNeedPreschoolDecisionPdf::class,
                     CreateChildDocumentPdf::class,
@@ -585,6 +584,12 @@ sealed interface AsyncJob : AsyncJobPayload {
                 AsyncJobPool.Id(AsyncJob::class, "varda"),
                 AsyncJobPool.Config(concurrency = 1),
                 setOf(VardaUpdateChild::class),
+            )
+        val bulk =
+            AsyncJobRunner.Pool(
+                AsyncJobPool.Id(AsyncJob::class, "bulk"),
+                AsyncJobPool.Config(concurrency = 4),
+                setOf(ArchiveChildDocument::class),
             )
     }
 }
