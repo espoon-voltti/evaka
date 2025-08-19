@@ -279,6 +279,7 @@ data class KoskiActivePreschoolDataRaw(
     val transportBenefit: DateSet,
     val childSupport: DateSet,
     val childSupportAndExtendedCompulsoryEducation: DateSet,
+    val childSupportAndOldExtendedCompulsoryEducation: DateSet,
 ) : KoskiActiveDataRaw(OpiskeluoikeudenTyyppiKoodi.PRESCHOOL) {
     override fun getHolidayDates(): DateSet = DateSet.of()
 
@@ -311,13 +312,17 @@ data class KoskiActivePreschoolDataRaw(
         val placementSpan = placements.spanningRange() ?: return null
 
         // these are deprecated after about 1.8.2026
+        val specialSupportWithoutEce = specialSupport.intersection(listOf(placementSpan))
         val level1 = specialSupportWithDecisionLevel1.intersection(listOf(placementSpan))
         val level2 = specialSupportWithDecisionLevel2.intersection(listOf(placementSpan))
-        val specialSupportWithEce = level1.addAll(level2)
-        val allSpecialSupport =
-            specialSupport.intersection(listOf(placementSpan)).addAll(specialSupportWithEce)
+        val allSpecialSupport = specialSupportWithoutEce.addAll(level1).addAll(level2)
+
+        val childSupportWithOldEce =
+            childSupportAndOldExtendedCompulsoryEducation.intersection(listOf(placementSpan))
+
         // Koski only accepts one range of old pidennetty oppivelvollisuus
-        val longestEce = specialSupportWithEce.ranges().maxByOrNull { it.durationInDays() }
+        val supportWithOldEce = level1.addAll(level2).addAll(childSupportWithOldEce)
+        val longestEce = supportWithOldEce.ranges().maxByOrNull { it.durationInDays() }
 
         // these replacements are introduced around 1.8.2026
         val childSupportWithoutEce = childSupport.intersection(listOf(placementSpan))
@@ -330,10 +335,13 @@ data class KoskiActivePreschoolDataRaw(
             transportBenefit.intersectRanges(placementSpan).maxByOrNull { it.durationInDays() }
 
         return Lisätiedot(
+                // deprecated
                 vammainen =
                     level1.ranges().map { Aikajakso.from(it) }.toList().takeIf { it.isNotEmpty() },
+                // deprecated
                 vaikeastiVammainen =
                     level2.ranges().map { Aikajakso.from(it) }.toList().takeIf { it.isNotEmpty() },
+                // deprecated
                 pidennettyOppivelvollisuus = longestEce?.let { Aikajakso.from(it) },
                 varhennetunOppivelvollisuudenJaksot =
                     childSupportWithEce
@@ -342,6 +350,7 @@ data class KoskiActivePreschoolDataRaw(
                         .map { Aikajakso.from(it) }
                         .takeIf { it.isNotEmpty() },
                 kuljetusetu = longestTransportBenefit?.let { Aikajakso.from(it) },
+                // deprecated
                 erityisenTuenPäätökset =
                     allSpecialSupport
                         .ranges()

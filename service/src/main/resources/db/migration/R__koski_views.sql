@@ -75,7 +75,8 @@ BEGIN ATOMIC
             coalesce(special_support_with_decision_level_2, '{}'),
             coalesce(transport_benefit, '{}'),
             coalesce(child_support, '{}'),
-            coalesce(child_support_and_extended_compulsory_education, '{}')
+            coalesce(child_support_and_extended_compulsory_education, '{}'),
+            coalesce(child_support_and_old_extended_compulsory_education, '{}')
         ) AS input_data
     FROM koski_placement(today) p
     JOIN koski_unit d ON p.unit_id = d.id
@@ -102,7 +103,10 @@ BEGIN ATOMIC
             ) AS child_support,
             range_agg(valid_during) FILTER (
                 WHERE level = 'CHILD_SUPPORT_AND_EXTENDED_COMPULSORY_EDUCATION'
-            ) AS child_support_and_extended_compulsory_education
+            ) AS child_support_and_extended_compulsory_education,
+            range_agg(valid_during) FILTER (
+                WHERE level = 'CHILD_SUPPORT_AND_OLD_EXTENDED_COMPULSORY_EDUCATION'
+            ) AS child_support_and_old_extended_compulsory_education
         FROM preschool_assistance pa
         WHERE pa.child_id = p.child_id
         AND pa.valid_during && range_merge(placements)
