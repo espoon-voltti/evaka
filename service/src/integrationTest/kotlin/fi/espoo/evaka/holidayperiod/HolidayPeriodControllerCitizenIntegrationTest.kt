@@ -7,8 +7,6 @@ package fi.espoo.evaka.holidayperiod
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.pis.service.insertGuardian
-import fi.espoo.evaka.placement.PlacementType
-import fi.espoo.evaka.placement.insertPlacement
 import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.HolidayQuestionnaireId
@@ -20,6 +18,7 @@ import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
+import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.DevServiceNeed
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertServiceNeedOptions
@@ -101,14 +100,13 @@ class HolidayPeriodControllerCitizenIntegrationTest :
             tx.insertGuardian(parent.id, child1.id)
 
             val placement =
-                tx.insertPlacement(
-                    PlacementType.DAYCARE,
-                    child1.id,
-                    daycare.id,
-                    mockToday.minusYears(2),
-                    mockToday.plusYears(1),
-                    false,
+                DevPlacement(
+                    childId = child1.id,
+                    unitId = daycare.id,
+                    startDate = mockToday.minusYears(2),
+                    endDate = mockToday.plusYears(1),
                 )
+            tx.insert(placement)
             tx.insertServiceNeedOptions()
             tx.insert(
                 DevServiceNeed(
@@ -153,30 +151,30 @@ class HolidayPeriodControllerCitizenIntegrationTest :
             // child1 has a placement that covers the whole period
             // child2 has no placement
             // child3 has a placement that covers the period partly
-            tx.insertPlacement(
-                PlacementType.DAYCARE,
-                child3.id,
-                daycare.id,
-                condition.start,
-                condition.end.minusDays(1),
-                false,
+            tx.insert(
+                DevPlacement(
+                    childId = child3.id,
+                    unitId = daycare.id,
+                    startDate = condition.start,
+                    endDate = condition.end.minusDays(1),
+                )
             )
             // child4 has two placements that cover the period together
-            tx.insertPlacement(
-                PlacementType.DAYCARE,
-                child4.id,
-                daycare.id,
-                condition.start,
-                condition.start.plusDays(5),
-                false,
+            tx.insert(
+                DevPlacement(
+                    childId = child4.id,
+                    unitId = daycare.id,
+                    startDate = condition.start,
+                    endDate = condition.start.plusDays(5),
+                )
             )
-            tx.insertPlacement(
-                PlacementType.DAYCARE,
-                child4.id,
-                daycare.id,
-                condition.start.plusDays(6),
-                condition.end,
-                false,
+            tx.insert(
+                DevPlacement(
+                    childId = child4.id,
+                    unitId = daycare.id,
+                    startDate = condition.start.plusDays(6),
+                    endDate = condition.end,
+                )
             )
         }
         createFixedPeriodQuestionnaire(
@@ -323,13 +321,13 @@ class HolidayPeriodControllerCitizenIntegrationTest :
         val firstOption = freePeriodQuestionnaire.periodOptions[0]
         db.transaction { tx ->
             tx.insertGuardian(parent.id, child2.id)
-            tx.insertPlacement(
-                PlacementType.DAYCARE,
-                child2.id,
-                daycare.id,
-                firstOption.start.plusDays(1),
-                firstOption.end,
-                false,
+            tx.insert(
+                DevPlacement(
+                    childId = child2.id,
+                    unitId = daycare.id,
+                    startDate = firstOption.start.plusDays(1),
+                    endDate = firstOption.end,
+                )
             )
         }
         val id =
@@ -352,13 +350,13 @@ class HolidayPeriodControllerCitizenIntegrationTest :
         val firstOption = freePeriodQuestionnaire.periodOptions[0]
         db.transaction { tx ->
             tx.insertGuardian(parent.id, child2.id)
-            tx.insertPlacement(
-                PlacementType.DAYCARE,
-                child2.id,
-                daycare.id,
-                firstOption.start,
-                firstOption.end.minusDays(1),
-                false,
+            tx.insert(
+                DevPlacement(
+                    childId = child2.id,
+                    unitId = daycare.id,
+                    startDate = firstOption.start,
+                    endDate = firstOption.end.minusDays(1),
+                )
             )
         }
         val id =
@@ -472,14 +470,13 @@ class HolidayPeriodControllerCitizenIntegrationTest :
             tx.insertGuardian(parent.id, child2.id)
 
             val placement =
-                tx.insertPlacement(
-                    PlacementType.DAYCARE,
-                    child2.id,
-                    daycareId,
-                    mockToday.minusYears(2),
-                    mockToday.plusYears(1),
-                    false,
+                DevPlacement(
+                    childId = child2.id,
+                    unitId = daycareId,
+                    startDate = mockToday.minusYears(2),
+                    endDate = mockToday.plusYears(1),
                 )
+            tx.insert(placement)
             tx.insert(
                 DevServiceNeed(
                     placementId = placement.id,

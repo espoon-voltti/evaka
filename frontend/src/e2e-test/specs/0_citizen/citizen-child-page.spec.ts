@@ -4,7 +4,7 @@
 
 import DateRange from 'lib-common/date-range'
 import type { PlacementType } from 'lib-common/generated/api-types/placement'
-import { evakaUserId, randomId } from 'lib-common/id-type'
+import { evakaUserId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import TimeRange from 'lib-common/time-range'
@@ -27,7 +27,6 @@ import {
   resetServiceState,
   upsertWeakCredentials
 } from '../../generated/api-clients'
-import type { DevPlacement } from '../../generated/api-types'
 import CitizenApplicationsPage from '../../pages/citizen/citizen-applications'
 import { CitizenChildPage } from '../../pages/citizen/citizen-children'
 import CitizenHeader from '../../pages/citizen/citizen-header'
@@ -57,17 +56,15 @@ describe('Citizen children page', () => {
 
   test('Citizen can see its children and navigate to their page', async () => {
     await createDaycarePlacements({
-      body: [testChild, testChild2].map((child) => ({
-        id: randomId(),
-        type: 'DAYCARE',
-        childId: child.id,
-        unitId: testDaycare.id,
-        startDate: mockedDate.subMonths(1),
-        endDate: mockedDate,
-        placeGuarantee: false,
-        terminatedBy: null,
-        terminationRequestedDate: null
-      }))
+      body: [testChild, testChild2].map((child) =>
+        Fixture.placement({
+          type: 'DAYCARE',
+          childId: child.id,
+          unitId: testDaycare.id,
+          startDate: mockedDate.subMonths(1),
+          endDate: mockedDate
+        })
+      )
     })
 
     await enduserLogin(page, testAdult)
@@ -88,21 +85,13 @@ describe('Citizen children page', () => {
     type: PlacementType = 'DAYCARE',
     startDate: LocalDate = mockedDate.subMonths(2)
   ) {
-    await createDaycarePlacements({
-      body: [
-        {
-          id: randomId(),
-          type,
-          childId: testChild2.id,
-          unitId,
-          startDate: startDate,
-          endDate: endDate,
-          placeGuarantee: false,
-          terminationRequestedDate: null,
-          terminatedBy: null
-        }
-      ]
-    })
+    await Fixture.placement({
+      type,
+      childId: testChild2.id,
+      unitId,
+      startDate: startDate,
+      endDate: endDate
+    }).save()
   }
 
   describe('Placement termination', () => {
@@ -242,64 +231,41 @@ describe('Citizen children page', () => {
       const preschool2End = preschool1End.addMonths(6)
       const daycareAfterPreschoolStart = preschool2End.addDays(1)
       const daycareAfterPreschoolEnd = preschool2End.addMonths(6)
-      const placements: DevPlacement[] = [
-        {
-          id: randomId(),
-          type: 'DAYCARE',
-          childId: testChild2.id,
-          unitId: testDaycare.id,
-          startDate: daycare1Start,
-          endDate: daycare1End,
-          placeGuarantee: false,
-          terminatedBy: null,
-          terminationRequestedDate: null
-        },
-        {
-          id: randomId(),
-          type: 'DAYCARE',
-          childId: testChild2.id,
-          unitId: testPreschool.id,
-          startDate: daycare2start,
-          endDate: daycare2end,
-          placeGuarantee: false,
-          terminatedBy: null,
-          terminationRequestedDate: null
-        },
-        {
-          id: randomId(),
-          type: 'PRESCHOOL',
-          childId: testChild2.id,
-          unitId: testPreschool.id,
-          startDate: preschool1Start,
-          endDate: preschool1End,
-          placeGuarantee: false,
-          terminatedBy: null,
-          terminationRequestedDate: null
-        },
-        {
-          id: randomId(),
-          type: 'PRESCHOOL_DAYCARE', // this gets grouped with the above
-          childId: testChild2.id,
-          unitId: testPreschool.id,
-          startDate: preschool2Start,
-          endDate: preschool2End,
-          placeGuarantee: false,
-          terminatedBy: null,
-          terminationRequestedDate: null
-        },
-        {
-          id: randomId(),
-          type: 'DAYCARE', // this is shown under PRESCHOOL as "Maksullinen varhaiskasvatus"
-          childId: testChild2.id,
-          unitId: testPreschool.id,
-          startDate: daycareAfterPreschoolStart,
-          endDate: daycareAfterPreschoolEnd,
-          placeGuarantee: false,
-          terminatedBy: null,
-          terminationRequestedDate: null
-        }
-      ]
-      await createDaycarePlacements({ body: placements })
+      await Fixture.placement({
+        type: 'DAYCARE',
+        childId: testChild2.id,
+        unitId: testDaycare.id,
+        startDate: daycare1Start,
+        endDate: daycare1End
+      }).save()
+      await Fixture.placement({
+        type: 'DAYCARE',
+        childId: testChild2.id,
+        unitId: testPreschool.id,
+        startDate: daycare2start,
+        endDate: daycare2end
+      }).save()
+      await Fixture.placement({
+        type: 'PRESCHOOL',
+        childId: testChild2.id,
+        unitId: testPreschool.id,
+        startDate: preschool1Start,
+        endDate: preschool1End
+      }).save()
+      await Fixture.placement({
+        type: 'PRESCHOOL_DAYCARE', // this gets grouped with the above
+        childId: testChild2.id,
+        unitId: testPreschool.id,
+        startDate: preschool2Start,
+        endDate: preschool2End
+      }).save()
+      await Fixture.placement({
+        type: 'DAYCARE', // this is shown under PRESCHOOL as "Maksullinen varhaiskasvatus"
+        childId: testChild2.id,
+        unitId: testPreschool.id,
+        startDate: daycareAfterPreschoolStart,
+        endDate: daycareAfterPreschoolEnd
+      }).save()
 
       await enduserLogin(page, testAdult)
       const header = new CitizenHeader(page)
@@ -330,31 +296,20 @@ describe('Citizen children page', () => {
       const daycare1End = mockedDate.addMonths(3)
       const daycare2start = daycare1End.addDays(1)
       const daycare2end = daycare1End.addMonths(2)
-      const placements: DevPlacement[] = [
-        {
-          id: randomId(),
-          type: 'DAYCARE',
-          childId: testChild2.id,
-          unitId: testDaycare.id,
-          startDate: daycare1Start,
-          endDate: daycare1End,
-          placeGuarantee: false,
-          terminatedBy: null,
-          terminationRequestedDate: null
-        },
-        {
-          id: randomId(),
-          type: 'DAYCARE',
-          childId: testChild2.id,
-          unitId: testPreschool.id,
-          startDate: daycare2start,
-          endDate: daycare2end,
-          placeGuarantee: false,
-          terminatedBy: null,
-          terminationRequestedDate: null
-        }
-      ]
-      await createDaycarePlacements({ body: placements })
+      await Fixture.placement({
+        type: 'DAYCARE',
+        childId: testChild2.id,
+        unitId: testDaycare.id,
+        startDate: daycare1Start,
+        endDate: daycare1End
+      }).save()
+      await Fixture.placement({
+        type: 'DAYCARE',
+        childId: testChild2.id,
+        unitId: testPreschool.id,
+        startDate: daycare2start,
+        endDate: daycare2end
+      }).save()
 
       await enduserLogin(page, testAdult)
       const header = new CitizenHeader(page)
@@ -402,31 +357,20 @@ describe('Citizen children page', () => {
       const preschool2End = mockedDate.addMonths(3)
       const daycareAfterPreschoolStart = preschool2End.addDays(1)
       const daycareAfterPreschoolEnd = preschool2End.addMonths(6)
-      const placements: DevPlacement[] = [
-        {
-          id: randomId(),
-          type: 'PRESCHOOL_DAYCARE', // this gets grouped with the above
-          childId: testChild2.id,
-          unitId: testPreschool.id,
-          startDate: preschool2Start,
-          endDate: preschool2End,
-          placeGuarantee: false,
-          terminatedBy: null,
-          terminationRequestedDate: null
-        },
-        {
-          id: randomId(),
-          type: 'DAYCARE', // this is shown under PRESCHOOL as "Maksullinen varhaiskasvatus"
-          childId: testChild2.id,
-          unitId: testPreschool.id,
-          startDate: daycareAfterPreschoolStart,
-          endDate: daycareAfterPreschoolEnd,
-          placeGuarantee: false,
-          terminatedBy: null,
-          terminationRequestedDate: null
-        }
-      ]
-      await createDaycarePlacements({ body: placements })
+      await Fixture.placement({
+        type: 'PRESCHOOL_DAYCARE', // this gets grouped with the above
+        childId: testChild2.id,
+        unitId: testPreschool.id,
+        startDate: preschool2Start,
+        endDate: preschool2End
+      }).save()
+      await Fixture.placement({
+        type: 'DAYCARE', // this is shown under PRESCHOOL as "Maksullinen varhaiskasvatus"
+        childId: testChild2.id,
+        unitId: testPreschool.id,
+        startDate: daycareAfterPreschoolStart,
+        endDate: daycareAfterPreschoolEnd
+      }).save()
 
       await enduserLogin(page, testAdult)
       const header = new CitizenHeader(page)

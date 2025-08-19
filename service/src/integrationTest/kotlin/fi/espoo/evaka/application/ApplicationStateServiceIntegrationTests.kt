@@ -29,6 +29,7 @@ import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.placement.PlacementPlan
 import fi.espoo.evaka.placement.PlacementPlanConfirmationStatus
 import fi.espoo.evaka.placement.PlacementPlanRejectReason
+import fi.espoo.evaka.placement.PlacementSource
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.getPlacementPlan
 import fi.espoo.evaka.placement.getPlacementsForChild
@@ -1942,6 +1943,13 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             // then
             val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(ApplicationStatus.ACTIVE, application.status)
+
+            // application is recorded as the placement's source
+            val placements = tx.getPlacementsForChild(testChild_6.id)
+            placements.single().also { placement ->
+                assertEquals(placement.source, PlacementSource.APPLICATION)
+                assertEquals(placement.sourceApplicationId, applicationId)
+            }
         }
     }
 

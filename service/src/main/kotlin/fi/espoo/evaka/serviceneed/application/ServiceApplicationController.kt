@@ -7,6 +7,7 @@ package fi.espoo.evaka.serviceneed.application
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.absence.generateAbsencesFromIrregularDailyServiceTimes
+import fi.espoo.evaka.placement.PlacementSource
 import fi.espoo.evaka.placement.createPlacement
 import fi.espoo.evaka.placement.deleteFutureReservationsAndAbsencesOutsideValidPlacements
 import fi.espoo.evaka.serviceneed.ShiftCareType
@@ -188,6 +189,8 @@ class ServiceApplicationController(
                                     placeGuarantee = false,
                                     now = clock.now(),
                                     userId = user.evakaUserId,
+                                    source = PlacementSource.SERVICE_APPLICATION,
+                                    sourceServiceApplicationId = id,
                                 )
                                 .also {
                                     tx.deleteFutureReservationsAndAbsencesOutsideValidPlacements(

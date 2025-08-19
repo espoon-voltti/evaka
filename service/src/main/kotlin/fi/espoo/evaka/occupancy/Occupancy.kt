@@ -10,6 +10,7 @@ import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.daycare.getPlannedCaretakersForGroups
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.placement.SpeculatedPlacement
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
@@ -120,7 +121,7 @@ fun Database.Read.calculateDailyUnitOccupancyValues(
     providerType: ProviderType? = null,
     unitTypes: Set<CareType>? = null,
     unitId: DaycareId? = null,
-    speculatedPlacements: List<Placement> = listOf(),
+    speculatedPlacements: List<SpeculatedPlacement> = listOf(),
 ): List<DailyOccupancyValues<UnitKey>> {
     if (type == OccupancyType.REALIZED && today < queryPeriod.start) return listOf()
     val period = getAndValidatePeriod(today, type, queryPeriod, singleUnit = unitId != null)
@@ -590,9 +591,19 @@ WHERE daterange(greatest(bc.start_date, p.start_date), least(bc.end_date, p.end_
         .toList<Placement>()
 }
 
+interface OccupancyInput {
+    val childId: ChildId
+    val placementId: PlacementId? // If null, default occupancy coefficients are used
+    val groupingId: Id<*>
+    val unitId: DaycareId
+    val period: FiniteDateRange
+    val type: PlacementType
+    val familyUnitPlacement: Boolean
+}
+
 private fun <K : OccupancyGroupingKey> Database.Read.calculateDailyOccupancies(
     caretakerCounts: Map<K, DateMap<BigDecimal>>,
-    placements: Iterable<Placement>,
+    placements: Iterable<OccupancyInput>,
     range: FiniteDateRange,
     type: OccupancyType,
 ): List<DailyOccupancyValues<K>> {
@@ -613,9 +624,10 @@ private fun <K : OccupancyGroupingKey> Database.Read.calculateDailyOccupancies(
             .toMap { columnPair<ChildId, LocalDate>("id", "date_of_birth") }
 
     val serviceNeeds =
-        this.createQuery {
-                sql(
-                    """
+        if (placements.any { it.placementId != null }) {
+            this.createQuery {
+                    sql(
+                        """
 SELECT
     sn.placement_id,
     CASE
@@ -640,12 +652,15 @@ JOIN placement pl ON sn.placement_id = pl.id
 JOIN service_need_option sno ON sn.option_id = sno.id
 JOIN person ch ON ch.id = pl.child_id
 JOIN daycare u ON pl.unit_id = u.id
-WHERE sn.placement_id = ANY(${bind(placements.map { it.placementId })})
+WHERE sn.placement_id = ANY(${bind(placements.mapNotNull { it.placementId })})
 """
-                )
-            }
-            .toList<ServiceNeed>()
-            .groupBy { it.placementId }
+                    )
+                }
+                .toList<ServiceNeed>()
+                .groupBy { it.placementId }
+        } else {
+            emptyMap()
+        }
 
     val defaultServiceNeedCoefficients =
         this.createQuery {
@@ -687,7 +702,7 @@ WHERE sn.placement_id = ANY(${bind(placements.map { it.placementId })})
             mapOf()
         }
 
-    fun getCoefficient(date: LocalDate, placement: Placement): Pair<BigDecimal, Boolean> {
+    fun getCoefficient(date: LocalDate, placement: OccupancyInput): Pair<BigDecimal, Boolean> {
         val assistanceCoefficient =
             assistanceFactors[placement.childId]?.find { it.period.includes(date) }?.capacityFactor
                 ?: BigDecimal.ONE
@@ -699,7 +714,8 @@ WHERE sn.placement_id = ANY(${bind(placements.map { it.placementId })})
 
         val serviceNeedCoefficient = run {
             val coefficients =
-                serviceNeeds[placement.placementId]
+                placement.placementId
+                    ?.let { serviceNeeds[it] }
                     ?.let { it.find { sn -> sn.period.includes(date) } }
                     ?.let {
                         ServiceNeedCoefficients(
@@ -892,14 +908,14 @@ private fun childWasAbsentWholeDay(
 }
 
 data class Placement(
-    val groupingId: DaycareId,
-    val placementId: PlacementId,
-    val childId: ChildId,
-    val unitId: DaycareId,
-    val type: PlacementType,
-    val familyUnitPlacement: Boolean,
-    val period: FiniteDateRange,
-)
+    override val groupingId: DaycareId,
+    override val placementId: PlacementId,
+    override val childId: ChildId,
+    override val unitId: DaycareId,
+    override val type: PlacementType,
+    override val familyUnitPlacement: Boolean,
+    override val period: FiniteDateRange,
+) : OccupancyInput
 
 private data class PlacementPlan(
     @Nested val placement: Placement,

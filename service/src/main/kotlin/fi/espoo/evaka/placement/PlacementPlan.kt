@@ -4,9 +4,12 @@
 
 package fi.espoo.evaka.placement
 
+import fi.espoo.evaka.occupancy.OccupancyInput
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.Id
+import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.PlacementPlanId
 import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -77,4 +80,18 @@ enum class PlacementPlanRejectReason : DatabaseEnum {
     REASON_3;
 
     override val sqlType: String = "placement_reject_reason"
+}
+
+class SpeculatedPlacement(
+    override val type: PlacementType,
+    override val childId: ChildId,
+    override val unitId: DaycareId,
+    override val period: FiniteDateRange,
+    override val familyUnitPlacement: Boolean,
+) : OccupancyInput {
+    override val placementId: PlacementId?
+        get() = null
+
+    override val groupingId: Id<*>
+        get() = unitId
 }

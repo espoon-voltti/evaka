@@ -136,6 +136,7 @@ import fi.espoo.evaka.pis.getEmployees
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.placement.PlacementPlanService
+import fi.espoo.evaka.placement.PlacementSource
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.reservations.DailyReservationRequest
 import fi.espoo.evaka.reservations.ReservationInsert
@@ -2168,6 +2169,13 @@ data class DevPlacement(
     val terminationRequestedDate: LocalDate? = null,
     val terminatedBy: EvakaUserId? = null,
     val placeGuarantee: Boolean = false,
+    val createdAt: HelsinkiDateTime = HelsinkiDateTime.now(),
+    val createdBy: EvakaUserId? = AuthenticatedUser.SystemInternalUser.evakaUserId,
+    val modifiedAt: HelsinkiDateTime? = HelsinkiDateTime.now(),
+    val modifiedBy: EvakaUserId? = AuthenticatedUser.SystemInternalUser.evakaUserId,
+    val source: PlacementSource? = PlacementSource.MANUAL,
+    val sourceApplicationId: ApplicationId? = null,
+    val sourceServiceApplicationId: ServiceApplicationId? = null,
 )
 
 data class DevPerson(

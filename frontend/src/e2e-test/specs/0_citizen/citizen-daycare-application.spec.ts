@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
-import { randomId } from 'lib-common/id-type'
 
 import { execSimpleApplicationActions } from '../../dev-api'
 import {
@@ -19,7 +18,6 @@ import {
 } from '../../dev-api/fixtures'
 import {
   createApplications,
-  createDaycarePlacements,
   getApplication,
   resetServiceState,
   runJobs,
@@ -177,21 +175,13 @@ describe('Citizen daycare applications', () => {
   })
 
   test('Notification on transfer application is visible', async () => {
-    await createDaycarePlacements({
-      body: [
-        {
-          id: randomId(),
-          type: 'DAYCARE',
-          childId: testChild.id,
-          unitId: testDaycare.id,
-          startDate: mockedDate.subYears(1),
-          endDate: mockedDate.addYears(1),
-          placeGuarantee: false,
-          terminatedBy: null,
-          terminationRequestedDate: null
-        }
-      ]
-    })
+    await Fixture.placement({
+      type: 'DAYCARE',
+      childId: testChild.id,
+      unitId: testDaycare.id,
+      startDate: mockedDate.subYears(1),
+      endDate: mockedDate.addYears(1)
+    }).save()
 
     await header.selectTab('applications')
     await applicationsPage.assertTransferNotificationIsShown(

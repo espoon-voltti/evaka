@@ -520,8 +520,8 @@ fun Database.Transaction.insert(row: DevPlacement): PlacementId =
     createUpdate {
             sql(
                 """
-INSERT INTO placement (id, type, child_id, unit_id, start_date, end_date, termination_requested_date, terminated_by, place_guarantee)
-VALUES (${bind(row.id)}, ${bind(row.type)}, ${bind(row.childId)}, ${bind(row.unitId)}, ${bind(row.startDate)}, ${bind(row.endDate)}, ${bind(row.terminationRequestedDate)}, ${bind(row.terminatedBy)}, ${bind(row.placeGuarantee)})
+INSERT INTO placement (id, type, child_id, unit_id, start_date, end_date, termination_requested_date, terminated_by, place_guarantee, created_at, created_by, source, source_application_id, source_service_application_id, modified_at, modified_by)
+VALUES (${bind(row.id)}, ${bind(row.type)}, ${bind(row.childId)}, ${bind(row.unitId)}, ${bind(row.startDate)}, ${bind(row.endDate)}, ${bind(row.terminationRequestedDate)}, ${bind(row.terminatedBy)}, ${bind(row.placeGuarantee)}, ${bind(row.createdAt)}, ${bind(row.createdBy)}, ${bind(row.source)}, ${bind(row.sourceApplicationId)}, ${bind(row.sourceServiceApplicationId)}, ${bind(row.modifiedAt)}, ${bind(row.modifiedBy)})
 RETURNING id
 """
             )

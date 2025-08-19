@@ -7,11 +7,11 @@ package fi.espoo.evaka.occupancy
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.application.fetchApplicationDetails
-import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.daycare.getUnitStats
 import fi.espoo.evaka.daycare.service.Caretakers
 import fi.espoo.evaka.placement.PlacementPlanService
+import fi.espoo.evaka.placement.SpeculatedPlacement
 import fi.espoo.evaka.reports.AttendanceReservationReportRow
 import fi.espoo.evaka.reports.ReservationType
 import fi.espoo.evaka.reports.getAttendanceReservationReport
@@ -90,27 +90,13 @@ class OccupancyController(
                             ?: throw NotFound("Application $applicationId not found")
 
                     val speculatedPlacements =
-                        placementPlanService
-                            .calculateSpeculatedPlacements(
-                                tx,
-                                unitId,
-                                application,
-                                period,
-                                preschoolDaycarePeriod,
-                            )
-                            .map {
-                                Placement(
-                                    groupingId = it.unitId,
-                                    placementId = it.id,
-                                    childId = it.childId,
-                                    unitId = it.unitId,
-                                    type = it.type,
-                                    familyUnitPlacement =
-                                        unit.type.contains(CareType.FAMILY) ||
-                                            unit.type.contains(CareType.GROUP_FAMILY),
-                                    period = FiniteDateRange(it.startDate, it.endDate),
-                                )
-                            }
+                        placementPlanService.calculateSpeculatedPlacements(
+                            tx,
+                            unit,
+                            application,
+                            period,
+                            preschoolDaycarePeriod,
+                        )
 
                     val (threeMonths, sixMonths) =
                         calculateSpeculatedMaxOccupancies(
@@ -399,7 +385,7 @@ private fun calculateSpeculatedMaxOccupancies(
     now: LocalDate,
     unitFilter: AccessControlFilter<DaycareId>,
     unitId: DaycareId,
-    speculatedPlacements: List<Placement>,
+    speculatedPlacements: List<SpeculatedPlacement>,
     from: LocalDate,
     lengthsInMonths: List<Long>,
 ): List<SpeculatedMaxOccupancies> {

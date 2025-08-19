@@ -70,7 +70,6 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
                 "pairing",
                 "payment",
                 "person",
-                "placement",
                 "placement_plan",
                 "preschool_assistance",
                 "preschool_term",
@@ -140,7 +139,6 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
                 "pairing",
                 "payment",
                 "person",
-                "placement",
                 "placement_plan",
                 "preschool_assistance",
                 "preschool_term",
@@ -359,6 +357,7 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
                 ),
                 Column(ColumnRef("child_document", "created_by"), "uuid", nullable = true),
                 Column(ColumnRef("fridge_partner", "created_by"), "uuid", nullable = true),
+                Column(ColumnRef("placement", "created_by"), "uuid", nullable = true),
             )
         val violations =
             columns
@@ -455,8 +454,6 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
                 // million)
                 ColumnRef("password_blacklist", "source"),
                 ColumnRef("payment", "sent_by"),
-                ColumnRef("placement", "modified_by"),
-                ColumnRef("placement", "terminated_by"),
                 ColumnRef("preschool_assistance", "modified_by"),
             )
         val violations =

@@ -424,6 +424,11 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
         assertEquals(placementTerminationDate.plusDays(1), remainderOfPreschool.startDate)
         assertEquals(endPreschool, remainderOfPreschool.endDate)
 
+        // ChildPlacement doesn't contain source info (yet?)
+        db.read { it.getPlacement(remainderOfPreschool.id) }!!.also {
+                assertEquals(PlacementSource.PLACEMENT_TERMINATION, it.source)
+            }
+
         assertEquals(
             0,
             db.read {

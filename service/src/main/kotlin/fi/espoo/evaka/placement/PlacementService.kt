@@ -18,6 +18,7 @@ import fi.espoo.evaka.serviceneed.getServiceNeedOptions
 import fi.espoo.evaka.serviceneed.getServiceNeedsByChild
 import fi.espoo.evaka.serviceneed.getServiceNeedsByUnit
 import fi.espoo.evaka.serviceneed.insertServiceNeed
+import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.BackupCareId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
@@ -26,6 +27,7 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
+import fi.espoo.evaka.shared.ServiceApplicationId
 import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.auth.AclAuthorization
@@ -59,6 +61,9 @@ fun createPlacements(
     placeGuarantee: Boolean,
     now: HelsinkiDateTime,
     userId: EvakaUserId,
+    source: PlacementSource,
+    sourceApplicationId: ApplicationId? = null,
+    sourceServiceApplicationId: ServiceApplicationId? = null,
 ): List<Placement> {
     placementTypePeriods
         .sortedBy { it.first.start }
@@ -76,6 +81,13 @@ fun createPlacements(
                 period.start,
                 period.end,
                 placeGuarantee && firstPlacementTypePeriod == period.start,
+                createdAt = now,
+                createdBy = userId,
+                source = source,
+                sourceApplicationId = sourceApplicationId,
+                sourceServiceApplicationId = sourceServiceApplicationId,
+                modifiedAt = now,
+                modifiedBy = userId,
             )
 
         if (serviceNeed?.placementType == type) {
@@ -106,6 +118,8 @@ fun createPlacement(
     placeGuarantee: Boolean,
     now: HelsinkiDateTime,
     userId: EvakaUserId,
+    source: PlacementSource,
+    sourceServiceApplicationId: ServiceApplicationId? = null,
 ): List<Placement> {
     val placementTypePeriods =
         if (useFiveYearsOldDaycare) {
@@ -122,6 +136,8 @@ fun createPlacement(
         placeGuarantee = placeGuarantee,
         now = now,
         userId = userId,
+        source = source,
+        sourceServiceApplicationId = sourceServiceApplicationId,
     )
 }
 
@@ -184,13 +200,13 @@ fun Database.Transaction.updatePlacement(
             }
 
         newPeriods.forEach { (period, type) ->
-            insertPlacement(
+            insertDerivedPlacement(
+                old,
                 type,
-                old.childId,
-                old.unitId,
                 period.start,
                 period.end,
-                old.placeGuarantee,
+                modifiedAt = now,
+                modifiedBy = userId,
             )
         }
     } catch (e: Exception) {
@@ -420,13 +436,13 @@ private fun Database.Transaction.splitPlacementWithGap(
         userId,
     )
 
-    insertPlacement(
-        type = placement.type,
-        childId = placement.childId,
-        unitId = placement.unitId,
-        startDate = gapEndInclusive.plusDays(1),
-        endDate = placement.endDate,
-        placeGuarantee = placement.placeGuarantee,
+    insertDerivedPlacement(
+        placement,
+        placement.type,
+        gapEndInclusive.plusDays(1),
+        placement.endDate,
+        now,
+        userId,
     )
 }
 

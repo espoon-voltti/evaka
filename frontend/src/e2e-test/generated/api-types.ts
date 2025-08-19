@@ -104,6 +104,7 @@ import type { PreschoolAssistanceLevel } from 'lib-common/generated/api-types/as
 import type { PreschoolTermId } from 'lib-common/generated/api-types/shared'
 import type { ProviderType } from 'lib-common/generated/api-types/daycare'
 import type { PushNotificationCategory } from 'lib-common/generated/api-types/webpush'
+import type { ServiceApplicationId } from 'lib-common/generated/api-types/shared'
 import type { ServiceNeedId } from 'lib-common/generated/api-types/shared'
 import type { ServiceNeedOptionId } from 'lib-common/generated/api-types/shared'
 import type { ServiceOptions } from 'lib-common/generated/api-types/assistanceneed'
@@ -920,9 +921,16 @@ export interface DevPersonalMobileDevice {
 */
 export interface DevPlacement {
   childId: PersonId
+  createdAt: HelsinkiDateTime
+  createdBy: EvakaUserId | null
   endDate: LocalDate
   id: PlacementId
+  modifiedAt: HelsinkiDateTime | null
+  modifiedBy: EvakaUserId | null
   placeGuarantee: boolean
+  source: PlacementSource | null
+  sourceApplicationId: ApplicationId | null
+  sourceServiceApplicationId: ServiceApplicationId | null
   startDate: LocalDate
   terminatedBy: EvakaUserId | null
   terminationRequestedDate: LocalDate | null
@@ -1167,6 +1175,15 @@ export interface PlacementPlan {
   preschoolDaycarePeriodStart: LocalDate | null
   unitId: DaycareId
 }
+
+/**
+* Generated from fi.espoo.evaka.placement.PlacementSource
+*/
+export type PlacementSource =
+  | 'APPLICATION'
+  | 'SERVICE_APPLICATION'
+  | 'PLACEMENT_TERMINATION'
+  | 'MANUAL'
 
 /**
 * Generated from fi.espoo.evaka.reservations.ReservationInsert
@@ -1656,7 +1673,9 @@ export function deserializeJsonDevPerson(json: JsonOf<DevPerson>): DevPerson {
 export function deserializeJsonDevPlacement(json: JsonOf<DevPlacement>): DevPlacement {
   return {
     ...json,
+    createdAt: HelsinkiDateTime.parseIso(json.createdAt),
     endDate: LocalDate.parseIso(json.endDate),
+    modifiedAt: (json.modifiedAt != null) ? HelsinkiDateTime.parseIso(json.modifiedAt) : null,
     startDate: LocalDate.parseIso(json.startDate),
     terminationRequestedDate: (json.terminationRequestedDate != null) ? LocalDate.parseIso(json.terminationRequestedDate) : null
   }

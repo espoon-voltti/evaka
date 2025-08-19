@@ -543,3 +543,5 @@ V544__child_document_decision_unit.sql
 V545__case_identifier.sql
 V546__end_decision_when_unit_changes_config.sql
 V547__relax_weak_credentials_check.sql
+V548__placement_created_by_source_etc.sql
+V549__placement_indexes.sql

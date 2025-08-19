@@ -92,16 +92,17 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     )
                 )
 
-            oldPlacement =
-                tx.insertPlacement(
-                    PlacementType.DAYCARE,
-                    childId,
-                    unitId,
-                    placementStart,
-                    placementEnd,
-                    false,
+            val daycarePlacementId =
+                tx.insert(
+                    DevPlacement(
+                        childId = childId,
+                        unitId = unitId,
+                        startDate = placementStart,
+                        endDate = placementEnd,
+                        placeGuarantee = false,
+                    )
                 )
-            daycarePlacementId = oldPlacement.id
+            oldPlacement = tx.getPlacement(daycarePlacementId)!!
 
             groupPlacementId =
                 tx.insert(
@@ -137,6 +138,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         placeGuarantee = false,
                         now = now,
                         userId = testDecisionMaker_1.evakaUserId,
+                        source = PlacementSource.MANUAL,
                     )
                 }
                 .first()
@@ -166,6 +168,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     placeGuarantee = false,
                     now = now,
                     userId = testDecisionMaker_1.evakaUserId,
+                    source = PlacementSource.MANUAL,
                 )
             }
 
@@ -196,6 +199,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         placeGuarantee = false,
                         now = now,
                         userId = testDecisionMaker_1.evakaUserId,
+                        source = PlacementSource.MANUAL,
                     )
                 }
                 .first()
@@ -230,6 +234,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         placeGuarantee = false,
                         now = now,
                         userId = testDecisionMaker_1.evakaUserId,
+                        source = PlacementSource.MANUAL,
                     )
                 }
                 .first()
@@ -284,6 +289,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         placeGuarantee = false,
                         now = now,
                         userId = testDecisionMaker_1.evakaUserId,
+                        source = PlacementSource.MANUAL,
                     )
                 }
                 .first()
@@ -323,6 +329,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         placeGuarantee = false,
                         now = now,
                         userId = testDecisionMaker_1.evakaUserId,
+                        source = PlacementSource.MANUAL,
                     )
                 }
                 .first()
@@ -370,6 +377,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         placeGuarantee = false,
                         now = now,
                         userId = testDecisionMaker_1.evakaUserId,
+                        source = PlacementSource.MANUAL,
                     )
                 }
                 .first()
@@ -402,6 +410,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         placeGuarantee = false,
                         now = now,
                         userId = testDecisionMaker_1.evakaUserId,
+                        source = PlacementSource.MANUAL,
                     )
                 }
                 .first()
@@ -441,6 +450,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         placeGuarantee = false,
                         now = now,
                         userId = testDecisionMaker_1.evakaUserId,
+                        source = PlacementSource.MANUAL,
                     )
                 }
                 .first()
@@ -473,6 +483,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         placeGuarantee = false,
                         now = now,
                         userId = testDecisionMaker_1.evakaUserId,
+                        source = PlacementSource.MANUAL,
                     )
                 }
                 .first()
@@ -505,6 +516,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         placeGuarantee = false,
                         now = now,
                         userId = testDecisionMaker_1.evakaUserId,
+                        source = PlacementSource.MANUAL,
                     )
                 }
                 .first()
@@ -544,6 +556,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         placeGuarantee = false,
                         now = now,
                         userId = testDecisionMaker_1.evakaUserId,
+                        source = PlacementSource.MANUAL,
                     )
                 }
                 .first()
@@ -562,6 +575,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         placeGuarantee = false,
                         now = now,
                         userId = testDecisionMaker_1.evakaUserId,
+                        source = PlacementSource.MANUAL,
                     )
                 }
                 .first()
@@ -590,33 +604,40 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     fun `adding a new placement does not delete future placements`() {
         // insert a future PRESCHOOL placement
         val (futurePreparatoryDaycare, futureDaycareInPreparatoryTerm, futurePreparatory) =
-            db.transaction {
+            db.transaction { tx ->
                 listOf(
-                    it.insertPlacement(
-                        PlacementType.PREPARATORY_DAYCARE,
-                        childId,
-                        unitId,
-                        LocalDate.of(year + 1, 8, 1),
-                        LocalDate.of(year + 2, 6, 30),
-                        false,
-                    ),
-                    it.insertPlacement(
-                        PlacementType.DAYCARE,
-                        childId,
-                        unitId,
-                        LocalDate.of(year + 2, 7, 1),
-                        LocalDate.of(year + 2, 7, 31),
-                        false,
-                    ),
-                    it.insertPlacement(
-                        PlacementType.PREPARATORY_DAYCARE,
-                        childId,
-                        unitId,
-                        LocalDate.of(year + 2, 9, 1),
-                        LocalDate.of(year + 3, 4, 11),
-                        false,
-                    ),
-                )
+                        tx.insert(
+                            DevPlacement(
+                                type = PlacementType.PREPARATORY_DAYCARE,
+                                childId = childId,
+                                unitId = unitId,
+                                startDate = LocalDate.of(year + 1, 8, 1),
+                                endDate = LocalDate.of(year + 2, 6, 30),
+                                placeGuarantee = false,
+                            )
+                        ),
+                        tx.insert(
+                            DevPlacement(
+                                type = PlacementType.DAYCARE,
+                                childId = childId,
+                                unitId = unitId,
+                                startDate = LocalDate.of(year + 2, 7, 1),
+                                endDate = LocalDate.of(year + 2, 7, 31),
+                                placeGuarantee = false,
+                            )
+                        ),
+                        tx.insert(
+                            DevPlacement(
+                                type = PlacementType.PREPARATORY_DAYCARE,
+                                childId = childId,
+                                unitId = unitId,
+                                startDate = LocalDate.of(year + 2, 9, 1),
+                                endDate = LocalDate.of(year + 3, 4, 11),
+                                placeGuarantee = false,
+                            )
+                        ),
+                    )
+                    .map { tx.getPlacement(it)!! }
             }
 
         val newPlacement =
@@ -635,6 +656,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         placeGuarantee = false,
                         now = now,
                         userId = testDecisionMaker_1.evakaUserId,
+                        source = PlacementSource.MANUAL,
                     )
                 }
                 .first()
@@ -672,6 +694,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         placeGuarantee = false,
                         now = now,
                         userId = testDecisionMaker_1.evakaUserId,
+                        source = PlacementSource.MANUAL,
                     )
                 }
                 .first()
@@ -714,6 +737,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         placeGuarantee = false,
                         now = now,
                         userId = testDecisionMaker_1.evakaUserId,
+                        source = PlacementSource.MANUAL,
                     )
                 }
                 .first()
@@ -793,6 +817,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         placeGuarantee = false,
                         now = now,
                         userId = testDecisionMaker_1.evakaUserId,
+                        source = PlacementSource.MANUAL,
                     )
                 }
                 .first()
@@ -830,6 +855,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 placeGuarantee = false,
                 now = now,
                 userId = testDecisionMaker_1.evakaUserId,
+                source = PlacementSource.MANUAL,
             )
         }
 
@@ -881,6 +907,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         placeGuarantee = false,
                         now = now,
                         userId = testDecisionMaker_1.evakaUserId,
+                        source = PlacementSource.MANUAL,
                     )
                 }
                 .first()
@@ -923,6 +950,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         placeGuarantee = false,
                         now = now,
                         userId = testDecisionMaker_1.evakaUserId,
+                        source = PlacementSource.MANUAL,
                     )
                 }
                 .first()
@@ -1005,6 +1033,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     unitId = daycare2.id,
                     startDate = daycarePlacementStartDate,
                     endDate = daycarePlacementEndDate,
+                    modifiedAt = null,
+                    modifiedBy = null,
                 )
             )
         }
@@ -1081,6 +1111,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     unitId = daycare2.id,
                     startDate = daycarePlacementStartDate,
                     endDate = daycarePlacementEndDate,
+                    modifiedAt = null,
+                    modifiedBy = null,
                 )
             )
         }
@@ -1235,35 +1267,39 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     @Test
     fun `only missing group placements after evaka launch are included`() {
         val evakaLaunch = LocalDate.of(2020, 3, 1)
-        val placement =
+        val startDate = evakaLaunch.minusYears(1)
+        val endDate = evakaLaunch.plusYears(1)
+        val placementId =
             db.transaction { tx ->
-                val placement =
-                    tx.insertPlacement(
-                        PlacementType.DAYCARE,
-                        testChild_1.id,
-                        daycare1.id,
-                        evakaLaunch.minusYears(1),
-                        evakaLaunch.plusYears(1),
-                        false,
+                val placementId =
+                    tx.insert(
+                        DevPlacement(
+                            type = PlacementType.DAYCARE,
+                            childId = testChild_1.id,
+                            unitId = daycare1.id,
+                            startDate = startDate,
+                            endDate = endDate,
+                            placeGuarantee = false,
+                        )
                     )
                 tx.insert(
                     DevDaycareGroupPlacement(
-                        daycarePlacementId = placement.id,
+                        daycarePlacementId = placementId,
                         daycareGroupId = groupId1,
                         startDate = evakaLaunch,
                         endDate = evakaLaunch.plusMonths(6),
                     )
                 )
-                placement
+                placementId
             }
 
         val (group, backup) = db.read { tx -> getMissingGroupPlacements(tx, daycare1.id) }
         assertEquals(
             listOf(
                 MissingGroupPlacement(
-                    placement.id,
-                    placement.type,
-                    FiniteDateRange(placement.startDate, placement.endDate),
+                    placementId,
+                    PlacementType.DAYCARE,
+                    FiniteDateRange(startDate, endDate),
                     testChild_1.id,
                     testChild_1.firstName,
                     testChild_1.lastName,
@@ -1281,23 +1317,27 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     @Test
     fun `only missing backup care group placements after evaka launch are included`() {
         val evakaLaunch = LocalDate.of(2020, 3, 1)
+        val startDate = evakaLaunch.minusYears(1)
+        val endDate = evakaLaunch.plusYears(1)
         val backupCareId =
             db.transaction { tx ->
-                val placement =
-                    tx.insertPlacement(
-                        PlacementType.DAYCARE,
-                        testChild_1.id,
-                        daycare1.id,
-                        evakaLaunch.minusYears(1),
-                        evakaLaunch.plusYears(1),
-                        false,
+                val placementId =
+                    tx.insert(
+                        DevPlacement(
+                            type = PlacementType.DAYCARE,
+                            childId = testChild_1.id,
+                            unitId = daycare1.id,
+                            startDate = startDate,
+                            endDate = endDate,
+                            placeGuarantee = false,
+                        )
                     )
                 tx.insert(
                     DevDaycareGroupPlacement(
-                        daycarePlacementId = placement.id,
+                        daycarePlacementId = placementId,
                         daycareGroupId = groupId1,
-                        startDate = placement.startDate,
-                        endDate = placement.endDate,
+                        startDate = startDate,
+                        endDate = endDate,
                     )
                 )
                 tx.insert(

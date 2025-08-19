@@ -7,6 +7,7 @@ package fi.espoo.evaka.serviceneed.application
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.insertServiceNeedOptions
+import fi.espoo.evaka.placement.PlacementSource
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.getPlacementsForChild
 import fi.espoo.evaka.serviceneed.ShiftCareType
@@ -456,6 +457,8 @@ class ServiceApplicationIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             assertEquals(it.endDate, placement.endDate)
             assertEquals(it.type, snDaycarePartDay25.validPlacementType)
             assertEquals(it.unitId, placement.unitId)
+            assertEquals(it.source, PlacementSource.SERVICE_APPLICATION)
+            assertEquals(it.sourceServiceApplicationId, application.id)
         }
 
         // service need was updated

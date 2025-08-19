@@ -39,6 +39,7 @@ import type {
   AreaId,
   DaycareId,
   EmployeeId,
+  EvakaUserId,
   FeeDecisionId,
   GroupId,
   PersonId,
@@ -157,6 +158,7 @@ import type {
   NekkuCustomer,
   NekkuSpecialDiet,
   PlacementPlan,
+  PlacementSource,
   ReservationInsert,
   VoucherValueDecision
 } from '../generated/api-types'
@@ -692,6 +694,13 @@ export class Fixture {
       placeGuarantee: false,
       terminatedBy: null,
       terminationRequestedDate: null,
+      createdAt: HelsinkiDateTime.now(),
+      createdBy: systemInternalUser.id,
+      source: 'MANUAL',
+      sourceApplicationId: null,
+      sourceServiceApplicationId: null,
+      modifiedAt: HelsinkiDateTime.now(),
+      modifiedBy: systemInternalUser.id,
       ...initial
     }
     return {
@@ -3218,9 +3227,14 @@ export function createDaycarePlacementFixture(
   startDate = LocalDate.of(2022, 5, 1),
   endDate = LocalDate.of(2023, 8, 31),
   type: PlacementType = 'DAYCARE',
-  placeGuarantee = false
+  placeGuarantee = false,
+  createdAt = HelsinkiDateTime.now(),
+  createdBy = systemInternalUser.id,
+  source: PlacementSource = 'MANUAL',
+  modifiedAt: HelsinkiDateTime | null = HelsinkiDateTime.now(),
+  modifiedBy: EvakaUserId | null = systemInternalUser.id
 ): DevPlacement {
-  return {
+  return Fixture.placement({
     id,
     type,
     childId,
@@ -3228,9 +3242,14 @@ export function createDaycarePlacementFixture(
     startDate,
     endDate,
     placeGuarantee,
+    createdAt,
+    createdBy,
+    source,
+    modifiedAt,
+    modifiedBy,
     terminationRequestedDate: null,
     terminatedBy: null
-  }
+  })
 }
 
 export const DecisionIncomeFixture = (total: number): DecisionIncome => ({

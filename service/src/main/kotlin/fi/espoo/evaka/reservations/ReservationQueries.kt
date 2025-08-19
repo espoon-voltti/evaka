@@ -668,7 +668,7 @@ fun Database.Read.getReservationEnabledPlacementRangesByChild(
     createQuery {
             sql(
                 """
-                SELECT pl.child_id, pl.created, daterange(pl.start_date, pl.end_date, '[]') AS range
+                SELECT pl.child_id, pl.created_at, daterange(pl.start_date, pl.end_date, '[]') AS range
                 FROM placement pl
                 JOIN daycare d ON pl.unit_id = d.id
                 WHERE pl.child_id = ANY(${bind(childIds)}) AND 'RESERVATIONS' = ANY(d.enabled_pilot_features)
@@ -678,7 +678,7 @@ fun Database.Read.getReservationEnabledPlacementRangesByChild(
         .map {
             column<ChildId>("child_id") to
                 ReservationEnabledPlacementRange(
-                    column<HelsinkiDateTime>("created").toLocalDate(),
+                    column<HelsinkiDateTime>("created_at").toLocalDate(),
                     column("range"),
                 )
         }

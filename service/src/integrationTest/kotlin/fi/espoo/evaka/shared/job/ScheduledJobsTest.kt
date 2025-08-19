@@ -22,7 +22,6 @@ import fi.espoo.evaka.note.child.sticky.getChildStickyNotesForChild
 import fi.espoo.evaka.pis.service.getGuardianChildIds
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.placement.PlacementType
-import fi.espoo.evaka.placement.insertPlacement
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -426,13 +425,13 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         val validNoteId =
             db.transaction {
-                it.insertPlacement(
-                    type = PlacementType.DAYCARE,
-                    childId = testChild_2.id,
-                    unitId = testDaycare.id,
-                    startDate = LocalDate.now().minusDays(100),
-                    endDate = LocalDate.now().plusDays(100),
-                    false,
+                it.insert(
+                    DevPlacement(
+                        childId = testChild_2.id,
+                        unitId = testDaycare.id,
+                        startDate = LocalDate.now().minusDays(100),
+                        endDate = LocalDate.now().plusDays(100),
+                    )
                 )
                 it.createChildDailyNote(
                     testChild_2.id,
