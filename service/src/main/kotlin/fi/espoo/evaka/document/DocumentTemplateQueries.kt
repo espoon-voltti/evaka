@@ -186,7 +186,7 @@ fun Database.Transaction.forceUnpublishTemplate(id: DocumentTemplateId) {
         sql(
             """
         WITH documents_to_delete AS (
-            SELECT id, process_id FROM child_document
+            SELECT id, process_id, decision_id FROM child_document
             WHERE template_id = ${bind(id)}
             FOR UPDATE 
         ), delete_processes AS (
@@ -194,6 +194,8 @@ fun Database.Transaction.forceUnpublishTemplate(id: DocumentTemplateId) {
             WHERE ap.id IN (SELECT d2d.process_id FROM documents_to_delete d2d)
         ), delete_documents AS (
             DELETE FROM child_document cd WHERE cd.id IN (SELECT d2d.id FROM documents_to_delete d2d)
+        ), delete_decisions AS (
+            DELETE FROM child_document_decision cdd WHERE cdd.id IN (SELECT d2d.decision_id FROM documents_to_delete d2d)
         )
         UPDATE document_template
         SET published = false
