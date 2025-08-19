@@ -164,9 +164,6 @@ data class FeatureConfig(
 
     /** Accept preschool decision without asking guardian confirmation */
     val skipGuardianPreschoolDecisionApproval: Boolean = false,
-
-    /** Nekku Meal Decution Factor that deducts normal diets from the group order */
-    val nekkuMealDeductionFactor: Double = 1.0,
 )
 
 enum class ArchiveProcessType {

@@ -113,6 +113,7 @@ type FormData = {
   iban: string
   providerId: string
   partnerCode: string
+  nekkuOrderReductionPercentage: string
 } & MealtimeData
 
 interface UnitDecisionCustomization {
@@ -659,6 +660,10 @@ function validateForm(
     form.mealtimeEveningSnack,
     'mealtimeEveningSnack'
   )
+  const nekkuOrderReductionPercentage = parseInt(
+    form.nekkuOrderReductionPercentage,
+    10
+  )
 
   const {
     openingDate,
@@ -751,7 +756,8 @@ function validateForm(
           snack: mealtimeSnack,
           supper: mealtimeSupper,
           eveningSnack: mealtimeEveningSnack
-        }
+        },
+        nekkuOrderReductionPercentage
       },
       {
         formErrors: errors,
@@ -879,7 +885,10 @@ function toFormData(unit: Daycare | undefined): FormData {
     mealtimeLunch: formatTimeRange(unit?.mealTimes.lunch),
     mealtimeSnack: formatTimeRange(unit?.mealTimes.snack),
     mealtimeSupper: formatTimeRange(unit?.mealTimes.supper),
-    mealtimeEveningSnack: formatTimeRange(unit?.mealTimes.eveningSnack)
+    mealtimeEveningSnack: formatTimeRange(unit?.mealTimes.eveningSnack),
+    nekkuOrderReductionPercentage: (
+      unit?.nekkuOrderReductionPercentage ?? 0
+    ).toString()
   }
 }
 
@@ -2162,6 +2171,21 @@ export default function UnitEditor(props: Props) {
             </FixedSpaceColumn>
           </FormPart>
         </>
+      )}
+      {featureFlags.nekkuIntegration && (
+        <FormPart>
+          <label>{i18n.unitEditor.label.nekkuMealReduction}</label>
+          <InputField
+            id="nekku-reduction"
+            value={form.nekkuOrderReductionPercentage}
+            width="xs"
+            onChange={(value) =>
+              updateForm({
+                nekkuOrderReductionPercentage: value
+              })
+            }
+          />
+        </FormPart>
       )}
       {props.editable && (
         <>

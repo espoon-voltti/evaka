@@ -4825,7 +4825,8 @@ export const fi = {
         snack: 'Välipala',
         supper: 'Päivällinen',
         eveningSnack: 'Iltapala'
-      }
+      },
+      nekkuMealReduction: 'Nekku-vähennysprosentti'
     },
     info: {
       varda: 'Käytetään Varda-integraatiossa',

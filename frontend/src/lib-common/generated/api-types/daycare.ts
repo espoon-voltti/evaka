@@ -214,6 +214,7 @@ export interface Daycare {
   mailingAddress: MailingAddress
   mealTimes: DaycareMealtimes
   name: string
+  nekkuOrderReductionPercentage: number
   openingDate: LocalDate | null
   operationDays: number[]
   operationTimes: (TimeRange | null)[]
@@ -283,6 +284,7 @@ export interface DaycareFields {
   mailingAddress: MailingAddress
   mealtimes: DaycareMealtimes
   name: string
+  nekkuOrderReductionPercentage: number
   openingDate: LocalDate | null
   operationTimes: (TimeRange | null)[]
   ophOrganizerOid: string | null

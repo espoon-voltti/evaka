@@ -224,7 +224,7 @@ INSERT INTO daycare (
     decision_daycare_name, decision_preschool_name, decision_handler, decision_handler_address,
     oph_unit_oid, oph_organizer_oid, operation_times, shift_care_operation_times, shift_care_open_on_holidays, enabled_pilot_features,
     finance_decision_handler, business_id, iban, provider_id, partner_code, mealtime_breakfast, mealtime_lunch, mealtime_snack,
-    mealtime_supper, mealtime_evening_snack, with_school
+    mealtime_supper, mealtime_evening_snack, with_school, nekku_order_reduction_percentage
 ) VALUES (
     ${bind(row.id)}, ${bind(row.name)}, ${bind(row.openingDate)}, ${bind(row.closingDate)}, ${bind(row.areaId)},
     ${bind(row.type)}::care_types[], ${bind(row.dailyPreschoolTime)}, ${bind(row.dailyPreparatoryTime)}, ${bind(row.daycareApplyPeriod)},
@@ -239,7 +239,7 @@ INSERT INTO daycare (
     ${bind(row.decisionCustomization.handlerAddress)}, ${bind(row.ophUnitOid)}, ${bind(row.ophOrganizerOid)},
     ${bind(row.operationTimes)}, ${bind(row.shiftCareOperationTimes)}, ${bind(row.shiftCareOpenOnHolidays)}, ${bind(row.enabledPilotFeatures)}::pilot_feature[], ${bind(row.financeDecisionHandler)}, ${bind(row.businessId)},
     ${bind(row.iban)}, ${bind(row.providerId)}, ${bind(row.partnerCode)}, ${bind(row.mealtimeBreakfast)}, ${bind(row.mealtimeLunch)}, ${bind(row.mealtimeSnack)},
-    ${bind(row.mealtimeSupper)}, ${bind(row.mealtimeEveningSnack)}, ${bind(row.withSchool)}
+    ${bind(row.mealtimeSupper)}, ${bind(row.mealtimeEveningSnack)}, ${bind(row.withSchool)}, ${bind(row.nekkuOrderReductionPercentage)}
 )
 RETURNING id
 """

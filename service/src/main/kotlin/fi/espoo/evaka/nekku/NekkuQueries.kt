@@ -888,3 +888,18 @@ data class NekkuDaycareOperationInfo(
     val combinedDays: List<Int>,
     val shiftCareOpenOnHolidays: Boolean,
 )
+
+fun Database.Read.getNekkuOrderReductionForDaycareByGroup(groupId: GroupId) =
+    createQuery {
+            sql(
+                """
+            SELECT nekku_order_reduction_percentage
+            FROM daycare dc
+            JOIN daycare_group dg
+            ON dg.daycare_id = dc.id
+            WHERE dg.id = ${bind(groupId)}
+            """
+                    .trimIndent()
+            )
+        }
+        .exactlyOne<Int>()

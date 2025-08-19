@@ -433,8 +433,8 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                 .forEach { tx.insert(it) }
         }
 
-        createAndSendNekkuOrder(client, db, group.id, monday, 0.9)
-        createAndSendNekkuOrder(client, db, group.id, tuesday, 0.9)
+        createAndSendNekkuOrder(client, db, group.id, monday)
+        createAndSendNekkuOrder(client, db, group.id, tuesday)
 
         assertOrdersListEquals(
             listOf(
@@ -539,7 +539,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                 .forEach { tx.insert(it) }
         }
 
-        createAndSendNekkuOrder(client, db, group.id, monday, 0.9)
+        createAndSendNekkuOrder(client, db, group.id, monday)
 
         db.transaction { tx ->
             val nekkuOrderReportResult = tx.getNekkuOrderReport(daycare.id, group.id, monday)
@@ -674,7 +674,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                 .forEach { tx.insert(it) }
         }
 
-        createAndSendNekkuOrder(client, db, group.id, monday, 0.9)
+        createAndSendNekkuOrder(client, db, group.id, monday)
 
         db.transaction { tx ->
             val nekkuOrderReportResult = tx.getNekkuOrderReport(daycare.id, group.id, monday)
@@ -723,6 +723,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                 mealtimeBreakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
                 mealtimeLunch = TimeRange(LocalTime.of(11, 15), LocalTime.of(11, 45)),
                 mealtimeSnack = TimeRange(LocalTime.of(13, 30), LocalTime.of(13, 50)),
+                nekkuOrderReductionPercentage = 10,
             )
         val group = DevDaycareGroup(daycareId = daycare.id, nekkuCustomerNumber = "2501K6089")
         val employee = DevEmployee()
@@ -790,8 +791,8 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
             }
         }
 
-        createAndSendNekkuOrder(client, db, group.id, monday, 0.9)
-        createAndSendNekkuOrder(client, db, group.id, tuesday, 0.9)
+        createAndSendNekkuOrder(client, db, group.id, monday)
+        createAndSendNekkuOrder(client, db, group.id, tuesday)
 
         assertOrdersListEquals(
             listOf(
@@ -828,6 +829,186 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
     }
 
     @Test
+    fun `Send Nekku orders with known reservations and remove unit specific percentage of normal orders`() {
+        val monday = LocalDate.of(2025, 4, 14)
+        val tuesday = LocalDate.of(2025, 4, 15)
+
+        // First create all of the basic backgrounds like
+        // Customer numbers
+        val client =
+            TestNekkuClient(
+                customers = basicTestClientCustomers,
+                nekkuProducts = nekkuProductsForOrder,
+                specialDiets = listOf(getNekkuSpecialDiet()),
+            )
+        fetchAndUpdateNekkuCustomers(client, db, asyncJobRunner, now)
+        // products
+        fetchAndUpdateNekkuProducts(client, db)
+        fetchAndUpdateNekkuSpecialDiets(client, db, asyncJobRunner, now)
+        // Daycare with groups
+        val area = DevCareArea()
+        val daycare1 =
+            DevDaycare(
+                areaId = area.id,
+                mealtimeBreakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
+                mealtimeLunch = TimeRange(LocalTime.of(11, 15), LocalTime.of(11, 45)),
+                mealtimeSnack = TimeRange(LocalTime.of(13, 30), LocalTime.of(13, 50)),
+                nekkuOrderReductionPercentage = 10,
+            )
+        val daycare2 =
+            DevDaycare(
+                areaId = area.id,
+                mealtimeBreakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
+                mealtimeLunch = TimeRange(LocalTime.of(11, 15), LocalTime.of(11, 45)),
+                mealtimeSnack = TimeRange(LocalTime.of(13, 30), LocalTime.of(13, 50)),
+                nekkuOrderReductionPercentage = 20,
+            )
+        val group1 = DevDaycareGroup(daycareId = daycare1.id, nekkuCustomerNumber = "2501K6089")
+        val group2 = DevDaycareGroup(daycareId = daycare2.id, nekkuCustomerNumber = "2501K6089")
+        val employee = DevEmployee()
+
+        // Children with placements in the group and they are not absent
+
+        val children1 =
+            listOf(
+                DevPerson(),
+                DevPerson(),
+                DevPerson(),
+                DevPerson(),
+                DevPerson(),
+                DevPerson(),
+                DevPerson(),
+                DevPerson(),
+                DevPerson(),
+                DevPerson(),
+            )
+        val children2 =
+            listOf(
+                DevPerson(),
+                DevPerson(),
+                DevPerson(),
+                DevPerson(),
+                DevPerson(),
+                DevPerson(),
+                DevPerson(),
+                DevPerson(),
+                DevPerson(),
+                DevPerson(),
+            )
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare1)
+            tx.insert(daycare2)
+            tx.insert(group1)
+            tx.insert(group2)
+            tx.insert(employee)
+            children1.map { child ->
+                tx.insert(child, DevPersonType.CHILD)
+                tx.insert(
+                        DevPlacement(
+                            childId = child.id,
+                            unitId = daycare1.id,
+                            startDate = monday,
+                            endDate = tuesday,
+                        )
+                    )
+                    .also { placementId ->
+                        tx.insert(
+                            DevDaycareGroupPlacement(
+                                daycarePlacementId = placementId,
+                                daycareGroupId = group1.id,
+                                startDate = monday,
+                                endDate = tuesday,
+                            )
+                        )
+                    }
+                // Two meals on Monday
+                tx.insert(
+                    DevReservation(
+                        childId = child.id,
+                        date = monday,
+                        startTime = LocalTime.of(8, 0),
+                        endTime = LocalTime.of(12, 0),
+                        createdBy = employee.evakaUserId,
+                    )
+                )
+            }
+
+            children2.map { child ->
+                tx.insert(child, DevPersonType.CHILD)
+                tx.insert(
+                        DevPlacement(
+                            childId = child.id,
+                            unitId = daycare2.id,
+                            startDate = monday,
+                            endDate = tuesday,
+                        )
+                    )
+                    .also { placementId ->
+                        tx.insert(
+                            DevDaycareGroupPlacement(
+                                daycarePlacementId = placementId,
+                                daycareGroupId = group2.id,
+                                startDate = monday,
+                                endDate = tuesday,
+                            )
+                        )
+                    }
+                // Two meals on Monday
+                tx.insert(
+                    DevReservation(
+                        childId = child.id,
+                        date = monday,
+                        startTime = LocalTime.of(8, 0),
+                        endTime = LocalTime.of(12, 0),
+                        createdBy = employee.evakaUserId,
+                    )
+                )
+            }
+        }
+
+        createAndSendNekkuOrder(client, db, group1.id, monday)
+        createAndSendNekkuOrder(client, db, group2.id, monday)
+
+        assertOrdersListEquals(
+            listOf(
+                NekkuClient.NekkuOrders(
+                    listOf(
+                        NekkuClient.NekkuOrder(
+                            monday.toString(),
+                            "2501K6089",
+                            group1.id.toString(),
+                            listOf(
+                                NekkuClient.Item("31000010", 9, null),
+                                NekkuClient.Item("31000011", 9, null),
+                            ),
+                            group1.name,
+                        )
+                    ),
+                    dryRun = false,
+                ),
+                NekkuClient.NekkuOrders(
+                    listOf(
+                        NekkuClient.NekkuOrder(
+                            monday.toString(),
+                            "2501K6089",
+                            group2.id.toString(),
+                            listOf(
+                                NekkuClient.Item("31000010", 8, null),
+                                NekkuClient.Item("31000011", 8, null),
+                            ),
+                            group2.name,
+                        )
+                    ),
+                    dryRun = false,
+                ),
+            ),
+            client.orders,
+        )
+    }
+
+    @Test
     fun `10percnt deduction does not remove any vegan or vegetable diets`() {
         val monday = LocalDate.of(2025, 4, 14)
         val tuesday = LocalDate.of(2025, 4, 15)
@@ -852,6 +1033,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                 mealtimeBreakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
                 mealtimeLunch = TimeRange(LocalTime.of(11, 15), LocalTime.of(11, 45)),
                 mealtimeSnack = TimeRange(LocalTime.of(13, 30), LocalTime.of(13, 50)),
+                nekkuOrderReductionPercentage = 10,
             )
         val group = DevDaycareGroup(daycareId = daycare.id, nekkuCustomerNumber = "2501K6089")
         val employee = DevEmployee()
@@ -920,8 +1102,8 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
             }
         }
 
-        createAndSendNekkuOrder(client, db, group.id, monday, 0.9)
-        createAndSendNekkuOrder(client, db, group.id, tuesday, 0.9)
+        createAndSendNekkuOrder(client, db, group.id, monday)
+        createAndSendNekkuOrder(client, db, group.id, tuesday)
 
         assertOrdersListEquals(
             listOf(
@@ -1060,7 +1242,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                 .forEach { tx.insert(it) }
         }
 
-        createAndSendNekkuOrder(client, db, group.id, monday, 0.9)
+        createAndSendNekkuOrder(client, db, group.id, monday)
 
         assertOrdersListEquals(
             listOf(
@@ -1154,7 +1336,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                 .forEach { tx.insert(it) }
         }
 
-        createAndSendNekkuOrder(client, db, group.id, monday, 0.9)
+        createAndSendNekkuOrder(client, db, group.id, monday)
 
         assertOrdersListEquals(
             listOf(
@@ -1253,8 +1435,8 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                 .forEach { tx.insert(it) }
         }
 
-        createAndSendNekkuOrder(client, db, group.id, monday, 0.9)
-        createAndSendNekkuOrder(client, db, group.id, tuesday, 0.9)
+        createAndSendNekkuOrder(client, db, group.id, monday)
+        createAndSendNekkuOrder(client, db, group.id, tuesday)
 
         assertOrdersListEquals(
             listOf(
@@ -1369,8 +1551,8 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                 }
         }
 
-        createAndSendNekkuOrder(client, db, group.id, monday, 0.9)
-        createAndSendNekkuOrder(client, db, group.id, tuesday, 0.9)
+        createAndSendNekkuOrder(client, db, group.id, monday)
+        createAndSendNekkuOrder(client, db, group.id, tuesday)
 
         assertOrdersListEquals(
             listOf(
@@ -1490,8 +1672,8 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                 .forEach { tx.insert(it) }
         }
 
-        createAndSendNekkuOrder(client, db, group.id, monday, 0.9)
-        createAndSendNekkuOrder(client, db, group.id, tuesday, 0.9)
+        createAndSendNekkuOrder(client, db, group.id, monday)
+        createAndSendNekkuOrder(client, db, group.id, tuesday)
 
         assertOrdersListEquals(
             listOf(
@@ -1623,8 +1805,8 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                 .forEach { tx.insert(it) }
         }
 
-        createAndSendNekkuOrder(client, db, group.id, monday, 0.9)
-        createAndSendNekkuOrder(client, db, group.id, tuesday, 0.9)
+        createAndSendNekkuOrder(client, db, group.id, monday)
+        createAndSendNekkuOrder(client, db, group.id, tuesday)
 
         assertOrdersListEquals(
             listOf(
@@ -1747,8 +1929,8 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                 .forEach { tx.insert(it) }
         }
 
-        createAndSendNekkuOrder(client, db, group.id, monday, 0.9)
-        createAndSendNekkuOrder(client, db, group.id, tuesday, 0.9)
+        createAndSendNekkuOrder(client, db, group.id, monday)
+        createAndSendNekkuOrder(client, db, group.id, tuesday)
 
         assertOrdersListEquals(
             listOf(
@@ -1917,7 +2099,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
             "Pähkinätön",
         )
 
-        createAndSendNekkuOrder(client, db, group.id, monday, 0.9)
+        createAndSendNekkuOrder(client, db, group.id, monday)
 
         assertOrdersListEquals(
             listOf(
@@ -2153,7 +2335,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
             "Pähkinätön",
         )
 
-        createAndSendNekkuOrder(client, db, group.id, monday, 0.9)
+        createAndSendNekkuOrder(client, db, group.id, monday)
 
         assertOrdersListEquals(
             listOf(
@@ -2423,7 +2605,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
             )
         }
 
-        createAndSendNekkuOrder(client, db, group.id, monday, 0.9)
+        createAndSendNekkuOrder(client, db, group.id, monday)
 
         assertOrdersListEquals(
             listOf(
@@ -2554,7 +2736,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
             "Pähkinätön",
         )
 
-        createAndSendNekkuOrder(client, db, group.id, monday, 0.9)
+        createAndSendNekkuOrder(client, db, group.id, monday)
 
         db.transaction { tx ->
             val nekkuOrderReportResult = tx.getNekkuOrderReport(daycare.id, group.id, monday)
@@ -2809,7 +2991,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
             "Pähkinätön",
         )
 
-        createAndSendNekkuOrder(client, db, group.id, monday, 0.9)
+        createAndSendNekkuOrder(client, db, group.id, monday)
 
         db.transaction { tx ->
             val nekkuOrderReportResult = tx.getNekkuOrderReport(daycare.id, group.id, monday)
@@ -2994,7 +3176,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
             "Laktoositon ruokavalio",
         )
 
-        createAndSendNekkuOrder(client, db, group.id, monday, 0.9)
+        createAndSendNekkuOrder(client, db, group.id, monday)
 
         db.transaction { tx ->
             val nekkuOrderReportResult = tx.getNekkuOrderReport(daycare.id, group.id, monday)

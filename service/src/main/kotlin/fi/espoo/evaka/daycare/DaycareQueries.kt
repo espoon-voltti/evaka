@@ -71,6 +71,7 @@ data class DaycareFields(
     val providerId: String,
     val partnerCode: String,
     val mealtimes: DaycareMealtimes,
+    val nekkuOrderReductionPercentage: Int,
 ) {
     fun validate() {
         if (name.isBlank()) {
@@ -174,7 +175,8 @@ SELECT
   daycare.mealtime_lunch,
   daycare.mealtime_snack,
   daycare.mealtime_supper,
-  daycare.mealtime_evening_snack
+  daycare.mealtime_evening_snack,
+  daycare.nekku_order_reduction_percentage
 FROM daycare
 LEFT JOIN employee finance_decision_handler ON finance_decision_handler.id = daycare.finance_decision_handler
 JOIN care_area ca ON daycare.care_area_id = ca.id
@@ -330,7 +332,8 @@ SET
   mealtime_lunch = ${bind(fields.mealtimes.lunch)},
   mealtime_snack = ${bind(fields.mealtimes.snack)},
   mealtime_supper = ${bind(fields.mealtimes.supper)},
-  mealtime_evening_snack = ${bind(fields.mealtimes.eveningSnack)}
+  mealtime_evening_snack = ${bind(fields.mealtimes.eveningSnack)},
+  nekku_order_reduction_percentage = ${bind(fields.nekkuOrderReductionPercentage)}
 WHERE id = ${bind(id)}
 """
     )
