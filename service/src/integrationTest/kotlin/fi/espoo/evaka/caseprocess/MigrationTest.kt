@@ -827,9 +827,11 @@ class MigrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 content = DocumentContent(emptyList()),
                 publishedContent = null,
                 modifiedAt = created,
-                contentModifiedAt = created,
-                contentModifiedBy = employee.id,
+                modifiedBy = employee.evakaUserId,
+                contentLockedAt = created,
+                contentLockedBy = employee.id,
                 publishedAt = null,
+                publishedBy = null,
             )
 
         db.transaction { tx ->
@@ -886,9 +888,11 @@ class MigrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 content = DocumentContent(emptyList()),
                 publishedContent = DocumentContent(emptyList()),
                 modifiedAt = modified,
-                contentModifiedAt = modified,
-                contentModifiedBy = employee.id,
+                modifiedBy = employee.evakaUserId,
+                contentLockedAt = modified,
+                contentLockedBy = employee.id,
                 publishedAt = modified,
+                publishedBy = employee.evakaUserId,
                 documentKey = "foobar123",
             )
 

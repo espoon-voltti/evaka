@@ -1507,8 +1507,8 @@ fun Database.Transaction.insert(row: DevChildDocument): ChildDocumentId {
     return createUpdate {
             sql(
                 """
-INSERT INTO child_document (id, created, created_by, type, status, child_id, template_id, content, published_content, modified_at, content_modified_at, content_modified_by, document_key, published_at, answered_at, answered_by, process_id, decision_maker, decision_id)
-VALUES (${bind(row.id)}, ${if (row.created != null) bind(row.created) else insertDefault()}, ${bind(row.createdBy)}, ${bind(type)}, ${bind(row.status)}, ${bind(row.childId)}, ${bind(row.templateId)}, ${bind(row.content)}, ${bind(row.publishedContent)}, ${bind(row.modifiedAt)}, ${bind(row.contentModifiedAt)}, ${bind(row.contentModifiedBy)}, ${bind(row.documentKey)}, ${bind(row.publishedAt)}, ${bind(row.answeredAt)}, ${bind(row.answeredBy)}, ${bind(row.processId)}, ${bind(row.decisionMaker)}, ${bind(decisionId)})
+INSERT INTO child_document (id, created, created_by, type, status, child_id, template_id, content, published_content, modified_at, modified_by, content_locked_at, content_locked_by, document_key, published_at, published_by, answered_at, answered_by, process_id, decision_maker, decision_id)
+VALUES (${bind(row.id)}, ${if (row.created != null) bind(row.created) else insertDefault()}, ${bind(row.createdBy)}, ${bind(type)}, ${bind(row.status)}, ${bind(row.childId)}, ${bind(row.templateId)}, ${bind(row.content)}, ${bind(row.publishedContent)}, ${bind(row.modifiedAt)}, ${bind(row.modifiedBy)}, ${bind(row.contentLockedAt)}, ${bind(row.contentLockedBy)}, ${bind(row.documentKey)}, ${bind(row.publishedAt)}, ${bind(row.publishedBy)}, ${bind(row.answeredAt)}, ${bind(row.answeredBy)}, ${bind(row.processId)}, ${bind(row.decisionMaker)}, ${bind(decisionId)})
 """
             )
         }

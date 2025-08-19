@@ -131,8 +131,10 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `expired vasu, leops and hojks documents are completed and published`() {
+        val employee = DevEmployee()
         // given
         db.transaction { tx ->
+            tx.insert(employee)
             tx.insert(
                 DevChildDocument(
                     id = activeHojksDocumentId,
@@ -142,9 +144,11 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     content = content,
                     publishedContent = null,
                     modifiedAt = clock.now(),
-                    contentModifiedAt = clock.now(),
-                    contentModifiedBy = null,
+                    modifiedBy = employee.evakaUserId,
+                    contentLockedAt = clock.now(),
+                    contentLockedBy = null,
                     publishedAt = null,
+                    publishedBy = null,
                     answeredAt = null,
                     answeredBy = null,
                 )
@@ -158,10 +162,12 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     content = content,
                     publishedContent = updatedContent,
                     modifiedAt = clock.now(),
-                    contentModifiedAt = clock.now(),
-                    contentModifiedBy = null,
+                    modifiedBy = employee.evakaUserId,
+                    contentLockedAt = clock.now(),
+                    contentLockedBy = null,
                     publishedAt =
                         HelsinkiDateTime.of(clock.today().minusMonths(1), LocalTime.of(8, 0)),
+                    publishedBy = employee.evakaUserId,
                     answeredAt = null,
                     answeredBy = null,
                 )
@@ -175,9 +181,11 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     content = content,
                     publishedContent = updatedContent,
                     modifiedAt = clock.now().minusMonths(1),
-                    contentModifiedAt = clock.now().minusMonths(1),
-                    contentModifiedBy = null,
+                    modifiedBy = employee.evakaUserId,
+                    contentLockedAt = clock.now().minusMonths(1),
+                    contentLockedBy = null,
                     publishedAt = clock.now().minusMonths(1),
+                    publishedBy = employee.evakaUserId,
                     answeredAt = null,
                     answeredBy = null,
                 )
@@ -191,9 +199,11 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     content = content,
                     publishedContent = null,
                     modifiedAt = clock.now(),
-                    contentModifiedAt = clock.now(),
-                    contentModifiedBy = null,
+                    modifiedBy = employee.evakaUserId,
+                    contentLockedAt = clock.now(),
+                    contentLockedBy = null,
                     publishedAt = null,
+                    publishedBy = null,
                     answeredAt = null,
                     answeredBy = null,
                 )
@@ -232,8 +242,10 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `email is not sent on publish if content was already up to date`() {
+        val employee = DevEmployee()
         // given
         db.transaction { tx ->
+            tx.insert(employee)
             tx.insert(
                 DevChildDocument(
                     id = expiredHojksDocumentId,
@@ -243,10 +255,12 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     content = content,
                     publishedContent = content,
                     modifiedAt = clock.now(),
-                    contentModifiedAt = clock.now(),
-                    contentModifiedBy = null,
+                    modifiedBy = employee.evakaUserId,
+                    contentLockedAt = clock.now(),
+                    contentLockedBy = null,
                     publishedAt =
                         HelsinkiDateTime.of(clock.today().minusMonths(1), LocalTime.of(8, 0)),
+                    publishedBy = employee.evakaUserId,
                     answeredAt = null,
                     answeredBy = null,
                 )

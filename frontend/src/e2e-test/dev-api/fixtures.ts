@@ -1794,10 +1794,12 @@ export class Fixture {
       createdBy: systemInternalUser.id,
       status: 'DRAFT',
       modifiedAt: HelsinkiDateTime.now(),
-      contentModifiedAt: HelsinkiDateTime.now(),
-      contentModifiedBy: null,
+      modifiedBy: systemInternalUser.id,
+      contentLockedAt: HelsinkiDateTime.now(),
+      contentLockedBy: null,
       documentKey: null,
       publishedAt: null,
+      publishedBy: null,
       content: {
         answers: [
           {
@@ -1834,7 +1836,6 @@ export class Fixture {
           publishedAt
         })
       },
-
       withPublishedContent(publishedContent: DocumentContent | null) {
         return Fixture.childDocument({
           ...value,
