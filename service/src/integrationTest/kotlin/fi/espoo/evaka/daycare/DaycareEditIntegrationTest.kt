@@ -123,6 +123,7 @@ class DaycareEditIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     supper = null,
                     eveningSnack = null,
                 ),
+            nekkuOrderReductionPercentage = 15,
         )
 
     @BeforeEach

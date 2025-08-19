@@ -5,6 +5,10 @@
 package fi.espoo.evaka.nekku
 
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.shared.dev.DevCareArea
+import fi.espoo.evaka.shared.dev.DevDaycare
+import fi.espoo.evaka.shared.dev.DevDaycareGroup
+import fi.espoo.evaka.shared.dev.insert
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -131,5 +135,33 @@ class NekkuQueryIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
             ),
             specialDietOptions,
         )
+    }
+
+    @Test
+    fun `Fetching the order reduction percentage by group should work`() {
+
+        val area = DevCareArea()
+        val daycare1 = DevDaycare(areaId = area.id, nekkuOrderReductionPercentage = 10)
+        val dc1group1 = DevDaycareGroup(daycareId = daycare1.id)
+        val dc1group2 = DevDaycareGroup(daycareId = daycare1.id)
+        val daycare2 = DevDaycare(areaId = area.id, nekkuOrderReductionPercentage = 20)
+        val dc2group = DevDaycareGroup(daycareId = daycare2.id)
+        val daycare3 = DevDaycare(areaId = area.id, nekkuOrderReductionPercentage = 15)
+        val dc3group = DevDaycareGroup(daycareId = daycare3.id)
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare1)
+            tx.insert(daycare2)
+            tx.insert(daycare3)
+            tx.insert(dc1group1)
+            tx.insert(dc1group2)
+            tx.insert(dc2group)
+            tx.insert(dc3group)
+
+            assertEquals(10, tx.getNekkuOrderReductionForDaycareByGroup(dc1group1.id))
+            assertEquals(10, tx.getNekkuOrderReductionForDaycareByGroup(dc1group2.id))
+            assertEquals(20, tx.getNekkuOrderReductionForDaycareByGroup(dc2group.id))
+        }
     }
 }

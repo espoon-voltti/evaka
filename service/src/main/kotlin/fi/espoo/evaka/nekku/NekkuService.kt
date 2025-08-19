@@ -156,13 +156,7 @@ class NekkuService(
     fun sendNekkuOrder(dbc: Database.Connection, clock: EvakaClock, job: AsyncJob.SendNekkuOrder) {
         if (client == null) error("Cannot send Nekku order: NekkuEnv is not configured")
 
-        createAndSendNekkuOrder(
-            client,
-            dbc,
-            groupId = job.groupId,
-            date = job.date,
-            featureConfig.nekkuMealDeductionFactor,
-        )
+        createAndSendNekkuOrder(client, dbc, groupId = job.groupId, date = job.date)
     }
 
     fun sendNekkuCustomerNumberNullificationWarningEmail(
@@ -360,7 +354,6 @@ fun createAndSendNekkuOrder(
     dbc: Database.Connection,
     groupId: GroupId,
     date: LocalDate,
-    nekkuMealDeductionFactor: Double,
 ) {
     try {
 
@@ -392,7 +385,14 @@ fun createAndSendNekkuOrder(
                                     preschoolTerms,
                                     nekkuProducts,
                                     nekkuDaycareCustomerMapping.customerType,
-                                    nekkuMealDeductionFactor,
+                                    nekkuMealDeductionFactor =
+                                        1 -
+                                            (dbc.read { tx ->
+                                                    tx.getNekkuOrderReductionForDaycareByGroup(
+                                                        groupId
+                                                    )
+                                                }
+                                                .toDouble() / 100),
                                 ),
                             description = nekkuDaycareCustomerMapping.groupName,
                         )
