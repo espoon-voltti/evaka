@@ -2174,6 +2174,8 @@ data class DevPlacement(
     val modifiedAt: HelsinkiDateTime? = HelsinkiDateTime.now(),
     val modifiedBy: EvakaUserId? = AuthenticatedUser.SystemInternalUser.evakaUserId,
     val source: PlacementSource? = PlacementSource.MANUAL,
+    val sourceApplicationId: ApplicationId? = null,
+    val sourceServiceApplicationId: ServiceApplicationId? = null,
 )
 
 data class DevPerson(

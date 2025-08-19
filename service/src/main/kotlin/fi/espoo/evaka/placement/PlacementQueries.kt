@@ -5,12 +5,14 @@
 package fi.espoo.evaka.placement
 
 import fi.espoo.evaka.backupcare.recreateBackupCares
+import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.PlacementId
+import fi.espoo.evaka.shared.ServiceApplicationId
 import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.Predicate
@@ -29,7 +31,7 @@ fun Database.Read.getPlacement(id: PlacementId): Placement? {
     return createQuery {
             sql(
                 """
-SELECT p.id, p.type, p.child_id, p.unit_id, p.start_date, p.end_date, p.termination_requested_date, p.terminated_by, p.place_guarantee, p.created_at, p.created_by, p.source, p.modified_at, p.modified_by
+SELECT p.id, p.type, p.child_id, p.unit_id, p.start_date, p.end_date, p.termination_requested_date, p.terminated_by, p.place_guarantee, p.created_at, p.created_by, p.source, p.source_application_id, p.source_service_application_id, p.modified_at, p.modified_by
 FROM placement p
 WHERE p.id = ${bind(id)}
 """
@@ -56,7 +58,7 @@ fun Database.Read.getPlacementsForChild(childId: ChildId): List<Placement> {
     return createQuery {
             sql(
                 """
-SELECT p.id, p.type, p.child_id, p.unit_id, p.start_date, p.end_date, p.termination_requested_date, p.terminated_by, p.place_guarantee, p.created_at, p.created_by, p.source, p.modified_at, p.modified_by
+SELECT p.id, p.type, p.child_id, p.unit_id, p.start_date, p.end_date, p.termination_requested_date, p.terminated_by, p.place_guarantee, p.created_at, p.created_by, p.source, p.source_application_id, p.source_service_application_id, p.modified_at, p.modified_by
 FROM placement p
 WHERE p.child_id = ${bind(childId)}
 """
@@ -69,7 +71,7 @@ fun Database.Read.getPlacements(where: Predicate): List<Placement> =
     createQuery {
             sql(
                 """
-SELECT p.id, p.type, p.child_id, p.unit_id, p.start_date, p.end_date, p.termination_requested_date, p.terminated_by, p.place_guarantee, p.created_at, p.created_by, p.source, p.modified_at, p.modified_by
+SELECT p.id, p.type, p.child_id, p.unit_id, p.start_date, p.end_date, p.termination_requested_date, p.terminated_by, p.place_guarantee, p.created_at, p.created_by, p.source, p.source_application_id, p.source_service_application_id, p.modified_at, p.modified_by
 FROM placement p
 WHERE ${predicate(where.forTable("p"))}
 """
@@ -125,6 +127,8 @@ fun Database.Transaction.insertPlacement(
     source: PlacementSource,
     modifiedAt: HelsinkiDateTime,
     modifiedBy: EvakaUserId,
+    sourceApplicationId: ApplicationId? = null,
+    sourceServiceApplicationId: ServiceApplicationId? = null,
 ): Placement {
     return createQuery {
             sql(
@@ -139,6 +143,8 @@ INSERT INTO placement (
     created_at,
     created_by,
     source,
+    source_application_id,
+    source_service_application_id,
     modified_at,
     modified_by
 ) VALUES (
@@ -151,6 +157,8 @@ INSERT INTO placement (
     ${bind(createdAt)},
     ${bind(createdBy)},
     ${bind(source)},
+    ${bind(sourceApplicationId)},
+    ${bind(sourceServiceApplicationId)},
     ${bind(modifiedAt)},
     ${bind(modifiedBy)}
 )
@@ -184,6 +192,8 @@ INSERT INTO placement (
     created_at,
     created_by,
     source,
+    source_application_id,
+    source_service_application_id,
     modified_at,
     modified_by
 ) VALUES (
@@ -196,6 +206,8 @@ INSERT INTO placement (
     ${bind(placement.createdAt)},
     ${bind(placement.createdBy)},
     ${bind(placement.source)},
+    ${bind(placement.sourceApplicationId)},
+    ${bind(placement.sourceServiceApplicationId)},
     ${bind(modifiedAt)},
     ${bind(modifiedBy)}
 )

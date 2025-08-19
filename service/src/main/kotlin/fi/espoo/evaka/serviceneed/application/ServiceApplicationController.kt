@@ -190,6 +190,7 @@ class ServiceApplicationController(
                                     now = clock.now(),
                                     userId = user.evakaUserId,
                                     source = PlacementSource.SERVICE_APPLICATION,
+                                    sourceServiceApplicationId = id,
                                 )
                                 .also {
                                     tx.deleteFutureReservationsAndAbsencesOutsideValidPlacements(

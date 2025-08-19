@@ -269,9 +269,10 @@ class PlacementPlanService(
             placementTypePeriods = placementTypePeriods,
             serviceNeed = serviceNeed,
             placeGuarantee = false,
-            now,
-            userId,
-            PlacementSource.APPLICATION,
+            now = now,
+            userId = userId,
+            source = PlacementSource.APPLICATION,
+            sourceApplicationId = application.id,
         )
 
         tx.deleteFutureReservationsAndAbsencesOutsideValidPlacements(childId, clock.today())

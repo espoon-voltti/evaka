@@ -104,6 +104,7 @@ import type { PreschoolAssistanceLevel } from 'lib-common/generated/api-types/as
 import type { PreschoolTermId } from 'lib-common/generated/api-types/shared'
 import type { ProviderType } from 'lib-common/generated/api-types/daycare'
 import type { PushNotificationCategory } from 'lib-common/generated/api-types/webpush'
+import type { ServiceApplicationId } from 'lib-common/generated/api-types/shared'
 import type { ServiceNeedId } from 'lib-common/generated/api-types/shared'
 import type { ServiceNeedOptionId } from 'lib-common/generated/api-types/shared'
 import type { ServiceOptions } from 'lib-common/generated/api-types/assistanceneed'
@@ -928,6 +929,8 @@ export interface DevPlacement {
   modifiedBy: EvakaUserId | null
   placeGuarantee: boolean
   source: PlacementSource | null
+  sourceApplicationId: ApplicationId | null
+  sourceServiceApplicationId: ServiceApplicationId | null
   startDate: LocalDate
   terminatedBy: EvakaUserId | null
   terminationRequestedDate: LocalDate | null

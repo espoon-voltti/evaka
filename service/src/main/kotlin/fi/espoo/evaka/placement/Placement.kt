@@ -5,10 +5,12 @@
 package fi.espoo.evaka.placement
 
 import fi.espoo.evaka.children.Unit
+import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.PlacementId
+import fi.espoo.evaka.shared.ServiceApplicationId
 import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
@@ -36,6 +38,8 @@ data class Placement(
     val createdAt: HelsinkiDateTime,
     val createdBy: EvakaUserId?,
     val source: PlacementSource?,
+    val sourceApplicationId: ApplicationId?,
+    val sourceServiceApplicationId: ServiceApplicationId?,
     val modifiedAt: HelsinkiDateTime?,
     val modifiedBy: EvakaUserId?,
 )

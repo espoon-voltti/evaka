@@ -697,6 +697,8 @@ export class Fixture {
       createdAt: HelsinkiDateTime.now(),
       createdBy: systemInternalUser.id,
       source: 'MANUAL',
+      sourceApplicationId: null,
+      sourceServiceApplicationId: null,
       modifiedAt: HelsinkiDateTime.now(),
       modifiedBy: systemInternalUser.id,
       ...initial

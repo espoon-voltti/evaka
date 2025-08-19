@@ -18,6 +18,7 @@ import fi.espoo.evaka.serviceneed.getServiceNeedOptions
 import fi.espoo.evaka.serviceneed.getServiceNeedsByChild
 import fi.espoo.evaka.serviceneed.getServiceNeedsByUnit
 import fi.espoo.evaka.serviceneed.insertServiceNeed
+import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.BackupCareId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
@@ -26,6 +27,7 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
+import fi.espoo.evaka.shared.ServiceApplicationId
 import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.auth.AclAuthorization
@@ -60,6 +62,8 @@ fun createPlacements(
     now: HelsinkiDateTime,
     userId: EvakaUserId,
     source: PlacementSource,
+    sourceApplicationId: ApplicationId? = null,
+    sourceServiceApplicationId: ServiceApplicationId? = null,
 ): List<Placement> {
     placementTypePeriods
         .sortedBy { it.first.start }
@@ -80,6 +84,8 @@ fun createPlacements(
                 createdAt = now,
                 createdBy = userId,
                 source = source,
+                sourceApplicationId = sourceApplicationId,
+                sourceServiceApplicationId = sourceServiceApplicationId,
                 modifiedAt = now,
                 modifiedBy = userId,
             )
@@ -113,6 +119,7 @@ fun createPlacement(
     now: HelsinkiDateTime,
     userId: EvakaUserId,
     source: PlacementSource,
+    sourceServiceApplicationId: ServiceApplicationId? = null,
 ): List<Placement> {
     val placementTypePeriods =
         if (useFiveYearsOldDaycare) {
@@ -130,6 +137,7 @@ fun createPlacement(
         now = now,
         userId = userId,
         source = source,
+        sourceServiceApplicationId = sourceServiceApplicationId,
     )
 }
 
