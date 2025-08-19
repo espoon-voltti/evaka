@@ -315,6 +315,8 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
         val newPlacement =
             placements.find { it.id != testPlacement.id && it.id != activePlacement.id }!!
 
+        assertEquals(PlacementSource.MANUAL, newPlacement.source)
+
         val secondGroupPlacementId =
             placementController.createGroupPlacement(
                 dbInstance(),
@@ -424,6 +426,8 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
         assertEquals(3, placements.size)
         val newPlacement =
             placements.find { it.id != testPlacement.id && it.id != activePlacement.id }!!
+
+        assertEquals(PlacementSource.MANUAL, newPlacement.source)
 
         val secondGroupPlacementId =
             placementController.createGroupPlacement(
