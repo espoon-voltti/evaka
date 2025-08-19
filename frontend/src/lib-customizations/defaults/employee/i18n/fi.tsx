@@ -5300,8 +5300,8 @@ export const fi = {
       language: 'Asiakirjan kieli',
       confidential: 'Asiakirja on salassapidettävä',
       confidentialityDuration: 'Salassapitoaika (vuotta)',
-      confidentialityBasis: 'Salassapitoperuste (lakiviittaus)',
-      legalBasis: 'Lait joihin asiakirja perustuu (vapaaehtoinen)',
+      confidentialityBasis: ' Salassapitoperuste (metatiedot ja arkistointi)',
+      legalBasis: 'Salassapitoperuste / lakiviittaus (näkyy lomakkeella)',
       validity: 'Voimassa ajalla',
       processDefinitionNumber: 'Tehtäväluokka',
       processDefinitionNumberInfo:
