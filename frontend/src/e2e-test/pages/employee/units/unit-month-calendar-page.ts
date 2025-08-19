@@ -68,10 +68,9 @@ export class UnitMonthCalendarPage extends UnitCalendarPageBase {
     date: LocalDate,
     expectedTexts: string[]
   ) {
-    const tooltipText = await this.absenceCell(
-      childId,
-      date
-    ).hoverAndGetTooltip()
+    await this.absenceCell(childId, date).hover()
+    const tooltipText =
+      (await this.page.findByDataQa('absence-cell-tooltip').text) || ''
     return expectedTexts.every((text) => tooltipText.includes(text))
   }
 
@@ -152,11 +151,6 @@ export class AbsenceCell extends Element {
 
   async assertNoAbsence(category: AbsenceCategory) {
     await this.assertAbsenceType('empty', category)
-  }
-
-  async hoverAndGetTooltip(): Promise<string> {
-    await this.cell.hover()
-    return (await this.cell.findByDataQa('absence-cell-tooltip').text) || ''
   }
 }
 

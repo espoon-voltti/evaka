@@ -564,7 +564,11 @@ class InvoiceCorrectionsSection extends Section {
   createInvoiceCorrectionButton = this.findByDataQa('create-invoice-correction')
 
   lastRow() {
-    return new InvoiceCorrectionRow(this, this.invoiceCorrectionRows.last())
+    return new InvoiceCorrectionRow(
+      this,
+      this.invoiceCorrectionRows.last(),
+      this.page
+    )
   }
 
   async addNewInvoiceCorrection() {
@@ -576,9 +580,11 @@ class InvoiceCorrectionsSection extends Section {
 class InvoiceCorrectionRow extends Element {
   constructor(
     public parent: Element,
-    self: Element
+    self: Element,
+    private page: Page
   ) {
     super(self)
+    this.noteTooltip = this.page.findByDataQa('note-tooltip')
   }
 
   productSelect = this.findByDataQa('product')
@@ -590,7 +596,7 @@ class InvoiceCorrectionRow extends Element {
   totalPrice = this.findByDataQa('total-price')
   status = this.findByDataQa('status')
   noteIcon = this.findByDataQa('note-icon')
-  noteTooltip = this.findByDataQa('note-tooltip')
+  noteTooltip: Element
   deleteButton = this.findByDataQa('delete-invoice-row-button')
 
   async editNote() {

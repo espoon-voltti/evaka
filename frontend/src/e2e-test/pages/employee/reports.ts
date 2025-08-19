@@ -493,7 +493,7 @@ export class AssistanceNeedsAndActionsReport {
     this.childRows = page.findAllByDataQa('child-row')
     this.careAreaSelect = new Combobox(page.findByDataQa('care-area-filter'))
     this.unitSelect = new Combobox(page.findByDataQa('unit-filter'))
-    this.typeSelect = new Combobox(this.page.findByDataQa(`type-filter`))
+    this.typeSelect = new Combobox(page.findByDataQa(`type-filter`))
     this.providerTypeSelect = new Combobox(
       this.page.findByDataQa('provider-type-filter')
     )
