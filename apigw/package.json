@@ -87,7 +87,7 @@
     "trailingComma": "none"
   },
   "engines": {
-    "node": ">= 22.12.0"
+    "node": ">= 22.18.0"
   },
   "packageManager": "yarn@4.9.2"
 }
