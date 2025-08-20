@@ -19,6 +19,21 @@ export const defaultButtonTextStyle = css`
   letter-spacing: 0;
 `
 
+export const buttonBounceAnimation = css`
+  @keyframes pulse {
+    0% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.1);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+  animation: pulse 0.35s 2;
+`
+
 export const buttonBorderRadius = '4px'
 
 /**
