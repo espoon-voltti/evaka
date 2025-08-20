@@ -14,6 +14,7 @@ import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.maxEndDate
 import fi.espoo.evaka.user.EvakaUser
 import java.time.LocalDate
 import org.jdbi.v3.core.mapper.Nested
@@ -68,6 +69,11 @@ enum class PreschoolAssistanceLevel(
     SPECIAL_SUPPORT_WITH_DECISION_LEVEL_2(maxEndDate = LocalDate.of(2026, 7, 31)),
     CHILD_SUPPORT(minStartDate = LocalDate.of(2025, 8, 1)),
     CHILD_SUPPORT_AND_EXTENDED_COMPULSORY_EDUCATION(minStartDate = LocalDate.of(2026, 8, 1)),
+    // deprecated, only available during the transition year
+    CHILD_SUPPORT_AND_OLD_EXTENDED_COMPULSORY_EDUCATION(
+        minStartDate = LocalDate.of(2025, 8, 1),
+        maxEndDate = LocalDate.of(2026, 7, 31),
+    ),
     GROUP_SUPPORT(minStartDate = LocalDate.of(2025, 8, 1));
 
     override val sqlType: String = "preschool_assistance_level"

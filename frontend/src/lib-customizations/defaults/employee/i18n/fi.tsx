@@ -772,10 +772,12 @@ export const fi = {
           SPECIAL_SUPPORT_WITH_DECISION_LEVEL_2:
             'Erityinen tuki ja pidennetty oppivelvollisuus - kehitysvamma 2 (Koskeen)',
           CHILD_SUPPORT:
-            'Lapsikohtainen tuki ilman varhennettua oppivelvollisuutta (Koskeen, käytössä 1.8.2025 alkaen)',
+            'Lapsikohtainen tuki ilman varhennettua oppivelvollisuutta (Koskeen)',
           CHILD_SUPPORT_AND_EXTENDED_COMPULSORY_EDUCATION:
-            'Lapsikohtainen tuki ja varhennettu oppivelvollisuus (Koskeen, käytössä 1.10.2025 alkaen)',
-          GROUP_SUPPORT: 'Ryhmäkohtaiset tukimuodot (käytössä 1.8.2025 alkaen)'
+            'Lapsikohtainen tuki ja varhennettu oppivelvollisuus (Koskeen, älä käytä ennen 1.10.2025)',
+          CHILD_SUPPORT_AND_OLD_EXTENDED_COMPULSORY_EDUCATION:
+            'Lapsikohtainen tuki ja vanhan mallinen pidennetty oppivelvollisuus (Koskeen, käytössä siirtymäkautena 1.8.2025 - 31.7.2026)',
+          GROUP_SUPPORT: 'Ryhmäkohtaiset tukimuodot'
         },
         otherAssistanceMeasureType: {
           TRANSPORT_BENEFIT: 'Kuljetusetu (esioppilailla Koski-tieto)',

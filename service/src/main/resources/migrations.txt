@@ -545,3 +545,4 @@ V546__end_decision_when_unit_changes_config.sql
 V547__relax_weak_credentials_check.sql
 V548__placement_created_by_source_etc.sql
 V549__placement_indexes.sql
+V550__new_preschool_assistance_levels_v2.sql

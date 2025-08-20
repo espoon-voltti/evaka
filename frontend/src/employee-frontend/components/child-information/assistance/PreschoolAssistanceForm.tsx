@@ -58,6 +58,10 @@ export const levelConfigs: Record<PreschoolAssistanceLevel, LevelConfig> = {
   CHILD_SUPPORT_AND_EXTENDED_COMPULSORY_EDUCATION: {
     minStartDate: LocalDate.of(2026, 8, 1)
   },
+  CHILD_SUPPORT_AND_OLD_EXTENDED_COMPULSORY_EDUCATION: {
+    minStartDate: LocalDate.of(2025, 8, 1),
+    maxEndDate: LocalDate.of(2026, 7, 31)
+  },
   GROUP_SUPPORT: { minStartDate: LocalDate.of(2025, 8, 1) }
 }
 
