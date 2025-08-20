@@ -12,6 +12,7 @@ import {
   useFormField,
   useFormUnion
 } from 'lib-common/form/hooks'
+import { ScreenReaderOnly } from 'lib-components/atoms/ScreenReaderOnly'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import Radio from 'lib-components/atoms/form/Radio'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
@@ -24,6 +25,7 @@ import { faPlus, fasUserMinus, faTrash, faUserMinus } from 'lib-icons'
 import { useTranslation } from '../../localization'
 import { focusElementOnNextFrame } from '../../utils/focus'
 import TimeRangeInput from '../TimeRangeInput'
+import { useTimedScreenReaderMessage } from '../hooks'
 
 import type { LimitedLocalTimeRangeField, ReadOnlyState } from './form'
 import {
@@ -345,6 +347,8 @@ const TimeRanges = React.memo(function TimeRanges({
   const i18n = useTranslation()
   const firstTimeRange = useFormElem(bind, 0)
   const secondTimeRange = useFormElem(bind, 1)
+  const [screenReaderMessage, showTimedScreenReaderMessage] =
+    useTimedScreenReaderMessage()
 
   if (firstTimeRange === undefined) {
     throw new Error('BUG: at least one time range expected')
@@ -366,6 +370,8 @@ const TimeRanges = React.memo(function TimeRanges({
             bind={firstTimeRange}
             hideErrorsBeforeTouched={!showAllErrors}
             dataQaPrefix={dataQaPrefix ? `${dataQaPrefix}-time-0` : undefined}
+            ariaDescriptionStart={i18n.calendar.reservationModal.startAria}
+            ariaDescriptionEnd={i18n.calendar.reservationModal.endAria}
             onFocus={onFocus}
           />
         </MiddleCell>
@@ -408,6 +414,9 @@ const TimeRanges = React.memo(function TimeRanges({
           </FixedSpaceRow>
         </RightCell>
       </FixedSpaceRow>
+      <ScreenReaderOnly aria-live="polite" aria-atomic={true}>
+        {screenReaderMessage}
+      </ScreenReaderOnly>
       {secondTimeRange !== undefined ? (
         <FixedSpaceRow fullWidth alignItems="center">
           {label !== undefined ? <LeftCell /> : null}
@@ -428,7 +437,12 @@ const TimeRanges = React.memo(function TimeRanges({
           <RightCell>
             <IconOnlyButton
               icon={faTrash}
-              onClick={() => bind.update((prev) => prev.slice(0, 1))}
+              onClick={() => {
+                bind.update((prev) => prev.slice(0, 1))
+                showTimedScreenReaderMessage(
+                  i18n.calendar.reservationModal.secondTimeRange.deleteSuccess
+                )
+              }}
               aria-label={i18n.calendar.reservationModal.secondTimeRange.delete}
             />
           </RightCell>
