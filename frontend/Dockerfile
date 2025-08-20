@@ -74,8 +74,8 @@ RUN apt-get update \
 
 
 # https://docs.datadoghq.com/tracing/setup_overview/proxy_setup/?tab=nginx # update version using get_latest_release
-ARG OPENTRACING_NGINX_VERSION=v0.40.0
-ARG OPENTRACING_NGINX_SHA256="62fe4230fba540d3a63451bbd6e706b465f65579bd8e32e199bb3fa23e6fe6db"
+ARG OPENTRACING_NGINX_VERSION=v0.41.0
+ARG OPENTRACING_NGINX_SHA256="82e6aacfab40a16d52677f76c041840f2e91f80945e474bda3bed4d2c43acd6e"
 ARG DD_OPENTRACING_CPP_VERSION=v1.3.7
 ARG DD_OPENTRACING_CPP_SHA256="df9a8097c3d6f6e5a96f96db0f3919b5b7b35df3d10c5fcc530707a878e2dd00"
 
