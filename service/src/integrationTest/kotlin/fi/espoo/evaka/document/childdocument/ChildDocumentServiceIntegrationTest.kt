@@ -231,6 +231,46 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
     }
 
     @Test
+    fun `child document notification email is not sent if placement has ended and document won't be visible anyway`() {
+        // given
+        db.transaction { tx ->
+            tx.insert(
+                DevChildDocument(
+                    id = expiredHojksDocumentId,
+                    status = DocumentStatus.DRAFT,
+                    childId = testChild_1.id,
+                    templateId = expiredHojksTemplateId,
+                    content = content,
+                    publishedContent = updatedContent,
+                    modifiedAt = clock.now(),
+                    contentModifiedAt = clock.now(),
+                    contentModifiedBy = null,
+                    publishedAt =
+                        HelsinkiDateTime.of(clock.today().minusMonths(1), LocalTime.of(8, 0)),
+                    answeredAt = null,
+                    answeredBy = null,
+                )
+            )
+
+            tx.execute {
+                sql(
+                    """
+                UPDATE placement 
+                SET start_date = ${bind(clock.today().minusMonths(1))}, 
+                    end_date = ${bind(clock.today().minusDays(1))}
+            """
+                )
+            }
+        }
+
+        // when
+        db.transaction { service.completeAndPublishChildDocumentsAtEndOfTerm(it, clock.now()) }
+        asyncJobRunner.runPendingJobsSync(clock)
+
+        assertEquals(0, MockEmailClient.emails.size)
+    }
+
+    @Test
     fun `email is not sent on publish if content was already up to date`() {
         // given
         db.transaction { tx ->
@@ -292,6 +332,14 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             tx.insert(testAdult, DevPersonType.ADULT)
             tx.insert(testChild, DevPersonType.CHILD)
             tx.insertGuardian(testAdult.id, testChild.id)
+            tx.insert(
+                DevPlacement(
+                    childId = testChild.id,
+                    unitId = testDaycare.id,
+                    startDate = clock.today(),
+                    endDate = clock.today().plusDays(5),
+                )
+            )
         }
         val documentId =
             controller.createDocument(
@@ -341,6 +389,14 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             tx.insert(testAdult, DevPersonType.ADULT)
             tx.insert(testChild, DevPersonType.CHILD)
             tx.insertGuardian(testAdult.id, testChild.id)
+            tx.insert(
+                DevPlacement(
+                    childId = testChild.id,
+                    unitId = testDaycare.id,
+                    startDate = clock.today(),
+                    endDate = clock.today().plusDays(5),
+                )
+            )
         }
 
         val documentId =
