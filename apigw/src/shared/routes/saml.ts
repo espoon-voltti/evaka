@@ -6,10 +6,12 @@ import * as url from 'node:url'
 
 import type { AuthOptions, Profile, SAML } from '@node-saml/node-saml'
 import { AxiosError } from 'axios'
+import cookieParser from 'cookie-parser'
 import express from 'express'
 import _ from 'lodash'
 
 import { createLogoutToken } from '../auth/index.ts'
+import { setDeviceAuthHistoryCookie } from '../device-cookies.ts'
 import type { AsyncRequestHandler } from '../express.ts'
 import { toRequestHandler } from '../express.ts'
 import { logAuditEvent, logDebug } from '../logging.ts'
@@ -34,6 +36,7 @@ export interface SamlEndpointConfig<T extends SessionType> {
   strategyName: string
   defaultPageUrl: string
   authenticate: AuthenticateProfile
+  citizenCookieSecret?: string
 }
 
 export type Options = {
@@ -80,8 +83,14 @@ export interface SamlIntegration {
 export function createSamlIntegration<T extends SessionType>(
   endpointConfig: SamlEndpointConfig<T>
 ): SamlIntegration {
-  const { sessions, strategyName, saml, defaultPageUrl, authenticate } =
-    endpointConfig
+  const {
+    sessions,
+    strategyName,
+    saml,
+    defaultPageUrl,
+    authenticate,
+    citizenCookieSecret
+  } = endpointConfig
 
   const eventCode = (name: SamlAuditEvent) =>
     `evaka.saml.${strategyName}.${name}`
@@ -202,6 +211,11 @@ export function createSamlIntegration<T extends SessionType>(
       const user = await authenticate(req, profile)
       await sessions.login(req, user)
       logAuditEvent(eventCode('sign_in'), req, 'User logged in successfully')
+
+      // Set device cookie for citizen authentication
+      if (citizenCookieSecret) {
+        setDeviceAuthHistoryCookie(res, user.id)
+      }
 
       // Persist in session to allow custom logic per strategy
       req.session.idpProvider = strategyName
@@ -347,6 +361,9 @@ export function createSamlIntegration<T extends SessionType>(
   // * HTTP POST: the browser makes a POST request with URI-encoded form body
   const router = express.Router()
   router.use(sessions.middleware)
+  if (citizenCookieSecret) {
+    router.use(cookieParser(citizenCookieSecret))
+  }
   // Our application directs the browser to this endpoint to start the login
   // flow. We generate a LoginRequest.
   router.get(`/login`, toRequestHandler(login))

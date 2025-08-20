@@ -145,6 +145,8 @@ interface IEmailMessageProvider {
     fun passwordChanged(): EmailContent
 
     fun emailChanged(newEmail: String): EmailContent
+
+    fun newBrowserLoginNotification(): EmailContent
 }
 
 data class MessageThreadData(
