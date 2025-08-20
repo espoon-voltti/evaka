@@ -132,6 +132,7 @@ const features: Features = {
     multiSelectDeparture: true,
     archiveIntegrationEnabled: true,
     aromiIntegration: false,
+    citizenChildDocumentTypes: true,
     decisionChildDocumentTypes: false,
     showCitizenApplicationPreschoolTerms: false,
     missingQuestionnaireAnswerMarkerEnabled: false,
