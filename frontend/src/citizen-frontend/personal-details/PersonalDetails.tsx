@@ -8,6 +8,7 @@ import { Redirect } from 'wouter'
 import { combine } from 'lib-common/api'
 import { useQueryResult } from 'lib-common/query'
 import { scrollRefIntoView } from 'lib-common/utils/scrolling'
+import { Notifications } from 'lib-components/Notifications'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Main from 'lib-components/atoms/Main'
 import Container, { ContentArea } from 'lib-components/layout/Container'
@@ -31,6 +32,7 @@ import {
 
 export default React.memo(function PersonalDetails() {
   const t = useTranslation()
+  const { apiVersion } = useContext(AuthContext)
   useTitle(t, t.personalDetails.title)
   const { user, refreshAuthStatus } = useContext(AuthContext)
   const notificationSettings = useQueryResult(notificationSettingsQuery())
@@ -51,6 +53,7 @@ export default React.memo(function PersonalDetails() {
   return (
     <Main>
       <Container>
+        <Notifications apiVersion={apiVersion} sticky topOffset={80} />
         <Gap size="L" />
         <ContentArea opaque paddingVertical="L">
           <H1 noMargin>{t.personalDetails.title}</H1>

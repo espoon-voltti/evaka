@@ -207,8 +207,7 @@ const OuterContainer = styled.div<{
   top: ${(p) => {
     const defaultOffset = p.sticky ? '16px' : '0'
     return p.topOffset ? `${p.topOffset}px` : defaultOffset
-  }
-};
+  }};
   left: 0;
   right: 0;
   z-index: 15; //this needs to stay behind modals and nav dropdowns

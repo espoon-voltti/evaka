@@ -11,7 +11,10 @@ import type { ChildDocumentCitizenDetails } from 'lib-common/generated/api-types
 import type { ChildDocumentId } from 'lib-common/generated/api-types/shared'
 import { useMutation, useQueryResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
-import { NotificationsContext } from 'lib-components/Notifications'
+import {
+  Notifications,
+  NotificationsContext
+} from 'lib-components/Notifications'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { tabletMin } from 'lib-components/breakpoints'
@@ -41,6 +44,7 @@ import { faArrowDownToLine, faCheck, faPrint } from 'lib-icons'
 
 import Footer from '../Footer'
 import { renderResult } from '../async-rendering'
+import { AuthContext } from '../auth/state'
 import { downloadChildDocument } from '../generated/api-clients/document'
 import { useTranslation } from '../localization'
 import useTitle from '../useTitle'
@@ -63,7 +67,7 @@ const TopButtonRow = styled(FixedSpaceRow)`
 
 export default React.memo(function ChildDocumentPage() {
   const id = useIdRouteParam<ChildDocumentId>('id')
-
+  const { apiVersion } = useContext(AuthContext)
   const childDocument = useQueryResult(
     childDocumentDetailsQuery({ documentId: id })
   )
@@ -72,6 +76,7 @@ export default React.memo(function ChildDocumentPage() {
   return (
     <>
       <Content>
+        <Notifications apiVersion={apiVersion} sticky topOffset={80} />
         <Gap size="s" />
         <TopButtonRow justifyContent="space-between">
           <ReturnButton label={i18n.common.return} />
