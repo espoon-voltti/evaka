@@ -902,14 +902,14 @@ describe('Realtime staff attendance edit page', () => {
     const newDepartureTime = '12:46'
     const editPage = new StaffAttendanceEditPage(page)
     await editPage.selectGroup(0, daycareGroup2Fixture.id)
-    await editPage.selectType(0, 'OVERTIME')
+    await editPage.selectType(0, 'OTHER_WORK')
     await editPage.fillArrived(0, newArrivalTime)
     await editPage.fillDeparted(0, newDepartureTime)
     await editPage.submit(pin)
 
     await staffAttendancePage.assertEmployeeStatus('Poissa')
     await staffAttendancePage.assertEmployeeAttendances([
-      `Ylityö ${newArrivalTime}–${newDepartureTime}`
+      `Työasia ${newArrivalTime}–${newDepartureTime}`
     ])
     const attendances = await getStaffAttendances()
     expect(attendances).toHaveLength(1)

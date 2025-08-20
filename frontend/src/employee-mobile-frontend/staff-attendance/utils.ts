@@ -10,6 +10,7 @@ import type {
   StaffMember
 } from 'lib-common/generated/api-types/attendance'
 import type HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import { featureFlags } from 'lib-customizations/employeeMobile'
 
 export interface Staff {
   type: 'employee' | 'external'
@@ -60,7 +61,8 @@ export function getAttendanceArrivalDifferenceReasons(
   )
 
   if (arrivedBeforeMinThreshold) {
-    return ['OVERTIME', 'JUSTIFIED_CHANGE']
+    if (featureFlags.hideOvertimeSelection) return ['JUSTIFIED_CHANGE']
+    else return ['OVERTIME', 'JUSTIFIED_CHANGE']
   }
   if (arrivedAfterMaxThreshold) {
     return ['OTHER_WORK', 'TRAINING', 'JUSTIFIED_CHANGE']
@@ -87,7 +89,8 @@ export function getAttendanceDepartureDifferenceReasons(
     return ['OTHER_WORK', 'TRAINING', 'JUSTIFIED_CHANGE']
   }
   if (departedAfterMaxThreshold) {
-    return ['OVERTIME', 'JUSTIFIED_CHANGE']
+    if (featureFlags.hideOvertimeSelection) return ['JUSTIFIED_CHANGE']
+    else return ['OVERTIME', 'JUSTIFIED_CHANGE']
   }
   return []
 }
