@@ -53,6 +53,7 @@ export class SamlError extends Error {
   constructor(message: string, options?: Options) {
     super(message, options)
     this.name = 'SamlError'
+    this.options = options
   }
 }
 
