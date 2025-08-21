@@ -29,6 +29,7 @@ import java.time.LocalTime
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import kotlin.collections.List
 
 class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
@@ -384,6 +385,49 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
         val now = HelsinkiDateTime.of(LocalDate.of(2025, 3, 24), LocalTime.of(2, 25))
 
         val toFourDays = HelsinkiDateTime.of(LocalDate.of(2025, 3, 28), LocalTime.of(2, 25))
+
+        planNekkuSpecifyOrderJobs(db, asyncJobRunner, now)
+
+        assertEquals(toFourDays.toLocalDate().toString(), getNekkuJobs(db).single().date.toString())
+    }
+
+    @Test
+    fun `meal order jobs for daycare groups are not re-planned four days before actual date also on weekend`() {
+
+        val client = TestNekkuClient(customers = basicTestClientCustomers)
+        fetchAndUpdateNekkuCustomers(client, db, asyncJobRunner, now)
+
+        val area = DevCareArea()
+
+        val daycare =
+            DevDaycare(
+                areaId = area.id,
+                mealtimeBreakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
+                mealtimeLunch = TimeRange(LocalTime.of(11, 15), LocalTime.of(11, 45)),
+                mealtimeSnack = TimeRange(LocalTime.of(13, 30), LocalTime.of(13, 50)),
+                operationTimes = listOf(
+                    TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+                    TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+                    TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+                    TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+                    TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+                    TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+                    TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+                ),
+            )
+        val group = DevDaycareGroup(daycareId = daycare.id, nekkuCustomerNumber = "2501K6089")
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(group)
+        }
+
+        // Wednesday
+        val now = HelsinkiDateTime.of(LocalDate.of(2025, 3, 26), LocalTime.of(2, 25))
+
+        //Sunday
+        val toFourDays = HelsinkiDateTime.of(LocalDate.of(2025, 3, 30), LocalTime.of(2, 25))
 
         planNekkuSpecifyOrderJobs(db, asyncJobRunner, now)
 

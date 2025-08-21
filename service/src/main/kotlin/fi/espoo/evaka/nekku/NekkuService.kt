@@ -53,7 +53,6 @@ class NekkuService(
     env: NekkuEnv?,
     jsonMapper: JsonMapper,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
-    private val featureConfig: FeatureConfig,
     private val emailEnv: EmailEnv,
     private val emailClient: EmailClient,
 ) {
