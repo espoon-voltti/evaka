@@ -15,6 +15,7 @@ import { NotificationsContext } from 'lib-components/Notifications'
 import { OnEnterView } from 'lib-components/OnEnterView'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
+import { buttonBounceAnimation } from 'lib-components/atoms/buttons/button-commons'
 import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
 import { tabletMin } from 'lib-components/breakpoints'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
@@ -229,4 +230,7 @@ const FloatingButton = styled(LegacyButton)`
   right: ${defaultMargins.s};
   border-radius: 40px;
   z-index: 10;
+
+  ${buttonBounceAnimation};
+  animation-delay: 0.5s;
 `

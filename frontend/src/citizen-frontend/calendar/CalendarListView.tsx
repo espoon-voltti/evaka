@@ -13,6 +13,7 @@ import type {
 } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
+import { buttonBounceAnimation } from 'lib-components/atoms/buttons/button-commons'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { defaultMargins } from 'lib-components/white-space'
 import { faPlus } from 'lib-icons'
@@ -127,18 +128,7 @@ const HoverButton = styled(LegacyButton)`
   border-radius: 40px;
   z-index: 2;
 
-  @keyframes pulse {
-    0% {
-      transform: scale(1);
-    }
-    50% {
-      transform: scale(1.1);
-    }
-    100% {
-      transform: scale(1);
-    }
-  }
-  animation: pulse 0.35s 2;
+  ${buttonBounceAnimation};
   animation-delay: 1.5s;
 `
 
