@@ -39,6 +39,7 @@ class AsyncJobConfig {
                     Duration.ofSeconds(1).takeIf { env.activeProfiles.contains("production") }
                 ),
                 AsyncJob.nightly,
+                AsyncJob.bulk,
             ),
             jdbi,
             tracer,
