@@ -20,6 +20,7 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { faExclamation, faInfo, faRedo } from 'lib-icons'
 
 import { Button } from './atoms/buttons/Button'
+import { desktopMin } from './breakpoints'
 import { useTranslations } from './i18n'
 import { FixedSpaceColumn } from './layout/flex-helpers'
 import TimedToast from './molecules/TimedToast'
@@ -125,9 +126,13 @@ export const NotificationsContextProvider = React.memo(
 )
 
 export const Notifications = React.memo(function Notifications({
-  apiVersion
+  apiVersion,
+  sticky,
+  offsetTop
 }: {
   apiVersion: string | undefined
+  sticky?: boolean
+  offsetTop?: boolean
 }) {
   const i18n = useTranslations()
   const {
@@ -149,7 +154,7 @@ export const Notifications = React.memo(function Notifications({
     addNotification
   )
   return (
-    <OuterContainer>
+    <OuterContainer sticky={sticky} offsetTop={offsetTop}>
       <ColumnContainer
         spacing="s"
         alignItems="flex-end"
@@ -195,12 +200,23 @@ export const Notifications = React.memo(function Notifications({
   )
 })
 
-const OuterContainer = styled.div`
-  position: fixed;
-  top: 0;
+const OuterContainer = styled.div<{
+  sticky?: boolean
+  offsetTop?: boolean
+}>`
+  @media (max-width: ${desktopMin}) {
+    position: ${(p) => (p.sticky ? 'sticky' : 'fixed')};
+    top: ${(p) => (p.offsetTop ? '60px' : '0')};
+  }
+
+  @media (min-width: ${desktopMin}) {
+    position: ${(p) => (p.sticky ? 'sticky' : 'fixed')};
+    top: ${(p) => (p.offsetTop ? '160px' : '0')};
+  }
+
   left: 0;
   right: 0;
-  z-index: 100;
+  z-index: 15; //behind modals and nav dropdowns, above content
   height: 0;
 `
 
