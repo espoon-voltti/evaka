@@ -55,7 +55,7 @@ dependencies {
 
         // Override for CVE vulnerability CVE-2025-48989
         api("org.apache.tomcat.embed:tomcat-embed-core:10.1.44")
-        api("org.apache.tomcat.embed:tomcat-embed-el:10.1.44")
+        api("org.apache.tomcat.embed:tomcat-embed-el:11.0.10")
         api("org.apache.tomcat.embed:tomcat-embed-websocket:10.1.44")
     }
 
