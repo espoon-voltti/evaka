@@ -56,7 +56,7 @@ dependencies {
         // Override for CVE vulnerability CVE-2025-48989
         api("org.apache.tomcat.embed:tomcat-embed-core:10.1.44")
         api("org.apache.tomcat.embed:tomcat-embed-el:10.1.44")
-        api("org.apache.tomcat.embed:tomcat-embed-websocket:10.1.44")
+        api("org.apache.tomcat.embed:tomcat-embed-websocket:11.0.10")
     }
 
     api(platform("com.fasterxml.jackson:jackson-bom:2.19.2"))
