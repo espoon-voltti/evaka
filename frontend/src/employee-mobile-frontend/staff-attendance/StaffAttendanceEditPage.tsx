@@ -181,11 +181,15 @@ const initialRowState = (
   id: attendance.id,
   type: {
     domValue: attendance.type,
-    options: staffAttendanceTypes.map((type) => ({
-      domValue: type,
-      value: type,
-      label: i18n.attendances.staffTypes[type]
-    }))
+    options: staffAttendanceTypes
+      .map((type) => ({
+        domValue: type,
+        value: type,
+        label: i18n.attendances.staffTypes[type]
+      }))
+      .filter((type) =>
+        featureFlags?.hideOvertimeSelection ? type.value !== 'OVERTIME' : true
+      )
   },
   groupEditMode: false,
   groupId: {

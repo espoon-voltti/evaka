@@ -218,6 +218,11 @@ interface BaseFeatureFlags {
   extendedPreschoolTerm: boolean
 
   /**
+   * Hide overtime selection in real time staff attendance
+   */
+  hideOvertimeSelection: boolean
+
+  /**
    * Experimental flags are features in development: features that aren't yet
    * recommended/tested for production usage but can be enabled for testing
    * in eVaka implementations. They are optional (have `?` after the property name)
