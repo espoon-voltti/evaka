@@ -23,7 +23,6 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.ScheduleType
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
-import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -299,13 +298,9 @@ fun planNekkuSpecifyOrderJobs(
             nekkuGroupIds.mapNotNull { nekkuGroupId ->
                 val groupOperationDays = tx.getGroupOperationDays(nekkuGroupId)
                 if (
-                    groupOperationDays != null &&
-                    isGroupOpenOnDate(range.end, groupOperationDays)
+                    groupOperationDays != null && isGroupOpenOnDate(range.end, groupOperationDays)
                 ) {
-                    AsyncJob.SendNekkuOrder(
-                        groupId = nekkuGroupId,
-                        date = range.end
-                    )
+                    AsyncJob.SendNekkuOrder(groupId = nekkuGroupId, date = range.end)
                 } else null
             },
             runAt = now,
