@@ -186,7 +186,7 @@ enum class ScheduledJob(
         ScheduledJobs::sendNekkuSpecifyOrders,
         ScheduledJobSettings(
             enabled = false,
-            schedule = JobSchedule.cron("0 30 9 * * *"), // daily 9:30 am
+            schedule = JobSchedule.cron("0 0 5 * * *"), // daily 5:00 am
         ),
     ),
     SendAromiOrders(
