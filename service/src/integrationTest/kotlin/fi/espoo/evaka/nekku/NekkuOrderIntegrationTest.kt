@@ -7,6 +7,7 @@ package fi.espoo.evaka.nekku
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.absence.AbsenceType
+import fi.espoo.evaka.reports.getNekkuReportRows
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.dev.DevAbsence
@@ -3252,6 +3253,23 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                 ),
                 nekkuOrderReportResult.toSet(),
             )
+        }
+    }
+
+    @Test
+    fun `should be able to read report rows when an error has been reported`() {
+
+        val area = DevCareArea()
+        val daycare = DevDaycare(areaId = area.id)
+        val group = DevDaycareGroup(daycareId = daycare.id)
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(group)
+            tx.setNekkuReportOrderErrorReport(group.id, LocalDate.now(), "Test error")
+
+            tx.getNekkuReportRows(daycare.id, listOf(group.id), listOf(LocalDate.now()))
         }
     }
 }
