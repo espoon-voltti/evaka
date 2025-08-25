@@ -8,7 +8,6 @@ import fi.espoo.evaka.shared.dateTimeMap
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
 import fi.espoo.evaka.shared.helsinkiDateTimeRange
-import io.kotest.common.runBlocking
 import io.kotest.property.Arb
 import io.kotest.property.arbitrary.list
 import io.kotest.property.arbitrary.map
@@ -17,6 +16,7 @@ import io.kotest.property.checkAll
 import java.time.Duration
 import kotlin.sequences.map
 import kotlin.test.assertNull
+import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 
 class DateTimeMapPropertyTest :

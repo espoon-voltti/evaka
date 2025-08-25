@@ -7,7 +7,6 @@ package fi.espoo.evaka.shared.data
 import fi.espoo.evaka.shared.dateSet
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.finiteDateRange
-import io.kotest.common.runBlocking
 import io.kotest.property.Arb
 import io.kotest.property.arbitrary.list
 import io.kotest.property.arbitrary.map
@@ -18,6 +17,7 @@ import java.time.LocalDate
 import kotlin.test.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import kotlinx.coroutines.runBlocking
 
 class DateSetPropertyTest : RangeBasedSetPropertyTest<LocalDate, FiniteDateRange, DateSet>() {
     @Test

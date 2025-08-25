@@ -7,7 +7,6 @@ package fi.espoo.evaka.shared.data
 import fi.espoo.evaka.shared.dateMap
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.finiteDateRange
-import io.kotest.common.runBlocking
 import io.kotest.property.Arb
 import io.kotest.property.arbitrary.list
 import io.kotest.property.arbitrary.map
@@ -16,6 +15,7 @@ import io.kotest.property.checkAll
 import java.time.LocalDate
 import kotlin.sequences.map
 import kotlin.test.assertNull
+import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 
 class DateMapPropertyTest : RangeBasedMapPropertyTest<LocalDate, FiniteDateRange, DateMap<Int>>() {
