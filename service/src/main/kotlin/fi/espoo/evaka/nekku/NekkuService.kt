@@ -23,7 +23,6 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.ScheduleType
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
-import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -53,7 +52,6 @@ class NekkuService(
     env: NekkuEnv?,
     jsonMapper: JsonMapper,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
-    private val featureConfig: FeatureConfig,
     private val emailEnv: EmailEnv,
     private val emailClient: EmailClient,
 ) {
@@ -148,6 +146,17 @@ class NekkuService(
         } catch (e: Exception) {
             logger.warn(e) {
                 "Failed to plan Nekku daily order to Nekku: date=${clock.now()} ,error=${e.localizedMessage}"
+            }
+            throw e
+        }
+    }
+
+    fun planNekkuSpecifyOrders(dbc: Database.Connection, clock: EvakaClock) {
+        try {
+            planNekkuSpecifyOrderJobs(dbc, asyncJobRunner, clock.now())
+        } catch (e: Exception) {
+            logger.warn(e) {
+                "Failed to plan Nekku specify order to Nekku: date=${clock.now()} ,error=${e.localizedMessage}"
             }
             throw e
         }
@@ -275,6 +284,32 @@ fun planNekkuDailyOrderJobs(
     }
 }
 
+fun planNekkuSpecifyOrderJobs(
+    dbc: Database.Connection,
+    asyncJobRunner: AsyncJobRunner<AsyncJob>,
+    now: HelsinkiDateTime,
+) {
+    val range = now.toLocalDate().addFourDays()
+
+    dbc.transaction { tx ->
+        val nekkuGroupIds = tx.getNekkuOpenDaycareGroupIds(range)
+        asyncJobRunner.plan(
+            tx,
+            nekkuGroupIds.mapNotNull { nekkuGroupId ->
+                val groupOperationDays = tx.getGroupOperationDays(nekkuGroupId)
+                if (
+                    groupOperationDays != null && isGroupOpenOnDate(range.end, groupOperationDays)
+                ) {
+                    AsyncJob.SendNekkuOrder(groupId = nekkuGroupId, date = range.end)
+                } else null
+            },
+            runAt = now,
+            retryInterval = Duration.ofHours(1),
+            retryCount = 3,
+        )
+    }
+}
+
 fun haveDaycareTimesBeenLockedForDate(today: LocalDate, date: LocalDate): Boolean =
     // daycare times have been locked for this week and the following week
     date.isOnOrBefore(today.nextWeeksSunday())
@@ -330,6 +365,12 @@ private fun LocalDate.weeklyJobsForThirdWeekFromNow(): FiniteDateRange {
 private fun LocalDate.daySpan(): FiniteDateRange {
     val start = this
     val end = start.plusDays(1)
+    return FiniteDateRange(start, end)
+}
+
+private fun LocalDate.addFourDays(): FiniteDateRange {
+    val start = this
+    val end = start.plusDays(4)
     return FiniteDateRange(start, end)
 }
 
