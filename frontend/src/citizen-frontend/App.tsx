@@ -57,6 +57,7 @@ export function App({ children }: { children: React.ReactNode }) {
                       <LoginErrorModal />
                       <div id="modal-container" />
                       <div id="datepicker-container" />
+                      <div id="tooltip-container" />
                     </MessageContextProvider>
                   </NotificationsContextProvider>
                 </OverlayContextProvider>

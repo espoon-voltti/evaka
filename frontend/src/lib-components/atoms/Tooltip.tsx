@@ -4,7 +4,8 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
-import React from 'react'
+import React, { useCallback, useLayoutEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import styled from 'styled-components'
 
 import {
@@ -27,76 +28,16 @@ const TooltipWrapper = styled.div`
   }
 `
 
-const tooltipPositions = (position: Position, width: Width) => {
-  const widthInPx = width === 'large' ? '-200px' : '-70px'
-  const top = (() => {
-    switch (position) {
-      case 'top':
-        return 'auto'
-      case 'bottom':
-        return `calc(100% + ${defaultMargins.xs})`
-      case 'left':
-      case 'right':
-        return widthInPx
-    }
-  })()
-
-  const bottom = () => {
-    switch (position) {
-      case 'top':
-        return `calc(100% + ${defaultMargins.xs})`
-      case 'bottom':
-        return 'auto'
-      case 'left':
-      case 'right':
-        return widthInPx
-    }
-  }
-
-  const left = () => {
-    switch (position) {
-      case 'top':
-      case 'bottom':
-        return widthInPx
-      case 'left':
-        return 'auto'
-      case 'right':
-        return `calc(100% + ${defaultMargins.xs})`
-    }
-  }
-
-  const right = () => {
-    switch (position) {
-      case 'top':
-      case 'bottom':
-        return widthInPx
-      case 'left':
-        return `calc(100% + ${defaultMargins.xs})`
-      case 'right':
-        return 'auto'
-    }
-  }
-
-  return { top, bottom, left, right }
-}
-
 const TooltipPositioner = styled.div<{
   position: Position
-  width: Width
 }>`
-  position: absolute;
+  position: fixed;
   z-index: 99999;
   display: flex;
-  justify-content: center;
-  align-items: center;
-
-  top: ${({ position, width }) => tooltipPositions(position, width).top};
-  bottom: ${({ position, width }) => tooltipPositions(position, width).bottom};
-  left: ${({ position, width }) => tooltipPositions(position, width).left};
-  right: ${({ position, width }) => tooltipPositions(position, width).right};
 `
 
 const TooltipDiv = styled.div`
+  position: static;
   color: ${(p) => p.theme.colors.grayscale.g0};
   font-size: 15px;
   line-height: 22px;
@@ -112,6 +53,9 @@ const TooltipDiv = styled.div`
   p:not(:last-child) {
     margin-bottom: 8px;
   }
+
+  overflow-wrap: anywhere;
+  hyphens: auto;
 `
 
 const beakPositions = (position: Position) => {
@@ -184,63 +128,201 @@ type Position = 'top' | 'bottom' | 'right' | 'left'
 type Width = 'small' | 'large'
 
 export type TooltipProps = BaseProps & {
-  children: React.ReactNode
+  children?: React.ReactNode
   tooltip: React.ReactNode
   position?: Position
   width?: Width
   className?: string
 }
 
+const defaultPosition: Position = 'bottom'
+
 export default React.memo(function Tooltip({
   children,
   className,
   ...props
 }: TooltipProps) {
+  const [isHovered, setIsHovered] = useState(false)
+  const wrapperRef = useRef<HTMLDivElement>(null)
+  const tooltipRef = useRef<HTMLDivElement>(null)
+
+  const position = props.position ?? defaultPosition
+
+  useFloatingPositioning({
+    anchorRef: wrapperRef,
+    floatingRef: tooltipRef,
+    active: isHovered,
+    position,
+    width: props.width ?? 'small'
+  })
+
   return (
-    <TooltipWrapper className={className}>
+    <TooltipWrapper
+      ref={wrapperRef}
+      className={className}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
       {children}
-      <TooltipWithoutAnchor {...props} />
+      {isHovered &&
+        createPortal(
+          <TooltipWithoutAnchor ref={tooltipRef} {...props} />,
+          document.getElementById('tooltip-container') ?? document.body
+        )}
     </TooltipWrapper>
   )
 })
 
-export const TooltipWithoutAnchor = React.memo(function Tooltip({
-  tooltip,
-  'data-qa': dataQa,
-  className,
-  ...props
-}: Omit<TooltipProps, 'children'>) {
-  if (!tooltip) return null
+export const TooltipWithoutAnchor = React.memo(
+  React.forwardRef(function Tooltip(
+    {
+      tooltip,
+      'data-qa': dataQa,
+      className,
+      ...props
+    }: Omit<TooltipProps, 'children'>,
+    ref: React.ForwardedRef<HTMLDivElement>
+  ) {
+    if (!tooltip) return null
 
-  const position = props.position ?? 'bottom'
-  const icon = (() => {
+    const position = props.position ?? defaultPosition
+    const icon = (() => {
+      switch (position) {
+        case 'top':
+          return fasCaretDown
+        case 'bottom':
+          return fasCaretUp
+        case 'left':
+          return fasCaretRight
+        case 'right':
+          return fasCaretLeft
+      }
+    })()
+
+    return (
+      <TooltipPositioner
+        className={classNames('tooltip', className)}
+        position={position}
+        ref={ref}
+      >
+        <TooltipDiv data-qa={dataQa}>
+          <Beak position={position}>
+            <FontAwesomeIcon
+              icon={icon}
+              size={['top', 'bottom'].includes(position) ? '3x' : '2x'}
+            />
+          </Beak>
+          <div>{tooltip}</div>
+        </TooltipDiv>
+      </TooltipPositioner>
+    )
+  })
+)
+
+type TooltipLocation = {
+  top: string | null
+  left: string | null
+  right: string | null
+  bottom: string | null
+  maxWidth?: string
+}
+
+function useFloatingPositioning({
+  anchorRef,
+  floatingRef,
+  active,
+  position,
+  width
+}: {
+  anchorRef: React.RefObject<HTMLElement | null>
+  floatingRef: React.RefObject<HTMLElement | null>
+  active: boolean
+  position: Position
+  width: Width
+}) {
+  const locate = useCallback(() => {
+    const margin = 4 // px
+
+    const viewportWidth = window.innerWidth
+    const viewportHeight = window.innerHeight
+
+    const anchor = anchorRef.current
+    const floating = floatingRef.current
+    if (!anchor || !floating) return
+
+    const anchorRect = anchor.getBoundingClientRect()
+
+    const tooltipMaxWidth =
+      (['top', 'bottom'].includes(position)
+        ? width === 'large'
+          ? 400
+          : 140
+        : margin) +
+      anchorRect.width +
+      'px'
+
+    Object.assign(floating.style, {
+      maxWidth: tooltipMaxWidth
+    })
+
+    const location: TooltipLocation = {
+      top: null,
+      left: null,
+      right: null,
+      bottom: null
+    }
+
     switch (position) {
       case 'top':
-        return fasCaretDown
+        location.bottom = viewportHeight - anchorRect.top + 3 * margin + 'px'
+        location.left =
+          anchorRect.left -
+          floating.offsetWidth / 2 +
+          anchorRect.width / 2 +
+          'px'
+        break
       case 'bottom':
-        return fasCaretUp
+        location.top = anchorRect.bottom + 3 * margin + 'px'
+        location.left =
+          anchorRect.left -
+          floating.offsetWidth / 2 +
+          anchorRect.width / 2 +
+          'px'
+        break
       case 'left':
-        return fasCaretRight
+        location.top =
+          anchorRect.top -
+          floating.offsetHeight / 2 +
+          anchorRect.height / 2 +
+          'px'
+        location.right = viewportWidth - anchorRect.left + 4 * margin + 'px'
+        break
       case 'right':
-        return fasCaretLeft
+        location.top =
+          anchorRect.top -
+          floating.offsetHeight / 2 +
+          anchorRect.height / 2 +
+          'px'
+        location.left = anchorRect.right + 4 * margin + 'px'
+        break
     }
-  })()
 
-  return (
-    <TooltipPositioner
-      className={classNames('tooltip', className)}
-      position={position}
-      width={props.width ?? 'small'}
-    >
-      <TooltipDiv data-qa={dataQa}>
-        <Beak position={position}>
-          <FontAwesomeIcon
-            icon={icon}
-            size={['top', 'bottom'].includes(position) ? '3x' : '2x'}
-          />
-        </Beak>
-        <div>{tooltip}</div>
-      </TooltipDiv>
-    </TooltipPositioner>
-  )
-})
+    Object.assign(floating.style, location)
+  }, [anchorRef, floatingRef, position, width])
+
+  useLayoutEffect(() => {
+    if (!active) return
+
+    locate() // Initial positioning
+
+    const handleUpdate = () => locate()
+
+    window.addEventListener('scroll', handleUpdate, true)
+    window.addEventListener('resize', handleUpdate)
+
+    return () => {
+      window.removeEventListener('scroll', handleUpdate, true)
+      window.removeEventListener('resize', handleUpdate)
+    }
+  }, [active, locate])
+}
