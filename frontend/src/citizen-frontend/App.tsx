@@ -105,7 +105,7 @@ const Content = React.memo(function Content({
     <FullPageContainer>
       <SkipToContent target="main">{t.skipLinks.mainContent}</SkipToContent>
       <Header ariaHidden={modalOpen} />
-      <Notifications apiVersion={apiVersion} />
+      <Notifications apiVersion={apiVersion} sticky offsetTop />
       <MainContainer ariaHidden={modalOpen}>{children}</MainContainer>
       <MobileNav />
       {sessionExpirationDetected && (
