@@ -218,7 +218,6 @@ describe('Realtime staff attendances', () => {
         plannedAttendances: [['07:00', '15:00']],
         attendances: [['07:03', '–']]
       })
-
       const modal = await staffAttendances.openDetails(0, mockedToday)
       await waitUntilEqual(() => modal.summary(), {
         plan: '07:00 – 15:00',
