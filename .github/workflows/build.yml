@@ -630,7 +630,7 @@ jobs:
             find . -name "$filename" -not -path "./maintenance-page/*" -type f -delete
           done
 
-          aws s3 sync --exact-timestamps . s3://evaka-static/
+          aws s3 sync --exact-timestamps . s3://${{ secrets.STATIC_FALLBACK_BUCKET }}/
 
   tag:
     if: ${{ !github.event.pull_request.head.repo.fork }}
