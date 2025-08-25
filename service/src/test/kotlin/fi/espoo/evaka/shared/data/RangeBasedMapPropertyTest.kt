@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.shared.data
 
-import io.kotest.common.runBlocking
 import io.kotest.property.Arb
 import io.kotest.property.arbitrary.int
 import io.kotest.property.arbitrary.list
@@ -15,6 +14,7 @@ import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import kotlinx.coroutines.runBlocking
 
 abstract class RangeBasedMapPropertyTest<
     Point : Comparable<Point>,

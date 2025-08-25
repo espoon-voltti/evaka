@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.shared.data
 
-import io.kotest.common.runBlocking
 import io.kotest.property.Arb
 import io.kotest.property.arbitrary.list
 import io.kotest.property.arbitrary.positiveInt
@@ -13,6 +12,7 @@ import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 
 abstract class RangeBasedSetPropertyTest<
