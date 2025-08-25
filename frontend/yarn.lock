@@ -1868,10 +1868,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@date-fns/tz@npm:^1.2.0":
-  version: 1.3.1
-  resolution: "@date-fns/tz@npm:1.3.1"
-  checksum: 10/e58623333c7a63269f734aac72856281940331d14825a1bd83fd4966694691badf51ba935dbc77ac769a6d0bd3b35c4afe086d3193aabf27c7d5f3162659f091
+"@date-fns/tz@npm:^1.4.1":
+  version: 1.4.1
+  resolution: "@date-fns/tz@npm:1.4.1"
+  checksum: 10/062097590005cce3da4c7d9880f9c77d386cff5b4dd58fa3dde3c346a8b2e4f4a8025a613306351a7cad8eb71178a0f67b4840d5884f73aa4c759085fac92063
   languageName: node
   linkType: hard
 
@@ -6398,7 +6398,7 @@ __metadata:
     punycode: "npm:2.3.1"
     react: "npm:19.1.1"
     react-chartjs-2: "npm:5.3.0"
-    react-day-picker: "npm:9.8.1"
+    react-day-picker: "npm:9.9.0"
     react-dom: "npm:19.1.1"
     react-focus-lock: "npm:2.13.6"
     react-focus-on: "npm:3.10.0"
@@ -9784,16 +9784,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-day-picker@npm:9.8.1":
-  version: 9.8.1
-  resolution: "react-day-picker@npm:9.8.1"
+"react-day-picker@npm:9.9.0":
+  version: 9.9.0
+  resolution: "react-day-picker@npm:9.9.0"
   dependencies:
-    "@date-fns/tz": "npm:^1.2.0"
+    "@date-fns/tz": "npm:^1.4.1"
     date-fns: "npm:^4.1.0"
     date-fns-jalali: "npm:^4.1.0-0"
   peerDependencies:
     react: ">=16.8.0"
-  checksum: 10/01acdf0f77476f951c6cfd57d05732efc88bf40145aa3f22caa7e142f89ab7800141d580262c19b3430a27418bc6015e4bfd77b0804e48f07dabbe2b4eb37846
+  checksum: 10/b4c804639228e6e0517213d156ff44feed81f14100dbb55a6abcca0acdb02444deadf7d3e1c8c95405aee9ca01f862ff8eafa1ddc9f90175fdffd3a9d98b4664
   languageName: node
   linkType: hard
 
