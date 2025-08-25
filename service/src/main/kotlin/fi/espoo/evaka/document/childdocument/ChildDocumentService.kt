@@ -20,6 +20,7 @@ import fi.espoo.evaka.pdfgen.PdfGenerator
 import fi.espoo.evaka.pis.EmailMessageType
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.service.getChildGuardiansAndFosterParents
+import fi.espoo.evaka.placement.getPlacementsForChild
 import fi.espoo.evaka.s3.DocumentKey
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.sficlient.SentSfiMessage
@@ -32,6 +33,7 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.domain.OfficialLanguage
@@ -334,6 +336,19 @@ WHERE person.email IS NOT NULL AND person.email != ''
         clock: EvakaClock,
         msg: AsyncJob.SendChildDocumentNotificationEmail,
     ) {
+        val childHasPlacement =
+            db.read { tx ->
+                tx.getPlacementsForChild(msg.childId).any {
+                    FiniteDateRange(it.startDate, it.endDate).includes(clock.today())
+                }
+            }
+        if (!childHasPlacement) {
+            logger.info {
+                "Child ${msg.childId} has no active placement, skipping notification email for document ${msg.documentId}"
+            }
+            return
+        }
+
         logger.info {
             "Sending child document notification email for document ${msg.documentId} to person ${msg.recipientId}"
         }
