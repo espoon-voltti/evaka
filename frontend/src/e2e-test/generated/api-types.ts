@@ -436,8 +436,8 @@ export interface DevChildDocument {
   answeredBy: EvakaUserId | null
   childId: PersonId
   content: DocumentContent
-  contentModifiedAt: HelsinkiDateTime
-  contentModifiedBy: EmployeeId | null
+  contentLockedAt: HelsinkiDateTime
+  contentLockedBy: EmployeeId | null
   created: HelsinkiDateTime | null
   createdBy: EvakaUserId
   decision: DevChildDocumentDecision | null
@@ -445,8 +445,10 @@ export interface DevChildDocument {
   documentKey: string | null
   id: ChildDocumentId
   modifiedAt: HelsinkiDateTime
+  modifiedBy: EvakaUserId
   processId: CaseProcessId | null
   publishedAt: HelsinkiDateTime | null
+  publishedBy: EvakaUserId | null
   publishedContent: DocumentContent | null
   status: DocumentStatus
   templateId: DocumentTemplateId
@@ -1429,7 +1431,7 @@ export function deserializeJsonDevChildDocument(json: JsonOf<DevChildDocument>):
     ...json,
     answeredAt: (json.answeredAt != null) ? HelsinkiDateTime.parseIso(json.answeredAt) : null,
     content: deserializeJsonDocumentContent(json.content),
-    contentModifiedAt: HelsinkiDateTime.parseIso(json.contentModifiedAt),
+    contentLockedAt: HelsinkiDateTime.parseIso(json.contentLockedAt),
     created: (json.created != null) ? HelsinkiDateTime.parseIso(json.created) : null,
     decision: (json.decision != null) ? deserializeJsonDevChildDocumentDecision(json.decision) : null,
     modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt),

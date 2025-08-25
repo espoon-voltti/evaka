@@ -16,6 +16,7 @@ import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.Predicate
@@ -41,8 +42,8 @@ fun Database.Transaction.insertChildDocument(
     return createQuery {
             sql(
                 """
-INSERT INTO child_document(child_id, template_id, type, status, content, modified_at, content_modified_at, content_modified_by, created_by, process_id, decision_maker)
-VALUES (${bind(childId)}, ${bind(templateId)}, ${bind(type)}, 'DRAFT', ${bind(DocumentContent(answers = emptyList()))}, ${bind(now)}, ${bind(now)}, ${bind(userId)}, ${bind(userId)}, ${bind(processId)}, NULL)
+INSERT INTO child_document(child_id, template_id, type, status, content, modified_at, modified_by, content_locked_at, content_locked_by, created_by, process_id, decision_maker)
+VALUES (${bind(childId)}, ${bind(templateId)}, ${bind(type)}, 'DRAFT', ${bind(DocumentContent(answers = emptyList()))}, ${bind(now)}, ${bind(userId)}, ${bind(now)}, ${bind(userId)}, ${bind(userId)}, ${bind(processId)}, NULL)
 RETURNING id
 """
             )
@@ -86,7 +87,9 @@ SELECT
     cd.status,
     dt.type,
     cd.modified_at, 
+    modified_by.name AS modified_by,
     cd.published_at, 
+    published_by.name AS published_by,
     dt.id as template_id, 
     dt.name as template_name,
     ch.first_name AS child_first_name,
@@ -107,6 +110,8 @@ SELECT
 FROM child_document cd
 JOIN document_template dt on cd.template_id = dt.id
 JOIN person ch ON cd.child_id = ch.id
+LEFT JOIN evaka_user modified_by ON cd.modified_by = modified_by.id
+LEFT JOIN evaka_user published_by ON cd.published_by = published_by.id
 LEFT JOIN evaka_user answered_by ON cd.answered_by = answered_by.id
 LEFT JOIN evaka_user decision_maker ON cd.decision_maker = decision_maker.employee_id
 LEFT JOIN child_document_decision cdd ON cdd.id = cd.decision_id
@@ -229,8 +234,8 @@ fun Database.Read.getChildDocumentKey(id: ChildDocumentId): String? {
 }
 
 data class DocumentWriteLock(
-    val modifiedBy: EvakaUserId,
-    val modifiedByName: String,
+    val lockedBy: EvakaUserId,
+    val lockedByName: String,
     val opensAt: HelsinkiDateTime,
 )
 
@@ -242,16 +247,16 @@ fun Database.Read.getCurrentWriteLock(
             sql(
                 """
     SELECT 
-        content_modified_by AS modified_by,
+        content_locked_by AS locked_by,
         (
             SELECT e.name
-            FROM evaka_user e WHERE e.id = cd.content_modified_by
-        ) AS modified_by_name,
-        content_modified_at + interval '$lockMinutes minutes' AS opens_at
+            FROM evaka_user e WHERE e.id = cd.content_locked_by
+        ) AS locked_by_name,
+        content_locked_at + interval '$lockMinutes minutes' AS opens_at
     FROM child_document cd
     WHERE id = ${bind(id)} AND 
-        content_modified_by IS NOT NULL AND 
-        content_modified_at >= ${bind(now.minusMinutes(lockMinutes.toLong()))}
+        content_locked_by IS NOT NULL AND 
+        content_locked_at >= ${bind(now.minusMinutes(lockMinutes.toLong()))}
 """
             )
         }
@@ -265,11 +270,11 @@ fun Database.Transaction.tryTakeWriteLock(
     createUpdate {
             sql(
                 """
-        UPDATE child_document SET content_modified_at = ${bind(now)}, content_modified_by = ${bind(userId)}
+        UPDATE child_document SET content_locked_at = ${bind(now)}, content_locked_by = ${bind(userId)}
         WHERE id = ${bind(id)} AND (
-            content_modified_by IS NULL OR
-            content_modified_by = ${bind(userId)} OR
-            content_modified_at < ${bind(now.minusMinutes(lockMinutes.toLong()))}
+            content_locked_by IS NULL OR
+            content_locked_by = ${bind(userId)} OR
+            content_locked_at < ${bind(now.minusMinutes(lockMinutes.toLong()))}
         )
     """
             )
@@ -291,12 +296,13 @@ fun Database.Transaction.updateChildDocumentContent(
                 SET 
                     content = ${bind(content)},
                     modified_at = ${bind(now)}, 
-                    content_modified_at = ${bind(now)}, 
-                    content_modified_by = ${bind(userId)}
+                    modified_by = ${bind(userId)},
+                    content_locked_at = ${bind(now)}, 
+                    content_locked_by = ${bind(userId)}
                 WHERE id = ${bind(id)} AND status = ${bind(status)} AND (
-                    content_modified_by IS NULL OR 
-                    content_modified_by = ${bind(userId)} OR 
-                    content_modified_at < ${bind(now.minusMinutes(lockMinutes.toLong()))}
+                    content_locked_by IS NULL OR 
+                    content_locked_by = ${bind(userId)} OR 
+                    content_locked_at < ${bind(now.minusMinutes(lockMinutes.toLong()))}
                 )
                 """
             )
@@ -319,10 +325,12 @@ fun Database.Transaction.updateChildDocument(
                     status = ${bind(statusTransition.newStatus)},
                     content = ${bind(content)},
                     modified_at = ${bind(now)},
-                    content_modified_at = ${bind(now)},
-                    content_modified_by = ${bind(userId)},
+                    modified_by = ${bind(userId)},
+                    content_locked_at = ${bind(now)},
+                    content_locked_by = ${bind(userId)},
                     published_content = ${bind(content)},
                     published_at = ${bind(now)},
+                    published_by = ${bind(userId)},
                     answered_at = ${bind(now)},
                     answered_by = ${bind(userId)}
                 WHERE id = ${bind(id)} AND status = ${bind(statusTransition.currentStatus)}
@@ -345,12 +353,16 @@ fun Database.Read.isDocumentPublishedContentUpToDate(id: ChildDocumentId): Boole
         .exactlyOneOrNull<Boolean>() ?: throw NotFound("Document $id not found")
 }
 
-fun Database.Transaction.publishChildDocument(id: ChildDocumentId, now: HelsinkiDateTime) {
+fun Database.Transaction.publishChildDocument(
+    id: ChildDocumentId,
+    now: HelsinkiDateTime,
+    userId: EvakaUserId,
+) {
     createUpdate {
             sql(
                 """
                 UPDATE child_document
-                SET published_at = ${bind(now)}, published_content = content
+                SET published_at = ${bind(now)}, published_by = ${bind(userId)}, published_content = content
                 WHERE id = ${bind(id)} AND status <> 'COMPLETED'
                 """
             )
@@ -374,12 +386,13 @@ fun Database.Transaction.changeStatus(
     id: ChildDocumentId,
     statusTransition: StatusTransition,
     now: HelsinkiDateTime,
+    userId: EvakaUserId,
 ) {
     createUpdate {
             sql(
                 """
                 UPDATE child_document
-                SET status = ${bind(statusTransition.newStatus)}, modified_at = ${bind(now)}
+                SET status = ${bind(statusTransition.newStatus)}, modified_at = ${bind(now)}, modified_by = ${bind(userId)}
                 WHERE id = ${bind(id)} AND status = ${bind(statusTransition.currentStatus)}
                 """
             )
@@ -392,13 +405,18 @@ fun Database.Transaction.changeStatusAndPublish(
     statusTransition: StatusTransition,
     now: HelsinkiDateTime,
     answeredBy: EvakaUserId?,
+    userId: EvakaUserId,
 ) {
     createUpdate {
             sql(
                 """
                 UPDATE child_document
-                SET status = ${bind(statusTransition.newStatus)}, modified_at = ${bind(now)}, 
-                    published_at = ${bind(now)}, published_content = content
+                SET status = ${bind(statusTransition.newStatus)},
+                    modified_at = ${bind(now)},
+                    modified_by = ${bind(userId)},
+                    published_at = ${bind(now)},
+                    published_by = ${bind(userId)},
+                    published_content = content
                     ${if (answeredBy != null) ", answered_at = ${bind(now)}, answered_by = ${bind(answeredBy)}" else ""}
                 WHERE id = ${bind(id)} AND status = ${bind(statusTransition.currentStatus)}
                 """
@@ -415,7 +433,12 @@ fun Database.Transaction.markCompletedAndPublish(
             sql(
                 """
                 UPDATE child_document
-                SET status = 'COMPLETED', modified_at = ${bind(now)}, published_at = ${bind(now)}, published_content = content
+                SET status = 'COMPLETED',
+                    modified_at = ${bind(now)},
+                    modified_by = ${bind(AuthenticatedUser.SystemInternalUser.rawId())},
+                    published_at = ${bind(now)},
+                    published_by = ${bind(AuthenticatedUser.SystemInternalUser.rawId())},
+                    published_content = content
                 WHERE id = ANY(${bind(ids)})
                 """
             )
@@ -557,6 +580,7 @@ fun Database.Transaction.setChildDocumentDecisionAndPublish(
     documentId: ChildDocumentId,
     decisionId: ChildDocumentDecisionId,
     now: HelsinkiDateTime,
+    userId: EvakaUserId,
 ) {
     createUpdate {
             sql(
@@ -565,8 +589,10 @@ fun Database.Transaction.setChildDocumentDecisionAndPublish(
                 SET decision_id = ${bind(decisionId)}, 
                     status = 'COMPLETED', 
                     modified_at = ${bind(now)},
+                    modified_by = ${bind(userId)},
                     published_content = content,
-                    published_at = ${bind(now)}
+                    published_at = ${bind(now)},
+                    published_by = ${bind(userId)}
                 WHERE id = ${bind(documentId)} AND status = 'DECISION_PROPOSAL'
                 """
             )

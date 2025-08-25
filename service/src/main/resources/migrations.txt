@@ -547,3 +547,4 @@ V548__placement_created_by_source_etc.sql
 V549__placement_indexes.sql
 V550__new_preschool_assistance_levels_v2.sql
 V551__daycare_nekku_order_reduction_percentage.sql
+V552__child_document_published_modified_metadata.sql

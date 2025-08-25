@@ -190,6 +190,8 @@ class ArchiveChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBe
                 )
 
             val emptyContent = DocumentContent(emptyList())
+            val employee = DevEmployee()
+            tx.insert(employee)
             val childDocument =
                 DevChildDocument(
                     id = documentId,
@@ -199,9 +201,11 @@ class ArchiveChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBe
                     content = emptyContent,
                     publishedContent = emptyContent,
                     modifiedAt = now,
-                    contentModifiedAt = now,
-                    contentModifiedBy = null,
+                    modifiedBy = employee.evakaUserId,
+                    contentLockedAt = now,
+                    contentLockedBy = null,
                     publishedAt = now,
+                    publishedBy = employee.evakaUserId,
                     answeredAt = null,
                     answeredBy = null,
                     processId = process.id,

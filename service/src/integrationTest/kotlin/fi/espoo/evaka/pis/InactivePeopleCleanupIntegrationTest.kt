@@ -379,9 +379,11 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
                         content = documentContent,
                         publishedContent = documentContent,
                         modifiedAt = HelsinkiDateTime.now(),
-                        contentModifiedAt = HelsinkiDateTime.now(),
-                        contentModifiedBy = employeeUser.id,
+                        modifiedBy = employeeUser.evakaUserId,
+                        contentLockedAt = HelsinkiDateTime.now(),
+                        contentLockedBy = employeeUser.id,
                         publishedAt = HelsinkiDateTime.now(),
+                        publishedBy = employeeUser.evakaUserId,
                     )
                 )
             tx.insert(testAdult_1, DevPersonType.RAW_ROW)

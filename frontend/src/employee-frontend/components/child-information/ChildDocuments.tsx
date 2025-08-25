@@ -30,6 +30,7 @@ import {
 } from 'lib-common/query'
 import type { UUID } from 'lib-common/types'
 import DisableableLink from 'lib-components/atoms/DisableableLink'
+import Tooltip from 'lib-components/atoms/Tooltip'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { SelectF } from 'lib-components/atoms/dropdowns/Select'
@@ -112,9 +113,27 @@ const InternalChildDocuments = React.memo(function InternalChildDocuments({
                   <span>{document.templateName}</span>
                 </DisableableLink>
               </WiderTd>
-              <Td>{document.modifiedAt.format()}</Td>
+              <Td>
+                <Tooltip
+                  tooltip={i18n.childInformation.childDocuments.table.modifiedBy(
+                    document.modifiedBy
+                  )}
+                >
+                  {document.modifiedAt.format()}
+                </Tooltip>
+              </Td>
               <Td data-qa="document-published-at">
-                {document.publishedAt?.format() ?? '-'}
+                {document.publishedAt && document.publishedBy ? (
+                  <Tooltip
+                    tooltip={i18n.childInformation.childDocuments.table.publishedBy(
+                      document.publishedBy
+                    )}
+                  >
+                    {document.publishedAt.format()}
+                  </Tooltip>
+                ) : (
+                  '-'
+                )}
               </Td>
               <StatusTd data-qa="document-status">
                 <ChildDocumentStateChip

@@ -124,7 +124,7 @@ const ConcurrentEditWarning = React.memo(function ConcurrentEditWarning({
 
   const errorText = currentLock
     ? i18n.childInformation.childDocuments.editor.lockedErrorDetailed(
-        currentLock.modifiedByName,
+        currentLock.lockedByName,
         currentLock.opensAt.toLocalTime().format()
       )
     : i18n.childInformation.childDocuments.editor.lockedError
