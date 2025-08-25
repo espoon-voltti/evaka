@@ -83,7 +83,7 @@ class NekkuOrderReportController(private val accessControl: AccessControl) {
     }
 }
 
-private fun Database.Read.getNekkuReportRows(
+fun Database.Read.getNekkuReportRows(
     daycareId: DaycareId,
     groupIds: List<GroupId>,
     dates: List<LocalDate>,
@@ -95,7 +95,7 @@ SELECT nor.delivery_date as date,
         nor.meal_sku as sku,
         nor.total_quantity as quantity, 
         dg.name as groupname,
-        nor.meal_time as mealtime,
+        coalesce(nor.meal_time, '{}') as mealtime,
         nor.meal_type as mealtype,
         nor.meals_by_special_diet as specialdiets,
         nor.nekku_order_info as nekkuOrderInfo
