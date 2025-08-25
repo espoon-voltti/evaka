@@ -255,6 +255,9 @@ fun getGroupMonthCalendar(
                                 val childAttendances = attendances[child.id to date] ?: emptyList()
                                 val childReservations =
                                     reservations[child.id to date] ?: emptyList()
+                                val childShouldHaveAnswers =
+                                    isQuestionnaireDate &&
+                                        questionnaires.any { it.active.overlaps(placement.range) }
                                 val noAnswersForChild =
                                     answers.none {
                                         it.childId == child.id &&
@@ -333,6 +336,7 @@ fun getGroupMonthCalendar(
                                             daycare.providerType !=
                                                 ProviderType.PRIVATE_SERVICE_VOUCHER &&
                                             isQuestionnaireDate &&
+                                            childShouldHaveAnswers &&
                                             noAnswersForChild,
                                     absences =
                                         childAbsences.map { AbsenceWithModifierInfo.from(it) },
