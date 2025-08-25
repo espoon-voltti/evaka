@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { useEffect, useRef } from 'react'
 import styled from 'styled-components'
 
 import type { ChildAndPermittedActions } from 'lib-common/generated/api-types/children'
@@ -41,6 +41,13 @@ export default React.memo(function ChildHeader({
   child: ChildAndPermittedActions
 }) {
   const t = useTranslation()
+  const mainHeading = useRef<HTMLHeadingElement | null>(null)
+  useEffect(() => {
+    // focus on the accessibility heading
+    if (mainHeading.current) {
+      mainHeading.current.focus()
+    }
+  }, [firstName, lastName])
   return (
     <ChildHeaderContainer>
       <RoundImage
@@ -51,7 +58,7 @@ export default React.memo(function ChildHeader({
         alt={t.children.childPicture}
       />
       <div>
-        <H1 noMargin data-qa="child-name">
+        <H1 noMargin data-qa="child-name" tabIndex={-1} ref={mainHeading}>
           <PersonName
             person={{ firstName, lastName }}
             format={childPageNameFormat}

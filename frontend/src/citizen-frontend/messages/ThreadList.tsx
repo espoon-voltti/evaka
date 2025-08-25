@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, { useContext, useState } from 'react'
+import React, { useContext, useEffect, useRef, useState } from 'react'
 import styled from 'styled-components'
 
 import type { CitizenMessageThread } from 'lib-common/generated/api-types/messaging'
@@ -63,6 +63,15 @@ export default React.memo(function ThreadList({
   const { addTimedNotification } = useContext(NotificationsContext)
   const [confirmDelete, setConfirmDelete] = useState<MessageThreadId>()
 
+  const mainHeading = useRef<HTMLHeadingElement | null>(null)
+
+  useEffect(() => {
+    // focus on the accessibility heading
+    if (mainHeading.current) {
+      mainHeading.current.focus()
+    }
+  }, [])
+
   return (
     <>
       {selectedThread && (
@@ -77,7 +86,9 @@ export default React.memo(function ThreadList({
       <Container className={selectedThread ? 'desktop-only' : undefined}>
         <Gap size="s" sizeOnMobile="m" />
         <HeaderContainer>
-          <H1 noMargin>{t.messages.inboxTitle}</H1>
+          <H1 noMargin ref={mainHeading} tabIndex={-1}>
+            {t.messages.inboxTitle}
+          </H1>
         </HeaderContainer>
         <Gap size="xs" sizeOnMobile="m" />
         <TabletAndDesktop>
