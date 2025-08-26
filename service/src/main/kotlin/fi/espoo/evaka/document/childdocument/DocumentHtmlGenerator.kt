@@ -149,18 +149,23 @@ private fun generateHeader(document: ChildDocumentDetails): HtmlElement {
             h1(template.name),
             div(className = "legal-info") {
                 listOfNotNull(
+                    document.decision?.createdAt?.let {
+                        div(
+                            "${getTranslations(document.template).decisionCreated } ${it.toLocalDate().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))}"
+                        )
+                    },
                     document.decision?.decisionNumber?.let {
                         div(
                             "${getTranslations(document.template).decisionNumber} $it",
                             className = "decision-number",
                         )
                     },
-                    template.legalBasis
-                        .takeIf { it.isNotBlank() }
-                        ?.let { div(text = it, className = "legal-basis") },
                     if (template.confidentiality != null)
                         div(getTranslations(template).confidential)
                     else null,
+                    template.legalBasis
+                        .takeIf { it.isNotBlank() }
+                        ?.let { div(text = it, className = "legal-basis") },
                 )
             },
         )
@@ -203,6 +208,7 @@ private fun generateQuestionHtml(
 private data class Translations(
     val confidential: String,
     val decisionNumber: String,
+    val decisionCreated: String,
     val decisionStatus: (ChildDocumentDecisionStatus) -> HtmlElement,
 )
 
@@ -210,6 +216,7 @@ private val translationsFi =
     Translations(
         confidential = "Salassapidettävä",
         decisionNumber = "Päätösnumero",
+        decisionCreated = "Päätöspvm",
         decisionStatus = { status: ChildDocumentDecisionStatus ->
             val statusString =
                 when (status) {
@@ -233,6 +240,7 @@ private val translationsSv =
     Translations(
         confidential = "Konfidentiellt",
         decisionNumber = "Beslutsnummer",
+        decisionCreated = "Beslutsdatum",
         decisionStatus = { status: ChildDocumentDecisionStatus ->
             val statusString =
                 when (status) {
@@ -256,6 +264,7 @@ private val translationsEn =
     Translations(
         confidential = "Confidential",
         decisionNumber = "Decision number",
+        decisionCreated = "Decision date",
         decisionStatus = { status: ChildDocumentDecisionStatus ->
             val statusString =
                 when (status) {
