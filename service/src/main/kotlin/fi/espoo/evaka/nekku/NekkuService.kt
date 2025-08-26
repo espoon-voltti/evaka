@@ -292,15 +292,16 @@ fun planNekkuSpecifyOrderJobs(
     val fourDaysFromNow = now.toLocalDate().plusDays(4)
 
     dbc.transaction { tx ->
-
-        val groupIds = tx.getNekkuOpenDaycareGroupIds(FiniteDateRange(fourDaysFromNow, fourDaysFromNow))
+        val groupIds =
+            tx.getNekkuOpenDaycareGroupIds(FiniteDateRange(fourDaysFromNow, fourDaysFromNow))
 
         asyncJobRunner.plan(
             tx,
             groupIds.mapNotNull { nekkuGroupId ->
                 val groupOperationDays = tx.getGroupOperationDays(nekkuGroupId)
                 if (
-                    groupOperationDays != null && isGroupOpenOnDate(fourDaysFromNow, groupOperationDays)
+                    groupOperationDays != null &&
+                        isGroupOpenOnDate(fourDaysFromNow, groupOperationDays)
                 ) {
                     AsyncJob.SendNekkuOrder(groupId = nekkuGroupId, date = fourDaysFromNow)
                 } else null
