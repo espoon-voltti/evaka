@@ -246,7 +246,6 @@ describe.each(envs)('Citizen calendar discussion surveys (%s)', (env) => {
       title: 'Unit event / Alkuräjähdyksen päiväkoti',
       description: 'For everyone in the unit'
     })
-    await calendarPage.closeToasts()
     await dayView.close()
 
     dayView = await calendarPage.openDayView(today.addDays(1))
@@ -295,7 +294,6 @@ describe.each(envs)('Citizen calendar discussion surveys (%s)', (env) => {
 
   test('Citizen can see open discussion survey details', async () => {
     const surveyModal = await calendarPage.openDiscussionSurveyModal()
-    await calendarPage.closeToasts()
     await surveyModal.assertChildSurvey(
       groupEventId,
       testChild.id,
