@@ -361,6 +361,10 @@ function StaffAttendanceDetailsModal<
   const openAttendanceInAnotherUnit =
     !!openAttendance && openAttendance.unitId !== unitId
 
+  const allowedStaffAttendanceTypes = featureFlags.hideOvertimeSelection
+    ? staffAttendanceTypes.filter((type) => type !== 'OVERTIME')
+    : staffAttendanceTypes
+
   return (
     <PlainModal
       margin="auto"
@@ -595,7 +599,7 @@ function StaffAttendanceDetailsModal<
                   </GroupIndicator>
                   {featureFlags.staffAttendanceTypes && !isExternal ? (
                     <Select
-                      items={[...staffAttendanceTypes]}
+                      items={[...allowedStaffAttendanceTypes]}
                       selectedItem={type}
                       onChange={(value) =>
                         value &&
