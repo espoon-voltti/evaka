@@ -424,7 +424,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
     }
 
     @Test
-    fun `meal order jobs for daycare groups are re-planned four days before actual date also on weekend`() {
+    fun `meal order jobs for daycare groups are re-planned four days before actual date also on weekend if daycare is open`() {
 
         val client = TestNekkuClient(customers = basicTestClientCustomers)
         fetchAndUpdateNekkuCustomers(client, db, asyncJobRunner, now)
