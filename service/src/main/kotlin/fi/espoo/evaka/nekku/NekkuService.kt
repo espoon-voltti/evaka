@@ -289,18 +289,20 @@ fun planNekkuSpecifyOrderJobs(
     asyncJobRunner: AsyncJobRunner<AsyncJob>,
     now: HelsinkiDateTime,
 ) {
-    val range = now.toLocalDate().addFourDays()
+    val fourDaysFromNow = now.toLocalDate().plusDays(4)
 
     dbc.transaction { tx ->
-        val nekkuGroupIds = tx.getNekkuOpenDaycareGroupIds(range)
+
+        val groupIds = tx.getNekkuOpenDaycareGroupIds(FiniteDateRange(fourDaysFromNow, fourDaysFromNow))
+
         asyncJobRunner.plan(
             tx,
-            nekkuGroupIds.mapNotNull { nekkuGroupId ->
+            groupIds.mapNotNull { nekkuGroupId ->
                 val groupOperationDays = tx.getGroupOperationDays(nekkuGroupId)
                 if (
-                    groupOperationDays != null && isGroupOpenOnDate(range.end, groupOperationDays)
+                    groupOperationDays != null && isGroupOpenOnDate(fourDaysFromNow, groupOperationDays)
                 ) {
-                    AsyncJob.SendNekkuOrder(groupId = nekkuGroupId, date = range.end)
+                    AsyncJob.SendNekkuOrder(groupId = nekkuGroupId, date = fourDaysFromNow)
                 } else null
             },
             runAt = now,
@@ -365,12 +367,6 @@ private fun LocalDate.weeklyJobsForThirdWeekFromNow(): FiniteDateRange {
 private fun LocalDate.daySpan(): FiniteDateRange {
     val start = this
     val end = start.plusDays(1)
-    return FiniteDateRange(start, end)
-}
-
-private fun LocalDate.addFourDays(): FiniteDateRange {
-    val start = this
-    val end = start.plusDays(4)
     return FiniteDateRange(start, end)
 }
 
