@@ -51,6 +51,7 @@ export function App({ children }: { children?: React.ReactNode }) {
                 <StateProvider>
                   <Content>{children}</Content>
                   <div id="datepicker-container" />
+                  <div id="tooltip-container" data-qa="tooltip-container" />
                 </StateProvider>
               </UserContextProvider>
             </ErrorBoundary>

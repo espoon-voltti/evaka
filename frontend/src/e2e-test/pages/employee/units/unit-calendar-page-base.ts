@@ -293,7 +293,7 @@ export class UnitStaffAttendancesTable extends Element {
     const arrivalTime = cell.findByDataQa('arrival-time')
     await arrivalTime.hover()
 
-    await arrivalTime
+    await this.page
       .findByDataQa('arrival-time-tooltip')
       .assertTextEquals(expectedTooltipText)
   }
@@ -307,7 +307,7 @@ export class UnitStaffAttendancesTable extends Element {
     const departureTime = cell.findByDataQa('departure-time')
     await departureTime.hover()
 
-    await departureTime
+    await this.page
       .findByDataQa('departure-time-tooltip')
       .assertTextEquals(expectedTooltipText)
   }

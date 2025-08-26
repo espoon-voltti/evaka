@@ -262,7 +262,7 @@ export class GroupCollapsible extends Element {
   }
 
   childRow(childId: string) {
-    return new GroupCollapsibleChildRow(this, childId)
+    return new GroupCollapsibleChildRow(this.page, this, childId)
   }
 
   async assertChildCount(expectedCount: number) {
@@ -344,12 +344,17 @@ export class GroupCollapsibleChildRow extends Element {
   #dailyNoteIcon: Element
   #dailyNoteTooltip: Element
 
-  constructor(self: Element, childId: string) {
+  constructor(
+    private page: Page,
+    self: Element,
+    childId: string
+  ) {
     super(self)
     this.#dailyNoteIcon = this.findByDataQa(
       `daycare-daily-note-icon-${childId}`
     )
-    this.#dailyNoteTooltip = this.findByDataQa(
+
+    this.#dailyNoteTooltip = this.page.findByDataQa(
       `daycare-daily-note-hover-${childId}`
     )
   }
