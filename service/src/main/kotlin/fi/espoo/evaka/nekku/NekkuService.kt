@@ -23,7 +23,6 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.ScheduleType
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
-import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -53,7 +52,6 @@ class NekkuService(
     env: NekkuEnv?,
     jsonMapper: JsonMapper,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
-    private val featureConfig: FeatureConfig,
     private val emailEnv: EmailEnv,
     private val emailClient: EmailClient,
 ) {
@@ -148,6 +146,17 @@ class NekkuService(
         } catch (e: Exception) {
             logger.warn(e) {
                 "Failed to plan Nekku daily order to Nekku: date=${clock.now()} ,error=${e.localizedMessage}"
+            }
+            throw e
+        }
+    }
+
+    fun planNekkuSpecifyOrders(dbc: Database.Connection, clock: EvakaClock) {
+        try {
+            planNekkuSpecifyOrderJobs(dbc, asyncJobRunner, clock.now())
+        } catch (e: Exception) {
+            logger.warn(e) {
+                "Failed to plan Nekku specify order to Nekku: date=${clock.now()} ,error=${e.localizedMessage}"
             }
             throw e
         }
@@ -266,6 +275,35 @@ fun planNekkuDailyOrderJobs(
                         groupId = nekkuGroupId,
                         date = daycareOpenNextTime(now.toLocalDate(), groupOperationDays),
                     )
+                } else null
+            },
+            runAt = now,
+            retryInterval = Duration.ofHours(1),
+            retryCount = 3,
+        )
+    }
+}
+
+fun planNekkuSpecifyOrderJobs(
+    dbc: Database.Connection,
+    asyncJobRunner: AsyncJobRunner<AsyncJob>,
+    now: HelsinkiDateTime,
+) {
+    val fourDaysFromNow = now.toLocalDate().plusDays(4)
+
+    dbc.transaction { tx ->
+        val groupIds =
+            tx.getNekkuOpenDaycareGroupIds(FiniteDateRange(fourDaysFromNow, fourDaysFromNow))
+
+        asyncJobRunner.plan(
+            tx,
+            groupIds.mapNotNull { nekkuGroupId ->
+                val groupOperationDays = tx.getGroupOperationDays(nekkuGroupId)
+                if (
+                    groupOperationDays != null &&
+                        isGroupOpenOnDate(fourDaysFromNow, groupOperationDays)
+                ) {
+                    AsyncJob.SendNekkuOrder(groupId = nekkuGroupId, date = fourDaysFromNow)
                 } else null
             },
             runAt = now,
