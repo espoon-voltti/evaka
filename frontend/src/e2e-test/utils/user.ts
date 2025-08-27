@@ -13,9 +13,7 @@ export async function enduserLogin(page: Page, person: DevPerson) {
     throw new Error('Person does not have an SSN: cannot login')
   }
 
-  await page.goto(
-    `${config.apiUrl}/citizen/auth/sfi/login?RelayState=%2Fapplications`
-  )
+  await page.goto(`${config.apiUrl}/citizen/auth/sfi/login?RelayState=%2F`)
   await page.find(`[id="${person.ssn}"]`).locator.check()
   await page.find('[type=submit]').findText('Kirjaudu').click()
   await page.find('[type=submit]').findText('Jatka').click()
