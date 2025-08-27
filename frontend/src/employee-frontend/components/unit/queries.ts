@@ -42,6 +42,7 @@ import {
   updateTemporaryEmployee,
   updateUnitClosingDate
 } from '../../generated/api-clients/daycare'
+import { getPreschoolTerms } from '../../generated/api-clients/daycare'
 import {
   getNekkuUnitNumbers,
   nekkuManualOrder
@@ -65,7 +66,6 @@ import {
   postReservations
 } from '../../generated/api-clients/reservations'
 import { getUndecidedServiceApplications } from '../../generated/api-clients/serviceneed'
-import { getPreschoolTerms } from '../../generated/api-clients/daycare'
 
 const q = new Queries()
 
@@ -185,7 +185,6 @@ export const deleteGroupPlacementMutation = q.parametricMutation<{
 ])
 
 export const getPreschoolTermsQuery = q.query(getPreschoolTerms)
-
 
 export const transferGroupMutation = q.parametricMutation<{
   unitId: DaycareId
