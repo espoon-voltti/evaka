@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2025 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -29,9 +29,8 @@ import { UIContext } from '../../../state/ui'
 import RetroactiveConfirmation, {
   isChangeRetroactive
 } from '../../common/RetroactiveConfirmation'
-import {daycaresQuery, getPreschoolTermsQuery} from '../../unit/queries'
+import { daycaresQuery, getPreschoolTermsQuery } from '../../unit/queries'
 import { createPlacementMutation } from '../queries'
-import {getPreschoolTerms} from "../../../generated/api-clients/daycare";
 
 export interface Props {
   childId: ChildId
@@ -49,7 +48,14 @@ function CreatePlacementModal({ childId }: Props) {
   const { i18n } = useTranslation()
   const { clearUiMode } = useContext(UIContext)
   const units = useQueryResult(daycaresQuery({ includeClosed: true }))
-  const prechoolTerms = useQueryResult(getPreschoolTermsQuery())
+  const preschoolTermsResult = useQueryResult(getPreschoolTermsQuery())
+  const preschoolTerms = useMemo(
+    () =>
+      preschoolTermsResult
+        .map((preschoolTerms) => preschoolTerms)
+        .getOrElse([]),
+    [preschoolTermsResult]
+  )
 
   const [form, setForm] = useState<Form>({
     type: 'DAYCARE',
@@ -97,6 +103,30 @@ function CreatePlacementModal({ childId }: Props) {
       .getOrElse([])
   }, [units, form])
 
+  const datesAreInsideSomePreschoolTerm = useMemo(() => {
+    if (form.startDate && form.endDate) {
+      return preschoolTerms.some(
+        (term) =>
+          (term.finnishPreschool.asDateRange().includes(form.startDate!) &&
+            term.finnishPreschool.asDateRange().includes(form.endDate!)) ||
+          (term.swedishPreschool.asDateRange().includes(form.startDate!) &&
+            term.swedishPreschool.asDateRange().includes(form.endDate!))
+      )
+    }
+    return false
+  }, [form, preschoolTerms])
+
+  const datesAreInsideSomeExtendedPreschoolTerm = useMemo(() => {
+    if (form.startDate && form.endDate) {
+      return preschoolTerms.some(
+        (term) =>
+          term.extendedTerm.asDateRange().includes(form.startDate!) &&
+          term.extendedTerm.asDateRange().includes(form.endDate!)
+      )
+    }
+    return false
+  }, [form, preschoolTerms])
+
   const errors = useMemo(() => {
     const errors: string[] = []
     if (!form.unit?.id) {
@@ -123,8 +153,38 @@ function CreatePlacementModal({ childId }: Props) {
       errors.push(i18n.validationError.invertedDateRange)
     }
 
+    if (
+      (form.type === 'PRESCHOOL' || form.type === 'PREPARATORY') &&
+      form.startDate &&
+      form.endDate &&
+      !datesAreInsideSomePreschoolTerm
+    ) {
+      errors.push(
+        i18n.childInformation.placements.createPlacement.preschoolTermNotOpen
+      )
+    }
+
+    if (
+      (form.type === 'PRESCHOOL_DAYCARE' ||
+        form.type === 'PRESCHOOL_DAYCARE_ONLY' ||
+        form.type === 'PREPARATORY_DAYCARE') &&
+      form.startDate &&
+      form.endDate &&
+      !datesAreInsideSomeExtendedPreschoolTerm
+    ) {
+      errors.push(
+        i18n.childInformation.placements.createPlacement
+          .preschoolExtendedTermNotOpen
+      )
+    }
+
     return errors
-  }, [i18n, form])
+  }, [
+    i18n,
+    form,
+    datesAreInsideSomePreschoolTerm,
+    datesAreInsideSomeExtendedPreschoolTerm
+  ])
 
   const { mutateAsync: createPlacement, isPending: submitting } =
     useMutationResult(createPlacementMutation)
