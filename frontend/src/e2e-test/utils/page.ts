@@ -64,6 +64,10 @@ export class Page {
     return this.page.waitForEvent('popup')
   }
 
+  async waitForUrl(url: string | RegExp) {
+    return this.page.waitForURL(url)
+  }
+
   async pause() {
     return this.page.pause()
   }

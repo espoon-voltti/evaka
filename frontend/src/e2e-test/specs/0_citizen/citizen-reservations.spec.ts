@@ -36,7 +36,6 @@ import {
 } from '../../generated/api-clients'
 import type { DevPerson } from '../../generated/api-types'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
-import CitizenHeader from '../../pages/citizen/citizen-header'
 import type { EnvType } from '../../utils/page'
 import { envs, Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
@@ -66,8 +65,6 @@ async function openCalendarPage(
     }
   })
   await enduserLogin(page, testAdult)
-  const header = new CitizenHeader(page, envType)
-  await header.selectTab('calendar')
   return new CitizenCalendarPage(page, envType)
 }
 
@@ -1230,7 +1227,7 @@ describe.each(envs)(
 
 describe('Citizen calendar child visibility', () => {
   let page: Page
-  let header: CitizenHeader
+
   let calendarPage: CitizenCalendarPage
   const today = LocalDate.of(2022, 1, 5)
   const placement1start = today
@@ -1280,13 +1277,11 @@ describe('Citizen calendar child visibility', () => {
     page = await Page.open({
       mockedTime: today.toHelsinkiDateTime(LocalTime.of(12, 0))
     })
-    await enduserLogin(page, testAdult)
-    header = new CitizenHeader(page, 'desktop')
     calendarPage = new CitizenCalendarPage(page, 'desktop')
   })
 
   test('Child visible only while placement is active', async () => {
-    await header.selectTab('calendar')
+    await enduserLogin(page, testAdult)
 
     await calendarPage.assertChildCountOnDay(placement1start.subDays(1), 0)
     await calendarPage.assertChildCountOnDay(placement1start, 1)
@@ -1315,7 +1310,7 @@ describe('Citizen calendar child visibility', () => {
   })
 
   test('Day popup contains message if no children placements on that date', async () => {
-    await header.selectTab('calendar')
+    await enduserLogin(page, testAdult)
 
     let dayView = await calendarPage.openDayView(today.subDays(1))
     await dayView.assertNoActivePlacementsMsgVisible()
@@ -1359,7 +1354,8 @@ describe('Citizen calendar child visibility', () => {
       shiftCare: 'FULL'
     }).save()
 
-    await header.selectTab('calendar')
+    await enduserLogin(page, testAdult)
+
     // Saturday
     await calendarPage.assertChildCountOnDay(today.addDays(3), 1)
   })
