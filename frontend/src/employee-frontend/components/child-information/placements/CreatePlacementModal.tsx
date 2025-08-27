@@ -29,8 +29,9 @@ import { UIContext } from '../../../state/ui'
 import RetroactiveConfirmation, {
   isChangeRetroactive
 } from '../../common/RetroactiveConfirmation'
-import { daycaresQuery } from '../../unit/queries'
+import {daycaresQuery, getPreschoolTermsQuery} from '../../unit/queries'
 import { createPlacementMutation } from '../queries'
+import {getPreschoolTerms} from "../../../generated/api-clients/daycare";
 
 export interface Props {
   childId: ChildId
@@ -48,6 +49,8 @@ function CreatePlacementModal({ childId }: Props) {
   const { i18n } = useTranslation()
   const { clearUiMode } = useContext(UIContext)
   const units = useQueryResult(daycaresQuery({ includeClosed: true }))
+  const prechoolTerms = useQueryResult(getPreschoolTermsQuery())
+
   const [form, setForm] = useState<Form>({
     type: 'DAYCARE',
     unit: null,

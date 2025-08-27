@@ -65,6 +65,7 @@ import {
   postReservations
 } from '../../generated/api-clients/reservations'
 import { getUndecidedServiceApplications } from '../../generated/api-clients/serviceneed'
+import { getPreschoolTerms } from '../../generated/api-clients/daycare'
 
 const q = new Queries()
 
@@ -182,6 +183,9 @@ export const deleteGroupPlacementMutation = q.parametricMutation<{
   ({ unitId }) => unitNotificationsQuery({ daycareId: unitId }),
   unitGroupDetailsQuery.prefix
 ])
+
+export const getPreschoolTermsQuery = q.query(getPreschoolTerms)
+
 
 export const transferGroupMutation = q.parametricMutation<{
   unitId: DaycareId
