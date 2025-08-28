@@ -231,9 +231,11 @@ class VardaClient(
     private val jsonMapper: JsonMapper,
     vardaBaseUrl: URI,
     private val basicAuth: String,
+    ratePerSec: Double,
 ) : VardaReadClient, VardaWriteClient, VardaUnitClient {
     private var token: String? = null
     private val baseUrl = vardaBaseUrl.ensureTrailingSlash()
+    val rateLimiter: RateLimiter = RateLimiter.create(ratePerSec)
 
     override fun getOrCreateHenkilo(
         body: VardaReadClient.GetOrCreateHenkiloRequest
@@ -324,8 +326,6 @@ class VardaClient(
     private inline fun <T, reified R> put(url: URI, body: T): R = request("PUT", url, body)
 
     override fun <T : VardaEntity> delete(data: T) = request<Unit>("DELETE", data.url)
-
-    val rateLimiter: RateLimiter = RateLimiter.create(1.0)
 
     private inline fun <reified R> request(method: String, url: URI, body: Any? = null): R {
         val rate = rateLimiter.acquire()

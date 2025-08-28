@@ -41,6 +41,7 @@ evaka:
       basic_auth: ""
       source_system: 31
       url: http://localhost:8888/mock-integration/varda/api
+      rate_per_sec: 1
     vtj:
       # these are used if you run pis-service in "vtj-dev" profile (against Test VTJ).
       # get-deployment-local.sh should fill the trustStore location, but you need to fill vtj user/pass with details from AWS Parameter Store

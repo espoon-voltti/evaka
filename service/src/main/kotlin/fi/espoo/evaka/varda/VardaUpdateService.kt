@@ -98,7 +98,13 @@ class VardaUpdateService(
             .build()
 
     private val vardaClient =
-        VardaClient(httpClient, jsonMapper, vardaEnv.url, vardaEnv.basicAuth.value)
+        VardaClient(
+            httpClient,
+            jsonMapper,
+            vardaEnv.url,
+            vardaEnv.basicAuth.value,
+            vardaEnv.ratePerSec ?: 1.0,
+        )
 
     private val vardaEnabledRange =
         DateRange(vardaEnv.startDate ?: VARDA_START_DATE, vardaEnv.endDate)
