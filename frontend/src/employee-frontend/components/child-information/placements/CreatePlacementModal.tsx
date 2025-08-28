@@ -49,13 +49,6 @@ function CreatePlacementModal({ childId }: Props) {
   const { clearUiMode } = useContext(UIContext)
   const units = useQueryResult(daycaresQuery({ includeClosed: true }))
   const preschoolTermsResult = useQueryResult(getPreschoolTermsQuery())
-  const preschoolTerms = useMemo(
-    () =>
-      preschoolTermsResult
-        .map((preschoolTerms) => preschoolTerms)
-        .getOrElse([]),
-    [preschoolTermsResult]
-  )
 
   const [form, setForm] = useState<Form>({
     type: 'DAYCARE',
@@ -105,6 +98,9 @@ function CreatePlacementModal({ childId }: Props) {
 
   const datesAreInsideSomePreschoolTerm = useMemo(() => {
     if (form.startDate && form.endDate) {
+      const preschoolTerms = preschoolTermsResult
+        .map((preschoolTerms) => preschoolTerms)
+        .getOrElse([])
       return preschoolTerms.some(
         (term) =>
           (term.finnishPreschool.asDateRange().includes(form.startDate!) &&
@@ -114,10 +110,13 @@ function CreatePlacementModal({ childId }: Props) {
       )
     }
     return false
-  }, [form, preschoolTerms])
+  }, [form, preschoolTermsResult])
 
   const datesAreInsideSomeExtendedPreschoolTerm = useMemo(() => {
     if (form.startDate && form.endDate) {
+      const preschoolTerms = preschoolTermsResult
+        .map((preschoolTerms) => preschoolTerms)
+        .getOrElse([])
       return preschoolTerms.some(
         (term) =>
           term.extendedTerm.asDateRange().includes(form.startDate!) &&
@@ -125,7 +124,7 @@ function CreatePlacementModal({ childId }: Props) {
       )
     }
     return false
-  }, [form, preschoolTerms])
+  }, [form, preschoolTermsResult])
 
   const errors = useMemo(() => {
     const errors: string[] = []
@@ -226,7 +225,7 @@ function CreatePlacementModal({ childId }: Props) {
       rejectLabel={i18n.common.cancel}
     >
       <FixedSpaceColumn>
-        <section>
+        <section data-qa="placement-type-select">
           <div className="bold">{i18n.childInformation.placements.type}</div>
 
           <Select

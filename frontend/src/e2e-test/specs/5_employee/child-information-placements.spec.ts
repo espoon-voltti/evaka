@@ -21,7 +21,8 @@ import {
   familyWithTwoGuardians,
   Fixture,
   testCareArea,
-  testDaycare
+  testDaycare,
+  preschoolTerm2023
 } from '../../dev-api/fixtures'
 import {
   createDaycareGroups,
@@ -31,7 +32,14 @@ import {
   terminatePlacement
 } from '../../generated/api-clients'
 import ChildInformationPage from '../../pages/employee/child-information'
-import { Combobox, Modal, Page } from '../../utils/page'
+import {
+  Checkbox,
+  Combobox,
+  DatePicker,
+  Modal,
+  Page,
+  Select
+} from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
 beforeEach(async (): Promise<void> => resetServiceState())
@@ -231,6 +239,7 @@ describe('Child Information placement create (feature flag place guarantee = fal
     await employeeLogin(page, admin)
 
     const childPlacements = await openChildPlacements(page, childId)
+
     await childPlacements.createNewPlacement({
       unitName,
       startDate: mockedTime.toLocalDate().subDays(1).format(),
@@ -273,6 +282,60 @@ describe('Child Information placement create (feature flag place guarantee = fal
     await unitSelect.fillAndSelectFirst(unitName)
     await modal.findByDataQa('create-placement-end-date').assertTextEquals('')
     await modal.submitButton.assertDisabled(true)
+  })
+
+  test('placement create dialog shows errors on dates outside preschool and extended terms', async () => {
+    const preschoolTerms = await preschoolTerm2023.save()
+
+    const admin = await Fixture.employee().admin().save()
+    const area = await Fixture.careArea().save()
+    const unit = await Fixture.daycare({ areaId: area.id }).save()
+    const unitName = unit.name
+    const child = await Fixture.person().saveChild({ updateMockVtj: true })
+    const childId = child.id
+
+    const page = await openPage()
+    await employeeLogin(page, admin)
+
+    await openChildPlacements(page, childId)
+    await page.findByDataQa('create-new-placement-button').click()
+
+    const modal = new Modal(page.findByDataQa('modal'))
+
+    const placementTypeSelect = new Select(
+      modal.find('[data-qa="placement-type-select"]')
+    )
+    await placementTypeSelect.selectOption('PRESCHOOL')
+
+    const unitSelect = new Combobox(modal.find('[data-qa="unit-select"]'))
+    await unitSelect.fillAndSelectFirst(unitName)
+    const start = new DatePicker(
+      modal.findByDataQa('create-placement-start-date')
+    )
+    await start.click()
+    await start.fill(preschoolTerms.finnishPreschool.start)
+
+    const end = new DatePicker(modal.findByDataQa('create-placement-end-date'))
+    await end.fill(preschoolTerms.finnishPreschool.end)
+
+    await new Checkbox(modal.findByDataQa('confirm-retroactive')).check()
+
+    await modal.submitButton.assertDisabled(false)
+
+    // Placement starts a day before the term
+    await start.fill(preschoolTerms.finnishPreschool.start.subDays(1))
+    await modal.findText('Sijoitus ei ole esiopetuskaudella').waitUntilVisible()
+    await modal.submitButton.assertDisabled(true)
+
+    // A day before preschool term the extended term is valid so placement can be created
+    await placementTypeSelect.selectOption('PRESCHOOL_DAYCARE')
+    await modal.submitButton.assertDisabled(false)
+
+    // Placement starts a day before the term
+    await start.fill(preschoolTerms.extendedTerm.start.subDays(1))
+    await modal
+      .findText('Sijoitus ei ole liittyvällä esiopetuskaudella')
+      .waitUntilVisible()
   })
 
   async function openPage() {
