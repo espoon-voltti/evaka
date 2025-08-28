@@ -91,21 +91,23 @@ fun Database.Read.getNekkuReportRows(
     return createQuery {
             sql(
                 """
-SELECT nor.delivery_date as date, 
-        nor.meal_sku as sku,
-        nor.total_quantity as quantity, 
-        dg.name as groupname,
-        coalesce(nor.meal_time, '{}') as mealtime,
-        nor.meal_type as mealtype,
-        nor.meals_by_special_diet as specialdiets,
-        nor.nekku_order_info as nekkuOrderInfo
-FROM nekku_orders_report nor
-    JOIN daycare_group dg
-    ON nor.group_id = dg.id
-    WHERE nor.daycare_id = ${bind(daycareId)}
-    AND nor.group_id =ANY(${bind ( groupIds)})
-    AND nor.delivery_date =ANY(${bind ( dates)})
-"""
+            SELECT 
+                nor.delivery_date as date, 
+                nor.meal_sku as sku,
+                nor.total_quantity as quantity, 
+                dg.name as groupname,
+                coalesce(nor.meal_time, '{}') as mealtime,
+                nor.meal_type as mealtype,
+                nor.meals_by_special_diet as specialdiets,
+                nor.nekku_order_info as nekkuOrderInfo
+            FROM nekku_orders_report nor
+                JOIN daycare_group dg
+                ON nor.group_id = dg.id
+                WHERE nor.daycare_id = ${bind(daycareId)}
+                AND nor.group_id =ANY(${bind ( groupIds)})
+                AND nor.delivery_date =ANY(${bind ( dates)})
+                ORDER BY nor.delivery_date
+            """
             )
         }
         .toList<NekkuOrderRow>()

@@ -736,7 +736,7 @@ fun Database.Read.getNekkuOrderReport(
 ): List<NekkuOrdersReport> =
     createQuery {
             sql(
-                "SELECT delivery_date, daycare_id, group_id, meal_sku, total_quantity, meal_time, meal_type, meals_by_special_diet, nekku_order_info FROM nekku_orders_report WHERE daycare_id = ${bind(daycareId)} AND group_id = (${bind(groupId)}) AND delivery_date = ${bind(date)} "
+                "SELECT delivery_date, daycare_id, group_id, meal_sku, total_quantity, meal_time, meal_type, meals_by_special_diet, nekku_order_info FROM nekku_orders_report WHERE daycare_id = ${bind(daycareId)} AND group_id = (${bind(groupId)}) AND delivery_date = ${bind(date)} ORDER BY delivery_date"
             )
         }
         .toList<NekkuOrdersReport>()
