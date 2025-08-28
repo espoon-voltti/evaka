@@ -331,7 +331,7 @@ class VardaClient(
         val rate = rateLimiter.acquire()
 
         logger.info {
-            "requesting $method $url" +
+            "VardaClient requesting $method $url" +
                 if (body == null) "" else " with body $body and rated wait of $rate"
         }
 
@@ -410,7 +410,9 @@ class VardaClient(
                 .header("Accept", "application/json")
                 .build()
 
-        rateLimiter.acquire()
+        val rate = rateLimiter.acquire()
+
+        logger.info { "VardaClient requesting get user/apikey/ with rated wait of $rate" }
 
         val newToken =
             httpClient.newCall(req).execute().use { response ->
@@ -420,6 +422,7 @@ class VardaClient(
                 val body = response.body?.string() ?: error("Varda API token response body is null")
                 jsonMapper.readTree(body).get("token").asText()
             }
+        logger.info { "Successfully fetched new Varda API token with rate wait of $rate" }
         token = newToken
         return newToken
     }
