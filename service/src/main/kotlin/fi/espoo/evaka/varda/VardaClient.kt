@@ -231,9 +231,11 @@ class VardaClient(
     private val jsonMapper: JsonMapper,
     vardaBaseUrl: URI,
     private val basicAuth: String,
+    ratePerSec: Double,
 ) : VardaReadClient, VardaWriteClient, VardaUnitClient {
     private var token: String? = null
     private val baseUrl = vardaBaseUrl.ensureTrailingSlash()
+    val rateLimiter: RateLimiter = RateLimiter.create(ratePerSec)
 
     override fun getOrCreateHenkilo(
         body: VardaReadClient.GetOrCreateHenkiloRequest
@@ -325,12 +327,14 @@ class VardaClient(
 
     override fun <T : VardaEntity> delete(data: T) = request<Unit>("DELETE", data.url)
 
-    val rateLimiter: RateLimiter = RateLimiter.create(2.0)
-
     private inline fun <reified R> request(method: String, url: URI, body: Any? = null): R {
-        logger.info { "requesting $method $url" + if (body == null) "" else " with body $body" }
+        val rate = rateLimiter.acquire()
 
-        rateLimiter.acquire()
+        logger.info {
+            "VardaClient requesting $method $url" +
+                if (body == null) "" else " with body $body and rated wait of $rate"
+        }
+
         val req =
             Request.Builder()
                 .method(
@@ -406,7 +410,9 @@ class VardaClient(
                 .header("Accept", "application/json")
                 .build()
 
-        rateLimiter.acquire()
+        val rate = rateLimiter.acquire()
+
+        logger.info { "VardaClient requesting get user/apikey/ with rated wait of $rate" }
 
         val newToken =
             httpClient.newCall(req).execute().use { response ->
@@ -416,6 +422,7 @@ class VardaClient(
                 val body = response.body?.string() ?: error("Varda API token response body is null")
                 jsonMapper.readTree(body).get("token").asText()
             }
+        logger.info { "Successfully fetched new Varda API token with rate wait of $rate" }
         token = newToken
         return newToken
     }

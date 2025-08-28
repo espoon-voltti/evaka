@@ -249,6 +249,7 @@ data class VardaEnv(
     val startDate: LocalDate?,
     val endDate: LocalDate?,
     val localDevPort: Int?,
+    val ratePerSec: Double?,
 ) {
     companion object {
         fun fromEnvironment(env: Environment) =
@@ -261,6 +262,9 @@ data class VardaEnv(
 
                 // Port that's forwarded to Varda for local development
                 localDevPort = env.lookup("evaka.integration.varda.local_dev_port"),
+
+                // Varda has a rate limit of 2 requests per second
+                ratePerSec = env.lookup("evaka.integration.varda.rate_per_sec"),
             )
     }
 }
