@@ -325,12 +325,16 @@ class VardaClient(
 
     override fun <T : VardaEntity> delete(data: T) = request<Unit>("DELETE", data.url)
 
-    val rateLimiter: RateLimiter = RateLimiter.create(2.0)
+    val rateLimiter: RateLimiter = RateLimiter.create(1.0)
 
     private inline fun <reified R> request(method: String, url: URI, body: Any? = null): R {
-        logger.info { "requesting $method $url" + if (body == null) "" else " with body $body" }
+        val rate = rateLimiter.acquire()
 
-        rateLimiter.acquire()
+        logger.info {
+            "requesting $method $url" +
+                if (body == null) "" else " with body $body and rated wait of $rate"
+        }
+
         val req =
             Request.Builder()
                 .method(
