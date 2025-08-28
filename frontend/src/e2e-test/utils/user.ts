@@ -19,6 +19,7 @@ export async function enduserLogin(page: Page, person: DevPerson) {
   await page.find('[type=submit]').findText('Jatka').click()
 
   await page.findByDataQa('header-city-logo').waitUntilVisible()
+  await page.waitForUrl(/.*\/(calendar|applications)/)
 }
 
 export async function enduserLoginWeak(
