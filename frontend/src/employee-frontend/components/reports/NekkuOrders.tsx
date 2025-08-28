@@ -26,6 +26,7 @@ import { renderResult } from '../async-rendering'
 import { FlexRow } from '../common/styled/containers'
 import { daycaresQuery, unitGroupsQuery } from '../unit/queries'
 
+import ReportDownload from './ReportDownload'
 import { FilterLabel, FilterRow, TableScrollable } from './common'
 
 const getNekkuOrderReportByUnitResult = wrapResult(getNekkuOrderReportByUnit)
@@ -175,6 +176,54 @@ export default React.memo(function NekkuOrders() {
         {tooLongRange && <div>{i18n.reports.nekkuOrders.tooLongRange}</div>}
         {renderResult(report, (report) => (
           <>
+            <ReportDownload
+              data={report}
+              columns={[
+                {
+                  label: i18n.reports.common.date,
+                  value: (row) => row.date.toString()
+                },
+                {
+                  label: i18n.reports.common.groupName,
+                  value: (row) => row.groupName
+                },
+                {
+                  label: i18n.reports.nekkuOrders.sku,
+                  value: (row) => row.sku
+                },
+                {
+                  label: i18n.reports.nekkuOrders.quantity,
+                  value: (row) => row.quantity
+                },
+                {
+                  label: i18n.reports.nekkuOrders.mealTime,
+                  value: (row) =>
+                    row.mealTime
+                      .map((mealTimeValue) => {
+                        return i18n.reports.nekkuOrders.mealTimeValues[
+                          mealTimeValue as mealTimeOptions
+                        ]
+                      })
+                      .join(', ')
+                },
+                {
+                  label: i18n.reports.nekkuOrders.mealType,
+                  value: (row) =>
+                    i18n.reports.nekkuOrders.mealTypeValues[
+                      (row.mealType ?? 'DEFAULT') as mealTypeOptions
+                    ]
+                },
+                {
+                  label: i18n.reports.nekkuOrders.specialDiets,
+                  value: (row) => row.specialDiets
+                },
+                {
+                  label: i18n.reports.nekkuOrders.nekkuOrderInfo,
+                  value: (row) => row.nekkuOrderInfo
+                }
+              ]}
+              filename={`${i18n.reports.nekkuOrders.title}.csv`}
+            />
             <TableScrollable data-qa="report-nekkuorders">
               <Thead>
                 <Tr>
