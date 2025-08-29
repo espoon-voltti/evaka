@@ -324,16 +324,35 @@ describe('Child Information placement create (feature flag place guarantee = fal
 
     // Placement starts a day before the term
     await start.fill(preschoolTerms.finnishPreschool.start.subDays(1))
-    await modal.findText('Sijoituksen tulee olla esiopetuskaudella').waitUntilVisible()
+    await modal
+      .findText('Sijoituksen tulee olla esiopetuskaudella')
+      .waitUntilVisible()
     await modal.submitButton.assertDisabled(true)
 
     // A day before preschool term the extended term is valid so placement can be created
     await placementTypeSelect.selectOption('PRESCHOOL_DAYCARE')
     await modal.submitButton.assertDisabled(false)
 
-    // Placement starts a day before the term
+    // Placement starts a day before the term so it is invalid
     await start.fill(preschoolTerms.extendedTerm.start.subDays(1))
     await modal
+      .findText('Sijoituksen tulee olla esiopetuskaudella')
+      .waitUntilVisible()
+    await modal.submitButton.assertDisabled(true)
+
+    // Create a valid placement
+    await start.fill(preschoolTerms.extendedTerm.start)
+    await modal.submitButton.click()
+
+    const placements = page.findByDataQa('child-placements-collapsible')
+    await placements.findByDataQa('btn-edit-placement').click()
+
+    const editedStart = new DatePicker(
+      placements.findByDataQa('placement-start-date-input')
+    )
+    await editedStart.fill(preschoolTerms.extendedTerm.start.subDays(1))
+
+    await placements
       .findText('Sijoituksen tulee olla esiopetuskaudella')
       .waitUntilVisible()
   })
