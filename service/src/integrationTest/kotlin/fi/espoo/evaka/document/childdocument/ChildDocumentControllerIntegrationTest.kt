@@ -304,7 +304,9 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                     childFirstName = testChild_1.firstName,
                     childLastName = testChild_1.lastName,
                     modifiedAt = clock.now(),
+                    modifiedBy = employeeUser.lastName + " " + employeeUser.firstName,
                     publishedAt = null,
+                    publishedBy = null,
                     answeredAt = null,
                     answeredBy = null,
                 )
@@ -999,7 +1001,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                 documentId,
             )
         assertTrue(lock.lockTakenSuccessfully)
-        assertEquals(employeeUser.evakaUserId, lock.currentLock.modifiedBy)
+        assertEquals(employeeUser.evakaUserId, lock.currentLock.lockedBy)
         assertEquals(
             HelsinkiDateTime.of(LocalDate.of(2022, 1, 1), LocalTime.of(11, 5)),
             lock.currentLock.opensAt,
@@ -1029,7 +1031,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                 documentId,
             )
         assertFalse(lock.lockTakenSuccessfully)
-        assertEquals(employeeUser.evakaUserId, lock.currentLock.modifiedBy)
+        assertEquals(employeeUser.evakaUserId, lock.currentLock.lockedBy)
         assertEquals(
             HelsinkiDateTime.of(LocalDate.of(2022, 1, 1), LocalTime.of(11, 25)),
             lock.currentLock.opensAt,
@@ -1054,7 +1056,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                 documentId,
             )
         assertTrue(lock.lockTakenSuccessfully)
-        assertEquals(unitSupervisorUser.evakaUserId, lock.currentLock.modifiedBy)
+        assertEquals(unitSupervisorUser.evakaUserId, lock.currentLock.lockedBy)
         assertEquals(
             HelsinkiDateTime.of(LocalDate.of(2022, 1, 1), LocalTime.of(11, 32)),
             lock.currentLock.opensAt,

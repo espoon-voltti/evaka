@@ -383,17 +383,19 @@ class CitizenDocumentReportTest : FullApplicationTest(resetDbBeforeEach = true) 
                     status = DocumentStatus.COMPLETED,
                     content = affirmativeDocumentContent,
                     publishedContent = affirmativeDocumentContent,
-                    contentModifiedAt = mockClock.now(),
+                    contentLockedAt = mockClock.now(),
                     modifiedAt = mockClock.now(),
+                    modifiedBy = admin.evakaUserId,
                     answeredAt = mockClock.now(),
                     publishedAt = mockClock.now(),
-                    contentModifiedBy = admin.id,
+                    publishedBy = admin.evakaUserId,
+                    contentLockedBy = admin.id,
                     answeredBy = admin.evakaUserId,
                 )
             val aapoEarlierResponse =
                 aapoLatestResponse.copy(
                     id = ChildDocumentId(UUID.randomUUID()),
-                    contentModifiedAt = mockClock.now().minusDays(1),
+                    contentLockedAt = mockClock.now().minusDays(1),
                     answeredAt = mockClock.now().minusDays(1),
                     content = negativeDocumentContent,
                 )
@@ -485,7 +487,7 @@ class CitizenDocumentReportTest : FullApplicationTest(resetDbBeforeEach = true) 
                     id = ChildDocumentId(UUID.randomUUID()),
                     childId = testChildCecil.id,
                     content = affirmativeDocumentContent,
-                    contentModifiedAt =
+                    contentLockedAt =
                         HelsinkiDateTime.of(placementC1.startDate.plusDays(1).atStartOfDay()),
                     answeredAt =
                         HelsinkiDateTime.of(placementC1.startDate.plusDays(1).atStartOfDay()),

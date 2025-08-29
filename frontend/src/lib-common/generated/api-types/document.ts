@@ -237,7 +237,9 @@ export interface ChildDocumentSummary {
   decisionMaker: EvakaUser | null
   id: ChildDocumentId
   modifiedAt: HelsinkiDateTime
+  modifiedBy: string
   publishedAt: HelsinkiDateTime | null
+  publishedBy: string | null
   status: DocumentStatus
   templateId: DocumentTemplateId
   templateName: string
@@ -401,8 +403,8 @@ export interface DocumentTemplateSummary {
 * Generated from fi.espoo.evaka.document.childdocument.DocumentWriteLock
 */
 export interface DocumentWriteLock {
-  modifiedBy: EvakaUserId
-  modifiedByName: string
+  lockedBy: EvakaUserId
+  lockedByName: string
   opensAt: HelsinkiDateTime
 }
 

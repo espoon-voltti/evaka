@@ -89,9 +89,11 @@ class ChildDocumentDecisionExpirationTest : PureJdbiTest(resetDbBeforeEach = tru
                     content = DocumentContent(emptyList()),
                     publishedContent = DocumentContent(emptyList()),
                     modifiedAt = now.minusDays(5),
-                    contentModifiedAt = now.minusDays(5),
-                    contentModifiedBy = admin.id,
+                    modifiedBy = admin.evakaUserId,
+                    contentLockedAt = now.minusDays(5),
+                    contentLockedBy = admin.id,
                     publishedAt = now.minusDays(5),
+                    publishedBy = admin.evakaUserId,
                     decisionMaker = admin.id,
                     decision =
                         DevChildDocumentDecision(

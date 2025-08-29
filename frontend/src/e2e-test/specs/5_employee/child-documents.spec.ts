@@ -653,6 +653,7 @@ describe('Employee - Child documents', () => {
       status: 'COMPLETED',
       content,
       publishedAt,
+      publishedBy: evakaUserId(unitSupervisor.id),
       publishedContent: content,
       answeredAt,
       answeredBy: evakaUserId(guardian.id)
@@ -936,6 +937,7 @@ describe('Employee - Child documents', () => {
         answers: []
       },
       publishedAt: now,
+      publishedBy: evakaUserId(director.id),
       publishedContent: {
         answers: []
       },
@@ -960,6 +962,7 @@ describe('Employee - Child documents', () => {
         answers: []
       },
       publishedAt: now,
+      publishedBy: evakaUserId(director.id),
       publishedContent: {
         answers: []
       },
@@ -1065,6 +1068,7 @@ describe('Employee - Child documents', () => {
         answers: []
       },
       publishedAt: now,
+      publishedBy: evakaUserId(director.id),
       publishedContent: {
         answers: []
       },

@@ -83,9 +83,11 @@ class ChildDocumentDecisionsReportTest : FullApplicationTest(resetDbBeforeEach =
                 ),
             publishedContent = null,
             publishedAt = null,
+            publishedBy = null,
             modifiedAt = clock.now(),
-            contentModifiedAt = clock.now(),
-            contentModifiedBy = supervisor2.id,
+            modifiedBy = supervisor2.evakaUserId,
+            contentLockedAt = clock.now(),
+            contentLockedBy = supervisor2.id,
         )
 
     @BeforeEach
@@ -136,8 +138,9 @@ class ChildDocumentDecisionsReportTest : FullApplicationTest(resetDbBeforeEach =
                     childId = child1.id,
                     status = DocumentStatus.COMPLETED,
                     publishedAt = clock.now(),
+                    publishedBy = supervisor1.evakaUserId,
                     publishedContent = child2Document.content,
-                    contentModifiedBy = supervisor1.id,
+                    contentLockedBy = supervisor1.id,
                     decision =
                         DevChildDocumentDecision(
                             createdBy = decisionMaker.id,
@@ -200,8 +203,9 @@ class ChildDocumentDecisionsReportTest : FullApplicationTest(resetDbBeforeEach =
                             childId = child1.id,
                             status = DocumentStatus.COMPLETED,
                             publishedAt = clock.now(),
+                            publishedBy = supervisor1.evakaUserId,
                             publishedContent = child2Document.content,
-                            contentModifiedBy = supervisor1.id,
+                            contentLockedBy = supervisor1.id,
                             decision =
                                 DevChildDocumentDecision(
                                     createdBy = decisionMaker.id,

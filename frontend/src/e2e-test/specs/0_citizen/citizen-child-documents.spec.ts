@@ -85,7 +85,8 @@ beforeEach(async () => {
   documentIdVasu = (
     await Fixture.childDocument({
       childId: child.id,
-      templateId: templateIdVasu
+      templateId: templateIdVasu,
+      publishedBy: evakaUserId(decisionMaker.id)
     })
       .withPublishedAt(mockedNow)
       .withPublishedContent({
@@ -111,7 +112,8 @@ beforeEach(async () => {
   documentIdHojks = (
     await Fixture.childDocument({
       childId: child.id,
-      templateId: templateIdHojks
+      templateId: templateIdHojks,
+      publishedBy: evakaUserId(decisionMaker.id)
     })
       .withPublishedAt(mockedNow)
       .withPublishedContent({
@@ -137,7 +139,8 @@ beforeEach(async () => {
   documentIdPed = (
     await Fixture.childDocument({
       templateId: templateIdPed,
-      childId: child.id
+      childId: child.id,
+      publishedBy: evakaUserId(decisionMaker.id)
     })
       .withModifiedAt(mockedNow)
       .withPublishedAt(mockedNow)
@@ -167,7 +170,8 @@ beforeEach(async () => {
       templateId: templateIdDecision,
       childId: child.id,
       status: 'COMPLETED',
-      decisionMaker: decisionMaker.id
+      decisionMaker: decisionMaker.id,
+      publishedBy: evakaUserId(decisionMaker.id)
     })
       .withModifiedAt(mockedNow)
       .withPublishedAt(mockedNow)
@@ -282,6 +286,7 @@ describe('Citizen child documents listing page', () => {
       status: 'COMPLETED',
       content: documentContent,
       publishedAt: mockedNow,
+      publishedBy: evakaUserId(unitSupervisor.id),
       publishedContent: documentContent,
       answeredAt: mockedNow,
       answeredBy: evakaUserId(unitSupervisor.id)
@@ -339,6 +344,7 @@ describe('Citizen child documents editor page', () => {
       status: 'CITIZEN_DRAFT',
       content: documentContent,
       publishedAt: mockedNow,
+      publishedBy: evakaUserId(decisionMaker.id),
       publishedContent: documentContent
     }).save()
 
@@ -416,6 +422,7 @@ describe('Citizen child documents editor page', () => {
       status: 'CITIZEN_DRAFT',
       content: documentContent,
       publishedAt: mockedNow,
+      publishedBy: evakaUserId(decisionMaker.id),
       publishedContent: documentContent
     }).save()
 

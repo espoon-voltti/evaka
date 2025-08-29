@@ -313,7 +313,7 @@ class ChildDocumentController(
                     validateContentAgainstTemplate(body, document.template.content)
 
                     tx.getCurrentWriteLock(documentId, clock.now())?.also { lock ->
-                        if (lock.modifiedBy != user.id) {
+                        if (lock.lockedBy != user.id) {
                             throw Conflict(
                                 message = "Did not own the lock on the document",
                                 errorCode = "invalid-lock",
@@ -359,7 +359,7 @@ class ChildDocumentController(
                         tx.getCurrentWriteLock(documentId, clock.now())
                             ?: throw IllegalStateException("lock should exist now")
                     DocumentLockResponse(
-                        lockTakenSuccessfully = success && currentLock.modifiedBy == user.id,
+                        lockTakenSuccessfully = success && currentLock.lockedBy == user.id,
                         currentLock = currentLock,
                     )
                 }
@@ -391,7 +391,7 @@ class ChildDocumentController(
                         throw BadRequest("Document type is not publishable")
 
                     val wasUpToDate = tx.isDocumentPublishedContentUpToDate(documentId)
-                    tx.publishChildDocument(documentId, clock.now())
+                    tx.publishChildDocument(documentId, clock.now(), user.evakaUserId)
                     if (!wasUpToDate) {
                         childDocumentService.schedulePdfGeneration(
                             tx,
@@ -460,7 +460,7 @@ class ChildDocumentController(
             )
 
         if (document.template.type.decision) {
-            tx.changeStatus(documentId, statusTransition, clock.now())
+            tx.changeStatus(documentId, statusTransition, clock.now(), user.evakaUserId)
         } else {
             val wasUpToDate = tx.isDocumentPublishedContentUpToDate(documentId)
             tx.changeStatusAndPublish(
@@ -472,6 +472,7 @@ class ChildDocumentController(
                         document.template.type == ChildDocumentType.CITIZEN_BASIC &&
                             statusTransition.newStatus == DocumentStatus.COMPLETED
                     },
+                user.evakaUserId,
             )
             if (statusTransition.newStatus == DocumentStatus.CITIZEN_DRAFT || !wasUpToDate) {
                 childDocumentService.scheduleEmailNotification(tx, listOf(documentId), clock.now())
@@ -525,7 +526,7 @@ class ChildDocumentController(
                             goingForward = false,
                         )
 
-                    tx.changeStatus(documentId, statusTransition, clock.now())
+                    tx.changeStatus(documentId, statusTransition, clock.now(), user.evakaUserId)
 
                     updateDocumentCaseProcessHistory(
                         tx = tx,
@@ -718,6 +719,7 @@ class ChildDocumentController(
                             newStatus = DocumentStatus.DECISION_PROPOSAL,
                         ),
                         clock.now(),
+                        user.evakaUserId,
                     )
 
                     updateDocumentCaseProcessHistory(
@@ -783,6 +785,7 @@ class ChildDocumentController(
                                 documentId,
                                 decisionId,
                                 clock.now(),
+                                user.evakaUserId,
                             )
                         }
 
@@ -851,6 +854,7 @@ class ChildDocumentController(
                                 documentId,
                                 decisionId,
                                 clock.now(),
+                                user.evakaUserId,
                             )
                         }
 
