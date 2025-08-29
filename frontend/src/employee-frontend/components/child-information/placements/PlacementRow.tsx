@@ -277,11 +277,7 @@ export default React.memo(function PlacementRow({
             (term.swedishPreschool.asDateRange().includes(startDate) &&
               term.swedishPreschool.asDateRange().includes(endDate))
         )
-        if (datesAreInsideSomePreschoolTerm) {
-          setPreschoolDatesTermWarning(false)
-        } else {
-          setPreschoolDatesTermWarning(true)
-        }
+        setPreschoolDatesTermWarning(!datesAreInsideSomePreschoolTerm)
       })
     }
 
@@ -296,11 +292,7 @@ export default React.memo(function PlacementRow({
             term.extendedTerm.asDateRange().includes(startDate) &&
             term.extendedTerm.asDateRange().includes(endDate)
         )
-        if (datesAreInsideSomeExtendedPreschoolTerm) {
-          setPreschoolDatesTermWarning(false)
-        } else {
-          setPreschoolDatesTermWarning(true)
-        }
+        setPreschoolDatesTermWarning(!datesAreInsideSomeExtendedPreschoolTerm)
       })
     }
   }
@@ -427,7 +419,9 @@ export default React.memo(function PlacementRow({
                   </div>
                 )}
               </div>
-            ) : null}
+            ) : (
+              placement.endDate.format()
+            )}
           </DataValue>
         </DataRow>
         {editing && retroactive && (
