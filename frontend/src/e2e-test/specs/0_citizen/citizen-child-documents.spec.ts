@@ -198,10 +198,12 @@ beforeEach(async () => {
 
   page = await Page.open({ mockedTime: mockedNow })
   header = new CitizenHeader(page, 'desktop')
-  await enduserLogin(page, testAdult)
 })
 
 describe('Citizen child documents listing page', () => {
+  beforeEach(async () => {
+    await enduserLogin(page, testAdult)
+  })
   test('Published vasu is in the list', async () => {
     await header.openChildPage(child.id)
     const childPage = new CitizenChildPage(page)
@@ -348,7 +350,7 @@ describe('Citizen child documents editor page', () => {
       publishedContent: documentContent
     }).save()
 
-    await page.reload()
+    await enduserLogin(page, testAdult)
     await header.assertUnreadChildrenCount(5)
     await header.openChildPage(child.id)
     const childPage = new CitizenChildPage(page)
@@ -426,7 +428,7 @@ describe('Citizen child documents editor page', () => {
       publishedContent: documentContent
     }).save()
 
-    await header.selectTab('calendar')
+    await enduserLogin(page, testAdult)
     const toast1 = page.findByDataQa(`toast-child-document-${document.id}`)
     await toast1.assertTextEquals(
       'Henkilökunta on pyytänyt sinua täyttämään asiakirjan, joka koskee lastasi: Jari-Petteri Karhula\n\nTäytä asiakirja'

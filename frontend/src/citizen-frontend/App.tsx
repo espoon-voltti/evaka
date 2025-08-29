@@ -142,11 +142,12 @@ export function HandleRedirection() {
     return <Redirect replace to="/login" />
   }
 
+  const fallbackUrl = user.authLevel !== 'STRONG' ? '/map' : '/applications'
   const hasAccessToCalendar = !!user?.accessibleFeatures.reservations
   return hasAccessToCalendar ? (
     <Redirect replace to="/calendar" />
   ) : (
-    <Redirect replace to="/map" />
+    <Redirect replace to={fallbackUrl} />
   )
 }
 

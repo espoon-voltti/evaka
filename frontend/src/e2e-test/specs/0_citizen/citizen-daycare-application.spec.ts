@@ -43,25 +43,25 @@ const testFilePath = `src/e2e-test/assets/${testFileName}`
 const mockedNow = HelsinkiDateTime.of(2021, 4, 1, 15, 0)
 const mockedDate = mockedNow.toLocalDate()
 
-beforeEach(async () => {
-  await resetServiceState()
-  await testCareArea.save()
-  await testDaycare.save()
-  await Fixture.family({
-    guardian: testAdult,
-    children: [testChild, testChild2, testChildRestricted]
-  }).save()
-  await testAdult2.saveAdult({
-    updateMockVtjWithDependants: [testChild]
+describe('Citizen daycare applications', () => {
+  beforeEach(async () => {
+    await resetServiceState()
+    await testCareArea.save()
+    await testDaycare.save()
+    await Fixture.family({
+      guardian: testAdult,
+      children: [testChild, testChild2, testChildRestricted]
+    }).save()
+    await testAdult2.saveAdult({
+      updateMockVtjWithDependants: [testChild]
+    })
+
+    page = await Page.open({ mockedTime: mockedNow })
+    await enduserLogin(page, testAdult)
+    header = new CitizenHeader(page)
+    applicationsPage = new CitizenApplicationsPage(page)
   })
 
-  page = await Page.open({ mockedTime: mockedNow })
-  await enduserLogin(page, testAdult)
-  header = new CitizenHeader(page)
-  applicationsPage = new CitizenApplicationsPage(page)
-})
-
-describe('Citizen daycare applications', () => {
   test('Sending incomplete daycare application gives validation error', async () => {
     await header.selectTab('applications')
     const editorPage = await applicationsPage.createApplication(
