@@ -324,7 +324,7 @@ describe('Child Information placement create (feature flag place guarantee = fal
 
     // Placement starts a day before the term
     await start.fill(preschoolTerms.finnishPreschool.start.subDays(1))
-    await modal.findText('Sijoitus ei ole esiopetuskaudella').waitUntilVisible()
+    await modal.findText('Sijoituksen tulee olla esiopetuskaudella').waitUntilVisible()
     await modal.submitButton.assertDisabled(true)
 
     // A day before preschool term the extended term is valid so placement can be created
@@ -334,7 +334,7 @@ describe('Child Information placement create (feature flag place guarantee = fal
     // Placement starts a day before the term
     await start.fill(preschoolTerms.extendedTerm.start.subDays(1))
     await modal
-      .findText('Sijoitus ei ole liittyvällä esiopetuskaudella')
+      .findText('Sijoituksen tulee olla esiopetuskaudella')
       .waitUntilVisible()
   })
 
