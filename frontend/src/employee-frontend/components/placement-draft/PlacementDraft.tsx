@@ -15,7 +15,8 @@ import type { DaycarePlacementPlan } from 'lib-common/generated/api-types/applic
 import type { PublicUnit } from 'lib-common/generated/api-types/daycare'
 import type {
   PlacementPlanDraft,
-  PlacementSummary
+  PlacementSummary,
+  PlacementType
 } from 'lib-common/generated/api-types/placement'
 import type {
   ApplicationId,
@@ -23,6 +24,7 @@ import type {
 } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { formatPersonName } from 'lib-common/names'
+import { useQueryResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
@@ -43,7 +45,9 @@ import { useTranslation } from '../../state/i18n'
 import { asUnitType } from '../../types/daycare'
 import { useTitle } from '../../utils/useTitle'
 import { renderResult } from '../async-rendering'
+import { InputWarning } from '../common/InputWarning'
 import WarningLabel from '../common/WarningLabel'
+import { getPreschoolTermsQuery } from '../unit/queries'
 
 import PlacementDraftRow from './PlacementDraftRow'
 import Placements from './Placements'
@@ -64,6 +68,9 @@ const SelectContainer = styled.div`
 
 const FloatRight = styled.div`
   float: right;
+`
+const WarningContainer = styled.div`
+  margin: 5px 0;
 `
 
 export interface PlacementSummaryWithOverlaps extends PlacementSummary {
@@ -126,7 +133,6 @@ export default React.memo(function PlacementDraft() {
     Result<PlacementPlanDraftWithOverlaps>
   >(Loading.of())
   const [units, setUnits] = useState<Result<PublicUnit[]>>(Loading.of())
-
   const [formState, setFormState] = useState<DaycarePlacementPlanForm>({
     unitId: null,
     period: null,
@@ -136,6 +142,11 @@ export default React.memo(function PlacementDraft() {
   const [additionalUnits, setAdditionalUnits] = useState<PublicUnit[]>([])
   const [selectedUnitIsGhostUnit, setSelectedUnitIsGhostUnit] =
     useState<boolean>(false)
+
+  const [preschoolDatesTermWarning, setPreschoolDatesTermWarning] =
+    useState(false)
+
+  const preschoolTermsResult = useQueryResult(getPreschoolTermsQuery())
 
   useEffect(() => {
     if (units.isSuccess && formState.unitId) {
@@ -203,9 +214,32 @@ export default React.memo(function PlacementDraft() {
         type: asUnitType(placementDraft.value.type),
         date: formState.period?.start ?? placementDraft.value.period.start,
         shiftCare: null
-      }).then(setUnits)
+      })
+        .then(setUnits)
+        .then(() => {
+          if (preschoolTermsResult.isSuccess) {
+            validatePreschoolPeriods(
+              placementDraft.value.type,
+              'period',
+              placementDraft.value.period
+            )
+
+            if (placementDraft.value.preschoolDaycarePeriod) {
+              validatePreschoolPeriods(
+                placementDraft.value.type,
+                'preschoolDaycarePeriod',
+                placementDraft.value.preschoolDaycarePeriod
+              )
+            }
+          }
+        })
     }
-  }, [placementDraft, formState.period?.start])
+  }, [
+    placementDraft,
+    formState.period?.start,
+    preschoolTermsResult,
+    validatePreschoolPeriods
+  ])
 
   useTitle(
     placementDraft.map(
@@ -240,6 +274,46 @@ export default React.memo(function PlacementDraft() {
     return null
   }
 
+  const validatePreschoolPeriods = useCallback(
+    (
+      placementType: PlacementType,
+      periodType: 'period' | 'preschoolDaycarePeriod',
+      period: FiniteDateRange
+    ) => {
+      if (preschoolTermsResult.isSuccess) {
+        if (
+          placementType === 'PRESCHOOL' ||
+          placementType === 'PREPARATORY' ||
+          placementType === 'PRESCHOOL_DAYCARE' ||
+          placementType === 'PRESCHOOL_DAYCARE_ONLY' ||
+          placementType === 'PREPARATORY_DAYCARE'
+        ) {
+          if (periodType === 'period') {
+            preschoolTermsResult.map((preschoolTerms) => {
+              const datesAreInsideSomePreschoolTerm = preschoolTerms.some(
+                (term) =>
+                  term.finnishPreschool.asDateRange().contains(period) ||
+                  term.swedishPreschool.asDateRange().contains(period)
+              )
+              setPreschoolDatesTermWarning(!datesAreInsideSomePreschoolTerm)
+            })
+          } else {
+            preschoolTermsResult.map((preschoolTerms) => {
+              const datesAreInsideSomeExtendedPreschoolTerm =
+                preschoolTerms.some((term) =>
+                  term.extendedTerm.asDateRange().contains(period)
+                )
+              setPreschoolDatesTermWarning(
+                !datesAreInsideSomeExtendedPreschoolTerm
+              )
+            })
+          }
+        }
+      }
+    },
+    [preschoolTermsResult, setPreschoolDatesTermWarning]
+  )
+
   const updatePlacementDate =
     (
       periodType: 'period' | 'preschoolDaycarePeriod',
@@ -257,6 +331,7 @@ export default React.memo(function PlacementDraft() {
         ...formState,
         [periodType]: fixedPeriod
       })
+
       if (fixedPeriod !== null && placementDraft.isSuccess) {
         const updatedPlacementDraft = placementDraft.map((draft) => ({
           ...draft,
@@ -264,6 +339,12 @@ export default React.memo(function PlacementDraft() {
         }))
         setPlacementDraft(updatedPlacementDraft)
         calculateOverLaps(updatedPlacementDraft, setPlacementDraft)
+
+        validatePreschoolPeriods(
+          placementDraft.value.type,
+          periodType,
+          fixedPeriod
+        )
       }
     }
 
@@ -368,6 +449,19 @@ export default React.memo(function PlacementDraft() {
                 'end'
               )}
             />
+            {preschoolDatesTermWarning && (
+              <div>
+                <WarningContainer>
+                  <InputWarning
+                    text={
+                      i18n.childInformation.placements.createPlacement
+                        .preschoolTermNotOpen
+                    }
+                    iconPosition="after"
+                  />
+                </WarningContainer>
+              </div>
+            )}
             <Gap size="L" />
             <UnitCards
               additionalUnits={additionalUnits}
