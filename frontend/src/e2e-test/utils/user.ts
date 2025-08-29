@@ -4,6 +4,7 @@
 
 import config from '../config'
 import type { DevPerson } from '../generated/api-types'
+import CitizenCalendarPage from '../pages/citizen/citizen-calendar'
 
 import type { Page } from './page'
 import { TextInput } from './page'
@@ -20,6 +21,13 @@ export async function enduserLogin(page: Page, person: DevPerson) {
 
   await page.findByDataQa('header-city-logo').waitUntilVisible()
   await page.waitForUrl(/.*\/(calendar|applications)/)
+
+  if (page.url.includes('/calendar')) {
+    // Need to wait until calendar page is fully loaded, as it may  otherwise interrupt
+    // header dropdown navigation in multiple places
+    const calendarPage = new CitizenCalendarPage(page, 'desktop')
+    await calendarPage.waitUntilLoaded()
+  }
 }
 
 export async function enduserLoginWeak(
