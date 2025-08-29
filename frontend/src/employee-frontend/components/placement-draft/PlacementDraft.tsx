@@ -208,6 +208,46 @@ export default React.memo(function PlacementDraft() {
     )
   }, [applicationId, redirectToMainPage])
 
+  const validatePreschoolPeriods = useCallback(
+    (
+      placementType: PlacementType,
+      periodType: 'period' | 'preschoolDaycarePeriod',
+      period: FiniteDateRange
+    ) => {
+      if (preschoolTermsResult.isSuccess) {
+        if (
+          placementType === 'PRESCHOOL' ||
+          placementType === 'PREPARATORY' ||
+          placementType === 'PRESCHOOL_DAYCARE' ||
+          placementType === 'PRESCHOOL_DAYCARE_ONLY' ||
+          placementType === 'PREPARATORY_DAYCARE'
+        ) {
+          if (periodType === 'period') {
+            preschoolTermsResult.map((preschoolTerms) => {
+              const datesAreInsideSomePreschoolTerm = preschoolTerms.some(
+                (term) =>
+                  term.finnishPreschool.asDateRange().contains(period) ||
+                  term.swedishPreschool.asDateRange().contains(period)
+              )
+              setPreschoolDatesTermWarning(!datesAreInsideSomePreschoolTerm)
+            })
+          } else {
+            preschoolTermsResult.map((preschoolTerms) => {
+              const datesAreInsideSomeExtendedPreschoolTerm =
+                preschoolTerms.some((term) =>
+                  term.extendedTerm.asDateRange().contains(period)
+                )
+              setPreschoolDatesTermWarning(
+                !datesAreInsideSomeExtendedPreschoolTerm
+              )
+            })
+          }
+        }
+      }
+    },
+    [preschoolTermsResult, setPreschoolDatesTermWarning]
+  )
+
   useEffect(() => {
     if (placementDraft.isSuccess) {
       void getApplicationUnitsResult({
@@ -273,46 +313,6 @@ export default React.memo(function PlacementDraft() {
     }
     return null
   }
-
-  const validatePreschoolPeriods = useCallback(
-    (
-      placementType: PlacementType,
-      periodType: 'period' | 'preschoolDaycarePeriod',
-      period: FiniteDateRange
-    ) => {
-      if (preschoolTermsResult.isSuccess) {
-        if (
-          placementType === 'PRESCHOOL' ||
-          placementType === 'PREPARATORY' ||
-          placementType === 'PRESCHOOL_DAYCARE' ||
-          placementType === 'PRESCHOOL_DAYCARE_ONLY' ||
-          placementType === 'PREPARATORY_DAYCARE'
-        ) {
-          if (periodType === 'period') {
-            preschoolTermsResult.map((preschoolTerms) => {
-              const datesAreInsideSomePreschoolTerm = preschoolTerms.some(
-                (term) =>
-                  term.finnishPreschool.asDateRange().contains(period) ||
-                  term.swedishPreschool.asDateRange().contains(period)
-              )
-              setPreschoolDatesTermWarning(!datesAreInsideSomePreschoolTerm)
-            })
-          } else {
-            preschoolTermsResult.map((preschoolTerms) => {
-              const datesAreInsideSomeExtendedPreschoolTerm =
-                preschoolTerms.some((term) =>
-                  term.extendedTerm.asDateRange().contains(period)
-                )
-              setPreschoolDatesTermWarning(
-                !datesAreInsideSomeExtendedPreschoolTerm
-              )
-            })
-          }
-        }
-      }
-    },
-    [preschoolTermsResult, setPreschoolDatesTermWarning]
-  )
 
   const updatePlacementDate =
     (
@@ -450,7 +450,7 @@ export default React.memo(function PlacementDraft() {
               )}
             />
             {preschoolDatesTermWarning && (
-              <div>
+              <div data-qa="preschool-term-warning">
                 <WarningContainer>
                   <InputWarning
                     text={
