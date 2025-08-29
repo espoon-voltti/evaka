@@ -382,7 +382,7 @@ describe('Application transitions', () => {
         testChild2,
         familyWithTwoGuardians.guardian,
         undefined,
-        'DAYCARE',
+        'PRESCHOOL',
         null,
         [testDaycare.id],
         true,
@@ -414,7 +414,6 @@ describe('Application transitions', () => {
 
     const planStartDate = preferredStartDate.addDays(1)
     await placementDraftPage.startDate.fill(planStartDate)
-
     await placementDraftPage.assertOccupancies(testDaycare.id, {
       max3Months: '14,3 %',
       max6Months: '14,3 %',
@@ -431,6 +430,36 @@ describe('Application transitions', () => {
     })
 
     await placementDraftPage.placeToUnit(testPreschool.id)
+
+    // TODO test placement dates here
+    const preschoolTermValidationWarning = page.findByDataQa(
+      'preschool-term-warning'
+    )
+    await preschoolTermValidationWarning
+      .findText('Sijoituksen tulee olla esiopetuskaudella')
+      .waitUntilVisible()
+
+    await placementDraftPage.preschoolDaycareEndDate?.fill(
+      preschoolTerm2021.extendedTerm.end
+    )
+    await preschoolTermValidationWarning
+      .findText('Sijoituksen tulee olla esiopetuskaudella')
+      .waitUntilHidden()
+
+    await placementDraftPage.endDate?.fill(
+      preschoolTerm2021.finnishPreschool.end.addDays(1)
+    )
+    await preschoolTermValidationWarning
+      .findText('Sijoituksen tulee olla esiopetuskaudella')
+      .waitUntilVisible()
+
+    await placementDraftPage.endDate?.fill(
+      preschoolTerm2021.finnishPreschool.end
+    )
+    await preschoolTermValidationWarning
+      .findText('Sijoituksen tulee olla esiopetuskaudella')
+      .waitUntilHidden()
+
     await placementDraftPage.submit()
 
     await applicationListView.filterByApplicationStatus('WAITING_DECISION')
