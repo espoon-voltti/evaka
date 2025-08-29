@@ -10,12 +10,23 @@ import { Combobox, DatePicker } from '../../utils/page'
 export class PlacementDraftPage {
   #restrictedDetailsWarning: Element
   startDate: DatePicker
+  endDate: DatePicker
+  preschoolDaycareStartDate: DatePicker | null = null
+  preschoolDaycareEndDate: DatePicker | null = null
   #addOtherUnitCombobox: Combobox
   constructor(private page: Page) {
     this.#restrictedDetailsWarning = page.findByDataQa(
       'restricted-details-warning'
     )
     this.startDate = new DatePicker(page.findByDataQa('start-date'))
+    this.endDate = new DatePicker(page.findByDataQa('end-date'))
+    this.preschoolDaycareStartDate = new DatePicker(
+      page.findByDataQa('preschool-daycare-start-date')
+    )
+    this.preschoolDaycareEndDate = new DatePicker(
+      page.findByDataQa('preschool-daycare-end-date')
+    )
+
     this.#addOtherUnitCombobox = new Combobox(
       page.findByDataQa('add-other-unit')
     )

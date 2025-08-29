@@ -48,6 +48,7 @@ import Toolbar from '../../common/Toolbar'
 import ToolbarAccordion, {
   RestrictedToolbar
 } from '../../common/ToolbarAccordion'
+import { getPreschoolTermsQuery } from '../../unit/queries'
 import {
   backupCaresQuery,
   deletePlacementMutation,
@@ -118,6 +119,8 @@ export default React.memo(function PlacementRow({
     backupCaresQuery({ childId: placement.child.id })
   )
 
+  const preschoolTermsResult = useQueryResult(getPreschoolTermsQuery())
+
   const expandedAtStart = isActiveDateRange(
     placement.startDate,
     placement.endDate
@@ -133,6 +136,9 @@ export default React.memo(function PlacementRow({
   const [confirmingDelete, setConfirmingDelete] = useState<boolean>(false)
   const [startDateWarning, setStartDateWarning] = useState(false)
   const [endDateWarning, setEndDateWarning] = useState(false)
+  const [preschoolDatesTermWarning, setPreschoolDatesTermWarning] =
+    useState(false)
+
   const retroactive = useMemo(
     () =>
       isChangeRetroactive(
@@ -154,6 +160,7 @@ export default React.memo(function PlacementRow({
     setStartDateWarning(false)
     setEndDateWarning(false)
     setConfirmedRetroactive(false)
+    setPreschoolDatesTermWarning(false)
   }
 
   const onSuccess = useCallback(() => {
@@ -211,10 +218,7 @@ export default React.memo(function PlacementRow({
     [backupCares, placement]
   )
 
-  function calculateOverlapWarnings(
-    startDate: LocalDate | null,
-    endDate: LocalDate | null
-  ) {
+  function validate(startDate: LocalDate | null, endDate: LocalDate | null) {
     if (!startDate || !endDate) return
     if (
       otherPlacementRanges.some((range) =>
@@ -264,6 +268,33 @@ export default React.memo(function PlacementRow({
     } else {
       setConflictBackupCare(false)
     }
+    if (placement.type === 'PRESCHOOL' || placement.type === 'PREPARATORY') {
+      preschoolTermsResult.map((preschoolTerms) => {
+        const datesAreInsideSomePreschoolTerm = preschoolTerms.some(
+          (term) =>
+            (term.finnishPreschool.asDateRange().includes(startDate) &&
+              term.finnishPreschool.asDateRange().includes(endDate)) ||
+            (term.swedishPreschool.asDateRange().includes(startDate) &&
+              term.swedishPreschool.asDateRange().includes(endDate))
+        )
+        setPreschoolDatesTermWarning(!datesAreInsideSomePreschoolTerm)
+      })
+    }
+
+    if (
+      placement.type === 'PRESCHOOL_DAYCARE' ||
+      placement.type === 'PRESCHOOL_DAYCARE_ONLY' ||
+      placement.type === 'PREPARATORY_DAYCARE'
+    ) {
+      preschoolTermsResult.map((preschoolTerms) => {
+        const datesAreInsideSomeExtendedPreschoolTerm = preschoolTerms.some(
+          (term) =>
+            term.extendedTerm.asDateRange().includes(startDate) &&
+            term.extendedTerm.asDateRange().includes(endDate)
+        )
+        setPreschoolDatesTermWarning(!datesAreInsideSomeExtendedPreschoolTerm)
+      })
+    }
   }
 
   return placement.isRestrictedFromUser ? (
@@ -312,7 +343,7 @@ export default React.memo(function PlacementRow({
                   maxDate={form.endDate ?? undefined}
                   onChange={(startDate) => {
                     setForm({ ...form, startDate })
-                    calculateOverlapWarnings(startDate, placement.endDate)
+                    validate(startDate, placement.endDate)
                   }}
                   data-qa="placement-start-date-input"
                   locale="fi"
@@ -343,7 +374,7 @@ export default React.memo(function PlacementRow({
                       minDate={form.startDate ?? undefined}
                       onChange={(endDate) => {
                         setForm({ ...form, endDate })
-                        calculateOverlapWarnings(placement.startDate, endDate)
+                        validate(placement.startDate, endDate)
                       }}
                       locale="fi"
                       data-qa="placement-end-date-input"
@@ -374,6 +405,19 @@ export default React.memo(function PlacementRow({
                     </WarningContainer>
                   )}
                 </div>
+                {preschoolDatesTermWarning && (
+                  <div>
+                    <WarningContainer>
+                      <InputWarning
+                        text={
+                          i18n.childInformation.placements.createPlacement
+                            .preschoolTermNotOpen
+                        }
+                        iconPosition="after"
+                      />
+                    </WarningContainer>
+                  </div>
+                )}
               </div>
             ) : (
               placement.endDate.format()
