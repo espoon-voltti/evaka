@@ -242,8 +242,10 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `child document notification email is not sent if placement has ended and document won't be visible anyway`() {
+        val employee = DevEmployee()
         // given
         db.transaction { tx ->
+            tx.insert(employee)
             tx.insert(
                 DevChildDocument(
                     id = expiredHojksDocumentId,
@@ -253,10 +255,12 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     content = content,
                     publishedContent = updatedContent,
                     modifiedAt = clock.now(),
-                    contentModifiedAt = clock.now(),
-                    contentModifiedBy = null,
+                    modifiedBy = employee.evakaUserId,
+                    contentLockedAt = clock.now(),
+                    contentLockedBy = null,
                     publishedAt =
                         HelsinkiDateTime.of(clock.today().minusMonths(1), LocalTime.of(8, 0)),
+                    publishedBy = employee.evakaUserId,
                     answeredAt = null,
                     answeredBy = null,
                 )
