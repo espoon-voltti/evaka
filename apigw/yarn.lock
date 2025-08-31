@@ -1226,48 +1226,48 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@redis/bloom@npm:5.8.1":
-  version: 5.8.1
-  resolution: "@redis/bloom@npm:5.8.1"
+"@redis/bloom@npm:5.8.2":
+  version: 5.8.2
+  resolution: "@redis/bloom@npm:5.8.2"
   peerDependencies:
-    "@redis/client": ^5.8.1
-  checksum: 10/f691b1dce21f6d9271591a5f0ba01c5bc559315488e03ce260924791cb5f02ee0f49bfd399a1b8610136194d626066ebffd87ddfe47d1f5330d49083c91b3d4a
+    "@redis/client": ^5.8.2
+  checksum: 10/99ec4f127b6ce86a62d8ddde9a2a3631feb0c68abe8c4c2e4cea143c1d1e2cec5fe78f0ad79b8cabc2bc0007f4718d6bf3b253526c704bc0e2111c9ef3b28bf9
   languageName: node
   linkType: hard
 
-"@redis/client@npm:5.8.1":
-  version: 5.8.1
-  resolution: "@redis/client@npm:5.8.1"
+"@redis/client@npm:5.8.2":
+  version: 5.8.2
+  resolution: "@redis/client@npm:5.8.2"
   dependencies:
     cluster-key-slot: "npm:1.1.2"
-  checksum: 10/329d76de06fc60be6e3039b70b4bc37d861fff9354e6429550a263062b10e4bc8725411cd279262f008d0351040ced0e9cf1b74e837f7b8121f95e18d531ffe0
+  checksum: 10/653ba2d0efb97b4479b3e9d2c1038da1993191a863f8c0427975f63a66354638b02befc2375977a0d0906a5bd70c0f57982e905063079c0c294944c519d87c88
   languageName: node
   linkType: hard
 
-"@redis/json@npm:5.8.1":
-  version: 5.8.1
-  resolution: "@redis/json@npm:5.8.1"
+"@redis/json@npm:5.8.2":
+  version: 5.8.2
+  resolution: "@redis/json@npm:5.8.2"
   peerDependencies:
-    "@redis/client": ^5.8.1
-  checksum: 10/9eabbf9a2c537eb814f4fe0ac17e181727e39665b38078b691abde0a88ae746c1aeb4ca3937b910c19372e4942d5b3252396ca7eb284bea2fb150b01ed206042
+    "@redis/client": ^5.8.2
+  checksum: 10/2877cd93b717344f1d1215474932bf2a662a069970356e781dc0f45f2fb4d1941c49401db33a34e9ab9347c485bba22bc97b57ddf2185e83f53ee8320968dedf
   languageName: node
   linkType: hard
 
-"@redis/search@npm:5.8.1":
-  version: 5.8.1
-  resolution: "@redis/search@npm:5.8.1"
+"@redis/search@npm:5.8.2":
+  version: 5.8.2
+  resolution: "@redis/search@npm:5.8.2"
   peerDependencies:
-    "@redis/client": ^5.8.1
-  checksum: 10/a5e12dd2c752e09e2052c3cd8d6ff8f2ff6f6c9336e07557a5a93c1ad6a908babdad8377a6d1ee1655054fcf9c2658e815d8463a23c1525302f9dc5da69c5fc5
+    "@redis/client": ^5.8.2
+  checksum: 10/6cc0499a11e86ea28451c02dc5b4b3133fc32e53447e4aebf0d100b0820ba2bcccacab9f344192b6a672b56851a4053705099482f26e4639f8fc3031f87a1cc6
   languageName: node
   linkType: hard
 
-"@redis/time-series@npm:5.8.1":
-  version: 5.8.1
-  resolution: "@redis/time-series@npm:5.8.1"
+"@redis/time-series@npm:5.8.2":
+  version: 5.8.2
+  resolution: "@redis/time-series@npm:5.8.2"
   peerDependencies:
-    "@redis/client": ^5.8.1
-  checksum: 10/c9440ce9350f8b04212d47ac5a2358d01973f777cb3d607fb8639819a3ab34d56bb5aaf70102251797d50825f8db15ed70adc6e9a1feda3582a4201f8b8a89d9
+    "@redis/client": ^5.8.2
+  checksum: 10/a7758173807b1464433bb3c18714b53acbc26f7a9c91d4cb3530bb8cfd85bdb60bcb4e67057ec9b053f5c64408beab4d4d3440689e6850762f9edc7e2e527231
   languageName: node
   linkType: hard
 
@@ -3513,7 +3513,7 @@ __metadata:
     prettier: "npm:3.6.2"
     pump: "npm:3.0.3"
     query-string: "npm:9.2.2"
-    redis: "npm:5.8.1"
+    redis: "npm:5.8.2"
     split2: "npm:4.2.0"
     through2: "npm:4.0.2"
     tough-cookie: "npm:6.0.0"
@@ -6649,16 +6649,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"redis@npm:5.8.1":
-  version: 5.8.1
-  resolution: "redis@npm:5.8.1"
+"redis@npm:5.8.2":
+  version: 5.8.2
+  resolution: "redis@npm:5.8.2"
   dependencies:
-    "@redis/bloom": "npm:5.8.1"
-    "@redis/client": "npm:5.8.1"
-    "@redis/json": "npm:5.8.1"
-    "@redis/search": "npm:5.8.1"
-    "@redis/time-series": "npm:5.8.1"
-  checksum: 10/26d97c6ddf04530149d97bfb11093a96cce04b949477a042ae0c0c80b8599ad275d88f5a21b384870b7c67a7ea614497cb52dbaf885ba7c94233a79f804ab270
+    "@redis/bloom": "npm:5.8.2"
+    "@redis/client": "npm:5.8.2"
+    "@redis/json": "npm:5.8.2"
+    "@redis/search": "npm:5.8.2"
+    "@redis/time-series": "npm:5.8.2"
+  checksum: 10/a7635cedf25f449ecf4ee667067cff655b6d462a93225a6e93217c3fdb3a050cf503f6add9ccaedb6caaced5e80c36ff754bea8ed4b270f2a1006add041bd219
   languageName: node
   linkType: hard
 
