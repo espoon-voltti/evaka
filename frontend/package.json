@@ -23,7 +23,7 @@
     "@fortawesome/fontawesome-svg-core": "6.7.2",
     "@fortawesome/free-regular-svg-icons": "6.7.2",
     "@fortawesome/free-solid-svg-icons": "6.7.2",
-    "@fortawesome/react-fontawesome": "0.2.3",
+    "@fortawesome/react-fontawesome": "0.2.6",
     "@react-spring/rafz": "10.0.1",
     "@react-spring/web": "10.0.1",
     "@sentry/browser": "10.5.0",
@@ -136,7 +136,7 @@
     }
   },
   "resolutions": {
-    "@fortawesome/react-fontawesome": "patch:@fortawesome/react-fontawesome@0.2.3#~/.yarn/patches/@fortawesome-react-fontawesome-npm-0.2.2-e1863961b2.patch",
+    "@fortawesome/react-fontawesome": "patch:@fortawesome/react-fontawesome@0.2.6#~/.yarn/patches/@fortawesome-react-fontawesome-npm-0.2.2-e1863961b2.patch",
     "@react-leaflet/core@npm:^3.0.0": "patch:@react-leaflet/core@npm%3A3.0.0#~/.yarn/patches/@react-leaflet-core-npm-3.0.0-4e3f2d62b5.patch",
     "unplugin@npm:1.0.1": "patch:unplugin@npm%3A1.0.1#~/.yarn/patches/unplugin-npm-1.0.1-70bc9bb0e2.patch"
   },
