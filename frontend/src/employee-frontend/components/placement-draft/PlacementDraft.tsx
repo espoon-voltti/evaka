@@ -143,8 +143,7 @@ export default React.memo(function PlacementDraft() {
   const [selectedUnitIsGhostUnit, setSelectedUnitIsGhostUnit] =
     useState<boolean>(false)
 
-  const [preschoolDatesTermWarning, setPreschoolDatesTermWarning] =
-    useState(false)
+  const [preschoolDatesAreValid, setPreschoolDatesAreValid] = useState(true)
 
   const preschoolTermsResult = useQueryResult(getPreschoolTermsQuery())
 
@@ -208,45 +207,64 @@ export default React.memo(function PlacementDraft() {
     )
   }, [applicationId, redirectToMainPage])
 
-  const validatePreschoolPeriods = useCallback(
-    (
-      placementType: PlacementType,
-      periodType: 'period' | 'preschoolDaycarePeriod',
-      period: FiniteDateRange
-    ) => {
-      if (preschoolTermsResult.isSuccess) {
-        if (
-          placementType === 'PRESCHOOL' ||
-          placementType === 'PREPARATORY' ||
-          placementType === 'PRESCHOOL_DAYCARE' ||
-          placementType === 'PRESCHOOL_DAYCARE_ONLY' ||
-          placementType === 'PREPARATORY_DAYCARE'
-        ) {
-          if (periodType === 'period') {
-            preschoolTermsResult.map((preschoolTerms) => {
-              const datesAreInsideSomePreschoolTerm = preschoolTerms.some(
-                (term) =>
-                  term.finnishPreschool.asDateRange().contains(period) ||
-                  term.swedishPreschool.asDateRange().contains(period)
-              )
-              setPreschoolDatesTermWarning(!datesAreInsideSomePreschoolTerm)
-            })
-          } else {
-            preschoolTermsResult.map((preschoolTerms) => {
-              const datesAreInsideSomeExtendedPreschoolTerm =
-                preschoolTerms.some((term) =>
-                  term.extendedTerm.asDateRange().contains(period)
-                )
-              setPreschoolDatesTermWarning(
-                !datesAreInsideSomeExtendedPreschoolTerm
-              )
-            })
-          }
-        }
-      }
-    },
-    [preschoolTermsResult, setPreschoolDatesTermWarning]
-  )
+  const isPreschoolPlacement = (placementType: PlacementType) =>
+    placementType === 'PRESCHOOL' ||
+    placementType === 'PREPARATORY' ||
+    placementType === 'PRESCHOOL_DAYCARE' ||
+    placementType === 'PRESCHOOL_DAYCARE_ONLY' ||
+    placementType === 'PREPARATORY_DAYCARE'
+
+  useEffect(() => {
+    if (
+      preschoolTermsResult.isSuccess &&
+      placementDraft.isSuccess &&
+      isPreschoolPlacement(placementDraft.value.type) &&
+      formState.period !== null
+    ) {
+      const preschoolPeriodIsValid = preschoolTermsResult
+        .map((preschoolTerms) =>
+          preschoolTerms.some(
+            (term) =>
+              term.finnishPreschool.asDateRange().contains(formState.period!) ||
+              term.swedishPreschool.asDateRange().contains(formState.period!)
+          )
+        )
+        .getOrElse(false)
+
+      // If preschools dates are set, the preschool daycare period must be inside 1.8.-31.7 of the selected preschool year
+      const previousAugust1StBeforePreschoolPlacementStart = LocalDate.of(
+        formState.period.start.year,
+        8,
+        1
+      ).isBefore(formState.period.start)
+        ? LocalDate.of(formState.period.start.year, 8, 1)
+        : LocalDate.of(formState.period.start.year - 1, 8, 1)
+
+      const nextJuly31StAfterPreschoolPlacementEnd = LocalDate.of(
+        formState.period.end.year,
+        7,
+        31
+      ).isAfter(formState.period.end)
+        ? LocalDate.of(formState.period.end.year, 7, 31)
+        : LocalDate.of(formState.period.start.year + 1, 7, 31)
+
+      const validExtenderPreschoolDaycarePeriod = new FiniteDateRange(
+        previousAugust1StBeforePreschoolPlacementStart,
+        nextJuly31StAfterPreschoolPlacementEnd
+      )
+
+      const preschoolDaycarePeriodIsValid =
+        formState.hasPreschoolDaycarePeriod &&
+        formState.preschoolDaycarePeriod !== null &&
+        validExtenderPreschoolDaycarePeriod.contains(
+          formState.preschoolDaycarePeriod
+        )
+
+      setPreschoolDatesAreValid(
+        preschoolPeriodIsValid && preschoolDaycarePeriodIsValid
+      )
+    }
+  }, [preschoolTermsResult, placementDraft, formState])
 
   useEffect(() => {
     if (placementDraft.isSuccess) {
@@ -254,32 +272,9 @@ export default React.memo(function PlacementDraft() {
         type: asUnitType(placementDraft.value.type),
         date: formState.period?.start ?? placementDraft.value.period.start,
         shiftCare: null
-      })
-        .then(setUnits)
-        .then(() => {
-          if (preschoolTermsResult.isSuccess) {
-            validatePreschoolPeriods(
-              placementDraft.value.type,
-              'period',
-              placementDraft.value.period
-            )
-
-            if (placementDraft.value.preschoolDaycarePeriod) {
-              validatePreschoolPeriods(
-                placementDraft.value.type,
-                'preschoolDaycarePeriod',
-                placementDraft.value.preschoolDaycarePeriod
-              )
-            }
-          }
-        })
+      }).then(setUnits)
     }
-  }, [
-    placementDraft,
-    formState.period?.start,
-    preschoolTermsResult,
-    validatePreschoolPeriods
-  ])
+  }, [placementDraft, formState.period?.start, preschoolTermsResult])
 
   useTitle(
     placementDraft.map(
@@ -339,12 +334,6 @@ export default React.memo(function PlacementDraft() {
         }))
         setPlacementDraft(updatedPlacementDraft)
         calculateOverLaps(updatedPlacementDraft, setPlacementDraft)
-
-        validatePreschoolPeriods(
-          placementDraft.value.type,
-          periodType,
-          fixedPeriod
-        )
       }
     }
 
@@ -370,7 +359,12 @@ export default React.memo(function PlacementDraft() {
 
   const validPlan: DaycarePlacementPlan | null = useMemo(() => {
     const { unitId, period, hasPreschoolDaycarePeriod } = formState
-    if (!unitId || !period || selectedUnitIsGhostUnit) {
+    if (
+      !unitId ||
+      !period ||
+      selectedUnitIsGhostUnit ||
+      !preschoolDatesAreValid
+    ) {
       return null
     } else {
       return {
@@ -381,7 +375,7 @@ export default React.memo(function PlacementDraft() {
           : null
       }
     }
-  }, [formState, selectedUnitIsGhostUnit])
+  }, [formState, selectedUnitIsGhostUnit, preschoolDatesAreValid])
 
   return (
     <Container
@@ -449,7 +443,7 @@ export default React.memo(function PlacementDraft() {
                 'end'
               )}
             />
-            {preschoolDatesTermWarning && (
+            {!preschoolDatesAreValid && (
               <div data-qa="preschool-term-warning">
                 <WarningContainer>
                   <InputWarning

@@ -431,16 +431,8 @@ describe('Application transitions', () => {
 
     await placementDraftPage.placeToUnit(testPreschool.id)
 
-    // TODO test placement dates here
     const preschoolTermValidationWarning = page.findByDataQa(
       'preschool-term-warning'
-    )
-    await preschoolTermValidationWarning
-      .findText('Sijoituksen tulee olla esiopetuskaudella')
-      .waitUntilVisible()
-
-    await placementDraftPage.preschoolDaycareEndDate?.fill(
-      preschoolTerm2021.extendedTerm.end
     )
     await preschoolTermValidationWarning
       .findText('Sijoituksen tulee olla esiopetuskaudella')
@@ -455,6 +447,20 @@ describe('Application transitions', () => {
 
     await placementDraftPage.endDate?.fill(
       preschoolTerm2021.finnishPreschool.end
+    )
+    await preschoolTermValidationWarning
+      .findText('Sijoituksen tulee olla esiopetuskaudella')
+      .waitUntilHidden()
+
+    await placementDraftPage.preschoolDaycareEndDate?.fill(
+      LocalDate.of(2022, 8, 1)
+    )
+    await preschoolTermValidationWarning
+      .findText('Sijoituksen tulee olla esiopetuskaudella')
+      .waitUntilVisible()
+
+    await placementDraftPage.preschoolDaycareEndDate?.fill(
+      LocalDate.of(2022, 7, 31)
     )
     await preschoolTermValidationWarning
       .findText('Sijoituksen tulee olla esiopetuskaudella')
