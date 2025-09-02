@@ -4,6 +4,7 @@
 
 import config from '../config'
 import type { DevPerson } from '../generated/api-types'
+import CitizenCalendarPage from '../pages/citizen/citizen-calendar'
 
 import type { Page } from './page'
 import { TextInput } from './page'
@@ -13,14 +14,20 @@ export async function enduserLogin(page: Page, person: DevPerson) {
     throw new Error('Person does not have an SSN: cannot login')
   }
 
-  await page.goto(
-    `${config.apiUrl}/citizen/auth/sfi/login?RelayState=%2Fapplications`
-  )
+  await page.goto(`${config.apiUrl}/citizen/auth/sfi/login?RelayState=%2F`)
   await page.find(`[id="${person.ssn}"]`).locator.check()
   await page.find('[type=submit]').findText('Kirjaudu').click()
   await page.find('[type=submit]').findText('Jatka').click()
 
   await page.findByDataQa('header-city-logo').waitUntilVisible()
+  await page.waitForUrl(/.*\/(calendar|applications)/)
+
+  if (page.url.includes('/calendar')) {
+    // Need to wait until calendar page is fully loaded, as it may  otherwise interrupt
+    // header dropdown navigation in multiple places
+    const calendarPage = new CitizenCalendarPage(page, 'desktop')
+    await calendarPage.waitUntilLoaded()
+  }
 }
 
 export async function enduserLoginWeak(
