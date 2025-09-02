@@ -248,7 +248,7 @@ export default React.memo(function PlacementDraft() {
         ? LocalDate.of(formState.period.end.year, 7, 31)
         : LocalDate.of(formState.period.start.year + 1, 7, 31)
 
-      const validExtenderPreschoolDaycarePeriod = new FiniteDateRange(
+      const validExtendedPreschoolDaycarePeriod = new FiniteDateRange(
         previousAugust1StBeforePreschoolPlacementStart,
         nextJuly31StAfterPreschoolPlacementEnd
       )
@@ -256,9 +256,10 @@ export default React.memo(function PlacementDraft() {
       const preschoolDaycarePeriodIsValid =
         formState.hasPreschoolDaycarePeriod &&
         formState.preschoolDaycarePeriod !== null &&
-        validExtenderPreschoolDaycarePeriod.contains(
+        validExtendedPreschoolDaycarePeriod.contains(
           formState.preschoolDaycarePeriod
-        )
+        ) &&
+        formState.period.overlaps(formState.preschoolDaycarePeriod) // must overlap with placement period at least 1 day
 
       setPreschoolDatesAreValid(
         preschoolPeriodIsValid && preschoolDaycarePeriodIsValid
