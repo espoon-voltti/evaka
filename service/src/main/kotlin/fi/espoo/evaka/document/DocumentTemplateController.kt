@@ -25,6 +25,7 @@ import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.domain.UiLanguage
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import fi.espoo.evaka.shared.security.PilotFeature
 import java.time.LocalDate
 import org.springframework.http.ContentDisposition
 import org.springframework.http.HttpHeaders
@@ -111,6 +112,7 @@ class DocumentTemplateController(
             .also { Audit.DocumentTemplateRead.log() }
     }
 
+    // TODO
     @GetMapping("/active")
     fun getActiveTemplates(
         db: Database,
@@ -137,7 +139,9 @@ class DocumentTemplateController(
                             it.placementTypes.contains(placement.type) &&
                             (it.language.name.uppercase() ==
                                 placement.unitLanguage.name.uppercase() ||
-                                it.language == UiLanguage.EN)
+                                it.language == UiLanguage.EN) &&
+                            (placement.enabledPilotFeatures.contains(PilotFeature.OTHER_DECISION) ||
+                                it.type != ChildDocumentType.OTHER_DECISION)
                     }
                 }
             }
@@ -449,7 +453,11 @@ private fun assertUniqueIds(content: DocumentTemplateContent) {
         throw BadRequest("Found non unique question ids")
 }
 
-private data class ActivePlacementInfo(val type: PlacementType, val unitLanguage: Language)
+private data class ActivePlacementInfo(
+    val type: PlacementType,
+    val unitLanguage: Language,
+    val enabledPilotFeatures: Set<PilotFeature>,
+)
 
 private fun Database.Read.getChildActivePlacementInfo(
     childId: ChildId,
@@ -458,7 +466,7 @@ private fun Database.Read.getChildActivePlacementInfo(
     createQuery {
             sql(
                 """
-SELECT pl.type, d.language AS unit_language
+SELECT pl.type, d.language AS unit_language, d.enabled_pilot_features AS enabled_pilot_features
 FROM placement pl
 JOIN daycare d on d.id = pl.unit_id
 WHERE pl.child_id = ${bind(childId)} AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(date)}
