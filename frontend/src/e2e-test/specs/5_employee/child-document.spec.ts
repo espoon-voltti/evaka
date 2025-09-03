@@ -31,7 +31,7 @@ describe('child document with person duplicate', () => {
     const daycare = await Fixture.daycare({
       areaId: area.id,
       type: ['CENTRE'],
-      enabledPilotFeatures: ['VASU_AND_PEDADOC']
+      enabledPilotFeatures: ['VASU_AND_PEDADOC', 'OTHER_DECISION']
     }).save()
     daycareSupervisor = await Fixture.employee()
       .unitSupervisor(daycare.id)
@@ -39,7 +39,7 @@ describe('child document with person duplicate', () => {
     const preschool = await Fixture.daycare({
       areaId: area.id,
       type: ['PRESCHOOL'],
-      enabledPilotFeatures: ['VASU_AND_PEDADOC']
+      enabledPilotFeatures: ['VASU_AND_PEDADOC', 'OTHER_DECISION']
     }).save()
 
     child = await Fixture.person().saveChild({ updateMockVtj: true })

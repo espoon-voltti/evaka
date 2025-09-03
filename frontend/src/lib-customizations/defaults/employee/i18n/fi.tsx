@@ -5383,7 +5383,8 @@ export const fi = {
       REALTIME_STAFF_ATTENDANCE: 'Henkilökunnan reaaliaikainen läsnäolo',
       PUSH_NOTIFICATIONS: 'Mobiilinotifikaatiot',
       SERVICE_APPLICATIONS: 'Palveluntarpeen muutoshakemukset',
-      STAFF_ATTENDANCE_INTEGRATION: 'Työvuoro­suunnittelu­integraatio'
+      STAFF_ATTENDANCE_INTEGRATION: 'Työvuoro­suunnittelu­integraatio',
+      OTHER_DECISION: 'Muut päätökset'
     }
   },
   roles: {
