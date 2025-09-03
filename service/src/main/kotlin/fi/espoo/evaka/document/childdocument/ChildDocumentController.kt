@@ -200,9 +200,19 @@ class ChildDocumentController(
                     )
                     val documents =
                         tx.getChildDocuments(childId) +
-                            tx.listPersonByDuplicateOf(childId).flatMap { duplicate ->
-                                tx.getChildDocuments(duplicate.id)
-                            }
+                            tx.listPersonByDuplicateOf(childId)
+                                .flatMap { duplicate -> tx.getChildDocuments(duplicate.id) }
+                                .filter {
+                                    user.isAdmin ||
+                                        it.type !in
+                                            listOf(
+                                                ChildDocumentType
+                                                    .MIGRATED_DAYCARE_ASSISTANCE_NEED_DECISION,
+                                                ChildDocumentType
+                                                    .MIGRATED_PRESCHOOL_ASSISTANCE_NEED_DECISION,
+                                            )
+                                }
+
                     val permittedActions =
                         accessControl.getPermittedActions<ChildDocumentId, Action.ChildDocument>(
                             tx,

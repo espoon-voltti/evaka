@@ -46,7 +46,9 @@ const caseManagementRequired: ChildDocumentType[] = [
   'VASU',
   'HOJKS',
   'LEOPS',
-  'OTHER_DECISION'
+  'OTHER_DECISION',
+  'MIGRATED_DAYCARE_ASSISTANCE_NEED_DECISION',
+  'MIGRATED_PRESCHOOL_ASSISTANCE_NEED_DECISION'
 ]
 
 export const documentTemplateForm = transformed(
