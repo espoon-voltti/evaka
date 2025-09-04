@@ -1,0 +1,1 @@
+ALTER TYPE pilot_feature ADD VALUE 'OTHER_DECISION';
