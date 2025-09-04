@@ -480,4 +480,48 @@ class DocumentMetadataUtilsTest {
         assertEquals("AddTimeSpanToTarget", rule.action.actionType)
         assertEquals("KA/13089/07.01.01.03.01/2018", rule.action.actionAnnotation)
     }
+
+    @Test
+    fun `createCreation prefers case process initial date when available`() {
+        val documentMetadata = createTestDocumentMetadata()
+        documentMetadata.copy(
+            createdAt = HelsinkiDateTime.of(LocalDateTime.parse("2023-02-01T12:10:00"))
+        )
+
+        // Create case process with different initial date than document metadata
+        val caseProcessInitialDate = LocalDateTime.parse("2019-01-15T10:30:00")
+        val caseProcess =
+            createTestCaseProcess(null)
+                .copy(
+                    history =
+                        listOf(
+                            CaseProcessHistoryRow(
+                                rowIndex = 1,
+                                state = CaseProcessState.INITIAL,
+                                enteredAt = HelsinkiDateTime.of(caseProcessInitialDate),
+                                enteredBy =
+                                    EvakaUser(
+                                        id = EvakaUserId(userId),
+                                        name = "Testi Testaaja",
+                                        type = EvakaUserType.EMPLOYEE,
+                                    ),
+                            )
+                        )
+                )
+
+        val result = createCreation(documentMetadata, caseProcess)
+
+        // Should use case process initial date, not document metadata creation date
+        assertEquals(caseProcessInitialDate.toLocalDate().toXMLGregorianCalendar(), result.created)
+    }
+
+    @Test
+    fun `createCreation falls back to document metadata when no case process`() {
+        val documentMetadata = createTestDocumentMetadata()
+
+        val result = createCreation(documentMetadata, null)
+
+        // Should use document metadata creation date when no case process
+        assertEquals(documentMetadata.createdAt?.asXMLGregorianCalendar(), result.created)
+    }
 }

@@ -299,9 +299,15 @@ private fun createFormat(filename: String): StandardMetadataType.Format {
     }
 }
 
-private fun createCreation(documentMetadata: DocumentMetadata): StandardMetadataType.Creation {
+fun createCreation(
+    documentMetadata: DocumentMetadata,
+    caseProcess: CaseProcess?,
+): StandardMetadataType.Creation {
     return StandardMetadataType.Creation().apply {
-        created = documentMetadata.createdAt?.asXMLGregorianCalendar()
+        created =
+            (caseProcess?.history?.find { it.state == CaseProcessState.INITIAL }?.enteredAt
+                    ?: documentMetadata.createdAt)
+                ?.asXMLGregorianCalendar()
         originatingSystem = "Varhaiskasvatuksen toiminnanohjausjärjestelmä"
     }
 }
@@ -384,7 +390,7 @@ fun createDocumentMetadata(
                         birthDate,
                     )
                 format = createFormat(filename)
-                creation = createCreation(documentMetadata)
+                creation = createCreation(documentMetadata, caseProcess)
                 policies = createPolicies(documentMetadata, document.template.type)
                 caseFile = createCaseFile(documentMetadata, caseProcess, document)
                 creation.created = getCaseFinishDate(documentMetadata, caseProcess, document)
