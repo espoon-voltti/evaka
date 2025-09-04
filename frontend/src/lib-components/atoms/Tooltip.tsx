@@ -252,17 +252,16 @@ function useFloatingPositioning({
 
     const anchorRect = anchor.getBoundingClientRect()
 
-    const tooltipMaxWidth =
+    const baseTooltipMaxWidth = 128 // based on previous tooltip measures
+    const calculatedMaxWidth =
       (['top', 'bottom'].includes(position)
         ? width === 'large'
           ? 400
-          : 140
-        : margin) +
-      anchorRect.width +
-      'px'
+          : baseTooltipMaxWidth
+        : margin) + anchorRect.width
 
     Object.assign(floating.style, {
-      maxWidth: tooltipMaxWidth
+      maxWidth: Math.max(baseTooltipMaxWidth, calculatedMaxWidth) + 'px'
     })
 
     const location: TooltipLocation = {
@@ -272,37 +271,26 @@ function useFloatingPositioning({
       bottom: null
     }
 
+    const verticalLeft =
+      anchorRect.left - floating.offsetWidth / 2 + anchorRect.width / 2 + 'px'
+    const horizontalTop =
+      anchorRect.top - floating.offsetHeight / 2 + anchorRect.height / 2 + 'px'
+
     switch (position) {
       case 'top':
         location.bottom = viewportHeight - anchorRect.top + 3 * margin + 'px'
-        location.left =
-          anchorRect.left -
-          floating.offsetWidth / 2 +
-          anchorRect.width / 2 +
-          'px'
+        location.left = verticalLeft
         break
       case 'bottom':
         location.top = anchorRect.bottom + 3 * margin + 'px'
-        location.left =
-          anchorRect.left -
-          floating.offsetWidth / 2 +
-          anchorRect.width / 2 +
-          'px'
+        location.left = verticalLeft
         break
       case 'left':
-        location.top =
-          anchorRect.top -
-          floating.offsetHeight / 2 +
-          anchorRect.height / 2 +
-          'px'
+        location.top = horizontalTop
         location.right = viewportWidth - anchorRect.left + 4 * margin + 'px'
         break
       case 'right':
-        location.top =
-          anchorRect.top -
-          floating.offsetHeight / 2 +
-          anchorRect.height / 2 +
-          'px'
+        location.top = horizontalTop
         location.left = anchorRect.right + 4 * margin + 'px'
         break
     }
