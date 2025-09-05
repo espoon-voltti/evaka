@@ -25,6 +25,7 @@ import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.TimeRange
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.LocalTime
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.Test
@@ -2750,6 +2751,237 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                 )
             ),
             client.orders,
+        )
+    }
+
+    @Test
+    fun `should not make weekly orders for days when unit or group is not open`() {
+
+        val client =
+            TestNekkuClient(
+                customers = basicTestClientCustomers,
+                nekkuProducts = nekkuProductsForOrder,
+                specialDiets = listOf(getNekkuSpecialDiet()),
+            )
+
+        fetchAndUpdateNekkuCustomers(client, db, asyncJobRunner, now)
+        // products
+        fetchAndUpdateNekkuProducts(client, db)
+        fetchAndUpdateNekkuSpecialDiets(client, db, asyncJobRunner, now)
+
+        val monday = LocalDate.of(2025, 4, 7)
+        val tuesday = LocalDate.of(2025, 4, 8)
+        val wednesday = LocalDate.of(2025, 4, 9)
+        val thursday = LocalDate.of(2025, 4, 10)
+        val friday = LocalDate.of(2025, 4, 11)
+        val allDays = listOf(monday, tuesday, wednesday, thursday, friday)
+
+        // Daycare with groups
+        val area = DevCareArea()
+        val daycareOpenThroughWeek =
+            DevDaycare(
+                areaId = area.id,
+                mealtimeBreakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
+                mealtimeLunch = TimeRange(LocalTime.of(11, 15), LocalTime.of(11, 45)),
+                mealtimeSnack = TimeRange(LocalTime.of(13, 30), LocalTime.of(13, 50)),
+            )
+        val daycareOpensDuringWeek =
+            DevDaycare(
+                areaId = area.id,
+                mealtimeBreakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
+                mealtimeLunch = TimeRange(LocalTime.of(11, 15), LocalTime.of(11, 45)),
+                mealtimeSnack = TimeRange(LocalTime.of(13, 30), LocalTime.of(13, 50)),
+                openingDate = wednesday,
+            )
+        val daycareClosesDuringWeek =
+            DevDaycare(
+                areaId = area.id,
+                mealtimeBreakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
+                mealtimeLunch = TimeRange(LocalTime.of(11, 15), LocalTime.of(11, 45)),
+                mealtimeSnack = TimeRange(LocalTime.of(13, 30), LocalTime.of(13, 50)),
+                closingDate = wednesday,
+            )
+
+        val groupOpenThroughWeek =
+            DevDaycareGroup(
+                daycareId = daycareOpenThroughWeek.id,
+                nekkuCustomerNumber = "2501K6089",
+            )
+        val groupOpensDuringWeek =
+            DevDaycareGroup(
+                daycareId = daycareOpenThroughWeek.id,
+                nekkuCustomerNumber = "2501K6089",
+                startDate = wednesday,
+            )
+        val groupClosesDuringWeek =
+            DevDaycareGroup(
+                daycareId = daycareOpenThroughWeek.id,
+                nekkuCustomerNumber = "2501K6089",
+                endDate = wednesday,
+            )
+        val groupInOpeningDaycare =
+            DevDaycareGroup(
+                daycareId = daycareOpensDuringWeek.id,
+                nekkuCustomerNumber = "2501K6089",
+                startDate = wednesday,
+            )
+        val groupInClosingDaycare =
+            DevDaycareGroup(
+                daycareId = daycareClosesDuringWeek.id,
+                nekkuCustomerNumber = "2501K6089",
+                endDate = wednesday,
+            )
+
+        val allGroups =
+            listOf(
+                groupOpenThroughWeek,
+                groupOpensDuringWeek,
+                groupClosesDuringWeek,
+                groupInOpeningDaycare,
+                groupInClosingDaycare,
+            )
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycareOpenThroughWeek)
+            tx.insert(daycareOpensDuringWeek)
+            tx.insert(daycareClosesDuringWeek)
+            tx.insert(groupOpenThroughWeek)
+            tx.insert(groupOpensDuringWeek)
+            tx.insert(groupClosesDuringWeek)
+            tx.insert(groupInOpeningDaycare)
+            tx.insert(groupInClosingDaycare)
+
+            allGroups.map { group ->
+                val childInGroup = DevPerson()
+                tx.insert(childInGroup, DevPersonType.CHILD)
+
+                val startDate = if (group.startDate > monday) group.startDate else monday
+                val groupEndDate = group.endDate
+                val endDate: LocalDate = if (groupEndDate != null) groupEndDate else friday
+
+                tx.insert(
+                        DevPlacement(
+                            childId = childInGroup.id,
+                            unitId = group.daycareId,
+                            startDate = startDate,
+                            endDate = endDate,
+                        )
+                    )
+                    .also { placementId ->
+                        tx.insert(
+                            DevDaycareGroupPlacement(
+                                daycarePlacementId = placementId,
+                                daycareGroupId = group.id,
+                                startDate = startDate,
+                                endDate = endDate,
+                            )
+                        )
+                    }
+            }
+        }
+
+        val expectedOrders =
+            mapOf(
+                groupOpenThroughWeek.id to allDays,
+                groupOpensDuringWeek.id to listOf(wednesday, thursday, friday),
+                groupClosesDuringWeek.id to listOf(monday, tuesday, wednesday),
+                groupInOpeningDaycare.id to listOf(wednesday, thursday, friday),
+                groupInClosingDaycare.id to listOf(monday, tuesday, wednesday),
+            )
+
+        planNekkuOrderJobs(
+            db,
+            asyncJobRunner,
+            HelsinkiDateTime.of(LocalDateTime.of(2025, 3, 20, 12, 34, 56)),
+        )
+        val plannedJobs = getNekkuJobs(db)
+
+        val expectedJobs =
+            expectedOrders.flatMap { (groupId, days) ->
+                days.map { day -> AsyncJob.SendNekkuOrder(groupId, day) }
+            }
+
+        assertEquals(expectedJobs.toSet(), plannedJobs.toSet())
+    }
+
+    @Test
+    fun `should make daily order for a newly opened group on its previous operating day`() {
+
+        val client =
+            TestNekkuClient(
+                customers = basicTestClientCustomers,
+                nekkuProducts = nekkuProductsForOrder,
+                specialDiets = listOf(getNekkuSpecialDiet()),
+            )
+
+        fetchAndUpdateNekkuCustomers(client, db, asyncJobRunner, now)
+        // products
+        fetchAndUpdateNekkuProducts(client, db)
+        fetchAndUpdateNekkuSpecialDiets(client, db, asyncJobRunner, now)
+
+        val area = DevCareArea()
+        val daycare =
+            DevDaycare(
+                areaId = area.id,
+                openingDate = LocalDate.of(2025, 1, 1),
+                operationTimes =
+                    listOf(
+                        null,
+                        TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+                        TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+                        TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+                        TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+                        null,
+                        null,
+                    ),
+            )
+        val group =
+            DevDaycareGroup(
+                daycareId = daycare.id,
+                startDate = LocalDate.of(2025, 6, 30),
+                nekkuCustomerNumber = "2501K6089",
+            )
+        val child = DevPerson()
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(group)
+            tx.insert(child, DevPersonType.CHILD)
+
+            tx.insert(
+                    DevPlacement(
+                        childId = child.id,
+                        unitId = group.daycareId,
+                        startDate = LocalDate.of(2025, 6, 30),
+                        endDate = LocalDate.of(2025, 7, 4),
+                    )
+                )
+                .also { placementId ->
+                    tx.insert(
+                        DevDaycareGroupPlacement(
+                            daycarePlacementId = placementId,
+                            daycareGroupId = group.id,
+                            startDate = LocalDate.of(2025, 6, 30),
+                            endDate = LocalDate.of(2025, 7, 4),
+                        )
+                    )
+                }
+        }
+
+        createAndSendNekkuOrder(client, db, group.id, LocalDate.of(2025, 7, 1))
+
+        planNekkuDailyOrderJobs(
+            db,
+            asyncJobRunner,
+            HelsinkiDateTime.of(LocalDate.of(2025, 6, 27), LocalTime.of(12, 34, 56)),
+        )
+
+        val plannedJobs = getNekkuJobs(db)
+        assertEquals(
+            listOf(AsyncJob.SendNekkuOrder(group.id, LocalDate.of(2025, 7, 1))),
+            plannedJobs,
         )
     }
 
