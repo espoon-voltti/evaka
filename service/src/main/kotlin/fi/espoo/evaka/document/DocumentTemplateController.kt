@@ -112,7 +112,6 @@ class DocumentTemplateController(
             .also { Audit.DocumentTemplateRead.log() }
     }
 
-    // TODO
     @GetMapping("/active")
     fun getActiveTemplates(
         db: Database,
@@ -140,6 +139,9 @@ class DocumentTemplateController(
                             (it.language.name.uppercase() ==
                                 placement.unitLanguage.name.uppercase() ||
                                 it.language == UiLanguage.EN) &&
+                            (placement.enabledPilotFeatures.contains(
+                                PilotFeature.VASU_AND_PEDADOC
+                            ) || !isPedagogicalDocument((it.type))) &&
                             (placement.enabledPilotFeatures.contains(PilotFeature.OTHER_DECISION) ||
                                 it.type != ChildDocumentType.OTHER_DECISION)
                     }
@@ -474,3 +476,16 @@ WHERE pl.child_id = ${bind(childId)} AND daterange(pl.start_date, pl.end_date, '
             )
         }
         .exactlyOneOrNull<ActivePlacementInfo>()
+
+private val PEDAGOGICAL_DOCUMENT_TYPES =
+    setOf(
+        ChildDocumentType.HOJKS,
+        ChildDocumentType.LEOPS,
+        ChildDocumentType.MIGRATED_LEOPS,
+        ChildDocumentType.MIGRATED_VASU,
+        ChildDocumentType.OTHER,
+        ChildDocumentType.PEDAGOGICAL_ASSESSMENT,
+        ChildDocumentType.VASU,
+    )
+
+private fun isPedagogicalDocument(type: ChildDocumentType) = type in PEDAGOGICAL_DOCUMENT_TYPES
