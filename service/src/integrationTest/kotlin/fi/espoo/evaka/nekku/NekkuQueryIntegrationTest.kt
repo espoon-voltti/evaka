@@ -9,6 +9,7 @@ import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.insert
+import java.time.LocalDate
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -162,6 +163,110 @@ class NekkuQueryIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
             assertEquals(10, tx.getNekkuOrderReductionForDaycareByGroup(dc1group1.id))
             assertEquals(10, tx.getNekkuOrderReductionForDaycareByGroup(dc1group2.id))
             assertEquals(20, tx.getNekkuOrderReductionForDaycareByGroup(dc2group.id))
+        }
+    }
+
+    @Test
+    fun `fetching open daycare group IDs should work`() {
+
+        insertCustomerNumbers(db)
+
+        val area = DevCareArea()
+        val daycare1 =
+            DevDaycare(
+                areaId = area.id,
+                openingDate = LocalDate.of(2025, 2, 1),
+                closingDate = LocalDate.of(2025, 12, 23),
+            )
+        val daycare2 =
+            DevDaycare(
+                areaId = area.id,
+                openingDate = LocalDate.of(2025, 6, 1),
+                closingDate = LocalDate.of(2025, 8, 31),
+            )
+        val group1 =
+            DevDaycareGroup(
+                daycareId = daycare1.id,
+                startDate = LocalDate.of(2025, 3, 1),
+                endDate = LocalDate.of(2025, 12, 31),
+                nekkuCustomerNumber = "1234",
+            )
+        val group2 =
+            DevDaycareGroup(
+                daycareId = daycare2.id,
+                startDate = LocalDate.of(2025, 5, 1),
+                endDate = LocalDate.of(2025, 7, 30),
+                nekkuCustomerNumber = "5678",
+            )
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare1)
+            tx.insert(daycare2)
+            tx.insert(group1)
+            tx.insert(group2)
+
+            val result = tx.getNekkuOpenDaycareGroupDates(LocalDate.of(2025, 6, 15))
+
+            assertEquals(
+                listOf(
+                        GroupDates(group1.id, group1.startDate, daycare1.closingDate),
+                        GroupDates(group2.id, daycare2.openingDate, group2.endDate),
+                    )
+                    .sortedBy { it.id },
+                result.sortedBy { it.id },
+            )
+        }
+    }
+
+    @Test
+    fun `fetching groups opening during the next week should work`() {
+
+        insertCustomerNumbers(db)
+
+        val today = LocalDate.of(2025, 5, 5)
+
+        val area = DevCareArea()
+        val daycare = DevDaycare(areaId = area.id)
+        val group1 =
+            DevDaycareGroup(
+                daycareId = daycare.id,
+                startDate = today.minusMonths(1),
+                nekkuCustomerNumber = "1234",
+            )
+        val group2 =
+            DevDaycareGroup(
+                daycareId = daycare.id,
+                startDate = today.plusDays(2),
+                nekkuCustomerNumber = "5678",
+            )
+        val group3 =
+            DevDaycareGroup(
+                daycareId = daycare.id,
+                startDate = today.plusDays(6),
+                nekkuCustomerNumber = "5678",
+            )
+        val group4 =
+            DevDaycareGroup(
+                daycareId = daycare.id,
+                startDate = today.plusWeeks(2),
+                nekkuCustomerNumber = "5678",
+            )
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(group1)
+            tx.insert(group2)
+            tx.insert(group3)
+            tx.insert(group4)
+
+            val result = tx.findNekkuGroupsOpeningInNextWeek(today)
+
+            assertEquals(
+                listOf(group2.id, group3.id).sortedBy { it },
+                result.sortedBy { it.id }.map { it.id },
+            )
         }
     }
 }

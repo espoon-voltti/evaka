@@ -641,12 +641,19 @@ data class NekkuDaycareCustomerMapping(
     val customerType: String,
 )
 
-fun Database.Read.getNekkuOpenDaycareGroupIds(range: FiniteDateRange): List<GroupId> =
+data class GroupDates(val id: GroupId, val validFrom: LocalDate?, val validTo: LocalDate?)
+
+fun Database.Read.getNekkuOpenDaycareGroupDates(date: LocalDate): List<GroupDates> =
+    getNekkuOpenDaycareGroupDates(FiniteDateRange(date, date))
+
+fun Database.Read.getNekkuOpenDaycareGroupDates(range: FiniteDateRange): List<GroupDates> =
     createQuery {
             sql(
                 """
-                    SELECT dg.id as groupId
-                    FROM daycare_group dg 
+                    SELECT dg.id as id,
+                    GREATEST(d.opening_date, dg.start_date) as valid_from,
+                    LEAST(d.closing_date, dg.end_date) as valid_to
+                    FROM daycare_group dg
                     JOIN daycare d ON d.id = dg.daycare_id
                     JOIN nekku_customer nc ON nc.number = dg.nekku_customer_number
                     WHERE dg.nekku_customer_number IS NOT NULL
@@ -655,7 +662,26 @@ fun Database.Read.getNekkuOpenDaycareGroupIds(range: FiniteDateRange): List<Grou
                 """
             )
         }
-        .toList<GroupId>()
+        .toList<GroupDates>()
+
+fun Database.Read.findNekkuGroupsOpeningInNextWeek(date: LocalDate): List<GroupDates> =
+    createQuery {
+            sql(
+                """
+                SELECT dg.id as id,
+                    GREATEST(d.opening_date, dg.start_date) as valid_from,
+                    LEAST(d.closing_date, dg.end_date) as valid_to
+                    FROM daycare_group dg
+                    JOIN daycare d ON d.id = dg.daycare_id
+                    JOIN nekku_customer nc ON nc.number = dg.nekku_customer_number
+                    WHERE dg.nekku_customer_number IS NOT NULL
+                    AND GREATEST(d.opening_date, dg.start_date) > ${bind(date)}
+                    AND GREATEST(d.opening_date, dg.start_date) <= ${bind(date.plusDays(7))}
+            """
+                    .trimIndent()
+            )
+        }
+        .toList<GroupDates>()
 
 fun Database.Read.mealTypesForChildren(
     childIds: Set<ChildId>
