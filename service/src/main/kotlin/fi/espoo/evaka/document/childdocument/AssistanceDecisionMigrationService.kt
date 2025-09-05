@@ -58,7 +58,8 @@ class AssistanceDecisionMigrationService(asyncJobRunner: AsyncJobRunner<AsyncJob
                         .filter {
                             it.type ==
                                 ChildDocumentType.MIGRATED_DAYCARE_ASSISTANCE_NEED_DECISION &&
-                                it.language.isoLanguage == decision.language.isoLanguage
+                                it.language.isoLanguage == decision.language.isoLanguage &&
+                                it.published
                         }
                         .also {
                             if (it.isEmpty()) {
@@ -141,7 +142,8 @@ class AssistanceDecisionMigrationService(asyncJobRunner: AsyncJobRunner<AsyncJob
                         .filter {
                             it.type ==
                                 ChildDocumentType.MIGRATED_PRESCHOOL_ASSISTANCE_NEED_DECISION &&
-                                it.language.isoLanguage == decision.form.language.isoLanguage
+                                it.language.isoLanguage == decision.form.language.isoLanguage &&
+                                it.published
                         }
                         .also {
                             if (it.isEmpty()) {
@@ -552,7 +554,11 @@ private fun migratePreschoolContent(
                         decision.form.preparer1Title,
                         decision.form.preparer1PhoneNumber,
                     ),
-                    listOf(decision.preparer2Name ?: "", "", ""),
+                    listOf(
+                        decision.preparer2Name ?: "",
+                        decision.form.preparer2Title,
+                        decision.form.preparer2PhoneNumber,
+                    ),
                 ),
             ),
             AnsweredQuestion.GroupedTextFieldsAnswer(
@@ -619,8 +625,8 @@ private fun Database.Transaction.insertMigratedDocument(
     createUpdate {
             sql(
                 """
-INSERT INTO child_document (id, child_id, template_id, content, published_at, status, published_content, modified_at, document_key, content_modified_at, content_modified_by, process_id, created_by, type, decision_maker, decision_id) 
-VALUES (${bind(id)}, ${bind(childId)}, ${bind(templateId)}, ${bind(content)}, ${bind(decidedAt)}, 'COMPLETED', ${bind(content)}, ${bind(decidedAt)}, ${bind(documentKey)}, ${bind(decidedAt)}, ${bind(userId)}, ${bind(processId)}, ${bind(systemUser)}, ${bind(type)}, ${bind(decisionMaker)}, ${bind(childDocumentDecisionId)})
+INSERT INTO child_document (id, child_id, template_id, content, published_at, status, published_content, modified_at, document_key, content_locked_at, content_locked_by, process_id, created_by, type, decision_maker, decision_id, published_by) 
+VALUES (${bind(id)}, ${bind(childId)}, ${bind(templateId)}, ${bind(content)}, ${bind(decidedAt)}, 'COMPLETED', ${bind(content)}, ${bind(decidedAt)}, ${bind(documentKey)}, ${bind(decidedAt)}, ${bind(userId)}, ${bind(processId)}, ${bind(systemUser)}, ${bind(type)}, ${bind(decisionMaker)}, ${bind(childDocumentDecisionId)}, ${bind(systemUser)})
 """
             )
         }
