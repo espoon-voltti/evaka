@@ -328,17 +328,16 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         )
                     )
                 }
-            listOf(
-                    // Two meals on Monday
-                    DevReservation(
-                        childId = child.id,
-                        date = monday,
-                        startTime = LocalTime.of(8, 0),
-                        endTime = LocalTime.of(16, 0),
-                        createdBy = employee.evakaUserId,
-                    )
+            tx.insert(
+                // Two meals on Monday
+                DevReservation(
+                    childId = child.id,
+                    date = monday,
+                    startTime = LocalTime.of(8, 0),
+                    endTime = LocalTime.of(16, 0),
+                    createdBy = employee.evakaUserId,
                 )
-                .forEach { tx.insert(it) }
+            )
         }
 
         // Original order
