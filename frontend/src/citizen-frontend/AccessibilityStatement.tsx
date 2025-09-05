@@ -21,7 +21,9 @@ export default React.memo(function AccessibilityStatement() {
       <Main>
         <Container>
           <ReturnButton label={t.common.return} />
-          <ContentArea opaque>{t.accessibilityStatement}</ContentArea>
+          <ContentArea opaque data-qa="accessibility-statement">
+            {t.accessibilityStatement}
+          </ContentArea>
         </Container>
       </Main>
       <Footer />
