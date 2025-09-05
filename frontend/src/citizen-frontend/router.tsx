@@ -46,7 +46,7 @@ const routes: CitizenRoute[] = [
   { path: '/login/form', component: LoginFormPage, auth: null },
   { path: '/login', component: LoginPage, auth: null },
   { path: '/map', component: MapPage, auth: null },
-  { path: '/accessibility', component: AccessibilityStatement },
+  { path: '/accessibility', component: AccessibilityStatement, auth: null },
   { path: '/applications', component: Applications },
   { path: '/applications/new', component: Applications },
   { path: '/applications/new/:childId', component: ApplicationCreation },
