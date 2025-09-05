@@ -10,6 +10,7 @@ import fi.espoo.evaka.ConstList
 import fi.espoo.evaka.EmailEnv
 import fi.espoo.evaka.NekkuEnv
 import fi.espoo.evaka.absence.AbsenceCategory
+import fi.espoo.evaka.absence.getDaycareIdByGroup
 import fi.espoo.evaka.daycare.DaycareMealtimes
 import fi.espoo.evaka.daycare.PreschoolTerm
 import fi.espoo.evaka.daycare.domain.Language
@@ -267,14 +268,24 @@ fun planNekkuDailyOrderJobs(
             tx,
             nekkuGroupIds.mapNotNull { nekkuGroupId ->
                 val groupOperationDays = tx.getGroupOperationDays(nekkuGroupId)
+
                 if (
                     groupOperationDays != null &&
                         isGroupOpenOnDate(now.toLocalDate(), groupOperationDays)
                 ) {
-                    AsyncJob.SendNekkuOrder(
-                        groupId = nekkuGroupId,
-                        date = daycareOpenNextTime(now.toLocalDate(), groupOperationDays),
-                    )
+                    val daycareOpenNextTime =
+                        daycareOpenNextTime(now.toLocalDate(), groupOperationDays)
+
+                    val nekkuOrders =
+                        tx.getNekkuOrderReport(
+                            tx.getDaycareIdByGroup(nekkuGroupId),
+                            nekkuGroupId,
+                            daycareOpenNextTime,
+                        )
+
+                    if (nekkuOrders.isNotEmpty()) {
+                        AsyncJob.SendNekkuOrder(groupId = nekkuGroupId, date = daycareOpenNextTime)
+                    } else null
                 } else null
             },
             runAt = now,
@@ -298,9 +309,17 @@ fun planNekkuSpecifyOrderJobs(
         asyncJobRunner.plan(
             tx,
             groupIds.mapNotNull { nekkuGroupId ->
+                val nekkuOrders =
+                    tx.getNekkuOrderReport(
+                        tx.getDaycareIdByGroup(nekkuGroupId),
+                        nekkuGroupId,
+                        fourDaysFromNow,
+                    )
+
                 val groupOperationDays = tx.getGroupOperationDays(nekkuGroupId)
                 if (
-                    groupOperationDays != null &&
+                    nekkuOrders.isNotEmpty() &&
+                        groupOperationDays != null &&
                         isGroupOpenOnDate(fourDaysFromNow, groupOperationDays)
                 ) {
                     AsyncJob.SendNekkuOrder(groupId = nekkuGroupId, date = fourDaysFromNow)
