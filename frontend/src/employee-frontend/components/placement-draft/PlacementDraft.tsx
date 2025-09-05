@@ -143,8 +143,6 @@ export default React.memo(function PlacementDraft() {
   const [selectedUnitIsGhostUnit, setSelectedUnitIsGhostUnit] =
     useState<boolean>(false)
 
-  const [preschoolDatesAreValid, setPreschoolDatesAreValid] = useState(true)
-
   const preschoolTermsResult = useQueryResult(getPreschoolTermsQuery())
 
   useEffect(() => {
@@ -214,56 +212,44 @@ export default React.memo(function PlacementDraft() {
     placementType === 'PRESCHOOL_DAYCARE_ONLY' ||
     placementType === 'PREPARATORY_DAYCARE'
 
-  useEffect(() => {
+  const preschoolDatesAreValid = useMemo(() => {
     if (
       preschoolTermsResult.isSuccess &&
       placementDraft.isSuccess &&
       isPreschoolPlacement(placementDraft.value.type) &&
       formState.period !== null
     ) {
-      const preschoolPeriodIsValid = preschoolTermsResult
+      const matchingPreschoolTerm = preschoolTermsResult
         .map((preschoolTerms) =>
-          preschoolTerms.some(
+          preschoolTerms.find(
             (term) =>
               term.finnishPreschool.asDateRange().contains(formState.period!) ||
               term.swedishPreschool.asDateRange().contains(formState.period!)
           )
         )
-        .getOrElse(false)
+        .getOrElse(undefined)
 
-      // If preschools dates are set, the preschool daycare period must be inside 1.8.-31.7 of the selected preschool year
-      const previousAugust1StBeforePreschoolPlacementStart = LocalDate.of(
-        formState.period.start.year,
-        8,
-        1
-      ).isBefore(formState.period.start)
-        ? LocalDate.of(formState.period.start.year, 8, 1)
-        : LocalDate.of(formState.period.start.year - 1, 8, 1)
+      if (!matchingPreschoolTerm) return false
+      if (!formState.hasPreschoolDaycarePeriod) {
+        return true
+      } else {
+        const validExtendedPreschoolDaycarePeriod = new FiniteDateRange(
+          matchingPreschoolTerm.extendedTerm.start,
+          LocalDate.of(matchingPreschoolTerm.finnishPreschool.end.year, 7, 31)
+        )
 
-      const nextJuly31StAfterPreschoolPlacementEnd = LocalDate.of(
-        formState.period.end.year,
-        7,
-        31
-      ).isAfter(formState.period.end)
-        ? LocalDate.of(formState.period.end.year, 7, 31)
-        : LocalDate.of(formState.period.start.year + 1, 7, 31)
-
-      const validExtendedPreschoolDaycarePeriod = new FiniteDateRange(
-        previousAugust1StBeforePreschoolPlacementStart,
-        nextJuly31StAfterPreschoolPlacementEnd
-      )
-
-      const preschoolDaycarePeriodIsValid =
-        formState.hasPreschoolDaycarePeriod &&
-        formState.preschoolDaycarePeriod !== null &&
-        validExtendedPreschoolDaycarePeriod.contains(
-          formState.preschoolDaycarePeriod
-        ) &&
-        formState.period.overlaps(formState.preschoolDaycarePeriod) // must overlap with placement period at least 1 day
-
-      setPreschoolDatesAreValid(
-        preschoolPeriodIsValid && preschoolDaycarePeriodIsValid
-      )
+        // must overlap with placement period at least 1 day
+        return (
+          formState.hasPreschoolDaycarePeriod &&
+          formState.preschoolDaycarePeriod !== null &&
+          validExtendedPreschoolDaycarePeriod.contains(
+            formState.preschoolDaycarePeriod
+          ) &&
+          formState.period.overlaps(formState.preschoolDaycarePeriod)
+        )
+      }
+    } else {
+      return false
     }
   }, [preschoolTermsResult, placementDraft, formState])
 
