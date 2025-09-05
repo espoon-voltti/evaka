@@ -24,6 +24,7 @@ import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.domain.UiLanguage
+import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
@@ -82,7 +83,13 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     AuthenticatedUser.Employee(it, setOf(UserRole.ADMIN))
                 }
             tx.insert(testArea)
-            tx.insert(testDaycare.copy(language = Language.sv))
+            tx.insert(
+                testDaycare.copy(
+                    language = Language.sv,
+                    enabledPilotFeatures =
+                        setOf(PilotFeature.VASU_AND_PEDADOC, PilotFeature.OTHER_DECISION),
+                )
+            )
             tx.insert(testChild_1, DevPersonType.CHILD)
             tx.insert(
                 DevPlacement(
@@ -324,6 +331,76 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         val active = controller.getActiveTemplates(dbInstance(), employeeUser, now, testChild_1.id)
         assertEquals(1, active.size)
         assertEquals(template.id, active.first().id)
+    }
+
+    @Test
+    fun `active templates endpoint does not return pedagogical templates if relevant pilot feature is not enabled`() {
+        val pedaTemplate =
+            controller.createTemplate(
+                dbInstance(),
+                employeeUser,
+                now,
+                testCreationRequest.copy(
+                    language = UiLanguage.SV,
+                    validity = DateRange(now.today(), null),
+                    type = ChildDocumentType.VASU,
+                ),
+            )
+        controller.publishTemplate(dbInstance(), employeeUser, now, pedaTemplate.id)
+        assertEquals(
+            1,
+            controller.getActiveTemplates(dbInstance(), employeeUser, now, testChild_1.id).size,
+        )
+
+        removePilotFeature(PilotFeature.VASU_AND_PEDADOC)
+
+        assertEquals(
+            0,
+            controller.getActiveTemplates(dbInstance(), employeeUser, now, testChild_1.id).size,
+        )
+    }
+
+    @Test
+    fun `active templates endpoint does not return other decision templates if relevant pilot feature is not enabled`() {
+        val pedaTemplate =
+            controller.createTemplate(
+                dbInstance(),
+                employeeUser,
+                now,
+                testCreationRequest.copy(
+                    language = UiLanguage.SV,
+                    validity = DateRange(now.today(), null),
+                    endDecisionWhenUnitChanges = true,
+                    type = ChildDocumentType.OTHER_DECISION,
+                ),
+            )
+        controller.publishTemplate(dbInstance(), employeeUser, now, pedaTemplate.id)
+        assertEquals(
+            1,
+            controller.getActiveTemplates(dbInstance(), employeeUser, now, testChild_1.id).size,
+        )
+
+        removePilotFeature(PilotFeature.OTHER_DECISION)
+
+        assertEquals(
+            0,
+            controller.getActiveTemplates(dbInstance(), employeeUser, now, testChild_1.id).size,
+        )
+    }
+
+    private fun removePilotFeature(pilotFeature: PilotFeature) {
+        db.transaction { tx ->
+                tx.createUpdate {
+                    sql(
+                        """
+    UPDATE daycare
+    SET enabled_pilot_features = array_remove(enabled_pilot_features, '${pilotFeature.name.uppercase()}')
+    WHERE id = ${bind(testDaycare.id)}
+    """
+                    )
+                }
+            }
+            .execute()
     }
 
     @Test

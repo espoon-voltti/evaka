@@ -63,8 +63,10 @@ export default React.memo(function CitizenDocumentResponseReport() {
     () =>
       units.map((res) =>
         orderBy(
-          res.filter((u) =>
-            u.enabledPilotFeatures.includes('VASU_AND_PEDADOC')
+          res.filter(
+            (u) =>
+              u.enabledPilotFeatures.includes('VASU_AND_PEDADOC') ||
+              u.enabledPilotFeatures.includes('OTHER_DECISION')
           ),
           (u) => u.name
         )
