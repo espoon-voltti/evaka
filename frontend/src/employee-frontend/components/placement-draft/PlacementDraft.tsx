@@ -143,8 +143,6 @@ export default React.memo(function PlacementDraft() {
   const [selectedUnitIsGhostUnit, setSelectedUnitIsGhostUnit] =
     useState<boolean>(false)
 
-  const [preschoolDatesAreValid, setPreschoolDatesAreValid] = useState(true)
-
   const preschoolTermsResult = useQueryResult(getPreschoolTermsQuery())
 
   useEffect(() => {
@@ -214,7 +212,7 @@ export default React.memo(function PlacementDraft() {
     placementType === 'PRESCHOOL_DAYCARE_ONLY' ||
     placementType === 'PREPARATORY_DAYCARE'
 
-  useEffect(() => {
+ const preschoolDatesAreValid = useMemo(() => {
     if (
       preschoolTermsResult.isSuccess &&
       placementDraft.isSuccess &&
@@ -261,10 +259,8 @@ export default React.memo(function PlacementDraft() {
         ) &&
         formState.period.overlaps(formState.preschoolDaycarePeriod) // must overlap with placement period at least 1 day
 
-      setPreschoolDatesAreValid(
-        preschoolPeriodIsValid && preschoolDaycarePeriodIsValid
-      )
-    }
+        return preschoolPeriodIsValid && preschoolDaycarePeriodIsValid
+    } else return false
   }, [preschoolTermsResult, placementDraft, formState])
 
   useEffect(() => {
