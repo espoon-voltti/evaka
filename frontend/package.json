@@ -73,7 +73,7 @@
     "@eslint/js": "9.34.0",
     "@evaka/eslint-plugin": "link:eslint-plugin",
     "@playwright/test": "1.55.0",
-    "@sentry/vite-plugin": "4.1.1",
+    "@sentry/vite-plugin": "4.2.0",
     "@testing-library/dom": "10.4.1",
     "@testing-library/jest-dom": "6.8.0",
     "@testing-library/react": "16.3.0",
