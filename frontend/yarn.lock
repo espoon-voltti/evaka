@@ -2412,27 +2412,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@fortawesome/react-fontawesome@npm:0.2.6":
-  version: 0.2.6
-  resolution: "@fortawesome/react-fontawesome@npm:0.2.6"
-  dependencies:
-    prop-types: "npm:^15.8.1"
+"@fortawesome/react-fontawesome@npm:3.0.2":
+  version: 3.0.2
+  resolution: "@fortawesome/react-fontawesome@npm:3.0.2"
   peerDependencies:
-    "@fortawesome/fontawesome-svg-core": ~1 || ~6 || ~7
-    react: ^16.3 || ^17.0.0 || ^18.0.0 || ^19.0.0
-  checksum: 10/e1660d528e3b76eb7e8080a6179188adb9a9eb6ec76a3d18443a8a30bb4a12515fdec456c5c23ae805cdff75c8bae636249863d587f66745a889f3df630d05a4
-  languageName: node
-  linkType: hard
-
-"@fortawesome/react-fontawesome@patch:@fortawesome/react-fontawesome@0.2.6#~/.yarn/patches/@fortawesome-react-fontawesome-npm-0.2.2-e1863961b2.patch":
-  version: 0.2.6
-  resolution: "@fortawesome/react-fontawesome@patch:@fortawesome/react-fontawesome@npm%3A0.2.6#~/.yarn/patches/@fortawesome-react-fontawesome-npm-0.2.2-e1863961b2.patch::version=0.2.6&hash=76a249"
-  dependencies:
-    prop-types: "npm:^15.8.1"
-  peerDependencies:
-    "@fortawesome/fontawesome-svg-core": ~1 || ~6 || ~7
-    react: ^16.3 || ^17.0.0 || ^18.0.0 || ^19.0.0
-  checksum: 10/a53085dfb329b91cb22027d183fb4f56b116b36c36bd0104804d1eb9c08403473c980ea3a5d013147899aaf1b4a3071bc3485ba3dca85a155ad7eba73bfe64f7
+    "@fortawesome/fontawesome-svg-core": ~6 || ~7
+    react: ^18.0.0 || ^19.0.0
+  checksum: 10/39f25b3814b5e8a26cb60028929158fa032b724388588b9c9e256cf657ea18a73db2560054058240e91efa6daf58398f60e25d9a5ccd97655b2472a992191968
   languageName: node
   linkType: hard
 
@@ -6356,7 +6342,7 @@ __metadata:
     "@fortawesome/fontawesome-svg-core": "npm:6.7.2"
     "@fortawesome/free-regular-svg-icons": "npm:6.7.2"
     "@fortawesome/free-solid-svg-icons": "npm:6.7.2"
-    "@fortawesome/react-fontawesome": "npm:0.2.6"
+    "@fortawesome/react-fontawesome": "npm:3.0.2"
     "@playwright/test": "npm:1.55.0"
     "@react-spring/rafz": "npm:10.0.1"
     "@react-spring/web": "npm:10.0.1"
