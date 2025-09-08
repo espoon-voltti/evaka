@@ -18,7 +18,7 @@ dependencies {
         api("com.networknt:json-schema-validator:1.5.8")
         api("com.zaxxer:HikariCP:7.0.2")
         api("io.github.oshai:kotlin-logging-jvm:7.0.13")
-        api("io.kotest:kotest-property:6.0.1")
+        api("io.kotest:kotest-property:6.0.2")
         api("io.mockk:mockk:1.14.5")
         api("jakarta.annotation:jakarta.annotation-api:3.0.0")
         api("jakarta.jws:jakarta.jws-api:3.0.0")
