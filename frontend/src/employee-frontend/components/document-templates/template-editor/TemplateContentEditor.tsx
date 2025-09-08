@@ -325,13 +325,11 @@ const BasicsEditor = React.memo(function BasicsEditor({
 
   const typeOptions = useMemo(
     () =>
-      childDocumentTypes
-        .filter((type) => !type.startsWith('MIGRATED_'))
-        .map((option) => ({
-          domValue: option,
-          value: option,
-          label: i18n.documentTemplates.documentTypes[option]
-        })),
+      childDocumentTypes.map((option) => ({
+        domValue: option,
+        value: option,
+        label: i18n.documentTemplates.documentTypes[option]
+      })),
     [i18n.documentTemplates]
   )
 
