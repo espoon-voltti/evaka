@@ -136,7 +136,6 @@
     }
   },
   "resolutions": {
-    "@fortawesome/react-fontawesome": "patch:@fortawesome/react-fontawesome@3.0.2#~/.yarn/patches/@fortawesome-react-fontawesome-npm-0.2.2-e1863961b2.patch",
     "@react-leaflet/core@npm:^3.0.0": "patch:@react-leaflet/core@npm%3A3.0.0#~/.yarn/patches/@react-leaflet-core-npm-3.0.0-4e3f2d62b5.patch",
     "unplugin@npm:1.0.1": "patch:unplugin@npm%3A1.0.1#~/.yarn/patches/unplugin-npm-1.0.1-70bc9bb0e2.patch"
   },
