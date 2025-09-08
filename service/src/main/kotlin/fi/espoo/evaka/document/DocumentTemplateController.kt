@@ -143,7 +143,10 @@ class DocumentTemplateController(
                                 PilotFeature.VASU_AND_PEDADOC
                             ) || !isPedagogicalDocument((it.type))) &&
                             (placement.enabledPilotFeatures.contains(PilotFeature.OTHER_DECISION) ||
-                                it.type != ChildDocumentType.OTHER_DECISION)
+                                it.type != ChildDocumentType.OTHER_DECISION) &&
+                            (placement.enabledPilotFeatures.contains(
+                                PilotFeature.CITIZEN_BASIC_DOCUMENT
+                            ) || it.type != ChildDocumentType.CITIZEN_BASIC)
                     }
                 }
             }
@@ -483,7 +486,6 @@ private val PEDAGOGICAL_DOCUMENT_TYPES =
         ChildDocumentType.LEOPS,
         ChildDocumentType.MIGRATED_LEOPS,
         ChildDocumentType.MIGRATED_VASU,
-        ChildDocumentType.OTHER,
         ChildDocumentType.PEDAGOGICAL_ASSESSMENT,
         ChildDocumentType.VASU,
     )

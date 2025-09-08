@@ -2286,6 +2286,7 @@ export const testDaycare = Fixture.daycare({
     'RESERVATIONS',
     'VASU_AND_PEDADOC',
     'OTHER_DECISION',
+    'CITIZEN_BASIC_DOCUMENT',
     'MOBILE_MESSAGING',
     'PLACEMENT_TERMINATION',
     'SERVICE_APPLICATIONS'

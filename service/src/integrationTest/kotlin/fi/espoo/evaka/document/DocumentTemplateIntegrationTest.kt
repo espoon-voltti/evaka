@@ -87,7 +87,11 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 testDaycare.copy(
                     language = Language.sv,
                     enabledPilotFeatures =
-                        setOf(PilotFeature.VASU_AND_PEDADOC, PilotFeature.OTHER_DECISION),
+                        setOf(
+                            PilotFeature.VASU_AND_PEDADOC,
+                            PilotFeature.OTHER_DECISION,
+                            PilotFeature.CITIZEN_BASIC_DOCUMENT,
+                        ),
                 )
             )
             tx.insert(testChild_1, DevPersonType.CHILD)
@@ -362,7 +366,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
     @Test
     fun `active templates endpoint does not return other decision templates if relevant pilot feature is not enabled`() {
-        val pedaTemplate =
+        val template =
             controller.createTemplate(
                 dbInstance(),
                 employeeUser,
@@ -374,13 +378,40 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     type = ChildDocumentType.OTHER_DECISION,
                 ),
             )
-        controller.publishTemplate(dbInstance(), employeeUser, now, pedaTemplate.id)
+        controller.publishTemplate(dbInstance(), employeeUser, now, template.id)
         assertEquals(
             1,
             controller.getActiveTemplates(dbInstance(), employeeUser, now, testChild_1.id).size,
         )
 
         removePilotFeature(PilotFeature.OTHER_DECISION)
+
+        assertEquals(
+            0,
+            controller.getActiveTemplates(dbInstance(), employeeUser, now, testChild_1.id).size,
+        )
+    }
+
+    @Test
+    fun `active templates endpoint does not return citizen basic templates if relevant pilot feature is not enabled`() {
+        val template =
+            controller.createTemplate(
+                dbInstance(),
+                employeeUser,
+                now,
+                testCreationRequest.copy(
+                    language = UiLanguage.SV,
+                    validity = DateRange(now.today(), null),
+                    type = ChildDocumentType.CITIZEN_BASIC,
+                ),
+            )
+        controller.publishTemplate(dbInstance(), employeeUser, now, template.id)
+        assertEquals(
+            1,
+            controller.getActiveTemplates(dbInstance(), employeeUser, now, testChild_1.id).size,
+        )
+
+        removePilotFeature(PilotFeature.CITIZEN_BASIC_DOCUMENT)
 
         assertEquals(
             0,

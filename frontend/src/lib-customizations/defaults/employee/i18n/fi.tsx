@@ -5384,7 +5384,8 @@ export const fi = {
       PUSH_NOTIFICATIONS: 'Mobiilinotifikaatiot',
       SERVICE_APPLICATIONS: 'Palveluntarpeen muutoshakemukset',
       STAFF_ATTENDANCE_INTEGRATION: 'Työvuoro­suunnittelu­integraatio',
-      OTHER_DECISION: 'Muut päätökset'
+      OTHER_DECISION: 'Muut päätökset',
+      CITIZEN_BASIC_DOCUMENT: 'Muut dokumentit'
     }
   },
   roles: {

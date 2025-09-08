@@ -786,12 +786,20 @@ describe('Employee - Child documents', () => {
     const daycare1 = await Fixture.daycare({
       areaId: careArea.id,
       language: 'fi',
-      enabledPilotFeatures: ['VASU_AND_PEDADOC', 'OTHER_DECISION']
+      enabledPilotFeatures: [
+        'VASU_AND_PEDADOC',
+        'OTHER_DECISION',
+        'CITIZEN_BASIC_DOCUMENT'
+      ]
     }).save()
     const daycare2 = await Fixture.daycare({
       areaId: careArea.id,
       language: 'sv',
-      enabledPilotFeatures: ['VASU_AND_PEDADOC', 'OTHER_DECISION']
+      enabledPilotFeatures: [
+        'VASU_AND_PEDADOC',
+        'OTHER_DECISION',
+        'CITIZEN_BASIC_DOCUMENT'
+      ]
     }).save()
     const supervisor = await Fixture.employee()
       .unitSupervisor(daycare1.id)
@@ -1193,7 +1201,11 @@ describe('Employee - Child documents - unit groups page', () => {
     const area = await Fixture.careArea().save()
     unit1 = await Fixture.daycare({
       areaId: area.id,
-      enabledPilotFeatures: ['VASU_AND_PEDADOC', 'OTHER_DECISION']
+      enabledPilotFeatures: [
+        'VASU_AND_PEDADOC',
+        'OTHER_DECISION',
+        'CITIZEN_BASIC_DOCUMENT'
+      ]
     }).save()
     group1 = await Fixture.daycareGroup({
       daycareId: unit1.id
